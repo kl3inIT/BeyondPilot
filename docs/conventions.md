@@ -172,7 +172,7 @@ Domain Story and Consumer
 The error contract follows [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) and the machine-readable-reason guidance of [Google AIP-193](https://google.aip.dev/193).
 
 - **Typed failures.** `FailureCategory`, `FailureReason` and the abstract `BusinessException` live in the base package. Each module declares its expected failures as one enum implementing `FailureReason` (stable code, category, safe user message) and throws one module exception that extends `BusinessException`. The exception message is diagnostic and reaches logs only. HTTP types never enter a module's root or persistence code.
-- **One handler.** `ApiExceptionHandler` in the `config` module is the application's only `@RestControllerAdvice`; modules never declare `@ExceptionHandler` or `@ControllerAdvice`. A failure that needs more in its response than code, category and message (for example a `Retry-After` delay) exposes it through typed members of its exception, which the single handler maps; every such member is declared on the shared problem schema.
+- **One handler.** `ApiExceptionHandler` in the `config` module is the application's only exception handler: no other class declares `@ExceptionHandler`, and modules declare no `@ControllerAdvice`, `@RestControllerAdvice` or response advice. A failure that needs more in its response than code, category and message (for example a `Retry-After` delay) exposes it through typed members of its exception, which the single handler maps; every such member is declared on the shared problem schema.
 - **Codes.** Codes are upper snake case, start with the module name, match `[A-Z][A-Z0-9_]+[A-Z0-9]` and are at most 63 characters, for example `PROPOSAL_DEADLINE_PASSED`. A published code never changes meaning; a new meaning gets a new code.
 - **Status by category.**
 
@@ -189,7 +189,7 @@ The error contract follows [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.htm
 - **Problem members.** `type` is `urn:beyondpilot:failure:<code in kebab case>` and maps one to one to `code`; `title` comes from the category; `detail` is the safe message; `code` is an extension member declared in the shared problem schema; `requestId` is an extension member equal to the identifier logged for that request.
 - **Every error response is `application/problem+json`**: business failures, request validation, Spring MVC errors, uncaught exceptions (a generic 500 with no internal detail) and Spring Security 401 and 403. A test verifies each kind. Uncaught exceptions reach this shape through the framework error path, not through an application `@ExceptionHandler(Exception.class)`, which is never added.
 - **Validation failures** return 400 with an `errors` extension: one entry per violation with `pointer` (a JSON Pointer to the offending member, for example `#/title`), `detail` (safe fallback text), `code` and optional `params` holding only allowlisted numeric bounds such as `min` and `max`. A rejected value is never echoed.
-- **Retry hints.** 429 and 503 responses carry `Retry-After`.
+- **Retry hints.** 429 and 503 responses carry `Retry-After` in whole seconds; a `LIMIT_EXCEEDED` or `SERVICE_UNAVAILABLE` failure supplies the delay by overriding `BusinessException.retryAfter()`.
 - **Consumers.** Clients branch on `status` or `code` (equivalent to `type`), never on `title`, `detail` or diagnostic text. The web translates codes into the reader's language at render time.
 - Never put a code into an exception message and match the string later.
 - Browser redirects keep their own contract.
