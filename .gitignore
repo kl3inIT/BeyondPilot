@@ -34,3 +34,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Local scratch and reference clones ###
+.tmp/
