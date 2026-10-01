@@ -1,0 +1,12 @@
+# Every deployed environment runs this profile; staging adds `staging` on top.
+# Database settings have no defaults so a missing value stops startup.
+spring:
+  datasource:
+    url: ${BEYONDPILOT_DATABASE_URL}
+    username: ${BEYONDPILOT_DATABASE_USERNAME}
+    password: ${BEYONDPILOT_DATABASE_PASSWORD}
+
+logging:
+  structured:
+    format:
+      console: logstash

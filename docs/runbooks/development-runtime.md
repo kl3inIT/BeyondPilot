@@ -22,11 +22,22 @@ From the repository root:
   docker compose -f backend/compose.yaml down
   ```
 
-The PostgreSQL image is `postgres:latest` with development-only credentials in `backend/compose.yaml`; pinning the image version is open in BEY-14.
+- The database is `postgres:18.6` with development-only credentials in `backend/compose.yaml`. Its data lives in the named volume `backend_postgres-data` and survives `down`; `down -v` deletes it.
+- On Windows, call the JDK through `JAVA_HOME` when running the jar by hand; a `java` found first on the Git Bash `PATH` may not be JDK 25.
 
-## Environment variables
+## Profiles and environment variables
 
-None yet for the backend. It runs on its generated defaults; `BEYONDPILOT_*` variables arrive with the `development`, `staging` and `production` profiles (BEY-14).
+Local runs use no profile. Deployed environments run `production`; staging runs `production,staging`.
+
+| Variable | Profile | Purpose |
+| --- | --- | --- |
+| `BEYONDPILOT_DATABASE_URL` | `production` | JDBC URL of the PostgreSQL database. No default |
+| `BEYONDPILOT_DATABASE_USERNAME` | `production` | Database login. No default |
+| `BEYONDPILOT_DATABASE_PASSWORD` | `production` | Database password; a managed secret, never committed. No default |
+| `BEYONDPILOT_DATABASE_POOL_SIZE` | all | Fixed connection pool size. Default `10` |
+
+- `production` writes Logstash-format JSON logs to standard output; `staging` adds DEBUG logging for `ai.genaifund.beyondpilot`.
+- A missing database variable stops startup. Spring reports it as `'url' must start with "jdbc"` rather than naming the variable: check `BEYONDPILOT_DATABASE_URL` first.
 
 ## Web application
 

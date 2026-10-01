@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: beyondpilot
+  threads:
+    virtual:
+      enabled: true
+  jackson:
+    datatype:
+      enum:
+        fail-on-numbers-for-enums: true
+  datasource:
+    hikari:
+      # A fixed-size pool: opening connections when load arrives is the slowest moment to do it.
+      pool-name: beyondpilot
+      maximum-pool-size: ${BEYONDPILOT_DATABASE_POOL_SIZE:10}
+      minimum-idle: ${BEYONDPILOT_DATABASE_POOL_SIZE:10}
+      # Fail while the caller still waits, retire connections before the network drops them,
+      # and report a connection that was borrowed and never returned.
+      connection-timeout: 10000
+      max-lifetime: 1500000
+      leak-detection-threshold: 60000
+  jpa:
+    # Flyway owns the schema; Hibernate only checks that entities match it.
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.cache.use_second_level_cache: false
+      hibernate.cache.use_query_cache: false

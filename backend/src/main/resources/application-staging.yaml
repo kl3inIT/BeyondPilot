@@ -1,0 +1,4 @@
+# Staging runs with `production,staging`: production settings plus diagnosis logging for our own code.
+logging:
+  level:
+    ai.genaifund.beyondpilot: DEBUG
