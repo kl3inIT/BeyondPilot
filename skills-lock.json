@@ -12,6 +12,12 @@
       "sourceType": "github",
       "skillPath": "skills/figma-codegen/SKILL.md",
       "computedHash": "0ba7d2b8b1a6756cac9ed9a01b4e9564a8b71a613b0eaafa517c9461c282f2fe"
+    },
+    "shadcn": {
+      "source": "shadcn-ui/ui",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "d04e43ec01e921558b93bb8046c14a42a22556689a2827243df900825a4e1604"
     }
   }
 }
