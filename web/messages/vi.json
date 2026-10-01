@@ -1,11 +1,228 @@
 {
   "Metadata": {
     "title": "BeyondPilot",
-    "description": "Kết nối doanh nghiệp với nhà cung cấp giải pháp AI và nhân lực AI."
+    "description": "Cùng giải bài toán AI của doanh nghiệp. Khám phá các chương trình của GenAI Fund, ứng tuyển bằng một hồ sơ dùng lại được và theo dõi đề xuất của bạn qua từng vòng duyệt."
   },
-  "HomePage": {
-    "title": "BeyondPilot",
-    "tagline": "Kết nối doanh nghiệp với nhà cung cấp giải pháp AI và nhân lực AI."
+  "Site": {
+    "brand": "BeyondPilot",
+    "poweredBy": "Vận hành bởi",
+    "genaiFund": "GenAI Fund",
+    "skipToContent": "Chuyển tới nội dung",
+    "nav": {
+      "label": "Điều hướng chính",
+      "programs": "Chương trình",
+      "useCases": "Bài toán",
+      "solutions": "Giải pháp AI",
+      "talent": "Nhân lực AI",
+      "signIn": "Đăng nhập",
+      "getStarted": "Bắt đầu"
+    },
+    "menu": {
+      "open": "Mở menu",
+      "close": "Đóng menu",
+      "title": "Menu",
+      "programsHint": "Thử thách và chiến dịch",
+      "useCasesHint": "Nhu cầu doanh nghiệp đang nhận đề xuất",
+      "solutionsHint": "Sản phẩm từ các nhà cung cấp AI",
+      "talentHint": "Nhà phát triển và chuyên gia",
+      "talentCta": "Bạn là chuyên gia AI? Tạo hồ sơ nhân lực"
+    },
+    "theme": {
+      "label": "Giao diện",
+      "light": "Sáng",
+      "dark": "Tối",
+      "system": "Theo hệ thống"
+    },
+    "footer": {
+      "platform": "Nền tảng",
+      "company": "GenAI Fund",
+      "about": "Giới thiệu",
+      "events": "Sự kiện",
+      "newsletter": "Bản tin",
+      "contact": "Liên hệ",
+      "linkedin": "LinkedIn",
+      "facebook": "Facebook",
+      "x": "X",
+      "copyright": "© {year} GenAI Fund. Đã đăng ký bản quyền.",
+      "privacy": "Chính sách quyền riêng tư",
+      "terms": "Điều khoản sử dụng"
+    }
+  },
+  "Campaign": {
+    "name": "AI for Insurance Challenge × Tasco",
+    "shortName": "AI for Insurance × Tasco",
+    "live": "Đang mở",
+    "liveNow": "Đang mở",
+    "closes": "Đóng 15/10",
+    "closesLong": "Đóng ngày 15/10/2026",
+    "apply": "Ứng tuyển",
+    "applyNow": "Ứng tuyển ngay",
+    "breadcrumb": "Chương trình / Bảo hiểm · Việt Nam",
+    "question": "Làm sao để bảo hiểm ở Việt Nam trở thành thứ người dân thấy đáng có — dễ mua, dễ mang theo, dễ yêu cầu bồi thường? Đề bài mở, ai cũng có thể tham gia.",
+    "questionShort": "Làm sao để bảo hiểm ở Việt Nam dễ mua, dễ mang theo và dễ bồi thường?",
+    "teams": "10 đội vào demo day",
+    "region": "Việt Nam",
+    "tabs": {
+      "directions": "Hướng giải",
+      "challenge": "Đề bài",
+      "eligibility": "Điều kiện",
+      "timeline": "Lịch trình",
+      "pilot": "Tháng pilot"
+    },
+    "directions": {
+      "buying": "Mua",
+      "buyingText": "Mua bảo hiểm nên mất vài phút, không phải chờ gọi lại.",
+      "buyingA": "Gia hạn liền mạch",
+      "buyingB": "Quyền lợi dễ hiểu",
+      "carrying": "Mang theo",
+      "carryingText": "Hợp đồng phải có sẵn ngay khi cần.",
+      "carryingA": "Bằng chứng trong túi",
+      "carryingB": "Hỗ trợ đến trước",
+      "claiming": "Bồi thường",
+      "claimingText": "Ngày tệ nhất nên là phần đơn giản nhất.",
+      "claimingA": "Bồi thường có hướng dẫn",
+      "claimingB": "Thẩm định nhanh hơn"
+    },
+    "applyTitle": "Ứng tuyển thử thách này",
+    "applyText": "Bạn không cần sản phẩm hoàn chỉnh. Bạn cần một góc nhìn rõ ràng và ba tuần.",
+    "readBrief": "Đọc đề bài",
+    "keyDates": "Mốc thời gian",
+    "opens": "Mở đơn",
+    "briefing": "Buổi giới thiệu trực tuyến",
+    "submissionsClose": "Hạn nộp",
+    "demoDay": "Demo day",
+    "investment": "Đầu tư",
+    "investmentValue": "Tới 100.000 USD",
+    "whoCanApply": "Ai có thể tham gia",
+    "whoA": "Cá nhân và nhóm sinh viên",
+    "whoB": "Startup và công ty phần mềm",
+    "whoC": "Agency và đội ngũ doanh nghiệp",
+    "searchPlaceholder": "Tìm chương trình…"
+  },
+  "Home": {
+    "hero": {
+      "title": "Cùng giải bài toán AI của doanh nghiệp",
+      "description": "Khám phá chương trình và bài toán từ các đối tác của GenAI Fund, ứng tuyển bằng một hồ sơ dùng lại được và theo dõi đề xuất qua từng vòng duyệt.",
+      "browse": "Xem chương trình",
+      "publish": "Đăng bài toán"
+    },
+    "logos": {
+      "title": "Đồng hành cùng mạng lưới đối tác của GenAI Fund"
+    },
+    "bento": {
+      "title": "Một nền tảng cho mọi chương trình.",
+      "programs": "Chiến dịch và chương trình",
+      "programsText": "Tổ chức thử thách, hackathon và pilot trên một trang dùng lại được, không phải dựng lại quy trình mỗi lần.",
+      "useCases": "Bài toán doanh nghiệp",
+      "useCasesText": "Đăng nhu cầu kinh doanh kèm kết quả mong muốn, mức sẵn sàng dữ liệu và thời hạn, được duyệt trước khi công khai.",
+      "solutions": "Danh mục giải pháp AI",
+      "solutionsText": "Tìm giải pháp theo năng lực, độ trưởng thành và bằng chứng từ các nhà cung cấp khắp châu Á.",
+      "talent": "Nhân lực AI",
+      "talentText": "Nhà phát triển và chuyên gia giới thiệu năng lực và nhận lời mời từ doanh nghiệp.",
+      "briefPill": "Tasco · AI for Insurance Challenge",
+      "briefTeams": "10 đội vào demo day",
+      "shortlisted": "Được chọn",
+      "moreProposals": "+ 9 đề xuất khác",
+      "talentBubble": "Sarah K. · Kỹ sư ML · Sẵn sàng làm pilot",
+      "kinds": {
+        "documentAi": "AI xử lý tài liệu",
+        "vision": "Thị giác máy tính",
+        "llm": "Trợ lý LLM",
+        "forecasting": "Dự báo",
+        "speech": "AI giọng nói",
+        "automation": "Tự động hoá quy trình",
+        "proofInPocket": "Bằng chứng trong túi",
+        "guidedClaims": "Bồi thường có hướng dẫn",
+        "renewal": "Gia hạn liền mạch"
+      },
+      "programAlt": {
+        "wash3000": "Poster chương trình Tasco Foundry Wash3000",
+        "workshops": "Poster chuỗi workshop AI Workforce Shift",
+        "demoDay": "Khán giả tại một buổi demo day của GenAI Fund"
+      }
+    },
+    "items": {
+      "title": "Phục vụ cả hai phía của thử thách.",
+      "providers": "Cho nhà cung cấp và nhà phát triển AI",
+      "enterprises": "Cho doanh nghiệp và GenAI Fund",
+      "browse": "Xem chương trình",
+      "publish": "Đăng bài toán",
+      "profile": "Một hồ sơ dùng lại",
+      "profileText": "Ứng tuyển mọi chiến dịch mà không phải nhập lại thông tin công ty.",
+      "context": "Giữ nguyên ngữ cảnh khi đăng ký",
+      "contextText": "Đăng nhập giữa chừng và quay lại đúng chỗ đang làm.",
+      "drafts": "Lưu nháp, làm tiếp sau",
+      "draftsText": "Lưu đề xuất hoặc bài toán và hoàn thành trước hạn.",
+      "teams": "Đội nhóm hay cá nhân",
+      "teamsText": "Ứng tuyển với tư cách tổ chức hoặc cá nhân.",
+      "rolling": "Duyệt liên tục",
+      "rollingText": "Doanh nghiệp thấy đề xuất ngay khi được gửi tới.",
+      "shortlists": "Danh sách chọn, không phải hộp thư",
+      "shortlistsText": "Đánh giá, so sánh và chọn ở cùng một nơi.",
+      "matched": "Gợi ý phù hợp",
+      "matchedText": "Đăng nhu cầu và nhận gợi ý giải pháp AI phù hợp ngay lập tức.",
+      "outcomes": "Kết quả rõ ràng",
+      "outcomesText": "Mọi người ứng tuyển đều nhận được phản hồi, dù có được chọn hay không."
+    },
+    "ecosystem": {
+      "title": "Hệ sinh thái AI châu Á, ở một nơi.",
+      "description": "GenAI Fund tổ chức các thử thách, tuần lễ phát triển và chương trình founder, kết nối doanh nghiệp với nhà phát triển AI khắp Đông Nam Á."
+    },
+    "steps": {
+      "title": "Từ nhu cầu đến pilot trong ba bước",
+      "description": "BeyondPilot giữ mọi bước của chiến dịch ở một nơi, từ đề bài đầu tiên đến danh sách được chọn.",
+      "publish": "Đăng nhu cầu",
+      "publishText": "Doanh nghiệp mô tả vấn đề, kết quả mong muốn và thời hạn; GenAI Fund duyệt trước khi công khai.",
+      "receive": "Nhận đề xuất",
+      "receiveText": "Nhà cung cấp ứng tuyển từ trang chiến dịch bằng một hồ sơ dùng lại và tài liệu kèm theo.",
+      "review": "Duyệt và chọn",
+      "reviewText": "Người duyệt đánh giá từng đề xuất, chọn đội phù hợp nhất và chuyển sang trao đổi pilot.",
+      "newUseCase": "Bài toán mới",
+      "draft": "Bản nháp",
+      "fieldTitle": "Tiêu đề",
+      "fieldTitleValue": "Giúp bảo hiểm xe dễ mua, dễ mang theo và dễ bồi thường",
+      "fieldOrg": "Tổ chức",
+      "fieldOrgValue": "Tasco · Bảo hiểm",
+      "submit": "Gửi duyệt",
+      "proposalTeam": "TP. Hồ Chí Minh · 6 người",
+      "proposalDirection": "Hướng giải: Bồi thường có hướng dẫn",
+      "proposalFile": "proposal-peregrin.pdf",
+      "proposalSubmitted": "Nộp ngày 14/10",
+      "shortlistedDemo": "Được chọn vào demo day",
+      "demoDayWhen": "Demo day 22/10 · 14–16h"
+    },
+    "founders": {
+      "title": "Đồng hành cùng các founder trong mạng lưới GenAI Fund",
+      "description": "Các đội GenAI Fund đầu tư và hợp tác khắp Đông Nam Á.",
+      "seeAll": "Xem tất cả founder"
+    },
+    "faq": {
+      "title": "Câu hỏi thường gặp",
+      "whoQ": "Ai có thể ứng tuyển chiến dịch?",
+      "whoA": "Bất kỳ ai có giải pháp: cá nhân, nhóm sinh viên, startup, công ty phần mềm, agency và đội ngũ doanh nghiệp. Mỗi chiến dịch có điều kiện tham gia riêng.",
+      "companyQ": "Tôi có cần thành lập công ty để gửi đề xuất không?",
+      "companyA": "Không. Bạn có thể ứng tuyển với tư cách cá nhân hoặc đội nhóm, và bổ sung hồ sơ tổ chức sau nếu muốn.",
+      "productQ": "Tôi có cần sản phẩm hoàn chỉnh không?",
+      "productA": "Không. Một bản prototype chạy được sẽ có lợi, nhưng một góc nhìn rõ ràng về vấn đề và cách giải là đủ để ứng tuyển.",
+      "reviewQ": "Đề xuất được duyệt và chọn như thế nào?",
+      "reviewA": "GenAI Fund sàng lọc mọi bài nộp và mời các đội được chọn trình bày tại demo day, nơi doanh nghiệp và ban giám khảo chấm điểm trực tiếp. Ai ứng tuyển cũng nhận được phản hồi.",
+      "shortlistQ": "Nếu được chọn thì chuyện gì xảy ra tiếp?",
+      "shortlistA": "Bạn bước vào giai đoạn pilot có phạm vi rõ ràng cùng doanh nghiệp. Các đội được chọn cũng có thể được xem xét đầu tư, tuỳ quyết định của đối tác chương trình.",
+      "runsQ": "Ai vận hành BeyondPilot?",
+      "runsA": "BeyondPilot do GenAI Fund vận hành — quỹ tập trung vào AI, kết nối doanh nghiệp với nhà phát triển AI khắp Đông Nam Á."
+    },
+    "cta": {
+      "title": "Bạn có bài toán AI cần giải?",
+      "publish": "Đăng bài toán",
+      "talk": "Trao đổi với GenAI Fund",
+      "talentQuestion": "Bạn là chuyên gia AI?",
+      "talentLink": "Tạo hồ sơ nhân lực"
+    }
+  },
+  "ComingSoon": {
+    "title": "Sắp ra mắt",
+    "description": "Phần này của BeyondPilot đang được xây dựng. Trong lúc chờ, AI for Insurance Challenge × Tasco đang nhận đơn ứng tuyển.",
+    "back": "Về trang chủ"
   },
   "NotFound": {
     "title": "Không tìm thấy trang",

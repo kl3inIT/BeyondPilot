@@ -11,6 +11,8 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${port}`,
     trace: "retain-on-failure",
+    // Entrance animations fade text in; accessibility checks read the settled page.
+    reducedMotion: "reduce",
   },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },

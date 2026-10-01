@@ -15,6 +15,12 @@ const badgeVariants = cva(
         outline: "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost: "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
+        // Status tones from tokens.css, used with a label (campaign Live, Upcoming, Shortlisted).
+        // Solid fills keep the 4.5:1 text contrast that tinted fills miss at badge size.
+        success: "bg-success text-success-foreground",
+        info: "bg-info text-info-foreground",
+        warning: "bg-warning/20 text-foreground",
+        brand: "bg-brand/15 text-foreground",
       },
     },
     defaultVariants: {

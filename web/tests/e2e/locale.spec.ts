@@ -10,8 +10,9 @@ test.describe("locale routing", () => {
 
     await expect(page).toHaveURL("/");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("BeyondPilot");
-    await expect(page.getByText("Connecting enterprises with AI solution providers")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Enterprise AI challenges, solved together",
+    );
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -19,9 +20,9 @@ test.describe("locale routing", () => {
     await page.goto("/vi");
 
     await expect(page.locator("html")).toHaveAttribute("lang", "vi");
-    await expect(
-      page.getByText("Kết nối doanh nghiệp với nhà cung cấp giải pháp AI"),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Cùng giải bài toán AI của doanh nghiệp",
+    );
     await expectNoSeriousA11yViolations(page);
   });
 
