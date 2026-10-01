@@ -29,7 +29,9 @@ Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/app/[locale]/`          | Every page. `(public)` and `(auth)` are route groups without a URL prefix; `workspace/` and `admin/` are URL segments with their own layouts |
 | `src/app/global-error.tsx`   | The failure screen when the root layout itself fails; the only inline bilingual copy                                                         |
-| `src/features/<module>/`     | Screens of one backend module: `templates/`, `components/`, `queries.ts`, `schemas.ts`                                                       |
+| `src/features/<domain>/`     | App screens of one business domain, flat: page components, parts, `<domain>-queries.ts`, `<domain>-schemas.ts`                               |
+| `src/components/sections/`   | Marketing page sections, one folder each (hero, logos, faq, cta, …)                                                                          |
+| `src/components/layout/`     | Site header, footer, mobile menu                                                                                                             |
 | `src/components/ui/`         | shadcn registry primitives (`components.json`, style `base-nova`)                                                                            |
 | `src/components/composites/` | Product patterns shared by several features, without data fetching or authority checks                                                       |
 | `src/lib/`                   | `utils.ts` (`cn`), `api/generated/` (types from `openapi.yml`), and the API client and session helpers as they arrive                        |
@@ -41,7 +43,7 @@ Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 
 ## Rules to check before you edit
 
-- **Structure and imports**: thin pages, templates in features, feature imports follow backend module dependencies, `components/` imports nothing from `features/` or `app/` ([structure](../docs/conventions.md#structure)).
+- **Structure and imports**: thin pages, app screens in flat domain features, marketing pages stacked from sections, feature imports follow backend module dependencies, `components/` imports nothing from `features/` or `app/` ([structure](../docs/conventions.md#structure)).
 - **Server or client**: Server Components by default, `"use client"` on the smallest leaf; writes go to Spring with the CSRF header, never through Server Actions ([rendering, data and auth](../docs/conventions.md#rendering-data-and-auth)).
 - **Text**: every visible string in both catalogs; dates in `Asia/Ho_Chi_Minh`; backend failures shown by code ([internationalization](../docs/conventions.md#internationalization)).
 - **Errors and states**: `error.tsx`, `not-found.tsx` and `loading.tsx` per area; problem codes mapped to fields ([errors, loading and empty states](../docs/conventions.md#errors-loading-and-empty-states)).

@@ -55,6 +55,6 @@ The third page stays free until a real need appears.
 
 1. Finish the foundations and the components a screen needs before drawing the screen.
 2. Generate code one section at a time: select the frame and ask for that frame.
-3. Generated code follows the web rules: templates in `src/features/<module>/templates`, primitives from `src/components/ui`, semantic tokens only, every string in both catalogs.
+3. Generated code follows the web rules: marketing sections in `src/components/sections`, app screens in `src/features/<domain>`, primitives from `src/components/ui`, semantic tokens only, every string in both catalogs.
 4. After a design change, use `design_diff` to update only the affected code.
 5. Verify the result in the browser and with `pnpm test:e2e` (Playwright with axe), comparing against the Figma screenshot.

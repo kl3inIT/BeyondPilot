@@ -244,8 +244,9 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 ### Structure
 
 - Every page lives under `src/app/[locale]/`. The route groups `(public)` and `(auth)` add no URL prefix; `workspace/` and `admin/` are URL segments with their own layouts.
-- Pages are thin: metadata, one data read, then a template. Page composition lives in `src/features/<module>/templates`, feature parts in `src/features/<module>/components`, query and mutation options in `queries.ts`, form schemas in `schemas.ts`.
-- A feature folder is named after the backend module whose screens it holds, and imports another feature only in the direction the backend modules depend on each other.
+- Pages are thin: metadata, one data read, then one page component.
+- App screens (workspace, admin, review) are organised by business domain in flat feature folders, as in MemoryOS and Dub: `src/features/<domain>/` holds the domain's page components (`campaign-detail-page.tsx`), parts (`campaign-card.tsx`), query and mutation options (`<domain>-queries.ts`) and form schemas (`<domain>-schemas.ts`). A subfolder appears only when a domain grows too many files. A domain is named after the business concept and usually matches a backend module; it imports another domain only in the direction the backend modules depend on each other.
+- Public marketing pages are composed from sections, as in Launch UI and the Medusa storefront: `src/components/sections/<section>/` holds one section per folder (hero, logos, faq, cta, …), and the route's `page.tsx` stacks them. A section that shows live product data takes it through props from a feature component; sections never fetch.
 - `src/components/ui` holds shadcn registry primitives. `src/components/composites` holds product patterns used by at least two features; they never fetch data or check authority. `src/components/layout` holds headers, footers and navigation.
 - `src/components/` never imports from `src/features/` or `src/app/`, so it can later move into a shared package without changes.
 - `src/lib/api` holds the generated client and its configuration, `src/lib/auth` the server-only session helpers, `src/i18n` the locale routing, `src/styles/tokens.css` the design tokens, and `messages/` the translation catalogs.
@@ -284,7 +285,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 
 ### Components
 
-- Choose the layer before writing: an existing `ui` primitive (install a missing one with `shadcn add`, never hand-roll it), then a composite, then a feature component, then a template.
+- Choose the layer before writing: an existing `ui` primitive (install a missing one with `shadcn add`, never hand-roll it), then a composite or section, then a feature component, then a page component.
 - Files are kebab-case, components are PascalCase, exports are named (default exports only where Next.js requires them), one main component per file, and no barrel `index.ts` files.
 - Props extend the native element's props; `ref` is an ordinary prop; `className` is merged last with `cn()`; variants use `cva`; parts are composed (`Card`, `CardHeader`, `CardContent`) rather than passed as convenience props. Base UI primitives take a `render` prop for polymorphism.
 - Product actions use the `Button`, `IconButton` and `TextButton` wrappers with `tone` (`default`, `danger`), `prominence` (`primary`, `secondary`, `tertiary`, `internal`), `size` (`sm`, `md`, `lg`) and `pending`. Product code does not pick shadcn button variants directly.
