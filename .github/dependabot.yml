@@ -34,6 +34,11 @@ updates:
     open-pull-requests-limit: 10
     labels:
       - dependencies
+    ignore:
+      # The types follow the Node.js runtime (24); both move together in one deliberate change.
+      - dependency-name: "@types/node"
+        update-types:
+          - version-update:semver-major
     groups:
       npm-minor-and-patch:
         update-types:
