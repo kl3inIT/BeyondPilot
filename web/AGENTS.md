@@ -32,6 +32,7 @@ Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 | `src/features/<domain>/`     | App screens of one business domain, flat: page components, parts, `<domain>-queries.ts`, `<domain>-schemas.ts`                               |
 | `src/components/sections/`   | Marketing page sections, one folder each (hero, logos, faq, cta, …)                                                                          |
 | `src/components/layout/`     | Site header, footer, mobile menu                                                                                                             |
+| `src/components/actions/`    | Product actions: `Button`, `IconButton`, `TextButton` with `tone`/`prominence`/`size`/`pending`                                              |
 | `src/components/ui/`         | shadcn registry primitives (`components.json`, style `base-nova`)                                                                            |
 | `src/components/composites/` | Product patterns shared by several features, without data fetching or authority checks                                                       |
 | `src/lib/`                   | `utils.ts` (`cn`), `api/generated/` (types from `openapi.yml`), and the API client and session helpers as they arrive                        |

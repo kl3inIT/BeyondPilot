@@ -1,0 +1,77 @@
+import { cva, type VariantProps } from "class-variance-authority";
+
+/**
+ * Product action appearance by role, not by look: `prominence` says how important the action is,
+ * `tone` whether it is destructive. Mirrors the Figma `Button` component set
+ * (docs/guidelines/figma.md › Components).
+ */
+const actionVariants = cva(
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-md border border-transparent text-sm font-medium whitespace-nowrap transition-colors outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-busy:pointer-events-none aria-busy:opacity-70 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  {
+    variants: {
+      tone: {
+        default: "",
+        danger: "",
+      },
+      prominence: {
+        primary: "shadow-sm",
+        secondary: "border-input bg-background shadow-sm",
+        tertiary: "bg-transparent",
+        internal: "",
+      },
+    },
+    compoundVariants: [
+      {
+        tone: "default",
+        prominence: "primary",
+        class: "bg-primary text-primary-foreground hover:bg-primary/90",
+      },
+      {
+        tone: "default",
+        prominence: "secondary",
+        class: "text-foreground hover:bg-accent hover:text-accent-foreground dark:bg-input/30",
+      },
+      {
+        tone: "default",
+        prominence: "tertiary",
+        class: "text-foreground hover:bg-accent hover:text-accent-foreground",
+      },
+      {
+        tone: "default",
+        prominence: "internal",
+        class: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+      },
+      {
+        tone: "danger",
+        prominence: "primary",
+        class: "bg-destructive text-white hover:bg-destructive/90",
+      },
+      {
+        tone: "danger",
+        prominence: "secondary",
+        class: "text-destructive hover:bg-destructive/10",
+      },
+      {
+        tone: "danger",
+        prominence: "tertiary",
+        class: "text-destructive hover:bg-destructive/10",
+      },
+      {
+        tone: "danger",
+        prominence: "internal",
+        class: "bg-destructive/10 text-destructive hover:bg-destructive/20",
+      },
+    ],
+    defaultVariants: {
+      tone: "default",
+      prominence: "primary",
+    },
+  },
+);
+
+type ActionVariantProps = VariantProps<typeof actionVariants>;
+type ActionTone = NonNullable<ActionVariantProps["tone"]>;
+type ActionProminence = NonNullable<ActionVariantProps["prominence"]>;
+type ActionSize = "sm" | "md" | "lg";
+
+export { actionVariants, type ActionProminence, type ActionSize, type ActionTone };
