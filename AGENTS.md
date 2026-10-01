@@ -11,5 +11,6 @@
 
 - Backend work in `backend/`: follow [docs/guidelines/backend.md](docs/guidelines/backend.md).
 - Frontend work in `web/`: follow [web/AGENTS.md](web/AGENTS.md).
+- Design work in Figma: follow [docs/guidelines/figma.md](docs/guidelines/figma.md).
 
 ## Operating rules
