@@ -3,6 +3,10 @@
     "linear-beyondpilot": {
       "type": "http",
       "url": "https://mcp.linear.app/mcp"
+    },
+    "figwright": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@figwright/mcp@latest"]
     }
   }
 }
