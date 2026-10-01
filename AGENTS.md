@@ -10,5 +10,6 @@
 ## Area guides
 
 - Backend work in `backend/`: follow [docs/guidelines/backend.md](docs/guidelines/backend.md).
+- Frontend work in `web/`: follow [web/AGENTS.md](web/AGENTS.md).
 
 ## Operating rules

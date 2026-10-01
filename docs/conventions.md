@@ -233,4 +233,68 @@ The error contract follows [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.htm
 
 ## Frontend
 
-Frontend conventions arrive with `web/`.
+The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-frontend-over-the-spring-backend.md). The checklist that points into this section is [web/AGENTS.md](../web/AGENTS.md).
+
+### Stack
+
+- Next.js 16 App Router with the React Compiler, React 19, TypeScript in strict mode, Tailwind CSS 4, shadcn/ui (`base-nova` style on Base UI primitives) and next-intl. New scaffolding comes from the official CLIs (`create-next-app`, `shadcn`); the lockfile is authoritative and upgrades are deliberate changes.
+- pnpm is installed directly, not through Corepack; `packageManager` in `web/package.json` records the version.
+- A library arrives with its first consumer, never ahead of it. The chosen ones are TanStack Query for client-side server state, TanStack Form with zod for forms, TanStack Table for tables, nuqs for URL state, Hey API for the generated client, and Vitest with Testing Library and MSW for unit tests.
+
+### Structure
+
+- Every page lives under `src/app/[locale]/`. The route groups `(public)` and `(auth)` add no URL prefix; `workspace/` and `admin/` are URL segments with their own layouts.
+- Pages are thin: metadata, one data read, then a template. Page composition lives in `src/features/<module>/templates`, feature parts in `src/features/<module>/components`, query and mutation options in `queries.ts`, form schemas in `schemas.ts`.
+- A feature folder is named after the backend module whose screens it holds, and imports another feature only in the direction the backend modules depend on each other.
+- `src/components/ui` holds shadcn registry primitives. `src/components/composites` holds product patterns used by at least two features; they never fetch data or check authority. `src/components/layout` holds headers, footers and navigation.
+- `src/components/` never imports from `src/features/` or `src/app/`, so it can later move into a shared package without changes.
+- `src/lib/api` holds the generated client and its configuration, `src/lib/auth` the server-only session helpers, `src/i18n` the locale routing, `src/styles/tokens.css` the design tokens, and `messages/` the translation catalogs.
+
+### Rendering, data and auth
+
+- Components are Server Components by default. `"use client"` goes on the smallest leaf that needs state, effects or events; server data reaches it as props.
+- Public pages read on the server through `src/lib/api`, forwarding the Spring session cookie. They may use time-based or tagged revalidation; authenticated reads never go through the shared data cache.
+- Writes go from the browser straight to Spring with `X-BeyondPilot-CSRF: 1`. Server Actions are not used for writes, so authorization and CSRF protection live in one place.
+- The `workspace/` and `admin/` layouts check the current user on the server through `/api/identity/me` and redirect when needed. `src/proxy.ts` handles locale routing only.
+- The browser sees one origin. Spring's paths (`/api`, `/login`, `/logout`, `/oauth2`, `/ott`) are rewritten to `BEYONDPILOT_API_ORIGIN` during development and routed by a reverse proxy when deployed.
+- The session lives only in httpOnly cookies; tokens are never stored in browser storage.
+
+### Internationalization
+
+- English is the default locale with no URL prefix; Vietnamese lives under `/vi`. A first visit is matched to the browser language.
+- Every visible string comes from `messages/en.json` and `messages/vi.json`, typed through `src/i18n/app-config.d.ts`. `pnpm check:messages` fails when the catalogs do not have the same keys. The only exception is `src/app/global-error.tsx`, which replaces the root layout and therefore has no translation provider; its copy is written in both languages inline.
+- Dates and times are formatted through next-intl in `Asia/Ho_Chi_Minh`. Deadlines always show their time zone.
+- Backend failures are shown by translating the problem `code`; backend text is never displayed.
+
+### Errors, loading and empty states
+
+- `src/app/global-error.tsx` and an `error.tsx` per area show safe copy, Next's `digest` as a reference, and a retry action. Each area has a `not-found.tsx`; unknown paths under a locale render the localized not-found page through `[...rest]`.
+- API failures are read as RFC 9457 problems ([API errors](#api-errors)): branch on `status` or `code`, map `errors[].pointer` onto form fields, and show the `requestId` whenever a person is asked to report a problem.
+- Each segment that loads data has a `loading.tsx` with skeletons. Every data view designs its loading, empty and failure states.
+- Toasts use sonner through a helper that accepts message keys only.
+- Server rendering errors are logged as structured JSON through `onRequestError` in `instrumentation.ts`, without a third-party service.
+
+### Design tokens and styling
+
+- Components use semantic tokens only. Tokens live in `src/styles/tokens.css` with light and dark values and are mapped to Tailwind in `src/app/globals.css`. Brand primitives replace the neutral values when GenAI Fund provides the BeyondPilot identity.
+- Status roles (`success`, `warning`, `info`, `destructive`) always come with an icon or a label.
+- Raw colours, inline styles, arbitrary values, unknown classes and dynamically built class names are lint errors outside `src/components/ui`, through the `@shadcn/lint` rules `no-raw-colors`, `no-inline-styles`, `no-arbitrary-values`, `no-unknown-classes` and `require-static-classes`. A value several features repeat becomes a token.
+- A component's appearance comes from its variants and sizes. `shadcn/no-restyle` allows only layout classes (margin, width, position) in `className` on a registry component; a new look is a new variant in the component, added only when the design calls for one.
+- `src/components/ui` is exempt from these design-system rules because primitives style their own internals; the rest of ESLint (React Hooks, accessibility, Next.js) still checks it.
+
+### Components
+
+- Choose the layer before writing: an existing `ui` primitive (install a missing one with `shadcn add`, never hand-roll it), then a composite, then a feature component, then a template.
+- Files are kebab-case, components are PascalCase, exports are named (default exports only where Next.js requires them), one main component per file, and no barrel `index.ts` files.
+- Props extend the native element's props; `ref` is an ordinary prop; `className` is merged last with `cn()`; variants use `cva`; parts are composed (`Card`, `CardHeader`, `CardContent`) rather than passed as convenience props. Base UI primitives take a `render` prop for polymorphism.
+- Product actions use the `Button`, `IconButton` and `TextButton` wrappers with `tone` (`default`, `danger`), `prominence` (`primary`, `secondary`, `tertiary`, `internal`), `size` (`sm`, `md`, `lg`) and `pending`. Product code does not pick shadcn button variants directly.
+- Every interactive component covers hover, active, focus-visible, disabled, pending (`aria-busy`) and invalid (`aria-invalid`) in both themes. Destructive actions confirm in a dialog whose Cancel receives initial focus.
+- Use semantic elements first and Base UI for complex widgets; icon-only controls have an accessible name; buttons default to `type="button"`; everything works from the keyboard.
+- Registry primitives under `src/components/ui` are changed as little as possible, and the reason for a change is recorded in its commit.
+- Behavior tests sit next to the component. Storybook is not used.
+
+### Quality gates
+
+- `pnpm check` runs ESLint (Next.js core web vitals, TypeScript, React Hooks including the React Compiler rules, and the `@shadcn/lint` rules), Prettier with Tailwind class sorting, `tsc`, the message-catalog check and knip.
+- `pnpm test:e2e` runs Playwright on desktop and mobile Chrome against the production build. Every spec runs axe and fails on any serious or critical WCAG 2.2 A/AA finding.
+- Baseline security headers are set in `next.config.ts`. A strict Content Security Policy with nonces is a separate decision.

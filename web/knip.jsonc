@@ -1,0 +1,7 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  // Registry primitives are installed ahead of their first screen, and lib/utils.ts is the
+  // `utils` alias target in components.json that the shadcn CLI writes into new components.
+  "entry": ["src/components/ui/**/*.tsx", "src/lib/utils.ts", "scripts/*.mjs"],
+  "ignoreExportsUsedInFile": true,
+}

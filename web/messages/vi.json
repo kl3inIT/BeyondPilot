@@ -1,0 +1,21 @@
+{
+  "Metadata": {
+    "title": "BeyondPilot",
+    "description": "Kết nối doanh nghiệp với nhà cung cấp giải pháp AI và nhân lực AI."
+  },
+  "HomePage": {
+    "title": "BeyondPilot",
+    "tagline": "Kết nối doanh nghiệp với nhà cung cấp giải pháp AI và nhân lực AI."
+  },
+  "NotFound": {
+    "title": "Không tìm thấy trang",
+    "description": "Trang bạn tìm không tồn tại hoặc đã được chuyển đi.",
+    "home": "Về trang chủ"
+  },
+  "Error": {
+    "title": "Đã có lỗi xảy ra",
+    "description": "Không tải được trang này. Vui lòng thử lại.",
+    "retry": "Thử lại",
+    "reference": "Mã tham chiếu: {digest}"
+  }
+}

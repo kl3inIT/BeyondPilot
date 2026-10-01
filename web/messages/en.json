@@ -1,0 +1,21 @@
+{
+  "Metadata": {
+    "title": "BeyondPilot",
+    "description": "Connecting enterprises with AI solution providers and AI talent."
+  },
+  "HomePage": {
+    "title": "BeyondPilot",
+    "tagline": "Connecting enterprises with AI solution providers and AI talent."
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist or has moved.",
+    "home": "Back to home"
+  },
+  "Error": {
+    "title": "Something went wrong",
+    "description": "We could not load this page. Please try again.",
+    "retry": "Try again",
+    "reference": "Reference: {digest}"
+  }
+}

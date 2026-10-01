@@ -26,4 +26,42 @@ The PostgreSQL image is `postgres:latest` with development-only credentials in `
 
 ## Environment variables
 
-None yet. The application runs on its generated defaults; `BEYONDPILOT_*` variables arrive with the `development`, `staging` and `production` profiles (BEY-14).
+None yet for the backend. It runs on its generated defaults; `BEYONDPILOT_*` variables arrive with the `development`, `staging` and `production` profiles (BEY-14).
+
+## Web application
+
+### Prerequisites
+
+- Node.js 24. Verified with 24.19.0.
+- pnpm installed directly, not through Corepack. Verified with 11.27.1, the version recorded in `web/package.json`.
+- For the browser tests, Chromium for Playwright, installed once with `pnpm --dir web exec playwright install chromium`.
+
+### Run locally
+
+From the repository root:
+
+```text
+pnpm --dir web install
+pnpm --dir web dev
+```
+
+- The application listens on port 3000. English is served at `/`, Vietnamese at `/vi`.
+- During development Next.js forwards `/api`, `/login`, `/logout`, `/oauth2` and `/ott` to `BEYONDPILOT_API_ORIGIN`, set to `http://localhost:8080` in the committed `web/.env.development`. Override it in `web/.env.development.local`, which is not committed. A missing value stops the dev server with an explicit error.
+- `pnpm --dir web check` runs lint, formatting, type and catalog checks and knip. `pnpm --dir web test:e2e` builds the app, serves it on port 3100 and runs Playwright with axe.
+
+### Windows: SWC native cache permissions
+
+On a Windows machine where other accounts may write into your user profile (for example the `CodexSandboxUsers` group that the Codex sandbox adds), `@swc/core`, loaded by the next-intl plugin, refuses to start and Next.js fails with `ERR_SWC_NATIVE_CACHE` ("DACL grants replacement rights … to SID …"). SWC checks the cache folder and every folder above it, so a folder anywhere under the user profile or at the root of a drive that grants Authenticated Users modify rights does not help. A folder at the root of `C:` with inheritance removed works:
+
+```powershell
+$dir = "C:\.swc-native-cache"
+New-Item -ItemType Directory -Path $dir -Force | Out-Null
+icacls $dir /inheritance:r /grant:r "${env:USERDOMAIN}\${env:USERNAME}:(OI)(CI)F" "NT AUTHORITY\SYSTEM:(OI)(CI)F" "BUILTIN\Administrators:(OI)(CI)F"
+[Environment]::SetEnvironmentVariable("SWC_NATIVE_BINDING_CACHE", $dir, "User")
+```
+
+Open a new terminal afterwards so the variable is set. Linux CI and containers are not affected.
+
+### Windows: standalone server
+
+The production build uses `output: "standalone"` for containers. On Windows the standalone server cannot follow the symlinks pnpm leaves in `.next/standalone/node_modules` (`EPERM` on `stat`), so `pnpm start` and the Playwright run use `next start`. The standalone server runs in Linux containers (BEY-16).
