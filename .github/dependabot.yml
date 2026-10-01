@@ -1,0 +1,63 @@
+version: 2
+
+# Weekly, one pull request per ecosystem and risk class: minor and patch upgrades land together,
+# majors stay separate. The cooldown keeps upgrades a few days behind publication, in line with
+# pnpm's minimumReleaseAge, so a compromised release is usually pulled before it reaches us.
+updates:
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Ho_Chi_Minh
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    groups:
+      gradle-minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:15"
+      timezone: Asia/Ho_Chi_Minh
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    ignore:
+      # The types follow the Node.js runtime (24); both move together in one deliberate change.
+      - dependency-name: "@types/node"
+        update-types:
+          - version-update:semver-major
+    groups:
+      npm-minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:30"
+      timezone: Asia/Ho_Chi_Minh
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    groups:
+      github-actions:
+        patterns:
+          - "*"

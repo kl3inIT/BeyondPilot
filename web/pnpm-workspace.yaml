@@ -16,3 +16,8 @@ minimumReleaseAgeExclude:
   - "@next/swc-win32-x64-msvc@16.3.8"
   - eslint-config-next@16.3.8
   - next@16.3.8
+overrides:
+  # @hey-api/json-schema-ref-parser 1.4.4 pins js-yaml 4.2.0, which has high advisories
+  # (GHSA-52cp-r559-cp3m, GHSA-5p4m-2wfm-xmqj, GHSA-2883-xcg3-v3hh). Drop this once Hey API
+  # releases a parser on js-yaml 4.3.2 or later.
+  "@hey-api/json-schema-ref-parser>js-yaml": 4.3.2
