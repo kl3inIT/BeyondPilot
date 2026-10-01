@@ -39,6 +39,17 @@ Local runs use no profile. Deployed environments run `production`; staging runs 
 - `production` writes Logstash-format JSON logs to standard output; `staging` adds DEBUG logging for `ai.genaifund.beyondpilot`.
 - A missing database variable stops startup. Spring reports it as `'url' must start with "jdbc"` rather than naming the variable: check `BEYONDPILOT_DATABASE_URL` first.
 
+## Refresh the API contract
+
+After changing a controller, its records or the shared problem schema, regenerate the contract and the web types in the same change ([published API contracts](../conventions.md#published-api-contracts)). Docker must be running; the test starts PostgreSQL through Testcontainers.
+
+```text
+BEYONDPILOT_OPENAPI_WRITE=true ./gradlew :backend:test --tests '*OpenApiContractTest'
+pnpm --dir web generate:api
+```
+
+In PowerShell, set the flag with `$env:BEYONDPILOT_OPENAPI_WRITE='true'` and clear it afterwards. Without the flag, `./gradlew :backend:check` fails when `openapi.yml` is stale, and `pnpm check` fails when `web/src/lib/api/generated` is; the second failure leaves the regenerated files in place to commit.
+
 ## Web application
 
 ### Prerequisites

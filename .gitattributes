@@ -1,3 +1,9 @@
-/gradlew text eol=lf
+# Keep repository text deterministic across operating systems: Prettier, the OpenAPI
+# contract test and the generated-client check compare bytes that assume LF.
+* text=auto eol=lf
+
+# Windows launchers remain native in Windows checkouts.
 *.bat text eol=crlf
+*.cmd text eol=crlf
+
 *.jar binary

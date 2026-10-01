@@ -27,3 +27,10 @@ spring:
     properties:
       hibernate.cache.use_second_level_cache: false
       hibernate.cache.use_query_cache: false
+
+springdoc:
+  # OpenApiContractTest generates openapi.yml; no runtime profile serves the contract.
+  api-docs:
+    enabled: false
+  paths-to-match: /api/**
+  writer-with-order-by-keys: true

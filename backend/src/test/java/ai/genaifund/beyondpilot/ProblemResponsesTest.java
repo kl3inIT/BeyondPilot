@@ -63,7 +63,7 @@ class ProblemResponsesTest {
 			.isEqualTo("TEST_CONFLICT")
 			.returnResult();
 
-		assertRequestIdMatchesHeader(result);
+		assertProblemShape(result);
 		assertThat(body(result)).doesNotContain("diagnostic detail for logs");
 		assertThat(result.getResponseHeaders().containsHeader("Retry-After")).isFalse();
 	}
@@ -86,7 +86,7 @@ class ProblemResponsesTest {
 			.isEqualTo("Limit reached")
 			.returnResult();
 
-		assertRequestIdMatchesHeader(result);
+		assertProblemShape(result);
 	}
 
 	@Test
@@ -123,7 +123,7 @@ class ProblemResponsesTest {
 			.doesNotExist()
 			.returnResult();
 
-		assertRequestIdMatchesHeader(result);
+		assertProblemShape(result);
 		assertThat(body(result)).doesNotContain("rejected-secret-value");
 	}
 
@@ -141,7 +141,7 @@ class ProblemResponsesTest {
 			.expectBody()
 			.returnResult();
 
-		assertRequestIdMatchesHeader(result);
+		assertProblemShape(result);
 	}
 
 	@Test
@@ -156,7 +156,7 @@ class ProblemResponsesTest {
 			.expectBody()
 			.returnResult();
 
-		assertRequestIdMatchesHeader(result);
+		assertProblemShape(result);
 	}
 
 	@Test
@@ -173,14 +173,18 @@ class ProblemResponsesTest {
 			.isEqualTo("The server could not complete the request.")
 			.returnResult();
 
-		assertRequestIdMatchesHeader(result);
+		assertProblemShape(result);
 		assertThat(body(result)).doesNotContain("internal secret").doesNotContain("IllegalStateException");
 	}
 
-	private static void assertRequestIdMatchesHeader(EntityExchangeResult<byte[]> result) {
+	/** The members openapi.yml declares required on every problem, with requestId equal to the response header. */
+	private static void assertProblemShape(EntityExchangeResult<byte[]> result) {
+		String body = body(result);
 		String header = result.getResponseHeaders().getFirst("X-Request-Id");
 		assertThat(header).isNotBlank();
-		assertThat(JsonPath.<String>read(body(result), "$.requestId")).isEqualTo(header);
+		assertThat(JsonPath.<String>read(body, "$.requestId")).isEqualTo(header);
+		assertThat(JsonPath.<String>read(body, "$.title")).isNotBlank();
+		assertThat(JsonPath.<Integer>read(body, "$.status")).isEqualTo(result.getStatus().value());
 	}
 
 	private static String body(EntityExchangeResult<byte[]> result) {

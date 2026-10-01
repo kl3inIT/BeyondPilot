@@ -32,6 +32,7 @@ dependencies {
 	implementation(libs.spring.boot.starter.webmvc)
 	implementation(libs.flyway.database.postgresql)
 	implementation(libs.spring.modulith.starter.core)
+	implementation(libs.springdoc.webmvc.api)
 	developmentOnly(libs.spring.boot.docker.compose)
 	runtimeOnly(libs.postgresql)
 	testImplementation(libs.spring.boot.starter.actuator.test)
@@ -48,4 +49,10 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+tasks.named<Test>("test") {
+	// OpenApiContractTest compares against, or with the flag rewrites, the committed contract.
+	inputs.files(rootProject.file("openapi.yml")).withPropertyName("openApiContract").optional()
+	inputs.property("openApiWrite", providers.environmentVariable("BEYONDPILOT_OPENAPI_WRITE").orElse("false"))
 }

@@ -17,7 +17,8 @@ For work under `web/`: the Next.js App Router application. This page points to t
 Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 
 - `pnpm dev` serves the app on port 3000 and forwards Spring's paths to `BEYONDPILOT_API_ORIGIN` ([development runtime](../docs/runbooks/development-runtime.md#web-application)).
-- `pnpm check` is the gate: ESLint with the shadcn rules, Prettier, `tsc`, the message-catalog check and knip.
+- `pnpm check` is the gate: the generated-client drift check, ESLint with the shadcn rules, Prettier, `tsc`, the message-catalog check and knip.
+- `pnpm generate:api` regenerates `src/lib/api/generated` from the repository's `openapi.yml` ([refresh the API contract](../docs/runbooks/development-runtime.md#refresh-the-api-contract)). Never edit the generated files.
 - `pnpm test:e2e` builds the app and runs Playwright with axe on desktop and mobile Chrome.
 - `pnpm format` applies Prettier, including Tailwind class order.
 - `pnpm dlx shadcn@latest add <component>` installs a registry component; the shadcn agent skill is in `.claude/skills/shadcn`.
@@ -31,7 +32,7 @@ Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 | `src/features/<module>/`     | Screens of one backend module: `templates/`, `components/`, `queries.ts`, `schemas.ts`                                                       |
 | `src/components/ui/`         | shadcn registry primitives (`components.json`, style `base-nova`)                                                                            |
 | `src/components/composites/` | Product patterns shared by several features, without data fetching or authority checks                                                       |
-| `src/lib/`                   | `utils.ts` (`cn`), the generated API client and session helpers as they arrive                                                               |
+| `src/lib/`                   | `utils.ts` (`cn`), `api/generated/` (types from `openapi.yml`), and the API client and session helpers as they arrive                        |
 | `src/i18n/`                  | Locale routing, request configuration, locale-aware `Link`, message typing                                                                   |
 | `src/styles/tokens.css`      | Semantic design tokens, light and dark                                                                                                       |
 | `src/proxy.ts`               | Locale routing only                                                                                                                          |

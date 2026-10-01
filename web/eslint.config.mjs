@@ -33,6 +33,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "playwright-report/**",
     "test-results/**",
+    // Generated from openapi.yml by `pnpm generate:api`.
+    "src/lib/api/generated/**",
   ]),
 ]);
 
