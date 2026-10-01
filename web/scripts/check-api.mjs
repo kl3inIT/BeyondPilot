@@ -22,7 +22,13 @@ function snapshot(directory, files = new Map()) {
 }
 
 const before = snapshot(generated);
-await createClient();
+// An argument is required: createClient() alone runs no job. A config object makes it load
+// openapi-ts.config.ts, as the CLI does. An unreadable input also returns no job, without throwing.
+const jobs = await createClient({});
+if (jobs.length === 0) {
+  console.error("openapi-ts generated nothing; check openapi-ts.config.ts and ../openapi.yml.");
+  process.exit(1);
+}
 const after = snapshot(generated);
 
 const changed = [...new Set([...before.keys(), ...after.keys()])]
