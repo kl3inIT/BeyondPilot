@@ -36,10 +36,10 @@ function CampaignMockup() {
     },
   ];
   const dates = [
-    [t("opens"), "23 Sep"],
-    [t("briefing"), "7 Oct"],
-    [t("submissionsClose"), "15 Oct"],
-    [t("demoDay"), "22 Oct"],
+    [t("opens"), t("dates.opens")],
+    [t("briefing"), t("dates.briefing")],
+    [t("submissionsClose"), t("dates.submissionsClose")],
+    [t("demoDay"), t("dates.demoDay")],
     [t("investment"), t("investmentValue")],
   ];
 
@@ -68,10 +68,10 @@ function CampaignMockup() {
               />
             </span>
           </span>
-          <span className="font-medium">Programs</span>
-          <span className="text-muted-foreground">Use cases</span>
-          <span className="text-muted-foreground">AI solutions</span>
-          <span className="text-muted-foreground">AI talent</span>
+          <span className="font-medium">{s("nav.programs")}</span>
+          <span className="text-muted-foreground">{s("nav.useCases")}</span>
+          <span className="text-muted-foreground">{s("nav.solutions")}</span>
+          <span className="text-muted-foreground">{s("nav.talent")}</span>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex w-56 items-center gap-2 rounded-md border px-3 py-1.5 text-sm text-muted-foreground">

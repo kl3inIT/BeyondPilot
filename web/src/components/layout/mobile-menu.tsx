@@ -30,7 +30,7 @@ function MobileMenu() {
       <SheetTrigger render={<IconButton aria-label={t("menu.open")} className="md:hidden" />}>
         <MenuIcon aria-hidden="true" />
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-full">
+      <SheetContent side="right" closeLabel={t("menu.close")} className="w-full sm:max-w-full">
         <div className="flex flex-1 flex-col">
           <SheetTitle className="sr-only">{t("menu.title")}</SheetTitle>
           <div className="flex h-16 items-center border-b px-4">
@@ -67,19 +67,10 @@ function MobileMenu() {
             ))}
           </nav>
           <div className="mt-auto flex flex-col gap-3 border-t p-4">
-            <Button
-              size="lg"
-              nativeButton={false}
-              render={<Link href={siteRoutes.getStarted} onClick={close} />}
-            >
+            <Button size="lg" href={siteRoutes.getStarted} onClick={close}>
               {t("nav.getStarted")}
             </Button>
-            <Button
-              size="lg"
-              prominence="secondary"
-              nativeButton={false}
-              render={<Link href={siteRoutes.signIn} onClick={close} />}
-            >
+            <Button size="lg" prominence="secondary" href={siteRoutes.signIn} onClick={close}>
               {t("nav.signIn")}
             </Button>
             <Link

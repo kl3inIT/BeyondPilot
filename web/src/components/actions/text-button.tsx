@@ -2,6 +2,7 @@ import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva } from "class-variance-authority";
 import { cn } from "cn";
 
+import { ActionLink, type ActionLinkProps } from "@/components/actions/action-link";
 import type { ActionSize, ActionTone } from "@/components/actions/action-styles";
 
 const textButtonVariants = cva(
@@ -22,13 +23,24 @@ const textButtonVariants = cva(
   },
 );
 
-type TextButtonProps = ButtonPrimitive.Props & {
+type TextButtonProps = {
   tone?: ActionTone;
   size?: ActionSize;
-};
+} & ((ButtonPrimitive.Props & { href?: undefined }) | ActionLinkProps);
 
-/** A text-only action, such as "Browse programs →" under a section. */
+/** A text-only action, such as "Browse programs →" under a section. With `href` it is a link. */
 function TextButton({ className, tone = "default", size = "md", ...props }: TextButtonProps) {
+  if (props.href !== undefined) {
+    return (
+      <ActionLink
+        {...props}
+        data-slot="text-button"
+        data-tone={tone}
+        className={cn(textButtonVariants({ tone, size }), className)}
+      />
+    );
+  }
+
   return (
     <ButtonPrimitive
       type="button"

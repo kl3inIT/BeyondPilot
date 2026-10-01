@@ -4,7 +4,6 @@ import Image from "next/image";
 
 import { TextButton } from "@/components/actions/text-button";
 import { Section } from "@/components/ui/section";
-import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
 type Founder = { photo: string; name: string; role: string; company: string };
@@ -80,11 +79,7 @@ function Founders() {
             </li>
           ))}
         </ul>
-        <TextButton
-          className="self-center md:hidden"
-          nativeButton={false}
-          render={<Link href={siteRoutes.founders} />}
-        >
+        <TextButton className="self-center md:hidden" href={siteRoutes.founders}>
           {t("seeAll")}
           <ArrowRightIcon aria-hidden="true" />
         </TextButton>

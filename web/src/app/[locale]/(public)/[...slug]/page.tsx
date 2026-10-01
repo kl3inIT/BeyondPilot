@@ -5,7 +5,6 @@ import { setRequestLocale } from "next-intl/server";
 import { use } from "react";
 
 import { Button } from "@/components/actions/button";
-import { Link } from "@/i18n/navigation";
 import { comingSoonPaths, liveCampaignUrl, siteRoutes } from "@/lib/site";
 
 // Planned pages share one coming-soon screen; any other unknown path is the localized not-found page.
@@ -28,15 +27,11 @@ function ComingSoon() {
       <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("title")}</h1>
       <p className="text-muted-foreground">{t("description")}</p>
       <div className="flex flex-wrap gap-3">
-        <Button nativeButton={false} render={<a href={liveCampaignUrl} />}>
+        <Button href={liveCampaignUrl}>
           {c("applyNow")}
           <ArrowRightIcon aria-hidden="true" />
         </Button>
-        <Button
-          prominence="secondary"
-          nativeButton={false}
-          render={<Link href={siteRoutes.home} />}
-        >
+        <Button prominence="secondary" href={siteRoutes.home}>
           {t("back")}
         </Button>
       </div>

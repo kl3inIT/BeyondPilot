@@ -6,7 +6,6 @@ import { CampaignMockup } from "@/components/sections/hero/campaign-mockup";
 import { Glow } from "@/components/ui/glow";
 import { Mockup, MockupFrame } from "@/components/ui/mockup";
 import { Section } from "@/components/ui/section";
-import { Link } from "@/i18n/navigation";
 import { liveCampaignUrl, siteRoutes } from "@/lib/site";
 
 function Hero() {
@@ -43,14 +42,8 @@ function Hero() {
             {t("description")}
           </p>
           <div className="relative z-10 flex w-full animate-appear flex-col justify-center gap-3 opacity-0 delay-300 motion-reduce:animate-none motion-reduce:opacity-100 sm:w-auto sm:flex-row sm:gap-4">
-            <Button nativeButton={false} render={<Link href={siteRoutes.programs} />}>
-              {t("browse")}
-            </Button>
-            <Button
-              prominence="secondary"
-              nativeButton={false}
-              render={<Link href={siteRoutes.publishUseCase} />}
-            >
+            <Button href={siteRoutes.programs}>{t("browse")}</Button>
+            <Button prominence="secondary" href={siteRoutes.publishUseCase}>
               {t("publish")}
             </Button>
           </div>

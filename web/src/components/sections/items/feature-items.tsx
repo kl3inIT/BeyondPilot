@@ -14,7 +14,6 @@ import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { Section } from "@/components/ui/section";
-import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
 type Item = { icon: LucideIcon; title: string; text: string };
@@ -44,7 +43,7 @@ function ItemGroup({
           </li>
         ))}
       </ul>
-      <TextButton nativeButton={false} render={<Link href={link.href} />}>
+      <TextButton href={link.href}>
         {link.label}
         <ArrowRightIcon aria-hidden="true" />
       </TextButton>

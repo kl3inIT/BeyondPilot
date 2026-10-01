@@ -92,7 +92,7 @@ function HowItWorks() {
           <Step number={2} title={t("receive")} text={t("receiveText")}>
             <div className="relative w-full pt-11">
               {/* An earlier proposal waits behind the newest one. */}
-              <p className="absolute inset-x-3 top-0 rounded-lg border bg-background px-4 py-3.5 text-xs font-medium text-muted-foreground opacity-60 shadow-md">
+              <p className="absolute inset-x-3 top-0 rounded-lg border bg-background px-4 py-3.5 text-xs font-medium text-muted-foreground shadow-sm">
                 Polymath · {k("proofInPocket")}
               </p>
               <div className="relative flex w-full flex-col gap-3 rounded-lg border bg-background p-4 shadow-lg">

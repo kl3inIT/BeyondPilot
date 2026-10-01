@@ -3,6 +3,7 @@ import { cva } from "class-variance-authority";
 import { cn } from "cn";
 import { Loader2Icon } from "lucide-react";
 
+import { ActionLink, type ActionLinkProps } from "@/components/actions/action-link";
 import {
   actionVariants,
   type ActionProminence,
@@ -21,28 +22,49 @@ const buttonSizes = cva("", {
   defaultVariants: { size: "md" },
 });
 
-type ButtonProps = ButtonPrimitive.Props & {
+type ButtonLook = {
   tone?: ActionTone;
   prominence?: ActionProminence;
   size?: ActionSize;
-  /** Shows a spinner, blocks activation and sets `aria-busy` while an action runs. */
-  pending?: boolean;
 };
 
+type ButtonProps = ButtonLook &
+  (
+    | (ButtonPrimitive.Props & {
+        href?: undefined;
+        /** Shows a spinner, blocks activation and sets `aria-busy` while an action runs. */
+        pending?: boolean;
+      })
+    | ActionLinkProps
+  );
+
 /**
- * Product action button. Links render through `render` (`<Button render={<Link href="…" />}
- * nativeButton={false}>`) so they keep link semantics and the action look.
+ * Product action button. With `href` it renders a real link that looks like the action
+ * (`<Button href="/programs">`); without it, a button.
  */
 function Button({
   className,
   tone = "default",
   prominence = "primary",
   size = "md",
-  pending = false,
-  disabled,
-  children,
-  ...props
+  ...rest
 }: ButtonProps) {
+  const look = cn(actionVariants({ tone, prominence }), buttonSizes({ size }), className);
+
+  if (rest.href !== undefined) {
+    return (
+      <ActionLink
+        {...rest}
+        data-slot="button"
+        data-tone={tone}
+        data-prominence={prominence}
+        className={look}
+      />
+    );
+  }
+
+  const { pending = false, disabled, children, ...props } = rest;
+
   return (
     <ButtonPrimitive
       type="button"
@@ -52,7 +74,7 @@ function Button({
       data-prominence={prominence}
       disabled={disabled || pending}
       aria-busy={pending || undefined}
-      className={cn(actionVariants({ tone, prominence }), buttonSizes({ size }), className)}
+      className={look}
     >
       {pending && <Loader2Icon className="animate-spin" aria-hidden="true" />}
       {children}

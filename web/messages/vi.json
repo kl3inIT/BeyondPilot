@@ -97,7 +97,13 @@
     "whoA": "Cá nhân và nhóm sinh viên",
     "whoB": "Startup và công ty phần mềm",
     "whoC": "Agency và đội ngũ doanh nghiệp",
-    "searchPlaceholder": "Tìm chương trình…"
+    "searchPlaceholder": "Tìm chương trình…",
+    "dates": {
+      "opens": "23 thg 9",
+      "briefing": "7 thg 10",
+      "submissionsClose": "15 thg 10",
+      "demoDay": "22 thg 10"
+    }
   },
   "Home": {
     "hero": {

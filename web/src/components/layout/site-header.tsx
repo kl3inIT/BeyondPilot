@@ -38,19 +38,10 @@ function SiteHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-2 md:gap-4">
-          <Button
-            prominence="tertiary"
-            className="hidden md:inline-flex"
-            nativeButton={false}
-            render={<Link href={siteRoutes.signIn} />}
-          >
+          <Button prominence="tertiary" className="hidden md:inline-flex" href={siteRoutes.signIn}>
             {t("signIn")}
           </Button>
-          <Button
-            className="hidden md:inline-flex"
-            nativeButton={false}
-            render={<Link href={siteRoutes.getStarted} />}
-          >
+          <Button className="hidden md:inline-flex" href={siteRoutes.getStarted}>
             {t("getStarted")}
           </Button>
           <MobileMenu />

@@ -5,7 +5,6 @@ import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { Glow } from "@/components/ui/glow";
 import { Section } from "@/components/ui/section";
-import { Link } from "@/i18n/navigation";
 import { genaiFundLinks, siteRoutes } from "@/lib/site";
 
 function Cta() {
@@ -19,20 +18,14 @@ function Cta() {
             {t("title")}
           </h2>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4">
-            <Button nativeButton={false} render={<Link href={siteRoutes.publishUseCase} />}>
-              {t("publish")}
-            </Button>
-            <Button
-              prominence="secondary"
-              nativeButton={false}
-              render={<a href={`mailto:${genaiFundLinks.email}`} />}
-            >
+            <Button href={siteRoutes.publishUseCase}>{t("publish")}</Button>
+            <Button prominence="secondary" href={`mailto:${genaiFundLinks.email}`}>
               {t("talk")}
             </Button>
           </div>
           <p className="flex flex-wrap items-center justify-center gap-1.5 text-sm text-muted-foreground">
             {t("talentQuestion")}
-            <TextButton nativeButton={false} render={<Link href={siteRoutes.talentProfile} />}>
+            <TextButton href={siteRoutes.talentProfile}>
               {t("talentLink")}
               <ArrowRightIcon aria-hidden="true" />
             </TextButton>

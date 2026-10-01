@@ -44,7 +44,7 @@ const actionVariants = cva(
       {
         tone: "danger",
         prominence: "primary",
-        class: "bg-destructive text-white hover:bg-destructive/90",
+        class: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
       },
       {
         tone: "danger",

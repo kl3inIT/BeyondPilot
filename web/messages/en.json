@@ -97,7 +97,13 @@
     "whoA": "Solo builders and student teams",
     "whoB": "Startups and software houses",
     "whoC": "Agencies and enterprise teams",
-    "searchPlaceholder": "Search programs…"
+    "searchPlaceholder": "Search programs…",
+    "dates": {
+      "opens": "23 Sep",
+      "briefing": "7 Oct",
+      "submissionsClose": "15 Oct",
+      "demoDay": "22 Oct"
+    }
   },
   "Home": {
     "hero": {
