@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * The error contract of docs/conventions.md › API errors, over real HTTP so that the servlet error path is part of the
  * test: every failure is an RFC 9457 problem that carries the request identifier sent in {@code X-Request-Id}.
+ * The refusals of the security filter chain are among them.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import({ TestcontainersConfiguration.class, ProblemResponsesTest.FailingController.class })
@@ -93,6 +94,7 @@ class ProblemResponsesTest {
 	void invalidBodyListsEachViolationWithAPointerAndNeverTheRejectedValue() {
 		EntityExchangeResult<byte[]> result = client.post()
 			.uri("/test/examples")
+			.header("X-BeyondPilot-CSRF", "1")
 			.contentType(MediaType.APPLICATION_JSON)
 			.body("{\"name\":\"\",\"code\":\"rejected-secret-value\"}")
 			.exchange()
@@ -131,6 +133,7 @@ class ProblemResponsesTest {
 	void malformedJsonIsAProblem() {
 		EntityExchangeResult<byte[]> result = client.post()
 			.uri("/test/examples")
+			.header("X-BeyondPilot-CSRF", "1")
 			.contentType(MediaType.APPLICATION_JSON)
 			.body("{")
 			.exchange()
@@ -147,10 +150,44 @@ class ProblemResponsesTest {
 	@Test
 	void unknownPathIsANotFoundProblem() {
 		EntityExchangeResult<byte[]> result = client.get()
-			.uri("/api/does-not-exist")
+			.uri("/does-not-exist")
 			.exchange()
 			.expectStatus()
 			.isNotFound()
+			.expectHeader()
+			.contentType(MediaType.APPLICATION_PROBLEM_JSON)
+			.expectBody()
+			.returnResult();
+
+		assertProblemShape(result);
+	}
+
+	@Test
+	void anApiPathWithoutASessionIsAnUnauthorizedProblem() {
+		EntityExchangeResult<byte[]> result = client.get()
+			.uri("/api/does-not-exist")
+			.exchange()
+			.expectStatus()
+			.isUnauthorized()
+			.expectHeader()
+			.contentType(MediaType.APPLICATION_PROBLEM_JSON)
+			.expectBody()
+			.jsonPath("$.instance")
+			.isEqualTo("/api/does-not-exist")
+			.returnResult();
+
+		assertProblemShape(result);
+	}
+
+	@Test
+	void aStateChangingRequestWithoutTheCsrfHeaderIsAForbiddenProblem() {
+		EntityExchangeResult<byte[]> result = client.post()
+			.uri("/test/examples")
+			.contentType(MediaType.APPLICATION_JSON)
+			.body("{\"name\":\"ok\",\"code\":\"abc\"}")
+			.exchange()
+			.expectStatus()
+			.isForbidden()
 			.expectHeader()
 			.contentType(MediaType.APPLICATION_PROBLEM_JSON)
 			.expectBody()

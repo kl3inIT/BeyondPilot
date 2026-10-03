@@ -1,5 +1,7 @@
 package ai.genaifund.beyondpilot.config;
 
+import java.net.URI;
+
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -27,6 +29,10 @@ class ProblemErrorController implements ErrorController {
 		HttpStatus status = status(request);
 		ProblemDetail problem = ProblemDetail.forStatus(status);
 		problem.setTitle(status.getReasonPhrase());
+		// The error dispatch runs on the error path; the problem names the path the client asked for.
+		if (request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI) instanceof String path) {
+			problem.setInstance(URI.create(path));
+		}
 		if (status.is5xxServerError()) {
 			problem.setDetail("The server could not complete the request.");
 			logFailure(request);

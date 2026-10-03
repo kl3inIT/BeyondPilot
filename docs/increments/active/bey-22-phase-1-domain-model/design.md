@@ -145,7 +145,7 @@ AI-filled values stay `ai_extracted` until the owner confirms them.
 
 | Table                                     | Key columns                                                                                                  |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `identity_account`                        | `email citext unique`, `display_name`, `status` (`active`, `disabled`), `platform_role` (`user`, `operator`) |
+| `identity_account`                        | `email` (unique on `lower(email)`), `display_name`, `status` (`active`, `disabled`), `platform_role` (`user`, `operator`), `last_login_at`. Implemented: see the [identity increment](../bey-30-identity/design.md) |
 | `identity_external_identity`              | `account_id`, `provider` (`google`), `subject` unique per provider                                           |
 | Spring Security and Spring Session tables | One-time tokens for email links, JDBC sessions                                                               |
 

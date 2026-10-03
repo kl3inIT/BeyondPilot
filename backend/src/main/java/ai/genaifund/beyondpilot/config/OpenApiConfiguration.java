@@ -12,6 +12,7 @@ import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,8 @@ class OpenApiConfiguration {
 
 	private static final String PROBLEM_SCHEMA = "Problem";
 
+	private static final String SESSION_SCHEME = "session";
+
 	private static final String CODE_PATTERN = "^[A-Z][A-Z0-9_]+[A-Z0-9]$";
 
 	@Bean
@@ -38,6 +41,12 @@ class OpenApiConfiguration {
 				openApi.setComponents(new Components());
 			}
 			openApi.getComponents().addSchemas(PROBLEM_SCHEMA, problem());
+			openApi.getComponents()
+				.addSecuritySchemes(SESSION_SCHEME, new SecurityScheme().type(SecurityScheme.Type.APIKEY)
+					.in(SecurityScheme.In.COOKIE)
+					.name("BEYONDPILOT_SESSION")
+					.description("The session cookie set by signing in. Requests that change state also send "
+							+ "`X-BeyondPilot-CSRF: 1`."));
 		};
 	}
 

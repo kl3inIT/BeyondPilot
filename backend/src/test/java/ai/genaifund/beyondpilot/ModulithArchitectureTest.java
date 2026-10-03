@@ -14,7 +14,7 @@ import org.springframework.modulith.core.ApplicationModules;
  */
 class ModulithArchitectureTest {
 
-	private static final Set<String> MODULES = Set.of("config");
+	private static final Set<String> MODULES = Set.of("config", "identity", "notification");
 
 	private final ApplicationModules modules = ApplicationModules.of(BeyondPilotApplication.class);
 

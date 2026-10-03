@@ -6,9 +6,64 @@ info:
 servers:
 - description: Same origin as the web application
   url: /
-paths: {}
+tags:
+- description: Who is signed in.
+  name: Identity
+paths:
+  /api/identity/me:
+    get:
+      operationId: getMe
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Me"
+          description: The account of the session.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The account has been disabled.
+      security:
+      - session: []
+      summary: The signed-in account
+      tags:
+      - Identity
 components:
   schemas:
+    Me:
+      type: object
+      description: The signed-in account.
+      properties:
+        displayName:
+          type:
+          - string
+          - "null"
+          description: The name the account shows; null until the person or their
+            provider gives one.
+        email:
+          type: string
+        id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          description: '`operator` is GenAI Fund staff.'
+          enum:
+          - user
+          - operator
+      required:
+      - email
+      - id
+      - role
     Problem:
       type: object
       additionalProperties: false
@@ -79,3 +134,10 @@ components:
       - requestId
       - status
       - title
+  securitySchemes:
+    session:
+      description: "The session cookie set by signing in. Requests that change state\
+        \ also send `X-BeyondPilot-CSRF: 1`."
+      in: cookie
+      name: BEYONDPILOT_SESSION
+      type: apiKey

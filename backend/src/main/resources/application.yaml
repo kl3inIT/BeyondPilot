@@ -28,6 +28,38 @@ spring:
       hibernate.cache.use_second_level_cache: false
       hibernate.cache.use_query_cache: false
 
+  session:
+    # Idle time after which a sign-in ends; each request restarts it.
+    timeout: 30d
+    jdbc:
+      # Flyway creates the session tables.
+      initialize-schema: never
+  mail:
+    # Local development delivers to the Mailpit container of backend/compose.yaml; nothing leaves the machine.
+    host: ${BEYONDPILOT_MAIL_HOST:localhost}
+    port: ${BEYONDPILOT_MAIL_PORT:1025}
+
+server:
+  # The web application and the reverse proxy forward the browser's host and scheme.
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        name: BEYONDPILOT_SESSION
+        http-only: true
+        same-site: lax
+        # The browser keeps the cookie across restarts; the session timeout above decides when the sign-in ends.
+        max-age: 365d
+
+beyondpilot:
+  identity:
+    public-url: ${BEYONDPILOT_PUBLIC_URL:http://localhost:3000}
+    sign-in-link-lifetime: 15m
+    # BEYONDPILOT_IDENTITY_OPERATOR_EMAILS lists the addresses that are operators from their first sign-in.
+    # Google sign-in is on when BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID and _CLIENT_SECRET are set.
+  notification:
+    from: ${BEYONDPILOT_MAIL_FROM:BeyondPilot <no-reply@beyondpilot.localhost>}
+
 springdoc:
   # OpenApiContractTest generates openapi.yml; no runtime profile serves the contract.
   api-docs:

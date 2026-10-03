@@ -4,6 +4,22 @@ export type ClientOptions = {
     baseUrl: `${string}://${string}` | (string & {});
 };
 
+/**
+ * The signed-in account.
+ */
+export type Me = {
+    /**
+     * The name the account shows; null until the person or their provider gives one.
+     */
+    displayName?: string | null;
+    email: string;
+    id: string;
+    /**
+     * `operator` is GenAI Fund staff.
+     */
+    role: 'user' | 'operator';
+};
+
 export type Problem = {
     /**
      * Stable failure code for module failures and request validation; clients branch on it.
@@ -58,3 +74,32 @@ export type Problem = {
      */
     type?: string;
 };
+
+export type GetMeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/identity/me';
+};
+
+export type GetMeErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The account has been disabled.
+     */
+    403: Problem;
+};
+
+export type GetMeError = GetMeErrors[keyof GetMeErrors];
+
+export type GetMeResponses = {
+    /**
+     * The account of the session.
+     */
+    200: Me;
+};
+
+export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
