@@ -3,6 +3,12 @@ allowBuilds:
   "@swc/core": false
   sharp: false
   unrs-resolver: false
+auditConfig:
+  # braces <=3.0.3 has a stack-exhaustion advisory with no patched release. It reaches us only
+  # through build-time tooling (the shadcn CLI and the Next.js ESLint plugin) that never receives
+  # untrusted glob patterns. Drop this once braces ships a fix and fast-glob/micromatch pick it up.
+  ignoreGhsas:
+    - GHSA-vfj7-8cjw-p6xm
 minimumReleaseAgeExclude:
   - "@next/env@16.3.8"
   - "@next/eslint-plugin-next@16.3.8"
