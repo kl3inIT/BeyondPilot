@@ -32,12 +32,12 @@ The web application is the only client and shares the origin, so no endpoint ans
 
 | Step | Request | Answer |
 | --- | --- | --- |
-| Ask for a link | `POST /ott/generate` with form fields `username` (the address), and optionally `returnTo` and `locale` (`vi`) | `204` whether or not the address has an account. `400` for a malformed address, `429` when the address already holds three working links, `503` when the email could not be sent |
+| Ask for a link | `POST /ott/generate` with form fields `username` (the address), and optionally `returnTo` and `locale` (`vi`) | `204` whether or not the address has an account. `400` for a malformed address, `429` when the address already holds three working links, `503` when the email could not be sent; both carry `Retry-After` |
 | Open the link | The email links to `/sign-in/link?token=…&returnTo=…` on the web application (`/vi/sign-in/link` for Vietnamese). That page posts the token | — |
 | Redeem | `POST /login/ott` with form field `token` | `204` and the session cookie; `401` for a used, expired or unknown token, or a disabled account |
 | Google | The browser opens `/oauth2/authorization/google?returnTo=…` | A redirect to Google, then back to `returnTo`, or to `/sign-in?error=google` |
 | Who am I | `GET /api/identity/me` | `200` with `id`, `email`, `displayName`, `role`; `401` without a session; `403` `IDENTITY_ACCOUNT_DISABLED` |
-| Sign out | `POST /logout` | `204` |
+| Sign out | `POST /logout` (a `GET` does nothing) | `204` |
 
 - Every request that changes state carries `X-BeyondPilot-CSRF: 1`; without it the answer is `403`.
 - A path under `/api` needs a session unless a line in `SecurityConfiguration` opens it.

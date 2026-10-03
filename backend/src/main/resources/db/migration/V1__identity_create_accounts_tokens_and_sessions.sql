@@ -24,11 +24,12 @@ create table identity_external_identity (
 
 create index identity_external_identity_account_id_idx on identity_external_identity (account_id);
 
--- The one-time-token table of Spring Security (JdbcOneTimeTokenService), with room for a full email address.
+-- The one-time-token table of Spring Security (JdbcOneTimeTokenService). The username is whatever was asked for, so
+-- it has no length limit here; the application refuses an overlong or malformed address before sending anything.
 create table one_time_tokens (
-    token_value varchar(36)  not null primary key,
-    username    varchar(320) not null,
-    expires_at  timestamp    not null
+    token_value varchar(36) not null primary key,
+    username    text        not null,
+    expires_at  timestamp   not null
 );
 
 create index one_time_tokens_username_idx on one_time_tokens (lower(username));

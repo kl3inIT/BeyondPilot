@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -17,6 +18,7 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.ott.GenerateOneTimeTokenRequestResolver;
 import org.springframework.security.web.authentication.ott.OneTimeTokenGenerationSuccessHandler;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 /**
  * The one security filter chain. The web application is the only client and shares this origin, so the endpoints
@@ -58,13 +60,15 @@ class SecurityConfiguration {
 					.loginProcessingUrl("/login/ott")
 					.showDefaultSubmitPage(false)
 					.tokenGenerationSuccessHandler(signInLinkSender)
-					.authenticationSuccessHandler(
+					.successHandler(
 							(request, response, authentication) -> response.setStatus(HttpServletResponse.SC_NO_CONTENT))
-					.authenticationFailureHandler((request, response, failure) -> response
+					.failureHandler((request, response, failure) -> response
 						.sendError(HttpServletResponse.SC_UNAUTHORIZED));
 				signInLinkRequest.ifAvailable(link::generateRequestResolver);
 			})
+			// Without Spring's CSRF support, sign-out would also answer GET, which a link on another site can trigger.
 			.logout(logout -> logout
+				.logoutRequestMatcher(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/logout"))
 				.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)));
 		if (oauthClients.getIfAvailable() != null) {
 			http.oauth2Login(google -> google.loginPage(SIGN_IN_PAGE)

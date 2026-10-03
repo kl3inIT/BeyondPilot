@@ -13,10 +13,11 @@ Boundaries follow [conventions › Testing](../conventions.md#testing). Sign-in 
 | A first Google sign-in needs a verified address | Taking over an account with an unverified address | `IdentitySignInTest.aFirstGoogleSignInNeedsAVerifiedAddress` |
 | A disabled account cannot sign in and its open session stops | A disabled account that keeps working | `IdentitySignInTest.aDisabledAccountCannotSignInAndItsOpenSessionStops` |
 | Signing out ends the session | A cookie that still works after sign-out | `IdentitySignInTest.signingOutEndsTheSession` |
+| Only a POST signs out | A link on another site that ends a session | `IdentitySignInTest.aLinkToTheSignOutAddressDoesNotSignOut` |
 | Without a session, an API path answers a 401 problem | An open API path, or a refusal that is not a problem | `IdentitySignInTest.nobodySignedInIsAnUnauthorizedProblem`, `ProblemResponsesTest.anApiPathWithoutASessionIsAnUnauthorizedProblem` |
 | A state-changing request without the CSRF header is refused | A cross-site form that acts for a signed-in person | `IdentitySignInTest.aStateChangingRequestWithoutTheCsrfHeaderIsRefused`, `ProblemResponsesTest.aStateChangingRequestWithoutTheCsrfHeaderIsAForbiddenProblem` |
-| An address holds at most three working links | Flooding a mailbox | `IdentitySignInTest.anAddressGetsALimitedNumberOfWorkingLinks` |
-| A malformed address is refused | Mail sent to nonsense | `IdentitySignInTest.aMalformedAddressIsRefused` |
+| An address holds at most three working links; the refusal says when to retry | Flooding a mailbox; a 429 without `Retry-After` | `IdentitySignInTest.anAddressGetsALimitedNumberOfWorkingLinks` |
+| A malformed or overlong address is refused | Mail sent to nonsense; a server error on a long value | `IdentitySignInTest.aMalformedAddressIsRefused` |
 | Choosing Google redirects to Google and remembers a path of this origin only | A broken start of the round trip, an open redirect after it | `GoogleSignInStartTest` |
 | The session cookie is `HttpOnly` and `SameSite=Lax` | A cookie readable by scripts or sent across sites | Asserted on every redemption in `IdentitySignInTest` |
 | The modules are closed and `identity` depends only on `notification` | A new dependency edge | `ModulithArchitectureTest` |

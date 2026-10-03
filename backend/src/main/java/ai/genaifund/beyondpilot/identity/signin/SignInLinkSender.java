@@ -16,6 +16,7 @@ import ai.genaifund.beyondpilot.notification.NotificationException;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ott.OneTimeToken;
 import org.springframework.security.web.authentication.ott.OneTimeTokenGenerationSuccessHandler;
@@ -33,6 +34,7 @@ class SignInLinkSender implements OneTimeTokenGenerationSuccessHandler {
 
 	private static final Pattern EMAIL = Pattern.compile("[^@\\s]+@[^@\\s]+\\.[^@\\s]+");
 	private static final int MAX_EMAIL_LENGTH = 320;
+	private static final String MAIL_RETRY_SECONDS = "30";
 
 	private final EmailService emails;
 	private final SignInLinkQueryRepository links;
@@ -55,6 +57,8 @@ class SignInLinkSender implements OneTimeTokenGenerationSuccessHandler {
 		// The token of this request is already stored, so the count includes it.
 		if (links.countUnexpired(email, Instant.now()) > properties.signInLinkLimit()) {
 			LOG.atWarn().addKeyValue("event", "identity.sign_in_link.limited").log("Sign-in link limit reached");
+			// Room for another link opens when the oldest one expires, at the latest after one lifetime.
+			response.setHeader(HttpHeaders.RETRY_AFTER, Long.toString(properties.signInLinkLifetime().toSeconds()));
 			response.sendError(HttpStatus.TOO_MANY_REQUESTS.value());
 			return;
 		}
@@ -64,6 +68,7 @@ class SignInLinkSender implements OneTimeTokenGenerationSuccessHandler {
 					properties.signInLinkLifetime(), locale);
 		}
 		catch (NotificationException exception) {
+			response.setHeader(HttpHeaders.RETRY_AFTER, MAIL_RETRY_SECONDS);
 			response.sendError(HttpStatus.SERVICE_UNAVAILABLE.value());
 			return;
 		}

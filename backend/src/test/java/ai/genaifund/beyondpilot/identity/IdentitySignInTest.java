@@ -183,6 +183,15 @@ class IdentitySignInTest {
 	}
 
 	@Test
+	void aLinkToTheSignOutAddressDoesNotSignOut() {
+		String session = redeem(tokenFor("staying@example.test"));
+
+		client.get().uri("/logout").cookie(SESSION_COOKIE, session).exchange().expectStatus().isNotFound();
+
+		client.get().uri("/api/identity/me").cookie(SESSION_COOKIE, session).exchange().expectStatus().isOk();
+	}
+
+	@Test
 	void nobodySignedInIsAnUnauthorizedProblem() {
 		assertProblem(client.get().uri("/api/identity/me").exchange(), 401);
 	}
@@ -204,13 +213,19 @@ class IdentitySignInTest {
 			requestLink("username=flood@example.test").expectStatus().isNoContent();
 		}
 
-		assertProblem(requestLink("username=flood@example.test"), 429);
+		requestLink("username=flood@example.test").expectStatus()
+			.isEqualTo(429)
+			.expectHeader()
+			.valueEquals("Retry-After", "900")
+			.expectHeader()
+			.contentType(MediaType.APPLICATION_PROBLEM_JSON);
 		assertThat(mail.countTo("flood@example.test")).isEqualTo(3);
 	}
 
 	@Test
 	void aMalformedAddressIsRefused() {
 		assertProblem(requestLink("username=not-an-address"), 400);
+		assertProblem(requestLink("username=" + "a".repeat(400) + "@example.test"), 400);
 	}
 
 	private RestTestClient.ResponseSpec requestLink(String form) {
