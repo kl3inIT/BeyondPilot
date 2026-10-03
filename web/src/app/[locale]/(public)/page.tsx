@@ -1,15 +1,12 @@
 import { setRequestLocale } from "next-intl/server";
 import { use } from "react";
 
-import { PlatformBento } from "@/components/sections/bento/platform-bento";
-import { Cta } from "@/components/sections/cta/cta";
-import { EcosystemArc } from "@/components/sections/ecosystem/ecosystem-arc";
+import { Directory } from "@/components/sections/directory/directory";
+import { ProgramsEvents } from "@/components/sections/events/programs-events";
 import { Faq } from "@/components/sections/faq/faq";
 import { Founders } from "@/components/sections/founders/founders";
 import { Hero } from "@/components/sections/hero/hero";
-import { FeatureItems } from "@/components/sections/items/feature-items";
 import { PartnerLogos } from "@/components/sections/logos/partner-logos";
-import { HowItWorks } from "@/components/sections/steps/how-it-works";
 
 export default function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = use(params);
@@ -18,14 +15,11 @@ export default function HomePage({ params }: PageProps<"/[locale]">) {
   return (
     <>
       <Hero />
+      <ProgramsEvents />
+      <Directory />
       <PartnerLogos />
-      <PlatformBento />
-      <FeatureItems />
-      <EcosystemArc />
-      <HowItWorks />
       <Founders />
       <Faq />
-      <Cta />
     </>
   );
 }

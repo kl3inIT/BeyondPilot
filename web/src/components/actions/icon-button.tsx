@@ -9,12 +9,14 @@ import {
   type ActionTone,
 } from "@/components/actions/action-styles";
 
-const iconButtonSizes = cva("p-0", {
+// Icon-only actions keep 8px corners rather than the pill; `lg` is the 44px control of the mobile
+// header and menu (DESIGN.md › Buttons › Touch).
+const iconButtonSizes = cva("rounded-md p-0", {
   variants: {
     size: {
       sm: "size-8",
       md: "size-9",
-      lg: "size-10",
+      lg: "size-11 [&_svg:not([class*='size-'])]:size-5",
     },
   },
   defaultVariants: { size: "md" },

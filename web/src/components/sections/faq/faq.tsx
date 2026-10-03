@@ -7,19 +7,35 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Section } from "@/components/ui/section";
+import { genaiFundLinks } from "@/lib/site";
 
 const questions = ["who", "company", "product", "review", "shortlist", "runs"] as const;
 
+/** The title and a way to ask beside the answers from `lg`; stacked on narrower screens. */
 function Faq() {
   const t = useTranslations("Home.faq");
 
   return (
     <Section>
-      <div className="mx-auto flex max-w-180 flex-col items-center gap-12">
-        <h2 className="text-center text-3xl font-semibold sm:text-5xl sm:leading-none">
-          {t("title")}
-        </h2>
-        <Accordion size="lg" defaultValue={["who"]} className="w-full">
+      <div className="flex flex-col gap-7 py-16 lg:flex-row lg:gap-20 lg:py-28">
+        <div className="flex flex-col gap-4 lg:w-105 lg:shrink-0">
+          <h2 className="text-3xl font-semibold tracking-headline md:text-headline">
+            {t("title")}
+          </h2>
+          <p className="text-base text-muted-foreground">
+            {t.rich("contact", {
+              email: (chunks) => (
+                <a
+                  href={`mailto:${genaiFundLinks.email}`}
+                  className="hit-area rounded-sm text-primary underline underline-offset-4 outline-none hover:no-underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  {chunks}
+                </a>
+              ),
+            })}
+          </p>
+        </div>
+        <Accordion size="lg" defaultValue={["who"]} className="min-w-0 flex-1">
           {questions.map((id) => (
             <AccordionItem key={id} value={id}>
               <AccordionTrigger>{t(`${id}Q`)}</AccordionTrigger>

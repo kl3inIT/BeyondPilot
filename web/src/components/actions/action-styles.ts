@@ -3,10 +3,11 @@ import { cva, type VariantProps } from "class-variance-authority";
 /**
  * Product action appearance by role, not by look: `prominence` says how important the action is,
  * `tone` whether it is destructive. Mirrors the Figma `Button` component set
- * (docs/guidelines/figma.md › Components).
+ * (docs/guidelines/figma.md › Components): full pills, except the tertiary action's 6px corners
+ * (DESIGN.md › Buttons). `hit-area` gives every action a 44px target on touch screens.
  */
 const actionVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-md border border-transparent text-sm font-medium whitespace-nowrap transition-colors outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-busy:pointer-events-none aria-busy:opacity-70 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "hit-area inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-transparent text-sm font-medium whitespace-nowrap transition-colors outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-busy:pointer-events-none aria-busy:opacity-70 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       tone: {
@@ -16,7 +17,7 @@ const actionVariants = cva(
       prominence: {
         primary: "shadow-sm",
         secondary: "border-input bg-background shadow-sm",
-        tertiary: "bg-transparent",
+        tertiary: "rounded-sm bg-transparent",
         internal: "",
       },
     },

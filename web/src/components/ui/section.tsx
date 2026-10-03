@@ -2,36 +2,31 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 
 /**
- * A landing section as the Figma frames draw it: at most 1312px wide, centred, 16px side padding on
- * phones and 32px from `sm`, with the vertical rhythm of the Launch UI blocks.
+ * A landing section as the Figma frames draw it: a full-bleed floor (Paper or Cool Paper) holding a
+ * column of at most 1440px with 20px gutters on phones, 32px from `md` and 64px from `xl`. The
+ * section's own vertical rhythm sits on the content inside, because each floor breathes
+ * differently. The column is the positioning context for anything that floats in the section.
  */
-const sectionVariants = cva("mx-auto w-full max-w-328 px-4 sm:px-8", {
+const sectionVariants = cva("relative w-full", {
   variants: {
-    spacing: {
-      default: "py-16 sm:py-20",
-      compact: "py-12 sm:py-20",
-      // The bottom edge belongs to an illustration that bleeds into the next section.
-      openBottom: "pt-12 sm:pt-20",
-      // A tall opening before a large illustration (Launch UI "Feature / Rising").
-      rising: "pt-16 sm:pt-32",
-      // The content sets its own padding, as the CTA does around its glow.
-      none: "",
+    surface: {
+      default: "bg-background",
+      muted: "bg-muted",
     },
   },
-  defaultVariants: { spacing: "default" },
+  defaultVariants: { surface: "default" },
 });
 
 function Section({
   className,
-  spacing,
+  surface,
+  children,
   ...props
 }: React.ComponentProps<"section"> & VariantProps<typeof sectionVariants>) {
   return (
-    <section
-      data-slot="section"
-      className={cn(sectionVariants({ spacing }), className)}
-      {...props}
-    />
+    <section data-slot="section" className={cn(sectionVariants({ surface }), className)} {...props}>
+      <div className="relative mx-auto w-full max-w-360 px-5 md:px-8 xl:px-16">{children}</div>
+    </section>
   );
 }
 

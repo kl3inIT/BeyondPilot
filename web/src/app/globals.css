@@ -59,6 +59,58 @@
   --color-use-case: var(--use-case);
   --color-solution: var(--solution);
   --color-talent: var(--talent);
+  /* Elevations of the landing (DESIGN.md › Elevation & Depth), all in the --elevation colour. */
+  --shadow-card: 0 4px 16px -4px color-mix(in oklch, var(--elevation) 5%, transparent);
+  --shadow-tile:
+    0 8px 24px -8px color-mix(in oklch, var(--elevation) 6%, transparent),
+    0 1px 2px 0 color-mix(in oklch, var(--elevation) 4%, transparent);
+  --shadow-mark: 0 8px 20px -6px color-mix(in oklch, var(--elevation) 10%, transparent);
+  --shadow-raised:
+    0 12px 32px -8px color-mix(in oklch, var(--elevation) 6%, transparent),
+    0 1px 3px 0 color-mix(in oklch, var(--elevation) 5%, transparent);
+  --shadow-float:
+    0 16px 40px -8px color-mix(in oklch, var(--elevation) 8%, transparent),
+    0 2px 6px 0 color-mix(in oklch, var(--elevation) 6%, transparent);
+  --shadow-search:
+    0 20px 48px -12px color-mix(in oklch, var(--elevation) 10%, transparent),
+    0 2px 6px 0 color-mix(in oklch, var(--elevation) 6%, transparent);
+  /* The sky light around the "Open now" timeline dot. */
+  --shadow-glow: 0 0 12px 2px color-mix(in oklch, var(--brand) 60%, transparent);
+}
+
+/* Type, motion and layout steps the Figma landing uses that Tailwind's scale lacks. */
+@theme {
+  --text-headline: 2.5rem;
+  --text-headline--line-height: 3rem;
+  --tracking-display: -0.03em;
+  --tracking-headline: -0.02em;
+  --tracking-title: -0.01em;
+  --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+  /* The desktop frame of the landing is 1440px wide. */
+  --breakpoint-desktop: 90rem;
+  /* The hero's live chip needs this much column to show its deadline (390 phones and up). */
+  --container-chip: 21.5rem;
+  /* After their entrance, the hero's floating cards rise and settle once (Figma Motion). */
+  --animate-bob: bob 3.2s ease-in-out var(--tw-animation-delay, 0s) 1 both;
+  --animate-bob-deep: bob-deep 3.8s ease-in-out var(--tw-animation-delay, 0s) 1 both;
+  /* Partner logos drift left; the track holds the list twice, so -50% loops seamlessly. */
+  --animate-marquee: marquee 34s linear infinite;
+
+  @keyframes bob {
+    50% {
+      translate: 0 -0.375rem;
+    }
+  }
+  @keyframes bob-deep {
+    50% {
+      translate: 0 -0.5rem;
+    }
+  }
+  @keyframes marquee {
+    to {
+      translate: -50% 0;
+    }
+  }
 }
 
 @layer base {
@@ -73,34 +125,22 @@
   }
 }
 
-/* Entrance animations from Launch UI: hero elements fade up in sequence. */
-@theme {
-  --animate-appear: appear 0.6s forwards ease-out;
-  --animate-appear-zoom: appear-zoom 0.6s forwards ease-out;
+/*
+ * A hit area of at least 44px on touch screens for a control drawn smaller (DESIGN.md › Buttons ›
+ * Touch). The control keeps its size; an invisible box centred on it takes the tap.
+ */
+@utility hit-area {
+  position: relative;
 
-  @keyframes appear {
-    0% {
-      opacity: 0;
-      transform: translateY(1rem);
-      filter: blur(0.5rem);
-    }
-    50% {
-      filter: blur(0);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-      filter: blur(0);
-    }
-  }
-  @keyframes appear-zoom {
-    0% {
-      opacity: 0;
-      transform: scale(0.5);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1);
+  @media (pointer: coarse) {
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, 2.75rem);
+      height: max(100%, 2.75rem);
+      translate: -50% -50%;
     }
   }
 }

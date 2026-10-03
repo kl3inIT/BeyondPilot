@@ -1,44 +1,20 @@
-import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 
-// Soft brand-coloured light behind hero mockups and section edges (from the Launch UI registry).
-const glowVariants = cva("pointer-events-none absolute w-full", {
-  variants: {
-    variant: {
-      top: "top-0",
-      above: "-top-[128px]",
-      bottom: "bottom-0",
-      below: "-bottom-[128px]",
-      center: "top-[50%]",
-    },
-  },
-  defaultVariants: { variant: "top" },
-});
-
-function Glow({
-  className,
-  variant,
-  ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof glowVariants>) {
+/**
+ * The sky light behind the landing hero (Figma "Glow/Azure" and "Glow/Cyan"): two heavily blurred
+ * ellipses that fade in on load. On phones they keep the desktop offsets, so the light enters from
+ * the right edge as in the 390 frame; from `lg` they centre on the search.
+ */
+function Glow({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="glow"
       aria-hidden="true"
-      className={cn(glowVariants({ variant }), className)}
+      className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}
       {...props}
     >
-      <div
-        className={cn(
-          "absolute left-1/2 h-[256px] w-[60%] -translate-x-1/2 scale-[2.5] rounded-[50%] bg-radial from-brand-foreground/50 from-10% to-brand-foreground/0 to-60% opacity-50 sm:h-[512px] dark:opacity-100",
-          variant === "center" && "-translate-y-1/2",
-        )}
-      />
-      <div
-        className={cn(
-          "absolute left-1/2 h-[128px] w-[40%] -translate-x-1/2 scale-200 rounded-[50%] bg-radial from-brand/30 from-10% to-brand-foreground/0 to-60% opacity-50 sm:h-[256px] dark:opacity-100",
-          variant === "center" && "-translate-y-1/2",
-        )}
-      />
+      <div className="absolute top-[230px] left-[230px] h-[420px] w-[980px] animate-in rounded-[50%] bg-brand opacity-35 blur-[180px] ease-entrance animation-duration-1600 fill-mode-both fade-in motion-reduce:animate-none lg:left-1/2 lg:-translate-x-1/2" />
+      <div className="absolute top-[330px] left-[560px] h-[300px] w-[620px] animate-in rounded-[50%] bg-primary opacity-22 blur-[140px] delay-200 ease-entrance animation-duration-1600 fill-mode-both fade-in motion-reduce:animate-none lg:left-[calc(50%-212px)] desktop:left-[calc(50%-160px)]" />
     </div>
   );
 }

@@ -1,72 +1,109 @@
-import { ArrowRightIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { ArrowRightIcon, SearchIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
-import { CampaignMockup } from "@/components/sections/hero/campaign-mockup";
+import { FloatingCards, FloatingCardsStack } from "@/components/sections/hero/floating-cards";
+import { Badge } from "@/components/ui/badge";
 import { Glow } from "@/components/ui/glow";
-import { Mockup, MockupFrame } from "@/components/ui/mockup";
 import { Section } from "@/components/ui/section";
+import { getPathname, Link } from "@/i18n/navigation";
 import { liveCampaignUrl, siteRoutes } from "@/lib/site";
 
+const scopes = ["agentic", "document", "insurance", "retail"] as const;
+
+/**
+ * One question and one search on Cool Paper, with the sky light behind it and real cards around it
+ * (DESIGN.md › Landing structure). Text rises in on load, one line after another.
+ */
 function Hero() {
   const t = useTranslations("Home.hero");
   const c = useTranslations("Campaign");
+  const locale = useLocale();
 
   return (
-    <div className="overflow-hidden">
-      <Section spacing="openBottom">
-        <div className="flex flex-col items-center gap-6 text-center sm:gap-12">
+    <Section surface="muted" className="overflow-hidden">
+      <Glow />
+      <FloatingCards />
+      <div className="relative flex flex-col items-center gap-2 pt-12 pb-6 lg:h-205 lg:pt-44 lg:pb-0">
+        <div className="@container flex w-full max-w-190 flex-col items-center gap-6 text-center">
           <a
             href={liveCampaignUrl}
-            className="flex animate-appear items-center gap-2.5 rounded-full border py-1 pr-3 pl-1 text-xs motion-reduce:animate-none"
+            className="hit-area flex h-11 max-w-full animate-in items-center gap-2 rounded-full border py-1 pr-3.5 pl-2 text-sm delay-100 ease-entrance animation-duration-800 fill-mode-both outline-none fade-in slide-in-from-bottom-4 hover:bg-background/60 focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:animate-none md:h-auto md:gap-2.5 md:pl-1"
           >
-            <span className="flex items-center gap-1.5 rounded-full bg-success/10 px-2 py-0.5 font-semibold text-foreground">
-              <span aria-hidden="true" className="size-1.5 rounded-full bg-success" />
-              {c("live")}
+            <Badge variant="success">{c("live")}</Badge>
+            <span className="font-medium whitespace-nowrap">
+              <span className="md:hidden">{c("shortName")}</span>
+              <span className="hidden md:inline">{c("name")}</span>
             </span>
-            <span className="font-medium">
-              <span className="sm:hidden">{c("shortName")}</span>
-              <span className="hidden sm:inline">{c("name")}</span>
+            <span className="min-w-0 truncate text-muted-foreground @max-chip:hidden">
+              <span className="md:hidden">{c("closesShort")}</span>
+              <span className="hidden md:inline">{c("submissionsClose")}</span>
             </span>
-            <span aria-hidden="true" className="hidden h-3 w-px bg-border sm:block" />
-            <span className="hidden text-muted-foreground sm:inline">{c("closes")}</span>
-            <span className="flex items-center gap-1 font-semibold">
+            <span className="flex items-center gap-1 font-semibold whitespace-nowrap">
               {c("apply")}
-              <ArrowRightIcon className="size-3" aria-hidden="true" />
+              <ArrowRightIcon className="size-4" aria-hidden="true" />
             </span>
           </a>
-          <h1 className="relative z-10 inline-block animate-appear bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-4xl leading-tight font-semibold text-balance text-transparent drop-shadow-2xl motion-reduce:animate-none sm:text-6xl sm:leading-tight md:text-8xl md:leading-none dark:to-muted-foreground">
+          <h1 className="animate-in text-4xl font-semibold text-balance delay-180 ease-entrance animation-duration-800 fill-mode-both fade-in slide-in-from-bottom-4 motion-reduce:animate-none lg:text-7xl lg:tracking-display">
             {t("title")}
           </h1>
-          <p className="relative z-10 max-w-136 animate-appear text-base font-medium text-muted-foreground opacity-0 delay-100 motion-reduce:animate-none motion-reduce:opacity-100 sm:text-xl">
+          <p className="max-w-145 animate-in text-base font-medium text-muted-foreground delay-260 ease-entrance animation-duration-800 fill-mode-both fade-in slide-in-from-bottom-4 motion-reduce:animate-none lg:text-xl">
             {t("description")}
           </p>
-          <div className="relative z-10 flex w-full animate-appear flex-col justify-center gap-3 opacity-0 delay-300 motion-reduce:animate-none motion-reduce:opacity-100 sm:w-auto sm:flex-row sm:gap-4">
-            <Button href={siteRoutes.programs}>{t("browse")}</Button>
-            <Button prominence="secondary" href={siteRoutes.publishUseCase}>
-              {t("publish")}
-            </Button>
-          </div>
-          <div className="relative w-full pt-4 sm:pt-12">
-            <div className="relative animate-appear opacity-0 delay-700 motion-reduce:animate-none motion-reduce:opacity-100">
-              <MockupFrame>
-                <Mockup type="inset" className="w-full">
-                  <CampaignMockup />
-                </Mockup>
-              </MockupFrame>
-              {/* The screen fades into the page, as in the Figma hero. */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 z-20 bg-linear-to-b from-background/0 to-background/90 to-85%"
+          <form
+            role="search"
+            action={getPathname({ href: siteRoutes.search, locale })}
+            className="flex w-full max-w-160 animate-in items-center gap-3 rounded-full border bg-card py-2 pr-2 pl-6 shadow-search delay-340 ease-entrance animation-duration-800 fill-mode-both fade-in slide-in-from-bottom-4 focus-within:ring-3 focus-within:ring-ring/50 motion-reduce:animate-none"
+          >
+            <SearchIcon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <div className="relative min-w-0 flex-1">
+              <label htmlFor="hero-search" className="sr-only">
+                {t("searchLabel")}
+              </label>
+              <input
+                id="hero-search"
+                name="q"
+                type="search"
+                placeholder=" "
+                className="peer w-full bg-transparent text-base text-foreground outline-none"
               />
+              {/* The placeholder shortens on phones, which the attribute cannot do. */}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 hidden truncate text-left text-base text-muted-foreground peer-placeholder-shown:block"
+              >
+                <span className="md:hidden">{t("searchPlaceholderShort")}</span>
+                <span className="hidden md:inline">{t("searchPlaceholder")}</span>
+              </span>
             </div>
-            <div className="animate-appear-zoom opacity-0 delay-1000 motion-reduce:animate-none motion-reduce:opacity-100">
-              <Glow variant="top" />
-            </div>
-          </div>
+            <Button type="submit" size="lg">
+              {t("search")}
+            </Button>
+          </form>
+          <ul
+            aria-label={t("scopesLabel")}
+            className="flex animate-in flex-wrap justify-center gap-2 delay-420 ease-entrance animation-duration-800 fill-mode-both fade-in slide-in-from-bottom-4 motion-reduce:animate-none"
+          >
+            {scopes.map((scope) => (
+              <li key={scope} className="flex">
+                <Badge
+                  variant="outline"
+                  render={
+                    <Link
+                      href={{ pathname: siteRoutes.search, query: { q: t(`scopes.${scope}`) } }}
+                    />
+                  }
+                  className="hit-area"
+                >
+                  {t(`scopes.${scope}`)}
+                </Badge>
+              </li>
+            ))}
+          </ul>
         </div>
-      </Section>
-    </div>
+        <FloatingCardsStack />
+      </div>
+    </Section>
   );
 }
 

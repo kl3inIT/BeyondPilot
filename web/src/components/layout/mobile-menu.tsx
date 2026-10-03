@@ -1,20 +1,20 @@
 "use client";
 
-import { ChevronRightIcon, MenuIcon } from "lucide-react";
+import { MenuIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
 import { BrandLockup } from "@/components/layout/brand-lockup";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Link } from "@/i18n/navigation";
-import { liveCampaignUrl, siteRoutes } from "@/lib/site";
+import { siteRoutes } from "@/lib/site";
 
-/** Full-screen menu for narrow screens: live campaign first, then sections, then account actions. */
+/** Full-screen menu below 768px: one hint line per destination, then account actions and language. */
 function MobileMenu() {
   const t = useTranslations("Site");
-  const c = useTranslations("Campaign");
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
 
@@ -27,59 +27,45 @@ function MobileMenu() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger render={<IconButton aria-label={t("menu.open")} className="md:hidden" />}>
+      <SheetTrigger
+        render={<IconButton aria-label={t("menu.open")} size="lg" className="md:hidden" />}
+      >
         <MenuIcon aria-hidden="true" />
       </SheetTrigger>
-      <SheetContent side="right" closeLabel={t("menu.close")} className="w-full sm:max-w-full">
-        <div className="flex flex-1 flex-col">
-          <SheetTitle className="sr-only">{t("menu.title")}</SheetTitle>
-          <div className="flex h-16 items-center border-b px-4">
-            <BrandLockup />
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        className="data-[side=right]:w-full data-[side=right]:sm:max-w-full"
+      >
+        <SheetTitle className="sr-only">{t("menu.title")}</SheetTitle>
+        <div className="flex flex-1 flex-col overflow-y-auto">
+          <div className="flex h-17 shrink-0 items-center justify-between border-b px-5">
+            <BrandLockup showPoweredBy={false} />
+            <SheetClose render={<IconButton aria-label={t("menu.close")} size="lg" />}>
+              <XIcon aria-hidden="true" />
+            </SheetClose>
           </div>
-          <a
-            href={liveCampaignUrl}
-            onClick={close}
-            className="flex items-center gap-3 bg-muted/60 px-4 py-3 hover:bg-muted"
-          >
-            <span aria-hidden="true" className="size-2 rounded-full bg-success" />
-            <span className="flex flex-1 flex-col">
-              <span className="text-sm font-medium">{c("shortName")}</span>
-              <span className="text-xs text-muted-foreground">
-                {c("liveNow")} · {c("closes")}
-              </span>
-            </span>
-            <ChevronRightIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-          </a>
-          <nav aria-label={t("nav.label")} className="flex flex-col px-4 py-2">
+          <nav aria-label={t("nav.label")} className="flex flex-col px-5 pt-2">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={close}
-                className="flex items-center justify-between border-b py-4"
+                className="flex flex-col gap-1 border-b py-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
               >
-                <span className="flex flex-col gap-0.5">
-                  <span className="text-lg font-semibold">{link.label}</span>
-                  <span className="text-sm text-muted-foreground">{link.hint}</span>
-                </span>
-                <ChevronRightIcon className="size-5 text-muted-foreground" aria-hidden="true" />
+                <span className="text-lg font-semibold">{link.label}</span>
+                <span className="text-sm text-muted-foreground">{link.hint}</span>
               </Link>
             ))}
           </nav>
-          <div className="mt-auto flex flex-col gap-3 border-t p-4">
+          <div className="flex flex-col gap-3 px-5 pt-6 pb-8">
             <Button size="lg" href={siteRoutes.getStarted} onClick={close}>
               {t("nav.getStarted")}
             </Button>
             <Button size="lg" prominence="secondary" href={siteRoutes.signIn} onClick={close}>
               {t("nav.signIn")}
             </Button>
-            <Link
-              href={siteRoutes.talentProfile}
-              onClick={close}
-              className="text-xs text-muted-foreground"
-            >
-              {t("menu.talentCta")}
-            </Link>
+            <LanguageSwitcher className="text-sm" />
           </div>
         </div>
       </SheetContent>

@@ -6,6 +6,10 @@ import { MobileMenu } from "@/components/layout/mobile-menu";
 import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
+/**
+ * Brand and four destinations on the left, account actions on the right. The search is the
+ * landing's primary action, so Get started stays secondary here (DESIGN.md › Buttons).
+ */
 function SiteHeader() {
   const t = useTranslations("Site.nav");
   const links = [
@@ -16,32 +20,27 @@ function SiteHeader() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-17 max-w-328 items-center justify-between gap-6 px-4 sm:px-8">
-        <div className="flex items-center gap-4">
-          <div className="hidden lg:block">
-            <BrandLockup />
-          </div>
-          <div className="lg:hidden">
-            <BrandLockup showPoweredBy={false} />
-          </div>
-          <nav aria-label={t("label")} className="hidden items-center md:flex">
+    <header className="sticky top-0 z-50 border-b bg-background">
+      <div className="mx-auto flex h-17 w-full max-w-360 items-center justify-between gap-6 px-5 md:px-8 xl:px-16">
+        <div className="flex items-center gap-8">
+          <BrandLockup showPoweredBy={false} />
+          <nav aria-label={t("label")} className="hidden items-center gap-7 md:flex">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+                className="hit-area rounded-sm text-sm font-medium transition-colors outline-none hover:text-muted-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
         </div>
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-2">
           <Button prominence="tertiary" className="hidden md:inline-flex" href={siteRoutes.signIn}>
             {t("signIn")}
           </Button>
-          <Button className="hidden md:inline-flex" href={siteRoutes.getStarted}>
+          <Button prominence="secondary" href={siteRoutes.getStarted}>
             {t("getStarted")}
           </Button>
           <MobileMenu />

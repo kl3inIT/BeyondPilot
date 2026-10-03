@@ -43,7 +43,7 @@ The folder rules are in [conventions › Frontend › Structure](docs/convention
 | Path under `web/src` | Holds today |
 | --- | --- |
 | `app/[locale]/(public)/` | The home page, composed from sections, and the coming-soon catch-all |
-| `components/sections/` | The home page sections: hero, partner logos, platform bento, feature items, ecosystem, steps, founders, FAQ, call to action |
+| `components/sections/` | The home page sections: hero with search, programs and events timeline, directory tabs, partner logos, founders, FAQ |
 | `components/layout/` | Site header and footer, mobile menu, brand lockup, light and dark theme switch |
 | `components/actions/` | The product's action components (`Button`, `IconButton`, `TextButton`, `ActionLink`) over shared action styles |
 | `components/ui/` | shadcn registry primitives |

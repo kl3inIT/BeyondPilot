@@ -6,17 +6,17 @@ import { ActionLink, type ActionLinkProps } from "@/components/actions/action-li
 import type { ActionSize, ActionTone } from "@/components/actions/action-styles";
 
 const textButtonVariants = cva(
-  "inline-flex shrink-0 items-center gap-1 rounded-sm font-medium whitespace-nowrap underline-offset-4 transition-colors outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "hit-area inline-flex shrink-0 items-center gap-1 rounded-sm whitespace-nowrap underline-offset-4 transition-colors outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       tone: {
-        default: "text-foreground",
+        default: "text-primary",
         danger: "text-destructive",
       },
       size: {
-        sm: "text-xs [&_svg:not([class*='size-'])]:size-3",
-        md: "text-sm [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "text-base [&_svg:not([class*='size-'])]:size-4",
+        sm: "text-xs font-medium [&_svg:not([class*='size-'])]:size-3",
+        md: "text-sm font-semibold [&_svg:not([class*='size-'])]:size-3.5",
+        lg: "text-base font-semibold [&_svg:not([class*='size-'])]:size-4",
       },
     },
     defaultVariants: { tone: "default", size: "md" },
@@ -28,7 +28,7 @@ type TextButtonProps = {
   size?: ActionSize;
 } & ((ButtonPrimitive.Props & { href?: undefined }) | ActionLinkProps);
 
-/** A text-only action, such as "Browse programs →" under a section. With `href` it is a link. */
+/** A text-only action in azure, such as "Publish a use case →" beside a heading. With `href` it is a link. */
 function TextButton({ className, tone = "default", size = "md", ...props }: TextButtonProps) {
   if (props.href !== undefined) {
     return (

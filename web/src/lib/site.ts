@@ -10,8 +10,7 @@ export const siteRoutes = {
   publishUseCase: "/use-cases/new",
   talentProfile: "/talent/new",
   founders: "/founders",
-  privacy: "/privacy",
-  terms: "/terms",
+  search: "/search",
 } as const;
 
 /** Planned pages without a screen yet; they share the coming-soon page. */
@@ -25,12 +24,14 @@ export const comingSoonPaths = [
   "sign-in",
   "get-started",
   "founders",
-  "privacy",
-  "terms",
+  "search",
 ] as const;
 
 /** The live campaign runs on GenAI Fund's interim page until campaigns move onto BeyondPilot. */
 export const liveCampaignUrl = "https://beyondpilot.genaifund.ai/insurance-ai-tasco";
+
+/** Submissions to the live campaign close at 23:59 Vietnam time (ICT) on 15 October 2026. */
+export const liveCampaignDeadline = "2026-10-15T23:59:00+07:00";
 
 export const genaiFundLinks = {
   site: "https://genaifund.ai",

@@ -11,7 +11,7 @@ test.describe("locale routing", () => {
     await expect(page).toHaveURL("/");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Enterprise AI challenges, solved together",
+      "Your next AI pilot starts here.",
     );
     await expectNoSeriousA11yViolations(page);
   });
@@ -21,7 +21,7 @@ test.describe("locale routing", () => {
 
     await expect(page.locator("html")).toHaveAttribute("lang", "vi");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Cùng giải bài toán AI của doanh nghiệp",
+      "Pilot AI tiếp theo bắt đầu từ đây.",
     );
     await expectNoSeriousA11yViolations(page);
   });

@@ -217,7 +217,15 @@ A 1312px column with 64px gutters on desktop, 32px on tablet (1024) and 20px on 
 
 ## Elevation & Depth
 
-Flat by default with hairlines; floating cards and the live campaign card use a soft two-layer shadow (ink at 6% on a 32px blur, ink at 5% on 3px). The search bar has a deeper shadow because it is the page's main control. Nothing else casts a shadow.
+Flat by default with hairlines. Shadows are ink at low opacity (`--elevation` in `tokens.css`) and come only from the `shadow-*` elevations in `web/src/app/globals.css`, from the faintest up:
+
+- `shadow-card`: event and past-program cards (ink 5% on a 16px blur).
+- `shadow-tile`: directory cards (ink 6% on 24px, 4% on 2px).
+- `shadow-mark`: the white icon and logo marks on card covers.
+- `shadow-raised`: the live campaign card (ink 6% on a 32px blur, 5% on 3px).
+- `shadow-float`: the hero's floating cards (ink 8% on 40px, 6% on 6px).
+- `shadow-search`: the search bar, the page's main control.
+- `shadow-glow`: the sky light around the "Open now" timeline dot.
 
 ## Shapes
 

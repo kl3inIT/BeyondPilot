@@ -52,6 +52,8 @@
   --use-case: oklch(0.555 0.146 48.998);
   --solution: oklch(0.508 0.105 165.612);
   --talent: oklch(0.586 0.222 17.585);
+  /* Colour of every shadow (the shadow-* elevations in app/globals.css): ink by day. */
+  --elevation: oklch(0.219 0.043 253.881);
 }
 
 .dark {
@@ -98,4 +100,5 @@
   --use-case: oklch(0.769 0.165 70.08);
   --solution: oklch(0.773 0.153 163.223);
   --talent: oklch(0.719 0.169 13.428);
+  --elevation: oklch(0.12 0.02 256);
 }
