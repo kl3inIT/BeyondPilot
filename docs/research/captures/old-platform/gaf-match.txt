@@ -1,0 +1,22 @@
+button: 30
+button: Hello, General GenAI Fund
+button: 
+h1: Select a Use Case
+h3: AI Agent for Social Media Campaign Automation
+h3: AI-Powered Real-Time Translation for Japan Event
+h3: Build AI that can listen, speak, see, and act
+h3: AI-Powered Smart Building & Sustainability Intelligence
+h3: AI-Driven Smart Facilities and Workforce Optimization Platform
+h3: Physical World Data Layer
+h3: AI-Powered Digital Transformation Scorecard
+h3: Human-AgentOS
+h3: Test
+h3: Event Digital Human MC & Announcer
+h3: AI Startup & Enterprise Discovery Platform
+h3: Privacy-Preserving Retail Analytics for Customer Insights
+h3: Daily Personalized Quotes to Increase Stickiness & Return Visits
+h3: Organizational AI Memory: The Capability Layer for the AI Enterprise
+h3: Open Innovation Event OS
+h3: Virtual Assistant AI
+h3: Real-Time English → Japanese Translation & Subtitling for Enterprise Events
+button: Notifications30

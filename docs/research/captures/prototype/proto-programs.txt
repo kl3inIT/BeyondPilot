@@ -1,0 +1,16 @@
+button: Sign in
+button: Join BeyondPilot
+h1: Programs & Events
+button: All
+button: Active
+button: Upcoming
+button: Past
+label: Search programs
+[input search]  Search programs or enterprises
+h2: AI for Insurance Challenge
+h2: GenAI Builders Meetup
+h2: Agentic AI Build Week
+h2: Qwen AI Build Day
+button: About
+button: Contact
+button: Privacy

@@ -1,0 +1,21 @@
+h1: 📝 My Use Cases
+label: Search Use Cases
+[input text]  Search by title or description...
+label: Status
+[select select-one] {All Status | Approved | Pending | Rejected}
+label: Tags
+[input text]  Enter tags...
+button: 🔍 Apply Filters
+button: 🗑️ Clear Filters
+button: ➕ Create New Use Case
+button: 🔽 More
+button: 📝 2 Submissions
+button: 🤝 0 Matches
+button: 📋 Unpublish
+button: 🗑️ Delete
+button: 📝 3 Submissions
+button: 📝 0 Submissions
+button: Previous
+button: 1
+button: 2
+button: Next

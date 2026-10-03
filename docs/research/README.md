@@ -17,9 +17,26 @@ What the team studied before designing BeyondPilot, kept so that a later reader 
 | [data/programs-and-events.json](data/programs-and-events.json)                                       | 21 programs with type, partners, countries, dates, status, and their Luma events and blog posts | genaifund.ai/blog and GenAI Fund's Luma calendars, read on 2 October 2026 |
 | [data/use-cases-open-innovation-vietnam-2025.json](data/use-cases-open-innovation-vietnam-2025.json) | 41 enterprise use cases in seven industries, each with what the enterprise needs                | genaifund.ai/genai-open-innovation-vietnam-2025, read on 3 October 2026   |
 
+## Sources, kept as received
+
+| File                                                                                 | Holds                                                                                                                              |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| [sources/2026-10-02-kickoff-transcript.md](sources/2026-10-02-kickoff-transcript.md) | The automatic transcript of the kickoff with GenAI Fund, in Vietnamese and English, with one exchange about a test account removed |
+| [sources/use-case-solution-research.md](sources/use-case-solution-research.md)       | The skill GenAI Fund's project lead uses to research vendors for a use case: the three relevance buckets and the evidence rules    |
+| [sources/2026-10-03-landing-critique.md](sources/2026-10-03-landing-critique.md)     | The second design critique of the landing page, as scored                                                                          |
+| [data/landing-image-sources.json](data/landing-image-sources.json)                   | Where each image on the landing page comes from, and the candidates that were not used                                             |
+
+## Captures
+
+| Folder                                           | Holds                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [captures/old-platform/](captures/old-platform/) | Screens of app.genaifund.ai as seen with the view-only test account, each as an image and as the text of its headings, labels and fields: public home, use case form, an enterprise's use cases and matches, startup registration and profile, notifications, and the administration area |
+| [captures/prototype/](captures/prototype/)       | Screens of GenAI Fund's prototype of BeyondPilot; its sample solutions and people are fictional                                                                                                                                                                                           |
+
 ## Rules for this folder
 
-- Only public sources and the team's own observations are recorded here. The repository is public.
-- No personal data, no account details and nothing that describes how a system of GenAI Fund is secured. Material that GenAI Fund shared in private, such as exports of the old platform, applications and internal working documents, stays in the team's private workspace.
-- Third-party screenshots are not committed; a note links to the page instead.
+- **Credentials are never recorded**: no account name with its password, no token, no key. A source that contains one is stored with that part removed and the removal marked.
+- A source is kept as received, in its own language, apart from that. Notes are written in English.
+- Names and messages of people outside the team and GenAI Fund are removed from captures of private conversations.
+- Screenshots of third-party products studied as references are not committed; a note links to the page instead.
 - A note is not edited to match later decisions. When a finding is superseded, the newer note says so.

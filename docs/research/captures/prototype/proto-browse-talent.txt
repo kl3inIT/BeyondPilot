@@ -1,0 +1,16 @@
+button: Sign in
+button: Join BeyondPilot
+h1: AI talent, proven in the field.
+label: ⌘ K
+[input text]  Search talent, skills, or deployment experience
+label: Sort by Featured Name A–Z
+[select select-one] {Featured | Name A–Z}
+button: All talent
+button: Forward-deployed engineers
+button: AI engineers
+button: Automation specialists
+h2: Linh Nguyen
+h2: Arjun Menon
+h2: Mai Tran
+h2: Daniel Lim
+h2: Quang Le

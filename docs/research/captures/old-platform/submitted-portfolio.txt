@@ -1,0 +1,31 @@
+h1: Discover Real-World AI Use Cases
+h2: Driving Enterprise Innovation
+[input text]  Search use cases...
+[select select-one] {All Industries | Retail & E-commerce | Fast-Moving Consumer Goods (FMCG) | Food & Beverages | Luxury & Fashion | Automotive & Mobility | Logistics & Supply Chain | Real Estate & Construction | Manufacturing | Agritech | Energy | Healthcare & Wellness | …}
+button: 🔍 Search
+h3: Featured Use Cases
+button: 📝 Submit Use Case
+button: Nestlé Vietnam AI Reinvention
+button: Shinhan Innoboost 2026
+button: Tasco Innovation Day
+button: GOI Indonesia 2025
+button: GOI Malaysia 2025
+button: GOI Japan 2025
+h3: Build AI that can listen, speak, see, and act
+button: 👍 Vote
+h3: Open Innovation Event OS
+h3: Organizational AI Memory: The Capability Layer for the AI Enterprise
+h3: AI Startup & Enterprise Discovery Platform
+h3: Human-AgentOS
+h3: AI-Powered Digital Transformation Scorecard
+h3: Physical World Data Layer
+h3: AI Agent for Social Media Campaign Automation
+h3: AI-Powered Real-Time Translation for Japan Event
+h3: AI for Insurance: Scaling Compulsory Motor Insurance Renewal
+button: ← Prev
+button: 1
+button: 2
+button: 21
+button: Next →
+h4: 🏆 Top 3 Use Cases
+h4: 🔥 Trending Tags

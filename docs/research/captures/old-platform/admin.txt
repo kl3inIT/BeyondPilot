@@ -1,0 +1,9 @@
+h1: 🛡️ Admin Panel
+label: Search by email
+[input email]  Enter email to search...
+label: User Type
+[select select-one] {All | Startup | Enterprise}
+label: Status
+[select select-one] {All | Active | Inactive}
+button: 📁 Import Users
+h3: User List (0)

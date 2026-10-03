@@ -1,0 +1,23 @@
+button: Sign in
+button: Join BeyondPilot
+h1: AI solutions, with proof.
+label: ⌘ K
+[input text]  Search solutions, capabilities, or industries
+label: Sort by Featured Name A–Z
+[select select-one] {Featured | Name A–Z}
+button: All solutions
+button: AI platforms
+button: Customer experience
+button: Operations
+button: Data & analytics
+button: Engineering
+button: Sales & marketing
+h2: OpenAI
+h3: FOCUS AREAS
+h3: INDUSTRIES
+h2: Relay AI
+h2: Documind
+h2: Scope AI
+h2: Vocalis
+h2: Forge Copilot
+h2: Signal Studio

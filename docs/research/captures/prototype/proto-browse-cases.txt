@@ -1,0 +1,22 @@
+button: Sign in
+button: Join BeyondPilot
+h1: Real problems. Your next opportunity.
+label: ⌘ K
+[input text]  Search enterprise problems or industries
+label: Sort by Featured Name A–Z
+[select select-one] {Featured | Name A–Z}
+button: All opportunities
+button: Published opportunities
+button: Automotive & mobility
+button: Financial services
+button: Retail
+button: Manufacturing
+button: Logistics
+h2: Human-AgentOS
+h3: RELEVANT AI TECHNOLOGIES
+button: +1
+h2: AI vehicle ownership and document assistant
+h2: Scale insurance renewals
+h2: Unify frontline knowledge
+h2: Automate supplier document checks
+h2: Predict delivery exceptions

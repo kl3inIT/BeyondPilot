@@ -1,0 +1,3 @@
+button: Sign in
+button: Join BeyondPilot
+h1: Bring your solution to the right companies.

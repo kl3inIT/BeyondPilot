@@ -1,0 +1,32 @@
+button: Back
+h1: Arcanic AI
+button: Message
+h2: Customer Solution Deck
+button: Open in popup
+button: 🔗 URL
+h2: Product Demo
+h2: Pitch Deck
+h3: Company Information
+label: Registration Country
+label: Target Industries
+label: Solution Types
+label: Product Stage
+label: Company Type
+h3: Products & Technology
+label: Products
+label: Core Technology
+label: Tech Stack
+label: Infrastructure
+h3: Business Model
+label: Segment Focus
+label: Monetization Model
+label: Best Customer Profile
+label: Funding Status
+label: Funding Raised
+h3: Additional Information
+label: Problems Solved
+label: Unique Value Proposition
+label: Competitors
+label: Key Milestones
+label: Notable Paying Customers
+label: Created Date

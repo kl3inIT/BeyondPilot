@@ -1,0 +1,3 @@
+button: Sign in
+button: Join BeyondPilot
+h1: Turn a business problem into a partner brief.

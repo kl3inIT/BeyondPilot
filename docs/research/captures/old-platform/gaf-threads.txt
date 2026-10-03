@@ -1,0 +1,24 @@
+button: 30
+button: Hello, General GenAI Fund
+button: 
+h1: Messages
+button: Refresh
+h2: Conversations
+button: Discussion with GenAI [name and message removed]
+h3: Discussion with GenAI Fund
+button: Discussion with Arcanic [name and message removed]
+h3: Discussion with Arcanic AI
+button: Discussion with Arcanic [name and message removed]
+button: Discussion with Arcanic [name and message removed]
+button: Discussion with GenAI [name and message removed]
+button: Discussion with GenAI [name and message removed]
+button: Discussion with GenAI [name and message removed]
+h3: Please select a thread
+button: Discussion with GenAI [name and message removed]
+button: Discussion with Arcanic [name and message removed]
+button: Discussion with Arcanic [name and message removed]
+button: Discussion with Arcanic [name and message removed]
+button: Discussion with GenAI [name and message removed]
+button: Discussion with GenAI [name and message removed]
+button: Discussion with GenAI [name and message removed]
+button: Notifications30

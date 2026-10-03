@@ -1,0 +1,9 @@
+button: Sign in
+button: Join BeyondPilot
+h1: AI for Insurance Challenge
+h2: Explore the challenge
+h2: Get ready to participate
+h2: Program at a glance
+button: About
+button: Contact
+button: Privacy

@@ -1,0 +1,82 @@
+button: Sign in
+button: Join BeyondPilot
+h1: Where Asia’s AI ecosystem turns connections into opportunity.
+button: ChatGPT integration · Coming soon
+legend: GenAI Fund ecosystem reach
+h2: Four ways to find your next opportunity.
+h3: AI Solutions
+h3: Enterprise Use Cases
+h3: AI Talent
+h3: Programs & Events
+h2: Explore BeyondPilotin your ChatGPT.
+h2: Turn enterprise challenges into opportunity.
+h3: AI for Insurance Challenge
+h2: Built across Asia andBeyond.
+h2: Built with the organizationsshaping AI adoption.
+h3: Technology partners
+h3: Enterprises
+h3: Government and institutions
+h2: Find your place in the ecosystem.
+button: Join BeyondPilot →
+button: Partner with us ↗
+button: About
+button: Contact
+button: Privacy
+button: ×
+h1: Relay AI
+h3: Problem(s) Solved
+h3: Target Market and Industry
+h3: Solution Focus Area(s)
+h3: Core Technology and AI Integration
+h3: Built with
+h3: Decks & demo
+h3: Segment Focus
+h3: Best Customer Profile
+h3: Monetization Model
+h3: Notable Paying Customers
+h3: Key Milestones and Business Tractions
+h3: Main Competitors or Market Alternatives
+h3: Unique Value Proposition
+h3: Funding Status
+h3: Total Funding Raised (USD)
+h3: Customer references & case studies
+h4: Mock pilot reduces manual review time with evidence-linked AI assistance
+h3: Use case or problem
+h3: Results and measurable outcomes
+h3: Offers
+h4: Mock six-week pilot package
+h3: Description and benefits
+h3: Offer value or discount
+h3: Eligibility
+h3: Terms and limitations
+h3: Expiry date
+h3: How to claim
+h3: Relay Labs
+h1: AI solutions, with proof.
+label: ⌘ K
+[input text]  Search solutions, capabilities, or industries
+label: Sort by FeaturedName A–Z
+[select select-one] {Featured | Name A–Z}
+button: All solutions
+button: AI platforms
+button: Customer experience
+button: Operations
+button: Data & analytics
+button: Engineering
+button: Sales & marketing
+h2: OpenAI
+h3: Focus areas
+h3: Industries
+h2: Relay AI
+h2: Documind
+h2: Scope AI
+h2: Vocalis
+h2: Forge Copilot
+h2: Signal Studio
+h1: Relay Labs
+h2: AI solutions
+h3: Relay AI
+h2: Customer deployments
+h3: Northstar Retail support automation
+h2: Meet the team
+button: ✕

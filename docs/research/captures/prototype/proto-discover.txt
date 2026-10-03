@@ -1,0 +1,24 @@
+button: Sign in
+button: Join BeyondPilot
+h1: Where Asia’s AI ecosystem turns connections into opportunity.
+button: ChatGPT integration · Coming soon
+legend: GENAI FUND ECOSYSTEM REACH
+h2: Four ways to find your next opportunity.
+h3: AI Solutions
+h3: Enterprise Use Cases
+h3: AI Talent
+h3: Programs & Events
+h2: Explore BeyondPilot in your ChatGPT.
+h2: Turn enterprise challenges into opportunity.
+h3: AI for Insurance Challenge
+h2: Built across Asia and Beyond.
+h2: Built with the organizations shaping AI adoption.
+h3: TECHNOLOGY PARTNERS
+h3: ENTERPRISES
+h3: GOVERNMENT AND INSTITUTIONS
+h2: Find your place in the ecosystem.
+button: Join BeyondPilot →
+button: Partner with us ↗
+button: About
+button: Contact
+button: Privacy

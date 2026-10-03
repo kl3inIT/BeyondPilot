@@ -1,0 +1,7 @@
+button: Sign Up
+h2: Create Account
+h3: Select Your Startup
+button: ← Go back
+label: Search Startup *
+[text] startupSearch Search for your startup... *
+button: Next

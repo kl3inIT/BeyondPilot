@@ -1,0 +1,2 @@
+h2: Forbidden resource
+button: Try Again

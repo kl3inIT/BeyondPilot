@@ -1,0 +1,357 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e75]:
+    - banner [ref=f1e77]:
+      - generic [ref=f1e79]:
+        - link [ref=f1e81] [cursor=pointer]:
+          - /url: /
+          - img "GenAIFund" [ref=f1e82]
+        - generic [ref=f1e83]:
+          - generic [ref=f1e84]:
+            - generic [ref=f1e85]: GenAI Fund
+            - generic [ref=f1e86]: Verified
+          - link [ref=f1e88] [cursor=pointer]:
+            - /url: /threads
+          - button "Notifications" [ref=f1e92]:
+            - generic [ref=f1e95]: "30"
+          - button "Hello, General GenAI Fund" [ref=f1e97]
+    - generic [ref=f1e102]:
+      - heading "Discover Real-World AI Use Cases" [level=1] [ref=f1e103]
+      - heading "Driving Enterprise Innovation" [level=2] [ref=f1e104]
+      - paragraph [ref=f1e105]: Explore, upvote, and connect with high-impact applications of AI across industries — where startups and enterprises meet to solve meaningful challenges.
+      - link "✨ AI Match - Find Your Perfect Match ✨" [ref=f1e107] [cursor=pointer]:
+        - /url: /match
+        - generic [ref=f1e108]: ✨
+        - generic [ref=f1e109]: AI Match - Find Your Perfect Match
+        - generic [ref=f1e110]: ✨
+    - main [ref=f1e115]:
+      - generic [ref=f1e118]:
+        - textbox "Search use cases..." [ref=f1e121]
+        - combobox [ref=f1e126]:
+          - option "All Industries" [selected]
+          - option "Retail & E-commerce"
+          - option "Fast-Moving Consumer Goods (FMCG)"
+          - option "Food & Beverages"
+          - option "Luxury & Fashion"
+          - option "Automotive & Mobility"
+          - option "Logistics & Supply Chain"
+          - option "Real Estate & Construction"
+          - option "Manufacturing"
+          - option "Agritech"
+          - option "Energy"
+          - option "Healthcare & Wellness"
+          - option "Financial Services"
+          - option "Telecommunications"
+          - option "Government & Public Sector"
+          - option "Non-Profit & Social Impact"
+          - option "Technology / Software / IT Services"
+          - option "Education & Training"
+          - option "Media, Entertainment & Gaming"
+          - option "Legal & Professional Services"
+          - option "Hospitality & Travel"
+          - option "Mining & Heavy Industry"
+          - option "Others"
+        - button "🔍 Search" [ref=f1e128]
+      - generic [ref=f1e129]:
+        - generic [ref=f1e130]:
+          - generic [ref=f1e132]:
+            - generic [ref=f1e133]:
+              - heading "Featured Use Cases" [level=3] [ref=f1e134]
+              - paragraph [ref=f1e135]: 208 use cases found
+            - link [ref=f1e137] [cursor=pointer]:
+              - /url: /create-usecase
+              - button "📝 Submit Use Case" [ref=f1e138]
+          - generic [ref=f1e139]:
+            - button "Nestlé Vietnam AI Reinvention" [ref=f1e140] [cursor=pointer]
+            - button "Shinhan Innoboost 2026" [ref=f1e141] [cursor=pointer]
+            - button "Tasco Innovation Day" [ref=f1e142] [cursor=pointer]
+            - button "GOI Indonesia 2025" [ref=f1e143] [cursor=pointer]
+            - button "GOI Malaysia 2025" [ref=f1e144] [cursor=pointer]
+            - button "GOI Japan 2025" [ref=f1e145] [cursor=pointer]
+          - generic [ref=f1e146]:
+            - generic [ref=f1e148] [cursor=pointer]:
+              - generic [ref=f1e150]:
+                - generic [ref=f1e151]:
+                  - generic [ref=f1e152]: 🤖
+                  - generic [ref=f1e153]:
+                    - heading "Build AI that can listen, speak, see, and act" [level=3] [ref=f1e154]
+                    - paragraph [ref=f1e155]: Most AI lives inside browsers, apps, or chat interfaces. Build an intelligent system that can interact directly with people, devices, machines, and real-world environments.
+                - generic [ref=f1e156]:
+                  - generic [ref=f1e157]: TBD
+                  - generic [ref=f1e161]: 1 votes
+              - generic [ref=f1e162]:
+                - generic [ref=f1e163]: Robotics & Physical AI
+                - generic [ref=f1e164]: AABW2026
+                - generic [ref=f1e165]: physical-ai-that-acts
+              - generic [ref=f1e166]:
+                - generic [ref=f1e167]:
+                  - generic [ref=f1e168]: Posted on Aug 27, 2026
+                  - generic [ref=f1e169]:
+                    - generic [ref=f1e170]: G
+                    - generic [ref=f1e172]: by GenAI Fund
+                - button "👍 Vote" [ref=f1e173]
+            - generic [ref=f1e175] [cursor=pointer]:
+              - generic [ref=f1e177]:
+                - generic [ref=f1e178]:
+                  - generic [ref=f1e179]: 🚀
+                  - generic [ref=f1e180]:
+                    - heading "Open Innovation Event OS" [level=3] [ref=f1e181]
+                    - paragraph [ref=f1e182]: Organizations still run hackathons, accelerators, grant programs, and build weeks across disconnected tools, manual outreach, and repeated setup work.
+                - generic [ref=f1e183]:
+                  - generic [ref=f1e184]: TBD
+                  - generic [ref=f1e188]: 0 votes
+              - generic [ref=f1e189]:
+                - generic [ref=f1e190]: Founder Mode Track
+                - generic [ref=f1e191]: AABW2026
+                - generic [ref=f1e192]: event-os
+              - generic [ref=f1e193]:
+                - generic [ref=f1e194]:
+                  - generic [ref=f1e195]: Posted on Aug 27, 2026
+                  - generic [ref=f1e196]:
+                    - generic [ref=f1e197]: G
+                    - generic [ref=f1e199]: by GenAI Fund
+                - button "👍 Vote" [ref=f1e200]
+            - generic [ref=f1e202] [cursor=pointer]:
+              - generic [ref=f1e204]:
+                - generic [ref=f1e205]:
+                  - generic [ref=f1e206]: 🚀
+                  - generic [ref=f1e207]:
+                    - 'heading "Organizational AI Memory: The Capability Layer for the AI Enterprise" [level=3] [ref=f1e208]'
+                    - paragraph [ref=f1e209]: AI capabilities are still trapped in individual employees' prompts, workflows, agents, decisions, and operating habits, so organizations lose AI knowledge when people change roles or leave.
+                - generic [ref=f1e210]:
+                  - generic [ref=f1e211]: TBD
+                  - generic [ref=f1e215]: 0 votes
+              - generic [ref=f1e216]:
+                - generic [ref=f1e217]: Founder Mode Track
+                - generic [ref=f1e218]: AABW2026
+                - generic [ref=f1e219]: organizational-ai-memory
+              - generic [ref=f1e220]:
+                - generic [ref=f1e221]:
+                  - generic [ref=f1e222]: Posted on Aug 27, 2026
+                  - generic [ref=f1e223]:
+                    - generic [ref=f1e224]: G
+                    - generic [ref=f1e226]: by GenAI Fund
+                - button "👍 Vote" [ref=f1e227]
+            - generic [ref=f1e229] [cursor=pointer]:
+              - generic [ref=f1e231]:
+                - generic [ref=f1e232]:
+                  - generic [ref=f1e233]: 🚀
+                  - generic [ref=f1e234]:
+                    - heading "AI Startup & Enterprise Discovery Platform" [level=3] [ref=f1e235]
+                    - paragraph [ref=f1e236]: Enterprises struggle to find relevant startups for business challenges, while startups struggle to identify the right enterprise customers and decision makers.
+                - generic [ref=f1e237]:
+                  - generic [ref=f1e238]: TBD
+                  - generic [ref=f1e242]: 0 votes
+              - generic [ref=f1e243]:
+                - generic [ref=f1e244]: Founder Mode Track
+                - generic [ref=f1e245]: AABW2026
+                - generic [ref=f1e246]: innovation-matchmaker
+              - generic [ref=f1e247]:
+                - generic [ref=f1e248]:
+                  - generic [ref=f1e249]: Posted on Aug 27, 2026
+                  - generic [ref=f1e250]:
+                    - generic [ref=f1e251]: G
+                    - generic [ref=f1e253]: by GenAI Fund
+                - button "👍 Vote" [ref=f1e254]
+            - generic [ref=f1e256] [cursor=pointer]:
+              - generic [ref=f1e258]:
+                - generic [ref=f1e259]:
+                  - generic [ref=f1e260]: 🚀
+                  - generic [ref=f1e261]:
+                    - heading "Human-AgentOS" [level=3] [ref=f1e262]
+                    - paragraph [ref=f1e263]: Organizations increasingly coordinate human workers and AI agents, but tools for discovery, assignment, governance, execution, and measurement are fragmented.
+                - generic [ref=f1e264]:
+                  - generic [ref=f1e265]: TBD
+                  - generic [ref=f1e269]: 0 votes
+              - generic [ref=f1e270]:
+                - generic [ref=f1e271]: Founder Mode Track
+                - generic [ref=f1e272]: AABW2026
+                - generic [ref=f1e273]: human-agent-os
+              - generic [ref=f1e274]:
+                - generic [ref=f1e275]:
+                  - generic [ref=f1e276]: Posted on Aug 27, 2026
+                  - generic [ref=f1e277]:
+                    - generic [ref=f1e278]: G
+                    - generic [ref=f1e280]: by GenAI Fund
+                - button "👍 Vote" [ref=f1e281]
+            - generic [ref=f1e283] [cursor=pointer]:
+              - generic [ref=f1e285]:
+                - generic [ref=f1e286]:
+                  - generic [ref=f1e287]: 🚀
+                  - generic [ref=f1e288]:
+                    - heading "AI-Powered Digital Transformation Scorecard" [level=3] [ref=f1e289]
+                    - paragraph [ref=f1e290]: Leadership teams lack a current view of digital maturity, AI readiness, capability gaps, and the next highest-impact transformation priorities.
+                - generic [ref=f1e291]:
+                  - generic [ref=f1e292]: TBD
+                  - generic [ref=f1e296]: 0 votes
+              - generic [ref=f1e297]:
+                - generic [ref=f1e298]: Founder Mode Track
+                - generic [ref=f1e299]: AABW2026
+                - generic [ref=f1e300]: transformation-scorecard
+              - generic [ref=f1e301]:
+                - generic [ref=f1e302]:
+                  - generic [ref=f1e303]: Posted on Aug 27, 2026
+                  - generic [ref=f1e304]:
+                    - generic [ref=f1e305]: G
+                    - generic [ref=f1e307]: by GenAI Fund
+                - button "👍 Vote" [ref=f1e308]
+            - generic [ref=f1e310] [cursor=pointer]:
+              - generic [ref=f1e312]:
+                - generic [ref=f1e313]:
+                  - generic [ref=f1e314]: 🚀
+                  - generic [ref=f1e315]:
+                    - heading "Physical World Data Layer" [level=3] [ref=f1e316]
+                    - paragraph [ref=f1e317]: Robotics and embodied AI need large volumes of real-world interaction data, but collecting that data through robot fleets, labs, and custom sensors is expensive and slow.
+                - generic [ref=f1e318]:
+                  - generic [ref=f1e319]: TBD
+                  - generic [ref=f1e323]: 0 votes
+              - generic [ref=f1e324]:
+                - generic [ref=f1e325]: Founder Mode Track
+                - generic [ref=f1e326]: AABW2026
+                - generic [ref=f1e327]: physical-world-data-layer
+              - generic [ref=f1e328]:
+                - generic [ref=f1e329]:
+                  - generic [ref=f1e330]: Posted on Aug 27, 2026
+                  - generic [ref=f1e331]:
+                    - generic [ref=f1e332]: G
+                    - generic [ref=f1e334]: by GenAI Fund
+                - button "👍 Vote" [ref=f1e335]
+            - generic [ref=f1e337] [cursor=pointer]:
+              - generic [ref=f1e339]:
+                - generic [ref=f1e340]:
+                  - generic [ref=f1e341]: 🤖
+                  - generic [ref=f1e342]:
+                    - heading "AI Agent for Social Media Campaign Automation" [level=3] [ref=f1e343]
+                    - paragraph [ref=f1e344]: Auto-generate text, image, and video content aligned with GenAI Fund branding. Automate campaign scheduling and posting across 3+ platforms. Increase engagement rates (likes, shares, comments) by >20% compared to manual campaigns. Reduce manual content creation and posting workload by >70%.
+                - generic [ref=f1e345]:
+                  - generic [ref=f1e346]: $US 0
+                  - generic [ref=f1e350]: 5 votes
+              - generic [ref=f1e351]:
+                - generic [ref=f1e352]: social-media
+                - generic [ref=f1e353]: automation
+                - generic [ref=f1e354]: content-generation
+                - generic [ref=f1e355]: campaign-management
+              - generic [ref=f1e356]:
+                - generic [ref=f1e357]:
+                  - generic [ref=f1e358]: Posted on Aug 19, 2025
+                  - generic [ref=f1e359]:
+                    - generic [ref=f1e360]: G
+                    - generic [ref=f1e362]: by GenAI Fund
+                - button "👍 Vote" [ref=f1e363]
+            - generic [ref=f1e365] [cursor=pointer]:
+              - generic [ref=f1e367]:
+                - generic [ref=f1e368]:
+                  - generic [ref=f1e369]: 🤖
+                  - generic [ref=f1e370]:
+                    - heading "AI-Powered Real-Time Translation for Japan Event" [level=3] [ref=f1e371]
+                    - paragraph [ref=f1e372]: GenAI Fund is set to revolutionize the experience of attendees at its upcoming event in Japan by implementing cutting-edge real-time translation technology. This initiative addresses the critical need for accessible content among local participants, including enterprises, startups, government stakeholders, and ecosystem partners, who prefer engaging...
+                - generic [ref=f1e373]:
+                  - generic [ref=f1e374]: $US 0
+                  - generic [ref=f1e378]: 4 votes
+              - generic [ref=f1e379]:
+                - generic [ref=f1e380]: live-translation
+                - generic [ref=f1e381]: japanese
+                - generic [ref=f1e382]: GOI Japan 2025
+              - generic [ref=f1e383]:
+                - generic [ref=f1e384]:
+                  - generic [ref=f1e385]: Posted on Aug 12, 2025
+                  - generic [ref=f1e386]:
+                    - generic [ref=f1e387]: G
+                    - generic [ref=f1e389]: by GenAI Fund
+                - button "👍 Vote" [ref=f1e390]
+            - generic [ref=f1e392] [cursor=pointer]:
+              - generic [ref=f1e394]:
+                - generic [ref=f1e395]:
+                  - generic [ref=f1e396]: 🤖
+                  - generic [ref=f1e397]:
+                    - 'heading "AI for Insurance: Scaling Compulsory Motor Insurance Renewal" [level=3] [ref=f1e398]'
+                    - paragraph [ref=f1e399]: "Develop a scalable renewal approach that materially increases the ability to identify, reach and convert renewal-eligible customers while reducing reliance on manual operational effort. Success should include: higher renewal conversion across digital and assisted channels; more proactive identification and engagement of customers approaching policy expiry; fewer manual touchpoints per..."
+                - generic [ref=f1e400]:
+                  - generic [ref=f1e401]: $US 0
+                  - generic [ref=f1e405]: 0 votes
+              - generic [ref=f1e406]:
+                - generic [ref=f1e407]: AI
+                - generic [ref=f1e408]: Automation
+                - generic [ref=f1e409]: Data Analytics
+                - generic [ref=f1e410]: Chatbot
+                - generic [ref=f1e411]: Enterprise
+                - generic [ref=f1e412]: Machine Learning
+              - generic [ref=f1e413]:
+                - generic [ref=f1e414]:
+                  - generic [ref=f1e415]: Posted on Sep 22, 2026
+                  - generic [ref=f1e416]:
+                    - img "Tasco logo" [ref=f1e498]
+                    - generic [ref=f1e419]: by Tasco
+                - button "👍 Vote" [ref=f1e420]
+          - generic [ref=f1e421]:
+            - button "← Prev" [disabled] [ref=f1e422]
+            - button "1" [ref=f1e423]
+            - button "2" [ref=f1e424]
+            - generic [ref=f1e425]: …
+            - button "21" [ref=f1e426]
+            - button "Next →" [ref=f1e427]
+        - generic [ref=f1e429]:
+          - generic [ref=f1e430]:
+            - heading "🏆 Top 3 Use Cases" [level=4] [ref=f1e431]
+            - generic [ref=f1e432]:
+              - generic [ref=f1e433] [cursor=pointer]:
+                - generic [ref=f1e434]: 🤖
+                - generic [ref=f1e435]:
+                  - paragraph [ref=f1e436]: AI for Contact Centres
+                  - paragraph [ref=f1e437]: 41 votes
+                  - paragraph [ref=f1e438]: HDBank
+                - generic [ref=f1e439]: 🥇
+              - generic [ref=f1e440] [cursor=pointer]:
+                - generic [ref=f1e441]: 🤖
+                - generic [ref=f1e442]:
+                  - paragraph [ref=f1e443]: AI-Powered MSME Onboarding and Credit Profiling
+                  - paragraph [ref=f1e444]: 26 votes
+                  - paragraph [ref=f1e445]: PayNet
+                - generic [ref=f1e446]: 🥈
+              - generic [ref=f1e447] [cursor=pointer]:
+                - generic [ref=f1e448]: 🤖
+                - generic [ref=f1e449]:
+                  - paragraph [ref=f1e450]: Automated Interview Screening
+                  - paragraph [ref=f1e451]: 22 votes
+                  - paragraph [ref=f1e452]: HDBank
+                - generic [ref=f1e453]: 🥉
+          - generic [ref=f1e454]:
+            - heading "🔥 Trending Tags" [level=4] [ref=f1e455]
+            - generic [ref=f1e456]:
+              - generic [ref=f1e457] [cursor=pointer]:
+                - text: GOI Indonesia 2025
+                - generic [ref=f1e458]: ⭐
+              - generic [ref=f1e459] [cursor=pointer]:
+                - text: GOI Japan 2025
+                - generic [ref=f1e460]: ⭐
+              - generic [ref=f1e461] [cursor=pointer]:
+                - text: GOI Malaysia 2025
+                - generic [ref=f1e462]: ⭐
+              - generic [ref=f1e463] [cursor=pointer]:
+                - text: Nestlé Vietnam AI Reinvention
+                - generic [ref=f1e464]: ⭐
+              - generic [ref=f1e465] [cursor=pointer]:
+                - text: Shinhan Innoboost 2026
+                - generic [ref=f1e466]: ⭐
+              - generic [ref=f1e467] [cursor=pointer]:
+                - text: Tasco Innovation Day
+                - generic [ref=f1e468]: ⭐
+              - generic [ref=f1e469] [cursor=pointer]: AI
+              - generic [ref=f1e470] [cursor=pointer]: Finance
+    - generic [ref=f1e473]:
+      - generic [ref=f1e474]:
+        - generic [ref=f1e475]: A product by
+        - generic [ref=f1e476]: GenAI Fund
+      - generic [ref=f1e478]:
+        - paragraph [ref=f1e479]: "Need help? Contact us:"
+        - link "it-support@genaifund.ai" [ref=f1e480] [cursor=pointer]:
+          - /url: mailto:it-support@genaifund.ai
+      - generic [ref=f1e481]:
+        - link "X" [ref=f1e482] [cursor=pointer]:
+          - /url: "#"
+        - link "Instagram" [ref=f1e486] [cursor=pointer]:
+          - /url: "#"
+        - link "YouTube" [ref=f1e490] [cursor=pointer]:
+          - /url: "#"
+        - link "LinkedIn" [ref=f1e494] [cursor=pointer]:
+          - /url: "#"
+  - alert [ref=f1e74]

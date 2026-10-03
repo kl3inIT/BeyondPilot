@@ -1,0 +1,4 @@
+h2: Create Account
+h3: Choose Account Type
+button: 🚀 Startup For startups and emerging companies
+button: 🏢 Enterprise For large enterprises and corporations

@@ -1,0 +1,15 @@
+h1: Create Instant Use Case
+button: Clear Form
+h2: Enterprise Information
+label: Enterprise Name *
+[input text]  Enter your enterprise name required
+label: Website
+[input url]  https://www.example.com
+label: Email *
+[input email]  contact@example.com required
+label: Phone Number *
+[input tel]  +1 (555) 123-4567 required
+label: Sender Name *
+[input text]  Enter your full name required
+button: Cancel
+button: Next

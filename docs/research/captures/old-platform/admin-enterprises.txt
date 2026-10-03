@@ -1,0 +1,13 @@
+h1: 🛡️ Admin Panel
+label: Search Enterprises
+[input text]  Search by company name, industry, or description...
+button: 🔍
+label: Industry
+[select select-one] {All Industries | Retail & E-commerce | Fast-Moving Consumer Goods (FMCG) | Food & Beverages | Luxury & Fashion | Automotive & Mobility | Logistics & Supply Chain | Real Estate & Construction | Manufacturing | Agritech | Energy | Healthcare & Wellness | …}
+label: Country
+[select select-one] {All Countries | Afghanistan | Albania | Algeria | Andorra | Angola | Antigua and Barbuda | Argentina | Armenia | Australia | Austria | Azerbaijan | …}
+label: Status
+[select select-one] {All Statuses | Active | Inactive}
+button: Clear Filters
+button: Import Enterprises
+h3: Enterprise List (0)

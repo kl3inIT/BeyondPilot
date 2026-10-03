@@ -1,0 +1,24 @@
+button: 30
+button: Hello, General GenAI Fund
+button: 
+h1: Create New Use Case
+h2: Use Case Title & Problem Statement
+label: Use Case Title *
+[input text]  Enter a clear, descriptive title for your use case... required
+label: Problem Statement *
+[textarea textarea]  Describe the specific problem you need to solve... required
+label: Relevant AI Technologies *
+label: Generative AI (text, image, video, code generation)
+[input checkbox]
+label: Conversational AI / Chatbots
+label: Predictive Analytics / Forecasting
+label: Computer Vision (image/video recognition, OCR)
+label: Recommendation Systems / Personalization
+label: Document Intelligence (data extraction from PDFs, forms, contracts)
+label: Voice AI (speech recognition, voice bots)
+label: Anomaly Detection / Fraud Detection
+label: Search & Knowledge Retrieval
+label: Robotic Process Automation (RPA)
+label: Other
+button: Next
+button: Notifications30

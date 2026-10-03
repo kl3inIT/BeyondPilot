@@ -1,0 +1,58 @@
+button: 30
+button: Hello, General GenAI Fund
+button: 
+button: Back
+h1: Profile Settings
+button: 🏢 Enterprise Information
+button: 👤 Personal Information
+h2: Enterprise Information
+h3: Basic Company Information
+label: Company Name *
+[input text] companyName  required
+label: Company Website *
+[input url] website https://yourcompany.com required
+label: Headquarter Country *
+[select select-one] headquarterCountry  required {Select your headquarter country | Afghanistan | Albania | Algeria | Andorra | Angola | Antigua and Barbuda | Argentina | Armenia | Australia | Austria | Azerbaijan | …}
+label: Year Founded *
+[input number] yearFounded  required
+label: Accepted Email Domains
+[input text] acceptedEmail
+h3: Company Avatar
+label: Upload New Avatar
+[input file] avatarFile
+h3: Industry Information
+label: Industry Sector(s) * (can have more than 1)
+label: Retail & E-commerce
+[input checkbox]
+label: Fast-Moving Consumer Goods (FMCG)
+label: Food & Beverages
+label: Luxury & Fashion
+label: Automotive & Mobility
+label: Logistics & Supply Chain
+label: Real Estate & Construction
+label: Manufacturing
+label: Agritech
+label: Energy
+label: Healthcare & Wellness
+label: Financial Services
+label: Telecommunications
+label: Government & Public Sector
+label: Non-Profit & Social Impact
+label: Technology / Software / IT Services
+label: Education & Training
+label: Media, Entertainment & Gaming
+label: Legal & Professional Services
+label: Hospitality & Travel
+label: Mining & Heavy Industry
+label: Others
+h3: Company Description
+label: Brief Company Description *
+[textarea textarea] description Describe your company's mission, vision, main business activities, and what makes your company unique... required
+h3: Company Size
+label: Company Size *
+[select select-one] employeeCount  required {Select company size | Less than 100 Employees | 100–499 Employees | 500–999 Employees | 1,000–4,999 Employees | 5,000–9,999 Employees | 10,000–49,999 Employees | 50,000 Employees or More}
+h3: Company Branding
+label: Upload Company Logo
+[input file] logoFile
+button: Save Changes
+button: Notifications30

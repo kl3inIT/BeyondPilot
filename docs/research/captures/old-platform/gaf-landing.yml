@@ -1,0 +1,423 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e4]:
+      - generic [ref=e6]:
+        - link [ref=e8] [cursor=pointer]:
+          - /url: /
+          - img "GenAIFund" [ref=e9]
+        - generic [ref=e10]:
+          - link "Sign In" [ref=e11] [cursor=pointer]:
+            - /url: /login
+          - link "Sign Up" [ref=e12] [cursor=pointer]:
+            - /url: /register
+    - generic [ref=e14]:
+      - heading "Discover Real-World AI Use Cases" [level=1] [ref=e15]
+      - heading "Driving Enterprise Innovation" [level=2] [ref=e16]
+      - paragraph [ref=e17]: Explore, upvote, and connect with high-impact applications of AI across industries — where startups and enterprises meet to solve meaningful challenges.
+      - link "🚀 Post Your Usecase 🚀" [ref=e19] [cursor=pointer]:
+        - /url: /instant-usecase
+        - generic [ref=e20]: 🚀
+        - generic [ref=e21]: Post Your Usecase
+        - generic [ref=e22]: 🚀
+    - main [ref=e27]:
+      - generic [ref=e227]:
+        - textbox "Search use cases..." [ref=e230]
+        - combobox [ref=e235]:
+          - option "All Industries" [selected]
+          - option "Retail & E-commerce"
+          - option "Fast-Moving Consumer Goods (FMCG)"
+          - option "Food & Beverages"
+          - option "Luxury & Fashion"
+          - option "Automotive & Mobility"
+          - option "Logistics & Supply Chain"
+          - option "Real Estate & Construction"
+          - option "Manufacturing"
+          - option "Agritech"
+          - option "Energy"
+          - option "Healthcare & Wellness"
+          - option "Financial Services"
+          - option "Telecommunications"
+          - option "Government & Public Sector"
+          - option "Non-Profit & Social Impact"
+          - option "Technology / Software / IT Services"
+          - option "Education & Training"
+          - option "Media, Entertainment & Gaming"
+          - option "Legal & Professional Services"
+          - option "Hospitality & Travel"
+          - option "Mining & Heavy Industry"
+          - option "Others"
+        - button "🔍 Search" [ref=e237]
+      - generic [ref=e39]:
+        - generic [ref=e40]:
+          - generic [ref=e43]:
+            - heading "Featured Use Cases" [level=3] [ref=e44]
+            - paragraph [ref=e238]: 208 use cases found
+          - generic [ref=e45]:
+            - button "Nestlé Vietnam AI Reinvention" [ref=e239] [cursor=pointer]
+            - button "Shinhan Innoboost 2026" [ref=e240] [cursor=pointer]
+            - button "Tasco Innovation Day" [ref=e241] [cursor=pointer]
+            - button "GOI Indonesia 2025" [ref=e242] [cursor=pointer]
+            - button "GOI Malaysia 2025" [ref=e243] [cursor=pointer]
+            - button "GOI Japan 2025" [ref=e244] [cursor=pointer]
+          - generic [ref=e49]:
+            - generic [ref=e246] [cursor=pointer]:
+              - generic [ref=e248]:
+                - generic [ref=e249]:
+                  - generic [ref=e250]: 🤖
+                  - generic [ref=e251]:
+                    - heading "AI for Contact Centres" [level=3] [ref=e252]
+                    - paragraph [ref=e253]: Integrate AI into multi-channel customer service to categorize requests, provide instant responses to FAQs, and route complex issues to the right agents.
+                - generic [ref=e254]:
+                  - generic [ref=e255]:
+                    - generic [ref=e256]: xx.xxx$
+                    - generic [ref=e259]: Login to view price
+                  - generic [ref=e261]: 41 votes
+              - generic [ref=e262]:
+                - generic [ref=e263]: ContactCenterAI
+                - generic [ref=e264]: CX
+                - generic [ref=e265]: FinServ
+                - generic [ref=e266]: ConversationalAI
+                - generic [ref=e267]: Conversational AI
+                - generic [ref=e268]: Chatbot
+                - generic [ref=e269]: Search
+                - generic [ref=e270]: Knowledge Management
+                - generic [ref=e271]: AI
+                - generic [ref=e272]: Machine Learning
+              - generic [ref=e273]:
+                - generic [ref=e274]:
+                  - generic [ref=e275]: Posted on Aug 12, 2025
+                  - generic [ref=e276]:
+                    - img "HDBank logo" [ref=e278]
+                    - generic [ref=e279]: by HDBank
+                - button "🔒 Login to Vote" [ref=e280]
+            - generic [ref=e282] [cursor=pointer]:
+              - generic [ref=e284]:
+                - generic [ref=e285]:
+                  - generic [ref=e286]: 🤖
+                  - generic [ref=e287]:
+                    - heading "AI-Powered MSME Onboarding and Credit Profiling" [level=3] [ref=e288]
+                    - paragraph [ref=e289]: The onboarding process for Micro, Small, and Medium Enterprises (MSMEs) into the banking industry is highly manual, requiring days to complete due to extensive documentation. Additionally, many MSMEs operate in a personal capacity, which restricts their access to business-specific financial tools that could foster growth.
+                - generic [ref=e290]:
+                  - generic [ref=e291]:
+                    - generic [ref=e292]: xx.xxx$
+                    - generic [ref=e295]: Login to view price
+                  - generic [ref=e297]: 26 votes
+              - generic [ref=e298]:
+                - generic [ref=e299]: FinTech
+                - generic [ref=e300]: Banking
+                - generic [ref=e301]: SME Onboarding
+                - generic [ref=e302]: eKYB
+                - generic [ref=e303]: Credit Scoring
+                - generic [ref=e304]: Predictive Analytics
+                - generic [ref=e305]: Forecasting
+                - generic [ref=e306]: Generative AI
+                - generic [ref=e307]: GenAI
+                - generic [ref=e308]: Document Intelligence
+                - generic [ref=e309]: Data Extraction
+                - generic [ref=e310]: AI
+                - generic [ref=e311]: Machine Learning
+                - generic [ref=e312]: GOI Malaysia 2025
+              - generic [ref=e313]:
+                - generic [ref=e314]:
+                  - generic [ref=e315]: Posted on Aug 12, 2025
+                  - generic [ref=e316]:
+                    - generic [ref=e317]: P
+                    - generic [ref=e318]: by PayNet
+                - button "🔒 Login to Vote" [ref=e319]
+            - generic [ref=e321] [cursor=pointer]:
+              - generic [ref=e323]:
+                - generic [ref=e324]:
+                  - generic [ref=e325]: 🤖
+                  - generic [ref=e326]:
+                    - heading "Automated Interview Screening" [level=3] [ref=e327]
+                    - paragraph [ref=e328]: Use AI to screen and evaluate over 20,000 job applications efficiently.
+                - generic [ref=e329]:
+                  - generic [ref=e330]:
+                    - generic [ref=e331]: xx.xxx$
+                    - generic [ref=e334]: Login to view price
+                  - generic [ref=e336]: 22 votes
+              - generic [ref=e337]:
+                - generic [ref=e338]: HRtech
+                - generic [ref=e339]: RecruitmentAI
+                - generic [ref=e340]: FinServ
+                - generic [ref=e341]: Screening
+                - generic [ref=e342]: Predictive Analytics
+                - generic [ref=e343]: Forecasting
+                - generic [ref=e344]: Document Intelligence
+                - generic [ref=e345]: Data Extraction
+                - generic [ref=e346]: Automation
+              - generic [ref=e347]:
+                - generic [ref=e348]:
+                  - generic [ref=e349]: Posted on Aug 12, 2025
+                  - generic [ref=e350]:
+                    - img "HDBank logo" [ref=e352]
+                    - generic [ref=e353]: by HDBank
+                - button "🔒 Login to Vote" [ref=e354]
+            - generic [ref=e356] [cursor=pointer]:
+              - generic [ref=e358]:
+                - generic [ref=e359]:
+                  - generic [ref=e360]: 🤖
+                  - generic [ref=e361]:
+                    - heading "RAG for coating application." [level=3] [ref=e362]
+                    - paragraph [ref=e363]: a highly secure system, (as the formulations are intellectual property), that can augment a chemist or technical engineer for users to ask AI what product most suitable and how much estimation of Liters, number of coats. To be used by distrubutors, sales and key...
+                - generic [ref=e364]:
+                  - generic [ref=e365]:
+                    - generic [ref=e366]: xx.xxx$
+                    - generic [ref=e369]: Login to view price
+                  - generic [ref=e371]: 17 votes
+              - generic [ref=e372]:
+                - generic [ref=e373]: Industrial protective coating
+                - generic [ref=e374]: chemicals
+                - generic [ref=e375]: GOI Malaysia 2025
+              - generic [ref=e376]:
+                - generic [ref=e377]:
+                  - generic [ref=e378]: Posted on Aug 19, 2025
+                  - generic [ref=e379]:
+                    - generic [ref=e380]: R
+                    - generic [ref=e381]: by Royalton Coating Sdn Bhd
+                - button "🔒 Login to Vote" [ref=e382]
+            - generic [ref=e384] [cursor=pointer]:
+              - generic [ref=e386]:
+                - generic [ref=e387]:
+                  - generic [ref=e388]: 🤖
+                  - generic [ref=e389]:
+                    - heading "[G1] AI Compliance & Document Governance System at Tasco Group" [level=3] [ref=e390]
+                    - paragraph [ref=e391]: With hundreds of subsidiary companies, it is difficult to standardize, monitor, and enforce policies, internal regulations, and legal documents across the group.
+                - generic [ref=e392]:
+                  - generic [ref=e393]:
+                    - generic [ref=e394]: xx.xxx$
+                    - generic [ref=e397]: Login to view price
+                  - generic [ref=e399]: 16 votes
+              - generic [ref=e400]:
+                - generic [ref=e401]: AI
+                - generic [ref=e402]: Enterprise
+                - generic [ref=e403]: Data Analytics
+                - generic [ref=e404]: Governance
+                - generic [ref=e405]: Tasco Innovation Day
+              - generic [ref=e406]:
+                - generic [ref=e407]:
+                  - generic [ref=e408]: Posted on Dec 25, 2025
+                  - generic [ref=e409]:
+                    - img "Tasco logo" [ref=e411]
+                    - generic [ref=e412]: by Tasco
+                - button "🔒 Login to Vote" [ref=e413]
+            - generic [ref=e415] [cursor=pointer]:
+              - generic [ref=e417]:
+                - generic [ref=e418]:
+                  - generic [ref=e419]: 🤖
+                  - generic [ref=e420]:
+                    - heading "AI-Powered Claim & Payment Automation" [level=3] [ref=e421]
+                    - paragraph [ref=e422]: Transform how trade claims are submitted, validated, and reimbursed ‚ delivering speed, accuracy, and transparency.
+                - generic [ref=e423]:
+                  - generic [ref=e424]:
+                    - generic [ref=e425]: xx.xxx$
+                    - generic [ref=e428]: Login to view price
+                  - generic [ref=e430]: 16 votes
+              - generic [ref=e431]:
+                - generic [ref=e432]: ClaimAutomation
+                - generic [ref=e433]: TradeMarketing
+                - generic [ref=e434]: FMCG
+                - generic [ref=e435]: FinOps
+                - generic [ref=e436]: Computer Vision
+                - generic [ref=e437]: Image Recognition
+                - generic [ref=e438]: Document Intelligence
+                - generic [ref=e439]: Data Extraction
+                - generic [ref=e440]: RPA
+                - generic [ref=e441]: Automation
+                - generic [ref=e442]: AI
+                - generic [ref=e443]: Machine Learning
+              - generic [ref=e444]:
+                - generic [ref=e445]:
+                  - generic [ref=e446]: Posted on Aug 12, 2025
+                  - generic [ref=e447]:
+                    - img "Coca-Cola Beverages Vietnam logo" [ref=e449]
+                    - generic [ref=e450]: by Coca-Cola Beverages Vietnam
+                - button "🔒 Login to Vote" [ref=e451]
+            - generic [ref=e453] [cursor=pointer]:
+              - generic [ref=e455]:
+                - generic [ref=e456]:
+                  - generic [ref=e457]: 🤖
+                  - generic [ref=e458]:
+                    - heading "AI-Powered Accounting Process Automation" [level=3] [ref=e459]
+                    - paragraph [ref=e460]: Develop an AI solution to automate payment reconciliation across 100+ stores and multiple payment channels.
+                - generic [ref=e461]:
+                  - generic [ref=e462]:
+                    - generic [ref=e463]: xx.xxx$
+                    - generic [ref=e466]: Login to view price
+                  - generic [ref=e468]: 16 votes
+              - generic [ref=e469]:
+                - generic [ref=e470]: FinanceAI
+                - generic [ref=e471]: RPA
+                - generic [ref=e472]: Accounting
+                - generic [ref=e473]: Automation
+                - generic [ref=e474]: Document Intelligence
+                - generic [ref=e475]: Data Extraction
+                - generic [ref=e476]: AI
+                - generic [ref=e477]: Machine Learning
+              - generic [ref=e478]:
+                - generic [ref=e479]:
+                  - generic [ref=e480]: Posted on Aug 12, 2025
+                  - generic [ref=e481]:
+                    - img "KFC Vietnam logo" [ref=e483]
+                    - generic [ref=e484]: by KFC Vietnam
+                - button "🔒 Login to Vote" [ref=e485]
+            - generic [ref=e487] [cursor=pointer]:
+              - generic [ref=e489]:
+                - generic [ref=e490]:
+                  - generic [ref=e491]: 🤖
+                  - generic [ref=e492]:
+                    - heading "Conversational AI for Customer Support" [level=3] [ref=e493]
+                    - paragraph [ref=e494]: Deploy a conversational AI chatbot to manage common customer inquiries, such as FAQs and order tracking.
+                - generic [ref=e495]:
+                  - generic [ref=e496]:
+                    - generic [ref=e497]: xx.xxx$
+                    - generic [ref=e500]: Login to view price
+                  - generic [ref=e502]: 14 votes
+              - generic [ref=e503]:
+                - generic [ref=e504]: ConversationalAI
+                - generic [ref=e505]: CustomerSupport
+                - generic [ref=e506]: FoodTech
+                - generic [ref=e507]: Chatbot
+                - generic [ref=e508]: Conversational AI
+                - generic [ref=e509]: AI
+                - generic [ref=e510]: Machine Learning
+              - generic [ref=e511]:
+                - generic [ref=e512]:
+                  - generic [ref=e513]: Posted on Aug 12, 2025
+                  - generic [ref=e514]:
+                    - img "KFC Vietnam logo" [ref=e516]
+                    - generic [ref=e517]: by KFC Vietnam
+                - button "🔒 Login to Vote" [ref=e518]
+            - generic [ref=e520] [cursor=pointer]:
+              - generic [ref=e522]:
+                - generic [ref=e523]:
+                  - generic [ref=e524]: 🤖
+                  - generic [ref=e525]:
+                    - heading "AI-Powered Food Tray Recognition for POS Integration" [level=3] [ref=e526]
+                    - paragraph [ref=e527]: We need an AI imaging system to quickly recognize products on a tray at the cashier. This is to address customer complaints about wrong inputs and long queues.
+                - generic [ref=e528]:
+                  - generic [ref=e529]:
+                    - generic [ref=e530]: xx.xxx$
+                    - generic [ref=e533]: Login to view price
+                  - generic [ref=e535]: 14 votes
+              - generic [ref=e536]:
+                - generic [ref=e537]: F&B
+                - generic [ref=e538]: Retail
+                - generic [ref=e539]: Operational Efficiency
+                - generic [ref=e540]: Customer Experience
+                - generic [ref=e541]: Computer Vision
+                - generic [ref=e542]: POS
+                - generic [ref=e543]: Image Recognition
+                - generic [ref=e544]: AI
+                - generic [ref=e545]: Machine Learning
+                - generic [ref=e546]: GOI Indonesia 2025
+              - generic [ref=e547]:
+                - generic [ref=e548]:
+                  - generic [ref=e549]: Posted on Aug 12, 2025
+                  - generic [ref=e550]:
+                    - generic [ref=e551]: P
+                    - generic [ref=e552]: by PT. Champ Resto Indonesia Tbk
+                - button "🔒 Login to Vote" [ref=e553]
+            - generic [ref=e555] [cursor=pointer]:
+              - generic [ref=e557]:
+                - generic [ref=e558]:
+                  - generic [ref=e559]: 🤖
+                  - generic [ref=e560]:
+                    - heading "ESG Data Analytics & Reporting" [level=3] [ref=e561]
+                    - paragraph [ref=e562]: Use AI to collect and analyze data across Environmental, Social, and Governance (ESG) metrics from both internal and external sources.
+                - generic [ref=e563]:
+                  - generic [ref=e564]:
+                    - generic [ref=e565]: xx.xxx$
+                    - generic [ref=e568]: Login to view price
+                  - generic [ref=e570]: 13 votes
+              - generic [ref=e571]:
+                - generic [ref=e572]: ESG
+                - generic [ref=e573]: Sustainability
+                - generic [ref=e574]: RegTech
+                - generic [ref=e575]: FinServ
+                - generic [ref=e576]: Predictive Analytics
+                - generic [ref=e577]: Forecasting
+                - generic [ref=e578]: Document Intelligence
+                - generic [ref=e579]: Data Extraction
+                - generic [ref=e580]: Analytics
+                - generic [ref=e581]: Dashboard
+              - generic [ref=e582]:
+                - generic [ref=e583]:
+                  - generic [ref=e584]: Posted on Aug 12, 2025
+                  - generic [ref=e585]:
+                    - generic [ref=e586]: ...
+                    - generic [ref=e588]: by HDBank
+                - button "🔒 Login to Vote" [ref=e589]
+          - generic [ref=e590]:
+            - button "← Prev" [disabled] [ref=e591]
+            - button "1" [ref=e592]
+            - button "2" [ref=e593]
+            - generic [ref=e594]: …
+            - button "21" [ref=e595]
+            - button "Next →" [ref=e596]
+        - generic [ref=e165]:
+          - generic [ref=e597]:
+            - heading "🏆 Top 3 Use Cases" [level=4] [ref=e598]
+            - generic [ref=e599]:
+              - generic [ref=e600] [cursor=pointer]:
+                - generic [ref=e601]: 🤖
+                - generic [ref=e602]:
+                  - paragraph [ref=e603]: AI for Contact Centres
+                  - paragraph [ref=e604]: 41 votes
+                  - paragraph [ref=e605]: HDBank
+                - generic [ref=e606]: 🥇
+              - generic [ref=e607] [cursor=pointer]:
+                - generic [ref=e608]: 🤖
+                - generic [ref=e609]:
+                  - paragraph [ref=e610]: AI-Powered MSME Onboarding and Credit Profiling
+                  - paragraph [ref=e611]: 26 votes
+                  - paragraph [ref=e612]: PayNet
+                - generic [ref=e613]: 🥈
+              - generic [ref=e614] [cursor=pointer]:
+                - generic [ref=e615]: 🤖
+                - generic [ref=e616]:
+                  - paragraph [ref=e617]: Automated Interview Screening
+                  - paragraph [ref=e618]: 22 votes
+                  - paragraph [ref=e619]: HDBank
+                - generic [ref=e620]: 🥉
+          - generic [ref=e621]:
+            - heading "🔥 Trending Tags" [level=4] [ref=e622]
+            - generic [ref=e623]:
+              - generic [ref=e624] [cursor=pointer]:
+                - text: GOI Indonesia 2025
+                - generic [ref=e625]: ⭐
+              - generic [ref=e626] [cursor=pointer]:
+                - text: GOI Japan 2025
+                - generic [ref=e627]: ⭐
+              - generic [ref=e628] [cursor=pointer]:
+                - text: GOI Malaysia 2025
+                - generic [ref=e629]: ⭐
+              - generic [ref=e630] [cursor=pointer]:
+                - text: Nestlé Vietnam AI Reinvention
+                - generic [ref=e631]: ⭐
+              - generic [ref=e632] [cursor=pointer]:
+                - text: Shinhan Innoboost 2026
+                - generic [ref=e633]: ⭐
+              - generic [ref=e634] [cursor=pointer]:
+                - text: Tasco Innovation Day
+                - generic [ref=e635]: ⭐
+              - generic [ref=e636] [cursor=pointer]: AI
+              - generic [ref=e637] [cursor=pointer]: Finance
+    - generic [ref=e200]:
+      - generic [ref=e201]:
+        - generic [ref=e202]: A product by
+        - generic [ref=e203]: GenAI Fund
+      - generic [ref=e205]:
+        - paragraph [ref=e206]: "Need help? Contact us:"
+        - link "it-support@genaifund.ai" [ref=e207] [cursor=pointer]:
+          - /url: mailto:it-support@genaifund.ai
+      - generic [ref=e208]:
+        - link "X" [ref=e209] [cursor=pointer]:
+          - /url: "#"
+        - link "Instagram" [ref=e213] [cursor=pointer]:
+          - /url: "#"
+        - link "YouTube" [ref=e217] [cursor=pointer]:
+          - /url: "#"
+        - link "LinkedIn" [ref=e221] [cursor=pointer]:
+          - /url: "#"
+  - alert [ref=e225]

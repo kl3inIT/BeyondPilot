@@ -1,0 +1,31 @@
+button: Sign in
+button: Join BeyondPilot
+h1: Relay AI
+h3: Problem(s) Solved
+h3: Target Market and Industry
+h3: Solution Focus Area(s)
+h3: Core Technology and AI Integration
+h3: Built with
+h3: Decks & demo
+h3: Segment Focus
+h3: Best Customer Profile
+h3: Monetization Model
+h3: Notable Paying Customers
+h3: Key Milestones and Business Tractions
+h3: Main Competitors or Market Alternatives
+h3: Unique Value Proposition
+h3: Funding Status
+h3: Total Funding Raised (USD)
+h3: Customer references & case studies
+h4: Mock pilot reduces manual review time with evidence-linked AI assistance
+h3: Use case or problem
+h3: Results and measurable outcomes
+h3: Offers
+h4: Mock six-week pilot package
+h3: Description and benefits
+h3: Offer value or discount
+h3: Eligibility
+h3: Terms and limitations
+h3: Expiry date
+h3: How to claim
+h3: Relay Labs

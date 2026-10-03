@@ -1,0 +1,315 @@
+- generic [ref=f15e1]:
+  - generic [ref=f15e4]:
+    - banner [ref=f15e6]:
+      - generic [ref=f15e8]:
+        - link [ref=f15e10] [cursor=pointer]:
+          - /url: /
+          - img "GenAIFund" [ref=f15e11]
+        - generic [ref=f15e12]:
+          - generic [ref=f15e13]:
+            - generic [ref=f15e14]: GenAI Fund
+            - generic [ref=f15e15]: Verified
+          - link [ref=f15e17] [cursor=pointer]:
+            - /url: /threads
+          - button "Notifications" [ref=f15e21]:
+            - generic [ref=f15e39]: "30"
+          - button "Hello, General GenAI Fund" [ref=f15e25]
+    - generic [ref=f15e40]:
+      - main [ref=f15e45]:
+        - generic [ref=f15e46]:
+          - heading "📝 My Use Cases" [level=1] [ref=f15e47]
+          - paragraph [ref=f15e48]: Manage and view all the use cases you have created
+        - generic [ref=f15e49]:
+          - generic [ref=f15e50]:
+            - generic [ref=f15e51]:
+              - generic [ref=f15e52]: Search Use Cases
+              - textbox "Search by title or description..." [ref=f15e53]
+            - generic [ref=f15e54]:
+              - generic [ref=f15e55]: Status
+              - combobox [ref=f15e56]:
+                - option "All Status" [selected]
+                - option "Approved"
+                - option "Pending"
+                - option "Rejected"
+            - generic [ref=f15e57]:
+              - generic [ref=f15e58]: Tags
+              - textbox "Enter tags..." [ref=f15e59]
+          - generic [ref=f15e60]:
+            - button "🔍 Apply Filters" [ref=f15e61]
+            - button "🗑️ Clear Filters" [ref=f15e62]
+        - button "➕ Create New Use Case" [ref=f15e64]
+        - table [ref=f15e68]:
+          - rowgroup [ref=f15e69]:
+            - row [ref=f15e70]:
+              - columnheader "Use Case" [ref=f15e71]
+              - columnheader "Price" [ref=f15e72]
+              - columnheader "Votes" [ref=f15e73]
+              - columnheader "Submissions" [ref=f15e74]
+              - columnheader "Matches" [ref=f15e75]
+              - columnheader "Actions" [ref=f15e76]
+          - rowgroup [ref=f15e77]:
+            - row [ref=f15e78]:
+              - cell "🤖 AI Agent for Social Media Campaign Autom... ✅ Approved Auto-generate text, image, and video content aligned with Ge... social-media automation +2 more 🔽 More" [ref=f15e79]:
+                - generic [ref=f15e80]:
+                  - generic [ref=f15e81]: 🤖
+                  - generic [ref=f15e82]:
+                    - generic [ref=f15e83]:
+                      - link "AI Agent for Social Media Campaign Autom..." [ref=f15e84] [cursor=pointer]:
+                        - /url: /usecase/1b723335-988d-4274-9faf-87a783a5cc63
+                      - generic [ref=f15e85]: ✅ Approved
+                    - generic [ref=f15e86]: Auto-generate text, image, and video content aligned with Ge...
+                    - generic [ref=f15e87]:
+                      - generic [ref=f15e88]: social-media
+                      - generic [ref=f15e89]: automation
+                      - generic [ref=f15e90]: +2 more
+                    - button "🔽 More" [ref=f15e92]
+              - cell "$US 0" [ref=f15e93]
+              - cell "👍 5" [ref=f15e95]
+              - cell [ref=f15e97]:
+                - button "📝 2 Submissions" [ref=f15e98]
+              - cell [ref=f15e99]:
+                - button "🤝 0 Matches" [ref=f15e100]
+              - cell [ref=f15e101]:
+                - generic [ref=f15e102]:
+                  - button "📋 Unpublish" [ref=f15e103]
+                  - button "🗑️ Delete" [ref=f15e104]
+            - row [ref=f15e105]:
+              - cell "🤖 AI-Powered Real-Time Translation for Jap... ✅ Approved GenAI Fund is set to revolutionize the experience of attende... live-translation japanese +1 more 🔽 More" [ref=f15e106]:
+                - generic [ref=f15e107]:
+                  - generic [ref=f15e108]: 🤖
+                  - generic [ref=f15e109]:
+                    - generic [ref=f15e110]:
+                      - link "AI-Powered Real-Time Translation for Jap..." [ref=f15e111] [cursor=pointer]:
+                        - /url: /usecase/1e940ced-3c31-4f01-b668-86b7aefe6461
+                      - generic [ref=f15e112]: ✅ Approved
+                    - generic [ref=f15e113]: GenAI Fund is set to revolutionize the experience of attende...
+                    - generic [ref=f15e114]:
+                      - generic [ref=f15e115]: live-translation
+                      - generic [ref=f15e116]: japanese
+                      - generic [ref=f15e117]: +1 more
+                    - button "🔽 More" [ref=f15e119]
+              - cell "$US 0" [ref=f15e120]
+              - cell "👍 4" [ref=f15e122]
+              - cell [ref=f15e124]:
+                - button "📝 3 Submissions" [active] [ref=f15e125]
+              - cell [ref=f15e126]:
+                - button "🤝 0 Matches" [ref=f15e127]
+              - cell [ref=f15e128]:
+                - generic [ref=f15e129]:
+                  - button "📋 Unpublish" [ref=f15e130]
+                  - button "🗑️ Delete" [ref=f15e131]
+            - row [ref=f15e132]:
+              - cell "🤖 Build AI that can listen, speak, see, an... ✅ Approved Most AI lives inside browsers, apps, or chat interfaces. Bui... Robotics & Physical AI AABW2026 +1 more 🔽 More" [ref=f15e133]:
+                - generic [ref=f15e134]:
+                  - generic [ref=f15e135]: 🤖
+                  - generic [ref=f15e136]:
+                    - generic [ref=f15e137]:
+                      - link "Build AI that can listen, speak, see, an..." [ref=f15e138] [cursor=pointer]:
+                        - /url: /usecase/b54b14b8-3594-4be2-9417-363cfaa035b8
+                      - generic [ref=f15e139]: ✅ Approved
+                    - generic [ref=f15e140]: Most AI lives inside browsers, apps, or chat interfaces. Bui...
+                    - generic [ref=f15e141]:
+                      - generic [ref=f15e142]: Robotics & Physical AI
+                      - generic [ref=f15e143]: AABW2026
+                      - generic [ref=f15e144]: +1 more
+                    - button "🔽 More" [ref=f15e146]
+              - cell "TBD" [ref=f15e147]
+              - cell "👍 1" [ref=f15e149]
+              - cell [ref=f15e151]:
+                - button "📝 0 Submissions" [ref=f15e152]
+              - cell [ref=f15e153]:
+                - button "🤝 0 Matches" [ref=f15e154]
+              - cell [ref=f15e155]:
+                - generic [ref=f15e156]:
+                  - button "📋 Unpublish" [ref=f15e157]
+                  - button "🗑️ Delete" [ref=f15e158]
+            - row [ref=f15e159]:
+              - cell "🤖 AI-Driven Smart Facilities and Workforce... ⏳ Pending - Reduce downtime and reactive maintenance through predictiv... Enterprise AI +1 more 🔽 More" [ref=f15e160]:
+                - generic [ref=f15e161]:
+                  - generic [ref=f15e162]: 🤖
+                  - generic [ref=f15e163]:
+                    - generic [ref=f15e164]:
+                      - link "AI-Driven Smart Facilities and Workforce..." [ref=f15e165] [cursor=pointer]:
+                        - /url: /usecase/00fd1ae1-62bc-49e9-8a41-2ace6d4570cf
+                      - generic [ref=f15e166]: ⏳ Pending
+                    - generic [ref=f15e167]: "- Reduce downtime and reactive maintenance through predictiv..."
+                    - generic [ref=f15e168]:
+                      - generic [ref=f15e169]: Enterprise
+                      - generic [ref=f15e170]: AI
+                      - generic [ref=f15e171]: +1 more
+                    - button "🔽 More" [ref=f15e173]
+              - cell "$US 0" [ref=f15e174]
+              - cell "👍 0" [ref=f15e176]
+              - cell [ref=f15e178]:
+                - button "📝 0 Submissions" [ref=f15e179]
+              - cell [ref=f15e180]:
+                - button "🤝 0 Matches" [ref=f15e181]
+              - cell [ref=f15e182]:
+                - button "🗑️ Delete" [ref=f15e184]
+            - row [ref=f15e185]:
+              - cell "🤖 Real-Time English → Japanese Translation... ⏳ Pending Success for this project means delivering a consistently inc... Enterprise AI +1 more 🔽 More" [ref=f15e186]:
+                - generic [ref=f15e187]:
+                  - generic [ref=f15e188]: 🤖
+                  - generic [ref=f15e189]:
+                    - generic [ref=f15e190]:
+                      - link "Real-Time English → Japanese Translation..." [ref=f15e191] [cursor=pointer]:
+                        - /url: /usecase/26ac10d0-aceb-4b1b-918c-12aacbf23a07
+                      - generic [ref=f15e192]: ⏳ Pending
+                    - generic [ref=f15e193]: Success for this project means delivering a consistently inc...
+                    - generic [ref=f15e194]:
+                      - generic [ref=f15e195]: Enterprise
+                      - generic [ref=f15e196]: AI
+                      - generic [ref=f15e197]: +1 more
+                    - button "🔽 More" [ref=f15e199]
+              - cell "$US 0" [ref=f15e200]
+              - cell "👍 0" [ref=f15e202]
+              - cell [ref=f15e204]:
+                - button "📝 0 Submissions" [ref=f15e205]
+              - cell [ref=f15e206]:
+                - button "🤝 0 Matches" [ref=f15e207]
+              - cell [ref=f15e208]:
+                - button "🗑️ Delete" [ref=f15e210]
+            - row [ref=f15e211]:
+              - cell "🤖 Virtual Assistant AI ⏳ Pending Generating the slides based on the given content in 5 mins f... AI Deep Learning +3 more 🔽 More" [ref=f15e212]:
+                - generic [ref=f15e213]:
+                  - generic [ref=f15e214]: 🤖
+                  - generic [ref=f15e215]:
+                    - generic [ref=f15e216]:
+                      - link "Virtual Assistant AI" [ref=f15e217] [cursor=pointer]:
+                        - /url: /usecase/277d3649-e1bf-44d4-b1c4-36db8e1f417c
+                      - generic [ref=f15e218]: ⏳ Pending
+                    - generic [ref=f15e219]: Generating the slides based on the given content in 5 mins f...
+                    - generic [ref=f15e220]:
+                      - generic [ref=f15e221]: AI
+                      - generic [ref=f15e222]: Deep Learning
+                      - generic [ref=f15e223]: +3 more
+                    - button "🔽 More" [ref=f15e225]
+              - cell "$US 0" [ref=f15e226]
+              - cell "👍 0" [ref=f15e228]
+              - cell [ref=f15e230]:
+                - button "📝 0 Submissions" [ref=f15e231]
+              - cell [ref=f15e232]:
+                - button "🤝 0 Matches" [ref=f15e233]
+              - cell [ref=f15e234]:
+                - button "🗑️ Delete" [ref=f15e236]
+            - row [ref=f15e237]:
+              - cell "🚀 Open Innovation Event OS ✅ Approved Organizations still run hackathons, accelerators, grant prog... Founder Mode Track AABW2026 +1 more 🔽 More" [ref=f15e238]:
+                - generic [ref=f15e239]:
+                  - generic [ref=f15e240]: 🚀
+                  - generic [ref=f15e241]:
+                    - generic [ref=f15e242]:
+                      - link "Open Innovation Event OS" [ref=f15e243] [cursor=pointer]:
+                        - /url: /usecase/640ee66e-4a2f-4a72-bab9-cb724a1e94b5
+                      - generic [ref=f15e244]: ✅ Approved
+                    - generic [ref=f15e245]: Organizations still run hackathons, accelerators, grant prog...
+                    - generic [ref=f15e246]:
+                      - generic [ref=f15e247]: Founder Mode Track
+                      - generic [ref=f15e248]: AABW2026
+                      - generic [ref=f15e249]: +1 more
+                    - button "🔽 More" [ref=f15e251]
+              - cell "TBD" [ref=f15e252]
+              - cell "👍 0" [ref=f15e254]
+              - cell [ref=f15e256]:
+                - button "📝 0 Submissions" [ref=f15e257]
+              - cell [ref=f15e258]:
+                - button "🤝 0 Matches" [ref=f15e259]
+              - cell [ref=f15e260]:
+                - generic [ref=f15e261]:
+                  - button "📋 Unpublish" [ref=f15e262]
+                  - button "🗑️ Delete" [ref=f15e263]
+            - row [ref=f15e264]:
+              - 'cell "🚀 Organizational AI Memory: The Capability... ✅ Approved AI capabilities are still trapped in individual employees'' p... Founder Mode Track AABW2026 +1 more 🔽 More" [ref=f15e265]':
+                - generic [ref=f15e266]:
+                  - generic [ref=f15e267]: 🚀
+                  - generic [ref=f15e268]:
+                    - generic [ref=f15e269]:
+                      - 'link "Organizational AI Memory: The Capability..." [ref=f15e270] [cursor=pointer]':
+                        - /url: /usecase/73eb392f-bfe0-4e44-ba29-f9d8a6a6bcec
+                      - generic [ref=f15e271]: ✅ Approved
+                    - generic [ref=f15e272]: AI capabilities are still trapped in individual employees' p...
+                    - generic [ref=f15e273]:
+                      - generic [ref=f15e274]: Founder Mode Track
+                      - generic [ref=f15e275]: AABW2026
+                      - generic [ref=f15e276]: +1 more
+                    - button "🔽 More" [ref=f15e278]
+              - cell "TBD" [ref=f15e279]
+              - cell "👍 0" [ref=f15e281]
+              - cell [ref=f15e283]:
+                - button "📝 0 Submissions" [ref=f15e284]
+              - cell [ref=f15e285]:
+                - button "🤝 0 Matches" [ref=f15e286]
+              - cell [ref=f15e287]:
+                - generic [ref=f15e288]:
+                  - button "📋 Unpublish" [ref=f15e289]
+                  - button "🗑️ Delete" [ref=f15e290]
+            - row [ref=f15e291]:
+              - cell "🤖 Daily Personalized Quotes to Increase St... ⏳ Pending CTR on quote widget/card ≥ 8–12% Return visits uplift (7-... Enterprise AI +1 more 🔽 More" [ref=f15e292]:
+                - generic [ref=f15e293]:
+                  - generic [ref=f15e294]: 🤖
+                  - generic [ref=f15e295]:
+                    - generic [ref=f15e296]:
+                      - link "Daily Personalized Quotes to Increase St..." [ref=f15e297] [cursor=pointer]:
+                        - /url: /usecase/76a5eb36-23ff-47ea-bbd8-bd5e084843a3
+                      - generic [ref=f15e298]: ⏳ Pending
+                    - generic [ref=f15e299]: CTR on quote widget/card ≥ 8–12% Return visits uplift (7-...
+                    - generic [ref=f15e300]:
+                      - generic [ref=f15e301]: Enterprise
+                      - generic [ref=f15e302]: AI
+                      - generic [ref=f15e303]: +1 more
+                    - button "🔽 More" [ref=f15e305]
+              - cell "$US 0" [ref=f15e306]
+              - cell "👍 0" [ref=f15e308]
+              - cell [ref=f15e310]:
+                - button "📝 0 Submissions" [ref=f15e311]
+              - cell [ref=f15e312]:
+                - button "🤝 0 Matches" [ref=f15e313]
+              - cell [ref=f15e314]:
+                - button "🗑️ Delete" [ref=f15e316]
+            - row [ref=f15e317]:
+              - cell "🤖 Privacy-Preserving Retail Analytics for ... ⏳ Pending - Enable AI-powered analytics without compromising customer ... Enterprise AI +1 more 🔽 More" [ref=f15e318]:
+                - generic [ref=f15e319]:
+                  - generic [ref=f15e320]: 🤖
+                  - generic [ref=f15e321]:
+                    - generic [ref=f15e322]:
+                      - link "Privacy-Preserving Retail Analytics for ..." [ref=f15e323] [cursor=pointer]:
+                        - /url: /usecase/a9777391-4704-4edc-bc37-23ae7a0ad33d
+                      - generic [ref=f15e324]: ⏳ Pending
+                    - generic [ref=f15e325]: "- Enable AI-powered analytics without compromising customer ..."
+                    - generic [ref=f15e326]:
+                      - generic [ref=f15e327]: Enterprise
+                      - generic [ref=f15e328]: AI
+                      - generic [ref=f15e329]: +1 more
+                    - button "🔽 More" [ref=f15e331]
+              - cell "$US 0" [ref=f15e332]
+              - cell "👍 0" [ref=f15e334]
+              - cell [ref=f15e336]:
+                - button "📝 0 Submissions" [ref=f15e337]
+              - cell [ref=f15e338]:
+                - button "🤝 0 Matches" [ref=f15e339]
+              - cell [ref=f15e340]:
+                - button "🗑️ Delete" [ref=f15e342]
+        - generic [ref=f15e344]:
+          - generic [ref=f15e345]: Showing 10 of 17 use cases
+          - generic [ref=f15e346]:
+            - button "Previous" [disabled] [ref=f15e347]
+            - button "1" [ref=f15e348]
+            - button "2" [ref=f15e349]
+            - button "Next" [ref=f15e350]
+      - generic [ref=f15e353]:
+        - generic [ref=f15e354]:
+          - generic [ref=f15e355]: A product by
+          - generic [ref=f15e356]: GenAI Fund
+        - generic [ref=f15e358]:
+          - paragraph [ref=f15e359]: "Need help? Contact us:"
+          - link "it-support@genaifund.ai" [ref=f15e360] [cursor=pointer]:
+            - /url: mailto:it-support@genaifund.ai
+        - generic [ref=f15e361]:
+          - link "X" [ref=f15e362] [cursor=pointer]:
+            - /url: "#"
+          - link "Instagram" [ref=f15e366] [cursor=pointer]:
+            - /url: "#"
+          - link "YouTube" [ref=f15e370] [cursor=pointer]:
+            - /url: "#"
+          - link "LinkedIn" [ref=f15e374] [cursor=pointer]:
+            - /url: "#"
+  - alert [ref=f15e38]

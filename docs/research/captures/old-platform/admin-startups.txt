@@ -1,0 +1,12 @@
+h1: 🛡️ Admin Panel
+label: Search Startups
+[input text]  Search by company name, industry, or description...
+button: 🔍
+label: Industry
+[select select-one] {All Industries | AI | ML | FinTech | HealthTech | EdTech | E-commerce | SaaS | IoT | Blockchain | Cybersecurity | Gaming | …}
+label: Status
+[select select-one] {All Statuses | Active | Inactive}
+button: Clear Filters
+button: Import Startups
+h3: Startup List (0)
+button: Import CSV

@@ -1,0 +1,14 @@
+h1: 🛡️ Admin Panel
+h3: Error
+button: Try Again
+button: Trending Tags Management
+button: Import CSV
+label: Search Usecases
+[input text]  Search by title, description...
+label: Status
+[select select-one] {All Status | ✅ Approved | ⏳ Pending | ❌ Rejected}
+label: Tags
+[input text]  AI,Technology,Development...
+button: 🔍 Apply Filters
+button: 🗑️ Clear
+h3: No usecases found

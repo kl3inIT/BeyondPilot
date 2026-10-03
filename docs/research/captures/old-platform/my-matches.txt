@@ -1,0 +1,10 @@
+h1: My Matches: AI Agent for Social Media Campaign Automation
+button: All 14
+button: 💖 Love 8
+button: ⭐ Save 5
+button: ❌ Pass 1
+h4: 📎 Proposal Attachments:
+button: Download
+button: Love
+button: Save
+button: Pass
