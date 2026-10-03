@@ -19,6 +19,7 @@ A temporary runtime profile, command or endpoint is not a substitute for a missi
 
 - Application services own authorization, input validation, orchestration, transaction boundaries, domain transition decisions and typed failure mapping. They do not inject `JdbcClient`, contain SQL, map rows or implement lock mechanics.
 - Persistence lives in the owning module's `persistence` package. Use Spring Data `JpaRepository` for entity lifecycle, declarative queries and ORM locks (`@Query`, `@Lock`, `@Modifying`). Use a concrete `@Repository` class with `JdbcClient` for SQL projections, claims, bulk updates and PostgreSQL-specific mechanics.
+- A module has what its screens need, not a fixed set of files: entities and a `JpaRepository` when it has a create, edit or state-change flow; a `JdbcClient` query repository when it has a list, filter, search or count screen, which maps rows straight to the response record. A module that only reads has no entity until its first write flow.
 - Group repositories by aggregate, use case, projection or consistency boundary, not one repository per table. Read projections get their own query repository rather than inflating a write repository.
 - Do not add a repository interface for a single internal JDBC implementation; inject the concrete class inside the module. Framework-implemented Spring Data interfaces are fine.
 - Do not create parallel domain, entity, DTO and mapper layers. Entities and their relationships stay inside their module; an entity never holds a relationship to another module's entity, only its identifier.
