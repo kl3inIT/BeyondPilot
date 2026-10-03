@@ -5,7 +5,7 @@ Reviewed on 2 October 2026: the platform BeyondPilot replaces, GenAI Fund's own 
 ## What GenAI Fund asked for at the kickoff
 
 - 6 October 2026: the main flows as UI, for feedback. 9 October: the site live with listings of solutions, use cases, talent and programs, and applications arriving in the solutions database instead of the interim app. Before 16 October: AI matching.
-- The old data is migrated in Phase 1, but its fields are not copied as they are: keyword matching on them was right about one time in three.
+- The old data is migrated in Phase 1, but its fields are not copied as they are: matching on keywords alone is not reliable enough to shortlist from.
 - Providers must be able to update their own data.
 - Candidates for a use case come from the database, from research and from open applications. An operator must also be able to add a provider by hand and to remove a wrong match; the old platform allows neither.
 - Sign-in by email link today; Google sign-in is wanted as well.
@@ -30,7 +30,7 @@ Reviewed on 2 October 2026: the platform BeyondPilot replaces, GenAI Fund's own 
 
 **Registration.** A startup first searches for itself, because GenAI Fund imports startups ahead of their founders; if it is not there it creates the startup with name, website, country, founding year, 13 solution focus areas and 22 target industries. The founder then creates an account whose email must belong to an accepted domain. An enterprise registers the same way, against a separate list of 25 industry sectors.
 
-**AI Match.** For one use case, the enterprise swipes through startup cards one at a time: pass, like, save or love. A card is either "AI selected" or a direct proposal. "My matches" lists both together, each with the match date, team size, a progress bar and the decision. GenAI Fund confirmed that this way of matching does not work.
+**AI Match.** For one use case, the enterprise swipes through startup cards one at a time: pass, like, save or love. A card is either "AI selected" or a direct proposal. "My matches" lists both together, each with the match date, team size, a progress bar and the decision. Swiping one card at a time does not scale to a shortlist: a candidate cannot be added by hand, a wrong match cannot be removed, and nothing explains why a card was selected.
 
 **Other.** Message threads between an enterprise and a startup. Notifications for a new proposal and for an approved use case. An administration area for users, startups, enterprises and use cases, with CSV import and approval of use cases.
 
