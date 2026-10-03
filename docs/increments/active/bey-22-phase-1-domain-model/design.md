@@ -73,7 +73,7 @@ In scope: accounts and organizations, the solution catalog, AI talent, enterpris
 | `program`      | Program (with events, people, featured use cases, application settings) | Create, publish, open and close applications, feature a use case                                                                    | `ProgramApplicationsClosed`                                         | Program directory, program page                    |
 | `proposal` | Proposal (with versions, review and outcome) | Start, save draft, submit, update before the deadline, withdraw; shortlist, mark not selected, assess, release outcomes of a program | `ProposalSubmitted`, `ProposalWithdrawn`, `OutcomesReleased` | My proposals, applications of a program for operators |
 | `matching` | Candidate list (per use case), research run | Run a database match, run web research, add a candidate, dismiss, restore, shortlist, request information | `CandidateShortlisted` | Candidate board, search index, AI profile cards |
-| `document`     | Document (with versions)                                                | Upload, register an external link, extract text                                                                                     | `DocumentExtracted`                                                 | —                                                  |
+| `storage`     | Document (with versions)                                                | Upload, register an external link, extract text                                                                                     | `DocumentExtracted`                                                 | —                                                  |
 | `notification` | — | Send an email from a template | — | — |
 
 Synchronous invariants stay inside one aggregate, for example "no submission after the deadline" or "one owner at least". Cross-module reactions are asynchronous through Spring Modulith events:
@@ -91,20 +91,20 @@ Each module owns its tables, lifecycle and invariants. Other modules hold only i
 | `shared`       | Taxonomy values (codes, labels, descriptions), identifier types. No beans                                              | —                                                                            |
 | `identity` | Accounts, external identities, one-time tokens, sessions, platform roles | `notification` |
 | `notification` | Email sending and its templates. It knows no other module; a module that needs an email calls it | — |
-| `document`     | Documents, versions, extracted text, the file store                                                                    | —                                                                            |
+| `storage`     | Documents, versions, extracted text, the file store                                                                    | —                                                                            |
 | `organization` | Organizations, members, domains, aliases, invitations, claims                                                          | `identity`                                                                   |
-| `solution`      | Solutions, evidence, offers, solution materials                                                                        | `organization`, `document`                                                   |
-| `talent`       | Talent profiles, enquiries                                                                                             | `identity`, `document`                                                       |
-| `usecase`      | Use cases, requirements                                                                                                | `organization`, `document`                                                   |
+| `solution`      | Solutions, evidence, offers, solution materials                                                                        | `organization`, `storage`                                                   |
+| `talent`       | Talent profiles, enquiries                                                                                             | `identity`, `storage`                                                       |
+| `usecase`      | Use cases, requirements                                                                                                | `organization`, `storage`                                                   |
 | `program`      | Programs, program events, people, partners, featured use cases, application settings and questions                     | `usecase`, `organization`                                                    |
-| `proposal` | Proposals, versions, answers, review status, assessments, outcomes shown to applicants | `organization`, `program`, `usecase`, `solution`, `document`, `notification` |
+| `proposal` | Proposals, versions, answers, review status, assessments, outcomes shown to applicants | `organization`, `program`, `usecase`, `solution`, `storage`, `notification` |
 | `matching` | Candidates, sources, evidence links, decisions, research runs, search index, embeddings, AI profile cards | `organization`, `solution`, `usecase`, `program`, `proposal` (events and API) |
 
 ```mermaid
 flowchart LR
   identity --> organization
   organization --> solution
-  document --> solution
+  storage --> solution
   organization --> usecase
   usecase --> program
   solution --> proposal
@@ -257,7 +257,7 @@ The real export arrives on 5 October 2026; this mapping is checked against it be
 | Startup                                                                                                                                 | `organization` with the `provider` role, plus one `solution` built from the product fields                                                                                             |
 | Startup company facts (country, year, funding)                                                                                          | `organization`, `organization_funding_round`                                                                                                                                                   |
 | Startup product fields (solution types, stage, segment, monetization, tech stack, infrastructure, UVP, problems, milestones, customers) | `solution`; customers and milestones become `solution_evidence` where they are concrete                                                                                                 |
-| Decks and demos                                                                                                                         | `document` and `solution_material`                                                                                                                                                              |
+| Decks and demos                                                                                                                         | `storage` and `solution_material`                                                                                                                                                              |
 | Use case                                                                                                                                | `usecase_use_case`; v1 tags become taxonomy codes where they map, otherwise they are dropped and reported                                                                                      |
 | Program tags on use cases (Nestlé, Shinhan, Tasco, GOI)                                                                                 | `program` and `program_use_case`                                                                                                                                                               |
 | Proposal and attachments                                                                                                                | `proposal`, `proposal_version`, `proposal_material`                                                                                                                                            |
@@ -273,6 +273,15 @@ Cleaning rules:
 - Convert empty strings and "Not specified" to `null`.
 - Mark every value with the `legacy_import` source.
 - Reconcile record and file counts against the export, and document every exception ([brief §11](../../../brief/BeyondPilot-Vendor-Product-Brief-and-Scope.md#11-existing-data-reuse-and-migration)).
+
+## Decisions of 3 October 2026
+
+- **Build order:** `identity`, `notification`, `storage`, `program`, `organization`, `solution`, `usecase`, `talent`, `proposal` (apply, then review), `matching`. Each has its own Linear issue (BEY-30 to BEY-39, with BEY-29 for `program`). The import from v1 follows the code; it does not gate it.
+- **Files:** every file goes through `storage` (named `document` in the first draft) behind a storage adapter: the file system first, MinIO or S3 later, chosen by configuration. No module stores a fixed image path. The table and column names that still say `document` are settled in BEY-32.
+- **Programs are entered, not seeded:** an operator creates and edits programs on screen, so `program` follows `identity` and `storage`.
+- **Program page content:** `program_section` holds the page's own presentation as ordered blocks (`position`, `kind`, `title`, `lead`, `content jsonb`) with four or five kinds; timeline, people, partners and events stay tables. It replaces `program.body`. A program page is one of three kinds: composed from blocks (the default), a hand-coded page in the web application for a program that needs it, or a redirect to an external landing page when `external_url` is set.
+- **Program partners** carry their own name and logo for now; the link to an organization is added when `organization` exists.
+- **Joining an organization by email domain:** an email on an organization's verified domain joins at once as a plain member, as on v1 and on comparable products; an owner can switch this off, after which joining is a request. Public mail domains never count. The first person with an email on the website domain of an unclaimed organization becomes its owner. This answers question 2 below.
 
 ## Open questions
 
