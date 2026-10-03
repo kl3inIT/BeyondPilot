@@ -2,12 +2,15 @@
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
-/** Light and dark follow the system until the visitor picks one; tokens.css holds both. */
+/**
+ * Opens in the light theme, the one the design is drawn in; a visitor can pick dark or the system's
+ * setting from the footer. tokens.css holds both.
+ */
 function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="system"
+      defaultTheme="light"
       enableSystem
       disableTransitionOnChange
     >
