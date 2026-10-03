@@ -13,7 +13,8 @@ const badgeVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
         // Scope chips under the landing search (Figma Badge "outline": 26px with a Field Line edge).
-        outline: "h-6.5 border-input text-foreground [a]:hover:bg-accent",
+        // Visible overflow lets a chip link's `hit-area` reach 44px on touch screens.
+        outline: "h-6.5 overflow-visible border-input text-foreground [a]:hover:bg-accent",
         ghost: "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
         // Status tones from tokens.css, used with a label (campaign Live, Upcoming, Shortlisted).

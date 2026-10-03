@@ -28,7 +28,7 @@ function Hero() {
         <div className="@container flex w-full max-w-190 flex-col items-center gap-6 text-center">
           <a
             href={liveCampaignUrl}
-            className="hit-area flex h-11 max-w-full animate-in items-center gap-2 rounded-full border py-1 pr-3.5 pl-2 text-sm delay-100 ease-entrance animation-duration-800 fill-mode-both outline-none fade-in slide-in-from-bottom-4 hover:bg-background/60 focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:animate-none md:h-auto md:gap-2.5 md:pl-1"
+            className="hit-area flex h-11 max-w-full animate-in items-center gap-2 rounded-full border py-1 pr-3 pl-2 text-sm delay-100 ease-entrance animation-duration-800 fill-mode-both outline-none fade-in slide-in-from-bottom-4 hover:bg-background/60 focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:animate-none md:h-auto md:gap-2.5 md:pr-3.5 md:pl-1"
           >
             <Badge variant="success">{c("live")}</Badge>
             <span className="font-medium whitespace-nowrap">
@@ -41,7 +41,7 @@ function Hero() {
             </span>
             <span className="flex items-center gap-1 font-semibold whitespace-nowrap">
               {c("apply")}
-              <ArrowRightIcon className="size-4" aria-hidden="true" />
+              <ArrowRightIcon className="size-3.5" aria-hidden="true" />
             </span>
           </a>
           <h1 className="animate-in text-4xl font-semibold text-balance delay-180 ease-entrance animation-duration-800 fill-mode-both fade-in slide-in-from-bottom-4 motion-reduce:animate-none lg:text-7xl lg:tracking-display">
