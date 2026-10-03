@@ -29,6 +29,20 @@ Figma file `BeyondPilot — Product UI`, page `Screens`, section `Main flows —
 | 12  | Use case detail                                                 | sticky proposal bar at 390           |
 | 13  | Solution detail                                                 | unknown evidence shown as unknown    |
 
+Above the section, `Flow map — which screen leads to which` shows the three journeys as rows of cards with their branches: applying to a program, browsing the directory, and reviewing applications. Each card names the row of its screen and opens it in Present mode. The prototype has one named flow per journey and width.
+
+### Operator screens (BEY-28)
+
+The section `Operator — applications (BEY-28)` holds what a GenAI Fund operator needs once applications arrive on BeyondPilot instead of the interim app. They are drawn at 1440 and 1024; the list also at 390.
+
+| Row | Screen                                                                                                                                                   | States drawn                                             |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| O1  | Applications of a program: status tabs, search, filters by direction and applicant kind, a table with reviews and status                                 | several selected, with bulk shortlist and "not selected" |
+| O2  | Application review: the answers and files on the left; the reviewer's own assessment and private note, the other reviewers and the decision on the right | —                                                        |
+| O3  | Release outcomes: the shortlisted and not-selected lists, the email each group receives, a confirmation                                                  | blocked while any application is under review            |
+
+The rows in these tables are sample data: applications are private, and none exists in the new system yet. The operator area uses a sidebar (`AppSidebar`, full at 1440, icons at 1024) and a top bar with a breadcrumb. Still to draw, with the AI milestone: the candidate board per use case. After that: approving use cases and solutions, creating and editing a program, and the workspaces of providers and enterprises.
+
 New components are on the page `Foundations & Components`, section `Form and flow primitives`. The pairs that exist in code are recorded in [docs/figma-component-map.md](../../../figma-component-map.md).
 
 ## Decisions
@@ -42,6 +56,7 @@ New components are on the page `Foundations & Components`, section `Form and flo
 7. **The directory is one list template.** Search, tabs per kind (use cases, AI solutions, AI talent), a row of filters and a card grid; on a phone the filters open in a sheet. A use case card is text-first (industry, title, the need, its source). A solution card shows its logo and one line of proof.
 8. **Proof before claims on a solution page.** Each proof item names its kind of evidence (programme selection, enterprise proof of concept, stated by the company) and links its source. A kind with nothing published is shown as such, never left out.
 9. **Introductions go through GenAI Fund.** "Request an introduction" on a solution keeps both email addresses private until the other side replies.
+10. **Review is private until release.** An operator and the invited reviewers give an assessment and a note that the applicant never sees. Outcomes are released for the whole program at once, and only when every application has a decision, so that every applicant hears back on the same day.
 
 ## Components
 
