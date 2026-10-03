@@ -1,0 +1,884 @@
+[
+  {
+    "slug": "ai-for-insurance-challenge-2026",
+    "name": "AI for Insurance Challenge × Tasco",
+    "type": "Enterprise challenge",
+    "partners": ["Tasco"],
+    "countries": ["Vietnam"],
+    "start": "2026-09-23",
+    "end": "2026-10-22",
+    "status": "active",
+    "url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco",
+    "summary": "Open-scope challenge on compulsory motor insurance: easy to buy, carry and claim. Submissions close 15 Oct 2026 23:59 ICT; demo day 22 Oct for ten teams; four-week pilot with Tasco; investment up to US$100,000 at partners' discretion.",
+    "cover": null,
+    "luma_events": [],
+    "blog_posts": []
+  },
+  {
+    "slug": "agentic-ai-build-week-2026",
+    "name": "Agentic AI Build Week 2026",
+    "type": "Buildathon",
+    "partners": [],
+    "countries": ["Vietnam"],
+    "start": "2026-07-08",
+    "end": "2026-07-12",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/uploads/mk/15d6ee9f-92db-4d74-8d2f-eca0e7cff530.png",
+    "luma_events": [
+      {
+        "name": "Render the Next Era of Creation with the BytePlus AI Stack — Agentic AI Build Week Workshop",
+        "start": "2026-07-08",
+        "url": "https://luma.com/gaf-vbkf",
+        "guests": 0
+      },
+      {
+        "name": "The Full-Stack Advantage: Building Production-Ready AI Agents with Tencent Cloud",
+        "start": "2026-07-08",
+        "url": "https://luma.com/tanuxv4i",
+        "guests": 0
+      },
+      {
+        "name": "Agentic AI Build Week powered by GenAI Fund",
+        "start": "2026-07-08",
+        "url": "https://luma.com/t6n0irct",
+        "guests": 1613
+      },
+      {
+        "name": "Agentic AI Build Week powered by GenAI Fund",
+        "start": "2026-07-08",
+        "url": "https://luma.com/gaf-hm61",
+        "guests": 3230
+      },
+      {
+        "name": "Inside the NVIDIA Inception Program: How Startups Build & Scale AI Globally — Agentic AI Build Week Workshop",
+        "start": "2026-07-08",
+        "url": "https://luma.com/gaf-t4bs",
+        "guests": 0
+      },
+      {
+        "name": "TRAE in Your Professional Workflow — Agentic AI Build Week Workshop",
+        "start": "2026-07-08",
+        "url": "https://luma.com/gaf-jpy4",
+        "guests": 0
+      },
+      {
+        "name": "OpenClaw Workshop: From Personal Automation to Business Workflows",
+        "start": "2026-07-08",
+        "url": "https://luma.com/bk5nav4f",
+        "guests": 157
+      },
+      {
+        "name": "From Spec to Production Code — Kiro, Claude Code & Codex on AWS",
+        "start": "2026-07-09",
+        "url": "https://luma.com/1mxdg4em",
+        "guests": 0
+      },
+      {
+        "name": "Physical AI Party: Build Voice Agents with Agora ConvoAI — Agentic AI Build Week Workshop",
+        "start": "2026-07-09",
+        "url": "https://luma.com/3j43oewt",
+        "guests": 0
+      },
+      {
+        "name": "Production Multi-Agent AI on AWS — Bedrock AgentCore",
+        "start": "2026-07-09",
+        "url": "https://luma.com/lptsgwm6",
+        "guests": 0
+      },
+      {
+        "name": "Enable Track Live-Demo Workshop",
+        "start": "2026-07-09",
+        "url": "https://luma.com/5a4h9zsx",
+        "guests": 0
+      },
+      {
+        "name": "Design Patterns & Best Practices — Testing, Monitoring & Production Readiness",
+        "start": "2026-07-09",
+        "url": "https://luma.com/1nubtbgt",
+        "guests": 0
+      },
+      {
+        "name": "Agentic AI Build Week Builder Night",
+        "start": "2026-07-09",
+        "url": "https://luma.com/gaf-u7gd",
+        "guests": 494
+      },
+      {
+        "name": "Build, Deploy & Monetize AI Agents: The Future of the Developer Economy — Agentic AI Build Week Workshop",
+        "start": "2026-07-10",
+        "url": "https://luma.com/gaf-umu5",
+        "guests": 0
+      },
+      {
+        "name": "Enterprise AI Track: LLM Observability & Evals with Langfuse — Hands-On Workshop",
+        "start": "2026-07-10",
+        "url": "https://luma.com/8zn9khl4",
+        "guests": 0
+      },
+      {
+        "name": "Beyond Autocomplete: How Agentic AI Solves the Enterprise Design Bottleneck — Agentic AI Build Week Workshop",
+        "start": "2026-07-10",
+        "url": "https://luma.com/gaf-idob",
+        "guests": 0
+      },
+      {
+        "name": "Securing Agentic AI: From AI Security Fundamentals to Hands-on Agent Assessment — Antitech Workshop",
+        "start": "2026-07-10",
+        "url": "https://luma.com/7l5r8205",
+        "guests": 0
+      },
+      {
+        "name": "Using Agents for Autonomous Internet Payments via EconomyOS — Virtuals Workshop, Agentic AI Build Week",
+        "start": "2026-07-10",
+        "url": "https://luma.com/1g46eunb",
+        "guests": 0
+      },
+      {
+        "name": "Setting Up Enterprise-Ready Agent Identities to Qualify For Regulated Workflows — Terminal 3 Workshop @ Agentic AI Build Week",
+        "start": "2026-07-10",
+        "url": "https://luma.com/8x3aedfy",
+        "guests": 0
+      }
+    ],
+    "blog_posts": [
+      {
+        "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+        "date": "2026-07-29",
+        "url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+        "excerpt": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen   On July 12, five days of 𝗔𝗴𝗲𝗻𝘁𝗶𝗰 […]"
+      }
+    ]
+  },
+  {
+    "slug": "shinhan-innoboost-2026",
+    "name": "Shinhan Global Innoboost 2026",
+    "type": "Enterprise challenge",
+    "partners": ["Shinhan"],
+    "countries": ["Vietnam"],
+    "start": "2026-04-15",
+    "end": "2026-09-17",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/uploads/eu/6c198149-3794-494c-8143-3e3cd913d03b.png",
+    "luma_events": [
+      {
+        "name": "[Briefing Webinar] Shinhan Global Innoboost 2026",
+        "start": "2026-04-15",
+        "url": "https://luma.com/4p0vl6lb",
+        "guests": 152
+      },
+      {
+        "name": "[Sharing Webinar 2.0] Shinhan Global Innoboost 2026",
+        "start": "2026-04-23",
+        "url": "https://luma.com/yrtdzhjn",
+        "guests": 66
+      },
+      {
+        "name": "[Exclusive] Office Hours Shinhan Innoboost",
+        "start": "2026-04-29",
+        "url": "https://luma.com/88oaw799",
+        "guests": 74
+      },
+      {
+        "name": "Shinhan Future's Lab Demo Day 2026",
+        "start": "2026-09-17",
+        "url": "https://luma.com/8eg5zmr0",
+        "guests": 378
+      }
+    ],
+    "blog_posts": []
+  },
+  {
+    "slug": "tasco-innovation-day-2026",
+    "name": "Tasco Innovation Day 2026",
+    "type": "Enterprise challenge",
+    "partners": ["Tasco"],
+    "countries": ["Vietnam"],
+    "start": "2026-01-15",
+    "end": "2026-01-15",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/event-covers/l8/de7b3cb4-4871-4515-8963-88b2b7039b26.png",
+    "luma_events": [
+      {
+        "name": "Tasco Innovation Day: Scale Your AI with Vietnam’s Largest Mobility Ecosystem",
+        "start": "2026-01-15",
+        "url": "https://luma.com/mpg8wiu1",
+        "guests": 0
+      }
+    ],
+    "blog_posts": [
+      {
+        "title": "Recap: Tasco Innovation Day 2026 (January 15)",
+        "date": "2026-01-21",
+        "url": "https://genaifund.ai/2026/01/21/recap-tasco-innovation-day-2026-january-15/",
+        "excerpt": "Recap: Tasco Innovation Day 2026 (January 15) On January 15, 2026, the tech world turned its eyes to Hanoi. Tasco […]"
+      }
+    ]
+  },
+  {
+    "slug": "tasco-foundry-wash3000",
+    "name": "Tasco Foundry: Wash3000",
+    "type": "Venture building",
+    "partners": ["Tasco"],
+    "countries": ["Vietnam"],
+    "start": "2026-03-13",
+    "end": "2026-04-16",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/event-covers/u7/66078617-6c08-471c-a736-0e036403e84a.png",
+    "luma_events": [
+      {
+        "name": "Tasco Foundry 2026: Innovation in Mobility",
+        "start": "2026-03-13",
+        "url": "https://luma.com/ebnp2dgv",
+        "guests": 0
+      },
+      {
+        "name": "[INVITE-ONLY] Tasco Showcase: Road to Wash3000",
+        "start": "2026-04-09",
+        "url": "https://luma.com/xl882h0i",
+        "guests": 74
+      },
+      {
+        "name": "Tasco Foundry: Wash3000 (Pitch To Receive 500K Investment Prize)",
+        "start": "2026-04-16",
+        "url": "https://luma.com/zu6ubyld",
+        "guests": 83
+      }
+    ],
+    "blog_posts": [
+      {
+        "title": "Wash3000: A Quick Look at GenAI Fund’s Venture-Building Program with Tasco",
+        "date": "2026-05-04",
+        "url": "https://genaifund.ai/2026/05/04/wash3000-a-quick-look-at-genai-funds-venture-building-program-with-tasco/",
+        "excerpt": "Wash3000: A Quick Look at GenAI Fund’s Venture-Building Program with Tasco At GenAI Fund, we do not want builder energy […]"
+      }
+    ]
+  },
+  {
+    "slug": "genai-open-innovation-vietnam-2025",
+    "name": "GenAI Open Innovation Vietnam 2025",
+    "type": "Open innovation call",
+    "partners": ["AWS"],
+    "countries": ["Vietnam"],
+    "start": "2025-07-03",
+    "end": "2025-07-03",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/event-covers/mx/d7fd642f-14b5-4ed9-95f5-4cb676e8d33f.png",
+    "luma_events": [
+      {
+        "name": "GenAI Open Innovation, in collaboration with AWS",
+        "start": "2025-07-03",
+        "url": "https://luma.com/yzm84b4p",
+        "guests": 0
+      }
+    ],
+    "blog_posts": [
+      {
+        "title": "Driving Enterprise AI Adoption in Vietnam: GenAI Open Innovation Vietnam 2025 in collaboration with AWS",
+        "date": "2025-07-07",
+        "url": "https://genaifund.ai/2025/07/07/genai-open-innovation-vietnam-2025/",
+        "excerpt": "Driving Enterprise AI Adoption in Vietnam: GenAI Open Innovation Vietnam 2025 in collaboration with AWS On July 3, we welcomed […]"
+      },
+      {
+        "title": "GenAI Open Innovation 2025 – Vietnam: Where Enterprises Meet the Future of AI",
+        "date": "2025-06-02",
+        "url": "https://genaifund.ai/2025/06/02/genai-open-innovation-2025-vietnam/",
+        "excerpt": "GenAI Open Innovation 2025 – Vietnam: Where Enterprises Meet the Future of AI Led by GenAI Fund, in collaboration with […]"
+      }
+    ]
+  },
+  {
+    "slug": "genai-open-innovation-japan-2025",
+    "name": "NextGen AI Open Innovation Japan 2025",
+    "type": "Open innovation call",
+    "partners": ["FPT"],
+    "countries": ["Japan"],
+    "start": "2025-09-26",
+    "end": "2025-09-26",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/event-covers/1q/bc1f0f48-6d7a-428a-b2c5-84c07686b1da.png",
+    "luma_events": [
+      {
+        "name": "NextGen AI Open Innovation Japan Kickoff",
+        "start": "2025-09-26",
+        "url": "https://luma.com/e11kumpo",
+        "guests": 0
+      }
+    ],
+    "blog_posts": [
+      {
+        "title": "NextGen AI Open Innovation Japan Kickoff 2025: Accelerating AI in Japan for Enterprise Collaboration",
+        "date": "2025-09-27",
+        "url": "https://genaifund.ai/2025/09/27/nextgen-ai-open-innovation-japan-kickoff-2025-accelerating-ai-in-japan-for-enterprise-collaboration/",
+        "excerpt": "NextGen AI Open Innovation Japan Kickoff 2025: Accelerating AI in Japan for Enterprise Collaboration ✨ On September 26, 2025, Tokyo […]"
+      },
+      {
+        "title": "🚀 AI Adoption in Japan: GenAI Open Innovation – Japan Chapter Launches with FPT Japan",
+        "date": "2025-08-20",
+        "url": "https://genaifund.ai/2025/08/20/genai-open-innovation-japan/",
+        "excerpt": "🚀 AI Adoption in Japan: GenAI Open Innovation – Japan Chapter Launches with FPT Smart Cloud The future of AI […]"
+      }
+    ]
+  },
+  {
+    "slug": "genai-open-innovation-malaysia-2025",
+    "name": "GenAI Open Innovation Malaysia 2025",
+    "type": "Open innovation call",
+    "partners": ["AWS"],
+    "countries": ["Malaysia"],
+    "start": "2025-09-30",
+    "end": "2025-09-30",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/event-covers/2h/223807d6-e680-4271-85ac-46eea610ac96.jpg",
+    "luma_events": [
+      {
+        "name": "GenAI Open Innovation - Malaysia Chapter, in collaboration with AWS",
+        "start": "2025-09-30",
+        "url": "https://luma.com/2zdo39j2",
+        "guests": 0
+      }
+    ],
+    "blog_posts": [
+      {
+        "title": "GenAI Open Innovation Malaysia 2025: Driving AI Adoption in Malaysia Through Enterprise–Startup Collaboration",
+        "date": "2025-10-01",
+        "url": "https://genaifund.ai/2025/10/01/genai-open-innovation-malaysia-2025-driving-ai-adoption-in-malaysia-through-enterprise-startup-collaboration/",
+        "excerpt": "GenAI Open Innovation Malaysia 2025: Driving AI Adoption in Malaysia Through Enterprise–Startup Collaboration  On September 30, 2025, Kuala Lumpur became […]"
+      },
+      {
+        "title": "🇲🇾 Introducing GenAI Open Innovation – Malaysia Chapter: Accelerating AI Adoption in Malaysia",
+        "date": "2025-08-19",
+        "url": "https://genaifund.ai/2025/08/19/ai-adoption-in-malaysia/",
+        "excerpt": "🇲🇾 Introducing GenAI Open Innovation – Malaysia Chapter: Accelerating AI Adoption in Malaysia A New Chapter for Enterprise–Startup Collaboration in […]"
+      }
+    ]
+  },
+  {
+    "slug": "genai-open-innovation-indonesia-2025",
+    "name": "GenAI Open Innovation Indonesia 2025",
+    "type": "Open innovation call",
+    "partners": ["Google"],
+    "countries": ["Indonesia"],
+    "start": "2025-10-20",
+    "end": "2025-10-20",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/event-covers/qr/0ede1f9c-0000-4976-8f35-710d87eb3aba.png",
+    "luma_events": [
+      {
+        "name": "GenAI Open Innovation Indonesia Kickoff, in collaboration with Google Cloud",
+        "start": "2025-10-20",
+        "url": "https://luma.com/e3foib2o",
+        "guests": 0
+      }
+    ],
+    "blog_posts": [
+      {
+        "title": "🚀 GenAI Open Innovation – Indonesia Kickoff: A New Chapter of AI Collaboration",
+        "date": "2025-10-21",
+        "url": "https://genaifund.ai/2025/10/21/genai-open-innovation-indonesia-kickoff-a-new-chapter-of-ai-collaboration/",
+        "excerpt": "🚀 GenAI Open Innovation – Indonesia Kickoff: A New Chapter of AI Collaboration On October 20, 2025, the GenAI Open […]"
+      },
+      {
+        "title": "GenAI Open Innovation – Indonesia Chapter: Accelerating AI Innovation in Indonesia",
+        "date": "2025-08-23",
+        "url": "https://genaifund.ai/2025/08/23/genai-open-innovation-indonesia/",
+        "excerpt": "GenAI Open Innovation – Indonesia Chapter: Accelerating AI Innovation in Indonesia Indonesia is Southeast Asia’s largest digital economy — and […]"
+      }
+    ]
+  },
+  {
+    "slug": "genai-open-innovation-vietnam-2024",
+    "name": "GenAI Open Innovation 2024",
+    "type": "Open innovation call",
+    "partners": ["AWS", "Vietnam National Innovation Center", "Sovico Group"],
+    "countries": ["Vietnam"],
+    "start": "2024-12-05",
+    "end": null,
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": null,
+    "luma_events": [],
+    "blog_posts": [
+      {
+        "title": "🌟 GenAI Open Innovation Powered by AWS, GenAI Fund, Vietnam National Innovation Center, and Sovico Group 🌟",
+        "date": "2024-12-05",
+        "url": "https://genaifund.ai/2024/12/05/event-recap-genai-open-innovation-powered-by-aws-genai-fund-vietnam-national-innovation-center-and-sovico-group/",
+        "excerpt": "🌟 Event Recap: GenAI Open Innovation Powered by AWS, GenAI Fund, Vietnam National Innovation Center, and Sovico Group 🌟 The […]"
+      }
+    ]
+  },
+  {
+    "slug": "fasttrack-ai-accelerator",
+    "name": "FastTrack AI Accelerator",
+    "type": "Accelerator",
+    "partners": ["NVIDIA Inception"],
+    "countries": ["Vietnam"],
+    "start": "2025-06-02",
+    "end": null,
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": null,
+    "luma_events": [],
+    "blog_posts": [
+      {
+        "title": "🚀 FastTrack AI Accelerator — Cohort 1 Announcement",
+        "date": "2025-10-21",
+        "url": "https://genaifund.ai/2025/10/21/fasttrack-ai-accelerator-cohort-1-announcement/",
+        "excerpt": "🚀 FastTrack AI Accelerator — Cohort 1 Announcement Powered by GenAI Fund | Accelerated by NVIDIA Inception Program After receiving […]"
+      },
+      {
+        "title": "🚀 FastTrack AI Accelerator Launches to Power the Next Wave of Enterprise Innovation",
+        "date": "2025-06-25",
+        "url": "https://genaifund.ai/2025/06/25/%f0%9f%9a%80-fasttrack-ai-accelerator-launches-to-power-the-next-wave-of-enterprise-innovation/",
+        "excerpt": "🚀 FastTrack AI Accelerator Launches to Power the Next Wave of Enterprise Innovation On June 24, 2025, the FastTrack AI […]"
+      },
+      {
+        "title": "FastTrack AI Accelerator Launch Event – June 24, 2025 in Ho Chi Minh City, Vietnam",
+        "date": "2025-06-02",
+        "url": "https://genaifund.ai/2025/06/02/fasttrack-ai-accelerator-launch-event/",
+        "excerpt": "FastTrack AI Accelerator Launch Event – June 24, 2025 in Ho Chi Minh City, Vietnam Join us in Ho Chi […]"
+      },
+      {
+        "title": "FastTrack AI Accelerator: Revolutionizing AI Innovation in Vietnam and Beyond",
+        "date": "2025-06-02",
+        "url": "https://genaifund.ai/2025/06/02/fasttrack-ai-accelerator/",
+        "excerpt": "FastTrack AI Accelerator (FAIA): Revolutionizing AI Innovation in Vietnam and Beyond Introducing the FastTrack AI Accelerator (FAIA) powered by GenAI […]"
+      }
+    ]
+  },
+  {
+    "slug": "fintech-ai-innovation-grants-2025",
+    "name": "Fintech AI Innovation Grants",
+    "type": "Grant",
+    "partners": [],
+    "countries": ["Vietnam"],
+    "start": "2025-06-02",
+    "end": null,
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": null,
+    "luma_events": [],
+    "blog_posts": [
+      {
+        "title": "Launch Announcement: Fintech AI Innovation Grants",
+        "date": "2025-06-02",
+        "url": "https://genaifund.ai/2025/06/02/fintech-ai-innovation-grants-2025/",
+        "excerpt": "🚀 Launch Announcement: Fintech AI Innovation Grants This initiative, in partnership with FastTrack AI Accelerator powered by GenAI Fund and accelerated […]"
+      }
+    ]
+  },
+  {
+    "slug": "lotushacks-2026",
+    "name": "LotusHacks × HackHarvard Vietnam Hackathon 2026",
+    "type": "Hackathon",
+    "partners": ["HackHarvard"],
+    "countries": ["Vietnam"],
+    "start": "2026-03-20",
+    "end": "2026-03-22",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/event-covers/hm/02f1c034-aef5-4595-b90f-a942277161da.png",
+    "luma_events": [
+      {
+        "name": "LotusHacks x HackHarvard x GenAI Fund Vietnam Hackathon",
+        "start": "2026-03-20",
+        "url": "https://luma.com/2y7phxis",
+        "guests": 0
+      }
+    ],
+    "blog_posts": [
+      {
+        "title": "LotusHacks 2026: Empowering Vietnam’s Next Generation of AI Builders",
+        "date": "2026-03-23",
+        "url": "https://genaifund.ai/2026/03/23/lotushacks-2026-empowering-vietnams-next-generation-of-ai-builders/",
+        "excerpt": "LotusHacks 2026: Empowering Vietnam’s Next Generation of AI Builders Last weekend, we made history. It started with a bold dream […]"
+      }
+    ]
+  },
+  {
+    "slug": "qwen-ai-build-day-vietnam-2026",
+    "name": "Qwen AI Build Day Vietnam",
+    "type": "Build day",
+    "partners": ["Alibaba Cloud"],
+    "countries": ["Vietnam"],
+    "start": "2026-04-21",
+    "end": "2026-04-21",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/event-covers/3m/6a14d726-45a3-4a98-91d8-5a9d7685fdaa.png",
+    "luma_events": [
+      {
+        "name": "Qwen AI Build Day",
+        "start": "2026-04-21",
+        "url": "https://luma.com/hg17adt7",
+        "guests": 390
+      }
+    ],
+    "blog_posts": [
+      {
+        "title": "Qwen AI Build Day Vietnam: Where Builders Met Enterprise Problems",
+        "date": "2026-04-22",
+        "url": "https://genaifund.ai/2026/04/22/qwen-ai-build-day-vietnam-where-builders-met-enterprise-problems/",
+        "excerpt": "Qwen AI Build Day Vietnam: Where Builders Met Enterprise Problems On April 21 and 22, GenAI Fund and Alibaba Cloud […]"
+      }
+    ]
+  },
+  {
+    "slug": "ai-youth-challenge-2026",
+    "name": "AI Youth Challenge",
+    "type": "Pitch competition",
+    "partners": [],
+    "countries": ["Australia"],
+    "start": "2026-04-27",
+    "end": "2026-04-27",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/event-covers/mg/20565978-ffc4-411c-8d1d-7498f99943fe.png",
+    "luma_events": [
+      {
+        "name": "AI Youth Challenge: Closed Door Pitch",
+        "start": "2026-04-27",
+        "url": "https://luma.com/0ka5drnk",
+        "guests": 0
+      }
+    ],
+    "blog_posts": []
+  },
+  {
+    "slug": "genai-builders-meetup",
+    "name": "GenAI Builders Meetup",
+    "type": "Event series",
+    "partners": [],
+    "countries": ["Vietnam", "Malaysia", "Singapore", "Australia"],
+    "start": "2025-06-23",
+    "end": "2026-12-15",
+    "status": "active",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/event-covers/jv/757f80c1-2ea7-4237-b8e4-fea30b7d18e0.png",
+    "luma_events": [
+      {
+        "name": "GenAI Builders Meetup Vietnam – Ho Chi Minh City",
+        "start": "2025-06-23",
+        "url": "https://luma.com/untlb2ra",
+        "guests": 46
+      },
+      {
+        "name": "GenAI Builders Meetup Vietnam – Ho Chi Minh City (in collaboration with Tasco)",
+        "start": "2025-12-16",
+        "url": "https://luma.com/l9ctv395",
+        "guests": 58
+      },
+      {
+        "name": "GenAI Builders Meetup Vietnam – Ho Chi Minh City (in collaboration with Pharmacity)",
+        "start": "2026-02-10",
+        "url": "https://luma.com/holfneup",
+        "guests": 72
+      },
+      {
+        "name": "GenAI Builders Meetup - Malaysia (ft. Qwen)",
+        "start": "2026-04-06",
+        "url": "https://luma.com/lg29gc89",
+        "guests": 100
+      },
+      {
+        "name": "GenAI Builders Meetup - Singapore (ft. Qwen)",
+        "start": "2026-04-08",
+        "url": "https://luma.com/rlmczylg",
+        "guests": 93
+      },
+      {
+        "name": "GenAI Builders Meetup - Singapore (ft. HSBC)",
+        "start": "2026-04-08",
+        "url": "https://luma.com/ca19b6uc",
+        "guests": 0
+      },
+      {
+        "name": "GenAI Builders Meetup - Ho Chi Minh (ft. Qwen)",
+        "start": "2026-04-23",
+        "url": "https://luma.com/847452pu",
+        "guests": 94
+      },
+      {
+        "name": "GenAI Builders Meetup - Melbourne (Australia x Southeast Asia AI collaboration)",
+        "start": "2026-05-19",
+        "url": "https://luma.com/61txcvzn",
+        "guests": 58
+      },
+      {
+        "name": "GenAI Builders Meetup",
+        "start": "2026-06-16",
+        "url": "https://luma.com/x3ee8t46",
+        "guests": 0
+      },
+      {
+        "name": "GenAI Builders Meetup",
+        "start": "2026-07-14",
+        "url": "https://luma.com/31mdtlen",
+        "guests": 0
+      },
+      {
+        "name": "GenAI Builders Meetup",
+        "start": "2026-08-18",
+        "url": "https://luma.com/4eo37jul",
+        "guests": 0
+      },
+      {
+        "name": "GenAI Builders Meetup",
+        "start": "2026-09-15",
+        "url": "https://luma.com/fn3a77zu",
+        "guests": 0
+      },
+      {
+        "name": "GenAI Builders Meetup",
+        "start": "2026-10-13",
+        "url": "https://luma.com/z61ddewv",
+        "guests": 0
+      },
+      {
+        "name": "GenAI Builders Meetup",
+        "start": "2026-11-17",
+        "url": "https://luma.com/9lj3fl5r",
+        "guests": 0
+      },
+      {
+        "name": "GenAI Builders Meetup",
+        "start": "2026-12-15",
+        "url": "https://luma.com/iw0txyt8",
+        "guests": 0
+      }
+    ],
+    "blog_posts": [
+      {
+        "title": "Recap: GenAI Builders Meetup Melbourne with Prime Value Asset Management (May 19, 2026)",
+        "date": "2026-05-20",
+        "url": "https://genaifund.ai/2026/05/20/recap-genai-builders-meetup-melbourne-with-prime-value-asset-management-may-19-2026/",
+        "excerpt": "Recap: GenAI Builders Meetup Melbourne with Prime Value Asset Management This week, GenAI Fund officially brought GenAI Builders Meetup to […]"
+      },
+      {
+        "title": "Recap: GenAI Builders Meetup x Qwen x Sunwah Group Vietnam (April 23, 2026)",
+        "date": "2026-04-24",
+        "url": "https://genaifund.ai/2026/04/24/recap-genai-builders-meetup-x-qwen-x-sunwah-group-vietnam-april-23/",
+        "excerpt": "Recap: GenAI Builders Meetup x Qwen x Sunwah Group Vietnam Another GenAI Builders Meetup (GBM) wrapped — our fourth in […]"
+      },
+      {
+        "title": "Recap: GenAI Builders Meetup Singapore Double Header — GBM x Qwen x Julius Baer and GBM x HSBC (April 8, 2026)",
+        "date": "2026-04-10",
+        "url": "https://genaifund.ai/2026/04/10/recap-genai-builders-meetup-singapore-double-header-gbm-x-qwen-x-julius-baer-and-gbm-x-hsbc-april-8/",
+        "excerpt": "Recap: GBM x Qwen x Julius Baer and GBM x HSBC Two days after a packed GBM in Kuala Lumpur, […]"
+      },
+      {
+        "title": "🚀 Recap: GenAI Builders Meetup x Qwen x Chin Hin Group (April 6th, 2026)",
+        "date": "2026-04-08",
+        "url": "https://genaifund.ai/2026/04/08/%f0%9f%9a%80-recap-genai-builders-meetup-x-qwen-x-chin-hin-group-april-6th-2026/",
+        "excerpt": "🚀 Recap: GenAI Builders Meetup x Qwen x Chin Hin Group It started with a webinar. It ended with a […]"
+      },
+      {
+        "title": "🚀 Recap: GenAI Builders Meetup x Pharmacity (February 10th, 2026)",
+        "date": "2026-02-11",
+        "url": "https://genaifund.ai/2026/02/11/%f0%9f%9a%80-recap-genai-builders-meetup-x-pharmacity-february-10th-2026/",
+        "excerpt": "🚀 Recap: GenAI Builders Meetup x Pharmacity Pre Tet energy hit differently this time. While most calendars are in year […]"
+      },
+      {
+        "title": "Recap: GenAI Builders Meetup x Tasco (December 16th)",
+        "date": "2025-12-20",
+        "url": "https://genaifund.ai/2025/12/20/recap-genai-builders-meetup-x-tasco/",
+        "excerpt": "🚀 Recap: GenAI Builders Meetup x Tasco JSC On December 16th, we gathered in Ho Chi Minh City for the […]"
+      },
+      {
+        "title": "GenAI Builders Meetup x TASCO – Ho Chi Minh City, Vietnam",
+        "date": "2025-12-01",
+        "url": "https://genaifund.ai/2025/12/01/gbm-tasco-vn25/",
+        "excerpt": "Join Us for the GenAI Builders Meetup x TASCO – Ho Chi Minh City, Vietnam 🇻🇳 We’re excited to announce […]"
+      },
+      {
+        "title": "Recap: GenAI Builders Meetup x NVIDIA (June 23rd)",
+        "date": "2025-06-24",
+        "url": "https://genaifund.ai/2025/06/24/recap-genai-builders-meetup-x-nvidia-june-23rd/",
+        "excerpt": "Recap: GenAI Builders Meetup x NVIDIA (June 23rd) This GenAI Builders Meetup by GenAI Fund was special—not just because we […]"
+      },
+      {
+        "title": "Recap: GenAI Builders Meetup x Singapore Global Network (May 29th)",
+        "date": "2025-05-30",
+        "url": "https://genaifund.ai/2025/05/30/recap-genai-builders-meetup-x-singapore-global-network-may-29th/",
+        "excerpt": "Recap: GenAI Builders Meetup x Singapore Global Network (May 29th) On May 29th, GenAI Fund and Singapore Global Network has […]"
+      },
+      {
+        "title": "GenAI Builders Meetup x Singapore Global Network – Ho Chi Minh City, Vietnam",
+        "date": "2025-05-24",
+        "url": "https://genaifund.ai/2025/05/24/genai-builders-meetup-vietnam-2025/",
+        "excerpt": "Join Us for the GenAI Builders Meetup – Ho Chi Minh City, Vietnam 🇻🇳 In collaboration with Singapore Global Network […]"
+      },
+      {
+        "title": "Recap: First GenAI Builders Meetup in Malaysia (April 29th)",
+        "date": "2025-04-30",
+        "url": "https://genaifund.ai/2025/04/30/recap-first-genai-builders-meetup-in-malaysia-april-29th/",
+        "excerpt": "Recap: First GenAI Builders Meetup in Malaysia (April 29th) Thank you to everyone who joined our first GenAI Builders Meetup […]"
+      }
+    ]
+  },
+  {
+    "slug": "genai-fund-expert-series",
+    "name": "GenAI Fund Expert Series",
+    "type": "Event series",
+    "partners": ["Qwen"],
+    "countries": [],
+    "start": "2026-03-11",
+    "end": "2026-03-11",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/event-covers/yp/d0843c06-2590-49ea-b404-a36652b87714.png",
+    "luma_events": [
+      {
+        "name": "GenAI Fund Expert Series (Virtual) ft. Qwen",
+        "start": "2026-03-11",
+        "url": "https://luma.com/dyzpd8hh",
+        "guests": 235
+      }
+    ],
+    "blog_posts": [
+      {
+        "title": "GenAI Fund Expert Series ft. Qwen: Recap & Key Takeaways",
+        "date": "2026-03-13",
+        "url": "https://genaifund.ai/2026/03/13/genai-fund-expert-series-ft-qwen-recap-key-takeaways/",
+        "excerpt": "GenAI Fund Expert Series ft. Qwen: Recap & Key Takeaways On March 11, we kicked off the GenAI Fund Expert […]"
+      }
+    ]
+  },
+  {
+    "slug": "the-codex-table",
+    "name": "The Codex Table",
+    "type": "Event",
+    "partners": ["OpenAI"],
+    "countries": ["Vietnam"],
+    "start": "2026-05-15",
+    "end": "2026-05-15",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/uploads/q5/0177c6f4-0f4b-46c6-9965-f61e6bab0686.png",
+    "luma_events": [
+      {
+        "name": "The Codex Table — HCMC, powered by OpenAI and GenAI Fund",
+        "start": "2026-05-15",
+        "url": "https://luma.com/83a3szf1",
+        "guests": 58
+      }
+    ],
+    "blog_posts": [
+      {
+        "title": "Recap: The Codex Table x OpenAI — Vietnam’s Most Exclusive AI Founders Brunch (May 15, 2026)",
+        "date": "2026-05-17",
+        "url": "https://genaifund.ai/2026/05/17/recap-the-codex-table-x-openai-vietnam-exclusive-ai-founders-brunch-may-15-2026/",
+        "excerpt": "The Codex Table x OpenAI — Vietnam’s Most Exclusive AI Founders Brunch A small room. A sharp table. A big […]"
+      }
+    ]
+  },
+  {
+    "slug": "alibaba-cloud-sme-ai-growth-day-2026",
+    "name": "Alibaba Cloud SME AI Growth Day Vietnam 2026",
+    "type": "Event",
+    "partners": ["Alibaba Cloud"],
+    "countries": ["Vietnam"],
+    "start": "2026-04-22",
+    "end": "2026-04-22",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/event-covers/p1/fdcc96cb-022f-4d33-b5ae-a242c3de0143.png",
+    "luma_events": [
+      {
+        "name": "Alibaba Cloud SME AI Growth Day Vietnam 2026",
+        "start": "2026-04-22",
+        "url": "https://luma.com/eypk2ivy",
+        "guests": 654
+      }
+    ],
+    "blog_posts": [
+      {
+        "title": "Alibaba Cloud SME AI Growth Day Vietnam 2026: From AI Demos to Real Adoption",
+        "date": "2026-04-23",
+        "url": "https://genaifund.ai/2026/04/23/138653/",
+        "excerpt": "Alibaba Cloud SME AI Growth Day Vietnam 2026: From AI Demos to Real Adoption After Qwen AI Build Day showed […]"
+      }
+    ]
+  },
+  {
+    "slug": "cowork-and-showcase",
+    "name": "Cowork & Showcase for Tech/Growth Builders",
+    "type": "Event series",
+    "partners": [],
+    "countries": ["Vietnam"],
+    "start": "2026-06-20",
+    "end": "2026-07-04",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/uploads/3e/a91b58ba-6276-481f-9029-4a3846b0c834.png",
+    "luma_events": [
+      {
+        "name": "Cowork & Showcase for Tech/Growth Builders - BS33",
+        "start": "2026-06-20",
+        "url": "https://luma.com/oawz935f",
+        "guests": 68
+      },
+      {
+        "name": "Cowork & Showcase for Tech/Growth Builders - BS34",
+        "start": "2026-07-04",
+        "url": "https://luma.com/unybskin",
+        "guests": 100
+      }
+    ],
+    "blog_posts": []
+  },
+  {
+    "slug": "beyond-the-pilot-executive-workshops-2026",
+    "name": "Beyond the Pilot executive workshops",
+    "type": "Workshop series",
+    "partners": [],
+    "countries": [],
+    "start": "2026-09-09",
+    "end": "2026-09-10",
+    "status": "past",
+    "url": null,
+    "summary": null,
+    "cover": "https://images.lumacdn.com/uploads/7n/35b42116-b69d-4d2a-97a1-1192e875a80e.png",
+    "luma_events": [
+      {
+        "name": "The AI Workforce Shift — CHRO/HR (Exclusive Workshop 1 of 2)",
+        "start": "2026-09-09",
+        "url": "https://luma.com/gaf-wzwy",
+        "guests": 0
+      },
+      {
+        "name": "Beyond the Pilot: Leading the Next Business Shift — CIO/CDTO & CEO/BUSINESS LEADERS (Exclusive Workshop 2 of 2)",
+        "start": "2026-09-10",
+        "url": "https://luma.com/cnuw2i0u",
+        "guests": 0
+      }
+    ],
+    "blog_posts": []
+  }
+]

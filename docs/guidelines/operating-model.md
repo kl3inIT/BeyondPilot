@@ -11,24 +11,25 @@ BeyondPilot uses the repository as its durable system of record. The model is ad
 
 ## Document layout
 
-| Location | Owns |
-| --- | --- |
-| `AGENTS.md` | The thin navigation map and the mandatory working rules |
-| `CLAUDE.md` | Claude Code's import of `AGENTS.md`; no rules of its own |
-| `README.md` | Entry points and basic commands |
-| `ARCHITECTURE.md` | The system structure and runtime flows as implemented |
-| `docs/brief/` | The client's product brief, kept as received |
-| `docs/vision.md` | Product outcomes and stable principles |
-| `docs/roadmap.md` | Delivered, active and candidate increments |
-| `docs/conventions.md` | Cross-cutting engineering conventions |
-| `docs/guidelines/` | Reusable engineering and operational policy per topic |
-| `web/AGENTS.md` | The web application's checklist, pointing into the conventions |
-| `docs/specs/` | Current behavior and invariants of each module |
-| `docs/tests/` | Requirement-to-verification matrix of each module |
-| `docs/decisions/` | Accepted, append-only architecture decisions |
-| `docs/increments/active/<increment>/` | Design, plan and verification evidence of a change in flight |
-| `docs/increments/completed/<increment>/` | The record of an increment after it has landed |
-| `docs/runbooks/` | Repeatable developer and operator procedures |
+| Location                                 | Owns                                                                                  |
+| ---------------------------------------- | ------------------------------------------------------------------------------------- |
+| `AGENTS.md`                              | The thin navigation map and the mandatory working rules                               |
+| `CLAUDE.md`                              | Claude Code's import of `AGENTS.md`; no rules of its own                              |
+| `README.md`                              | Entry points and basic commands                                                       |
+| `ARCHITECTURE.md`                        | The system structure and runtime flows as implemented                                 |
+| `docs/brief/`                            | The client's product brief, kept as received                                          |
+| `docs/vision.md`                         | Product outcomes and stable principles                                                |
+| `docs/roadmap.md`                        | Delivered, active and candidate increments                                            |
+| `docs/conventions.md`                    | Cross-cutting engineering conventions                                                 |
+| `docs/guidelines/`                       | Reusable engineering and operational policy per topic                                 |
+| `web/AGENTS.md`                          | The web application's checklist, pointing into the conventions                        |
+| `docs/specs/`                            | Current behavior and invariants of each module                                        |
+| `docs/tests/`                            | Requirement-to-verification matrix of each module                                     |
+| `docs/decisions/`                        | Accepted, append-only architecture decisions                                          |
+| `docs/increments/active/<increment>/`    | Design, plan and verification evidence of a change in flight                          |
+| `docs/increments/completed/<increment>/` | The record of an increment after it has landed                                        |
+| `docs/runbooks/`                         | Repeatable developer and operator procedures                                          |
+| `docs/research/`                         | Dated notes on what was studied before a design, and the public source data behind it |
 
 Task status lives in Linear (team BeyondPilot, issues `BEY-<n>`), not in the repository.
 
@@ -42,6 +43,7 @@ Before adding text, choose its owner:
 - **Accepted tradeoff:** ADR.
 - **Detail of the current change:** the active increment.
 - **Repeatable command sequence:** runbook.
+- **What was studied, and its sources:** a research note. It records findings, never decisions.
 - **Task status:** the Linear issue, summarized in the roadmap.
 
 If the same statement would appear twice, keep the detailed version in the deeper source and replace the other copy with a link.

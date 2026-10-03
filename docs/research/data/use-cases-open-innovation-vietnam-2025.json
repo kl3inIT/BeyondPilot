@@ -1,0 +1,211 @@
+{
+  "source": "https://genaifund.ai/genai-open-innovation-vietnam-2025/",
+  "retrieved": "2026-10-03",
+  "use_cases": [
+    {
+      "industry": "Banking",
+      "title": "Automated Interview Screening",
+      "need": "An AI-driven system to evaluate 20,000+ job applications, shortlist top candidates based on predefined criteria, and auto-schedule interviews—reducing manual screening time, improving selection accuracy, and accelerating the hiring pipeline."
+    },
+    {
+      "industry": "Banking",
+      "title": "Asset Valuation & Credit Risk Assessment",
+      "need": "AI models that ingest heterogeneous asset data (real estate, vehicles, digital assets) to generate precise valuations and predict borrower credit risk—enabling faster loan decisions and minimizing defaults."
+    },
+    {
+      "industry": "Banking",
+      "title": "AI-Powered Contact Centre Automation",
+      "need": "An AI platform to unify phone, chat, email, and social media interactions—auto-categorizing inquiries, instantly resolving FAQs, and routing complex issues to specialists—thereby boosting customer satisfaction and cutting support costs."
+    },
+    {
+      "industry": "Banking",
+      "title": "Tokenization & Digital Asset Management",
+      "need": "A blockchain-based solution to authenticate, record ownership, and seamlessly transfer tokenized assets (certificates, property rights, virtual goods)—ensuring transparency, traceability, and regulatory compliance."
+    },
+    {
+      "industry": "Banking",
+      "title": "ESG Data Analytics & Reporting",
+      "need": "A system to aggregate and analyze Environmental, Social, and Governance metrics from diverse sources, automatically generate standardized ESG reports, and ensure compliance with investor and regulatory requirements—enhancing transparency and decision-making."
+    },
+    {
+      "industry": "Banking",
+      "title": "AI for Health & Industry Benchmarking",
+      "need": "AI tools to analyze structured and unstructured data—assessing financial health, operational efficiency, and market positioning against peers—to identify strengths, risks, and strategic growth opportunities."
+    },
+    {
+      "industry": "Banking",
+      "title": "AI-Driven Investment Advisory & Stock Ranking",
+      "need": "Real-time AI models that evaluate companies using financial indicators, market sentiment, and alternative data—producing ranked investment recommendations and dynamic portfolio insights."
+    },
+    {
+      "industry": "Banking",
+      "title": "Autonomous Agentic Finance",
+      "need": "Autonomous AI agents that monitor portfolios, execute trades, and manage cash flows according to user goals—optimizing financial outcomes with minimal human intervention."
+    },
+    {
+      "industry": "Real Estate & Construction",
+      "title": "SafePass AI for Worker Safety Compliance",
+      "need": "A mobile-first AI platform that digitizes Permit-to-Work workflows, delivers native-language safety instructions, enables two-way incident reporting, and uses computer vision to detect PPE violations—integrating with BIM, payroll, and messaging to cut permit processing below 10 minutes and reduce incidents by ≥20%."
+    },
+    {
+      "industry": "Real Estate & Construction",
+      "title": "GuardianAI for Real-Time Regulatory Oversight",
+      "need": "An AI system that ingests BIM, CCTV, and drone feeds to detect hazards, auto-generate statutory documents (Bomba approvals, HSSE logs), validate against CIDB/DOSH standards, and provide a chat interface—achieving ≥90% first-round approval rates and 40% faster submission cycles."
+    },
+    {
+      "industry": "Real Estate & Construction",
+      "title": "AI-Driven Safety Communication for Multilingual Teams",
+      "need": "GenAI agents that translate safety protocols, quizzes, and instructions into seven workforce languages (e.g., Bengali, Nepali, Tagalog), support text/voice/photo inputs, and eliminate language barriers—boosting comprehension to ≥95% and minimizing safety violations."
+    },
+    {
+      "industry": "Real Estate & Construction",
+      "title": "Vision-Based Safety Surveillance",
+      "need": "Edge AI vision that continuously monitors sites for missing PPE, unsafe proximities, or blocked exits—triggering instant alerts, recording violation clips, and auto-suspending non-compliant work with ≥90% detection precision."
+    },
+    {
+      "industry": "Real Estate & Construction",
+      "title": "Automated Compliance Documentation & Risk Dashboards",
+      "need": "AI agents that aggregate safety events into CIDB/DOSH regulatory documents and live dashboards—highlighting high-risk zones, surfacing compliance gaps, reducing submission cycles by 40%, and maintaining ≤1.5 HSSE non-compliances per 10,000 site hours."
+    },
+    {
+      "industry": "Real Estate & Construction",
+      "title": "Realistic Tile Visualization for Sales Enablement",
+      "need": "An AI tool that generates photorealistic room mockups by overlaying tile products into customer photos—ensuring high-fidelity renderings to boost engagement and conversion in real-estate and design sales."
+    },
+    {
+      "industry": "Real Estate & Construction",
+      "title": "Warehouse Operations Optimization",
+      "need": "AI-driven analytics on logistics and warehouse data to optimize inventory placement, forecast demand, and streamline workflows—targeting up to 50% improvement in throughput across national warehouse networks."
+    },
+    {
+      "industry": "FMCG",
+      "title": "AI-Powered Sales Rep Enablement",
+      "need": "An AI assistant that analyzes reps’ daily activities to surface real-time suggestions, flag execution gaps before they impact sales, recommend optimized visit plans, and automate routine tasks—so reps spend more time selling and less time on admin."
+    },
+    {
+      "industry": "FMCG",
+      "title": "AI for Sales Leadership & Coaching",
+      "need": "A dashboard driven by AI that ingests performance metrics in real time, detects early warning signals, recommends territory adjustments, suggests tailored coaching prompts, and automatically sets data-backed targets—so leaders can intervene proactively and drive team performance."
+    },
+    {
+      "industry": "FMCG",
+      "title": "AI-Driven Customer Insights & Personalization",
+      "need": "AI models that predict retailer and distributor demand, personalize offer timing and content for each account, surface loyalty-building opportunities, preempt service issues, and identify upsell/cross-sell triggers—boosting customer satisfaction and revenue per account."
+    },
+    {
+      "industry": "FMCG",
+      "title": "Visual Shelf Monitoring",
+      "need": "An image-recognition system that processes ~20 in-store photos daily to verify product placement compliance, detect misplacements or competitor intrusions, trigger instant alerts, and generate automated compliance reports—ensuring perfect execution at shelf level."
+    },
+    {
+      "industry": "FMCG",
+      "title": "Fridge Monitoring & Inventory Compliance",
+      "need": "An AI solution that scans weekly fridge images, identifies unauthorized or out-of-place products, tracks fridge identity and uptime via QR/IoT, and alerts field teams for corrective action—maintaining brand standards and maximizing fridge utilization."
+    },
+    {
+      "industry": "FMCG",
+      "title": "AI-Driven POSM Quality Assurance",
+      "need": "A computer-vision system that inspects point-of-sale materials (billboards, signage, displays) to detect issues—fading visuals, broken lighting, damaged materials—and integrates with maintenance workflows to schedule repairs, ensuring all POSM assets remain impactful."
+    },
+    {
+      "industry": "FMCG",
+      "title": "Premium Asset Auditing (e.g., Beverage Equipment)",
+      "need": "An AI monitoring solution using photos or video feeds to verify correct usage of premium setups, flag under-utilized or idle equipment, and identify maintenance without ROI—enabling teams to optimize asset deployment and reduce operational waste."
+    },
+    {
+      "industry": "FMCG",
+      "title": "Internal GenAI Assistant & Workflow Chatbot",
+      "need": "A GenAI-powered chatbot that ingests company policies, workflows, and documents to answer employee queries (e.g., approval processes, report templates, ordering procedures) and updates itself as documents evolve—streamlining internal operations and reducing help-desk load."
+    },
+    {
+      "industry": "Food & Beverage",
+      "title": "AI-Powered Accounting Process Automation",
+      "need": "An AI solution to extract, match, and reconcile payment data from 100+ outlets and multiple channels against accounting ledgers—eliminating manual errors, accelerating month-end closes, and freeing finance teams from repetitive reconciliation tasks."
+    },
+    {
+      "industry": "Food & Beverage",
+      "title": "GenAI for Marketing Automation",
+      "need": "A GenAI platform that generates campaign copy, segments audiences dynamically, personalizes messaging at scale, and automates A/B tests and journey mapping—optimizing promotion performance and driving higher customer engagement and loyalty."
+    },
+    {
+      "industry": "Food & Beverage",
+      "title": "AI Assistant for Staff Onboarding & Offboarding",
+      "need": "An AI-driven virtual assistant that orchestrates checklists, handles document workflows, and answers HR queries for thousands of hires and exits annually—ensuring consistent, timely, and error-free employee transitions."
+    },
+    {
+      "industry": "Food & Beverage",
+      "title": "Conversational AI for Customer Support",
+      "need": "A chatbot powered by conversational AI to resolve FAQs, track orders, and escalate complex issues—reducing support response times, offloading routine inquiries, and elevating overall customer satisfaction."
+    },
+    {
+      "industry": "Food & Beverage",
+      "title": "AI-Enhanced Data Analytics",
+      "need": "Integration of GenAI with BI tools (e.g., Power BI) to uncover hidden patterns, recommend KPIs, diagnose root causes, and propose strategic actions—transforming raw sales and operations data into prescriptive business intelligence."
+    },
+    {
+      "industry": "Automotive",
+      "title": "Voice-Enabled Navigation for Safer, Smarter Use",
+      "need": "A hands-free, voice-activated assistant in the VETC app—enabling wallet checks, station locators, and roadside assistance requests—so drivers can interact safely and seamlessly while on the move."
+    },
+    {
+      "industry": "Automotive",
+      "title": "Seamless Wake-Word Activation & Dialogue Flow",
+      "need": "A responsive voice interface triggered by “VETC ơi,” engineered for"
+    },
+    {
+      "industry": "Automotive",
+      "title": "High-Accuracy Vietnamese Speech Recognition",
+      "need": "An ASR solution that reliably understands both Northern and Southern Vietnamese accents under moderate noise—with a target word error rate below 10%—to serve Vietnam’s diverse driver base."
+    },
+    {
+      "industry": "Automotive",
+      "title": "Lightweight & Cost-Efficient Deployment",
+      "need": "A compact, on-device or edge AI model ("
+    },
+    {
+      "industry": "Automotive",
+      "title": "AI-Powered Omnichannel Lead Qualification",
+      "need": "An AI platform that consolidates online and offline engagement data—linking digital behaviors (e.g., ad clicks, site visits) with showroom interactions—to assess lead quality, measure campaign performance, and reactivate cold leads through personalized outreach across channels."
+    },
+    {
+      "industry": "Automotive",
+      "title": "GenAI for Customized Marketing Materials at Scale",
+      "need": "A Generative AI system that localizes and personalizes POSM (Point-of-Sale Materials) and digital marketing assets by market—automatically creating mood boards, adapting creatives to regional preferences, and maintaining brand consistency—while drastically reducing time and cost in creative production."
+    },
+    {
+      "industry": "Investment",
+      "title": "Early Detection of At-Risk Clients",
+      "need": "An AI system that analyses behavioral and transaction data to flag clients likely to churn, enabling automated, personalized retention campaigns or premium care outreach to proactively reduce attrition."
+    },
+    {
+      "industry": "Investment",
+      "title": "Personalized Product Recommendations",
+      "need": "AI-driven profiling of each investor’s trading history and risk preferences to surface tailored financial product suggestions—boosting satisfaction, increasing cross-sell uptake, and deepening client engagement."
+    },
+    {
+      "industry": "Investment",
+      "title": "Real-Time Trade Pattern Alerts & Insights",
+      "need": "A real-time analytics engine that detects suboptimal trading behaviors (e.g., “buy high, sell low”), issues risk warnings or buy/sell signals, and delivers actionable insights to help clients make disciplined, data-backed decisions."
+    },
+    {
+      "industry": "Gaming",
+      "title": "AI-Powered Gameplay Testing Agent",
+      "need": "AI agents that simulate a wide range of player behaviors and interaction patterns to automatically test gameplay—expanding coverage, detecting bugs, and validating game balance and stability across real-world scenarios before release."
+    },
+    {
+      "industry": "Gaming",
+      "title": "GenAI-Based Creative Optimization Engine",
+      "need": "A Generative AI engine integrated with reinforcement learning that creates, tests, and refines game creatives (ads, assets, promos) based on live performance data (CTR, CVR, ROAS)—continuously optimizing for higher impact across user acquisition channels."
+    },
+    {
+      "industry": "Gaming",
+      "title": "AI-Assisted Gamer Coaching System",
+      "need": "An AI-powered assistant that analyzes individual gameplay data to deliver real-time tips, custom training routines, and strategic advice—enhancing player performance and engagement, especially for competitive and hardcore gamers."
+    },
+    {
+      "industry": "Gaming",
+      "title": "Agentic Natural Language Analytics Interface",
+      "need": "A natural language AI interface that enables teams to query player and game data directly (e.g., “Which level has the highest drop-off rate?” or “What’s the sentiment on our latest update?”)—accelerating insights and streamlining data-driven decisions."
+    }
+  ]
+}
