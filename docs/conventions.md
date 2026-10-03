@@ -277,7 +277,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 
 ### Design tokens and styling
 
-- Components use semantic tokens only. Tokens live in `src/styles/tokens.css` with light and dark values and are mapped to Tailwind in `src/app/globals.css`. Brand primitives replace the neutral values when GenAI Fund provides the BeyondPilot identity.
+- Components use semantic tokens only. Tokens live in `src/styles/tokens.css` with light and dark values and are mapped to Tailwind in `src/app/globals.css`. The palette behind them is described in `DESIGN.md`.
 - Status roles (`success`, `warning`, `info`, `destructive`) always come with an icon or a label.
 - Raw colours, inline styles, arbitrary values, unknown classes and dynamically built class names are lint errors outside `src/components/ui`, through the `@shadcn/lint` rules `no-raw-colors`, `no-inline-styles`, `no-arbitrary-values`, `no-unknown-classes` and `require-static-classes`. A value several features repeat becomes a token.
 - A component's appearance comes from its variants and sizes. `shadcn/no-restyle` allows only layout classes (margin, width, position) in `className` on a registry component; a new look is a new variant in the component, added only when the design calls for one.

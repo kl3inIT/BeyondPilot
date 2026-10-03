@@ -56,6 +56,9 @@
   --color-info-foreground: var(--info-foreground);
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
+  --color-use-case: var(--use-case);
+  --color-solution: var(--solution);
+  --color-talent: var(--talent);
 }
 
 @layer base {

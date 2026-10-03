@@ -20,11 +20,12 @@ The third page stays free until a real need appears.
 ## Tokens
 
 - Every fill, stroke, radius, gap and padding is bound to a variable. A literal colour or spacing value on a screen is a defect.
-- Collection `Theme` holds the semantic roles with their light values; collection `Theme/Dark` holds the same variable names with the `.dark` values. The Starter plan allows one mode per collection, so the paired collection stands in for a `Dark` mode, and Figwright reads the same-name pair as one theme axis. Variable names and values mirror `web/src/styles/tokens.css` one to one (`background`, `foreground`, `primary`, `primary-foreground`, `muted`, `muted-foreground`, `border`, `input`, `ring`, `destructive`, `success`, `warning`, `info`, `brand`, …). Screens bind to `Theme`. The neutral palette is shadcn zinc; `brand` is the orange accent used only for glows and highlights, never as the only carrier of meaning.
+- Collection `Theme` holds the semantic roles with their light values; collection `Theme/Dark` holds the same variable names with the `.dark` values. The Starter plan allows one mode per collection, so the paired collection stands in for a `Dark` mode, and Figwright reads the same-name pair as one theme axis. Variable names and values mirror `web/src/styles/tokens.css` one to one (`background`, `foreground`, `primary`, `primary-foreground`, `muted`, `muted-foreground`, `border`, `input`, `ring`, `destructive`, `success`, `warning`, `info`, `brand`, …). Screens bind to `Theme`. The palette is BeyondPilot's own azure on a cool paper ([DESIGN.md](../../DESIGN.md)); `brand` is the sky light used only for glows and arcs, and `use-case`, `solution` and `talent` mark the three directory kinds. None of them is ever the only carrier of meaning.
 - Each `Theme` variable sets the WEB code syntax to its CSS custom property (`var(--primary)`), so code generation emits the token instead of deriving a name.
 - Collection `Scale` holds radius and spacing. Radius mirrors `--radius` and its derived steps (`radius/sm` … `radius/4xl`); spacing follows the Tailwind 4px scale (`space/1` = 4px, `space/2` = 8px, …).
 - Text styles are named after the Tailwind utilities they produce (`text-sm/font-medium`, `text-5xl/font-semibold`), so a style maps one to one to classes. The font is Inter, the font the web application loads. Effect styles follow the same rule (`shadow/sm`, `shadow/lg`, `blur/2xl`, `glow/brand/sm`).
-- A token change lands in Figma and in `tokens.css` in the same change. Brand colours replace the neutral values only when GenAI Fund provides the BeyondPilot identity.
+- A token change lands in Figma and in `tokens.css` in the same change.
+- Gradients that no single variable can express (card covers, edge fades) are paint styles named by role (`cover/brand`, `cover/use-case`, `fade/muted-start`), never literal fills on a screen.
 
 ## Components
 
