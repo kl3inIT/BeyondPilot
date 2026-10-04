@@ -2,7 +2,8 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   // Registry primitives are installed ahead of their first screen, and lib/utils.ts is the
   // `utils` alias target in components.json that the shadcn CLI writes into new components.
-  "entry": ["src/components/ui/**/*.tsx", "src/lib/utils.ts", "scripts/*.mjs"],
+  // Playwright starts the stub backend as a process, so nothing imports it.
+  "entry": ["src/components/ui/**/*.tsx", "src/lib/utils.ts", "scripts/*.mjs", "tests/e2e/stub-backend.mjs"],
   // Generated from openapi.yml; its exports are the contract, used as screens arrive.
   "ignore": ["src/lib/api/generated/**"],
   "ignoreExportsUsedInFile": true,
