@@ -1,12 +1,7 @@
-import { expect, test, type BrowserContext, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
-
-// The header reads the session on the web server, which asks the stub backend of this run; the
-// cookie's value picks the account it answers with (tests/e2e/stub-backend.mjs).
-async function signInAs(context: BrowserContext, account: "operator" | "unnamed", baseURL: string) {
-  await context.addCookies([{ name: "BEYONDPILOT_SESSION", value: account, url: baseURL }]);
-}
+import { signInAs } from "./session";
 
 /** Answers the sign-out request; a 204 also ends the session, as the backend would. */
 async function answerSignOut(page: Page, status: number) {

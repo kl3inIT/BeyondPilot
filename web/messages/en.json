@@ -271,5 +271,10 @@
         "failed": "We couldn't check the code. Try again in a moment."
       }
     }
+  },
+  "Admin": {
+    "metaTitle": "Admin · BeyondPilot",
+    "title": "Admin",
+    "empty": "No admin screens yet."
   }
 }
