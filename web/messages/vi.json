@@ -17,6 +17,12 @@
       "signIn": "Đăng nhập",
       "getStarted": "Bắt đầu"
     },
+    "account": {
+      "open": "Menu tài khoản của {name}",
+      "operator": "Operator",
+      "signOut": "Đăng xuất",
+      "signOutFailed": "Chưa đăng xuất được. Bạn thử lại."
+    },
     "menu": {
       "open": "Mở menu",
       "close": "Đóng menu",

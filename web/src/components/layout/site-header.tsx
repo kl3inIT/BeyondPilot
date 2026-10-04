@@ -1,8 +1,7 @@
 import { useTranslations } from "next-intl";
 
-import { Button } from "@/components/actions/button";
 import { BrandLockup } from "@/components/layout/brand-lockup";
-import { MobileMenu } from "@/components/layout/mobile-menu";
+import { HeaderAccount } from "@/components/layout/header-account";
 import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
@@ -37,13 +36,7 @@ function SiteHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-2">
-          <Button prominence="tertiary" className="hidden md:inline-flex" href={siteRoutes.signIn}>
-            {t("signIn")}
-          </Button>
-          <Button prominence="secondary" href={siteRoutes.getStarted}>
-            {t("getStarted")}
-          </Button>
-          <MobileMenu />
+          <HeaderAccount />
         </div>
       </div>
     </header>
