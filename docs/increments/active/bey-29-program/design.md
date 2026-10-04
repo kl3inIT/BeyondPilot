@@ -1,6 +1,6 @@
 # Program: programs, their dates and their pages
 
-Status: design for review, 5 October 2026; nothing is implemented yet ([plan](plan.md)). It is the fourth slice of the [Phase 1 domain model](../bey-22-phase-1-domain-model/design.md) and narrows that model's `program` module to what the live site of 9 October needs. The screens are those approved in Figma on 4 and 5 October ([main flows](../bey-27-main-flows-design/design.md)): the programs list, the program page, and in the admin area the Programs list and a program's Settings.
+Status: accepted on 5 October 2026 and being implemented ([plan](plan.md)). It is the fourth slice of the [Phase 1 domain model](../bey-22-phase-1-domain-model/design.md) and narrows that model's `program` module to what the live site of 9 October needs. The screens are those approved in Figma on 4 and 5 October ([main flows](../bey-27-main-flows-design/design.md)): the programs list, the program page, and in the admin area the Programs list and a program's Settings.
 
 ## What a person can do
 
@@ -13,7 +13,7 @@ Status: design for review, 5 October 2026; nothing is implemented yet ([plan](pl
 
 **Story.** An operator opens Programs in the admin area, creates "AI for Insurance Challenge × Tasco" and saves it as a draft. They enter the summary, the window in which applications are taken, the dates of the briefing and the demo day, and the briefing as an event with its registration link; they upload a cover and publish. The program appears on the public list under Open now. When the window closes it stays on the list as running, and after its last day it moves to Done.
 
-- _The address is taken:_ saving is refused and names the field.
+- _The address is taken:_ saving is refused with a failure of its own.
 - _The window is inconsistent_ (it closes before it opens, or outcomes are due before it closes): saving is refused and names the field.
 - _A published program is found to be wrong:_ the operator unpublishes it; it leaves the public list and its address answers "not found" until it is published again.
 
@@ -29,7 +29,7 @@ Status: design for review, 5 October 2026; nothing is implemented yet ([plan](pl
 
 **Commands and facts.** Create, update, publish, unpublish. No event is published to other modules yet: `ProgramApplicationsClosed` of the domain model arrives with the review of proposals (BEY-38), its first listener.
 
-**Owner of data and rules.** `program` owns the program, its window, its key dates and its events, and these rules: an address is unique and never reused by another program; a window opens before it closes; only a published program is public; a phase follows from the dates and the clock alone.
+**Owner of data and rules.** `program` owns the program, its window, its key dates and its events, and these rules: an address is unique, and fixed from the first publication on; a window opens before it closes; only a published program is public; a phase follows from the dates and the clock alone.
 
 **Communication.** `program` asks `identity` whether the caller is an operator, asks `storage` for the cover it is given, and records each change with `audit` in the same transaction as the change. `proposal` will ask `program` whether a program takes applications now (BEY-37); nothing calls `program` yet.
 
@@ -45,6 +45,9 @@ Status: design for review, 5 October 2026; nothing is implemented yet ([plan](pl
 | The phase is derived | `upcoming` before the program starts or its window opens, `open` while the window is open, `running` after the window closes (or with no window) until the last day, `done` after it | A stored status goes stale the minute a deadline passes; the list must be right at 23:59 without anyone acting |
 | The three window dates are also key dates | The opening, the closing and the day outcomes are due appear in the timeline, computed from the window; an operator edits them in one place | The Settings screen shows them locked in Key dates for that reason |
 | Times | Stored as instants; entered and shown in Vietnam time (ICT), with the zone written beside a deadline | Every program so far is run from Vietnam; a zone per program is a later column if one is needed |
+| The address is fixed once published | An operator changes the address freely while the program has never been published; after the first publication it stays, published or not | A shared link must not die because someone tidied a name |
+| Two statuses | `draft` and `published`. The domain model's `archived` is added with the first screen that archives | No screen or command uses it yet |
+| No paging | Both lists return every program they select | GenAI Fund runs a few programs a year; paging is added when a list is long |
 | The partner is a name | `partner_name` as text | `organization` does not exist yet; the link is added when it does (the domain model's decision of 3 October) |
 | One save for a program | Settings sends the program with its window, key dates and events together; the lists are replaced as sent | The screen has one Save changes; a program is small, and a half-saved timeline is worse than a refused save |
 | Reading the lists | The public list and the admin list are `JdbcClient` queries; the program an operator edits is a JPA aggregate | The split the [persistence guideline](../../../guidelines/persistence.md) gives: screens that list read with SQL, flows that change state use entities |
@@ -57,9 +60,9 @@ Status: design for review, 5 October 2026; nothing is implemented yet ([plan](pl
 | Step | Request | Answer |
 | --- | --- | --- |
 | The public list | `GET /api/program/programs?phase=&type=`, without a session | Published programs with name, address, type, partner, summary, cover, phase, window, the next key dates and the upcoming events |
-| A public program | `GET /api/program/programs/{slug}`, without a session | The same, with About, every key date and every event, the page kind and the external address. `404` for a draft, an archived program or an unknown address |
+| A public program | `GET /api/program/programs/{slug}`, without a session | The same, with About, every key date and every event, the page kind and the external address. `404` for a draft or an unknown address |
 | The admin list | `GET /api/program/admin/programs` | Every program with its status, phase and window. `403` for a caller who is not an operator |
-| Create | `POST /api/program/admin/programs` with name, address and type | `201` with the draft. `400` with the field for a taken or malformed address |
+| Create | `POST /api/program/admin/programs` with name, address and type | `201` with the draft. `400` naming the member that is malformed; `409` `PROGRAM_SLUG_TAKEN` for a taken address |
 | Read for editing | `GET /api/program/admin/programs/{id}` | The whole program as the Settings screen shows it |
 | Save | `PUT /api/program/admin/programs/{id}` | The saved program. `400` with the fields that are wrong; `409` when someone else saved it in the meantime |
 | Publish, unpublish | `POST /api/program/admin/programs/{id}/publish`, `…/unpublish` | `204`. Publishing is refused with `400` while the summary is empty |
@@ -80,12 +83,12 @@ The domain model lists `usecase` and `organization` as dependencies of `program`
 
 | Table | Columns |
 | --- | --- |
-| `program` | `id`, `slug` (unique), `name`, `type` (the ten types of the domain model), `partner_name`, `summary`, `about`, `countries text[]`, `starts_on`, `ends_on`, `status` (`draft`, `published`, `archived`), `page_kind` (`standard`, `custom`, `external`), `external_url`, `cover_file_id`, `version`, `created_at`, `updated_at` |
+| `program` | `id`, `slug` (unique), `name`, `type` (the ten types of the domain model), `partner_name`, `summary`, `about`, `starts_on`, `ends_on`, `status` (`draft`, `published`), `published_at` (the first publication), `page_kind` (`standard`, `custom`, `external`), `external_url`, `cover_file_id`, `version`, `created_at`, `updated_at` |
 | `program_application_settings` | `program_id` (primary key), `opens_at`, `closes_at`, `shortlist_size`, `outcomes_due_on`, `allow_updates_until_close` |
 | `program_milestone` | `id`, `program_id`, `position`, `title`, `starts_at`, `ends_at`, `all_day`, `note` |
 | `program_event` | `id`, `program_id`, `position`, `title`, `starts_at`, `ends_at`, `online`, `city`, `country`, `registration_url` |
 
-Against the domain model: `body` becomes `about`; `cover_document_id` becomes `cover_file_id`; `page_kind` is new; the settings lose `timezone`, `scope` and `max_use_cases_per_proposal` until use cases are featured, and gain `shortlist_size` and `outcomes_due_on`, which the Settings screen asks for. `program_question`, `program_use_case`, `program_partner`, `program_person` and `program_section` are not created in this slice.
+Against the domain model: `body` becomes `about`; `cover_document_id` becomes `cover_file_id`; `page_kind` and `published_at` are new; `countries` and the `archived` status wait for a screen that uses them; the settings lose `timezone`, `scope` and `max_use_cases_per_proposal` until use cases are featured, and gain `shortlist_size` and `outcomes_due_on`, which the Settings screen asks for. `program_question`, `program_use_case`, `program_partner`, `program_person` and `program_section` are not created in this slice.
 
 ## The web application
 

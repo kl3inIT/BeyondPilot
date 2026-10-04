@@ -53,6 +53,82 @@ export type AccountSummary = {
 };
 
 /**
+ * A program as an operator edits it, in any status.
+ */
+export type AdminProgram = {
+    /**
+     * The text of the standard page.
+     */
+    about?: string | null;
+    createdAt: string;
+    endsOn?: string | null;
+    externalUrl?: string | null;
+    id: string;
+    name: string;
+    /**
+     * `standard` is built from these fields, `custom` is written in the web application for this address, `external` links to `externalUrl`.
+     */
+    pageKind: 'standard' | 'custom' | 'external';
+    /**
+     * The organization the program is run with.
+     */
+    partnerName?: string | null;
+    /**
+     * The address under /programs.
+     */
+    slug: string;
+    startsOn?: string | null;
+    /**
+     * Only a published program is public.
+     */
+    status: 'draft' | 'published';
+    /**
+     * One or two sentences, shown on the list.
+     */
+    summary?: string | null;
+    type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+    updatedAt: string;
+    /**
+     * Sent back with a save, which is refused when someone else saved in the meantime.
+     */
+    version: number;
+};
+
+/**
+ * Every program, the newest first.
+ */
+export type AdminProgramList = {
+    items: Array<AdminProgramSummary>;
+};
+
+/**
+ * One program in the operators' list.
+ */
+export type AdminProgramSummary = {
+    endsOn?: string | null;
+    id: string;
+    name: string;
+    partnerName?: string | null;
+    slug: string;
+    startsOn?: string | null;
+    status: 'draft' | 'published';
+    type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+    updatedAt: string;
+};
+
+/**
+ * What a program cannot do without. It is created as a draft.
+ */
+export type CreateProgram = {
+    name: string;
+    /**
+     * The address under /programs: lowercase letters, digits and single hyphens.
+     */
+    slug: string;
+    type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+};
+
+/**
  * The signed-in account.
  */
 export type Me = {
@@ -403,6 +479,107 @@ export type GetMeResponses = {
 };
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type ListAdminProgramsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/program/admin/programs';
+};
+
+export type ListAdminProgramsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminProgramsError = ListAdminProgramsErrors[keyof ListAdminProgramsErrors];
+
+export type ListAdminProgramsResponses = {
+    /**
+     * Every program in any status.
+     */
+    200: AdminProgramList;
+};
+
+export type ListAdminProgramsResponse = ListAdminProgramsResponses[keyof ListAdminProgramsResponses];
+
+export type CreateProgramData = {
+    body: CreateProgram;
+    path?: never;
+    query?: never;
+    url: '/api/program/admin/programs';
+};
+
+export type CreateProgramErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * Another program already has this address.
+     */
+    409: Problem;
+};
+
+export type CreateProgramError = CreateProgramErrors[keyof CreateProgramErrors];
+
+export type CreateProgramResponses = {
+    /**
+     * The draft.
+     */
+    201: AdminProgram;
+};
+
+export type CreateProgramResponse = CreateProgramResponses[keyof CreateProgramResponses];
+
+export type GetAdminProgramData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}';
+};
+
+export type GetAdminProgramErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+};
+
+export type GetAdminProgramError = GetAdminProgramErrors[keyof GetAdminProgramErrors];
+
+export type GetAdminProgramResponses = {
+    /**
+     * The program.
+     */
+    200: AdminProgram;
+};
+
+export type GetAdminProgramResponse = GetAdminProgramResponses[keyof GetAdminProgramResponses];
 
 export type GetPublicFileData = {
     body?: never;

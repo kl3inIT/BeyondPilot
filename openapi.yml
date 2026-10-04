@@ -13,6 +13,8 @@ tags:
   name: Identity
 - description: Uploading and reading files.
   name: Storage
+- description: The programs operators create and edit.
+  name: Program administration
 paths:
   /api/identity/accounts:
     get:
@@ -271,6 +273,117 @@ paths:
       summary: The signed-in account
       tags:
       - Identity
+  /api/program/admin/programs:
+    get:
+      operationId: listAdminPrograms
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminProgramList"
+          description: Every program in any status.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "Every program, the newest first"
+      tags:
+      - Program administration
+    post:
+      operationId: createProgram
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProgram"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminProgram"
+          description: The draft.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Another program already has this address.
+      security:
+      - session: []
+      summary: Create a program as a draft
+      tags:
+      - Program administration
+  /api/program/admin/programs/{id}:
+    get:
+      operationId: getAdminProgram
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminProgram"
+          description: The program.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program.
+      security:
+      - session: []
+      summary: One program as an operator edits it
+      tags:
+      - Program administration
   /api/storage/files/{id}:
     get:
       description: "The bytes of a file anyone may read, such as an image of a program,\
@@ -508,6 +621,193 @@ components:
       - id
       - role
       - status
+    AdminProgram:
+      type: object
+      description: "A program as an operator edits it, in any status."
+      properties:
+        about:
+          type:
+          - string
+          - "null"
+          description: The text of the standard page.
+        createdAt:
+          type: string
+          format: date-time
+        endsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        externalUrl:
+          type:
+          - string
+          - "null"
+          format: uri
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        pageKind:
+          type: string
+          description: "`standard` is built from these fields, `custom` is written\
+            \ in the web application for this address, `external` links to `externalUrl`."
+          enum:
+          - standard
+          - custom
+          - external
+        partnerName:
+          type:
+          - string
+          - "null"
+          description: The organization the program is run with.
+        slug:
+          type: string
+          description: The address under /programs.
+        startsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        status:
+          type: string
+          description: Only a published program is public.
+          enum:
+          - draft
+          - published
+        summary:
+          type:
+          - string
+          - "null"
+          description: "One or two sentences, shown on the list."
+        type:
+          type: string
+          enum:
+          - enterprise_challenge
+          - open_innovation_call
+          - accelerator
+          - hackathon
+          - buildathon
+          - grant
+          - venture_building
+          - pitch_competition
+          - event_series
+          - event
+        updatedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+          description: "Sent back with a save, which is refused when someone else\
+            \ saved in the meantime."
+      required:
+      - createdAt
+      - id
+      - name
+      - pageKind
+      - slug
+      - status
+      - type
+      - updatedAt
+      - version
+    AdminProgramList:
+      type: object
+      description: "Every program, the newest first."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminProgramSummary"
+      required:
+      - items
+    AdminProgramSummary:
+      type: object
+      description: One program in the operators' list.
+      properties:
+        endsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        partnerName:
+          type:
+          - string
+          - "null"
+        slug:
+          type: string
+        startsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        status:
+          type: string
+          enum:
+          - draft
+          - published
+        type:
+          type: string
+          enum:
+          - enterprise_challenge
+          - open_innovation_call
+          - accelerator
+          - hackathon
+          - buildathon
+          - grant
+          - venture_building
+          - pitch_competition
+          - event_series
+          - event
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - name
+      - slug
+      - status
+      - type
+      - updatedAt
+    CreateProgram:
+      type: object
+      description: What a program cannot do without. It is created as a draft.
+      properties:
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+        slug:
+          type: string
+          description: "The address under /programs: lowercase letters, digits and\
+            \ single hyphens."
+          example: insurance-ai-tasco
+          maxLength: 60
+          minLength: 3
+          pattern: "[a-z0-9]+(-[a-z0-9]+)*"
+        type:
+          type: string
+          enum:
+          - enterprise_challenge
+          - open_innovation_call
+          - accelerator
+          - hackathon
+          - buildathon
+          - grant
+          - venture_building
+          - pitch_competition
+          - event_series
+          - event
+          pattern: enterprise_challenge|open_innovation_call|accelerator|hackathon|buildathon|grant|venture_building|pitch_competition|event_series|event
+      required:
+      - name
+      - slug
+      - type
     Me:
       type: object
       description: The signed-in account.

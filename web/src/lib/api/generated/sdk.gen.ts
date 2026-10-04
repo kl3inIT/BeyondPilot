@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetMeData, GetMeErrors, GetMeResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
+import type { ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetMeData, GetMeErrors, GetMeResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -93,6 +93,49 @@ export const getMe = <ThrowOnError extends boolean = true>(options?: Options<Get
             type: 'apiKey'
         }],
     url: '/api/identity/me',
+    ...options
+});
+
+/**
+ * Every program, the newest first
+ */
+export const listAdminPrograms = <ThrowOnError extends boolean = true>(options?: Options<ListAdminProgramsData, ThrowOnError>): RequestResult<ListAdminProgramsResponses, ListAdminProgramsErrors, ThrowOnError> => (options?.client ?? client).get<ListAdminProgramsResponses, ListAdminProgramsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/program/admin/programs',
+    ...options
+});
+
+/**
+ * Create a program as a draft
+ */
+export const createProgram = <ThrowOnError extends boolean = true>(options: Options<CreateProgramData, ThrowOnError>): RequestResult<CreateProgramResponses, CreateProgramErrors, ThrowOnError> => (options.client ?? client).post<CreateProgramResponses, CreateProgramErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/program/admin/programs',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * One program as an operator edits it
+ */
+export const getAdminProgram = <ThrowOnError extends boolean = true>(options: Options<GetAdminProgramData, ThrowOnError>): RequestResult<GetAdminProgramResponses, GetAdminProgramErrors, ThrowOnError> => (options.client ?? client).get<GetAdminProgramResponses, GetAdminProgramErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/program/admin/programs/{id}',
     ...options
 });
 
