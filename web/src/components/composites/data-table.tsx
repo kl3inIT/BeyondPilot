@@ -1,0 +1,142 @@
+import { cn } from "cn";
+
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Table } from "@/components/ui/table";
+
+/**
+ * The frame every list of the application shares. A list is read by a Server Component from the
+ * parameters of the URL and drawn with the registry table inside this frame; nothing here fetches
+ * or keeps state (docs/conventions.md › Lists).
+ */
+function DataTable({ className, ...props }: React.ComponentProps<typeof Table>) {
+  return (
+    <div data-slot="data-table" className={cn("overflow-hidden rounded-lg border", className)}>
+      <Table {...props} />
+    </div>
+  );
+}
+
+type DataTableEmptyProps = {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  /** The one action that leads out of this state, for example clearing the search and filters. */
+  children?: React.ReactNode;
+};
+
+/**
+ * What a list shows in place of its rows: a search that found nothing, or a list with nothing in it
+ * yet. The two are different states with their own words.
+ */
+function DataTableEmpty({ icon, title, description, children }: DataTableEmptyProps) {
+  return (
+    <Empty data-slot="data-table-empty">
+      <EmptyHeader>
+        <EmptyMedia>{icon}</EmptyMedia>
+        <EmptyTitle>{title}</EmptyTitle>
+        <EmptyDescription>{description}</EmptyDescription>
+      </EmptyHeader>
+      {children && <EmptyContent>{children}</EmptyContent>}
+    </Empty>
+  );
+}
+
+/** The pages to offer around the current one: the first, the last, the neighbours, and gaps between. */
+function pagesAround(current: number, last: number): (number | "gap")[] {
+  const shown = [1, current - 1, current, current + 1, last].filter(
+    (page, index, all) => page >= 1 && page <= last && all.indexOf(page) === index,
+  );
+  return shown.flatMap((page, index) =>
+    index > 0 && page - shown[index - 1] > 1 ? (["gap", page] as const) : [page],
+  );
+}
+
+type DataTableFooterProps = {
+  /** How many records match, already worded: "8 accounts". */
+  count: string;
+  /** The current page, counted from 1, and the last one. */
+  page: number;
+  pages: number;
+  /** The address of a page, already carrying the search and filters; the link adds the locale. */
+  href: (page: number) => string;
+  labels: {
+    /** The name of the paging navigation for assistive technology. */
+    navigation: string;
+    previous: string;
+    next: string;
+    goToPrevious: string;
+    goToNext: string;
+    page: (page: number) => string;
+  };
+};
+
+/**
+ * Under a list: how many records match, and the registry pagination when they fill more than one
+ * page. A way that does not exist, back from the first page or on from the last, is not offered.
+ */
+function DataTableFooter({ count, page, pages, href, labels }: DataTableFooterProps) {
+  return (
+    <div data-slot="data-table-footer" className="flex items-center justify-between gap-4">
+      <p className="text-sm text-muted-foreground">{count}</p>
+      {pages > 1 && (
+        <Pagination aria-label={labels.navigation} className="mx-0 w-auto">
+          <PaginationContent>
+            {page > 1 && (
+              <PaginationItem>
+                <PaginationPrevious
+                  href={href(page - 1)}
+                  text={labels.previous}
+                  aria-label={labels.goToPrevious}
+                />
+              </PaginationItem>
+            )}
+            {pagesAround(page, pages).map((entry, index) =>
+              entry === "gap" ? (
+                <PaginationItem key={`gap-${index}`}>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              ) : (
+                <PaginationItem key={entry}>
+                  <PaginationLink
+                    href={href(entry)}
+                    isActive={entry === page}
+                    aria-label={labels.page(entry)}
+                  >
+                    {entry}
+                  </PaginationLink>
+                </PaginationItem>
+              ),
+            )}
+            {page < pages && (
+              <PaginationItem>
+                <PaginationNext
+                  href={href(page + 1)}
+                  text={labels.next}
+                  aria-label={labels.goToNext}
+                />
+              </PaginationItem>
+            )}
+          </PaginationContent>
+        </Pagination>
+      )}
+    </div>
+  );
+}
+
+export { DataTable, DataTableEmpty, DataTableFooter };

@@ -279,8 +279,100 @@
     "empty": "Chưa có màn quản trị nào.",
     "nav": {
       "label": "Điều hướng quản trị",
-      "home": "Trang chủ"
+      "home": "Trang chủ",
+      "accounts": "Tài khoản"
     },
-    "toggleSidebar": "Thu gọn hoặc mở thanh bên"
+    "toggleSidebar": "Thu gọn hoặc mở thanh bên",
+    "accounts": {
+      "metaTitle": "Tài khoản · BeyondPilot",
+      "title": "Tài khoản",
+      "lead": "Mọi người đã đăng nhập BeyondPilot. Operator là nhân viên GenAI Fund và vào được khu vực này.",
+      "search": "Tìm theo tên hoặc email",
+      "filters": {
+        "status": {
+          "label": "Trạng thái",
+          "all": "Mọi trạng thái"
+        },
+        "role": {
+          "label": "Vai trò",
+          "all": "Mọi vai trò"
+        }
+      },
+      "columns": {
+        "account": "Tài khoản",
+        "role": "Vai trò",
+        "status": "Trạng thái",
+        "lastSignIn": "Đăng nhập gần nhất",
+        "created": "Ngày tạo",
+        "actions": "Thao tác"
+      },
+      "role": {
+        "user": "Người dùng",
+        "operator": "Operator"
+      },
+      "status": {
+        "active": "Đang hoạt động",
+        "disabled": "Đã khóa"
+      },
+      "you": "Bạn",
+      "today": "Hôm nay, {time}",
+      "dayAndTime": "{day}, {time}",
+      "never": "Chưa từng",
+      "count": "{count} tài khoản",
+      "pagination": {
+        "label": "Các trang tài khoản",
+        "previous": "Trước",
+        "next": "Sau",
+        "goToPrevious": "Về trang trước",
+        "goToNext": "Sang trang sau",
+        "page": "Trang {page}"
+      },
+      "actions": {
+        "open": "Thao tác với {name}",
+        "makeOperator": "Cấp quyền operator…",
+        "withdrawOperator": "Thu quyền operator…",
+        "disable": "Khóa tài khoản…",
+        "enable": "Mở khóa tài khoản"
+      },
+      "confirm": {
+        "cancel": "Hủy",
+        "disable": {
+          "title": "Khóa tài khoản này?",
+          "lead": "Bạn sắp khóa:",
+          "note": "Người này bị đăng xuất ngay và không đăng nhập lại được. Những gì họ đã nộp vẫn còn nguyên, và bạn có thể mở khóa bất cứ lúc nào.",
+          "confirm": "Khóa tài khoản"
+        },
+        "makeOperator": {
+          "title": "Cấp quyền operator cho {name}?",
+          "lead": "Bạn sắp cấp quyền operator cho:",
+          "note": "Operator vào được khu vực quản trị: điều hành chương trình, duyệt đơn và quản lý tài khoản. Bạn có thể thu quyền bất cứ lúc nào.",
+          "confirm": "Cấp quyền"
+        },
+        "withdrawOperator": {
+          "title": "Thu quyền operator?",
+          "lead": "Bạn sắp thu quyền operator của:",
+          "note": "Người này vẫn giữ tài khoản và những gì đã nộp, nhưng mất quyền vào khu vực quản trị ngay.",
+          "confirm": "Thu quyền"
+        }
+      },
+      "done": {
+        "disabled": "{name} không còn đăng nhập được.",
+        "enabled": "{name} đã đăng nhập lại được.",
+        "operatorGranted": "{name} giờ là operator.",
+        "operatorWithdrawn": "{name} không còn là operator."
+      },
+      "errors": {
+        "ownAccount": "Bạn không thể tự khóa tài khoản hay tự thu quyền của mình.",
+        "operatorConfigured": "Operator này được khai trong cấu hình máy chủ nên không thu quyền ở đây được.",
+        "accountNotFound": "Tài khoản này không còn tồn tại.",
+        "operatorRequired": "Bạn không còn là operator.",
+        "unknown": "Thao tác không thành công. Hãy thử lại."
+      },
+      "empty": {
+        "title": "Không có tài khoản nào khớp",
+        "description": "Không có tài khoản nào khớp với từ khóa và bộ lọc này.",
+        "clear": "Xóa từ khóa và bộ lọc"
+      }
+    }
   }
 }

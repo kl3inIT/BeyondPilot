@@ -1,4 +1,3 @@
-import { HouseIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import type { AccountMenuProps } from "@/components/layout/account-menu";
@@ -19,15 +18,11 @@ import { siteRoutes } from "@/lib/site";
 
 /**
  * The admin area's sidebar, the stock shadcn one that collapses to icons: the brand, the
- * destinations, and the signed-in person at the foot. A destination is listed here once its screen
- * exists.
+ * destinations it is given, and the signed-in person at the foot.
  */
-function AdminSidebar({ account }: { account: AccountMenuProps }) {
+function AdminSidebar({ account, items }: { account: AccountMenuProps; items: AdminNavItem[] }) {
   const t = useTranslations("Admin");
   const s = useTranslations("Site");
-  const items: AdminNavItem[] = [
-    { href: siteRoutes.admin, label: t("nav.home"), icon: <HouseIcon aria-hidden="true" /> },
-  ];
 
   return (
     <Sidebar collapsible="icon">

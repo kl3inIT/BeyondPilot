@@ -12,6 +12,7 @@ export const siteRoutes = {
   founders: "/founders",
   search: "/search",
   admin: "/admin",
+  adminAccounts: "/admin/accounts",
 } as const;
 
 /** Planned pages without a screen yet; they share the coming-soon page. */
