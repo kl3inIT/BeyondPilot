@@ -1,27 +1,33 @@
 # Identity: verification matrix
 
-Boundaries follow [conventions › Testing](../conventions.md#testing). Sign-in is application composition, sessions and filters, so its tests start the full application and speak real HTTP against PostgreSQL; only the SMTP server is replaced.
+Boundaries follow [conventions › Testing](../conventions.md#testing). Sign-in is application composition, sessions and filters, so its tests start the full application and speak real HTTP against PostgreSQL; only the SMTP server is replaced. The web screens are covered by `web/tests/e2e/sign-in.spec.ts`, with the backend's answers stood in for.
 
-| Contract | Regression it catches | Test |
+## Backend
+
+| Contract | Regression it catches | Test (`IdentitySignInTest` unless named) |
 | --- | --- | --- |
-| An emailed link opens a session of the address; the email is in the asked language and carries the return path | A link that does not sign in, a wrong link address, a missing translation | `IdentitySignInTest.anEmailedLinkOpensASessionOfTheAddress` |
-| A link works once | A reusable link | `IdentitySignInTest.aLinkWorksOnce` |
-| An expired link is refused | A link that outlives its lifetime | `IdentitySignInTest.anExpiredLinkIsRefused` |
-| The return path is a path of this origin | An open redirect through the emailed link | `IdentitySignInTest.anExternalSiteCannotBeTheReturnDestination` |
-| A configured operator address is an operator from its first sign-in | Nobody can operate a new environment | `IdentitySignInTest.aConfiguredOperatorAddressIsAnOperatorFromItsFirstSignIn` |
-| The link and Google reach one account of an address; a returning Google user is found by subject | A second, empty account for the same person | `IdentitySignInTest.googleAndTheLinkReachOneAccountOfAnAddress` |
-| A first Google sign-in needs a verified address | Taking over an account with an unverified address | `IdentitySignInTest.aFirstGoogleSignInNeedsAVerifiedAddress` |
-| A disabled account cannot sign in and its open session stops | A disabled account that keeps working | `IdentitySignInTest.aDisabledAccountCannotSignInAndItsOpenSessionStops` |
-| Signing out ends the session | A cookie that still works after sign-out | `IdentitySignInTest.signingOutEndsTheSession` |
-| Only a POST signs out | A link on another site that ends a session | `IdentitySignInTest.aLinkToTheSignOutAddressDoesNotSignOut` |
-| Without a session, an API path answers a 401 problem | An open API path, or a refusal that is not a problem | `IdentitySignInTest.nobodySignedInIsAnUnauthorizedProblem`, `ProblemResponsesTest.anApiPathWithoutASessionIsAnUnauthorizedProblem` |
-| A state-changing request without the CSRF header is refused | A cross-site form that acts for a signed-in person | `IdentitySignInTest.aStateChangingRequestWithoutTheCsrfHeaderIsRefused`, `ProblemResponsesTest.aStateChangingRequestWithoutTheCsrfHeaderIsAForbiddenProblem` |
-| An address holds at most three working links; the refusal says when to retry | Flooding a mailbox; a 429 without `Retry-After` | `IdentitySignInTest.anAddressGetsALimitedNumberOfWorkingLinks` |
-| Requests for one address that arrive together send at most three emails | A limit that concurrent requests slip past | `IdentitySignInTest.requestsThatArriveTogetherDoNotExceedTheLimit` |
-| No spelling of the link address gets around the checks | A path variant that reaches Spring Security's filter but not the guard | `IdentitySignInTest.noSpellingOfTheLinkAddressGetsAroundTheChecks` |
-| A malformed or overlong address is refused | Mail sent to nonsense; a server error on a long value | `IdentitySignInTest.aMalformedAddressIsRefused` |
+| A code typed in the browser that asked opens a session of the address; the email is in the asked language | A code that does not sign in, a missing translation, a session not replaced on sign-in | `aCodeTypedInTheBrowserThatAskedOpensASessionOfTheAddress` |
+| A code is worth nothing outside the browser that asked for it, and trying it there neither spends nor counts against it | Signing someone into another person's account with a forwarded code; guessing at or blocking a code from elsewhere | `aCodeIsWorthNothingOutsideTheBrowserThatAskedForIt` |
+| A code works once | A reusable code | `aCodeWorksOnce` |
+| An expired code is refused | A code that outlives its lifetime | `anExpiredCodeIsRefused` |
+| Five wrong codes stop the code, also for the right one | Unlimited guessing | `wrongCodesStopTheCodeFromWorking` |
+| Guesses sent together get no more turns than guesses sent in a row | A limit that concurrent guesses outrun | `guessesSentTogetherGetNoMoreTurnsThanGuessesSentInARow` |
+| An address that keeps getting wrong codes gets no new code for a day | Slow guessing over many codes | `anAddressThatKeepsGettingWrongCodesGetsNoNewCodeForADay` |
+| A new code replaces the one before it in the same browser | An older code that still signs in | `aNewCodeReplacesTheOneBeforeItInTheSameBrowser` |
+| The code is stored as a hash | A database copy that reveals working codes | `theCodeIsNotStoredAsSent` |
+| An address holds at most three working codes; the refusal says when to retry | Flooding a mailbox; a 429 without `Retry-After` | `anAddressGetsALimitedNumberOfWorkingCodes` |
+| Requests for one address that arrive together send at most three emails | A limit that concurrent requests slip past | `requestsThatArriveTogetherDoNotExceedTheLimit` |
+| No spelling of the code request address gets around the checks | A path variant that reaches Spring Security's filter but not the guard | `noSpellingOfTheCodeRequestAddressGetsAroundTheChecks` |
+| A value that is not a plain address is refused and nothing is stored for it | Mail sent to nonsense, header injection, a full table | `aMalformedAddressIsRefused` |
+| A configured operator address is an operator from its first sign-in | Nobody can operate a new environment | `aConfiguredOperatorAddressIsAnOperatorFromItsFirstSignIn` |
+| The code and Google reach one account of an address; a returning Google user is found by subject | A second, empty account for the same person | `googleAndTheCodeReachOneAccountOfAnAddress` |
+| A first Google sign-in needs a verified address | Taking over an account with an unverified address | `aFirstGoogleSignInNeedsAVerifiedAddress` |
+| A disabled account cannot sign in and its open session stops | A disabled account that keeps working | `aDisabledAccountCannotSignInAndItsOpenSessionStops` |
+| Signing out ends the session; only a POST signs out | A cookie that still works after sign-out; a page of another site that ends a session | `signingOutEndsTheSession`, `aLinkToTheSignOutAddressDoesNotSignOut` |
+| Without a session, an API path answers a 401 problem | An open API path, or a refusal that is not a problem | `nobodySignedInIsAnUnauthorizedProblem`, `ProblemResponsesTest.anApiPathWithoutASessionIsAnUnauthorizedProblem` |
+| A state-changing request without the CSRF header is refused | A cross-site form that acts for a signed-in person | `aStateChangingRequestWithoutTheCsrfHeaderIsRefused`, `ProblemResponsesTest.aStateChangingRequestWithoutTheCsrfHeaderIsAForbiddenProblem` |
 | Choosing Google redirects to Google and remembers a path of this origin only | A broken start of the round trip, an open redirect after it | `GoogleSignInStartTest` |
-| The session cookie is `HttpOnly` and `SameSite=Lax` | A cookie readable by scripts or sent across sites | Asserted on every redemption in `IdentitySignInTest` |
+| The session cookie is `HttpOnly` and `SameSite=Lax` | A cookie readable by scripts or sent across sites | Asserted on every session in `IdentitySignInTest` |
 | The modules are closed and `identity` depends only on `notification` | A new dependency edge | `ModulithArchitectureTest` |
 | `openapi.yml` describes `GET /api/identity/me` | A stale contract | `OpenApiContractTest` |
 

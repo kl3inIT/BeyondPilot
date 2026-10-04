@@ -1,27 +1,26 @@
 /** Every request that changes state carries this header (docs/conventions.md › Published API contracts). */
 const csrfHeader = { "X-BeyondPilot-CSRF": "1" };
 
-type LinkRequestOutcome =
+type CodeRequestOutcome =
   | { kind: "sent" }
   | { kind: "invalid" }
   | { kind: "limited"; retryAfterMinutes: number }
   | { kind: "failed" };
 
-type LinkRequest = { email: string; locale: string; returnTo?: string };
+type CodeRequest = { email: string; locale: string };
 
-/** Asks the backend to email a sign-in link. The answer never says whether the address has an account. */
-async function requestSignInLink({
-  email,
-  locale,
-  returnTo,
-}: LinkRequest): Promise<LinkRequestOutcome> {
-  const form = new URLSearchParams({ username: email, locale });
-  if (returnTo) {
-    form.set("returnTo", returnTo);
-  }
+/**
+ * Asks the backend to email a sign-in code. The answer never says whether the address has an
+ * account. The backend ties the code to this browser's session, so only this browser can use it.
+ */
+async function requestSignInCode({ email, locale }: CodeRequest): Promise<CodeRequestOutcome> {
   let response: Response;
   try {
-    response = await fetch("/ott/generate", { method: "POST", headers: csrfHeader, body: form });
+    response = await fetch("/ott/generate", {
+      method: "POST",
+      headers: csrfHeader,
+      body: new URLSearchParams({ username: email, locale }),
+    });
   } catch {
     return { kind: "failed" };
   }
@@ -38,17 +37,32 @@ async function requestSignInLink({
   return { kind: "failed" };
 }
 
-/** Redeems the token of an emailed link; on success the response sets the session cookie. */
-async function redeemSignInLink(token: string): Promise<boolean> {
+/**
+ * What the backend made of a typed code: `wrong` can be tried again, `expired` and `locked` need a
+ * new code, `disabled` is an account that may not sign in, `failed` is a request that did not get
+ * an answer.
+ */
+type CodeCheckOutcome = "signed-in" | "wrong" | "expired" | "locked" | "disabled" | "failed";
+
+const codeCheckByStatus: Record<number, CodeCheckOutcome> = {
+  204: "signed-in",
+  401: "wrong",
+  410: "expired",
+  429: "locked",
+  403: "disabled",
+};
+
+/** Checks a typed code; on success the response sets the session cookie. */
+async function verifySignInCode(code: string): Promise<CodeCheckOutcome> {
   try {
     const response = await fetch("/login/ott", {
       method: "POST",
       headers: csrfHeader,
-      body: new URLSearchParams({ token }),
+      body: new URLSearchParams({ code }),
     });
-    return response.status === 204;
+    return codeCheckByStatus[response.status] ?? "failed";
   } catch {
-    return false;
+    return "failed";
   }
 }
 
@@ -59,4 +73,10 @@ function googleSignInPath(returnTo?: string) {
     : "/oauth2/authorization/google";
 }
 
-export { googleSignInPath, redeemSignInLink, requestSignInLink, type LinkRequestOutcome };
+export {
+  googleSignInPath,
+  requestSignInCode,
+  verifySignInCode,
+  type CodeCheckOutcome,
+  type CodeRequestOutcome,
+};

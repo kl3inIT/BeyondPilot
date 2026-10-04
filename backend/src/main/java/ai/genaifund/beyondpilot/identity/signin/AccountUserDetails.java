@@ -9,7 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
- * The principal of a session opened with an emailed link. It holds no authority: roles are read from the account when
+ * The principal of a session opened with an emailed code. It holds no authority: roles are read from the account when
  * an operation needs them.
  */
 public final class AccountUserDetails implements UserDetails {

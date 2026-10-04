@@ -216,7 +216,7 @@
     "or": "or",
     "emailLabel": "Email",
     "emailPlaceholder": "you@company.com",
-    "submit": "Email me a sign-in link",
+    "submit": "Email me a sign-in code",
     "invalidEmail": "Enter an email address like name@company.com.",
     "sendFailedTitle": "We couldn't send the email",
     "sendFailedBody": "Nothing was sent to {email}. Try again in a moment.",
@@ -224,24 +224,24 @@
     "googleFailedBody": "Try again, or get a sign-in link by email instead.",
     "sent": {
       "title": "Check your email",
-      "sentTo": "We sent a sign-in link to",
-      "validity": "It works for 15 minutes and takes you back to where you were.",
+      "enterCode": "Enter the 6-digit code we sent to",
+      "codeLabel": "Sign-in code",
+      "continue": "Continue",
+      "validity": "The code works for 15 minutes.",
       "openGmail": "Open Gmail",
       "resendHint": "Not in your inbox or spam?",
-      "resend": "Send it again",
-      "resent": "Sent again. Not there yet?",
+      "resend": "Send a new code",
+      "resent": "Sent a new code. Not there yet?",
       "resendFailed": "We couldn't send it. Try once more?",
-      "limited": "You have asked for three links. You can ask for another in {minutes, plural, one {# minute} other {# minutes}}; the newest link still works.",
-      "differentEmail": "Use a different email"
-    },
-    "expired": {
-      "title": "This link no longer works",
-      "lead": "A sign-in link works once, for 15 minutes. Ask for a new one and you will land back where you were.",
-      "submit": "Email me a new link"
-    },
-    "signingIn": {
-      "title": "Signing you in…",
-      "lead": "You will be back where you were in a moment."
+      "limited": "You have asked for three codes. You can ask for another in {minutes, plural, one {# minute} other {# minutes}}; the newest code still works.",
+      "differentEmail": "Use a different email",
+      "problem": {
+        "wrong": "That code is not right. Check the newest email and try again.",
+        "expired": "This code has expired. Send a new one below.",
+        "locked": "Too many wrong codes. Send a new code to try again.",
+        "disabled": "This account has been disabled, so it cannot sign in.",
+        "failed": "We couldn't check the code. Try again in a moment."
+      }
     }
   }
 }

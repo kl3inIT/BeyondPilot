@@ -8,8 +8,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 /**
- * Called by Spring Security after it has consumed a valid one-time token: the username is the address the link was
- * sent to, which the redemption has just proven.
+ * Called by Spring Security after a sign-in code was accepted: the username is the address the code was
+ * sent to, which the typed code has just proven.
  */
 @Component
 class AccountUserDetailsService implements UserDetailsService {

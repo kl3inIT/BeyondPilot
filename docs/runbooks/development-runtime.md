@@ -15,7 +15,7 @@ From the repository root:
 ```
 
 - Spring Boot Docker Compose support (`spring-boot-docker-compose`, a development-only dependency) starts PostgreSQL and Mailpit from `backend/compose.yaml` and connects the application to the database. No datasource settings are needed.
-- Every email the application sends lands in Mailpit: open `http://localhost:8025` to read a sign-in link. Nothing is delivered outside the machine.
+- Every email the application sends lands in Mailpit: open `http://localhost:8025` to read a sign-in code. Nothing is delivered outside the machine.
 - The application listens on port 8080. `http://localhost:8080/actuator/health` returns `"status":"UP"`.
 - If the process is killed instead of stopped, the PostgreSQL container keeps running. Remove it with:
 
@@ -36,7 +36,6 @@ Local runs use no profile. Deployed environments run `production`; staging runs 
 | `BEYONDPILOT_DATABASE_USERNAME` | `production` | Database login. No default |
 | `BEYONDPILOT_DATABASE_PASSWORD` | `production` | Database password; a managed secret, never committed. No default |
 | `BEYONDPILOT_DATABASE_POOL_SIZE` | all | Fixed connection pool size. Default `10` |
-| `BEYONDPILOT_PUBLIC_URL` | all | Origin people open the web application at; emailed links start with it. Default `http://localhost:3000`; no default under `production` |
 | `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS` | all | Comma-separated addresses that become operators when they sign in. Default: none |
 | `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID`, `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET` | all | Google OAuth client. Locally Google sign-in is off without them; `production` does not start without them. The secret is a managed secret, never committed |
 | `BEYONDPILOT_MAIL_HOST`, `BEYONDPILOT_MAIL_PORT` | all | SMTP server. Default `localhost:1025`, the Mailpit container; no default under `production` |
@@ -49,11 +48,10 @@ Local runs use no profile. Deployed environments run `production`; staging runs 
 ## Sign in locally
 
 1. Start the backend and the web application.
-2. Ask for a link at `http://localhost:3000/sign-in`, then open the link from the newest email in Mailpit (`http://localhost:8025`); the remaining steps are the same flow by hand. Or `curl -X POST -H "X-BeyondPilot-CSRF: 1" --data-urlencode "username=you@example.test" http://localhost:8080/ott/generate`.
-3. Open `http://localhost:8025` and take the token from the link in the newest email.
-4. Redeem it: `curl -c cookies.txt -X POST -H "X-BeyondPilot-CSRF: 1" -d "token=<token>" http://localhost:8080/login/ott`, then `curl -b cookies.txt http://localhost:8080/api/identity/me`.
+2. Ask for a code at `http://localhost:3000/sign-in`.
+3. Open `http://localhost:8025` (Mailpit), read the six digits in the newest email and type them into the waiting screen.
 
-To sign in as an operator, start the backend with your address in `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS`. In Git Bash, pass form values with `--data-urlencode`: a value that starts with `/` in a plain `-d` argument is rewritten into a Windows path.
+To sign in as an operator, start the backend with your address in `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS`. The same flow by hand needs one cookie jar for both requests, because the code works only in the session that asked for it: `curl -c jar.txt -X POST -H "X-BeyondPilot-CSRF: 1" --data-urlencode "username=you@example.test" http://localhost:8080/ott/generate`, then `curl -b jar.txt -c jar.txt -X POST -H "X-BeyondPilot-CSRF: 1" -d "code=<code>" http://localhost:8080/login/ott`.
 
 ## Refresh the API contract
 

@@ -216,7 +216,7 @@
     "or": "hoặc",
     "emailLabel": "Email",
     "emailPlaceholder": "ban@congty.com",
-    "submit": "Gửi link đăng nhập cho tôi",
+    "submit": "Gửi mã đăng nhập cho tôi",
     "invalidEmail": "Nhập địa chỉ email dạng ten@congty.com.",
     "sendFailedTitle": "Chưa gửi được email",
     "sendFailedBody": "Chưa có gì được gửi tới {email}. Bạn thử lại sau ít phút.",
@@ -224,24 +224,24 @@
     "googleFailedBody": "Bạn thử lại, hoặc nhận link đăng nhập qua email.",
     "sent": {
       "title": "Kiểm tra email của bạn",
-      "sentTo": "Chúng tôi đã gửi link đăng nhập tới",
-      "validity": "Link có hiệu lực 15 phút và đưa bạn về đúng trang đang xem.",
+      "enterCode": "Nhập mã 6 số chúng tôi đã gửi tới",
+      "codeLabel": "Mã đăng nhập",
+      "continue": "Tiếp tục",
+      "validity": "Mã có hiệu lực trong 15 phút.",
       "openGmail": "Mở Gmail",
       "resendHint": "Không thấy trong hộp thư đến hay thư rác?",
-      "resend": "Gửi lại",
-      "resent": "Đã gửi lại. Vẫn chưa thấy?",
+      "resend": "Gửi mã mới",
+      "resent": "Đã gửi mã mới. Vẫn chưa thấy?",
       "resendFailed": "Chưa gửi được. Thử lại lần nữa?",
-      "limited": "Bạn đã yêu cầu ba link. Bạn có thể yêu cầu thêm sau {minutes} phút; link mới nhất vẫn dùng được.",
-      "differentEmail": "Dùng email khác"
-    },
-    "expired": {
-      "title": "Link này không còn dùng được",
-      "lead": "Mỗi link đăng nhập chỉ dùng một lần, trong 15 phút. Yêu cầu link mới và bạn sẽ về đúng trang đang xem.",
-      "submit": "Gửi link mới cho tôi"
-    },
-    "signingIn": {
-      "title": "Đang đăng nhập…",
-      "lead": "Bạn sẽ về đúng trang đang xem ngay thôi."
+      "limited": "Bạn đã yêu cầu ba mã. Bạn có thể yêu cầu thêm sau {minutes} phút; mã mới nhất vẫn dùng được.",
+      "differentEmail": "Dùng email khác",
+      "problem": {
+        "wrong": "Mã chưa đúng. Bạn xem email mới nhất rồi thử lại.",
+        "expired": "Mã này đã hết hạn. Bạn gửi mã mới ở bên dưới.",
+        "locked": "Bạn đã nhập sai quá nhiều lần. Gửi mã mới để thử lại.",
+        "disabled": "Tài khoản này đã bị khoá nên không đăng nhập được.",
+        "failed": "Chưa kiểm tra được mã. Bạn thử lại sau ít phút."
+      }
     }
   }
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { AuthBackLink } from "@/features/identity/auth-back-link";
@@ -7,7 +8,6 @@ import { getPathname } from "@/i18n/navigation";
 import { getCurrentAccount } from "@/lib/auth/session";
 import { localPath } from "@/lib/return-to";
 import { siteRoutes } from "@/lib/site";
-import { redirect } from "next/navigation";
 
 export async function generateMetadata({
   params,
@@ -26,16 +26,21 @@ export default async function SignInRoute({
   setRequestLocale(locale);
   const { returnTo: requested, error } = await searchParams;
   const returnTo = localPath(typeof requested === "string" ? requested : undefined);
+  const home = getPathname({ href: siteRoutes.home, locale });
 
   // Someone already signed in has nothing to do here.
   if (await getCurrentAccount()) {
-    redirect(returnTo ?? getPathname({ href: siteRoutes.home, locale }));
+    redirect(returnTo ?? home);
   }
 
   return (
     <>
       <AuthBackLink />
-      <SignInForm returnTo={returnTo} error={typeof error === "string" ? error : undefined} />
+      <SignInForm
+        returnTo={returnTo}
+        home={home}
+        error={typeof error === "string" ? error : undefined}
+      />
     </>
   );
 }

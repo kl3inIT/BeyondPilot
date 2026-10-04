@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Accounts and their sign-ins. An address is one account however its owner proves it: a link sent to it and a Google
+ * Accounts and their sign-ins. An address is one account however its owner proves it: a code sent to it and a Google
  * sign-in with the same verified address reach the same account.
  */
 @Service
@@ -39,12 +39,12 @@ public class IdentityService {
 	}
 
 	/**
-	 * Signs in the owner of an address that was just proven by redeeming a link sent to it.
+	 * Signs in the owner of an address that was just proven by typing the code sent to it.
 	 * @throws IdentityException when the account is disabled
 	 */
 	@Transactional
 	public Actor signInWithEmail(String email) {
-		return completeSignIn(findOrCreate(email, null), "email_link");
+		return completeSignIn(findOrCreate(email, null), "email_code");
 	}
 
 	/**

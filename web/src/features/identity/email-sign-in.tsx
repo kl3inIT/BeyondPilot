@@ -8,7 +8,7 @@ import { Button } from "@/components/actions/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { requestSignInLink, type LinkRequestOutcome } from "@/features/identity/identity-api";
+import { requestSignInCode, type CodeRequestOutcome } from "@/features/identity/identity-api";
 
 /** The backend accepts the same plain shape; anything else is refused there too. */
 const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
@@ -16,27 +16,18 @@ const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
 type EmailSignInProps = {
   /** The address to start with, when the person comes back to change it. */
   initialEmail?: string;
-  submitLabel: string;
-  returnTo?: string;
   /** Another method is in progress. */
   disabled: boolean;
   onPendingChange: (pending: boolean) => void;
-  /** A link went out, or the address already holds its share of links that still work. */
+  /** A code went out, or the address already holds its share of codes that still work. */
   onSent: (
     email: string,
-    outcome: Extract<LinkRequestOutcome, { kind: "sent" | "limited" }>,
+    outcome: Extract<CodeRequestOutcome, { kind: "sent" | "limited" }>,
   ) => void;
 };
 
-/** Asks for an address and has a sign-in link emailed to it. */
-function EmailSignIn({
-  initialEmail = "",
-  submitLabel,
-  returnTo,
-  disabled,
-  onPendingChange,
-  onSent,
-}: EmailSignInProps) {
+/** Asks for an address and has a sign-in code emailed to it. */
+function EmailSignIn({ initialEmail = "", disabled, onPendingChange, onSent }: EmailSignInProps) {
   const t = useTranslations("SignIn");
   const locale = useLocale();
   const errorId = useId();
@@ -44,7 +35,7 @@ function EmailSignIn({
   const [pending, setPending] = useState(false);
   const [problem, setProblem] = useState<"invalid" | "failed" | null>(null);
   // Until the page is interactive a click would submit the form the browser's way: a page load with
-  // the address in the URL and no link sent. The button waits for the script instead.
+  // the address in the URL and no code sent. The button waits for the script instead.
   const interactive = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -61,7 +52,7 @@ function EmailSignIn({
     setProblem(null);
     setPending(true);
     onPendingChange(true);
-    const outcome = await requestSignInLink({ email: address, locale, returnTo });
+    const outcome = await requestSignInCode({ email: address, locale });
     setPending(false);
     onPendingChange(false);
     if (outcome.kind === "sent" || outcome.kind === "limited") {
@@ -98,7 +89,7 @@ function EmailSignIn({
         pending={pending}
         disabled={disabled || !interactive}
       >
-        {submitLabel}
+        {t("submit")}
       </Button>
       {problem === "failed" && (
         <Alert variant="destructive">

@@ -13,7 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 /**
  * Remembers where a person was when they chose a provider, so {@link ReturnToSuccessHandler} can send them back after
  * the round trip. Only a path of this origin is kept, judged the way a browser reads it (no backslash, tab, line
- * break or space); the emailed link applies the same rule in the identity module.
+ * break or space).
  */
 class ReturnToFilter extends OncePerRequestFilter {
 
