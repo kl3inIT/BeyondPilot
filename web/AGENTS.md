@@ -38,6 +38,7 @@ Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 | `src/lib/`                   | `utils.ts` (`cn`), `api/generated/` (types from `openapi.yml`), and the API client and session helpers as they arrive                        |
 | `src/i18n/`                  | Locale routing, request configuration, locale-aware `Link`, message typing                                                                   |
 | `src/styles/tokens.css`      | Semantic design tokens, light and dark                                                                                                       |
+| `src/instrumentation.ts`     | Logs server rendering errors as JSON                                                                                                         |
 | `src/proxy.ts`               | Locale routing only                                                                                                                          |
 | `messages/`                  | `en.json` and `vi.json`                                                                                                                      |
 | `tests/e2e/`                 | Playwright specs and the axe helper                                                                                                          |

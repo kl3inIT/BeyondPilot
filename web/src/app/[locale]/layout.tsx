@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { ThemeProvider } from "@/components/layout/theme-provider";
+import { Providers } from "@/components/layout/providers";
 import { routing } from "@/i18n/routing";
 
 import "../globals.css";
@@ -47,9 +47,9 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <ThemeProvider>
-          <NextIntlClientProvider>{children}</NextIntlClientProvider>
-        </ThemeProvider>
+        <NextIntlClientProvider>
+          <Providers>{children}</Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
