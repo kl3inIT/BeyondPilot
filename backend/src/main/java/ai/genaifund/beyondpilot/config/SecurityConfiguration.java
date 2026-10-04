@@ -45,6 +45,9 @@ class SecurityConfiguration {
 			// A path under /api is closed unless a line here opens it; the web application serves every other path.
 			.authorizeHttpRequests(requests -> requests.dispatcherTypeMatchers(DispatcherType.ERROR)
 				.permitAll()
+				// A public file, such as an image of a program, is read without a session.
+				.requestMatchers(HttpMethod.GET, "/api/storage/files/*")
+				.permitAll()
 				.requestMatchers("/api/**")
 				.authenticated()
 				.anyRequest()

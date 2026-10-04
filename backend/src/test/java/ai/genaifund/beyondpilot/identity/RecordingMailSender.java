@@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 /** Stands in for the SMTP server, the one external collaborator of sign-in: it keeps what would have been sent. */
-class RecordingMailSender extends JavaMailSenderImpl {
+public class RecordingMailSender extends JavaMailSenderImpl {
 
 	/** The code stands alone on its line in the plain-text part. */
 	private static final Pattern CODE = Pattern.compile("(?m)^\\d{6}$");
@@ -29,7 +29,7 @@ class RecordingMailSender extends JavaMailSenderImpl {
 	}
 
 	/** The six-digit code in the newest email sent to the address. */
-	String latestCodeTo(String recipient) {
+	public String latestCodeTo(String recipient) {
 		for (MimeMessage message : sent.reversed()) {
 			try {
 				if (isTo(message, recipient)) {

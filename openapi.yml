@@ -11,6 +11,8 @@ tags:
   name: Accounts
 - description: Who is signed in.
   name: Identity
+- description: Uploading and reading files.
+  name: Storage
 paths:
   /api/identity/accounts:
     get:
@@ -269,6 +271,169 @@ paths:
       summary: The signed-in account
       tags:
       - Identity
+  /api/storage/files/{id}:
+    get:
+      description: "The bytes of a file anyone may read, such as an image of a program,\
+        \ or a redirect to where the object store serves them. No session is needed."
+      operationId: getPublicFile
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+          description: The bytes of the file.
+        "302":
+          description: "The address the object store serves the file at, for a while."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No stored public file has this identifier.
+      summary: A public file
+      tags:
+      - Storage
+  /api/storage/uploads:
+    post:
+      description: "The first of three steps: reserve, send the bytes as the ticket\
+        \ says, confirm."
+      operationId: reserveUpload
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReserveUpload"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadTicket"
+          description: The pending file and where to send its bytes.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The purpose refuses this media type or this size.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller may not upload for this purpose.
+      security:
+      - session: []
+      summary: Reserve an upload
+      tags:
+      - Storage
+  /api/storage/uploads/{id}/confirm:
+    post:
+      description: Checks that the bytes arrived and are the announced file. Only
+        then can the file be used.
+      operationId: confirmUpload
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoredFile"
+          description: The stored file.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The uploaded bytes are not the announced file.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller has no such upload.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nothing has been uploaded yet.
+      security:
+      - session: []
+      summary: Confirm an upload
+      tags:
+      - Storage
+  /api/storage/uploads/{id}/content:
+    put:
+      description: The address a ticket names when the object store receives uploads
+        through this application. The body is the file; the token works once.
+      operationId: sendUploadContent
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: token
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: The bytes are written.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The body is not the announced length.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The token is not valid or has been used.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller has no such pending upload.
+        "410":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The ticket has expired.
+      security:
+      - session: []
+      summary: Send the bytes of an upload
+      tags:
+      - Storage
 components:
   schemas:
     AccountList:
@@ -438,6 +603,87 @@ components:
       - requestId
       - status
       - title
+    ReserveUpload:
+      type: object
+      description: The file a person is about to upload.
+      properties:
+        fileName:
+          type: string
+          description: "The name of the file, kept to show and to download under."
+          maxLength: 255
+          minLength: 0
+        mediaType:
+          type: string
+          example: application/pdf
+          maxLength: 127
+          minLength: 0
+        purpose:
+          type: string
+          description: Why the file is uploaded; it fixes the allowed media types
+            and the largest size.
+          enum:
+          - program_image
+          - application_file
+        sizeBytes:
+          type: integer
+          format: int64
+          description: The exact length of the file in bytes.
+          exclusiveMinimum: 0
+      required:
+      - fileName
+      - mediaType
+      - purpose
+      - sizeBytes
+    StoredFile:
+      type: object
+      description: A file whose upload is confirmed.
+      properties:
+        fileName:
+          type: string
+        id:
+          type: string
+          format: uuid
+        mediaType:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+      required:
+      - fileName
+      - id
+      - mediaType
+      - sizeBytes
+    UploadTicket:
+      type: object
+      description: "Permission to send the bytes of one file. Send them as the request\
+        \ says, then confirm."
+      properties:
+        expiresAt:
+          type: string
+          format: date-time
+          description: When the permission ends.
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: The headers the request must carry.
+        id:
+          type: string
+          format: uuid
+          description: "The file, pending until confirmed."
+        method:
+          type: string
+          example: PUT
+        url:
+          type: string
+          description: "Where to send the bytes: an address of the object store, or\
+            \ a path of this application."
+      required:
+      - expiresAt
+      - headers
+      - id
+      - method
+      - url
   securitySchemes:
     session:
       description: "The session cookie set by signing in. Requests that change state\
