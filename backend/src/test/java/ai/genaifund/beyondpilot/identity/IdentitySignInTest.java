@@ -3,7 +3,13 @@ package ai.genaifund.beyondpilot.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.net.URI;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import org.junit.jupiter.api.BeforeEach;
@@ -231,6 +237,19 @@ class IdentitySignInTest {
 	}
 
 	@Test
+	void requestsThatArriveTogetherDoNotExceedTheLimit() throws Exception {
+		try (ExecutorService requests = Executors.newVirtualThreadPerTaskExecutor()) {
+			List<Callable<Object>> together = Collections.nCopies(8,
+					() -> requestLink("username=together@example.test").returnResult(Void.class));
+			for (Future<Object> request : requests.invokeAll(together)) {
+				request.get();
+			}
+		}
+
+		assertThat(mail.countTo("together@example.test")).isBetween(1L, 3L);
+	}
+
+	@Test
 	void aMalformedAddressIsRefused() {
 		for (String value : List.of("not-an-address", "a".repeat(400) + "@refused.test",
 				"two@refused.test,other@refused.test", "name%20%3Cangle@refused.test%3E", "line@refused.test%0Abcc")) {
@@ -240,6 +259,24 @@ class IdentitySignInTest {
 		assertThat(jdbc.sql("select count(*) from one_time_tokens where username like '%refused.test%'")
 			.query(Integer.class)
 			.single()).as("nothing is stored for a refused value").isZero();
+	}
+
+	@Test
+	void noSpellingOfTheLinkAddressGetsAroundTheChecks() {
+		for (String path : List.of("/ott/generate;x=1", "/ott/generate/", "/ott//generate", "/ott/%67enerate")) {
+			client.post()
+				.uri(URI.create("http://localhost:" + port + path))
+				.header(CSRF_HEADER, "1")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.body("username=two@spelling.test,other@spelling.test")
+				.exchange()
+				.expectStatus()
+				.value(status -> assertThat(status).as(path).isBetween(400, 499));
+		}
+
+		assertThat(jdbc.sql("select count(*) from one_time_tokens where username like '%spelling.test%'")
+			.query(Integer.class)
+			.single()).isZero();
 	}
 
 	private RestTestClient.ResponseSpec requestLink(String form) {

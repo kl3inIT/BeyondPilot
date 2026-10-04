@@ -2,12 +2,14 @@ package ai.genaifund.beyondpilot.identity.signin;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Instant;
 import java.util.Locale;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import ai.genaifund.beyondpilot.identity.IdentityProperties;
+import ai.genaifund.beyondpilot.identity.persistence.SignInLinkQueryRepository;
 import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.notification.NotificationException;
 import org.jspecify.annotations.Nullable;
@@ -30,10 +32,12 @@ class SignInLinkSender implements OneTimeTokenGenerationSuccessHandler {
 	private static final int MAX_RETURN_TO_LENGTH = 2000;
 
 	private final EmailService emails;
+	private final SignInLinkQueryRepository links;
 	private final IdentityProperties properties;
 
-	SignInLinkSender(EmailService emails, IdentityProperties properties) {
+	SignInLinkSender(EmailService emails, SignInLinkQueryRepository links, IdentityProperties properties) {
 		this.emails = emails;
+		this.links = links;
 		this.properties = properties;
 	}
 
@@ -52,9 +56,16 @@ class SignInLinkSender implements OneTimeTokenGenerationSuccessHandler {
 	public void handle(HttpServletRequest request, HttpServletResponse response, OneTimeToken token)
 			throws IOException {
 		String email = token.getUsername();
-		// Fail closed if a token was generated for something the guard would have refused.
+		// The guard decides first; these two checks fail closed if a request ever reaches the handler around it.
 		if (!SignInLinkRequestGuard.isAddress(email)) {
 			response.sendError(HttpStatus.BAD_REQUEST.value());
+			return;
+		}
+		// Requests that arrive together can all pass the guard, which counts before any of them has stored its token.
+		// This count runs after the token of this request is stored, so of such a group at most the limit are sent.
+		if (links.countUnexpired(email, Instant.now()) > properties.signInLinkLimit()) {
+			response.setHeader(HttpHeaders.RETRY_AFTER, Long.toString(properties.signInLinkLifetime().toSeconds()));
+			response.sendError(HttpStatus.TOO_MANY_REQUESTS.value());
 			return;
 		}
 		Locale locale = "vi".equals(request.getParameter("locale")) ? Locale.forLanguageTag("vi") : Locale.ENGLISH;

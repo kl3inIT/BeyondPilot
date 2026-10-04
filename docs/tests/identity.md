@@ -17,6 +17,8 @@ Boundaries follow [conventions › Testing](../conventions.md#testing). Sign-in 
 | Without a session, an API path answers a 401 problem | An open API path, or a refusal that is not a problem | `IdentitySignInTest.nobodySignedInIsAnUnauthorizedProblem`, `ProblemResponsesTest.anApiPathWithoutASessionIsAnUnauthorizedProblem` |
 | A state-changing request without the CSRF header is refused | A cross-site form that acts for a signed-in person | `IdentitySignInTest.aStateChangingRequestWithoutTheCsrfHeaderIsRefused`, `ProblemResponsesTest.aStateChangingRequestWithoutTheCsrfHeaderIsAForbiddenProblem` |
 | An address holds at most three working links; the refusal says when to retry | Flooding a mailbox; a 429 without `Retry-After` | `IdentitySignInTest.anAddressGetsALimitedNumberOfWorkingLinks` |
+| Requests for one address that arrive together send at most three emails | A limit that concurrent requests slip past | `IdentitySignInTest.requestsThatArriveTogetherDoNotExceedTheLimit` |
+| No spelling of the link address gets around the checks | A path variant that reaches Spring Security's filter but not the guard | `IdentitySignInTest.noSpellingOfTheLinkAddressGetsAroundTheChecks` |
 | A malformed or overlong address is refused | Mail sent to nonsense; a server error on a long value | `IdentitySignInTest.aMalformedAddressIsRefused` |
 | Choosing Google redirects to Google and remembers a path of this origin only | A broken start of the round trip, an open redirect after it | `GoogleSignInStartTest` |
 | The session cookie is `HttpOnly` and `SameSite=Lax` | A cookie readable by scripts or sent across sites | Asserted on every redemption in `IdentitySignInTest` |

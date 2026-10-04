@@ -17,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -31,8 +34,12 @@ class SignInLinkRequestGuard extends OncePerRequestFilter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SignInLinkRequestGuard.class);
 
-	/** Spring Security's default address for generating a one-time token. */
-	private static final String LINK_REQUEST_PATH = "/ott/generate";
+	/**
+	 * Spring Security's default address for generating a one-time token, matched with Spring Security's own matcher so
+	 * that no spelling of the path reaches its filter without passing here.
+	 */
+	private static final RequestMatcher LINK_REQUEST = PathPatternRequestMatcher.withDefaults()
+		.matcher(HttpMethod.POST, "/ott/generate");
 
 	/**
 	 * Deliberately narrower than the address grammar: only characters that every mail parser reads the same way, so no
@@ -55,8 +62,7 @@ class SignInLinkRequestGuard extends OncePerRequestFilter {
 
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) {
-		return !("POST".equals(request.getMethod())
-				&& request.getRequestURI().equals(request.getContextPath() + LINK_REQUEST_PATH));
+		return !LINK_REQUEST.matches(request);
 	}
 
 	@Override
