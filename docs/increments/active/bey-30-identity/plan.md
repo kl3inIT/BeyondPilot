@@ -8,6 +8,7 @@ Design: [design.md](design.md). Tracked in Linear as BEY-30.
 | 2 | Web: the Sign in and Check your email pages from the Figma screens approved on 4 October 2026 | Done, 4 October 2026 |
 | 2a | The emailed link replaced by a six-digit code, backend and web, after a review found that a forwarded link signs its reader into the sender's account | Done, 4 October 2026 |
 | 2b | Web: the signed-in state of the header and sign out, once drawn and approved; the program line of "Sign in to apply", once the `program` module exists | Open |
+| 2c | Web: `requireAccount` and `requireRole`, and the `/admin` page only an operator opens (BEY-44); the admin sidebar follows in the same issue | Done, 4 October 2026 |
 | 3 | Operator management: Figma screen, then the API and the screen to grant and withdraw the operator role | After step 2 |
 | 4 | A Google OAuth client and a mail provider for the development environment; a hand check of the Google round trip | Needs the credentials |
 
