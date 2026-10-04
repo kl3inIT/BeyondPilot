@@ -119,15 +119,15 @@ Keep parts together when they share one language, invariant owner, transaction a
 
 Every test must identify the observable contract and the regression it would catch. Use the smallest boundary that can actually detect that regression:
 
-| Contract | Default test boundary |
-| --- | --- |
-| Business rule, validation, ordering, state transition | Plain unit test with real value objects; substitute only external collaborators |
-| HTTP mapping, binding, validation, JSON or filter behavior | MVC slice with the relevant security configuration; calling a controller method directly is insufficient |
-| SQL, migration, locking, transaction or constraint | Repository or application integration test against PostgreSQL and the Flyway migrations |
-| Module boundary and inter-module events | `@ApplicationModuleTest` for the module; `ModulithArchitectureTest` for the whole structure |
-| Application composition, sessions, actor binding or background lifecycle | Full application context; real HTTP when the transport is part of the contract |
-| Browser interaction and recovery | Component test for local behavior; browser test for routing, cookies, network and browser-owned behavior |
-| Deployed feature acceptance | Authenticated runtime smoke test against the deployed release and its real dependencies |
+| Contract                                                                 | Default test boundary                                                                                    |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| Business rule, validation, ordering, state transition                    | Plain unit test with real value objects; substitute only external collaborators                          |
+| HTTP mapping, binding, validation, JSON or filter behavior               | MVC slice with the relevant security configuration; calling a controller method directly is insufficient |
+| SQL, migration, locking, transaction or constraint                       | Repository or application integration test against PostgreSQL and the Flyway migrations                  |
+| Module boundary and inter-module events                                  | `@ApplicationModuleTest` for the module; `ModulithArchitectureTest` for the whole structure              |
+| Application composition, sessions, actor binding or background lifecycle | Full application context; real HTTP when the transport is part of the contract                           |
+| Browser interaction and recovery                                         | Component test for local behavior; browser test for routing, cookies, network and browser-owned behavior |
+| Deployed feature acceptance                                              | Authenticated runtime smoke test against the deployed release and its real dependencies                  |
 
 - Do not test generated accessors, framework defaults, private methods, fixed call sequences or source spelling. Architecture and generated-contract drift checks are exceptions because those boundaries are repository contracts.
 - Before adding a test, check the module's verification matrix in `docs/tests/` and existing cases. Extend an existing case when it covers the same behavior, boundary and failure mode.
@@ -176,15 +176,15 @@ The error contract follows [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.htm
 - **Codes.** Codes are upper snake case, start with the module name, match `[A-Z][A-Z0-9_]+[A-Z0-9]` and are at most 63 characters, for example `PROPOSAL_DEADLINE_PASSED`. A published code never changes meaning; a new meaning gets a new code.
 - **Status by category.**
 
-  | `ErrorCategory` | HTTP status |
-  | --- | --- |
-  | `VALIDATION` | 400 |
-  | `NOT_PERMITTED` | 403 |
-  | `NOT_FOUND` | 404 |
-  | `CONFLICT` | 409 |
-  | `GONE` | 410 |
-  | `LIMIT_EXCEEDED` | 429 |
-  | `SERVICE_UNAVAILABLE` | 503 |
+  | `ErrorCategory`       | HTTP status |
+  | --------------------- | ----------- |
+  | `VALIDATION`          | 400         |
+  | `NOT_PERMITTED`       | 403         |
+  | `NOT_FOUND`           | 404         |
+  | `CONFLICT`            | 409         |
+  | `GONE`                | 410         |
+  | `LIMIT_EXCEEDED`      | 429         |
+  | `SERVICE_UNAVAILABLE` | 503         |
 
 - **Problem members.** `type` is `urn:beyondpilot:failure:<code in kebab case>` and maps one to one to `code`; `title` comes from the category; `detail` is the safe message; `code` is an extension member declared in the shared problem schema; `requestId` is an extension member equal to the identifier logged for that request.
 - **Every error response is `application/problem+json`**: business failures, request validation, Spring MVC errors, uncaught exceptions (a generic 500 with no internal detail) and Spring Security 401 and 403. A test verifies each kind. Uncaught exceptions reach this shape through the framework error path, not through an application `@ExceptionHandler(Exception.class)`, which is never added.
@@ -239,7 +239,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 
 - Next.js 16 App Router with the React Compiler, React 19, TypeScript in strict mode, Tailwind CSS 4, shadcn/ui (`base-nova` style on Base UI primitives) and next-intl. New scaffolding comes from the official CLIs (`create-next-app`, `shadcn`); the lockfile is authoritative and upgrades are deliberate changes.
 - pnpm is installed directly, not through Corepack; `packageManager` in `web/package.json` records the version.
-- A library arrives with its first consumer, never ahead of it. The chosen ones are TanStack Query for client-side server state, TanStack Form with zod for forms, TanStack Table for tables, nuqs for URL state, Hey API for the generated client, and Vitest with Testing Library and MSW for unit tests.
+- A library arrives with its first consumer, never ahead of it. A list is read by a Server Component from the parameters of the URL and drawn with the registry `table` through the `DataTable` composite; a write ends in a refresh. The chosen libraries are nuqs for URL state, TanStack Form with zod for forms, TanStack Query for server data a screen keeps in the browser (polling, optimistic updates, a draft that outlives navigation), TanStack Table for a table that keeps state in the browser (sorting by a column header, hidden columns, virtual rows), Hey API for the generated client, and Vitest with Testing Library and MSW for unit tests.
 
 ### Structure
 
