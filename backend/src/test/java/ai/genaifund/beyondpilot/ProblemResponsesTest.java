@@ -233,12 +233,12 @@ class ProblemResponsesTest {
 
 		@GetMapping("/test/conflict")
 		void conflict() {
-			throw new ExampleException(ExampleFailure.CONFLICT, null);
+			throw new ExampleException(ExampleErrorCode.CONFLICT, null);
 		}
 
 		@GetMapping("/test/limit")
 		void limit() {
-			throw new ExampleException(ExampleFailure.LIMIT_REACHED, Duration.ofMillis(29_200));
+			throw new ExampleException(ExampleErrorCode.LIMIT_REACHED, Duration.ofMillis(29_200));
 		}
 
 		@PostMapping("/test/examples")
@@ -254,16 +254,16 @@ class ProblemResponsesTest {
 	record ExampleRequest(@NotBlank String name, @Size(min = 2, max = 5) String code) {
 	}
 
-	enum ExampleFailure implements FailureReason {
+	enum ExampleErrorCode implements ErrorCode {
 
-		CONFLICT("TEST_CONFLICT", FailureCategory.CONFLICT, "The example conflicts with existing state."),
-		LIMIT_REACHED("TEST_LIMIT_REACHED", FailureCategory.LIMIT_EXCEEDED, "Too many examples; try again later.");
+		CONFLICT("TEST_CONFLICT", ErrorCategory.CONFLICT, "The example conflicts with existing state."),
+		LIMIT_REACHED("TEST_LIMIT_REACHED", ErrorCategory.LIMIT_EXCEEDED, "Too many examples; try again later.");
 
 		private final String code;
-		private final FailureCategory category;
+		private final ErrorCategory category;
 		private final String message;
 
-		ExampleFailure(String code, FailureCategory category, String message) {
+		ExampleErrorCode(String code, ErrorCategory category, String message) {
 			this.code = code;
 			this.category = category;
 			this.message = message;
@@ -275,7 +275,7 @@ class ProblemResponsesTest {
 		}
 
 		@Override
-		public FailureCategory category() {
+		public ErrorCategory category() {
 			return category;
 		}
 
@@ -289,8 +289,8 @@ class ProblemResponsesTest {
 
 		private final @Nullable Duration retryAfter;
 
-		ExampleException(ExampleFailure failure, @Nullable Duration retryAfter) {
-			super(failure, "diagnostic detail for logs");
+		ExampleException(ExampleErrorCode errorCode, @Nullable Duration retryAfter) {
+			super(errorCode, "diagnostic detail for logs");
 			this.retryAfter = retryAfter;
 		}
 

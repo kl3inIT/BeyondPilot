@@ -171,12 +171,12 @@ Domain Story and Consumer
 
 The error contract follows [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) and the machine-readable-reason guidance of [Google AIP-193](https://google.aip.dev/193).
 
-- **Typed failures.** `FailureCategory`, `FailureReason` and the abstract `BusinessException` live in the base package. Each module declares its expected failures as one enum implementing `FailureReason` (stable code, category, safe user message) and throws one module exception that extends `BusinessException`. The exception message is diagnostic and reaches logs only. HTTP types never enter a module's root or persistence code.
+- **Typed failures.** `ErrorCategory`, `ErrorCode` and the abstract `BusinessException` live in the base package. Each module declares its expected failures as one enum `<Module>ErrorCode` implementing `ErrorCode` (stable code, category, safe user message) and throws one module exception that extends `BusinessException`. The exception message is diagnostic and reaches logs only. HTTP types never enter a module's root or persistence code.
 - **One handler.** `ApiExceptionHandler` in the `config` module is the application's only exception handler: no other class declares `@ExceptionHandler`, and modules declare no `@ControllerAdvice`, `@RestControllerAdvice` or response advice. A failure that needs more in its response than code, category and message (for example a `Retry-After` delay) exposes it through typed members of its exception, which the single handler maps; every such member is declared on the shared problem schema.
 - **Codes.** Codes are upper snake case, start with the module name, match `[A-Z][A-Z0-9_]+[A-Z0-9]` and are at most 63 characters, for example `PROPOSAL_DEADLINE_PASSED`. A published code never changes meaning; a new meaning gets a new code.
 - **Status by category.**
 
-  | `FailureCategory` | HTTP status |
+  | `ErrorCategory` | HTTP status |
   | --- | --- |
   | `VALIDATION` | 400 |
   | `NOT_PERMITTED` | 403 |

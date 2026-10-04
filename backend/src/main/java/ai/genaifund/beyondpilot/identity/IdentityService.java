@@ -58,7 +58,7 @@ public class IdentityService {
 			.flatMap(identity -> accounts.findById(identity.getAccountId()))
 			.orElseGet(() -> {
 				if (!emailVerified) {
-					throw new IdentityException(IdentityFailure.EMAIL_NOT_VERIFIED,
+					throw new IdentityException(IdentityErrorCode.EMAIL_NOT_VERIFIED,
 							"Google sign-in with an unverified address");
 				}
 				Account joined = findOrCreate(email, name);
@@ -77,7 +77,7 @@ public class IdentityService {
 	public MeResponse me(Actor actor) {
 		Account account = accounts.findById(actor.accountId())
 			.filter(found -> !found.isDisabled())
-			.orElseThrow(() -> new IdentityException(IdentityFailure.ACCOUNT_DISABLED,
+			.orElseThrow(() -> new IdentityException(IdentityErrorCode.ACCOUNT_DISABLED,
 					"Session of a disabled or missing account " + actor.accountId()));
 		return new MeResponse(account.getId(), account.getEmail(), account.getDisplayName(),
 				account.getPlatformRole().name().toLowerCase(Locale.ROOT));
@@ -92,7 +92,7 @@ public class IdentityService {
 
 	private Actor completeSignIn(Account account, String method) {
 		if (account.isDisabled()) {
-			throw new IdentityException(IdentityFailure.ACCOUNT_DISABLED,
+			throw new IdentityException(IdentityErrorCode.ACCOUNT_DISABLED,
 					"Sign-in to disabled account " + account.getId());
 		}
 		if (account.getPlatformRole() != PlatformRole.OPERATOR && properties.isOperatorEmail(account.getEmail())) {

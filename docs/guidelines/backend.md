@@ -6,10 +6,10 @@ For work in `backend/`: one Spring Boot application whose modules are Spring Mod
 
 | Location | Holds | Never holds |
 | --- | --- | --- |
-| `ai.genaifund.beyondpilot` (base package) | `BeyondPilotApplication` and the shared failure types `BusinessException`, `FailureReason`, `FailureCategory`. Types here belong to no module, and every module may use them | Anything else |
+| `ai.genaifund.beyondpilot` (base package) | `BeyondPilotApplication` and the shared failure types `BusinessException`, `ErrorCode`, `ErrorCategory`. Types here belong to no module, and every module may use them | Anything else |
 | `ai.genaifund.beyondpilot.shared` | Identifiers and values that several modules carry, and technical utilities that at least two modules need and that know nothing about any module | Spring beans, persistence, configuration, a module's rules, a dependency on any module |
 | `ai.genaifund.beyondpilot.config` | Cross-cutting HTTP configuration that no module owns: Spring Security (`SecurityFilterChain`, CSRF header check, session), the error path (`RequestIdFilter`, `ApiExceptionHandler`, `RequestIdProblemAdvice`, `ProblemErrorController`), OpenAPI configuration | A module's business behavior, and configuration a single module owns (its client, properties or scheduler stays in that module) |
-| `ai.genaifund.beyondpilot.<module>` | The module's published API: application services, events, its `FailureReason` enum and its exception, and the identifiers and records another module calls for | SQL, a record no other module uses |
+| `ai.genaifund.beyondpilot.<module>` | The module's published API: application services, events, its `<Module>ErrorCode` enum and its exception, and the identifiers and records another module calls for | SQL, a record no other module uses |
 | `<module>.web` | Controllers | Business rules, SQL, entities as HTTP bodies |
 | `<module>.dto` | Request and response records, returned by the application service and by the controller | Entities, behavior |
 | `<module>.persistence` | JPA entities, Spring Data repositories, `JdbcClient` repositories | Authorization, validation, orchestration |
@@ -26,7 +26,7 @@ Every direct subpackage of the base package, `shared` and `config` included, is 
 - **Interchangeable implementations.** A choice among vendors or protocols uses the [Strategy-behind-a-registry pattern](../conventions.md#interchangeable-implementations-strategy-behind-a-registry) from the first vendor.
 - **Persistence.** SQL, row mapping, locks and bulk writes live in the module's `persistence` package; application services own authorization, validation, orchestration and the transaction boundary ([persistence](persistence.md#implementation-boundaries)).
 - **Nullness and records.** `@NullMarked` everywhere, `@Nullable` for optional values, records constructed by shape, no Lombok ([Java and Gradle](../conventions.md#java-and-gradle)).
-- **Failures.** Expected failures are the module's typed exception carrying a `FailureReason`; the single `config.ApiExceptionHandler` turns them into RFC 9457 problems, and no module adds its own handler ([API errors](../conventions.md#api-errors)).
+- **Failures.** Expected failures are the module's typed exception carrying an `ErrorCode`; the single `config.ApiExceptionHandler` turns them into RFC 9457 problems, and no module adds its own handler ([API errors](../conventions.md#api-errors)).
 - **HTTP contract.** Controllers in `web`, request and response records in `dto`, `@CurrentActor` for the caller, and `openapi.yml` refreshed in the same change ([published API contracts](../conventions.md#published-api-contracts)).
 - **Logging.** Fluent SLF4J with `event`, `error_type` and `error_code`; no secrets, payloads or personal data ([logging](../conventions.md#logging)).
 - **Security.** Server-side authorization, exact security identifiers, fail closed on missing configuration ([data and security](../conventions.md#data-and-security)).

@@ -5,7 +5,7 @@ import java.time.Duration;
 import java.util.Locale;
 
 import ai.genaifund.beyondpilot.BusinessException;
-import ai.genaifund.beyondpilot.FailureCategory;
+import ai.genaifund.beyondpilot.ErrorCategory;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -42,7 +42,7 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	@Override
 	protected @Nullable ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException exception,
 			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		ProblemDetail problem = failure(FailureCategory.VALIDATION, REQUEST_INVALID, "The request is invalid.");
+		ProblemDetail problem = failure(ErrorCategory.VALIDATION, REQUEST_INVALID, "The request is invalid.");
 		problem.setProperty("errors", exception.getBindingResult()
 			.getFieldErrors()
 			.stream()
@@ -53,8 +53,8 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 				request);
 	}
 
-	private static ProblemDetail failure(FailureCategory category, String code, String detail) {
-		FailureRendering rendering = FailureRendering.of(category);
+	private static ProblemDetail failure(ErrorCategory category, String code, String detail) {
+		ErrorRendering rendering = ErrorRendering.of(category);
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(rendering.status(), detail);
 		problem.setTitle(rendering.title());
 		problem.setType(URI.create("urn:beyondpilot:failure:" + code.toLowerCase(Locale.ROOT).replace('_', '-')));

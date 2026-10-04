@@ -4,7 +4,7 @@ import ai.genaifund.beyondpilot.BusinessException;
 
 public final class IdentityException extends BusinessException {
 
-	IdentityException(IdentityFailure failure, String diagnosticMessage) {
-		super(failure, diagnosticMessage);
+	IdentityException(IdentityErrorCode errorCode, String diagnosticMessage) {
+		super(errorCode, diagnosticMessage);
 	}
 }

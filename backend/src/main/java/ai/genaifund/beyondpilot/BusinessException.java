@@ -15,28 +15,28 @@ public abstract class BusinessException extends RuntimeException {
 	private static final Pattern CODE = Pattern.compile("[A-Z][A-Z0-9_]+[A-Z0-9]");
 	private static final int MAX_CODE_LENGTH = 63;
 
-	private final FailureReason reason;
+	private final ErrorCode errorCode;
 
-	protected BusinessException(FailureReason reason, String diagnosticMessage) {
+	protected BusinessException(ErrorCode errorCode, String diagnosticMessage) {
 		super(diagnosticMessage);
-		this.reason = requireValid(reason);
+		this.errorCode = requireValid(errorCode);
 	}
 
-	protected BusinessException(FailureReason reason, String diagnosticMessage, Throwable cause) {
+	protected BusinessException(ErrorCode errorCode, String diagnosticMessage, Throwable cause) {
 		super(diagnosticMessage, cause);
-		this.reason = requireValid(reason);
+		this.errorCode = requireValid(errorCode);
 	}
 
 	public String code() {
-		return reason.code();
+		return errorCode.code();
 	}
 
-	public FailureCategory category() {
-		return reason.category();
+	public ErrorCategory category() {
+		return errorCode.category();
 	}
 
 	public String safeMessage() {
-		return reason.message();
+		return errorCode.message();
 	}
 
 	/**
@@ -47,17 +47,17 @@ public abstract class BusinessException extends RuntimeException {
 		return null;
 	}
 
-	private static FailureReason requireValid(FailureReason reason) {
-		Objects.requireNonNull(reason, "reason must not be null");
-		String code = reason.code();
+	private static ErrorCode requireValid(ErrorCode errorCode) {
+		Objects.requireNonNull(errorCode, "errorCode must not be null");
+		String code = errorCode.code();
 		if (code.length() > MAX_CODE_LENGTH || !CODE.matcher(code).matches()) {
 			throw new IllegalArgumentException(
 					"A failure code is upper snake case and at most " + MAX_CODE_LENGTH + " characters: " + code);
 		}
-		Objects.requireNonNull(reason.category(), "category must not be null");
-		if (reason.message().isBlank()) {
+		Objects.requireNonNull(errorCode.category(), "category must not be null");
+		if (errorCode.message().isBlank()) {
 			throw new IllegalArgumentException("A failure message must not be blank: " + code);
 		}
-		return reason;
+		return errorCode;
 	}
 }

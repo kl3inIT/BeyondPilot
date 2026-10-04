@@ -26,7 +26,7 @@ Every direct subpackage of `ai.genaifund.beyondpilot` is a closed Spring Modulit
 
 | Package | Holds today |
 | --- | --- |
-| `ai.genaifund.beyondpilot` | `BeyondPilotApplication` and the failure types every module shares: `BusinessException`, `FailureReason`, `FailureCategory` |
+| `ai.genaifund.beyondpilot` | `BeyondPilotApplication` and the failure types every module shares: `BusinessException`, `ErrorCode`, `ErrorCategory` |
 | `ai.genaifund.beyondpilot.config` | The security filter chain, the error path and the OpenAPI configuration; depends on no module |
 | `ai.genaifund.beyondpilot.identity` | Accounts, sign-in with Google and with an emailed link, the operator role; `Actor` and `@CurrentActor` for other modules. Depends on `notification` |
 | `ai.genaifund.beyondpilot.notification` | `EmailService`: the emails the application sends, over SMTP |

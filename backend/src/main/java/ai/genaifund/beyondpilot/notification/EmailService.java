@@ -60,9 +60,9 @@ public class EmailService {
 				.addKeyValue("event", "notification.email.failed")
 				.addKeyValue("email_kind", kind)
 				.addKeyValue("error_type", exception.getClass().getName())
-				.addKeyValue("error_code", NotificationFailure.EMAIL_NOT_SENT.code())
+				.addKeyValue("error_code", NotificationErrorCode.EMAIL_NOT_SENT.code())
 				.log("Email not sent");
-			throw new NotificationException(NotificationFailure.EMAIL_NOT_SENT, "Sending the " + kind + " email failed",
+			throw new NotificationException(NotificationErrorCode.EMAIL_NOT_SENT, "Sending the " + kind + " email failed",
 					exception);
 		}
 		LOG.atInfo().addKeyValue("event", "notification.email.sent").addKeyValue("email_kind", kind).log("Email sent");
