@@ -82,12 +82,34 @@ public class IdentityService {
 	 */
 	@Transactional(readOnly = true)
 	public MeResponse me(Actor actor) {
-		Account account = accounts.findById(actor.accountId())
+		Account account = active(actor);
+		return new MeResponse(account.getId(), account.getEmail(), account.getDisplayName(),
+				account.getPlatformRole().name().toLowerCase(Locale.ROOT));
+	}
+
+	/**
+	 * Refuses a caller whose account has been disabled since they signed in.
+	 * @throws IdentityException when the account is disabled or gone
+	 */
+	@Transactional(readOnly = true)
+	public void requireActive(Actor actor) {
+		active(actor);
+	}
+
+	/** Whether the caller is GenAI Fund staff now, whatever they were when they signed in. */
+	@Transactional(readOnly = true)
+	public boolean isOperator(Actor actor) {
+		return accounts.findById(actor.accountId())
+			.filter(account -> !account.isDisabled())
+			.map(account -> account.getPlatformRole() == PlatformRole.OPERATOR)
+			.orElse(false);
+	}
+
+	private Account active(Actor actor) {
+		return accounts.findById(actor.accountId())
 			.filter(found -> !found.isDisabled())
 			.orElseThrow(() -> new IdentityException(IdentityErrorCode.ACCOUNT_DISABLED,
 					"Session of a disabled or missing account " + actor.accountId()));
-		return new MeResponse(account.getId(), account.getEmail(), account.getDisplayName(),
-				account.getPlatformRole().name().toLowerCase(Locale.ROOT));
 	}
 
 	private Account findOrCreate(String email, @Nullable String name) {
