@@ -2,20 +2,15 @@ package ai.genaifund.beyondpilot.identity.signin;
 
 import java.io.IOException;
 import java.net.URI;
-import java.time.Instant;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import ai.genaifund.beyondpilot.identity.IdentityProperties;
-import ai.genaifund.beyondpilot.identity.persistence.SignInLinkQueryRepository;
 import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.notification.NotificationException;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ott.OneTimeToken;
@@ -25,41 +20,41 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Emails the sign-in link once Spring Security has generated its token. The answer is the same whether or not the
- * address has an account, so the endpoint tells nobody who is registered.
+ * address has an account, so the endpoint tells nobody who is registered. {@link SignInLinkRequestGuard} has already
+ * refused a value that is not a plain address and an address that holds its share of links.
  */
 @Component
 class SignInLinkSender implements OneTimeTokenGenerationSuccessHandler {
 
-	private static final Logger LOG = LoggerFactory.getLogger(SignInLinkSender.class);
-
-	private static final Pattern EMAIL = Pattern.compile("[^@\\s]+@[^@\\s]+\\.[^@\\s]+");
-	private static final int MAX_EMAIL_LENGTH = 320;
 	private static final String MAIL_RETRY_SECONDS = "30";
+	private static final int MAX_RETURN_TO_LENGTH = 2000;
 
 	private final EmailService emails;
-	private final SignInLinkQueryRepository links;
 	private final IdentityProperties properties;
 
-	SignInLinkSender(EmailService emails, SignInLinkQueryRepository links, IdentityProperties properties) {
+	SignInLinkSender(EmailService emails, IdentityProperties properties) {
 		this.emails = emails;
-		this.links = links;
 		this.properties = properties;
+	}
+
+	/**
+	 * A path of this origin, judged the way a browser reads it: a browser drops tabs and line breaks and treats a
+	 * backslash as a slash, so a value such as slash, tab, slash, host would leave the site. The same rule guards the
+	 * Google round trip in the config module.
+	 */
+	static boolean isLocalPath(@Nullable String path) {
+		return path != null && path.length() <= MAX_RETURN_TO_LENGTH && path.startsWith("/") && !path.startsWith("//")
+				&& !path.contains("\\")
+				&& path.chars().noneMatch(character -> Character.isISOControl(character) || Character.isWhitespace(character));
 	}
 
 	@Override
 	public void handle(HttpServletRequest request, HttpServletResponse response, OneTimeToken token)
 			throws IOException {
 		String email = token.getUsername();
-		if (email.length() > MAX_EMAIL_LENGTH || !EMAIL.matcher(email).matches()) {
+		// Fail closed if a token was generated for something the guard would have refused.
+		if (!SignInLinkRequestGuard.isAddress(email)) {
 			response.sendError(HttpStatus.BAD_REQUEST.value());
-			return;
-		}
-		// The token of this request is already stored, so the count includes it.
-		if (links.countUnexpired(email, Instant.now()) > properties.signInLinkLimit()) {
-			LOG.atWarn().addKeyValue("event", "identity.sign_in_link.limited").log("Sign-in link limit reached");
-			// Room for another link opens when the oldest one expires, at the latest after one lifetime.
-			response.setHeader(HttpHeaders.RETRY_AFTER, Long.toString(properties.signInLinkLifetime().toSeconds()));
-			response.sendError(HttpStatus.TOO_MANY_REQUESTS.value());
 			return;
 		}
 		Locale locale = "vi".equals(request.getParameter("locale")) ? Locale.forLanguageTag("vi") : Locale.ENGLISH;
@@ -80,7 +75,7 @@ class SignInLinkSender implements OneTimeTokenGenerationSuccessHandler {
 		UriComponentsBuilder link = UriComponentsBuilder.fromUri(properties.publicUrl())
 			.path("vi".equals(locale.getLanguage()) ? "/vi/sign-in/link" : "/sign-in/link")
 			.queryParam("token", token.getTokenValue());
-		if (returnTo != null && returnTo.startsWith("/") && !returnTo.startsWith("//") && !returnTo.contains("\\")) {
+		if (isLocalPath(returnTo)) {
 			link.queryParam("returnTo", returnTo);
 		}
 		return link.encode().build().toUri();

@@ -101,9 +101,14 @@ class IdentitySignInTest {
 
 	@Test
 	void anExternalSiteCannotBeTheReturnDestination() {
-		requestLink("username=return@example.test&returnTo=//evil.example/steal").expectStatus().isNoContent();
+		// A browser reads the second and third as //evil.example: it drops the tab and turns the backslash.
+		for (String destination : List.of("//evil.example/steal", "/%09/evil.example", "/%5Cevil.example",
+				"https://evil.example")) {
+			requestLink("username=return@example.test&returnTo=" + destination).expectStatus().isNoContent();
 
-		assertThat(mail.latestLinkTo("return@example.test")).doesNotContain("returnTo").doesNotContain("evil");
+			assertThat(mail.latestLinkTo("return@example.test")).doesNotContain("returnTo").doesNotContain("evil");
+			jdbc.sql("delete from one_time_tokens where username = 'return@example.test'").update();
+		}
 	}
 
 	@Test
@@ -220,12 +225,21 @@ class IdentitySignInTest {
 			.expectHeader()
 			.contentType(MediaType.APPLICATION_PROBLEM_JSON);
 		assertThat(mail.countTo("flood@example.test")).isEqualTo(3);
+		assertThat(jdbc.sql("select count(*) from one_time_tokens where username = 'flood@example.test'")
+			.query(Integer.class)
+			.single()).as("a refused request stores no token").isEqualTo(3);
 	}
 
 	@Test
 	void aMalformedAddressIsRefused() {
-		assertProblem(requestLink("username=not-an-address"), 400);
-		assertProblem(requestLink("username=" + "a".repeat(400) + "@example.test"), 400);
+		for (String value : List.of("not-an-address", "a".repeat(400) + "@refused.test",
+				"two@refused.test,other@refused.test", "name%20%3Cangle@refused.test%3E", "line@refused.test%0Abcc")) {
+			assertProblem(requestLink("username=" + value), 400);
+		}
+
+		assertThat(jdbc.sql("select count(*) from one_time_tokens where username like '%refused.test%'")
+			.query(Integer.class)
+			.single()).as("nothing is stored for a refused value").isZero();
 	}
 
 	private RestTestClient.ResponseSpec requestLink(String form) {

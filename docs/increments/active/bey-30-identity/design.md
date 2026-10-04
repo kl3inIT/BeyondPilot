@@ -69,6 +69,6 @@ The web application is the only client and shares the origin, so no endpoint ans
 ## Known limits
 
 - The return from Google is not covered by an automated test, because it needs Google. It is checked by hand on an environment with a real OAuth client.
-- The link limit is per address. There is no limit per network address yet, so one sender can still ask for links to many addresses; a limit at the reverse proxy belongs to the deployment work.
+- A value that is not a plain address, and a request beyond the limit, are refused before a token is stored, so neither fills the token table. The link limit is per address. There is no limit per network address yet, so one sender can still ask for links to many addresses; a limit at the reverse proxy belongs to the deployment work.
 - One-time tokens are stored as issued, as Spring Security's JDBC service does. They are single use and live 15 minutes.
 - The application trusts `X-Forwarded-*` headers (`server.forward-headers-strategy: framework`), which is correct only behind the web application or a reverse proxy; the backend port is never exposed directly.
