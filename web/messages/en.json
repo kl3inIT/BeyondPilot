@@ -275,6 +275,11 @@
   "Admin": {
     "metaTitle": "Admin · BeyondPilot",
     "title": "Admin",
-    "empty": "No admin screens yet."
+    "empty": "No admin screens yet.",
+    "nav": {
+      "label": "Admin navigation",
+      "home": "Home"
+    },
+    "toggleSidebar": "Toggle sidebar"
   }
 }

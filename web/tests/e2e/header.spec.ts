@@ -1,21 +1,7 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
-import { signInAs } from "./session";
-
-/** Answers the sign-out request; a 204 also ends the session, as the backend would. */
-async function answerSignOut(page: Page, status: number) {
-  const requests: string[] = [];
-  await page.route("**/logout", async (route) => {
-    requests.push(route.request().method());
-    expect(route.request().headers()["x-beyondpilot-csrf"]).toBe("1");
-    if (status === 204) {
-      await page.context().clearCookies();
-    }
-    await route.fulfill({ status });
-  });
-  return requests;
-}
+import { answerSignOut, signInAs } from "./session";
 
 test.describe("header", () => {
   test.use({ locale: "en-US" });
