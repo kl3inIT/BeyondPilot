@@ -8,6 +8,15 @@ import { getMe, type Me } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 /**
+ * What a server-side call to the backend carries so that it is made as the person behind this
+ * request: their cookies, and no caching, because what one person may read is never kept for
+ * another. Server only.
+ */
+export async function sessionRequest() {
+  return { headers: { cookie: (await cookies()).toString() }, cache: "no-store" as const };
+}
+
+/**
  * The signed-in account of the current request, or `null`. Server only: it forwards the browser's
  * cookies to the backend, which owns the session. The answer is never cached across requests, and
  * any failure (no session, a disabled account, a backend that is unreachable or
@@ -15,16 +24,12 @@ import { siteRoutes } from "@/lib/site";
  * however many components call this.
  */
 export const getCurrentAccount = cache(async (): Promise<Me | null> => {
-  const cookieHeader = (await cookies()).toString();
-  if (!cookieHeader) {
+  const request = await sessionRequest();
+  if (!request.headers.cookie) {
     return null;
   }
   try {
-    const { data } = await getMe({
-      headers: { cookie: cookieHeader },
-      cache: "no-store",
-      signal: AbortSignal.timeout(3000),
-    });
+    const { data } = await getMe({ ...request, signal: AbortSignal.timeout(3000) });
     return data;
   } catch {
     return null;

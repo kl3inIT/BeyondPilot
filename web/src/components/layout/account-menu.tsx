@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
 import { signOut } from "@/lib/auth/sign-out";
+import { initials } from "@/lib/initials";
 
 type AccountMenuProps = {
   /** Null until the person or their provider gives a name: a code by email proves only the address. */
@@ -22,17 +23,6 @@ type AccountMenuProps = {
   email: string;
   operator: boolean;
 };
-
-/** First letters of the first and last word of the name; the address's first letter without one. */
-function initials(name: string | null, email: string) {
-  const words = name?.trim().split(/\s+/).filter(Boolean) ?? [];
-  const letters =
-    words.length > 1 ? [words[0], words[words.length - 1]] : [words[0] ?? email.trim()];
-  return letters
-    .map((word) => Array.from(word)[0] ?? "")
-    .join("")
-    .toLocaleUpperCase();
-}
 
 /**
  * What an account menu holds, wherever it opens from: who is signed in and the way out. Signing
@@ -102,5 +92,5 @@ function AccountMenu({ name, email, operator }: AccountMenuProps) {
   );
 }
 
-export { AccountMenu, AccountMenuPanel, initials };
+export { AccountMenu, AccountMenuPanel };
 export type { AccountMenuProps };

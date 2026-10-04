@@ -3,11 +3,7 @@
 import { ChevronsUpDownIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import {
-  AccountMenuPanel,
-  initials,
-  type AccountMenuProps,
-} from "@/components/layout/account-menu";
+import { AccountMenuPanel, type AccountMenuProps } from "@/components/layout/account-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -20,6 +16,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { initials } from "@/lib/initials";
 
 /** The signed-in person at the foot of the admin sidebar; it opens the same menu as the header. */
 function AdminAccount({ name, email, operator }: AccountMenuProps) {

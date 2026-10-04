@@ -279,8 +279,100 @@
     "empty": "No admin screens yet.",
     "nav": {
       "label": "Admin navigation",
-      "home": "Home"
+      "home": "Home",
+      "accounts": "Accounts"
     },
-    "toggleSidebar": "Toggle sidebar"
+    "toggleSidebar": "Toggle sidebar",
+    "accounts": {
+      "metaTitle": "Accounts · BeyondPilot",
+      "title": "Accounts",
+      "lead": "Everyone who has signed in to BeyondPilot. Operators are GenAI Fund staff and can open this area.",
+      "search": "Search by name or email",
+      "filters": {
+        "status": {
+          "label": "Status",
+          "all": "All statuses"
+        },
+        "role": {
+          "label": "Role",
+          "all": "All roles"
+        }
+      },
+      "columns": {
+        "account": "Account",
+        "role": "Role",
+        "status": "Status",
+        "lastSignIn": "Last sign-in",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "role": {
+        "user": "User",
+        "operator": "Operator"
+      },
+      "status": {
+        "active": "Active",
+        "disabled": "Disabled"
+      },
+      "you": "You",
+      "today": "Today, {time}",
+      "dayAndTime": "{day}, {time}",
+      "never": "Never",
+      "count": "{count, plural, one {# account} other {# accounts}}",
+      "pagination": {
+        "label": "Pages of accounts",
+        "previous": "Previous",
+        "next": "Next",
+        "goToPrevious": "Go to the previous page",
+        "goToNext": "Go to the next page",
+        "page": "Page {page}"
+      },
+      "actions": {
+        "open": "Actions for {name}",
+        "makeOperator": "Make operator…",
+        "withdrawOperator": "Withdraw operator role…",
+        "disable": "Disable account…",
+        "enable": "Enable account"
+      },
+      "confirm": {
+        "cancel": "Cancel",
+        "disable": {
+          "title": "Disable this account?",
+          "lead": "You are about to disable:",
+          "note": "They are signed out at once and cannot sign in again. Nothing they submitted is removed, and you can enable the account at any time.",
+          "confirm": "Disable account"
+        },
+        "makeOperator": {
+          "title": "Make {name} an operator?",
+          "lead": "You are about to give the operator role to:",
+          "note": "Operators can open the admin area: they run programs, review applications and manage accounts. You can withdraw the role at any time.",
+          "confirm": "Make operator"
+        },
+        "withdrawOperator": {
+          "title": "Withdraw the operator role?",
+          "lead": "You are about to withdraw the operator role from:",
+          "note": "They keep their account and what they submitted, and lose the admin area at once.",
+          "confirm": "Withdraw role"
+        }
+      },
+      "done": {
+        "disabled": "{name} can no longer sign in.",
+        "enabled": "{name} can sign in again.",
+        "operatorGranted": "{name} is now an operator.",
+        "operatorWithdrawn": "{name} is no longer an operator."
+      },
+      "errors": {
+        "ownAccount": "You cannot disable your own account or withdraw your own role.",
+        "operatorConfigured": "This operator is set in the server configuration, so the role cannot be withdrawn here.",
+        "accountNotFound": "This account no longer exists.",
+        "operatorRequired": "You are no longer an operator.",
+        "unknown": "That did not work. Try again."
+      },
+      "empty": {
+        "title": "No account matches",
+        "description": "No account matches this search and these filters.",
+        "clear": "Clear search and filters"
+      }
+    }
   }
 }

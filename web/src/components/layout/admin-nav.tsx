@@ -20,7 +20,7 @@ type AdminNavItem = {
  * The item of the page a person is on: the one whose address the path continues, whole segment by
  * whole segment, and the longest of those, so `/admin` is not lit on every page under it.
  */
-function currentItem(items: AdminNavItem[], pathname: string) {
+function currentItem<Item extends Pick<AdminNavItem, "href">>(items: Item[], pathname: string) {
   return items
     .filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
     .sort((a, b) => b.href.length - a.href.length)[0];
@@ -54,5 +54,5 @@ function AdminNav({ label, items }: { label: string; items: AdminNavItem[] }) {
   );
 }
 
-export { AdminNav };
+export { AdminNav, currentItem };
 export type { AdminNavItem };
