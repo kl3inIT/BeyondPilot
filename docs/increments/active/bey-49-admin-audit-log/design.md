@@ -6,9 +6,9 @@ Status: designed on 5 October 2026; the screens are drawn in Figma (section `Adm
 
 An operator opens Admin › Audit log and sees what operators and the server configuration changed in the last seven days, newest first. Each line says when, who, and what was done to whom.
 
-- A colleague finds their account disabled: the operator searches the colleague's name, sees who disabled it and when, and opens the event to read the rest.
+- A colleague finds their account disabled: the operator searches the colleague's name and sees who disabled it and when.
 - The team reviews who holds the operator role: the operator filters by "Made operator" over all time.
-- An event looks wrong: the operator opens it and copies its identifier and request identifier, which name the same change in the server's log.
+- An event looks wrong: the operator tells a developer the person and the time, and the developer finds the event and its request identifier through the API or the table.
 
 _Failures:_ someone who is not an operator asks for the log (refused, and nothing is revealed in the web application); the filters match nothing (the screen says so and offers to clear them); a link holds a cursor that is not one (refused as a bad request).
 
@@ -85,10 +85,10 @@ The web page calls `requireRole("operator")`; a signed-in person who is not an o
 ## Web
 
 - **Route** `src/app/[locale]/admin/audit-log/page.tsx`: `requireRole("operator")`, then the list read on the server from the address's parameters. The sidebar gains its third destination, Audit log, and the breadcrumb follows from the same list.
-- **Feature** `src/features/audit/`: the page, the toolbar, the event panel, the search parameters and the server read, and the map from an action to its wording.
+- **Feature** `src/features/audit/`: the page, the toolbar, the search parameters and the server read, and the map from an action to its wording.
 - **Reading** follows the [list rules](../../../conventions.md#lists) the Accounts screen set: a Server Component reads by the address (`?period=&action=&q=&before=&after=`), nuqs writes it with `shallow: false`, the search waits 300 ms. A change of filter drops the cursor. The page turns `period` into `from` when it reads; the API knows instants, not presets.
-- **Columns:** Time, Person, Activity. The time reads as on the Accounts screen ("Today, 14:05"). The person is the `Person` composite, or "System" when the event has no actor. The activity is a sentence from the action, ending in the resource's label, and is the button that opens the event.
-- **One event** opens in the registry `sheet` from the right: the action's sentence as its title with the stored name under it in monospace, then When (local time and UTC), Who, What (the resource, its type and identifier, the action's details by label), and the event and request identifiers. The panel is a client component fed with the events the server already rendered; opening it reads nothing.
+- **Columns:** Time, Person, Activity. The time reads as on the Accounts screen ("Today, 14:05"), with the full date and time to the second in a tooltip. The person is the `Person` composite, or "System" when the event has no actor. The activity is a sentence from the action, ending in the resource's label.
+- **A row is the whole event; nothing opens.** Decided on 5 October 2026 after the first drawing, which opened an event in a sheet as MemoryOS, Railway and Stripe do. Those are products for engineers. With the stored action name, the UTC time, the resource's type and the three identifiers taken out, because an operator can do nothing with them, the sheet said only what its row already says. A detail view arrives with the first action whose details do not fit a line. The API still returns `id`, `details` and `requestId` for a developer who traces a change.
 - **Footer:** the registry `pagination` with Previous and Next only, as links that carry `after` and `before`. `DataTableFooter` gains this form beside the numbered one; there is no count.
 - **Empty states:** no event in the period, and nothing matching the filters, each inside the table frame; the second offers to clear the filters.
 - **Below 768px** each event is a stacked row, as on the Accounts screen.
@@ -96,8 +96,8 @@ The web page calls `requireRole("operator")`; a signed-in person who is not an o
 
 ## Design system
 
-No new token and no new composite. `Sheet` becomes a Figma component with this screen, and the `AdminSidebar` component gains the Audit log item.
+No new token, no new composite and no new Figma component. The `AdminSidebar` component gains the Audit log item.
 
 ## Not in this increment
 
-Export, a retention period, a free date range, a link from an event to the account it concerns, and events from modules other than `identity`. Each waits until something asks for it.
+A detail view of one event, export, a retention period, a free date range, a link from an event to the account it concerns, and events from modules other than `identity`. Each waits until something asks for it.
