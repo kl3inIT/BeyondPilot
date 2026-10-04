@@ -207,5 +207,41 @@
     "description": "We could not load this page. Please try again.",
     "retry": "Try again",
     "reference": "Reference: {digest}"
+  },
+  "SignIn": {
+    "metaTitle": "Sign in · BeyondPilot",
+    "back": "Back to home",
+    "title": "Sign in to BeyondPilot",
+    "google": "Continue with Google",
+    "or": "or",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@company.com",
+    "submit": "Email me a sign-in link",
+    "invalidEmail": "Enter an email address like name@company.com.",
+    "sendFailedTitle": "We couldn't send the email",
+    "sendFailedBody": "Nothing was sent to {email}. Try again in a moment.",
+    "googleFailedTitle": "Google sign-in did not finish",
+    "googleFailedBody": "Try again, or get a sign-in link by email instead.",
+    "sent": {
+      "title": "Check your email",
+      "sentTo": "We sent a sign-in link to",
+      "validity": "It works for 15 minutes and takes you back to where you were.",
+      "openGmail": "Open Gmail",
+      "resendHint": "Not in your inbox or spam?",
+      "resend": "Send it again",
+      "resent": "Sent again. Not there yet?",
+      "resendFailed": "We couldn't send it. Try once more?",
+      "limited": "You have asked for three links. You can ask for another in {minutes, plural, one {# minute} other {# minutes}}; the newest link still works.",
+      "differentEmail": "Use a different email"
+    },
+    "expired": {
+      "title": "This link no longer works",
+      "lead": "A sign-in link works once, for 15 minutes. Ask for a new one and you will land back where you were.",
+      "submit": "Email me a new link"
+    },
+    "signingIn": {
+      "title": "Signing you in…",
+      "lead": "You will be back where you were in a moment."
+    }
   }
 }

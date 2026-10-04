@@ -14,7 +14,7 @@ flowchart LR
 ```
 
 - **backend** is one Spring Boot application on Java 25 with virtual threads ([ADR 0001](docs/decisions/0001-single-spring-boot-application-with-modulith-modules.md)). Over HTTP it answers `/actuator/health`, the sign-in endpoints and `GET /api/identity/me`, and every failure as an RFC 9457 problem.
-- **web** is one Next.js App Router application ([ADR 0002](docs/decisions/0002-nextjs-frontend-over-the-spring-backend.md)). It serves the public home page in English at `/` and in Vietnamese at `/vi`, and a shared coming-soon page for the planned destinations listed in `web/src/lib/site.ts`. It makes no backend call yet.
+- **web** is one Next.js App Router application ([ADR 0002](docs/decisions/0002-nextjs-frontend-over-the-spring-backend.md)). It serves the public home page in English at `/` and in Vietnamese at `/vi`, the sign-in pages, and a shared coming-soon page for the planned destinations listed in `web/src/lib/site.ts`. Its only backend calls are the sign-in ones.
 - **One origin.** Spring owns `/api`, `/login`, `/logout`, `/oauth2` and `/ott`. During development Next.js rewrites those paths to `BEYONDPILOT_API_ORIGIN`; `web/src/proxy.ts` excludes them from locale routing. No reverse proxy is configured, because nothing is deployed.
 - **The API contract** is `openapi.yml` at the repository root, generated from the full backend context by `OpenApiContractTest` and turned into TypeScript types in `web/src/lib/api/generated`. It currently declares one path, `GET /api/identity/me`, and the shared `Problem` schema. Both sides fail their gate when their copy is stale.
 
@@ -45,6 +45,9 @@ The folder rules are in [conventions › Frontend › Structure](docs/convention
 | Path under `web/src` | Holds today |
 | --- | --- |
 | `app/[locale]/(public)/` | The home page, composed from sections, and the coming-soon catch-all |
+| `app/[locale]/(auth)/` | The sign-in pages under their own layout, which shows the brand and no site navigation: `/sign-in`, and `/sign-in/link`, the page an emailed link opens |
+| `features/identity/` | The sign-in screens: `SignInForm` with its methods (`GoogleButton`, `EmailSignIn`), `CheckEmail` with `ResendLink`, `SignInLinkPage`, and the calls to the backend in `identity-api.ts` |
+| `lib/auth/session.ts` | `getCurrentAccount`, the server-side read of who is signed in |
 | `components/sections/` | The home page sections: hero with search, programs and events timeline, directory tabs, partner logos, founders, FAQ |
 | `components/layout/` | Site header and footer, mobile menu, brand lockup, light and dark theme switch |
 | `components/actions/` | The product's action components (`Button`, `IconButton`, `TextButton`, `ActionLink`) over shared action styles |
@@ -53,7 +56,7 @@ The folder rules are in [conventions › Frontend › Structure](docs/convention
 | `i18n/`, `proxy.ts`, `../messages/` | Locale routing (`en` without a prefix, `vi` under `/vi`) and the two message catalogs |
 | `styles/tokens.css` | Semantic design tokens, light and dark |
 
-There is no `features/` folder yet: no application screen exists. The home page links its campaign call to action to the interim campaign page that GenAI Fund runs outside this repository.
+The home page links its campaign call to action to the interim campaign page that GenAI Fund runs outside this repository.
 
 ## Identity and authorization
 
@@ -63,7 +66,7 @@ Sign-in is Spring Security inside the backend; there is no separate identity ser
 - **Session.** Spring Session stores it in PostgreSQL; it ends 30 days after the last request. The cookie `BEYONDPILOT_SESSION` is `HttpOnly` and `SameSite=Lax`, and `Secure` under the `production` profile. The session holds only the account identifier; role and status are read from the database.
 - **Requests.** A path under `/api` needs a session unless `SecurityConfiguration` opens it. A request that changes state must carry `X-BeyondPilot-CSRF: 1`. Refusals are 401 and 403 problems.
 - **Roles.** An account is a `user` or an `operator`. The addresses in `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS` become operators when they sign in. No screen grants the role yet, and no endpoint requires it yet.
-- The web application has no sign-in screen yet; the endpoints are exercised by the tests and by hand.
+- **Web.** `/sign-in` offers Google and the emailed link, then says where the link went; `/sign-in/link` posts the token and opens the page the person came from. A signed-in visitor to `/sign-in` is sent on. The header does not show who is signed in yet, and nothing in the web application signs out.
 
 ## Data ownership and consistency
 

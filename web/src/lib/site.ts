@@ -21,7 +21,6 @@ export const comingSoonPaths = [
   "solutions",
   "talent",
   "talent/new",
-  "sign-in",
   "get-started",
   "founders",
   "search",

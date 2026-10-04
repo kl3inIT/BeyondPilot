@@ -49,7 +49,7 @@ Local runs use no profile. Deployed environments run `production`; staging runs 
 ## Sign in locally
 
 1. Start the backend and the web application.
-2. Ask for a link: the web sign-in page when it exists, or `curl -X POST -H "X-BeyondPilot-CSRF: 1" --data-urlencode "username=you@example.test" http://localhost:8080/ott/generate`.
+2. Ask for a link at `http://localhost:3000/sign-in`, then open the link from the newest email in Mailpit (`http://localhost:8025`); the remaining steps are the same flow by hand. Or `curl -X POST -H "X-BeyondPilot-CSRF: 1" --data-urlencode "username=you@example.test" http://localhost:8080/ott/generate`.
 3. Open `http://localhost:8025` and take the token from the link in the newest email.
 4. Redeem it: `curl -c cookies.txt -X POST -H "X-BeyondPilot-CSRF: 1" -d "token=<token>" http://localhost:8080/login/ott`, then `curl -b cookies.txt http://localhost:8080/api/identity/me`.
 

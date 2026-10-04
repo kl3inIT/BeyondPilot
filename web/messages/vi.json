@@ -207,5 +207,41 @@
     "description": "Không tải được trang này. Vui lòng thử lại.",
     "retry": "Thử lại",
     "reference": "Mã tham chiếu: {digest}"
+  },
+  "SignIn": {
+    "metaTitle": "Đăng nhập · BeyondPilot",
+    "back": "Về trang chủ",
+    "title": "Đăng nhập BeyondPilot",
+    "google": "Tiếp tục với Google",
+    "or": "hoặc",
+    "emailLabel": "Email",
+    "emailPlaceholder": "ban@congty.com",
+    "submit": "Gửi link đăng nhập cho tôi",
+    "invalidEmail": "Nhập địa chỉ email dạng ten@congty.com.",
+    "sendFailedTitle": "Chưa gửi được email",
+    "sendFailedBody": "Chưa có gì được gửi tới {email}. Bạn thử lại sau ít phút.",
+    "googleFailedTitle": "Đăng nhập Google chưa hoàn tất",
+    "googleFailedBody": "Bạn thử lại, hoặc nhận link đăng nhập qua email.",
+    "sent": {
+      "title": "Kiểm tra email của bạn",
+      "sentTo": "Chúng tôi đã gửi link đăng nhập tới",
+      "validity": "Link có hiệu lực 15 phút và đưa bạn về đúng trang đang xem.",
+      "openGmail": "Mở Gmail",
+      "resendHint": "Không thấy trong hộp thư đến hay thư rác?",
+      "resend": "Gửi lại",
+      "resent": "Đã gửi lại. Vẫn chưa thấy?",
+      "resendFailed": "Chưa gửi được. Thử lại lần nữa?",
+      "limited": "Bạn đã yêu cầu ba link. Bạn có thể yêu cầu thêm sau {minutes} phút; link mới nhất vẫn dùng được.",
+      "differentEmail": "Dùng email khác"
+    },
+    "expired": {
+      "title": "Link này không còn dùng được",
+      "lead": "Mỗi link đăng nhập chỉ dùng một lần, trong 15 phút. Yêu cầu link mới và bạn sẽ về đúng trang đang xem.",
+      "submit": "Gửi link mới cho tôi"
+    },
+    "signingIn": {
+      "title": "Đang đăng nhập…",
+      "lead": "Bạn sẽ về đúng trang đang xem ngay thôi."
+    }
   }
 }
