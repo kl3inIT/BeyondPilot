@@ -1,6 +1,8 @@
 package ai.genaifund.beyondpilot.identity.signin;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -49,7 +51,8 @@ class SignInCodeSender implements OneTimeTokenGenerationSuccessHandler {
 		}
 		UUID challengeId = code.challengeId();
 		if (challengeId == null) {
-			response.setHeader(HttpHeaders.RETRY_AFTER, Long.toString(properties.signInCodeLifetime().toSeconds()));
+			long wait = Math.max(1, Duration.between(Instant.now(), code.getExpiresAt()).toSeconds());
+			response.setHeader(HttpHeaders.RETRY_AFTER, Long.toString(wait));
 			response.sendError(HttpStatus.TOO_MANY_REQUESTS.value());
 			return;
 		}

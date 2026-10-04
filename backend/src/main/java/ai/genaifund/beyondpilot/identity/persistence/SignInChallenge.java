@@ -31,15 +31,19 @@ public class SignInChallenge {
 	@Column(nullable = false, updatable = false)
 	private Instant expiresAt;
 
+	@Column(nullable = false, updatable = false)
+	private Instant createdAt;
+
 	@SuppressWarnings("NullAway.Init")
 	protected SignInChallenge() {
 	}
 
-	public SignInChallenge(UUID id, String email, String codeHash, Instant expiresAt) {
+	public SignInChallenge(UUID id, String email, String codeHash, Instant createdAt, Instant expiresAt) {
 		this.id = id;
 		this.email = email;
 		this.codeHash = codeHash;
 		this.expiresAt = expiresAt;
+		this.createdAt = createdAt;
 	}
 
 	public String getEmail() {

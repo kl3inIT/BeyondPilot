@@ -26,9 +26,12 @@ final class SignInCode implements OneTimeToken {
 		this.expiresAt = expiresAt;
 	}
 
-	/** The address already holds its share of working codes: nothing was stored and nothing is to be sent. */
-	static SignInCode refused(String email, Instant at) {
-		return new SignInCode(null, "", email, at);
+	/**
+	 * The address may not have another code yet: nothing was stored and nothing is to be sent.
+	 * @param retryAt when a new request can succeed
+	 */
+	static SignInCode refused(String email, Instant retryAt) {
+		return new SignInCode(null, "", email, retryAt);
 	}
 
 	/** The challenge the code belongs to, or {@code null} when the request was refused. */

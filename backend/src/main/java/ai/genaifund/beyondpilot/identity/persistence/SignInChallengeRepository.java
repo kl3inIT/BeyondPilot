@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.identity.persistence;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,14 +22,21 @@ public interface SignInChallengeRepository extends JpaRepository<SignInChallenge
 	Integer takeTurnFor(String email);
 
 	/**
-	 * Records one wrong code in the database itself, so guesses that arrive together are each counted.
-	 * @return the number of wrong codes after this one, or 0 when the challenge is gone
+	 * Takes one of the challenge's guesses before the guess is looked at, in the database itself: of any number of
+	 * guesses that arrive together, only as many as are left get a turn. A right guess removes the challenge, so the
+	 * count only ever matters for wrong ones.
+	 * @return the guesses used after this one; empty when none was left or the challenge is gone
 	 */
 	@Query(value = """
 			update identity_sign_in_challenge set failed_attempts = failed_attempts + 1
-			where id = :id returning failed_attempts
+			where id = :id and failed_attempts < :allowed returning failed_attempts
 			""", nativeQuery = true)
-	Integer recordFailedAttempt(UUID id);
+	List<Integer> takeGuess(UUID id, int allowed);
+
+	/** The wrong codes typed for this address since the given moment, over all of its codes. */
+	@Query("select coalesce(sum(c.failedAttempts), 0) from SignInChallenge c "
+			+ "where lower(c.email) = lower(:email) and c.createdAt > :since")
+	long wrongCodesSince(String email, Instant since);
 
 	/**
 	 * Uses the challenge up.

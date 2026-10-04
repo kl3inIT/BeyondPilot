@@ -15,7 +15,9 @@ import org.springframework.validation.annotation.Validated;
 /**
  * @param signInCodeLifetime how long an emailed sign-in code works
  * @param signInCodeLimit how many unexpired codes one address may hold before further requests are refused
- * @param signInCodeAttempts how many wrong codes are accepted before the code stops working
+ * @param signInCodeAttempts how many guesses one code takes before it stops working
+ * @param signInCodeDailyAttempts how many wrong codes one address takes in a day, over all its codes, before no new
+ * code is sent to it until the day has passed
  * @param operatorEmails addresses that become operators when they sign in; the way the first operators exist
  * @param google the Google OAuth client, absent where Google sign-in is not configured
  */
@@ -23,6 +25,7 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties("beyondpilot.identity")
 public record IdentityProperties(@DefaultValue("15m") Duration signInCodeLifetime,
 		@DefaultValue("3") @Min(1) int signInCodeLimit, @DefaultValue("5") @Min(1) int signInCodeAttempts,
+		@DefaultValue("15") @Min(1) int signInCodeDailyAttempts,
 		@DefaultValue Set<String> operatorEmails, @Nullable Google google) {
 
 	public IdentityProperties {

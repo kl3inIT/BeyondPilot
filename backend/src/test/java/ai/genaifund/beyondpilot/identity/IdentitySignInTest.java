@@ -136,6 +136,41 @@ class IdentitySignInTest {
 	}
 
 	@Test
+	void guessesSentTogetherGetNoMoreTurnsThanGuessesSentInARow() throws Exception {
+		String browser = browserWaitingFor("stormed@example.test");
+		String code = mail.latestCodeTo("stormed@example.test");
+		String wrong = code.equals("000000") ? "111111" : "000000";
+
+		try (ExecutorService guesses = Executors.newVirtualThreadPerTaskExecutor()) {
+			List<Callable<Object>> together = Collections.nCopies(40,
+					() -> typeCode(browser, wrong).returnResult(Void.class));
+			for (Future<Object> guess : guesses.invokeAll(together)) {
+				guess.get();
+			}
+		}
+
+		assertThat(jdbc.sql("select failed_attempts from identity_sign_in_challenge where email = 'stormed@example.test'")
+			.query(Integer.class)
+			.single()).as("only five of the forty were looked at").isEqualTo(5);
+		assertProblem(typeCode(browser, code), 429);
+	}
+
+	@Test
+	void anAddressThatKeepsGettingWrongCodesGetsNoNewCodeForADay() {
+		jdbc.sql("""
+				insert into identity_sign_in_challenge (id, email, code_hash, failed_attempts, expires_at, created_at)
+				select gen_random_uuid(), 'besieged@example.test', 'x', 5, now() - interval '1 hour', now() - interval '2 hours'
+				from generate_series(1, 3)
+				""").update();
+
+		requestCode(null, "username=besieged@example.test").expectStatus()
+			.isEqualTo(429)
+			.expectHeader()
+			.value("Retry-After", seconds -> assertThat(Long.parseLong(seconds)).isBetween(86_000L, 86_400L));
+		assertThat(mail.countTo("besieged@example.test")).isZero();
+	}
+
+	@Test
 	void aNewCodeReplacesTheOneBeforeItInTheSameBrowser() {
 		String browser = browserWaitingFor("again@example.test");
 		String first = mail.latestCodeTo("again@example.test");
@@ -262,7 +297,7 @@ class IdentitySignInTest {
 		requestCode(null, "username=flood@example.test").expectStatus()
 			.isEqualTo(429)
 			.expectHeader()
-			.valueEquals("Retry-After", "900")
+			.value("Retry-After", seconds -> assertThat(Long.parseLong(seconds)).isBetween(1L, 900L))
 			.expectHeader()
 			.contentType(MediaType.APPLICATION_PROBLEM_JSON);
 		assertThat(mail.countTo("flood@example.test")).isEqualTo(3);

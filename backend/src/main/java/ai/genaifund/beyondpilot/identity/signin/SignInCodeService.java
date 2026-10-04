@@ -7,6 +7,7 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.IdentityProperties;
@@ -28,8 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Sign-in codes behind Spring Security's one-time-token login. A code is six digits, so three things keep it safe:
- * it works only together with the challenge held in the session of the browser that asked for it, it stops working
- * after a few wrong guesses, and it expires. Whoever is sent someone else's code can do nothing with it, and nobody
+ * it works only together with the challenge held in the session of the browser that asked for it, it takes only a
+ * few guesses, and it expires. Whoever is sent someone else's code can do nothing with it, and nobody
  * can guess at, or lock, a code from another browser.
  */
 @Service
@@ -56,13 +57,20 @@ class SignInCodeService implements OneTimeTokenService {
 		challenges.takeTurnFor(request.getUsername());
 		if (challenges.countUnexpired(request.getUsername(), now) >= properties.signInCodeLimit()) {
 			LOG.atWarn().addKeyValue("event", "identity.sign_in_code.limited").log("Sign-in code limit reached");
-			return SignInCode.refused(request.getUsername(), now);
+			return SignInCode.refused(request.getUsername(), now.plus(request.getExpiresIn()));
+		}
+		// Six digits are guessable given enough codes to guess at, so an address that keeps getting wrong codes gets
+		// no new one for a day. Google sign-in is not affected.
+		if (challenges.wrongCodesSince(request.getUsername(), now.minus(KEEP_EXPIRED)) >= properties
+			.signInCodeDailyAttempts()) {
+			LOG.atWarn().addKeyValue("event", "identity.sign_in_code.guarded").log("Sign-in codes paused for an address");
+			return SignInCode.refused(request.getUsername(), now.plus(KEEP_EXPIRED));
 		}
 		challenges.removeExpiredBefore(now.minus(KEEP_EXPIRED));
 		UUID challengeId = UUID.randomUUID();
 		String code = String.format("%06d", random.nextInt(1_000_000));
 		Instant expiresAt = now.plus(request.getExpiresIn());
-		challenges.save(new SignInChallenge(challengeId, request.getUsername(), hash(challengeId, code), expiresAt));
+		challenges.save(new SignInChallenge(challengeId, request.getUsername(), hash(challengeId, code), now, expiresAt));
 		return new SignInCode(challengeId, code, request.getUsername(), expiresAt);
 	}
 
@@ -84,12 +92,14 @@ class SignInCodeService implements OneTimeTokenService {
 		if (challengeId == null || challenge == null || !challenge.getExpiresAt().isAfter(Instant.now())) {
 			throw new CredentialsExpiredException("No sign-in code is waiting in this session");
 		}
-		if (challenge.getFailedAttempts() >= properties.signInCodeAttempts()) {
+		// The guess is paid for before it is looked at, so guesses sent together cannot outrun the limit.
+		List<Integer> taken = challenges.takeGuess(challengeId, properties.signInCodeAttempts());
+		if (taken.isEmpty()) {
 			throw new LockedException("Too many wrong sign-in codes");
 		}
+		int used = taken.getFirst();
 		if (!matches(challenge.getCodeHash(), hash(challengeId, typed))) {
-			Integer failed = challenges.recordFailedAttempt(challengeId);
-			if (failed != null && failed >= properties.signInCodeAttempts()) {
+			if (used >= properties.signInCodeAttempts()) {
 				LOG.atWarn().addKeyValue("event", "identity.sign_in_code.locked").log("Sign-in code locked");
 				throw new LockedException("Too many wrong sign-in codes");
 			}
