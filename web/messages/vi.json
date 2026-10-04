@@ -275,6 +275,11 @@
   "Admin": {
     "metaTitle": "Quản trị · BeyondPilot",
     "title": "Quản trị",
-    "empty": "Chưa có màn quản trị nào."
+    "empty": "Chưa có màn quản trị nào.",
+    "nav": {
+      "label": "Điều hướng quản trị",
+      "home": "Trang chủ"
+    },
+    "toggleSidebar": "Thu gọn hoặc mở thanh bên"
   }
 }

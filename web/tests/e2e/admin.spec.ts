@@ -1,7 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
-import { signInAs } from "./session";
+import { answerSignOut, signInAs } from "./session";
+
+/** The toggle in the bar above the page; the sidebar's own edge carries a second one. */
+function sidebarToggle(page: Page) {
+  return page.getByRole("main").getByRole("button", { name: "Toggle sidebar" });
+}
 
 test.describe("admin", () => {
   test.use({ locale: "en-US" });
@@ -49,5 +54,70 @@ test.describe("admin", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Admin");
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await expectNoSeriousA11yViolations(page);
+  });
+
+  test("the sidebar marks the current page, and collapsed to icons it stays so and keeps its names", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "below 768px the sidebar is a sheet, not a column that collapses");
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin");
+
+    const home = page
+      .getByRole("navigation", { name: "Admin navigation" })
+      .getByRole("link", { name: "Home" });
+    await expect(home).toHaveAttribute("aria-current", "page");
+
+    const sidebar = page.locator('[data-slot="sidebar"]');
+    await expect(sidebar).toHaveAttribute("data-state", "expanded");
+    await sidebarToggle(page).click();
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+
+    // The choice is read on the server, so the page comes back collapsed rather than snapping shut.
+    await page.reload();
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    await expect(home).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+  });
+
+  test("on a phone the sidebar opens over the page", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, "the sheet exists below 768px only");
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin");
+
+    await sidebarToggle(page).click();
+    const sheet = page.getByRole("dialog");
+    await expect(sheet.getByRole("link", { name: "Home" })).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+  });
+
+  test("signing out of the admin area leads to sign in", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const signOuts = await answerSignOut(page, 204);
+    await page.goto("/admin");
+    if (isMobile) {
+      await sidebarToggle(page).click();
+    }
+
+    await page.getByRole("button", { name: "Account menu for Đạt Phan" }).click();
+    const menu = page.getByRole("menu");
+    await expect(menu.getByText("dat.phan@example.com")).toBeVisible();
+    await menu.getByRole("menuitem", { name: "Sign out" }).click();
+
+    await expect(page).toHaveURL("/sign-in?returnTo=%2Fadmin");
+    expect(signOuts).toEqual(["POST"]);
   });
 });
