@@ -18,7 +18,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationConverter;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.ott.GenerateOneTimeTokenRequestResolver;
@@ -79,7 +78,7 @@ class SecurityConfiguration {
 		if (oauthClients.getIfAvailable() != null) {
 			http.oauth2Login(google -> google.loginPage(SIGN_IN_PAGE)
 				.successHandler(new ReturnToSuccessHandler())
-				.failureHandler(new SimpleUrlAuthenticationFailureHandler(SIGN_IN_PAGE + "?error=google")))
+				.failureHandler(new ProviderSignInFailureHandler("google", SIGN_IN_PAGE + "?error=google")))
 				.addFilterBefore(new ReturnToFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
 		}
 		return http.build();
