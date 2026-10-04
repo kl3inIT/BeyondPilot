@@ -17,7 +17,8 @@ For work under `web/`: the Next.js App Router application. This page points to t
 Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 
 - `pnpm dev` serves the app on port 3000 and forwards Spring's paths to `BEYONDPILOT_API_ORIGIN` ([development runtime](../docs/runbooks/development-runtime.md#web-application)).
-- `pnpm check` is the gate: the generated-client drift check, ESLint with the shadcn rules, Prettier, `tsc`, the message-catalog check and knip.
+- `pnpm check` is the gate: the generated-client drift check, ESLint with the shadcn rules, Prettier, `tsc`, the unit tests, the message-catalog check and knip.
+- `pnpm test:unit` runs the Vitest files (`src/**/*.test.ts`).
 - `pnpm generate:api` regenerates `src/lib/api/generated` from the repository's `openapi.yml` ([refresh the API contract](../docs/runbooks/development-runtime.md#refresh-the-api-contract)). Never edit the generated files.
 - `pnpm test:e2e` builds the app and runs Playwright with axe on desktop and mobile Chrome.
 - `pnpm format` applies Prettier, including Tailwind class order.
@@ -25,23 +26,23 @@ Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 
 ## Where things live
 
-| Path                         | Holds                                                                                                                                        |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/app/[locale]/`          | Every page. `(public)` and `(auth)` are route groups without a URL prefix; `workspace/` and `admin/` are URL segments with their own layouts |
-| `src/app/global-error.tsx`   | The failure screen when the root layout itself fails; the only inline bilingual copy                                                         |
-| `src/features/<domain>/`     | App screens of one business domain, flat: page components, parts, `<domain>-queries.ts`, `<domain>-schemas.ts`                               |
-| `src/components/sections/`   | Marketing page sections, one folder each (hero, logos, faq, cta, …)                                                                          |
-| `src/components/layout/`     | Site header, footer, mobile menu, and the admin sidebar                                                                                      |
-| `src/components/actions/`    | Product actions: `Button`, `IconButton`, `TextButton` with `tone`/`prominence`/`size`/`pending`                                              |
-| `src/components/ui/`         | shadcn registry primitives (`components.json`, style `base-nova`)                                                                            |
-| `src/components/composites/` | Product patterns shared by several features, without data fetching or authority checks                                                       |
-| `src/lib/`                   | `utils.ts` (`cn`), `api/generated/` (types from `openapi.yml`), and the API client and session helpers as they arrive                        |
-| `src/i18n/`                  | Locale routing, request configuration, locale-aware `Link`, message typing                                                                   |
-| `src/styles/tokens.css`      | Semantic design tokens, light and dark                                                                                                       |
-| `src/instrumentation.ts`     | Logs server rendering errors as JSON                                                                                                         |
-| `src/proxy.ts`               | Locale routing only                                                                                                                          |
-| `messages/`                  | `en.json` and `vi.json`                                                                                                                      |
-| `tests/e2e/`                 | Playwright specs and the axe helper                                                                                                          |
+| Path                         | Holds                                                                                                                                                 |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/[locale]/`          | Every page. `(public)` and `(auth)` are route groups without a URL prefix; `workspace/` and `admin/` are URL segments with their own layouts          |
+| `src/app/global-error.tsx`   | The failure screen when the root layout itself fails; the only inline bilingual copy                                                                  |
+| `src/features/<domain>/`     | App screens of one business domain, flat: page components, parts, `<domain>-queries.ts`, `<domain>-schemas.ts`                                        |
+| `src/components/sections/`   | Marketing page sections, one folder each (hero, logos, faq, cta, …)                                                                                   |
+| `src/components/layout/`     | Site header, footer, mobile menu, and the admin sidebar                                                                                               |
+| `src/components/actions/`    | Product actions: `Button`, `IconButton`, `TextButton` with `tone`/`prominence`/`size`/`pending`                                                       |
+| `src/components/ui/`         | shadcn registry primitives (`components.json`, style `base-nova`)                                                                                     |
+| `src/components/composites/` | Product patterns shared by several features, without data fetching or authority checks                                                                |
+| `src/lib/`                   | `utils.ts` (`cn`), `api/generated/` (SDK and types from `openapi.yml`), `api/client.ts` (its configuration and `ApiError`), `auth/` (session helpers) |
+| `src/i18n/`                  | Locale routing, request configuration, locale-aware `Link`, message typing                                                                            |
+| `src/styles/tokens.css`      | Semantic design tokens, light and dark                                                                                                                |
+| `src/instrumentation.ts`     | Logs server rendering errors as JSON                                                                                                                  |
+| `src/proxy.ts`               | Locale routing only                                                                                                                                   |
+| `messages/`                  | `en.json` and `vi.json`                                                                                                                               |
+| `tests/e2e/`                 | Playwright specs and the axe helper                                                                                                                   |
 
 ## Rules to check before you edit
 

@@ -1,9 +1,14 @@
 import { defineConfig } from "@hey-api/openapi-ts";
 
-// The contract has no operations yet, so only its types are generated. The fetch client, SDK and
-// TanStack Query plugins arrive with the first endpoint the web calls.
+// The client, the SDK and the types of the backend's contract. The TanStack Query plugin arrives
+// with the first screen that reads through it.
 export default defineConfig({
   input: "../openapi.yml",
   output: "src/lib/api/generated",
-  plugins: ["@hey-api/typescript"],
+  plugins: [
+    // Every SDK call rejects with ApiError on a failed request (src/lib/api/client.ts).
+    { name: "@hey-api/client-next", runtimeConfigPath: "./src/lib/api/client", throwOnError: true },
+    "@hey-api/typescript",
+    "@hey-api/sdk",
+  ],
 });
