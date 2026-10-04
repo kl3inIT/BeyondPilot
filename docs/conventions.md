@@ -264,6 +264,15 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 - The browser sees one origin. Spring's paths (`/api`, `/login`, `/logout`, `/oauth2`, `/ott`) are rewritten to `BEYONDPILOT_API_ORIGIN` during development and routed by a reverse proxy when deployed.
 - The session lives only in httpOnly cookies; tokens are never stored in browser storage.
 
+### Lists
+
+- A list's search, filters and page are the URL, written through nuqs with `shallow: false` so a change asks the server again. A value at its default is left out of the URL. Changing the search or a filter returns to page 1. A search field waits 300 ms after the last keystroke.
+- The Server Component of the page reads the list with those parameters; nothing about a list is kept in browser state that the URL does not hold. A write goes to Spring from the browser and ends in `router.refresh()`.
+- The API pages from 1 and answers `items`, `page`, `pageSize` and `total`; a page past the end is empty, not an error.
+- An empty list and a search that finds nothing are different states. The second keeps the header row and offers one action that clears the search and the filters.
+- Row actions sit in a menu at the end of the row. A destructive action comes last, after a divider, in the destructive colour; an action that opens a dialog ends with an ellipsis. The dialog names who or what it concerns, what will happen and how it is undone.
+- On a phone a list is stacked rows, never a table scrolled sideways.
+
 ### Internationalization
 
 - English is the default locale with no URL prefix; Vietnamese lives under `/vi`. A first visit is matched to the browser language.
