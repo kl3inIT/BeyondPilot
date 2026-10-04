@@ -69,3 +69,15 @@ tasks.named<Test>("test") {
 	inputs.files(rootProject.file("openapi.yml")).withPropertyName("openApiContract").optional()
 	inputs.property("openApiWrite", providers.environmentVariable("BEYONDPILOT_OPENAPI_WRITE").orElse("false"))
 }
+
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+	// Local settings and secrets come from the git-ignored .env at the repository root (.env.example
+	// names them). Only this task reads the file; a deployed application takes its environment as is.
+	val localEnvironment = rootProject.file(".env")
+	if (localEnvironment.exists()) {
+		localEnvironment.readLines()
+			.map { it.trim() }
+			.filter { it.isNotEmpty() && !it.startsWith("#") && it.contains("=") }
+			.forEach { environment(it.substringBefore("=").trim(), it.substringAfter("=").trim()) }
+	}
+}

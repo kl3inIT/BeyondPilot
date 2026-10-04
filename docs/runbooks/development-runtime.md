@@ -51,9 +51,11 @@ Local runs use no profile. Deployed environments run `production`; staging runs 
 2. Ask for a code at `http://localhost:3000/sign-in`.
 3. Open `http://localhost:8025` (Mailpit), read the six digits in the newest email and type them into the waiting screen.
 
-To sign in as an operator, start the backend with your address in `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS`.
+To sign in as an operator, put your address in `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS` in the local `.env` file described below.
 
-Google sign-in works locally once a Google OAuth client exists whose redirect URI is `http://localhost:3000/login/oauth2/code/google`. Keep its id and secret in a file under the git-ignored `.tmp/` folder, one `NAME=value` per line for `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID` and `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET`, and load it into the shell that starts the backend: `set -a; . ./.tmp/dev-secrets.env; set +a; ./gradlew :backend:bootRun`. The values never go on a command line, into a tracked file or into a message. A client for a deployed environment is a separate client, managed with that environment's secrets. The same flow by hand needs one cookie jar for both requests, because the code works only in the session that asked for it: `curl -c jar.txt -X POST -H "X-BeyondPilot-CSRF: 1" --data-urlencode "username=you@example.test" http://localhost:8080/ott/generate`, then `curl -b jar.txt -c jar.txt -X POST -H "X-BeyondPilot-CSRF: 1" -d "code=<code>" http://localhost:8080/login/ott`.
+`./gradlew :backend:bootRun` reads `.env` at the repository root when the file exists: one `NAME=value` per line, `#` for comments. Git ignores the file; `.env.example` lists the names it may hold. Only the `bootRun` task reads it, so tests and deployed environments are not affected. Each checkout and worktree has its own `.env`.
+
+Google sign-in works locally once a Google OAuth client exists whose redirect URI is `http://localhost:3000/login/oauth2/code/google`. Keep its id and secret in `.env` as `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID` and `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET`. The values never go on a command line, into a tracked file or into a message. A client for a deployed environment is a separate client, managed with that environment's secrets. The same flow by hand needs one cookie jar for both requests, because the code works only in the session that asked for it: `curl -c jar.txt -X POST -H "X-BeyondPilot-CSRF: 1" --data-urlencode "username=you@example.test" http://localhost:8080/ott/generate`, then `curl -b jar.txt -c jar.txt -X POST -H "X-BeyondPilot-CSRF: 1" -d "code=<code>" http://localhost:8080/login/ott`.
 
 ## Refresh the API contract
 
