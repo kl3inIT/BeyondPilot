@@ -4,6 +4,7 @@ import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,12 +12,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -40,7 +44,12 @@ class SecurityConfiguration {
 			OneTimeTokenGenerationSuccessHandler signInCodeSender,
 			ObjectProvider<GenerateOneTimeTokenRequestResolver> signInCodeRequest,
 			ObjectProvider<AuthenticationConverter> signInCodeConverter,
-			ObjectProvider<ClientRegistrationRepository> oauthClients) throws Exception {
+			ObjectProvider<ClientRegistrationRepository> oauthClients,
+			@Qualifier("operatorsOnly") ObjectProvider<AuthorizationManager<RequestAuthorizationContext>> operatorsOnly)
+			throws Exception {
+		// The module that knows the roles supplies the check; without it the operators' paths stay closed.
+		AuthorizationManager<RequestAuthorizationContext> operators = operatorsOnly
+			.getIfAvailable(() -> (authentication, request) -> new AuthorizationDecision(false));
 		http
 			// A path under /api is closed unless a line here opens it; the web application serves every other path.
 			.authorizeHttpRequests(requests -> requests.dispatcherTypeMatchers(DispatcherType.ERROR)
@@ -48,6 +57,9 @@ class SecurityConfiguration {
 				// A public file, such as an image of a program, is read without a session.
 				.requestMatchers(HttpMethod.GET, "/api/storage/files/*")
 				.permitAll()
+				// The audit module cannot ask who is an operator (ADR 0004), so the chain asks for it.
+				.requestMatchers("/api/audit/**")
+				.access(operators)
 				.requestMatchers("/api/**")
 				.authenticated()
 				.anyRequest()

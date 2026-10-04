@@ -119,9 +119,22 @@ public class AccountAdministration {
 	}
 
 	/** The caller's account, which must be an operator's and not disabled, read now and not from the session. */
+	/**
+	 * Whether the account is an operator now. Read from the database, so a withdrawn role or a disabled account stops
+	 * counting at once, whatever its session still says.
+	 */
+	@Transactional(readOnly = true)
+	public boolean isOperator(Actor actor) {
+		return accounts.findById(actor.accountId()).filter(AccountAdministration::operates).isPresent();
+	}
+
+	private static boolean operates(Account account) {
+		return account.isOperator() && !account.isDisabled();
+	}
+
 	private Account operator(Actor actor) {
 		return accounts.findById(actor.accountId())
-			.filter(account -> account.isOperator() && !account.isDisabled())
+			.filter(AccountAdministration::operates)
 			.orElseThrow(() -> new IdentityException(IdentityErrorCode.OPERATOR_REQUIRED,
 					"Operator action by account " + actor.accountId()));
 	}
