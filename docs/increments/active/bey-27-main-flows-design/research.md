@@ -48,3 +48,50 @@ The use case fields the guide defines are the template of the use case page: pro
 - "What winning gets you" was missing from the first draft although it is the campaign's main argument.
 - The application form's fields come from the campaign's own submission list, not from a generic "proposal" form.
 - The directory's use case cards became text-first: the photographs on hand show events, not the use cases.
+
+## Review of 4 October 2026
+
+Each screen of the row was reviewed with the team lead before it may be coded. This section records what was studied that day; the sections above are left as written.
+
+### Challenge platforms
+
+Pages of live challenges on five platforms, opened in a browser at 1440 and 390 and measured. No screenshot is kept; the links are public.
+
+| Platform                                                                                                                                                                 | Page height at 1440 | At 390              | How the content is laid out                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Devpost: [Meta VR Start Developer Competition 2026](https://start-developer-competition-26.devpost.com/), [ForgeHacks Online 2026](https://forgehacks-2026.devpost.com/) | 6,900 and 9,200px   | 11,400 and 15,900px | Paragraphs and bullet lists; a summary box with deadline, days left, prize, format and participant count          |
+| HeroX: [Open Call for Startups](https://www.herox.com/StartupOpenCall)                                                                                                   | 6,800px             | 13,300px            | Almost all paragraphs; an Updates section                                                                         |
+| Agorize: [Make AI Happen](https://www.agorize.com/en/challenges/make-ai-happen)                                                                                          | 4,700px             | 6,400px             | A horizontal timeline, theme cards, three steps to take part; an enterprise sets the challenge, as on BeyondPilot |
+| lablab.ai: [AI Dark Factory](https://lablab.ai/ai-hackathons/wearedevelopers-hackathon)                                                                                  | 21,800px            | 44,200px            | A sticky section row, a facts band, a card per track, partners, then the submitted projects                       |
+| Devfolio: [Hackverse 2026](https://hackverse-19.devfolio.co/)                                                                                                            | 3,700px             | 2,500px             | Short; prizes and an FAQ                                                                                          |
+
+The program page for the Tasco challenge is 5,200px at 1440 and 8,800px at 390, so its length is ordinary for the kind. Taken from these pages: a section row on a phone (Devpost uses a select; the screen uses a row that scrolls sideways), a contact line for the organiser, and eligibility placed second. Seen on several and left for a decision (BEY-41): an Updates section and a public count of participants. Devpost gives each hackathon its own subdomain over one page template; BeyondPilot keeps path addresses for now (BEY-43).
+
+### The live application form
+
+The interim campaign's form at `beyondpilot.genaifund.ai/insurance-ai-tasco/apply`, seen signed in on 4 October 2026 through screenshots the team lead took. It was read only; nothing was submitted.
+
+| Step         | Fields (an asterisk marks a required field)                                                                                                                                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| About you    | First name\*, last name\*, email\* (fixed: the sign-in address), phone with country code\*, country\*, LinkedIn profile\*                                                                                                                               |
+| Organization | Name\*, type\* (several may be chosen), organization or team size\*, team background\*, website\*, country of business operation                                                                                                                        |
+| Solution     | Product or solution name\*, problems solved\*, product stage\*, key milestones and traction\*, built with\*; then, optional: short description, challenge areas, how the solution addresses the challenge, what Tasco would need to provide for a pilot |
+| Materials    | Solution deck (PDF, up to 25 MB)_, product demo URL_, a proposal to Tasco of no more than two pages (PDF)\*                                                                                                                                             |
+| Review       | Every answer by step, each step with an Edit button; an empty answer shows as a dash                                                                                                                                                                    |
+
+The screens keep four steps and differ from the live form on purpose: an applicant chooses Individual, Team or Company instead of an organization type, because the campaign invites solo builders; website, milestones and the demo link are optional for the same reason; responsible design is asked, as the campaign page lists it among what to submit. The live form's challenge areas (Proactive Renewal Intelligence, Self-Service / Renewal Journey, Agent Augmentation, Conversational AI & Automation, Customer Engagement, Partnership / Distribution Models, Data & Infrastructure, Other) are not the eight directions of the campaign page; which set stands is asked in BEY-41.
+
+### Functional patterns (Mobbin)
+
+| Screen                | Reference                                                                                                                                                                                                                                                                                                 | Taken                                                                                  |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Application steps     | [DoorDash Merchant](https://mobbin.com/screens/d99c8fbe-7874-4b39-ac8e-069cf9a13011), [Mercor](https://mobbin.com/screens/978d2369-5208-4472-ae2e-22bc91ceb366), [Zillow](https://mobbin.com/screens/1794eb49-e0a0-4f57-bc1d-013cef1737aa)                                                                | A step list beside the form, and saving with a way out                                 |
+| Review and submit     | [Square](https://mobbin.com/screens/55a4c753-d6d5-4865-abfb-86b5f6a5356a), [Turo](https://mobbin.com/screens/c565e29a-b949-49bf-bfde-11bafecc512f), [Zillow](https://mobbin.com/screens/8743e2d5-d864-47c4-b7ec-43bd57df810d), [Klaviyo](https://mobbin.com/screens/02359910-64f7-4f23-8280-f1bf18c8e95f) | A summary by section with Edit; an incomplete section is labelled where it sits        |
+| Application submitted | [DoorDash Merchant](https://mobbin.com/screens/f87226cf-4f68-49d4-9920-f4ecae861eda), [Zillow](https://mobbin.com/screens/40d14f6b-8626-44b4-ac5f-56132ceb38a9)                                                                                                                                           | Confirmation, then what happens next, then one way on                                  |
+| My applications       | [Mercor](https://mobbin.com/screens/a61d83b2-1972-48be-b400-e11eaeefe61a)                                                                                                                                                                                                                                 | Groups in the order in progress, submitted, past; a draft says how many steps are done |
+
+Mercor's compact rows suit dozens of applications; the screen uses a card with the program's stages instead (design decision 13).
+
+### The ended program
+
+The results of Agentic AI Build Week 2026 follow [aabw.genaifund.ai](https://aabw.genaifund.ai/), which lists winners, runners-up and shoutouts per track with a link to each project. The [blog recap](https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/) spells three teams differently (Ask Windy Everything, Intelliworks, WeMaidAi) and describes the US$2M as claimable AI credits where the site calls it a prize pool with proof-of-concept budgets; the screen follows the site. The site's Builder Experience warm-up track is left out. The Robotics and Physical AI track is shown as led by GenAI Fund, as the recap says.
