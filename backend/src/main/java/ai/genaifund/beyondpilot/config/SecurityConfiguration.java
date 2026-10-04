@@ -8,11 +8,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -22,7 +27,7 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 
 /**
  * The one security filter chain. The web application is the only client and shares this origin, so the endpoints
- * answer with a status and never with a page: 204 for a sent link, a redeemed link and a sign-out; a problem for every
+ * answer with a status and never with a page: 204 for a sent code, an accepted code and a sign-out; a problem for every
  * refusal. Only the Google round trip redirects, because the browser itself travels it.
  */
 @Configuration(proxyBeanMethods = false)
@@ -33,8 +38,9 @@ class SecurityConfiguration {
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http,
-			OneTimeTokenGenerationSuccessHandler signInLinkSender,
-			ObjectProvider<GenerateOneTimeTokenRequestResolver> signInLinkRequest,
+			OneTimeTokenGenerationSuccessHandler signInCodeSender,
+			ObjectProvider<GenerateOneTimeTokenRequestResolver> signInCodeRequest,
+			ObjectProvider<AuthenticationConverter> signInCodeConverter,
 			ObjectProvider<ClientRegistrationRepository> oauthClients) throws Exception {
 		http
 			// A path under /api is closed unless a line here opens it; the web application serves every other path.
@@ -54,17 +60,17 @@ class SecurityConfiguration {
 					.sendError(HttpServletResponse.SC_UNAUTHORIZED))
 				.accessDeniedHandler(
 						(request, response, failure) -> response.sendError(HttpServletResponse.SC_FORBIDDEN)))
-			.oneTimeTokenLogin(link -> {
+			.oneTimeTokenLogin(code -> {
 				// Naming the page moves the redeeming URL onto it unless that URL is named too.
-				link.loginPage(SIGN_IN_PAGE)
+				code.loginPage(SIGN_IN_PAGE)
 					.loginProcessingUrl("/login/ott")
 					.showDefaultSubmitPage(false)
-					.tokenGenerationSuccessHandler(signInLinkSender)
+					.tokenGenerationSuccessHandler(signInCodeSender)
 					.successHandler(
 							(request, response, authentication) -> response.setStatus(HttpServletResponse.SC_NO_CONTENT))
-					.failureHandler((request, response, failure) -> response
-						.sendError(HttpServletResponse.SC_UNAUTHORIZED));
-				signInLinkRequest.ifAvailable(link::generateRequestResolver);
+					.failureHandler((request, response, failure) -> response.sendError(signInFailureStatus(failure)));
+				signInCodeRequest.ifAvailable(code::generateRequestResolver);
+				signInCodeConverter.ifUnique(code::authenticationConverter);
 			})
 			// Without Spring's CSRF support, sign-out would also answer GET, which a link on another site can trigger.
 			.logout(logout -> logout
@@ -77,5 +83,18 @@ class SecurityConfiguration {
 				.addFilterBefore(new ReturnToFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
 		}
 		return http.build();
+	}
+
+	/**
+	 * A refused code says why by its status, so the screen can tell the person what to do next: 401 try again, 410 ask
+	 * for a new code, 429 too many wrong codes, 403 the account is disabled.
+	 */
+	private static int signInFailureStatus(AuthenticationException failure) {
+		return switch (failure) {
+			case CredentialsExpiredException expired -> HttpServletResponse.SC_GONE;
+			case LockedException locked -> 429;
+			case DisabledException disabled -> HttpServletResponse.SC_FORBIDDEN;
+			default -> HttpServletResponse.SC_UNAUTHORIZED;
+		};
 	}
 }

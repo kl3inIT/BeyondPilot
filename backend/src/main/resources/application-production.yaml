@@ -24,7 +24,6 @@ server:
 # Sign-in settings have no defaults either: a deployment without them does not start.
 beyondpilot:
   identity:
-    public-url: ${BEYONDPILOT_PUBLIC_URL}
     google:
       client-id: ${BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID}
       client-secret: ${BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET}

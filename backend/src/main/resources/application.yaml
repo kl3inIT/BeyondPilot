@@ -53,8 +53,7 @@ server:
 
 beyondpilot:
   identity:
-    public-url: ${BEYONDPILOT_PUBLIC_URL:http://localhost:3000}
-    sign-in-link-lifetime: 15m
+    sign-in-code-lifetime: 15m
     # BEYONDPILOT_IDENTITY_OPERATOR_EMAILS lists the addresses that are operators from their first sign-in.
     # Google sign-in is on when BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID and _CLIENT_SECRET are set.
   notification:

@@ -1,13 +1,10 @@
 package ai.genaifund.beyondpilot.identity;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
@@ -21,7 +18,8 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 /** Stands in for the SMTP server, the one external collaborator of sign-in: it keeps what would have been sent. */
 class RecordingMailSender extends JavaMailSenderImpl {
 
-	private static final Pattern LINK = Pattern.compile("https?://\\S+");
+	/** The code stands alone on its line in the plain-text part. */
+	private static final Pattern CODE = Pattern.compile("(?m)^\\d{6}$");
 
 	private final List<MimeMessage> sent = new CopyOnWriteArrayList<>();
 
@@ -30,14 +28,14 @@ class RecordingMailSender extends JavaMailSenderImpl {
 		sent.addAll(List.of(messages));
 	}
 
-	/** The link in the plain-text part of the newest email sent to the address. */
-	String latestLinkTo(String recipient) {
+	/** The six-digit code in the newest email sent to the address. */
+	String latestCodeTo(String recipient) {
 		for (MimeMessage message : sent.reversed()) {
 			try {
-				if (message.getRecipients(Message.RecipientType.TO)[0].toString().equals(recipient)) {
-					Matcher link = LINK.matcher(plainText(message));
-					if (link.find()) {
-						return link.group();
+				if (isTo(message, recipient)) {
+					Matcher code = CODE.matcher(plainText(message));
+					if (code.find()) {
+						return code.group();
 					}
 				}
 			}
@@ -45,13 +43,13 @@ class RecordingMailSender extends JavaMailSenderImpl {
 				throw new IllegalStateException(exception);
 			}
 		}
-		throw new AssertionError("No email with a link was sent to " + recipient);
+		throw new AssertionError("No email with a code was sent to " + recipient);
 	}
 
 	String latestSubjectTo(String recipient) {
 		for (MimeMessage message : sent.reversed()) {
 			try {
-				if (message.getRecipients(Message.RecipientType.TO)[0].toString().equals(recipient)) {
+				if (isTo(message, recipient)) {
 					return message.getSubject();
 				}
 			}
@@ -65,12 +63,16 @@ class RecordingMailSender extends JavaMailSenderImpl {
 	long countTo(String recipient) {
 		return sent.stream().filter(message -> {
 			try {
-				return message.getRecipients(Message.RecipientType.TO)[0].toString().equals(recipient);
+				return isTo(message, recipient);
 			}
 			catch (MessagingException exception) {
 				throw new IllegalStateException(exception);
 			}
 		}).count();
+	}
+
+	private static boolean isTo(MimeMessage message, String recipient) throws MessagingException {
+		return message.getRecipients(Message.RecipientType.TO)[0].toString().equals(recipient);
 	}
 
 	private static String plainText(Part part) throws MessagingException, IOException {
@@ -85,13 +87,5 @@ class RecordingMailSender extends JavaMailSenderImpl {
 			return "";
 		}
 		return content instanceof String text && part.isMimeType("text/plain") ? text : "";
-	}
-
-	/** The query parameters of a link, undecoded. */
-	static Map<String, String> query(String link) {
-		String query = link.substring(link.indexOf('?') + 1);
-		return Arrays.stream(query.split("&"))
-			.map(pair -> pair.split("=", 2))
-			.collect(Collectors.toMap(pair -> pair[0], pair -> pair[1]));
 	}
 }

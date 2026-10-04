@@ -55,6 +55,11 @@ dependencies {
 	testRuntimeOnly(libs.junit.platform.launcher)
 }
 
+// A deprecated API is a build failure, so an upgrade never leaves one behind unnoticed.
+tasks.withType<JavaCompile> {
+	options.compilerArgs.addAll(listOf("-Xlint:deprecation,removal", "-Werror"))
+}
+
 tasks.withType<Test> {
 	useJUnitPlatform()
 }

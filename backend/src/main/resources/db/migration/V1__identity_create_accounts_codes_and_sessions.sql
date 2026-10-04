@@ -24,15 +24,17 @@ create table identity_external_identity (
 
 create index identity_external_identity_account_id_idx on identity_external_identity (account_id);
 
--- The one-time-token table of Spring Security (JdbcOneTimeTokenService). The username is whatever was asked for, so
--- it has no length limit here; the application refuses an overlong or malformed address before sending anything.
-create table one_time_tokens (
-    token_value varchar(36) not null primary key,
-    username    text        not null,
-    expires_at  timestamp   not null
+-- One emailed sign-in code. The id stays in the session of the browser that asked; the code is stored as a hash.
+create table identity_sign_in_challenge (
+    id              uuid primary key,
+    email           text        not null,
+    code_hash       text        not null,
+    failed_attempts integer     not null default 0,
+    expires_at      timestamptz not null,
+    created_at      timestamptz not null default now()
 );
 
-create index one_time_tokens_username_idx on one_time_tokens (lower(username));
+create index identity_sign_in_challenge_email_idx on identity_sign_in_challenge (lower(email));
 
 -- The tables of Spring Session (spring-session-jdbc, schema-postgresql.sql).
 create table spring_session (

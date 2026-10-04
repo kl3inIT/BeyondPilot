@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.identity;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -12,6 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +29,11 @@ import org.springframework.test.web.servlet.client.EntityExchangeResult;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 /**
- * Sign-in over real HTTP against PostgreSQL: the emailed link, the session cookie it opens, and who the session is.
- * Only the SMTP server is replaced.
+ * Sign-in over real HTTP against PostgreSQL: the emailed code, the browser it is tied to, the session it opens, and
+ * who the session is. Only the SMTP server is replaced.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		properties = { "beyondpilot.identity.operator-emails=Operator@genaifund.test",
-				"beyondpilot.identity.public-url=https://beyondpilot.test" })
+		properties = "beyondpilot.identity.operator-emails=Operator@genaifund.test")
 @Import({ TestcontainersConfiguration.class, IdentitySignInTest.Mail.class })
 class IdentitySignInTest {
 
@@ -59,16 +60,14 @@ class IdentitySignInTest {
 	}
 
 	@Test
-	void anEmailedLinkOpensASessionOfTheAddress() {
-		requestLink("username=An.Tran@example.test&locale=vi&returnTo=/programs/insurance").expectStatus()
-			.isNoContent();
+	void aCodeTypedInTheBrowserThatAskedOpensASessionOfTheAddress() {
+		String browser = sessionOf(requestCode(null, "username=An.Tran@example.test&locale=vi").expectStatus()
+			.isNoContent());
 
-		String link = mail.latestLinkTo("An.Tran@example.test");
-		assertThat(link).startsWith("https://beyondpilot.test/vi/sign-in/link?token=")
-			.contains("returnTo=/programs/insurance");
-		assertThat(mail.latestSubjectTo("An.Tran@example.test")).isEqualTo("Link đăng nhập BeyondPilot của bạn");
+		String code = mail.latestCodeTo("An.Tran@example.test");
+		assertThat(mail.latestSubjectTo("An.Tran@example.test")).isEqualTo(code + " là mã đăng nhập BeyondPilot của bạn");
 
-		String session = redeem(RecordingMailSender.query(link).get("token"));
+		String session = signIn(browser, code);
 
 		client.get()
 			.uri("/api/identity/me")
@@ -85,41 +84,74 @@ class IdentitySignInTest {
 			.isEmpty()
 			.jsonPath("$.id")
 			.isNotEmpty();
+		assertThat(session).as("signing in replaces the session of the anonymous browser").isNotEqualTo(browser);
 	}
 
 	@Test
-	void aLinkWorksOnce() {
-		String token = tokenFor("once@example.test");
-		redeem(token);
+	void aCodeWorksOnce() {
+		String browser = browserWaitingFor("once@example.test");
+		String code = mail.latestCodeTo("once@example.test");
+		signIn(browser, code);
 
-		assertProblem(redeemExchange(token), 401);
+		assertProblem(typeCode(browser, code), 410);
 	}
 
 	@Test
-	void anExpiredLinkIsRefused() {
-		String token = tokenFor("late@example.test");
-		jdbc.sql("update one_time_tokens set expires_at = expires_at - interval '16 minutes' where token_value = ?")
-			.param(token)
+	void anExpiredCodeIsRefused() {
+		String browser = browserWaitingFor("late@example.test");
+		jdbc.sql("update identity_sign_in_challenge set expires_at = now() - interval '1 minute' where email = ?")
+			.param("late@example.test")
 			.update();
 
-		assertProblem(redeemExchange(token), 401);
+		assertProblem(typeCode(browser, mail.latestCodeTo("late@example.test")), 410);
 	}
 
 	@Test
-	void anExternalSiteCannotBeTheReturnDestination() {
-		// A browser reads the second and third as //evil.example: it drops the tab and turns the backslash.
-		for (String destination : List.of("//evil.example/steal", "/%09/evil.example", "/%5Cevil.example",
-				"https://evil.example")) {
-			requestLink("username=return@example.test&returnTo=" + destination).expectStatus().isNoContent();
+	void aCodeIsWorthNothingOutsideTheBrowserThatAskedForIt() {
+		String asking = browserWaitingFor("target@example.test");
+		String code = mail.latestCodeTo("target@example.test");
+		String other = browserWaitingFor("someone.else@example.test");
 
-			assertThat(mail.latestLinkTo("return@example.test")).doesNotContain("returnTo").doesNotContain("evil");
-			jdbc.sql("delete from one_time_tokens where username = 'return@example.test'").update();
+		// No session at all, as when the code is handed to another person.
+		assertProblem(typeCode(null, code), 410);
+		// Another browser, waiting for its own code: the stranger's code is simply wrong there.
+		assertProblem(typeCode(other, code), 401);
+
+		// And none of that spent the code or counted against it where it belongs.
+		assertThat(emailOf(signIn(asking, code))).isEqualTo("target@example.test");
+	}
+
+	@Test
+	void wrongCodesStopTheCodeFromWorking() {
+		String browser = browserWaitingFor("guessed@example.test");
+		String code = mail.latestCodeTo("guessed@example.test");
+		String wrong = code.equals("000000") ? "111111" : "000000";
+
+		for (int attempt = 1; attempt <= 4; attempt++) {
+			assertProblem(typeCode(browser, wrong), 401);
 		}
+		assertProblem(typeCode(browser, wrong), 429);
+
+		assertProblem(typeCode(browser, code), 429);
+	}
+
+	@Test
+	void aNewCodeReplacesTheOneBeforeItInTheSameBrowser() {
+		String browser = browserWaitingFor("again@example.test");
+		String first = mail.latestCodeTo("again@example.test");
+		requestCode(browser, "username=again@example.test").expectStatus().isNoContent();
+		String second = mail.latestCodeTo("again@example.test");
+
+		if (!first.equals(second)) {
+			assertProblem(typeCode(browser, first), 401);
+		}
+		assertThat(emailOf(signIn(browser, second))).isEqualTo("again@example.test");
 	}
 
 	@Test
 	void aConfiguredOperatorAddressIsAnOperatorFromItsFirstSignIn() {
-		String session = redeem(tokenFor("operator@genaifund.test"));
+		String browser = browserWaitingFor("operator@genaifund.test");
+		String session = signIn(browser, mail.latestCodeTo("operator@genaifund.test"));
 
 		client.get()
 			.uri("/api/identity/me")
@@ -133,15 +165,15 @@ class IdentitySignInTest {
 	}
 
 	@Test
-	void googleAndTheLinkReachOneAccountOfAnAddress() {
-		Actor byLink = identity.signInWithEmail("same@example.test");
+	void googleAndTheCodeReachOneAccountOfAnAddress() {
+		Actor byCode = identity.signInWithEmail("same@example.test");
 
 		Actor byGoogle = identity.signInWithGoogle("google-subject-1", "Same@Example.test", true, "Same Person");
 		Actor returning = identity.signInWithGoogle("google-subject-1", "moved@example.test", false, null);
 
-		assertThat(byGoogle).isEqualTo(byLink);
-		assertThat(returning).isEqualTo(byLink);
-		assertThat(identity.me(byLink).displayName()).isEqualTo("Same Person");
+		assertThat(byGoogle).isEqualTo(byCode);
+		assertThat(returning).isEqualTo(byCode);
+		assertThat(identity.me(byCode).displayName()).isEqualTo("Same Person");
 		assertThat(jdbc.sql("select count(*) from identity_account where lower(email) = 'same@example.test'")
 			.query(Integer.class)
 			.single()).isEqualTo(1);
@@ -160,11 +192,12 @@ class IdentitySignInTest {
 
 	@Test
 	void aDisabledAccountCannotSignInAndItsOpenSessionStops() {
-		String session = redeem(tokenFor("disabled@example.test"));
-		String nextToken = tokenFor("disabled@example.test");
+		String first = browserWaitingFor("disabled@example.test");
+		String session = signIn(first, mail.latestCodeTo("disabled@example.test"));
+		String second = browserWaitingFor("disabled@example.test");
 		jdbc.sql("update identity_account set status = 'disabled' where email = 'disabled@example.test'").update();
 
-		assertProblem(redeemExchange(nextToken), 401);
+		assertProblem(typeCode(second, mail.latestCodeTo("disabled@example.test")), 403);
 		EntityExchangeResult<byte[]> me = client.get()
 			.uri("/api/identity/me")
 			.cookie(SESSION_COOKIE, session)
@@ -180,7 +213,8 @@ class IdentitySignInTest {
 
 	@Test
 	void signingOutEndsTheSession() {
-		String session = redeem(tokenFor("leaving@example.test"));
+		String browser = browserWaitingFor("leaving@example.test");
+		String session = signIn(browser, mail.latestCodeTo("leaving@example.test"));
 
 		client.post()
 			.uri("/logout")
@@ -195,7 +229,8 @@ class IdentitySignInTest {
 
 	@Test
 	void aLinkToTheSignOutAddressDoesNotSignOut() {
-		String session = redeem(tokenFor("staying@example.test"));
+		String browser = browserWaitingFor("staying@example.test");
+		String session = signIn(browser, mail.latestCodeTo("staying@example.test"));
 
 		client.get().uri("/logout").cookie(SESSION_COOKIE, session).exchange().expectStatus().isNotFound();
 
@@ -219,28 +254,26 @@ class IdentitySignInTest {
 	}
 
 	@Test
-	void anAddressGetsALimitedNumberOfWorkingLinks() {
+	void anAddressGetsALimitedNumberOfWorkingCodes() {
 		for (int request = 0; request < 3; request++) {
-			requestLink("username=flood@example.test").expectStatus().isNoContent();
+			requestCode(null, "username=flood@example.test").expectStatus().isNoContent();
 		}
 
-		requestLink("username=flood@example.test").expectStatus()
+		requestCode(null, "username=flood@example.test").expectStatus()
 			.isEqualTo(429)
 			.expectHeader()
 			.valueEquals("Retry-After", "900")
 			.expectHeader()
 			.contentType(MediaType.APPLICATION_PROBLEM_JSON);
 		assertThat(mail.countTo("flood@example.test")).isEqualTo(3);
-		assertThat(jdbc.sql("select count(*) from one_time_tokens where username = 'flood@example.test'")
-			.query(Integer.class)
-			.single()).as("a refused request stores no token").isEqualTo(3);
+		assertThat(storedCodesFor("flood@example.test")).as("a refused request stores no code").isEqualTo(3);
 	}
 
 	@Test
 	void requestsThatArriveTogetherDoNotExceedTheLimit() throws Exception {
 		try (ExecutorService requests = Executors.newVirtualThreadPerTaskExecutor()) {
 			List<Callable<Object>> together = Collections.nCopies(8,
-					() -> requestLink("username=together@example.test").returnResult(Void.class));
+					() -> requestCode(null, "username=together@example.test").returnResult(Void.class));
 			for (Future<Object> request : requests.invokeAll(together)) {
 				request.get();
 			}
@@ -250,19 +283,7 @@ class IdentitySignInTest {
 	}
 
 	@Test
-	void aMalformedAddressIsRefused() {
-		for (String value : List.of("not-an-address", "a".repeat(400) + "@refused.test",
-				"two@refused.test,other@refused.test", "name%20%3Cangle@refused.test%3E", "line@refused.test%0Abcc")) {
-			assertProblem(requestLink("username=" + value), 400);
-		}
-
-		assertThat(jdbc.sql("select count(*) from one_time_tokens where username like '%refused.test%'")
-			.query(Integer.class)
-			.single()).as("nothing is stored for a refused value").isZero();
-	}
-
-	@Test
-	void noSpellingOfTheLinkAddressGetsAroundTheChecks() {
+	void noSpellingOfTheCodeRequestAddressGetsAroundTheChecks() {
 		for (String path : List.of("/ott/generate;x=1", "/ott/generate/", "/ott//generate", "/ott/%67enerate")) {
 			client.post()
 				.uri(URI.create("http://localhost:" + port + path))
@@ -274,47 +295,85 @@ class IdentitySignInTest {
 				.value(status -> assertThat(status).as(path).isBetween(400, 499));
 		}
 
-		assertThat(jdbc.sql("select count(*) from one_time_tokens where username like '%spelling.test%'")
+		assertThat(jdbc.sql("select count(*) from identity_sign_in_challenge where email like '%spelling.test%'")
 			.query(Integer.class)
 			.single()).isZero();
 	}
 
-	private RestTestClient.ResponseSpec requestLink(String form) {
-		return client.post()
-			.uri("/ott/generate")
-			.header(CSRF_HEADER, "1")
-			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-			.body(form)
-			.exchange();
+	@Test
+	void aMalformedAddressIsRefused() {
+		for (String value : List.of("not-an-address", "a".repeat(400) + "@refused.test",
+				"two@refused.test,other@refused.test", "name%20%3Cangle@refused.test%3E", "line@refused.test%0Abcc")) {
+			assertProblem(requestCode(null, "username=" + value), 400);
+		}
+
+		assertThat(jdbc.sql("select count(*) from identity_sign_in_challenge where email like '%refused.test%'")
+			.query(Integer.class)
+			.single()).as("nothing is stored for a refused value").isZero();
 	}
 
-	private String tokenFor(String email) {
-		requestLink("username=" + email).expectStatus().isNoContent();
-		return RecordingMailSender.query(mail.latestLinkTo(email)).get("token");
+	@Test
+	void theCodeIsNotStoredAsSent() {
+		browserWaitingFor("stored@example.test");
+
+		assertThat(jdbc.sql("select code_hash from identity_sign_in_challenge where email = 'stored@example.test'")
+			.query(String.class)
+			.single()).hasSize(64).doesNotContain(mail.latestCodeTo("stored@example.test"));
 	}
 
-	private RestTestClient.ResponseSpec redeemExchange(String token) {
-		return client.post()
-			.uri("/login/ott")
-			.header(CSRF_HEADER, "1")
-			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-			.body("token=" + token)
-			.exchange();
+	private RestTestClient.ResponseSpec requestCode(String browser, String form) {
+		RestTestClient.RequestBodySpec request = client.post().uri("/ott/generate").header(CSRF_HEADER, "1");
+		if (browser != null) {
+			request = request.cookie(SESSION_COOKIE, browser);
+		}
+		return request.contentType(MediaType.APPLICATION_FORM_URLENCODED).body(form).exchange();
 	}
 
-	/** Redeems the token and returns the value of the session cookie it opens. */
-	private String redeem(String token) {
-		EntityExchangeResult<byte[]> result = redeemExchange(token).expectStatus()
-			.isNoContent()
-			.expectBody()
-			.returnResult();
-		List<String> cookies = result.getResponseHeaders().getOrEmpty(HttpHeaders.SET_COOKIE);
+	/** Asks for a code and returns the session cookie of the browser that now waits for it. */
+	private String browserWaitingFor(String email) {
+		return sessionOf(requestCode(null, "username=" + email).expectStatus().isNoContent());
+	}
+
+	private RestTestClient.ResponseSpec typeCode(String browser, String code) {
+		RestTestClient.RequestBodySpec request = client.post().uri("/login/ott").header(CSRF_HEADER, "1");
+		if (browser != null) {
+			request = request.cookie(SESSION_COOKIE, browser);
+		}
+		return request.contentType(MediaType.APPLICATION_FORM_URLENCODED).body("code=" + code).exchange();
+	}
+
+	/** Types the code in the browser and returns the cookie of the session that opens. */
+	private String signIn(String browser, String code) {
+		return sessionOf(typeCode(browser, code).expectStatus().isNoContent());
+	}
+
+	private String sessionOf(RestTestClient.ResponseSpec response) {
+		List<String> cookies = response.expectBody()
+			.returnResult()
+			.getResponseHeaders()
+			.getOrEmpty(HttpHeaders.SET_COOKIE);
 		String cookie = cookies.stream()
 			.filter(value -> value.startsWith(SESSION_COOKIE + "="))
 			.findFirst()
 			.orElseThrow(() -> new AssertionError("No session cookie in " + cookies));
 		assertThat(cookie).contains("HttpOnly").contains("SameSite=Lax");
 		return cookie.substring(SESSION_COOKIE.length() + 1, cookie.indexOf(';'));
+	}
+
+	private String emailOf(String session) {
+		return identityEmail(client.get().uri("/api/identity/me").cookie(SESSION_COOKIE, session).exchange());
+	}
+
+	private static String identityEmail(RestTestClient.ResponseSpec response) {
+		String body = new String(response.expectStatus().isOk().expectBody().returnResult().getResponseBody(), UTF_8);
+		return JsonPath.read(body, "$.email");
+	}
+
+	private int storedCodesFor(String email) {
+		return jdbc.sql("select count(*) from identity_sign_in_challenge where email = ?")
+			.param(email)
+			.query(Integer.class)
+			.single();
 	}
 
 	private static void assertProblem(RestTestClient.ResponseSpec response, int status) {
