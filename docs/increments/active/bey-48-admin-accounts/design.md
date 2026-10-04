@@ -21,7 +21,7 @@ _Failures:_ the operator acts on an account another operator has just changed (t
 | **Configured operator** | An operator whose address is in `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS`. The configuration gives the role back at every sign-in |
 | **Disabled**            | An account that cannot sign in and whose open sessions stop                                                                    |
 
-The owner of all of it is the `identity` module, which already owns `identity_account`. No module is added and no dependency edge changes.
+The owner of all of it is the `identity` module, which already owns `identity_account`. The record of who changed what belongs to a new module, `audit` ([below](#record-of-sensitive-changes)).
 
 ## Commands, read model and invariants
 
@@ -77,9 +77,30 @@ New failure codes in `IdentityErrorCode`: `IDENTITY_OPERATOR_REQUIRED` (not perm
 
 ## Record of sensitive changes
 
-The brief asks to "keep appropriate records of sensitive changes" (§7.10). Each command logs one INFO line: `identity.account.disabled`, `identity.account.enabled`, `identity.operator.granted`, `identity.operator.withdrawn`, with `account_id` (whose account), `actor_id` (who did it) and `source` `operator`. No address is logged.
+The brief asks to "keep appropriate records of sensitive changes and proposal access" (§7.10). Decided on 4 October 2026: the record is a table from the start, because operators are its readers and it has to hold from the first change on. The shape follows the audit of MemoryOS, the sibling project this backend is modelled on (its ADR 0013 "Server-authored audit evidence", `V95__audit_event.sql` and the package `io.memoryos.audit`), cut down to what this product has.
 
-**Decision to confirm:** these records are log lines for now. A table an operator can read on a screen arrives with the audit-log screen; building it here would add a table with no reader. If GenAI Fund needs to look changes up before that screen exists, the table moves into this increment.
+**A new module, `audit`.** `identity` records account changes now; `proposal` will record who opened and decided a proposal, and `program` who published one. A writer several modules call is its own closed module with no dependency; `identity` gains the edge `identity → audit`. That is a boundary change, recorded as an ADR once implementation starts.
+
+| Term            | Meaning                                                                                                                                                             |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Audit event** | One thing someone did that changed who may do what, or touched something sensitive. Written once, never changed                                                     |
+| **Action**      | What happened, from a closed catalog: `account.disable`, `account.enable`, `operator.grant`, `operator.withdraw`. A value never changes meaning; new ones are added |
+| **Actor**       | Who did it. Empty when the server configuration did it, as when a configured address becomes an operator on signing in                                              |
+| **Resource**    | What it was done to: here an account                                                                                                                                |
+
+**Table `audit_event`** (`V2__audit_event.sql`): `id`, `occurred_at`, `action`, `actor_id`, `actor_label`, `actor_email`, `resource_type`, `resource_id`, `resource_label`, `details` (a JSON object), `request_id`.
+
+- **Append-only.** A trigger rejects every UPDATE and DELETE.
+- **Readable after a rename or a removal.** `actor_id` and `resource_id` are not foreign keys, and the name and address of the actor and the label of the resource are stored as they were at that moment.
+- **The caller supplies the labels.** The audit package of MemoryOS reads another module's table for them; here a module never reads the table of another, so `identity` passes the names it already holds.
+- **Declared details.** Each action names the fields its `details` may carry; an undeclared field is refused, so a slip at one call site cannot put a secret into the record.
+- **In the transaction of the operation.** A change that rolls back leaves no event. Unlike MemoryOS, a failed event write fails the operation: one database, one transaction and a handful of operators make a complete record cheaper than a recovery path.
+- **The log line stays.** Each event is also one INFO line (`audit.event.recorded` with the action and the identifiers, no address), so shipping logs elsewhere later needs no new instrumentation.
+- **Personal data.** The table holds names and addresses, which logs may not; it is data the product owns, behind the operator check.
+
+Published by `audit`: `AuditTrail.record(AuditRecord)`, `AuditAction` and `AuditRecord`.
+
+Left out, each until something needs it: an outcome column (only successes are recorded; a refused attempt by someone who is not an operator is not evidence of anything), a class for routing to a SIEM, the source address, export, and a retention sweep. The read API and the screen are the next admin screen, drawn and approved before they are built; that design also settles how reading is authorized without making `audit` and `identity` depend on each other.
 
 ## Concurrency and repetition
 
@@ -101,7 +122,15 @@ Two operators may act on one account at the same moment. Each command sets a sta
 - **Confirmation.** Disable, grant and withdraw open the alert dialog first, through one hook that returns a promise; its confirm button shows the pending state. Enable happens at once: it is the undo.
 - **One's own row** has a "You" badge and no menu. A configured operator's menu has no "Withdraw operator role".
 
-**Decision to confirm: no TanStack Query and no TanStack Table in this screen.** The plan of BEY-45 expected both here. This list is five fixed columns, read on the server from the URL, changed by four commands that each end in a refresh; a client cache and a table engine would add code without a behaviour to show for it. nuqs, the confirmation hook, the toast helper and the `Status` component do arrive here, with their first use. Query arrives with the first screen that keeps server data in the browser (polling, optimistic updates, a list that outlives navigation); Table with the first screen that sorts by column, selects rows or hides columns, which the applications list of BEY-38 does.
+**Decided on 4 October 2026: the list is built the way the App Router is meant to be used, without TanStack Query and without TanStack Table.** The plan of BEY-45 expected both here.
+
+- Three of the four references use both, and all three render nothing on a server: the Medusa admin and MemoryOS are Vite applications, and Dub fetches in the browser. They need a client cache and a client table engine because the browser is the only place their list exists.
+- Payload is the one built like this application. Its list is a Server Component that reads by the parameters of the URL; a filter writes the URL inside a transition (`router.replace`) and the server renders again; a save ends in `router.refresh()`; the page returns to 1 when the search or a filter changes. It uses neither library. Its columns come from collection configuration, which does not transfer; the URL as the state and the refresh after a write do.
+- So: a Server Component reads the list, the registry `table` primitive draws it, nuqs writes the URL, and a write ends in a refresh. One `DataTable` composite on the primitive holds what every list repeats: the frame, the header row, the empty and no-results states, the footer with the count and paging. Later lists use it, so there is one table system.
+- TanStack Table arrives with the first table that keeps state in the browser: sorting by a column header, hiding columns, virtual rows. Selecting rows on a server-rendered page is a set of identifiers and does not need it. TanStack Query arrives with the first screen that keeps server data in the browser: polling, optimistic updates, a draft that outlives navigation.
+- `docs/conventions.md` (Frontend › Stack) is amended in this change to say when each of the two is used.
+
+nuqs, the confirmation hook, the toast helper and the `Status` component arrive here, with their first use.
 
 ## Design system
 
@@ -114,10 +143,11 @@ No new token. The role tokens cover it: `success` for the Active dot, `muted-for
 ## Verification
 
 - Backend, real HTTP against PostgreSQL (`IdentityAccountsTest`): the list's filters, search, order, paging and bounds; each command and its repetition; that a disabled account's session stops; that a withdrawn operator loses the list at once; each refusal with its code; that nobody but an operator gets anything.
-- `OpenApiContractTest` for the five operations; `ModulithArchitectureTest` unchanged.
+- `OpenApiContractTest` for the five operations; `ModulithArchitectureTest` lists `audit` and the edge from `identity`.
+- Each command writes its audit event with the actor and the account as they were; a refused or rolled-back command writes none; an event can be neither updated nor deleted.
 - Web, Playwright with the stub backend extended to answer the list and the commands: the three widths, search and filters writing the URL, each confirmation, the refusals, the no-results state, and the page being absent for a non-operator.
 - The matrix is recorded in `docs/tests/identity.md`.
 
 ## Not in this increment
 
-Editing a name or an address; deleting an account; inviting someone who has not signed in; an organisation column; bulk actions; a detail page; the audit-log screen.
+Editing a name or an address; deleting an account; inviting someone who has not signed in; an organisation column; bulk actions; a detail page; reading the audit events (the API and the screen).
