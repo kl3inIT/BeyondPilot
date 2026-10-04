@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetMeData, GetMeErrors, GetMeResponses } from './types.gen';
+import type { DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetMeData, GetMeErrors, GetMeResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -17,6 +17,71 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
      */
     meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
+
+/**
+ * The accounts, latest sign-in first
+ */
+export const listAccounts = <ThrowOnError extends boolean = true>(options?: Options<ListAccountsData, ThrowOnError>): RequestResult<ListAccountsResponses, ListAccountsErrors, ThrowOnError> => (options?.client ?? client).get<ListAccountsResponses, ListAccountsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/identity/accounts',
+    ...options
+});
+
+/**
+ * Stop an account from signing in
+ */
+export const disableAccount = <ThrowOnError extends boolean = true>(options: Options<DisableAccountData, ThrowOnError>): RequestResult<DisableAccountResponses, DisableAccountErrors, ThrowOnError> => (options.client ?? client).post<DisableAccountResponses, DisableAccountErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/identity/accounts/{id}/disable',
+    ...options
+});
+
+/**
+ * Let a disabled account sign in again
+ */
+export const enableAccount = <ThrowOnError extends boolean = true>(options: Options<EnableAccountData, ThrowOnError>): RequestResult<EnableAccountResponses, EnableAccountErrors, ThrowOnError> => (options.client ?? client).post<EnableAccountResponses, EnableAccountErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/identity/accounts/{id}/enable',
+    ...options
+});
+
+/**
+ * Make an account an operator
+ */
+export const grantOperator = <ThrowOnError extends boolean = true>(options: Options<GrantOperatorData, ThrowOnError>): RequestResult<GrantOperatorResponses, GrantOperatorErrors, ThrowOnError> => (options.client ?? client).post<GrantOperatorResponses, GrantOperatorErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/identity/accounts/{id}/grant-operator',
+    ...options
+});
+
+/**
+ * Take the operator role from an account
+ */
+export const withdrawOperator = <ThrowOnError extends boolean = true>(options: Options<WithdrawOperatorData, ThrowOnError>): RequestResult<WithdrawOperatorResponses, WithdrawOperatorErrors, ThrowOnError> => (options.client ?? client).post<WithdrawOperatorResponses, WithdrawOperatorErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/identity/accounts/{id}/withdraw-operator',
+    ...options
+});
 
 /**
  * The signed-in account

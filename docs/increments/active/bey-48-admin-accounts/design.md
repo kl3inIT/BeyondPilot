@@ -71,7 +71,7 @@ New failure codes in `IdentityErrorCode`: `IDENTITY_OPERATOR_REQUIRED` (not perm
 
 ## Authorization
 
-- `IdentityService.requireOperator(Actor)` reads the actor's role from the database and throws `IDENTITY_OPERATOR_REQUIRED` otherwise. Every operation of this increment calls it first, in the application service, as the [security rules](../../../conventions.md#data-and-security) ask. It is published from the module's root, because the admin operations of later modules need the same check.
+- `AccountAdministration`, the application service of this increment, reads the caller's role from the database first in every operation and throws `IDENTITY_OPERATOR_REQUIRED` otherwise, as the [security rules](../../../conventions.md#data-and-security) ask. A disabled operator is refused too. The check becomes a published operation of `identity` when a second module needs it.
 - `SecurityConfiguration` is unchanged: `/api/**` already needs a session. The role is a business rule, checked where the business operation is.
 - The web page calls `requireRole("operator")`; a signed-in person who is not an operator gets the not-found page, as for the admin home.
 
@@ -104,7 +104,7 @@ Left out, each until something needs it: an outcome column (only successes are r
 
 ## Concurrency and repetition
 
-Two operators may act on one account at the same moment. Each command sets a state, the entity carries `@Version`, and a lost optimistic lock is retried once; the result is the same whichever lands last. The list is read without locks and may be one action behind until it is read again.
+Two operators may act on one account at the same moment. Each command sets a state and takes a row lock on the account it changes, so the two act one after the other and the result is the same whichever lands last. The list is read without locks and may be one action behind until it is read again.
 
 ## Persistence
 
