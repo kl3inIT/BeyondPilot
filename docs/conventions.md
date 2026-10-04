@@ -256,7 +256,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 - Components are Server Components by default. `"use client"` goes on the smallest leaf that needs state, effects or events; server data reaches it as props.
 - Public pages read on the server through `src/lib/api`, forwarding the Spring session cookie. They may use time-based or tagged revalidation; authenticated reads never go through the shared data cache.
 - Writes go from the browser straight to Spring with `X-BeyondPilot-CSRF: 1`. Server Actions are not used for writes, so authorization and CSRF protection live in one place.
-- The `workspace/` and `admin/` layouts check the current user on the server through `/api/identity/me` and redirect when needed. `src/proxy.ts` handles locale routing only.
+- Every page under `workspace/` and `admin/` checks the current user on the server, through `requireAccount` or `requireRole` in `src/lib/auth/session.ts`: a visitor is redirected to sign in with the path to return to, and an account of the wrong role gets the not-found page. The check is in the page, not the layout, because Next.js does not render a layout again when a person moves between its pages. No `loading.tsx` or other Suspense boundary sits above the check, so the answer is a real 307 or 404 rather than a streamed 200. `getCurrentAccount` asks `/api/identity/me` once per request. `src/proxy.ts` handles locale routing only.
 - The browser sees one origin. Spring's paths (`/api`, `/login`, `/logout`, `/oauth2`, `/ott`) are rewritten to `BEYONDPILOT_API_ORIGIN` during development and routed by a reverse proxy when deployed.
 - The session lives only in httpOnly cookies; tokens are never stored in browser storage.
 
