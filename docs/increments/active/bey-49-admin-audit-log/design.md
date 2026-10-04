@@ -1,6 +1,6 @@
 # BEY-49 — Admin: the audit log
 
-Status: designed on 5 October 2026; the screens are not drawn and nothing is implemented ([plan](plan.md)). It is the reader of the record that [BEY-48](../../completed/bey-48-admin-accounts/design.md#record-of-sensitive-changes) started writing, and the second screen inside the admin frame. The research behind the screen is in [docs/research](../../../research/2026-10-05-admin-audit-log.md).
+Status: designed on 5 October 2026; the screens are drawn in Figma (section `Admin — Audit log (draft for review)`) and wait for approval, the backend is built, the web screen is not ([plan](plan.md)). It is the reader of the record that [BEY-48](../../completed/bey-48-admin-accounts/design.md#record-of-sensitive-changes) started writing, and the second screen inside the admin frame. The research behind the screen is in [docs/research](../../../research/2026-10-05-admin-audit-log.md).
 
 ## Domain story
 
@@ -49,7 +49,7 @@ Response `200`, `AuditEventListResponse`: `items`, `newer` and `older`.
 - Each item is an `AuditEventResponse`: `id`, `occurredAt`, `action`, `actor` (`id`, `label`, `email`) or null, `resource` (`type`, `id`, `label`), `details` (an object of strings) and `requestId`.
 - `older` is the cursor of the next page towards the past, or null on the last one; `newer` is the cursor of the page towards the present, or null on the first one. A cursor is opaque to the caller; it encodes `(occurred_at, id)` of the item at that edge.
 - The page size is 50 and fixed.
-- `before` together with `after`, a cursor that does not decode, an unknown `action` or a `q` over 100 characters is a `400` with the violation's pointer.
+- A cursor that is not one, an unknown `action`, a `from` that is not an instant or a `q` over 100 characters is a `400` problem. When both cursors are given, `before` is used.
 - `action` is published as an enumeration in `openapi.yml`, generated from the catalog, so the web application's filter cannot offer an action the server does not know.
 
 **Paging is by cursor in both directions, not by page number.** The table only grows, the newest events are the ones read, and a page number would count every matching row and shift under the reader whenever an event is recorded. `V2` already carries the index `(occurred_at desc, id desc)` for it. Two cursors rather than one let the address alone say which page is shown, so the server can render any page without the browser remembering where it came from. This is the second paged list of the API and it differs from the first on purpose: the [account list](../../completed/bey-48-admin-accounts/design.md#api) is a small set a person jumps around in, and keeps `page` and `total`.
@@ -58,7 +58,7 @@ Response `200`, `AuditEventListResponse`: `items`, `newer` and `older`.
 
 Reading needs the operator role, and the role is known only to `identity`, which already depends on `audit`. `audit` therefore cannot call `identity`, nor take its `Actor`.
 
-**Proposed: `identity` publishes the operator check as a Spring Security `AuthorizationManager` bean, and the filter chain in `config` applies it to `/api/audit/**`.**
+**Decided ([ADR 0004](../../../decisions/0004-the-filter-chain-keeps-the-audit-log-for-operators.md)): `identity` publishes the operator check as a Spring Security `AuthorizationManager` bean, and the filter chain in `config` applies it to `/api/audit/**`.**
 
 - It is the first of the two ways [ADR 0003](../../../decisions/0003-an-audit-module-that-modules-record-through.md) left open, and the way `identity` already hands its sign-in pieces to the filter chain: by a Spring Security type, so neither `config` nor `audit` names an `identity` class and no module edge is added.
 - The bean reads the role from the database on every request, as `AccountAdministration` does. The session carries no authority, so a withdrawn role stops reading at once.
@@ -72,8 +72,6 @@ Alternatives:
 - **`audit` declares the interface it needs and `identity` implements it.** An interface with one implementation by nature, which the [change design rules](../../../conventions.md#change-design) refuse, and a second place that knows how a session names its account.
 - **The role as an authority in the session.** One line in the chain, but a withdrawn or disabled operator would keep reading until the session ends; BEY-48 chose the database for that reason.
 - **`audit` listens to events**, ADR 0003's fallback. It solves the writing side's edge, not the reading side's.
-
-The decision is recorded as an ADR once it is accepted and step 2 of the [plan](plan.md) starts.
 
 The web page calls `requireRole("operator")`; a signed-in person who is not an operator gets the not-found page, as on the other admin pages.
 

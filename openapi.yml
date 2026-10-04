@@ -7,6 +7,8 @@ servers:
 - description: Same origin as the web application
   url: /
 tags:
+- description: "The record of sensitive changes, read by operators."
+  name: Audit
 - description: The accounts operators manage.
   name: Accounts
 - description: Who is signed in.
@@ -14,6 +16,92 @@ tags:
 - description: Uploading and reading files.
   name: Storage
 paths:
+  /api/audit/events:
+    get:
+      operationId: listAuditEvents
+      parameters:
+      - description: Only events at or after this instant.
+        in: query
+        name: from
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: date-time
+      - description: Only events of this action.
+        in: query
+        name: action
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - account.disable
+          - account.enable
+          - operator.grant
+          - operator.withdraw
+      - description: "Events whose actor's name or address, or whose resource's name,\
+          \ contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "The `older` cursor of a page: the events before it. Used when\
+          \ both cursors are given."
+        in: query
+        name: before
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: "\\d{1,18}_[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}"
+      - description: "The `newer` cursor of a page: the events after it."
+        in: query
+        name: after
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: "\\d{1,18}_[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditEventList"
+          description: One page of the events the parameters select.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The audit events, newest first"
+      tags:
+      - Audit
   /api/identity/accounts:
     get:
       operationId: listAccounts
@@ -508,6 +596,100 @@ components:
       - id
       - role
       - status
+    AuditEvent:
+      type: object
+      description: "One recorded change: who did what to what, and when."
+      properties:
+        action:
+          type: string
+          enum:
+          - account.disable
+          - account.enable
+          - operator.grant
+          - operator.withdraw
+        actor:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/AuditEventActor"
+          description: Who did it; null when the server configuration did.
+        details:
+          type: object
+          additionalProperties:
+            type: string
+          description: "The fields the action declares, each as text."
+        id:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+        requestId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The request that made the change, as logged and returned in\
+            \ X-Request-Id."
+        resource:
+          $ref: "#/components/schemas/AuditEventResource"
+      required:
+      - action
+      - details
+      - id
+      - occurredAt
+      - resource
+    AuditEventActor:
+      type: object
+      description: "The person who acted, as they were named at that moment."
+      properties:
+        email:
+          type: string
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+      required:
+      - email
+      - id
+      - label
+    AuditEventList:
+      type: object
+      description: "One page of audit events, newest first."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditEvent"
+        newer:
+          type:
+          - string
+          - "null"
+          description: Pass as `after` for the page towards the present; null on the
+            newest page.
+        older:
+          type:
+          - string
+          - "null"
+          description: Pass as `before` for the page towards the past; null on the
+            oldest page.
+      required:
+      - items
+    AuditEventResource:
+      type: object
+      description: "What was acted on, with the name it had at that moment."
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        type:
+          type: string
+      required:
+      - id
+      - label
+      - type
     Me:
       type: object
       description: The signed-in account.
