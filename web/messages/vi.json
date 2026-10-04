@@ -271,5 +271,10 @@
         "failed": "Chưa kiểm tra được mã. Bạn thử lại sau ít phút."
       }
     }
+  },
+  "Admin": {
+    "metaTitle": "Quản trị · BeyondPilot",
+    "title": "Quản trị",
+    "empty": "Chưa có màn quản trị nào."
   }
 }

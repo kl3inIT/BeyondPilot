@@ -11,6 +11,7 @@ export const siteRoutes = {
   talentProfile: "/talent/new",
   founders: "/founders",
   search: "/search",
+  admin: "/admin",
 } as const;
 
 /** Planned pages without a screen yet; they share the coming-soon page. */
