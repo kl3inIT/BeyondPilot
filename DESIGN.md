@@ -203,7 +203,7 @@ A cool azure system with a sky light, three directory accents and the status rol
 
 ## Layout
 
-A 1312px column with 64px gutters on desktop, 32px on tablet (1024) and 20px on mobile (390). Sections breathe at 72–112px vertically on desktop and 56px on mobile, alternating Cool Paper and Paper so the page reads as distinct floors. Nothing is cut at the screen edge on mobile: past programs stack vertically, the directory shows one card and a "See all …" link, founders become a two-column grid of avatar rows, and partner logos become a static grid. Navigation collapses to a menu button below 768px that opens a full-screen menu with one hint line per destination. Text never has a fixed width, because Vietnamese runs 20–30% longer.
+A 1312px column with 64px gutters on desktop, 32px on tablet (1024) and 20px on mobile (390). Sections breathe at 72–112px vertically on desktop and 56px on mobile, alternating Cool Paper and Paper so the page reads as distinct floors. Nothing is cut at the screen edge on mobile: past programs stack vertically, the directory shows one card and a "See all …" link, founders become a two-column grid of avatar rows, and the network's panels stack in one column. Navigation collapses to a menu button below 768px that opens a full-screen menu with one hint line per destination. Text never has a fixed width, because Vietnamese runs 20–30% longer.
 
 ### Landing structure
 
@@ -211,7 +211,7 @@ A 1312px column with 64px gutters on desktop, 32px on tablet (1024) and 20px on 
 2. Hero: live campaign chip, display headline, lead, search with scope chips; real cards float around it (demo-day photo, next meetup, a founder, a partner logo).
 3. Programs and events: one azure timeline with three stops. **Open now** holds the live campaign card with its countdown, key dates and actions; **Coming up** shows each recurring event once with its next dates as tiles; **Done** shows past programs as cover cards.
 4. Explore the directory: underline tabs with counts and a three-card cover grid; "Publish a use case →" beside the heading.
-5. Partner logos, a single marquee.
+5. The network behind every program: one panel per role (enterprises, technology partners, government and institutions, investors and community, the press), each organisation's logo in its own colours straight on the panel. A logo's height follows its shape, so a long wordmark sits lower than a stacked mark. At night the logos turn to one light ink.
 6. Founders: one compact row.
 7. FAQ, then the footer.
 

@@ -783,5 +783,194 @@
    "source_page_url": "https://luma.com/untlb2ra",
    "image_url": "https://images.lumacdn.com/event-covers/iy/ec722291-230a-42b2-ada2-ede2fe34b938.png"
   }
- ]
+ ],
+ "network_logos": {
+  "used_in": "The network behind every program (web/public/partners/network/)",
+  "processing": "Rendered 112px tall on transparent in the organisation's own colours. A white ground is lifted off; The Anam's white artwork is redrawn in navy ink; the white lettering of KFC and FPT is cut out so the mark reads in one ink at night.",
+  "logos": [
+   {
+    "file": "tasco.png",
+    "name": "Tasco",
+    "role": "enterprises",
+    "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco"
+   },
+   {
+    "file": "vnggames.png",
+    "name": "VNGGames",
+    "role": "enterprises",
+    "source_page_url": "https://vnggames.com/vi/"
+   },
+   {
+    "file": "fpt.png",
+    "name": "FPT",
+    "role": "enterprises",
+    "source_page_url": "https://fpt.com/en",
+    "image_url": "https://fpt.com/fpt-logo.svg"
+   },
+   {
+    "file": "kfc.png",
+    "name": "KFC Vietnam",
+    "role": "enterprises",
+    "source_page_url": "https://commons.wikimedia.org/wiki/File:Kentucky_Fried_Chicken_201x_logo.svg"
+   },
+   {
+    "file": "gotyme.png",
+    "name": "GoTyme Bank",
+    "role": "enterprises",
+    "source_page_url": "https://www.gotyme.com.ph/"
+   },
+   {
+    "file": "the-anam.png",
+    "name": "The Anam",
+    "role": "enterprises",
+    "source_page_url": "https://theanam.com/",
+    "image_url": "https://theanam.com/wp-content/uploads/2024/10/TheAnam_OfficialLogo_white.webp"
+   },
+   {
+    "file": "aws.png",
+    "name": "AWS",
+    "role": "technology",
+    "source_page_url": "https://commons.wikimedia.org/wiki/File:Amazon_Web_Services_Logo.svg"
+   },
+   {
+    "file": "nvidia.png",
+    "name": "NVIDIA",
+    "role": "technology",
+    "source_page_url": "https://svgl.app/"
+   },
+   {
+    "file": "google-cloud.png",
+    "name": "Google Cloud",
+    "role": "technology",
+    "source_page_url": "https://commons.wikimedia.org/wiki/File:Google_Cloud_logo.svg"
+   },
+   {
+    "file": "microsoft.png",
+    "name": "Microsoft for Startups",
+    "role": "technology",
+    "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco"
+   },
+   {
+    "file": "openai.png",
+    "name": "OpenAI",
+    "role": "technology",
+    "source_page_url": "https://svgl.app/"
+   },
+   {
+    "file": "alibaba-cloud.png",
+    "name": "Alibaba Cloud",
+    "role": "technology",
+    "source_page_url": "https://commons.wikimedia.org/wiki/File:Alibaba-cloud-logo-grey-2-01.png",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/4/40/Alibaba-cloud-logo-grey-2-01.png"
+   },
+   {
+    "file": "databricks.png",
+    "name": "Databricks",
+    "role": "technology",
+    "source_page_url": "https://commons.wikimedia.org/wiki/File:Databricks_Logo.png"
+   },
+   {
+    "file": "langfuse.png",
+    "name": "Langfuse",
+    "role": "technology",
+    "source_page_url": "https://langfuse.com/"
+   },
+   {
+    "file": "notion.png",
+    "name": "Notion",
+    "role": "technology",
+    "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco"
+   },
+   {
+    "file": "nic.png",
+    "name": "Vietnam National Innovation Center",
+    "role": "government",
+    "source_page_url": "https://genaifund.ai/"
+   },
+   {
+    "file": "disg.png",
+    "name": "Digital Industry Singapore",
+    "role": "government",
+    "source_page_url": "https://genaifund.ai/"
+   },
+   {
+    "file": "granite-asia.png",
+    "name": "Granite Asia",
+    "role": "investors",
+    "source_page_url": "https://genaifund.ai/"
+   },
+   {
+    "file": "founder-institute.png",
+    "name": "Founder Institute",
+    "role": "investors",
+    "source_page_url": "https://genaifund.ai/"
+   },
+   {
+    "file": "jdi.png",
+    "name": "JDI",
+    "role": "investors",
+    "source_page_url": "https://genaifund.ai/"
+   },
+   {
+    "file": "techinasia.png",
+    "name": "TechInAsia",
+    "role": "press",
+    "source_page_url": "https://genaifund.ai/"
+   },
+   {
+    "file": "e27.png",
+    "name": "e27",
+    "role": "press",
+    "source_page_url": "https://genaifund.ai/"
+   },
+   {
+    "file": "vneconomy.png",
+    "name": "VnEconomy",
+    "role": "press",
+    "source_page_url": "https://genaifund.ai/"
+   }
+  ],
+  "left_out": [
+   {
+    "name": "Shinhan Future's Lab",
+    "why": "no logo file found on its site or on Wikimedia Commons"
+   },
+   {
+    "name": "Guardian",
+    "why": "its site refuses the download"
+   },
+   {
+    "name": "Sovico Group",
+    "why": "its site could not be reached"
+   },
+   {
+    "name": "Vietjet",
+    "why": "Wikimedia Commons has the file but rate-limited every request on 4 October 2026"
+   },
+   {
+    "name": "Tencent Cloud",
+    "why": "no usable logo file found"
+   },
+   {
+    "name": "HackHarvard",
+    "why": "no usable logo file found"
+   },
+   {
+    "name": "Galaxy Holdings",
+    "why": "which company this is could not be confirmed"
+   },
+   {
+    "name": "Phong Vu",
+    "why": "the only file is a dark tile with lettering too small to read"
+   },
+   {
+    "name": "Qwen",
+    "why": "only the mark without its name"
+   },
+   {
+    "name": "Agora",
+    "why": "only the mark without its name"
+   }
+  ]
+ }
 }
