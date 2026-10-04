@@ -139,4 +139,48 @@ function DataTableFooter({ count, page, pages, href, labels }: DataTableFooterPr
   );
 }
 
-export { DataTable, DataTableEmpty, DataTableFooter };
+type DataTablePagerProps = {
+  /** The address of the page towards the start of the list; absent on the first page. */
+  previous?: string;
+  /** The address of the page towards its end; absent on the last page. */
+  next?: string;
+  labels: Pick<
+    DataTableFooterProps["labels"],
+    "navigation" | "previous" | "next" | "goToPrevious" | "goToNext"
+  >;
+};
+
+/**
+ * Under a list that only grows and is read from its newest end: the way to the page before and
+ * after, without a count or page numbers, because a total would move under the reader. Nothing is
+ * drawn for a list that fits one page.
+ */
+function DataTablePager({ previous, next, labels }: DataTablePagerProps) {
+  if (!previous && !next) {
+    return null;
+  }
+  return (
+    <div data-slot="data-table-pager" className="flex justify-end">
+      <Pagination aria-label={labels.navigation} className="mx-0 w-auto">
+        <PaginationContent>
+          {previous && (
+            <PaginationItem>
+              <PaginationPrevious
+                href={previous}
+                text={labels.previous}
+                aria-label={labels.goToPrevious}
+              />
+            </PaginationItem>
+          )}
+          {next && (
+            <PaginationItem>
+              <PaginationNext href={next} text={labels.next} aria-label={labels.goToNext} />
+            </PaginationItem>
+          )}
+        </PaginationContent>
+      </Pagination>
+    </div>
+  );
+}
+
+export { DataTable, DataTableEmpty, DataTableFooter, DataTablePager };

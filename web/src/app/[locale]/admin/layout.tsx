@@ -1,4 +1,4 @@
-import { HouseIcon, UserCogIcon } from "lucide-react";
+import { HouseIcon, ScrollTextIcon, UserCogIcon } from "lucide-react";
 import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
@@ -35,6 +35,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
       href: siteRoutes.adminAccounts,
       label: t("nav.accounts"),
       icon: <UserCogIcon aria-hidden="true" />,
+    },
+    {
+      href: siteRoutes.adminAuditLog,
+      label: t("nav.auditLog"),
+      icon: <ScrollTextIcon aria-hidden="true" />,
     },
   ];
 

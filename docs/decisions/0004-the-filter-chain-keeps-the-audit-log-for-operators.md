@@ -6,7 +6,7 @@
 
 ## Context
 
-[ADR 0003](0003-an-audit-module-that-modules-record-through.md) made `audit` a module without dependencies that `identity` records through, and left open how reading the record is authorized. Reading needs the operator role ([BEY-49](../increments/active/bey-49-admin-audit-log/design.md)). Only `identity` knows the role, and `identity` already depends on `audit`, so `audit` can neither call `identity` nor take its `Actor`.
+[ADR 0003](0003-an-audit-module-that-modules-record-through.md) made `audit` a module without dependencies that `identity` records through, and left open how reading the record is authorized. Reading needs the operator role ([BEY-49](../increments/completed/bey-49-admin-audit-log/design.md)). Only `identity` knows the role, and `identity` already depends on `audit`, so `audit` can neither call `identity` nor take its `Actor`.
 
 The role is not in the session: a session's principal carries no authority, and every operator operation reads the role from the database, so that a withdrawn role or a disabled account stops at once (BEY-48).
 

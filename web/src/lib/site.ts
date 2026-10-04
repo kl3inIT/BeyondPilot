@@ -13,6 +13,7 @@ export const siteRoutes = {
   search: "/search",
   admin: "/admin",
   adminAccounts: "/admin/accounts",
+  adminAuditLog: "/admin/audit-log",
 } as const;
 
 /** Planned pages without a screen yet; they share the coming-soon page. */
