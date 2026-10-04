@@ -1,9 +1,10 @@
 /**
  * The programs GenAI Fund runs: what each is, when it takes applications, its key dates and its events. Operators
- * create and edit every program through {@link ai.genaifund.beyondpilot.program.ProgramAdministration}.
+ * create and edit every program through {@link ai.genaifund.beyondpilot.program.ProgramAdministration}. A cover is a
+ * stored file the program names by its identifier.
  */
 @ApplicationModule(displayName = "Program", type = ApplicationModule.Type.CLOSED,
-		allowedDependencies = { "audit", "identity" })
+		allowedDependencies = { "audit", "identity", "storage" })
 @NullMarked
 package ai.genaifund.beyondpilot.program;
 

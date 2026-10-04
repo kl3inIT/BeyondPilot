@@ -20,28 +20,27 @@ create table program (
     page_kind     text        not null default 'standard' check (page_kind in ('standard', 'custom', 'external')),
     external_url  text,
     cover_file_id uuid references storage_file (id),
+    -- When the program takes applications here. Both are null for a program that takes none.
+    applications_open_at      timestamptz,
+    applications_close_at     timestamptz,
+    shortlist_size            integer check (shortlist_size > 0),
+    outcomes_due_on           date,
+    allow_updates_until_close boolean     not null default true,
     version       bigint      not null default 0,
     created_at    timestamptz not null default now(),
     updated_at    timestamptz not null default now(),
     constraint program_slug_key unique (slug),
+    -- A cover belongs to one program, which removes the file when it stops naming it.
+    constraint program_cover_file_id_key unique (cover_file_id),
     constraint program_slug_format check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and char_length(slug) between 3 and 60),
-    constraint program_days_in_order check (starts_on is null or ends_on is null or starts_on <= ends_on)
+    constraint program_days_in_order check (starts_on is null or ends_on is null or starts_on <= ends_on),
+    constraint program_window_whole check ((applications_open_at is null) = (applications_close_at is null)),
+    constraint program_window_in_order check (applications_open_at < applications_close_at)
 );
 
--- When and how a program takes applications. A program without a row takes none here.
-create table program_application_settings (
-    program_id                uuid primary key references program (id) on delete cascade,
-    opens_at                  timestamptz not null,
-    closes_at                 timestamptz not null,
-    shortlist_size            integer check (shortlist_size > 0),
-    outcomes_due_on           date,
-    allow_updates_until_close boolean     not null default true,
-    constraint program_application_settings_window_in_order check (opens_at < closes_at)
-);
-
--- A dated step of a program that an applicant plans around.
+-- A dated step of a program that an applicant plans around. The list is kept in the order the operator gave it and
+-- is replaced as a whole, so a row is known by its place.
 create table program_milestone (
-    id         uuid primary key,
     program_id uuid        not null references program (id) on delete cascade,
     position   integer     not null,
     title      text        not null,
@@ -49,13 +48,12 @@ create table program_milestone (
     ends_at    timestamptz,
     all_day    boolean     not null default false,
     note       text,
-    constraint program_milestone_position_key unique (program_id, position),
+    primary key (program_id, position),
     constraint program_milestone_times_in_order check (ends_at is null or starts_at <= ends_at)
 );
 
--- A session of a program that people register for somewhere else.
+-- A session of a program that people register for somewhere else. Kept like the milestones.
 create table program_event (
-    id               uuid primary key,
     program_id       uuid        not null references program (id) on delete cascade,
     position         integer     not null,
     title            text        not null,
@@ -65,7 +63,7 @@ create table program_event (
     city             text,
     country          text,
     registration_url text,
-    constraint program_event_position_key unique (program_id, position),
+    primary key (program_id, position),
     constraint program_event_times_in_order check (ends_at is null or starts_at <= ends_at)
 );
 

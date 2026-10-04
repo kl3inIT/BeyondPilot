@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.program.dto;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,6 +11,8 @@ import org.jspecify.annotations.Nullable;
 @Schema(name = "AdminProgram", description = "A program as an operator edits it, in any status.")
 public record AdminProgramResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The address under /programs.") String slug,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The program has been published at least once, so its address cannot change.") boolean slugFixed,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "enterprise_challenge", "open_innovation_call", "accelerator", "hackathon",
@@ -27,6 +30,11 @@ public record AdminProgramResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "standard", "custom", "external" },
 				description = "`standard` is built from these fields, `custom` is written in the web application for this address, `external` links to `externalUrl`.") String pageKind,
 		@Schema(types = { "string", "null" }, format = "uri") @Nullable String externalUrl,
+		@Schema(types = { "string", "null" }, format = "uuid",
+				description = "The cover, read at the public address of stored files.") @Nullable UUID coverFileId,
+		@Schema(description = "Null for a program that takes no applications here.") @Nullable ProgramApplications applications,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<ProgramKeyDate> keyDates,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<ProgramEventEntry> events,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Sent back with a save, which is refused when someone else saved in the meantime.") long version,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt,

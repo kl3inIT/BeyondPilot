@@ -1,6 +1,12 @@
 package ai.genaifund.beyondpilot.program;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
@@ -12,10 +18,21 @@ import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.program.dto.AdminProgramListResponse;
 import ai.genaifund.beyondpilot.program.dto.AdminProgramResponse;
 import ai.genaifund.beyondpilot.program.dto.CreateProgramRequest;
+import ai.genaifund.beyondpilot.program.dto.ProgramApplications;
+import ai.genaifund.beyondpilot.program.dto.ProgramEventEntry;
+import ai.genaifund.beyondpilot.program.dto.ProgramKeyDate;
+import ai.genaifund.beyondpilot.program.dto.SaveProgramRequest;
+import ai.genaifund.beyondpilot.program.persistence.PageKind;
 import ai.genaifund.beyondpilot.program.persistence.Program;
+import ai.genaifund.beyondpilot.program.persistence.ProgramEvent;
+import ai.genaifund.beyondpilot.program.persistence.ProgramMilestone;
 import ai.genaifund.beyondpilot.program.persistence.ProgramQueryRepository;
 import ai.genaifund.beyondpilot.program.persistence.ProgramRepository;
 import ai.genaifund.beyondpilot.program.persistence.ProgramType;
+import ai.genaifund.beyondpilot.storage.FilePurpose;
+import ai.genaifund.beyondpilot.storage.StorageException;
+import ai.genaifund.beyondpilot.storage.StorageService;
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,19 +46,25 @@ public class ProgramAdministration {
 
 	private static final String PROGRAM = "program";
 
+	/** Programs are run from Vietnam: a day an operator names is a day there. */
+	private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+
 	private final ProgramRepository programs;
 
 	private final ProgramQueryRepository programList;
 
 	private final IdentityService identity;
 
+	private final StorageService storage;
+
 	private final AuditTrail audit;
 
 	ProgramAdministration(ProgramRepository programs, ProgramQueryRepository programList, IdentityService identity,
-			AuditTrail audit) {
+			StorageService storage, AuditTrail audit) {
 		this.programs = programs;
 		this.programList = programList;
 		this.identity = identity;
+		this.storage = storage;
 		this.audit = audit;
 	}
 
@@ -63,8 +86,7 @@ public class ProgramAdministration {
 	@Transactional(readOnly = true)
 	public AdminProgramResponse get(Actor actor, UUID id) {
 		identity.requireOperator(actor);
-		return response(programs.findById(id)
-			.orElseThrow(() -> new ProgramException(ProgramErrorCode.PROGRAM_NOT_FOUND, "No program " + id)));
+		return response(programs.findById(id).orElseThrow(() -> notFound(id)));
 	}
 
 	/**
@@ -76,7 +98,7 @@ public class ProgramAdministration {
 	public AdminProgramResponse create(Actor actor, CreateProgramRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		if (programs.existsBySlug(request.slug())) {
-			throw new ProgramException(ProgramErrorCode.SLUG_TAKEN, "The address " + request.slug() + " is taken");
+			throw slugTaken(request.slug(), null);
 		}
 		Program program;
 		try {
@@ -85,11 +107,126 @@ public class ProgramAdministration {
 		}
 		catch (DataIntegrityViolationException raced) {
 			// Two operators created the same address at the same moment; the unique constraint decided.
-			throw new ProgramException(ProgramErrorCode.SLUG_TAKEN, "The address " + request.slug() + " is taken",
-					raced);
+			throw slugTaken(request.slug(), raced);
 		}
 		record(AuditAction.PROGRAM_CREATE, operator, program);
 		return response(program);
+	}
+
+	/**
+	 * Saves a program as the Settings screen holds it: its details, its application window, its key dates and its
+	 * events together, or nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProgramException when the program does not exist, it changed since the screen read it, its address is
+	 * taken or fixed, its dates are out of order, or its cover is not a stored image of the caller
+	 */
+	@Transactional
+	public AdminProgramResponse save(Actor actor, UUID id, SaveProgramRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		Program program = programs.findForUpdate(id).orElseThrow(() -> notFound(id));
+		if (program.getVersion() != request.version()) {
+			throw new ProgramException(ProgramErrorCode.CHANGED_MEANWHILE, "Save of program " + id + " at version "
+					+ request.version() + ", which is at " + program.getVersion());
+		}
+		// The cover and the address are looked up before anything is changed: a query after a change would first
+		// write the half of the save made so far.
+		UUID cover = request.coverFileId();
+		UUID replacedCover = Objects.equals(program.getCoverFileId(), cover) ? null : program.getCoverFileId();
+		if (cover != null && !cover.equals(program.getCoverFileId())) {
+			requireUsableCover(actor, id, cover);
+		}
+		boolean moved = !program.getSlug().equals(request.slug());
+		if (moved) {
+			if (program.hasBeenPublished()) {
+				throw new ProgramException(ProgramErrorCode.SLUG_FIXED,
+						"New address for program " + id + ", which has been published");
+			}
+			if (programs.existsBySlug(request.slug())) {
+				throw slugTaken(request.slug(), null);
+			}
+		}
+		PageKind pageKind = PageKind.valueOf(request.pageKind().toUpperCase(Locale.ROOT));
+		String externalUrl = text(request.externalUrl());
+		if (pageKind == PageKind.EXTERNAL && externalUrl == null) {
+			throw refused(ProgramErrorCode.EXTERNAL_URL_REQUIRED, id);
+		}
+		if (request.startsOn() != null && request.endsOn() != null && request.endsOn().isBefore(request.startsOn())) {
+			throw refused(ProgramErrorCode.DAYS_OUT_OF_ORDER, id);
+		}
+		program.moveTo(request.slug());
+		program.describe(request.name().strip(), ProgramType.of(request.type()), text(request.partnerName()),
+				text(request.summary()), text(request.about()));
+		program.runBetween(request.startsOn(), request.endsOn());
+		program.showAs(pageKind, externalUrl);
+		takeApplications(program, request.applications());
+		program.schedule(milestones(id, request.keyDates()), events(id, request.events()));
+		program.coverWith(cover);
+		try {
+			programs.flush();
+		}
+		catch (DataIntegrityViolationException raced) {
+			if (moved) {
+				throw slugTaken(request.slug(), raced);
+			}
+			throw raced;
+		}
+		record(AuditAction.PROGRAM_UPDATE, operator, program);
+		if (replacedCover != null) {
+			// The program no longer names the file, so nothing does.
+			storage.delete(replacedCover);
+		}
+		return response(program);
+	}
+
+	private static void takeApplications(Program program, @Nullable ProgramApplications applications) {
+		if (applications == null) {
+			program.takeNoApplications();
+			return;
+		}
+		if (!applications.opensAt().isBefore(applications.closesAt())) {
+			throw refused(ProgramErrorCode.WINDOW_OUT_OF_ORDER, program.getId());
+		}
+		LocalDate outcomesDueOn = applications.outcomesDueOn();
+		if (outcomesDueOn != null && outcomesDueOn.isBefore(applications.closesAt().atZone(ZONE).toLocalDate())) {
+			throw refused(ProgramErrorCode.OUTCOMES_BEFORE_CLOSE, program.getId());
+		}
+		program.takeApplications(applications.opensAt(), applications.closesAt(), applications.shortlistSize(),
+				outcomesDueOn, applications.allowUpdatesUntilClose());
+	}
+
+	private static List<ProgramMilestone> milestones(UUID id, List<ProgramKeyDate> keyDates) {
+		return keyDates.stream().map(keyDate -> {
+			if (outOfOrder(keyDate.startsAt(), keyDate.endsAt())) {
+				throw refused(ProgramErrorCode.KEY_DATE_OUT_OF_ORDER, id);
+			}
+			return new ProgramMilestone(keyDate.title().strip(), keyDate.startsAt(), keyDate.endsAt(),
+					keyDate.allDay(), text(keyDate.note()));
+		}).toList();
+	}
+
+	private static List<ProgramEvent> events(UUID id, List<ProgramEventEntry> events) {
+		return events.stream().map(event -> {
+			if (outOfOrder(event.startsAt(), event.endsAt())) {
+				throw refused(ProgramErrorCode.EVENT_OUT_OF_ORDER, id);
+			}
+			return new ProgramEvent(event.title().strip(), event.startsAt(), event.endsAt(), event.online(),
+					text(event.city()), text(event.country()), text(event.registrationUrl()));
+		}).toList();
+	}
+
+	/** A cover is a stored image the caller uploaded, and the cover of no other program. */
+	private void requireUsableCover(Actor actor, UUID id, UUID cover) {
+		try {
+			storage.stored(cover, FilePurpose.PROGRAM_IMAGE, actor);
+		}
+		catch (StorageException notUsable) {
+			throw new ProgramException(ProgramErrorCode.COVER_NOT_USABLE,
+					"File " + cover + " as the cover of program " + id, notUsable);
+		}
+		if (programs.existsByCoverFileId(cover)) {
+			throw new ProgramException(ProgramErrorCode.COVER_NOT_USABLE,
+					"File " + cover + " is the cover of another program");
+		}
 	}
 
 	private void record(AuditAction action, Operator operator, Program program) {
@@ -99,10 +236,49 @@ public class ProgramAdministration {
 	}
 
 	private static AdminProgramResponse response(Program program) {
-		return new AdminProgramResponse(program.getId(), program.getSlug(), program.getName(),
-				program.getType().code(), program.getPartnerName(), program.getSummary(), program.getAbout(),
-				program.getStartsOn(), program.getEndsOn(), program.getStatus().code(), program.getPageKind().code(),
-				program.getExternalUrl(), program.getVersion(), program.getCreatedAt(), program.getUpdatedAt());
+		Instant opensAt = program.getApplicationsOpenAt();
+		Instant closesAt = program.getApplicationsCloseAt();
+		return new AdminProgramResponse(program.getId(), program.getSlug(), program.hasBeenPublished(),
+				program.getName(), program.getType().code(), program.getPartnerName(), program.getSummary(),
+				program.getAbout(), program.getStartsOn(), program.getEndsOn(), program.getStatus().code(),
+				program.getPageKind().code(), program.getExternalUrl(), program.getCoverFileId(),
+				opensAt == null || closesAt == null ? null
+						: new ProgramApplications(opensAt, closesAt, program.getShortlistSize(),
+								program.getOutcomesDueOn(), program.isAllowUpdatesUntilClose()),
+				program.getMilestones()
+					.stream()
+					.map(milestone -> new ProgramKeyDate(milestone.title(), milestone.startsAt(), milestone.endsAt(),
+							milestone.allDay(), milestone.note()))
+					.toList(),
+				program.getEvents()
+					.stream()
+					.map(event -> new ProgramEventEntry(event.title(), event.startsAt(), event.endsAt(),
+							event.online(), event.city(), event.country(), event.registrationUrl()))
+					.toList(),
+				program.getVersion(), program.getCreatedAt(), program.getUpdatedAt());
+	}
+
+	private static boolean outOfOrder(Instant startsAt, @Nullable Instant endsAt) {
+		return endsAt != null && endsAt.isBefore(startsAt);
+	}
+
+	/** What a person typed, or null when they typed nothing. */
+	private static @Nullable String text(@Nullable String value) {
+		return value == null || value.isBlank() ? null : value.strip();
+	}
+
+	private static ProgramException notFound(UUID id) {
+		return new ProgramException(ProgramErrorCode.PROGRAM_NOT_FOUND, "No program " + id);
+	}
+
+	private static ProgramException refused(ProgramErrorCode code, UUID id) {
+		return new ProgramException(code, "Save of program " + id + " refused: " + code.code());
+	}
+
+	private static ProgramException slugTaken(String slug, @Nullable Throwable cause) {
+		String message = "The address " + slug + " is taken";
+		return cause == null ? new ProgramException(ProgramErrorCode.SLUG_TAKEN, message)
+				: new ProgramException(ProgramErrorCode.SLUG_TAKEN, message, cause);
 	}
 
 }

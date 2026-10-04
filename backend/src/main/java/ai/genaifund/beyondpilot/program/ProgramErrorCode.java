@@ -7,7 +7,33 @@ public enum ProgramErrorCode implements ErrorCode {
 
 	PROGRAM_NOT_FOUND("PROGRAM_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such program."),
 
-	SLUG_TAKEN("PROGRAM_SLUG_TAKEN", ErrorCategory.CONFLICT, "Another program already has this address.");
+	SLUG_TAKEN("PROGRAM_SLUG_TAKEN", ErrorCategory.CONFLICT, "Another program already has this address."),
+
+	SLUG_FIXED("PROGRAM_SLUG_FIXED", ErrorCategory.CONFLICT,
+			"The address cannot change once the program has been published."),
+
+	CHANGED_MEANWHILE("PROGRAM_CHANGED_MEANWHILE", ErrorCategory.CONFLICT,
+			"Someone else saved this program in the meantime. Reload it and make your changes again."),
+
+	DAYS_OUT_OF_ORDER("PROGRAM_DAYS_OUT_OF_ORDER", ErrorCategory.VALIDATION,
+			"The program ends before it starts."),
+
+	WINDOW_OUT_OF_ORDER("PROGRAM_WINDOW_OUT_OF_ORDER", ErrorCategory.VALIDATION,
+			"Applications close before they open."),
+
+	OUTCOMES_BEFORE_CLOSE("PROGRAM_OUTCOMES_BEFORE_CLOSE", ErrorCategory.VALIDATION,
+			"Outcomes are due before applications close."),
+
+	KEY_DATE_OUT_OF_ORDER("PROGRAM_KEY_DATE_OUT_OF_ORDER", ErrorCategory.VALIDATION,
+			"A key date ends before it starts."),
+
+	EVENT_OUT_OF_ORDER("PROGRAM_EVENT_OUT_OF_ORDER", ErrorCategory.VALIDATION, "An event ends before it starts."),
+
+	EXTERNAL_URL_REQUIRED("PROGRAM_EXTERNAL_URL_REQUIRED", ErrorCategory.VALIDATION,
+			"A program whose page is somewhere else needs the address of that page."),
+
+	COVER_NOT_USABLE("PROGRAM_COVER_NOT_USABLE", ErrorCategory.VALIDATION,
+			"This file cannot be the cover. Upload the image again.");
 
 	private final String code;
 	private final ErrorCategory category;

@@ -21,7 +21,9 @@ public enum AuditAction {
 
 	OPERATOR_WITHDRAW("operator.withdraw"),
 
-	PROGRAM_CREATE("program.create");
+	PROGRAM_CREATE("program.create"),
+
+	PROGRAM_UPDATE("program.update");
 
 	private final String value;
 

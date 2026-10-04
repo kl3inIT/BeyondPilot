@@ -14,7 +14,7 @@ Status: accepted on 5 October 2026 and being implemented ([plan](plan.md)). It i
 **Story.** An operator opens Programs in the admin area, creates "AI for Insurance Challenge × Tasco" and saves it as a draft. They enter the summary, the window in which applications are taken, the dates of the briefing and the demo day, and the briefing as an event with its registration link; they upload a cover and publish. The program appears on the public list under Open now. When the window closes it stays on the list as running, and after its last day it moves to Done.
 
 - _The address is taken:_ saving is refused with a failure of its own.
-- _The window is inconsistent_ (it closes before it opens, or outcomes are due before it closes): saving is refused and names the field.
+- _The window is inconsistent_ (it closes before it opens, or outcomes are due before it closes): saving is refused with a failure that names the rule.
 - _A published program is found to be wrong:_ the operator unpublishes it; it leaves the public list and its address answers "not found" until it is published again.
 
 **Glossary.** The terms of the [domain model's glossary](../bey-22-phase-1-domain-model/design.md#glossary) hold. This slice adds:
@@ -53,6 +53,8 @@ Status: accepted on 5 October 2026 and being implemented ([plan](plan.md)). It i
 | Reading the lists | The public list and the admin list are `JdbcClient` queries; the program an operator edits is a JPA aggregate | The split the [persistence guideline](../../../guidelines/persistence.md) gives: screens that list read with SQL, flows that change state use entities |
 | The operator's addresses sit under `/admin` | `/api/program/admin/programs`, beside the public `/api/program/programs` | The same collection is read two ways: the public by address and published only, an operator by id and in any status. One path answering differently by caller would hide a draft behind a rule nobody can read from the contract. Accounts needed no such segment because they have no public reading |
 | Public reading needs no session | `SecurityConfiguration` permits `GET /api/program/programs` and `GET /api/program/programs/*` | The list and the pages are for visitors; everything under `/admin` stays behind the session and the operator check |
+| A rule across members is a failure code | A window that closes before it opens, and the rules like it, answer `400` with a code of their own; a single malformed member answers `REQUEST_INVALID` with a pointer | A module's failure carries a code and no pointer ([API errors](../../../conventions.md#api-errors)); the screen maps each code to the field it sits beside |
+| The cover is one program's | A save names a stored `program_image` the caller uploaded; the program then owns it, and removes the file when it names another or none | Nothing else would ever remove a replaced cover, and a file two programs share could not be removed by either |
 | Changes are audited | Create, update, publish and unpublish each record an event with the operator and the program | The same rule the accounts screen follows |
 
 ## The addresses
@@ -64,7 +66,7 @@ Status: accepted on 5 October 2026 and being implemented ([plan](plan.md)). It i
 | The admin list | `GET /api/program/admin/programs` | Every program with its status, phase and window. `403` for a caller who is not an operator |
 | Create | `POST /api/program/admin/programs` with name, address and type | `201` with the draft. `400` naming the member that is malformed; `409` `PROGRAM_SLUG_TAKEN` for a taken address |
 | Read for editing | `GET /api/program/admin/programs/{id}` | The whole program as the Settings screen shows it |
-| Save | `PUT /api/program/admin/programs/{id}` | The saved program. `400` with the fields that are wrong; `409` when someone else saved it in the meantime |
+| Save | `PUT /api/program/admin/programs/{id}` with the version the screen read | The saved program with its new version. `400` naming the member that is malformed, or with the code of the rule that is broken (`PROGRAM_DAYS_OUT_OF_ORDER`, `PROGRAM_WINDOW_OUT_OF_ORDER`, `PROGRAM_OUTCOMES_BEFORE_CLOSE`, `PROGRAM_KEY_DATE_OUT_OF_ORDER`, `PROGRAM_EVENT_OUT_OF_ORDER`, `PROGRAM_EXTERNAL_URL_REQUIRED`, `PROGRAM_COVER_NOT_USABLE`); `409` `PROGRAM_CHANGED_MEANWHILE` when someone else saved it in the meantime, `PROGRAM_SLUG_TAKEN` or `PROGRAM_SLUG_FIXED` for the address |
 | Publish, unpublish | `POST /api/program/admin/programs/{id}/publish`, `…/unpublish` | `204`. Publishing is refused with `400` while the summary is empty |
 
 The counts of applications on the admin list ("8 submitted · 2 to decide") arrive with `proposal`; until then the column is not shown.
@@ -83,12 +85,13 @@ The domain model lists `usecase` and `organization` as dependencies of `program`
 
 | Table | Columns |
 | --- | --- |
-| `program` | `id`, `slug` (unique), `name`, `type` (the ten types of the domain model), `partner_name`, `summary`, `about`, `starts_on`, `ends_on`, `status` (`draft`, `published`), `published_at` (the first publication), `page_kind` (`standard`, `custom`, `external`), `external_url`, `cover_file_id`, `version`, `created_at`, `updated_at` |
-| `program_application_settings` | `program_id` (primary key), `opens_at`, `closes_at`, `shortlist_size`, `outcomes_due_on`, `allow_updates_until_close` |
-| `program_milestone` | `id`, `program_id`, `position`, `title`, `starts_at`, `ends_at`, `all_day`, `note` |
-| `program_event` | `id`, `program_id`, `position`, `title`, `starts_at`, `ends_at`, `online`, `city`, `country`, `registration_url` |
+| `program` | `id`, `slug` (unique), `name`, `type` (the ten types of the domain model), `partner_name`, `summary`, `about`, `starts_on`, `ends_on`, `status` (`draft`, `published`), `published_at` (the first publication), `page_kind` (`standard`, `custom`, `external`), `external_url`, `cover_file_id` (unique), the application window, `version`, `created_at`, `updated_at` |
+| `program_milestone` | `program_id`, `position` (together the key), `title`, `starts_at`, `ends_at`, `all_day`, `note` |
+| `program_event` | `program_id`, `position` (together the key), `title`, `starts_at`, `ends_at`, `online`, `city`, `country`, `registration_url` |
 
-Against the domain model: `body` becomes `about`; `cover_document_id` becomes `cover_file_id`; `page_kind` and `published_at` are new; `countries` and the `archived` status wait for a screen that uses them; the settings lose `timezone`, `scope` and `max_use_cases_per_proposal` until use cases are featured, and gain `shortlist_size` and `outcomes_due_on`, which the Settings screen asks for. `program_question`, `program_use_case`, `program_partner`, `program_person` and `program_section` are not created in this slice.
+The application window is five columns of `program` (`applications_open_at`, `applications_close_at`, `shortlist_size`, `outcomes_due_on`, `allow_updates_until_close`): it is at most one per program and is saved with it, so a table of its own would add a join and nothing else. The two lists are value collections of the program, kept in the order the operator gave and replaced as a whole, so a row is known by its place and has no identifier.
+
+Against the domain model: `body` becomes `about`; `cover_document_id` becomes `cover_file_id`; `page_kind` and `published_at` are new; `countries` and the `archived` status wait for a screen that uses them; the application settings move onto `program`, lose `timezone`, `scope` and `max_use_cases_per_proposal` until use cases are featured, and gain `shortlist_size` and `outcomes_due_on`, which the Settings screen asks for. `program_question`, `program_use_case`, `program_partner`, `program_person` and `program_section` are not created in this slice.
 
 ## The web application
 

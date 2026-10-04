@@ -3,8 +3,11 @@ package ai.genaifund.beyondpilot.program;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.RecordingMailSender;
@@ -69,6 +72,8 @@ class ProgramAdministrationTest {
 		assertProblem(get(user, PROGRAMS), 403, "IDENTITY_OPERATOR_REQUIRED");
 		assertProblem(get(user, one), 403, "IDENTITY_OPERATOR_REQUIRED");
 		assertProblem(create(user, "Mine", "mine", "event"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		save(null, one, program(0, "Guarded", "guarded")).expectStatus().isUnauthorized();
+		assertProblem(save(user, one, program(0, "Taken over", "guarded")), 403, "IDENTITY_OPERATOR_REQUIRED");
 		assertThat(slugs()).doesNotContain("nobody", "mine");
 	}
 
@@ -152,6 +157,306 @@ class ProgramAdministrationTest {
 	@Test
 	void aProgramThatDoesNotExistIsNotFound() {
 		assertProblem(get(operator, PROGRAMS + "/00000000-0000-0000-0000-000000000000"), 404, "PROGRAM_NOT_FOUND");
+	}
+
+	@Test
+	void aSaveKeepsEverythingTheScreenHolds() {
+		String one = created("Saved whole", "saved-whole");
+		UUID cover = storedImage("operator@program.test");
+		Map<String, Object> program = program(0, "  AI for Insurance Challenge  ", "saved-whole");
+		program.put("type", "enterprise_challenge");
+		program.put("partnerName", " Tasco ");
+		program.put("summary", "Insurers name what they need; providers answer.");
+		program.put("about", "   ");
+		program.put("startsOn", "2026-10-01");
+		program.put("endsOn", "2026-12-18");
+		program.put("pageKind", "custom");
+		program.put("coverFileId", cover);
+		program.put("applications", applications("2026-10-01T02:00:00Z", "2026-11-15T16:59:00Z", "2026-11-16"));
+		program.put("keyDates",
+				List.of(keyDate("Briefing", "2026-10-09T07:00:00Z", "2026-10-09T09:00:00Z", false),
+						keyDate("Demo day", "2026-12-17T17:00:00Z", null, true)));
+		program.put("events", List.of(Map.of("title", "Briefing for providers", "startsAt", "2026-10-09T07:00:00Z",
+				"online", true, "registrationUrl", "https://luma.com/briefing")));
+
+		save(operator, one, program).expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.name")
+			.isEqualTo("AI for Insurance Challenge")
+			.jsonPath("$.version")
+			.isEqualTo(1);
+
+		get(operator, one).expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.type")
+			.isEqualTo("enterprise_challenge")
+			.jsonPath("$.partnerName")
+			.isEqualTo("Tasco")
+			.jsonPath("$.about")
+			.isEmpty()
+			.jsonPath("$.startsOn")
+			.isEqualTo("2026-10-01")
+			.jsonPath("$.endsOn")
+			.isEqualTo("2026-12-18")
+			.jsonPath("$.pageKind")
+			.isEqualTo("custom")
+			.jsonPath("$.slugFixed")
+			.isEqualTo(false)
+			.jsonPath("$.coverFileId")
+			.isEqualTo(cover.toString())
+			.jsonPath("$.applications.opensAt")
+			.isEqualTo("2026-10-01T02:00:00Z")
+			.jsonPath("$.applications.closesAt")
+			.isEqualTo("2026-11-15T16:59:00Z")
+			.jsonPath("$.applications.shortlistSize")
+			.isEqualTo(10)
+			.jsonPath("$.applications.outcomesDueOn")
+			.isEqualTo("2026-11-16")
+			.jsonPath("$.applications.allowUpdatesUntilClose")
+			.isEqualTo(true)
+			.jsonPath("$.keyDates.length()")
+			.isEqualTo(2)
+			.jsonPath("$.keyDates[0].title")
+			.isEqualTo("Briefing")
+			.jsonPath("$.keyDates[0].endsAt")
+			.isEqualTo("2026-10-09T09:00:00Z")
+			.jsonPath("$.keyDates[1].title")
+			.isEqualTo("Demo day")
+			.jsonPath("$.keyDates[1].allDay")
+			.isEqualTo(true)
+			.jsonPath("$.events[0].registrationUrl")
+			.isEqualTo("https://luma.com/briefing")
+			.jsonPath("$.events[0].city")
+			.isEmpty();
+		assertThat(eventsOf(one.substring(one.lastIndexOf('/') + 1))).extracting(event -> event.get("action"))
+			.containsExactly("program.create", "program.update");
+	}
+
+	@Test
+	void aSaveReplacesTheListsAndTheWindowAsSent() {
+		String one = created("Replaced", "replaced");
+		Map<String, Object> program = program(0, "Replaced", "replaced");
+		program.put("applications", applications("2026-10-01T02:00:00Z", "2026-11-15T16:59:00Z", null));
+		program.put("keyDates",
+				List.of(keyDate("First", "2026-10-09T07:00:00Z", null, false),
+						keyDate("Second", "2026-10-10T07:00:00Z", null, false),
+						keyDate("Third", "2026-10-11T07:00:00Z", null, false)));
+		save(operator, one, program).expectStatus().isOk();
+
+		Map<String, Object> shorter = program(1, "Replaced", "replaced");
+		shorter.put("keyDates", List.of(keyDate("Third", "2026-10-11T07:00:00Z", null, false),
+				keyDate("First", "2026-10-09T07:00:00Z", null, false)));
+
+		save(operator, one, shorter).expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.applications")
+			.isEmpty()
+			.jsonPath("$.keyDates[*].title")
+			.isEqualTo(List.of("Third", "First"));
+	}
+
+	@Test
+	void aSaveOverSomeoneElsesSaveIsRefused() {
+		String one = created("Shared", "shared-screen");
+		save(operator, one, program(0, "Saved first", "shared-screen")).expectStatus().isOk();
+
+		assertProblem(save(operator, one, program(0, "Saved second", "shared-screen")), 409,
+				"PROGRAM_CHANGED_MEANWHILE");
+
+		get(operator, one).expectBody().jsonPath("$.name").isEqualTo("Saved first");
+	}
+
+	@Test
+	void datesOutOfOrderAreRefused() {
+		String one = created("Ordered", "ordered");
+
+		Map<String, Object> days = program(0, "Ordered", "ordered");
+		days.put("startsOn", "2026-12-18");
+		days.put("endsOn", "2026-12-17");
+		assertProblem(save(operator, one, days), 400, "PROGRAM_DAYS_OUT_OF_ORDER");
+
+		Map<String, Object> window = program(0, "Ordered", "ordered");
+		window.put("applications", applications("2026-11-15T16:59:00Z", "2026-11-15T16:59:00Z", null));
+		assertProblem(save(operator, one, window), 400, "PROGRAM_WINDOW_OUT_OF_ORDER");
+
+		// The deadline is 23:59 on 15 November in Vietnam, so the 15th is still in time and the 14th is not.
+		Map<String, Object> outcomes = program(0, "Ordered", "ordered");
+		outcomes.put("applications", applications("2026-10-01T02:00:00Z", "2026-11-15T16:59:00Z", "2026-11-14"));
+		assertProblem(save(operator, one, outcomes), 400, "PROGRAM_OUTCOMES_BEFORE_CLOSE");
+
+		Map<String, Object> keyDate = program(0, "Ordered", "ordered");
+		keyDate.put("keyDates", List.of(keyDate("Backwards", "2026-10-09T09:00:00Z", "2026-10-09T07:00:00Z", false)));
+		assertProblem(save(operator, one, keyDate), 400, "PROGRAM_KEY_DATE_OUT_OF_ORDER");
+
+		Map<String, Object> event = program(0, "Ordered", "ordered");
+		event.put("events", List.of(Map.of("title", "Backwards", "startsAt", "2026-10-09T09:00:00Z", "endsAt",
+				"2026-10-09T07:00:00Z", "online", false)));
+		assertProblem(save(operator, one, event), 400, "PROGRAM_EVENT_OUT_OF_ORDER");
+
+		Map<String, Object> elsewhere = program(0, "Ordered", "ordered");
+		elsewhere.put("pageKind", "external");
+		assertProblem(save(operator, one, elsewhere), 400, "PROGRAM_EXTERNAL_URL_REQUIRED");
+
+		get(operator, one).expectBody().jsonPath("$.version").isEqualTo(0);
+	}
+
+	@Test
+	void aSavedMemberThatIsNotValidIsPointedAt() {
+		String one = created("Pointed", "pointed");
+		Map<String, Object> program = program(0, "Pointed", "pointed");
+		program.put("externalUrl", "genaifund.ai");
+		program.put("applications", Map.of("opensAt", "2026-10-01T02:00:00Z", "shortlistSize", 0,
+				"allowUpdatesUntilClose", true));
+		program.put("keyDates", List.of(keyDate(" ", "2026-10-09T07:00:00Z", null, false)));
+		program.put("events", List.of(Map.of("title", "Briefing", "startsAt", "2026-10-09T07:00:00Z", "online", true,
+				"registrationUrl", "luma")));
+
+		String body = new String(save(operator, one, program).expectStatus()
+			.isBadRequest()
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), UTF_8);
+
+		assertThat(JsonPath.<String>read(body, "$.code")).isEqualTo("REQUEST_INVALID");
+		assertThat(JsonPath.<List<String>>read(body, "$.errors[*].pointer")).containsExactlyInAnyOrder("#/externalUrl",
+				"#/applications/closesAt", "#/applications/shortlistSize", "#/keyDates/0/title",
+				"#/events/0/registrationUrl");
+	}
+
+	@Test
+	void anAddressChangesUntilTheFirstPublication() {
+		String one = created("Moving", "moving-from");
+		created("Standing", "standing");
+
+		save(operator, one, program(0, "Moving", "moving-to")).expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.slug")
+			.isEqualTo("moving-to");
+		assertProblem(save(operator, one, program(1, "Moving", "standing")), 409, "PROGRAM_SLUG_TAKEN");
+
+		jdbc.sql("update program set published_at = now() where slug = 'moving-to'").update();
+
+		assertProblem(save(operator, one, program(1, "Moving", "moving-again")), 409, "PROGRAM_SLUG_FIXED");
+		save(operator, one, program(1, "Moved", "moving-to")).expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.slugFixed")
+			.isEqualTo(true);
+	}
+
+	@Test
+	void aCoverIsAStoredImageOfTheCallerAndAReplacedOneIsRemoved() {
+		String one = created("Covered", "covered");
+		String other = created("Covered too", "covered-too");
+		UUID first = storedImage("operator@program.test");
+		UUID second = storedImage("operator@program.test");
+		TestSignIn.session(client, mail, "someone@program.test");
+
+		Map<String, Object> program = program(0, "Covered", "covered");
+		program.put("coverFileId", first);
+		save(operator, one, program).expectStatus().isOk();
+		// Saving again with the cover it has changes nothing about the file.
+		program.put("version", 1);
+		program.put("name", "Covered still");
+		save(operator, one, program).expectStatus().isOk();
+		assertThat(fileExists(first)).isTrue();
+
+		for (UUID notUsable : List.of(UUID.randomUUID(), storedImage("someone@program.test"),
+				file("operator@program.test", "program_image", "pending"),
+				file("operator@program.test", "application_file", "stored"))) {
+			program.put("version", 2);
+			program.put("coverFileId", notUsable);
+			assertProblem(save(operator, one, program), 400, "PROGRAM_COVER_NOT_USABLE");
+		}
+		Map<String, Object> borrowed = program(0, "Covered too", "covered-too");
+		borrowed.put("coverFileId", first);
+		assertProblem(save(operator, other, borrowed), 400, "PROGRAM_COVER_NOT_USABLE");
+
+		program.put("coverFileId", second);
+		save(operator, one, program).expectStatus().isOk();
+		assertThat(fileExists(first)).isFalse();
+
+		program.put("version", 3);
+		program.put("coverFileId", null);
+		save(operator, one, program).expectStatus().isOk().expectBody().jsonPath("$.coverFileId").isEmpty();
+		assertThat(fileExists(second)).isFalse();
+	}
+
+	/** Creates a draft and returns the address it is read and saved at. */
+	private String created(String name, String slug) {
+		String body = create(operator, name, slug, "event").expectStatus()
+			.isCreated()
+			.expectBody(String.class)
+			.returnResult()
+			.getResponseBody();
+		return PROGRAMS + "/" + JsonPath.<String>read(body, "$.id");
+	}
+
+	/** What the Settings screen sends for a program it has filled in nothing else of. */
+	private static Map<String, Object> program(long version, String name, String slug) {
+		Map<String, Object> program = new LinkedHashMap<>();
+		program.put("version", version);
+		program.put("name", name);
+		program.put("slug", slug);
+		program.put("type", "event");
+		program.put("pageKind", "standard");
+		program.put("keyDates", new ArrayList<>());
+		program.put("events", new ArrayList<>());
+		return program;
+	}
+
+	private static Map<String, Object> applications(String opensAt, String closesAt, String outcomesDueOn) {
+		Map<String, Object> applications = new LinkedHashMap<>();
+		applications.put("opensAt", opensAt);
+		applications.put("closesAt", closesAt);
+		applications.put("shortlistSize", 10);
+		applications.put("outcomesDueOn", outcomesDueOn);
+		applications.put("allowUpdatesUntilClose", true);
+		return applications;
+	}
+
+	private static Map<String, Object> keyDate(String title, String startsAt, String endsAt, boolean allDay) {
+		Map<String, Object> keyDate = new LinkedHashMap<>();
+		keyDate.put("title", title);
+		keyDate.put("startsAt", startsAt);
+		keyDate.put("endsAt", endsAt);
+		keyDate.put("allDay", allDay);
+		return keyDate;
+	}
+
+	private RestTestClient.ResponseSpec save(String session, String uri, Map<String, Object> program) {
+		RestTestClient.RequestBodySpec request = client.put()
+			.uri(uri)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.contentType(MediaType.APPLICATION_JSON);
+		if (session != null) {
+			request = request.cookie(TestSignIn.SESSION_COOKIE, session);
+		}
+		return request.body(program).exchange();
+	}
+
+	private UUID storedImage(String uploader) {
+		return file(uploader, "program_image", "stored");
+	}
+
+	/** The record of a file as storage keeps it; the save reads the record, never the bytes. */
+	private UUID file(String uploader, String purpose, String status) {
+		UUID id = UUID.randomUUID();
+		jdbc.sql("""
+				insert into storage_file (id, provider, object_key, purpose, public_read, file_name, media_type,
+				                          size_bytes, status, uploaded_by_account_id, upload_expires_at)
+				select ?, 'local', ?, ?, true, 'cover.png', 'image/png', 2048, ?, id, now()
+				from identity_account where email = ?
+				""").params(id, "test/" + id, purpose, status, uploader).update();
+		return id;
+	}
+
+	private boolean fileExists(UUID id) {
+		return jdbc.sql("select count(*) from storage_file where id = ?").param(id).query(Long.class).single() == 1;
 	}
 
 	private RestTestClient.ResponseSpec create(String session, String name, String slug, String type) {

@@ -8,6 +8,7 @@ import ai.genaifund.beyondpilot.program.ProgramAdministration;
 import ai.genaifund.beyondpilot.program.dto.AdminProgramListResponse;
 import ai.genaifund.beyondpilot.program.dto.AdminProgramResponse;
 import ai.genaifund.beyondpilot.program.dto.CreateProgramRequest;
+import ai.genaifund.beyondpilot.program.dto.SaveProgramRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -74,6 +76,24 @@ class AdminProgramsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	AdminProgramResponse get(@CurrentActor Actor actor, @PathVariable UUID id) {
 		return programs.get(actor, id);
+	}
+
+	@PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "saveProgram",
+			summary = "Save a program with its application window, key dates and events",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The program as saved, with its new version.")
+	@ApiResponse(responseCode = "400",
+			description = "A member is not valid, dates are out of order, or the cover is not a stored image of the caller.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such program.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409",
+			description = "The program changed since it was read, or its address is taken or can no longer change.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	AdminProgramResponse save(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody SaveProgramRequest request) {
+		return programs.save(actor, id, request);
 	}
 
 }

@@ -60,10 +60,20 @@ export type AdminProgram = {
      * The text of the standard page.
      */
     about?: string | null;
+    /**
+     * Null for a program that takes no applications here.
+     */
+    applications?: ProgramApplications;
+    /**
+     * The cover, read at the public address of stored files.
+     */
+    coverFileId?: string | null;
     createdAt: string;
     endsOn?: string | null;
+    events: Array<ProgramEvent>;
     externalUrl?: string | null;
     id: string;
+    keyDates: Array<ProgramKeyDate>;
     name: string;
     /**
      * `standard` is built from these fields, `custom` is written in the web application for this address, `external` links to `externalUrl`.
@@ -77,6 +87,10 @@ export type AdminProgram = {
      * The address under /programs.
      */
     slug: string;
+    /**
+     * The program has been published at least once, so its address cannot change.
+     */
+    slugFixed: boolean;
     startsOn?: string | null;
     /**
      * Only a published program is public.
@@ -200,6 +214,65 @@ export type Problem = {
 };
 
 /**
+ * When and how a program takes applications here.
+ */
+export type ProgramApplications = {
+    /**
+     * Whether an applicant may change a submitted application until the deadline.
+     */
+    allowUpdatesUntilClose: boolean;
+    /**
+     * The deadline; later than `opensAt`.
+     */
+    closesAt: string;
+    opensAt: string;
+    /**
+     * The day applicants hear the outcome; not before the deadline.
+     */
+    outcomesDueOn?: string | null;
+    /**
+     * How many applications go on to the next round.
+     */
+    shortlistSize?: number | null;
+};
+
+/**
+ * A session of a program that people register for somewhere else.
+ */
+export type ProgramEvent = {
+    city?: string | null;
+    country?: string | null;
+    /**
+     * Not before `startsAt`.
+     */
+    endsAt?: string | null;
+    online: boolean;
+    /**
+     * Where people register, for example on Luma.
+     */
+    registrationUrl?: string | null;
+    startsAt: string;
+    title: string;
+};
+
+/**
+ * A dated step of a program that an applicant plans around.
+ */
+export type ProgramKeyDate = {
+    /**
+     * The step is a day, not a moment; it is shown without a time.
+     */
+    allDay: boolean;
+    /**
+     * Not before `startsAt`.
+     */
+    endsAt?: string | null;
+    note?: string | null;
+    startsAt: string;
+    title: string;
+};
+
+/**
  * The file a person is about to upload.
  */
 export type ReserveUpload = {
@@ -216,6 +289,45 @@ export type ReserveUpload = {
      * The exact length of the file in bytes.
      */
     sizeBytes: number;
+};
+
+/**
+ * A program as the Settings screen holds it. Everything is saved together, and the lists are replaced as sent.
+ */
+export type SaveProgram = {
+    about?: string | null;
+    /**
+     * Null for a program that takes no applications here.
+     */
+    applications?: ProgramApplications;
+    /**
+     * A stored `program_image` the caller uploaded, or the cover the program already has. Null removes the cover.
+     */
+    coverFileId?: string | null;
+    /**
+     * Not before `startsOn`.
+     */
+    endsOn?: string | null;
+    events: Array<ProgramEvent>;
+    /**
+     * Needed when `pageKind` is `external`.
+     */
+    externalUrl?: string | null;
+    keyDates: Array<ProgramKeyDate>;
+    name: string;
+    pageKind: 'standard' | 'custom' | 'external';
+    partnerName?: string | null;
+    /**
+     * The address under /programs. It cannot change once the program has been published.
+     */
+    slug: string;
+    startsOn?: string | null;
+    summary?: string | null;
+    type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+    /**
+     * The version the screen read; the save is refused when the program changed since.
+     */
+    version: number;
 };
 
 /**
@@ -580,6 +692,49 @@ export type GetAdminProgramResponses = {
 };
 
 export type GetAdminProgramResponse = GetAdminProgramResponses[keyof GetAdminProgramResponses];
+
+export type SaveProgramData = {
+    body: SaveProgram;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}';
+};
+
+export type SaveProgramErrors = {
+    /**
+     * A member is not valid, dates are out of order, or the cover is not a stored image of the caller.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+    /**
+     * The program changed since it was read, or its address is taken or can no longer change.
+     */
+    409: Problem;
+};
+
+export type SaveProgramError = SaveProgramErrors[keyof SaveProgramErrors];
+
+export type SaveProgramResponses = {
+    /**
+     * The program as saved, with its new version.
+     */
+    200: AdminProgram;
+};
+
+export type SaveProgramResponse = SaveProgramResponses[keyof SaveProgramResponses];
 
 export type GetPublicFileData = {
     body?: never;

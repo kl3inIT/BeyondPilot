@@ -5,7 +5,8 @@ Design: [design.md](design.md). Tracked in Linear as BEY-29.
 | # | Step | State |
 | --- | --- | --- |
 | 1 | Backend: `V4__program_create_programs.sql`; the `program` module, closed, depending on `identity` and `audit`, listed in `ModulithArchitectureTest`; an operator creates a draft, reads it and reads the list | Done |
-| 2 | Backend: the operator's other changes (save with the cover through `storage`, publish, unpublish) with their rules and audit events | Open |
+| 2 | Backend: the save of a program with its window, key dates, events and cover, with its rules and its audit event | Done |
+| 2b | Backend: publish and unpublish | Open |
 | 3 | Backend: the public list and the public program, with the phase worked out from the dates; `openapi.yml` and the generated web client refreshed | Open |
 | 4 | Web: the upload helper (reserve, send, confirm), then the admin Programs list and a program's Settings | Open |
 | 5 | Web: the public programs list | Open |
