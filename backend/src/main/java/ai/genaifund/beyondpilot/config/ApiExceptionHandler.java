@@ -54,9 +54,9 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	private static ProblemDetail failure(ErrorCategory category, String code, String detail) {
-		ErrorRendering rendering = ErrorRendering.of(category);
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(rendering.status(), detail);
-		problem.setTitle(rendering.title());
+		ErrorCategoryHttpStatus http = ErrorCategoryHttpStatus.of(category);
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(http.status(), detail);
+		problem.setTitle(http.title());
 		problem.setType(URI.create("urn:beyondpilot:failure:" + code.toLowerCase(Locale.ROOT).replace('_', '-')));
 		problem.setProperty("code", code);
 		return problem;
