@@ -10,7 +10,7 @@ For work in `backend/`: one Spring Boot application whose modules are Spring Mod
 | `ai.genaifund.beyondpilot.shared` | Identifiers and values that several modules carry, and technical utilities that at least two modules need and that know nothing about any module | Spring beans, persistence, configuration, a module's rules, a dependency on any module |
 | `ai.genaifund.beyondpilot.config` | Cross-cutting HTTP configuration that no module owns: Spring Security (`SecurityFilterChain`, CSRF header check, session), the error path (`RequestIdFilter`, `ApiExceptionHandler`, `RequestIdProblemAdvice`, `ProblemErrorController`), OpenAPI configuration | A module's business behavior, and configuration a single module owns (its client, properties or scheduler stays in that module) |
 | `ai.genaifund.beyondpilot.<module>` | The module's published API: application services, events, its `<Module>ErrorCode` enum and its exception, and the identifiers and records another module calls for | SQL, a record no other module uses |
-| `<module>.web` | Controllers | Business rules, SQL, entities as HTTP bodies |
+| `<module>.web` | Controllers | Business rules, SQL, entities as HTTP bodies, any use of the `persistence` package |
 | `<module>.dto` | Request and response records, returned by the application service and by the controller | Entities, behavior |
 | `<module>.persistence` | JPA entities, Spring Data repositories, `JdbcClient` repositories | Authorization, validation, orchestration |
 | `<module>.adapter` | Implementations of the [interchangeable-implementations pattern](../conventions.md#interchangeable-implementations-strategy-behind-a-registry) | Code with only one implementation by nature |
@@ -24,6 +24,7 @@ Every direct subpackage of the base package, `shared` and `config` included, is 
 - **Module boundary.** A module is closed and lists its allowed dependencies. Its root package is the published API; `web`, `dto`, `persistence`, `adapter` and feature subpackages are internal. A new dependency edge needs an architecture decision ([change design](../conventions.md#change-design)).
 - **No speculative structure.** No empty packages, single-implementation interfaces, temporary runtime modes or one-shot endpoints ([change design](../conventions.md#change-design)).
 - **Interchangeable implementations.** A choice among vendors or protocols uses the [Strategy-behind-a-registry pattern](../conventions.md#interchangeable-implementations-strategy-behind-a-registry) from the first vendor.
+- **Controllers.** A controller takes the request, calls one application service and returns its record. It never injects a repository or touches an entity: authorization, validation and the transaction are the service's, and going around it skips them. `ModulithArchitectureTest` fails on a `web` class that uses a `persistence` class.
 - **Persistence.** SQL, row mapping, locks and bulk writes live in the module's `persistence` package; application services own authorization, validation, orchestration and the transaction boundary ([persistence](persistence.md#implementation-boundaries)).
 - **Nullness and records.** `@NullMarked` everywhere, `@Nullable` for optional values, records constructed by shape, no Lombok ([Java and Gradle](../conventions.md#java-and-gradle)).
 - **Failures.** Expected failures are the module's typed exception carrying an `ErrorCode`; the single `config.ApiExceptionHandler` turns them into RFC 9457 problems, and no module adds its own handler ([API errors](../conventions.md#api-errors)).
@@ -41,6 +42,7 @@ Every direct subpackage of the base package, `shared` and `config` included, is 
 ## Common mistakes
 
 - Importing another module's `web`, `dto`, `persistence`, `adapter` or feature package.
+- Injecting a repository into a controller, or loading an entity there, instead of calling the application service.
 - Returning an entity as an HTTP body instead of a `dto` record, or adding a view record between the entity and the DTO that no other module uses.
 - Encoding a failure code in an exception message and matching the string.
 - Adding an `@ExceptionHandler` or `@ControllerAdvice` inside a module, or an `@ExceptionHandler(Exception.class)` anywhere.
