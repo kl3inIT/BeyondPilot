@@ -7,9 +7,241 @@ servers:
 - description: Same origin as the web application
   url: /
 tags:
+- description: The accounts operators manage.
+  name: Accounts
 - description: Who is signed in.
   name: Identity
 paths:
+  /api/identity/accounts:
+    get:
+      operationId: listAccounts
+      parameters:
+      - description: "Accounts whose name or address contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only accounts of this status.
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - active
+          - disabled
+          pattern: active|disabled
+      - description: Only accounts of this role.
+        in: query
+        name: role
+        required: false
+        schema:
+          type: string
+          enum:
+          - user
+          - operator
+          pattern: user|operator
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountList"
+          description: One page of the accounts the parameters select.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The accounts, latest sign-in first"
+      tags:
+      - Accounts
+  /api/identity/accounts/{id}/disable:
+    post:
+      operationId: disableAccount
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The account is disabled.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such account.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The account is the caller's own.
+      security:
+      - session: []
+      summary: Stop an account from signing in
+      tags:
+      - Accounts
+  /api/identity/accounts/{id}/enable:
+    post:
+      operationId: enableAccount
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The account is active.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such account.
+      security:
+      - session: []
+      summary: Let a disabled account sign in again
+      tags:
+      - Accounts
+  /api/identity/accounts/{id}/grant-operator:
+    post:
+      operationId: grantOperator
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The account is an operator.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such account.
+      security:
+      - session: []
+      summary: Make an account an operator
+      tags:
+      - Accounts
+  /api/identity/accounts/{id}/withdraw-operator:
+    post:
+      operationId: withdrawOperator
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The account is not an operator.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such account.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The account is the caller's own, or the server configuration\
+            \ names it as an operator."
+      security:
+      - session: []
+      summary: Take the operator role from an account
+      tags:
+      - Accounts
   /api/identity/me:
     get:
       operationId: getMe
@@ -39,6 +271,78 @@ paths:
       - Identity
 components:
   schemas:
+    AccountList:
+      type: object
+      description: "One page of accounts, latest sign-in first."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountSummary"
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+          description: How many accounts a page holds.
+        total:
+          type: integer
+          format: int64
+          description: "How many accounts match, over all pages."
+      required:
+      - items
+      - page
+      - pageSize
+      - total
+    AccountSummary:
+      type: object
+      description: One account in the operators' list.
+      properties:
+        configuredOperator:
+          type: boolean
+          description: "The server configuration names this address as an operator,\
+            \ so the role cannot be withdrawn here."
+        createdAt:
+          type: string
+          format: date-time
+        displayName:
+          type:
+          - string
+          - "null"
+          description: The name the account shows; null until the person or their
+            provider gives one.
+        email:
+          type: string
+        id:
+          type: string
+          format: uuid
+        lastSignInAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: The last completed sign-in.
+        role:
+          type: string
+          description: '`operator` is GenAI Fund staff.'
+          enum:
+          - user
+          - operator
+        status:
+          type: string
+          description: A disabled account cannot sign in.
+          enum:
+          - active
+          - disabled
+      required:
+      - configuredOperator
+      - createdAt
+      - email
+      - id
+      - role
+      - status
     Me:
       type: object
       description: The signed-in account.

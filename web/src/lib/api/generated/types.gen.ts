@@ -5,6 +5,54 @@ export type ClientOptions = {
 };
 
 /**
+ * One page of accounts, latest sign-in first.
+ */
+export type AccountList = {
+    items: Array<AccountSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    /**
+     * How many accounts a page holds.
+     */
+    pageSize: number;
+    /**
+     * How many accounts match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * One account in the operators' list.
+ */
+export type AccountSummary = {
+    /**
+     * The server configuration names this address as an operator, so the role cannot be withdrawn here.
+     */
+    configuredOperator: boolean;
+    createdAt: string;
+    /**
+     * The name the account shows; null until the person or their provider gives one.
+     */
+    displayName?: string | null;
+    email: string;
+    id: string;
+    /**
+     * The last completed sign-in.
+     */
+    lastSignInAt?: string | null;
+    /**
+     * `operator` is GenAI Fund staff.
+     */
+    role: 'user' | 'operator';
+    /**
+     * A disabled account cannot sign in.
+     */
+    status: 'active' | 'disabled';
+};
+
+/**
  * The signed-in account.
  */
 export type Me = {
@@ -74,6 +122,204 @@ export type Problem = {
      */
     type?: string;
 };
+
+export type ListAccountsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Accounts whose name or address contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only accounts of this status.
+         */
+        status?: 'active' | 'disabled';
+        /**
+         * Only accounts of this role.
+         */
+        role?: 'user' | 'operator';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/identity/accounts';
+};
+
+export type ListAccountsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAccountsError = ListAccountsErrors[keyof ListAccountsErrors];
+
+export type ListAccountsResponses = {
+    /**
+     * One page of the accounts the parameters select.
+     */
+    200: AccountList;
+};
+
+export type ListAccountsResponse = ListAccountsResponses[keyof ListAccountsResponses];
+
+export type DisableAccountData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/identity/accounts/{id}/disable';
+};
+
+export type DisableAccountErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such account.
+     */
+    404: Problem;
+    /**
+     * The account is the caller's own.
+     */
+    409: Problem;
+};
+
+export type DisableAccountError = DisableAccountErrors[keyof DisableAccountErrors];
+
+export type DisableAccountResponses = {
+    /**
+     * The account is disabled.
+     */
+    204: void;
+};
+
+export type DisableAccountResponse = DisableAccountResponses[keyof DisableAccountResponses];
+
+export type EnableAccountData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/identity/accounts/{id}/enable';
+};
+
+export type EnableAccountErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such account.
+     */
+    404: Problem;
+};
+
+export type EnableAccountError = EnableAccountErrors[keyof EnableAccountErrors];
+
+export type EnableAccountResponses = {
+    /**
+     * The account is active.
+     */
+    204: void;
+};
+
+export type EnableAccountResponse = EnableAccountResponses[keyof EnableAccountResponses];
+
+export type GrantOperatorData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/identity/accounts/{id}/grant-operator';
+};
+
+export type GrantOperatorErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such account.
+     */
+    404: Problem;
+};
+
+export type GrantOperatorError = GrantOperatorErrors[keyof GrantOperatorErrors];
+
+export type GrantOperatorResponses = {
+    /**
+     * The account is an operator.
+     */
+    204: void;
+};
+
+export type GrantOperatorResponse = GrantOperatorResponses[keyof GrantOperatorResponses];
+
+export type WithdrawOperatorData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/identity/accounts/{id}/withdraw-operator';
+};
+
+export type WithdrawOperatorErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such account.
+     */
+    404: Problem;
+    /**
+     * The account is the caller's own, or the server configuration names it as an operator.
+     */
+    409: Problem;
+};
+
+export type WithdrawOperatorError = WithdrawOperatorErrors[keyof WithdrawOperatorErrors];
+
+export type WithdrawOperatorResponses = {
+    /**
+     * The account is not an operator.
+     */
+    204: void;
+};
+
+export type WithdrawOperatorResponse = WithdrawOperatorResponses[keyof WithdrawOperatorResponses];
 
 export type GetMeData = {
     body?: never;

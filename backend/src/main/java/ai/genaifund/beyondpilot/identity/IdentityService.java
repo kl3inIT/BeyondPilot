@@ -2,8 +2,12 @@ package ai.genaifund.beyondpilot.identity;
 
 import java.time.Instant;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.audit.AuditAction;
+import ai.genaifund.beyondpilot.audit.AuditRecord;
+import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.identity.dto.MeResponse;
 import ai.genaifund.beyondpilot.identity.persistence.Account;
 import ai.genaifund.beyondpilot.identity.persistence.AccountRepository;
@@ -31,11 +35,14 @@ public class IdentityService {
 	private final ExternalIdentityRepository externalIdentities;
 	private final IdentityProperties properties;
 
+	private final AuditTrail audit;
+
 	IdentityService(AccountRepository accounts, ExternalIdentityRepository externalIdentities,
-			IdentityProperties properties) {
+			IdentityProperties properties, AuditTrail audit) {
 		this.accounts = accounts;
 		this.externalIdentities = externalIdentities;
 		this.properties = properties;
+		this.audit = audit;
 	}
 
 	/**
@@ -97,11 +104,10 @@ public class IdentityService {
 		}
 		if (account.getPlatformRole() != PlatformRole.OPERATOR && properties.isOperatorEmail(account.getEmail())) {
 			account.makeOperator();
-			LOG.atInfo()
-				.addKeyValue("event", "identity.operator.granted")
-				.addKeyValue("account_id", account.getId())
-				.addKeyValue("source", "configuration")
-				.log("Operator role granted");
+			// Nobody did this: the server configuration names the address. The event has no actor.
+			audit.record(new AuditRecord(AuditAction.OPERATOR_GRANT, null,
+					new AuditRecord.Resource("account", account.getId().toString(), account.label()),
+					Map.of("source", "configuration")));
 		}
 		account.recordSignIn(Instant.now());
 		LOG.atInfo()

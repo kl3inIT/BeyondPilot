@@ -24,12 +24,13 @@ flowchart LR
 
 Every direct subpackage of `ai.genaifund.beyondpilot` is a closed Spring Modulith module; `ModulithArchitectureTest` verifies the structure and pins the module list. The placement rules are in the [backend guide](docs/guidelines/backend.md#where-things-live).
 
-| Package | Holds today |
-| --- | --- |
-| `ai.genaifund.beyondpilot` | `BeyondPilotApplication` and the failure types every module shares: `BusinessException`, `ErrorCode`, `ErrorCategory` |
-| `ai.genaifund.beyondpilot.config` | The security filter chain, the error path and the OpenAPI configuration; depends on no module |
-| `ai.genaifund.beyondpilot.identity` | Accounts, sign-in with Google and with an emailed code, the operator role; `Actor` and `@CurrentActor` for other modules. Depends on `notification` |
-| `ai.genaifund.beyondpilot.notification` | `EmailService`: the emails the application sends, over SMTP |
+| Package                                 | Holds today                                                                                                                                                                                                               |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ai.genaifund.beyondpilot`              | `BeyondPilotApplication` and the failure types every module shares: `BusinessException`, `ErrorCode`, `ErrorCategory`                                                                                                     |
+| `ai.genaifund.beyondpilot.audit`        | `AuditTrail`: the append-only record of sensitive changes, written in the transaction of the change ([ADR 0003](docs/decisions/0003-an-audit-module-that-modules-record-through.md)); depends on no module                |
+| `ai.genaifund.beyondpilot.config`       | The security filter chain, the error path and the OpenAPI configuration; depends on no module                                                                                                                             |
+| `ai.genaifund.beyondpilot.identity`     | Accounts, sign-in with Google and with an emailed code, the operator role; `AccountAdministration`, what operators do with accounts; `Actor` and `@CurrentActor` for other modules. Depends on `audit` and `notification` |
+| `ai.genaifund.beyondpilot.notification` | `EmailService`: the emails the application sends, over SMTP                                                                                                                                                               |
 
 No other business module exists. The error path in `config` is the application's only exception handling ([API errors](docs/conventions.md#api-errors)):
 
@@ -42,19 +43,19 @@ No other business module exists. The error path in `config` is the application's
 
 The folder rules are in [conventions › Frontend › Structure](docs/conventions.md#structure) and the [web guide](web/AGENTS.md).
 
-| Path under `web/src` | Holds today |
-| --- | --- |
-| `app/[locale]/(public)/` | The home page, composed from sections, and the coming-soon catch-all |
-| `app/[locale]/(auth)/` | The sign-in page, `/sign-in`, under its own layout, which shows the brand and no site navigation |
-| `features/identity/` | The sign-in screens: `SignInForm` with its methods (`GoogleButton`, `EmailSignIn`), `CheckEmail` with `ResendCode`, and the calls to the backend in `identity-api.ts` |
-| `lib/auth/session.ts` | `getCurrentAccount`, the server-side read of who is signed in |
-| `components/sections/` | The home page sections: hero with search, programs and events timeline, directory tabs, partner logos, founders, FAQ |
-| `components/layout/` | Site header and footer, mobile menu, brand lockup, light and dark theme switch |
-| `components/actions/` | The product's action components (`Button`, `IconButton`, `TextButton`, `ActionLink`) over shared action styles |
-| `components/ui/` | shadcn registry primitives |
-| `lib/api/generated/` | Types generated from `openapi.yml` |
-| `i18n/`, `proxy.ts`, `../messages/` | Locale routing (`en` without a prefix, `vi` under `/vi`) and the two message catalogs |
-| `styles/tokens.css` | Semantic design tokens, light and dark |
+| Path under `web/src`                | Holds today                                                                                                                                                           |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/[locale]/(public)/`            | The home page, composed from sections, and the coming-soon catch-all                                                                                                  |
+| `app/[locale]/(auth)/`              | The sign-in page, `/sign-in`, under its own layout, which shows the brand and no site navigation                                                                      |
+| `features/identity/`                | The sign-in screens: `SignInForm` with its methods (`GoogleButton`, `EmailSignIn`), `CheckEmail` with `ResendCode`, and the calls to the backend in `identity-api.ts` |
+| `lib/auth/session.ts`               | `getCurrentAccount`, the server-side read of who is signed in                                                                                                         |
+| `components/sections/`              | The home page sections: hero with search, programs and events timeline, directory tabs, partner logos, founders, FAQ                                                  |
+| `components/layout/`                | Site header and footer, mobile menu, brand lockup, light and dark theme switch                                                                                        |
+| `components/actions/`               | The product's action components (`Button`, `IconButton`, `TextButton`, `ActionLink`) over shared action styles                                                        |
+| `components/ui/`                    | shadcn registry primitives                                                                                                                                            |
+| `lib/api/generated/`                | Types generated from `openapi.yml`                                                                                                                                    |
+| `i18n/`, `proxy.ts`, `../messages/` | Locale routing (`en` without a prefix, `vi` under `/vi`) and the two message catalogs                                                                                 |
+| `styles/tokens.css`                 | Semantic design tokens, light and dark                                                                                                                                |
 
 The home page links its campaign call to action to the interim campaign page that GenAI Fund runs outside this repository.
 
@@ -65,13 +66,13 @@ Sign-in is Spring Security inside the backend; there is no separate identity ser
 - **Two ways in, one account per address.** A six-digit code emailed to an address and Google sign-in. The code works only in the browser that asked for it, once, for 15 minutes and for five guesses. A typed code and a Google sign-in with the same verified address reach the same account. Google sign-in exists only where an OAuth client is configured.
 - **Session.** Spring Session stores it in PostgreSQL; it ends 30 days after the last request. The cookie `BEYONDPILOT_SESSION` is `HttpOnly` and `SameSite=Lax`, and `Secure` under the `production` profile. The session holds only the account identifier; role and status are read from the database.
 - **Requests.** A path under `/api` needs a session unless `SecurityConfiguration` opens it. A request that changes state must carry `X-BeyondPilot-CSRF: 1`. Refusals are 401 and 403 problems.
-- **Roles.** An account is a `user` or an `operator`. The addresses in `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS` become operators when they sign in. No screen grants the role yet, and no endpoint requires it yet.
-- **Web.** `/sign-in` offers Google and the emailed code, then takes the code and opens the page the person came from. A signed-in visitor to `/sign-in` is sent on. The header does not show who is signed in yet, and nothing in the web application signs out.
+- **Roles.** An account is a `user` or an `operator`. The addresses in `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS` become operators when they sign in. Operators list accounts, disable and enable them, and grant and withdraw the role through `/api/identity/accounts`; each operation checks the caller's role in the database, and each change is recorded as an audit event. An operator cannot disable or demote themselves, and the role of a configured address cannot be withdrawn. No screen uses these operations yet.
+- **Web.** `/sign-in` offers Google and the emailed code, then takes the code and opens the page the person came from. A signed-in visitor to `/sign-in` is sent on. The header shows a signed-in person their account menu, with sign-out. `/admin` is the operators' area: each of its pages checks the role on the server, and anyone else gets the not-found page.
 
 ## Data ownership and consistency
 
 - PostgreSQL 18.6 is the only data store, pinned to the same image for local Docker Compose and for Testcontainers.
-- Flyway owns the schema and Hibernate only validates it (`ddl-auto: validate`); `open-in-view` is off. One migration exists: `identity` owns the account, external-identity and sign-in-challenge tables and the tables of Spring Session.
+- Flyway owns the schema and Hibernate only validates it (`ddl-auto: validate`); `open-in-view` is off. Two migrations exist: `identity` owns the account, external-identity and sign-in-challenge tables and the tables of Spring Session; `audit` owns `audit_event`, which a trigger keeps append-only.
 - The rules for the first schema are in the [persistence guideline](docs/guidelines/persistence.md).
 
 ## Deployment and operations

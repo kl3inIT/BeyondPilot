@@ -68,8 +68,30 @@ public class Account {
 		lastLoginAt = at;
 	}
 
+	public boolean isOperator() {
+		return platformRole == PlatformRole.OPERATOR;
+	}
+
+	/** The name a person is shown by: their name, or their address until they have one. */
+	public String label() {
+		return displayName != null ? displayName : email;
+	}
+
 	public void makeOperator() {
 		platformRole = PlatformRole.OPERATOR;
+	}
+
+	public void withdrawOperator() {
+		platformRole = PlatformRole.USER;
+	}
+
+	/** A disabled account cannot sign in, and its open sessions stop answering. Nothing it holds is removed. */
+	public void disable() {
+		status = AccountStatus.DISABLED;
+	}
+
+	public void enable() {
+		status = AccountStatus.ACTIVE;
 	}
 
 	/** Keeps the name a person already has; a provider's name only fills an empty one. */
