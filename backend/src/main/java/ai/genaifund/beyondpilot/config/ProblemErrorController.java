@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.config;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,7 +32,12 @@ class ProblemErrorController implements ErrorController {
 		problem.setTitle(status.getReasonPhrase());
 		// The error dispatch runs on the error path; the problem names the path the client asked for.
 		if (request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI) instanceof String path) {
-			problem.setInstance(URI.create(path));
+			try {
+				problem.setInstance(new URI(path));
+			}
+			catch (URISyntaxException ex) {
+				// The container accepted a path that is no URI reference; the problem goes out without an instance.
+			}
 		}
 		if (status.is5xxServerError()) {
 			problem.setDetail("The server could not complete the request.");

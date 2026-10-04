@@ -33,12 +33,6 @@ public class ExternalIdentity {
 	protected ExternalIdentity() {
 	}
 
-	public ExternalIdentity(UUID accountId, String provider, String subject) {
-		this.accountId = accountId;
-		this.provider = provider;
-		this.subject = subject;
-	}
-
 	public UUID getAccountId() {
 		return accountId;
 	}

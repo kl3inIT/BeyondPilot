@@ -62,7 +62,7 @@ public class IdentityService {
 							"Google sign-in with an unverified address");
 				}
 				Account joined = findOrCreate(email, name);
-				externalIdentities.save(new ExternalIdentity(joined.getId(), ExternalIdentity.GOOGLE, subject));
+				externalIdentities.insertIfAbsent(UUID.randomUUID(), joined.getId(), ExternalIdentity.GOOGLE, subject);
 				return joined;
 			});
 		account.nameIfUnnamed(name);
