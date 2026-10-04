@@ -119,7 +119,8 @@ Two operators may act on one account at the same moment. Each command sets a sta
 - **Feature** `src/features/identity/`: `accounts-page.tsx`, its parts (toolbar, table, stacked rows for a phone, row menu), `accounts-queries.ts` (the search parameters and the server read) and the confirmation wording.
 - **Reading.** The list is rendered on the server on every navigation, uncached, with the session cookie forwarded. Search and filters are the URL (`?q=&status=&role=&page=`), written through nuqs with `shallow: false` so a change asks the server again; the search field waits 300 ms after typing. A filter or search change returns to page 1.
 - **Writing.** The row menu calls the generated SDK from the browser; on success the page is refreshed (`router.refresh()`) and a toast names what happened; a refusal shows the translated message of its `code`.
-- **Confirmation.** Disable, grant and withdraw open the alert dialog first, through one hook that returns a promise; its confirm button shows the pending state. Enable happens at once: it is the undo.
+- **Confirmation.** Disable, grant and withdraw open the alert dialog first; its confirm button shows the pending state and the dialog stays open until the command has answered. Enable happens at once: it is the undo.
+- **Where a person is.** The bar above the page carries the breadcrumb, "Admin › Accounts", from the same list of destinations the sidebar shows.
 - **One's own row** has a "You" badge and no menu. A configured operator's menu has no "Withdraw operator role".
 
 **Decided on 4 October 2026: the list is built the way the App Router is meant to be used, without TanStack Query and without TanStack Table.** The plan of BEY-45 expected both here.
@@ -130,7 +131,7 @@ Two operators may act on one account at the same moment. Each command sets a sta
 - TanStack Table arrives with the first table that keeps state in the browser: sorting by a column header, hiding columns, virtual rows. Selecting rows on a server-rendered page is a set of identifiers and does not need it. TanStack Query arrives with the first screen that keeps server data in the browser: polling, optimistic updates, a draft that outlives navigation.
 - `docs/conventions.md` (Frontend › Stack) is amended in this change to say when each of the two is used.
 
-nuqs, the confirmation hook, the toast helper and the `Status` component arrive here, with their first use.
+nuqs and four composites arrive here, with their first use: `DataTable` (the frame, the empty state and the footer with the count and the registry pagination), `ConfirmDialog` on `alert-dialog`, `Status` and `Person`; and `useNotify`, the toast helper that takes message keys. The confirmation is a controlled dialog beside the menu that opens it, not a provider with a hook: one place opens it, and a provider would add a second way to do the same.
 
 ## Design system
 
@@ -139,6 +140,12 @@ No new token. The role tokens cover it: `success` for the Active dot, `muted-for
 - **`Status`** (new, `src/components/composites/`): a dot and a word, with `tone` `success`, `warning`, `info`, `destructive` or `neutral`. Which status of a domain takes which tone is a small map beside that domain's code, not a token.
 - **`Badge`**: the existing `outline` variant for "Operator" and "You".
 - **Avatar**: the registry `Avatar` with initials as its fallback, as in the sidebar's foot. The header's account button keeps its own approved look; it is a button, not a list avatar.
+
+Three places where the built screen differs from the drawing, each for a reason found while building:
+
+- The initials of a disabled account are not dimmed. At 60% they fell to a contrast of 2.6 against the 4.5 a reader needs, which the accessibility check caught; the name is quieter and the status says "Disabled".
+- The footer shows the registry pagination with page numbers when there is more than one page, and nothing but the count when there is one, where the drawing had two disabled buttons.
+- The search field and the two selects are 32px high, the registry's `input-group` height, where the drawing had 40px.
 
 ## Verification
 
