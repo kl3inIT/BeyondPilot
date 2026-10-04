@@ -12,8 +12,11 @@ import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/com
 import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
-/** Full-screen menu below 768px: one hint line per destination, then account actions and language. */
-function MobileMenu() {
+/**
+ * Full-screen menu below 768px: one hint line per destination, then the ways in and the language.
+ * A signed-in person has their account menu beside the menu button, so the ways in are left out.
+ */
+function MobileMenu({ signedIn = false }: { signedIn?: boolean }) {
   const t = useTranslations("Site");
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
@@ -59,12 +62,16 @@ function MobileMenu() {
             ))}
           </nav>
           <div className="flex flex-col gap-3 px-5 pt-6 pb-8">
-            <Button size="lg" href={siteRoutes.getStarted} onClick={close}>
-              {t("nav.getStarted")}
-            </Button>
-            <Button size="lg" prominence="secondary" href={siteRoutes.signIn} onClick={close}>
-              {t("nav.signIn")}
-            </Button>
+            {!signedIn && (
+              <>
+                <Button size="lg" href={siteRoutes.getStarted} onClick={close}>
+                  {t("nav.getStarted")}
+                </Button>
+                <Button size="lg" prominence="secondary" href={siteRoutes.signIn} onClick={close}>
+                  {t("nav.signIn")}
+                </Button>
+              </>
+            )}
             <LanguageSwitcher className="text-sm" />
           </div>
         </div>

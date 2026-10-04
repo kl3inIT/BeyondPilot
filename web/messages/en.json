@@ -17,6 +17,12 @@
       "signIn": "Sign in",
       "getStarted": "Get started"
     },
+    "account": {
+      "open": "Account menu for {name}",
+      "operator": "Operator",
+      "signOut": "Sign out",
+      "signOutFailed": "We could not sign you out. Try again."
+    },
     "menu": {
       "open": "Open menu",
       "close": "Close menu",
