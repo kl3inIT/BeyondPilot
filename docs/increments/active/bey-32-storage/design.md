@@ -1,6 +1,6 @@
 # Storage: uploading and serving files
 
-Status: design for review, 4 October 2026; nothing is implemented yet ([plan](plan.md)). It is the third slice of the [Phase 1 domain model](../bey-22-phase-1-domain-model/design.md) and narrows that model's `storage` module to what the first two consumers need: images of a program, and the files of an application.
+Status: backend implemented on 4 October 2026; the web upload helper follows with the first screen that uploads ([plan](plan.md)). It is the third slice of the [Phase 1 domain model](../bey-22-phase-1-domain-model/design.md) and narrows that model's `storage` module to what the first two consumers need: images of a program, and the files of an application.
 
 ## What a person can do
 
@@ -40,9 +40,9 @@ The web application does the same three things whatever the object store is.
 
 | Step    | Request                                                                                            | Answer                                                                                                                                                                                             |
 | ------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Reserve | `POST /api/storage/uploads` with `purpose`, `fileName`, `mediaType`, `sizeBytes`                   | `201` with the file's `id` and a ticket: `method`, `url`, `headers`, `expiresAt`. `422` when the purpose refuses the media type or the size, `403` when the caller may not upload for that purpose |
+| Reserve | `POST /api/storage/uploads` with `purpose`, `fileName`, `mediaType`, `sizeBytes`                   | `201` with the file's `id` and a ticket: `method`, `url`, `headers`, `expiresAt`. `400` when the purpose refuses the media type or the size, `403` when the caller may not upload for that purpose |
 | Send    | The ticket's `method` to the ticket's `url`, with the ticket's `headers` and the bytes as the body | Whatever the address answers with a 2xx status                                                                                                                                                     |
-| Confirm | `POST /api/storage/uploads/{id}/confirm`                                                           | `200` with `id`, `fileName`, `mediaType`, `sizeBytes`. `409` when nothing was uploaded, `422` when the bytes are not what was announced                                                            |
+| Confirm | `POST /api/storage/uploads/{id}/confirm`                                                           | `200` with `id`, `fileName`, `mediaType`, `sizeBytes`. `409` when nothing was uploaded, `400` when the bytes are not what was announced                                                            |
 
 What the ticket points at is the only difference between the two object stores:
 
@@ -118,6 +118,6 @@ On AWS the bucket is private, blocks public access, and allows `PUT` and `GET` f
 
 ## Known limits
 
-- The presigned upload is tested against MinIO in a container, not against AWS; the first deployment checks it by hand, CORS included.
+- The presigned upload is tested against MinIO in a container (Chainguard's build, since MinIO no longer publishes an image), not against AWS; the first deployment checks it by hand, CORS included.
 - A file that is reserved and never confirmed stays until the cleanup of step 6 exists.
 - A redirect to S3 leaves the site's origin for the download only; the address expires and names nothing but the object.

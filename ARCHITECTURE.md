@@ -31,8 +31,9 @@ Every direct subpackage of `ai.genaifund.beyondpilot` is a closed Spring Modulit
 | `ai.genaifund.beyondpilot.config`       | The security filter chain, the error path and the OpenAPI configuration; depends on no module                                                                                                                             |
 | `ai.genaifund.beyondpilot.identity`     | Accounts, sign-in with Google and with an emailed code, the operator role; `AccountAdministration`, what operators do with accounts; `Actor` and `@CurrentActor` for other modules. Depends on `audit` and `notification` |
 | `ai.genaifund.beyondpilot.notification` | `EmailService`: the emails the application sends, over SMTP                                                                                                                                                               |
+| `ai.genaifund.beyondpilot.storage`      | `StorageService`: uploaded files and the object store behind them, a directory or an S3 bucket, chosen by configuration and reached through `ObjectStorageAdapterRegistry`. Depends on `identity`                         |
 
-No other business module exists. The error path in `config` is the application's only exception handling ([API errors](docs/conventions.md#api-errors)):
+No other business module exists. Files are uploaded in three requests (reserve, send, confirm); with S3 the browser sends the bytes straight to the bucket through a presigned address ([storage increment](docs/increments/active/bey-32-storage/design.md)). The error path in `config` is the application's only exception handling ([API errors](docs/conventions.md#api-errors)):
 
 - `RequestIdFilter` gives each request an identifier, returned in `X-Request-Id` and logged as `request_id`.
 - `ApiExceptionHandler` turns module failures and request validation into problems with a stable `code`, and keeps Spring MVC's own problems.
@@ -72,7 +73,7 @@ Sign-in is Spring Security inside the backend; there is no separate identity ser
 ## Data ownership and consistency
 
 - PostgreSQL 18.6 is the only data store, pinned to the same image for local Docker Compose and for Testcontainers.
-- Flyway owns the schema and Hibernate only validates it (`ddl-auto: validate`); `open-in-view` is off. Two migrations exist: `identity` owns the account, external-identity and sign-in-challenge tables and the tables of Spring Session; `audit` owns `audit_event`, which a trigger keeps append-only.
+- Flyway owns the schema and Hibernate only validates it (`ddl-auto: validate`); `open-in-view` is off. Three migrations exist: `identity` owns the account, external-identity and sign-in-challenge tables and the tables of Spring Session; `audit` owns `audit_event`, which a trigger keeps append-only. `storage` owns `storage_file`, the record of every uploaded file.
 - The rules for the first schema are in the [persistence guideline](docs/guidelines/persistence.md).
 
 ## Deployment and operations
