@@ -27,6 +27,9 @@ beyondpilot:
     google:
       client-id: ${BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID}
       client-secret: ${BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET}
+  storage:
+    # No default: a deployment says where its files are kept.
+    provider: ${BEYONDPILOT_STORAGE_PROVIDER}
   notification:
     from: ${BEYONDPILOT_MAIL_FROM}
 

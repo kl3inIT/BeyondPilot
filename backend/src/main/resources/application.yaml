@@ -56,6 +56,15 @@ beyondpilot:
     sign-in-code-lifetime: 15m
     # BEYONDPILOT_IDENTITY_OPERATOR_EMAILS lists the addresses that are operators from their first sign-in.
     # Google sign-in is on when BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID and _CLIENT_SECRET are set.
+  storage:
+    # `local` keeps files in a directory; `s3` keeps them in a bucket and the browser uploads straight to it.
+    provider: ${BEYONDPILOT_STORAGE_PROVIDER:local}
+    local:
+      directory: ${BEYONDPILOT_STORAGE_LOCAL_DIRECTORY:build/storage}
+    s3:
+      bucket: ${BEYONDPILOT_STORAGE_S3_BUCKET:}
+      region: ${BEYONDPILOT_STORAGE_S3_REGION:}
+      endpoint: ${BEYONDPILOT_STORAGE_S3_ENDPOINT:}
   notification:
     from: ${BEYONDPILOT_MAIL_FROM:BeyondPilot <no-reply@beyondpilot.localhost>}
 
