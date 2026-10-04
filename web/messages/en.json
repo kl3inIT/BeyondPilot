@@ -280,7 +280,8 @@
     "nav": {
       "label": "Admin navigation",
       "home": "Home",
-      "accounts": "Accounts"
+      "accounts": "Accounts",
+      "auditLog": "Audit log"
     },
     "toggleSidebar": "Toggle sidebar",
     "accounts": {
@@ -371,6 +372,75 @@
       "empty": {
         "title": "No account matches",
         "description": "No account matches this search and these filters.",
+        "clear": "Clear search and filters"
+      }
+    },
+    "auditLog": {
+      "metaTitle": "Audit log · BeyondPilot",
+      "title": "Audit log",
+      "lead": "Changes that operators and the server configuration made to accounts and roles, newest first.",
+      "search": "Search people or accounts",
+      "filters": {
+        "period": {
+          "label": "Period"
+        },
+        "action": {
+          "label": "Action",
+          "all": "All actions"
+        }
+      },
+      "period": {
+        "day": "Last 24 hours",
+        "week": "Last 7 days",
+        "month": "Last 30 days",
+        "all": "All time"
+      },
+      "action": {
+        "account": {
+          "disable": "Disabled an account",
+          "enable": "Enabled an account"
+        },
+        "operator": {
+          "grant": "Gave the operator role",
+          "withdraw": "Withdrew the operator role"
+        }
+      },
+      "activity": {
+        "account": {
+          "disable": "Disabled the account of <resource></resource>",
+          "enable": "Enabled the account of <resource></resource>"
+        },
+        "operator": {
+          "grant": "Gave the operator role to <resource></resource>",
+          "withdraw": "Withdrew the operator role from <resource></resource>"
+        }
+      },
+      "columns": {
+        "time": "Time",
+        "person": "Person",
+        "activity": "Activity"
+      },
+      "system": {
+        "name": "System",
+        "detail": "Server configuration"
+      },
+      "today": "Today, {time}",
+      "dayAndTime": "{day}, {time}",
+      "pagination": {
+        "label": "Pages of the audit log",
+        "previous": "Previous",
+        "next": "Next",
+        "goToPrevious": "Go to newer events",
+        "goToNext": "Go to older events"
+      },
+      "empty": {
+        "title": "{period, select, day {No events in the last 24 hours} week {No events in the last 7 days} month {No events in the last 30 days} other {No events yet}}",
+        "description": "Changes to accounts and roles appear here.",
+        "showAll": "Show all time"
+      },
+      "noMatch": {
+        "title": "No event matches",
+        "description": "{period, select, day {Nothing in the last 24 hours matches this search and this filter.} week {Nothing in the last 7 days matches this search and this filter.} month {Nothing in the last 30 days matches this search and this filter.} other {Nothing matches this search and this filter.}}",
         "clear": "Clear search and filters"
       }
     }

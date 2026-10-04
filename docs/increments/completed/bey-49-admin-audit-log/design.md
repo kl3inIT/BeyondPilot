@@ -1,6 +1,6 @@
 # BEY-49 — Admin: the audit log
 
-Status: designed on 5 October 2026; the screens are drawn in Figma (section `Admin — Audit log (draft for review)`) and wait for approval, the backend is built, the web screen is not ([plan](plan.md)). It is the reader of the record that [BEY-48](../../completed/bey-48-admin-accounts/design.md#record-of-sensitive-changes) started writing, and the second screen inside the admin frame. The research behind the screen is in [docs/research](../../../research/2026-10-05-admin-audit-log.md).
+Status: delivered on 5 October 2026 ([plan](plan.md)); the screens were approved in Figma the same day (section `Admin — Audit log`). It is the reader of the record that [BEY-48](../bey-48-admin-accounts/design.md#record-of-sensitive-changes) started writing, and the second screen inside the admin frame. The research behind the screen is in [docs/research](../../../research/2026-10-05-admin-audit-log.md).
 
 ## Domain story
 
@@ -52,7 +52,7 @@ Response `200`, `AuditEventListResponse`: `items`, `newer` and `older`.
 - A cursor that is not one, an unknown `action`, a `from` that is not an instant or a `q` over 100 characters is a `400` problem. When both cursors are given, `before` is used.
 - `action` is published as an enumeration in `openapi.yml`, generated from the catalog, so the web application's filter cannot offer an action the server does not know.
 
-**Paging is by cursor in both directions, not by page number.** The table only grows, the newest events are the ones read, and a page number would count every matching row and shift under the reader whenever an event is recorded. `V2` already carries the index `(occurred_at desc, id desc)` for it. Two cursors rather than one let the address alone say which page is shown, so the server can render any page without the browser remembering where it came from. This is the second paged list of the API and it differs from the first on purpose: the [account list](../../completed/bey-48-admin-accounts/design.md#api) is a small set a person jumps around in, and keeps `page` and `total`.
+**Paging is by cursor in both directions, not by page number.** The table only grows, the newest events are the ones read, and a page number would count every matching row and shift under the reader whenever an event is recorded. `V2` already carries the index `(occurred_at desc, id desc)` for it. Two cursors rather than one let the address alone say which page is shown, so the server can render any page without the browser remembering where it came from. This is the second paged list of the API and it differs from the first on purpose: the [account list](../bey-48-admin-accounts/design.md#api) is a small set a person jumps around in, and keeps `page` and `total`.
 
 ## Authorization
 
@@ -87,16 +87,16 @@ The web page calls `requireRole("operator")`; a signed-in person who is not an o
 - **Route** `src/app/[locale]/admin/audit-log/page.tsx`: `requireRole("operator")`, then the list read on the server from the address's parameters. The sidebar gains its third destination, Audit log, and the breadcrumb follows from the same list.
 - **Feature** `src/features/audit/`: the page, the toolbar, the search parameters and the server read, and the map from an action to its wording.
 - **Reading** follows the [list rules](../../../conventions.md#lists) the Accounts screen set: a Server Component reads by the address (`?period=&action=&q=&before=&after=`), nuqs writes it with `shallow: false`, the search waits 300 ms. A change of filter drops the cursor. The page turns `period` into `from` when it reads; the API knows instants, not presets.
-- **Columns:** Time, Person, Activity. The time reads as on the Accounts screen ("Today, 14:05"), with the full date and time to the second in a tooltip. The person is the `Person` composite, or "System" when the event has no actor. The activity is a sentence from the action, ending in the resource's label.
+- **Columns:** Time, Person, Activity. The time reads as on the Accounts screen ("Today, 14:05"), with the full date and time to the second in a tooltip. The person is the `Person` composite, which takes an icon in place of initials for "System", the actor of an event the configuration made. The activity is a sentence from the action, ending in the resource's label.
 - **A row is the whole event; nothing opens.** Decided on 5 October 2026 after the first drawing, which opened an event in a sheet as MemoryOS, Railway and Stripe do. Those are products for engineers. With the stored action name, the UTC time, the resource's type and the three identifiers taken out, because an operator can do nothing with them, the sheet said only what its row already says. A detail view arrives with the first action whose details do not fit a line. The API still returns `id`, `details` and `requestId` for a developer who traces a change.
-- **Footer:** the registry `pagination` with Previous and Next only, as links that carry `after` and `before`. `DataTableFooter` gains this form beside the numbered one; there is no count.
+- **Under the list:** the registry `pagination` with Previous and Next only, as links that carry `after` and `before`, in a new `DataTablePager` beside `DataTableFooter`; there is no count. A page that holds nothing, or a cursor that is not one, leads back to the newest events.
 - **Empty states:** no event in the period, and nothing matching the filters, each inside the table frame; the second offers to clear the filters.
 - **Below 768px** each event is a stacked row, as on the Accounts screen.
 - **Wording** for each action and each detail field lives in both message catalogs under `Admin.auditLog`. An action the web application has no wording for yet shows its stored name.
 
 ## Design system
 
-No new token, no new composite and no new Figma component. The `AdminSidebar` component gains the Audit log item.
+No new token and no new Figma component; `DataTablePager` joins the list composites. The `AdminSidebar` component gains the Audit log item.
 
 ## Not in this increment
 
