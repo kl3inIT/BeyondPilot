@@ -248,6 +248,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 - App screens (workspace, admin, review) are organised by business domain in flat feature folders, as in MemoryOS and Dub: `src/features/<domain>/` holds the domain's page components (`campaign-detail-page.tsx`), parts (`campaign-card.tsx`), query and mutation options (`<domain>-queries.ts`) and form schemas (`<domain>-schemas.ts`). A subfolder appears only when a domain grows too many files. A domain is named after the business concept and usually matches a backend module; it imports another domain only in the direction the backend modules depend on each other.
 - Public marketing pages are composed from sections, as in Launch UI and the Medusa storefront: `src/components/sections/<section>/` holds one section per folder (hero, logos, faq, cta, …), and the route's `page.tsx` stacks them. A section that shows live product data takes it through props from a feature component; sections never fetch.
 - `src/components/ui` holds shadcn registry primitives. `src/components/composites` holds product patterns used by at least two features; they never fetch data or check authority. `src/components/layout` holds headers, footers and navigation.
+- What every page shares on the client is mounted once in `src/components/layout/providers.tsx` under the root layout: the theme, the tooltip provider and the toaster. Tooltips use the provider's delay; a tooltip does not set its own. A provider only some pages need goes in the layout of those pages.
 - `src/components/` never imports from `src/features/` or `src/app/`, so it can later move into a shared package without changes.
 - `src/lib/api` holds the generated client and its configuration, `src/lib/auth` the server-only session helpers, `src/i18n` the locale routing, `src/styles/tokens.css` the design tokens, and `messages/` the translation catalogs.
 
@@ -274,8 +275,8 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 - `src/app/global-error.tsx` and an `error.tsx` per area show safe copy, Next's `digest` as a reference, and a retry action. Each area has a `not-found.tsx`; unknown paths under a locale render the localized not-found page through `[...rest]`.
 - API failures are read as RFC 9457 problems ([API errors](#api-errors)): branch on `status` or `code`, map `errors[].pointer` onto form fields, and show the `requestId` whenever a person is asked to report a problem.
 - Each segment that loads data has a `loading.tsx` with skeletons. Every data view designs its loading, empty and failure states.
-- Toasts use sonner through a helper that accepts message keys only.
-- Server rendering errors are logged as structured JSON through `onRequestError` in `instrumentation.ts`, without a third-party service.
+- Toasts use sonner; the one `Toaster` is mounted in `src/components/layout/providers.tsx`. They are raised through a helper that accepts message keys only, which is written with its first caller.
+- Server rendering errors are logged as structured JSON through `onRequestError` in `src/instrumentation.ts`, without a third-party service: `event` `web.render.failed`, the error's type, its `digest` (the reference the error screen shows) and the route pattern, never the error's text, the query string or headers.
 
 ### Design tokens and styling
 
