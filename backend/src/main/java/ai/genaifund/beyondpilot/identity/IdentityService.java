@@ -101,7 +101,7 @@ public class IdentityService {
 	public boolean isOperator(Actor actor) {
 		return accounts.findById(actor.accountId())
 			.filter(account -> !account.isDisabled())
-			.map(account -> account.getPlatformRole() == PlatformRole.OPERATOR)
+			.map(Account::isOperator)
 			.orElse(false);
 	}
 

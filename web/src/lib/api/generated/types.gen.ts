@@ -123,6 +123,60 @@ export type Problem = {
     type?: string;
 };
 
+/**
+ * The file a person is about to upload.
+ */
+export type ReserveUpload = {
+    /**
+     * The name of the file, kept to show and to download under.
+     */
+    fileName: string;
+    mediaType: string;
+    /**
+     * Why the file is uploaded; it fixes the allowed media types and the largest size.
+     */
+    purpose: 'program_image' | 'application_file';
+    /**
+     * The exact length of the file in bytes.
+     */
+    sizeBytes: number;
+};
+
+/**
+ * A file whose upload is confirmed.
+ */
+export type StoredFile = {
+    fileName: string;
+    id: string;
+    mediaType: string;
+    sizeBytes: number;
+};
+
+/**
+ * Permission to send the bytes of one file. Send them as the request says, then confirm.
+ */
+export type UploadTicket = {
+    /**
+     * When the permission ends.
+     */
+    expiresAt: string;
+    /**
+     * The headers the request must carry.
+     */
+    headers: {
+        [key: string]: string;
+    };
+    /**
+     * The file, pending until confirmed.
+     */
+    id: string;
+    method: string;
+    /**
+     * Where to send the bytes: an address of the object store, or a path of this application.
+     */
+    url: string;
+};
+
 export type ListAccountsData = {
     body?: never;
     path?: never;
@@ -349,3 +403,139 @@ export type GetMeResponses = {
 };
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type GetPublicFileData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/storage/files/{id}';
+};
+
+export type GetPublicFileErrors = {
+    /**
+     * No stored public file has this identifier.
+     */
+    404: Problem;
+};
+
+export type GetPublicFileError = GetPublicFileErrors[keyof GetPublicFileErrors];
+
+export type GetPublicFileResponses = {
+    /**
+     * The bytes of the file.
+     */
+    200: Blob | File;
+};
+
+export type GetPublicFileResponse = GetPublicFileResponses[keyof GetPublicFileResponses];
+
+export type ReserveUploadData = {
+    body: ReserveUpload;
+    path?: never;
+    query?: never;
+    url: '/api/storage/uploads';
+};
+
+export type ReserveUploadErrors = {
+    /**
+     * The purpose refuses this media type or this size.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller may not upload for this purpose.
+     */
+    403: Problem;
+};
+
+export type ReserveUploadError = ReserveUploadErrors[keyof ReserveUploadErrors];
+
+export type ReserveUploadResponses = {
+    /**
+     * The pending file and where to send its bytes.
+     */
+    201: UploadTicket;
+};
+
+export type ReserveUploadResponse = ReserveUploadResponses[keyof ReserveUploadResponses];
+
+export type ConfirmUploadData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/storage/uploads/{id}/confirm';
+};
+
+export type ConfirmUploadErrors = {
+    /**
+     * The uploaded bytes are not the announced file.
+     */
+    400: Problem;
+    /**
+     * The caller has no such upload.
+     */
+    404: Problem;
+    /**
+     * Nothing has been uploaded yet.
+     */
+    409: Problem;
+};
+
+export type ConfirmUploadError = ConfirmUploadErrors[keyof ConfirmUploadErrors];
+
+export type ConfirmUploadResponses = {
+    /**
+     * The stored file.
+     */
+    200: StoredFile;
+};
+
+export type ConfirmUploadResponse = ConfirmUploadResponses[keyof ConfirmUploadResponses];
+
+export type SendUploadContentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query: {
+        token: string;
+    };
+    url: '/api/storage/uploads/{id}/content';
+};
+
+export type SendUploadContentErrors = {
+    /**
+     * The body is not the announced length.
+     */
+    400: Problem;
+    /**
+     * The token is not valid or has been used.
+     */
+    403: Problem;
+    /**
+     * The caller has no such pending upload.
+     */
+    404: Problem;
+    /**
+     * The ticket has expired.
+     */
+    410: Problem;
+};
+
+export type SendUploadContentError = SendUploadContentErrors[keyof SendUploadContentErrors];
+
+export type SendUploadContentResponses = {
+    /**
+     * The bytes are written.
+     */
+    204: void;
+};
+
+export type SendUploadContentResponse = SendUploadContentResponses[keyof SendUploadContentResponses];

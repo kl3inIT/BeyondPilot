@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetMeData, GetMeErrors, GetMeResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
+import type { ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetMeData, GetMeErrors, GetMeResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -93,5 +93,61 @@ export const getMe = <ThrowOnError extends boolean = true>(options?: Options<Get
             type: 'apiKey'
         }],
     url: '/api/identity/me',
+    ...options
+});
+
+/**
+ * A public file
+ *
+ * The bytes of a file anyone may read, such as an image of a program, or a redirect to where the object store serves them. No session is needed.
+ */
+export const getPublicFile = <ThrowOnError extends boolean = true>(options: Options<GetPublicFileData, ThrowOnError>): RequestResult<GetPublicFileResponses, GetPublicFileErrors, ThrowOnError> => (options.client ?? client).get<GetPublicFileResponses, GetPublicFileErrors, ThrowOnError>({ url: '/api/storage/files/{id}', ...options });
+
+/**
+ * Reserve an upload
+ *
+ * The first of three steps: reserve, send the bytes as the ticket says, confirm.
+ */
+export const reserveUpload = <ThrowOnError extends boolean = true>(options: Options<ReserveUploadData, ThrowOnError>): RequestResult<ReserveUploadResponses, ReserveUploadErrors, ThrowOnError> => (options.client ?? client).post<ReserveUploadResponses, ReserveUploadErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/storage/uploads',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Confirm an upload
+ *
+ * Checks that the bytes arrived and are the announced file. Only then can the file be used.
+ */
+export const confirmUpload = <ThrowOnError extends boolean = true>(options: Options<ConfirmUploadData, ThrowOnError>): RequestResult<ConfirmUploadResponses, ConfirmUploadErrors, ThrowOnError> => (options.client ?? client).post<ConfirmUploadResponses, ConfirmUploadErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/storage/uploads/{id}/confirm',
+    ...options
+});
+
+/**
+ * Send the bytes of an upload
+ *
+ * The address a ticket names when the object store receives uploads through this application. The body is the file; the token works once.
+ */
+export const sendUploadContent = <ThrowOnError extends boolean = true>(options: Options<SendUploadContentData, ThrowOnError>): RequestResult<SendUploadContentResponses, SendUploadContentErrors, ThrowOnError> => (options.client ?? client).put<SendUploadContentResponses, SendUploadContentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/storage/uploads/{id}/content',
     ...options
 });
