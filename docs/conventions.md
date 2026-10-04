@@ -255,6 +255,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 ### Rendering, data and auth
 
 - Components are Server Components by default. `"use client"` goes on the smallest leaf that needs state, effects or events; server data reaches it as props.
+- Every call to an address in `openapi.yml` goes through the generated SDK in `src/lib/api/generated`, configured once in `src/lib/api/client.ts`: the browser calls its own origin, the server calls `BEYONDPILOT_API_ORIGIN`, a request that changes state gets the CSRF header, and a request that fails rejects with `ApiError`. `ApiError` carries `status` (missing when no answer came), `code`, `requestId` and `violations`, the problem's `errors`. Addresses outside the contract (`/ott/generate`, `/login/ott`, `/logout`) are called by hand with the same `csrfHeader`.
 - Public pages read on the server through `src/lib/api`, forwarding the Spring session cookie. They may use time-based or tagged revalidation; authenticated reads never go through the shared data cache.
 - Writes go from the browser straight to Spring with `X-BeyondPilot-CSRF: 1`. Server Actions are not used for writes, so authorization and CSRF protection live in one place.
 - Every page under `workspace/` and `admin/` checks the current user on the server, through `requireAccount` or `requireRole` in `src/lib/auth/session.ts`: a visitor is redirected to sign in with the path to return to, and an account of the wrong role gets the not-found page. The check is in the page, not the layout, because Next.js does not render a layout again when a person moves between its pages. No `loading.tsx` or other Suspense boundary sits above the check, so the answer is a real 307 or 404 rather than a streamed 200. A layout of these areas draws its frame only for an account its pages admit and otherwise returns the page alone, so a refusal carries no frame. `getCurrentAccount` asks `/api/identity/me` once per request. `src/proxy.ts` handles locale routing only.
@@ -299,6 +300,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 
 ### Quality gates
 
-- `pnpm check` runs ESLint (Next.js core web vitals, TypeScript, React Hooks including the React Compiler rules, and the `@shadcn/lint` rules), Prettier with Tailwind class sorting, `tsc`, the message-catalog check and knip.
+- `pnpm check` runs ESLint (Next.js core web vitals, TypeScript, React Hooks including the React Compiler rules, and the `@shadcn/lint` rules), Prettier with Tailwind class sorting, `tsc`, the unit tests, the message-catalog check and knip.
+- Unit tests are Vitest files named `*.test.ts` next to what they test, run by `pnpm test:unit` in Node. They cover what a browser test reaches poorly: a function with many edge inputs, and the API client against stood-in answers.
 - `pnpm test:e2e` runs Playwright on desktop and mobile Chrome against the production build. Every spec runs axe and fails on any serious or critical WCAG 2.2 A/AA finding.
 - Baseline security headers are set in `next.config.ts`. A strict Content Security Policy with nonces is a separate decision.

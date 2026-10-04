@@ -1,5 +1,7 @@
-/** Every request that changes state carries this header (docs/conventions.md › Published API contracts). */
-const csrfHeader = { "X-BeyondPilot-CSRF": "1" };
+import { csrfHeader } from "@/lib/api/client";
+
+// Asking for a code and typing one are Spring Security's own addresses, outside the API contract,
+// so they are called by hand here and answer with a status, not a problem.
 
 type CodeRequestOutcome =
   | { kind: "sent" }
