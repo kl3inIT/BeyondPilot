@@ -2,15 +2,15 @@
 
 Design: [design.md](design.md). Tracked in Linear as BEY-30.
 
-| # | Step | State |
-| --- | --- | --- |
-| 1 | Backend: the `identity` and `notification` modules, the security filter chain, the migration, `GET /api/identity/me`, the API contract and the generated web types | Done, 3 October 2026 |
-| 2 | Web: the Sign in and Check your email pages from the Figma screens approved on 4 October 2026 | Done, 4 October 2026 |
-| 2a | The emailed link replaced by a six-digit code, backend and web, after a review found that a forwarded link signs its reader into the sender's account | Done, 4 October 2026 |
-| 2b | Web: the signed-in state of the header and sign out, once drawn and approved; the program line of "Sign in to apply", once the `program` module exists | Open |
-| 2c | Web: `requireAccount` and `requireRole`, and the `/admin` page only an operator opens (BEY-44); the admin frame around it, the stock shadcn sidebar that collapses to icons, with the account menu of the header at its foot | Done, 4 October 2026 |
-| 3 | Operator management: Figma screen, then the API and the screen to grant and withdraw the operator role | After step 2 |
-| 4 | A Google OAuth client and a mail provider for the development environment; a hand check of the Google round trip | Needs the credentials |
+| #   | Step                                                                                                                                                                                                                         | State                 |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| 1   | Backend: the `identity` and `notification` modules, the security filter chain, the migration, `GET /api/identity/me`, the API contract and the generated web types                                                           | Done, 3 October 2026  |
+| 2   | Web: the Sign in and Check your email pages from the Figma screens approved on 4 October 2026                                                                                                                                | Done, 4 October 2026  |
+| 2a  | The emailed link replaced by a six-digit code, backend and web, after a review found that a forwarded link signs its reader into the sender's account                                                                        | Done, 4 October 2026  |
+| 2b  | Web: the signed-in state of the header and sign out, once drawn and approved; the program line of "Sign in to apply", once the `program` module exists                                                                       | Open                  |
+| 2c  | Web: `requireAccount` and `requireRole`, and the `/admin` page only an operator opens (BEY-44); the admin frame around it, the stock shadcn sidebar that collapses to icons, with the account menu of the header at its foot | Done, 4 October 2026  |
+| 3   | Operator management: granting and withdrawing the operator role, with disabling and enabling an account, as the Accounts screen ([BEY-48](../../completed/bey-48-admin-accounts/design.md))                                  | Done, 4 October 2026  |
+| 4   | A Google OAuth client and a mail provider for the development environment; a hand check of the Google round trip                                                                                                             | Needs the credentials |
 
 ## Verification
 
@@ -21,8 +21,8 @@ Design: [design.md](design.md). Tracked in Linear as BEY-30.
 
 ## Needed from outside the code
 
-| What | For | Where it is managed |
-| --- | --- | --- |
-| Google OAuth client (id and secret) | Google sign-in on every environment | Environment variables `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID` and `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET`; never in Git |
-| SMTP account of a mail provider | Sign-in codes on deployed environments | `BEYONDPILOT_MAIL_*`; never in Git |
-| The list of operator addresses | The first operators | `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS` |
+| What                                | For                                    | Where it is managed                                                                                                         |
+| ----------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Google OAuth client (id and secret) | Google sign-in on every environment    | Environment variables `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID` and `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET`; never in Git |
+| SMTP account of a mail provider     | Sign-in codes on deployed environments | `BEYONDPILOT_MAIL_*`; never in Git                                                                                          |
+| The list of operator addresses      | The first operators                    | `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS`                                                                                      |

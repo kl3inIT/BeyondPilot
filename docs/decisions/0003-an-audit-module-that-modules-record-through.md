@@ -6,7 +6,7 @@
 
 ## Context
 
-The brief asks the platform to "keep appropriate records of sensitive changes and proposal access" (§7.10). The first such changes arrive with the operators' Accounts screen ([BEY-48](../increments/active/bey-48-admin-accounts/design.md)): disabling and enabling an account, granting and withdrawing the operator role. Later modules add their own: who opened and decided a proposal, who published a program, who approved a listing.
+The brief asks the platform to "keep appropriate records of sensitive changes and proposal access" (§7.10). The first such changes arrive with the operators' Accounts screen ([BEY-48](../increments/completed/bey-48-admin-accounts/design.md)): disabling and enabling an account, granting and withdrawing the operator role. Later modules add their own: who opened and decided a proposal, who published a program, who approved a listing.
 
 Operators are the readers of this record, and it has to hold from the first change on; a record that starts later has a hole no one can fill. Log lines alone do not serve: an operator cannot read the server's logs, and logs may not carry the names and addresses that make an event readable ([logging](../conventions.md#logging)).
 
