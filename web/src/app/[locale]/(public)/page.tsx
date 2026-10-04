@@ -6,7 +6,7 @@ import { ProgramsEvents } from "@/components/sections/events/programs-events";
 import { Faq } from "@/components/sections/faq/faq";
 import { Founders } from "@/components/sections/founders/founders";
 import { Hero } from "@/components/sections/hero/hero";
-import { PartnerLogos } from "@/components/sections/logos/partner-logos";
+import { PartnerNetwork } from "@/components/sections/logos/partner-network";
 
 export default function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = use(params);
@@ -17,7 +17,7 @@ export default function HomePage({ params }: PageProps<"/[locale]">) {
       <Hero />
       <ProgramsEvents />
       <Directory />
-      <PartnerLogos />
+      <PartnerNetwork />
       <Founders />
       <Faq />
     </>

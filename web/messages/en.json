@@ -167,8 +167,30 @@
       "talentLink": "Create a talent profile",
       "talentAlt": "A full audience of builders at Agentic AI Build Week 2026"
     },
-    "logos": {
-      "title": "Backed by the GenAI Fund partner network"
+    "network": {
+      "title": "The network behind every program",
+      "description": "Enterprises, technology companies and public institutions that took part in GenAI Fund programs in 2025 and 2026.",
+      "roles": {
+        "enterprises": {
+          "title": "Enterprises",
+          "description": "They set the problems and run the pilots"
+        },
+        "technology": {
+          "title": "Technology partners",
+          "description": "They bring the models, the cloud and the credits"
+        },
+        "government": {
+          "title": "Government and institutions",
+          "description": "They open doors across the region"
+        },
+        "investors": {
+          "title": "Investors and community",
+          "description": "They back the builders"
+        },
+        "press": {
+          "title": "In the press"
+        }
+      }
     },
     "founders": {
       "title": "Built with founders from the GenAI Fund network",

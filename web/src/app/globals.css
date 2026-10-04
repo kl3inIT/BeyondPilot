@@ -93,8 +93,6 @@
   /* After their entrance, the hero's floating cards rise and settle once (Figma Motion). */
   --animate-bob: bob 3.2s ease-in-out var(--tw-animation-delay, 0s) 1 both;
   --animate-bob-deep: bob-deep 3.8s ease-in-out var(--tw-animation-delay, 0s) 1 both;
-  /* Partner logos drift left; the track holds the list twice, so -50% loops seamlessly. */
-  --animate-marquee: marquee 34s linear infinite;
 
   @keyframes bob {
     50% {
@@ -104,11 +102,6 @@
   @keyframes bob-deep {
     50% {
       translate: 0 -0.5rem;
-    }
-  }
-  @keyframes marquee {
-    to {
-      translate: -50% 0;
     }
   }
 }

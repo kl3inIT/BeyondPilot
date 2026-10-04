@@ -167,8 +167,30 @@
       "talentLink": "Tạo hồ sơ nhân lực",
       "talentAlt": "Khán phòng kín chỗ tại Agentic AI Build Week 2026"
     },
-    "logos": {
-      "title": "Đồng hành cùng mạng lưới đối tác của GenAI Fund"
+    "network": {
+      "title": "Mạng lưới đứng sau mỗi chương trình",
+      "description": "Doanh nghiệp, công ty công nghệ và cơ quan nhà nước đã tham gia các chương trình của GenAI Fund trong năm 2025 và 2026.",
+      "roles": {
+        "enterprises": {
+          "title": "Doanh nghiệp",
+          "description": "Đặt bài toán và chạy thử nghiệm"
+        },
+        "technology": {
+          "title": "Đối tác công nghệ",
+          "description": "Mang đến mô hình, hạ tầng đám mây và tín dụng sử dụng"
+        },
+        "government": {
+          "title": "Cơ quan nhà nước và tổ chức",
+          "description": "Mở cửa vào thị trường trong khu vực"
+        },
+        "investors": {
+          "title": "Nhà đầu tư và cộng đồng",
+          "description": "Đồng hành cùng đội xây dựng sản phẩm"
+        },
+        "press": {
+          "title": "Báo chí"
+        }
+      }
     },
     "founders": {
       "title": "Đồng hành cùng các founder trong mạng lưới GenAI Fund",
