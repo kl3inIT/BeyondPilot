@@ -79,7 +79,8 @@ test.describe("admin", () => {
     // The choice is read on the server, so the page comes back collapsed rather than snapping shut.
     await page.reload();
     await expect(sidebar).toHaveAttribute("data-state", "collapsed");
-    await expect(home).toBeVisible();
+    await home.hover();
+    await expect(page.locator('[data-slot="tooltip-content"]')).toHaveText("Home");
     await expectNoSeriousA11yViolations(page);
   });
 
