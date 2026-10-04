@@ -281,7 +281,7 @@ Cleaning rules:
 - **Programs are entered, not seeded:** an operator creates and edits programs on screen, so `program` follows `identity` and `storage`.
 - **Program page content:** `program_section` holds the page's own presentation as ordered blocks (`position`, `kind`, `title`, `lead`, `content jsonb`) with four or five kinds; timeline, people, partners and events stay tables. It replaces `program.body`. A program page is one of three kinds: composed from blocks (the default), a hand-coded page in the web application for a program that needs it, or a redirect to an external landing page when `external_url` is set.
 - **Program partners** carry their own name and logo for now; the link to an organization is added when `organization` exists.
-- **Joining an organization by email domain:** an email on an organization's verified domain joins at once as a plain member, as on v1 and on comparable products; an owner can switch this off, after which joining is a request. Public mail domains never count. The first person with an email on the website domain of an unclaimed organization becomes its owner. This answers question 2 below.
+- **Joining an organization by email domain:** an email on an organization's verified domain joins at once as a plain member, as on v1 and on comparable products; an owner can switch this off, after which joining is a request. Public mail domains never count. The first person with an email on the website domain of an unclaimed organization becomes its owner. This closes the open question on joining by email domain.
 
 ## Open questions
 
@@ -292,10 +292,9 @@ v1 behavior and Kai's prototype are references from users of the product; the mo
 - Automatic outreach is Phase 2. Whether web research is in the 16 October scope is tracked in BEY-23.
 - Messaging, use case voting and anonymous use cases are tracked in BEY-24; only the `anonymous` flag is modeled.
 
-Still open, to ask GenAI Fund (BEY-25). The model supports either answer, so neither blocks implementation:
+Still open, to ask GenAI Fund (BEY-25). The model supports either answer, so it does not block implementation:
 
 1. **Offers:** GenAI Fund probably creates them; the alternative is that providers post offers and GenAI Fund approves them. Claiming is either a code or link handed out at once, or a request the provider accepts (`solution_offer.claim_method`).
-2. **Joining an organization by email domain:** a person signing in with an email on an organization's verified domain either becomes a member at once (`organization_domain.auto_join`) or sends a join request that an owner approves. Until answered, join requests are the default. Claiming an _unclaimed_ organization with an email on its website's domain counts as proof of ownership.
 
 ## Verification
 

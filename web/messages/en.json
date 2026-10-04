@@ -221,7 +221,7 @@
     "sendFailedTitle": "We couldn't send the email",
     "sendFailedBody": "Nothing was sent to {email}. Try again in a moment.",
     "googleFailedTitle": "Google sign-in did not finish",
-    "googleFailedBody": "Try again, or get a sign-in link by email instead.",
+    "googleFailedBody": "Try again, or get a sign-in code by email instead.",
     "sent": {
       "title": "Check your email",
       "enterCode": "Enter the 6-digit code we sent to",

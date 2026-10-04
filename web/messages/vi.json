@@ -221,7 +221,7 @@
     "sendFailedTitle": "Chưa gửi được email",
     "sendFailedBody": "Chưa có gì được gửi tới {email}. Bạn thử lại sau ít phút.",
     "googleFailedTitle": "Đăng nhập Google chưa hoàn tất",
-    "googleFailedBody": "Bạn thử lại, hoặc nhận link đăng nhập qua email.",
+    "googleFailedBody": "Bạn thử lại, hoặc nhận mã đăng nhập qua email.",
     "sent": {
       "title": "Kiểm tra email của bạn",
       "enterCode": "Nhập mã 6 số chúng tôi đã gửi tới",
