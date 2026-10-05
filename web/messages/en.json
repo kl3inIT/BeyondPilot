@@ -378,7 +378,7 @@
     "auditLog": {
       "metaTitle": "Audit log · BeyondPilot",
       "title": "Audit log",
-      "lead": "Changes that operators and the server configuration made to accounts and roles, newest first.",
+      "lead": "Changes that operators and the server configuration made to accounts, roles and programs, newest first.",
       "search": "Search people or accounts",
       "filters": {
         "period": {
@@ -403,6 +403,12 @@
         "operator": {
           "grant": "Gave the operator role",
           "withdraw": "Withdrew the operator role"
+        },
+        "program": {
+          "create": "Created a program",
+          "update": "Saved a program",
+          "publish": "Published a program",
+          "unpublish": "Unpublished a program"
         }
       },
       "activity": {
@@ -413,6 +419,12 @@
         "operator": {
           "grant": "Gave the operator role to <resource></resource>",
           "withdraw": "Withdrew the operator role from <resource></resource>"
+        },
+        "program": {
+          "create": "Created the program <resource></resource>",
+          "update": "Saved the program <resource></resource>",
+          "publish": "Published the program <resource></resource>",
+          "unpublish": "Unpublished the program <resource></resource>"
         }
       },
       "columns": {
@@ -435,7 +447,7 @@
       },
       "empty": {
         "title": "{period, select, day {No events in the last 24 hours} week {No events in the last 7 days} month {No events in the last 30 days} other {No events yet}}",
-        "description": "Changes to accounts and roles appear here.",
+        "description": "Changes to accounts, roles and programs appear here.",
         "showAll": "Show all time"
       },
       "noMatch": {

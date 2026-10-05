@@ -11,10 +11,14 @@ tags:
   name: Audit
 - description: The accounts operators manage.
   name: Accounts
+- description: "The programs GenAI Fund runs, as the public site shows them."
+  name: Programs
 - description: Who is signed in.
   name: Identity
 - description: Uploading and reading files.
   name: Storage
+- description: The programs operators create and edit.
+  name: Program administration
 paths:
   /api/audit/events:
     get:
@@ -42,6 +46,10 @@ paths:
           - account.enable
           - operator.grant
           - operator.withdraw
+          - program.create
+          - program.update
+          - program.publish
+          - program.unpublish
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
         in: query
@@ -359,6 +367,331 @@ paths:
       summary: The signed-in account
       tags:
       - Identity
+  /api/program/admin/programs:
+    get:
+      operationId: listAdminPrograms
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminProgramList"
+          description: Every program in any status.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "Every program, the newest first"
+      tags:
+      - Program administration
+    post:
+      operationId: createProgram
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProgram"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminProgram"
+          description: The draft.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Another program already has this address.
+      security:
+      - session: []
+      summary: Create a program as a draft
+      tags:
+      - Program administration
+  /api/program/admin/programs/{id}:
+    get:
+      operationId: getAdminProgram
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminProgram"
+          description: The program.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program.
+      security:
+      - session: []
+      summary: One program as an operator edits it
+      tags:
+      - Program administration
+    put:
+      operationId: saveProgram
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveProgram"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminProgram"
+          description: "The program as saved, with its new version."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, dates are out of order, or the cover\
+            \ is not a stored image of the caller."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The program changed since it was read, or its address is taken\
+            \ or can no longer change."
+      security:
+      - session: []
+      summary: "Save a program with its application window, key dates and events"
+      tags:
+      - Program administration
+  /api/program/admin/programs/{id}/publish:
+    post:
+      operationId: publishProgram
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The program is published. Its address is fixed from now on.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The program still lacks what its publishIssues list; nothing
+            changed.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program.
+      security:
+      - session: []
+      summary: Put a program on the public site
+      tags:
+      - Program administration
+  /api/program/admin/programs/{id}/unpublish:
+    post:
+      operationId: unpublishProgram
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The program is a draft again; it keeps its address.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program.
+      security:
+      - session: []
+      summary: Take a program off the public site
+      tags:
+      - Program administration
+  /api/program/programs:
+    get:
+      operationId: listPrograms
+      parameters:
+      - description: Only programs in this phase today.
+        in: query
+        name: phase
+        required: false
+        schema:
+          type: string
+          enum:
+          - upcoming
+          - open
+          - running
+          - done
+          pattern: upcoming|open|running|done
+      - description: Only programs of this type.
+        in: query
+        name: type
+        required: false
+        schema:
+          type: string
+          enum:
+          - enterprise_challenge
+          - open_innovation_call
+          - accelerator
+          - hackathon
+          - buildathon
+          - grant
+          - venture_building
+          - pitch_competition
+          - event_series
+          - event
+          pattern: enterprise_challenge|open_innovation_call|accelerator|hackathon|buildathon|grant|venture_building|pitch_competition|event_series|event
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgramList"
+          description: The programs the parameters select.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+      summary: "The published programs, the latest to start first"
+      tags:
+      - Programs
+  /api/program/programs/{slug}:
+    get:
+      description: "A published program, or a draft when an operator previews it."
+      operationId: getProgram
+      parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Program"
+          description: The program.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No program is published at this address.
+      summary: A program's public page
+      tags:
+      - Programs
   /api/storage/files/{id}:
     get:
       description: "The bytes of a file anyone may read, such as an image of a program,\
@@ -596,6 +929,195 @@ components:
       - id
       - role
       - status
+    AdminProgram:
+      type: object
+      description: "A program as an operator edits it, in any status."
+      properties:
+        about:
+          type:
+          - string
+          - "null"
+          description: The text of the standard page.
+        applications:
+          $ref: "#/components/schemas/ProgramApplications"
+          description: Null for a program that takes no applications here.
+        coverFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The cover, read at the public address of stored files."
+        createdAt:
+          type: string
+          format: date-time
+        endsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgramEvent"
+        externalUrl:
+          type:
+          - string
+          - "null"
+          format: uri
+        id:
+          type: string
+          format: uuid
+        keyDates:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgramKeyDate"
+        name:
+          type: string
+        pageKind:
+          type: string
+          description: "`standard` is built from these fields, `custom` is written\
+            \ in the web application for this address, `external` links to `externalUrl`."
+          enum:
+          - standard
+          - custom
+          - external
+        partnerName:
+          type:
+          - string
+          - "null"
+          description: The organization the program is run with.
+        publishIssues:
+          type: array
+          description: "What the program still lacks before it can be published, in\
+            \ the order the Settings screen shows its fields. Empty when it can be\
+            \ published."
+          items:
+            type: string
+            enum:
+            - summary
+            - cover
+            - dates
+        slug:
+          type: string
+          description: The address under /programs.
+        slugFixed:
+          type: boolean
+          description: "The program has been published at least once, so its address\
+            \ cannot change."
+        startsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        status:
+          type: string
+          description: Only a published program is public.
+          enum:
+          - draft
+          - published
+        summary:
+          type:
+          - string
+          - "null"
+          description: "One or two sentences, shown on the list."
+        type:
+          type: string
+          enum:
+          - enterprise_challenge
+          - open_innovation_call
+          - accelerator
+          - hackathon
+          - buildathon
+          - grant
+          - venture_building
+          - pitch_competition
+          - event_series
+          - event
+        updatedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+          description: "Sent back with a save, which is refused when someone else\
+            \ saved in the meantime."
+      required:
+      - createdAt
+      - events
+      - id
+      - keyDates
+      - name
+      - pageKind
+      - publishIssues
+      - slug
+      - slugFixed
+      - status
+      - type
+      - updatedAt
+      - version
+    AdminProgramList:
+      type: object
+      description: "Every program, the newest first."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminProgramSummary"
+      required:
+      - items
+    AdminProgramSummary:
+      type: object
+      description: One program in the operators' list.
+      properties:
+        endsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        partnerName:
+          type:
+          - string
+          - "null"
+        slug:
+          type: string
+        startsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        status:
+          type: string
+          enum:
+          - draft
+          - published
+        type:
+          type: string
+          enum:
+          - enterprise_challenge
+          - open_innovation_call
+          - accelerator
+          - hackathon
+          - buildathon
+          - grant
+          - venture_building
+          - pitch_competition
+          - event_series
+          - event
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - name
+      - slug
+      - status
+      - type
+      - updatedAt
     AuditEvent:
       type: object
       description: "One recorded change: who did what to what, and when."
@@ -607,6 +1129,10 @@ components:
           - account.enable
           - operator.grant
           - operator.withdraw
+          - program.create
+          - program.update
+          - program.publish
+          - program.unpublish
         actor:
           type:
           - object
@@ -689,6 +1215,40 @@ components:
       required:
       - id
       - label
+      - type
+    CreateProgram:
+      type: object
+      description: What a program cannot do without. It is created as a draft.
+      properties:
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+        slug:
+          type: string
+          description: "The address under /programs: lowercase letters, digits and\
+            \ single hyphens."
+          example: insurance-ai-tasco
+          maxLength: 60
+          minLength: 3
+          pattern: "[a-z0-9]+(-[a-z0-9]+)*"
+        type:
+          type: string
+          enum:
+          - enterprise_challenge
+          - open_innovation_call
+          - accelerator
+          - hackathon
+          - buildathon
+          - grant
+          - venture_building
+          - pitch_competition
+          - event_series
+          - event
+          pattern: enterprise_challenge|open_innovation_call|accelerator|hackathon|buildathon|grant|venture_building|pitch_competition|event_series|event
+      required:
+      - name
+      - slug
       - type
     Me:
       type: object
@@ -785,6 +1345,306 @@ components:
       - requestId
       - status
       - title
+    Program:
+      type: object
+      description: A program as its public page shows it.
+      properties:
+        about:
+          type:
+          - string
+          - "null"
+          description: The text of the standard page.
+        applications:
+          $ref: "#/components/schemas/ProgramApplications"
+          description: "Null for a program that takes no applications here. Its opening,\
+            \ its closing and the day outcomes are due belong in the timeline beside\
+            \ the key dates."
+        coverFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The cover, read at the public address of stored files."
+        endsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        events:
+          type: array
+          description: In the order the operator gave.
+          items:
+            $ref: "#/components/schemas/ProgramEvent"
+        externalUrl:
+          type:
+          - string
+          - "null"
+          format: uri
+        keyDates:
+          type: array
+          description: In the order the operator gave.
+          items:
+            $ref: "#/components/schemas/ProgramKeyDate"
+        name:
+          type: string
+        pageKind:
+          type: string
+          description: "`standard` is built from these fields, `custom` is written\
+            \ in the web application for this address, `external` lives at `externalUrl`."
+          enum:
+          - standard
+          - custom
+          - external
+        partnerName:
+          type:
+          - string
+          - "null"
+        phase:
+          type: string
+          description: "Where the program stands now, worked out from its dates."
+          enum:
+          - upcoming
+          - open
+          - running
+          - done
+        slug:
+          type: string
+          description: The address under /programs.
+        startsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        status:
+          type: string
+          description: '`draft` only when an operator previews a program that is not
+            public.'
+          enum:
+          - draft
+          - published
+        summary:
+          type:
+          - string
+          - "null"
+        type:
+          type: string
+          enum:
+          - enterprise_challenge
+          - open_innovation_call
+          - accelerator
+          - hackathon
+          - buildathon
+          - grant
+          - venture_building
+          - pitch_competition
+          - event_series
+          - event
+      required:
+      - events
+      - keyDates
+      - name
+      - pageKind
+      - phase
+      - slug
+      - status
+      - type
+    ProgramApplications:
+      type: object
+      description: When and how a program takes applications here.
+      properties:
+        allowUpdatesUntilClose:
+          type: boolean
+          description: Whether an applicant may change a submitted application until
+            the deadline.
+        closesAt:
+          type: string
+          format: date-time
+          description: The deadline; later than `opensAt`.
+        opensAt:
+          type: string
+          format: date-time
+        outcomesDueOn:
+          type:
+          - string
+          - "null"
+          format: date
+          description: The day applicants hear the outcome; not before the deadline.
+        shortlistSize:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: How many applications go on to the next round.
+          exclusiveMinimum: 0
+      required:
+      - allowUpdatesUntilClose
+      - closesAt
+      - opensAt
+    ProgramEvent:
+      type: object
+      description: A session of a program that people register for somewhere else.
+      properties:
+        city:
+          type:
+          - string
+          - "null"
+          maxLength: 80
+          minLength: 0
+        country:
+          type:
+          - string
+          - "null"
+          maxLength: 80
+          minLength: 0
+        endsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: Not before `startsAt`.
+        online:
+          type: boolean
+        registrationUrl:
+          type:
+          - string
+          - "null"
+          format: uri
+          description: "Where people register, for example on Luma."
+          maxLength: 2000
+          minLength: 0
+          pattern: https?://\S+
+        startsAt:
+          type: string
+          format: date-time
+        title:
+          type: string
+          maxLength: 160
+          minLength: 0
+      required:
+      - online
+      - startsAt
+      - title
+    ProgramKeyDate:
+      type: object
+      description: A dated step of a program that an applicant plans around.
+      properties:
+        allDay:
+          type: boolean
+          description: "The step is a day, not a moment; it is shown without a time."
+        endsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: Not before `startsAt`.
+        note:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+        startsAt:
+          type: string
+          format: date-time
+        title:
+          type: string
+          maxLength: 160
+          minLength: 0
+      required:
+      - allDay
+      - startsAt
+      - title
+    ProgramList:
+      type: object
+      description: "The published programs, the latest to start first."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgramSummary"
+      required:
+      - items
+    ProgramSummary:
+      type: object
+      description: A published program as the public list shows it.
+      properties:
+        applications:
+          $ref: "#/components/schemas/ProgramApplications"
+          description: Null for a program that takes no applications here.
+        coverFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The cover, read at the public address of stored files."
+        endsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        externalUrl:
+          type:
+          - string
+          - "null"
+          format: uri
+        name:
+          type: string
+        pageKind:
+          type: string
+          description: '`external` links to `externalUrl` instead of a page here.'
+          enum:
+          - standard
+          - custom
+          - external
+        partnerName:
+          type:
+          - string
+          - "null"
+        phase:
+          type: string
+          description: "Where the program stands now, worked out from its dates."
+          enum:
+          - upcoming
+          - open
+          - running
+          - done
+        slug:
+          type: string
+          description: The address under /programs.
+        startsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        summary:
+          type:
+          - string
+          - "null"
+        type:
+          type: string
+          enum:
+          - enterprise_challenge
+          - open_innovation_call
+          - accelerator
+          - hackathon
+          - buildathon
+          - grant
+          - venture_building
+          - pitch_competition
+          - event_series
+          - event
+        upcomingEvents:
+          type: array
+          description: "Its events still to come, soonest first, at most three."
+          items:
+            $ref: "#/components/schemas/ProgramEvent"
+      required:
+      - name
+      - pageKind
+      - phase
+      - slug
+      - type
+      - upcomingEvents
     ReserveUpload:
       type: object
       description: The file a person is about to upload.
@@ -816,6 +1676,116 @@ components:
       - mediaType
       - purpose
       - sizeBytes
+    SaveProgram:
+      type: object
+      description: "A program as the Settings screen holds it. Everything is saved\
+        \ together, and the lists are replaced as sent."
+      properties:
+        about:
+          type:
+          - string
+          - "null"
+          maxLength: 20000
+          minLength: 0
+        applications:
+          $ref: "#/components/schemas/ProgramApplications"
+          description: Null for a program that takes no applications here.
+        coverFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "A stored `program_image` the caller uploaded, or the cover\
+            \ the program already has. Null removes the cover."
+        endsOn:
+          type:
+          - string
+          - "null"
+          format: date
+          description: Not before `startsOn`.
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgramEvent"
+          maxItems: 30
+          minItems: 0
+        externalUrl:
+          type:
+          - string
+          - "null"
+          format: uri
+          description: Needed when `pageKind` is `external`.
+          maxLength: 2000
+          minLength: 0
+          pattern: https?://\S+
+        keyDates:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgramKeyDate"
+          maxItems: 30
+          minItems: 0
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+        pageKind:
+          type: string
+          enum:
+          - standard
+          - custom
+          - external
+          pattern: standard|custom|external
+        partnerName:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
+        slug:
+          type: string
+          description: The address under /programs. It cannot change once the program
+            has been published.
+          maxLength: 60
+          minLength: 3
+          pattern: "[a-z0-9]+(-[a-z0-9]+)*"
+        startsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        summary:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+        type:
+          type: string
+          enum:
+          - enterprise_challenge
+          - open_innovation_call
+          - accelerator
+          - hackathon
+          - buildathon
+          - grant
+          - venture_building
+          - pitch_competition
+          - event_series
+          - event
+          pattern: enterprise_challenge|open_innovation_call|accelerator|hackathon|buildathon|grant|venture_building|pitch_competition|event_series|event
+        version:
+          type: integer
+          format: int64
+          description: The version the screen read; the save is refused when the program
+            changed since.
+      required:
+      - events
+      - keyDates
+      - name
+      - pageKind
+      - slug
+      - type
+      - version
     StoredFile:
       type: object
       description: A file whose upload is confirmed.

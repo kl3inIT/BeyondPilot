@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetMeData, GetMeErrors, GetMeResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
+import type { ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetMeData, GetMeErrors, GetMeResponses, GetProgramData, GetProgramErrors, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, SaveProgramData, SaveProgramErrors, SaveProgramResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -108,6 +108,104 @@ export const getMe = <ThrowOnError extends boolean = true>(options?: Options<Get
     url: '/api/identity/me',
     ...options
 });
+
+/**
+ * Every program, the newest first
+ */
+export const listAdminPrograms = <ThrowOnError extends boolean = true>(options?: Options<ListAdminProgramsData, ThrowOnError>): RequestResult<ListAdminProgramsResponses, ListAdminProgramsErrors, ThrowOnError> => (options?.client ?? client).get<ListAdminProgramsResponses, ListAdminProgramsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/program/admin/programs',
+    ...options
+});
+
+/**
+ * Create a program as a draft
+ */
+export const createProgram = <ThrowOnError extends boolean = true>(options: Options<CreateProgramData, ThrowOnError>): RequestResult<CreateProgramResponses, CreateProgramErrors, ThrowOnError> => (options.client ?? client).post<CreateProgramResponses, CreateProgramErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/program/admin/programs',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * One program as an operator edits it
+ */
+export const getAdminProgram = <ThrowOnError extends boolean = true>(options: Options<GetAdminProgramData, ThrowOnError>): RequestResult<GetAdminProgramResponses, GetAdminProgramErrors, ThrowOnError> => (options.client ?? client).get<GetAdminProgramResponses, GetAdminProgramErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/program/admin/programs/{id}',
+    ...options
+});
+
+/**
+ * Save a program with its application window, key dates and events
+ */
+export const saveProgram = <ThrowOnError extends boolean = true>(options: Options<SaveProgramData, ThrowOnError>): RequestResult<SaveProgramResponses, SaveProgramErrors, ThrowOnError> => (options.client ?? client).put<SaveProgramResponses, SaveProgramErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/program/admin/programs/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Put a program on the public site
+ */
+export const publishProgram = <ThrowOnError extends boolean = true>(options: Options<PublishProgramData, ThrowOnError>): RequestResult<PublishProgramResponses, PublishProgramErrors, ThrowOnError> => (options.client ?? client).post<PublishProgramResponses, PublishProgramErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/program/admin/programs/{id}/publish',
+    ...options
+});
+
+/**
+ * Take a program off the public site
+ */
+export const unpublishProgram = <ThrowOnError extends boolean = true>(options: Options<UnpublishProgramData, ThrowOnError>): RequestResult<UnpublishProgramResponses, UnpublishProgramErrors, ThrowOnError> => (options.client ?? client).post<UnpublishProgramResponses, UnpublishProgramErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/program/admin/programs/{id}/unpublish',
+    ...options
+});
+
+/**
+ * The published programs, the latest to start first
+ */
+export const listPrograms = <ThrowOnError extends boolean = true>(options?: Options<ListProgramsData, ThrowOnError>): RequestResult<ListProgramsResponses, ListProgramsErrors, ThrowOnError> => (options?.client ?? client).get<ListProgramsResponses, ListProgramsErrors, ThrowOnError>({ url: '/api/program/programs', ...options });
+
+/**
+ * A program's public page
+ *
+ * A published program, or a draft when an operator previews it.
+ */
+export const getProgram = <ThrowOnError extends boolean = true>(options: Options<GetProgramData, ThrowOnError>): RequestResult<GetProgramResponses, GetProgramErrors, ThrowOnError> => (options.client ?? client).get<GetProgramResponses, GetProgramErrors, ThrowOnError>({ url: '/api/program/programs/{slug}', ...options });
 
 /**
  * A public file

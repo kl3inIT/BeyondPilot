@@ -11,11 +11,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 /**
  * Binds a controller parameter of type {@link Actor} to the signed-in account. It never appears in the API contract.
+ * On an address open to visitors, a visitor who is not signed in is bound as null.
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@AuthenticationPrincipal(expression = "actor")
+@AuthenticationPrincipal(expression = "#root instanceof T(java.lang.String) ? null : actor")
 @Parameter(hidden = true)
 public @interface CurrentActor {
 }

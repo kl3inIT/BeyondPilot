@@ -378,7 +378,7 @@
     "auditLog": {
       "metaTitle": "Nhật ký thao tác · BeyondPilot",
       "title": "Nhật ký thao tác",
-      "lead": "Những thay đổi mà operator và cấu hình máy chủ đã thực hiện với tài khoản và vai trò, mới nhất trước.",
+      "lead": "Những thay đổi mà operator và cấu hình máy chủ đã thực hiện với tài khoản, vai trò và chương trình, mới nhất trước.",
       "search": "Tìm người hoặc tài khoản",
       "filters": {
         "period": {
@@ -403,6 +403,12 @@
         "operator": {
           "grant": "Cấp quyền operator",
           "withdraw": "Thu quyền operator"
+        },
+        "program": {
+          "create": "Tạo chương trình",
+          "update": "Lưu chương trình",
+          "publish": "Công bố chương trình",
+          "unpublish": "Gỡ chương trình"
         }
       },
       "activity": {
@@ -413,6 +419,12 @@
         "operator": {
           "grant": "Đã cấp quyền operator cho <resource></resource>",
           "withdraw": "Đã thu quyền operator của <resource></resource>"
+        },
+        "program": {
+          "create": "Đã tạo chương trình <resource></resource>",
+          "update": "Đã lưu chương trình <resource></resource>",
+          "publish": "Đã công bố chương trình <resource></resource>",
+          "unpublish": "Đã gỡ chương trình <resource></resource>"
         }
       },
       "columns": {
@@ -435,7 +447,7 @@
       },
       "empty": {
         "title": "{period, select, day {Không có sự kiện nào trong 24 giờ qua} week {Không có sự kiện nào trong 7 ngày qua} month {Không có sự kiện nào trong 30 ngày qua} other {Chưa có sự kiện nào}}",
-        "description": "Thay đổi về tài khoản và vai trò sẽ hiện ở đây.",
+        "description": "Thay đổi về tài khoản, vai trò và chương trình sẽ hiện ở đây.",
         "showAll": "Xem toàn bộ"
       },
       "noMatch": {

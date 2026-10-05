@@ -53,10 +53,92 @@ export type AccountSummary = {
 };
 
 /**
+ * A program as an operator edits it, in any status.
+ */
+export type AdminProgram = {
+    /**
+     * The text of the standard page.
+     */
+    about?: string | null;
+    /**
+     * Null for a program that takes no applications here.
+     */
+    applications?: ProgramApplications;
+    /**
+     * The cover, read at the public address of stored files.
+     */
+    coverFileId?: string | null;
+    createdAt: string;
+    endsOn?: string | null;
+    events: Array<ProgramEvent>;
+    externalUrl?: string | null;
+    id: string;
+    keyDates: Array<ProgramKeyDate>;
+    name: string;
+    /**
+     * `standard` is built from these fields, `custom` is written in the web application for this address, `external` links to `externalUrl`.
+     */
+    pageKind: 'standard' | 'custom' | 'external';
+    /**
+     * The organization the program is run with.
+     */
+    partnerName?: string | null;
+    /**
+     * What the program still lacks before it can be published, in the order the Settings screen shows its fields. Empty when it can be published.
+     */
+    publishIssues: Array<'summary' | 'cover' | 'dates'>;
+    /**
+     * The address under /programs.
+     */
+    slug: string;
+    /**
+     * The program has been published at least once, so its address cannot change.
+     */
+    slugFixed: boolean;
+    startsOn?: string | null;
+    /**
+     * Only a published program is public.
+     */
+    status: 'draft' | 'published';
+    /**
+     * One or two sentences, shown on the list.
+     */
+    summary?: string | null;
+    type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+    updatedAt: string;
+    /**
+     * Sent back with a save, which is refused when someone else saved in the meantime.
+     */
+    version: number;
+};
+
+/**
+ * Every program, the newest first.
+ */
+export type AdminProgramList = {
+    items: Array<AdminProgramSummary>;
+};
+
+/**
+ * One program in the operators' list.
+ */
+export type AdminProgramSummary = {
+    endsOn?: string | null;
+    id: string;
+    name: string;
+    partnerName?: string | null;
+    slug: string;
+    startsOn?: string | null;
+    status: 'draft' | 'published';
+    type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+    updatedAt: string;
+};
+
+/**
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -107,6 +189,18 @@ export type AuditEventResource = {
     id: string;
     label: string;
     type: string;
+};
+
+/**
+ * What a program cannot do without. It is created as a draft.
+ */
+export type CreateProgram = {
+    name: string;
+    /**
+     * The address under /programs: lowercase letters, digits and single hyphens.
+     */
+    slug: string;
+    type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
 };
 
 /**
@@ -181,6 +275,158 @@ export type Problem = {
 };
 
 /**
+ * A program as its public page shows it.
+ */
+export type Program = {
+    /**
+     * The text of the standard page.
+     */
+    about?: string | null;
+    /**
+     * Null for a program that takes no applications here. Its opening, its closing and the day outcomes are due belong in the timeline beside the key dates.
+     */
+    applications?: ProgramApplications;
+    /**
+     * The cover, read at the public address of stored files.
+     */
+    coverFileId?: string | null;
+    endsOn?: string | null;
+    /**
+     * In the order the operator gave.
+     */
+    events: Array<ProgramEvent>;
+    externalUrl?: string | null;
+    /**
+     * In the order the operator gave.
+     */
+    keyDates: Array<ProgramKeyDate>;
+    name: string;
+    /**
+     * `standard` is built from these fields, `custom` is written in the web application for this address, `external` lives at `externalUrl`.
+     */
+    pageKind: 'standard' | 'custom' | 'external';
+    partnerName?: string | null;
+    /**
+     * Where the program stands now, worked out from its dates.
+     */
+    phase: 'upcoming' | 'open' | 'running' | 'done';
+    /**
+     * The address under /programs.
+     */
+    slug: string;
+    startsOn?: string | null;
+    /**
+     * `draft` only when an operator previews a program that is not public.
+     */
+    status: 'draft' | 'published';
+    summary?: string | null;
+    type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+};
+
+/**
+ * When and how a program takes applications here.
+ */
+export type ProgramApplications = {
+    /**
+     * Whether an applicant may change a submitted application until the deadline.
+     */
+    allowUpdatesUntilClose: boolean;
+    /**
+     * The deadline; later than `opensAt`.
+     */
+    closesAt: string;
+    opensAt: string;
+    /**
+     * The day applicants hear the outcome; not before the deadline.
+     */
+    outcomesDueOn?: string | null;
+    /**
+     * How many applications go on to the next round.
+     */
+    shortlistSize?: number | null;
+};
+
+/**
+ * A session of a program that people register for somewhere else.
+ */
+export type ProgramEvent = {
+    city?: string | null;
+    country?: string | null;
+    /**
+     * Not before `startsAt`.
+     */
+    endsAt?: string | null;
+    online: boolean;
+    /**
+     * Where people register, for example on Luma.
+     */
+    registrationUrl?: string | null;
+    startsAt: string;
+    title: string;
+};
+
+/**
+ * A dated step of a program that an applicant plans around.
+ */
+export type ProgramKeyDate = {
+    /**
+     * The step is a day, not a moment; it is shown without a time.
+     */
+    allDay: boolean;
+    /**
+     * Not before `startsAt`.
+     */
+    endsAt?: string | null;
+    note?: string | null;
+    startsAt: string;
+    title: string;
+};
+
+/**
+ * The published programs, the latest to start first.
+ */
+export type ProgramList = {
+    items: Array<ProgramSummary>;
+};
+
+/**
+ * A published program as the public list shows it.
+ */
+export type ProgramSummary = {
+    /**
+     * Null for a program that takes no applications here.
+     */
+    applications?: ProgramApplications;
+    /**
+     * The cover, read at the public address of stored files.
+     */
+    coverFileId?: string | null;
+    endsOn?: string | null;
+    externalUrl?: string | null;
+    name: string;
+    /**
+     * `external` links to `externalUrl` instead of a page here.
+     */
+    pageKind: 'standard' | 'custom' | 'external';
+    partnerName?: string | null;
+    /**
+     * Where the program stands now, worked out from its dates.
+     */
+    phase: 'upcoming' | 'open' | 'running' | 'done';
+    /**
+     * The address under /programs.
+     */
+    slug: string;
+    startsOn?: string | null;
+    summary?: string | null;
+    type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+    /**
+     * Its events still to come, soonest first, at most three.
+     */
+    upcomingEvents: Array<ProgramEvent>;
+};
+
+/**
  * The file a person is about to upload.
  */
 export type ReserveUpload = {
@@ -197,6 +443,45 @@ export type ReserveUpload = {
      * The exact length of the file in bytes.
      */
     sizeBytes: number;
+};
+
+/**
+ * A program as the Settings screen holds it. Everything is saved together, and the lists are replaced as sent.
+ */
+export type SaveProgram = {
+    about?: string | null;
+    /**
+     * Null for a program that takes no applications here.
+     */
+    applications?: ProgramApplications;
+    /**
+     * A stored `program_image` the caller uploaded, or the cover the program already has. Null removes the cover.
+     */
+    coverFileId?: string | null;
+    /**
+     * Not before `startsOn`.
+     */
+    endsOn?: string | null;
+    events: Array<ProgramEvent>;
+    /**
+     * Needed when `pageKind` is `external`.
+     */
+    externalUrl?: string | null;
+    keyDates: Array<ProgramKeyDate>;
+    name: string;
+    pageKind: 'standard' | 'custom' | 'external';
+    partnerName?: string | null;
+    /**
+     * The address under /programs. It cannot change once the program has been published.
+     */
+    slug: string;
+    startsOn?: string | null;
+    summary?: string | null;
+    type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+    /**
+     * The version the screen read; the save is refused when the program changed since.
+     */
+    version: number;
 };
 
 /**
@@ -245,7 +530,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -514,6 +799,285 @@ export type GetMeResponses = {
 };
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type ListAdminProgramsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/program/admin/programs';
+};
+
+export type ListAdminProgramsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminProgramsError = ListAdminProgramsErrors[keyof ListAdminProgramsErrors];
+
+export type ListAdminProgramsResponses = {
+    /**
+     * Every program in any status.
+     */
+    200: AdminProgramList;
+};
+
+export type ListAdminProgramsResponse = ListAdminProgramsResponses[keyof ListAdminProgramsResponses];
+
+export type CreateProgramData = {
+    body: CreateProgram;
+    path?: never;
+    query?: never;
+    url: '/api/program/admin/programs';
+};
+
+export type CreateProgramErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * Another program already has this address.
+     */
+    409: Problem;
+};
+
+export type CreateProgramError = CreateProgramErrors[keyof CreateProgramErrors];
+
+export type CreateProgramResponses = {
+    /**
+     * The draft.
+     */
+    201: AdminProgram;
+};
+
+export type CreateProgramResponse = CreateProgramResponses[keyof CreateProgramResponses];
+
+export type GetAdminProgramData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}';
+};
+
+export type GetAdminProgramErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+};
+
+export type GetAdminProgramError = GetAdminProgramErrors[keyof GetAdminProgramErrors];
+
+export type GetAdminProgramResponses = {
+    /**
+     * The program.
+     */
+    200: AdminProgram;
+};
+
+export type GetAdminProgramResponse = GetAdminProgramResponses[keyof GetAdminProgramResponses];
+
+export type SaveProgramData = {
+    body: SaveProgram;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}';
+};
+
+export type SaveProgramErrors = {
+    /**
+     * A member is not valid, dates are out of order, or the cover is not a stored image of the caller.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+    /**
+     * The program changed since it was read, or its address is taken or can no longer change.
+     */
+    409: Problem;
+};
+
+export type SaveProgramError = SaveProgramErrors[keyof SaveProgramErrors];
+
+export type SaveProgramResponses = {
+    /**
+     * The program as saved, with its new version.
+     */
+    200: AdminProgram;
+};
+
+export type SaveProgramResponse = SaveProgramResponses[keyof SaveProgramResponses];
+
+export type PublishProgramData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}/publish';
+};
+
+export type PublishProgramErrors = {
+    /**
+     * The program still lacks what its publishIssues list; nothing changed.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+};
+
+export type PublishProgramError = PublishProgramErrors[keyof PublishProgramErrors];
+
+export type PublishProgramResponses = {
+    /**
+     * The program is published. Its address is fixed from now on.
+     */
+    204: void;
+};
+
+export type PublishProgramResponse = PublishProgramResponses[keyof PublishProgramResponses];
+
+export type UnpublishProgramData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}/unpublish';
+};
+
+export type UnpublishProgramErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+};
+
+export type UnpublishProgramError = UnpublishProgramErrors[keyof UnpublishProgramErrors];
+
+export type UnpublishProgramResponses = {
+    /**
+     * The program is a draft again; it keeps its address.
+     */
+    204: void;
+};
+
+export type UnpublishProgramResponse = UnpublishProgramResponses[keyof UnpublishProgramResponses];
+
+export type ListProgramsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Only programs in this phase today.
+         */
+        phase?: 'upcoming' | 'open' | 'running' | 'done';
+        /**
+         * Only programs of this type.
+         */
+        type?: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+    };
+    url: '/api/program/programs';
+};
+
+export type ListProgramsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+};
+
+export type ListProgramsError = ListProgramsErrors[keyof ListProgramsErrors];
+
+export type ListProgramsResponses = {
+    /**
+     * The programs the parameters select.
+     */
+    200: ProgramList;
+};
+
+export type ListProgramsResponse = ListProgramsResponses[keyof ListProgramsResponses];
+
+export type GetProgramData = {
+    body?: never;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/program/programs/{slug}';
+};
+
+export type GetProgramErrors = {
+    /**
+     * No program is published at this address.
+     */
+    404: Problem;
+};
+
+export type GetProgramError = GetProgramErrors[keyof GetProgramErrors];
+
+export type GetProgramResponses = {
+    /**
+     * The program.
+     */
+    200: Program;
+};
+
+export type GetProgramResponse = GetProgramResponses[keyof GetProgramResponses];
 
 export type GetPublicFileData = {
     body?: never;

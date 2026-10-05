@@ -105,6 +105,19 @@ public class IdentityService {
 			.orElse(false);
 	}
 
+	/**
+	 * The caller as an operator, for a module whose operation only GenAI Fund staff may do.
+	 * @throws IdentityException when the caller is not an operator now
+	 */
+	@Transactional(readOnly = true)
+	public Operator requireOperator(Actor actor) {
+		return accounts.findById(actor.accountId())
+			.filter(account -> account.isOperator() && !account.isDisabled())
+			.map(account -> new Operator(account.getId(), account.label(), account.getEmail()))
+			.orElseThrow(() -> new IdentityException(IdentityErrorCode.OPERATOR_REQUIRED,
+					"Operator action by account " + actor.accountId()));
+	}
+
 	private Account active(Actor actor) {
 		return accounts.findById(actor.accountId())
 			.filter(found -> !found.isDisabled())

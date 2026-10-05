@@ -21,7 +21,15 @@ public enum AuditAction {
 	/** {@code source} is {@code operator} or {@code configuration}. */
 	OPERATOR_GRANT("operator.grant", "source"),
 
-	OPERATOR_WITHDRAW("operator.withdraw");
+	OPERATOR_WITHDRAW("operator.withdraw"),
+
+	PROGRAM_CREATE("program.create"),
+
+	PROGRAM_UPDATE("program.update"),
+
+	PROGRAM_PUBLISH("program.publish"),
+
+	PROGRAM_UNPUBLISH("program.unpublish");
 
 	private final String value;
 
