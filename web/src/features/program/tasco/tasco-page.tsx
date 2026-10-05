@@ -1,18 +1,15 @@
 import {
-  BanknoteIcon,
   CarIcon,
   CheckIcon,
   CircleHelpIcon,
   CopyIcon,
   FileTextIcon,
-  HandshakeIcon,
   PhoneIcon,
   ReceiptTextIcon,
   ShieldBanIcon,
-  UserCheckIcon,
 } from "lucide-react";
 import Image from "next/image";
-import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import {
@@ -26,7 +23,7 @@ import type { Program } from "@/lib/api/generated";
 import { genaiFundLinks, liveCampaignUrl, programApplyUrl } from "@/lib/site";
 
 import { ProgramCountdown } from "../program-countdown";
-import { deadlineText, renderedAt } from "../program-format";
+import { deadlineText, programFormatter, renderedAt } from "../program-format";
 import { ProgramBreadcrumb } from "../program-page";
 import { ApplyCard, DraftBanner, Timeline, timelineOf } from "../program-parts";
 
@@ -51,11 +48,7 @@ const kinds = [
   "agency",
 ] as const;
 
-const wins = [
-  ["yes", UserCheckIcon],
-  ["partner", HandshakeIcon],
-  ["investment", BanknoteIcon],
-] as const;
+const wins = ["yes", "partner", "investment"] as const;
 
 const directionGroups = [
   ["buying", ["d1", "d2", "d3"]],
@@ -146,12 +139,12 @@ async function ApplyRail({
  * campaign and lives in both catalogs; its dates, events and application window are the program's.
  */
 async function TascoPage({ program }: { program: Program }) {
-  const [t, page, format, locale] = await Promise.all([
+  const [t, page, locale] = await Promise.all([
     getTranslations("Tasco"),
     getTranslations("Program.page"),
-    getFormatter(),
     getLocale(),
   ]);
+  const format = programFormatter(locale);
   const now = renderedAt();
   const steps = await timelineOf(program, format);
   const applications = program.applications;
@@ -169,13 +162,13 @@ async function TascoPage({ program }: { program: Program }) {
             <div className="flex min-w-0 flex-1 flex-col gap-4">
               <div className="flex flex-wrap items-center gap-2.5">
                 <Badge variant={open ? "success" : "info"}>{page(`phase.${program.phase}`)}</Badge>
-                <span className="text-sm text-primary-foreground/80">{t("kind")}</span>
+                <span className="text-sm text-primary-foreground">{t("kind")}</span>
               </div>
               <h1 className="text-4xl font-semibold tracking-headline md:text-5xl">
                 {program.name}
               </h1>
               {program.summary && (
-                <p className="max-w-2xl text-lg text-primary-foreground/90">{program.summary}</p>
+                <p className="max-w-2xl text-lg text-primary-foreground">{program.summary}</p>
               )}
               <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
                 {open && apply && (
@@ -184,7 +177,7 @@ async function TascoPage({ program }: { program: Program }) {
                   </Button>
                 )}
                 {open && (
-                  <p className="text-sm text-primary-foreground/90">
+                  <p className="text-sm text-primary-foreground">
                     <ProgramCountdown
                       deadline={applications.closesAt}
                       closes={deadlineText(format, applications)}
@@ -209,7 +202,7 @@ async function TascoPage({ program }: { program: Program }) {
             {(["teams", "investment", "pilot"] as const).map((stat) => (
               <li key={stat} className="flex flex-col gap-1">
                 <p className="text-2xl font-semibold">{t(`stats.${stat}.value`)}</p>
-                <p className="text-sm text-primary-foreground/80">{t(`stats.${stat}.label`)}</p>
+                <p className="text-sm text-primary-foreground">{t(`stats.${stat}.label`)}</p>
               </li>
             ))}
           </ul>
@@ -221,7 +214,7 @@ async function TascoPage({ program }: { program: Program }) {
               <li key={section}>
                 <a
                   href={`#${section}`}
-                  className="inline-flex pb-3 text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground focus-visible:underline"
+                  className="inline-flex min-h-11 items-center text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground focus-visible:underline"
                 >
                   {t(`nav.${section}`)}
                 </a>
@@ -275,10 +268,9 @@ async function TascoPage({ program }: { program: Program }) {
 
             <section id="win" className="flex scroll-mt-6 flex-col gap-5">
               <SectionHead title={t("win.title")} lead={t("win.lead")} />
-              <ul className="grid gap-4 md:grid-cols-3">
-                {wins.map(([win, Icon]) => (
-                  <li key={win} className="flex flex-col gap-2 rounded-xl border bg-card p-5">
-                    <Icon className="size-5 text-primary" aria-hidden="true" />
+              <ul className="grid gap-6 md:grid-cols-3">
+                {wins.map((win) => (
+                  <li key={win} className="flex flex-col gap-2 border-t-2 border-primary pt-4">
                     <p className="font-medium">{t(`win.cards.${win}.title`)}</p>
                     <p className="text-sm text-muted-foreground">{t(`win.cards.${win}.text`)}</p>
                   </li>
@@ -407,15 +399,18 @@ async function TascoPage({ program }: { program: Program }) {
             <div className="hidden flex-col gap-4 lg:flex">
               <ApplyRail program={program} steps={steps} now={now} />
             </div>
-            <aside className="flex flex-col gap-4 rounded-2xl border bg-card p-5">
+            <aside
+              aria-label={t("rail.partners")}
+              className="flex flex-col gap-4 rounded-2xl border bg-card p-5"
+            >
               <div className="flex flex-col gap-2">
                 <p className="text-xs font-medium text-muted-foreground">{t("rail.host")}</p>
                 <Image
                   src="/programs/tasco/tasco.png"
                   alt="Tasco"
-                  width={112}
-                  height={16}
-                  className="h-4 w-auto"
+                  width={168}
+                  height={24}
+                  className="h-6 w-auto"
                 />
                 <p className="text-xs text-muted-foreground">{t("rail.hostText")}</p>
               </div>
@@ -455,7 +450,7 @@ async function TascoPage({ program }: { program: Program }) {
           <section className="flex flex-col gap-4 rounded-3xl bg-primary bg-linear-150 from-foreground/60 via-transparent via-60% to-transparent p-6 text-primary-foreground md:flex-row md:items-center md:justify-between md:p-10 dark:from-transparent">
             <div className="flex flex-col gap-1">
               <h2 className="text-2xl font-semibold md:text-3xl">{t("closing.title")}</h2>
-              <p className="text-primary-foreground/85">{t("closing.text")}</p>
+              <p className="text-primary-foreground">{t("closing.text")}</p>
             </div>
             <Button size="lg" prominence="secondary" href={apply}>
               {page("applyNow")}

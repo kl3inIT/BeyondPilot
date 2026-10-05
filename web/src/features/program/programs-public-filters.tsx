@@ -49,7 +49,7 @@ function ProgramsPublicFilters({
           setSearch({ phase: publicPhases.find((phase) => phase === value) ?? null })
         }
       >
-        <TabsList variant="line" aria-label={t("filters.label")}>
+        <TabsList variant="underline" aria-label={t("filters.label")}>
           <TabsTrigger value={ALL}>{t("filters.all")}</TabsTrigger>
           {publicPhases.map((phase) => (
             <TabsTrigger key={phase} value={phase}>

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,7 @@ import { programApplyUrl, siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
 import { ProgramCountdown } from "./program-countdown";
-import { daysText, deadlineText, renderedAt } from "./program-format";
+import { daysText, deadlineText, programFormatter, renderedAt } from "./program-format";
 import { ApplyCard, DraftBanner, EventList, Timeline, timelineOf } from "./program-parts";
 
 /** The badge of a program's phase: open is the one that takes action. */
@@ -53,12 +53,12 @@ export async function ProgramBreadcrumb({ name }: { name: string }) {
  * the timeline of its key dates and application window, its events, and the card to apply.
  */
 async function ProgramPage({ program }: { program: Program }) {
-  const [t, types, format, locale] = await Promise.all([
+  const [t, types, locale] = await Promise.all([
     getTranslations("Program.page"),
     getTranslations("Program.type"),
-    getFormatter(),
     getLocale(),
   ]);
+  const format = programFormatter(locale);
   const now = renderedAt();
   const steps = await timelineOf(program, format);
   const applications = program.applications;
@@ -76,11 +76,11 @@ async function ProgramPage({ program }: { program: Program }) {
           <div className="flex min-w-0 flex-1 flex-col gap-4">
             <div className="flex flex-wrap items-center gap-2.5">
               <Badge variant={phaseVariant[program.phase]}>{t(`phase.${program.phase}`)}</Badge>
-              <span className="text-sm text-primary-foreground/80">{kind}</span>
+              <span className="text-sm text-primary-foreground">{kind}</span>
             </div>
             <h1 className="text-4xl font-semibold tracking-headline md:text-5xl">{program.name}</h1>
             {program.summary && (
-              <p className="max-w-2xl text-lg text-primary-foreground/90">{program.summary}</p>
+              <p className="max-w-2xl text-lg text-primary-foreground">{program.summary}</p>
             )}
             <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
               {open && apply && (
@@ -88,7 +88,7 @@ async function ProgramPage({ program }: { program: Program }) {
                   {t("applyNow")}
                 </Button>
               )}
-              <p className="text-sm text-primary-foreground/90">
+              <p className="text-sm text-primary-foreground">
                 {open ? (
                   <ProgramCountdown
                     deadline={applications.closesAt}

@@ -1,5 +1,5 @@
 import { CheckIcon, EyeOffIcon } from "lucide-react";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { Link } from "@/i18n/navigation";
@@ -7,9 +7,16 @@ import type { Program } from "@/lib/api/generated";
 import { adminProgramRoute, programApplyUrl } from "@/lib/site";
 
 import { ProgramCountdown } from "./program-countdown";
-import { deadlineText, placeOf, vietnamDay, whenText } from "./program-format";
+import {
+  deadlineText,
+  placeOf,
+  programFormatter,
+  vietnamDay,
+  whenText,
+  type ProgramFormat,
+} from "./program-format";
 
-type Format = Awaited<ReturnType<typeof getFormatter>>;
+type Format = ProgramFormat;
 
 /** One step of a program's timeline, from its key dates or its application window. */
 type Step = { title: string; when: string; at: string; note?: string | null };
@@ -99,14 +106,18 @@ export async function ApplyCard({
   steps: Step[];
   now: number;
 }) {
-  const [t, format] = await Promise.all([getTranslations("Program.page"), getFormatter()]);
+  const [t, locale] = await Promise.all([getTranslations("Program.page"), getLocale()]);
+  const format = programFormatter(locale);
   const applications = program.applications;
   const apply = programApplyUrl(program.slug);
   const open = program.phase === "open" && applications;
   const next = steps.filter((step) => Date.parse(step.at) >= now).slice(0, 5);
 
   return (
-    <aside className="flex flex-col gap-4 rounded-2xl border bg-card p-5 shadow-card">
+    <aside
+      aria-label={t("applyCard")}
+      className="flex flex-col gap-4 rounded-2xl border bg-card p-5 shadow-card"
+    >
       {open ? (
         <div className="flex flex-col gap-1">
           <p className="text-sm text-muted-foreground">{t("closesIn")}</p>
@@ -144,7 +155,8 @@ export async function ApplyCard({
 
 /** A program's events, each with when, where and where to register. */
 export async function EventList({ program }: { program: Program }) {
-  const [t, format] = await Promise.all([getTranslations("Program.page"), getFormatter()]);
+  const [t, locale] = await Promise.all([getTranslations("Program.page"), getLocale()]);
+  const format = programFormatter(locale);
   return (
     <ul className="flex flex-col gap-3">
       {program.events.map((event) => (

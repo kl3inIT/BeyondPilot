@@ -7,6 +7,9 @@ import { programTypes } from "./program-schemas";
 /** The phases the public list is narrowed to, in the order its tabs show them. */
 export const publicPhases = ["open", "upcoming", "done"] as const;
 
+/** How many of its next events a program's card under Open now shows. */
+export const openCardEvents = 3;
+
 /** What narrows the public list of programs, as the URL holds it: `?phase=&type=`. */
 export const programsPublicSearch = {
   phase: parseAsStringLiteral(publicPhases),
@@ -31,10 +34,15 @@ export function groupPrograms(programs: ProgramSummary[], search: ProgramsPublic
   return {
     open: shown("open") ? open : [],
     upcoming: shown("upcoming") ? upcoming : [],
-    // Coming up also lists the events still to come of programs that are open or running.
+    // Coming up also lists the events still to come of programs that are open or running, except
+    // those their card under Open now already shows.
     events: shown("upcoming")
       ? open
-          .flatMap((program) => program.upcomingEvents.map((event) => ({ program, event })))
+          .flatMap((program) =>
+            program.upcomingEvents
+              .slice(shown("open") ? openCardEvents : 0)
+              .map((event) => ({ program, event })),
+          )
           .sort((a, b) => a.event.startsAt.localeCompare(b.event.startsAt))
       : [],
     done: shown("done") ? done : [],

@@ -19,10 +19,14 @@ test.describe("programs", () => {
     await expect(open.getByText(/days left · closes/)).toBeVisible();
     await expect(open.getByRole("link", { name: "Apply now" })).toHaveAttribute("href", applyUrl);
 
+    // An event the open card already shows is not repeated under Coming up.
+    await expect(
+      open.getByText("Stop Guessing What Insurers Need: Tasco Challenge Briefing"),
+    ).toBeVisible();
     const coming = page.getByRole("region", { name: "Coming up" });
     await expect(
-      coming.getByText("Stop Guessing What Insurers Need: Tasco Challenge Briefing"),
-    ).toBeVisible();
+      coming.getByText("Stop Guessing What Insurers Need", { exact: false }),
+    ).toHaveCount(0);
     await expect(coming.getByRole("link", { name: "GenAI Builders Hanoi" })).toBeVisible();
 
     // A program whose page is somewhere else links there, and is never a draft on the list.
@@ -38,6 +42,11 @@ test.describe("programs", () => {
   test("the tabs and the type are the address", async ({ page }) => {
     await page.goto("/programs");
 
+    // Under Coming up alone, the open program's next event is listed again.
+    await page.getByRole("tab", { name: "Coming up" }).click();
+    await expect(
+      page.getByText("Stop Guessing What Insurers Need: Tasco Challenge Briefing"),
+    ).toBeVisible();
     await page.getByRole("tab", { name: "Done" }).click();
     await expect(page).toHaveURL(/[?&]phase=done/);
     await expect(page.getByRole("region", { name: "Open now" })).toHaveCount(0);

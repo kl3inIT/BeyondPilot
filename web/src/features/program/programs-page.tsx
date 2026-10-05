@@ -1,6 +1,6 @@
 import { ArrowUpRightIcon } from "lucide-react";
 import Image from "next/image";
-import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,11 +10,19 @@ import { programApplyUrl, programRoute, siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
 import { ProgramCountdown } from "./program-countdown";
-import { daysText, deadlineText, placeOf, vietnamDay, whenText } from "./program-format";
+import {
+  daysText,
+  deadlineText,
+  placeOf,
+  programFormatter,
+  vietnamDay,
+  whenText,
+  type ProgramFormat,
+} from "./program-format";
 import { ProgramsPublicFilters } from "./programs-public-filters";
-import type { groupPrograms } from "./programs-public-search";
+import { openCardEvents, type groupPrograms } from "./programs-public-search";
 
-type Format = Awaited<ReturnType<typeof getFormatter>>;
+type Format = ProgramFormat;
 
 /** Where a program is read: its page here, or the page somewhere else it lives on. */
 function hrefOf(program: Pick<ProgramSummary, "slug" | "pageKind" | "externalUrl">) {
@@ -37,12 +45,12 @@ function SectionHead({ title, count }: { title: string; count?: string }) {
  * by year. A program opens on its page, or on the page somewhere else it lives on.
  */
 async function ProgramsPage({ groups }: { groups: ReturnType<typeof groupPrograms> }) {
-  const [t, types, format, locale] = await Promise.all([
+  const [t, types, locale] = await Promise.all([
     getTranslations("Programs"),
     getTranslations("Program.type"),
-    getFormatter(),
     getLocale(),
   ]);
+  const format = programFormatter(locale);
   const comingUp = groups.upcoming.length + groups.events.length;
   const byYear = new Map<number, ProgramSummary[]>();
   for (const program of groups.done) {
@@ -153,7 +161,7 @@ async function OpenProgram({
   const applications = program.applications;
   const open = program.phase === "open";
   const apply = programApplyUrl(program.slug);
-  const facts = program.upcomingEvents.slice(0, 3);
+  const facts = program.upcomingEvents.slice(0, openCardEvents);
 
   return (
     <article className="flex flex-col gap-1 rounded-3xl border bg-card p-2 text-card-foreground shadow-raised md:gap-2 md:p-3 xl:flex-row xl:gap-8">
