@@ -210,6 +210,43 @@ const talent = {
   },
 };
 
+/** The requests for an introduction to Pocket Policy: one waiting, one answered each way. */
+const introductions = [
+  {
+    id: "e19ebcda-8b86-4cd9-9cd3-8f1b4b4d5c21",
+    solutionName: "Policy Chat",
+    senderOrganization: "Lumen Health",
+    senderName: "Hà Lê",
+    senderEmail: null,
+    message: "We want a renewals assistant for our clinics.",
+    status: "pending",
+    createdAt: day,
+    answeredAt: null,
+  },
+  {
+    id: "e19ebcda-8b86-4cd9-9cd3-8f1b4b4d5c22",
+    solutionName: "Claims Vision",
+    senderOrganization: "Mekong Life",
+    senderName: null,
+    senderEmail: "claims@mekong.example",
+    message: "Can it read our scanned claim forms?",
+    status: "replied",
+    createdAt: day,
+    answeredAt: day,
+  },
+  {
+    id: "e19ebcda-8b86-4cd9-9cd3-8f1b4b4d5c23",
+    solutionName: "Agent Coach",
+    senderOrganization: "Bảo An",
+    senderName: "Quang Vũ",
+    senderEmail: null,
+    message: "Do you coach agents in Vietnamese?",
+    status: "declined",
+    createdAt: day,
+    answeredAt: day,
+  },
+];
+
 const refused = (status, code) => [status, { status, code }];
 
 /**
@@ -223,6 +260,7 @@ export function answerWorkspace(url, session) {
     "/api/organization/mine/members",
     "/api/solution/mine",
     "/api/talent/mine",
+    "/api/introduction/mine/received",
   ];
   if (!known.includes(pathname) && !pathname.startsWith("/api/solution/mine/")) {
     return undefined;
@@ -238,6 +276,11 @@ export function answerWorkspace(url, session) {
       200,
       { organization: role ? pocketPolicy : null, role, jobTitle, invitations, request: asked },
     ];
+  }
+  if (pathname === "/api/introduction/mine/received") {
+    return role
+      ? [200, { editable: role === "owner", items: introductions }]
+      : refused(403, "INTRODUCTION_NEEDS_ORGANIZATION");
   }
   if (pathname === "/api/talent/mine") {
     return [200, talent[session] ?? { profile: null, enquiries: [] }];
