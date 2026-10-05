@@ -106,8 +106,13 @@ fi
 } >"$deployments/current.env"
 
 # Keep the bundles of the current and previous releases and the five newest pre-deployment dumps.
-keep=$(grep --no-filename '^BEYONDPILOT_RELEASE=' "$deployments"/current.env "$deployments"/previous.env 2>/dev/null |
-    cut --delimiter='=' --fields=2)
+# The first deployment has no previous.env, so only the records that exist are read.
+keep=""
+for record in "$deployments/current.env" "$deployments/previous.env"; do
+    if [[ -f "$record" ]]; then
+        keep+="$(sed --quiet 's/^BEYONDPILOT_RELEASE=//p' "$record")"$'\n'
+    fi
+done
 for directory in "$root"/incoming/*/; do
     name=$(basename "$directory")
     grep --quiet --fixed-strings --line-regexp "$name" <<<"$keep" || rm -rf -- "$directory"
