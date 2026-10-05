@@ -287,7 +287,8 @@
       "auditLog": "Audit log",
       "organizations": "Organisations",
       "solutions": "Solutions",
-      "talent": "Talent"
+      "talent": "Talent",
+      "introductions": "Introductions"
     },
     "toggleSidebar": "Toggle sidebar",
     "programs": {
@@ -997,6 +998,40 @@
       "talent": "Talent profiles to review",
       "review": "Open the queue, longest wait first",
       "none": "Nothing waiting"
+    },
+    "introductions": {
+      "metaTitle": "Introductions · BeyondPilot",
+      "title": "Introductions",
+      "lead": "Requests for an introduction to the organization behind a solution. The owners of that organization answer; you read, and see which ones wait too long.",
+      "overdueNotice": "{count, plural, one {# request has} other {# requests have}} waited more than 3 days for an answer.",
+      "overdue": "Waiting over 3 days",
+      "search": "Search by solution",
+      "searchButton": "Search",
+      "filter": {
+        "label": "Filter by state",
+        "all": "All"
+      },
+      "status": {
+        "pending": "Waiting",
+        "replied": "Replied",
+        "declined": "Declined"
+      },
+      "route": "{sender} → {provider}",
+      "about": "About {solution}",
+      "sender": "{name} · {organization}",
+      "senderUnnamed": "Someone at {organization}",
+      "waitingSince": "Waiting since {time}",
+      "answered": "Answered {date}",
+      "count": "{count, plural, one {# request} other {# requests}}",
+      "empty": {
+        "title": "No requests yet",
+        "description": "When someone asks for an introduction to a solution, it appears here."
+      },
+      "noMatch": {
+        "title": "No request matches",
+        "description": "Try another solution name, or another state.",
+        "clear": "Clear search and filters"
+      }
     }
   },
   "Lists": {

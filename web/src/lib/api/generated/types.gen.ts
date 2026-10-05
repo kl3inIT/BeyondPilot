@@ -75,6 +75,60 @@ export type AdminCreateOrganization = {
 };
 
 /**
+ * A request for an introduction as an operator reads it: the message in full, and no address.
+ */
+export type AdminIntroduction = {
+    /**
+     * When it was answered; absent while it waits.
+     */
+    answeredAt?: string;
+    createdAt: string;
+    id: string;
+    message: string;
+    /**
+     * Whether it has waited for an answer longer than three days.
+     */
+    overdue: boolean;
+    /**
+     * The organization that offers the solution and answers.
+     */
+    providerOrganization: string;
+    /**
+     * The sender's name; absent while they have not given one.
+     */
+    senderName?: string;
+    /**
+     * The organization the sender asked as.
+     */
+    senderOrganization: string;
+    /**
+     * The solution asked about, by the name it had then.
+     */
+    solutionName: string;
+    status: 'pending' | 'replied' | 'declined';
+};
+
+/**
+ * One page of requests for an introduction: those that wait first, the longest wait on top.
+ */
+export type AdminIntroductionList = {
+    items: Array<AdminIntroduction>;
+    /**
+     * How many requests, whatever the filter, have waited longer than three days.
+     */
+    overdue: number;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many requests match, over all pages.
+     */
+    total: number;
+};
+
+/**
  * One organization as an operator reviews it.
  */
 export type AdminOrganization = {
@@ -1789,6 +1843,52 @@ export type GetMeResponses = {
 };
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type ListAdminIntroductionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Requests about a solution whose name contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only requests in this state.
+         */
+        status?: 'pending' | 'replied' | 'declined';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/introduction/admin/introductions';
+};
+
+export type ListAdminIntroductionsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminIntroductionsError = ListAdminIntroductionsErrors[keyof ListAdminIntroductionsErrors];
+
+export type ListAdminIntroductionsResponses = {
+    /**
+     * One page of the requests the parameters select.
+     */
+    200: AdminIntroductionList;
+};
+
+export type ListAdminIntroductionsResponse = ListAdminIntroductionsResponses[keyof ListAdminIntroductionsResponses];
 
 export type RequestIntroductionData = {
     body: RequestIntroduction;

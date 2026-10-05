@@ -287,7 +287,8 @@
       "auditLog": "Nhật ký thao tác",
       "organizations": "Tổ chức",
       "solutions": "Giải pháp",
-      "talent": "Nhân lực"
+      "talent": "Nhân lực",
+      "introductions": "Giới thiệu"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
     "programs": {
@@ -997,6 +998,40 @@
       "talent": "Hồ sơ nhân lực chờ duyệt",
       "review": "Mở hàng chờ, chờ lâu nhất ở trên",
       "none": "Không có gì đang chờ"
+    },
+    "introductions": {
+      "metaTitle": "Giới thiệu · BeyondPilot",
+      "title": "Giới thiệu",
+      "lead": "Các yêu cầu nhờ giới thiệu tới tổ chức đứng sau một giải pháp. Chủ sở hữu của tổ chức đó trả lời; bạn đọc và thấy yêu cầu nào chờ quá lâu.",
+      "overdueNotice": "{count} yêu cầu đã chờ câu trả lời quá 3 ngày.",
+      "overdue": "Chờ quá 3 ngày",
+      "search": "Tìm theo giải pháp",
+      "searchButton": "Tìm",
+      "filter": {
+        "label": "Lọc theo trạng thái",
+        "all": "Tất cả"
+      },
+      "status": {
+        "pending": "Đang chờ",
+        "replied": "Đã trả lời",
+        "declined": "Đã từ chối"
+      },
+      "route": "{sender} → {provider}",
+      "about": "Về {solution}",
+      "sender": "{name} · {organization}",
+      "senderUnnamed": "Một người ở {organization}",
+      "waitingSince": "Chờ từ {time}",
+      "answered": "Đã trả lời {date}",
+      "count": "{count} yêu cầu",
+      "empty": {
+        "title": "Chưa có yêu cầu",
+        "description": "Khi có người nhờ giới thiệu tới một giải pháp, yêu cầu sẽ hiện ở đây."
+      },
+      "noMatch": {
+        "title": "Không có yêu cầu nào khớp",
+        "description": "Hãy thử tên giải pháp khác, hoặc trạng thái khác.",
+        "clear": "Xóa tìm kiếm và bộ lọc"
+      }
     }
   },
   "Lists": {

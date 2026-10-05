@@ -2,8 +2,11 @@ package ai.genaifund.beyondpilot.introduction.persistence;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,6 +32,11 @@ public class IntroductionRepository {
 			select id, solution_id, solution_name, provider_organization_id, sender_account_id, sender_organization_id,
 			       message, status, created_at, answered_at
 			from introduction_request
+			""";
+
+	private static final String ADMIN_FILTER = """
+			where (cast(:pattern as text) is null or lower(solution_name) like :pattern escape '\\')
+			  and (cast(:status as text) is null or status = :status)
 			""";
 
 	private final JdbcClient jdbc;
@@ -93,8 +101,44 @@ public class IntroductionRepository {
 			.update();
 	}
 
+	/** One page for operators: those that wait first, the longest wait on top, then the answered, newest first. */
+	public List<Request> adminPage(@Nullable String text, @Nullable String status, int limit, long offset) {
+		return adminFiltered(COLUMNS + ADMIN_FILTER + """
+				order by case status when 'pending' then 0 else 1 end,
+				         case when status = 'pending' then created_at end asc,
+				         created_at desc, id
+				limit :limit offset :offset
+				""", text, status).param("limit", limit).param("offset", offset).query(IntroductionRepository::request).list();
+	}
+
+	public long adminCount(@Nullable String text, @Nullable String status) {
+		return adminFiltered("select count(*) from introduction_request\n" + ADMIN_FILTER, text, status)
+			.query(Long.class)
+			.single();
+	}
+
+	/** How many requests were sent before the moment given and still wait. */
+	public long pendingBefore(Instant moment) {
+		return jdbc.sql("select count(*) from introduction_request where status = 'pending' and created_at < ?")
+			.param(Timestamp.from(moment))
+			.query(Long.class)
+			.single();
+	}
+
+	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, @Nullable String status) {
+		return jdbc.sql(sql)
+			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
+			.param("status", status, Types.VARCHAR);
+	}
+
+	/** A pattern that matches the text anywhere, with the characters LIKE gives a meaning taken literally. */
+	private static String containing(String text) {
+		String literal = text.toLowerCase(Locale.ROOT).replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+		return "%" + literal + "%";
+	}
+
 	private static Request request(ResultSet row, int index) throws SQLException {
-		java.sql.Timestamp answered = row.getTimestamp("answered_at");
+		Timestamp answered = row.getTimestamp("answered_at");
 		return new Request(row.getObject("id", UUID.class), row.getObject("solution_id", UUID.class),
 				row.getString("solution_name"), row.getObject("provider_organization_id", UUID.class),
 				row.getObject("sender_account_id", UUID.class), row.getObject("sender_organization_id", UUID.class),

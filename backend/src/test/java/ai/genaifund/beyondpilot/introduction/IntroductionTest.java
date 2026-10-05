@@ -40,6 +40,8 @@ class IntroductionTest {
 
 	private static final String INTRODUCTION = "/api/introduction";
 
+	private static final String INTRODUCTIONS_ADMIN = INTRODUCTION + "/admin/introductions";
+
 	@LocalServerPort
 	private int port;
 
@@ -191,6 +193,39 @@ class IntroductionTest {
 				"INTRODUCTION_REQUEST_NOT_FOUND");
 		assertProblem(get(signIn("loner@only-gmail.test"), INTRODUCTION + "/mine/received"), 403,
 				"INTRODUCTION_NEEDS_ORGANIZATION");
+	}
+
+	@Test
+	void anOperatorReadsTheRequestsInFullWithoutAnAddressAndSeesWhichWaitTooLong() {
+		String provider = organizationOwner("owner@admin-provider.test", "Admin Provider", "provider");
+		String slug = listedSolution(provider, "Admin Triage");
+		String buyer = organizationOwner("buyer@admin-buyer.test", "Admin Buyer", "enterprise");
+		ask(buyer, slug, "We need claims triage, in full.");
+		UUID id = firstReceived(provider);
+
+		String waiting = body(get(operator, INTRODUCTIONS_ADMIN + "?q=admin triage").expectStatus().isOk());
+
+		assertThat(JsonPath.<List<String>>read(waiting, "$.items[*].message")).containsExactly("We need claims triage, in full.");
+		assertThat(JsonPath.<String>read(waiting, "$.items[0].providerOrganization")).isEqualTo("Admin Provider");
+		assertThat(JsonPath.<String>read(waiting, "$.items[0].senderOrganization")).isEqualTo("Admin Buyer");
+		assertThat(JsonPath.<Boolean>read(waiting, "$.items[0].overdue")).isFalse();
+		assertThat(waiting).doesNotContain("buyer@admin-buyer.test");
+		jdbc.sql("update introduction_request set created_at = now() - interval '4 days' where id = ?")
+			.param(id)
+			.update();
+		String overdue = body(get(operator, INTRODUCTIONS_ADMIN + "?q=admin triage&status=pending").expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(overdue, "$.items[0].overdue")).isTrue();
+		assertThat(JsonPath.<Number>read(overdue, "$.overdue").longValue()).isGreaterThanOrEqualTo(1);
+		post(provider, INTRODUCTION + "/mine/received/" + id + "/decline", null).expectStatus().isNoContent();
+		String declined = body(get(operator, INTRODUCTIONS_ADMIN + "?q=admin triage").expectStatus().isOk());
+		assertThat(JsonPath.<String>read(declined, "$.items[0].status")).isEqualTo("declined");
+		assertThat(JsonPath.<Boolean>read(declined, "$.items[0].overdue")).isFalse();
+		assertThat(JsonPath.<List<Object>>read(
+				body(get(operator, INTRODUCTIONS_ADMIN + "?q=admin triage&status=pending").expectStatus().isOk()),
+				"$.items")).isEmpty();
+		// Only an operator reads them.
+		assertProblem(get(buyer, INTRODUCTIONS_ADMIN), 403, "IDENTITY_OPERATOR_REQUIRED");
+		client.get().uri(INTRODUCTIONS_ADMIN).exchange().expectStatus().isUnauthorized();
 	}
 
 	@Test

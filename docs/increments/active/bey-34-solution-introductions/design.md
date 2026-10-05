@@ -10,6 +10,7 @@ The decision behind it is [BEY-27, decision 9](../bey-27-main-flows-design/desig
 - **Wait for the answer.** At most one request from a person to a solution waits at a time. A new one can be sent once the provider has answered the earlier one.
 - **Hear of it as the provider.** The owners of the provider organization get an email with the sender's name, their organization and the message, and no address. It tells them to sign in and answer under My organization › Introductions.
 - **Answer.** An owner of the provider opens the list of requests and replies or declines. Members of the organization may read the list.
+- **Read, as an operator.** Under `/admin/introductions`, every request with its message in full and no address, those that wait first and the longest wait on top. A request that has waited more than three days is marked, and the page says how many there are. They narrow by state and by solution name.
 - **Be introduced.** On a reply, both people get an email with the other's name and address, and the request is marked replied. On a decline, the sender gets an email that the provider will not take it further, with no address.
 
 ## Boundary discovery
@@ -37,12 +38,13 @@ The dependency edges are new: `introduction → audit, identity, notification, o
 
 ## HTTP
 
-| Path                                                | Use                                                             |
-| --------------------------------------------------- | --------------------------------------------------------------- |
-| `POST /api/introduction/introductions`              | Ask for an introduction: the solution's address and the message |
-| `GET /api/introduction/mine/received`               | The requests to the caller's organization, newest first         |
-| `POST /api/introduction/mine/received/{id}/reply`   | An owner answers and both sides learn each other's address      |
-| `POST /api/introduction/mine/received/{id}/decline` | An owner declines                                               |
+| Path                                                | Use                                                                             |
+| --------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `POST /api/introduction/introductions`              | Ask for an introduction: the solution's address and the message                 |
+| `GET /api/introduction/admin/introductions`         | The requests for an operator: filter by state and solution name, overdue marked |
+| `GET /api/introduction/mine/received`               | The requests to the caller's organization, newest first                         |
+| `POST /api/introduction/mine/received/{id}/reply`   | An owner answers and both sides learn each other's address                      |
+| `POST /api/introduction/mine/received/{id}/decline` | An owner declines                                                               |
 
 The exact contract is `openapi.yml`.
 
@@ -51,6 +53,7 @@ The exact contract is `openapi.yml`.
 | Where                                   | What                                                                                  |
 | --------------------------------------- | ------------------------------------------------------------------------------------- |
 | `/solutions/[slug]`                     | The button, the dialog and the "request sent" state, as drawn in rows 4 and 5         |
+| `/admin/introductions`                  | The operators' list, with its overdue notice                                          |
 | `/workspace/organization/introductions` | The provider's requests with Reply and Decline; a tab beside Solutions for a provider |
 
 Every visible string is in both `messages/en.json` and `messages/vi.json`, and every refusal is shown by its code ([internationalization](../../../conventions.md#internationalization)). The screens follow the Figma frames; where the frames draw more than the API holds, the screen shows the empty state or leaves the element out.
@@ -61,7 +64,7 @@ Every visible string is in both `messages/en.json` and `messages/vi.json`, and e
 
 ## Known limits
 
-- Operators see none of it; the admin screens come later.
+- Operators only read: they cannot answer for the provider, close a request or block a sender.
 - There is no in-application notice: the owner learns of a request by email and by opening the list.
 - The Figma frames do not draw the owners' list of requests; it is built from the Solutions tab of the same page.
 - A request names a solution, not a person at the provider.
