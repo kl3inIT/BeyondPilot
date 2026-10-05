@@ -29,6 +29,9 @@ export const comingSoonPaths = [
   "search",
 ] as const;
 
+/** The address search engines and agents should know; staging and local hosts stay out of their index. */
+export const siteOrigin = "https://beyondpilot.ai";
+
 /** The live campaign runs on GenAI Fund's interim page until campaigns move onto BeyondPilot. */
 export const liveCampaignUrl = "https://beyondpilot.genaifund.ai/insurance-ai-tasco";
 
