@@ -292,6 +292,7 @@
       "columns": {
         "program": "Program",
         "status": "Status",
+        "runs": "Runs",
         "window": "Applications open",
         "open": "Open"
       },
@@ -495,7 +496,24 @@
           "confirm": "Unpublish",
           "done": "{name} is no longer public."
         }
-      }
+      },
+      "noDays": "Days not set",
+      "search": "Search programs by name",
+      "filters": {
+        "label": "Programs by state",
+        "all": "All",
+        "draft": "Drafts",
+        "open": "Open",
+        "upcoming": "Coming up",
+        "running": "Running",
+        "done": "Done"
+      },
+      "noMatch": {
+        "title": "No programs match",
+        "description": "Try another name, or look at every state.",
+        "clear": "Show all programs"
+      },
+      "countOf": "{count, plural, one {# program} other {# programs}} of {total}"
     },
     "accounts": {
       "metaTitle": "Accounts · BeyondPilot",

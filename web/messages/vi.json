@@ -292,6 +292,7 @@
       "columns": {
         "program": "Chương trình",
         "status": "Trạng thái",
+        "runs": "Thời gian",
         "window": "Thời gian nhận đơn",
         "open": "Mở"
       },
@@ -495,7 +496,24 @@
           "confirm": "Gỡ",
           "done": "{name} không còn công khai."
         }
-      }
+      },
+      "noDays": "Chưa đặt ngày",
+      "search": "Tìm chương trình theo tên",
+      "filters": {
+        "label": "Chương trình theo trạng thái",
+        "all": "Tất cả",
+        "draft": "Bản nháp",
+        "open": "Đang nhận đơn",
+        "upcoming": "Sắp diễn ra",
+        "running": "Đang diễn ra",
+        "done": "Đã kết thúc"
+      },
+      "noMatch": {
+        "title": "Không có chương trình nào khớp",
+        "description": "Thử tên khác, hoặc xem mọi trạng thái.",
+        "clear": "Xem tất cả chương trình"
+      },
+      "countOf": "{count, plural, other {# chương trình}} trên {total}"
     },
     "accounts": {
       "metaTitle": "Tài khoản · BeyondPilot",

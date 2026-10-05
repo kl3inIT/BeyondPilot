@@ -1072,6 +1072,12 @@ components:
         applications:
           $ref: "#/components/schemas/ProgramApplications"
           description: Null for a program that takes no applications here.
+        coverFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The cover, read at the public address of stored files."
         endsOn:
           type:
           - string

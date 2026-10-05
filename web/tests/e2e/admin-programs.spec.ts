@@ -11,6 +11,15 @@ function shown(page: Page, name: string) {
   return page.getByRole("button", { name, exact: true }).and(page.locator(":visible"));
 }
 
+/**
+ * Opens a program's Settings and waits until its scripts have loaded, so that what a test types is
+ * held by the form and not by the page as the server sent it.
+ */
+async function openSettings(page: Page, id: string) {
+  await page.goto(`/admin/programs/${id}/settings`);
+  await page.waitForLoadState("networkidle");
+}
+
 /** Answers a command the browser sends about a program; returns the bodies it saw. */
 async function answer(page: Page, path: string, status: number, body?: object) {
   const sent: unknown[] = [];
@@ -62,6 +71,25 @@ test.describe("admin programs", () => {
     await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
     await expectNoSeriousA11yViolations(page);
 
+    // The tabs count each state; a tab and a search narrow the list, and the address keeps them.
+    await expect(page.getByRole("tab", { name: "Drafts 1" })).toBeVisible();
+    await page.getByRole("tab", { name: "Drafts 1" }).click();
+    await expect(page).toHaveURL(/[?&]state=draft/);
+    await expect(
+      page.getByRole("link", { name: "AI for Insurance Challenge × Tasco" }),
+    ).toHaveCount(0);
+    await page.getByRole("tab", { name: "All 2" }).click();
+    await page.getByRole("searchbox", { name: "Search programs by name" }).fill("tasco");
+    await expect(page).toHaveURL(/[?&]q=tasco/);
+    await expect(page.getByRole("link", { name: "GenAI Monthly Meetup" })).toHaveCount(0);
+    await page.getByRole("searchbox", { name: "Search programs by name" }).fill("nothing like it");
+    await expect(page.getByText("No programs match").and(page.locator(":visible"))).toBeVisible();
+    await page
+      .getByRole("link", { name: "Show all programs" })
+      .and(page.locator(":visible"))
+      .click();
+    await expect(page).toHaveURL("/admin/programs");
+
     await page.getByRole("link", { name: "AI for Insurance Challenge × Tasco" }).click();
     await expect(page).toHaveURL(`/admin/programs/${tasco}/settings`);
   });
@@ -76,8 +104,13 @@ test.describe("admin programs", () => {
     await page.goto("/admin/programs");
 
     await page.getByRole("button", { name: "New program" }).click();
-    await page.getByLabel("Name").fill("GenAI Monthly Meetup · Hà Nội");
-    await expect(page.getByLabel("Address")).toHaveValue("genai-monthly-meetup-ha-noi");
+    await page
+      .getByRole("dialog")
+      .getByRole("textbox", { name: "Name" })
+      .fill("GenAI Monthly Meetup · Hà Nội");
+    await expect(page.getByRole("dialog").getByRole("textbox", { name: "Address" })).toHaveValue(
+      "genai-monthly-meetup-ha-noi",
+    );
     await expectNoSeriousA11yViolations(page);
     await page.getByRole("button", { name: "Create program" }).click();
 
@@ -100,11 +133,16 @@ test.describe("admin programs", () => {
     await page.goto("/admin/programs");
 
     await page.getByRole("button", { name: "New program" }).click();
-    await page.getByLabel("Name").fill("AI for Insurance Challenge");
+    await page
+      .getByRole("dialog")
+      .getByRole("textbox", { name: "Name" })
+      .fill("AI for Insurance Challenge");
     await page.getByRole("button", { name: "Create program" }).click();
 
     await expect(page.getByText("Another program already has this address.")).toBeVisible();
-    await expect(page.getByLabel("Address")).toHaveAttribute("aria-invalid", "true");
+    await expect(
+      page.getByRole("dialog").getByRole("textbox", { name: "Address" }),
+    ).toHaveAttribute("aria-invalid", "true");
   });
 
   test("a draft lists what blocks publishing, and each line leads to its field", async ({
@@ -113,7 +151,7 @@ test.describe("admin programs", () => {
     baseURL,
   }) => {
     await signInAs(context, "operator", baseURL!);
-    await page.goto(`/admin/programs/${draft}/settings`);
+    await openSettings(page, draft);
 
     await expect(page.getByRole("heading", { name: "Before you can publish" })).toBeVisible();
     await expect(shown(page, "Publish")).toBeDisabled();
@@ -147,7 +185,7 @@ test.describe("admin programs", () => {
       createdAt: "2026-10-05T03:00:00Z",
       updatedAt: "2026-10-05T04:00:00Z",
     });
-    await page.goto(`/admin/programs/${draft}/settings`);
+    await openSettings(page, draft);
 
     await page
       .getByRole("textbox", { name: "Summary" })
@@ -205,10 +243,17 @@ test.describe("admin programs", () => {
   }) => {
     await signInAs(context, "operator", baseURL!);
     const saved = await answer(page, `/api/program/admin/programs/${draft}`, 200, {});
-    await page.goto(`/admin/programs/${draft}/settings`);
+    await openSettings(page, draft);
 
-    await page.getByLabel("Starts", { exact: true }).fill("2026-11-09");
-    await page.getByLabel("Ends", { exact: true }).fill("2026-11-02");
+    // Typed before the form has hydrated, a value is lost; typing again until the form holds it.
+    await expect(async () => {
+      await page.getByLabel("Starts", { exact: true }).fill("2026-11-09");
+      await page.getByLabel("Ends", { exact: true }).fill("2026-11-02");
+      await expect(page.getByText("You have unsaved changes.")).toBeVisible({ timeout: 1000 });
+      await expect(page.getByLabel("Starts", { exact: true })).toHaveValue("2026-11-09", {
+        timeout: 1000,
+      });
+    }).toPass();
     await shown(page, "Save changes").click();
 
     await expect(page.getByText("The end is before the start.")).toBeVisible();
@@ -225,7 +270,7 @@ test.describe("admin programs", () => {
       status: 409,
       code: "PROGRAM_CHANGED_MEANWHILE",
     });
-    await page.goto(`/admin/programs/${tasco}/settings`);
+    await openSettings(page, tasco);
 
     await page.getByRole("textbox", { name: "Summary" }).fill("Changed here too.");
     await shown(page, "Save changes").click();
@@ -241,7 +286,7 @@ test.describe("admin programs", () => {
     baseURL,
   }) => {
     await signInAs(context, "operator", baseURL!);
-    await page.goto(`/admin/programs/${tasco}/settings`);
+    await openSettings(page, tasco);
     await expect(page.getByText("Published", { exact: true })).toBeVisible();
     await expect(page.getByRole("textbox", { name: "Address" })).toBeDisabled();
     await expect(
@@ -258,7 +303,7 @@ test.describe("admin programs", () => {
   }) => {
     await signInAs(context, "operator", baseURL!);
     const unpublished = await answer(page, `/api/program/admin/programs/${tasco}/unpublish`, 204);
-    await page.goto(`/admin/programs/${tasco}/settings`);
+    await openSettings(page, tasco);
 
     await page.getByRole("button", { name: "More actions" }).click();
     await page.getByRole("menuitem", { name: "Unpublish…" }).click();
@@ -300,7 +345,7 @@ test.describe("admin programs", () => {
     };
     const saved = await answer(page, `/api/program/admin/programs/${draft}`, 200, ready);
     const published = await answer(page, `/api/program/admin/programs/${draft}/publish`, 204);
-    await page.goto(`/admin/programs/${draft}/settings`);
+    await openSettings(page, draft);
 
     await page
       .getByRole("textbox", { name: "Summary" })

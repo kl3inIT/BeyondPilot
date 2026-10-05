@@ -16,6 +16,8 @@ public record AdminProgramSummaryResponse(@Schema(requiredMode = Schema.Required
 						"buildathon", "grant", "venture_building", "pitch_competition", "event_series",
 						"event" }) String type,
 		@Schema(types = { "string", "null" }) @Nullable String partnerName,
+		@Schema(types = { "string", "null" }, format = "uuid",
+				description = "The cover, read at the public address of stored files.") @Nullable UUID coverFileId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "draft", "published" }) String status,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "upcoming", "open", "running", "done" },

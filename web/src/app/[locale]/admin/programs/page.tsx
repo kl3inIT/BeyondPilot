@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ProgramsAdminPage } from "@/features/program/programs-admin-page";
 import { readAdminPrograms } from "@/features/program/program-queries";
+import { loadProgramsSearch, narrowPrograms } from "@/features/program/programs-search";
 import { requireRole } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
 
@@ -17,11 +18,15 @@ export async function generateMetadata({
 
 export default async function ProgramsAdminRoute({
   params,
+  searchParams,
 }: PageProps<"/[locale]/admin/programs">) {
   const { locale } = await params;
   setRequestLocale(locale);
   await requireRole("operator", siteRoutes.adminPrograms);
-  const programs = await readAdminPrograms();
+  const [programs, search] = await Promise.all([
+    readAdminPrograms(),
+    loadProgramsSearch(searchParams),
+  ]);
 
-  return <ProgramsAdminPage programs={programs} />;
+  return <ProgramsAdminPage list={narrowPrograms(programs.items, search)} search={search} />;
 }

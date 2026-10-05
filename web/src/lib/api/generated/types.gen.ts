@@ -127,6 +127,10 @@ export type AdminProgramSummary = {
      * Null for a program that takes no applications here.
      */
     applications?: ProgramApplications;
+    /**
+     * The cover, read at the public address of stored files.
+     */
+    coverFileId?: string | null;
     endsOn?: string | null;
     id: string;
     name: string;

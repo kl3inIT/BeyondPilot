@@ -34,7 +34,7 @@ public class ProgramQueryRepository {
 	/** Every program in any status, the newest first, each with the phase it would be in at {@code now}. */
 	public List<AdminProgramSummaryResponse> all(Instant now) {
 		return jdbc.sql("""
-				select id, slug, name, type, partner_name, status, starts_on, ends_on, applications_open_at,
+				select id, slug, name, type, partner_name, cover_file_id, status, starts_on, ends_on, applications_open_at,
 				       applications_close_at, shortlist_size, outcomes_due_on, allow_updates_until_close, updated_at
 				from program
 				order by created_at desc, id
@@ -45,7 +45,7 @@ public class ProgramQueryRepository {
 			LocalDate endsOn = day(row.getDate("ends_on"));
 			return new AdminProgramSummaryResponse(row.getObject("id", UUID.class), row.getString("slug"),
 					row.getString("name"), row.getString("type"), row.getString("partner_name"),
-					row.getString("status"), ProgramPhase.of(startsOn, endsOn, opensAt, closesAt, now).code(),
+					row.getObject("cover_file_id", UUID.class), row.getString("status"), ProgramPhase.of(startsOn, endsOn, opensAt, closesAt, now).code(),
 					applications(row, opensAt, closesAt), startsOn, endsOn, row.getTimestamp("updated_at").toInstant());
 		}).list();
 	}
