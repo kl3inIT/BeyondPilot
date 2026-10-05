@@ -715,6 +715,46 @@
       "pitch_competition": "Pitch competition",
       "event_series": "Event series",
       "event": "Event"
+    },
+    "countdown": {
+      "closes": "Closes {closes}",
+      "closed": "Applications closed on {closes}",
+      "left": "{days, plural, =0 {Last day} one {# day left} other {# days left}} · closes {closes}"
+    }
+  },
+  "Programs": {
+    "metaTitle": "Programs and events · BeyondPilot",
+    "title": "Programs and events",
+    "lead": "Enterprise challenges, open innovation calls, build weeks and meetups that GenAI Fund runs with its partners across Southeast Asia.",
+    "filters": {
+      "label": "Programs by phase",
+      "all": "All",
+      "open": "Open now",
+      "upcoming": "Coming up",
+      "done": "Done",
+      "type": "Type of program",
+      "allTypes": "All types"
+    },
+    "open": "Open now",
+    "upcoming": "Coming up",
+    "done": "Done",
+    "programCount": "{count, plural, one {# program} other {# programs}}",
+    "itemCount": "{count, plural, one {# event} other {# events}}",
+    "undated": "Earlier",
+    "live": "Live",
+    "running": "Running",
+    "nextUp": "Coming up next",
+    "applyNow": "Apply now",
+    "readBrief": "Read the brief",
+    "online": "Online",
+    "register": "Register",
+    "opensOn": "Applications open {date}",
+    "readRecap": "Read the recap",
+    "readPage": "See the program",
+    "empty": {
+      "title": "No programs here yet",
+      "description": "Try another type, or look at every program.",
+      "clear": "Show all programs"
     }
   }
 }

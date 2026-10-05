@@ -715,6 +715,46 @@
       "pitch_competition": "Cuộc thi gọi vốn",
       "event_series": "Chuỗi sự kiện",
       "event": "Sự kiện"
+    },
+    "countdown": {
+      "closes": "Đóng {closes}",
+      "closed": "Đã đóng nhận đơn lúc {closes}",
+      "left": "{days, plural, =0 {Ngày cuối} other {Còn # ngày}} · đóng {closes}"
+    }
+  },
+  "Programs": {
+    "metaTitle": "Chương trình và sự kiện · BeyondPilot",
+    "title": "Chương trình và sự kiện",
+    "lead": "Thử thách doanh nghiệp, kêu gọi đổi mới mở, tuần lễ xây dựng và các buổi gặp mặt mà GenAI Fund tổ chức cùng đối tác khắp Đông Nam Á.",
+    "filters": {
+      "label": "Chương trình theo giai đoạn",
+      "all": "Tất cả",
+      "open": "Đang mở",
+      "upcoming": "Sắp diễn ra",
+      "done": "Đã kết thúc",
+      "type": "Loại chương trình",
+      "allTypes": "Mọi loại"
+    },
+    "open": "Đang mở",
+    "upcoming": "Sắp diễn ra",
+    "done": "Đã kết thúc",
+    "programCount": "{count, plural, other {# chương trình}}",
+    "itemCount": "{count, plural, other {# sự kiện}}",
+    "undated": "Trước đó",
+    "live": "Đang mở",
+    "running": "Đang diễn ra",
+    "nextUp": "Sắp tới",
+    "applyNow": "Nộp đơn ngay",
+    "readBrief": "Xem đề bài",
+    "online": "Trực tuyến",
+    "register": "Đăng ký",
+    "opensOn": "Mở nhận đơn {date}",
+    "readRecap": "Xem tổng kết",
+    "readPage": "Xem chương trình",
+    "empty": {
+      "title": "Chưa có chương trình nào ở đây",
+      "description": "Thử loại khác, hoặc xem mọi chương trình.",
+      "clear": "Xem tất cả chương trình"
     }
   }
 }
