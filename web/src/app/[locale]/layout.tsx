@@ -17,6 +17,8 @@ const inter = Inter({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin", "vietnamese"],
+  // Only charts and keyboard hints use it, never the first view, so it is not preloaded.
+  preload: false,
 });
 
 export function generateStaticParams() {
