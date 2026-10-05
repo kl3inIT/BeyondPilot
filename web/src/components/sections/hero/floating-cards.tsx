@@ -47,6 +47,7 @@ function FloatingCards() {
             alt="NVIDIA"
             width={400}
             height={200}
+            sizes="6rem"
             className="h-12 w-24 object-contain dark:invert"
           />
         </div>
@@ -58,6 +59,7 @@ function FloatingCards() {
             alt="AWS"
             width={400}
             height={200}
+            sizes="5rem"
             className="h-10 w-20 object-contain dark:invert"
           />
         </div>

@@ -8,6 +8,11 @@ const springPaths = ["/api/:path*", "/login/:path*", "/logout", "/oauth2/:path*"
 const nextConfig: NextConfig = {
   output: "standalone",
   reactCompiler: true,
+  experimental: {
+    // Tailwind's stylesheet is small and most visitors arrive for the first time, so it rides in the
+    // HTML instead of blocking the first paint as a separate request.
+    inlineCss: true,
+  },
   async headers() {
     return [
       {
