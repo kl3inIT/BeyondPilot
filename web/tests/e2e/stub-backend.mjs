@@ -90,6 +90,70 @@ const events = [
   requestId: null,
 }));
 
+/** The programs an operator edits: a draft that lacks what publishing needs, and a published one. */
+const programs = {
+  "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c01": {
+    id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c01",
+    slug: "genai-monthly-meetup",
+    slugFixed: false,
+    publishIssues: ["summary", "cover", "dates"],
+    name: "GenAI Monthly Meetup",
+    type: "event_series",
+    partnerName: null,
+    summary: null,
+    about: null,
+    startsOn: null,
+    endsOn: null,
+    status: "draft",
+    pageKind: "standard",
+    externalUrl: null,
+    coverFileId: null,
+    keyDates: [],
+    events: [],
+    version: 0,
+    createdAt: "2026-10-05T03:00:00Z",
+    updatedAt: "2026-10-05T03:00:00Z",
+  },
+  "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c02": {
+    id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c02",
+    slug: "insurance-ai-tasco",
+    slugFixed: true,
+    publishIssues: [],
+    name: "AI for Insurance Challenge × Tasco",
+    type: "enterprise_challenge",
+    partnerName: "Tasco",
+    summary:
+      "In Vietnam, insurance is still a piece of paper you can lose. Change that by 15 October.",
+    about: null,
+    startsOn: "2026-09-23",
+    endsOn: "2026-12-05",
+    status: "published",
+    pageKind: "custom",
+    externalUrl: null,
+    coverFileId: "4c0d5f9e-2b1a-4e3c-8d7f-6a5b4c3d2e01",
+    applications: {
+      opensAt: "2026-09-22T17:00:00Z",
+      closesAt: "2026-10-15T16:59:00Z",
+      shortlistSize: 10,
+      outcomesDueOn: "2026-10-16",
+      allowUpdatesUntilClose: true,
+    },
+    keyDates: [
+      {
+        title: "Briefing with Tasco's business team",
+        startsAt: "2026-10-07T08:30:00Z",
+        endsAt: "2026-10-07T10:00:00Z",
+        allDay: false,
+        note: "Online",
+      },
+    ],
+    events: [],
+    version: 4,
+    createdAt: "2026-09-20T03:00:00Z",
+    updatedAt: "2026-10-04T03:00:00Z",
+  },
+};
+
 function json(response, status, body) {
   response.writeHead(status, { "Content-Type": "application/json" });
   response.end(JSON.stringify(body));
@@ -159,6 +223,30 @@ createServer((request, response) => {
       items,
       newer: items.length > 0 && start > 0 ? items[0].id : null,
       older: items.length > 0 && start + items.length < matching.length ? items.at(-1).id : null,
+    });
+  }
+  if (url.pathname.startsWith("/api/program/admin/programs")) {
+    if (account?.role !== "operator") {
+      return json(response, account ? 403 : 401, {});
+    }
+    const id = url.pathname.split("/")[5];
+    if (id) {
+      return programs[id] ? json(response, 200, programs[id]) : json(response, 404, {});
+    }
+    return json(response, 200, {
+      items: Object.values(programs).map((program) => ({
+        id: program.id,
+        slug: program.slug,
+        name: program.name,
+        type: program.type,
+        partnerName: program.partnerName,
+        status: program.status,
+        phase: program.status === "draft" ? "upcoming" : "open",
+        applications: program.applications,
+        startsOn: program.startsOn,
+        endsOn: program.endsOn,
+        updatedAt: program.updatedAt,
+      })),
     });
   }
   response.writeHead(url.pathname === "/health" ? 200 : 404).end();

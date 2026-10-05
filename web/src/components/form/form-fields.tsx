@@ -168,10 +168,8 @@ function FormError() {
   return (
     <form.Subscribe selector={(state) => state.errorMap.onServer}>
       {(error) => {
-        const message =
-          error && typeof error === "object" && "form" in error && typeof error.form === "string"
-            ? error.form
-            : undefined;
+        // TanStack Form keeps the `form` part of the errors setServerErrors gave as the form's own error.
+        const message = typeof error === "string" ? error : undefined;
         return message ? <FieldError>{message}</FieldError> : null;
       }}
     </form.Subscribe>
