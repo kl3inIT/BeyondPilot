@@ -5,7 +5,7 @@
   },
   "Site": {
     "brand": "BeyondPilot",
-    "poweredBy": "Powered by",
+    "backedBy": "Backed by",
     "genaiFund": "GenAI Fund",
     "skipToContent": "Skip to content",
     "notifications": "Notifications",
@@ -54,7 +54,7 @@
       "linkedin": "LinkedIn",
       "facebook": "Facebook",
       "x": "X",
-      "copyright": "© {year} GenAI Fund"
+      "copyright": "© {year} BeyondPilot"
     }
   },
   "Campaign": {
@@ -217,8 +217,8 @@
       "reviewA": "GenAI Fund screens every submission and invites a shortlist to present on demo day, where the enterprise and judges score live. Every applicant hears back.",
       "shortlistQ": "What happens if we are shortlisted?",
       "shortlistA": "You move into a scoped pilot with the enterprise. Selected teams can also be considered for investment, at the programme partners’ discretion.",
-      "runsQ": "Who runs BeyondPilot?",
-      "runsA": "BeyondPilot is run by GenAI Fund, the AI-focused fund connecting enterprises with AI builders across Southeast Asia."
+      "runsQ": "Who is behind BeyondPilot?",
+      "runsA": "BeyondPilot is backed by GenAI Fund, the AI-focused fund connecting enterprises with AI builders across Southeast Asia."
     }
   },
   "ComingSoon": {

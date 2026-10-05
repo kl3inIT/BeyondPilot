@@ -5,7 +5,7 @@
   },
   "Site": {
     "brand": "BeyondPilot",
-    "poweredBy": "Vận hành bởi",
+    "backedBy": "Được hậu thuẫn bởi",
     "genaiFund": "GenAI Fund",
     "skipToContent": "Chuyển tới nội dung",
     "notifications": "Thông báo",
@@ -54,7 +54,7 @@
       "linkedin": "LinkedIn",
       "facebook": "Facebook",
       "x": "X",
-      "copyright": "© {year} GenAI Fund"
+      "copyright": "© {year} BeyondPilot"
     }
   },
   "Campaign": {
@@ -217,8 +217,8 @@
       "reviewA": "GenAI Fund sàng lọc mọi bài nộp và mời các đội được chọn trình bày tại demo day, nơi doanh nghiệp và ban giám khảo chấm điểm trực tiếp. Ai ứng tuyển cũng nhận được phản hồi.",
       "shortlistQ": "Nếu được chọn thì chuyện gì xảy ra tiếp?",
       "shortlistA": "Bạn bước vào giai đoạn pilot có phạm vi rõ ràng cùng doanh nghiệp. Các đội được chọn cũng có thể được xem xét đầu tư, tuỳ quyết định của đối tác chương trình.",
-      "runsQ": "Ai vận hành BeyondPilot?",
-      "runsA": "BeyondPilot do GenAI Fund vận hành — quỹ tập trung vào AI, kết nối doanh nghiệp với nhà phát triển AI khắp Đông Nam Á."
+      "runsQ": "Ai đứng sau BeyondPilot?",
+      "runsA": "BeyondPilot được GenAI Fund hậu thuẫn — quỹ tập trung vào AI, kết nối doanh nghiệp với nhà phát triển AI khắp Đông Nam Á."
     }
   },
   "ComingSoon": {
