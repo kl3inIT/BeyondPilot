@@ -6,10 +6,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { JsonLd } from "@/components/layout/json-ld";
 import { Section } from "@/components/ui/section";
+import { faqQuestions } from "@/components/sections/faq/faq-questions";
 import { genaiFundLinks } from "@/lib/site";
-
-const questions = ["who", "company", "product", "review", "shortlist", "runs"] as const;
 
 /** The title and a way to ask beside the answers from `lg`; stacked on narrower screens. */
 function Faq() {
@@ -36,7 +36,7 @@ function Faq() {
           </p>
         </div>
         <Accordion size="lg" defaultValue={["who"]} className="min-w-0 flex-1">
-          {questions.map((id) => (
+          {faqQuestions.map((id) => (
             <AccordionItem key={id} value={id}>
               <AccordionTrigger>{t(`${id}Q`)}</AccordionTrigger>
               <AccordionContent>{t(`${id}A`)}</AccordionContent>
@@ -44,6 +44,18 @@ function Faq() {
           ))}
         </Accordion>
       </div>
+      {/* Every answer, including the closed ones the accordion leaves out of the page. */}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqQuestions.map((id) => ({
+            "@type": "Question",
+            name: t(`${id}Q`),
+            acceptedAnswer: { "@type": "Answer", text: t(`${id}A`) },
+          })),
+        }}
+      />
     </Section>
   );
 }

@@ -67,7 +67,8 @@ function yamlString(value: string) {
 /**
  * The Markdown for Agents form of a rendered page (developers.cloudflare.com, "Markdown for
  * Agents"): a frontmatter block with the title, description and address, then the page's `<main>`
- * as Markdown. Without a `<main>` the whole body is converted.
+ * as Markdown, and last the page's JSON-LD in fenced blocks, as the spec keeps it. Without a
+ * `<main>` the whole body is converted.
  */
 function pageToMarkdown(html: string, url: string): string {
   const title = attribute(html, /<title[^>]*>([^<]*)<\/title>/i);
@@ -88,7 +89,11 @@ function pageToMarkdown(html: string, url: string): string {
     "---",
   ].join("\n");
 
-  return `${frontmatter}\n\n${converter(url).turndown(main).trim()}\n`;
+  const structuredData = [
+    ...html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi),
+  ].map(([, json]) => `\`\`\`json\n${JSON.stringify(JSON.parse(json), null, 2)}\n\`\`\``);
+
+  return [frontmatter, converter(url).turndown(main).trim(), ...structuredData].join("\n\n") + "\n";
 }
 
 /** The few entities React writes into attributes and titles. */

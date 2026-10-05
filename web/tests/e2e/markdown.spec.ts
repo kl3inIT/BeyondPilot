@@ -28,3 +28,34 @@ test.describe("Markdown for agents", () => {
     expect(response.headers()["content-type"]).toBe("text/markdown; charset=utf-8");
   });
 });
+
+// What a language model reads before it reads the pages.
+test.describe("llms.txt and structured data", () => {
+  test("llms.txt describes the site, its pages, its program and its answers", async ({
+    request,
+  }) => {
+    const response = await request.get("/llms.txt");
+
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toBe("text/markdown; charset=utf-8");
+    const text = await response.text();
+    expect(text).toMatch(/^# BeyondPilot\n\n> /);
+    expect(text).toContain("AI for Insurance Challenge × Tasco");
+    expect(text).toContain("- **Who can apply to a campaign?**");
+  });
+
+  test("the home page describes the site and every answer as JSON-LD", async ({ page }) => {
+    await page.goto("/");
+
+    const blocks = await page
+      .locator('script[type="application/ld+json"]')
+      .evaluateAll((scripts) => scripts.map((script) => JSON.parse(script.textContent ?? "")));
+    const faq = blocks.find((block) => block["@type"] === "FAQPage");
+    expect(faq.mainEntity).toHaveLength(6);
+    const graph = blocks.find((block) => block["@graph"])["@graph"];
+    expect(graph.map((node: { "@type": string }) => node["@type"])).toEqual([
+      "Organization",
+      "WebSite",
+    ]);
+  });
+});

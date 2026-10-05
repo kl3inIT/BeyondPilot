@@ -18,6 +18,7 @@ const page = `<!DOCTYPE html><html><head>
 <img alt="Builders at Build Week" src="/_next/image?url=%2Fprograms%2Fdemo-day.jpg&amp;w=640&amp;q=75"/>
 <img alt="" src="/landing/glow.png"/>
 <script>self.__next_f.push([1])</script>
+<script type="application/ld+json">{"@type":"FAQPage","name":"\\u003cb>Q"}</script>
 </main>
 <footer>© 2026 BeyondPilot</footer>
 </body></html>`;
@@ -57,6 +58,12 @@ describe("pageToMarkdown", () => {
     ]) {
       expect(markdown).not.toContain(absent);
     }
+  });
+
+  it("ends with the page's structured data as fenced JSON", () => {
+    expect(markdown.endsWith('```json\n{\n  "@type": "FAQPage",\n  "name": "<b>Q"\n}\n```\n')).toBe(
+      true,
+    );
   });
 
   it("counts about four characters to a token", () => {
