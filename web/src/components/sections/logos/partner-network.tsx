@@ -4,6 +4,9 @@ import Image from "next/image";
 
 import { Section } from "@/components/ui/section";
 
+/** Each shape's tallest height in pixels (md and up), so a logo asks for an image of its drawn width. */
+const logoHeight = { wordmark: 22, long: 24, medium: 28, stacked: 36, emblem: 48 } as const;
+
 /**
  * A logo's height follows its shape, so a long wordmark and a stacked mark carry the same weight
  * on the panel: the longer the mark, the lower it sits. At night the logos turn to one light ink,
@@ -34,9 +37,7 @@ const panel = cva("flex flex-col gap-5 rounded-2xl border bg-card p-5 md:gap-7 m
   },
 });
 
-type Organisation = { file: string; name: string; width: number } & Required<
-  VariantProps<typeof logo>
->;
+type Organisation = { file: string; name: string; width: number; shape: keyof typeof logoHeight };
 
 // The press only reports, so its panel carries no line about what it brings.
 type Role = (
@@ -144,6 +145,7 @@ function PartnerNetwork() {
                       alt={name}
                       width={width}
                       height={112}
+                      sizes={`${Math.ceil((width * logoHeight[shape]) / 112)}px`}
                       className={logo({ shape })}
                     />
                   </li>

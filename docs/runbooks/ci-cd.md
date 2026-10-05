@@ -88,9 +88,9 @@ Dumps stay on this host until an off-host backup target is chosen.
 
 ### The reverse proxy
 
-One proxy host in Nginx Proxy Manager: `beyondpilot.vadan.app`, forwarding to `http://beyondpilot-web:3000`, with a Let's Encrypt certificate, Force SSL, HTTP/2 and the advanced configuration below.
+One proxy host in Nginx Proxy Manager serves `beyondpilot.vadan.app`, `beyondpilot.ai` and `www.beyondpilot.ai`, forwarding to `http://beyondpilot-web:3000`, with one Let's Encrypt certificate for the three names, Force SSL, HTTP/2 and the advanced configuration below. GenAI Fund owns `beyondpilot.ai` and keeps its DNS at Namecheap: the `@` and `www` A records point at the staging host, and the mail records are theirs. The web application opens `robots.txt` to crawlers on `beyondpilot.ai` only and closes it on every other host, so staging is never indexed next to it.
 
-The browser sees one origin, so Spring's paths go to the api in the advanced configuration of `beyondpilot.vadan.app`. The upstream is a variable, so nginx resolves it per request and the host keeps working while the api container is being replaced. A custom location would resolve it at load and disable the host whenever the container is absent:
+The browser sees one origin, so Spring's paths go to the api in the advanced configuration of that proxy host. The upstream is a variable, so nginx resolves it per request and the host keeps working while the api container is being replaced. A custom location would resolve it at load and disable the host whenever the container is absent:
 
 ```nginx
 location ~ ^/(api|login|logout|oauth2|ott)(/|$) {

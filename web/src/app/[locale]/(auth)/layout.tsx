@@ -18,7 +18,7 @@ export default function AuthLayout({ children }: LayoutProps<"/[locale]">) {
         {t("skipToContent")}
       </a>
       <header className="flex items-center px-5 py-5 md:px-8 lg:px-16">
-        <BrandLockup showPoweredBy={false} />
+        <BrandLockup showBackedBy={false} />
       </header>
       <main
         id="content"

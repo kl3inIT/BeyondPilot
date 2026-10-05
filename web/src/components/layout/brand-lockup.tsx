@@ -5,12 +5,12 @@ import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
 type BrandLockupProps = {
-  /** The header and menu show the name alone; the footer adds "Powered by GenAI Fund" under it. */
-  showPoweredBy?: boolean;
+  /** The header and menu show the name alone; the footer adds "Backed by GenAI Fund" under it. */
+  showBackedBy?: boolean;
 };
 
 /** "BeyondPilot", with GenAI Fund standing behind it in the footer. */
-function BrandLockup({ showPoweredBy = true }: BrandLockupProps) {
+function BrandLockup({ showBackedBy = true }: BrandLockupProps) {
   const t = useTranslations("Site");
 
   return (
@@ -21,9 +21,9 @@ function BrandLockup({ showPoweredBy = true }: BrandLockupProps) {
       >
         {t("brand")}
       </Link>
-      {showPoweredBy && (
+      {showBackedBy && (
         <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-          {t("poweredBy")}
+          {t("backedBy")}
           <Image
             src="/brand/genaifund-logo.png"
             alt={t("genaiFund")}

@@ -13,7 +13,9 @@ const scopes = ["agentic", "document", "insurance", "retail"] as const;
 
 /**
  * One question and one search on Cool Paper, with the sky light behind it and real cards around it
- * (DESIGN.md › Landing structure). Text rises in on load, one line after another.
+ * (DESIGN.md › Landing structure). Text rises in on load, one line after another; the heading
+ * rises without fading, because a browser skips an invisible element when it measures the largest
+ * paint, and the heading is that paint.
  */
 function Hero() {
   const t = useTranslations("Home.hero");
@@ -44,7 +46,7 @@ function Hero() {
               <ArrowRightIcon className="size-3.5" aria-hidden="true" />
             </span>
           </a>
-          <h1 className="animate-in text-4xl font-semibold text-balance delay-180 ease-entrance animation-duration-800 fill-mode-both fade-in slide-in-from-bottom-4 motion-reduce:animate-none lg:text-7xl lg:tracking-display">
+          <h1 className="animate-in text-4xl font-semibold text-balance delay-180 ease-entrance animation-duration-800 fill-mode-both slide-in-from-bottom-4 motion-reduce:animate-none lg:text-7xl lg:tracking-display">
             {t("title")}
           </h1>
           <p className="max-w-145 animate-in text-base font-medium text-muted-foreground delay-260 ease-entrance animation-duration-800 fill-mode-both fade-in slide-in-from-bottom-4 motion-reduce:animate-none lg:text-xl">
