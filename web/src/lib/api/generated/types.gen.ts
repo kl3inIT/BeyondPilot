@@ -275,6 +275,55 @@ export type Problem = {
 };
 
 /**
+ * A program as its public page shows it.
+ */
+export type Program = {
+    /**
+     * The text of the standard page.
+     */
+    about?: string | null;
+    /**
+     * Null for a program that takes no applications here. Its opening, its closing and the day outcomes are due belong in the timeline beside the key dates.
+     */
+    applications?: ProgramApplications;
+    /**
+     * The cover, read at the public address of stored files.
+     */
+    coverFileId?: string | null;
+    endsOn?: string | null;
+    /**
+     * In the order the operator gave.
+     */
+    events: Array<ProgramEvent>;
+    externalUrl?: string | null;
+    /**
+     * In the order the operator gave.
+     */
+    keyDates: Array<ProgramKeyDate>;
+    name: string;
+    /**
+     * `standard` is built from these fields, `custom` is written in the web application for this address, `external` lives at `externalUrl`.
+     */
+    pageKind: 'standard' | 'custom' | 'external';
+    partnerName?: string | null;
+    /**
+     * Where the program stands now, worked out from its dates.
+     */
+    phase: 'upcoming' | 'open' | 'running' | 'done';
+    /**
+     * The address under /programs.
+     */
+    slug: string;
+    startsOn?: string | null;
+    /**
+     * `draft` only when an operator previews a program that is not public.
+     */
+    status: 'draft' | 'published';
+    summary?: string | null;
+    type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+};
+
+/**
  * When and how a program takes applications here.
  */
 export type ProgramApplications = {
@@ -331,6 +380,50 @@ export type ProgramKeyDate = {
     note?: string | null;
     startsAt: string;
     title: string;
+};
+
+/**
+ * The published programs, the latest to start first.
+ */
+export type ProgramList = {
+    items: Array<ProgramSummary>;
+};
+
+/**
+ * A published program as the public list shows it.
+ */
+export type ProgramSummary = {
+    /**
+     * Null for a program that takes no applications here.
+     */
+    applications?: ProgramApplications;
+    /**
+     * The cover, read at the public address of stored files.
+     */
+    coverFileId?: string | null;
+    endsOn?: string | null;
+    externalUrl?: string | null;
+    name: string;
+    /**
+     * `external` links to `externalUrl` instead of a page here.
+     */
+    pageKind: 'standard' | 'custom' | 'external';
+    partnerName?: string | null;
+    /**
+     * Where the program stands now, worked out from its dates.
+     */
+    phase: 'upcoming' | 'open' | 'running' | 'done';
+    /**
+     * The address under /programs.
+     */
+    slug: string;
+    startsOn?: string | null;
+    summary?: string | null;
+    type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+    /**
+     * Its events still to come, soonest first, at most three.
+     */
+    upcomingEvents: Array<ProgramEvent>;
 };
 
 /**
@@ -924,6 +1017,67 @@ export type UnpublishProgramResponses = {
 };
 
 export type UnpublishProgramResponse = UnpublishProgramResponses[keyof UnpublishProgramResponses];
+
+export type ListProgramsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Only programs in this phase today.
+         */
+        phase?: 'upcoming' | 'open' | 'running' | 'done';
+        /**
+         * Only programs of this type.
+         */
+        type?: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+    };
+    url: '/api/program/programs';
+};
+
+export type ListProgramsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+};
+
+export type ListProgramsError = ListProgramsErrors[keyof ListProgramsErrors];
+
+export type ListProgramsResponses = {
+    /**
+     * The programs the parameters select.
+     */
+    200: ProgramList;
+};
+
+export type ListProgramsResponse = ListProgramsResponses[keyof ListProgramsResponses];
+
+export type GetProgramData = {
+    body?: never;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/program/programs/{slug}';
+};
+
+export type GetProgramErrors = {
+    /**
+     * No program is published at this address.
+     */
+    404: Problem;
+};
+
+export type GetProgramError = GetProgramErrors[keyof GetProgramErrors];
+
+export type GetProgramResponses = {
+    /**
+     * The program.
+     */
+    200: Program;
+};
+
+export type GetProgramResponse = GetProgramResponses[keyof GetProgramResponses];
 
 export type GetPublicFileData = {
     body?: never;

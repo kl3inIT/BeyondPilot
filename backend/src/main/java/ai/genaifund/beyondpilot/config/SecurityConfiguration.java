@@ -57,6 +57,9 @@ class SecurityConfiguration {
 				// A public file, such as an image of a program, is read without a session.
 				.requestMatchers(HttpMethod.GET, "/api/storage/files/*")
 				.permitAll()
+				// The programs and their pages are for visitors; an operator's session only adds the drafts.
+				.requestMatchers(HttpMethod.GET, "/api/program/programs", "/api/program/programs/*")
+				.permitAll()
 				// The audit module cannot ask who is an operator (ADR 0004), so the chain asks for it.
 				.requestMatchers("/api/audit/**")
 				.access(operators)

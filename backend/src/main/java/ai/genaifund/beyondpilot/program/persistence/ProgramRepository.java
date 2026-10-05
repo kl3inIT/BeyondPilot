@@ -19,6 +19,8 @@ public interface ProgramRepository extends JpaRepository<Program, UUID> {
 	@Query("select p from Program p where p.id = :id")
 	Optional<Program> findForUpdate(UUID id);
 
+	Optional<Program> findBySlug(String slug);
+
 	boolean existsBySlug(String slug);
 
 	boolean existsByCoverFileId(UUID coverFileId);

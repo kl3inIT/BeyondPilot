@@ -11,6 +11,8 @@ tags:
   name: Audit
 - description: The accounts operators manage.
   name: Accounts
+- description: "The programs GenAI Fund runs, as the public site shows them."
+  name: Programs
 - description: Who is signed in.
   name: Identity
 - description: Uploading and reading files.
@@ -614,6 +616,82 @@ paths:
       summary: Take a program off the public site
       tags:
       - Program administration
+  /api/program/programs:
+    get:
+      operationId: listPrograms
+      parameters:
+      - description: Only programs in this phase today.
+        in: query
+        name: phase
+        required: false
+        schema:
+          type: string
+          enum:
+          - upcoming
+          - open
+          - running
+          - done
+          pattern: upcoming|open|running|done
+      - description: Only programs of this type.
+        in: query
+        name: type
+        required: false
+        schema:
+          type: string
+          enum:
+          - enterprise_challenge
+          - open_innovation_call
+          - accelerator
+          - hackathon
+          - buildathon
+          - grant
+          - venture_building
+          - pitch_competition
+          - event_series
+          - event
+          pattern: enterprise_challenge|open_innovation_call|accelerator|hackathon|buildathon|grant|venture_building|pitch_competition|event_series|event
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgramList"
+          description: The programs the parameters select.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+      summary: "The published programs, the latest to start first"
+      tags:
+      - Programs
+  /api/program/programs/{slug}:
+    get:
+      description: "A published program, or a draft when an operator previews it."
+      operationId: getProgram
+      parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Program"
+          description: The program.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No program is published at this address.
+      summary: A program's public page
+      tags:
+      - Programs
   /api/storage/files/{id}:
     get:
       description: "The bytes of a file anyone may read, such as an image of a program,\
@@ -1267,6 +1345,109 @@ components:
       - requestId
       - status
       - title
+    Program:
+      type: object
+      description: A program as its public page shows it.
+      properties:
+        about:
+          type:
+          - string
+          - "null"
+          description: The text of the standard page.
+        applications:
+          $ref: "#/components/schemas/ProgramApplications"
+          description: "Null for a program that takes no applications here. Its opening,\
+            \ its closing and the day outcomes are due belong in the timeline beside\
+            \ the key dates."
+        coverFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The cover, read at the public address of stored files."
+        endsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        events:
+          type: array
+          description: In the order the operator gave.
+          items:
+            $ref: "#/components/schemas/ProgramEvent"
+        externalUrl:
+          type:
+          - string
+          - "null"
+          format: uri
+        keyDates:
+          type: array
+          description: In the order the operator gave.
+          items:
+            $ref: "#/components/schemas/ProgramKeyDate"
+        name:
+          type: string
+        pageKind:
+          type: string
+          description: "`standard` is built from these fields, `custom` is written\
+            \ in the web application for this address, `external` lives at `externalUrl`."
+          enum:
+          - standard
+          - custom
+          - external
+        partnerName:
+          type:
+          - string
+          - "null"
+        phase:
+          type: string
+          description: "Where the program stands now, worked out from its dates."
+          enum:
+          - upcoming
+          - open
+          - running
+          - done
+        slug:
+          type: string
+          description: The address under /programs.
+        startsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        status:
+          type: string
+          description: '`draft` only when an operator previews a program that is not
+            public.'
+          enum:
+          - draft
+          - published
+        summary:
+          type:
+          - string
+          - "null"
+        type:
+          type: string
+          enum:
+          - enterprise_challenge
+          - open_innovation_call
+          - accelerator
+          - hackathon
+          - buildathon
+          - grant
+          - venture_building
+          - pitch_competition
+          - event_series
+          - event
+      required:
+      - events
+      - keyDates
+      - name
+      - pageKind
+      - phase
+      - slug
+      - status
+      - type
     ProgramApplications:
       type: object
       description: When and how a program takes applications here.
@@ -1373,6 +1554,97 @@ components:
       - allDay
       - startsAt
       - title
+    ProgramList:
+      type: object
+      description: "The published programs, the latest to start first."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgramSummary"
+      required:
+      - items
+    ProgramSummary:
+      type: object
+      description: A published program as the public list shows it.
+      properties:
+        applications:
+          $ref: "#/components/schemas/ProgramApplications"
+          description: Null for a program that takes no applications here.
+        coverFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The cover, read at the public address of stored files."
+        endsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        externalUrl:
+          type:
+          - string
+          - "null"
+          format: uri
+        name:
+          type: string
+        pageKind:
+          type: string
+          description: '`external` links to `externalUrl` instead of a page here.'
+          enum:
+          - standard
+          - custom
+          - external
+        partnerName:
+          type:
+          - string
+          - "null"
+        phase:
+          type: string
+          description: "Where the program stands now, worked out from its dates."
+          enum:
+          - upcoming
+          - open
+          - running
+          - done
+        slug:
+          type: string
+          description: The address under /programs.
+        startsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        summary:
+          type:
+          - string
+          - "null"
+        type:
+          type: string
+          enum:
+          - enterprise_challenge
+          - open_innovation_call
+          - accelerator
+          - hackathon
+          - buildathon
+          - grant
+          - venture_building
+          - pitch_competition
+          - event_series
+          - event
+        upcomingEvents:
+          type: array
+          description: "Its events still to come, soonest first, at most three."
+          items:
+            $ref: "#/components/schemas/ProgramEvent"
+      required:
+      - name
+      - pageKind
+      - phase
+      - slug
+      - type
+      - upcomingEvents
     ReserveUpload:
       type: object
       description: The file a person is about to upload.

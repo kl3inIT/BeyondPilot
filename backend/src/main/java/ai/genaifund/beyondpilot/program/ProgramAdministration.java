@@ -2,7 +2,6 @@ package ai.genaifund.beyondpilot.program;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -51,9 +50,6 @@ public class ProgramAdministration {
 	private static final String SLUG_KEY = "program_slug_key";
 
 	private static final String COVER_KEY = "program_cover_file_id_key";
-
-	/** Programs are run from Vietnam: a day an operator names is a day there. */
-	private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
 	private final ProgramRepository programs;
 
@@ -205,7 +201,7 @@ public class ProgramAdministration {
 			throw refused(ProgramErrorCode.WINDOW_OUT_OF_ORDER, program.getId());
 		}
 		LocalDate outcomesDueOn = applications.outcomesDueOn();
-		if (outcomesDueOn != null && outcomesDueOn.isBefore(applications.closesAt().atZone(ZONE).toLocalDate())) {
+		if (outcomesDueOn != null && outcomesDueOn.isBefore(applications.closesAt().atZone(ProgramPhase.ZONE).toLocalDate())) {
 			throw refused(ProgramErrorCode.OUTCOMES_BEFORE_CLOSE, program.getId());
 		}
 		program.takeApplications(applications.opensAt(), applications.closesAt(), applications.shortlistSize(),

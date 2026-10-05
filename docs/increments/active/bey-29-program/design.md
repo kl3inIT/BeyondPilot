@@ -42,6 +42,7 @@ Status: accepted on 5 October 2026 and being implemented ([plan](plan.md)). It i
 | The Tasco challenge is a custom page | Its long content (the question, the directions, the judges, the FAQ) lives in the web application in English and Vietnamese; its dates, events and window come from the API | The page is approved and its content is fixed for this campaign; an editor for it would not be ready by 9 October |
 | A custom page falls back | A program marked `custom` whose address has no page in the web application is shown as a standard page | An operator's choice never produces an empty page |
 | One language for what an operator enters | Name, summary, About, key dates and events are stored once and shown as entered, in English for now; the page around them is in the visitor's language | Translating by hand doubles the entry work; translation and filling by AI is its own piece of work (BEY-50) |
+| An operator previews a draft at its address | `GET /api/program/programs/{slug}` answers an operator's session for a draft too, with `status: draft`; the page shows a banner. Everyone else gets `404` | Organizers see the real page because they are signed in; no product read uses a secret link ([research](../../../research/2026-10-05-program-publish-flow.md)) |
 | The phase is derived | `upcoming` before the program starts or its window opens, `open` while the window is open, `running` after the window closes (or with no window) until the last day, `done` after it | A stored status goes stale the minute a deadline passes; the list must be right at 23:59 without anyone acting |
 | The three window dates are also key dates | The opening, the closing and the day outcomes are due appear in the timeline, computed from the window; an operator edits them in one place | The Settings screen shows them locked in Key dates for that reason |
 | Times | Stored as instants; entered and shown in Vietnam time (ICT), with the zone written beside a deadline | Every program so far is run from Vietnam; a zone per program is a later column if one is needed |
@@ -63,8 +64,8 @@ Status: accepted on 5 October 2026 and being implemented ([plan](plan.md)). It i
 
 | Step | Request | Answer |
 | --- | --- | --- |
-| The public list | `GET /api/program/programs?phase=&type=`, without a session | Published programs with name, address, type, partner, summary, cover, phase, window, the next key dates and the upcoming events |
-| A public program | `GET /api/program/programs/{slug}`, without a session | The same, with About, every key date and every event, the page kind and the external address. `404` for a draft or an unknown address |
+| The public list | `GET /api/program/programs?phase=&type=`, without a session | Published programs, the latest to start first, with name, address, type, partner, summary, cover, phase, days, page kind, window and their next three events |
+| A public program | `GET /api/program/programs/{slug}`, without a session | The same, with About, every key date and every event. The window's three dates are returned in `applications`, and the page places them in the timeline with words in the visitor's language. `404` for a draft, unless an operator asks, and for an unknown address |
 | The admin list | `GET /api/program/admin/programs` | Every program with its status, phase and window. `403` for a caller who is not an operator |
 | Create | `POST /api/program/admin/programs` with name, address and type | `201` with the draft. `400` naming the member that is malformed; `409` `PROGRAM_SLUG_TAKEN` for a taken address |
 | Read for editing | `GET /api/program/admin/programs/{id}` | The whole program as the Settings screen shows it |

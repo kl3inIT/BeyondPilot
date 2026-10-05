@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetMeData, GetMeErrors, GetMeResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, SaveProgramData, SaveProgramErrors, SaveProgramResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
+import type { ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetMeData, GetMeErrors, GetMeResponses, GetProgramData, GetProgramErrors, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, SaveProgramData, SaveProgramErrors, SaveProgramResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -194,6 +194,18 @@ export const unpublishProgram = <ThrowOnError extends boolean = true>(options: O
     url: '/api/program/admin/programs/{id}/unpublish',
     ...options
 });
+
+/**
+ * The published programs, the latest to start first
+ */
+export const listPrograms = <ThrowOnError extends boolean = true>(options?: Options<ListProgramsData, ThrowOnError>): RequestResult<ListProgramsResponses, ListProgramsErrors, ThrowOnError> => (options?.client ?? client).get<ListProgramsResponses, ListProgramsErrors, ThrowOnError>({ url: '/api/program/programs', ...options });
+
+/**
+ * A program's public page
+ *
+ * A published program, or a draft when an operator previews it.
+ */
+export const getProgram = <ThrowOnError extends boolean = true>(options: Options<GetProgramData, ThrowOnError>): RequestResult<GetProgramResponses, GetProgramErrors, ThrowOnError> => (options.client ?? client).get<GetProgramResponses, GetProgramErrors, ThrowOnError>({ url: '/api/program/programs/{slug}', ...options });
 
 /**
  * A public file
