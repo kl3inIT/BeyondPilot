@@ -280,10 +280,53 @@
     "nav": {
       "label": "Admin navigation",
       "home": "Home",
+      "programs": "Programs",
       "accounts": "Accounts",
       "auditLog": "Audit log"
     },
     "toggleSidebar": "Toggle sidebar",
+    "programs": {
+      "metaTitle": "Programs · BeyondPilot",
+      "title": "Programs",
+      "lead": "Every program GenAI Fund runs, in any status. Open one to edit its page and its dates, and to publish it.",
+      "columns": {
+        "program": "Program",
+        "status": "Status",
+        "window": "Applications open",
+        "open": "Open"
+      },
+      "state": {
+        "draft": "Draft",
+        "upcoming": "Coming up",
+        "open": "Open",
+        "running": "Running",
+        "done": "Done"
+      },
+      "window": "{opens} – {closes}, {time} ICT",
+      "noApplications": "Applications are not taken here",
+      "count": "{count, plural, one {# program} other {# programs}}",
+      "empty": {
+        "title": "No programs yet",
+        "description": "Create the first one with New program."
+      },
+      "create": {
+        "open": "New program",
+        "title": "New program",
+        "lead": "It starts as a draft that only operators can see.",
+        "name": "Name",
+        "slug": "Address",
+        "slugHint": "{address}. Made from the name; you can change it until the program is first published.",
+        "type": "Type",
+        "cancel": "Cancel",
+        "submit": "Create program",
+        "errors": {
+          "slugTaken": "Another program already has this address."
+        }
+      },
+      "errors": {
+        "unknown": "That did not work. Try again in a moment."
+      }
+    },
     "accounts": {
       "metaTitle": "Accounts · BeyondPilot",
       "title": "Accounts",
@@ -455,6 +498,30 @@
         "description": "{period, select, day {Nothing in the last 24 hours matches this search and this filter.} week {Nothing in the last 7 days matches this search and this filter.} month {Nothing in the last 30 days matches this search and this filter.} other {Nothing matches this search and this filter.}}",
         "clear": "Clear search and filters"
       }
+    }
+  },
+  "Form": {
+    "optional": "Optional",
+    "errors": {
+      "required": "Fill this in.",
+      "tooLong": "Keep it to {max} characters.",
+      "slugFormat": "Use lowercase letters, digits and single hyphens.",
+      "slugLength": "Use 3 to 60 characters.",
+      "invalid": "Check this field."
+    }
+  },
+  "Program": {
+    "type": {
+      "enterprise_challenge": "Enterprise challenge",
+      "open_innovation_call": "Open innovation call",
+      "accelerator": "Accelerator",
+      "hackathon": "Hackathon",
+      "buildathon": "Buildathon",
+      "grant": "Grant",
+      "venture_building": "Venture building",
+      "pitch_competition": "Pitch competition",
+      "event_series": "Event series",
+      "event": "Event"
     }
   }
 }

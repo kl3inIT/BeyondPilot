@@ -280,10 +280,53 @@
     "nav": {
       "label": "Điều hướng quản trị",
       "home": "Trang chủ",
+      "programs": "Chương trình",
       "accounts": "Tài khoản",
       "auditLog": "Nhật ký thao tác"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
+    "programs": {
+      "metaTitle": "Chương trình · BeyondPilot",
+      "title": "Chương trình",
+      "lead": "Mọi chương trình GenAI Fund tổ chức, ở bất kỳ trạng thái nào. Mở một chương trình để sửa trang, các mốc thời gian và công bố.",
+      "columns": {
+        "program": "Chương trình",
+        "status": "Trạng thái",
+        "window": "Thời gian nhận đơn",
+        "open": "Mở"
+      },
+      "state": {
+        "draft": "Bản nháp",
+        "upcoming": "Sắp diễn ra",
+        "open": "Đang nhận đơn",
+        "running": "Đang diễn ra",
+        "done": "Đã kết thúc"
+      },
+      "window": "{opens} – {closes}, {time} ICT",
+      "noApplications": "Không nhận đơn trên BeyondPilot",
+      "count": "{count, plural, other {# chương trình}}",
+      "empty": {
+        "title": "Chưa có chương trình nào",
+        "description": "Tạo chương trình đầu tiên bằng nút Chương trình mới."
+      },
+      "create": {
+        "open": "Chương trình mới",
+        "title": "Chương trình mới",
+        "lead": "Chương trình bắt đầu là bản nháp, chỉ operator thấy.",
+        "name": "Tên",
+        "slug": "Địa chỉ",
+        "slugHint": "{address}. Tạo từ tên; bạn đổi được cho đến lần công bố đầu tiên.",
+        "type": "Loại",
+        "cancel": "Huỷ",
+        "submit": "Tạo chương trình",
+        "errors": {
+          "slugTaken": "Địa chỉ này đã thuộc về một chương trình khác."
+        }
+      },
+      "errors": {
+        "unknown": "Chưa thực hiện được. Hãy thử lại sau giây lát."
+      }
+    },
     "accounts": {
       "metaTitle": "Tài khoản · BeyondPilot",
       "title": "Tài khoản",
@@ -455,6 +498,30 @@
         "description": "{period, select, day {Trong 24 giờ qua không có gì khớp với từ khóa và bộ lọc này.} week {Trong 7 ngày qua không có gì khớp với từ khóa và bộ lọc này.} month {Trong 30 ngày qua không có gì khớp với từ khóa và bộ lọc này.} other {Không có gì khớp với từ khóa và bộ lọc này.}}",
         "clear": "Xóa từ khóa và bộ lọc"
       }
+    }
+  },
+  "Form": {
+    "optional": "Không bắt buộc",
+    "errors": {
+      "required": "Hãy điền mục này.",
+      "tooLong": "Tối đa {max} ký tự.",
+      "slugFormat": "Chỉ dùng chữ thường, chữ số và một dấu gạch ngang giữa các từ.",
+      "slugLength": "Từ 3 đến 60 ký tự.",
+      "invalid": "Hãy kiểm tra lại mục này."
+    }
+  },
+  "Program": {
+    "type": {
+      "enterprise_challenge": "Thử thách doanh nghiệp",
+      "open_innovation_call": "Kêu gọi đổi mới mở",
+      "accelerator": "Chương trình tăng tốc",
+      "hackathon": "Hackathon",
+      "buildathon": "Buildathon",
+      "grant": "Tài trợ",
+      "venture_building": "Xây dựng doanh nghiệp",
+      "pitch_competition": "Cuộc thi gọi vốn",
+      "event_series": "Chuỗi sự kiện",
+      "event": "Sự kiện"
     }
   }
 }

@@ -1,4 +1,4 @@
-import { HouseIcon, ScrollTextIcon, UserCogIcon } from "lucide-react";
+import { CalendarRangeIcon, HouseIcon, ScrollTextIcon, UserCogIcon } from "lucide-react";
 import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
@@ -31,6 +31,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
   // the change that adds its screen.
   const destinations: AdminNavItem[] = [
     { href: siteRoutes.admin, label: t("nav.home"), icon: <HouseIcon aria-hidden="true" /> },
+    {
+      href: siteRoutes.adminPrograms,
+      label: t("nav.programs"),
+      icon: <CalendarRangeIcon aria-hidden="true" />,
+    },
     {
       href: siteRoutes.adminAccounts,
       label: t("nav.accounts"),

@@ -1069,6 +1069,9 @@ components:
       type: object
       description: One program in the operators' list.
       properties:
+        applications:
+          $ref: "#/components/schemas/ProgramApplications"
+          description: Null for a program that takes no applications here.
         endsOn:
           type:
           - string
@@ -1083,6 +1086,15 @@ components:
           type:
           - string
           - "null"
+        phase:
+          type: string
+          description: "Where the program would stand now, worked out from its dates;\
+            \ a draft is shown as a draft whatever its phase."
+          enum:
+          - upcoming
+          - open
+          - running
+          - done
         slug:
           type: string
         startsOn:
@@ -1114,6 +1126,7 @@ components:
       required:
       - id
       - name
+      - phase
       - slug
       - status
       - type

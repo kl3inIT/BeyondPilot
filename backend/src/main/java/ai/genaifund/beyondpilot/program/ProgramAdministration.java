@@ -80,7 +80,7 @@ public class ProgramAdministration {
 	@Transactional(readOnly = true)
 	public AdminProgramListResponse list(Actor actor) {
 		identity.requireOperator(actor);
-		return new AdminProgramListResponse(programList.all());
+		return new AdminProgramListResponse(programList.all(Instant.now()));
 	}
 
 	/**

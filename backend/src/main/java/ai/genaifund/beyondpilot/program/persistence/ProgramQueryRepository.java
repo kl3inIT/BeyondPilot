@@ -31,18 +31,23 @@ public class ProgramQueryRepository {
 		this.jdbc = jdbc;
 	}
 
-	/** Every program in any status, the newest first. */
-	public List<AdminProgramSummaryResponse> all() {
+	/** Every program in any status, the newest first, each with the phase it would be in at {@code now}. */
+	public List<AdminProgramSummaryResponse> all(Instant now) {
 		return jdbc.sql("""
-				select id, slug, name, type, partner_name, status, starts_on, ends_on, updated_at
+				select id, slug, name, type, partner_name, status, starts_on, ends_on, applications_open_at,
+				       applications_close_at, shortlist_size, outcomes_due_on, allow_updates_until_close, updated_at
 				from program
 				order by created_at desc, id
-				""")
-			.query((row, index) -> new AdminProgramSummaryResponse(row.getObject("id", UUID.class),
-					row.getString("slug"), row.getString("name"), row.getString("type"),
-					row.getString("partner_name"), row.getString("status"), day(row.getDate("starts_on")),
-					day(row.getDate("ends_on")), row.getTimestamp("updated_at").toInstant()))
-			.list();
+				""").query((row, index) -> {
+			Instant opensAt = instant(row.getTimestamp("applications_open_at"));
+			Instant closesAt = instant(row.getTimestamp("applications_close_at"));
+			LocalDate startsOn = day(row.getDate("starts_on"));
+			LocalDate endsOn = day(row.getDate("ends_on"));
+			return new AdminProgramSummaryResponse(row.getObject("id", UUID.class), row.getString("slug"),
+					row.getString("name"), row.getString("type"), row.getString("partner_name"),
+					row.getString("status"), ProgramPhase.of(startsOn, endsOn, opensAt, closesAt, now).code(),
+					applications(row, opensAt, closesAt), startsOn, endsOn, row.getTimestamp("updated_at").toInstant());
+		}).list();
 	}
 
 	/**

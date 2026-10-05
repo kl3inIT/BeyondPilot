@@ -12,9 +12,18 @@ export const siteRoutes = {
   founders: "/founders",
   search: "/search",
   admin: "/admin",
+  adminPrograms: "/admin/programs",
   adminAccounts: "/admin/accounts",
   adminAuditLog: "/admin/audit-log",
 } as const;
+
+/** The host the public site is served from, as an operator sees a program's address written out. */
+export const publicSiteHost = "beyondpilot.genaifund.ai";
+
+/** A program's Settings in the admin area, the screen a program opens on. */
+export function adminProgramRoute(id: string) {
+  return `${siteRoutes.adminPrograms}/${id}/settings`;
+}
 
 /** Planned pages without a screen yet; they share the coming-soon page. */
 export const comingSoonPaths = [

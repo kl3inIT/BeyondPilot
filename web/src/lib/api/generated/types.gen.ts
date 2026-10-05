@@ -123,10 +123,18 @@ export type AdminProgramList = {
  * One program in the operators' list.
  */
 export type AdminProgramSummary = {
+    /**
+     * Null for a program that takes no applications here.
+     */
+    applications?: ProgramApplications;
     endsOn?: string | null;
     id: string;
     name: string;
     partnerName?: string | null;
+    /**
+     * Where the program would stand now, worked out from its dates; a draft is shown as a draft whatever its phase.
+     */
+    phase: 'upcoming' | 'open' | 'running' | 'done';
     slug: string;
     startsOn?: string | null;
     status: 'draft' | 'published';
