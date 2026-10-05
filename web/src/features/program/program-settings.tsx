@@ -4,7 +4,7 @@ import { revalidateLogic } from "@tanstack/react-form";
 import { LockIcon, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { setServerErrors, useAppForm, type ServerErrors } from "@/components/form/app-form";
@@ -27,6 +27,7 @@ import { instantInVietnam } from "@/lib/vietnam-time";
 
 import { CoverUpload } from "./cover-upload";
 import { programState } from "./program-labels";
+import { ProgramMenu, PublishButton, PublishChecklist } from "./program-publishing";
 import {
   programTypes,
   settingsSchema,
@@ -99,6 +100,8 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
   const router = useRouter();
   const [keyDate, setKeyDate] = useState<Editing>(null);
   const [event, setEvent] = useState<Editing>(null);
+  // The program as the last save answered it, for Save and publish; null when that save was refused.
+  const saved = useRef<AdminProgram | null>(null);
 
   const form = useAppForm({
     defaultValues: settingsValuesOf(program),
@@ -107,10 +110,12 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
     onSubmit: async ({ value, formApi }) => {
       try {
         const { data } = await saveProgram({ path: { id: program.id }, body: saveBodyOf(value) });
+        saved.current = data;
         formApi.reset(settingsValuesOf(data));
         notify.success("Admin.programs.settings.saved");
         router.refresh();
       } catch (error) {
+        saved.current = null;
         setServerErrors(formApi, refusal(error));
       }
     },
@@ -151,6 +156,14 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
     return endsAt ? `${day}, ${time(starts)}–${time(new Date(endsAt))}` : `${day}, ${time(starts)}`;
   }
 
+  /** Saves Settings and answers the program as saved, or null when the form or the backend refused it. */
+  async function save() {
+    saved.current = null;
+    await form.handleSubmit();
+    return saved.current;
+  }
+
+  const draft = program.status === "draft";
   const state = programState({ status: program.status, phase: "upcoming" });
 
   return (
@@ -182,18 +195,30 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
             )}
           </form.Subscribe>
         </div>
-        <div className="hidden items-center gap-2 md:flex">
-          <form.AppForm>
-            <form.SubmitButton prominence={program.status === "draft" ? "secondary" : "primary"}>
-              {t("save")}
-            </form.SubmitButton>
-          </form.AppForm>
+        <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 md:flex">
+            <form.AppForm>
+              <form.SubmitButton prominence={draft ? "secondary" : "primary"}>
+                {t("save")}
+              </form.SubmitButton>
+            </form.AppForm>
+            {draft && (
+              <form.Subscribe selector={(formState) => formState.isDirty}>
+                {(dirty) => <PublishButton program={program} dirty={dirty} save={save} />}
+              </form.Subscribe>
+            )}
+          </div>
+          <ProgramMenu program={program} />
         </div>
       </div>
 
       <form.AppForm>
         <form.FormError />
       </form.AppForm>
+
+      {draft && program.publishIssues.length > 0 && (
+        <PublishChecklist issues={program.publishIssues} />
+      )}
 
       <nav aria-label={t("tabs")} className="border-b">
         <span
@@ -513,8 +538,17 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
       {/* Below 768px the actions stay at the foot of the screen while the form scrolls. */}
       <div className="fixed inset-x-0 bottom-0 z-10 flex gap-2 border-t bg-background px-4 pt-3 pb-6 md:hidden">
         <form.AppForm>
-          <form.SubmitButton className="flex-1">{t("save")}</form.SubmitButton>
+          <form.SubmitButton className="flex-1" prominence={draft ? "secondary" : "primary"}>
+            {t("save")}
+          </form.SubmitButton>
         </form.AppForm>
+        {draft && (
+          <form.Subscribe selector={(formState) => formState.isDirty}>
+            {(dirty) => (
+              <PublishButton className="flex-1" program={program} dirty={dirty} save={save} />
+            )}
+          </form.Subscribe>
+        )}
       </div>
 
       {keyDate && (

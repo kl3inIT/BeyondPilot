@@ -462,6 +462,38 @@
           "country": "Country",
           "registrationUrl": "Registration link",
           "registrationUrlHint": "Where people sign up, for example the event's Luma page. The program's page links to it."
+        },
+        "more": "More actions",
+        "copyLink": "Copy link",
+        "copied": "Link copied.",
+        "publish": {
+          "button": "Publish",
+          "saveAndPublish": "Save and publish",
+          "checklist": {
+            "title": "Before you can publish",
+            "lead": "Publishing puts the program on the programs list. These are still missing:",
+            "issues": {
+              "summary": "Add a summary",
+              "cover": "Add a cover image",
+              "dates": "Set when the program starts and ends"
+            }
+          },
+          "confirm": {
+            "title": "Publish {name}?",
+            "lead": "It goes on the programs list, and anyone with the link can open its page.",
+            "note": "From now on its address is fixed, so links people share keep working.",
+            "cancel": "Cancel"
+          },
+          "done": "{name} is published.",
+          "notReady": "The program still lacks what the list above names."
+        },
+        "unpublish": {
+          "menu": "Unpublish…",
+          "title": "Unpublish {name}?",
+          "lead": "It leaves the programs list, and its page answers “not found” until you publish it again.",
+          "note": "Nothing you entered is lost, and the address stays the same.",
+          "confirm": "Unpublish",
+          "done": "{name} is no longer public."
         }
       }
     },

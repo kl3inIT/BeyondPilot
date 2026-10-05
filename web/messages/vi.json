@@ -462,6 +462,38 @@
           "country": "Quốc gia",
           "registrationUrl": "Link đăng ký",
           "registrationUrlHint": "Nơi mọi người đăng ký, ví dụ trang Luma của sự kiện. Trang chương trình dẫn tới đây."
+        },
+        "more": "Thao tác khác",
+        "copyLink": "Sao chép link",
+        "copied": "Đã sao chép link.",
+        "publish": {
+          "button": "Công bố",
+          "saveAndPublish": "Lưu và công bố",
+          "checklist": {
+            "title": "Trước khi công bố",
+            "lead": "Công bố sẽ đưa chương trình lên danh sách chương trình. Còn thiếu:",
+            "issues": {
+              "summary": "Thêm tóm tắt",
+              "cover": "Thêm ảnh bìa",
+              "dates": "Đặt ngày bắt đầu và kết thúc"
+            }
+          },
+          "confirm": {
+            "title": "Công bố {name}?",
+            "lead": "Chương trình sẽ lên danh sách chương trình, và ai có link đều mở được trang.",
+            "note": "Từ giờ địa chỉ cố định, để link mọi người đã chia sẻ vẫn dùng được.",
+            "cancel": "Huỷ"
+          },
+          "done": "Đã công bố {name}.",
+          "notReady": "Chương trình vẫn còn thiếu những mục trong danh sách ở trên."
+        },
+        "unpublish": {
+          "menu": "Gỡ khỏi trang công khai…",
+          "title": "Gỡ {name} khỏi trang công khai?",
+          "lead": "Chương trình rời danh sách chương trình, và trang trả “không tìm thấy” cho đến khi bạn công bố lại.",
+          "note": "Mọi thứ đã nhập được giữ nguyên, địa chỉ không đổi.",
+          "confirm": "Gỡ",
+          "done": "{name} không còn công khai."
         }
       }
     },
