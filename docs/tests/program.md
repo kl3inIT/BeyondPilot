@@ -29,3 +29,7 @@ Not covered by a test: two saves that take the same address or cover at the same
 Unit tests beside the code cover the address made from a name (`program-schemas.test.ts`), the program as Settings holds it and as it is sent back (`program-values.test.ts`), the days and times of Vietnam (`lib/vietnam-time.test.ts`) and the field a validation problem points at (`lib/api/problem-fields.test.ts`).
 
 Checked by hand on the local stack on 5 October: a cover uploaded to the local store and shown in Settings, a program saved, a refused save, publishing a new program after filling what blocked it, and unpublishing it.
+
+## The public pages
+
+`web/tests/e2e/programs.spec.ts` runs on desktop and mobile Chrome with axe, the programs answered by `tests/e2e/stub-backend.mjs` with dates counted from the moment it starts. It covers: the list shows what is open now with its countdown and Apply, what is coming up (programs not started and events still to come) and what is done, and never a draft; a program whose page is somewhere else links there; the phase tabs and the type are the address; a standard page shows the program, its About and its timeline; the Tasco page is the one made for it, its timeline taken from the program, its card to apply before the challenge on a phone, and its Vietnamese copy at `/vi`; a draft answers 404 to a visitor and shows an operator a banner that leads back to Settings; an unknown address is not found.
