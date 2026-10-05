@@ -115,6 +115,11 @@ async function ProgramPage({ program }: { program: Program }) {
           )}
         </header>
 
+        {/* On a phone the card to apply comes first; from lg it stands beside the content. */}
+        <div className="lg:hidden">
+          <ApplyCard program={program} steps={steps} now={now} />
+        </div>
+
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start">
           <div className="flex min-w-0 flex-1 flex-col gap-10">
             {program.about && (
@@ -141,7 +146,7 @@ async function ProgramPage({ program }: { program: Program }) {
               <p className="text-muted-foreground">{t("nothingYet")}</p>
             )}
           </div>
-          <div className="lg:sticky lg:top-6 lg:w-80 lg:shrink-0">
+          <div className="hidden lg:sticky lg:top-6 lg:block lg:w-80 lg:shrink-0">
             <ApplyCard program={program} steps={steps} now={now} />
           </div>
         </div>

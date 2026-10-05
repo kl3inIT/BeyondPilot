@@ -784,5 +784,253 @@
       "description": "Try another type, or look at every program.",
       "clear": "Show all programs"
     }
+  },
+  "Tasco": {
+    "kind": "Enterprise challenge · Insurance · Vietnam",
+    "question": {
+      "label": "The question",
+      "text": "How might we make insurance in Vietnam something people are glad to hold — easy to buy, easy to carry, easy to claim?",
+      "setBy": "Set by Tasco's leadership team, with GenAI Fund"
+    },
+    "stats": {
+      "teams": {
+        "value": "10 teams",
+        "label": "present live at demo day on 22 October"
+      },
+      "investment": {
+        "value": "Up to US$100,000",
+        "label": "investment considered for teams that come through the pilot"
+      },
+      "pilot": {
+        "value": "4 weeks",
+        "label": "of pilot with the business owners who would run it"
+      }
+    },
+    "nav": {
+      "label": "On this page",
+      "challenge": "Overview",
+      "who": "Who can apply",
+      "win": "What you win",
+      "directions": "Directions",
+      "timeline": "Timeline",
+      "submit": "What to submit",
+      "judges": "Judges",
+      "faq": "FAQ"
+    },
+    "challenge": {
+      "title": "The challenge",
+      "lead": "Compulsory motor insurance is something nearly every driver in Vietnam has to carry. It is mandated and priced by regulation, so every provider offers the same cover at the same price — and when a product is regulated into sameness, the experience around it stops improving.",
+      "pains": {
+        "paper": {
+          "title": "It's still paper",
+          "text": "Lose the paper and, in every way that matters, you've lost the policy."
+        },
+        "must": {
+          "title": "People buy it because they must",
+          "text": "A compliance purchase, with no relationship before or after the sale."
+        },
+        "unaware": {
+          "title": "Few know what they're covered for",
+          "text": "Most people find out the difference at the worst possible moment."
+        },
+        "carry": {
+          "title": "You have to carry it, or pay",
+          "text": "If you can't produce it when you're stopped, you're fined."
+        },
+        "same": {
+          "title": "Every product looks the same",
+          "text": "Same cover and the same regulated price, right across the market."
+        },
+        "claim": {
+          "title": "Claiming means a call and some hope",
+          "text": "Support runs through hotlines, and nobody can see where a claim stands."
+        }
+      },
+      "constraint": {
+        "title": "One hard constraint",
+        "text": "No premium discounts, cashback or disguised price incentives. The point is a better experience, not a bought outcome. Everything else is open."
+      }
+    },
+    "who": {
+      "title": "Who can apply",
+      "lead": "Judged on the solution, not the company. One person with a prototype and a software house with a product in market apply the same way.",
+      "kinds": {
+        "solo": "Solo builder",
+        "students": "Student team",
+        "early": "Early-stage startup",
+        "late": "Late-stage startup",
+        "unicorn": "Unicorn",
+        "isv": "ISV / software house",
+        "si": "Systems integrator",
+        "enterprise": "Enterprise team",
+        "agency": "Agency"
+      }
+    },
+    "win": {
+      "title": "No cash prize. A buyer instead.",
+      "lead": "Most pilots die for one reason: the people in the room couldn't buy anything. This challenge fixes that part first.",
+      "cards": {
+        "yes": {
+          "title": "The people reviewing your work can say yes",
+          "text": "Tasco's leadership and the business owners who run its insurance operation set the brief, sit at demo day and choose what moves forward. The budget is allocated."
+        },
+        "partner": {
+          "title": "A partner that has already done this",
+          "text": "In September 2026, Tasco led an investment round into BonBon, a startup it first met through its own innovation programme, with GenAI Fund investing alongside."
+        },
+        "investment": {
+          "title": "Investment of up to US$100,000",
+          "text": "Teams that come through the pilot can be considered for investment, on top of the commercial relationship. Offered at the partners' discretion, after due diligence."
+        }
+      }
+    },
+    "directions": {
+      "title": "Directions to build from",
+      "lead": "Eight places the experience breaks, in the order a customer meets them. Take one, combine several, or make a better case for your own.",
+      "groups": {
+        "buying": {
+          "label": "Buying",
+          "lead": "Getting covered should take minutes, not a call-back"
+        },
+        "carrying": {
+          "label": "Carrying",
+          "lead": "The policy should be there when it's needed"
+        },
+        "claiming": {
+          "label": "Claiming",
+          "lead": "The worst day should be the simplest part"
+        }
+      },
+      "items": {
+        "d1": {
+          "title": "Frictionless purchase and renewal",
+          "text": "Buy, renew and pay without a queue, a call-back, or a form you fill in twice."
+        },
+        "d2": {
+          "title": "Understand before you buy",
+          "text": "Explain cover in plain language, so people know what they're getting."
+        },
+        "d3": {
+          "title": "The right cover for the right person",
+          "text": "Use consented data to fit protection to one driver, not an average one."
+        },
+        "d4": {
+          "title": "Proof in your pocket",
+          "text": "Digital, instantly verifiable, impossible to lose or leave at home."
+        },
+        "d5": {
+          "title": "Help that arrives first",
+          "text": "Renewal reminders and useful prompts that come before the problem does."
+        },
+        "d6": {
+          "title": "Answers at the moment of need",
+          "text": "Support through chat, voice or in-app, without a hotline queue."
+        },
+        "d7": {
+          "title": "Guided claims",
+          "text": "Tell people what's covered, what's needed, and where their claim stands."
+        },
+        "d8": {
+          "title": "Faster assessment",
+          "text": "Close the gap between filing and resolution."
+        },
+        "other": {
+          "title": "Something else entirely",
+          "text": "Combine directions, or bring one nobody has thought of."
+        }
+      }
+    },
+    "timeline": {
+      "title": "Timeline",
+      "lead": "Three weeks, six fixed dates. The build period opens the same day as applications."
+    },
+    "submit": {
+      "title": "What to submit",
+      "lead": "Make it tangible: show what improves for the customer, how it works, and what you'd need to test it for real.",
+      "items": {
+        "framing": {
+          "title": "Problem framing",
+          "text": "Who you're helping and which friction you're solving."
+        },
+        "prototype": {
+          "title": "Prototype or design",
+          "text": "The proposed experience and how it works. A working prototype is preferred."
+        },
+        "impact": {
+          "title": "Impact and assumptions",
+          "text": "The improvement you expect, and what you're assuming."
+        },
+        "needs": {
+          "title": "Implementation needs",
+          "text": "Data, integrations and enterprise support required."
+        },
+        "responsible": {
+          "title": "Responsible design",
+          "text": "Data access, consent and privacy assumptions, and where staff review is needed."
+        }
+      },
+      "judgedOn": "Judged on",
+      "criteria": {
+        "impact": "Practical impact",
+        "execution": "Credible execution",
+        "scale": "Scale potential",
+        "compliance": "Compliance fit",
+        "feasibility": "Feasibility and time to pilot",
+        "experience": "Customer experience",
+        "sustainability": "Operational sustainability",
+        "clarity": "Implementation clarity"
+      }
+    },
+    "judges": {
+      "title": "The people scoring your work",
+      "more": "More judges are announced weekly.",
+      "linkedin": "{name} on LinkedIn",
+      "roles": {
+        "laura": "CEO and Managing Partner, GenAI Fund",
+        "kai": "Partner, GenAI Fund",
+        "rizwan": "Partner, Positive Moves · Ex-Executive Director, EY",
+        "david": "Director, AI & Machine Learning, Singtel",
+        "julie": "Startup Lead, ASEAN, Microsoft",
+        "hawkins": "Director, Head of VNGGames Publishing Platform",
+        "manuja": "Head of AI and Data, Manulife"
+      }
+    },
+    "faq": {
+      "title": "Questions people ask",
+      "items": {
+        "startup": {
+          "q": "Do I need to be a startup?",
+          "a": "No. Solo builders, student teams, startups, ISVs, systems integrators and enterprise teams can all apply. You're judged on the solution, not the company behind it."
+        },
+        "inMarket": {
+          "q": "Can I apply with a product that's already in market?",
+          "a": "Yes — and those submissions often do well, because you can show something working on day one. Tell us what already exists and what you'd build or adapt for Tasco."
+        },
+        "ip": {
+          "q": "Who owns my IP?",
+          "a": "You do. A mutual NDA is signed before any pilot begins. Commercial terms are agreed directly between you and Tasco, before work starts."
+        },
+        "vietnam": {
+          "q": "Do I need to be in Vietnam, or speak Vietnamese?",
+          "a": "No. Applications, the briefing and demo day run in English, virtually. If you reach a pilot, you'll need people who can work with Tasco's team on Vietnam time."
+        },
+        "hearBack": {
+          "q": "When do I hear back?",
+          "a": "Submissions close 15 October at 23:59 ICT. On 16 October every applicant gets an outcome — shortlisted or not. Ten teams present live on 22 October, and pilot scoping starts on 23 October. No one is left waiting to find out by silence."
+        }
+      }
+    },
+    "rail": {
+      "readBrief": "Read the participant brief",
+      "note": "You don't need a finished product to apply. You need a point of view and three weeks.",
+      "host": "Enterprise partner",
+      "hostText": "Tasco runs automotive retail, VETC tolling, insurance and roadside assistance across Vietnam. GenAI Fund runs the programme and screens submissions.",
+      "tech": "Technology partners",
+      "questions": "Questions about this challenge?"
+    },
+    "closing": {
+      "title": "Sixty teams will apply. Ten will present.",
+      "text": "Submissions close 15 October at 23:59 ICT. Everyone hears back on 16 October."
+    }
   }
 }
