@@ -23,5 +23,5 @@ export default function proxy(request: NextRequest) {
 
 export const config = {
   // Everything except whole Spring-owned segments, Next.js internals and files with an extension.
-  matcher: "/((?!(?:api|login|logout|oauth2|ott)(?:/|$)|_next|_vercel|.*\..*).*)",
+  matcher: "/((?!(?:api|login|logout|oauth2|ott)(?:/|$)|_next|_vercel|.*\\..*).*)",
 };
