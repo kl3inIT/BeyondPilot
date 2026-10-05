@@ -1,0 +1,8 @@
+[Unit]
+Description=Dump the BeyondPilot staging database
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/beyondpilot-backup

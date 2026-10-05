@@ -6,6 +6,7 @@
 - Engineering rules for all code: [docs/conventions.md](docs/conventions.md); topic guidelines under [docs/guidelines/](docs/guidelines/).
 - Why a decision was made: accepted ADRs under [docs/decisions/](docs/decisions/).
 - Running the system locally: [docs/runbooks/development-runtime.md](docs/runbooks/development-runtime.md).
+- Releases and the staging host: [docs/runbooks/ci-cd.md](docs/runbooks/ci-cd.md).
 - What the team studied before designing, with its sources: [docs/research/](docs/research/README.md).
 
 ## Area guides
