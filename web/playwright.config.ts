@@ -37,7 +37,8 @@ export default defineConfig({
       url: `http://localhost:${port}`,
       reuseExistingServer: !process.env.CI,
       timeout: 240_000,
-      env: { BEYONDPILOT_API_ORIGIN: `http://localhost:${stubBackendPort}` },
+      // PORT tells the Markdown route where this server answers when it renders a page for an agent.
+      env: { BEYONDPILOT_API_ORIGIN: `http://localhost:${stubBackendPort}`, PORT: String(port) },
     },
   ],
 });
