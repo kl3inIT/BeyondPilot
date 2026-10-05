@@ -60,6 +60,12 @@ class SecurityConfiguration {
 				// The programs and their pages are for visitors; an operator's session only adds the drafts.
 				.requestMatchers(HttpMethod.GET, "/api/program/programs", "/api/program/programs/*")
 				.permitAll()
+				// The directories of approved solutions and talent, and the page of an approved organization, are read
+				// without a session.
+				.requestMatchers(HttpMethod.GET, "/api/solution/solutions", "/api/solution/solutions/*",
+						"/api/solution/deployments",
+						"/api/talent/profiles", "/api/talent/profiles/*", "/api/organization/organizations/*")
+				.permitAll()
 				// The audit module cannot ask who is an operator (ADR 0004), so the chain asks for it.
 				.requestMatchers("/api/audit/**")
 				.access(operators)

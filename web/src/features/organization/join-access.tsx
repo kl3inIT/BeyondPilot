@@ -1,0 +1,59 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+
+import { Button } from "@/components/actions/button";
+import { Badge } from "@/components/ui/badge";
+import { useNotify } from "@/hooks/use-notify";
+import { changeOrganizationAutoJoin } from "@/lib/api/generated";
+
+import { NoticeCard } from "./notice-card";
+import { organizationError } from "./organization-errors";
+
+type JoinAccessProps = {
+  /** The email domain that vouches for colleagues. */
+  emailDomain: string;
+  /** Whether an address on that domain joins at once, or has to ask. */
+  autoJoin: boolean;
+};
+
+/** Who can join by email domain, as an owner sets it: at once as a member, or by asking first. */
+function JoinAccess({ emailDomain, autoJoin }: JoinAccessProps) {
+  const t = useTranslations("Organization.members.access");
+  const notify = useNotify();
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const state = autoJoin ? "on" : "off";
+
+  async function toggle() {
+    setPending(true);
+    try {
+      await changeOrganizationAutoJoin({ body: { autoJoin: !autoJoin } });
+      notify.success(autoJoin ? "Organization.done.autoJoinOff" : "Organization.done.autoJoinOn");
+      router.refresh();
+    } catch (error) {
+      notify.error(organizationError(error));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <NoticeCard
+      titleAs="h3"
+      title={t(`${state}.title`, { domain: emailDomain })}
+      description={<p>{t(`${state}.lead`)}</p>}
+      badge={<Badge variant="info">{t(`${state}.badge`)}</Badge>}
+      foot={t("domain", { domain: emailDomain })}
+      actions={
+        <Button prominence="secondary" pending={pending} onClick={toggle}>
+          {t(`${state}.action`)}
+        </Button>
+      }
+    />
+  );
+}
+
+export { JoinAccess };

@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetMeData, GetMeErrors, GetMeResponses, GetProgramData, GetProgramErrors, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, SaveProgramData, SaveProgramErrors, SaveProgramResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
+import type { AcceptOrganizationInvitationData, AcceptOrganizationInvitationErrors, AcceptOrganizationInvitationResponses, AddCustomerDeploymentData, AddCustomerDeploymentErrors, AddCustomerDeploymentResponses, ApproveCustomerDeploymentData, ApproveCustomerDeploymentErrors, ApproveCustomerDeploymentResponses, ApproveJoinRequestData, ApproveJoinRequestErrors, ApproveJoinRequestResponses, ApproveOrganizationClaimData, ApproveOrganizationClaimErrors, ApproveOrganizationClaimResponses, ApproveOrganizationData, ApproveOrganizationErrors, ApproveOrganizationResponses, ApproveSolutionData, ApproveSolutionErrors, ApproveSolutionResponses, ApproveTalentData, ApproveTalentErrors, ApproveTalentResponses, ChangeMyJobTitleData, ChangeMyJobTitleErrors, ChangeMyJobTitleResponses, ChangeOrganizationAutoJoinData, ChangeOrganizationAutoJoinErrors, ChangeOrganizationAutoJoinResponses, ChangeOrganizationMemberRoleData, ChangeOrganizationMemberRoleErrors, ChangeOrganizationMemberRoleResponses, ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateAdminOrganizationData, CreateAdminOrganizationErrors, CreateAdminOrganizationResponses, CreateOrganizationData, CreateOrganizationErrors, CreateOrganizationResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, CreateSolutionData, CreateSolutionErrors, CreateSolutionResponses, DeclineJoinRequestData, DeclineJoinRequestErrors, DeclineJoinRequestResponses, DeclineOrganizationClaimData, DeclineOrganizationClaimErrors, DeclineOrganizationClaimResponses, DeclineOrganizationInvitationData, DeclineOrganizationInvitationErrors, DeclineOrganizationInvitationResponses, DeleteCustomerDeploymentData, DeleteCustomerDeploymentErrors, DeleteCustomerDeploymentResponses, DeleteSolutionDraftData, DeleteSolutionDraftErrors, DeleteSolutionDraftResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminOrganizationData, GetAdminOrganizationErrors, GetAdminOrganizationResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetAdminSolutionData, GetAdminSolutionErrors, GetAdminSolutionResponses, GetAdminTalentData, GetAdminTalentErrors, GetAdminTalentResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyOrganizationData, GetMyOrganizationErrors, GetMyOrganizationResponses, GetMySolutionData, GetMySolutionErrors, GetMySolutionResponses, GetMyTalentProfileData, GetMyTalentProfileErrors, GetMyTalentProfileResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetProgramData, GetProgramErrors, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GetSolutionData, GetSolutionErrors, GetSolutionResponses, GetTalentData, GetTalentErrors, GetTalentResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, InviteOrganizationMemberData, InviteOrganizationMemberErrors, InviteOrganizationMemberResponses, JoinOrganizationData, JoinOrganizationErrors, JoinOrganizationResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminOrganizationsData, ListAdminOrganizationsErrors, ListAdminOrganizationsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAdminSolutionsData, ListAdminSolutionsErrors, ListAdminSolutionsResponses, ListAdminTalentData, ListAdminTalentErrors, ListAdminTalentResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListCustomerDeploymentsData, ListCustomerDeploymentsErrors, ListCustomerDeploymentsResponses, ListMyOrganizationMembersData, ListMyOrganizationMembersErrors, ListMyOrganizationMembersResponses, ListMySolutionsData, ListMySolutionsErrors, ListMySolutionsResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, ListSolutionsData, ListSolutionsErrors, ListSolutionsResponses, ListTalentData, ListTalentErrors, ListTalentResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, RefuseOrganizationData, RefuseOrganizationErrors, RefuseOrganizationResponses, RejectCustomerDeploymentData, RejectCustomerDeploymentErrors, RejectCustomerDeploymentResponses, RejectSolutionData, RejectSolutionErrors, RejectSolutionResponses, RejectTalentData, RejectTalentErrors, RejectTalentResponses, RemoveOrganizationMemberData, RemoveOrganizationMemberErrors, RemoveOrganizationMemberResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, RevokeOrganizationInvitationData, RevokeOrganizationInvitationErrors, RevokeOrganizationInvitationResponses, SaveCustomerDeploymentData, SaveCustomerDeploymentErrors, SaveCustomerDeploymentResponses, SaveMyOrganizationData, SaveMyOrganizationErrors, SaveMyOrganizationResponses, SaveMyTalentProfileData, SaveMyTalentProfileErrors, SaveMyTalentProfileResponses, SaveProgramData, SaveProgramErrors, SaveProgramResponses, SaveSolutionData, SaveSolutionErrors, SaveSolutionResponses, SearchOrganizationsData, SearchOrganizationsErrors, SearchOrganizationsResponses, SendTalentEnquiryData, SendTalentEnquiryErrors, SendTalentEnquiryResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, SubmitMyTalentProfileData, SubmitMyTalentProfileErrors, SubmitMyTalentProfileResponses, SubmitSolutionData, SubmitSolutionErrors, SubmitSolutionResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, WithdrawJoinRequestData, WithdrawJoinRequestErrors, WithdrawJoinRequestResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -110,6 +110,359 @@ export const getMe = <ThrowOnError extends boolean = true>(options?: Options<Get
 });
 
 /**
+ * Let a person own an organization nobody owns
+ */
+export const approveOrganizationClaim = <ThrowOnError extends boolean = true>(options: Options<ApproveOrganizationClaimData, ThrowOnError>): RequestResult<ApproveOrganizationClaimResponses, ApproveOrganizationClaimErrors, ThrowOnError> => (options.client ?? client).post<ApproveOrganizationClaimResponses, ApproveOrganizationClaimErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/claims/{id}/approve',
+    ...options
+});
+
+/**
+ * Decline a request to own an organization
+ */
+export const declineOrganizationClaim = <ThrowOnError extends boolean = true>(options: Options<DeclineOrganizationClaimData, ThrowOnError>): RequestResult<DeclineOrganizationClaimResponses, DeclineOrganizationClaimErrors, ThrowOnError> => (options.client ?? client).post<DeclineOrganizationClaimResponses, DeclineOrganizationClaimErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/claims/{id}/decline',
+    ...options
+});
+
+/**
+ * The organizations, those waiting for review first
+ */
+export const listAdminOrganizations = <ThrowOnError extends boolean = true>(options?: Options<ListAdminOrganizationsData, ThrowOnError>): RequestResult<ListAdminOrganizationsResponses, ListAdminOrganizationsErrors, ThrowOnError> => (options?.client ?? client).get<ListAdminOrganizationsResponses, ListAdminOrganizationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations',
+    ...options
+});
+
+/**
+ * Create an organization for a company that is not here yet
+ */
+export const createAdminOrganization = <ThrowOnError extends boolean = true>(options: Options<CreateAdminOrganizationData, ThrowOnError>): RequestResult<CreateAdminOrganizationResponses, CreateAdminOrganizationErrors, ThrowOnError> => (options.client ?? client).post<CreateAdminOrganizationResponses, CreateAdminOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * One organization as an operator reviews it
+ */
+export const getAdminOrganization = <ThrowOnError extends boolean = true>(options: Options<GetAdminOrganizationData, ThrowOnError>): RequestResult<GetAdminOrganizationResponses, GetAdminOrganizationErrors, ThrowOnError> => (options.client ?? client).get<GetAdminOrganizationResponses, GetAdminOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}',
+    ...options
+});
+
+/**
+ * Approve an organization that waits for review
+ */
+export const approveOrganization = <ThrowOnError extends boolean = true>(options: Options<ApproveOrganizationData, ThrowOnError>): RequestResult<ApproveOrganizationResponses, ApproveOrganizationErrors, ThrowOnError> => (options.client ?? client).post<ApproveOrganizationResponses, ApproveOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/approve',
+    ...options
+});
+
+/**
+ * Refuse an organization that waits for review
+ */
+export const refuseOrganization = <ThrowOnError extends boolean = true>(options: Options<RefuseOrganizationData, ThrowOnError>): RequestResult<RefuseOrganizationResponses, RefuseOrganizationErrors, ThrowOnError> => (options.client ?? client).post<RefuseOrganizationResponses, RefuseOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/refuse',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Accept an invitation to the caller's address
+ */
+export const acceptOrganizationInvitation = <ThrowOnError extends boolean = true>(options: Options<AcceptOrganizationInvitationData, ThrowOnError>): RequestResult<AcceptOrganizationInvitationResponses, AcceptOrganizationInvitationErrors, ThrowOnError> => (options.client ?? client).post<AcceptOrganizationInvitationResponses, AcceptOrganizationInvitationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/invitations/{id}/accept',
+    ...options
+});
+
+/**
+ * Decline an invitation to the caller's address
+ */
+export const declineOrganizationInvitation = <ThrowOnError extends boolean = true>(options: Options<DeclineOrganizationInvitationData, ThrowOnError>): RequestResult<DeclineOrganizationInvitationResponses, DeclineOrganizationInvitationErrors, ThrowOnError> => (options.client ?? client).post<DeclineOrganizationInvitationResponses, DeclineOrganizationInvitationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/invitations/{id}/decline',
+    ...options
+});
+
+/**
+ * Withdraw the request the caller waits on
+ */
+export const withdrawJoinRequest = <ThrowOnError extends boolean = true>(options?: Options<WithdrawJoinRequestData, ThrowOnError>): RequestResult<WithdrawJoinRequestResponses, WithdrawJoinRequestErrors, ThrowOnError> => (options?.client ?? client).post<WithdrawJoinRequestResponses, WithdrawJoinRequestErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/join-request/withdraw',
+    ...options
+});
+
+/**
+ * The caller's organization, or their ways into one
+ */
+export const getMyOrganization = <ThrowOnError extends boolean = true>(options?: Options<GetMyOrganizationData, ThrowOnError>): RequestResult<GetMyOrganizationResponses, GetMyOrganizationErrors, ThrowOnError> => (options?.client ?? client).get<GetMyOrganizationResponses, GetMyOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/mine',
+    ...options
+});
+
+/**
+ * Save the profile of the caller's organization
+ */
+export const saveMyOrganization = <ThrowOnError extends boolean = true>(options: Options<SaveMyOrganizationData, ThrowOnError>): RequestResult<SaveMyOrganizationResponses, SaveMyOrganizationErrors, ThrowOnError> => (options.client ?? client).put<SaveMyOrganizationResponses, SaveMyOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/mine',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Let addresses on the organization's domain join without asking, or stop that
+ */
+export const changeOrganizationAutoJoin = <ThrowOnError extends boolean = true>(options: Options<ChangeOrganizationAutoJoinData, ThrowOnError>): RequestResult<ChangeOrganizationAutoJoinResponses, ChangeOrganizationAutoJoinErrors, ThrowOnError> => (options.client ?? client).put<ChangeOrganizationAutoJoinResponses, ChangeOrganizationAutoJoinErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/mine/auto-join',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Ask an address to join the caller's organization
+ */
+export const inviteOrganizationMember = <ThrowOnError extends boolean = true>(options: Options<InviteOrganizationMemberData, ThrowOnError>): RequestResult<InviteOrganizationMemberResponses, InviteOrganizationMemberErrors, ThrowOnError> => (options.client ?? client).post<InviteOrganizationMemberResponses, InviteOrganizationMemberErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/mine/invitations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Take back an open invitation
+ */
+export const revokeOrganizationInvitation = <ThrowOnError extends boolean = true>(options: Options<RevokeOrganizationInvitationData, ThrowOnError>): RequestResult<RevokeOrganizationInvitationResponses, RevokeOrganizationInvitationErrors, ThrowOnError> => (options.client ?? client).post<RevokeOrganizationInvitationResponses, RevokeOrganizationInvitationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/mine/invitations/{id}/revoke',
+    ...options
+});
+
+/**
+ * Set what the caller does in their organization
+ */
+export const changeMyJobTitle = <ThrowOnError extends boolean = true>(options: Options<ChangeMyJobTitleData, ThrowOnError>): RequestResult<ChangeMyJobTitleResponses, ChangeMyJobTitleErrors, ThrowOnError> => (options.client ?? client).put<ChangeMyJobTitleResponses, ChangeMyJobTitleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/mine/job-title',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Who belongs to the caller's organization
+ */
+export const listMyOrganizationMembers = <ThrowOnError extends boolean = true>(options?: Options<ListMyOrganizationMembersData, ThrowOnError>): RequestResult<ListMyOrganizationMembersResponses, ListMyOrganizationMembersErrors, ThrowOnError> => (options?.client ?? client).get<ListMyOrganizationMembersResponses, ListMyOrganizationMembersErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/mine/members',
+    ...options
+});
+
+/**
+ * Take a person out of the organization; a member may only take themselves out
+ */
+export const removeOrganizationMember = <ThrowOnError extends boolean = true>(options: Options<RemoveOrganizationMemberData, ThrowOnError>): RequestResult<RemoveOrganizationMemberResponses, RemoveOrganizationMemberErrors, ThrowOnError> => (options.client ?? client).post<RemoveOrganizationMemberResponses, RemoveOrganizationMemberErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/mine/members/{accountId}/remove',
+    ...options
+});
+
+/**
+ * Make a member an owner, or an owner a member
+ */
+export const changeOrganizationMemberRole = <ThrowOnError extends boolean = true>(options: Options<ChangeOrganizationMemberRoleData, ThrowOnError>): RequestResult<ChangeOrganizationMemberRoleResponses, ChangeOrganizationMemberRoleErrors, ThrowOnError> => (options.client ?? client).put<ChangeOrganizationMemberRoleResponses, ChangeOrganizationMemberRoleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/mine/members/{accountId}/role',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Let a person who asked join
+ */
+export const approveJoinRequest = <ThrowOnError extends boolean = true>(options: Options<ApproveJoinRequestData, ThrowOnError>): RequestResult<ApproveJoinRequestResponses, ApproveJoinRequestErrors, ThrowOnError> => (options.client ?? client).post<ApproveJoinRequestResponses, ApproveJoinRequestErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/mine/requests/{id}/approve',
+    ...options
+});
+
+/**
+ * Decline a request to join
+ */
+export const declineJoinRequest = <ThrowOnError extends boolean = true>(options: Options<DeclineJoinRequestData, ThrowOnError>): RequestResult<DeclineJoinRequestResponses, DeclineJoinRequestErrors, ThrowOnError> => (options.client ?? client).post<DeclineJoinRequestResponses, DeclineJoinRequestErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/mine/requests/{id}/decline',
+    ...options
+});
+
+/**
+ * The approved organizations whose name contains a text
+ */
+export const searchOrganizations = <ThrowOnError extends boolean = true>(options?: Options<SearchOrganizationsData, ThrowOnError>): RequestResult<SearchOrganizationsResponses, SearchOrganizationsErrors, ThrowOnError> => (options?.client ?? client).get<SearchOrganizationsResponses, SearchOrganizationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/organizations',
+    ...options
+});
+
+/**
+ * Create an organization the caller owns
+ */
+export const createOrganization = <ThrowOnError extends boolean = true>(options: Options<CreateOrganizationData, ThrowOnError>): RequestResult<CreateOrganizationResponses, CreateOrganizationErrors, ThrowOnError> => (options.client ?? client).post<CreateOrganizationResponses, CreateOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/organizations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Ask to get into an organization
+ */
+export const joinOrganization = <ThrowOnError extends boolean = true>(options: Options<JoinOrganizationData, ThrowOnError>): RequestResult<JoinOrganizationResponses, JoinOrganizationErrors, ThrowOnError> => (options.client ?? client).post<JoinOrganizationResponses, JoinOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/organizations/{id}/join',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The public page of an approved organization, read without a session
+ */
+export const getOrganization = <ThrowOnError extends boolean = true>(options: Options<GetOrganizationData, ThrowOnError>): RequestResult<GetOrganizationResponses, GetOrganizationErrors, ThrowOnError> => (options.client ?? client).get<GetOrganizationResponses, GetOrganizationErrors, ThrowOnError>({ url: '/api/organization/organizations/{slug}', ...options });
+
+/**
  * Every program, the newest first
  */
 export const listAdminPrograms = <ThrowOnError extends boolean = true>(options?: Options<ListAdminProgramsData, ThrowOnError>): RequestResult<ListAdminProgramsResponses, ListAdminProgramsErrors, ThrowOnError> => (options?.client ?? client).get<ListAdminProgramsResponses, ListAdminProgramsErrors, ThrowOnError>({
@@ -208,6 +561,240 @@ export const listPrograms = <ThrowOnError extends boolean = true>(options?: Opti
 export const getProgram = <ThrowOnError extends boolean = true>(options: Options<GetProgramData, ThrowOnError>): RequestResult<GetProgramResponses, GetProgramErrors, ThrowOnError> => (options.client ?? client).get<GetProgramResponses, GetProgramErrors, ThrowOnError>({ url: '/api/program/programs/{slug}', ...options });
 
 /**
+ * Approve a customer deployment that waits for review
+ */
+export const approveCustomerDeployment = <ThrowOnError extends boolean = true>(options: Options<ApproveCustomerDeploymentData, ThrowOnError>): RequestResult<ApproveCustomerDeploymentResponses, ApproveCustomerDeploymentErrors, ThrowOnError> => (options.client ?? client).post<ApproveCustomerDeploymentResponses, ApproveCustomerDeploymentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/admin/deployments/{id}/approve',
+    ...options
+});
+
+/**
+ * Reject a customer deployment that waits for review, or take an approved one off its solution
+ */
+export const rejectCustomerDeployment = <ThrowOnError extends boolean = true>(options: Options<RejectCustomerDeploymentData, ThrowOnError>): RequestResult<RejectCustomerDeploymentResponses, RejectCustomerDeploymentErrors, ThrowOnError> => (options.client ?? client).post<RejectCustomerDeploymentResponses, RejectCustomerDeploymentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/admin/deployments/{id}/reject',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The submitted solutions, those waiting for review first
+ */
+export const listAdminSolutions = <ThrowOnError extends boolean = true>(options?: Options<ListAdminSolutionsData, ThrowOnError>): RequestResult<ListAdminSolutionsResponses, ListAdminSolutionsErrors, ThrowOnError> => (options?.client ?? client).get<ListAdminSolutionsResponses, ListAdminSolutionsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/admin/solutions',
+    ...options
+});
+
+/**
+ * One solution as an operator reviews it
+ */
+export const getAdminSolution = <ThrowOnError extends boolean = true>(options: Options<GetAdminSolutionData, ThrowOnError>): RequestResult<GetAdminSolutionResponses, GetAdminSolutionErrors, ThrowOnError> => (options.client ?? client).get<GetAdminSolutionResponses, GetAdminSolutionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/admin/solutions/{id}',
+    ...options
+});
+
+/**
+ * Approve a solution that waits for review
+ */
+export const approveSolution = <ThrowOnError extends boolean = true>(options: Options<ApproveSolutionData, ThrowOnError>): RequestResult<ApproveSolutionResponses, ApproveSolutionErrors, ThrowOnError> => (options.client ?? client).post<ApproveSolutionResponses, ApproveSolutionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/admin/solutions/{id}/approve',
+    ...options
+});
+
+/**
+ * Reject a solution that waits for review, or take an approved one out of the directory
+ */
+export const rejectSolution = <ThrowOnError extends boolean = true>(options: Options<RejectSolutionData, ThrowOnError>): RequestResult<RejectSolutionResponses, RejectSolutionErrors, ThrowOnError> => (options.client ?? client).post<RejectSolutionResponses, RejectSolutionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/admin/solutions/{id}/reject',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The approved customer deployments of an organization, the most recently approved first
+ */
+export const listCustomerDeployments = <ThrowOnError extends boolean = true>(options: Options<ListCustomerDeploymentsData, ThrowOnError>): RequestResult<ListCustomerDeploymentsResponses, ListCustomerDeploymentsErrors, ThrowOnError> => (options.client ?? client).get<ListCustomerDeploymentsResponses, ListCustomerDeploymentsErrors, ThrowOnError>({ url: '/api/solution/deployments', ...options });
+
+/**
+ * The solutions of the caller's organization
+ */
+export const listMySolutions = <ThrowOnError extends boolean = true>(options?: Options<ListMySolutionsData, ThrowOnError>): RequestResult<ListMySolutionsResponses, ListMySolutionsErrors, ThrowOnError> => (options?.client ?? client).get<ListMySolutionsResponses, ListMySolutionsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/mine',
+    ...options
+});
+
+/**
+ * Create a solution as a draft
+ */
+export const createSolution = <ThrowOnError extends boolean = true>(options: Options<CreateSolutionData, ThrowOnError>): RequestResult<CreateSolutionResponses, CreateSolutionErrors, ThrowOnError> => (options.client ?? client).post<CreateSolutionResponses, CreateSolutionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/mine',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a draft
+ */
+export const deleteSolutionDraft = <ThrowOnError extends boolean = true>(options: Options<DeleteSolutionDraftData, ThrowOnError>): RequestResult<DeleteSolutionDraftResponses, DeleteSolutionDraftErrors, ThrowOnError> => (options.client ?? client).delete<DeleteSolutionDraftResponses, DeleteSolutionDraftErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/mine/{id}',
+    ...options
+});
+
+/**
+ * One solution of the caller's organization
+ */
+export const getMySolution = <ThrowOnError extends boolean = true>(options: Options<GetMySolutionData, ThrowOnError>): RequestResult<GetMySolutionResponses, GetMySolutionErrors, ThrowOnError> => (options.client ?? client).get<GetMySolutionResponses, GetMySolutionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/mine/{id}',
+    ...options
+});
+
+/**
+ * Save a solution
+ */
+export const saveSolution = <ThrowOnError extends boolean = true>(options: Options<SaveSolutionData, ThrowOnError>): RequestResult<SaveSolutionResponses, SaveSolutionErrors, ThrowOnError> => (options.client ?? client).put<SaveSolutionResponses, SaveSolutionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/mine/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Send a solution to GenAI Fund for review
+ */
+export const submitSolution = <ThrowOnError extends boolean = true>(options: Options<SubmitSolutionData, ThrowOnError>): RequestResult<SubmitSolutionResponses, SubmitSolutionErrors, ThrowOnError> => (options.client ?? client).post<SubmitSolutionResponses, SubmitSolutionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/mine/{id}/submit',
+    ...options
+});
+
+/**
+ * Add a customer deployment to a solution
+ */
+export const addCustomerDeployment = <ThrowOnError extends boolean = true>(options: Options<AddCustomerDeploymentData, ThrowOnError>): RequestResult<AddCustomerDeploymentResponses, AddCustomerDeploymentErrors, ThrowOnError> => (options.client ?? client).post<AddCustomerDeploymentResponses, AddCustomerDeploymentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/mine/{solutionId}/deployments',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove a customer deployment
+ */
+export const deleteCustomerDeployment = <ThrowOnError extends boolean = true>(options: Options<DeleteCustomerDeploymentData, ThrowOnError>): RequestResult<DeleteCustomerDeploymentResponses, DeleteCustomerDeploymentErrors, ThrowOnError> => (options.client ?? client).delete<DeleteCustomerDeploymentResponses, DeleteCustomerDeploymentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/mine/{solutionId}/deployments/{id}',
+    ...options
+});
+
+/**
+ * Save a customer deployment, which sends it to review again
+ */
+export const saveCustomerDeployment = <ThrowOnError extends boolean = true>(options: Options<SaveCustomerDeploymentData, ThrowOnError>): RequestResult<SaveCustomerDeploymentResponses, SaveCustomerDeploymentErrors, ThrowOnError> => (options.client ?? client).put<SaveCustomerDeploymentResponses, SaveCustomerDeploymentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/mine/{solutionId}/deployments/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The approved, listed solutions, in the order asked for
+ */
+export const listSolutions = <ThrowOnError extends boolean = true>(options?: Options<ListSolutionsData, ThrowOnError>): RequestResult<ListSolutionsResponses, ListSolutionsErrors, ThrowOnError> => (options?.client ?? client).get<ListSolutionsResponses, ListSolutionsErrors, ThrowOnError>({ url: '/api/solution/solutions', ...options });
+
+/**
+ * One solution of the directory by its address
+ */
+export const getSolution = <ThrowOnError extends boolean = true>(options: Options<GetSolutionData, ThrowOnError>): RequestResult<GetSolutionResponses, GetSolutionErrors, ThrowOnError> => (options.client ?? client).get<GetSolutionResponses, GetSolutionErrors, ThrowOnError>({ url: '/api/solution/solutions/{slug}', ...options });
+
+/**
  * A public file
  *
  * The bytes of a file anyone may read, such as an image of a program, or a redirect to where the object store serves them. No session is needed.
@@ -261,4 +848,130 @@ export const sendUploadContent = <ThrowOnError extends boolean = true>(options: 
         }],
     url: '/api/storage/uploads/{id}/content',
     ...options
+});
+
+/**
+ * The submitted talent profiles, those waiting for review first
+ */
+export const listAdminTalent = <ThrowOnError extends boolean = true>(options?: Options<ListAdminTalentData, ThrowOnError>): RequestResult<ListAdminTalentResponses, ListAdminTalentErrors, ThrowOnError> => (options?.client ?? client).get<ListAdminTalentResponses, ListAdminTalentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/admin/profiles',
+    ...options
+});
+
+/**
+ * One talent profile as an operator reviews it
+ */
+export const getAdminTalent = <ThrowOnError extends boolean = true>(options: Options<GetAdminTalentData, ThrowOnError>): RequestResult<GetAdminTalentResponses, GetAdminTalentErrors, ThrowOnError> => (options.client ?? client).get<GetAdminTalentResponses, GetAdminTalentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/admin/profiles/{id}',
+    ...options
+});
+
+/**
+ * Approve a talent profile that waits for review
+ */
+export const approveTalent = <ThrowOnError extends boolean = true>(options: Options<ApproveTalentData, ThrowOnError>): RequestResult<ApproveTalentResponses, ApproveTalentErrors, ThrowOnError> => (options.client ?? client).post<ApproveTalentResponses, ApproveTalentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/admin/profiles/{id}/approve',
+    ...options
+});
+
+/**
+ * Reject a talent profile that waits for review, or take an approved one out of the directory
+ */
+export const rejectTalent = <ThrowOnError extends boolean = true>(options: Options<RejectTalentData, ThrowOnError>): RequestResult<RejectTalentResponses, RejectTalentErrors, ThrowOnError> => (options.client ?? client).post<RejectTalentResponses, RejectTalentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/admin/profiles/{id}/reject',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The caller's talent profile and the messages sent through it
+ */
+export const getMyTalentProfile = <ThrowOnError extends boolean = true>(options?: Options<GetMyTalentProfileData, ThrowOnError>): RequestResult<GetMyTalentProfileResponses, GetMyTalentProfileErrors, ThrowOnError> => (options?.client ?? client).get<GetMyTalentProfileResponses, GetMyTalentProfileErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/mine',
+    ...options
+});
+
+/**
+ * Save the caller's talent profile; the first save creates it
+ */
+export const saveMyTalentProfile = <ThrowOnError extends boolean = true>(options: Options<SaveMyTalentProfileData, ThrowOnError>): RequestResult<SaveMyTalentProfileResponses, SaveMyTalentProfileErrors, ThrowOnError> => (options.client ?? client).put<SaveMyTalentProfileResponses, SaveMyTalentProfileErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/mine',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Send the caller's talent profile to GenAI Fund for review
+ */
+export const submitMyTalentProfile = <ThrowOnError extends boolean = true>(options?: Options<SubmitMyTalentProfileData, ThrowOnError>): RequestResult<SubmitMyTalentProfileResponses, SubmitMyTalentProfileErrors, ThrowOnError> => (options?.client ?? client).post<SubmitMyTalentProfileResponses, SubmitMyTalentProfileErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/mine/submit',
+    ...options
+});
+
+/**
+ * The approved, listed talent profiles, in the order asked for
+ */
+export const listTalent = <ThrowOnError extends boolean = true>(options?: Options<ListTalentData, ThrowOnError>): RequestResult<ListTalentResponses, ListTalentErrors, ThrowOnError> => (options?.client ?? client).get<ListTalentResponses, ListTalentErrors, ThrowOnError>({ url: '/api/talent/profiles', ...options });
+
+/**
+ * One talent profile of the directory by its address
+ */
+export const getTalent = <ThrowOnError extends boolean = true>(options: Options<GetTalentData, ThrowOnError>): RequestResult<GetTalentResponses, GetTalentErrors, ThrowOnError> => (options.client ?? client).get<GetTalentResponses, GetTalentErrors, ThrowOnError>({ url: '/api/talent/profiles/{slug}', ...options });
+
+/**
+ * Send a message to the person behind a talent profile
+ */
+export const sendTalentEnquiry = <ThrowOnError extends boolean = true>(options: Options<SendTalentEnquiryData, ThrowOnError>): RequestResult<SendTalentEnquiryResponses, SendTalentEnquiryErrors, ThrowOnError> => (options.client ?? client).post<SendTalentEnquiryResponses, SendTalentEnquiryErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/profiles/{slug}/enquiries',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });

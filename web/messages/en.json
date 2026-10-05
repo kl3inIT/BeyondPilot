@@ -22,7 +22,10 @@
       "open": "Account menu for {name}",
       "operator": "Operator",
       "signOut": "Sign out",
-      "signOutFailed": "We could not sign you out. Try again."
+      "signOutFailed": "We could not sign you out. Try again.",
+      "organization": "My organization",
+      "talentProfile": "Talent profile",
+      "admin": "Admin"
     },
     "menu": {
       "open": "Open menu",
@@ -276,13 +279,15 @@
   "Admin": {
     "metaTitle": "Admin · BeyondPilot",
     "title": "Admin",
-    "empty": "No admin screens yet.",
     "nav": {
       "label": "Admin navigation",
       "home": "Home",
       "programs": "Programs",
       "accounts": "Accounts",
-      "auditLog": "Audit log"
+      "auditLog": "Audit log",
+      "organizations": "Organisations",
+      "solutions": "Solutions",
+      "talent": "Talent"
     },
     "toggleSidebar": "Toggle sidebar",
     "programs": {
@@ -618,7 +623,7 @@
     "auditLog": {
       "metaTitle": "Audit log · BeyondPilot",
       "title": "Audit log",
-      "lead": "Changes that operators and the server configuration made to accounts, roles and programs, newest first.",
+      "lead": "What operators and the server configuration changed or decided: accounts, roles, programs, organizations, solutions and talent profiles. Newest first.",
       "search": "Search people or accounts",
       "filters": {
         "period": {
@@ -649,6 +654,25 @@
           "update": "Saved a program",
           "publish": "Published a program",
           "unpublish": "Unpublished a program"
+        },
+        "organization": {
+          "create": "Added an organization",
+          "approve": "Approved an organization",
+          "refuse": "Did not approve an organization",
+          "claim_approve": "Approved a claim",
+          "claim_decline": "Declined a claim",
+          "member_role": "Changed a member's role",
+          "member_remove": "Removed a member"
+        },
+        "solution": {
+          "approve": "Approved a solution",
+          "reject": "Sent a solution back",
+          "deployment_approve": "Approved a customer deployment",
+          "deployment_reject": "Sent a customer deployment back"
+        },
+        "talent": {
+          "approve": "Approved a talent profile",
+          "reject": "Sent a talent profile back"
         }
       },
       "activity": {
@@ -665,6 +689,25 @@
           "update": "Saved the program <resource></resource>",
           "publish": "Published the program <resource></resource>",
           "unpublish": "Unpublished the program <resource></resource>"
+        },
+        "organization": {
+          "create": "Added the organization <resource></resource>",
+          "approve": "Approved the organization <resource></resource>",
+          "refuse": "Did not approve the organization <resource></resource>",
+          "claim_approve": "Approved a claim to own <resource></resource>",
+          "claim_decline": "Declined a claim to own <resource></resource>",
+          "member_role": "Changed a member's role in <resource></resource>",
+          "member_remove": "Removed a member from <resource></resource>"
+        },
+        "solution": {
+          "approve": "Approved the solution <resource></resource>",
+          "reject": "Sent the solution <resource></resource> back",
+          "deployment_approve": "Approved the customer deployment <resource></resource>",
+          "deployment_reject": "Sent the customer deployment <resource></resource> back"
+        },
+        "talent": {
+          "approve": "Approved the talent profile of <resource></resource>",
+          "reject": "Sent the talent profile of <resource></resource> back"
         }
       },
       "columns": {
@@ -687,7 +730,7 @@
       },
       "empty": {
         "title": "{period, select, day {No events in the last 24 hours} week {No events in the last 7 days} month {No events in the last 30 days} other {No events yet}}",
-        "description": "Changes to accounts, roles and programs appear here.",
+        "description": "Changes and decisions appear here.",
         "showAll": "Show all time"
       },
       "noMatch": {
@@ -695,6 +738,1218 @@
         "description": "{period, select, day {Nothing in the last 24 hours matches this search and this filter.} week {Nothing in the last 7 days matches this search and this filter.} month {Nothing in the last 30 days matches this search and this filter.} other {Nothing matches this search and this filter.}}",
         "clear": "Clear search and filters"
       }
+    },
+    "organizations": {
+      "metaTitle": "Organisations · BeyondPilot",
+      "title": "Organisations",
+      "lead": "Companies and teams on BeyondPilot. A new organization, and a claim to own one, wait here for a decision.",
+      "search": "Search by name or email domain",
+      "filters": {
+        "status": {
+          "label": "Status",
+          "all": "All statuses"
+        }
+      },
+      "status": {
+        "pending": "Needs review",
+        "approved": "Approved",
+        "rejected": "Not approved"
+      },
+      "columns": {
+        "organization": "Organisation",
+        "request": "Request",
+        "status": "Status",
+        "received": "Received",
+        "actions": "Actions"
+      },
+      "request": {
+        "new": "New organization",
+        "claim": "Claim",
+        "none": "—"
+      },
+      "members": "{count, plural, one {# member} other {# members}}",
+      "unowned": "No owner",
+      "actions": {
+        "open": "Actions for {name}",
+        "review": "Review…",
+        "record": "Open record",
+        "claims": "Open record and claims"
+      },
+      "needReview": "{count, plural, one {# needs review} other {# need review}}",
+      "empty": {
+        "title": "No organizations yet",
+        "description": "Organizations appear here when people create them, or when you add one."
+      },
+      "noMatch": {
+        "title": "No organization matches",
+        "description": "Nothing matches this search and this filter.",
+        "clear": "Clear search and filter"
+      },
+      "count": "{count, plural, one {# organisation} other {# organisations}}",
+      "create": {
+        "open": "Add organization",
+        "title": "Add an organization",
+        "lead": "It is approved at once. Use this to list a company before anyone from it signs in.",
+        "name": "Organization name",
+        "nameRequired": "Enter the organization's name.",
+        "roles": "Role on BeyondPilot",
+        "rolesRequired": "Choose at least one.",
+        "type": "Type",
+        "emailDomain": "Email domain (optional)",
+        "emailDomainHint": "People who sign in with this domain are offered the organization.",
+        "emailDomainInvalid": "Enter a company domain such as example.com that no other organization uses.",
+        "ownerEmail": "Owner's email (optional)",
+        "ownerEmailHint": "They are invited to own it. Leave empty to let someone claim it.",
+        "ownerEmailInvalid": "Enter a full email address.",
+        "website": "Website (optional)",
+        "websiteInvalid": "Enter a full address that starts with https://",
+        "cancel": "Cancel",
+        "confirm": "Add organization"
+      },
+      "detail": {
+        "back": "All organizations",
+        "roles": "Role",
+        "type": "Type",
+        "country": "Country",
+        "teamSize": "Team size",
+        "website": "Website",
+        "emailDomain": "Email domain",
+        "createdBy": "Created",
+        "createdByOn": "{name} on {day}",
+        "description": "About",
+        "notStated": "Not stated",
+        "refused": "Not approved: {reason}.",
+        "claims": "Claims to own it",
+        "approveClaim": "Make owner",
+        "declineClaim": "Decline",
+        "members": "{count, plural, =0 {Members} one {# member} other {# members}}",
+        "noMembers": "Nobody belongs to this organization yet.",
+        "invitations": "Open invitations",
+        "industries": "Industries"
+      },
+      "review": {
+        "title": "Review {name}",
+        "lead": "A new organization, created by {creator} on {day}. Until you decide, it is not shown in the directories.",
+        "leadUnknown": "A new organization, created on {day}. Until you decide, it is not shown in the directories.",
+        "note": "Approving lists the organization and lets it publish solutions. Its owners are told by email either way.",
+        "approve": "Approve",
+        "refuse": "Do not approve…",
+        "refuseTitle": "Do not approve {name}",
+        "refuseLead": "The owners see the reason, and can edit the organization and send it again.",
+        "refuseConfirm": "Send decision",
+        "reason": "Reason",
+        "message": "Message to the owners",
+        "messageHint": "The decision is recorded in the audit log.",
+        "back": "Back",
+        "reasonPlaceholder": "Choose a reason"
+      },
+      "clear": "Clear filters",
+      "queueEmpty": {
+        "title": "Nothing waits for review",
+        "description": "Every new organization has a decision.",
+        "home": "Back to Admin home"
+      }
+    },
+    "solutions": {
+      "metaTitle": "Solutions · BeyondPilot",
+      "title": "Solutions",
+      "lead": "Every solution providers sent for review. Those still waiting come first, the longest wait on top.",
+      "columns": {
+        "solution": "Solution",
+        "maturity": "Maturity",
+        "status": "Status",
+        "submitted": "Submitted",
+        "actions": "Actions"
+      },
+      "notStated": "Not stated",
+      "openNamed": "Open {name}",
+      "empty": {
+        "title": "Nothing to review",
+        "description": "Solutions appear here when a provider sends one for review."
+      },
+      "noMatch": {
+        "title": "No solution matches",
+        "description": "Nothing matches this search and this filter.",
+        "clear": "Clear search and filter"
+      },
+      "count": "{count, plural, one {# solution} other {# solutions}}",
+      "open": "Open",
+      "review": {
+        "open": "Review",
+        "approve": "Approve",
+        "reject": "Send back…",
+        "takeDown": "Take down…",
+        "rejectTitle": "Send {name} back?",
+        "rejectLead": "It goes back to its organization as a draft to correct. The owners read your reason.",
+        "takeDownLead": "It leaves the directory at once. The owners read your reason and can send it again.",
+        "reason": "Reason",
+        "message": "Note (optional)",
+        "messageHint": "They read this word for word. Say what to change.",
+        "cancel": "Cancel",
+        "rejectConfirm": "Send back",
+        "takeDownConfirm": "Take down",
+        "reasonPlaceholder": "Choose a reason",
+        "takeDownTitle": "Take {name} down?",
+        "keys": "Keys: A approve · S send back",
+        "keysApproved": "Key: S take down"
+      },
+      "detail": {
+        "back": "All solutions",
+        "submitted": "Submitted {day}",
+        "unlisted": "Hidden by its organization",
+        "rejected": "Changes needed: {reason}.",
+        "next": "Next in review: {name}",
+        "position": "{place} of {total} waiting",
+        "waitingSince": "Sent {time}",
+        "public": "Open the public page"
+      },
+      "queueEmpty": {
+        "title": "Nothing waits for review",
+        "description": "Every solution sent for review has a decision.",
+        "home": "Back to Admin home"
+      },
+      "waitingSince": "Sent {time}",
+      "deployments": {
+        "title": "Customer deployments",
+        "problem": "The business problem",
+        "delivered": "What was deployed",
+        "channels": "Channels",
+        "languages": "Languages",
+        "period": "Period",
+        "result": "Result",
+        "rejected": "Sent back: {reason}.",
+        "rejectLead": "It stays off the solution's page. The owners read your reason and can correct it.",
+        "takeDownLead": "It leaves the solution's page at once. The owners read your reason and can send it again."
+      },
+      "deploymentsWaiting": "{count, plural, one {# deployment waits} other {# deployments wait}}"
+    },
+    "talent": {
+      "metaTitle": "Talent · BeyondPilot",
+      "title": "Talent",
+      "lead": "Every profile people sent for review. Those still waiting come first, the longest wait on top.",
+      "columns": {
+        "person": "Person",
+        "headline": "Headline",
+        "status": "Status",
+        "submitted": "Submitted",
+        "actions": "Actions"
+      },
+      "openNamed": "Open {name}",
+      "empty": {
+        "title": "Nothing to review",
+        "description": "Profiles appear here when someone sends theirs for review."
+      },
+      "noMatch": {
+        "title": "No profile matches",
+        "description": "Nothing matches this search and this filter.",
+        "clear": "Clear search and filter"
+      },
+      "count": "{count, plural, one {# profile} other {# profiles}}",
+      "open": "Open",
+      "review": {
+        "open": "Review",
+        "approve": "Approve",
+        "reject": "Send back…",
+        "takeDown": "Take down…",
+        "rejectTitle": "Send {name} back?",
+        "rejectLead": "The profile goes back to its person to correct. They read your reason.",
+        "takeDownLead": "The profile leaves the directory at once. Its person reads your reason and can send it again.",
+        "reason": "Reason",
+        "message": "Note (optional)",
+        "messageHint": "They read this word for word. Say what to change.",
+        "cancel": "Cancel",
+        "rejectConfirm": "Send back",
+        "takeDownConfirm": "Take down",
+        "reasonPlaceholder": "Choose a reason",
+        "takeDownTitle": "Take {name} down?",
+        "keys": "Keys: A approve · S send back",
+        "keysApproved": "Key: S take down"
+      },
+      "detail": {
+        "back": "All talent",
+        "submitted": "Submitted {day}",
+        "unlisted": "Hidden by its person",
+        "rejected": "Changes needed: {reason}.",
+        "next": "Next in review: {name}",
+        "position": "{place} of {total} waiting",
+        "waitingSince": "Sent {time}",
+        "public": "Open the public page"
+      },
+      "queueEmpty": {
+        "title": "Nothing waits for review",
+        "description": "Every profile sent for review has a decision.",
+        "home": "Back to Admin home"
+      },
+      "waitingSince": "Sent {time}"
+    },
+    "home": {
+      "lead": "{count, plural, =0 {Nothing waits for a decision.} one {# record waits for a decision.} other {# records wait for a decision.}}",
+      "organizations": "Organizations to review",
+      "solutions": "Solutions to review",
+      "talent": "Talent profiles to review",
+      "review": "Open the queue, longest wait first",
+      "none": "Nothing waiting"
+    }
+  },
+  "Lists": {
+    "loadMore": "Load more",
+    "pagination": {
+      "label": "Pages",
+      "previous": "Previous",
+      "next": "Next",
+      "goToPrevious": "Go to the previous page",
+      "goToNext": "Go to the next page",
+      "page": "Page {page}"
+    },
+    "sort": {
+      "label": "Sort by",
+      "newest": "Newest",
+      "name": "Name A–Z"
+    }
+  },
+  "Vocabulary": {
+    "organizationRole": {
+      "provider": "AI provider",
+      "enterprise": "Enterprise"
+    },
+    "organizationType": {
+      "company": "Company",
+      "builder_team": "Builder team",
+      "independent_builder": "Independent builder",
+      "other": "Other"
+    },
+    "teamSize": {
+      "just_me": "Just me",
+      "2_9": "2–9 people",
+      "10_49": "10–49 people",
+      "50_99": "50–99 people",
+      "100_499": "100–499 people",
+      "500_999": "500–999 people",
+      "1000_4999": "1,000–4,999 people",
+      "5000_plus": "5,000 people or more"
+    },
+    "organizationRefusal": {
+      "duplicate": "Already on BeyondPilot",
+      "not_a_real_organization": "Could not be verified as an organization",
+      "incomplete": "Profile is incomplete",
+      "out_of_scope": "Outside what BeyondPilot covers",
+      "other": "Other reason"
+    },
+    "memberRole": {
+      "owner": "Owner",
+      "member": "Member"
+    },
+    "reviewStatus": {
+      "draft": "Draft",
+      "submitted": "In review",
+      "approved": "Approved",
+      "rejected": "Changes needed"
+    },
+    "focusArea": {
+      "conversational_ai": "Conversational AI",
+      "document_processing": "Document processing",
+      "computer_vision": "Computer vision",
+      "speech_voice": "Speech and voice",
+      "predictive_analytics": "Predictive analytics",
+      "recommendation": "Recommendation",
+      "process_automation": "Process automation",
+      "ai_agents": "AI agents",
+      "generative_content": "Generative content",
+      "search_knowledge": "Search and knowledge",
+      "data_platform": "Data platform",
+      "ai_security": "AI security",
+      "other": "Other"
+    },
+    "industry": {
+      "banking_finance": "Banking and finance",
+      "insurance": "Insurance",
+      "retail_ecommerce": "Retail and e-commerce",
+      "manufacturing": "Manufacturing",
+      "logistics": "Logistics",
+      "healthcare": "Healthcare",
+      "education": "Education",
+      "real_estate": "Real estate",
+      "telecom": "Telecom",
+      "energy": "Energy",
+      "agriculture": "Agriculture",
+      "travel_hospitality": "Travel and hospitality",
+      "media_entertainment": "Media and entertainment",
+      "public_sector": "Public sector",
+      "professional_services": "Professional services",
+      "technology": "Technology",
+      "automotive_mobility": "Automotive and mobility",
+      "consumer_goods": "Consumer goods",
+      "other": "Other"
+    },
+    "maturity": {
+      "idea": "Idea",
+      "prototype": "Prototype",
+      "pilot": "In pilot",
+      "production": "In production",
+      "scaled": "At scale"
+    },
+    "deployment": {
+      "cloud_saas": "Cloud (SaaS)",
+      "private_cloud": "Private cloud",
+      "on_premise": "On-premise",
+      "hybrid": "Hybrid"
+    },
+    "solutionRejection": {
+      "incomplete": "Information is missing",
+      "not_an_ai_solution": "Not an AI solution",
+      "duplicate": "Already listed",
+      "unverifiable": "Claims could not be verified",
+      "other": "Other reason"
+    },
+    "talentRole": {
+      "ai_engineer": "AI engineer",
+      "ml_engineer": "ML engineer",
+      "forward_deployed_engineer": "Forward-deployed engineer",
+      "automation_specialist": "Automation specialist",
+      "data_scientist": "Data scientist",
+      "data_engineer": "Data engineer",
+      "ai_product_manager": "AI product manager",
+      "ai_consultant": "AI consultant",
+      "ai_designer": "AI designer",
+      "other": "Other"
+    },
+    "availability": {
+      "available": "Available now",
+      "open_to_offers": "Open to offers",
+      "not_available": "Not available"
+    },
+    "engagement": {
+      "full_time": "Full-time",
+      "part_time": "Part-time",
+      "contract": "Contract",
+      "advisory": "Advisory"
+    },
+    "rateBand": {
+      "under_25": "Under $25 an hour",
+      "25_50": "$25–50 an hour",
+      "50_100": "$50–100 an hour",
+      "100_150": "$100–150 an hour",
+      "150_plus": "$150 an hour or more"
+    },
+    "talentRejection": {
+      "incomplete": "Information is missing",
+      "unverifiable": "Experience could not be verified",
+      "inappropriate": "Content does not belong here",
+      "other": "Other reason"
+    },
+    "country": {
+      "VN": "Vietnam",
+      "SG": "Singapore",
+      "TH": "Thailand",
+      "MY": "Malaysia",
+      "ID": "Indonesia",
+      "PH": "Philippines",
+      "JP": "Japan",
+      "KR": "South Korea",
+      "CN": "China",
+      "HK": "Hong Kong",
+      "TW": "Taiwan",
+      "IN": "India",
+      "AU": "Australia",
+      "AE": "United Arab Emirates",
+      "US": "United States",
+      "CA": "Canada",
+      "GB": "United Kingdom",
+      "DE": "Germany",
+      "FR": "France",
+      "NL": "Netherlands"
+    },
+    "deploymentStage": {
+      "pilot": "In pilot",
+      "production": "In production"
+    },
+    "deploymentRejection": {
+      "incomplete": "Information is missing",
+      "unverifiable": "Could not be verified",
+      "other": "Another reason"
+    }
+  },
+  "Organization": {
+    "metaTitle": "My organization · BeyondPilot",
+    "tabs": {
+      "label": "Sections of your organization",
+      "profile": "Profile",
+      "members": "Members",
+      "solutions": "Solutions"
+    },
+    "status": {
+      "pending": "In review",
+      "approved": "Approved",
+      "rejected": "Not approved"
+    },
+    "pending": {
+      "title": "GenAI Fund is reviewing your organization",
+      "lead": "Until it is approved, {name} does not appear in the directories and cannot list a solution publicly. You can complete the profile and invite people now.",
+      "foot": "We email the owners when it is decided.",
+      "edit": "Edit profile"
+    },
+    "rejected": {
+      "title": "GenAI Fund did not approve {name}",
+      "reason": "Reason: {reason}.",
+      "owner": "Change the profile and save it to send it for review again.",
+      "member": "An owner can change the profile and send it for review again.",
+      "edit": "Edit and send again"
+    },
+    "errors": {
+      "ORGANIZATION_NOT_FOUND": "This organization no longer exists.",
+      "ORGANIZATION_MEMBERSHIP_REQUIRED": "You are no longer a member of this organization.",
+      "ORGANIZATION_OWNER_REQUIRED": "Only an owner can do this.",
+      "ORGANIZATION_ALREADY_MEMBER": "You already belong to an organization. Leave it first.",
+      "ORGANIZATION_REQUEST_PENDING": "You already have a request waiting. Withdraw it first.",
+      "ORGANIZATION_INVITATION_NOT_FOUND": "This invitation is no longer open.",
+      "ORGANIZATION_REQUEST_NOT_FOUND": "This request is no longer open.",
+      "ORGANIZATION_MEMBER_NOT_FOUND": "This person is no longer a member.",
+      "ORGANIZATION_ALREADY_INVITED": "This address already has an invitation.",
+      "ORGANIZATION_INVITEE_IS_MEMBER": "This person already belongs to an organization.",
+      "ORGANIZATION_LAST_OWNER": "An organization needs an owner. Make someone else an owner first.",
+      "ORGANIZATION_CHANGED_MEANWHILE": "Someone else changed this profile. Reload the page and try again.",
+      "ORGANIZATION_NOT_AWAITING_REVIEW": "This organization has already been reviewed.",
+      "ORGANIZATION_DOMAIN_TAKEN": "Another organization already uses this email domain.",
+      "REQUEST_INVALID": "Check the marked fields and try again.",
+      "unknown": "That did not work. Try again."
+    },
+    "done": {
+      "invitationAccepted": "You joined the organization.",
+      "invitationDeclined": "Invitation declined.",
+      "invitationRevoked": "Invitation withdrawn.",
+      "requestApproved": "Request approved. They are now a member.",
+      "requestDeclined": "Request declined.",
+      "requestWithdrawn": "Request withdrawn.",
+      "organizationApproved": "Organization approved.",
+      "organizationRefused": "Organization not approved. Its owners can read the reason.",
+      "claimApproved": "Claim approved. They now own the organization.",
+      "claimDeclined": "Claim declined.",
+      "saved": "Profile saved.",
+      "created": "Organization created and sent for review.",
+      "adminCreated": "{name} created.",
+      "joined": "You joined {name}.",
+      "owner": "You now own {name}.",
+      "requested": "Request sent to {name}.",
+      "madeOwner": "{name} is now an owner.",
+      "madeMember": "{name} is now a member.",
+      "left": "You left the organization.",
+      "removed": "{name} was removed.",
+      "invited": "{count, plural, one {Invitation sent.} other {# invitations sent.}}",
+      "jobTitleSaved": "Job title saved.",
+      "autoJoinOn": "Colleagues on your email domain now join without asking.",
+      "autoJoinOff": "Colleagues on your email domain now ask to join."
+    },
+    "form": {
+      "metaTitle": "Create an organization · BeyondPilot",
+      "createTitle": "Create your organization",
+      "createLead": "A company, a team or just you. GenAI Fund reviews a new organization before it appears in the directories. You can prepare your profile in the meantime.",
+      "profileTitle": "Organization profile",
+      "profileLead": "Shown with every solution the organization lists. Only owners can edit it.",
+      "basics": "Basics",
+      "about": "About",
+      "optional": "Optional",
+      "name": "Organization name",
+      "nameRequired": "Enter the organization's name.",
+      "roles": "What does it do on BeyondPilot?",
+      "rolesRequired": "Choose at least one.",
+      "rolesHint": "A provider lists AI solutions. An enterprise publishes use cases it wants solved. Choose both if both are true.",
+      "type": "Type",
+      "country": "Country",
+      "countryPlaceholder": "Select a country",
+      "teamSize": "Team size",
+      "teamSizePlaceholder": "Select a size",
+      "notStated": "Not stated",
+      "website": "Website",
+      "websiteInvalid": "Enter a full address that starts with https://",
+      "description": "Short description",
+      "descriptionHint": "What the organization does and for whom, in a few sentences.",
+      "counter": "{count} / {max}",
+      "save": "Save changes",
+      "create": "Create organization",
+      "cancel": "Cancel",
+      "emailDomain": "Verified email domain",
+      "emailDomainHint": "The domain of the organization's work email. Who can join with it is set in Members.",
+      "leave": {
+        "title": "Leave without saving?",
+        "lead": "Your changes to the organization's profile are not saved yet.",
+        "leave": "Leave without saving",
+        "stay": "Stay"
+      },
+      "discard": "Discard changes",
+      "confirmDiscard": {
+        "title": "Discard your changes?",
+        "lead": "The form goes back to the profile as it was last saved.",
+        "cancel": "Keep editing"
+      },
+      "industries": "Industries",
+      "industriesRequired": "Choose at least one industry.",
+      "industriesHint": "The industries it works in or serves. Choose up to {count}. {chosen} chosen.",
+      "countryRequired": "Select a country.",
+      "teamSizeRequired": "Select a team size.",
+      "jobTitle": "Your role or job title",
+      "jobTitleRequired": "Enter your role or job title.",
+      "jobTitleHint": "What you do in the organization. It shows beside your name among its members."
+    },
+    "find": {
+      "title": "Find your organization",
+      "search": "Company or team name",
+      "nothing": "No organization matches “{query}”. Check the spelling, or create it.",
+      "way": {
+        "join": "You can join at once",
+        "joinDomain": "Your email is on {domain}, so you join at once",
+        "request": "Managed by its owners",
+        "claim": "No one manages this page yet"
+      },
+      "action": {
+        "join": "Join",
+        "request": "Request to join",
+        "claim": "Claim this page"
+      },
+      "or": "or",
+      "create": "Create a new organization",
+      "note": {
+        "create": "Working alone? Create an organization for just you. You can add people later.",
+        "claim": "If your email is on the organization's email domain, you become its owner at once. Otherwise GenAI Fund reviews the claim.",
+        "request": "An owner of {name} decides.",
+        "requestDomain": "Your email is not on {domain}, so an owner of {name} decides."
+      },
+      "ask": {
+        "request": {
+          "title": "Ask to join {name}?",
+          "lead": "An owner reads your request and decides."
+        },
+        "claim": {
+          "title": "Claim {name}?",
+          "lead": "Nobody owns this organization yet. GenAI Fund checks that you represent it, then makes you its owner."
+        },
+        "join": {
+          "title": "Join {name}?",
+          "lead": "Your email domain matches, so you join at once."
+        },
+        "message": "Message (optional)",
+        "cancel": "Cancel"
+      }
+    },
+    "entry": {
+      "back": "Back to BeyondPilot",
+      "invitation": {
+        "title": "Join {name} on BeyondPilot",
+        "invitedOn": "Invited by {name} on {day}",
+        "jobTitle": "Your job title",
+        "jobTitlePlaceholder": "e.g. Solutions engineer",
+        "jobTitlePlaceholderOwner": "e.g. Head of digital transformation",
+        "accept": "Accept and join",
+        "acceptOwner": "Accept and become owner",
+        "decline": "Decline",
+        "noteMember": "{inviter} invited {email} to join as a member. Members are shown on {name}'s team; only owners edit its profile and solutions.",
+        "noteOwner": "{inviter} invited {email} to join as an owner. As owner you can edit the profile, invite colleagues and manage its solutions."
+      },
+      "request": {
+        "claimTitle": "Your claim for {name} is with GenAI Fund",
+        "joinTitle": "Your request to join {name} is with its owners",
+        "claimSent": "Claim sent on {day}",
+        "joinSent": "Request sent on {day}",
+        "withdraw": "Withdraw request",
+        "claimNote": "GenAI Fund checks the claim by hand. Until then the page stays without an owner. Withdraw the request to choose another organization.",
+        "joinNote": "An owner decides. Withdraw the request to choose another organization."
+      }
+    },
+    "members": {
+      "metaTitle": "Members · BeyondPilot",
+      "title": "Members",
+      "summary": {
+        "members": "{count, plural, one {# member} other {# members}}",
+        "invitations": "{count, plural, one {# invitation pending} other {# invitations pending}}"
+      },
+      "columns": {
+        "member": "Member",
+        "role": "Role",
+        "jobTitle": "Job title",
+        "joined": "Joined",
+        "actions": "Actions"
+      },
+      "you": "You",
+      "none": "—",
+      "invited": "Invited {day}",
+      "invitePending": "Invite pending",
+      "requests": {
+        "title": "Requests to join",
+        "asked": "Asked to join on {day}.",
+        "onDomain": "The email is on your verified domain {domain}.",
+        "foot": "Approving adds them as a member.",
+        "approve": "Approve",
+        "decline": "Decline"
+      },
+      "access": {
+        "title": "Who can join",
+        "domain": "Verified domain: {domain}",
+        "on": {
+          "title": "Anyone with an @{domain} email joins as a member",
+          "lead": "They join when they sign in with a verified company email. Turn this off to approve each request yourself.",
+          "badge": "On",
+          "action": "Turn off"
+        },
+        "off": {
+          "title": "People with an @{domain} email ask to join",
+          "lead": "You approve each request. Turn this on to let them join at once as members.",
+          "badge": "Off",
+          "action": "Turn on"
+        }
+      },
+      "actions": {
+        "open": "Actions for {name}",
+        "openInvitation": "Actions for the invitation to {email}",
+        "editJobTitle": "Edit job title…",
+        "makeMember": "Make member",
+        "makeOwner": "Make owner",
+        "leave": "Leave organization…",
+        "remove": "Remove from organization…",
+        "revoke": "Withdraw invitation"
+      },
+      "jobTitle": {
+        "title": "Your job title",
+        "lead": "Shown beside your name on the organization's team.",
+        "label": "Job title",
+        "placeholder": "e.g. Solutions engineer",
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "confirm": {
+        "leave": {
+          "title": "Leave this organization?",
+          "lead": "You lose access to its profile, members and solutions.",
+          "confirm": "Leave organization"
+        },
+        "remove": {
+          "title": "Remove this member?",
+          "lead": "They lose access to the organization's profile, members and solutions.",
+          "confirm": "Remove member"
+        },
+        "note": "What the organization published stays. They can be invited again at any time.",
+        "cancel": "Cancel"
+      },
+      "invite": {
+        "open": "Invite people",
+        "title": "Invite people to {name}",
+        "lead": "Each person gets an email with a link, and joins when they accept.",
+        "emails": "Email addresses",
+        "emailsPlaceholder": "name@company.com, name@company.com",
+        "emailsInvalid": "Enter full email addresses, separated by commas.",
+        "role": "Role",
+        "note": "Members are shown on the team and can edit their own job title. Only owners edit the profile and the solutions, invite people and remove members.",
+        "cancel": "Cancel",
+        "send": "Send invitations"
+      }
+    }
+  },
+  "Solution": {
+    "errors": {
+      "SOLUTION_NOT_FOUND": "This solution no longer exists.",
+      "SOLUTION_PROVIDER_REQUIRED": "Only an owner of an approved AI provider can do this.",
+      "SOLUTION_INCOMPLETE": "Fill in the marked fields before sending for review.",
+      "SOLUTION_NOT_SUBMITTABLE": "This solution is already in review or approved.",
+      "SOLUTION_NOT_A_DRAFT": "Only a draft can be deleted.",
+      "SOLUTION_NOT_AWAITING_REVIEW": "This solution has already been reviewed.",
+      "SOLUTION_CHANGED_MEANWHILE": "Someone else changed this solution. Reload the page and try again.",
+      "REQUEST_INVALID": "Check the marked fields and try again.",
+      "SOLUTION_DEPLOYMENT_NOT_FOUND": "This customer deployment no longer exists.",
+      "SOLUTION_TOO_MANY_DEPLOYMENTS": "A solution lists at most 12 customer deployments. Remove one before adding another.",
+      "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW": "This customer deployment is not waiting for review.",
+      "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Someone else saved this customer deployment in the meantime. Reload the page and make your changes again.",
+      "unknown": "That did not work. Try again."
+    },
+    "done": {
+      "saved": "Solution saved.",
+      "submitted": "Sent to GenAI Fund for review.",
+      "deleted": "{name} deleted.",
+      "approved": "{name} is approved.",
+      "rejected": "{name} sent back with your reason.",
+      "deploymentSaved": "{name} sent to GenAI Fund for review.",
+      "deploymentRemoved": "{name} removed.",
+      "deploymentApproved": "{name} approved.",
+      "deploymentRejected": "{name} sent back."
+    },
+    "directory": {
+      "metaTitle": "AI solutions · BeyondPilot",
+      "title": "AI solutions",
+      "lead": "AI products and services, each with the proof behind it: who built it, where it runs and what it has delivered.",
+      "showing": "Showing {shown} of {total}",
+      "noCase": "No customer case published",
+      "strip": {
+        "title": "Building an AI solution?",
+        "body": "List it with the proof behind it, so enterprises looking for a pilot can find you."
+      },
+      "list": "List your solution",
+      "count": "{count, plural, one {# solution} other {# solutions}}",
+      "more": "+{count} more",
+      "by": "By {name}",
+      "empty": {
+        "title": "No solutions listed yet",
+        "description": "Approved solutions appear here. Providers can list theirs from their organization."
+      },
+      "noMatch": {
+        "title": "No solution matches",
+        "description": "Nothing matches this search and these filters.",
+        "clear": "Clear search and filters"
+      },
+      "ownLead": "This is your organization's solution, as others see it.",
+      "ownEdit": "Edit this solution",
+      "deployments": "{count, plural, one {# customer deployment} other {# customer deployments}}"
+    },
+    "filters": {
+      "search": "Search by name or summary",
+      "toggle": "Filters",
+      "adminSearch": "Search by solution or organization",
+      "industry": {
+        "label": "Industry",
+        "all": "All industries"
+      },
+      "focusArea": {
+        "label": "Capability",
+        "all": "All capabilities"
+      },
+      "maturity": {
+        "label": "Stage",
+        "all": "Any stage"
+      },
+      "status": {
+        "label": "Status",
+        "all": "All statuses"
+      },
+      "clear": "Clear filters"
+    },
+    "view": {
+      "problemsSolved": "Problems it solves",
+      "valueProposition": "Why it is worth it",
+      "maturity": "Maturity",
+      "focusAreas": "Focus areas",
+      "industries": "Industries",
+      "deployment": "Deployment",
+      "website": "Visit website",
+      "nothingYet": "Nothing written yet."
+    },
+    "detail": {
+      "unknown": "Not listed yet",
+      "proof": {
+        "title": "Proof",
+        "lead": "Every claim shows its kind of evidence and where it comes from. What isn't known is shown as unknown.",
+        "customerCase": "Customer case",
+        "noCase": "No customer case published."
+      },
+      "fit": {
+        "title": "Where it fits",
+        "industries": "Industries",
+        "channels": "Channels",
+        "deployment": "Deployment",
+        "languages": "Languages"
+      },
+      "product": {
+        "title": "Product and business",
+        "capabilities": "Capabilities",
+        "stage": "Stage",
+        "notPublished": "Not published yet: core technology, segment, best customer profile, funding, built with, demo and decks, pricing model, notable customers, alternatives."
+      },
+      "offers": {
+        "title": "Offers",
+        "kind": "Offer",
+        "none": "No offer has been published yet."
+      },
+      "company": {
+        "title": "The company behind this solution",
+        "view": "View company",
+        "solutions": "Solutions",
+        "noSolutions": "No solution is listed yet.",
+        "listedBelow": "{count, plural, one {# customer deployment, listed below} other {# customer deployments, listed below}}",
+        "deployments": "Customer deployments",
+        "noDeployments": "No customer deployment published.",
+        "type": "Type",
+        "country": "Country",
+        "website": "Website",
+        "industries": "Industries"
+      },
+      "contact": {
+        "title": "Work with {name}",
+        "website": "Visit website",
+        "basedIn": "Based in"
+      }
+    },
+    "mine": {
+      "metaTitle": "Solutions · BeyondPilot",
+      "title": "Solutions",
+      "summary": {
+        "listed": "{count} listed",
+        "draft": "{count, plural, one {# draft} other {# drafts}}",
+        "submitted": "{count} in review",
+        "rejected": "{count} not approved",
+        "hidden": "{count} hidden"
+      },
+      "columns": {
+        "solution": "Solution",
+        "status": "Status",
+        "updated": "Updated",
+        "actions": "Actions"
+      },
+      "state": {
+        "listed": "Listed in the directory",
+        "hidden": "Approved · hidden from the directory",
+        "draft": "Not submitted · visible to your organization only",
+        "submitted": "Sent for review · visible to your organization only",
+        "rejected": "Not approved · visible to your organization only"
+      },
+      "actions": {
+        "open": "Actions for {name}",
+        "edit": "Edit",
+        "view": "Open",
+        "viewPublic": "View public page"
+      },
+      "create": {
+        "title": "Add a solution",
+        "lead": "Start with its name. It stays a draft until you send it for review.",
+        "name": "Solution name",
+        "nameRequired": "Enter the solution's name.",
+        "cancel": "Cancel",
+        "submit": "Add solution"
+      },
+      "afterApproval": "You can add solutions once GenAI Fund approves your organization.",
+      "empty": {
+        "title": "No solutions yet",
+        "owner": "Add the first product your organization offers.",
+        "member": "An owner of the organization adds its solutions."
+      }
+    },
+    "editor": {
+      "back": "All solutions",
+      "submitted": {
+        "title": "GenAI Fund is reviewing this solution",
+        "lead": "This usually takes one or two working days. You can still correct it."
+      },
+      "approved": {
+        "listed": "Approved and listed in the directory",
+        "unlisted": "Approved, but hidden from the directory",
+        "open": "Open the public page",
+        "unlistedLead": "Turn on “Show in the directory” below to list it."
+      },
+      "rejected": {
+        "title": "Changes needed: {reason}",
+        "lead": "Correct it and send it for review again."
+      }
+    },
+    "form": {
+      "name": "Name",
+      "nameRequired": "Enter the solution's name.",
+      "summary": "Summary",
+      "summaryHint": "One or two sentences. This is what the directory shows.",
+      "problemsSolved": "Problems it solves",
+      "problemsSolvedHint": "The situations a customer is in before using it.",
+      "valueProposition": "Why it is worth it",
+      "valuePropositionHint": "Results customers got, with numbers where you have them.",
+      "focusAreas": "Focus areas",
+      "industries": "Industries",
+      "upTo": "Choose up to {count}. {chosen} chosen.",
+      "maturity": "Maturity",
+      "notStated": "Not stated",
+      "website": "Product page",
+      "websiteInvalid": "Enter a full address that starts with https://",
+      "deployment": "Deployment",
+      "listed": "Show in the directory",
+      "listedHint": "Takes effect once the solution is approved.",
+      "submit": "Send for review",
+      "resubmit": "Send for review again",
+      "saveDraft": "Save draft",
+      "save": "Save changes",
+      "delete": "Delete draft…",
+      "confirmDelete": {
+        "title": "Delete {name}?",
+        "lead": "The draft is removed for everyone in your organization. This cannot be undone.",
+        "confirm": "Delete draft",
+        "cancel": "Cancel"
+      },
+      "listedHintApproved": "The solution is approved, so this and every saved change show in the directory at once.",
+      "needed": {
+        "summary": "Write one or two sentences about what it does.",
+        "focusAreas": "Choose at least one focus area.",
+        "industries": "Choose at least one industry.",
+        "maturity": "Choose how mature it is."
+      },
+      "readiness": {
+        "missing": "Before you send it for review, add:",
+        "ready": "Ready to send for review",
+        "note": "GenAI Fund checks that the solution is real, that the summary says what it does, and that your organization offers it. This usually takes one or two working days, and the decision shows on this page.",
+        "count": "{count, plural, one {# field to add before review} other {# fields to add before review}}"
+      },
+      "discard": "Discard changes",
+      "unsaved": "Unsaved changes",
+      "neededMark": "· needed for review",
+      "leave": {
+        "title": "Leave without saving?",
+        "lead": "Your changes to this solution are not saved yet.",
+        "leave": "Leave without saving",
+        "stay": "Stay"
+      },
+      "confirmDiscard": {
+        "title": "Discard your changes?",
+        "lead": "The form goes back to this solution as it was last saved.",
+        "cancel": "Keep editing"
+      },
+      "requiredMark": "· required"
+    },
+    "deployment": {
+      "open": "Open the deployment to read the problem, what was deployed and the result.",
+      "eyebrow": "Customer deployment",
+      "line": "{solution} · {customer}",
+      "lead": "{solution}, deployed by {organization}. {stage}; reviewed by GenAI Fund on {day}.",
+      "problem": "The business problem",
+      "delivered": "What was deployed",
+      "scope": "Scope and result",
+      "channels": "Channels",
+      "languages": "Languages",
+      "period": "Period",
+      "result": "Result",
+      "notPublished": "Not published",
+      "about": "About this project",
+      "deliveredBy": "Delivered by",
+      "customer": "Customer",
+      "solutionUsed": "Solution used",
+      "source": "Stated by the company and reviewed by GenAI Fund. The customer has not confirmed it here."
+    },
+    "deployments": {
+      "title": "Customer deployments",
+      "lead": "Projects in which a customer put this solution to work. GenAI Fund reviews each one before it is shown, and again after every change.",
+      "add": "Add a deployment",
+      "none": "No customer deployment yet. One reviewed deployment says more than any claim.",
+      "edit": "Edit",
+      "remove": "Remove",
+      "rejected": "Sent back: {reason}.",
+      "confirmRemove": {
+        "title": "Remove {name}?",
+        "lead": "It leaves the solution's page at once and cannot be restored."
+      },
+      "form": {
+        "addTitle": "Add a customer deployment",
+        "editTitle": "Edit the customer deployment",
+        "lead": "Write only what the customer agreed to publish. Saving sends it to GenAI Fund for review.",
+        "title": "Title",
+        "titleHint": "What was put to work, such as \"Voice agent for card and loan enquiries\".",
+        "customer": "Customer",
+        "customerHint": "Its name, or a description such as \"A retail bank in Vietnam\".",
+        "stage": "Stage",
+        "problem": "The business problem",
+        "delivered": "What was deployed",
+        "channels": "Channels (optional)",
+        "channelsHint": "Such as chat and voice.",
+        "languages": "Languages (optional)",
+        "languagesHint": "Such as Vietnamese, English.",
+        "period": "Period (optional)",
+        "periodHint": "Such as since March 2026.",
+        "result": "Result (optional)",
+        "resultHint": "A number the customer stands behind.",
+        "cancel": "Cancel",
+        "save": "Send for review"
+      }
+    }
+  },
+  "Talent": {
+    "errors": {
+      "TALENT_PROFILE_NOT_FOUND": "This profile no longer exists.",
+      "TALENT_INCOMPLETE": "Fill in the marked fields before sending for review.",
+      "TALENT_NOT_SUBMITTABLE": "This profile is already in review or approved.",
+      "TALENT_NOT_AWAITING_REVIEW": "This profile has already been reviewed.",
+      "TALENT_CHANGED_MEANWHILE": "This profile changed in another tab. Reload the page and try again.",
+      "TALENT_OWN_PROFILE": "This is your own profile.",
+      "TALENT_ENQUIRY_TOO_SOON": "You already wrote to this person today. Try again tomorrow.",
+      "REQUEST_INVALID": "Check the marked fields and try again.",
+      "unknown": "That did not work. Try again."
+    },
+    "done": {
+      "saved": "Profile saved.",
+      "submitted": "Sent to GenAI Fund for review.",
+      "approved": "{name} is approved.",
+      "rejected": "{name} sent back with your reason."
+    },
+    "directory": {
+      "metaTitle": "AI talent · BeyondPilot",
+      "title": "AI talent",
+      "lead": "Engineers and builders who deploy AI for businesses, shown with the work they have delivered.",
+      "create": "Create a talent profile",
+      "count": "Showing {shown} of {total}",
+      "total": "{count, plural, one {# person} other {# people}}",
+      "more": "+{count}",
+      "allSkills": "Show all {count} skills",
+      "strip": {
+        "title": "Do you deploy AI for businesses?",
+        "body": "Create a profile with your skills and the projects you have delivered. Enquiries reach you without showing your email address."
+      },
+      "empty": {
+        "title": "Talent profiles open with the launch",
+        "description": "AI engineers, forward-deployed engineers and automation specialists will be listed here, with their skills and projects."
+      },
+      "noMatch": {
+        "title": "No profile matches",
+        "description": "Nothing matches this search and these filters.",
+        "clear": "Clear search and filters"
+      },
+      "edit": "Edit your profile"
+    },
+    "filters": {
+      "search": "Search talent by name or skill",
+      "open": "Filters",
+      "done": "Show results",
+      "close": "Close",
+      "adminSearch": "Search by name or email",
+      "role": {
+        "label": "Role",
+        "all": "All roles"
+      },
+      "availability": {
+        "label": "Availability",
+        "all": "Any availability"
+      },
+      "status": {
+        "label": "Status",
+        "all": "All statuses"
+      },
+      "clear": "Clear filters"
+    },
+    "view": {
+      "roles": "Roles",
+      "skills": "Skills",
+      "engagement": "Open to",
+      "rate": "Rate",
+      "projects": "Selected work",
+      "openProject": "See the work",
+      "website": "Portfolio or LinkedIn",
+      "nothingYet": "Nothing written yet."
+    },
+    "profile": {
+      "trail": "You are here",
+      "about": "About",
+      "projects": {
+        "title": "Deployed projects",
+        "lead": "Each project is shown as stated by the person.",
+        "stated": "Stated by the person",
+        "open": "View the project",
+        "empty": "No deployed project published yet."
+      },
+      "fit": {
+        "title": "Skills and availability",
+        "skills": "Skills",
+        "availability": "Availability",
+        "engagement": "Open to",
+        "rate": "Rate"
+      },
+      "facts": {
+        "country": "Based in",
+        "role": "Role",
+        "website": "Portfolio or LinkedIn"
+      },
+      "notListed": "Not listed yet",
+      "note": "Enquiries go through BeyondPilot. {name} gets your message with your name and email address; theirs is not shown until they reply."
+    },
+    "enquiry": {
+      "title": "Work with {name}",
+      "project": "Discuss a project",
+      "role": "Ask about a role",
+      "projectLabel": "Tell {name} about your project",
+      "projectPlaceholder": "What you are building, and what you need from them.",
+      "roleLabel": "Ask {name} about a role",
+      "rolePlaceholder": "The role, the team, and what you would like to know.",
+      "hint": "They get your message with your name and email, and answer you directly.",
+      "required": "Write a message first.",
+      "send": "Send message",
+      "cancel": "Cancel",
+      "sentTitle": "Message sent to {name}",
+      "sentLead": "They will answer to your email address.",
+      "signInLead": "Sign in to write to {name}.",
+      "ownLead": "This is your profile, as others see it.",
+      "ownEdit": "Edit your profile"
+    },
+    "mine": {
+      "metaTitle": "Talent profile · BeyondPilot",
+      "title": "Your talent profile",
+      "lead": "How companies see you in the AI talent directory.",
+      "leadNew": "Tell companies what you build. GenAI Fund reviews the profile before it is listed.",
+      "submitted": {
+        "title": "GenAI Fund is reviewing your profile",
+        "lead": "This usually takes one or two working days. You can still correct it."
+      },
+      "approved": {
+        "listed": "Approved and listed in the directory",
+        "unlisted": "Approved, but hidden from the directory",
+        "open": "Open your public profile",
+        "unlistedLead": "Turn on “Show in the directory” below to be listed."
+      },
+      "rejected": {
+        "title": "Changes needed: {reason}",
+        "lead": "Correct it and send it for review again."
+      },
+      "enquiries": "{count, plural, one {# message} other {# messages}}",
+      "reply": "Reply to {email}"
+    },
+    "form": {
+      "name": "Name",
+      "nameRequired": "Enter your name.",
+      "headline": "Headline",
+      "bio": "About you",
+      "bioHint": "What you have built, for whom, and what you want to work on next.",
+      "roles": "Roles",
+      "upTo": "Choose up to {count}. {chosen} chosen.",
+      "skills": "Skills",
+      "skillsHint": "Separate with commas, up to {count}. For example: Python, LangGraph, RAG, MLOps.",
+      "skillsInvalid": "Name at most {count} skills, each up to 40 characters.",
+      "country": "Country",
+      "availability": "Availability",
+      "rate": "Rate",
+      "notStated": "Not stated",
+      "engagement": "Open to",
+      "website": "Portfolio or LinkedIn",
+      "websiteHint": "Shown on your profile. Your email address never is.",
+      "websiteInvalid": "Enter a full address that starts with https://",
+      "projects": {
+        "title": "Selected work",
+        "lead": "Up to {count} projects that show what you can do.",
+        "titleRequired": "Give every project a title, or remove it.",
+        "name": "Project {number}",
+        "year": "Year",
+        "summary": "What you did",
+        "url": "Link",
+        "remove": "Remove project {number}",
+        "add": "Add a project"
+      },
+      "listed": "Show in the directory",
+      "listedHint": "Takes effect once the profile is approved.",
+      "submit": "Send for review",
+      "resubmit": "Send for review again",
+      "saveDraft": "Save draft",
+      "save": "Save changes",
+      "listedHintApproved": "Your profile is approved, so this and every saved change show in the directory at once.",
+      "needed": {
+        "headline": "Say what you do in one line.",
+        "bio": "Write a few sentences about your work.",
+        "roles": "Choose at least one role.",
+        "skills": "Name at least one skill."
+      },
+      "readiness": {
+        "missing": "Before you send it for review, add:",
+        "ready": "Ready to send for review",
+        "note": "GenAI Fund checks that the profile is a real person's and says what you do. This usually takes one or two working days, and the decision shows on this page.",
+        "count": "{count, plural, one {# field to add before review} other {# fields to add before review}}"
+      },
+      "discard": "Discard changes",
+      "unsaved": "Unsaved changes",
+      "neededMark": "· needed for review",
+      "leave": {
+        "title": "Leave without saving?",
+        "lead": "Your changes to your profile are not saved yet.",
+        "leave": "Leave without saving",
+        "stay": "Stay"
+      },
+      "confirmDiscard": {
+        "title": "Discard your changes?",
+        "lead": "The form goes back to your profile as it was last saved.",
+        "cancel": "Keep editing"
+      },
+      "requiredMark": "· required",
+      "headlineHint": "One line on what you do. For example: ML engineer building document AI for banks."
     }
   },
   "Form": {

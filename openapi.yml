@@ -13,12 +13,32 @@ tags:
   name: Accounts
 - description: "The programs GenAI Fund runs, as the public site shows them."
   name: Programs
+- description: The public directory of approved AI solutions.
+  name: Solutions
+- description: The public directory of approved talent profiles.
+  name: Talent
+- description: The organizations operators review.
+  name: Organization administration
+- description: The organization the caller belongs to.
+  name: My organization
+- description: The programs operators create and edit.
+  name: Program administration
 - description: Who is signed in.
   name: Identity
 - description: Uploading and reading files.
   name: Storage
-- description: The programs operators create and edit.
-  name: Program administration
+- description: The projects in which a customer put a solution to work.
+  name: Customer deployments
+- description: The caller's own talent profile.
+  name: My talent profile
+- description: The talent profiles operators review.
+  name: Talent administration
+- description: The solutions operators review.
+  name: Solution administration
+- description: "Finding, joining and creating an organization."
+  name: Organizations
+- description: The solutions of the caller's organization.
+  name: My solutions
 paths:
   /api/audit/events:
     get:
@@ -50,6 +70,19 @@ paths:
           - program.update
           - program.publish
           - program.unpublish
+          - organization.create
+          - organization.approve
+          - organization.refuse
+          - organization.claim_approve
+          - organization.claim_decline
+          - organization.member_role
+          - organization.member_remove
+          - solution.approve
+          - solution.reject
+          - solution.deployment_approve
+          - solution.deployment_reject
+          - talent.approve
+          - talent.reject
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
         in: query
@@ -367,6 +400,995 @@ paths:
       summary: The signed-in account
       tags:
       - Identity
+  /api/organization/admin/claims/{id}/approve:
+    post:
+      operationId: approveOrganizationClaim
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The person owns the organization.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The claim is not open.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The person joined another organization in the meantime.
+      security:
+      - session: []
+      summary: Let a person own an organization nobody owns
+      tags:
+      - Organization administration
+  /api/organization/admin/claims/{id}/decline:
+    post:
+      operationId: declineOrganizationClaim
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The claim is closed.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The claim is not open.
+      security:
+      - session: []
+      summary: Decline a request to own an organization
+      tags:
+      - Organization administration
+  /api/organization/admin/organizations:
+    get:
+      operationId: listAdminOrganizations
+      parameters:
+      - description: "Organizations whose name or domain contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only organizations of this review status.
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - pending
+          - approved
+          - rejected
+          pattern: pending|approved|rejected
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOrganizationList"
+          description: One page of the organizations the parameters select.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The organizations, those waiting for review first"
+      tags:
+      - Organization administration
+    post:
+      operationId: createAdminOrganization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCreateOrganization"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOrganization"
+          description: "The organization, approved and without an owner."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Another organization has the email domain.
+      security:
+      - session: []
+      summary: Create an organization for a company that is not here yet
+      tags:
+      - Organization administration
+  /api/organization/admin/organizations/{id}:
+    get:
+      operationId: getAdminOrganization
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOrganization"
+          description: "The organization, its people and the requests to own it."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such organization.
+      security:
+      - session: []
+      summary: One organization as an operator reviews it
+      tags:
+      - Organization administration
+  /api/organization/admin/organizations/{id}/approve:
+    post:
+      operationId: approveOrganization
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The organization is approved.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization is not waiting for review.
+      security:
+      - session: []
+      summary: Approve an organization that waits for review
+      tags:
+      - Organization administration
+  /api/organization/admin/organizations/{id}/refuse:
+    post:
+      operationId: refuseOrganization
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefuseOrganization"
+        required: true
+      responses:
+        "204":
+          description: "The organization is refused, with the reason."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization is not waiting for review.
+      security:
+      - session: []
+      summary: Refuse an organization that waits for review
+      tags:
+      - Organization administration
+  /api/organization/invitations/{id}/accept:
+    post:
+      operationId: acceptOrganizationInvitation
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The caller belongs to the organization.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No open invitation to the caller has this identifier.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller already belongs to an organization.
+      security:
+      - session: []
+      summary: Accept an invitation to the caller's address
+      tags:
+      - Organizations
+  /api/organization/invitations/{id}/decline:
+    post:
+      operationId: declineOrganizationInvitation
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The invitation is closed.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No open invitation to the caller has this identifier.
+      security:
+      - session: []
+      summary: Decline an invitation to the caller's address
+      tags:
+      - Organizations
+  /api/organization/join-request/withdraw:
+    post:
+      operationId: withdrawJoinRequest
+      responses:
+        "204":
+          description: The caller waits on no request.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: Withdraw the request the caller waits on
+      tags:
+      - Organizations
+  /api/organization/mine:
+    get:
+      operationId: getMyOrganization
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyOrganization"
+          description: Where the caller stands.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: "The caller's organization, or their ways into one"
+      tags:
+      - My organization
+    put:
+      operationId: saveMyOrganization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveOrganization"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+          description: "The organization as saved, with its new version."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller belongs to no organization, or is not an owner\
+            \ of it."
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization changed since it was read.
+      security:
+      - session: []
+      summary: Save the profile of the caller's organization
+      tags:
+      - My organization
+  /api/organization/mine/auto-join:
+    put:
+      operationId: changeOrganizationAutoJoin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AutoJoin"
+        required: true
+      responses:
+        "204":
+          description: The setting is saved.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The value is missing.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller belongs to no organization, or is not an owner\
+            \ of it."
+      security:
+      - session: []
+      summary: "Let addresses on the organization's domain join without asking, or\
+        \ stop that"
+      tags:
+      - My organization
+  /api/organization/mine/invitations:
+    post:
+      operationId: inviteOrganizationMember
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InviteMember"
+        required: true
+      responses:
+        "204":
+          description: The invitation is open and the address was told.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller belongs to no organization, or is not an owner\
+            \ of it."
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The address already belongs to the organization, or already\
+            \ holds an open invitation."
+      security:
+      - session: []
+      summary: Ask an address to join the caller's organization
+      tags:
+      - My organization
+  /api/organization/mine/invitations/{id}/revoke:
+    post:
+      operationId: revokeOrganizationInvitation
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The invitation is closed.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller belongs to no organization, or is not an owner\
+            \ of it."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The invitation is not open.
+      security:
+      - session: []
+      summary: Take back an open invitation
+      tags:
+      - My organization
+  /api/organization/mine/job-title:
+    put:
+      operationId: changeMyJobTitle
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobTitle"
+        required: true
+      responses:
+        "204":
+          description: The job title is saved.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The job title is too long.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller belongs to no organization.
+      security:
+      - session: []
+      summary: Set what the caller does in their organization
+      tags:
+      - My organization
+  /api/organization/mine/members:
+    get:
+      operationId: listMyOrganizationMembers
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationMembers"
+          description: "The members, and for an owner the open invitations and requests."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller belongs to no organization.
+      security:
+      - session: []
+      summary: Who belongs to the caller's organization
+      tags:
+      - My organization
+  /api/organization/mine/members/{accountId}/remove:
+    post:
+      operationId: removeOrganizationMember
+      parameters:
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The person no longer belongs to the organization.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller belongs to no organization, or removes someone\
+            \ else without being an owner."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The person does not belong to the organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The removal would leave the organization without an owner.
+      security:
+      - session: []
+      summary: Take a person out of the organization; a member may only take themselves
+        out
+      tags:
+      - My organization
+  /api/organization/mine/members/{accountId}/role:
+    put:
+      operationId: changeOrganizationMemberRole
+      parameters:
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeMemberRole"
+        required: true
+      responses:
+        "204":
+          description: The person has the role.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The role is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller belongs to no organization, or is not an owner\
+            \ of it."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The person does not belong to the organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The change would leave the organization without an owner.
+      security:
+      - session: []
+      summary: "Make a member an owner, or an owner a member"
+      tags:
+      - My organization
+  /api/organization/mine/requests/{id}/approve:
+    post:
+      operationId: approveJoinRequest
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The person is a member.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller belongs to no organization, or is not an owner\
+            \ of it."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The request is not open.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The person joined another organization in the meantime.
+      security:
+      - session: []
+      summary: Let a person who asked join
+      tags:
+      - My organization
+  /api/organization/mine/requests/{id}/decline:
+    post:
+      operationId: declineJoinRequest
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The request is closed.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller belongs to no organization, or is not an owner\
+            \ of it."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The request is not open.
+      security:
+      - session: []
+      summary: Decline a request to join
+      tags:
+      - My organization
+  /api/organization/organizations:
+    get:
+      operationId: searchOrganizations
+      parameters:
+      - description: "A part of the name, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type: string
+          maxLength: 100
+          minLength: 0
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationSearch"
+          description: "Ten organizations at most, by name; none for a text shorter\
+            \ than two characters."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The text is too long.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: The approved organizations whose name contains a text
+      tags:
+      - Organizations
+    post:
+      operationId: createOrganization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrganization"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+          description: "The organization, waiting for GenAI Fund's review."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller already belongs to an organization, or waits on\
+            \ a request to join one."
+      security:
+      - session: []
+      summary: Create an organization the caller owns
+      tags:
+      - Organizations
+  /api/organization/organizations/{id}/join:
+    post:
+      operationId: joinOrganization
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinOrganization"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JoinOutcome"
+          description: "What asking did: joined, owner, or a request that waits."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The message is too long.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such approved organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller already belongs to an organization, or waits on\
+            \ a request."
+      security:
+      - session: []
+      summary: Ask to get into an organization
+      tags:
+      - Organizations
+  /api/organization/organizations/{slug}:
+    get:
+      operationId: getOrganization
+      parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicOrganization"
+          description: The organization.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No approved organization has this address.
+      summary: "The public page of an approved organization, read without a session"
+      tags:
+      - Organizations
   /api/program/admin/programs:
     get:
       operationId: listAdminPrograms
@@ -692,6 +1714,870 @@ paths:
       summary: A program's public page
       tags:
       - Programs
+  /api/solution/admin/deployments/{id}/approve:
+    post:
+      operationId: approveCustomerDeployment
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The deployment is approved.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such customer deployment for this caller.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The deployment is not waiting for review.
+      security:
+      - session: []
+      summary: Approve a customer deployment that waits for review
+      tags:
+      - Customer deployments
+  /api/solution/admin/deployments/{id}/reject:
+    post:
+      operationId: rejectCustomerDeployment
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectCustomerDeployment"
+        required: true
+      responses:
+        "204":
+          description: "The deployment is rejected, with the reason."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such customer deployment for this caller.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The deployment is neither waiting for review nor approved.
+      security:
+      - session: []
+      summary: "Reject a customer deployment that waits for review, or take an approved\
+        \ one off its solution"
+      tags:
+      - Customer deployments
+  /api/solution/admin/solutions:
+    get:
+      operationId: listAdminSolutions
+      parameters:
+      - description: "Solutions whose name contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only solutions of this status. Drafts are never listed.
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - submitted
+          - approved
+          - rejected
+          pattern: submitted|approved|rejected
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSolutionList"
+          description: One page of the solutions the parameters select.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The submitted solutions, those waiting for review first"
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}:
+    get:
+      operationId: getAdminSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Solution"
+          description: The solution.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+      security:
+      - session: []
+      summary: One solution as an operator reviews it
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/approve:
+    post:
+      operationId: approveSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The solution is approved.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution is not waiting for review.
+      security:
+      - session: []
+      summary: Approve a solution that waits for review
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/reject:
+    post:
+      operationId: rejectSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectSolution"
+        required: true
+      responses:
+        "204":
+          description: "The solution is rejected, with the reason."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution is neither waiting for review nor approved.
+      security:
+      - session: []
+      summary: "Reject a solution that waits for review, or take an approved one out\
+        \ of the directory"
+      tags:
+      - Solution administration
+  /api/solution/deployments:
+    get:
+      operationId: listCustomerDeployments
+      parameters:
+      - description: The address of the organization's public page.
+        in: query
+        name: organization
+        required: true
+        schema:
+          type: string
+          maxLength: 120
+          minLength: 0
+      - description: "The page, from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type:
+          - integer
+          - "null"
+          format: int32
+          maximum: 1000
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicCustomerDeploymentList"
+          description: One page of the deployments.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+      summary: "The approved customer deployments of an organization, the most recently\
+        \ approved first"
+      tags:
+      - Solutions
+  /api/solution/mine:
+    get:
+      operationId: listMySolutions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MySolutions"
+          description: "The solutions, the newest first."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: The solutions of the caller's organization
+      tags:
+      - My solutions
+    post:
+      operationId: createSolution
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSolution"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Solution"
+          description: The draft.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The name is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of an approved organization that
+            is a provider.
+      security:
+      - session: []
+      summary: Create a solution as a draft
+      tags:
+      - My solutions
+  /api/solution/mine/{id}:
+    delete:
+      operationId: deleteSolutionDraft
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The draft is gone.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of an approved organization that
+            is a provider.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization has no such solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution is not a draft.
+      security:
+      - session: []
+      summary: Delete a draft
+      tags:
+      - My solutions
+    get:
+      operationId: getMySolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Solution"
+          description: The solution.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization has no such solution.
+      security:
+      - session: []
+      summary: One solution of the caller's organization
+      tags:
+      - My solutions
+    put:
+      operationId: saveSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveSolution"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Solution"
+          description: "The solution as saved, with its new version."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, or a submitted or approved solution\
+            \ would lose what a submission needs."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of an approved organization that
+            is a provider.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization has no such solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution changed since it was read.
+      security:
+      - session: []
+      summary: Save a solution
+      tags:
+      - My solutions
+  /api/solution/mine/{id}/submit:
+    post:
+      operationId: submitSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Solution"
+          description: "The solution, waiting for review."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution lacks what a submission needs.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of an approved organization that
+            is a provider.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization has no such solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution is already submitted or approved.
+      security:
+      - session: []
+      summary: Send a solution to GenAI Fund for review
+      tags:
+      - My solutions
+  /api/solution/mine/{solutionId}/deployments:
+    post:
+      operationId: addCustomerDeployment
+      parameters:
+      - in: path
+        name: solutionId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveCustomerDeployment"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerDeployment"
+          description: "The deployment, waiting for review."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of an approved organization that
+            is a provider.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization has no such solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution already lists as many as it may.
+      security:
+      - session: []
+      summary: Add a customer deployment to a solution
+      tags:
+      - Customer deployments
+  /api/solution/mine/{solutionId}/deployments/{id}:
+    delete:
+      operationId: deleteCustomerDeployment
+      parameters:
+      - in: path
+        name: solutionId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The deployment is gone.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of an approved organization that
+            is a provider.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such customer deployment for this caller.
+      security:
+      - session: []
+      summary: Remove a customer deployment
+      tags:
+      - Customer deployments
+    put:
+      operationId: saveCustomerDeployment
+      parameters:
+      - in: path
+        name: solutionId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveCustomerDeployment"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerDeployment"
+          description: "The deployment as saved, waiting for review."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of an approved organization that
+            is a provider.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such customer deployment for this caller.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The deployment changed since it was read.
+      security:
+      - session: []
+      summary: "Save a customer deployment, which sends it to review again"
+      tags:
+      - Customer deployments
+  /api/solution/solutions:
+    get:
+      operationId: listSolutions
+      parameters:
+      - description: "Solutions whose name or summary contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only solutions for this industry.
+        in: query
+        name: industry
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+      - description: Only solutions of this focus area.
+        in: query
+        name: focusArea
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: conversational_ai|document_processing|computer_vision|speech_voice|predictive_analytics|recommendation|process_automation|ai_agents|generative_content|search_knowledge|data_platform|ai_security|other
+      - description: Only solutions of this maturity.
+        in: query
+        name: maturity
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: idea|prototype|pilot|production|scaled
+      - description: Only solutions of the organization at this address.
+        in: query
+        name: organization
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
+      - description: "The order: by name, or the most recently approved first."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+          default: name
+          enum:
+          - name
+          - newest
+          pattern: name|newest
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicSolutionList"
+          description: One page of the solutions the parameters select.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+      summary: "The approved, listed solutions, in the order asked for"
+      tags:
+      - Solutions
+  /api/solution/solutions/{slug}:
+    get:
+      operationId: getSolution
+      parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicSolution"
+          description: The solution.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "No approved, listed solution has this address."
+      summary: One solution of the directory by its address
+      tags:
+      - Solutions
   /api/storage/files/{id}:
     get:
       description: "The bytes of a file anyone may read, such as an image of a program,\
@@ -855,6 +2741,453 @@ paths:
       summary: Send the bytes of an upload
       tags:
       - Storage
+  /api/talent/admin/profiles:
+    get:
+      operationId: listAdminTalent
+      parameters:
+      - description: "Profiles whose name contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only profiles of this status. Drafts are never listed.
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - submitted
+          - approved
+          - rejected
+          pattern: submitted|approved|rejected
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTalentList"
+          description: One page of the profiles the parameters select.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The submitted talent profiles, those waiting for review first"
+      tags:
+      - Talent administration
+  /api/talent/admin/profiles/{id}:
+    get:
+      operationId: getAdminTalent
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTalent"
+          description: The profile.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted talent profile.
+      security:
+      - session: []
+      summary: One talent profile as an operator reviews it
+      tags:
+      - Talent administration
+  /api/talent/admin/profiles/{id}/approve:
+    post:
+      operationId: approveTalent
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The profile is approved.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted talent profile.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The profile is not waiting for review.
+      security:
+      - session: []
+      summary: Approve a talent profile that waits for review
+      tags:
+      - Talent administration
+  /api/talent/admin/profiles/{id}/reject:
+    post:
+      operationId: rejectTalent
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectTalent"
+        required: true
+      responses:
+        "204":
+          description: "The profile is rejected, with the reason."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted talent profile.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The profile is neither waiting for review nor approved.
+      security:
+      - session: []
+      summary: "Reject a talent profile that waits for review, or take an approved\
+        \ one out of the directory"
+      tags:
+      - Talent administration
+  /api/talent/mine:
+    get:
+      operationId: getMyTalentProfile
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyTalent"
+          description: "The profile, or none yet, and the messages."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: The caller's talent profile and the messages sent through it
+      tags:
+      - My talent profile
+    put:
+      operationId: saveMyTalentProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveTalentProfile"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TalentProfile"
+          description: "The profile as saved, with its new version."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, or a submitted or approved profile\
+            \ would lose what a submission needs."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The profile changed since it was read.
+      security:
+      - session: []
+      summary: Save the caller's talent profile; the first save creates it
+      tags:
+      - My talent profile
+  /api/talent/mine/submit:
+    post:
+      operationId: submitMyTalentProfile
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TalentProfile"
+          description: "The profile, waiting for review."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The profile lacks what a submission needs.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller has no profile.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The profile is already submitted or approved.
+      security:
+      - session: []
+      summary: Send the caller's talent profile to GenAI Fund for review
+      tags:
+      - My talent profile
+  /api/talent/profiles:
+    get:
+      operationId: listTalent
+      parameters:
+      - description: "Profiles whose name, headline or a skill contains this, ignoring\
+          \ case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only profiles with this role.
+        in: query
+        name: role
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: ai_engineer|ml_engineer|forward_deployed_engineer|automation_specialist|data_scientist|data_engineer|ai_product_manager|ai_consultant|ai_designer|other
+      - description: Only profiles of this availability.
+        in: query
+        name: availability
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: available|open_to_offers|not_available
+      - description: "The order: by name, or the most recently approved first."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+          default: name
+          enum:
+          - name
+          - newest
+          pattern: name|newest
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicTalentList"
+          description: One page of the profiles the parameters select.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+      summary: "The approved, listed talent profiles, in the order asked for"
+      tags:
+      - Talent
+  /api/talent/profiles/{slug}:
+    get:
+      operationId: getTalent
+      parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicTalent"
+          description: The profile.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "No approved, listed profile has this address."
+      summary: One talent profile of the directory by its address
+      tags:
+      - Talent
+  /api/talent/profiles/{slug}/enquiries:
+    post:
+      operationId: sendTalentEnquiry
+      parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendTalentEnquiry"
+        required: true
+      responses:
+        "204":
+          description: The message was sent to the person by email.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The message is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "No approved, listed profile has this address."
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The profile is the caller's own.
+        "429":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller already wrote through this profile within a day.
+      security:
+      - session: []
+      summary: Send a message to the person behind a talent profile
+      tags:
+      - Talent
 components:
   schemas:
     AccountList:
@@ -929,6 +3262,179 @@ components:
       - id
       - role
       - status
+    AdminCreateOrganization:
+      type: object
+      description: "An organization an operator creates for a company that is not\
+        \ here yet. It is approved from the start and has no member until someone\
+        \ accepts the invitation to own it, or claims it."
+      properties:
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+          pattern: "[A-Z]{2}"
+        emailDomain:
+          type:
+          - string
+          - "null"
+          description: The domain of the company's work addresses. The first person
+            who signs in on it may own the organization at once.
+          example: tasco.com.vn
+          maxLength: 253
+          minLength: 0
+          pattern: "[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+"
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+        ownerEmail:
+          type:
+          - string
+          - "null"
+          format: email
+          description: The address invited to own it.
+          maxLength: 254
+          minLength: 0
+        roles:
+          type: array
+          items:
+            type: string
+            pattern: provider|enterprise
+          maxItems: 2
+          minItems: 1
+        type:
+          type: string
+          enum:
+          - company
+          - builder_team
+          - independent_builder
+          - other
+          pattern: company|builder_team|independent_builder|other
+        website:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+          pattern: "https?://[^\\s]+"
+      required:
+      - name
+      - roles
+      - type
+    AdminOrganization:
+      type: object
+      description: One organization as an operator reviews it.
+      properties:
+        claims:
+          type: array
+          description: The open requests to own it; empty for an owned organization.
+          items:
+            $ref: "#/components/schemas/OrganizationJoinRequest"
+        createdBy:
+          type: string
+          description: "Who created it, as they are shown."
+        createdByEmail:
+          type: string
+        invitations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationInvitation"
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationMember"
+        organization:
+          $ref: "#/components/schemas/Organization"
+      required:
+      - claims
+      - createdBy
+      - createdByEmail
+      - invitations
+      - members
+      - organization
+    AdminOrganizationList:
+      type: object
+      description: "One page of organizations: those waiting for review first, then\
+        \ the newest."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminOrganizationSummary"
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+          description: "How many organizations match, over all pages."
+      required:
+      - items
+      - page
+      - pageSize
+      - total
+    AdminOrganizationSummary:
+      type: object
+      description: One organization in the operators' list.
+      properties:
+        country:
+          type:
+          - string
+          - "null"
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        members:
+          type: integer
+          format: int32
+        name:
+          type: string
+        openClaims:
+          type: integer
+          format: int32
+          description: How many people ask to own it; always 0 for an owned organization.
+        owned:
+          type: boolean
+          description: Whether a person owns it; an operator-created organization
+            has no owner until someone accepts or claims it.
+        roles:
+          type: array
+          items:
+            type: string
+        slug:
+          type: string
+        status:
+          type: string
+          enum:
+          - pending
+          - approved
+          - rejected
+        type:
+          type: string
+          enum:
+          - company
+          - builder_team
+          - independent_builder
+          - other
+      required:
+      - createdAt
+      - id
+      - members
+      - name
+      - openClaims
+      - owned
+      - roles
+      - slug
+      - status
+      - type
     AdminProgram:
       type: object
       description: "A program as an operator edits it, in any status."
@@ -1137,6 +3643,68 @@ components:
       - status
       - type
       - updatedAt
+    AdminSolutionList:
+      type: object
+      description: "One page of submitted solutions: those waiting for review first,\
+        \ the longest wait on top."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SolutionSummary"
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+          description: "How many solutions match, over all pages."
+      required:
+      - items
+      - page
+      - pageSize
+      - total
+    AdminTalent:
+      type: object
+      description: A talent profile as an operator reviews it.
+      properties:
+        email:
+          type: string
+          description: The address of the account the profile belongs to.
+        profile:
+          $ref: "#/components/schemas/TalentProfile"
+      required:
+      - email
+      - profile
+    AdminTalentList:
+      type: object
+      description: "One page of submitted talent profiles: those waiting for review\
+        \ first, the longest wait on top."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TalentSummary"
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+          description: "How many profiles match, over all pages."
+      required:
+      - items
+      - page
+      - pageSize
+      - total
     AuditEvent:
       type: object
       description: "One recorded change: who did what to what, and when."
@@ -1152,6 +3720,19 @@ components:
           - program.update
           - program.publish
           - program.unpublish
+          - organization.create
+          - organization.approve
+          - organization.refuse
+          - organization.claim_approve
+          - organization.claim_decline
+          - organization.member_role
+          - organization.member_remove
+          - solution.approve
+          - solution.reject
+          - solution.deployment_approve
+          - solution.deployment_reject
+          - talent.approve
+          - talent.reject
         actor:
           type:
           - object
@@ -1235,6 +3816,92 @@ components:
       - id
       - label
       - type
+    AutoJoin:
+      type: object
+      description: Whether an address on the organization's domain joins without asking.
+      properties:
+        autoJoin:
+          type: boolean
+      required:
+      - autoJoin
+    ChangeMemberRole:
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+          - owner
+          - member
+          pattern: owner|member
+      required:
+      - role
+    CreateOrganization:
+      type: object
+      description: "A new organization. Its creator owns it, and it waits for GenAI\
+        \ Fund's review."
+      properties:
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2.
+          pattern: "[A-Z]{2}"
+        description:
+          type:
+          - string
+          - "null"
+          maxLength: 2000
+          minLength: 0
+        industries:
+          type: array
+          description: "The industries it works in or serves, as the codes the solutions\
+            \ use."
+          items:
+            type: string
+            pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+          maxItems: 5
+          minItems: 1
+        jobTitle:
+          type: string
+          description: What the creator does in the organization.
+          maxLength: 120
+          minLength: 0
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+        roles:
+          type: array
+          description: One or both of `provider` and `enterprise`.
+          items:
+            type: string
+            pattern: provider|enterprise
+          maxItems: 2
+          minItems: 1
+        teamSize:
+          type: string
+          pattern: just_me|2_9|10_49|50_99|100_499|500_999|1000_4999|5000_plus
+        type:
+          type: string
+          enum:
+          - company
+          - builder_team
+          - independent_builder
+          - other
+          pattern: company|builder_team|independent_builder|other
+        website:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+          pattern: "https?://[^\\s]+"
+      required:
+      - country
+      - industries
+      - jobTitle
+      - name
+      - roles
+      - teamSize
+      - type
     CreateProgram:
       type: object
       description: What a program cannot do without. It is created as a draft.
@@ -1269,6 +3936,145 @@ components:
       - name
       - slug
       - type
+    CreateSolution:
+      type: object
+      description: What a solution cannot do without. It is created as a draft.
+      properties:
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+      required:
+      - name
+    CustomerDeployment:
+      type: object
+      description: "A customer deployment of a solution as its organization, and operators,\
+        \ see it."
+      properties:
+        channels:
+          type:
+          - string
+          - "null"
+        customer:
+          type: string
+        decisionMessage:
+          type:
+          - string
+          - "null"
+          description: What the operator wrote to the owners with the rejection.
+        decisionReason:
+          type:
+          - string
+          - "null"
+          description: Why it was last rejected.
+          enum:
+          - incomplete
+          - unverifiable
+          - other
+        delivered:
+          type: string
+        id:
+          type: string
+          format: uuid
+        languages:
+          type:
+          - string
+          - "null"
+        period:
+          type:
+          - string
+          - "null"
+        problem:
+          type: string
+        result:
+          type:
+          - string
+          - "null"
+        stage:
+          type: string
+          enum:
+          - pilot
+          - production
+        status:
+          type: string
+          enum:
+          - submitted
+          - approved
+          - rejected
+        title:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+          description: "Sent back with a save, which is refused when the deployment\
+            \ changed since."
+      required:
+      - customer
+      - delivered
+      - id
+      - problem
+      - stage
+      - status
+      - title
+      - updatedAt
+      - version
+    InviteMember:
+      type: object
+      description: An address asked to join the caller's organization.
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          minLength: 0
+        role:
+          type: string
+          enum:
+          - owner
+          - member
+          pattern: owner|member
+      required:
+      - email
+      - role
+    JobTitle:
+      type: object
+      description: What the caller does in their organization; null or blank removes
+        it.
+      properties:
+        jobTitle:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
+    JoinOrganization:
+      type: object
+      description: What a person says with a request to join or to claim.
+      properties:
+        message:
+          type:
+          - string
+          - "null"
+          maxLength: 1000
+          minLength: 0
+    JoinOutcome:
+      type: object
+      description: What asking to get into an organization did.
+      properties:
+        outcome:
+          type: string
+          description: "`joined`: the caller is a member. `owner`: nobody owned it\
+            \ and the caller's address is on its domain, so they own it. `requested`:\
+            \ its owners, or GenAI Fund when nobody owns it, decide."
+          enum:
+          - joined
+          - owner
+          - requested
+      required:
+      - outcome
     Me:
       type: object
       description: The signed-in account.
@@ -1294,6 +4100,367 @@ components:
       - email
       - id
       - role
+    MyOrganization:
+      type: object
+      description: "Where the caller stands: the organization they belong to, or their\
+        \ ways in."
+      properties:
+        invitations:
+          type: array
+          description: The open invitations to the caller's address.
+          items:
+            $ref: "#/components/schemas/OrganizationInvitation"
+        jobTitle:
+          type:
+          - string
+          - "null"
+        organization:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/Organization"
+          description: The organization the caller belongs to.
+        request:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/OrganizationJoinRequest"
+          description: The request the caller waits on.
+        role:
+          type:
+          - string
+          - "null"
+          description: What the caller is in it.
+          enum:
+          - owner
+          - member
+        suggestion:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/OrganizationMatch"
+          description: "The organization of the caller's email domain, when they belong\
+            \ to none."
+      required:
+      - invitations
+    MySolutions:
+      type: object
+      description: "The solutions of the caller's organization, the newest first."
+      properties:
+        editable:
+          type: boolean
+          description: "Whether the caller may add and change solutions: an owner\
+            \ of an approved organization that is a provider."
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SolutionSummary"
+      required:
+      - editable
+      - items
+    MyTalent:
+      type: object
+      description: The caller's talent profile and the messages sent through it.
+      properties:
+        enquiries:
+          type: array
+          description: The newest first.
+          items:
+            $ref: "#/components/schemas/TalentEnquiry"
+        profile:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/TalentProfile"
+          description: Null until the caller saves a profile.
+          oneOf:
+          - $ref: "#/components/schemas/TalentProfile"
+      required:
+      - enquiries
+    Organization:
+      type: object
+      description: "An organization as the people who belong to it, and operators,\
+        \ see it."
+      properties:
+        autoJoin:
+          type: boolean
+          description: Whether an address on the domain joins at once; otherwise it
+            asks the owners.
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+        createdAt:
+          type: string
+          format: date-time
+        decisionMessage:
+          type:
+          - string
+          - "null"
+          description: What the operator wrote to the owners with the refusal.
+        decisionReason:
+          type:
+          - string
+          - "null"
+          description: Why it was last refused.
+          enum:
+          - duplicate
+          - not_a_real_organization
+          - incomplete
+          - out_of_scope
+          - other
+        description:
+          type:
+          - string
+          - "null"
+        emailDomain:
+          type:
+          - string
+          - "null"
+          description: The domain whose addresses may join; null when it was made
+            from a public mail address.
+        id:
+          type: string
+          format: uuid
+        industries:
+          type: array
+          description: The industries it works in or serves; empty until an owner
+            names them.
+          items:
+            type: string
+        name:
+          type: string
+        roles:
+          type: array
+          description: "What it does here: `provider` lists AI solutions, `enterprise`\
+            \ posts use cases."
+          items:
+            type: string
+        slug:
+          type: string
+        status:
+          type: string
+          description: GenAI Fund's review of the organization.
+          enum:
+          - pending
+          - approved
+          - rejected
+        teamSize:
+          type:
+          - string
+          - "null"
+          description: Null is unknown.
+          enum:
+          - just_me
+          - 2_9
+          - 10_49
+          - 50_99
+          - 100_499
+          - 500_999
+          - 1000_4999
+          - 5000_plus
+        type:
+          type: string
+          enum:
+          - company
+          - builder_team
+          - independent_builder
+          - other
+        version:
+          type: integer
+          format: int64
+          description: "Sent back with a save, which is refused when the organization\
+            \ changed since."
+        website:
+          type:
+          - string
+          - "null"
+      required:
+      - autoJoin
+      - createdAt
+      - id
+      - industries
+      - name
+      - roles
+      - slug
+      - status
+      - type
+      - version
+    OrganizationInvitation:
+      type: object
+      description: An open invitation to an organization.
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        email:
+          type: string
+          description: The address that was asked.
+        id:
+          type: string
+          format: uuid
+        invitedBy:
+          type: string
+          description: "Who asked, as they are shown."
+        organizationId:
+          type: string
+          format: uuid
+        organizationName:
+          type: string
+        role:
+          type: string
+          enum:
+          - owner
+          - member
+      required:
+      - createdAt
+      - email
+      - id
+      - invitedBy
+      - organizationId
+      - organizationName
+      - role
+    OrganizationJoinRequest:
+      type: object
+      description: An open request to join an organization.
+      properties:
+        claim:
+          type: boolean
+          description: "Whether nobody owns the organization, so GenAI Fund decides\
+            \ and approval makes the person its owner."
+        createdAt:
+          type: string
+          format: date-time
+        email:
+          type: string
+        id:
+          type: string
+          format: uuid
+        message:
+          type:
+          - string
+          - "null"
+        name:
+          type:
+          - string
+          - "null"
+          description: The name of the person who asks; null until they have one.
+        organizationId:
+          type: string
+          format: uuid
+        organizationName:
+          type: string
+      required:
+      - claim
+      - createdAt
+      - email
+      - id
+      - organizationId
+      - organizationName
+    OrganizationMatch:
+      type: object
+      description: "An organization a person may get into, and how."
+      properties:
+        country:
+          type:
+          - string
+          - "null"
+        emailDomain:
+          type:
+          - string
+          - "null"
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - company
+          - builder_team
+          - independent_builder
+          - other
+        way:
+          type: string
+          description: "What asking to get in does for this caller: `join` makes them\
+            \ a member at once (owner, when nobody owns it yet), `request` asks its\
+            \ owners, `claim` asks GenAI Fund to let them own it."
+          enum:
+          - join
+          - request
+          - claim
+      required:
+      - id
+      - name
+      - type
+      - way
+    OrganizationMember:
+      type: object
+      description: One person who belongs to an organization.
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        jobTitle:
+          type:
+          - string
+          - "null"
+        joinedAt:
+          type: string
+          format: date-time
+        name:
+          type:
+          - string
+          - "null"
+        role:
+          type: string
+          enum:
+          - owner
+          - member
+        self:
+          type: boolean
+          description: Whether this is the caller.
+      required:
+      - accountId
+      - email
+      - joinedAt
+      - role
+      - self
+    OrganizationMembers:
+      type: object
+      description: "Who belongs to an organization, owners first. Invitations and\
+        \ requests are empty for a caller who is not an owner."
+      properties:
+        invitations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationInvitation"
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationMember"
+        requests:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationJoinRequest"
+      required:
+      - invitations
+      - members
+      - requests
+    OrganizationSearch:
+      type: object
+      description: "The approved organizations a search finds, by name; ten at most."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationMatch"
+      required:
+      - items
     Problem:
       type: object
       additionalProperties: false
@@ -1669,6 +4836,482 @@ components:
       - slug
       - type
       - upcomingEvents
+    PublicCustomerDeployment:
+      type: object
+      description: An approved customer deployment as anyone reads it.
+      properties:
+        approvedAt:
+          type: string
+          format: date-time
+          description: When GenAI Fund approved it.
+        channels:
+          type:
+          - string
+          - "null"
+        customer:
+          type: string
+        delivered:
+          type: string
+        id:
+          type: string
+          format: uuid
+        languages:
+          type:
+          - string
+          - "null"
+        period:
+          type:
+          - string
+          - "null"
+        problem:
+          type: string
+        result:
+          type:
+          - string
+          - "null"
+        solutionName:
+          type: string
+        solutionSlug:
+          type: string
+        stage:
+          type: string
+          enum:
+          - pilot
+          - production
+        title:
+          type: string
+      required:
+      - approvedAt
+      - customer
+      - delivered
+      - id
+      - problem
+      - solutionName
+      - solutionSlug
+      - stage
+      - title
+    PublicCustomerDeploymentList:
+      type: object
+      description: One page of the customer deployments of an organization.
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicCustomerDeployment"
+        page:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+      required:
+      - items
+      - page
+      - pageSize
+      - total
+    PublicOrganization:
+      type: object
+      description: An approved organization as anyone reads it.
+      properties:
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+        description:
+          type:
+          - string
+          - "null"
+        industries:
+          type: array
+          items:
+            type: string
+        name:
+          type: string
+        slug:
+          type: string
+        type:
+          type: string
+          enum:
+          - company
+          - builder_team
+          - independent_builder
+          - other
+        website:
+          type:
+          - string
+          - "null"
+      required:
+      - industries
+      - name
+      - slug
+      - type
+    PublicSolution:
+      type: object
+      description: "An approved, listed solution as anyone reads it."
+      properties:
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+        customerDeployments:
+          type: array
+          description: "Its approved customer deployments, the most recently approved\
+            \ first."
+          items:
+            $ref: "#/components/schemas/PublicCustomerDeployment"
+        deployment:
+          type: array
+          items:
+            type: string
+        focusAreas:
+          type: array
+          items:
+            type: string
+        industries:
+          type: array
+          items:
+            type: string
+        maturity:
+          type:
+          - string
+          - "null"
+          enum:
+          - idea
+          - prototype
+          - pilot
+          - production
+          - scaled
+        name:
+          type: string
+        organizationName:
+          type: string
+        organizationSlug:
+          type: string
+          description: The address of the organization's public page.
+        problemsSolved:
+          type:
+          - string
+          - "null"
+        slug:
+          type: string
+        summary:
+          type:
+          - string
+          - "null"
+        valueProposition:
+          type:
+          - string
+          - "null"
+        website:
+          type:
+          - string
+          - "null"
+      required:
+      - customerDeployments
+      - deployment
+      - focusAreas
+      - industries
+      - name
+      - organizationName
+      - organizationSlug
+      - slug
+    PublicSolutionList:
+      type: object
+      description: "One page of the public directory of solutions, by name."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicSolutionSummary"
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+          description: "How many solutions match, over all pages."
+      required:
+      - items
+      - page
+      - pageSize
+      - total
+    PublicSolutionSummary:
+      type: object
+      description: One solution in the public directory.
+      properties:
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+        customerDeployments:
+          type: integer
+          format: int32
+          description: How many approved customer deployments it lists.
+        focusAreas:
+          type: array
+          items:
+            type: string
+        industries:
+          type: array
+          items:
+            type: string
+        maturity:
+          type:
+          - string
+          - "null"
+          enum:
+          - idea
+          - prototype
+          - pilot
+          - production
+          - scaled
+        name:
+          type: string
+        organizationName:
+          type: string
+        organizationSlug:
+          type: string
+          description: The address of the organization's public page.
+        slug:
+          type: string
+        summary:
+          type:
+          - string
+          - "null"
+      required:
+      - customerDeployments
+      - focusAreas
+      - industries
+      - name
+      - organizationName
+      - organizationSlug
+      - slug
+    PublicTalent:
+      type: object
+      description: "An approved, listed talent profile as anyone reads it. It carries\
+        \ no address of the person."
+      properties:
+        availability:
+          type:
+          - string
+          - "null"
+          enum:
+          - available
+          - open_to_offers
+          - not_available
+        bio:
+          type:
+          - string
+          - "null"
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+        engagement:
+          type: array
+          items:
+            type: string
+        headline:
+          type:
+          - string
+          - "null"
+        name:
+          type: string
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/TalentProject"
+        rateBand:
+          type:
+          - string
+          - "null"
+          description: US dollars an hour. Null is not stated.
+          enum:
+          - under_25
+          - 25_50
+          - 50_100
+          - 100_150
+          - 150_plus
+        roles:
+          type: array
+          items:
+            type: string
+        skills:
+          type: array
+          items:
+            type: string
+        slug:
+          type: string
+        website:
+          type:
+          - string
+          - "null"
+      required:
+      - engagement
+      - name
+      - projects
+      - roles
+      - skills
+      - slug
+    PublicTalentList:
+      type: object
+      description: "One page of the public directory of talent, by name."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicTalentSummary"
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+          description: "How many profiles match, over all pages."
+      required:
+      - items
+      - page
+      - pageSize
+      - total
+    PublicTalentSummary:
+      type: object
+      description: One profile in the public directory of talent.
+      properties:
+        availability:
+          type:
+          - string
+          - "null"
+          enum:
+          - available
+          - open_to_offers
+          - not_available
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+        headline:
+          type:
+          - string
+          - "null"
+        name:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        skills:
+          type: array
+          items:
+            type: string
+        slug:
+          type: string
+      required:
+      - name
+      - roles
+      - skills
+      - slug
+    RefuseOrganization:
+      type: object
+      description: "Why an organization is not approved, and what its owners are told."
+      properties:
+        message:
+          type:
+          - string
+          - "null"
+          description: Shown to the owners with the refusal.
+          maxLength: 1000
+          minLength: 0
+        reason:
+          type: string
+          enum:
+          - duplicate
+          - not_a_real_organization
+          - incomplete
+          - out_of_scope
+          - other
+          pattern: duplicate|not_a_real_organization|incomplete|out_of_scope|other
+      required:
+      - reason
+    RejectCustomerDeployment:
+      type: object
+      description: "Why a customer deployment is not approved, and what the owners\
+        \ are told."
+      properties:
+        message:
+          type:
+          - string
+          - "null"
+          description: Shown to the owners with the rejection.
+          maxLength: 1000
+          minLength: 0
+        reason:
+          type: string
+          enum:
+          - incomplete
+          - unverifiable
+          - other
+          pattern: incomplete|unverifiable|other
+      required:
+      - reason
+    RejectSolution:
+      type: object
+      description: "Why a solution is not approved, and what its owners are told."
+      properties:
+        message:
+          type:
+          - string
+          - "null"
+          description: Shown to the owners with the rejection.
+          maxLength: 1000
+          minLength: 0
+        reason:
+          type: string
+          enum:
+          - incomplete
+          - not_an_ai_solution
+          - duplicate
+          - unverifiable
+          - other
+          pattern: incomplete|not_an_ai_solution|duplicate|unverifiable|other
+      required:
+      - reason
+    RejectTalent:
+      type: object
+      description: "Why a talent profile is not approved, and what its person is told."
+      properties:
+        message:
+          type:
+          - string
+          - "null"
+          description: Shown to the person with the rejection.
+          maxLength: 1000
+          minLength: 0
+        reason:
+          type: string
+          enum:
+          - incomplete
+          - unverifiable
+          - inappropriate
+          - other
+          pattern: incomplete|unverifiable|inappropriate|other
+      required:
+      - reason
     ReserveUpload:
       type: object
       description: The file a person is about to upload.
@@ -1700,6 +5343,135 @@ components:
       - mediaType
       - purpose
       - sizeBytes
+    SaveCustomerDeployment:
+      type: object
+      description: A customer deployment as its form holds it.
+      properties:
+        channels:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
+        customer:
+          type: string
+          description: "The customer as it may be published: a name, or a description\
+            \ that does not name it."
+          maxLength: 120
+          minLength: 0
+        delivered:
+          type: string
+          maxLength: 1000
+          minLength: 0
+        languages:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
+        period:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
+        problem:
+          type: string
+          maxLength: 1000
+          minLength: 0
+        result:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+        stage:
+          type: string
+          enum:
+          - pilot
+          - production
+          pattern: pilot|production
+        title:
+          type: string
+          maxLength: 120
+          minLength: 0
+        version:
+          type:
+          - integer
+          - "null"
+          format: int64
+          description: The version the form read; absent for a new deployment.
+      required:
+      - customer
+      - delivered
+      - problem
+      - stage
+      - title
+    SaveOrganization:
+      type: object
+      description: The profile of an organization as its Profile screen holds it.
+      properties:
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2.
+          pattern: "[A-Z]{2}"
+        description:
+          type:
+          - string
+          - "null"
+          maxLength: 2000
+          minLength: 0
+        industries:
+          type: array
+          description: "The industries it works in or serves, as the codes the solutions\
+            \ use."
+          items:
+            type: string
+            pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+          maxItems: 5
+          minItems: 1
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+        roles:
+          type: array
+          description: One or both of `provider` and `enterprise`.
+          items:
+            type: string
+            pattern: provider|enterprise
+          maxItems: 2
+          minItems: 1
+        teamSize:
+          type: string
+          pattern: just_me|2_9|10_49|50_99|100_499|500_999|1000_4999|5000_plus
+        type:
+          type: string
+          enum:
+          - company
+          - builder_team
+          - independent_builder
+          - other
+          pattern: company|builder_team|independent_builder|other
+        version:
+          type: integer
+          format: int64
+          description: The version the screen read.
+        website:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+          pattern: "https?://[^\\s]+"
+      required:
+      - country
+      - industries
+      - name
+      - roles
+      - teamSize
+      - type
+      - version
     SaveProgram:
       type: object
       description: "A program as the Settings screen holds it. Everything is saved\
@@ -1810,6 +5582,371 @@ components:
       - slug
       - type
       - version
+    SaveSolution:
+      type: object
+      description: A solution as its edit screen holds it.
+      properties:
+        deployment:
+          type: array
+          items:
+            type: string
+            pattern: cloud_saas|private_cloud|on_premise|hybrid
+          maxItems: 4
+          minItems: 0
+        focusAreas:
+          type: array
+          items:
+            type: string
+            pattern: conversational_ai|document_processing|computer_vision|speech_voice|predictive_analytics|recommendation|process_automation|ai_agents|generative_content|search_knowledge|data_platform|ai_security|other
+          maxItems: 5
+          minItems: 0
+        industries:
+          type: array
+          items:
+            type: string
+            pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+          maxItems: 5
+          minItems: 0
+        listed:
+          type: boolean
+          description: Whether it appears in the public directory once approved.
+        maturity:
+          type:
+          - string
+          - "null"
+          enum:
+          - idea
+          - prototype
+          - pilot
+          - production
+          - scaled
+          pattern: idea|prototype|pilot|production|scaled
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+        problemsSolved:
+          type:
+          - string
+          - "null"
+          maxLength: 4000
+          minLength: 0
+        summary:
+          type:
+          - string
+          - "null"
+          description: One or two sentences shown in lists.
+          maxLength: 300
+          minLength: 0
+        valueProposition:
+          type:
+          - string
+          - "null"
+          maxLength: 4000
+          minLength: 0
+        version:
+          type: integer
+          format: int64
+          description: The version the screen read.
+        website:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+          pattern: "https?://[^\\s]+"
+      required:
+      - deployment
+      - focusAreas
+      - industries
+      - listed
+      - name
+      - version
+    SaveTalentProfile:
+      type: object
+      description: A talent profile as its edit screen holds it.
+      properties:
+        availability:
+          type:
+          - string
+          - "null"
+          enum:
+          - available
+          - open_to_offers
+          - not_available
+          pattern: available|open_to_offers|not_available
+        bio:
+          type:
+          - string
+          - "null"
+          maxLength: 4000
+          minLength: 0
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+          pattern: "[A-Z]{2}"
+        engagement:
+          type: array
+          items:
+            type: string
+            pattern: full_time|part_time|contract|advisory
+          maxItems: 4
+          minItems: 0
+        headline:
+          type:
+          - string
+          - "null"
+          description: One line shown in lists.
+          maxLength: 160
+          minLength: 0
+        listed:
+          type: boolean
+          description: Whether it appears in the public directory once approved.
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/TalentProject"
+          maxItems: 6
+          minItems: 0
+        rateBand:
+          type:
+          - string
+          - "null"
+          enum:
+          - under_25
+          - 25_50
+          - 50_100
+          - 100_150
+          - 150_plus
+          pattern: under_25|25_50|50_100|100_150|150_plus
+        roles:
+          type: array
+          items:
+            type: string
+            pattern: ai_engineer|ml_engineer|forward_deployed_engineer|automation_specialist|data_scientist|data_engineer|ai_product_manager|ai_consultant|ai_designer|other
+          maxItems: 4
+          minItems: 0
+        skills:
+          type: array
+          items:
+            type: string
+            maxLength: 40
+            minLength: 0
+          maxItems: 15
+          minItems: 0
+        version:
+          type:
+          - integer
+          - "null"
+          format: int64
+          description: "The version the screen read; null for the first save, which\
+            \ creates the profile."
+        website:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+          pattern: "https?://[^\\s]+"
+      required:
+      - engagement
+      - listed
+      - name
+      - projects
+      - roles
+      - skills
+    SendTalentEnquiry:
+      type: object
+      description: A message to the person behind a talent profile.
+      properties:
+        message:
+          type: string
+          maxLength: 2000
+          minLength: 0
+      required:
+      - message
+    Solution:
+      type: object
+      description: "A solution as its organization, and operators, see it."
+      properties:
+        complete:
+          type: boolean
+          description: "Whether it has what a submission needs: a summary, a maturity,\
+            \ a focus area and an industry."
+        customerDeployments:
+          type: array
+          description: "Its customer deployments, the newest first, whatever their\
+            \ review says."
+          items:
+            $ref: "#/components/schemas/CustomerDeployment"
+        decisionMessage:
+          type:
+          - string
+          - "null"
+          description: What the operator wrote to the owners with the rejection.
+        decisionReason:
+          type:
+          - string
+          - "null"
+          description: Why it was last rejected.
+          enum:
+          - incomplete
+          - not_an_ai_solution
+          - duplicate
+          - unverifiable
+          - other
+        deployment:
+          type: array
+          items:
+            type: string
+        focusAreas:
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+          format: uuid
+        industries:
+          type: array
+          items:
+            type: string
+        listed:
+          type: boolean
+          description: Whether it appears in the public directory once approved.
+        maturity:
+          type:
+          - string
+          - "null"
+          description: Null is unknown.
+          enum:
+          - idea
+          - prototype
+          - pilot
+          - production
+          - scaled
+        name:
+          type: string
+        organizationId:
+          type: string
+          format: uuid
+        organizationName:
+          type: string
+        problemsSolved:
+          type:
+          - string
+          - "null"
+        slug:
+          type: string
+        status:
+          type: string
+          enum:
+          - draft
+          - submitted
+          - approved
+          - rejected
+        submittedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        summary:
+          type:
+          - string
+          - "null"
+        updatedAt:
+          type: string
+          format: date-time
+        valueProposition:
+          type:
+          - string
+          - "null"
+        version:
+          type: integer
+          format: int64
+          description: "Sent back with a save, which is refused when the solution\
+            \ changed since."
+        website:
+          type:
+          - string
+          - "null"
+      required:
+      - complete
+      - customerDeployments
+      - deployment
+      - focusAreas
+      - id
+      - industries
+      - listed
+      - name
+      - organizationId
+      - organizationName
+      - slug
+      - status
+      - updatedAt
+      - version
+    SolutionSummary:
+      type: object
+      description: One solution in a list of its organization or of the operators.
+      properties:
+        deploymentsAwaitingReview:
+          type: integer
+          format: int32
+          description: How many of its customer deployments wait for review.
+        id:
+          type: string
+          format: uuid
+        listed:
+          type: boolean
+        maturity:
+          type:
+          - string
+          - "null"
+          enum:
+          - idea
+          - prototype
+          - pilot
+          - production
+          - scaled
+        name:
+          type: string
+        organizationName:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+          enum:
+          - draft
+          - submitted
+          - approved
+          - rejected
+        submittedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        summary:
+          type:
+          - string
+          - "null"
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - deploymentsAwaitingReview
+      - id
+      - listed
+      - name
+      - organizationName
+      - slug
+      - status
+      - updatedAt
     StoredFile:
       type: object
       description: A file whose upload is confirmed.
@@ -1829,6 +5966,222 @@ components:
       - id
       - mediaType
       - sizeBytes
+    TalentEnquiry:
+      type: object
+      description: A message someone sent through the caller's talent profile.
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        message:
+          type: string
+        senderEmail:
+          type: string
+          description: Where the caller answers them.
+        senderName:
+          type: string
+          description: "Who wrote it, as they are shown."
+      required:
+      - createdAt
+      - id
+      - message
+      - senderEmail
+      - senderName
+    TalentProfile:
+      type: object
+      description: "A talent profile as its person, and operators, see it."
+      properties:
+        availability:
+          type:
+          - string
+          - "null"
+          enum:
+          - available
+          - open_to_offers
+          - not_available
+        bio:
+          type:
+          - string
+          - "null"
+        complete:
+          type: boolean
+          description: "Whether it has what a submission needs: a headline, a bio,\
+            \ a role and a skill."
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+        decisionMessage:
+          type:
+          - string
+          - "null"
+          description: What the operator wrote to the person with the rejection.
+        decisionReason:
+          type:
+          - string
+          - "null"
+          description: Why it was last rejected.
+          enum:
+          - incomplete
+          - unverifiable
+          - inappropriate
+          - other
+        engagement:
+          type: array
+          items:
+            type: string
+        headline:
+          type:
+          - string
+          - "null"
+        id:
+          type: string
+          format: uuid
+        listed:
+          type: boolean
+          description: Whether it appears in the public directory once approved.
+        name:
+          type: string
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/TalentProject"
+        rateBand:
+          type:
+          - string
+          - "null"
+          description: US dollars an hour. Null is not stated.
+          enum:
+          - under_25
+          - 25_50
+          - 50_100
+          - 100_150
+          - 150_plus
+        roles:
+          type: array
+          items:
+            type: string
+        skills:
+          type: array
+          items:
+            type: string
+        slug:
+          type: string
+        status:
+          type: string
+          enum:
+          - draft
+          - submitted
+          - approved
+          - rejected
+        submittedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+          description: "Sent back with a save, which is refused when the profile changed\
+            \ since."
+        website:
+          type:
+          - string
+          - "null"
+      required:
+      - complete
+      - engagement
+      - id
+      - listed
+      - name
+      - projects
+      - roles
+      - skills
+      - slug
+      - status
+      - updatedAt
+      - version
+    TalentProject:
+      type: object
+      description: One piece of work a talent profile shows.
+      properties:
+        summary:
+          type:
+          - string
+          - "null"
+          maxLength: 600
+          minLength: 0
+        title:
+          type: string
+          maxLength: 120
+          minLength: 0
+        url:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+          pattern: "https?://[^\\s]+"
+        year:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: The year the work was done.
+          maximum: 2100
+          minimum: 1990
+      required:
+      - title
+    TalentSummary:
+      type: object
+      description: One talent profile in the operators' list.
+      properties:
+        email:
+          type: string
+          description: The address of the account the profile belongs to.
+        headline:
+          type:
+          - string
+          - "null"
+        id:
+          type: string
+          format: uuid
+        listed:
+          type: boolean
+        name:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+          enum:
+          - draft
+          - submitted
+          - approved
+          - rejected
+        submittedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - email
+      - id
+      - listed
+      - name
+      - slug
+      - status
+      - updatedAt
     UploadTicket:
       type: object
       description: "Permission to send the bytes of one file. Send them as the request\

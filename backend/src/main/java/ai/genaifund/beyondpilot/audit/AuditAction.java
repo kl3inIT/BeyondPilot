@@ -29,7 +29,41 @@ public enum AuditAction {
 
 	PROGRAM_PUBLISH("program.publish"),
 
-	PROGRAM_UNPUBLISH("program.unpublish");
+	PROGRAM_UNPUBLISH("program.unpublish"),
+
+	/** An operator created an organization for a company that is not here yet. */
+	ORGANIZATION_CREATE("organization.create"),
+
+	ORGANIZATION_APPROVE("organization.approve"),
+
+	/** {@code reason} is the code of the reason given. */
+	ORGANIZATION_REFUSE("organization.refuse", "reason"),
+
+	/** An operator let a person own an organization nobody owned. {@code account} is that person's identifier. */
+	ORGANIZATION_CLAIM_APPROVE("organization.claim_approve", "account"),
+
+	ORGANIZATION_CLAIM_DECLINE("organization.claim_decline", "account"),
+
+	/** An owner changed what a member may do. {@code account} is the member, {@code role} the new role. */
+	ORGANIZATION_MEMBER_ROLE("organization.member_role", "account", "role"),
+
+	ORGANIZATION_MEMBER_REMOVE("organization.member_remove", "account"),
+
+	SOLUTION_APPROVE("solution.approve"),
+
+	/** {@code reason} is the code of the reason given. */
+	SOLUTION_REJECT("solution.reject", "reason"),
+
+	/** An operator approved what an organization tells about a customer of a solution. */
+	SOLUTION_DEPLOYMENT_APPROVE("solution.deployment_approve"),
+
+	/** {@code reason} is the code of the reason given. */
+	SOLUTION_DEPLOYMENT_REJECT("solution.deployment_reject", "reason"),
+
+	TALENT_APPROVE("talent.approve"),
+
+	/** {@code reason} is the code of the reason given. */
+	TALENT_REJECT("talent.reject", "reason");
 
 	private final String value;
 

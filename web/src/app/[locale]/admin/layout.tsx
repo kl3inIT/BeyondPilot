@@ -1,4 +1,12 @@
-import { CalendarRangeIcon, HouseIcon, ScrollTextIcon, UserCogIcon } from "lucide-react";
+import {
+  BoxesIcon,
+  Building2Icon,
+  CalendarRangeIcon,
+  HouseIcon,
+  ScrollTextIcon,
+  UserCogIcon,
+  UsersIcon,
+} from "lucide-react";
 import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
@@ -35,6 +43,21 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
       href: siteRoutes.adminPrograms,
       label: t("nav.programs"),
       icon: <CalendarRangeIcon aria-hidden="true" />,
+    },
+    {
+      href: siteRoutes.adminOrganizations,
+      label: t("nav.organizations"),
+      icon: <Building2Icon aria-hidden="true" />,
+    },
+    {
+      href: siteRoutes.adminSolutions,
+      label: t("nav.solutions"),
+      icon: <BoxesIcon aria-hidden="true" />,
+    },
+    {
+      href: siteRoutes.adminTalent,
+      label: t("nav.talent"),
+      icon: <UsersIcon aria-hidden="true" />,
     },
     {
       href: siteRoutes.adminAccounts,

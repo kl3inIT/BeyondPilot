@@ -53,6 +53,85 @@ export type AccountSummary = {
 };
 
 /**
+ * An organization an operator creates for a company that is not here yet. It is approved from the start and has no member until someone accepts the invitation to own it, or claims it.
+ */
+export type AdminCreateOrganization = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    /**
+     * The domain of the company's work addresses. The first person who signs in on it may own the organization at once.
+     */
+    emailDomain?: string | null;
+    name: string;
+    /**
+     * The address invited to own it.
+     */
+    ownerEmail?: string | null;
+    roles: Array<string>;
+    type: 'company' | 'builder_team' | 'independent_builder' | 'other';
+    website?: string | null;
+};
+
+/**
+ * One organization as an operator reviews it.
+ */
+export type AdminOrganization = {
+    /**
+     * The open requests to own it; empty for an owned organization.
+     */
+    claims: Array<OrganizationJoinRequest>;
+    /**
+     * Who created it, as they are shown.
+     */
+    createdBy: string;
+    createdByEmail: string;
+    invitations: Array<OrganizationInvitation>;
+    members: Array<OrganizationMember>;
+    organization: Organization;
+};
+
+/**
+ * One page of organizations: those waiting for review first, then the newest.
+ */
+export type AdminOrganizationList = {
+    items: Array<AdminOrganizationSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many organizations match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * One organization in the operators' list.
+ */
+export type AdminOrganizationSummary = {
+    country?: string | null;
+    createdAt: string;
+    id: string;
+    members: number;
+    name: string;
+    /**
+     * How many people ask to own it; always 0 for an owned organization.
+     */
+    openClaims: number;
+    /**
+     * Whether a person owns it; an operator-created organization has no owner until someone accepts or claims it.
+     */
+    owned: boolean;
+    roles: Array<string>;
+    slug: string;
+    status: 'pending' | 'approved' | 'rejected';
+    type: 'company' | 'builder_team' | 'independent_builder' | 'other';
+};
+
+/**
  * A program as an operator edits it, in any status.
  */
 export type AdminProgram = {
@@ -147,10 +226,53 @@ export type AdminProgramSummary = {
 };
 
 /**
+ * One page of submitted solutions: those waiting for review first, the longest wait on top.
+ */
+export type AdminSolutionList = {
+    items: Array<SolutionSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many solutions match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * A talent profile as an operator reviews it.
+ */
+export type AdminTalent = {
+    /**
+     * The address of the account the profile belongs to.
+     */
+    email: string;
+    profile: TalentProfile;
+};
+
+/**
+ * One page of submitted talent profiles: those waiting for review first, the longest wait on top.
+ */
+export type AdminTalentList = {
+    items: Array<TalentSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many profiles match, over all pages.
+     */
+    total: number;
+};
+
+/**
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'talent.approve' | 'talent.reject';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -204,6 +326,44 @@ export type AuditEventResource = {
 };
 
 /**
+ * Whether an address on the organization's domain joins without asking.
+ */
+export type AutoJoin = {
+    autoJoin: boolean;
+};
+
+export type ChangeMemberRole = {
+    role: 'owner' | 'member';
+};
+
+/**
+ * A new organization. Its creator owns it, and it waits for GenAI Fund's review.
+ */
+export type CreateOrganization = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country: string;
+    description?: string | null;
+    /**
+     * The industries it works in or serves, as the codes the solutions use.
+     */
+    industries: Array<string>;
+    /**
+     * What the creator does in the organization.
+     */
+    jobTitle: string;
+    name: string;
+    /**
+     * One or both of `provider` and `enterprise`.
+     */
+    roles: Array<string>;
+    teamSize: string;
+    type: 'company' | 'builder_team' | 'independent_builder' | 'other';
+    website?: string | null;
+};
+
+/**
  * What a program cannot do without. It is created as a draft.
  */
 export type CreateProgram = {
@@ -213,6 +373,75 @@ export type CreateProgram = {
      */
     slug: string;
     type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+};
+
+/**
+ * What a solution cannot do without. It is created as a draft.
+ */
+export type CreateSolution = {
+    name: string;
+};
+
+/**
+ * A customer deployment of a solution as its organization, and operators, see it.
+ */
+export type CustomerDeployment = {
+    channels?: string | null;
+    customer: string;
+    /**
+     * What the operator wrote to the owners with the rejection.
+     */
+    decisionMessage?: string | null;
+    /**
+     * Why it was last rejected.
+     */
+    decisionReason?: 'incomplete' | 'unverifiable' | 'other';
+    delivered: string;
+    id: string;
+    languages?: string | null;
+    period?: string | null;
+    problem: string;
+    result?: string | null;
+    stage: 'pilot' | 'production';
+    status: 'submitted' | 'approved' | 'rejected';
+    title: string;
+    updatedAt: string;
+    /**
+     * Sent back with a save, which is refused when the deployment changed since.
+     */
+    version: number;
+};
+
+/**
+ * An address asked to join the caller's organization.
+ */
+export type InviteMember = {
+    email: string;
+    role: 'owner' | 'member';
+};
+
+/**
+ * What the caller does in their organization; null or blank removes it.
+ */
+export type JobTitle = {
+    jobTitle?: string | null;
+};
+
+/**
+ * What a person says with a request to join or to claim.
+ */
+export type JoinOrganization = {
+    message?: string | null;
+};
+
+/**
+ * What asking to get into an organization did.
+ */
+export type JoinOutcome = {
+    /**
+     * `joined`: the caller is a member. `owner`: nobody owned it and the caller's address is on its domain, so they own it. `requested`: its owners, or GenAI Fund when nobody owns it, decide.
+     */
+    outcome: 'joined' | 'owner' | 'requested';
 };
 
 /**
@@ -229,6 +458,197 @@ export type Me = {
      * `operator` is GenAI Fund staff.
      */
     role: 'user' | 'operator';
+};
+
+/**
+ * Where the caller stands: the organization they belong to, or their ways in.
+ */
+export type MyOrganization = {
+    /**
+     * The open invitations to the caller's address.
+     */
+    invitations: Array<OrganizationInvitation>;
+    jobTitle?: string | null;
+    /**
+     * The organization the caller belongs to.
+     */
+    organization?: Organization | null;
+    /**
+     * The request the caller waits on.
+     */
+    request?: OrganizationJoinRequest | null;
+    /**
+     * What the caller is in it.
+     */
+    role?: 'owner' | 'member';
+    /**
+     * The organization of the caller's email domain, when they belong to none.
+     */
+    suggestion?: OrganizationMatch | null;
+};
+
+/**
+ * The solutions of the caller's organization, the newest first.
+ */
+export type MySolutions = {
+    /**
+     * Whether the caller may add and change solutions: an owner of an approved organization that is a provider.
+     */
+    editable: boolean;
+    items: Array<SolutionSummary>;
+};
+
+/**
+ * The caller's talent profile and the messages sent through it.
+ */
+export type MyTalent = {
+    /**
+     * The newest first.
+     */
+    enquiries: Array<TalentEnquiry>;
+    /**
+     * Null until the caller saves a profile.
+     */
+    profile?: TalentProfile | null;
+};
+
+/**
+ * An organization as the people who belong to it, and operators, see it.
+ */
+export type Organization = {
+    /**
+     * Whether an address on the domain joins at once; otherwise it asks the owners.
+     */
+    autoJoin: boolean;
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    createdAt: string;
+    /**
+     * What the operator wrote to the owners with the refusal.
+     */
+    decisionMessage?: string | null;
+    /**
+     * Why it was last refused.
+     */
+    decisionReason?: 'duplicate' | 'not_a_real_organization' | 'incomplete' | 'out_of_scope' | 'other';
+    description?: string | null;
+    /**
+     * The domain whose addresses may join; null when it was made from a public mail address.
+     */
+    emailDomain?: string | null;
+    id: string;
+    /**
+     * The industries it works in or serves; empty until an owner names them.
+     */
+    industries: Array<string>;
+    name: string;
+    /**
+     * What it does here: `provider` lists AI solutions, `enterprise` posts use cases.
+     */
+    roles: Array<string>;
+    slug: string;
+    /**
+     * GenAI Fund's review of the organization.
+     */
+    status: 'pending' | 'approved' | 'rejected';
+    /**
+     * Null is unknown.
+     */
+    teamSize?: 'just_me' | '2_9' | '10_49' | '50_99' | '100_499' | '500_999' | '1000_4999' | '5000_plus';
+    type: 'company' | 'builder_team' | 'independent_builder' | 'other';
+    /**
+     * Sent back with a save, which is refused when the organization changed since.
+     */
+    version: number;
+    website?: string | null;
+};
+
+/**
+ * An open invitation to an organization.
+ */
+export type OrganizationInvitation = {
+    createdAt: string;
+    /**
+     * The address that was asked.
+     */
+    email: string;
+    id: string;
+    /**
+     * Who asked, as they are shown.
+     */
+    invitedBy: string;
+    organizationId: string;
+    organizationName: string;
+    role: 'owner' | 'member';
+};
+
+/**
+ * An open request to join an organization.
+ */
+export type OrganizationJoinRequest = {
+    /**
+     * Whether nobody owns the organization, so GenAI Fund decides and approval makes the person its owner.
+     */
+    claim: boolean;
+    createdAt: string;
+    email: string;
+    id: string;
+    message?: string | null;
+    /**
+     * The name of the person who asks; null until they have one.
+     */
+    name?: string | null;
+    organizationId: string;
+    organizationName: string;
+};
+
+/**
+ * An organization a person may get into, and how.
+ */
+export type OrganizationMatch = {
+    country?: string | null;
+    emailDomain?: string | null;
+    id: string;
+    name: string;
+    type: 'company' | 'builder_team' | 'independent_builder' | 'other';
+    /**
+     * What asking to get in does for this caller: `join` makes them a member at once (owner, when nobody owns it yet), `request` asks its owners, `claim` asks GenAI Fund to let them own it.
+     */
+    way: 'join' | 'request' | 'claim';
+};
+
+/**
+ * One person who belongs to an organization.
+ */
+export type OrganizationMember = {
+    accountId: string;
+    email: string;
+    jobTitle?: string | null;
+    joinedAt: string;
+    name?: string | null;
+    role: 'owner' | 'member';
+    /**
+     * Whether this is the caller.
+     */
+    self: boolean;
+};
+
+/**
+ * Who belongs to an organization, owners first. Invitations and requests are empty for a caller who is not an owner.
+ */
+export type OrganizationMembers = {
+    invitations: Array<OrganizationInvitation>;
+    members: Array<OrganizationMember>;
+    requests: Array<OrganizationJoinRequest>;
+};
+
+/**
+ * The approved organizations a search finds, by name; ten at most.
+ */
+export type OrganizationSearch = {
+    items: Array<OrganizationMatch>;
 };
 
 export type Problem = {
@@ -443,6 +863,224 @@ export type ProgramSummary = {
 };
 
 /**
+ * An approved customer deployment as anyone reads it.
+ */
+export type PublicCustomerDeployment = {
+    /**
+     * When GenAI Fund approved it.
+     */
+    approvedAt: string;
+    channels?: string | null;
+    customer: string;
+    delivered: string;
+    id: string;
+    languages?: string | null;
+    period?: string | null;
+    problem: string;
+    result?: string | null;
+    solutionName: string;
+    solutionSlug: string;
+    stage: 'pilot' | 'production';
+    title: string;
+};
+
+/**
+ * One page of the customer deployments of an organization.
+ */
+export type PublicCustomerDeploymentList = {
+    items: Array<PublicCustomerDeployment>;
+    page: number;
+    pageSize: number;
+    total: number;
+};
+
+/**
+ * An approved organization as anyone reads it.
+ */
+export type PublicOrganization = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    description?: string | null;
+    industries: Array<string>;
+    name: string;
+    slug: string;
+    type: 'company' | 'builder_team' | 'independent_builder' | 'other';
+    website?: string | null;
+};
+
+/**
+ * An approved, listed solution as anyone reads it.
+ */
+export type PublicSolution = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    /**
+     * Its approved customer deployments, the most recently approved first.
+     */
+    customerDeployments: Array<PublicCustomerDeployment>;
+    deployment: Array<string>;
+    focusAreas: Array<string>;
+    industries: Array<string>;
+    maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
+    name: string;
+    organizationName: string;
+    /**
+     * The address of the organization's public page.
+     */
+    organizationSlug: string;
+    problemsSolved?: string | null;
+    slug: string;
+    summary?: string | null;
+    valueProposition?: string | null;
+    website?: string | null;
+};
+
+/**
+ * One page of the public directory of solutions, by name.
+ */
+export type PublicSolutionList = {
+    items: Array<PublicSolutionSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many solutions match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * One solution in the public directory.
+ */
+export type PublicSolutionSummary = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    /**
+     * How many approved customer deployments it lists.
+     */
+    customerDeployments: number;
+    focusAreas: Array<string>;
+    industries: Array<string>;
+    maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
+    name: string;
+    organizationName: string;
+    /**
+     * The address of the organization's public page.
+     */
+    organizationSlug: string;
+    slug: string;
+    summary?: string | null;
+};
+
+/**
+ * An approved, listed talent profile as anyone reads it. It carries no address of the person.
+ */
+export type PublicTalent = {
+    availability?: 'available' | 'open_to_offers' | 'not_available';
+    bio?: string | null;
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    engagement: Array<string>;
+    headline?: string | null;
+    name: string;
+    projects: Array<TalentProject>;
+    /**
+     * US dollars an hour. Null is not stated.
+     */
+    rateBand?: 'under_25' | '25_50' | '50_100' | '100_150' | '150_plus';
+    roles: Array<string>;
+    skills: Array<string>;
+    slug: string;
+    website?: string | null;
+};
+
+/**
+ * One page of the public directory of talent, by name.
+ */
+export type PublicTalentList = {
+    items: Array<PublicTalentSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many profiles match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * One profile in the public directory of talent.
+ */
+export type PublicTalentSummary = {
+    availability?: 'available' | 'open_to_offers' | 'not_available';
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    headline?: string | null;
+    name: string;
+    roles: Array<string>;
+    skills: Array<string>;
+    slug: string;
+};
+
+/**
+ * Why an organization is not approved, and what its owners are told.
+ */
+export type RefuseOrganization = {
+    /**
+     * Shown to the owners with the refusal.
+     */
+    message?: string | null;
+    reason: 'duplicate' | 'not_a_real_organization' | 'incomplete' | 'out_of_scope' | 'other';
+};
+
+/**
+ * Why a customer deployment is not approved, and what the owners are told.
+ */
+export type RejectCustomerDeployment = {
+    /**
+     * Shown to the owners with the rejection.
+     */
+    message?: string | null;
+    reason: 'incomplete' | 'unverifiable' | 'other';
+};
+
+/**
+ * Why a solution is not approved, and what its owners are told.
+ */
+export type RejectSolution = {
+    /**
+     * Shown to the owners with the rejection.
+     */
+    message?: string | null;
+    reason: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+};
+
+/**
+ * Why a talent profile is not approved, and what its person is told.
+ */
+export type RejectTalent = {
+    /**
+     * Shown to the person with the rejection.
+     */
+    message?: string | null;
+    reason: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
+};
+
+/**
  * The file a person is about to upload.
  */
 export type ReserveUpload = {
@@ -459,6 +1097,55 @@ export type ReserveUpload = {
      * The exact length of the file in bytes.
      */
     sizeBytes: number;
+};
+
+/**
+ * A customer deployment as its form holds it.
+ */
+export type SaveCustomerDeployment = {
+    channels?: string | null;
+    /**
+     * The customer as it may be published: a name, or a description that does not name it.
+     */
+    customer: string;
+    delivered: string;
+    languages?: string | null;
+    period?: string | null;
+    problem: string;
+    result?: string | null;
+    stage: 'pilot' | 'production';
+    title: string;
+    /**
+     * The version the form read; absent for a new deployment.
+     */
+    version?: number | null;
+};
+
+/**
+ * The profile of an organization as its Profile screen holds it.
+ */
+export type SaveOrganization = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country: string;
+    description?: string | null;
+    /**
+     * The industries it works in or serves, as the codes the solutions use.
+     */
+    industries: Array<string>;
+    name: string;
+    /**
+     * One or both of `provider` and `enterprise`.
+     */
+    roles: Array<string>;
+    teamSize: string;
+    type: 'company' | 'builder_team' | 'independent_builder' | 'other';
+    /**
+     * The version the screen read.
+     */
+    version: number;
+    website?: string | null;
 };
 
 /**
@@ -501,6 +1188,139 @@ export type SaveProgram = {
 };
 
 /**
+ * A solution as its edit screen holds it.
+ */
+export type SaveSolution = {
+    deployment: Array<string>;
+    focusAreas: Array<string>;
+    industries: Array<string>;
+    /**
+     * Whether it appears in the public directory once approved.
+     */
+    listed: boolean;
+    maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
+    name: string;
+    problemsSolved?: string | null;
+    /**
+     * One or two sentences shown in lists.
+     */
+    summary?: string | null;
+    valueProposition?: string | null;
+    /**
+     * The version the screen read.
+     */
+    version: number;
+    website?: string | null;
+};
+
+/**
+ * A talent profile as its edit screen holds it.
+ */
+export type SaveTalentProfile = {
+    availability?: 'available' | 'open_to_offers' | 'not_available';
+    bio?: string | null;
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    engagement: Array<string>;
+    /**
+     * One line shown in lists.
+     */
+    headline?: string | null;
+    /**
+     * Whether it appears in the public directory once approved.
+     */
+    listed: boolean;
+    name: string;
+    projects: Array<TalentProject>;
+    rateBand?: 'under_25' | '25_50' | '50_100' | '100_150' | '150_plus';
+    roles: Array<string>;
+    skills: Array<string>;
+    /**
+     * The version the screen read; null for the first save, which creates the profile.
+     */
+    version?: number | null;
+    website?: string | null;
+};
+
+/**
+ * A message to the person behind a talent profile.
+ */
+export type SendTalentEnquiry = {
+    message: string;
+};
+
+/**
+ * A solution as its organization, and operators, see it.
+ */
+export type Solution = {
+    /**
+     * Whether it has what a submission needs: a summary, a maturity, a focus area and an industry.
+     */
+    complete: boolean;
+    /**
+     * Its customer deployments, the newest first, whatever their review says.
+     */
+    customerDeployments: Array<CustomerDeployment>;
+    /**
+     * What the operator wrote to the owners with the rejection.
+     */
+    decisionMessage?: string | null;
+    /**
+     * Why it was last rejected.
+     */
+    decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    deployment: Array<string>;
+    focusAreas: Array<string>;
+    id: string;
+    industries: Array<string>;
+    /**
+     * Whether it appears in the public directory once approved.
+     */
+    listed: boolean;
+    /**
+     * Null is unknown.
+     */
+    maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
+    name: string;
+    organizationId: string;
+    organizationName: string;
+    problemsSolved?: string | null;
+    slug: string;
+    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    submittedAt?: string | null;
+    summary?: string | null;
+    updatedAt: string;
+    valueProposition?: string | null;
+    /**
+     * Sent back with a save, which is refused when the solution changed since.
+     */
+    version: number;
+    website?: string | null;
+};
+
+/**
+ * One solution in a list of its organization or of the operators.
+ */
+export type SolutionSummary = {
+    /**
+     * How many of its customer deployments wait for review.
+     */
+    deploymentsAwaitingReview: number;
+    id: string;
+    listed: boolean;
+    maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
+    name: string;
+    organizationName: string;
+    slug: string;
+    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    submittedAt?: string | null;
+    summary?: string | null;
+    updatedAt: string;
+};
+
+/**
  * A file whose upload is confirmed.
  */
 export type StoredFile = {
@@ -508,6 +1328,102 @@ export type StoredFile = {
     id: string;
     mediaType: string;
     sizeBytes: number;
+};
+
+/**
+ * A message someone sent through the caller's talent profile.
+ */
+export type TalentEnquiry = {
+    createdAt: string;
+    id: string;
+    message: string;
+    /**
+     * Where the caller answers them.
+     */
+    senderEmail: string;
+    /**
+     * Who wrote it, as they are shown.
+     */
+    senderName: string;
+};
+
+/**
+ * A talent profile as its person, and operators, see it.
+ */
+export type TalentProfile = {
+    availability?: 'available' | 'open_to_offers' | 'not_available';
+    bio?: string | null;
+    /**
+     * Whether it has what a submission needs: a headline, a bio, a role and a skill.
+     */
+    complete: boolean;
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    /**
+     * What the operator wrote to the person with the rejection.
+     */
+    decisionMessage?: string | null;
+    /**
+     * Why it was last rejected.
+     */
+    decisionReason?: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
+    engagement: Array<string>;
+    headline?: string | null;
+    id: string;
+    /**
+     * Whether it appears in the public directory once approved.
+     */
+    listed: boolean;
+    name: string;
+    projects: Array<TalentProject>;
+    /**
+     * US dollars an hour. Null is not stated.
+     */
+    rateBand?: 'under_25' | '25_50' | '50_100' | '100_150' | '150_plus';
+    roles: Array<string>;
+    skills: Array<string>;
+    slug: string;
+    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    submittedAt?: string | null;
+    updatedAt: string;
+    /**
+     * Sent back with a save, which is refused when the profile changed since.
+     */
+    version: number;
+    website?: string | null;
+};
+
+/**
+ * One piece of work a talent profile shows.
+ */
+export type TalentProject = {
+    summary?: string | null;
+    title: string;
+    url?: string | null;
+    /**
+     * The year the work was done.
+     */
+    year?: number | null;
+};
+
+/**
+ * One talent profile in the operators' list.
+ */
+export type TalentSummary = {
+    /**
+     * The address of the account the profile belongs to.
+     */
+    email: string;
+    headline?: string | null;
+    id: string;
+    listed: boolean;
+    name: string;
+    slug: string;
+    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    submittedAt?: string | null;
+    updatedAt: string;
 };
 
 /**
@@ -546,7 +1462,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'talent.approve' | 'talent.reject';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -815,6 +1731,893 @@ export type GetMeResponses = {
 };
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type ApproveOrganizationClaimData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/claims/{id}/approve';
+};
+
+export type ApproveOrganizationClaimErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The claim is not open.
+     */
+    404: Problem;
+    /**
+     * The person joined another organization in the meantime.
+     */
+    409: Problem;
+};
+
+export type ApproveOrganizationClaimError = ApproveOrganizationClaimErrors[keyof ApproveOrganizationClaimErrors];
+
+export type ApproveOrganizationClaimResponses = {
+    /**
+     * The person owns the organization.
+     */
+    204: void;
+};
+
+export type ApproveOrganizationClaimResponse = ApproveOrganizationClaimResponses[keyof ApproveOrganizationClaimResponses];
+
+export type DeclineOrganizationClaimData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/claims/{id}/decline';
+};
+
+export type DeclineOrganizationClaimErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The claim is not open.
+     */
+    404: Problem;
+};
+
+export type DeclineOrganizationClaimError = DeclineOrganizationClaimErrors[keyof DeclineOrganizationClaimErrors];
+
+export type DeclineOrganizationClaimResponses = {
+    /**
+     * The claim is closed.
+     */
+    204: void;
+};
+
+export type DeclineOrganizationClaimResponse = DeclineOrganizationClaimResponses[keyof DeclineOrganizationClaimResponses];
+
+export type ListAdminOrganizationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Organizations whose name or domain contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only organizations of this review status.
+         */
+        status?: 'pending' | 'approved' | 'rejected';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/organization/admin/organizations';
+};
+
+export type ListAdminOrganizationsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminOrganizationsError = ListAdminOrganizationsErrors[keyof ListAdminOrganizationsErrors];
+
+export type ListAdminOrganizationsResponses = {
+    /**
+     * One page of the organizations the parameters select.
+     */
+    200: AdminOrganizationList;
+};
+
+export type ListAdminOrganizationsResponse = ListAdminOrganizationsResponses[keyof ListAdminOrganizationsResponses];
+
+export type CreateAdminOrganizationData = {
+    body: AdminCreateOrganization;
+    path?: never;
+    query?: never;
+    url: '/api/organization/admin/organizations';
+};
+
+export type CreateAdminOrganizationErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * Another organization has the email domain.
+     */
+    409: Problem;
+};
+
+export type CreateAdminOrganizationError = CreateAdminOrganizationErrors[keyof CreateAdminOrganizationErrors];
+
+export type CreateAdminOrganizationResponses = {
+    /**
+     * The organization, approved and without an owner.
+     */
+    201: AdminOrganization;
+};
+
+export type CreateAdminOrganizationResponse = CreateAdminOrganizationResponses[keyof CreateAdminOrganizationResponses];
+
+export type GetAdminOrganizationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}';
+};
+
+export type GetAdminOrganizationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+};
+
+export type GetAdminOrganizationError = GetAdminOrganizationErrors[keyof GetAdminOrganizationErrors];
+
+export type GetAdminOrganizationResponses = {
+    /**
+     * The organization, its people and the requests to own it.
+     */
+    200: AdminOrganization;
+};
+
+export type GetAdminOrganizationResponse = GetAdminOrganizationResponses[keyof GetAdminOrganizationResponses];
+
+export type ApproveOrganizationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/approve';
+};
+
+export type ApproveOrganizationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not waiting for review.
+     */
+    409: Problem;
+};
+
+export type ApproveOrganizationError = ApproveOrganizationErrors[keyof ApproveOrganizationErrors];
+
+export type ApproveOrganizationResponses = {
+    /**
+     * The organization is approved.
+     */
+    204: void;
+};
+
+export type ApproveOrganizationResponse = ApproveOrganizationResponses[keyof ApproveOrganizationResponses];
+
+export type RefuseOrganizationData = {
+    body: RefuseOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/refuse';
+};
+
+export type RefuseOrganizationErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not waiting for review.
+     */
+    409: Problem;
+};
+
+export type RefuseOrganizationError = RefuseOrganizationErrors[keyof RefuseOrganizationErrors];
+
+export type RefuseOrganizationResponses = {
+    /**
+     * The organization is refused, with the reason.
+     */
+    204: void;
+};
+
+export type RefuseOrganizationResponse = RefuseOrganizationResponses[keyof RefuseOrganizationResponses];
+
+export type AcceptOrganizationInvitationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/invitations/{id}/accept';
+};
+
+export type AcceptOrganizationInvitationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * No open invitation to the caller has this identifier.
+     */
+    404: Problem;
+    /**
+     * The caller already belongs to an organization.
+     */
+    409: Problem;
+};
+
+export type AcceptOrganizationInvitationError = AcceptOrganizationInvitationErrors[keyof AcceptOrganizationInvitationErrors];
+
+export type AcceptOrganizationInvitationResponses = {
+    /**
+     * The caller belongs to the organization.
+     */
+    204: void;
+};
+
+export type AcceptOrganizationInvitationResponse = AcceptOrganizationInvitationResponses[keyof AcceptOrganizationInvitationResponses];
+
+export type DeclineOrganizationInvitationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/invitations/{id}/decline';
+};
+
+export type DeclineOrganizationInvitationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * No open invitation to the caller has this identifier.
+     */
+    404: Problem;
+};
+
+export type DeclineOrganizationInvitationError = DeclineOrganizationInvitationErrors[keyof DeclineOrganizationInvitationErrors];
+
+export type DeclineOrganizationInvitationResponses = {
+    /**
+     * The invitation is closed.
+     */
+    204: void;
+};
+
+export type DeclineOrganizationInvitationResponse = DeclineOrganizationInvitationResponses[keyof DeclineOrganizationInvitationResponses];
+
+export type WithdrawJoinRequestData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/organization/join-request/withdraw';
+};
+
+export type WithdrawJoinRequestErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type WithdrawJoinRequestError = WithdrawJoinRequestErrors[keyof WithdrawJoinRequestErrors];
+
+export type WithdrawJoinRequestResponses = {
+    /**
+     * The caller waits on no request.
+     */
+    204: void;
+};
+
+export type WithdrawJoinRequestResponse = WithdrawJoinRequestResponses[keyof WithdrawJoinRequestResponses];
+
+export type GetMyOrganizationData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/organization/mine';
+};
+
+export type GetMyOrganizationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type GetMyOrganizationError = GetMyOrganizationErrors[keyof GetMyOrganizationErrors];
+
+export type GetMyOrganizationResponses = {
+    /**
+     * Where the caller stands.
+     */
+    200: MyOrganization;
+};
+
+export type GetMyOrganizationResponse = GetMyOrganizationResponses[keyof GetMyOrganizationResponses];
+
+export type SaveMyOrganizationData = {
+    body: SaveOrganization;
+    path?: never;
+    query?: never;
+    url: '/api/organization/mine';
+};
+
+export type SaveMyOrganizationErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization, or is not an owner of it.
+     */
+    403: Problem;
+    /**
+     * The organization changed since it was read.
+     */
+    409: Problem;
+};
+
+export type SaveMyOrganizationError = SaveMyOrganizationErrors[keyof SaveMyOrganizationErrors];
+
+export type SaveMyOrganizationResponses = {
+    /**
+     * The organization as saved, with its new version.
+     */
+    200: Organization;
+};
+
+export type SaveMyOrganizationResponse = SaveMyOrganizationResponses[keyof SaveMyOrganizationResponses];
+
+export type ChangeOrganizationAutoJoinData = {
+    body: AutoJoin;
+    path?: never;
+    query?: never;
+    url: '/api/organization/mine/auto-join';
+};
+
+export type ChangeOrganizationAutoJoinErrors = {
+    /**
+     * The value is missing.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization, or is not an owner of it.
+     */
+    403: Problem;
+};
+
+export type ChangeOrganizationAutoJoinError = ChangeOrganizationAutoJoinErrors[keyof ChangeOrganizationAutoJoinErrors];
+
+export type ChangeOrganizationAutoJoinResponses = {
+    /**
+     * The setting is saved.
+     */
+    204: void;
+};
+
+export type ChangeOrganizationAutoJoinResponse = ChangeOrganizationAutoJoinResponses[keyof ChangeOrganizationAutoJoinResponses];
+
+export type InviteOrganizationMemberData = {
+    body: InviteMember;
+    path?: never;
+    query?: never;
+    url: '/api/organization/mine/invitations';
+};
+
+export type InviteOrganizationMemberErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization, or is not an owner of it.
+     */
+    403: Problem;
+    /**
+     * The address already belongs to the organization, or already holds an open invitation.
+     */
+    409: Problem;
+};
+
+export type InviteOrganizationMemberError = InviteOrganizationMemberErrors[keyof InviteOrganizationMemberErrors];
+
+export type InviteOrganizationMemberResponses = {
+    /**
+     * The invitation is open and the address was told.
+     */
+    204: void;
+};
+
+export type InviteOrganizationMemberResponse = InviteOrganizationMemberResponses[keyof InviteOrganizationMemberResponses];
+
+export type RevokeOrganizationInvitationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/mine/invitations/{id}/revoke';
+};
+
+export type RevokeOrganizationInvitationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization, or is not an owner of it.
+     */
+    403: Problem;
+    /**
+     * The invitation is not open.
+     */
+    404: Problem;
+};
+
+export type RevokeOrganizationInvitationError = RevokeOrganizationInvitationErrors[keyof RevokeOrganizationInvitationErrors];
+
+export type RevokeOrganizationInvitationResponses = {
+    /**
+     * The invitation is closed.
+     */
+    204: void;
+};
+
+export type RevokeOrganizationInvitationResponse = RevokeOrganizationInvitationResponses[keyof RevokeOrganizationInvitationResponses];
+
+export type ChangeMyJobTitleData = {
+    body: JobTitle;
+    path?: never;
+    query?: never;
+    url: '/api/organization/mine/job-title';
+};
+
+export type ChangeMyJobTitleErrors = {
+    /**
+     * The job title is too long.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization.
+     */
+    403: Problem;
+};
+
+export type ChangeMyJobTitleError = ChangeMyJobTitleErrors[keyof ChangeMyJobTitleErrors];
+
+export type ChangeMyJobTitleResponses = {
+    /**
+     * The job title is saved.
+     */
+    204: void;
+};
+
+export type ChangeMyJobTitleResponse = ChangeMyJobTitleResponses[keyof ChangeMyJobTitleResponses];
+
+export type ListMyOrganizationMembersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/organization/mine/members';
+};
+
+export type ListMyOrganizationMembersErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization.
+     */
+    403: Problem;
+};
+
+export type ListMyOrganizationMembersError = ListMyOrganizationMembersErrors[keyof ListMyOrganizationMembersErrors];
+
+export type ListMyOrganizationMembersResponses = {
+    /**
+     * The members, and for an owner the open invitations and requests.
+     */
+    200: OrganizationMembers;
+};
+
+export type ListMyOrganizationMembersResponse = ListMyOrganizationMembersResponses[keyof ListMyOrganizationMembersResponses];
+
+export type RemoveOrganizationMemberData = {
+    body?: never;
+    path: {
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/organization/mine/members/{accountId}/remove';
+};
+
+export type RemoveOrganizationMemberErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization, or removes someone else without being an owner.
+     */
+    403: Problem;
+    /**
+     * The person does not belong to the organization.
+     */
+    404: Problem;
+    /**
+     * The removal would leave the organization without an owner.
+     */
+    409: Problem;
+};
+
+export type RemoveOrganizationMemberError = RemoveOrganizationMemberErrors[keyof RemoveOrganizationMemberErrors];
+
+export type RemoveOrganizationMemberResponses = {
+    /**
+     * The person no longer belongs to the organization.
+     */
+    204: void;
+};
+
+export type RemoveOrganizationMemberResponse = RemoveOrganizationMemberResponses[keyof RemoveOrganizationMemberResponses];
+
+export type ChangeOrganizationMemberRoleData = {
+    body: ChangeMemberRole;
+    path: {
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/organization/mine/members/{accountId}/role';
+};
+
+export type ChangeOrganizationMemberRoleErrors = {
+    /**
+     * The role is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization, or is not an owner of it.
+     */
+    403: Problem;
+    /**
+     * The person does not belong to the organization.
+     */
+    404: Problem;
+    /**
+     * The change would leave the organization without an owner.
+     */
+    409: Problem;
+};
+
+export type ChangeOrganizationMemberRoleError = ChangeOrganizationMemberRoleErrors[keyof ChangeOrganizationMemberRoleErrors];
+
+export type ChangeOrganizationMemberRoleResponses = {
+    /**
+     * The person has the role.
+     */
+    204: void;
+};
+
+export type ChangeOrganizationMemberRoleResponse = ChangeOrganizationMemberRoleResponses[keyof ChangeOrganizationMemberRoleResponses];
+
+export type ApproveJoinRequestData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/mine/requests/{id}/approve';
+};
+
+export type ApproveJoinRequestErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization, or is not an owner of it.
+     */
+    403: Problem;
+    /**
+     * The request is not open.
+     */
+    404: Problem;
+    /**
+     * The person joined another organization in the meantime.
+     */
+    409: Problem;
+};
+
+export type ApproveJoinRequestError = ApproveJoinRequestErrors[keyof ApproveJoinRequestErrors];
+
+export type ApproveJoinRequestResponses = {
+    /**
+     * The person is a member.
+     */
+    204: void;
+};
+
+export type ApproveJoinRequestResponse = ApproveJoinRequestResponses[keyof ApproveJoinRequestResponses];
+
+export type DeclineJoinRequestData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/mine/requests/{id}/decline';
+};
+
+export type DeclineJoinRequestErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization, or is not an owner of it.
+     */
+    403: Problem;
+    /**
+     * The request is not open.
+     */
+    404: Problem;
+};
+
+export type DeclineJoinRequestError = DeclineJoinRequestErrors[keyof DeclineJoinRequestErrors];
+
+export type DeclineJoinRequestResponses = {
+    /**
+     * The request is closed.
+     */
+    204: void;
+};
+
+export type DeclineJoinRequestResponse = DeclineJoinRequestResponses[keyof DeclineJoinRequestResponses];
+
+export type SearchOrganizationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * A part of the name, ignoring case.
+         */
+        q?: string;
+    };
+    url: '/api/organization/organizations';
+};
+
+export type SearchOrganizationsErrors = {
+    /**
+     * The text is too long.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type SearchOrganizationsError = SearchOrganizationsErrors[keyof SearchOrganizationsErrors];
+
+export type SearchOrganizationsResponses = {
+    /**
+     * Ten organizations at most, by name; none for a text shorter than two characters.
+     */
+    200: OrganizationSearch;
+};
+
+export type SearchOrganizationsResponse = SearchOrganizationsResponses[keyof SearchOrganizationsResponses];
+
+export type CreateOrganizationData = {
+    body: CreateOrganization;
+    path?: never;
+    query?: never;
+    url: '/api/organization/organizations';
+};
+
+export type CreateOrganizationErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller already belongs to an organization, or waits on a request to join one.
+     */
+    409: Problem;
+};
+
+export type CreateOrganizationError = CreateOrganizationErrors[keyof CreateOrganizationErrors];
+
+export type CreateOrganizationResponses = {
+    /**
+     * The organization, waiting for GenAI Fund's review.
+     */
+    201: Organization;
+};
+
+export type CreateOrganizationResponse = CreateOrganizationResponses[keyof CreateOrganizationResponses];
+
+export type JoinOrganizationData = {
+    body: JoinOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/organizations/{id}/join';
+};
+
+export type JoinOrganizationErrors = {
+    /**
+     * The message is too long.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * There is no such approved organization.
+     */
+    404: Problem;
+    /**
+     * The caller already belongs to an organization, or waits on a request.
+     */
+    409: Problem;
+};
+
+export type JoinOrganizationError = JoinOrganizationErrors[keyof JoinOrganizationErrors];
+
+export type JoinOrganizationResponses = {
+    /**
+     * What asking did: joined, owner, or a request that waits.
+     */
+    200: JoinOutcome;
+};
+
+export type JoinOrganizationResponse = JoinOrganizationResponses[keyof JoinOrganizationResponses];
+
+export type GetOrganizationData = {
+    body?: never;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/organization/organizations/{slug}';
+};
+
+export type GetOrganizationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * No approved organization has this address.
+     */
+    404: Problem;
+};
+
+export type GetOrganizationError = GetOrganizationErrors[keyof GetOrganizationErrors];
+
+export type GetOrganizationResponses = {
+    /**
+     * The organization.
+     */
+    200: PublicOrganization;
+};
+
+export type GetOrganizationResponse = GetOrganizationResponses[keyof GetOrganizationResponses];
 
 export type ListAdminProgramsData = {
     body?: never;
@@ -1095,6 +2898,703 @@ export type GetProgramResponses = {
 
 export type GetProgramResponse = GetProgramResponses[keyof GetProgramResponses];
 
+export type ApproveCustomerDeploymentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/deployments/{id}/approve';
+};
+
+export type ApproveCustomerDeploymentErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such customer deployment for this caller.
+     */
+    404: Problem;
+    /**
+     * The deployment is not waiting for review.
+     */
+    409: Problem;
+};
+
+export type ApproveCustomerDeploymentError = ApproveCustomerDeploymentErrors[keyof ApproveCustomerDeploymentErrors];
+
+export type ApproveCustomerDeploymentResponses = {
+    /**
+     * The deployment is approved.
+     */
+    204: void;
+};
+
+export type ApproveCustomerDeploymentResponse = ApproveCustomerDeploymentResponses[keyof ApproveCustomerDeploymentResponses];
+
+export type RejectCustomerDeploymentData = {
+    body: RejectCustomerDeployment;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/deployments/{id}/reject';
+};
+
+export type RejectCustomerDeploymentErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such customer deployment for this caller.
+     */
+    404: Problem;
+    /**
+     * The deployment is neither waiting for review nor approved.
+     */
+    409: Problem;
+};
+
+export type RejectCustomerDeploymentError = RejectCustomerDeploymentErrors[keyof RejectCustomerDeploymentErrors];
+
+export type RejectCustomerDeploymentResponses = {
+    /**
+     * The deployment is rejected, with the reason.
+     */
+    204: void;
+};
+
+export type RejectCustomerDeploymentResponse = RejectCustomerDeploymentResponses[keyof RejectCustomerDeploymentResponses];
+
+export type ListAdminSolutionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Solutions whose name contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only solutions of this status. Drafts are never listed.
+         */
+        status?: 'submitted' | 'approved' | 'rejected';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/solution/admin/solutions';
+};
+
+export type ListAdminSolutionsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminSolutionsError = ListAdminSolutionsErrors[keyof ListAdminSolutionsErrors];
+
+export type ListAdminSolutionsResponses = {
+    /**
+     * One page of the solutions the parameters select.
+     */
+    200: AdminSolutionList;
+};
+
+export type ListAdminSolutionsResponse = ListAdminSolutionsResponses[keyof ListAdminSolutionsResponses];
+
+export type GetAdminSolutionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}';
+};
+
+export type GetAdminSolutionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+};
+
+export type GetAdminSolutionError = GetAdminSolutionErrors[keyof GetAdminSolutionErrors];
+
+export type GetAdminSolutionResponses = {
+    /**
+     * The solution.
+     */
+    200: Solution;
+};
+
+export type GetAdminSolutionResponse = GetAdminSolutionResponses[keyof GetAdminSolutionResponses];
+
+export type ApproveSolutionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/approve';
+};
+
+export type ApproveSolutionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+    /**
+     * The solution is not waiting for review.
+     */
+    409: Problem;
+};
+
+export type ApproveSolutionError = ApproveSolutionErrors[keyof ApproveSolutionErrors];
+
+export type ApproveSolutionResponses = {
+    /**
+     * The solution is approved.
+     */
+    204: void;
+};
+
+export type ApproveSolutionResponse = ApproveSolutionResponses[keyof ApproveSolutionResponses];
+
+export type RejectSolutionData = {
+    body: RejectSolution;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/reject';
+};
+
+export type RejectSolutionErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+    /**
+     * The solution is neither waiting for review nor approved.
+     */
+    409: Problem;
+};
+
+export type RejectSolutionError = RejectSolutionErrors[keyof RejectSolutionErrors];
+
+export type RejectSolutionResponses = {
+    /**
+     * The solution is rejected, with the reason.
+     */
+    204: void;
+};
+
+export type RejectSolutionResponse = RejectSolutionResponses[keyof RejectSolutionResponses];
+
+export type ListCustomerDeploymentsData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * The address of the organization's public page.
+         */
+        organization: string;
+        /**
+         * The page, from 1.
+         */
+        page?: number | null;
+    };
+    url: '/api/solution/deployments';
+};
+
+export type ListCustomerDeploymentsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+};
+
+export type ListCustomerDeploymentsError = ListCustomerDeploymentsErrors[keyof ListCustomerDeploymentsErrors];
+
+export type ListCustomerDeploymentsResponses = {
+    /**
+     * One page of the deployments.
+     */
+    200: PublicCustomerDeploymentList;
+};
+
+export type ListCustomerDeploymentsResponse = ListCustomerDeploymentsResponses[keyof ListCustomerDeploymentsResponses];
+
+export type ListMySolutionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/solution/mine';
+};
+
+export type ListMySolutionsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type ListMySolutionsError = ListMySolutionsErrors[keyof ListMySolutionsErrors];
+
+export type ListMySolutionsResponses = {
+    /**
+     * The solutions, the newest first.
+     */
+    200: MySolutions;
+};
+
+export type ListMySolutionsResponse = ListMySolutionsResponses[keyof ListMySolutionsResponses];
+
+export type CreateSolutionData = {
+    body: CreateSolution;
+    path?: never;
+    query?: never;
+    url: '/api/solution/mine';
+};
+
+export type CreateSolutionErrors = {
+    /**
+     * The name is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an owner of an approved organization that is a provider.
+     */
+    403: Problem;
+};
+
+export type CreateSolutionError = CreateSolutionErrors[keyof CreateSolutionErrors];
+
+export type CreateSolutionResponses = {
+    /**
+     * The draft.
+     */
+    201: Solution;
+};
+
+export type CreateSolutionResponse = CreateSolutionResponses[keyof CreateSolutionResponses];
+
+export type DeleteSolutionDraftData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/mine/{id}';
+};
+
+export type DeleteSolutionDraftErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an owner of an approved organization that is a provider.
+     */
+    403: Problem;
+    /**
+     * The caller's organization has no such solution.
+     */
+    404: Problem;
+    /**
+     * The solution is not a draft.
+     */
+    409: Problem;
+};
+
+export type DeleteSolutionDraftError = DeleteSolutionDraftErrors[keyof DeleteSolutionDraftErrors];
+
+export type DeleteSolutionDraftResponses = {
+    /**
+     * The draft is gone.
+     */
+    204: void;
+};
+
+export type DeleteSolutionDraftResponse = DeleteSolutionDraftResponses[keyof DeleteSolutionDraftResponses];
+
+export type GetMySolutionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/mine/{id}';
+};
+
+export type GetMySolutionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller's organization has no such solution.
+     */
+    404: Problem;
+};
+
+export type GetMySolutionError = GetMySolutionErrors[keyof GetMySolutionErrors];
+
+export type GetMySolutionResponses = {
+    /**
+     * The solution.
+     */
+    200: Solution;
+};
+
+export type GetMySolutionResponse = GetMySolutionResponses[keyof GetMySolutionResponses];
+
+export type SaveSolutionData = {
+    body: SaveSolution;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/mine/{id}';
+};
+
+export type SaveSolutionErrors = {
+    /**
+     * A member is not valid, or a submitted or approved solution would lose what a submission needs.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an owner of an approved organization that is a provider.
+     */
+    403: Problem;
+    /**
+     * The caller's organization has no such solution.
+     */
+    404: Problem;
+    /**
+     * The solution changed since it was read.
+     */
+    409: Problem;
+};
+
+export type SaveSolutionError = SaveSolutionErrors[keyof SaveSolutionErrors];
+
+export type SaveSolutionResponses = {
+    /**
+     * The solution as saved, with its new version.
+     */
+    200: Solution;
+};
+
+export type SaveSolutionResponse = SaveSolutionResponses[keyof SaveSolutionResponses];
+
+export type SubmitSolutionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/mine/{id}/submit';
+};
+
+export type SubmitSolutionErrors = {
+    /**
+     * The solution lacks what a submission needs.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an owner of an approved organization that is a provider.
+     */
+    403: Problem;
+    /**
+     * The caller's organization has no such solution.
+     */
+    404: Problem;
+    /**
+     * The solution is already submitted or approved.
+     */
+    409: Problem;
+};
+
+export type SubmitSolutionError = SubmitSolutionErrors[keyof SubmitSolutionErrors];
+
+export type SubmitSolutionResponses = {
+    /**
+     * The solution, waiting for review.
+     */
+    200: Solution;
+};
+
+export type SubmitSolutionResponse = SubmitSolutionResponses[keyof SubmitSolutionResponses];
+
+export type AddCustomerDeploymentData = {
+    body: SaveCustomerDeployment;
+    path: {
+        solutionId: string;
+    };
+    query?: never;
+    url: '/api/solution/mine/{solutionId}/deployments';
+};
+
+export type AddCustomerDeploymentErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an owner of an approved organization that is a provider.
+     */
+    403: Problem;
+    /**
+     * The caller's organization has no such solution.
+     */
+    404: Problem;
+    /**
+     * The solution already lists as many as it may.
+     */
+    409: Problem;
+};
+
+export type AddCustomerDeploymentError = AddCustomerDeploymentErrors[keyof AddCustomerDeploymentErrors];
+
+export type AddCustomerDeploymentResponses = {
+    /**
+     * The deployment, waiting for review.
+     */
+    201: CustomerDeployment;
+};
+
+export type AddCustomerDeploymentResponse = AddCustomerDeploymentResponses[keyof AddCustomerDeploymentResponses];
+
+export type DeleteCustomerDeploymentData = {
+    body?: never;
+    path: {
+        solutionId: string;
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/mine/{solutionId}/deployments/{id}';
+};
+
+export type DeleteCustomerDeploymentErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an owner of an approved organization that is a provider.
+     */
+    403: Problem;
+    /**
+     * There is no such customer deployment for this caller.
+     */
+    404: Problem;
+};
+
+export type DeleteCustomerDeploymentError = DeleteCustomerDeploymentErrors[keyof DeleteCustomerDeploymentErrors];
+
+export type DeleteCustomerDeploymentResponses = {
+    /**
+     * The deployment is gone.
+     */
+    204: void;
+};
+
+export type DeleteCustomerDeploymentResponse = DeleteCustomerDeploymentResponses[keyof DeleteCustomerDeploymentResponses];
+
+export type SaveCustomerDeploymentData = {
+    body: SaveCustomerDeployment;
+    path: {
+        solutionId: string;
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/mine/{solutionId}/deployments/{id}';
+};
+
+export type SaveCustomerDeploymentErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an owner of an approved organization that is a provider.
+     */
+    403: Problem;
+    /**
+     * There is no such customer deployment for this caller.
+     */
+    404: Problem;
+    /**
+     * The deployment changed since it was read.
+     */
+    409: Problem;
+};
+
+export type SaveCustomerDeploymentError = SaveCustomerDeploymentErrors[keyof SaveCustomerDeploymentErrors];
+
+export type SaveCustomerDeploymentResponses = {
+    /**
+     * The deployment as saved, waiting for review.
+     */
+    200: CustomerDeployment;
+};
+
+export type SaveCustomerDeploymentResponse = SaveCustomerDeploymentResponses[keyof SaveCustomerDeploymentResponses];
+
+export type ListSolutionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Solutions whose name or summary contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only solutions for this industry.
+         */
+        industry?: string | null;
+        /**
+         * Only solutions of this focus area.
+         */
+        focusArea?: string | null;
+        /**
+         * Only solutions of this maturity.
+         */
+        maturity?: string | null;
+        /**
+         * Only solutions of the organization at this address.
+         */
+        organization?: string | null;
+        /**
+         * The order: by name, or the most recently approved first.
+         */
+        sort?: 'name' | 'newest';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/solution/solutions';
+};
+
+export type ListSolutionsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+};
+
+export type ListSolutionsError = ListSolutionsErrors[keyof ListSolutionsErrors];
+
+export type ListSolutionsResponses = {
+    /**
+     * One page of the solutions the parameters select.
+     */
+    200: PublicSolutionList;
+};
+
+export type ListSolutionsResponse = ListSolutionsResponses[keyof ListSolutionsResponses];
+
+export type GetSolutionData = {
+    body?: never;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/solution/solutions/{slug}';
+};
+
+export type GetSolutionErrors = {
+    /**
+     * No approved, listed solution has this address.
+     */
+    404: Problem;
+};
+
+export type GetSolutionError = GetSolutionErrors[keyof GetSolutionErrors];
+
+export type GetSolutionResponses = {
+    /**
+     * The solution.
+     */
+    200: PublicSolution;
+};
+
+export type GetSolutionResponse = GetSolutionResponses[keyof GetSolutionResponses];
+
 export type GetPublicFileData = {
     body?: never;
     path: {
@@ -1230,3 +3730,377 @@ export type SendUploadContentResponses = {
 };
 
 export type SendUploadContentResponse = SendUploadContentResponses[keyof SendUploadContentResponses];
+
+export type ListAdminTalentData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Profiles whose name contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only profiles of this status. Drafts are never listed.
+         */
+        status?: 'submitted' | 'approved' | 'rejected';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/talent/admin/profiles';
+};
+
+export type ListAdminTalentErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminTalentError = ListAdminTalentErrors[keyof ListAdminTalentErrors];
+
+export type ListAdminTalentResponses = {
+    /**
+     * One page of the profiles the parameters select.
+     */
+    200: AdminTalentList;
+};
+
+export type ListAdminTalentResponse = ListAdminTalentResponses[keyof ListAdminTalentResponses];
+
+export type GetAdminTalentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/admin/profiles/{id}';
+};
+
+export type GetAdminTalentErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted talent profile.
+     */
+    404: Problem;
+};
+
+export type GetAdminTalentError = GetAdminTalentErrors[keyof GetAdminTalentErrors];
+
+export type GetAdminTalentResponses = {
+    /**
+     * The profile.
+     */
+    200: AdminTalent;
+};
+
+export type GetAdminTalentResponse = GetAdminTalentResponses[keyof GetAdminTalentResponses];
+
+export type ApproveTalentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/admin/profiles/{id}/approve';
+};
+
+export type ApproveTalentErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted talent profile.
+     */
+    404: Problem;
+    /**
+     * The profile is not waiting for review.
+     */
+    409: Problem;
+};
+
+export type ApproveTalentError = ApproveTalentErrors[keyof ApproveTalentErrors];
+
+export type ApproveTalentResponses = {
+    /**
+     * The profile is approved.
+     */
+    204: void;
+};
+
+export type ApproveTalentResponse = ApproveTalentResponses[keyof ApproveTalentResponses];
+
+export type RejectTalentData = {
+    body: RejectTalent;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/admin/profiles/{id}/reject';
+};
+
+export type RejectTalentErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted talent profile.
+     */
+    404: Problem;
+    /**
+     * The profile is neither waiting for review nor approved.
+     */
+    409: Problem;
+};
+
+export type RejectTalentError = RejectTalentErrors[keyof RejectTalentErrors];
+
+export type RejectTalentResponses = {
+    /**
+     * The profile is rejected, with the reason.
+     */
+    204: void;
+};
+
+export type RejectTalentResponse = RejectTalentResponses[keyof RejectTalentResponses];
+
+export type GetMyTalentProfileData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/talent/mine';
+};
+
+export type GetMyTalentProfileErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type GetMyTalentProfileError = GetMyTalentProfileErrors[keyof GetMyTalentProfileErrors];
+
+export type GetMyTalentProfileResponses = {
+    /**
+     * The profile, or none yet, and the messages.
+     */
+    200: MyTalent;
+};
+
+export type GetMyTalentProfileResponse = GetMyTalentProfileResponses[keyof GetMyTalentProfileResponses];
+
+export type SaveMyTalentProfileData = {
+    body: SaveTalentProfile;
+    path?: never;
+    query?: never;
+    url: '/api/talent/mine';
+};
+
+export type SaveMyTalentProfileErrors = {
+    /**
+     * A member is not valid, or a submitted or approved profile would lose what a submission needs.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The profile changed since it was read.
+     */
+    409: Problem;
+};
+
+export type SaveMyTalentProfileError = SaveMyTalentProfileErrors[keyof SaveMyTalentProfileErrors];
+
+export type SaveMyTalentProfileResponses = {
+    /**
+     * The profile as saved, with its new version.
+     */
+    200: TalentProfile;
+};
+
+export type SaveMyTalentProfileResponse = SaveMyTalentProfileResponses[keyof SaveMyTalentProfileResponses];
+
+export type SubmitMyTalentProfileData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/talent/mine/submit';
+};
+
+export type SubmitMyTalentProfileErrors = {
+    /**
+     * The profile lacks what a submission needs.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no profile.
+     */
+    404: Problem;
+    /**
+     * The profile is already submitted or approved.
+     */
+    409: Problem;
+};
+
+export type SubmitMyTalentProfileError = SubmitMyTalentProfileErrors[keyof SubmitMyTalentProfileErrors];
+
+export type SubmitMyTalentProfileResponses = {
+    /**
+     * The profile, waiting for review.
+     */
+    200: TalentProfile;
+};
+
+export type SubmitMyTalentProfileResponse = SubmitMyTalentProfileResponses[keyof SubmitMyTalentProfileResponses];
+
+export type ListTalentData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Profiles whose name, headline or a skill contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only profiles with this role.
+         */
+        role?: string | null;
+        /**
+         * Only profiles of this availability.
+         */
+        availability?: string | null;
+        /**
+         * The order: by name, or the most recently approved first.
+         */
+        sort?: 'name' | 'newest';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/talent/profiles';
+};
+
+export type ListTalentErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+};
+
+export type ListTalentError = ListTalentErrors[keyof ListTalentErrors];
+
+export type ListTalentResponses = {
+    /**
+     * One page of the profiles the parameters select.
+     */
+    200: PublicTalentList;
+};
+
+export type ListTalentResponse = ListTalentResponses[keyof ListTalentResponses];
+
+export type GetTalentData = {
+    body?: never;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/talent/profiles/{slug}';
+};
+
+export type GetTalentErrors = {
+    /**
+     * No approved, listed profile has this address.
+     */
+    404: Problem;
+};
+
+export type GetTalentError = GetTalentErrors[keyof GetTalentErrors];
+
+export type GetTalentResponses = {
+    /**
+     * The profile.
+     */
+    200: PublicTalent;
+};
+
+export type GetTalentResponse = GetTalentResponses[keyof GetTalentResponses];
+
+export type SendTalentEnquiryData = {
+    body: SendTalentEnquiry;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/talent/profiles/{slug}/enquiries';
+};
+
+export type SendTalentEnquiryErrors = {
+    /**
+     * The message is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * No approved, listed profile has this address.
+     */
+    404: Problem;
+    /**
+     * The profile is the caller's own.
+     */
+    409: Problem;
+    /**
+     * The caller already wrote through this profile within a day.
+     */
+    429: Problem;
+};
+
+export type SendTalentEnquiryError = SendTalentEnquiryErrors[keyof SendTalentEnquiryErrors];
+
+export type SendTalentEnquiryResponses = {
+    /**
+     * The message was sent to the person by email.
+     */
+    204: void;
+};
+
+export type SendTalentEnquiryResponse = SendTalentEnquiryResponses[keyof SendTalentEnquiryResponses];

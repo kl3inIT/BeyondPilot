@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOutIcon } from "lucide-react";
+import { Building2Icon, IdCardIcon, LogOutIcon, ShieldIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -14,8 +14,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
+import { Link } from "@/i18n/navigation";
 import { signOut } from "@/lib/auth/sign-out";
 import { initials } from "@/lib/initials";
+import { siteRoutes } from "@/lib/site";
 
 type AccountMenuProps = {
   /** Null until the person or their provider gives a name: a code by email proves only the address. */
@@ -25,7 +27,8 @@ type AccountMenuProps = {
 };
 
 /**
- * What an account menu holds, wherever it opens from: who is signed in and the way out. Signing
+ * What an account menu holds, wherever it opens from: who is signed in, their own pages, the admin
+ * area for an operator, and the way out. Signing
  * out keeps the menu open while the request runs, and says so there when it fails.
  */
 function AccountMenuPanel({ name, email, operator }: AccountMenuProps) {
@@ -54,6 +57,21 @@ function AccountMenuPanel({ name, email, operator }: AccountMenuProps) {
         )}
         <span className="truncate text-sm text-muted-foreground">{email}</span>
       </div>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem render={<Link href={siteRoutes.workspaceOrganization} />}>
+        <Building2Icon aria-hidden="true" />
+        {t("organization")}
+      </DropdownMenuItem>
+      <DropdownMenuItem render={<Link href={siteRoutes.talentProfile} />}>
+        <IdCardIcon aria-hidden="true" />
+        {t("talentProfile")}
+      </DropdownMenuItem>
+      {operator && (
+        <DropdownMenuItem render={<Link href={siteRoutes.admin} />}>
+          <ShieldIcon aria-hidden="true" />
+          {t("admin")}
+        </DropdownMenuItem>
+      )}
       <DropdownMenuSeparator />
       <DropdownMenuItem closeOnClick={false} disabled={state === "pending"} onClick={leave}>
         {state === "pending" ? <Spinner /> : <LogOutIcon aria-hidden="true" />}

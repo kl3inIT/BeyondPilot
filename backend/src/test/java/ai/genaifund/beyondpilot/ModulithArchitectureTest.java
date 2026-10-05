@@ -18,8 +18,8 @@ import org.springframework.modulith.core.ApplicationModules;
  */
 class ModulithArchitectureTest {
 
-	private static final Set<String> MODULES = Set.of("audit", "config", "identity", "notification", "program",
-			"storage");
+	private static final Set<String> MODULES = Set.of("audit", "config", "identity", "notification", "organization",
+			"program", "solution", "storage", "talent");
 
 	private final ApplicationModules modules = ApplicationModules.of(BeyondPilotApplication.class);
 

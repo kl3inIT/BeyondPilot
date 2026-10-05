@@ -7,8 +7,8 @@ import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
 /**
- * Brand and four destinations on the left, account actions on the right. The search is the
- * landing's primary action, so Get started stays secondary here (DESIGN.md › Buttons).
+ * Brand and four destinations on the left, account actions on the right. A destination turns azure
+ * under the pointer.
  */
 function SiteHeader() {
   const t = useTranslations("Site.nav");
@@ -29,7 +29,7 @@ function SiteHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="hit-area rounded-sm text-sm font-medium transition-colors outline-none hover:text-muted-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="hit-area rounded-sm text-sm font-nav transition-colors outline-none hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 {link.label}
               </Link>

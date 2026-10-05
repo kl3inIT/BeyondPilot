@@ -4,17 +4,24 @@ export const siteRoutes = {
   programs: "/programs",
   useCases: "/use-cases",
   solutions: "/solutions",
+  organizations: "/organizations",
   talent: "/talent",
   signIn: "/sign-in",
   getStarted: "/get-started",
   publishUseCase: "/use-cases/new",
-  talentProfile: "/talent/new",
+  talentProfile: "/workspace/talent",
   founders: "/founders",
   search: "/search",
   admin: "/admin",
   adminPrograms: "/admin/programs",
   adminAccounts: "/admin/accounts",
   adminAuditLog: "/admin/audit-log",
+  adminOrganizations: "/admin/organizations",
+  adminSolutions: "/admin/solutions",
+  adminTalent: "/admin/talent",
+  workspaceOrganization: "/workspace/organization",
+  workspaceMembers: "/workspace/organization/members",
+  workspaceSolutions: "/workspace/organization/solutions",
 } as const;
 
 /** The host the public site is served from, as an operator sees a program's address written out. */
@@ -43,13 +50,13 @@ export function adminProgramRoute(id: string) {
 export const comingSoonPaths = [
   "use-cases",
   "use-cases/new",
-  "solutions",
-  "talent",
-  "talent/new",
   "get-started",
   "founders",
   "search",
 ] as const;
+
+/** The product's name, as the end of a page title that is a record's own name. */
+export const titleSuffix = " · BeyondPilot";
 
 /** The address search engines and agents should know; staging and local hosts stay out of their index. */
 export const siteOrigin = "https://beyondpilot.ai";

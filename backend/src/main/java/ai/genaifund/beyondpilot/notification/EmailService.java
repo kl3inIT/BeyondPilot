@@ -44,6 +44,62 @@ public class EmailService {
 		send("sign_in_code", recipient, email.subject(), email.text(), email.html());
 	}
 
+	/**
+	 * Tells an address that it was asked to join an organization. The email carries no link that acts: the person signs
+	 * in with this address and finds the invitation there. Its language is not known, so it is written in both.
+	 * @param organizationName the organization that asks
+	 * @param inviterName who asked, as they are shown
+	 * @param owner whether the person is asked to own the organization, not only to belong to it
+	 */
+	public void sendOrganizationInvitation(String recipient, String organizationName, String inviterName,
+			boolean owner) {
+		String english = inviterName + " invited you to " + (owner ? "own " : "join ") + organizationName
+				+ " on BeyondPilot. Sign in with this email address to accept or decline.";
+		String vietnamese = inviterName + " mời bạn " + (owner ? "làm chủ sở hữu " : "tham gia ") + organizationName
+				+ " trên BeyondPilot. Hãy đăng nhập bằng địa chỉ email này để chấp nhận hoặc từ chối.";
+		send("organization_invitation", recipient, "You are invited to " + organizationName + " on BeyondPilot",
+				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+	}
+
+	/**
+	 * Tells an owner what GenAI Fund decided about their organization, in both languages.
+	 * @param approved whether the organization was approved; a refusal's reason is read after signing in
+	 */
+	public void sendOrganizationDecision(String recipient, String organizationName, boolean approved) {
+		String english = approved
+				? organizationName + " has been approved on BeyondPilot. Sign in to manage it."
+				: organizationName + " was not approved on BeyondPilot. Sign in to read why and to correct it.";
+		String vietnamese = approved
+				? organizationName + " đã được duyệt trên BeyondPilot. Hãy đăng nhập để quản lý."
+				: organizationName + " chưa được duyệt trên BeyondPilot. Hãy đăng nhập để xem lý do và chỉnh sửa.";
+		send("organization_decision", recipient, organizationName + " on BeyondPilot",
+				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+	}
+
+	/**
+	 * Passes a message on to a person who has a talent profile. The sender is named with their address so the person
+	 * can answer by email; the sender never learns the address this is sent to.
+	 * @param senderName who wrote the message, as they are shown
+	 * @param senderEmail where the person answers
+	 * @param message what the sender wrote
+	 */
+	public void sendTalentEnquiry(String recipient, String senderName, String senderEmail, String message) {
+		String english = senderName + " (" + senderEmail + ") sent you a message through your BeyondPilot talent profile."
+				+ " Answer them at that address.";
+		String vietnamese = senderName + " (" + senderEmail + ") đã gửi cho bạn một lời nhắn qua hồ sơ nhân tài của bạn"
+				+ " trên BeyondPilot. Hãy trả lời họ qua địa chỉ đó.";
+		send("talent_enquiry", recipient, "A message through your BeyondPilot talent profile",
+				english + "\n\n" + vietnamese + "\n\n" + message + "\n", paragraphs(english, vietnamese, message));
+	}
+
+	private static String paragraphs(String... texts) {
+		StringBuilder html = new StringBuilder();
+		for (String text : texts) {
+			html.append("<p>").append(HtmlUtils.htmlEscape(text)).append("</p>");
+		}
+		return html.toString();
+	}
+
 	private void send(String kind, String recipient, String subject, String text, String html) {
 		try {
 			MimeMessage message = mailSender.createMimeMessage();

@@ -1,0 +1,120 @@
+"use client";
+
+import { useId, useState } from "react";
+
+import { Button } from "@/components/actions/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
+
+type ReasonDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  /** What is about to happen and to whom, in one line. */
+  description: string;
+  reasonLabel: string;
+  /** The words of the select before a reason is chosen: "Choose a reason". */
+  reasonPlaceholder: string;
+  reasons: { value: string; label: string }[];
+  messageLabel: string;
+  /** Who reads the message. */
+  messageHint: string;
+  confirmLabel: string;
+  cancelLabel: string;
+  /** True while the decision is sent: the confirm button shows it and neither button can be used. */
+  pending: boolean;
+  onConfirm: (reason: string, message: string) => void;
+};
+
+/**
+ * Asks for the reason of a refusal before it is made: one reason out of a short list, and a message
+ * for the people it concerns. No reason is chosen for the operator, and none means no decision. It stays open while the decision is sent; whoever opened it closes it.
+ */
+function ReasonDialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  reasonLabel,
+  reasonPlaceholder,
+  reasons,
+  messageLabel,
+  messageHint,
+  confirmLabel,
+  cancelLabel,
+  pending,
+  onConfirm,
+}: ReasonDialogProps) {
+  const reasonId = useId();
+  const messageId = useId();
+  const hintId = useId();
+  const [reason, setReason] = useState("");
+  const [message, setMessage] = useState("");
+
+  return (
+    <Dialog open={open} onOpenChange={(next) => (pending ? undefined : onOpenChange(next))}>
+      <DialogContent showCloseButton={false} className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor={reasonId}>{reasonLabel}</FieldLabel>
+            <NativeSelect
+              id={reasonId}
+              className="w-full"
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+            >
+              <NativeSelectOption value="" disabled>
+                {reasonPlaceholder}
+              </NativeSelectOption>
+              {reasons.map((option) => (
+                <NativeSelectOption key={option.value} value={option.value}>
+                  {option.label}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor={messageId}>{messageLabel}</FieldLabel>
+            <Textarea
+              id={messageId}
+              rows={4}
+              maxLength={1000}
+              value={message}
+              aria-describedby={hintId}
+              onChange={(event) => setMessage(event.target.value)}
+            />
+            <FieldDescription id={hintId}>{messageHint}</FieldDescription>
+          </Field>
+        </FieldGroup>
+        <DialogFooter>
+          <Button prominence="secondary" disabled={pending} onClick={() => onOpenChange(false)}>
+            {cancelLabel}
+          </Button>
+          <Button
+            tone="danger"
+            pending={pending}
+            disabled={!reason}
+            onClick={() => onConfirm(reason, message)}
+          >
+            {confirmLabel}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export { ReasonDialog };
