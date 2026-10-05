@@ -60,6 +60,21 @@ public class RecordingMailSender extends JavaMailSenderImpl {
 		throw new AssertionError("No email was sent to " + recipient);
 	}
 
+	/** The plain-text part of the newest email sent to the address. */
+	public String latestTextTo(String recipient) {
+		for (MimeMessage message : sent.reversed()) {
+			try {
+				if (isTo(message, recipient)) {
+					return plainText(message);
+				}
+			}
+			catch (MessagingException | IOException exception) {
+				throw new IllegalStateException(exception);
+			}
+		}
+		throw new AssertionError("No email was sent to " + recipient);
+	}
+
 	long countTo(String recipient) {
 		return sent.stream().filter(message -> {
 			try {

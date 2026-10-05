@@ -102,6 +102,14 @@ public class SolutionDirectory {
 					.toList());
 	}
 
+	/** The approved, listed solution at this address, as another module needs it; empty when there is none. */
+	@Transactional(readOnly = true)
+	public Optional<ListedSolution> listedAt(String slug) {
+		return solutions.findBySlug(slug)
+			.filter(found -> found.isApproved() && found.isListed())
+			.map(found -> new ListedSolution(found.getId(), found.getName(), found.getOrganizationId()));
+	}
+
 	/**
 	 * One page of the approved customer deployments of an organization's listed solutions, the most recently approved
 	 * first. An address no approved organization has selects nothing.

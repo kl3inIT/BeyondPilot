@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.organization;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,6 +43,16 @@ public class OrganizationDirectory {
 			.flatMap(member -> organizations.findById(member.organizationId())
 				.map(organization -> new Membership(organization.getId(), organization.getName(), member.isOwner(),
 						organization.isApproved(), organization.getRoles())));
+	}
+
+	/** The accounts that own an organization, read now; empty when it has no owner. */
+	@Transactional(readOnly = true)
+	public List<UUID> ownersOf(UUID organizationId) {
+		return memberships.members(organizationId)
+			.stream()
+			.filter(MembershipRepository.Member::isOwner)
+			.map(MembershipRepository.Member::accountId)
+			.toList();
 	}
 
 	/** The approved organization at this address, as another module shows it; empty when there is none. */
