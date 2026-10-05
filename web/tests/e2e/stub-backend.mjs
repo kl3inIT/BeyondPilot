@@ -338,9 +338,22 @@ createServer((request, response) => {
   if (url.pathname === "/api/program/programs") {
     const items = Object.values(publicPrograms)
       .filter((program) => program.status === "published")
-      .map(({ about, keyDates, events, status, id, ...summary }) => ({
-        ...summary,
-        upcomingEvents: events.filter((event) => event.startsAt >= new Date().toISOString()),
+      .map((program) => ({
+        slug: program.slug,
+        name: program.name,
+        type: program.type,
+        partnerName: program.partnerName,
+        summary: program.summary,
+        coverFileId: program.coverFileId,
+        phase: program.phase,
+        startsOn: program.startsOn,
+        endsOn: program.endsOn,
+        pageKind: program.pageKind,
+        externalUrl: program.externalUrl,
+        applications: program.applications,
+        upcomingEvents: program.events.filter(
+          (event) => event.startsAt >= new Date().toISOString(),
+        ),
       }));
     return json(response, 200, { items });
   }
