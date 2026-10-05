@@ -73,6 +73,8 @@ type SolutionPageProps = {
   solution: PublicSolution;
   /** The editor of this solution, when the visitor may change it. */
   editHref?: string;
+  /** The way to ask for an introduction to its company, put in by the route that knows the visitor. */
+  introduction?: React.ReactNode;
 };
 
 /**
@@ -80,7 +82,7 @@ type SolutionPageProps = {
  * itself, its proof and where it fits, beside the way to reach its company. What a solution cannot
  * state yet is shown as unknown, never filled in.
  */
-function SolutionPage({ solution, editHref }: SolutionPageProps) {
+function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
   const t = useTranslations("Solution.detail");
   const directory = useTranslations("Solution.directory");
   const view = useTranslations("Solution.view");
@@ -241,6 +243,7 @@ function SolutionPage({ solution, editHref }: SolutionPageProps) {
           <h2 className="text-base font-medium">
             {t("contact.title", { name: solution.organizationName })}
           </h2>
+          {introduction}
           {solution.website && (
             <>
               <Button
