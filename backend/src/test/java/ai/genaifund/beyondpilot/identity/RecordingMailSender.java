@@ -46,7 +46,7 @@ public class RecordingMailSender extends JavaMailSenderImpl {
 		throw new AssertionError("No email with a code was sent to " + recipient);
 	}
 
-	String latestSubjectTo(String recipient) {
+	public String latestSubjectTo(String recipient) {
 		for (MimeMessage message : sent.reversed()) {
 			try {
 				if (isTo(message, recipient)) {

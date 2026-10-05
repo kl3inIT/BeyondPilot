@@ -1,9 +1,11 @@
 package ai.genaifund.beyondpilot.identity;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditRecord;
@@ -103,6 +105,40 @@ public class IdentityService {
 			.filter(account -> !account.isDisabled())
 			.map(Account::isOperator)
 			.orElse(false);
+	}
+
+	/**
+	 * The caller as an operator, for a module whose operation only GenAI Fund staff may do.
+	 * @throws IdentityException when the caller is not an operator now
+	 */
+	@Transactional(readOnly = true)
+	public Operator requireOperator(Actor actor) {
+		return accounts.findById(actor.accountId())
+			.filter(account -> account.isOperator() && !account.isDisabled())
+			.map(account -> new Operator(account.getId(), account.label(), account.getEmail()))
+			.orElseThrow(() -> new IdentityException(IdentityErrorCode.OPERATOR_REQUIRED,
+					"Operator action by account " + actor.accountId()));
+	}
+
+	/**
+	 * The caller as a person, for a module that acts on the address they signed in with.
+	 * @throws IdentityException when the account is disabled
+	 */
+	@Transactional(readOnly = true)
+	public Person person(Actor actor) {
+		return person(active(actor));
+	}
+
+	/** The people behind these accounts, for a module that shows who its records belong to. Unknown ones are left out. */
+	@Transactional(readOnly = true)
+	public Map<UUID, Person> people(Collection<UUID> accountIds) {
+		return accounts.findAllById(accountIds)
+			.stream()
+			.collect(Collectors.toMap(Account::getId, IdentityService::person));
+	}
+
+	private static Person person(Account account) {
+		return new Person(account.getId(), account.getEmail(), account.getDisplayName());
 	}
 
 	private Account active(Actor actor) {

@@ -1,0 +1,14 @@
+package ai.genaifund.beyondpilot.organization.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.jspecify.annotations.Nullable;
+
+@Schema(name = "PublicOrganization", description = "An approved organization as anyone reads it.")
+public record PublicOrganizationResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String slug,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				allowableValues = { "company", "builder_team", "independent_builder", "other" }) String type,
+		@Schema(types = { "string", "null" }, description = "ISO 3166-1 alpha-2.") @Nullable String country,
+		@Schema(types = { "string", "null" }) @Nullable String website,
+		@Schema(types = { "string", "null" }) @Nullable String description) {
+}
