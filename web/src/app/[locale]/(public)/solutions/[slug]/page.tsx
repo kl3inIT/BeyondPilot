@@ -55,6 +55,7 @@ export default async function SolutionRoute({ params }: PageProps<"/[locale]/sol
         asksOwnCompany ? undefined : (
           <RequestIntroduction
             slug={solution.slug}
+            name={solution.name}
             provider={solution.organizationName}
             organization={organization?.name ?? null}
             awaitingApproval={organization ? organization.status !== "approved" : false}

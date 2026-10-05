@@ -21,6 +21,22 @@ test.describe("asking for an introduction", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("on a phone the way to ask stays in a bar at the foot of the screen", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, "The bar is for phones; wider screens keep the action beside the page.");
+    await page.goto("/solutions/clinic-triage");
+
+    const bar = page.locator("div.fixed.bottom-0");
+    await expect(bar.getByText("Clinic Triage")).toBeVisible();
+    await expect(bar.getByText("By Lumen Health")).toBeVisible();
+    await expect(bar.getByRole("link", { name: "Request an introduction" })).toHaveAttribute(
+      "href",
+      "/sign-in?returnTo=%2Fsolutions%2Fclinic-triage",
+    );
+  });
+
   test("a person without an organization is told to set one up", async ({
     page,
     context,
@@ -38,6 +54,25 @@ test.describe("asking for an introduction", () => {
       "/workspace/organization",
     );
     await expectNoSeriousA11yViolations(page);
+  });
+
+  test("an organization that is not approved yet is told to wait", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "waiting", baseURL!);
+    const sent = await answerDecisions(page, askPath, 204);
+    await page.goto("/solutions/clinic-triage");
+
+    await page.getByRole("button", { name: "Request an introduction" }).click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(
+      dialog.getByRole("heading", { name: "Your organization is not approved yet" }),
+    ).toBeVisible();
+    await expect(dialog.getByRole("textbox")).toHaveCount(0);
+    expect(sent).toEqual([]);
   });
 
   test("an organization asks, naming itself, and a message is needed", async ({

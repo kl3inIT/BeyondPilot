@@ -1773,6 +1773,7 @@
     },
     "request": {
       "open": "Request an introduction",
+      "by": "By {provider}",
       "title": "Request an introduction to {provider}",
       "lead": "Introductions go through GenAI Fund. Neither email address is shown until {provider} replies.",
       "organization": "Your organization",

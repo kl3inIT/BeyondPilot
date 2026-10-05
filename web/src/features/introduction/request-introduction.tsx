@@ -23,6 +23,8 @@ import { introductionError } from "./introduction-errors";
 type RequestIntroductionProps = {
   /** The address of the solution the visitor asks about. */
   slug: string;
+  /** What the solution is called, in the bar at the foot of a phone. */
+  name: string;
   /** The organization that offers it: the one the introduction is to. */
   provider: string;
   /** The organization the caller asks as; absent when they belong to none. */
@@ -40,6 +42,7 @@ type RequestIntroductionProps = {
  */
 function RequestIntroduction({
   slug,
+  name,
   provider,
   organization,
   awaitingApproval,
@@ -53,6 +56,8 @@ function RequestIntroduction({
   const [invalid, setInvalid] = useState(false);
   const [sent, setSent] = useState(false);
   const blocked = organization === null ? "organization" : awaitingApproval ? "approval" : null;
+  // A visitor's button is the link to sign in; a signed-in person's opens the dialog.
+  const opens = signInHref ? { href: signInHref } : { onClick: () => setOpen(true) };
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -86,13 +91,19 @@ function RequestIntroduction({
 
   return (
     <>
-      <Button
-        size="lg"
-        className="w-full"
-        {...(signInHref ? { href: signInHref } : { onClick: () => setOpen(true) })}
-      >
+      <Button size="lg" className="w-full max-md:hidden" {...opens}>
         {t("open")}
       </Button>
+      {/* On a phone the action stays in reach in a bar at the foot of the screen. */}
+      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t bg-background px-4 py-3 shadow-lg md:hidden">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-sm font-semibold">{name}</span>
+          <span className="truncate text-xs text-muted-foreground">{t("by", { provider })}</span>
+        </div>
+        <Button size="lg" {...opens}>
+          {t("open")}
+        </Button>
+      </div>
       <Dialog open={open} onOpenChange={close}>
         <DialogContent showCloseButton={false}>
           {sent ? (

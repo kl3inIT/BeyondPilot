@@ -1773,6 +1773,7 @@
     },
     "request": {
       "open": "Nhờ giới thiệu",
+      "by": "Bởi {provider}",
       "title": "Nhờ giới thiệu tới {provider}",
       "lead": "Việc giới thiệu đi qua GenAI Fund. Địa chỉ email của hai bên được giấu cho đến khi {provider} trả lời.",
       "organization": "Tổ chức của bạn",

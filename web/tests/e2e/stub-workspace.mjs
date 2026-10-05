@@ -23,6 +23,17 @@ const pocketPolicy = {
   createdAt: day,
 };
 
+/** An organization that waits for GenAI Fund's approval, with its owner. */
+const newCo = {
+  ...pocketPolicy,
+  id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04",
+  name: "Newco",
+  slug: "newco",
+  status: "pending",
+  roles: ["enterprise"],
+  emailDomain: "newco.example",
+};
+
 const ofPocketPolicy = { organizationId: pocketPolicy.id, organizationName: pocketPolicy.name };
 
 const invitation = {
@@ -69,6 +80,7 @@ const standing = {
   member: { role: "member" },
   invited: { invitations: [invitation] },
   asked: { request },
+  waiting: { role: "owner", organization: newCo },
 };
 
 function deployment(id, title, status, more) {
@@ -268,13 +280,18 @@ export function answerWorkspace(url, session) {
   if (!session) {
     return [401, {}];
   }
-  const { role, invitations = [], request: asked = null } = standing[session] ?? {};
+  const {
+    role,
+    organization = pocketPolicy,
+    invitations = [],
+    request: asked = null,
+  } = standing[session] ?? {};
 
   if (pathname === "/api/organization/mine") {
     const jobTitle = members.find((person) => person.role === role)?.jobTitle ?? null;
     return [
       200,
-      { organization: role ? pocketPolicy : null, role, jobTitle, invitations, request: asked },
+      { organization: role ? organization : null, role, jobTitle, invitations, request: asked },
     ];
   }
   if (pathname === "/api/introduction/mine/received") {
