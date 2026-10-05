@@ -61,3 +61,49 @@ updates:
       github-actions:
         patterns:
           - "*"
+
+  # Base images are pinned by digest; this refreshes the digest and proposes newer tags. Majors (a new
+  # JDK, Node.js or PostgreSQL) stay deliberate changes.
+  - package-ecosystem: docker
+    directories:
+      - /backend
+      - /web
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:45"
+      timezone: Asia/Ho_Chi_Minh
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+    groups:
+      docker-images:
+        patterns:
+          - "*"
+
+  - package-ecosystem: docker-compose
+    directory: /infrastructure/deployment
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:45"
+      timezone: Asia/Ho_Chi_Minh
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+    groups:
+      compose-images:
+        patterns:
+          - "*"

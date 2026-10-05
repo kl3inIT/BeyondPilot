@@ -35,7 +35,7 @@ function Faq() {
             })}
           </p>
         </div>
-        <Accordion size="lg" defaultValue={["who"]} className="min-w-0 flex-1">
+        <Accordion size="lg" defaultValue={["who"]} hiddenUntilFound className="min-w-0 flex-1">
           {questions.map((id) => (
             <AccordionItem key={id} value={id}>
               <AccordionTrigger>{t(`${id}Q`)}</AccordionTrigger>

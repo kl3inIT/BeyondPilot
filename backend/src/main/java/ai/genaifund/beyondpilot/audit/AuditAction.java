@@ -23,6 +23,14 @@ public enum AuditAction {
 
 	OPERATOR_WITHDRAW("operator.withdraw"),
 
+	PROGRAM_CREATE("program.create"),
+
+	PROGRAM_UPDATE("program.update"),
+
+	PROGRAM_PUBLISH("program.publish"),
+
+	PROGRAM_UNPUBLISH("program.unpublish"),
+
 	/** An operator created an organization for a company that is not here yet. */
 	ORGANIZATION_CREATE("organization.create"),
 

@@ -274,5 +274,6 @@ Underline tabs with a kind icon and a count; the active tab is ink with a 2px in
 - **Don't** use purple or indigo anywhere.
 - **Don't** invent statistics, testimonials, people or notification cards, and don't add "announcement" sparkle pills.
 - **Don't** spread the sky glow beyond the hero, the arc and the live campaign cover.
+- **Don't** fade in a page's main heading from invisible: it rises without fading, because browsers skip an invisible element when they measure the largest paint.
 - **Don't** add audience-split box pairs ("For providers / For enterprises") whose actions already live elsewhere on the page.
 - **Don't** use raw colours, arbitrary values or inline styles outside `src/components/ui`; the shadcn lint rules reject them.

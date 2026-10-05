@@ -43,7 +43,7 @@ function MobileMenu({ signedIn = false }: { signedIn?: boolean }) {
         <SheetTitle className="sr-only">{t("menu.title")}</SheetTitle>
         <div className="flex flex-1 flex-col overflow-y-auto">
           <div className="flex h-17 shrink-0 items-center justify-between border-b px-5">
-            <BrandLockup showPoweredBy={false} />
+            <BrandLockup showBackedBy={false} />
             <SheetClose render={<IconButton aria-label={t("menu.close")} size="lg" />}>
               <XIcon aria-hidden="true" />
             </SheetClose>

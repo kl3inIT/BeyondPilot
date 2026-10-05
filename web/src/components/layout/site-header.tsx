@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 
 import { BrandLockup } from "@/components/layout/brand-lockup";
 import { HeaderAccount } from "@/components/layout/header-account";
+import { LanguageMenu } from "@/components/layout/language-menu";
 import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
@@ -22,7 +23,7 @@ function SiteHeader() {
     <header className="sticky top-0 z-50 border-b bg-background">
       <div className="mx-auto flex h-17 w-full max-w-360 items-center justify-between gap-6 px-5 md:px-8 xl:px-16">
         <div className="flex items-center gap-8">
-          <BrandLockup showPoweredBy={false} />
+          <BrandLockup showBackedBy={false} />
           <nav aria-label={t("label")} className="hidden items-center gap-7 md:flex">
             {links.map((link) => (
               <Link
@@ -36,6 +37,7 @@ function SiteHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-2">
+          <LanguageMenu className="hidden md:flex" />
           <HeaderAccount />
         </div>
       </div>

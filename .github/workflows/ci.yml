@@ -33,6 +33,9 @@ jobs:
       - name: Lint workflows
         run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 
+      - name: Check deployment scripts
+        run: shellcheck infrastructure/deployment/*.sh infrastructure/backup/*.sh
+
       - name: Scan history for secrets with a checksum-pinned scanner
         run: |
           curl --fail --silent --show-error --location \
@@ -131,3 +134,110 @@ jobs:
           name: playwright-report
           path: web/playwright-report/
           retention-days: 7
+
+  images:
+    name: Images
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # Only a main push uses the write permission, to push the images it has just exercised.
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      api: ${{ steps.push.outputs.api }}
+      web: ${{ steps.push.outputs.web }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      # Loaded under the names compose.local.yaml gives them, so the composition below runs these exact builds.
+      - name: Build the api image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: backend/Dockerfile
+          load: true
+          tags: beyondpilot-api:local
+          build-args: VCS_REF=${{ github.sha }}
+          provenance: false
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max,ignore-error=true
+
+      - name: Build the web image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: web/Dockerfile
+          load: true
+          tags: beyondpilot-web:local
+          build-args: VCS_REF=${{ github.sha }}
+          provenance: false
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max,ignore-error=true
+
+      # The images start, Flyway migrates an empty database, and the proxy routes Spring's paths to the api
+      # (an anonymous /api call is refused there) and every other path to the web application.
+      - name: Start the composition and exercise its routes
+        run: |
+          compose=(docker compose -f infrastructure/deployment/compose.base.yaml -f infrastructure/deployment/compose.local.yaml)
+          "${compose[@]}" up --no-build --wait --wait-timeout 240
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8000/)" = 200
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8000/api/identity/me)" = 401
+          for image in beyondpilot-api:local beyondpilot-web:local; do
+            test "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$image")" = "$GITHUB_SHA"
+          done
+
+      - name: Show container logs
+        if: ${{ failure() }}
+        run: docker compose -f infrastructure/deployment/compose.base.yaml -f infrastructure/deployment/compose.local.yaml logs --no-color --tail 200
+
+      # The bytes pushed are the ones exercised above. A tag names one CI attempt and is never moved; a release
+      # names the images by digest.
+      - name: Push the verified images to GHCR
+        id: push
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          tag="sha-$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          for component in api web; do
+            remote="ghcr.io/kl3init/beyondpilot-$component"
+            docker tag "beyondpilot-$component:local" "$remote:$tag"
+            docker push --quiet "$remote:$tag"
+            digest=$(docker image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$remote:$tag" | grep -m1 "^$remote@sha256:")
+            [[ "$digest" =~ ^ghcr\.io/kl3init/beyondpilot-(api|web)@sha256:[0-9a-f]{64}$ ]]
+            echo "$component=$digest" >> "$GITHUB_OUTPUT"
+          done
+          docker logout ghcr.io
+
+  release:
+    name: Publish release
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    needs: [repository, backend, web, e2e, images]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # Deploy staging reads this file from a successful main run; it names nothing a failed run pushed.
+      - name: Record the release
+        env:
+          API_IMAGE: ${{ needs.images.outputs.api }}
+          WEB_IMAGE: ${{ needs.images.outputs.web }}
+        run: |
+          [[ "$API_IMAGE" =~ ^ghcr\.io/kl3init/beyondpilot-api@sha256:[0-9a-f]{64}$ ]]
+          [[ "$WEB_IMAGE" =~ ^ghcr\.io/kl3init/beyondpilot-web@sha256:[0-9a-f]{64}$ ]]
+          mkdir release
+          printf 'BEYONDPILOT_SOURCE_SHA=%s\nBEYONDPILOT_API_IMAGE=%s\nBEYONDPILOT_WEB_IMAGE=%s\n' \
+            "$GITHUB_SHA" "$API_IMAGE" "$WEB_IMAGE" > release/images.env
+
+      - name: Upload the release
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-${{ github.sha }}
+          path: release/images.env
+          retention-days: 30

@@ -57,6 +57,9 @@ class SecurityConfiguration {
 				// A public file, such as an image of a program, is read without a session.
 				.requestMatchers(HttpMethod.GET, "/api/storage/files/*")
 				.permitAll()
+				// The programs and their pages are for visitors; an operator's session only adds the drafts.
+				.requestMatchers(HttpMethod.GET, "/api/program/programs", "/api/program/programs/*")
+				.permitAll()
 				// The directories of approved solutions and talent, and the page of an approved organization, are read
 				// without a session.
 				.requestMatchers(HttpMethod.GET, "/api/solution/solutions", "/api/solution/solutions/*",

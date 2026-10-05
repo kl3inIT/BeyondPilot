@@ -33,6 +33,17 @@ BeyondPilot uses the repository as its durable system of record. The model is ad
 
 Task status lives in Linear (team BeyondPilot, issues `BEY-<n>`), not in the repository.
 
+## Linear as the record of work
+
+Linear is the source of truth for who did what, what was learned and how far each piece of work has come. The project is paid work, and each member's contribution is assessed from it, so a piece of work that is not in Linear did not happen as far as that assessment is concerned.
+
+- Every piece of work has an issue with one assignee before it starts: research, design, code, operations and questions to the client alike. Work done by an agent is recorded under the member who directed it.
+- Keep the issue current while working, not at the end: move its status as the work moves (Backlog, Todo, In Progress, Done), tick its checklist, and attach each pull request and the deployed result.
+- After research, write the findings on the issue: what was studied, what was concluded and what was ruled out, with links to the sources and to the note under `docs/research/` when there is one.
+- After implementation, write what was delivered and how it was verified, and any decision taken on the way with its reason. A decision that changes a plan says what it replaced.
+- Write it for a reader who was not there: a member, the client or whoever assesses the contribution later.
+- The repository stays the home of the detail. The issue summarizes and links to the increment, the runbook or the ADR instead of copying them. No secret value is written to Linear; record only where the secret is managed.
+
 ## Source classification
 
 Before adding text, choose its owner:

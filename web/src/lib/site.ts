@@ -36,6 +36,9 @@ export const comingSoonPaths = [
 /** The product's name, as the end of a page title that is a record's own name. */
 export const titleSuffix = " · BeyondPilot";
 
+/** The address search engines and agents should know; staging and local hosts stay out of their index. */
+export const siteOrigin = "https://beyondpilot.ai";
+
 /** The live campaign runs on GenAI Fund's interim page until campaigns move onto BeyondPilot. */
 export const liveCampaignUrl = "https://beyondpilot.genaifund.ai/insurance-ai-tasco";
 

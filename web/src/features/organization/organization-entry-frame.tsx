@@ -23,7 +23,7 @@ function OrganizationEntryFrame({ children }: { children: React.ReactNode }) {
         {s("skipToContent")}
       </a>
       <header className="flex items-center justify-between gap-4 px-5 py-5 md:px-8 lg:px-16">
-        <BrandLockup showPoweredBy={false} />
+        <BrandLockup showBackedBy={false} />
         <Link
           href={siteRoutes.home}
           className="hit-area inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
