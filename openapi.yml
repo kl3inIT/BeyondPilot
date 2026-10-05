@@ -3575,6 +3575,15 @@ components:
       type: object
       description: One program in the operators' list.
       properties:
+        applications:
+          $ref: "#/components/schemas/ProgramApplications"
+          description: Null for a program that takes no applications here.
+        coverFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The cover, read at the public address of stored files."
         endsOn:
           type:
           - string
@@ -3589,6 +3598,15 @@ components:
           type:
           - string
           - "null"
+        phase:
+          type: string
+          description: "Where the program would stand now, worked out from its dates;\
+            \ a draft is shown as a draft whatever its phase."
+          enum:
+          - upcoming
+          - open
+          - running
+          - done
         slug:
           type: string
         startsOn:
@@ -3620,6 +3638,7 @@ components:
       required:
       - id
       - name
+      - phase
       - slug
       - status
       - type
@@ -4547,6 +4566,10 @@ components:
           - string
           - "null"
           format: uri
+        id:
+          type: string
+          format: uuid
+          description: Leads an operator who previews a draft back to its Settings.
         keyDates:
           type: array
           description: In the order the operator gave.
@@ -4608,6 +4631,7 @@ components:
           - event
       required:
       - events
+      - id
       - keyDates
       - name
       - pageKind

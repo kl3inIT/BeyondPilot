@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 
 import { estimateTokens, pageToMarkdown } from "@/lib/markdown";
+import { markdownPathHeader } from "@/lib/markdown-request";
 import { localPath } from "@/lib/return-to";
 import { siteOrigin } from "@/lib/site";
 
@@ -11,7 +12,7 @@ import { siteOrigin } from "@/lib/site";
  * public origin, never the request's Host, and a redirect is handed back rather than followed.
  */
 export async function GET(request: NextRequest) {
-  const path = localPath(request.nextUrl.searchParams.get("path"));
+  const path = localPath(request.headers.get(markdownPathHeader));
   if (!path) {
     return new Response("Not found\n", { status: 404 });
   }

@@ -288,6 +288,12 @@ class ProgramAdministrationTest {
 			.isEmpty();
 		assertThat(eventsOf(one.substring(one.lastIndexOf('/') + 1))).extracting(event -> event.get("action"))
 			.containsExactly("program.create", "program.update");
+		// The operators' list shows the window and the phase it works out from the dates.
+		String list = new String(get(operator, PROGRAMS).expectBody().returnResult().getResponseBody(), UTF_8);
+		String item = "$.items[?(@.slug == 'saved-whole')]";
+		assertThat(JsonPath.<List<String>>read(list, item + ".applications.closesAt"))
+			.containsExactly("2026-11-15T16:59:00Z");
+		assertThat(JsonPath.<List<String>>read(list, item + ".phase")).singleElement().isNotNull();
 	}
 
 	@Test

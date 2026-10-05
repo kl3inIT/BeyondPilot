@@ -36,6 +36,8 @@ Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 | `src/components/actions/`    | Product actions: `Button`, `IconButton`, `TextButton` with `tone`/`prominence`/`size`/`pending`                                                       |
 | `src/components/ui/`         | shadcn registry primitives (`components.json`, style `base-nova`)                                                                                     |
 | `src/components/composites/` | Product patterns shared by several features, without data fetching or authority checks                                                                |
+| `src/components/form/`       | `useAppForm`, the TanStack Form hook with the shared `Field` controls, and `setServerErrors` for a refused submission                                 |
+| `src/lib/storage/`           | `uploadFile`: reserve, send, confirm, the same with the local store and S3                                                                            |
 | `src/lib/`                   | `utils.ts` (`cn`), `api/generated/` (SDK and types from `openapi.yml`), `api/client.ts` (its configuration and `ApiError`), `auth/` (session helpers) |
 | `src/i18n/`                  | Locale routing, request configuration, locale-aware `Link`, message typing                                                                            |
 | `src/styles/tokens.css`      | Semantic design tokens, light and dark                                                                                                                |

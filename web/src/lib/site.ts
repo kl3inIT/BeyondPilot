@@ -13,6 +13,7 @@ export const siteRoutes = {
   founders: "/founders",
   search: "/search",
   admin: "/admin",
+  adminPrograms: "/admin/programs",
   adminAccounts: "/admin/accounts",
   adminAuditLog: "/admin/audit-log",
   adminOrganizations: "/admin/organizations",
@@ -23,9 +24,30 @@ export const siteRoutes = {
   workspaceSolutions: "/workspace/organization/solutions",
 } as const;
 
+/** The host the public site is served from, as an operator sees a program's address written out. */
+export const publicSiteHost = "beyondpilot.genaifund.ai";
+
+/** A program's public page. */
+export function programRoute(slug: string) {
+  return `${siteRoutes.programs}/${slug}`;
+}
+
+/**
+ * Where a program takes applications, while the application form of BeyondPilot is being built
+ * (BEY-37): the Tasco challenge still takes them on its interim page. A program without one shows
+ * no Apply button.
+ */
+export function programApplyUrl(slug: string): string | undefined {
+  return slug === "insurance-ai-tasco" ? `${liveCampaignUrl}/apply` : undefined;
+}
+
+/** A program's Settings in the admin area, the screen a program opens on. */
+export function adminProgramRoute(id: string) {
+  return `${siteRoutes.adminPrograms}/${id}/settings`;
+}
+
 /** Planned pages without a screen yet; they share the coming-soon page. */
 export const comingSoonPaths = [
-  "programs",
   "use-cases",
   "use-cases/new",
   "get-started",

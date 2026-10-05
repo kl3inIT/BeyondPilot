@@ -282,6 +282,7 @@
     "nav": {
       "label": "Điều hướng quản trị",
       "home": "Trang chủ",
+      "programs": "Chương trình",
       "accounts": "Tài khoản",
       "auditLog": "Nhật ký thao tác",
       "organizations": "Tổ chức",
@@ -289,6 +290,245 @@
       "talent": "Nhân lực"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
+    "programs": {
+      "metaTitle": "Chương trình · BeyondPilot",
+      "title": "Chương trình",
+      "lead": "Mọi chương trình GenAI Fund tổ chức, ở bất kỳ trạng thái nào. Mở một chương trình để sửa trang, các mốc thời gian và công bố.",
+      "columns": {
+        "program": "Chương trình",
+        "status": "Trạng thái",
+        "runs": "Thời gian",
+        "window": "Thời gian nhận đơn",
+        "open": "Mở"
+      },
+      "state": {
+        "draft": "Bản nháp",
+        "upcoming": "Sắp diễn ra",
+        "open": "Đang nhận đơn",
+        "running": "Đang diễn ra",
+        "done": "Đã kết thúc"
+      },
+      "window": "{opens} – {closes}, {time} ICT",
+      "noApplications": "Không nhận đơn trên BeyondPilot",
+      "count": "{count, plural, other {# chương trình}}",
+      "empty": {
+        "title": "Chưa có chương trình nào",
+        "description": "Tạo chương trình đầu tiên bằng nút Chương trình mới."
+      },
+      "create": {
+        "open": "Chương trình mới",
+        "title": "Chương trình mới",
+        "lead": "Chương trình bắt đầu là bản nháp, chỉ operator thấy.",
+        "name": "Tên",
+        "slug": "Địa chỉ",
+        "slugHint": "{address}. Tạo từ tên; bạn đổi được cho đến lần công bố đầu tiên.",
+        "type": "Loại",
+        "cancel": "Huỷ",
+        "submit": "Tạo chương trình",
+        "errors": {
+          "slugTaken": "Địa chỉ này đã thuộc về một chương trình khác."
+        },
+        "typePlaceholder": "Chọn loại"
+      },
+      "errors": {
+        "unknown": "Chưa thực hiện được. Hãy thử lại sau giây lát."
+      },
+      "settings": {
+        "metaTitle": "Cài đặt chương trình · BeyondPilot",
+        "published": "Đã công bố",
+        "unsaved": "Có thay đổi chưa lưu.",
+        "context": {
+          "published": "Thay đổi hiện trên trang chương trình ngay khi bạn lưu.",
+          "draft": "Chỉ operator thấy chương trình này cho đến khi được công bố."
+        },
+        "save": "Lưu thay đổi",
+        "saved": "Đã lưu.",
+        "basics": {
+          "title": "Thông tin cơ bản",
+          "what": "Tên chương trình và địa chỉ trang.",
+          "name": "Tên",
+          "slug": "Địa chỉ",
+          "slugHint": "{address}. Bạn đổi được cho đến lần công bố đầu tiên.",
+          "slugFixed": "{address}. Địa chỉ cố định từ khi chương trình được công bố.",
+          "type": "Loại",
+          "partner": "Đối tác",
+          "startsOn": "Bắt đầu",
+          "endsOn": "Kết thúc",
+          "daysHint": "Danh sách chương trình chuyển chương trình sang Đã kết thúc sau ngày cuối.",
+          "summary": "Tóm tắt",
+          "summaryHint": "Hiện trên danh sách chương trình và đầu trang.",
+          "about": "Giới thiệu",
+          "aboutHint": "Phần mở đầu của trang chuẩn. Trang làm riêng cho chương trình tự viết phần này.",
+          "cover": "Ảnh bìa",
+          "coverHint": "Hiện trên danh sách chương trình và đầu trang."
+        },
+        "page": {
+          "title": "Trang",
+          "what": "Cách trang công khai của chương trình được tạo.",
+          "standard": {
+            "title": "Trang chuẩn",
+            "what": "Dựng từ những gì nhập ở đây: tóm tắt, giới thiệu, các mốc thời gian và sự kiện."
+          },
+          "custom": {
+            "title": "Trang làm riêng cho chương trình",
+            "what": "Đội ngũ viết trang bằng code; chương trình cung cấp ngày, sự kiện và form nộp đơn."
+          },
+          "external": {
+            "title": "Trang ở nơi khác",
+            "what": "Danh sách chương trình dẫn tới một địa chỉ bên ngoài. Việc nộp đơn vẫn trên BeyondPilot."
+          },
+          "externalUrl": "Địa chỉ trang"
+        },
+        "applications": {
+          "title": "Nhận đơn",
+          "what": "Thời gian nhận đơn và số đội đi tiếp.",
+          "takes": "Nhận đơn trên BeyondPilot",
+          "opens": "Mở",
+          "closes": "Đóng",
+          "time": "Giờ",
+          "ict": "Giờ Việt Nam (ICT). Form tự đóng vào giờ đóng.",
+          "shortlist": "Số suất demo day",
+          "outcomes": "Ngày báo kết quả",
+          "updates": "Người nộp được sửa đơn đã nộp cho đến giờ đóng."
+        },
+        "keyDates": {
+          "title": "Các mốc thời gian",
+          "what": "Dòng thời gian trên trang chương trình, và điều người nộp đơn được báo sẽ diễn ra.",
+          "opens": "Mở nhận đơn và giai đoạn xây dựng",
+          "closes": "Đóng nhận bài",
+          "outcomes": "Mọi người nộp đơn nhận kết quả",
+          "fromWindow": "Theo thời gian nhận đơn",
+          "locked": "Sửa ở mục Nhận đơn",
+          "add": "Thêm mốc",
+          "hint": "Giờ Việt Nam (ICT). Các mốc khoá theo mục Nhận đơn ở trên."
+        },
+        "events": {
+          "title": "Sự kiện",
+          "what": "Các buổi của chương trình mà mọi người đăng ký tham gia; cũng hiện ở mục Sắp diễn ra trên danh sách chương trình.",
+          "online": "Trực tuyến",
+          "add": "Thêm sự kiện"
+        },
+        "edit": "Sửa",
+        "editNamed": "Sửa {name}",
+        "delete": "Xoá",
+        "cancel": "Huỷ",
+        "errors": {
+          "unknown": "Chương trình chưa được lưu. Hãy thử lại sau giây lát.",
+          "changedMeanwhile": "Người khác vừa lưu chương trình này. Hãy tải lại trang rồi sửa lại.",
+          "codes": {
+            "PROGRAM_SLUG_TAKEN": "Địa chỉ này đã thuộc về một chương trình khác.",
+            "PROGRAM_SLUG_FIXED": "Không đổi được địa chỉ sau khi chương trình đã công bố.",
+            "PROGRAM_DAYS_OUT_OF_ORDER": "Ngày kết thúc trước ngày bắt đầu.",
+            "PROGRAM_WINDOW_OUT_OF_ORDER": "Giờ đóng nhận đơn trước giờ mở.",
+            "PROGRAM_OUTCOMES_BEFORE_CLOSE": "Ngày báo kết quả trước ngày đóng nhận đơn.",
+            "PROGRAM_EXTERNAL_URL_REQUIRED": "Nhập địa chỉ của trang ở nơi khác.",
+            "PROGRAM_COVER_NOT_USABLE": "Ảnh này không dùng làm ảnh bìa được. Hãy tải lên lại.",
+            "PROGRAM_KEY_DATE_OUT_OF_ORDER": "Có mốc thời gian kết thúc trước khi bắt đầu.",
+            "PROGRAM_EVENT_OUT_OF_ORDER": "Có sự kiện kết thúc trước khi bắt đầu."
+          }
+        },
+        "cover": {
+          "alt": "Ảnh bìa chương trình",
+          "replace": "Thay ảnh",
+          "remove": "Bỏ ảnh",
+          "empty": "Tải ảnh bìa lên",
+          "uploading": "Đang tải lên…",
+          "limits": "PNG, JPEG hoặc WebP, tối đa 5 MB.",
+          "errors": {
+            "type": "Hãy dùng ảnh PNG, JPEG hoặc WebP.",
+            "size": "Ảnh lớn hơn 5 MB.",
+            "failed": "Chưa tải ảnh lên được. Hãy thử lại."
+          }
+        },
+        "keyDate": {
+          "addTitle": "Thêm mốc thời gian",
+          "editTitle": "Sửa mốc thời gian",
+          "title": "Tiêu đề",
+          "day": "Ngày",
+          "from": "Từ",
+          "to": "Đến",
+          "allDay": "Cả ngày",
+          "note": "Ghi chú",
+          "noteHint": "Hiện dưới ngày trên trang chương trình.",
+          "add": "Thêm mốc",
+          "update": "Cập nhật"
+        },
+        "event": {
+          "addTitle": "Thêm sự kiện",
+          "editTitle": "Sửa sự kiện",
+          "title": "Tiêu đề",
+          "startsDay": "Bắt đầu",
+          "startsTime": "Giờ",
+          "endsDay": "Kết thúc",
+          "endsTime": "Giờ",
+          "where": "Hình thức",
+          "online": "Trực tuyến",
+          "inPerson": "Trực tiếp",
+          "city": "Thành phố",
+          "country": "Quốc gia",
+          "registrationUrl": "Link đăng ký",
+          "registrationUrlHint": "Nơi mọi người đăng ký, ví dụ trang Luma của sự kiện. Trang chương trình dẫn tới đây.",
+          "add": "Thêm sự kiện",
+          "update": "Cập nhật"
+        },
+        "more": "Thao tác khác",
+        "copyLink": "Sao chép link",
+        "copied": "Đã sao chép link.",
+        "publish": {
+          "button": "Công bố",
+          "saveAndPublish": "Lưu và công bố",
+          "checklist": {
+            "title": "Trước khi công bố",
+            "lead": "Công bố sẽ đưa chương trình lên danh sách chương trình. Còn thiếu:",
+            "issues": {
+              "summary": "Thêm tóm tắt",
+              "cover": "Thêm ảnh bìa",
+              "dates": "Đặt ngày bắt đầu và kết thúc"
+            },
+            "ready": "Đã đủ. Công bố để lưu và đưa chương trình lên danh sách.",
+            "done": "Xong"
+          },
+          "confirm": {
+            "title": "Công bố {name}?",
+            "lead": "Chương trình sẽ lên danh sách chương trình, và ai có link đều mở được trang.",
+            "note": "Từ giờ địa chỉ cố định, để link mọi người đã chia sẻ vẫn dùng được.",
+            "cancel": "Huỷ"
+          },
+          "done": "Đã công bố {name}.",
+          "notReady": "Chương trình vẫn còn thiếu những mục trong danh sách ở trên.",
+          "missing": "Còn thiếu {count} mục trước khi công bố"
+        },
+        "unpublish": {
+          "menu": "Gỡ khỏi trang công khai…",
+          "title": "Gỡ {name} khỏi trang công khai?",
+          "lead": "Chương trình rời danh sách chương trình, và trang trả “không tìm thấy” cho đến khi bạn công bố lại.",
+          "note": "Mọi thứ đã nhập được giữ nguyên, địa chỉ không đổi.",
+          "confirm": "Gỡ",
+          "done": "{name} không còn công khai."
+        },
+        "preview": "Xem trước",
+        "viewPage": "Xem trang",
+        "notSaved": "Chưa lưu",
+        "leave": "Có thay đổi chưa lưu. Rời trang này và bỏ các thay đổi đó?"
+      },
+      "noDays": "Chưa đặt ngày",
+      "search": "Tìm chương trình theo tên",
+      "filters": {
+        "label": "Chương trình theo trạng thái",
+        "all": "Tất cả",
+        "draft": "Bản nháp",
+        "open": "Đang nhận đơn",
+        "upcoming": "Sắp diễn ra",
+        "running": "Đang diễn ra",
+        "done": "Đã kết thúc"
+      },
+      "noMatch": {
+        "title": "Không có chương trình nào khớp",
+        "description": "Thử tên khác, hoặc xem mọi trạng thái.",
+        "clear": "Xem tất cả chương trình"
+      },
+      "countOf": "{count, plural, other {# chương trình}} trên {total}"
+    },
     "accounts": {
       "metaTitle": "Tài khoản · BeyondPilot",
       "title": "Tài khoản",
@@ -1710,6 +1950,351 @@
       },
       "requiredMark": "· bắt buộc",
       "headlineHint": "Một dòng về việc bạn làm. Ví dụ: Kỹ sư ML xây AI xử lý tài liệu cho ngân hàng."
+    }
+  },
+  "Form": {
+    "optional": "Không bắt buộc",
+    "errors": {
+      "required": "Hãy điền mục này.",
+      "tooLong": "Tối đa {max} ký tự.",
+      "slugFormat": "Chỉ dùng chữ thường, chữ số và một dấu gạch ngang giữa các từ.",
+      "slugLength": "Từ 3 đến 60 ký tự.",
+      "invalid": "Hãy kiểm tra lại mục này.",
+      "endsBeforeStarts": "Thời điểm kết thúc trước thời điểm bắt đầu.",
+      "closesBeforeOpens": "Giờ đóng nhận đơn trước giờ mở.",
+      "outcomesBeforeClose": "Ngày báo kết quả trước ngày đóng nhận đơn.",
+      "webAddress": "Nhập địa chỉ bắt đầu bằng http:// hoặc https://.",
+      "positive": "Nhập một số nguyên lớn hơn 0."
+    }
+  },
+  "Program": {
+    "type": {
+      "enterprise_challenge": "Thử thách doanh nghiệp",
+      "open_innovation_call": "Kêu gọi đổi mới mở",
+      "accelerator": "Chương trình tăng tốc",
+      "hackathon": "Hackathon",
+      "buildathon": "Buildathon",
+      "grant": "Tài trợ",
+      "venture_building": "Xây dựng doanh nghiệp",
+      "pitch_competition": "Cuộc thi gọi vốn",
+      "event_series": "Chuỗi sự kiện",
+      "event": "Sự kiện"
+    },
+    "countdown": {
+      "closes": "Đóng {closes}",
+      "closed": "Đã đóng nhận đơn lúc {closes}",
+      "left": "{days, plural, =0 {Ngày cuối} other {Còn # ngày}} · đóng {closes}"
+    },
+    "page": {
+      "programs": "Chương trình",
+      "phase": {
+        "open": "Đang mở",
+        "upcoming": "Sắp diễn ra",
+        "running": "Đang diễn ra",
+        "done": "Đã kết thúc"
+      },
+      "applyNow": "Nộp đơn ngay",
+      "closesIn": "Hạn nộp đơn",
+      "about": "Giới thiệu",
+      "timeline": "Dòng thời gian",
+      "events": "Sự kiện",
+      "online": "Trực tuyến",
+      "register": "Đăng ký",
+      "nothingYet": "Thông tin thêm về chương trình sẽ sớm có.",
+      "draft": {
+        "message": "Bản nháp. Chỉ operator thấy trang này; trang chưa có trên danh sách chương trình.",
+        "back": "Quay lại cài đặt"
+      },
+      "applyCard": "Nộp đơn"
+    },
+    "timeline": {
+      "opens": "Mở nhận đơn",
+      "closes": "Đóng nhận đơn",
+      "outcomes": "Mọi người nộp đơn nhận kết quả"
+    }
+  },
+  "Programs": {
+    "metaTitle": "Chương trình và sự kiện · BeyondPilot",
+    "title": "Chương trình và sự kiện",
+    "lead": "Thử thách doanh nghiệp, kêu gọi đổi mới mở, tuần lễ xây dựng và các buổi gặp mặt mà GenAI Fund tổ chức cùng đối tác khắp Đông Nam Á.",
+    "filters": {
+      "label": "Chương trình theo giai đoạn",
+      "all": "Tất cả",
+      "open": "Đang mở",
+      "upcoming": "Sắp diễn ra",
+      "done": "Đã kết thúc",
+      "type": "Loại chương trình",
+      "allTypes": "Mọi loại"
+    },
+    "open": "Đang mở",
+    "upcoming": "Sắp diễn ra",
+    "done": "Đã kết thúc",
+    "programCount": "{count, plural, other {# chương trình}}",
+    "itemCount": "{count, plural, other {# sự kiện}}",
+    "undated": "Trước đó",
+    "live": "Đang mở",
+    "running": "Đang diễn ra",
+    "nextUp": "Sắp tới",
+    "applyNow": "Nộp đơn ngay",
+    "readBrief": "Xem chương trình",
+    "online": "Trực tuyến",
+    "register": "Đăng ký",
+    "opensOn": "Mở nhận đơn {date}",
+    "readRecap": "Xem tổng kết",
+    "readPage": "Xem chương trình",
+    "empty": {
+      "title": "Chưa có chương trình nào ở đây",
+      "description": "Thử loại khác, hoặc xem mọi chương trình.",
+      "clear": "Xem tất cả chương trình"
+    }
+  },
+  "Tasco": {
+    "kind": "Thử thách doanh nghiệp · Bảo hiểm · Việt Nam",
+    "question": {
+      "label": "Câu hỏi",
+      "text": "Làm sao để bảo hiểm ở Việt Nam trở thành thứ người ta vui lòng mang theo — dễ mua, dễ mang, dễ bồi thường?",
+      "setBy": "Do ban lãnh đạo Tasco đặt ra, cùng GenAI Fund"
+    },
+    "stats": {
+      "teams": {
+        "value": "10 đội",
+        "label": "trình bày trực tiếp tại demo day ngày 22 tháng 10"
+      },
+      "investment": {
+        "value": "Tới 100.000 USD",
+        "label": "đầu tư được cân nhắc cho các đội đi hết giai đoạn thử nghiệm"
+      },
+      "pilot": {
+        "value": "4 tuần",
+        "label": "thử nghiệm cùng những người sẽ vận hành giải pháp"
+      }
+    },
+    "nav": {
+      "label": "Trên trang này",
+      "challenge": "Tổng quan",
+      "who": "Ai được nộp",
+      "win": "Bạn nhận được gì",
+      "directions": "Hướng gợi ý",
+      "timeline": "Dòng thời gian",
+      "submit": "Cần nộp gì",
+      "judges": "Giám khảo",
+      "faq": "Hỏi đáp"
+    },
+    "challenge": {
+      "title": "Thử thách",
+      "lead": "Bảo hiểm bắt buộc xe cơ giới là thứ gần như mọi tài xế ở Việt Nam phải có. Sản phẩm do quy định đặt ra và định giá, nên mọi nhà cung cấp đều bán cùng quyền lợi với cùng một mức phí — và khi quy định khiến sản phẩm giống hệt nhau, trải nghiệm xung quanh nó cũng ngừng được cải thiện.",
+      "pains": {
+        "paper": {
+          "title": "Vẫn là tờ giấy",
+          "text": "Mất tờ giấy là, theo mọi nghĩa quan trọng, bạn đã mất hợp đồng bảo hiểm."
+        },
+        "must": {
+          "title": "Người ta mua vì bắt buộc",
+          "text": "Một lần mua để tuân thủ, không có mối quan hệ nào trước hay sau khi bán."
+        },
+        "unaware": {
+          "title": "Ít ai biết mình được bảo hiểm những gì",
+          "text": "Phần lớn chỉ nhận ra khác biệt vào đúng lúc tệ nhất."
+        },
+        "carry": {
+          "title": "Phải mang theo, không thì bị phạt",
+          "text": "Không xuất trình được khi bị dừng xe là bị phạt."
+        },
+        "same": {
+          "title": "Sản phẩm nào cũng như nhau",
+          "text": "Cùng quyền lợi, cùng mức phí theo quy định, trên toàn thị trường."
+        },
+        "claim": {
+          "title": "Bồi thường là một cuộc gọi và chút hy vọng",
+          "text": "Hỗ trợ đi qua tổng đài, và không ai thấy hồ sơ bồi thường đang ở đâu."
+        }
+      },
+      "constraint": {
+        "title": "Một ràng buộc cứng",
+        "text": "Không giảm phí, không hoàn tiền, không ưu đãi giá trá hình. Mục tiêu là trải nghiệm tốt hơn, không phải mua kết quả. Mọi thứ khác đều mở."
+      }
+    },
+    "who": {
+      "title": "Ai được nộp",
+      "lead": "Chấm theo giải pháp, không theo công ty. Một người có bản thử và một công ty phần mềm có sản phẩm đã ra thị trường nộp theo cùng một cách.",
+      "kinds": {
+        "solo": "Cá nhân",
+        "students": "Nhóm sinh viên",
+        "early": "Startup giai đoạn đầu",
+        "late": "Startup giai đoạn sau",
+        "unicorn": "Kỳ lân",
+        "isv": "ISV / công ty phần mềm",
+        "si": "Đơn vị tích hợp hệ thống",
+        "enterprise": "Đội ngũ doanh nghiệp",
+        "agency": "Agency"
+      }
+    },
+    "win": {
+      "title": "Không có giải tiền mặt. Thay vào đó là người mua.",
+      "lead": "Phần lớn các dự án thử nghiệm chết vì một lý do: những người trong phòng không mua được gì. Thử thách này giải quyết phần đó trước tiên.",
+      "cards": {
+        "yes": {
+          "title": "Người chấm bài của bạn có quyền nói có",
+          "text": "Ban lãnh đạo Tasco và những người vận hành mảng bảo hiểm đặt đề bài, ngồi ở demo day và chọn giải pháp đi tiếp. Ngân sách đã được phân bổ."
+        },
+        "partner": {
+          "title": "Một đối tác đã từng làm việc này",
+          "text": "Tháng 9/2026, Tasco dẫn dắt vòng đầu tư vào BonBon, một startup Tasco gặp lần đầu qua chương trình đổi mới của chính mình, cùng GenAI Fund đầu tư."
+        },
+        "investment": {
+          "title": "Đầu tư tới 100.000 USD",
+          "text": "Các đội đi hết giai đoạn thử nghiệm có thể được cân nhắc đầu tư, bên cạnh quan hệ thương mại. Do các đối tác quyết định, sau thẩm định."
+        }
+      }
+    },
+    "directions": {
+      "title": "Các hướng để bắt đầu",
+      "lead": "Tám chỗ trải nghiệm bị đứt gãy, theo thứ tự khách hàng gặp phải. Chọn một, kết hợp vài hướng, hoặc đưa ra lập luận tốt hơn cho hướng của riêng bạn.",
+      "groups": {
+        "buying": {
+          "label": "Mua",
+          "lead": "Có bảo hiểm nên mất vài phút, không phải chờ gọi lại"
+        },
+        "carrying": {
+          "label": "Mang theo",
+          "lead": "Hợp đồng nên có mặt khi cần đến"
+        },
+        "claiming": {
+          "label": "Bồi thường",
+          "lead": "Ngày tệ nhất nên là phần đơn giản nhất"
+        }
+      },
+      "items": {
+        "d1": {
+          "title": "Mua và gia hạn không vướng víu",
+          "text": "Mua, gia hạn và thanh toán không phải xếp hàng, chờ gọi lại hay điền một mẫu đơn hai lần."
+        },
+        "d2": {
+          "title": "Hiểu trước khi mua",
+          "text": "Giải thích quyền lợi bằng lời dễ hiểu, để người mua biết mình nhận được gì."
+        },
+        "d3": {
+          "title": "Đúng quyền lợi cho đúng người",
+          "text": "Dùng dữ liệu đã được đồng ý để may đo bảo vệ cho từng tài xế, không phải một tài xế trung bình."
+        },
+        "d4": {
+          "title": "Chứng nhận trong túi",
+          "text": "Số hoá, xác minh ngay, không thể làm mất hay để quên ở nhà."
+        },
+        "d5": {
+          "title": "Giúp đỡ đến trước",
+          "text": "Nhắc gia hạn và gợi ý hữu ích đến trước khi vấn đề xảy ra."
+        },
+        "d6": {
+          "title": "Câu trả lời đúng lúc cần",
+          "text": "Hỗ trợ qua chat, giọng nói hoặc trong ứng dụng, không phải chờ tổng đài."
+        },
+        "d7": {
+          "title": "Bồi thường có dẫn dắt",
+          "text": "Cho người ta biết được bảo hiểm gì, cần gì, và hồ sơ đang ở đâu."
+        },
+        "d8": {
+          "title": "Giám định nhanh hơn",
+          "text": "Rút ngắn khoảng cách giữa lúc nộp hồ sơ và lúc giải quyết."
+        },
+        "other": {
+          "title": "Một hướng hoàn toàn khác",
+          "text": "Kết hợp các hướng, hoặc mang đến hướng chưa ai nghĩ tới."
+        }
+      }
+    },
+    "timeline": {
+      "title": "Dòng thời gian",
+      "lead": "Ba tuần, sáu mốc cố định. Giai đoạn xây dựng mở cùng ngày với việc nhận đơn."
+    },
+    "submit": {
+      "title": "Cần nộp gì",
+      "lead": "Cụ thể hoá: cho thấy điều gì tốt lên với khách hàng, nó hoạt động thế nào, và bạn cần gì để thử nghiệm thật.",
+      "items": {
+        "framing": {
+          "title": "Đặt vấn đề",
+          "text": "Bạn giúp ai và giải quyết điểm vướng nào."
+        },
+        "prototype": {
+          "title": "Bản thử hoặc thiết kế",
+          "text": "Trải nghiệm đề xuất và cách nó hoạt động. Ưu tiên bản thử chạy được."
+        },
+        "impact": {
+          "title": "Tác động và giả định",
+          "text": "Cải thiện bạn kỳ vọng, và những gì bạn đang giả định."
+        },
+        "needs": {
+          "title": "Nhu cầu triển khai",
+          "text": "Dữ liệu, tích hợp và hỗ trợ cần từ doanh nghiệp."
+        },
+        "responsible": {
+          "title": "Thiết kế có trách nhiệm",
+          "text": "Giả định về truy cập dữ liệu, sự đồng ý và quyền riêng tư, và chỗ nào cần nhân viên rà soát."
+        }
+      },
+      "judgedOn": "Tiêu chí chấm",
+      "criteria": {
+        "impact": "Tác động thực tế",
+        "execution": "Khả năng thực thi",
+        "scale": "Tiềm năng mở rộng",
+        "compliance": "Phù hợp quy định",
+        "feasibility": "Tính khả thi và thời gian tới thử nghiệm",
+        "experience": "Trải nghiệm khách hàng",
+        "sustainability": "Bền vững khi vận hành",
+        "clarity": "Rõ ràng về triển khai"
+      }
+    },
+    "judges": {
+      "title": "Những người chấm bài của bạn",
+      "more": "Giám khảo mới được công bố hằng tuần.",
+      "linkedin": "{name} trên LinkedIn",
+      "roles": {
+        "laura": "CEO và Managing Partner, GenAI Fund",
+        "kai": "Partner, GenAI Fund",
+        "rizwan": "Partner, Positive Moves · Nguyên Executive Director, EY",
+        "david": "Director, AI & Machine Learning, Singtel",
+        "julie": "Startup Lead, ASEAN, Microsoft",
+        "hawkins": "Director, Head of VNGGames Publishing Platform",
+        "manuja": "Head of AI and Data, Manulife"
+      }
+    },
+    "faq": {
+      "title": "Câu hỏi thường gặp",
+      "items": {
+        "startup": {
+          "q": "Tôi có cần là startup không?",
+          "a": "Không. Cá nhân, nhóm sinh viên, startup, ISV, đơn vị tích hợp hệ thống và đội ngũ doanh nghiệp đều nộp được. Bạn được chấm theo giải pháp, không theo công ty đứng sau."
+        },
+        "inMarket": {
+          "q": "Tôi có nộp được sản phẩm đã ra thị trường không?",
+          "a": "Được — và các bài như vậy thường làm tốt, vì bạn cho thấy được thứ chạy được ngay từ ngày đầu. Hãy cho biết cái gì đã có và bạn sẽ xây hay điều chỉnh gì cho Tasco."
+        },
+        "ip": {
+          "q": "Ai sở hữu tài sản trí tuệ của tôi?",
+          "a": "Bạn. Một thoả thuận bảo mật hai chiều được ký trước khi bắt đầu thử nghiệm. Điều khoản thương mại do bạn và Tasco thoả thuận trực tiếp, trước khi bắt đầu làm."
+        },
+        "vietnam": {
+          "q": "Tôi có cần ở Việt Nam hay nói tiếng Việt không?",
+          "a": "Không. Nộp đơn, buổi briefing và demo day diễn ra bằng tiếng Anh, trực tuyến. Nếu vào giai đoạn thử nghiệm, bạn cần người làm việc được với đội Tasco theo giờ Việt Nam."
+        },
+        "hearBack": {
+          "q": "Khi nào tôi nhận được kết quả?",
+          "a": "Hạn nộp là 23:59 ICT ngày 15 tháng 10. Ngày 16 tháng 10, mọi người nộp đơn đều nhận kết quả — vào vòng trong hay không. Mười đội trình bày trực tiếp ngày 22 tháng 10, và phần xác định phạm vi thử nghiệm bắt đầu ngày 23 tháng 10. Không ai phải đoán kết quả qua sự im lặng."
+        }
+      }
+    },
+    "rail": {
+      "readBrief": "Xem tài liệu cho người tham gia",
+      "note": "Bạn không cần sản phẩm hoàn chỉnh để nộp. Bạn cần một góc nhìn và ba tuần.",
+      "host": "Đối tác doanh nghiệp",
+      "hostText": "Tasco kinh doanh bán lẻ ô tô, thu phí VETC, bảo hiểm và cứu hộ trên khắp Việt Nam. GenAI Fund điều hành chương trình và sàng lọc bài nộp.",
+      "tech": "Đối tác công nghệ",
+      "questions": "Có câu hỏi về thử thách này?",
+      "partners": "Đối tác"
+    },
+    "closing": {
+      "title": "Mười đội trình bày trực tiếp ngày 22 tháng 10.",
+      "text": "Hạn nộp là 23:59 ICT ngày 15 tháng 10. Mọi người nhận kết quả vào ngày 16 tháng 10."
     }
   }
 }

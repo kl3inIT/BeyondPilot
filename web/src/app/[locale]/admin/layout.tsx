@@ -1,6 +1,7 @@
 import {
   BoxesIcon,
   Building2Icon,
+  CalendarRangeIcon,
   HouseIcon,
   ScrollTextIcon,
   UserCogIcon,
@@ -38,6 +39,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
   // the change that adds its screen.
   const destinations: AdminNavItem[] = [
     { href: siteRoutes.admin, label: t("nav.home"), icon: <HouseIcon aria-hidden="true" /> },
+    {
+      href: siteRoutes.adminPrograms,
+      label: t("nav.programs"),
+      icon: <CalendarRangeIcon aria-hidden="true" />,
+    },
     {
       href: siteRoutes.adminOrganizations,
       label: t("nav.organizations"),

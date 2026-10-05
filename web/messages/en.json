@@ -282,6 +282,7 @@
     "nav": {
       "label": "Admin navigation",
       "home": "Home",
+      "programs": "Programs",
       "accounts": "Accounts",
       "auditLog": "Audit log",
       "organizations": "Organisations",
@@ -289,6 +290,245 @@
       "talent": "Talent"
     },
     "toggleSidebar": "Toggle sidebar",
+    "programs": {
+      "metaTitle": "Programs · BeyondPilot",
+      "title": "Programs",
+      "lead": "Every program GenAI Fund runs, in any status. Open one to edit its page and its dates, and to publish it.",
+      "columns": {
+        "program": "Program",
+        "status": "Status",
+        "runs": "Runs",
+        "window": "Applications open",
+        "open": "Open"
+      },
+      "state": {
+        "draft": "Draft",
+        "upcoming": "Coming up",
+        "open": "Open",
+        "running": "Running",
+        "done": "Done"
+      },
+      "window": "{opens} – {closes}, {time} ICT",
+      "noApplications": "Applications are not taken here",
+      "count": "{count, plural, one {# program} other {# programs}}",
+      "empty": {
+        "title": "No programs yet",
+        "description": "Create the first one with New program."
+      },
+      "create": {
+        "open": "New program",
+        "title": "New program",
+        "lead": "It starts as a draft that only operators can see.",
+        "name": "Name",
+        "slug": "Address",
+        "slugHint": "{address}. Made from the name; you can change it until the program is first published.",
+        "type": "Type",
+        "cancel": "Cancel",
+        "submit": "Create program",
+        "errors": {
+          "slugTaken": "Another program already has this address."
+        },
+        "typePlaceholder": "Choose a type"
+      },
+      "errors": {
+        "unknown": "That did not work. Try again in a moment."
+      },
+      "settings": {
+        "metaTitle": "Program settings · BeyondPilot",
+        "published": "Published",
+        "unsaved": "You have unsaved changes.",
+        "context": {
+          "published": "Changes show on the program's page as soon as you save.",
+          "draft": "Only operators can see this program until it is published."
+        },
+        "save": "Save changes",
+        "saved": "Saved.",
+        "basics": {
+          "title": "Basics",
+          "what": "What the program is called and where it lives.",
+          "name": "Name",
+          "slug": "Address",
+          "slugHint": "{address}. You can change it until the program is first published.",
+          "slugFixed": "{address}. The address is fixed once the program has been published.",
+          "type": "Type",
+          "partner": "Partner",
+          "startsOn": "Starts",
+          "endsOn": "Ends",
+          "daysHint": "The programs list moves a program to Done after its last day.",
+          "summary": "Summary",
+          "summaryHint": "Shown on the programs list and at the top of the page.",
+          "about": "About",
+          "aboutHint": "The introduction on a standard page. A page made for the program writes its own.",
+          "cover": "Cover image",
+          "coverHint": "Shown on the programs list and at the top of the page."
+        },
+        "page": {
+          "title": "Page",
+          "what": "How the public page of this program is made.",
+          "standard": {
+            "title": "Standard page",
+            "what": "Built from what is entered here: the summary, the About text, the key dates and the events."
+          },
+          "custom": {
+            "title": "A page made for this program",
+            "what": "The team builds the page in code; this program supplies its dates, its events and its application form."
+          },
+          "external": {
+            "title": "A page somewhere else",
+            "what": "The programs list links to an outside address. Applying still happens on BeyondPilot."
+          },
+          "externalUrl": "Address of the page"
+        },
+        "applications": {
+          "title": "Applications",
+          "what": "When applications are taken and how many teams go through.",
+          "takes": "Applications are taken on BeyondPilot",
+          "opens": "Opens",
+          "closes": "Closes",
+          "time": "Time",
+          "ict": "Times are in Vietnam time (ICT). The form closes by itself at the closing time.",
+          "shortlist": "Demo-day places",
+          "outcomes": "Outcomes due",
+          "updates": "Applicants can edit a submitted application until the closing time."
+        },
+        "keyDates": {
+          "title": "Key dates",
+          "what": "The timeline on the program's page, and what an applicant is told happens next.",
+          "opens": "Applications and the build period open",
+          "closes": "Submissions close",
+          "outcomes": "Every applicant hears back",
+          "fromWindow": "From the application window",
+          "locked": "Edited under Applications",
+          "add": "Add a date",
+          "hint": "Times are in Vietnam time (ICT). The locked dates follow the Applications section above."
+        },
+        "events": {
+          "title": "Events",
+          "what": "Sessions of this program that people register for; they also show under Coming up on the programs list.",
+          "online": "Online",
+          "add": "Add an event"
+        },
+        "edit": "Edit",
+        "editNamed": "Edit {name}",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "errors": {
+          "unknown": "The program was not saved. Try again in a moment.",
+          "changedMeanwhile": "Someone else saved this program in the meantime. Reload the page and make your changes again.",
+          "codes": {
+            "PROGRAM_SLUG_TAKEN": "Another program already has this address.",
+            "PROGRAM_SLUG_FIXED": "The address cannot change once the program has been published.",
+            "PROGRAM_DAYS_OUT_OF_ORDER": "The program ends before it starts.",
+            "PROGRAM_WINDOW_OUT_OF_ORDER": "Applications close before they open.",
+            "PROGRAM_OUTCOMES_BEFORE_CLOSE": "Outcomes are due before applications close.",
+            "PROGRAM_EXTERNAL_URL_REQUIRED": "Enter the address of the page somewhere else.",
+            "PROGRAM_COVER_NOT_USABLE": "This image cannot be the cover. Upload it again.",
+            "PROGRAM_KEY_DATE_OUT_OF_ORDER": "A key date ends before it starts.",
+            "PROGRAM_EVENT_OUT_OF_ORDER": "An event ends before it starts."
+          }
+        },
+        "cover": {
+          "alt": "The program's cover",
+          "replace": "Replace",
+          "remove": "Remove",
+          "empty": "Upload a cover image",
+          "uploading": "Uploading…",
+          "limits": "PNG, JPEG or WebP, up to 5 MB.",
+          "errors": {
+            "type": "Use a PNG, JPEG or WebP image.",
+            "size": "The image is larger than 5 MB.",
+            "failed": "The image was not uploaded. Try again."
+          }
+        },
+        "keyDate": {
+          "addTitle": "Add a key date",
+          "editTitle": "Edit key date",
+          "title": "Title",
+          "day": "Date",
+          "from": "From",
+          "to": "To",
+          "allDay": "All day",
+          "note": "Note",
+          "noteHint": "Shown under the date on the program's page.",
+          "add": "Add date",
+          "update": "Update"
+        },
+        "event": {
+          "addTitle": "Add an event",
+          "editTitle": "Edit event",
+          "title": "Title",
+          "startsDay": "Starts",
+          "startsTime": "Time",
+          "endsDay": "Ends",
+          "endsTime": "Time",
+          "where": "Where",
+          "online": "Online",
+          "inPerson": "In person",
+          "city": "City",
+          "country": "Country",
+          "registrationUrl": "Registration link",
+          "registrationUrlHint": "Where people sign up, for example the event's Luma page. The program's page links to it.",
+          "add": "Add event",
+          "update": "Update"
+        },
+        "more": "More actions",
+        "copyLink": "Copy link",
+        "copied": "Link copied.",
+        "publish": {
+          "button": "Publish",
+          "saveAndPublish": "Save and publish",
+          "checklist": {
+            "title": "Before you can publish",
+            "lead": "Publishing puts the program on the programs list. These are still missing:",
+            "issues": {
+              "summary": "Add a summary",
+              "cover": "Add a cover image",
+              "dates": "Set when the program starts and ends"
+            },
+            "ready": "Everything is in place. Publish to save it and put the program on the list.",
+            "done": "Done"
+          },
+          "confirm": {
+            "title": "Publish {name}?",
+            "lead": "It goes on the programs list, and anyone with the link can open its page.",
+            "note": "From now on its address is fixed, so links people share keep working.",
+            "cancel": "Cancel"
+          },
+          "done": "{name} is published.",
+          "notReady": "The program still lacks what the list above names.",
+          "missing": "{count, plural, one {# thing is} other {# things are}} missing before you can publish"
+        },
+        "unpublish": {
+          "menu": "Unpublish…",
+          "title": "Unpublish {name}?",
+          "lead": "It leaves the programs list, and its page answers “not found” until you publish it again.",
+          "note": "Nothing you entered is lost, and the address stays the same.",
+          "confirm": "Unpublish",
+          "done": "{name} is no longer public."
+        },
+        "preview": "Preview",
+        "viewPage": "View page",
+        "notSaved": "Not saved yet",
+        "leave": "Some changes are not saved. Leave this page and lose them?"
+      },
+      "noDays": "Days not set",
+      "search": "Search programs by name",
+      "filters": {
+        "label": "Programs by state",
+        "all": "All",
+        "draft": "Drafts",
+        "open": "Open",
+        "upcoming": "Coming up",
+        "running": "Running",
+        "done": "Done"
+      },
+      "noMatch": {
+        "title": "No programs match",
+        "description": "Try another name, or look at every state.",
+        "clear": "Show all programs"
+      },
+      "countOf": "{count, plural, one {# program} other {# programs}} of {total}"
+    },
     "accounts": {
       "metaTitle": "Accounts · BeyondPilot",
       "title": "Accounts",
@@ -1710,6 +1950,351 @@
       },
       "requiredMark": "· required",
       "headlineHint": "One line on what you do. For example: ML engineer building document AI for banks."
+    }
+  },
+  "Form": {
+    "optional": "Optional",
+    "errors": {
+      "required": "Fill this in.",
+      "tooLong": "Keep it to {max} characters.",
+      "slugFormat": "Use lowercase letters, digits and single hyphens.",
+      "slugLength": "Use 3 to 60 characters.",
+      "invalid": "Check this field.",
+      "endsBeforeStarts": "The end is before the start.",
+      "closesBeforeOpens": "Applications close before they open.",
+      "outcomesBeforeClose": "Outcomes are due before applications close.",
+      "webAddress": "Enter an address that starts with http:// or https://.",
+      "positive": "Enter a whole number above 0."
+    }
+  },
+  "Program": {
+    "type": {
+      "enterprise_challenge": "Enterprise challenge",
+      "open_innovation_call": "Open innovation call",
+      "accelerator": "Accelerator",
+      "hackathon": "Hackathon",
+      "buildathon": "Buildathon",
+      "grant": "Grant",
+      "venture_building": "Venture building",
+      "pitch_competition": "Pitch competition",
+      "event_series": "Event series",
+      "event": "Event"
+    },
+    "countdown": {
+      "closes": "Closes {closes}",
+      "closed": "Applications closed on {closes}",
+      "left": "{days, plural, =0 {Last day} one {# day left} other {# days left}} · closes {closes}"
+    },
+    "page": {
+      "programs": "Programs",
+      "phase": {
+        "open": "Open now",
+        "upcoming": "Coming up",
+        "running": "Running",
+        "done": "Done"
+      },
+      "applyNow": "Apply now",
+      "closesIn": "Applications close",
+      "about": "About",
+      "timeline": "Timeline",
+      "events": "Events",
+      "online": "Online",
+      "register": "Register",
+      "nothingYet": "More about this program is coming soon.",
+      "draft": {
+        "message": "Draft. Only operators can see this page; it is not on the programs list yet.",
+        "back": "Back to settings"
+      },
+      "applyCard": "Applying"
+    },
+    "timeline": {
+      "opens": "Applications open",
+      "closes": "Applications close",
+      "outcomes": "Every applicant hears back"
+    }
+  },
+  "Programs": {
+    "metaTitle": "Programs and events · BeyondPilot",
+    "title": "Programs and events",
+    "lead": "Enterprise challenges, open innovation calls, build weeks and meetups that GenAI Fund runs with its partners across Southeast Asia.",
+    "filters": {
+      "label": "Programs by phase",
+      "all": "All",
+      "open": "Open now",
+      "upcoming": "Coming up",
+      "done": "Done",
+      "type": "Type of program",
+      "allTypes": "All types"
+    },
+    "open": "Open now",
+    "upcoming": "Coming up",
+    "done": "Done",
+    "programCount": "{count, plural, one {# program} other {# programs}}",
+    "itemCount": "{count, plural, one {# event} other {# events}}",
+    "undated": "Earlier",
+    "live": "Open now",
+    "running": "Running",
+    "nextUp": "Coming up next",
+    "applyNow": "Apply now",
+    "readBrief": "See the program",
+    "online": "Online",
+    "register": "Register",
+    "opensOn": "Applications open {date}",
+    "readRecap": "Read the recap",
+    "readPage": "See the program",
+    "empty": {
+      "title": "No programs here yet",
+      "description": "Try another type, or look at every program.",
+      "clear": "Show all programs"
+    }
+  },
+  "Tasco": {
+    "kind": "Enterprise challenge · Insurance · Vietnam",
+    "question": {
+      "label": "The question",
+      "text": "How might we make insurance in Vietnam something people are glad to hold — easy to buy, easy to carry, easy to claim?",
+      "setBy": "Set by Tasco's leadership team, with GenAI Fund"
+    },
+    "stats": {
+      "teams": {
+        "value": "10 teams",
+        "label": "present live at demo day on 22 October"
+      },
+      "investment": {
+        "value": "Up to US$100,000",
+        "label": "investment considered for teams that come through the pilot"
+      },
+      "pilot": {
+        "value": "4 weeks",
+        "label": "of pilot with the business owners who would run it"
+      }
+    },
+    "nav": {
+      "label": "On this page",
+      "challenge": "Overview",
+      "who": "Who can apply",
+      "win": "What you win",
+      "directions": "Directions",
+      "timeline": "Timeline",
+      "submit": "What to submit",
+      "judges": "Judges",
+      "faq": "FAQ"
+    },
+    "challenge": {
+      "title": "The challenge",
+      "lead": "Compulsory motor insurance is something nearly every driver in Vietnam has to carry. It is mandated and priced by regulation, so every provider offers the same cover at the same price — and when a product is regulated into sameness, the experience around it stops improving.",
+      "pains": {
+        "paper": {
+          "title": "It's still paper",
+          "text": "Lose the paper and, in every way that matters, you've lost the policy."
+        },
+        "must": {
+          "title": "People buy it because they must",
+          "text": "A compliance purchase, with no relationship before or after the sale."
+        },
+        "unaware": {
+          "title": "Few know what they're covered for",
+          "text": "Most people find out the difference at the worst possible moment."
+        },
+        "carry": {
+          "title": "You have to carry it, or pay",
+          "text": "If you can't produce it when you're stopped, you're fined."
+        },
+        "same": {
+          "title": "Every product looks the same",
+          "text": "Same cover and the same regulated price, right across the market."
+        },
+        "claim": {
+          "title": "Claiming means a call and some hope",
+          "text": "Support runs through hotlines, and nobody can see where a claim stands."
+        }
+      },
+      "constraint": {
+        "title": "One hard constraint",
+        "text": "No premium discounts, cashback or disguised price incentives. The point is a better experience, not a bought outcome. Everything else is open."
+      }
+    },
+    "who": {
+      "title": "Who can apply",
+      "lead": "Judged on the solution, not the company. One person with a prototype and a software house with a product in market apply the same way.",
+      "kinds": {
+        "solo": "Solo builder",
+        "students": "Student team",
+        "early": "Early-stage startup",
+        "late": "Late-stage startup",
+        "unicorn": "Unicorn",
+        "isv": "ISV / software house",
+        "si": "Systems integrator",
+        "enterprise": "Enterprise team",
+        "agency": "Agency"
+      }
+    },
+    "win": {
+      "title": "No cash prize. A buyer instead.",
+      "lead": "Most pilots die for one reason: the people in the room couldn't buy anything. This challenge fixes that part first.",
+      "cards": {
+        "yes": {
+          "title": "The people reviewing your work can say yes",
+          "text": "Tasco's leadership and the business owners who run its insurance operation set the brief, sit at demo day and choose what moves forward. The budget is allocated."
+        },
+        "partner": {
+          "title": "A partner that has already done this",
+          "text": "In September 2026, Tasco led an investment round into BonBon, a startup it first met through its own innovation programme, with GenAI Fund investing alongside."
+        },
+        "investment": {
+          "title": "Investment of up to US$100,000",
+          "text": "Teams that come through the pilot can be considered for investment, on top of the commercial relationship. Offered at the partners' discretion, after due diligence."
+        }
+      }
+    },
+    "directions": {
+      "title": "Directions to build from",
+      "lead": "Eight places the experience breaks, in the order a customer meets them. Take one, combine several, or make a better case for your own.",
+      "groups": {
+        "buying": {
+          "label": "Buying",
+          "lead": "Getting covered should take minutes, not a call-back"
+        },
+        "carrying": {
+          "label": "Carrying",
+          "lead": "The policy should be there when it's needed"
+        },
+        "claiming": {
+          "label": "Claiming",
+          "lead": "The worst day should be the simplest part"
+        }
+      },
+      "items": {
+        "d1": {
+          "title": "Frictionless purchase and renewal",
+          "text": "Buy, renew and pay without a queue, a call-back, or a form you fill in twice."
+        },
+        "d2": {
+          "title": "Understand before you buy",
+          "text": "Explain cover in plain language, so people know what they're getting."
+        },
+        "d3": {
+          "title": "The right cover for the right person",
+          "text": "Use consented data to fit protection to one driver, not an average one."
+        },
+        "d4": {
+          "title": "Proof in your pocket",
+          "text": "Digital, instantly verifiable, impossible to lose or leave at home."
+        },
+        "d5": {
+          "title": "Help that arrives first",
+          "text": "Renewal reminders and useful prompts that come before the problem does."
+        },
+        "d6": {
+          "title": "Answers at the moment of need",
+          "text": "Support through chat, voice or in-app, without a hotline queue."
+        },
+        "d7": {
+          "title": "Guided claims",
+          "text": "Tell people what's covered, what's needed, and where their claim stands."
+        },
+        "d8": {
+          "title": "Faster assessment",
+          "text": "Close the gap between filing and resolution."
+        },
+        "other": {
+          "title": "Something else entirely",
+          "text": "Combine directions, or bring one nobody has thought of."
+        }
+      }
+    },
+    "timeline": {
+      "title": "Timeline",
+      "lead": "Three weeks, six fixed dates. The build period opens the same day as applications."
+    },
+    "submit": {
+      "title": "What to submit",
+      "lead": "Make it tangible: show what improves for the customer, how it works, and what you'd need to test it for real.",
+      "items": {
+        "framing": {
+          "title": "Problem framing",
+          "text": "Who you're helping and which friction you're solving."
+        },
+        "prototype": {
+          "title": "Prototype or design",
+          "text": "The proposed experience and how it works. A working prototype is preferred."
+        },
+        "impact": {
+          "title": "Impact and assumptions",
+          "text": "The improvement you expect, and what you're assuming."
+        },
+        "needs": {
+          "title": "Implementation needs",
+          "text": "Data, integrations and enterprise support required."
+        },
+        "responsible": {
+          "title": "Responsible design",
+          "text": "Data access, consent and privacy assumptions, and where staff review is needed."
+        }
+      },
+      "judgedOn": "Judged on",
+      "criteria": {
+        "impact": "Practical impact",
+        "execution": "Credible execution",
+        "scale": "Scale potential",
+        "compliance": "Compliance fit",
+        "feasibility": "Feasibility and time to pilot",
+        "experience": "Customer experience",
+        "sustainability": "Operational sustainability",
+        "clarity": "Implementation clarity"
+      }
+    },
+    "judges": {
+      "title": "The people scoring your work",
+      "more": "More judges are announced weekly.",
+      "linkedin": "{name} on LinkedIn",
+      "roles": {
+        "laura": "CEO and Managing Partner, GenAI Fund",
+        "kai": "Partner, GenAI Fund",
+        "rizwan": "Partner, Positive Moves · Ex-Executive Director, EY",
+        "david": "Director, AI & Machine Learning, Singtel",
+        "julie": "Startup Lead, ASEAN, Microsoft",
+        "hawkins": "Director, Head of VNGGames Publishing Platform",
+        "manuja": "Head of AI and Data, Manulife"
+      }
+    },
+    "faq": {
+      "title": "Questions people ask",
+      "items": {
+        "startup": {
+          "q": "Do I need to be a startup?",
+          "a": "No. Solo builders, student teams, startups, ISVs, systems integrators and enterprise teams can all apply. You're judged on the solution, not the company behind it."
+        },
+        "inMarket": {
+          "q": "Can I apply with a product that's already in market?",
+          "a": "Yes — and those submissions often do well, because you can show something working on day one. Tell us what already exists and what you'd build or adapt for Tasco."
+        },
+        "ip": {
+          "q": "Who owns my IP?",
+          "a": "You do. A mutual NDA is signed before any pilot begins. Commercial terms are agreed directly between you and Tasco, before work starts."
+        },
+        "vietnam": {
+          "q": "Do I need to be in Vietnam, or speak Vietnamese?",
+          "a": "No. Applications, the briefing and demo day run in English, virtually. If you reach a pilot, you'll need people who can work with Tasco's team on Vietnam time."
+        },
+        "hearBack": {
+          "q": "When do I hear back?",
+          "a": "Submissions close 15 October at 23:59 ICT. On 16 October every applicant gets an outcome — shortlisted or not. Ten teams present live on 22 October, and pilot scoping starts on 23 October. No one is left waiting to find out by silence."
+        }
+      }
+    },
+    "rail": {
+      "readBrief": "Read the participant brief",
+      "note": "You don't need a finished product to apply. You need a point of view and three weeks.",
+      "host": "Enterprise partner",
+      "hostText": "Tasco runs automotive retail, VETC tolling, insurance and roadside assistance across Vietnam. GenAI Fund runs the programme and screens submissions.",
+      "tech": "Technology partners",
+      "questions": "Questions about this challenge?",
+      "partners": "Partners"
+    },
+    "closing": {
+      "title": "Ten teams present live on 22 October.",
+      "text": "Submissions close 15 October at 23:59 ICT. Everyone hears back on 16 October."
     }
   }
 }

@@ -1,976 +1,958 @@
 {
- "used": [
-  {
-   "file": "cover-aabw-2026.jpg",
-   "used_in": "Programs and events › Done › Agentic AI Build Week 2026 (desktop, tablet, mobile)",
-   "from": "blog-aabw-2026-4.jpg",
-   "source_page_url": "https://genaifund.ai/blog/ (Agentic AI Build Week 2026 recap)",
-   "crop": "8:3 centre band",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-3-4-scaled.jpg",
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29"
-  },
-  {
-   "file": "cover-shinhan-demo-day-2026.jpg",
-   "used_in": "Programs and events › Done › Global Shinhan InnoBoost 2026",
-   "from": "luma-8eg5zmr0.png",
-   "source_page_url": "https://luma.com/8eg5zmr0",
-   "crop": "composed: Shinhan Financial Group logo and the poster's blue horizon; the poster's purple 'AX' lettering left out",
-   "image_url": "https://images.lumacdn.com/uploads/eu/6c198149-3794-494c-8143-3e3cd913d03b.png",
-   "title": "Shinhan Future's Lab Demo Day 2026",
-   "date": "2026-09-17"
-  },
-  {
-   "file": "cover-ai-workforce-shift.jpg",
-   "used_in": "Programs and events › Done › The AI Workforce Shift · Beyond the Pilot; Directory › Programs tab",
-   "from": "luma-gaf-wzwy.png",
-   "source_page_url": "https://luma.com/gaf-wzwy",
-   "crop": "illustration band only; the poster's purple title left out",
-   "image_url": "https://images.lumacdn.com/uploads/7n/35b42116-b69d-4d2a-97a1-1192e875a80e.png",
-   "title": "The AI Workforce Shift — CHRO/HR (Exclusive Workshop 1 of 2)",
-   "date": "2026-09-09"
-  },
-  {
-   "file": "uc-contact-centre.jpg",
-   "used_in": "Directory › Use cases › AI-powered contact centre automation (Banking)",
-   "source_page_url": "https://genaifund.ai/genai-open-innovation-vietnam-2025/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2025/07/SON05517-scaled.jpg",
-   "note": "Session photo from GenAI Open Innovation Vietnam 2025; the use case text comes from the same page."
-  },
-  {
-   "file": "uc-safety-vision.jpg",
-   "used_in": "Directory › Use cases › Vision-based safety surveillance (Real estate & construction)",
-   "source_page_url": "https://genaifund.ai/genai-open-innovation-vietnam-2025/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2025/07/SON05969-scaled.jpg",
-   "note": "Cropped to leave out a whiteboard showing the venue's Wi-Fi password."
-  },
-  {
-   "file": "uc-shelf-monitoring.jpg",
-   "used_in": "Directory › Use cases › Visual shelf monitoring (FMCG)",
-   "source_page_url": "https://genaifund.ai/genai-open-innovation-vietnam-2025/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2025/07/SON05179-scaled.jpg"
-  },
-  {
-   "file": "logo-revve.jpeg",
-   "used_in": "Directory › AI solutions › Revve AI",
-   "source_page_url": "https://genaifund.ai/our-portfolio/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2025/10/revve_ai_logo.jpeg"
-  },
-  {
-   "file": "logo-ourteam.png",
-   "used_in": "Directory › AI solutions › ourteam",
-   "source_page_url": "https://genaifund.ai/our-portfolio/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2025/10/ourteam_ai_logo-1.png"
-  },
-  {
-   "file": "logo-superagent.jpeg",
-   "used_in": "Directory › AI solutions › Superagent",
-   "source_page_url": "https://genaifund.ai/our-portfolio/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2025/10/superagentco_logo.jpeg"
-  },
-  {
-   "file": "talent-aabw-builders.jpg",
-   "used_in": "Directory › AI talent (empty state)",
-   "source_page_url": "https://genaifund.ai/blog/ (Agentic AI Build Week 2026 recap)",
-   "image_url": "blog-aabw-2026-3"
-  }
- ],
- "candidates_blog_photos": [
-  {
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29",
-   "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/D5-1-scaled.jpg",
-   "role": "featured",
-   "file": "blog-agentic-ai-build-week-2026-the-largest-b.jpg",
-   "size": [
-    1600,
-    856
-   ]
-  },
-  {
-   "title": "Recap: GenAI Builders Meetup Melbourne with Prime Value Asset Management (May 19, 2026)",
-   "date": "2026-05-20",
-   "source_page_url": "https://genaifund.ai/2026/05/20/recap-genai-builders-meetup-melbourne-with-prime-value-asset-management-may-19-2026/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/05/GBM-Mel-1-scaled.jpg",
-   "role": "featured",
-   "file": "blog-recap-genai-builders-meetup-melbourne-wi.jpg",
-   "size": [
-    1600,
-    900
-   ]
-  },
-  {
-   "title": "Recap: The Codex Table x OpenAI — Vietnam’s Most Exclusive AI Founders Brunch (May 15, 2026)",
-   "date": "2026-05-17",
-   "source_page_url": "https://genaifund.ai/2026/05/17/recap-the-codex-table-x-openai-vietnam-exclusive-ai-founders-brunch-may-15-2026/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/05/Codex-1-scaled.jpg",
-   "role": "featured",
-   "file": "blog-recap-the-codex-table-x-openai-vietnam-s.jpg",
-   "size": [
-    1600,
-    1200
-   ]
-  },
-  {
-   "title": "Wash3000: A Quick Look at GenAI Fund’s Venture-Building Program with Tasco",
-   "date": "2026-05-04",
-   "source_page_url": "https://genaifund.ai/2026/05/04/wash3000-a-quick-look-at-genai-funds-venture-building-program-with-tasco/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/05/Wash3000-wordpress.png",
-   "role": "featured",
-   "file": "blog-wash3000-a-quick-look-at-genai-fund-s-ve.jpg",
-   "size": [
-    1600,
-    900
-   ]
-  },
-  {
-   "title": "Recap: GenAI Builders Meetup x Qwen x Sunwah Group Vietnam (April 23, 2026)",
-   "date": "2026-04-24",
-   "source_page_url": "https://genaifund.ai/2026/04/24/recap-genai-builders-meetup-x-qwen-x-sunwah-group-vietnam-april-23/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/04/GBM-VN-5-scaled.jpg",
-   "role": "featured",
-   "file": "blog-recap-genai-builders-meetup-x-qwen-x-sun.jpg",
-   "size": [
-    1600,
-    1200
-   ]
-  },
-  {
-   "title": "Alibaba Cloud SME AI Growth Day Vietnam 2026: From AI Demos to Real Adoption",
-   "date": "2026-04-23",
-   "source_page_url": "https://genaifund.ai/2026/04/23/138653/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/05/SME-13-scaled.jpg",
-   "role": "featured",
-   "file": "blog-alibaba-cloud-sme-ai-growth-day-vietnam.jpg",
-   "size": [
-    1600,
-    1067
-   ]
-  },
-  {
-   "title": "Qwen AI Build Day Vietnam: Where Builders Met Enterprise Problems",
-   "date": "2026-04-22",
-   "source_page_url": "https://genaifund.ai/2026/04/22/qwen-ai-build-day-vietnam-where-builders-met-enterprise-problems/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/05/QABD-1.jpeg",
-   "role": "featured",
-   "file": "blog-qwen-ai-build-day-vietnam-where-builders.jpg",
-   "size": [
-    1600,
-    1066
-   ]
-  },
-  {
-   "title": "🚀 Recap: GenAI Builders Meetup x Qwen x Chin Hin Group (April 6th, 2026)",
-   "date": "2026-04-08",
-   "source_page_url": "https://genaifund.ai/2026/04/08/%f0%9f%9a%80-recap-genai-builders-meetup-x-qwen-x-chin-hin-group-april-6th-2026/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/04/MY-1-scaled.jpg",
-   "role": "featured",
-   "file": "blog-recap-genai-builders-meetup-x-qwen-x-ch.jpg",
-   "size": [
-    1600,
-    1200
-   ]
-  },
-  {
-   "title": "LotusHacks 2026: Empowering Vietnam’s Next Generation of AI Builders",
-   "date": "2026-03-23",
-   "source_page_url": "https://genaifund.ai/2026/03/23/lotushacks-2026-empowering-vietnams-next-generation-of-ai-builders/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/03/Blog-7-scaled.jpg",
-   "role": "featured",
-   "file": "blog-lotushacks-2026-empowering-vietnam-s-nex.jpg",
-   "size": [
-    1600,
-    1061
-   ]
-  },
-  {
-   "title": "🚀 Recap: GenAI Builders Meetup x Pharmacity (February 10th, 2026)",
-   "date": "2026-02-11",
-   "source_page_url": "https://genaifund.ai/2026/02/11/%f0%9f%9a%80-recap-genai-builders-meetup-x-pharmacity-february-10th-2026/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/02/photo_2026-02-11_15-34-21.jpg",
-   "role": "featured",
-   "file": "blog-recap-genai-builders-meetup-x-pharmacit.jpg",
-   "size": [
-    1280,
-    960
-   ]
-  },
-  {
-   "title": "Minister Nguyen Manh Hung Meets Vietnam’s AI Startup Community: 4 Key Insights from the Dialogue",
-   "date": "2026-01-29",
-   "source_page_url": "https://genaifund.ai/2026/01/29/insightful-dialogue-with-the-minister/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/01/NAM09547-scaled.jpg",
-   "role": "featured",
-   "file": "blog-minister-nguyen-manh-hung-meets-vietnam.jpg",
-   "size": [
-    1600,
-    1088
-   ]
-  },
-  {
-   "title": "Recap: Tasco Innovation Day 2026 (January 15)",
-   "date": "2026-01-21",
-   "source_page_url": "https://genaifund.ai/2026/01/21/recap-tasco-innovation-day-2026-january-15/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/01/DSC02834-scaled.jpg",
-   "role": "featured",
-   "file": "blog-recap-tasco-innovation-day-2026-january.jpg",
-   "size": [
-    1600,
-    1067
-   ]
-  },
-  {
-   "title": "Recap: GenAI Builders Meetup x Tasco (December 16th)",
-   "date": "2025-12-20",
-   "source_page_url": "https://genaifund.ai/2025/12/20/recap-genai-builders-meetup-x-tasco/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2025/12/img_5437-1.jpg",
-   "role": "featured",
-   "file": "blog-recap-genai-builders-meetup-x-tasco-dece.jpg",
-   "size": [
-    1600,
-    1200
-   ]
-  },
-  {
-   "title": "🚀 GenAI Open Innovation – Indonesia Kickoff: A New Chapter of AI Collaboration",
-   "date": "2025-10-21",
-   "source_page_url": "https://genaifund.ai/2025/10/21/genai-open-innovation-indonesia-kickoff-a-new-chapter-of-ai-collaboration/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2025/10/WhatsApp-Image-2025-10-22-at-13.34.11-1.jpeg",
-   "role": "featured",
-   "file": "blog-genai-open-innovation-indonesia-kickoff.jpg",
-   "size": [
-    1280,
-    720
-   ]
-  },
-  {
-   "title": "NextGen AI Open Innovation Japan Kickoff 2025: Accelerating AI in Japan for Enterprise Collaboration",
-   "date": "2025-09-27",
-   "source_page_url": "https://genaifund.ai/2025/09/27/nextgen-ai-open-innovation-japan-kickoff-2025-accelerating-ai-in-japan-for-enterprise-collaboration/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2025/10/Brandchie-PTS-026-scaled.jpg",
-   "role": "featured",
-   "file": "blog-nextgen-ai-open-innovation-japan-kickoff.jpg",
-   "size": [
-    1600,
-    1067
-   ]
-  },
-  {
-   "title": "Driving Enterprise AI Adoption in Vietnam: GenAI Open Innovation Vietnam 2025 in collaboration with AWS",
-   "date": "2025-07-07",
-   "source_page_url": "https://genaifund.ai/2025/07/07/genai-open-innovation-vietnam-2025/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2025/07/SON05825-min-1-scaled.jpg",
-   "role": "featured",
-   "file": "blog-driving-enterprise-ai-adoption-in-vietna.jpg",
-   "size": [
-    1600,
-    1067
-   ]
-  },
-  {
-   "title": "Recap: GenAI Builders Meetup x NVIDIA (June 23rd)",
-   "date": "2025-06-24",
-   "source_page_url": "https://genaifund.ai/2025/06/24/recap-genai-builders-meetup-x-nvidia-june-23rd/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2025/12/510700639_10161135846607478_181258969740321447_n-1.jpg",
-   "role": "featured",
-   "file": "blog-recap-genai-builders-meetup-x-nvidia-jun.jpg",
-   "size": [
-    1600,
-    1200
-   ]
-  },
-  {
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29",
-   "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/D5-1-scaled.jpg",
-   "role": "inline",
-   "file": "blog-aabw-2026-1.jpg",
-   "size": [
-    1600,
-    856
-   ]
-  },
-  {
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29",
-   "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-1-2-scaled.jpg",
-   "role": "inline",
-   "file": "blog-aabw-2026-2.jpg",
-   "size": [
-    1600,
-    1200
-   ]
-  },
-  {
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29",
-   "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-3-1-scaled.jpg",
-   "role": "inline",
-   "file": "blog-aabw-2026-3.jpg",
-   "size": [
-    1600,
-    1200
-   ]
-  },
-  {
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29",
-   "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-3-4-scaled.jpg",
-   "role": "inline",
-   "file": "blog-aabw-2026-4.jpg",
-   "size": [
-    1600,
-    966
-   ]
-  },
-  {
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29",
-   "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-2-1.jpeg",
-   "role": "inline",
-   "file": "blog-aabw-2026-5.jpg",
-   "size": [
-    1200,
-    1600
-   ]
-  },
-  {
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29",
-   "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-2-2.jpeg",
-   "role": "inline",
-   "file": "blog-aabw-2026-6.jpg",
-   "size": [
-    1200,
-    1600
-   ]
-  },
-  {
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29",
-   "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-2-3.jpeg",
-   "role": "inline",
-   "file": "blog-aabw-2026-7.jpg",
-   "size": [
-    1200,
-    1600
-   ]
-  },
-  {
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29",
-   "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-2-4.png",
-   "role": "inline",
-   "file": "blog-aabw-2026-8.jpg",
-   "size": [
-    1500,
-    1460
-   ]
-  },
-  {
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29",
-   "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/D2-workshop-1-5-scaled.jpeg",
-   "role": "inline",
-   "file": "blog-aabw-2026-9.jpg",
-   "size": [
-    1600,
-    1200
-   ]
-  },
-  {
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29",
-   "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/D2-workshop-1-2.jpeg",
-   "role": "inline",
-   "file": "blog-aabw-2026-10.jpg",
-   "size": [
-    1200,
-    1600
-   ]
-  },
-  {
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29",
-   "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/D2-workshop-2-1-scaled.jpg",
-   "role": "inline",
-   "file": "blog-aabw-2026-11.jpg",
-   "size": [
-    1600,
-    1200
-   ]
-  },
-  {
-   "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
-   "date": "2026-07-29",
-   "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
-   "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/D2-workshop-3-1-scaled.jpg",
-   "role": "inline",
-   "file": "blog-aabw-2026-12.jpg",
-   "size": [
-    1600,
-    1200
-   ]
-  }
- ],
- "candidates_luma_posters": [
-  {
-   "file": "luma-8eg5zmr0.png",
-   "title": "Shinhan Future's Lab Demo Day 2026",
-   "date": "2026-09-17",
-   "source_page_url": "https://luma.com/8eg5zmr0",
-   "image_url": "https://images.lumacdn.com/uploads/eu/6c198149-3794-494c-8143-3e3cd913d03b.png"
-  },
-  {
-   "file": "luma-cnuw2i0u.png",
-   "title": "Beyond the Pilot: Leading the Next Business Shift — CIO/CDTO & CEO/BUSINESS LEADERS (Exclusive Workshop 2 of 2)",
-   "date": "2026-09-10",
-   "source_page_url": "https://luma.com/cnuw2i0u",
-   "image_url": "https://images.lumacdn.com/uploads/46/c7e2b2c7-7103-450b-8d3d-32a4510c5171.png"
-  },
-  {
-   "file": "luma-gaf-wzwy.png",
-   "title": "The AI Workforce Shift — CHRO/HR (Exclusive Workshop 1 of 2)",
-   "date": "2026-09-09",
-   "source_page_url": "https://luma.com/gaf-wzwy",
-   "image_url": "https://images.lumacdn.com/uploads/7n/35b42116-b69d-4d2a-97a1-1192e875a80e.png"
-  },
-  {
-   "file": "luma-8x3aedfy.png",
-   "title": "Setting Up Enterprise-Ready Agent Identities to Qualify For Regulated Workflows — Terminal 3 Workshop @ Agentic AI Build Week",
-   "date": "2026-07-10",
-   "source_page_url": "https://luma.com/8x3aedfy",
-   "image_url": "https://images.lumacdn.com/uploads/gt/30a8dc77-7048-4b33-9c35-81cfba5e0881.png"
-  },
-  {
-   "file": "luma-1g46eunb.png",
-   "title": "Using Agents for Autonomous Internet Payments via EconomyOS — Virtuals Workshop, Agentic AI Build Week",
-   "date": "2026-07-10",
-   "source_page_url": "https://luma.com/1g46eunb",
-   "image_url": "https://images.lumacdn.com/uploads/bc/3b34f7c5-7fa7-444f-8d54-6959c900ef9c.png"
-  },
-  {
-   "file": "luma-7l5r8205.png",
-   "title": "Securing Agentic AI: From AI Security Fundamentals to Hands-on Agent Assessment — Antitech Workshop",
-   "date": "2026-07-10",
-   "source_page_url": "https://luma.com/7l5r8205",
-   "image_url": "https://images.lumacdn.com/uploads/e1/4966aaa3-b03a-400d-bdff-61288c414503.png"
-  },
-  {
-   "file": "luma-gaf-idob.png",
-   "title": "Beyond Autocomplete: How Agentic AI Solves the Enterprise Design Bottleneck — Agentic AI Build Week Workshop",
-   "date": "2026-07-10",
-   "source_page_url": "https://luma.com/gaf-idob",
-   "image_url": "https://images.lumacdn.com/uploads/0h/b028855e-f2c0-4229-baf6-761445acf745.png"
-  },
-  {
-   "file": "luma-8zn9khl4.png",
-   "title": "Enterprise AI Track: LLM Observability & Evals with Langfuse — Hands-On Workshop",
-   "date": "2026-07-10",
-   "source_page_url": "https://luma.com/8zn9khl4",
-   "image_url": "https://images.lumacdn.com/uploads/it/c5bde3e9-654a-439c-855b-f2041567d1b1.png"
-  },
-  {
-   "file": "luma-gaf-umu5.png",
-   "title": "Build, Deploy & Monetize AI Agents: The Future of the Developer Economy — Agentic AI Build Week Workshop",
-   "date": "2026-07-10",
-   "source_page_url": "https://luma.com/gaf-umu5",
-   "image_url": "https://images.lumacdn.com/uploads/jj/288529bd-2fc0-43c1-a25b-32fe1736d278.png"
-  },
-  {
-   "file": "luma-gaf-u7gd.png",
-   "title": "Agentic AI Build Week Builder Night",
-   "date": "2026-07-09",
-   "source_page_url": "https://luma.com/gaf-u7gd",
-   "image_url": "https://images.lumacdn.com/uploads/7i/24039bd4-b859-4b1c-ba5a-6691c1c5b130.png"
-  },
-  {
-   "file": "luma-1nubtbgt.png",
-   "title": "Design Patterns & Best Practices — Testing, Monitoring & Production Readiness",
-   "date": "2026-07-09",
-   "source_page_url": "https://luma.com/1nubtbgt",
-   "image_url": "https://images.lumacdn.com/uploads/y3/1924056c-9643-45c1-bdc0-7938a0f82099.png"
-  },
-  {
-   "file": "luma-5a4h9zsx.png",
-   "title": "Enable Track Live-Demo Workshop",
-   "date": "2026-07-09",
-   "source_page_url": "https://luma.com/5a4h9zsx",
-   "image_url": "https://images.lumacdn.com/uploads/ru/2a23ada4-b175-486d-9eb0-8ca803539f31.png"
-  },
-  {
-   "file": "luma-lptsgwm6.png",
-   "title": "Production Multi-Agent AI on AWS — Bedrock AgentCore",
-   "date": "2026-07-09",
-   "source_page_url": "https://luma.com/lptsgwm6",
-   "image_url": "https://images.lumacdn.com/uploads/oa/3312b157-bd32-4867-abd3-b3c2534adb60.png"
-  },
-  {
-   "file": "luma-3j43oewt.png",
-   "title": "Physical AI Party: Build Voice Agents with Agora ConvoAI — Agentic AI Build Week Workshop",
-   "date": "2026-07-09",
-   "source_page_url": "https://luma.com/3j43oewt",
-   "image_url": "https://images.lumacdn.com/uploads/j4/c292d557-a8c1-4034-980d-e8248756f056.png"
-  },
-  {
-   "file": "luma-1mxdg4em.png",
-   "title": "From Spec to Production Code — Kiro, Claude Code & Codex on AWS",
-   "date": "2026-07-09",
-   "source_page_url": "https://luma.com/1mxdg4em",
-   "image_url": "https://images.lumacdn.com/uploads/83/ee4a876a-6bad-44ca-9f64-083d8191bdec.png"
-  },
-  {
-   "file": "luma-bk5nav4f.png",
-   "title": "OpenClaw Workshop: From Personal Automation to Business Workflows",
-   "date": "2026-07-08",
-   "source_page_url": "https://luma.com/bk5nav4f",
-   "image_url": "https://images.lumacdn.com/uploads/vs/67b304f5-199a-4a72-b729-77666767b175.png"
-  },
-  {
-   "file": "luma-gaf-jpy4.png",
-   "title": "TRAE in Your Professional Workflow — Agentic AI Build Week Workshop",
-   "date": "2026-07-08",
-   "source_page_url": "https://luma.com/gaf-jpy4",
-   "image_url": "https://images.lumacdn.com/uploads/4w/98e547e7-11c0-4a07-b7cd-105069417d75.png"
-  },
-  {
-   "file": "luma-gaf-t4bs.png",
-   "title": "Inside the NVIDIA Inception Program: How Startups Build & Scale AI Globally — Agentic AI Build Week Workshop",
-   "date": "2026-07-08",
-   "source_page_url": "https://luma.com/gaf-t4bs",
-   "image_url": "https://images.lumacdn.com/uploads/mk/6f4a09e8-81c0-4a09-ab81-4e377623a7de.png"
-  },
-  {
-   "file": "luma-gaf-hm61.png",
-   "title": "Agentic AI Build Week powered by GenAI Fund",
-   "date": "2026-07-08",
-   "source_page_url": "https://luma.com/gaf-hm61",
-   "image_url": "https://images.lumacdn.com/uploads/mk/15d6ee9f-92db-4d74-8d2f-eca0e7cff530.png"
-  },
-  {
-   "file": "luma-tanuxv4i.png",
-   "title": "The Full-Stack Advantage: Building Production-Ready AI Agents with Tencent Cloud",
-   "date": "2026-07-08",
-   "source_page_url": "https://luma.com/tanuxv4i",
-   "image_url": "https://images.lumacdn.com/uploads/ip/2f8955b9-8029-4ef5-a78c-4d183017e87a.png"
-  },
-  {
-   "file": "luma-gaf-vbkf.png",
-   "title": "Render the Next Era of Creation with the BytePlus AI Stack — Agentic AI Build Week Workshop",
-   "date": "2026-07-08",
-   "source_page_url": "https://luma.com/gaf-vbkf",
-   "image_url": "https://images.lumacdn.com/uploads/r7/cf59a715-7e51-4fe5-90f4-23683ca3d53a.png"
-  },
-  {
-   "file": "luma-unybskin.png",
-   "title": "Cowork & Showcase for Tech/Growth Builders - BS34",
-   "date": "2026-07-04",
-   "source_page_url": "https://luma.com/unybskin",
-   "image_url": "https://images.lumacdn.com/uploads/3e/a91b58ba-6276-481f-9029-4a3846b0c834.png"
-  },
-  {
-   "file": "luma-oawz935f.png",
-   "title": "Cowork & Showcase for Tech/Growth Builders - BS33",
-   "date": "2026-06-20",
-   "source_page_url": "https://luma.com/oawz935f",
-   "image_url": "https://images.lumacdn.com/uploads/at/5872b947-77df-48f8-baeb-e381bbda5171.png"
-  },
-  {
-   "file": "luma-beyondpilot-tasco-briefing.png",
-   "title": "Stop Guessing What Insurers Need: Tasco Challenge Briefing",
-   "date": "2026-10-07",
-   "source_page_url": "https://luma.com/beyondpilot-tasco-briefing",
-   "image_url": "https://images.lumacdn.com/api-uploads/nt/a6f4b9d3-2597-494c-819e-aa7a029a7151.png"
-  },
-  {
-   "file": "luma-fn3a77zu.png",
-   "title": "GenAI Builders Meetup",
-   "date": "2026-09-15",
-   "source_page_url": "https://luma.com/fn3a77zu",
-   "image_url": "https://images.lumacdn.com/event-covers/tu/33c0b118-b39e-491b-91f1-b59bbb2c63b9.png"
-  },
-  {
-   "file": "luma-t6n0irct.png",
-   "title": "Agentic AI Build Week powered by GenAI Fund",
-   "date": "2026-07-08",
-   "source_page_url": "https://luma.com/t6n0irct",
-   "image_url": "https://images.lumacdn.com/uploads/ke/156ce485-2c2c-4a45-add8-570b691a49db.png"
-  },
-  {
-   "file": "luma-61txcvzn.png",
-   "title": "GenAI Builders Meetup - Melbourne (Australia x Southeast Asia AI collaboration)",
-   "date": "2026-05-19",
-   "source_page_url": "https://luma.com/61txcvzn",
-   "image_url": "https://images.lumacdn.com/uploads/73/ec16f585-56da-426b-b9bd-9cf45d186357.png"
-  },
-  {
-   "file": "luma-83a3szf1.png",
-   "title": "The Codex Table — HCMC, powered by OpenAI and GenAI Fund",
-   "date": "2026-05-15",
-   "source_page_url": "https://luma.com/83a3szf1",
-   "image_url": "https://images.lumacdn.com/uploads/q5/0177c6f4-0f4b-46c6-9965-f61e6bab0686.png"
-  },
-  {
-   "file": "luma-88oaw799.png",
-   "title": "[Exclusive] Office Hours Shinhan Innoboost",
-   "date": "2026-04-29",
-   "source_page_url": "https://luma.com/88oaw799",
-   "image_url": "https://images.lumacdn.com/event-covers/xk/f1030477-924f-4eac-87f5-6af86a52159e.png"
-  },
-  {
-   "file": "luma-0ka5drnk.png",
-   "title": "AI Youth Challenge: Closed Door Pitch",
-   "date": "2026-04-27",
-   "source_page_url": "https://luma.com/0ka5drnk",
-   "image_url": "https://images.lumacdn.com/event-covers/mg/20565978-ffc4-411c-8d1d-7498f99943fe.png"
-  },
-  {
-   "file": "luma-847452pu.png",
-   "title": "GenAI Builders Meetup - Ho Chi Minh (ft. Qwen)",
-   "date": "2026-04-23",
-   "source_page_url": "https://luma.com/847452pu",
-   "image_url": "https://images.lumacdn.com/event-covers/6g/39a7eb17-d5c1-4f38-a268-62f3ba893de7.png"
-  },
-  {
-   "file": "luma-yrtdzhjn.png",
-   "title": "[Sharing Webinar 2.0] Shinhan Global Innoboost 2026",
-   "date": "2026-04-23",
-   "source_page_url": "https://luma.com/yrtdzhjn",
-   "image_url": "https://images.lumacdn.com/event-covers/4p/36f11ffa-1fbc-433e-9ff1-3ce5ea3aebb7.png"
-  },
-  {
-   "file": "luma-eypk2ivy.png",
-   "title": "Alibaba Cloud SME AI Growth Day Vietnam 2026",
-   "date": "2026-04-22",
-   "source_page_url": "https://luma.com/eypk2ivy",
-   "image_url": "https://images.lumacdn.com/event-covers/p1/fdcc96cb-022f-4d33-b5ae-a242c3de0143.png"
-  },
-  {
-   "file": "luma-hg17adt7.png",
-   "title": "Qwen AI Build Day",
-   "date": "2026-04-21",
-   "source_page_url": "https://luma.com/hg17adt7",
-   "image_url": "https://images.lumacdn.com/event-covers/3m/6a14d726-45a3-4a98-91d8-5a9d7685fdaa.png"
-  },
-  {
-   "file": "luma-zu6ubyld.png",
-   "title": "Tasco Foundry: Wash3000 (Pitch To Receive 500K Investment Prize)",
-   "date": "2026-04-16",
-   "source_page_url": "https://luma.com/zu6ubyld",
-   "image_url": "https://images.lumacdn.com/event-covers/u7/66078617-6c08-471c-a736-0e036403e84a.png"
-  },
-  {
-   "file": "luma-4p0vl6lb.png",
-   "title": "[Briefing Webinar] Shinhan Global Innoboost 2026",
-   "date": "2026-04-15",
-   "source_page_url": "https://luma.com/4p0vl6lb",
-   "image_url": "https://images.lumacdn.com/event-covers/0u/1ac9f3f2-f049-4d7f-93f1-602d14c0e5ac.png"
-  },
-  {
-   "file": "luma-xl882h0i.png",
-   "title": "[INVITE-ONLY] Tasco Showcase: Road to Wash3000",
-   "date": "2026-04-09",
-   "source_page_url": "https://luma.com/xl882h0i",
-   "image_url": "https://images.lumacdn.com/event-covers/0z/130642b3-6cc2-43a7-8bfa-b21cb0924a48.png"
-  },
-  {
-   "file": "luma-ca19b6uc.png",
-   "title": "GenAI Builders Meetup - Singapore (ft. HSBC)",
-   "date": "2026-04-08",
-   "source_page_url": "https://luma.com/ca19b6uc",
-   "image_url": "https://images.lumacdn.com/event-covers/l3/59a173fd-8009-41ad-8d54-ecfed7376b3b.png"
-  },
-  {
-   "file": "luma-rlmczylg.png",
-   "title": "GenAI Builders Meetup - Singapore (ft. Qwen)",
-   "date": "2026-04-08",
-   "source_page_url": "https://luma.com/rlmczylg",
-   "image_url": "https://images.lumacdn.com/event-covers/9r/5bcf6615-dc5c-4bdc-ba53-df15cde79cd1.png"
-  },
-  {
-   "file": "luma-lg29gc89.png",
-   "title": "GenAI Builders Meetup - Malaysia (ft. Qwen)",
-   "date": "2026-04-06",
-   "source_page_url": "https://luma.com/lg29gc89",
-   "image_url": "https://images.lumacdn.com/event-covers/jv/757f80c1-2ea7-4237-b8e4-fea30b7d18e0.png"
-  },
-  {
-   "file": "luma-2y7phxis.png",
-   "title": "LotusHacks x HackHarvard x GenAI Fund Vietnam Hackathon",
-   "date": "2026-03-20",
-   "source_page_url": "https://luma.com/2y7phxis",
-   "image_url": "https://images.lumacdn.com/event-covers/hm/02f1c034-aef5-4595-b90f-a942277161da.png"
-  },
-  {
-   "file": "luma-ebnp2dgv.png",
-   "title": "Tasco Foundry 2026: Innovation in Mobility",
-   "date": "2026-03-13",
-   "source_page_url": "https://luma.com/ebnp2dgv",
-   "image_url": "https://images.lumacdn.com/event-covers/ty/de5c43e6-15a4-409e-8947-fe35dc485f4b.png"
-  },
-  {
-   "file": "luma-dyzpd8hh.png",
-   "title": "GenAI Fund Expert Series (Virtual) ft. Qwen",
-   "date": "2026-03-11",
-   "source_page_url": "https://luma.com/dyzpd8hh",
-   "image_url": "https://images.lumacdn.com/event-covers/yp/d0843c06-2590-49ea-b404-a36652b87714.png"
-  },
-  {
-   "file": "luma-holfneup.png",
-   "title": "GenAI Builders Meetup Vietnam – Ho Chi Minh City (in collaboration with Pharmacity)",
-   "date": "2026-02-10",
-   "source_page_url": "https://luma.com/holfneup",
-   "image_url": "https://images.lumacdn.com/event-covers/zt/23f10769-fa44-48ac-a330-ed5a4d0635b2.png"
-  },
-  {
-   "file": "luma-mpg8wiu1.png",
-   "title": "Tasco Innovation Day: Scale Your AI with Vietnam’s Largest Mobility Ecosystem",
-   "date": "2026-01-15",
-   "source_page_url": "https://luma.com/mpg8wiu1",
-   "image_url": "https://images.lumacdn.com/event-covers/l8/de7b3cb4-4871-4515-8963-88b2b7039b26.png"
-  },
-  {
-   "file": "luma-l9ctv395.png",
-   "title": "GenAI Builders Meetup Vietnam – Ho Chi Minh City (in collaboration with Tasco)",
-   "date": "2025-12-16",
-   "source_page_url": "https://luma.com/l9ctv395",
-   "image_url": "https://images.lumacdn.com/event-covers/s7/a1d2445a-3fb4-492a-b32d-d8b5a3ae36c4.png"
-  },
-  {
-   "file": "luma-e3foib2o.png",
-   "title": "GenAI Open Innovation Indonesia Kickoff, in collaboration with Google Cloud",
-   "date": "2025-10-20",
-   "source_page_url": "https://luma.com/e3foib2o",
-   "image_url": "https://images.lumacdn.com/event-covers/qr/0ede1f9c-0000-4976-8f35-710d87eb3aba.png"
-  },
-  {
-   "file": "luma-2zdo39j2.jpg",
-   "title": "GenAI Open Innovation - Malaysia Chapter, in collaboration with AWS",
-   "date": "2025-09-30",
-   "source_page_url": "https://luma.com/2zdo39j2",
-   "image_url": "https://images.lumacdn.com/event-covers/2h/223807d6-e680-4271-85ac-46eea610ac96.jpg"
-  },
-  {
-   "file": "luma-e11kumpo.png",
-   "title": "NextGen AI Open Innovation Japan Kickoff",
-   "date": "2025-09-26",
-   "source_page_url": "https://luma.com/e11kumpo",
-   "image_url": "https://images.lumacdn.com/event-covers/1q/bc1f0f48-6d7a-428a-b2c5-84c07686b1da.png"
-  },
-  {
-   "file": "luma-yzm84b4p.png",
-   "title": "GenAI Open Innovation, in collaboration with AWS",
-   "date": "2025-07-03",
-   "source_page_url": "https://luma.com/yzm84b4p",
-   "image_url": "https://images.lumacdn.com/event-covers/mx/d7fd642f-14b5-4ed9-95f5-4cb676e8d33f.png"
-  },
-  {
-   "file": "luma-untlb2ra.png",
-   "title": "GenAI Builders Meetup Vietnam – Ho Chi Minh City",
-   "date": "2025-06-23",
-   "source_page_url": "https://luma.com/untlb2ra",
-   "image_url": "https://images.lumacdn.com/event-covers/iy/ec722291-230a-42b2-ada2-ede2fe34b938.png"
-  }
- ],
- "network_logos": {
-  "used_in": "The network behind every program (web/public/partners/network/)",
-  "processing": "Rendered 112px tall on transparent in the organisation's own colours. A white ground is lifted off; The Anam's white artwork is redrawn in navy ink; the white lettering of KFC and FPT is cut out so the mark reads in one ink at night.",
-  "logos": [
-   {
-    "file": "tasco.png",
-    "name": "Tasco",
-    "role": "enterprises",
-    "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco"
-   },
-   {
-    "file": "vnggames.png",
-    "name": "VNGGames",
-    "role": "enterprises",
-    "source_page_url": "https://vnggames.com/vi/"
-   },
-   {
-    "file": "fpt.png",
-    "name": "FPT",
-    "role": "enterprises",
-    "source_page_url": "https://fpt.com/en",
-    "image_url": "https://fpt.com/fpt-logo.svg"
-   },
-   {
-    "file": "kfc.png",
-    "name": "KFC Vietnam",
-    "role": "enterprises",
-    "source_page_url": "https://commons.wikimedia.org/wiki/File:Kentucky_Fried_Chicken_201x_logo.svg"
-   },
-   {
-    "file": "gotyme.png",
-    "name": "GoTyme Bank",
-    "role": "enterprises",
-    "source_page_url": "https://www.gotyme.com.ph/"
-   },
-   {
-    "file": "the-anam.png",
-    "name": "The Anam",
-    "role": "enterprises",
-    "source_page_url": "https://theanam.com/",
-    "image_url": "https://theanam.com/wp-content/uploads/2024/10/TheAnam_OfficialLogo_white.webp"
-   },
-   {
-    "file": "aws.png",
-    "name": "AWS",
-    "role": "technology",
-    "source_page_url": "https://commons.wikimedia.org/wiki/File:Amazon_Web_Services_Logo.svg"
-   },
-   {
-    "file": "nvidia.png",
-    "name": "NVIDIA",
-    "role": "technology",
-    "source_page_url": "https://svgl.app/"
-   },
-   {
-    "file": "google-cloud.png",
-    "name": "Google Cloud",
-    "role": "technology",
-    "source_page_url": "https://commons.wikimedia.org/wiki/File:Google_Cloud_logo.svg"
-   },
-   {
-    "file": "microsoft.png",
-    "name": "Microsoft for Startups",
-    "role": "technology",
-    "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco"
-   },
-   {
-    "file": "openai.png",
-    "name": "OpenAI",
-    "role": "technology",
-    "source_page_url": "https://svgl.app/"
-   },
-   {
-    "file": "alibaba-cloud.png",
-    "name": "Alibaba Cloud",
-    "role": "technology",
-    "source_page_url": "https://commons.wikimedia.org/wiki/File:Alibaba-cloud-logo-grey-2-01.png",
-    "image_url": "https://upload.wikimedia.org/wikipedia/commons/4/40/Alibaba-cloud-logo-grey-2-01.png"
-   },
-   {
-    "file": "databricks.png",
-    "name": "Databricks",
-    "role": "technology",
-    "source_page_url": "https://commons.wikimedia.org/wiki/File:Databricks_Logo.png"
-   },
-   {
-    "file": "langfuse.png",
-    "name": "Langfuse",
-    "role": "technology",
-    "source_page_url": "https://langfuse.com/"
-   },
-   {
-    "file": "notion.png",
-    "name": "Notion",
-    "role": "technology",
-    "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco"
-   },
-   {
-    "file": "nic.png",
-    "name": "Vietnam National Innovation Center",
-    "role": "government",
-    "source_page_url": "https://genaifund.ai/"
-   },
-   {
-    "file": "disg.png",
-    "name": "Digital Industry Singapore",
-    "role": "government",
-    "source_page_url": "https://genaifund.ai/"
-   },
-   {
-    "file": "granite-asia.png",
-    "name": "Granite Asia",
-    "role": "investors",
-    "source_page_url": "https://genaifund.ai/"
-   },
-   {
-    "file": "founder-institute.png",
-    "name": "Founder Institute",
-    "role": "investors",
-    "source_page_url": "https://genaifund.ai/"
-   },
-   {
-    "file": "jdi.png",
-    "name": "JDI",
-    "role": "investors",
-    "source_page_url": "https://genaifund.ai/"
-   },
-   {
-    "file": "techinasia.png",
-    "name": "TechInAsia",
-    "role": "press",
-    "source_page_url": "https://genaifund.ai/"
-   },
-   {
-    "file": "e27.png",
-    "name": "e27",
-    "role": "press",
-    "source_page_url": "https://genaifund.ai/"
-   },
-   {
-    "file": "vneconomy.png",
-    "name": "VnEconomy",
-    "role": "press",
-    "source_page_url": "https://genaifund.ai/"
-   }
+  "used": [
+    {
+      "file": "cover-aabw-2026.jpg",
+      "used_in": "Programs and events › Done › Agentic AI Build Week 2026 (desktop, tablet, mobile)",
+      "from": "blog-aabw-2026-4.jpg",
+      "source_page_url": "https://genaifund.ai/blog/ (Agentic AI Build Week 2026 recap)",
+      "crop": "8:3 centre band",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-3-4-scaled.jpg",
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29"
+    },
+    {
+      "file": "cover-shinhan-demo-day-2026.jpg",
+      "used_in": "Programs and events › Done › Global Shinhan InnoBoost 2026",
+      "from": "luma-8eg5zmr0.png",
+      "source_page_url": "https://luma.com/8eg5zmr0",
+      "crop": "composed: Shinhan Financial Group logo and the poster's blue horizon; the poster's purple 'AX' lettering left out",
+      "image_url": "https://images.lumacdn.com/uploads/eu/6c198149-3794-494c-8143-3e3cd913d03b.png",
+      "title": "Shinhan Future's Lab Demo Day 2026",
+      "date": "2026-09-17"
+    },
+    {
+      "file": "cover-ai-workforce-shift.jpg",
+      "used_in": "Programs and events › Done › The AI Workforce Shift · Beyond the Pilot; Directory › Programs tab",
+      "from": "luma-gaf-wzwy.png",
+      "source_page_url": "https://luma.com/gaf-wzwy",
+      "crop": "illustration band only; the poster's purple title left out",
+      "image_url": "https://images.lumacdn.com/uploads/7n/35b42116-b69d-4d2a-97a1-1192e875a80e.png",
+      "title": "The AI Workforce Shift — CHRO/HR (Exclusive Workshop 1 of 2)",
+      "date": "2026-09-09"
+    },
+    {
+      "file": "uc-contact-centre.jpg",
+      "used_in": "Directory › Use cases › AI-powered contact centre automation (Banking)",
+      "source_page_url": "https://genaifund.ai/genai-open-innovation-vietnam-2025/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2025/07/SON05517-scaled.jpg",
+      "note": "Session photo from GenAI Open Innovation Vietnam 2025; the use case text comes from the same page."
+    },
+    {
+      "file": "uc-safety-vision.jpg",
+      "used_in": "Directory › Use cases › Vision-based safety surveillance (Real estate & construction)",
+      "source_page_url": "https://genaifund.ai/genai-open-innovation-vietnam-2025/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2025/07/SON05969-scaled.jpg",
+      "note": "Cropped to leave out a whiteboard showing the venue's Wi-Fi password."
+    },
+    {
+      "file": "uc-shelf-monitoring.jpg",
+      "used_in": "Directory › Use cases › Visual shelf monitoring (FMCG)",
+      "source_page_url": "https://genaifund.ai/genai-open-innovation-vietnam-2025/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2025/07/SON05179-scaled.jpg"
+    },
+    {
+      "file": "logo-revve.jpeg",
+      "used_in": "Directory › AI solutions › Revve AI",
+      "source_page_url": "https://genaifund.ai/our-portfolio/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2025/10/revve_ai_logo.jpeg"
+    },
+    {
+      "file": "logo-ourteam.png",
+      "used_in": "Directory › AI solutions › ourteam",
+      "source_page_url": "https://genaifund.ai/our-portfolio/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2025/10/ourteam_ai_logo-1.png"
+    },
+    {
+      "file": "logo-superagent.jpeg",
+      "used_in": "Directory › AI solutions › Superagent",
+      "source_page_url": "https://genaifund.ai/our-portfolio/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2025/10/superagentco_logo.jpeg"
+    },
+    {
+      "file": "talent-aabw-builders.jpg",
+      "used_in": "Directory › AI talent (empty state)",
+      "source_page_url": "https://genaifund.ai/blog/ (Agentic AI Build Week 2026 recap)",
+      "image_url": "blog-aabw-2026-3"
+    }
   ],
-  "left_out": [
-   {
-    "name": "Shinhan Future's Lab",
-    "why": "no logo file found on its site or on Wikimedia Commons"
-   },
-   {
-    "name": "Guardian",
-    "why": "its site refuses the download"
-   },
-   {
-    "name": "Sovico Group",
-    "why": "its site could not be reached"
-   },
-   {
-    "name": "Vietjet",
-    "why": "Wikimedia Commons has the file but rate-limited every request on 4 October 2026"
-   },
-   {
-    "name": "Tencent Cloud",
-    "why": "no usable logo file found"
-   },
-   {
-    "name": "HackHarvard",
-    "why": "no usable logo file found"
-   },
-   {
-    "name": "Galaxy Holdings",
-    "why": "which company this is could not be confirmed"
-   },
-   {
-    "name": "Phong Vu",
-    "why": "the only file is a dark tile with lettering too small to read"
-   },
-   {
-    "name": "Qwen",
-    "why": "only the mark without its name"
-   },
-   {
-    "name": "Agora",
-    "why": "only the mark without its name"
-   }
+  "candidates_blog_photos": [
+    {
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29",
+      "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/D5-1-scaled.jpg",
+      "role": "featured",
+      "file": "blog-agentic-ai-build-week-2026-the-largest-b.jpg",
+      "size": [1600, 856]
+    },
+    {
+      "title": "Recap: GenAI Builders Meetup Melbourne with Prime Value Asset Management (May 19, 2026)",
+      "date": "2026-05-20",
+      "source_page_url": "https://genaifund.ai/2026/05/20/recap-genai-builders-meetup-melbourne-with-prime-value-asset-management-may-19-2026/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/05/GBM-Mel-1-scaled.jpg",
+      "role": "featured",
+      "file": "blog-recap-genai-builders-meetup-melbourne-wi.jpg",
+      "size": [1600, 900]
+    },
+    {
+      "title": "Recap: The Codex Table x OpenAI — Vietnam’s Most Exclusive AI Founders Brunch (May 15, 2026)",
+      "date": "2026-05-17",
+      "source_page_url": "https://genaifund.ai/2026/05/17/recap-the-codex-table-x-openai-vietnam-exclusive-ai-founders-brunch-may-15-2026/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/05/Codex-1-scaled.jpg",
+      "role": "featured",
+      "file": "blog-recap-the-codex-table-x-openai-vietnam-s.jpg",
+      "size": [1600, 1200]
+    },
+    {
+      "title": "Wash3000: A Quick Look at GenAI Fund’s Venture-Building Program with Tasco",
+      "date": "2026-05-04",
+      "source_page_url": "https://genaifund.ai/2026/05/04/wash3000-a-quick-look-at-genai-funds-venture-building-program-with-tasco/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/05/Wash3000-wordpress.png",
+      "role": "featured",
+      "file": "blog-wash3000-a-quick-look-at-genai-fund-s-ve.jpg",
+      "size": [1600, 900]
+    },
+    {
+      "title": "Recap: GenAI Builders Meetup x Qwen x Sunwah Group Vietnam (April 23, 2026)",
+      "date": "2026-04-24",
+      "source_page_url": "https://genaifund.ai/2026/04/24/recap-genai-builders-meetup-x-qwen-x-sunwah-group-vietnam-april-23/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/04/GBM-VN-5-scaled.jpg",
+      "role": "featured",
+      "file": "blog-recap-genai-builders-meetup-x-qwen-x-sun.jpg",
+      "size": [1600, 1200]
+    },
+    {
+      "title": "Alibaba Cloud SME AI Growth Day Vietnam 2026: From AI Demos to Real Adoption",
+      "date": "2026-04-23",
+      "source_page_url": "https://genaifund.ai/2026/04/23/138653/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/05/SME-13-scaled.jpg",
+      "role": "featured",
+      "file": "blog-alibaba-cloud-sme-ai-growth-day-vietnam.jpg",
+      "size": [1600, 1067]
+    },
+    {
+      "title": "Qwen AI Build Day Vietnam: Where Builders Met Enterprise Problems",
+      "date": "2026-04-22",
+      "source_page_url": "https://genaifund.ai/2026/04/22/qwen-ai-build-day-vietnam-where-builders-met-enterprise-problems/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/05/QABD-1.jpeg",
+      "role": "featured",
+      "file": "blog-qwen-ai-build-day-vietnam-where-builders.jpg",
+      "size": [1600, 1066]
+    },
+    {
+      "title": "🚀 Recap: GenAI Builders Meetup x Qwen x Chin Hin Group (April 6th, 2026)",
+      "date": "2026-04-08",
+      "source_page_url": "https://genaifund.ai/2026/04/08/%f0%9f%9a%80-recap-genai-builders-meetup-x-qwen-x-chin-hin-group-april-6th-2026/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/04/MY-1-scaled.jpg",
+      "role": "featured",
+      "file": "blog-recap-genai-builders-meetup-x-qwen-x-ch.jpg",
+      "size": [1600, 1200]
+    },
+    {
+      "title": "LotusHacks 2026: Empowering Vietnam’s Next Generation of AI Builders",
+      "date": "2026-03-23",
+      "source_page_url": "https://genaifund.ai/2026/03/23/lotushacks-2026-empowering-vietnams-next-generation-of-ai-builders/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/03/Blog-7-scaled.jpg",
+      "role": "featured",
+      "file": "blog-lotushacks-2026-empowering-vietnam-s-nex.jpg",
+      "size": [1600, 1061]
+    },
+    {
+      "title": "🚀 Recap: GenAI Builders Meetup x Pharmacity (February 10th, 2026)",
+      "date": "2026-02-11",
+      "source_page_url": "https://genaifund.ai/2026/02/11/%f0%9f%9a%80-recap-genai-builders-meetup-x-pharmacity-february-10th-2026/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/02/photo_2026-02-11_15-34-21.jpg",
+      "role": "featured",
+      "file": "blog-recap-genai-builders-meetup-x-pharmacit.jpg",
+      "size": [1280, 960]
+    },
+    {
+      "title": "Minister Nguyen Manh Hung Meets Vietnam’s AI Startup Community: 4 Key Insights from the Dialogue",
+      "date": "2026-01-29",
+      "source_page_url": "https://genaifund.ai/2026/01/29/insightful-dialogue-with-the-minister/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/01/NAM09547-scaled.jpg",
+      "role": "featured",
+      "file": "blog-minister-nguyen-manh-hung-meets-vietnam.jpg",
+      "size": [1600, 1088]
+    },
+    {
+      "title": "Recap: Tasco Innovation Day 2026 (January 15)",
+      "date": "2026-01-21",
+      "source_page_url": "https://genaifund.ai/2026/01/21/recap-tasco-innovation-day-2026-january-15/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/01/DSC02834-scaled.jpg",
+      "role": "featured",
+      "file": "blog-recap-tasco-innovation-day-2026-january.jpg",
+      "size": [1600, 1067]
+    },
+    {
+      "title": "Recap: GenAI Builders Meetup x Tasco (December 16th)",
+      "date": "2025-12-20",
+      "source_page_url": "https://genaifund.ai/2025/12/20/recap-genai-builders-meetup-x-tasco/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2025/12/img_5437-1.jpg",
+      "role": "featured",
+      "file": "blog-recap-genai-builders-meetup-x-tasco-dece.jpg",
+      "size": [1600, 1200]
+    },
+    {
+      "title": "🚀 GenAI Open Innovation – Indonesia Kickoff: A New Chapter of AI Collaboration",
+      "date": "2025-10-21",
+      "source_page_url": "https://genaifund.ai/2025/10/21/genai-open-innovation-indonesia-kickoff-a-new-chapter-of-ai-collaboration/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2025/10/WhatsApp-Image-2025-10-22-at-13.34.11-1.jpeg",
+      "role": "featured",
+      "file": "blog-genai-open-innovation-indonesia-kickoff.jpg",
+      "size": [1280, 720]
+    },
+    {
+      "title": "NextGen AI Open Innovation Japan Kickoff 2025: Accelerating AI in Japan for Enterprise Collaboration",
+      "date": "2025-09-27",
+      "source_page_url": "https://genaifund.ai/2025/09/27/nextgen-ai-open-innovation-japan-kickoff-2025-accelerating-ai-in-japan-for-enterprise-collaboration/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2025/10/Brandchie-PTS-026-scaled.jpg",
+      "role": "featured",
+      "file": "blog-nextgen-ai-open-innovation-japan-kickoff.jpg",
+      "size": [1600, 1067]
+    },
+    {
+      "title": "Driving Enterprise AI Adoption in Vietnam: GenAI Open Innovation Vietnam 2025 in collaboration with AWS",
+      "date": "2025-07-07",
+      "source_page_url": "https://genaifund.ai/2025/07/07/genai-open-innovation-vietnam-2025/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2025/07/SON05825-min-1-scaled.jpg",
+      "role": "featured",
+      "file": "blog-driving-enterprise-ai-adoption-in-vietna.jpg",
+      "size": [1600, 1067]
+    },
+    {
+      "title": "Recap: GenAI Builders Meetup x NVIDIA (June 23rd)",
+      "date": "2025-06-24",
+      "source_page_url": "https://genaifund.ai/2025/06/24/recap-genai-builders-meetup-x-nvidia-june-23rd/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2025/12/510700639_10161135846607478_181258969740321447_n-1.jpg",
+      "role": "featured",
+      "file": "blog-recap-genai-builders-meetup-x-nvidia-jun.jpg",
+      "size": [1600, 1200]
+    },
+    {
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29",
+      "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/D5-1-scaled.jpg",
+      "role": "inline",
+      "file": "blog-aabw-2026-1.jpg",
+      "size": [1600, 856]
+    },
+    {
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29",
+      "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-1-2-scaled.jpg",
+      "role": "inline",
+      "file": "blog-aabw-2026-2.jpg",
+      "size": [1600, 1200]
+    },
+    {
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29",
+      "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-3-1-scaled.jpg",
+      "role": "inline",
+      "file": "blog-aabw-2026-3.jpg",
+      "size": [1600, 1200]
+    },
+    {
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29",
+      "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-3-4-scaled.jpg",
+      "role": "inline",
+      "file": "blog-aabw-2026-4.jpg",
+      "size": [1600, 966]
+    },
+    {
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29",
+      "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-2-1.jpeg",
+      "role": "inline",
+      "file": "blog-aabw-2026-5.jpg",
+      "size": [1200, 1600]
+    },
+    {
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29",
+      "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-2-2.jpeg",
+      "role": "inline",
+      "file": "blog-aabw-2026-6.jpg",
+      "size": [1200, 1600]
+    },
+    {
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29",
+      "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-2-3.jpeg",
+      "role": "inline",
+      "file": "blog-aabw-2026-7.jpg",
+      "size": [1200, 1600]
+    },
+    {
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29",
+      "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/workshop-2-4.png",
+      "role": "inline",
+      "file": "blog-aabw-2026-8.jpg",
+      "size": [1500, 1460]
+    },
+    {
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29",
+      "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/D2-workshop-1-5-scaled.jpeg",
+      "role": "inline",
+      "file": "blog-aabw-2026-9.jpg",
+      "size": [1600, 1200]
+    },
+    {
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29",
+      "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/D2-workshop-1-2.jpeg",
+      "role": "inline",
+      "file": "blog-aabw-2026-10.jpg",
+      "size": [1200, 1600]
+    },
+    {
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29",
+      "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/D2-workshop-2-1-scaled.jpg",
+      "role": "inline",
+      "file": "blog-aabw-2026-11.jpg",
+      "size": [1600, 1200]
+    },
+    {
+      "title": "Agentic AI Build Week 2026: The Largest Buildathon ASEAN Has Ever Seen",
+      "date": "2026-07-29",
+      "source_page_url": "https://genaifund.ai/2026/07/29/agentic-ai-build-week-2026-the-largest-buildathon-asean-has-ever-seen/",
+      "image_url": "https://genaifund.ai/wp-content/uploads/2026/07/D2-workshop-3-1-scaled.jpg",
+      "role": "inline",
+      "file": "blog-aabw-2026-12.jpg",
+      "size": [1600, 1200]
+    }
+  ],
+  "candidates_luma_posters": [
+    {
+      "file": "luma-8eg5zmr0.png",
+      "title": "Shinhan Future's Lab Demo Day 2026",
+      "date": "2026-09-17",
+      "source_page_url": "https://luma.com/8eg5zmr0",
+      "image_url": "https://images.lumacdn.com/uploads/eu/6c198149-3794-494c-8143-3e3cd913d03b.png"
+    },
+    {
+      "file": "luma-cnuw2i0u.png",
+      "title": "Beyond the Pilot: Leading the Next Business Shift — CIO/CDTO & CEO/BUSINESS LEADERS (Exclusive Workshop 2 of 2)",
+      "date": "2026-09-10",
+      "source_page_url": "https://luma.com/cnuw2i0u",
+      "image_url": "https://images.lumacdn.com/uploads/46/c7e2b2c7-7103-450b-8d3d-32a4510c5171.png"
+    },
+    {
+      "file": "luma-gaf-wzwy.png",
+      "title": "The AI Workforce Shift — CHRO/HR (Exclusive Workshop 1 of 2)",
+      "date": "2026-09-09",
+      "source_page_url": "https://luma.com/gaf-wzwy",
+      "image_url": "https://images.lumacdn.com/uploads/7n/35b42116-b69d-4d2a-97a1-1192e875a80e.png"
+    },
+    {
+      "file": "luma-8x3aedfy.png",
+      "title": "Setting Up Enterprise-Ready Agent Identities to Qualify For Regulated Workflows — Terminal 3 Workshop @ Agentic AI Build Week",
+      "date": "2026-07-10",
+      "source_page_url": "https://luma.com/8x3aedfy",
+      "image_url": "https://images.lumacdn.com/uploads/gt/30a8dc77-7048-4b33-9c35-81cfba5e0881.png"
+    },
+    {
+      "file": "luma-1g46eunb.png",
+      "title": "Using Agents for Autonomous Internet Payments via EconomyOS — Virtuals Workshop, Agentic AI Build Week",
+      "date": "2026-07-10",
+      "source_page_url": "https://luma.com/1g46eunb",
+      "image_url": "https://images.lumacdn.com/uploads/bc/3b34f7c5-7fa7-444f-8d54-6959c900ef9c.png"
+    },
+    {
+      "file": "luma-7l5r8205.png",
+      "title": "Securing Agentic AI: From AI Security Fundamentals to Hands-on Agent Assessment — Antitech Workshop",
+      "date": "2026-07-10",
+      "source_page_url": "https://luma.com/7l5r8205",
+      "image_url": "https://images.lumacdn.com/uploads/e1/4966aaa3-b03a-400d-bdff-61288c414503.png"
+    },
+    {
+      "file": "luma-gaf-idob.png",
+      "title": "Beyond Autocomplete: How Agentic AI Solves the Enterprise Design Bottleneck — Agentic AI Build Week Workshop",
+      "date": "2026-07-10",
+      "source_page_url": "https://luma.com/gaf-idob",
+      "image_url": "https://images.lumacdn.com/uploads/0h/b028855e-f2c0-4229-baf6-761445acf745.png"
+    },
+    {
+      "file": "luma-8zn9khl4.png",
+      "title": "Enterprise AI Track: LLM Observability & Evals with Langfuse — Hands-On Workshop",
+      "date": "2026-07-10",
+      "source_page_url": "https://luma.com/8zn9khl4",
+      "image_url": "https://images.lumacdn.com/uploads/it/c5bde3e9-654a-439c-855b-f2041567d1b1.png"
+    },
+    {
+      "file": "luma-gaf-umu5.png",
+      "title": "Build, Deploy & Monetize AI Agents: The Future of the Developer Economy — Agentic AI Build Week Workshop",
+      "date": "2026-07-10",
+      "source_page_url": "https://luma.com/gaf-umu5",
+      "image_url": "https://images.lumacdn.com/uploads/jj/288529bd-2fc0-43c1-a25b-32fe1736d278.png"
+    },
+    {
+      "file": "luma-gaf-u7gd.png",
+      "title": "Agentic AI Build Week Builder Night",
+      "date": "2026-07-09",
+      "source_page_url": "https://luma.com/gaf-u7gd",
+      "image_url": "https://images.lumacdn.com/uploads/7i/24039bd4-b859-4b1c-ba5a-6691c1c5b130.png"
+    },
+    {
+      "file": "luma-1nubtbgt.png",
+      "title": "Design Patterns & Best Practices — Testing, Monitoring & Production Readiness",
+      "date": "2026-07-09",
+      "source_page_url": "https://luma.com/1nubtbgt",
+      "image_url": "https://images.lumacdn.com/uploads/y3/1924056c-9643-45c1-bdc0-7938a0f82099.png"
+    },
+    {
+      "file": "luma-5a4h9zsx.png",
+      "title": "Enable Track Live-Demo Workshop",
+      "date": "2026-07-09",
+      "source_page_url": "https://luma.com/5a4h9zsx",
+      "image_url": "https://images.lumacdn.com/uploads/ru/2a23ada4-b175-486d-9eb0-8ca803539f31.png"
+    },
+    {
+      "file": "luma-lptsgwm6.png",
+      "title": "Production Multi-Agent AI on AWS — Bedrock AgentCore",
+      "date": "2026-07-09",
+      "source_page_url": "https://luma.com/lptsgwm6",
+      "image_url": "https://images.lumacdn.com/uploads/oa/3312b157-bd32-4867-abd3-b3c2534adb60.png"
+    },
+    {
+      "file": "luma-3j43oewt.png",
+      "title": "Physical AI Party: Build Voice Agents with Agora ConvoAI — Agentic AI Build Week Workshop",
+      "date": "2026-07-09",
+      "source_page_url": "https://luma.com/3j43oewt",
+      "image_url": "https://images.lumacdn.com/uploads/j4/c292d557-a8c1-4034-980d-e8248756f056.png"
+    },
+    {
+      "file": "luma-1mxdg4em.png",
+      "title": "From Spec to Production Code — Kiro, Claude Code & Codex on AWS",
+      "date": "2026-07-09",
+      "source_page_url": "https://luma.com/1mxdg4em",
+      "image_url": "https://images.lumacdn.com/uploads/83/ee4a876a-6bad-44ca-9f64-083d8191bdec.png"
+    },
+    {
+      "file": "luma-bk5nav4f.png",
+      "title": "OpenClaw Workshop: From Personal Automation to Business Workflows",
+      "date": "2026-07-08",
+      "source_page_url": "https://luma.com/bk5nav4f",
+      "image_url": "https://images.lumacdn.com/uploads/vs/67b304f5-199a-4a72-b729-77666767b175.png"
+    },
+    {
+      "file": "luma-gaf-jpy4.png",
+      "title": "TRAE in Your Professional Workflow — Agentic AI Build Week Workshop",
+      "date": "2026-07-08",
+      "source_page_url": "https://luma.com/gaf-jpy4",
+      "image_url": "https://images.lumacdn.com/uploads/4w/98e547e7-11c0-4a07-b7cd-105069417d75.png"
+    },
+    {
+      "file": "luma-gaf-t4bs.png",
+      "title": "Inside the NVIDIA Inception Program: How Startups Build & Scale AI Globally — Agentic AI Build Week Workshop",
+      "date": "2026-07-08",
+      "source_page_url": "https://luma.com/gaf-t4bs",
+      "image_url": "https://images.lumacdn.com/uploads/mk/6f4a09e8-81c0-4a09-ab81-4e377623a7de.png"
+    },
+    {
+      "file": "luma-gaf-hm61.png",
+      "title": "Agentic AI Build Week powered by GenAI Fund",
+      "date": "2026-07-08",
+      "source_page_url": "https://luma.com/gaf-hm61",
+      "image_url": "https://images.lumacdn.com/uploads/mk/15d6ee9f-92db-4d74-8d2f-eca0e7cff530.png"
+    },
+    {
+      "file": "luma-tanuxv4i.png",
+      "title": "The Full-Stack Advantage: Building Production-Ready AI Agents with Tencent Cloud",
+      "date": "2026-07-08",
+      "source_page_url": "https://luma.com/tanuxv4i",
+      "image_url": "https://images.lumacdn.com/uploads/ip/2f8955b9-8029-4ef5-a78c-4d183017e87a.png"
+    },
+    {
+      "file": "luma-gaf-vbkf.png",
+      "title": "Render the Next Era of Creation with the BytePlus AI Stack — Agentic AI Build Week Workshop",
+      "date": "2026-07-08",
+      "source_page_url": "https://luma.com/gaf-vbkf",
+      "image_url": "https://images.lumacdn.com/uploads/r7/cf59a715-7e51-4fe5-90f4-23683ca3d53a.png"
+    },
+    {
+      "file": "luma-unybskin.png",
+      "title": "Cowork & Showcase for Tech/Growth Builders - BS34",
+      "date": "2026-07-04",
+      "source_page_url": "https://luma.com/unybskin",
+      "image_url": "https://images.lumacdn.com/uploads/3e/a91b58ba-6276-481f-9029-4a3846b0c834.png"
+    },
+    {
+      "file": "luma-oawz935f.png",
+      "title": "Cowork & Showcase for Tech/Growth Builders - BS33",
+      "date": "2026-06-20",
+      "source_page_url": "https://luma.com/oawz935f",
+      "image_url": "https://images.lumacdn.com/uploads/at/5872b947-77df-48f8-baeb-e381bbda5171.png"
+    },
+    {
+      "file": "luma-beyondpilot-tasco-briefing.png",
+      "title": "Stop Guessing What Insurers Need: Tasco Challenge Briefing",
+      "date": "2026-10-07",
+      "source_page_url": "https://luma.com/beyondpilot-tasco-briefing",
+      "image_url": "https://images.lumacdn.com/api-uploads/nt/a6f4b9d3-2597-494c-819e-aa7a029a7151.png"
+    },
+    {
+      "file": "luma-fn3a77zu.png",
+      "title": "GenAI Builders Meetup",
+      "date": "2026-09-15",
+      "source_page_url": "https://luma.com/fn3a77zu",
+      "image_url": "https://images.lumacdn.com/event-covers/tu/33c0b118-b39e-491b-91f1-b59bbb2c63b9.png"
+    },
+    {
+      "file": "luma-t6n0irct.png",
+      "title": "Agentic AI Build Week powered by GenAI Fund",
+      "date": "2026-07-08",
+      "source_page_url": "https://luma.com/t6n0irct",
+      "image_url": "https://images.lumacdn.com/uploads/ke/156ce485-2c2c-4a45-add8-570b691a49db.png"
+    },
+    {
+      "file": "luma-61txcvzn.png",
+      "title": "GenAI Builders Meetup - Melbourne (Australia x Southeast Asia AI collaboration)",
+      "date": "2026-05-19",
+      "source_page_url": "https://luma.com/61txcvzn",
+      "image_url": "https://images.lumacdn.com/uploads/73/ec16f585-56da-426b-b9bd-9cf45d186357.png"
+    },
+    {
+      "file": "luma-83a3szf1.png",
+      "title": "The Codex Table — HCMC, powered by OpenAI and GenAI Fund",
+      "date": "2026-05-15",
+      "source_page_url": "https://luma.com/83a3szf1",
+      "image_url": "https://images.lumacdn.com/uploads/q5/0177c6f4-0f4b-46c6-9965-f61e6bab0686.png"
+    },
+    {
+      "file": "luma-88oaw799.png",
+      "title": "[Exclusive] Office Hours Shinhan Innoboost",
+      "date": "2026-04-29",
+      "source_page_url": "https://luma.com/88oaw799",
+      "image_url": "https://images.lumacdn.com/event-covers/xk/f1030477-924f-4eac-87f5-6af86a52159e.png"
+    },
+    {
+      "file": "luma-0ka5drnk.png",
+      "title": "AI Youth Challenge: Closed Door Pitch",
+      "date": "2026-04-27",
+      "source_page_url": "https://luma.com/0ka5drnk",
+      "image_url": "https://images.lumacdn.com/event-covers/mg/20565978-ffc4-411c-8d1d-7498f99943fe.png"
+    },
+    {
+      "file": "luma-847452pu.png",
+      "title": "GenAI Builders Meetup - Ho Chi Minh (ft. Qwen)",
+      "date": "2026-04-23",
+      "source_page_url": "https://luma.com/847452pu",
+      "image_url": "https://images.lumacdn.com/event-covers/6g/39a7eb17-d5c1-4f38-a268-62f3ba893de7.png"
+    },
+    {
+      "file": "luma-yrtdzhjn.png",
+      "title": "[Sharing Webinar 2.0] Shinhan Global Innoboost 2026",
+      "date": "2026-04-23",
+      "source_page_url": "https://luma.com/yrtdzhjn",
+      "image_url": "https://images.lumacdn.com/event-covers/4p/36f11ffa-1fbc-433e-9ff1-3ce5ea3aebb7.png"
+    },
+    {
+      "file": "luma-eypk2ivy.png",
+      "title": "Alibaba Cloud SME AI Growth Day Vietnam 2026",
+      "date": "2026-04-22",
+      "source_page_url": "https://luma.com/eypk2ivy",
+      "image_url": "https://images.lumacdn.com/event-covers/p1/fdcc96cb-022f-4d33-b5ae-a242c3de0143.png"
+    },
+    {
+      "file": "luma-hg17adt7.png",
+      "title": "Qwen AI Build Day",
+      "date": "2026-04-21",
+      "source_page_url": "https://luma.com/hg17adt7",
+      "image_url": "https://images.lumacdn.com/event-covers/3m/6a14d726-45a3-4a98-91d8-5a9d7685fdaa.png"
+    },
+    {
+      "file": "luma-zu6ubyld.png",
+      "title": "Tasco Foundry: Wash3000 (Pitch To Receive 500K Investment Prize)",
+      "date": "2026-04-16",
+      "source_page_url": "https://luma.com/zu6ubyld",
+      "image_url": "https://images.lumacdn.com/event-covers/u7/66078617-6c08-471c-a736-0e036403e84a.png"
+    },
+    {
+      "file": "luma-4p0vl6lb.png",
+      "title": "[Briefing Webinar] Shinhan Global Innoboost 2026",
+      "date": "2026-04-15",
+      "source_page_url": "https://luma.com/4p0vl6lb",
+      "image_url": "https://images.lumacdn.com/event-covers/0u/1ac9f3f2-f049-4d7f-93f1-602d14c0e5ac.png"
+    },
+    {
+      "file": "luma-xl882h0i.png",
+      "title": "[INVITE-ONLY] Tasco Showcase: Road to Wash3000",
+      "date": "2026-04-09",
+      "source_page_url": "https://luma.com/xl882h0i",
+      "image_url": "https://images.lumacdn.com/event-covers/0z/130642b3-6cc2-43a7-8bfa-b21cb0924a48.png"
+    },
+    {
+      "file": "luma-ca19b6uc.png",
+      "title": "GenAI Builders Meetup - Singapore (ft. HSBC)",
+      "date": "2026-04-08",
+      "source_page_url": "https://luma.com/ca19b6uc",
+      "image_url": "https://images.lumacdn.com/event-covers/l3/59a173fd-8009-41ad-8d54-ecfed7376b3b.png"
+    },
+    {
+      "file": "luma-rlmczylg.png",
+      "title": "GenAI Builders Meetup - Singapore (ft. Qwen)",
+      "date": "2026-04-08",
+      "source_page_url": "https://luma.com/rlmczylg",
+      "image_url": "https://images.lumacdn.com/event-covers/9r/5bcf6615-dc5c-4bdc-ba53-df15cde79cd1.png"
+    },
+    {
+      "file": "luma-lg29gc89.png",
+      "title": "GenAI Builders Meetup - Malaysia (ft. Qwen)",
+      "date": "2026-04-06",
+      "source_page_url": "https://luma.com/lg29gc89",
+      "image_url": "https://images.lumacdn.com/event-covers/jv/757f80c1-2ea7-4237-b8e4-fea30b7d18e0.png"
+    },
+    {
+      "file": "luma-2y7phxis.png",
+      "title": "LotusHacks x HackHarvard x GenAI Fund Vietnam Hackathon",
+      "date": "2026-03-20",
+      "source_page_url": "https://luma.com/2y7phxis",
+      "image_url": "https://images.lumacdn.com/event-covers/hm/02f1c034-aef5-4595-b90f-a942277161da.png"
+    },
+    {
+      "file": "luma-ebnp2dgv.png",
+      "title": "Tasco Foundry 2026: Innovation in Mobility",
+      "date": "2026-03-13",
+      "source_page_url": "https://luma.com/ebnp2dgv",
+      "image_url": "https://images.lumacdn.com/event-covers/ty/de5c43e6-15a4-409e-8947-fe35dc485f4b.png"
+    },
+    {
+      "file": "luma-dyzpd8hh.png",
+      "title": "GenAI Fund Expert Series (Virtual) ft. Qwen",
+      "date": "2026-03-11",
+      "source_page_url": "https://luma.com/dyzpd8hh",
+      "image_url": "https://images.lumacdn.com/event-covers/yp/d0843c06-2590-49ea-b404-a36652b87714.png"
+    },
+    {
+      "file": "luma-holfneup.png",
+      "title": "GenAI Builders Meetup Vietnam – Ho Chi Minh City (in collaboration with Pharmacity)",
+      "date": "2026-02-10",
+      "source_page_url": "https://luma.com/holfneup",
+      "image_url": "https://images.lumacdn.com/event-covers/zt/23f10769-fa44-48ac-a330-ed5a4d0635b2.png"
+    },
+    {
+      "file": "luma-mpg8wiu1.png",
+      "title": "Tasco Innovation Day: Scale Your AI with Vietnam’s Largest Mobility Ecosystem",
+      "date": "2026-01-15",
+      "source_page_url": "https://luma.com/mpg8wiu1",
+      "image_url": "https://images.lumacdn.com/event-covers/l8/de7b3cb4-4871-4515-8963-88b2b7039b26.png"
+    },
+    {
+      "file": "luma-l9ctv395.png",
+      "title": "GenAI Builders Meetup Vietnam – Ho Chi Minh City (in collaboration with Tasco)",
+      "date": "2025-12-16",
+      "source_page_url": "https://luma.com/l9ctv395",
+      "image_url": "https://images.lumacdn.com/event-covers/s7/a1d2445a-3fb4-492a-b32d-d8b5a3ae36c4.png"
+    },
+    {
+      "file": "luma-e3foib2o.png",
+      "title": "GenAI Open Innovation Indonesia Kickoff, in collaboration with Google Cloud",
+      "date": "2025-10-20",
+      "source_page_url": "https://luma.com/e3foib2o",
+      "image_url": "https://images.lumacdn.com/event-covers/qr/0ede1f9c-0000-4976-8f35-710d87eb3aba.png"
+    },
+    {
+      "file": "luma-2zdo39j2.jpg",
+      "title": "GenAI Open Innovation - Malaysia Chapter, in collaboration with AWS",
+      "date": "2025-09-30",
+      "source_page_url": "https://luma.com/2zdo39j2",
+      "image_url": "https://images.lumacdn.com/event-covers/2h/223807d6-e680-4271-85ac-46eea610ac96.jpg"
+    },
+    {
+      "file": "luma-e11kumpo.png",
+      "title": "NextGen AI Open Innovation Japan Kickoff",
+      "date": "2025-09-26",
+      "source_page_url": "https://luma.com/e11kumpo",
+      "image_url": "https://images.lumacdn.com/event-covers/1q/bc1f0f48-6d7a-428a-b2c5-84c07686b1da.png"
+    },
+    {
+      "file": "luma-yzm84b4p.png",
+      "title": "GenAI Open Innovation, in collaboration with AWS",
+      "date": "2025-07-03",
+      "source_page_url": "https://luma.com/yzm84b4p",
+      "image_url": "https://images.lumacdn.com/event-covers/mx/d7fd642f-14b5-4ed9-95f5-4cb676e8d33f.png"
+    },
+    {
+      "file": "luma-untlb2ra.png",
+      "title": "GenAI Builders Meetup Vietnam – Ho Chi Minh City",
+      "date": "2025-06-23",
+      "source_page_url": "https://luma.com/untlb2ra",
+      "image_url": "https://images.lumacdn.com/event-covers/iy/ec722291-230a-42b2-ada2-ede2fe34b938.png"
+    }
+  ],
+  "network_logos": {
+    "used_in": "The network behind every program (web/public/partners/network/)",
+    "processing": "Rendered 112px tall on transparent in the organisation's own colours. A white ground is lifted off; The Anam's white artwork is redrawn in navy ink; the white lettering of KFC and FPT is cut out so the mark reads in one ink at night.",
+    "logos": [
+      {
+        "file": "tasco.png",
+        "name": "Tasco",
+        "role": "enterprises",
+        "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco"
+      },
+      {
+        "file": "vnggames.png",
+        "name": "VNGGames",
+        "role": "enterprises",
+        "source_page_url": "https://vnggames.com/vi/"
+      },
+      {
+        "file": "fpt.png",
+        "name": "FPT",
+        "role": "enterprises",
+        "source_page_url": "https://fpt.com/en",
+        "image_url": "https://fpt.com/fpt-logo.svg"
+      },
+      {
+        "file": "kfc.png",
+        "name": "KFC Vietnam",
+        "role": "enterprises",
+        "source_page_url": "https://commons.wikimedia.org/wiki/File:Kentucky_Fried_Chicken_201x_logo.svg"
+      },
+      {
+        "file": "gotyme.png",
+        "name": "GoTyme Bank",
+        "role": "enterprises",
+        "source_page_url": "https://www.gotyme.com.ph/"
+      },
+      {
+        "file": "the-anam.png",
+        "name": "The Anam",
+        "role": "enterprises",
+        "source_page_url": "https://theanam.com/",
+        "image_url": "https://theanam.com/wp-content/uploads/2024/10/TheAnam_OfficialLogo_white.webp"
+      },
+      {
+        "file": "aws.png",
+        "name": "AWS",
+        "role": "technology",
+        "source_page_url": "https://commons.wikimedia.org/wiki/File:Amazon_Web_Services_Logo.svg"
+      },
+      {
+        "file": "nvidia.png",
+        "name": "NVIDIA",
+        "role": "technology",
+        "source_page_url": "https://svgl.app/"
+      },
+      {
+        "file": "google-cloud.png",
+        "name": "Google Cloud",
+        "role": "technology",
+        "source_page_url": "https://commons.wikimedia.org/wiki/File:Google_Cloud_logo.svg"
+      },
+      {
+        "file": "microsoft.png",
+        "name": "Microsoft for Startups",
+        "role": "technology",
+        "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco"
+      },
+      {
+        "file": "openai.png",
+        "name": "OpenAI",
+        "role": "technology",
+        "source_page_url": "https://svgl.app/"
+      },
+      {
+        "file": "alibaba-cloud.png",
+        "name": "Alibaba Cloud",
+        "role": "technology",
+        "source_page_url": "https://commons.wikimedia.org/wiki/File:Alibaba-cloud-logo-grey-2-01.png",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/4/40/Alibaba-cloud-logo-grey-2-01.png"
+      },
+      {
+        "file": "databricks.png",
+        "name": "Databricks",
+        "role": "technology",
+        "source_page_url": "https://commons.wikimedia.org/wiki/File:Databricks_Logo.png"
+      },
+      {
+        "file": "langfuse.png",
+        "name": "Langfuse",
+        "role": "technology",
+        "source_page_url": "https://langfuse.com/"
+      },
+      {
+        "file": "notion.png",
+        "name": "Notion",
+        "role": "technology",
+        "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco"
+      },
+      {
+        "file": "nic.png",
+        "name": "Vietnam National Innovation Center",
+        "role": "government",
+        "source_page_url": "https://genaifund.ai/"
+      },
+      {
+        "file": "disg.png",
+        "name": "Digital Industry Singapore",
+        "role": "government",
+        "source_page_url": "https://genaifund.ai/"
+      },
+      {
+        "file": "granite-asia.png",
+        "name": "Granite Asia",
+        "role": "investors",
+        "source_page_url": "https://genaifund.ai/"
+      },
+      {
+        "file": "founder-institute.png",
+        "name": "Founder Institute",
+        "role": "investors",
+        "source_page_url": "https://genaifund.ai/"
+      },
+      {
+        "file": "jdi.png",
+        "name": "JDI",
+        "role": "investors",
+        "source_page_url": "https://genaifund.ai/"
+      },
+      {
+        "file": "techinasia.png",
+        "name": "TechInAsia",
+        "role": "press",
+        "source_page_url": "https://genaifund.ai/"
+      },
+      {
+        "file": "e27.png",
+        "name": "e27",
+        "role": "press",
+        "source_page_url": "https://genaifund.ai/"
+      },
+      {
+        "file": "vneconomy.png",
+        "name": "VnEconomy",
+        "role": "press",
+        "source_page_url": "https://genaifund.ai/"
+      }
+    ],
+    "left_out": [
+      {
+        "name": "Shinhan Future's Lab",
+        "why": "no logo file found on its site or on Wikimedia Commons"
+      },
+      {
+        "name": "Guardian",
+        "why": "its site refuses the download"
+      },
+      {
+        "name": "Sovico Group",
+        "why": "its site could not be reached"
+      },
+      {
+        "name": "Vietjet",
+        "why": "Wikimedia Commons has the file but rate-limited every request on 4 October 2026"
+      },
+      {
+        "name": "Tencent Cloud",
+        "why": "no usable logo file found"
+      },
+      {
+        "name": "HackHarvard",
+        "why": "no usable logo file found"
+      },
+      {
+        "name": "Galaxy Holdings",
+        "why": "which company this is could not be confirmed"
+      },
+      {
+        "name": "Phong Vu",
+        "why": "the only file is a dark tile with lettering too small to read"
+      },
+      {
+        "name": "Qwen",
+        "why": "only the mark without its name"
+      },
+      {
+        "name": "Agora",
+        "why": "only the mark without its name"
+      }
+    ]
+  },
+  "tasco_challenge": [
+    {
+      "file": "programs/tasco/judges/laura-nguyen.jpg",
+      "used_in": "AI for Insurance Challenge × Tasco page · Judges · Laura Nguyen",
+      "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco (The people scoring your work)",
+      "from": "the approved Figma program page (87:9138), which took it from the live campaign page",
+      "note": "Resized to at most 400 px where larger"
+    },
+    {
+      "file": "programs/tasco/judges/kai-yong.jpg",
+      "used_in": "AI for Insurance Challenge × Tasco page · Judges · Kai Yong",
+      "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco (The people scoring your work)",
+      "from": "the approved Figma program page (87:9138), which took it from the live campaign page",
+      "note": "Resized to at most 400 px where larger"
+    },
+    {
+      "file": "programs/tasco/judges/rizwan-hazarika.jpg",
+      "used_in": "AI for Insurance Challenge × Tasco page · Judges · Rizwan Hazarika",
+      "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco (The people scoring your work)",
+      "from": "the approved Figma program page (87:9138), which took it from the live campaign page",
+      "note": "Resized to at most 400 px where larger"
+    },
+    {
+      "file": "programs/tasco/judges/david-low.jpg",
+      "used_in": "AI for Insurance Challenge × Tasco page · Judges · David Low",
+      "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco (The people scoring your work)",
+      "from": "the approved Figma program page (87:9138), which took it from the live campaign page",
+      "note": "Resized to at most 400 px where larger"
+    },
+    {
+      "file": "programs/tasco/judges/julie-bulaklak.jpg",
+      "used_in": "AI for Insurance Challenge × Tasco page · Judges · Julie Bulaklak",
+      "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco (The people scoring your work)",
+      "from": "the approved Figma program page (87:9138), which took it from the live campaign page",
+      "note": "Resized to at most 400 px where larger"
+    },
+    {
+      "file": "programs/tasco/judges/hawkins-pham.jpg",
+      "used_in": "AI for Insurance Challenge × Tasco page · Judges · Hawkins Pham",
+      "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco (The people scoring your work)",
+      "from": "the approved Figma program page (87:9138), which took it from the live campaign page",
+      "note": "Resized to at most 400 px where larger"
+    },
+    {
+      "file": "programs/tasco/judges/manuja-kasthuriarachchi.jpg",
+      "used_in": "AI for Insurance Challenge × Tasco page · Judges · Don Manuja Kasthuriarachchi",
+      "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco (The people scoring your work)",
+      "from": "the approved Figma program page (87:9138), which took it from the live campaign page",
+      "note": "Resized to at most 400 px where larger"
+    },
+    {
+      "file": "programs/tasco/tasco.png",
+      "used_in": "AI for Insurance Challenge × Tasco page · Enterprise partner",
+      "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco",
+      "from": "the approved Figma program page (87:9138)"
+    },
+    {
+      "file": "programs/tasco/microsoft-for-startups.png",
+      "used_in": "AI for Insurance Challenge × Tasco page · Technology partners",
+      "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco",
+      "from": "the approved Figma program page (87:9138)"
+    },
+    {
+      "file": "programs/tasco/notion.png",
+      "used_in": "AI for Insurance Challenge × Tasco page · Technology partners",
+      "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco",
+      "from": "the approved Figma program page (87:9138)"
+    }
   ]
- }
 }

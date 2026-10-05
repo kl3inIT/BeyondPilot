@@ -119,6 +119,180 @@ const events = [
   requestId: null,
 }));
 
+/** The programs an operator edits: a draft that lacks what publishing needs, and a published one. */
+const programs = {
+  "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c01": {
+    id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c01",
+    slug: "genai-monthly-meetup",
+    slugFixed: false,
+    publishIssues: ["summary", "cover", "dates"],
+    name: "GenAI Monthly Meetup",
+    type: "event_series",
+    partnerName: null,
+    summary: null,
+    about: null,
+    startsOn: null,
+    endsOn: null,
+    status: "draft",
+    pageKind: "standard",
+    externalUrl: null,
+    coverFileId: null,
+    keyDates: [],
+    events: [],
+    version: 0,
+    createdAt: "2026-10-05T03:00:00Z",
+    updatedAt: "2026-10-05T03:00:00Z",
+  },
+  "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c02": {
+    id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c02",
+    slug: "insurance-ai-tasco",
+    slugFixed: true,
+    publishIssues: [],
+    name: "AI for Insurance Challenge × Tasco",
+    type: "enterprise_challenge",
+    partnerName: "Tasco",
+    summary:
+      "In Vietnam, insurance is still a piece of paper you can lose. Change that by 15 October.",
+    about: null,
+    startsOn: "2026-09-23",
+    endsOn: "2026-12-05",
+    status: "published",
+    pageKind: "custom",
+    externalUrl: null,
+    coverFileId: "4c0d5f9e-2b1a-4e3c-8d7f-6a5b4c3d2e01",
+    applications: {
+      opensAt: "2026-09-22T17:00:00Z",
+      closesAt: "2026-10-15T16:59:00Z",
+      shortlistSize: 10,
+      outcomesDueOn: "2026-10-16",
+      allowUpdatesUntilClose: true,
+    },
+    keyDates: [
+      {
+        title: "Briefing with Tasco's business team",
+        startsAt: "2026-10-07T08:30:00Z",
+        endsAt: "2026-10-07T10:00:00Z",
+        allDay: false,
+        note: "Online",
+      },
+    ],
+    events: [],
+    version: 4,
+    createdAt: "2026-09-20T03:00:00Z",
+    updatedAt: "2026-10-04T03:00:00Z",
+  },
+};
+
+const day = 24 * hour;
+const inDays = (days) => new Date(Date.now() + days * day).toISOString();
+
+/** The published programs and a draft, as visitors read them; dates count from the stub's start. */
+const publicPrograms = {
+  "insurance-ai-tasco": {
+    id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c02",
+    slug: "insurance-ai-tasco",
+    name: "AI for Insurance Challenge × Tasco",
+    type: "enterprise_challenge",
+    partnerName: "Tasco",
+    summary:
+      "In Vietnam, insurance is still a piece of paper you can lose. Change that by 15 October.",
+    about: null,
+    coverFileId: null,
+    phase: "open",
+    status: "published",
+    startsOn: "2026-09-23",
+    endsOn: "2026-12-05",
+    pageKind: "custom",
+    externalUrl: null,
+    applications: {
+      opensAt: inDays(-12),
+      closesAt: inDays(10),
+      shortlistSize: 10,
+      outcomesDueOn: inDays(11).slice(0, 10),
+      allowUpdatesUntilClose: true,
+    },
+    keyDates: [
+      {
+        title: "Demo day: ten teams present live",
+        startsAt: inDays(17),
+        endsAt: inDays(17.1),
+        allDay: false,
+        note: "Virtual",
+      },
+    ],
+    events: [
+      {
+        title: "Stop Guessing What Insurers Need: Tasco Challenge Briefing",
+        startsAt: inDays(2),
+        endsAt: null,
+        online: true,
+        city: null,
+        country: null,
+        registrationUrl: "https://luma.com/tasco-briefing",
+      },
+    ],
+  },
+  "genai-builders-hanoi": {
+    id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c03",
+    slug: "genai-builders-hanoi",
+    name: "GenAI Builders Hanoi",
+    type: "event_series",
+    partnerName: null,
+    summary: "Builders meet once a month to show what they shipped.",
+    about: [
+      "Every month, builders in Hanoi show what they shipped and what broke.",
+      "Bring a demo.",
+    ].join("\n\n"),
+    coverFileId: null,
+    phase: "upcoming",
+    status: "published",
+    startsOn: inDays(30).slice(0, 10),
+    endsOn: inDays(30).slice(0, 10),
+    pageKind: "standard",
+    externalUrl: null,
+    keyDates: [
+      { title: "Doors open", startsAt: inDays(30), endsAt: null, allDay: false, note: null },
+    ],
+    events: [],
+  },
+  "agentic-ai-build-week-2026": {
+    id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c04",
+    slug: "agentic-ai-build-week-2026",
+    name: "Agentic AI Build Week 2026",
+    type: "buildathon",
+    partnerName: null,
+    summary: "3,230 builders, five days.",
+    about: null,
+    coverFileId: null,
+    phase: "done",
+    status: "published",
+    startsOn: "2026-07-08",
+    endsOn: "2026-07-12",
+    pageKind: "external",
+    externalUrl: "https://genaifund.ai/blog/",
+    keyDates: [],
+    events: [],
+  },
+  "genai-monthly-meetup": {
+    id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c01",
+    slug: "genai-monthly-meetup",
+    name: "GenAI Monthly Meetup",
+    type: "event_series",
+    partnerName: null,
+    summary: null,
+    about: null,
+    coverFileId: null,
+    phase: "upcoming",
+    status: "draft",
+    startsOn: null,
+    endsOn: null,
+    pageKind: "standard",
+    externalUrl: null,
+    keyDates: [],
+    events: [],
+  },
+};
+
 function json(response, status, body) {
   response.writeHead(status, { "Content-Type": "application/json" });
   response.end(JSON.stringify(body));
@@ -196,6 +370,60 @@ createServer((request, response) => {
     answerDirectory(url);
   if (record) {
     return json(response, ...record);
+  }
+  if (url.pathname === "/api/program/programs") {
+    const items = Object.values(publicPrograms)
+      .filter((program) => program.status === "published")
+      .map((program) => ({
+        slug: program.slug,
+        name: program.name,
+        type: program.type,
+        partnerName: program.partnerName,
+        summary: program.summary,
+        coverFileId: program.coverFileId,
+        phase: program.phase,
+        startsOn: program.startsOn,
+        endsOn: program.endsOn,
+        pageKind: program.pageKind,
+        externalUrl: program.externalUrl,
+        applications: program.applications,
+        upcomingEvents: program.events.filter(
+          (event) => event.startsAt >= new Date().toISOString(),
+        ),
+      }));
+    return json(response, 200, { items });
+  }
+  if (url.pathname.startsWith("/api/program/programs/")) {
+    const program = publicPrograms[url.pathname.split("/")[4]];
+    // A draft is read by an operator only, as the backend answers it.
+    if (!program || (program.status === "draft" && account?.role !== "operator")) {
+      return json(response, 404, { status: 404, code: "PROGRAM_NOT_FOUND" });
+    }
+    return json(response, 200, program);
+  }
+  if (url.pathname.startsWith("/api/program/admin/programs")) {
+    if (account?.role !== "operator") {
+      return json(response, account ? 403 : 401, {});
+    }
+    const id = url.pathname.split("/")[5];
+    if (id) {
+      return programs[id] ? json(response, 200, programs[id]) : json(response, 404, {});
+    }
+    return json(response, 200, {
+      items: Object.values(programs).map((program) => ({
+        id: program.id,
+        slug: program.slug,
+        name: program.name,
+        type: program.type,
+        partnerName: program.partnerName,
+        status: program.status,
+        phase: program.status === "draft" ? "upcoming" : "open",
+        applications: program.applications,
+        startsOn: program.startsOn,
+        endsOn: program.endsOn,
+        updatedAt: program.updatedAt,
+      })),
+    });
   }
   response.writeHead(url.pathname === "/health" ? 200 : 404).end();
 }).listen(Number(process.env.STUB_BACKEND_PORT));

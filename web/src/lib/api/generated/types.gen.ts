@@ -202,10 +202,22 @@ export type AdminProgramList = {
  * One program in the operators' list.
  */
 export type AdminProgramSummary = {
+    /**
+     * Null for a program that takes no applications here.
+     */
+    applications?: ProgramApplications;
+    /**
+     * The cover, read at the public address of stored files.
+     */
+    coverFileId?: string | null;
     endsOn?: string | null;
     id: string;
     name: string;
     partnerName?: string | null;
+    /**
+     * Where the program would stand now, worked out from its dates; a draft is shown as a draft whatever its phase.
+     */
+    phase: 'upcoming' | 'open' | 'running' | 'done';
     slug: string;
     startsOn?: string | null;
     status: 'draft' | 'published';
@@ -716,6 +728,10 @@ export type Program = {
      */
     events: Array<ProgramEvent>;
     externalUrl?: string | null;
+    /**
+     * Leads an operator who previews a draft back to its Settings.
+     */
+    id: string;
     /**
      * In the order the operator gave.
      */
