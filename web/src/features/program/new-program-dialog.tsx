@@ -43,13 +43,14 @@ function NewProgramDialog({ locale }: { locale: string }) {
     defaultValues: {
       name: "",
       slug: "",
-      type: "enterprise_challenge" as (typeof programTypes)[number],
+      type: "",
     },
     validationLogic: revalidateLogic(),
     validators: { onDynamic: createProgramSchema(say) },
     onSubmit: async ({ value, formApi }) => {
       try {
-        const { data } = await createProgram({ body: value });
+        // The form is valid here, so its type is one of the program types.
+        const { data } = await createProgram({ body: createProgramSchema(say).parse(value) });
         setOpen(false);
         router.push(getPathname({ href: adminProgramRoute(data.id), locale }));
       } catch (error) {
@@ -129,6 +130,7 @@ function NewProgramDialog({ locale }: { locale: string }) {
               {(field) => (
                 <field.SelectField
                   label={t("type")}
+                  placeholder={t("typePlaceholder")}
                   options={programTypes.map((value) => ({ value, label: types(value) }))}
                 />
               )}

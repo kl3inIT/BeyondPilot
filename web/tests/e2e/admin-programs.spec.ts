@@ -66,7 +66,7 @@ test.describe("admin programs", () => {
     ).toBeVisible();
     // Times are written in Vietnam whatever the zone of the browser.
     await expect(
-      page.getByText("Sep 23 – Oct 15, 2026, 23:59 ICT").and(page.locator(":visible")),
+      page.getByText("23 Sept – 15 Oct 2026, 23:59 ICT").and(page.locator(":visible")),
     ).toBeVisible();
     await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
     await expectNoSeriousA11yViolations(page);
@@ -112,6 +112,12 @@ test.describe("admin programs", () => {
       "genai-monthly-meetup-ha-noi",
     );
     await expectNoSeriousA11yViolations(page);
+    // The type is chosen, never assumed.
+    await page.getByRole("button", { name: "Create program" }).click();
+    await expect(page.getByRole("dialog").getByText("Fill this in.")).toBeVisible();
+    expect(created).toEqual([]);
+    await page.getByRole("dialog").getByRole("combobox", { name: "Type" }).click();
+    await page.getByRole("option", { name: "Event series" }).click();
     await page.getByRole("button", { name: "Create program" }).click();
 
     await expect(page).toHaveURL(`/admin/programs/${draft}/settings`);
@@ -119,7 +125,7 @@ test.describe("admin programs", () => {
       {
         name: "GenAI Monthly Meetup · Hà Nội",
         slug: "genai-monthly-meetup-ha-noi",
-        type: "enterprise_challenge",
+        type: "event_series",
       },
     ]);
   });
@@ -137,6 +143,8 @@ test.describe("admin programs", () => {
       .getByRole("dialog")
       .getByRole("textbox", { name: "Name" })
       .fill("AI for Insurance Challenge");
+    await page.getByRole("dialog").getByRole("combobox", { name: "Type" }).click();
+    await page.getByRole("option", { name: "Enterprise challenge" }).click();
     await page.getByRole("button", { name: "Create program" }).click();
 
     await expect(page.getByText("Another program already has this address.")).toBeVisible();
@@ -161,6 +169,9 @@ test.describe("admin programs", () => {
     await expect(page.getByRole("textbox", { name: "Summary" })).toBeFocused();
     await page.keyboard.type("Builders meet once a month in Hanoi.");
     await expect(page.getByText("You have unsaved changes.")).toBeVisible();
+    // The list follows the form: the summary is ticked before it is saved.
+    await expect(page.getByRole("link", { name: "Add a summary" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Add a cover image" })).toBeVisible();
     await expect(shown(page, "Save and publish")).toBeEnabled();
   });
 
@@ -204,7 +215,13 @@ test.describe("admin programs", () => {
     await dialog.getByLabel("Date", { exact: true }).fill("2026-11-02");
     await dialog.getByLabel("From", { exact: true }).fill("18:30");
     await expectNoSeriousA11yViolations(page);
-    await dialog.getByRole("button", { name: "Save" }).click();
+    await dialog.getByRole("button", { name: "Add date" }).click();
+    await expect(page.getByText("Demo night")).toBeVisible();
+    // Until Settings is saved, the date is marked, and leaving the page asks first.
+    await expect(page.getByText("Not saved yet")).toBeVisible();
+    page.once("dialog", (question) => void question.dismiss());
+    await page.getByRole("link", { name: "Preview" }).click();
+    await expect(page).toHaveURL(`/admin/programs/${draft}/settings`);
     await expect(page.getByText("Demo night")).toBeVisible();
     await expect(page.getByText("Submissions close")).toBeVisible();
 

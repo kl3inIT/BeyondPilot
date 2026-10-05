@@ -99,7 +99,11 @@ function KeyDateDialog({ value, onSave, onDelete, onClose }: DialogProps<KeyDate
             )}
           </form.AppField>
           <form.AppForm>
-            <ScheduleFooter onDelete={onDelete} onClose={onClose} />
+            <ScheduleFooter
+              submit={value ? t("update") : t("add")}
+              onDelete={onDelete}
+              onClose={onClose}
+            />
           </form.AppForm>
         </form>
       </DialogContent>
@@ -209,7 +213,11 @@ function EventDialog({ value, onSave, onDelete, onClose }: DialogProps<EventValu
             )}
           </form.AppField>
           <form.AppForm>
-            <ScheduleFooter onDelete={onDelete} onClose={onClose} />
+            <ScheduleFooter
+              submit={value ? t("update") : t("add")}
+              onDelete={onDelete}
+              onClose={onClose}
+            />
           </form.AppForm>
         </form>
       </DialogContent>
@@ -217,7 +225,19 @@ function EventDialog({ value, onSave, onDelete, onClose }: DialogProps<EventValu
   );
 }
 
-function ScheduleFooter({ onDelete, onClose }: { onDelete?: () => void; onClose: () => void }) {
+/**
+ * Delete, Cancel, and Add or Update: the entry joins the list on the page, and is stored only when
+ * Settings is saved, so the button does not say Save.
+ */
+function ScheduleFooter({
+  submit,
+  onDelete,
+  onClose,
+}: {
+  submit: string;
+  onDelete?: () => void;
+  onClose: () => void;
+}) {
   const t = useTranslations("Admin.programs.settings");
   return (
     <DialogFooter className="sm:justify-between">
@@ -233,7 +253,7 @@ function ScheduleFooter({ onDelete, onClose }: { onDelete?: () => void; onClose:
         <Button prominence="secondary" onClick={onClose}>
           {t("cancel")}
         </Button>
-        <Button type="submit">{t("done")}</Button>
+        <Button type="submit">{submit}</Button>
       </div>
     </DialogFooter>
   );

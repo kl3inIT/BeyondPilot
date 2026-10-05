@@ -322,7 +322,8 @@
         "submit": "Create program",
         "errors": {
           "slugTaken": "Another program already has this address."
-        }
+        },
+        "typePlaceholder": "Choose a type"
       },
       "errors": {
         "unknown": "That did not work. Try again in a moment."
@@ -337,8 +338,6 @@
         },
         "save": "Save changes",
         "saved": "Saved.",
-        "tabs": "Program",
-        "tab": "Settings",
         "basics": {
           "title": "Basics",
           "what": "What the program is called and where it lives.",
@@ -408,7 +407,6 @@
         "editNamed": "Edit {name}",
         "delete": "Delete",
         "cancel": "Cancel",
-        "done": "Save",
         "errors": {
           "unknown": "The program was not saved. Try again in a moment.",
           "changedMeanwhile": "Someone else saved this program in the meantime. Reload the page and make your changes again.",
@@ -446,7 +444,9 @@
           "to": "To",
           "allDay": "All day",
           "note": "Note",
-          "noteHint": "Shown under the date on the program's page."
+          "noteHint": "Shown under the date on the program's page.",
+          "add": "Add date",
+          "update": "Update"
         },
         "event": {
           "addTitle": "Add an event",
@@ -462,7 +462,9 @@
           "city": "City",
           "country": "Country",
           "registrationUrl": "Registration link",
-          "registrationUrlHint": "Where people sign up, for example the event's Luma page. The program's page links to it."
+          "registrationUrlHint": "Where people sign up, for example the event's Luma page. The program's page links to it.",
+          "add": "Add event",
+          "update": "Update"
         },
         "more": "More actions",
         "copyLink": "Copy link",
@@ -477,7 +479,9 @@
               "summary": "Add a summary",
               "cover": "Add a cover image",
               "dates": "Set when the program starts and ends"
-            }
+            },
+            "ready": "Everything is in place. Publish to save it and put the program on the list.",
+            "done": "Done"
           },
           "confirm": {
             "title": "Publish {name}?",
@@ -486,7 +490,8 @@
             "cancel": "Cancel"
           },
           "done": "{name} is published.",
-          "notReady": "The program still lacks what the list above names."
+          "notReady": "The program still lacks what the list above names.",
+          "missing": "{count, plural, one {# thing is} other {# things are}} missing before you can publish"
         },
         "unpublish": {
           "menu": "Unpublish…",
@@ -497,7 +502,9 @@
           "done": "{name} is no longer public."
         },
         "preview": "Preview",
-        "viewPage": "View page"
+        "viewPage": "View page",
+        "notSaved": "Not saved yet",
+        "leave": "Some changes are not saved. Leave this page and lose them?"
       },
       "noDays": "Days not set",
       "search": "Search programs by name",
@@ -742,7 +749,8 @@
       "draft": {
         "message": "Draft. Only operators can see this page; it is not on the programs list yet.",
         "back": "Back to settings"
-      }
+      },
+      "applyCard": "Applying"
     },
     "timeline": {
       "opens": "Applications open",
@@ -769,11 +777,11 @@
     "programCount": "{count, plural, one {# program} other {# programs}}",
     "itemCount": "{count, plural, one {# event} other {# events}}",
     "undated": "Earlier",
-    "live": "Live",
+    "live": "Open now",
     "running": "Running",
     "nextUp": "Coming up next",
     "applyNow": "Apply now",
-    "readBrief": "Read the brief",
+    "readBrief": "See the program",
     "online": "Online",
     "register": "Register",
     "opensOn": "Applications open {date}",
@@ -1026,10 +1034,11 @@
       "host": "Enterprise partner",
       "hostText": "Tasco runs automotive retail, VETC tolling, insurance and roadside assistance across Vietnam. GenAI Fund runs the programme and screens submissions.",
       "tech": "Technology partners",
-      "questions": "Questions about this challenge?"
+      "questions": "Questions about this challenge?",
+      "partners": "Partners"
     },
     "closing": {
-      "title": "Sixty teams will apply. Ten will present.",
+      "title": "Ten teams present live on 22 October.",
       "text": "Submissions close 15 October at 23:59 ICT. Everyone hears back on 16 October."
     }
   }

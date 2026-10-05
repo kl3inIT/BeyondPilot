@@ -1,10 +1,10 @@
 "use client";
 
-import { revalidateLogic } from "@tanstack/react-form";
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { LockIcon, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { setServerErrors, useAppForm, type ServerErrors } from "@/components/form/app-form";
@@ -26,8 +26,14 @@ import { programRoute, publicSiteHost, siteRoutes } from "@/lib/site";
 import { instantInVietnam } from "@/lib/vietnam-time";
 
 import { CoverUpload } from "./cover-upload";
+import { programFormatter } from "./program-format";
 import { programState } from "./program-labels";
-import { ProgramMenu, PublishButton, PublishChecklist } from "./program-publishing";
+import {
+  missingToPublish,
+  ProgramMenu,
+  PublishButton,
+  PublishChecklist,
+} from "./program-publishing";
 import {
   programTypes,
   settingsSchema,
@@ -82,6 +88,36 @@ function isRefusal(code: string): code is (typeof refusals)[number] {
   return (refusals as readonly string[]).includes(code);
 }
 
+/**
+ * Asks before the page is left while it holds unsaved changes: closing or reloading the tab, and
+ * following a link inside the app, which the browser does not ask about.
+ */
+function useLeaveGuard(dirty: boolean, question: string) {
+  useEffect(() => {
+    if (!dirty) {
+      return;
+    }
+    const unload = (event: BeforeUnloadEvent) => event.preventDefault();
+    const click = (event: MouseEvent) => {
+      const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+      const href = link?.getAttribute("href") ?? "";
+      if (!link || href.startsWith("#") || link.getAttribute("target") === "_blank") {
+        return;
+      }
+      if (!window.confirm(question)) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    window.addEventListener("beforeunload", unload);
+    document.addEventListener("click", click, true);
+    return () => {
+      window.removeEventListener("beforeunload", unload);
+      document.removeEventListener("click", click, true);
+    };
+  }, [dirty, question]);
+}
+
 /** Which key date or event a dialog edits: its place in the list, or a new one. */
 type Editing = { index: number | null } | null;
 
@@ -95,13 +131,21 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
   const states = useTranslations("Admin.programs.state");
   const types = useTranslations("Program.type");
   const say = useTranslations("Form.errors");
-  const format = useFormatter();
+  const format = programFormatter(useLocale());
   const notify = useNotify();
   const router = useRouter();
   const [keyDate, setKeyDate] = useState<Editing>(null);
   const [event, setEvent] = useState<Editing>(null);
   // The program as the last save answered it, for Save and publish; null when that save was refused.
   const saved = useRef<AdminProgram | null>(null);
+  // The key dates and events as stored, to mark those added or changed since the last save.
+  const [stored] = useState(() => {
+    const values = settingsValuesOf(program);
+    return {
+      keyDates: new Set(values.keyDates.map((value) => JSON.stringify(value))),
+      events: new Set(values.events.map((value) => JSON.stringify(value))),
+    };
+  });
 
   const form = useAppForm({
     defaultValues: settingsValuesOf(program),
@@ -163,13 +207,16 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
     return saved.current;
   }
 
+  const dirty = useStore(form.store, (formState) => formState.isDirty);
+  useLeaveGuard(dirty, t("leave"));
+
   const draft = program.status === "draft";
   const state = programState({ status: program.status, phase: "upcoming" });
 
   return (
     <form
       noValidate
-      className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-28 md:px-6 md:pb-12 lg:px-8"
+      className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-36 md:px-6 md:pb-12 lg:px-8"
       onSubmit={(submitEvent) => {
         submitEvent.preventDefault();
         void form.handleSubmit();
@@ -183,17 +230,13 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
               {program.status === "published" ? t("published") : states("draft")}
             </Badge>
           </div>
-          <form.Subscribe selector={(formState) => formState.isDirty}>
-            {(dirty) => (
-              <p className="text-sm text-muted-foreground">
-                {dirty
-                  ? t("unsaved")
-                  : program.status === "published"
-                    ? t("context.published")
-                    : t("context.draft")}
-              </p>
-            )}
-          </form.Subscribe>
+          <p className="text-sm text-muted-foreground">
+            {dirty
+              ? t("unsaved")
+              : program.status === "published"
+                ? t("context.published")
+                : t("context.draft")}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="hidden items-center gap-2 md:flex">
@@ -202,11 +245,7 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
                 {t("save")}
               </form.SubmitButton>
             </form.AppForm>
-            {draft && (
-              <form.Subscribe selector={(formState) => formState.isDirty}>
-                {(dirty) => <PublishButton program={program} dirty={dirty} save={save} />}
-              </form.Subscribe>
-            )}
+            {draft && <PublishButton program={program} dirty={dirty} save={save} />}
           </div>
           <Button prominence="secondary" href={programRoute(program.slug)}>
             {t(draft ? "preview" : "viewPage")}
@@ -219,18 +258,17 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
         <form.FormError />
       </form.AppForm>
 
-      {draft && program.publishIssues.length > 0 && (
-        <PublishChecklist issues={program.publishIssues} />
+      {draft && (
+        <form.Subscribe selector={(formState) => missingToPublish(formState.values).join(" ")}>
+          {(missing) =>
+            (missing || program.publishIssues.length > 0) && (
+              <PublishChecklist
+                missing={missing ? (missing.split(" ") as typeof program.publishIssues) : []}
+              />
+            )
+          }
+        </form.Subscribe>
       )}
-
-      <nav aria-label={t("tabs")} className="border-b">
-        <span
-          aria-current="page"
-          className="inline-flex border-b-2 border-foreground pb-2.5 text-sm font-medium"
-        >
-          {t("tab")}
-        </span>
-      </nav>
 
       <div className="flex flex-col gap-8">
         <SettingsSection title={t("basics.title")} what={t("basics.what")}>
@@ -442,11 +480,13 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
                   allDay: "allDay" in entry,
                   index: null,
                   note: t("keyDates.fromWindow"),
+                  unsaved: false,
                 })),
                 ...keyDates.map((value, index) => ({
                   ...keyDateOf(value),
                   index,
                   note: value.note || null,
+                  unsaved: !stored.keyDates.has(JSON.stringify(value)),
                 })),
               ].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
               return (
@@ -464,6 +504,7 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
                             .join(" · ")}
                         </span>
                       </div>
+                      {row.unsaved && <Badge variant="outline">{t("notSaved")}</Badge>}
                       {row.index === null ? (
                         <LockIcon
                           className="size-4 text-muted-foreground"
@@ -514,6 +555,9 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
                               .join(" · ")}
                           </span>
                         </div>
+                        {!stored.events.has(JSON.stringify(value)) && (
+                          <Badge variant="outline">{t("notSaved")}</Badge>
+                        )}
                         <Button
                           prominence="tertiary"
                           size="sm"
@@ -539,19 +583,31 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
       </div>
 
       {/* Below 768px the actions stay at the foot of the screen while the form scrolls. */}
-      <div className="fixed inset-x-0 bottom-0 z-10 flex gap-2 border-t bg-background px-4 pt-3 pb-6 md:hidden">
-        <form.AppForm>
-          <form.SubmitButton className="flex-1" prominence={draft ? "secondary" : "primary"}>
-            {t("save")}
-          </form.SubmitButton>
-        </form.AppForm>
+      <div className="fixed inset-x-0 bottom-0 z-10 flex flex-col gap-2 border-t bg-background px-4 pt-3 pb-6 md:hidden">
         {draft && (
-          <form.Subscribe selector={(formState) => formState.isDirty}>
-            {(dirty) => (
-              <PublishButton className="flex-1" program={program} dirty={dirty} save={save} />
-            )}
+          <form.Subscribe selector={(formState) => missingToPublish(formState.values).length}>
+            {(missing) =>
+              missing > 0 && (
+                <a
+                  href="#publish-checklist"
+                  className="text-xs text-muted-foreground underline-offset-4 hover:underline"
+                >
+                  {t("publish.missing", { count: missing })}
+                </a>
+              )
+            }
           </form.Subscribe>
         )}
+        <div className="flex gap-2">
+          <form.AppForm>
+            <form.SubmitButton className="flex-1" prominence={draft ? "secondary" : "primary"}>
+              {t("save")}
+            </form.SubmitButton>
+          </form.AppForm>
+          {draft && (
+            <PublishButton className="flex-1" program={program} dirty={dirty} save={save} />
+          )}
+        </div>
       </div>
 
       {keyDate && (

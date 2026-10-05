@@ -90,20 +90,22 @@ function TextareaField({ label, optional, description, ...textarea }: TextareaFi
 type SelectFieldProps = Labelled & {
   /** The choices, in the order they are offered. */
   options: { value: string; label: string }[];
+  /** Shown while nothing is chosen. */
+  placeholder?: string;
 };
 
-function SelectField({ label, optional, description, options }: SelectFieldProps) {
+function SelectField({ label, optional, description, options, placeholder }: SelectFieldProps) {
   const { field, invalid, errors } = useFieldValidity<string>();
   return (
     <Field data-invalid={invalid || undefined}>
       <FieldLabelText label={label} optional={optional} htmlFor={field.name} />
       <Select
         items={options}
-        value={field.state.value}
-        onValueChange={(value) => field.handleChange(String(value))}
+        value={field.state.value || null}
+        onValueChange={(value) => field.handleChange(String(value ?? ""))}
       >
         <SelectTrigger id={field.name} aria-invalid={invalid || undefined} className="w-full">
-          <SelectValue />
+          <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>

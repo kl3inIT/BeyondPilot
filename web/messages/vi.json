@@ -322,7 +322,8 @@
         "submit": "Tạo chương trình",
         "errors": {
           "slugTaken": "Địa chỉ này đã thuộc về một chương trình khác."
-        }
+        },
+        "typePlaceholder": "Chọn loại"
       },
       "errors": {
         "unknown": "Chưa thực hiện được. Hãy thử lại sau giây lát."
@@ -337,8 +338,6 @@
         },
         "save": "Lưu thay đổi",
         "saved": "Đã lưu.",
-        "tabs": "Chương trình",
-        "tab": "Cài đặt",
         "basics": {
           "title": "Thông tin cơ bản",
           "what": "Tên chương trình và địa chỉ trang.",
@@ -408,7 +407,6 @@
         "editNamed": "Sửa {name}",
         "delete": "Xoá",
         "cancel": "Huỷ",
-        "done": "Lưu",
         "errors": {
           "unknown": "Chương trình chưa được lưu. Hãy thử lại sau giây lát.",
           "changedMeanwhile": "Người khác vừa lưu chương trình này. Hãy tải lại trang rồi sửa lại.",
@@ -446,7 +444,9 @@
           "to": "Đến",
           "allDay": "Cả ngày",
           "note": "Ghi chú",
-          "noteHint": "Hiện dưới ngày trên trang chương trình."
+          "noteHint": "Hiện dưới ngày trên trang chương trình.",
+          "add": "Thêm mốc",
+          "update": "Cập nhật"
         },
         "event": {
           "addTitle": "Thêm sự kiện",
@@ -462,7 +462,9 @@
           "city": "Thành phố",
           "country": "Quốc gia",
           "registrationUrl": "Link đăng ký",
-          "registrationUrlHint": "Nơi mọi người đăng ký, ví dụ trang Luma của sự kiện. Trang chương trình dẫn tới đây."
+          "registrationUrlHint": "Nơi mọi người đăng ký, ví dụ trang Luma của sự kiện. Trang chương trình dẫn tới đây.",
+          "add": "Thêm sự kiện",
+          "update": "Cập nhật"
         },
         "more": "Thao tác khác",
         "copyLink": "Sao chép link",
@@ -477,7 +479,9 @@
               "summary": "Thêm tóm tắt",
               "cover": "Thêm ảnh bìa",
               "dates": "Đặt ngày bắt đầu và kết thúc"
-            }
+            },
+            "ready": "Đã đủ. Công bố để lưu và đưa chương trình lên danh sách.",
+            "done": "Xong"
           },
           "confirm": {
             "title": "Công bố {name}?",
@@ -486,7 +490,8 @@
             "cancel": "Huỷ"
           },
           "done": "Đã công bố {name}.",
-          "notReady": "Chương trình vẫn còn thiếu những mục trong danh sách ở trên."
+          "notReady": "Chương trình vẫn còn thiếu những mục trong danh sách ở trên.",
+          "missing": "Còn thiếu {count} mục trước khi công bố"
         },
         "unpublish": {
           "menu": "Gỡ khỏi trang công khai…",
@@ -497,7 +502,9 @@
           "done": "{name} không còn công khai."
         },
         "preview": "Xem trước",
-        "viewPage": "Xem trang"
+        "viewPage": "Xem trang",
+        "notSaved": "Chưa lưu",
+        "leave": "Có thay đổi chưa lưu. Rời trang này và bỏ các thay đổi đó?"
       },
       "noDays": "Chưa đặt ngày",
       "search": "Tìm chương trình theo tên",
@@ -742,7 +749,8 @@
       "draft": {
         "message": "Bản nháp. Chỉ operator thấy trang này; trang chưa có trên danh sách chương trình.",
         "back": "Quay lại cài đặt"
-      }
+      },
+      "applyCard": "Nộp đơn"
     },
     "timeline": {
       "opens": "Mở nhận đơn",
@@ -773,7 +781,7 @@
     "running": "Đang diễn ra",
     "nextUp": "Sắp tới",
     "applyNow": "Nộp đơn ngay",
-    "readBrief": "Xem đề bài",
+    "readBrief": "Xem chương trình",
     "online": "Trực tuyến",
     "register": "Đăng ký",
     "opensOn": "Mở nhận đơn {date}",
@@ -1026,10 +1034,11 @@
       "host": "Đối tác doanh nghiệp",
       "hostText": "Tasco kinh doanh bán lẻ ô tô, thu phí VETC, bảo hiểm và cứu hộ trên khắp Việt Nam. GenAI Fund điều hành chương trình và sàng lọc bài nộp.",
       "tech": "Đối tác công nghệ",
-      "questions": "Có câu hỏi về thử thách này?"
+      "questions": "Có câu hỏi về thử thách này?",
+      "partners": "Đối tác"
     },
     "closing": {
-      "title": "Sáu mươi đội sẽ nộp. Mười đội sẽ trình bày.",
+      "title": "Mười đội trình bày trực tiếp ngày 22 tháng 10.",
       "text": "Hạn nộp là 23:59 ICT ngày 15 tháng 10. Mọi người nhận kết quả vào ngày 16 tháng 10."
     }
   }

@@ -1,8 +1,20 @@
-import type { getFormatter } from "next-intl/server";
+import { createFormatter } from "next-intl";
 
 import type { ProgramApplications, ProgramEvent, ProgramKeyDate } from "@/lib/api/generated";
 
-type Format = Awaited<ReturnType<typeof getFormatter>>;
+export type ProgramFormat = ReturnType<typeof createFormatter>;
+type Format = ProgramFormat;
+
+/**
+ * Dates as GenAI Fund writes them, day before month ("15 Oct"), in Vietnam time. English would
+ * otherwise follow the American order ("Oct 15"), which the campaign copy never uses.
+ */
+export function programFormatter(locale: string): ProgramFormat {
+  return createFormatter({
+    locale: locale === "en" ? "en-GB" : locale,
+    timeZone: "Asia/Ho_Chi_Minh",
+  });
+}
 
 const time = { hour: "2-digit", minute: "2-digit", hourCycle: "h23" } as const;
 const dayMonth = { day: "numeric", month: "short" } as const;
@@ -26,7 +38,7 @@ export function deadlineText(format: Format, applications: ProgramApplications) 
   return `${format.dateTime(closes, dayMonth)}, ${format.dateTime(closes, time)} ICT`;
 }
 
-/** "7 Oct, 15:30–17:00", "16 Oct": a key date or an event as a line of a timeline. */
+/** "7 Oct, 15:30–17:00 ICT", "16 Oct": a key date or an event as a line of a timeline. */
 export function whenText(
   format: Format,
   entry: Pick<ProgramKeyDate, "startsAt" | "endsAt"> & { allDay?: boolean },
@@ -37,8 +49,8 @@ export function whenText(
     return day;
   }
   return entry.endsAt
-    ? `${day}, ${format.dateTime(starts, time)}–${format.dateTime(new Date(entry.endsAt), time)}`
-    : `${day}, ${format.dateTime(starts, time)}`;
+    ? `${day}, ${format.dateTime(starts, time)}–${format.dateTime(new Date(entry.endsAt), time)} ICT`
+    : `${day}, ${format.dateTime(starts, time)} ICT`;
 }
 
 /** "23 Sep – 5 Dec 2026", or one day. */

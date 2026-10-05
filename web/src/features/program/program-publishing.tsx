@@ -1,6 +1,13 @@
 "use client";
 
-import { CircleIcon, EllipsisIcon, EyeOffIcon, GlobeIcon, LinkIcon } from "lucide-react";
+import {
+  CircleCheckIcon,
+  CircleIcon,
+  EllipsisIcon,
+  EyeOffIcon,
+  GlobeIcon,
+  LinkIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -20,23 +27,45 @@ import { ApiError } from "@/lib/api/client";
 import { publishProgram, unpublishProgram, type AdminProgram } from "@/lib/api/generated";
 import { publicSiteHost, siteRoutes } from "@/lib/site";
 
+import type { SettingsValues } from "./program-schemas";
+
 /** Where a program is read, written out as an operator shares it. */
 function addressOf(slug: string) {
   return `${publicSiteHost}${siteRoutes.programs}/${slug}`;
 }
 
-/** The field each thing that blocks publishing is filled in at. */
-const fieldOfIssue: Record<AdminProgram["publishIssues"][number], string> = {
+type PublishIssue = AdminProgram["publishIssues"][number];
+
+/** The field each thing that blocks publishing is filled in at, in the order the form shows them. */
+const fieldOfIssue: Record<PublishIssue, string> = {
   summary: "summary",
   cover: "coverFileId",
   dates: "startsOn",
 };
 
+const publishIssues = Object.keys(fieldOfIssue) as PublishIssue[];
+
 /**
- * What a draft still lacks before it can be published, as the backend counts it at the last save;
- * each line leads to the field to fill in.
+ * What the form still lacks before the program can be published, as it stands while it is edited.
+ * The backend counts the same three when it publishes, and has the last word.
  */
-function PublishChecklist({ issues }: { issues: AdminProgram["publishIssues"] }) {
+function missingToPublish(
+  values: Pick<SettingsValues, "summary" | "coverFileId" | "startsOn" | "endsOn">,
+) {
+  return publishIssues.filter((issue) =>
+    issue === "summary"
+      ? !values.summary.trim()
+      : issue === "cover"
+        ? !values.coverFileId
+        : !values.startsOn || !values.endsOn,
+  );
+}
+
+/**
+ * What a draft needs before it can be published, ticked as the operator fills it in; each line still
+ * missing leads to the field to fill in.
+ */
+function PublishChecklist({ missing }: { missing: PublishIssue[] }) {
   const t = useTranslations("Admin.programs.settings.publish.checklist");
   return (
     <section
@@ -47,29 +76,39 @@ function PublishChecklist({ issues }: { issues: AdminProgram["publishIssues"] })
         <h2 id="publish-checklist" className="text-sm font-semibold">
           {t("title")}
         </h2>
-        <p className="text-sm text-muted-foreground">{t("lead")}</p>
+        <p className="text-sm text-muted-foreground">
+          {missing.length > 0 ? t("lead") : t("ready")}
+        </p>
       </div>
       <ul className="flex flex-col gap-1.5">
-        {issues.map((issue) => (
-          <li key={issue} className="flex items-center gap-2">
-            <CircleIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <a
-              href={`#${fieldOfIssue[issue]}`}
-              className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-              onClick={(event) => {
-                // The field is focused, not only scrolled to, so the operator can type at once.
-                const field = document.getElementById(fieldOfIssue[issue]);
-                if (field) {
-                  event.preventDefault();
-                  field.scrollIntoView({ block: "center" });
-                  field.focus({ preventScroll: true });
-                }
-              }}
-            >
-              {t(`issues.${issue}`)}
-            </a>
-          </li>
-        ))}
+        {publishIssues.map((issue) =>
+          missing.includes(issue) ? (
+            <li key={issue} className="flex items-center gap-2">
+              <CircleIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <a
+                href={`#${fieldOfIssue[issue]}`}
+                className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                onClick={(event) => {
+                  // The field is focused, not only scrolled to, so the operator can type at once.
+                  const field = document.getElementById(fieldOfIssue[issue]);
+                  if (field) {
+                    event.preventDefault();
+                    field.scrollIntoView({ block: "center" });
+                    field.focus({ preventScroll: true });
+                  }
+                }}
+              >
+                {t(`issues.${issue}`)}
+              </a>
+            </li>
+          ) : (
+            <li key={issue} className="flex items-center gap-2 text-sm text-muted-foreground">
+              <CircleCheckIcon className="size-4 shrink-0 text-success" aria-hidden="true" />
+              <span>{t(`issues.${issue}`)}</span>
+              <span className="sr-only">{t("done")}</span>
+            </li>
+          ),
+        )}
       </ul>
     </section>
   );
@@ -241,4 +280,4 @@ function AddressBox({ slug }: { slug: string }) {
   );
 }
 
-export { ProgramMenu, PublishButton, PublishChecklist };
+export { missingToPublish, ProgramMenu, PublishButton, PublishChecklist };

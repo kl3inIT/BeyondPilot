@@ -59,7 +59,7 @@ export function createProgramSchema(say: Say) {
       .min(slugBounds.min, say("slugLength"))
       .max(slugBounds.max, say("slugLength"))
       .regex(slugPattern, say("slugFormat")),
-    type: z.enum(programTypes),
+    type: z.enum(programTypes, say("required")),
   });
 }
 

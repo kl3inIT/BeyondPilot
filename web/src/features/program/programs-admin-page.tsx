@@ -1,6 +1,6 @@
 import { ChevronRightIcon, LayoutListIcon, SearchXIcon } from "lucide-react";
 import Image from "next/image";
-import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
@@ -12,6 +12,7 @@ import { adminProgramRoute, siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
 import { NewProgramDialog } from "./new-program-dialog";
+import { programFormatter } from "./program-format";
 import { programState } from "./program-labels";
 import type { narrowPrograms, ProgramsSearch } from "./programs-search";
 import { ProgramsToolbar } from "./programs-toolbar";
@@ -42,14 +43,14 @@ type ProgramsAdminPageProps = {
  * A program opens on its Settings, the one screen of a program so far.
  */
 async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
-  const [t, types, format, locale] = await Promise.all([
+  const [t, types, locale] = await Promise.all([
     getTranslations("Admin.programs"),
     getTranslations("Program.type"),
-    getFormatter(),
     getLocale(),
   ]);
+  const format = programFormatter(locale);
 
-  /** "23 Sep – 15 Oct 2026, 23:59 ICT", or why there is no window. */
+  /** "23 Sept – 15 Oct 2026, 23:59 ICT", or why there is no window. */
   function window(program: AdminProgramSummary) {
     const applications = program.applications;
     if (!applications) {
