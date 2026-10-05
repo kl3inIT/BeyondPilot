@@ -37,6 +37,8 @@ out/
 
 ### Local scratch and reference clones ###
 .tmp/
+# Screenshots and other captures made to look at a change locally; never committed.
+output/
 
 ### Local settings and secrets, read by bootRun ###
 /.env
