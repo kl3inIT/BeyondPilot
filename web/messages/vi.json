@@ -325,6 +325,144 @@
       },
       "errors": {
         "unknown": "Chưa thực hiện được. Hãy thử lại sau giây lát."
+      },
+      "settings": {
+        "metaTitle": "Cài đặt chương trình · BeyondPilot",
+        "published": "Đã công bố",
+        "unsaved": "Có thay đổi chưa lưu.",
+        "context": {
+          "published": "Thay đổi hiện trên trang chương trình ngay khi bạn lưu.",
+          "draft": "Chỉ operator thấy chương trình này cho đến khi được công bố."
+        },
+        "save": "Lưu thay đổi",
+        "saved": "Đã lưu.",
+        "tabs": "Chương trình",
+        "tab": "Cài đặt",
+        "basics": {
+          "title": "Thông tin cơ bản",
+          "what": "Tên chương trình và địa chỉ trang.",
+          "name": "Tên",
+          "slug": "Địa chỉ",
+          "slugHint": "{address}. Bạn đổi được cho đến lần công bố đầu tiên.",
+          "slugFixed": "{address}. Địa chỉ cố định từ khi chương trình được công bố.",
+          "type": "Loại",
+          "partner": "Đối tác",
+          "startsOn": "Bắt đầu",
+          "endsOn": "Kết thúc",
+          "daysHint": "Danh sách chương trình chuyển chương trình sang Đã kết thúc sau ngày cuối.",
+          "summary": "Tóm tắt",
+          "summaryHint": "Hiện trên danh sách chương trình và đầu trang.",
+          "about": "Giới thiệu",
+          "aboutHint": "Phần mở đầu của trang chuẩn. Trang làm riêng cho chương trình tự viết phần này.",
+          "cover": "Ảnh bìa",
+          "coverHint": "Hiện trên danh sách chương trình và đầu trang."
+        },
+        "page": {
+          "title": "Trang",
+          "what": "Cách trang công khai của chương trình được tạo.",
+          "standard": {
+            "title": "Trang chuẩn",
+            "what": "Dựng từ những gì nhập ở đây: tóm tắt, giới thiệu, các mốc thời gian và sự kiện."
+          },
+          "custom": {
+            "title": "Trang làm riêng cho chương trình",
+            "what": "Đội ngũ viết trang bằng code; chương trình cung cấp ngày, sự kiện và form nộp đơn."
+          },
+          "external": {
+            "title": "Trang ở nơi khác",
+            "what": "Danh sách chương trình dẫn tới một địa chỉ bên ngoài. Việc nộp đơn vẫn trên BeyondPilot."
+          },
+          "externalUrl": "Địa chỉ trang"
+        },
+        "applications": {
+          "title": "Nhận đơn",
+          "what": "Thời gian nhận đơn và số đội đi tiếp.",
+          "takes": "Nhận đơn trên BeyondPilot",
+          "opens": "Mở",
+          "closes": "Đóng",
+          "time": "Giờ",
+          "ict": "Giờ Việt Nam (ICT). Form tự đóng vào giờ đóng.",
+          "shortlist": "Số suất demo day",
+          "outcomes": "Ngày báo kết quả",
+          "updates": "Người nộp được sửa đơn đã nộp cho đến giờ đóng."
+        },
+        "keyDates": {
+          "title": "Các mốc thời gian",
+          "what": "Dòng thời gian trên trang chương trình, và điều người nộp đơn được báo sẽ diễn ra.",
+          "opens": "Mở nhận đơn và giai đoạn xây dựng",
+          "closes": "Đóng nhận bài",
+          "outcomes": "Mọi người nộp đơn nhận kết quả",
+          "fromWindow": "Theo thời gian nhận đơn",
+          "locked": "Sửa ở mục Nhận đơn",
+          "add": "Thêm mốc",
+          "hint": "Giờ Việt Nam (ICT). Các mốc khoá theo mục Nhận đơn ở trên."
+        },
+        "events": {
+          "title": "Sự kiện",
+          "what": "Các buổi của chương trình mà mọi người đăng ký tham gia; cũng hiện ở mục Sắp diễn ra trên danh sách chương trình.",
+          "online": "Trực tuyến",
+          "add": "Thêm sự kiện"
+        },
+        "edit": "Sửa",
+        "editNamed": "Sửa {name}",
+        "delete": "Xoá",
+        "cancel": "Huỷ",
+        "done": "Lưu",
+        "errors": {
+          "unknown": "Chương trình chưa được lưu. Hãy thử lại sau giây lát.",
+          "changedMeanwhile": "Người khác vừa lưu chương trình này. Hãy tải lại trang rồi sửa lại.",
+          "codes": {
+            "PROGRAM_SLUG_TAKEN": "Địa chỉ này đã thuộc về một chương trình khác.",
+            "PROGRAM_SLUG_FIXED": "Không đổi được địa chỉ sau khi chương trình đã công bố.",
+            "PROGRAM_DAYS_OUT_OF_ORDER": "Ngày kết thúc trước ngày bắt đầu.",
+            "PROGRAM_WINDOW_OUT_OF_ORDER": "Giờ đóng nhận đơn trước giờ mở.",
+            "PROGRAM_OUTCOMES_BEFORE_CLOSE": "Ngày báo kết quả trước ngày đóng nhận đơn.",
+            "PROGRAM_EXTERNAL_URL_REQUIRED": "Nhập địa chỉ của trang ở nơi khác.",
+            "PROGRAM_COVER_NOT_USABLE": "Ảnh này không dùng làm ảnh bìa được. Hãy tải lên lại.",
+            "PROGRAM_KEY_DATE_OUT_OF_ORDER": "Có mốc thời gian kết thúc trước khi bắt đầu.",
+            "PROGRAM_EVENT_OUT_OF_ORDER": "Có sự kiện kết thúc trước khi bắt đầu."
+          }
+        },
+        "cover": {
+          "alt": "Ảnh bìa chương trình",
+          "replace": "Thay ảnh",
+          "remove": "Bỏ ảnh",
+          "empty": "Tải ảnh bìa lên",
+          "uploading": "Đang tải lên…",
+          "limits": "PNG, JPEG hoặc WebP, tối đa 5 MB.",
+          "errors": {
+            "type": "Hãy dùng ảnh PNG, JPEG hoặc WebP.",
+            "size": "Ảnh lớn hơn 5 MB.",
+            "failed": "Chưa tải ảnh lên được. Hãy thử lại."
+          }
+        },
+        "keyDate": {
+          "addTitle": "Thêm mốc thời gian",
+          "editTitle": "Sửa mốc thời gian",
+          "title": "Tiêu đề",
+          "day": "Ngày",
+          "from": "Từ",
+          "to": "Đến",
+          "allDay": "Cả ngày",
+          "note": "Ghi chú",
+          "noteHint": "Hiện dưới ngày trên trang chương trình."
+        },
+        "event": {
+          "addTitle": "Thêm sự kiện",
+          "editTitle": "Sửa sự kiện",
+          "title": "Tiêu đề",
+          "startsDay": "Bắt đầu",
+          "startsTime": "Giờ",
+          "endsDay": "Kết thúc",
+          "endsTime": "Giờ",
+          "where": "Hình thức",
+          "online": "Trực tuyến",
+          "inPerson": "Trực tiếp",
+          "city": "Thành phố",
+          "country": "Quốc gia",
+          "registrationUrl": "Link đăng ký",
+          "registrationUrlHint": "Nơi mọi người đăng ký, ví dụ trang Luma của sự kiện. Trang chương trình dẫn tới đây."
+        }
       }
     },
     "accounts": {
@@ -507,7 +645,12 @@
       "tooLong": "Tối đa {max} ký tự.",
       "slugFormat": "Chỉ dùng chữ thường, chữ số và một dấu gạch ngang giữa các từ.",
       "slugLength": "Từ 3 đến 60 ký tự.",
-      "invalid": "Hãy kiểm tra lại mục này."
+      "invalid": "Hãy kiểm tra lại mục này.",
+      "endsBeforeStarts": "Thời điểm kết thúc trước thời điểm bắt đầu.",
+      "closesBeforeOpens": "Giờ đóng nhận đơn trước giờ mở.",
+      "outcomesBeforeClose": "Ngày báo kết quả trước ngày đóng nhận đơn.",
+      "webAddress": "Nhập địa chỉ bắt đầu bằng http:// hoặc https://.",
+      "positive": "Nhập một số nguyên lớn hơn 0."
     }
   },
   "Program": {

@@ -325,6 +325,144 @@
       },
       "errors": {
         "unknown": "That did not work. Try again in a moment."
+      },
+      "settings": {
+        "metaTitle": "Program settings · BeyondPilot",
+        "published": "Published",
+        "unsaved": "You have unsaved changes.",
+        "context": {
+          "published": "Changes show on the program's page as soon as you save.",
+          "draft": "Only operators can see this program until it is published."
+        },
+        "save": "Save changes",
+        "saved": "Saved.",
+        "tabs": "Program",
+        "tab": "Settings",
+        "basics": {
+          "title": "Basics",
+          "what": "What the program is called and where it lives.",
+          "name": "Name",
+          "slug": "Address",
+          "slugHint": "{address}. You can change it until the program is first published.",
+          "slugFixed": "{address}. The address is fixed once the program has been published.",
+          "type": "Type",
+          "partner": "Partner",
+          "startsOn": "Starts",
+          "endsOn": "Ends",
+          "daysHint": "The programs list moves a program to Done after its last day.",
+          "summary": "Summary",
+          "summaryHint": "Shown on the programs list and at the top of the page.",
+          "about": "About",
+          "aboutHint": "The introduction on a standard page. A page made for the program writes its own.",
+          "cover": "Cover image",
+          "coverHint": "Shown on the programs list and at the top of the page."
+        },
+        "page": {
+          "title": "Page",
+          "what": "How the public page of this program is made.",
+          "standard": {
+            "title": "Standard page",
+            "what": "Built from what is entered here: the summary, the About text, the key dates and the events."
+          },
+          "custom": {
+            "title": "A page made for this program",
+            "what": "The team builds the page in code; this program supplies its dates, its events and its application form."
+          },
+          "external": {
+            "title": "A page somewhere else",
+            "what": "The programs list links to an outside address. Applying still happens on BeyondPilot."
+          },
+          "externalUrl": "Address of the page"
+        },
+        "applications": {
+          "title": "Applications",
+          "what": "When applications are taken and how many teams go through.",
+          "takes": "Applications are taken on BeyondPilot",
+          "opens": "Opens",
+          "closes": "Closes",
+          "time": "Time",
+          "ict": "Times are in Vietnam time (ICT). The form closes by itself at the closing time.",
+          "shortlist": "Demo-day places",
+          "outcomes": "Outcomes due",
+          "updates": "Applicants can edit a submitted application until the closing time."
+        },
+        "keyDates": {
+          "title": "Key dates",
+          "what": "The timeline on the program's page, and what an applicant is told happens next.",
+          "opens": "Applications and the build period open",
+          "closes": "Submissions close",
+          "outcomes": "Every applicant hears back",
+          "fromWindow": "From the application window",
+          "locked": "Edited under Applications",
+          "add": "Add a date",
+          "hint": "Times are in Vietnam time (ICT). The locked dates follow the Applications section above."
+        },
+        "events": {
+          "title": "Events",
+          "what": "Sessions of this program that people register for; they also show under Coming up on the programs list.",
+          "online": "Online",
+          "add": "Add an event"
+        },
+        "edit": "Edit",
+        "editNamed": "Edit {name}",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "done": "Save",
+        "errors": {
+          "unknown": "The program was not saved. Try again in a moment.",
+          "changedMeanwhile": "Someone else saved this program in the meantime. Reload the page and make your changes again.",
+          "codes": {
+            "PROGRAM_SLUG_TAKEN": "Another program already has this address.",
+            "PROGRAM_SLUG_FIXED": "The address cannot change once the program has been published.",
+            "PROGRAM_DAYS_OUT_OF_ORDER": "The program ends before it starts.",
+            "PROGRAM_WINDOW_OUT_OF_ORDER": "Applications close before they open.",
+            "PROGRAM_OUTCOMES_BEFORE_CLOSE": "Outcomes are due before applications close.",
+            "PROGRAM_EXTERNAL_URL_REQUIRED": "Enter the address of the page somewhere else.",
+            "PROGRAM_COVER_NOT_USABLE": "This image cannot be the cover. Upload it again.",
+            "PROGRAM_KEY_DATE_OUT_OF_ORDER": "A key date ends before it starts.",
+            "PROGRAM_EVENT_OUT_OF_ORDER": "An event ends before it starts."
+          }
+        },
+        "cover": {
+          "alt": "The program's cover",
+          "replace": "Replace",
+          "remove": "Remove",
+          "empty": "Upload a cover image",
+          "uploading": "Uploading…",
+          "limits": "PNG, JPEG or WebP, up to 5 MB.",
+          "errors": {
+            "type": "Use a PNG, JPEG or WebP image.",
+            "size": "The image is larger than 5 MB.",
+            "failed": "The image was not uploaded. Try again."
+          }
+        },
+        "keyDate": {
+          "addTitle": "Add a key date",
+          "editTitle": "Edit key date",
+          "title": "Title",
+          "day": "Date",
+          "from": "From",
+          "to": "To",
+          "allDay": "All day",
+          "note": "Note",
+          "noteHint": "Shown under the date on the program's page."
+        },
+        "event": {
+          "addTitle": "Add an event",
+          "editTitle": "Edit event",
+          "title": "Title",
+          "startsDay": "Starts",
+          "startsTime": "Time",
+          "endsDay": "Ends",
+          "endsTime": "Time",
+          "where": "Where",
+          "online": "Online",
+          "inPerson": "In person",
+          "city": "City",
+          "country": "Country",
+          "registrationUrl": "Registration link",
+          "registrationUrlHint": "Where people sign up, for example the event's Luma page. The program's page links to it."
+        }
       }
     },
     "accounts": {
@@ -507,7 +645,12 @@
       "tooLong": "Keep it to {max} characters.",
       "slugFormat": "Use lowercase letters, digits and single hyphens.",
       "slugLength": "Use 3 to 60 characters.",
-      "invalid": "Check this field."
+      "invalid": "Check this field.",
+      "endsBeforeStarts": "The end is before the start.",
+      "closesBeforeOpens": "Applications close before they open.",
+      "outcomesBeforeClose": "Outcomes are due before applications close.",
+      "webAddress": "Enter an address that starts with http:// or https://.",
+      "positive": "Enter a whole number above 0."
     }
   },
   "Program": {
