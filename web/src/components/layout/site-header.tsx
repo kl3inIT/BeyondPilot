@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 
 import { BrandLockup } from "@/components/layout/brand-lockup";
 import { HeaderAccount } from "@/components/layout/header-account";
+import { LanguageMenu } from "@/components/layout/language-menu";
 import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
@@ -36,6 +37,7 @@ function SiteHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-2">
+          <LanguageMenu className="hidden md:flex" />
           <HeaderAccount />
         </div>
       </div>

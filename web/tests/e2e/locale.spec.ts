@@ -36,6 +36,27 @@ test.describe("locale routing", () => {
   });
 });
 
+test.describe("header language menu", () => {
+  test.use({ locale: "en-US" });
+
+  test("opens the current page in the chosen language", async ({ page, isMobile }) => {
+    test.skip(isMobile, "below 768px the language is chosen in the full-screen menu");
+    await page.goto("/");
+
+    await page.getByRole("banner").getByRole("button", { name: "Language: EN" }).click();
+    const menu = page.getByRole("menu");
+    await expect(menu.getByRole("menuitemradio", { name: "English" })).toBeChecked();
+    await expectNoSeriousA11yViolations(page);
+
+    await menu.getByRole("menuitemradio", { name: "Tiếng Việt" }).click();
+    await expect(page).toHaveURL("/vi");
+    await expect(page.locator("html")).toHaveAttribute("lang", "vi");
+    await expect(
+      page.getByRole("banner").getByRole("button", { name: "Ngôn ngữ: VI" }),
+    ).toBeVisible();
+  });
+});
+
 test.describe("Spring-owned paths", () => {
   test.use({ locale: "en-US" });
 
