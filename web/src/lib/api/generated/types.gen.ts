@@ -131,6 +131,63 @@ export type AdminProgramSummary = {
 };
 
 /**
+ * One recorded change: who did what to what, and when.
+ */
+export type AuditEvent = {
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update';
+    /**
+     * Who did it; null when the server configuration did.
+     */
+    actor?: AuditEventActor | null;
+    /**
+     * The fields the action declares, each as text.
+     */
+    details: {
+        [key: string]: string;
+    };
+    id: string;
+    occurredAt: string;
+    /**
+     * The request that made the change, as logged and returned in X-Request-Id.
+     */
+    requestId?: string | null;
+    resource: AuditEventResource;
+};
+
+/**
+ * The person who acted, as they were named at that moment.
+ */
+export type AuditEventActor = {
+    email: string;
+    id: string;
+    label: string;
+};
+
+/**
+ * One page of audit events, newest first.
+ */
+export type AuditEventList = {
+    items: Array<AuditEvent>;
+    /**
+     * Pass as `after` for the page towards the present; null on the newest page.
+     */
+    newer?: string | null;
+    /**
+     * Pass as `before` for the page towards the past; null on the oldest page.
+     */
+    older?: string | null;
+};
+
+/**
+ * What was acted on, with the name it had at that moment.
+ */
+export type AuditEventResource = {
+    id: string;
+    label: string;
+    type: string;
+};
+
+/**
  * What a program cannot do without. It is created as a draft.
  */
 export type CreateProgram = {
@@ -364,6 +421,60 @@ export type UploadTicket = {
      */
     url: string;
 };
+
+export type ListAuditEventsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Only events at or after this instant.
+         */
+        from?: string | null;
+        /**
+         * Only events of this action.
+         */
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update';
+        /**
+         * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * The `older` cursor of a page: the events before it. Used when both cursors are given.
+         */
+        before?: string | null;
+        /**
+         * The `newer` cursor of a page: the events after it.
+         */
+        after?: string | null;
+    };
+    url: '/api/audit/events';
+};
+
+export type ListAuditEventsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAuditEventsError = ListAuditEventsErrors[keyof ListAuditEventsErrors];
+
+export type ListAuditEventsResponses = {
+    /**
+     * One page of the events the parameters select.
+     */
+    200: AuditEventList;
+};
+
+export type ListAuditEventsResponse = ListAuditEventsResponses[keyof ListAuditEventsResponses];
 
 export type ListAccountsData = {
     body?: never;

@@ -6,7 +6,10 @@ import { initials } from "@/lib/initials";
 type PersonProps = React.ComponentProps<"div"> & {
   /** Null until the person or their provider gives a name; the address then takes the first line. */
   name: string | null;
+  /** The second line: the address, or what stands in for one when there is an `icon`. */
   email: string;
+  /** In place of the initials, for an actor that is not a person: the server, an integration. */
+  icon?: React.ReactNode;
   /** Shown after the name, for example a "You" badge. */
   badge?: React.ReactNode;
   /**
@@ -16,12 +19,12 @@ type PersonProps = React.ComponentProps<"div"> & {
   muted?: boolean;
 };
 
-/** A person in a row or a card: their initials, then the name over the address. */
-function Person({ name, email, badge, muted = false, className, ...props }: PersonProps) {
+/** Who a row or a card is about: their initials, then the name over the address or a second line. */
+function Person({ name, email, icon, badge, muted = false, className, ...props }: PersonProps) {
   return (
     <div data-slot="person" className={cn("flex min-w-0 items-center gap-3", className)} {...props}>
       <Avatar>
-        <AvatarFallback>{initials(name, email)}</AvatarFallback>
+        <AvatarFallback>{icon ?? initials(name, email)}</AvatarFallback>
       </Avatar>
       <div className="grid min-w-0 text-sm">
         <span className="flex min-w-0 items-center gap-2">

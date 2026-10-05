@@ -280,7 +280,8 @@
     "nav": {
       "label": "Điều hướng quản trị",
       "home": "Trang chủ",
-      "accounts": "Tài khoản"
+      "accounts": "Tài khoản",
+      "auditLog": "Nhật ký thao tác"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
     "accounts": {
@@ -371,6 +372,83 @@
       "empty": {
         "title": "Không có tài khoản nào khớp",
         "description": "Không có tài khoản nào khớp với từ khóa và bộ lọc này.",
+        "clear": "Xóa từ khóa và bộ lọc"
+      }
+    },
+    "auditLog": {
+      "metaTitle": "Nhật ký thao tác · BeyondPilot",
+      "title": "Nhật ký thao tác",
+      "lead": "Những thay đổi mà operator và cấu hình máy chủ đã thực hiện với tài khoản, vai trò và chương trình, mới nhất trước.",
+      "search": "Tìm người hoặc tài khoản",
+      "filters": {
+        "period": {
+          "label": "Khoảng thời gian"
+        },
+        "action": {
+          "label": "Hành động",
+          "all": "Mọi hành động"
+        }
+      },
+      "period": {
+        "day": "24 giờ qua",
+        "week": "7 ngày qua",
+        "month": "30 ngày qua",
+        "all": "Toàn bộ"
+      },
+      "action": {
+        "account": {
+          "disable": "Khóa tài khoản",
+          "enable": "Mở khóa tài khoản"
+        },
+        "operator": {
+          "grant": "Cấp quyền operator",
+          "withdraw": "Thu quyền operator"
+        },
+        "program": {
+          "create": "Tạo chương trình",
+          "update": "Lưu chương trình"
+        }
+      },
+      "activity": {
+        "account": {
+          "disable": "Đã khóa tài khoản của <resource></resource>",
+          "enable": "Đã mở khóa tài khoản của <resource></resource>"
+        },
+        "operator": {
+          "grant": "Đã cấp quyền operator cho <resource></resource>",
+          "withdraw": "Đã thu quyền operator của <resource></resource>"
+        },
+        "program": {
+          "create": "Đã tạo chương trình <resource></resource>",
+          "update": "Đã lưu chương trình <resource></resource>"
+        }
+      },
+      "columns": {
+        "time": "Thời gian",
+        "person": "Người thực hiện",
+        "activity": "Hoạt động"
+      },
+      "system": {
+        "name": "Hệ thống",
+        "detail": "Cấu hình máy chủ"
+      },
+      "today": "Hôm nay, {time}",
+      "dayAndTime": "{day}, {time}",
+      "pagination": {
+        "label": "Các trang nhật ký thao tác",
+        "previous": "Trước",
+        "next": "Sau",
+        "goToPrevious": "Về các sự kiện mới hơn",
+        "goToNext": "Sang các sự kiện cũ hơn"
+      },
+      "empty": {
+        "title": "{period, select, day {Không có sự kiện nào trong 24 giờ qua} week {Không có sự kiện nào trong 7 ngày qua} month {Không có sự kiện nào trong 30 ngày qua} other {Chưa có sự kiện nào}}",
+        "description": "Thay đổi về tài khoản, vai trò và chương trình sẽ hiện ở đây.",
+        "showAll": "Xem toàn bộ"
+      },
+      "noMatch": {
+        "title": "Không có sự kiện nào khớp",
+        "description": "{period, select, day {Trong 24 giờ qua không có gì khớp với từ khóa và bộ lọc này.} week {Trong 7 ngày qua không có gì khớp với từ khóa và bộ lọc này.} month {Trong 30 ngày qua không có gì khớp với từ khóa và bộ lọc này.} other {Không có gì khớp với từ khóa và bộ lọc này.}}",
         "clear": "Xóa từ khóa và bộ lọc"
       }
     }
