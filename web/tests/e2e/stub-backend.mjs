@@ -4,6 +4,10 @@
 // sign-out) is answered by the test itself, with page.route.
 import { createServer } from "node:http";
 
+import { answerDirectory } from "./stub-directories.mjs";
+import { answerReview } from "./stub-reviews.mjs";
+import { answerWorkspace } from "./stub-workspace.mjs";
+
 const accounts = {
   operator: {
     id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a01",
@@ -15,6 +19,31 @@ const accounts = {
     id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a02",
     email: "an.tran@example.com",
     displayName: null,
+    role: "user",
+  },
+  // The people of one organization, and two on their way into it (stub-workspace.mjs).
+  owner: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a04",
+    email: "minh.tran@pocketpolicy.example",
+    displayName: "Minh Trần",
+    role: "user",
+  },
+  member: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a12",
+    email: "siti@pocketpolicy.example",
+    displayName: "Siti Rahma",
+    role: "user",
+  },
+  invited: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a13",
+    email: "hoa.le@example.com",
+    displayName: "Hoa Lê",
+    role: "user",
+  },
+  asked: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a14",
+    email: "nam.do@pocketpolicy.example",
+    displayName: "Nam Đỗ",
     role: "user",
   },
 };
@@ -160,6 +189,13 @@ createServer((request, response) => {
       newer: items.length > 0 && start > 0 ? items[0].id : null,
       older: items.length > 0 && start + items.length < matching.length ? items.at(-1).id : null,
     });
+  }
+  const record =
+    answerReview(url, account) ??
+    answerWorkspace(url, account ? session : undefined) ??
+    answerDirectory(url);
+  if (record) {
+    return json(response, ...record);
   }
   response.writeHead(url.pathname === "/health" ? 200 : 404).end();
 }).listen(Number(process.env.STUB_BACKEND_PORT));

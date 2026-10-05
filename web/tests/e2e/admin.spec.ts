@@ -56,6 +56,30 @@ test.describe("admin", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("admin home counts what waits for a decision, each count a way into its queue", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin");
+
+    await expect(page.getByText("5 records wait for a decision.")).toBeVisible();
+    for (const [queue, count, href] of [
+      ["Organizations to review", 1, "/admin/organizations?status=pending"],
+      ["Solutions to review", 2, "/admin/solutions?status=submitted"],
+      ["Talent profiles to review", 2, "/admin/talent?status=submitted"],
+    ] as const) {
+      const link = page.getByRole("main").getByRole("link", { name: queue });
+      await expect(link).toHaveAttribute("href", href);
+      await expect(link).toContainText(String(count));
+    }
+
+    await page.getByRole("main").getByRole("link", { name: "Solutions to review" }).click();
+    await expect(page).toHaveURL("/admin/solutions?status=submitted");
+    await expect(page.getByText("2 solutions")).toBeVisible();
+  });
+
   test("the sidebar marks the current page, and collapsed to icons it stays so and keeps its names", async ({
     page,
     context,
