@@ -240,10 +240,10 @@ Flat by default with hairlines. Shadows are ink at low opacity (`--elevation` in
 - **Shape:** full pill; heights 32, 36 and 40px for `sm`, `md`, `lg`.
 - **Primary:** Azure fill, white label, small shadow.
 - **Secondary:** Paper with a Field Line border and small shadow.
-- **Tertiary:** transparent with 6px corners, for "Sign in".
+- **Tertiary:** transparent with 6px corners, for a quiet action beside others.
 - **States:** a 3px Azure focus ring at 50%; disabled at 50% opacity; pending shows a spinner and sets `aria-busy`.
 - **Touch:** on touch screens every control has a hit area of at least 44px (`min-h-11 min-w-11`), even when it is drawn smaller: 36px buttons, 26px scope chips and text links. Icon buttons in the mobile header are 44px.
-- **On the landing:** Search is the primary action, so the header's Get started is secondary there.
+- **In the header:** Sign in is secondary and Get started is primary, both full pills. A destination of the navigation is Ink at weight 550 (`font-nav`) and turns Azure under the pointer.
 
 ### Cards
 
