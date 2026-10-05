@@ -69,7 +69,7 @@ Secret files are generated or written on the host and never printed; the api rea
 cd /apps/beyondpilot/secrets
 sudo sh -c 'umask 077; openssl rand -hex 32 > database-password'
 sudo sh -c 'umask 077; cat > google-client-secret'      # paste the client secret, then Ctrl-D
-sudo sh -c 'umask 077; htpasswd -nB <reader> > mailpit-ui-auth'   # apache2-utils; one line per reader
+sudo sh -c 'umask 077; htpasswd -nB team > mailpit-ui-auth'   # bcrypt; one line per reader
 sudo chown 1654:1654 database-password google-client-secret mailpit-ui-auth
 sudo chmod 0400 database-password google-client-secret mailpit-ui-auth
 ```
@@ -88,12 +88,7 @@ Dumps stay on this host until an off-host backup target is chosen.
 
 ### The reverse proxy
 
-Two proxy hosts in Nginx Proxy Manager, each with a Let's Encrypt certificate, Force SSL and HTTP/2:
-
-| Domain | Forward to | Also |
-| --- | --- | --- |
-| `beyondpilot.vadan.app` | `http://beyondpilot-web:3000` | The advanced configuration below |
-| `mail.beyondpilot.vadan.app` | `http://beyondpilot-mailpit:8025` | WebSockets on; Mailpit asks for its own login |
+One proxy host in Nginx Proxy Manager: `beyondpilot.vadan.app`, forwarding to `http://beyondpilot-web:3000`, with a Let's Encrypt certificate, Force SSL, HTTP/2 and the advanced configuration below.
 
 The browser sees one origin, so Spring's paths go to the api in the advanced configuration of `beyondpilot.vadan.app`. The upstream is a variable, so nginx resolves it per request and the host keeps working while the api container is being replaced. A custom location would resolve it at load and disable the host whenever the container is absent:
 
@@ -110,6 +105,16 @@ location ~ ^/(api|login|logout|oauth2|ott)(/|$) {
 ```
 
 The [local composition](development-runtime.md#run-the-whole-stack-in-containers) routes the same paths with `infrastructure/deployment/local-proxy.conf`.
+
+### Read staging mail
+
+Mailpit is on no network the proxy reaches. Open a tunnel to its container and sign in as `team`; the password is in `/apps/beyondpilot/secrets/mailpit-ui-password`, readable by root:
+
+```sh
+ssh -L 8025:$(ssh aioffice-app "docker inspect --format '{{.NetworkSettings.Networks.beyondpilot_internal.IPAddress}}' beyondpilot-mailpit"):8025 aioffice-app
+```
+
+Then open `http://localhost:8025`.
 
 ### GitHub configuration
 

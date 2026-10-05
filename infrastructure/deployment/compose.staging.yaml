@@ -1,6 +1,6 @@
 # Staging on the shared host (docs/runbooks/ci-cd.md). deploy.sh names the images by digest and reads the
 # rest from /apps/beyondpilot/.env.staging. The reverse proxy of the host, Nginx Proxy Manager on the external
-# proxy-network, reaches the web, the api and Mailpit by their container names; nothing publishes a host port.
+# proxy-network, reaches the web and the api by their container names; nothing publishes a host port.
 services:
   postgres:
     container_name: beyondpilot-postgres
@@ -39,19 +39,17 @@ services:
       - internal
       - proxy
 
-  # Its mail holds sign-in codes and it shares proxy-network with other tenants of the host, so the web interface
-  # asks for its own login whatever the reverse proxy in front of it does.
+  # Its mail holds sign-in codes, so it stays off proxy-network, which other tenants of the host share; the team
+  # reaches it through an SSH tunnel (docs/runbooks/ci-cd.md), and its web interface still asks for a login.
   mailpit:
     container_name: beyondpilot-mailpit
     environment:
       MP_UI_AUTH_FILE: /run/secrets/mailpit_ui_auth
     secrets:
       - mailpit_ui_auth
-    networks:
-      - internal
-      - proxy
 
-# Owned by root, mode 0400, uid 1654 (the api) as owner; Postgres reads its copy as root before it drops privileges.
+# Each file is owned by uid 1654, the api's user, with mode 0400: Compose mounts it as it is on the host. Postgres and
+# Mailpit read theirs as root.
 secrets:
   database_password:
     file: /apps/beyondpilot/secrets/database-password
