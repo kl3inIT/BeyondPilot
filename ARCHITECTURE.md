@@ -15,7 +15,7 @@ flowchart LR
 
 - **backend** is one Spring Boot application on Java 25 with virtual threads ([ADR 0001](docs/decisions/0001-single-spring-boot-application-with-modulith-modules.md)). Over HTTP it answers `/actuator/health`, the sign-in endpoints and `GET /api/identity/me`, and every failure as an RFC 9457 problem.
 - **web** is one Next.js App Router application ([ADR 0002](docs/decisions/0002-nextjs-frontend-over-the-spring-backend.md)). It serves the public home page in English at `/` and in Vietnamese at `/vi`, the sign-in pages, and a shared coming-soon page for the planned destinations listed in `web/src/lib/site.ts`. Its only backend calls are the sign-in ones.
-- **One origin.** Spring owns `/api`, `/login`, `/logout`, `/oauth2` and `/ott`. During development Next.js rewrites those paths to `BEYONDPILOT_API_ORIGIN`; `web/src/proxy.ts` excludes them from locale routing. No reverse proxy is configured, because nothing is deployed.
+- **One origin.** Spring owns `/api`, `/login`, `/logout`, `/oauth2` and `/ott`. During development Next.js rewrites those paths to `BEYONDPILOT_API_ORIGIN`; `web/src/proxy.ts` excludes them from locale routing. When the stack runs in containers, a reverse proxy in front of both routes them: Nginx Proxy Manager on a deployed host, an nginx stand-in in the local composition.
 - **The API contract** is `openapi.yml` at the repository root, generated from the full backend context by `OpenApiContractTest` and turned into TypeScript types in `web/src/lib/api/generated`. It currently declares one path, `GET /api/identity/me`, and the shared `Problem` schema. Both sides fail their gate when their copy is stale.
 
 ## Code and capability boundaries
@@ -78,8 +78,10 @@ Sign-in is Spring Security inside the backend; there is no separate identity ser
 
 ## Deployment and operations
 
-- No environment is deployed and no container image is built.
-- Email goes over SMTP. Local runs deliver to a Mailpit container, so nothing leaves the machine; no mail provider is chosen for deployed environments yet.
+- Two images: `backend/Dockerfile` (the Spring Boot jar in layers on a JRE, uid 1654) and `web/Dockerfile` (the Next.js standalone server, user `node`). Both build from the repository root on pinned base images and carry OCI `revision` and `source` labels.
+- `infrastructure/deployment/` holds the compositions: `compose.base.yaml` (PostgreSQL, api, web, Mailpit, no published port), `compose.local.yaml` (built from the checkout, behind a local nginx on port 8000) and `compose.staging.yaml` (published images, secrets as files, the host's `proxy-network`).
+- Staging runs at `https://beyondpilot.vadan.app` on a host shared with MemoryOS, isolated in `/apps/beyondpilot` with its own PostgreSQL; the host's Nginx Proxy Manager terminates TLS and routes Spring's paths to the api. Every successful main CI run deploys there ([runbook](docs/runbooks/ci-cd.md)). Production is not deployed.
+- Email goes over SMTP. Local runs and staging deliver to a Mailpit container, so nothing leaves the host; no mail provider is chosen for production yet.
 - Local runs use no Spring profile. The `production` profile reads the database from `BEYONDPILOT_DATABASE_*` without defaults and logs Logstash-format JSON; `staging` adds DEBUG logging for the application's own code ([runbook](docs/runbooks/development-runtime.md#profiles-and-environment-variables)).
-- Continuous integration runs on every branch push: workflow lint and a secret scan, the backend gate, the web gate with a dependency audit, and Playwright with axe on the production build ([testing guideline](docs/guidelines/testing.md#continuous-integration)). Dependabot proposes Gradle, pnpm and GitHub Actions upgrades weekly.
+- Continuous integration runs on every branch push: workflow lint and a secret scan, the backend gate, the web gate with a dependency audit, and Playwright with axe on the production build ([testing guideline](docs/guidelines/testing.md#continuous-integration)). A main push also publishes both images to GHCR and a release that [Deploy staging](docs/runbooks/ci-cd.md) promotes to the staging host. Dependabot proposes Gradle, pnpm, GitHub Actions and base-image upgrades weekly.
 - Metrics, tracing and dashboards do not exist; logs are the only operational signal.

@@ -68,6 +68,16 @@ tasks.withType<JavaCompile> {
 	options.compilerArgs.addAll(listOf("-Xlint:deprecation,removal", "-Werror"))
 }
 
+// The image build (backend/Dockerfile) downloads the build classpaths in a layer of their own, before the sources
+// are copied, so a change to the code reuses the downloaded dependencies.
+tasks.register("resolveDependencies") {
+	notCompatibleWithConfigurationCache("Resolves configurations at execution time")
+	val names = setOf("compileClasspath", "runtimeClasspath", "productionRuntimeClasspath", "annotationProcessor")
+	doLast {
+		project.configurations.filter { it.name in names && it.isCanBeResolved }.forEach { it.resolve() }
+	}
+}
+
 tasks.withType<Test> {
 	useJUnitPlatform()
 }

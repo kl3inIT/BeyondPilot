@@ -1,0 +1,49 @@
+# Both images build from the repository root; only what a build reads is sent to the daemon.
+
+# Version control, agents and editors
+.git
+.github
+.claude
+.mcp.json
+.idea
+.vscode
+.settings
+.classpath
+.project
+.factorypath
+*.iml
+
+# Build outputs, caches and dependencies, which each build recreates
+.gradle
+**/.gradle
+**/build
+**/bin
+out
+.tmp
+**/node_modules
+**/.next
+**/test-results
+**/playwright-report
+**/coverage
+**/*.tsbuildinfo
+
+# Machine-local configuration and secrets
+.env
+.env.*
+**/.env
+**/.env.*
+secrets
+**/secrets
+*.pem
+*.key
+*.p12
+*.jks
+
+# Documents and deployment files no image reads
+docs
+infrastructure
+*.md
+
+# Crash reports
+hs_err_pid*.log
+replay_pid*.log
