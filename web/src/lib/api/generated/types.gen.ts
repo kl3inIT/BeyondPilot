@@ -309,6 +309,10 @@ export type Program = {
     events: Array<ProgramEvent>;
     externalUrl?: string | null;
     /**
+     * Leads an operator who previews a draft back to its Settings.
+     */
+    id: string;
+    /**
      * In the order the operator gave.
      */
     keyDates: Array<ProgramKeyDate>;

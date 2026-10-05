@@ -1399,6 +1399,10 @@ components:
           - string
           - "null"
           format: uri
+        id:
+          type: string
+          format: uuid
+          description: Leads an operator who previews a draft back to its Settings.
         keyDates:
           type: array
           description: In the order the operator gave.
@@ -1460,6 +1464,7 @@ components:
           - event
       required:
       - events
+      - id
       - keyDates
       - name
       - pageKind

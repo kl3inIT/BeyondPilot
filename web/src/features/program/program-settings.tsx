@@ -22,7 +22,7 @@ import { useNotify } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
 import { saveProgram, type AdminProgram } from "@/lib/api/generated";
 import { fieldOfPointer } from "@/lib/api/problem-fields";
-import { publicSiteHost, siteRoutes } from "@/lib/site";
+import { programRoute, publicSiteHost, siteRoutes } from "@/lib/site";
 import { instantInVietnam } from "@/lib/vietnam-time";
 
 import { CoverUpload } from "./cover-upload";
@@ -208,6 +208,9 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
               </form.Subscribe>
             )}
           </div>
+          <Button prominence="secondary" href={programRoute(program.slug)}>
+            {t(draft ? "preview" : "viewPage")}
+          </Button>
           <ProgramMenu program={program} />
         </div>
       </div>

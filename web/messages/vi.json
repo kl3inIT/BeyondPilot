@@ -495,7 +495,9 @@
           "note": "Mọi thứ đã nhập được giữ nguyên, địa chỉ không đổi.",
           "confirm": "Gỡ",
           "done": "{name} không còn công khai."
-        }
+        },
+        "preview": "Xem trước",
+        "viewPage": "Xem trang"
       },
       "noDays": "Chưa đặt ngày",
       "search": "Tìm chương trình theo tên",
@@ -720,6 +722,32 @@
       "closes": "Đóng {closes}",
       "closed": "Đã đóng nhận đơn lúc {closes}",
       "left": "{days, plural, =0 {Ngày cuối} other {Còn # ngày}} · đóng {closes}"
+    },
+    "page": {
+      "programs": "Chương trình",
+      "phase": {
+        "open": "Đang mở",
+        "upcoming": "Sắp diễn ra",
+        "running": "Đang diễn ra",
+        "done": "Đã kết thúc"
+      },
+      "applyNow": "Nộp đơn ngay",
+      "closesIn": "Hạn nộp đơn",
+      "about": "Giới thiệu",
+      "timeline": "Dòng thời gian",
+      "events": "Sự kiện",
+      "online": "Trực tuyến",
+      "register": "Đăng ký",
+      "nothingYet": "Thông tin thêm về chương trình sẽ sớm có.",
+      "draft": {
+        "message": "Bản nháp. Chỉ operator thấy trang này; trang chưa có trên danh sách chương trình.",
+        "back": "Quay lại cài đặt"
+      }
+    },
+    "timeline": {
+      "opens": "Mở nhận đơn",
+      "closes": "Đóng nhận đơn",
+      "outcomes": "Mọi người nộp đơn nhận kết quả"
     }
   },
   "Programs": {

@@ -495,7 +495,9 @@
           "note": "Nothing you entered is lost, and the address stays the same.",
           "confirm": "Unpublish",
           "done": "{name} is no longer public."
-        }
+        },
+        "preview": "Preview",
+        "viewPage": "View page"
       },
       "noDays": "Days not set",
       "search": "Search programs by name",
@@ -720,6 +722,32 @@
       "closes": "Closes {closes}",
       "closed": "Applications closed on {closes}",
       "left": "{days, plural, =0 {Last day} one {# day left} other {# days left}} · closes {closes}"
+    },
+    "page": {
+      "programs": "Programs",
+      "phase": {
+        "open": "Open now",
+        "upcoming": "Coming up",
+        "running": "Running",
+        "done": "Done"
+      },
+      "applyNow": "Apply now",
+      "closesIn": "Applications close",
+      "about": "About",
+      "timeline": "Timeline",
+      "events": "Events",
+      "online": "Online",
+      "register": "Register",
+      "nothingYet": "More about this program is coming soon.",
+      "draft": {
+        "message": "Draft. Only operators can see this page; it is not on the programs list yet.",
+        "back": "Back to settings"
+      }
+    },
+    "timeline": {
+      "opens": "Applications open",
+      "closes": "Applications close",
+      "outcomes": "Every applicant hears back"
     }
   },
   "Programs": {

@@ -7,6 +7,14 @@ type Format = Awaited<ReturnType<typeof getFormatter>>;
 const time = { hour: "2-digit", minute: "2-digit", hourCycle: "h23" } as const;
 const dayMonth = { day: "numeric", month: "short" } as const;
 
+/**
+ * The moment a page is rendered, which places each step of a timeline before or after it. A page is
+ * rendered for each request, so it is the moment of the visit.
+ */
+export function renderedAt() {
+  return Date.now();
+}
+
 /** A day the backend writes as `2026-12-05`, at midnight in Vietnam. */
 export function vietnamDay(day: string) {
   return new Date(`${day}T00:00:00+07:00`);

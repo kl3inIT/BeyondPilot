@@ -57,7 +57,7 @@ public class ProgramService {
 			.orElseThrow(() -> new ProgramException(ProgramErrorCode.PROGRAM_NOT_FOUND, "No public program " + slug));
 		Instant opensAt = program.getApplicationsOpenAt();
 		Instant closesAt = program.getApplicationsCloseAt();
-		return new ProgramResponse(program.getSlug(), program.getName(), program.getType().code(),
+		return new ProgramResponse(program.getId(), program.getSlug(), program.getName(), program.getType().code(),
 				program.getPartnerName(), program.getSummary(), program.getAbout(), program.getCoverFileId(),
 				ProgramPhase.of(program.getStartsOn(), program.getEndsOn(), opensAt, closesAt, Instant.now()).code(),
 				program.getStartsOn(), program.getEndsOn(), program.getPageKind().code(), program.getExternalUrl(),

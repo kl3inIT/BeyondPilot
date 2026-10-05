@@ -9,6 +9,8 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(name = "Program", description = "A program as its public page shows it.")
 public record ProgramResponse(
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "Leads an operator who previews a draft back to its Settings.") UUID id,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The address under /programs.") String slug,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
