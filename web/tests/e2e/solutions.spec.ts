@@ -156,6 +156,7 @@ test.describe("solutions directory", () => {
     await expect(page).toHaveTitle("Pocket Policy · BeyondPilot");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pocket Policy");
     await expect(page.getByText("Company · Singapore")).toBeVisible();
+    await expect(page.getByText("Insurance, Banking and finance")).toBeVisible();
     await expect(page.getByRole("link", { name: "pocketpolicy.example" })).toHaveAttribute(
       "href",
       "https://www.pocketpolicy.example/",

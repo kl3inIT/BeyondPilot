@@ -14,6 +14,7 @@ const pocketPolicy = {
   roles: ["provider"],
   country: "SG",
   teamSize: "10_49",
+  industries: ["insurance"],
   website: "https://pocketpolicy.example",
   emailDomain: "pocketpolicy.example",
   description: "Assistants for insurers across Southeast Asia.",

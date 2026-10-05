@@ -249,14 +249,22 @@ export type CreateOrganization = {
     /**
      * ISO 3166-1 alpha-2.
      */
-    country?: string | null;
+    country: string;
     description?: string | null;
+    /**
+     * The industries it works in or serves, as the codes the solutions use.
+     */
+    industries: Array<string>;
+    /**
+     * What the creator does in the organization.
+     */
+    jobTitle: string;
     name: string;
     /**
      * One or both of `provider` and `enterprise`.
      */
     roles: Array<string>;
-    teamSize?: string | null;
+    teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     website?: string | null;
 };
@@ -425,6 +433,10 @@ export type Organization = {
      */
     emailDomain?: string | null;
     id: string;
+    /**
+     * The industries it works in or serves; empty until an owner names them.
+     */
+    industries: Array<string>;
     name: string;
     /**
      * What it does here: `provider` lists AI solutions, `enterprise` posts use cases.
@@ -629,6 +641,7 @@ export type PublicOrganization = {
      */
     country?: string | null;
     description?: string | null;
+    industries: Array<string>;
     name: string;
     slug: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
@@ -853,14 +866,18 @@ export type SaveOrganization = {
     /**
      * ISO 3166-1 alpha-2.
      */
-    country?: string | null;
+    country: string;
     description?: string | null;
+    /**
+     * The industries it works in or serves, as the codes the solutions use.
+     */
+    industries: Array<string>;
     name: string;
     /**
      * One or both of `provider` and `enterprise`.
      */
     roles: Array<string>;
-    teamSize?: string | null;
+    teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     /**
      * The version the screen read.

@@ -20,6 +20,7 @@ function OrganizationProfilePage({ mine, counts }: OrganizationProfilePageProps)
   const roleName = useVocabulary("organizationRole");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
+  const industryName = useVocabulary("industry");
   const countryName = useCountryName();
   const { organization } = mine;
 
@@ -30,6 +31,7 @@ function OrganizationProfilePage({ mine, counts }: OrganizationProfilePageProps)
     { label: t("type"), value: typeName(organization.type) },
     { label: t("teamSize"), value: organization.teamSize && sizeName(organization.teamSize) },
     { label: t("roles"), value: organization.roles.map(roleName).join(", ") },
+    { label: t("industries"), value: organization.industries.map(industryName).join(", ") },
     { label: t("country"), value: organization.country && countryName(organization.country) },
     { label: t("description"), value: organization.description },
   ];

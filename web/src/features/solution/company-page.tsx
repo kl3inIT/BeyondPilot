@@ -92,12 +92,17 @@ function CompanyPage({ organization, solutions, more, deployments }: CompanyPage
   const directory = useTranslations("Solution.directory");
   const lists = useTranslations("Lists");
   const type = useVocabulary("organizationType");
+  const industry = useVocabulary("industry");
   const countryName = useCountryName();
   const country = organization.country ? countryName(organization.country) : undefined;
   const kind = [type(organization.type), country].filter(Boolean).join(" · ");
   const facts = [
     { name: detail("company.type"), value: type(organization.type) },
     { name: detail("company.country"), value: country },
+    {
+      name: detail("company.industries"),
+      value: organization.industries.map(industry).join(", "),
+    },
   ];
 
   return (

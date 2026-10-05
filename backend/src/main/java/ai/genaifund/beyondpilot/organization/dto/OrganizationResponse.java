@@ -20,6 +20,8 @@ public record OrganizationResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 		@Schema(types = { "string", "null" }, description = "Null is unknown.",
 				allowableValues = { "just_me", "2_9", "10_49", "50_99", "100_499", "500_999", "1000_4999",
 						"5000_plus" }) @Nullable String teamSize,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The industries it works in or serves; empty until an owner names them.") List<String> industries,
 		@Schema(types = { "string", "null" }) @Nullable String description,
 		@Schema(types = { "string", "null" },
 				description = "The domain whose addresses may join; null when it was made from a public mail address.") @Nullable String emailDomain,

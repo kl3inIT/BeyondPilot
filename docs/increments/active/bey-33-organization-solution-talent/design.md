@@ -8,6 +8,7 @@ The domain behind it is [BEY-22 — Phase 1 domain model](../bey-22-phase-1-doma
 
 - **Get into an organization.** A signed-in person without one sees the invitations sent to their address, the organization of their email domain, a search by name, and a form to create a new one. Joining is immediate when the email domain matches and the organization allows it; otherwise the person asks and an owner decides. An organization nobody owns can be claimed, and an operator decides the claim.
 - **Run an organization.** Its owners edit the profile, invite people by email as owner or member, approve or decline requests to join, change roles and remove members. Anyone can leave; the last owner cannot. Each member records their own job title.
+- **Say what an organization is.** Its profile holds a name, what it does here, a type, a country, a team size and one to five industries from the list the solutions are filed under; a website and a description are optional. The person who creates it also says their own role or job title, which is recorded on their membership. An organization an operator adds for a company that is not here yet has no team size and no industries until an owner saves its profile.
 - **Say what the organization is.** An organization is a provider, an enterprise, or both. The owner chooses; the role decides which tabs the organization has. Only a provider has Solutions.
 - **List a solution.** An owner of an approved provider starts a solution from its name, fills it in as a draft and sends it for review. Members read. A rejected solution carries the reason and can be sent again. An approved solution is in the public directory while `listed` is on, and a change to it shows at once.
 - **Publish a talent profile.** Any signed-in person keeps one profile: headline, bio, roles, skills, availability, engagement, rate band, up to six projects. It is reviewed like a solution.
@@ -82,6 +83,7 @@ The dependency edges are new: `organization → audit, identity, notification`; 
 
 - `V5__organization_create_organizations.sql`: `organization`, `organization_member`, `organization_invitation`, `organization_join_request`.
 - `V6__solution_create_solutions.sql`: `solution`.
+- `V9__organization_add_industries.sql`: `organization.industries`, empty for the rows that exist.
 - `V7__talent_create_profiles.sql`: `talent_profile`, `talent_project`, `talent_enquiry`.
 
 V4 is left to the program module, which is built on another branch.

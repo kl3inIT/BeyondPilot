@@ -65,7 +65,8 @@ public class OrganizationDirectory {
 			.orElseThrow(() -> new OrganizationException(OrganizationErrorCode.ORGANIZATION_NOT_FOUND,
 					"No approved organization at " + slug));
 		return new PublicOrganizationResponse(organization.getSlug(), organization.getName(), organization.getType(),
-				organization.getCountry(), organization.getWebsite(), organization.getDescription());
+				organization.getCountry(), organization.getIndustries(), organization.getWebsite(),
+				organization.getDescription());
 	}
 
 	/** The names of these organizations by identifier; an unknown one is left out. */

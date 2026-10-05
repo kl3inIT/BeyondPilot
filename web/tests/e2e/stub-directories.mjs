@@ -6,6 +6,7 @@ const pocketPolicy = {
   name: "Pocket Policy",
   type: "company",
   country: "SG",
+  industries: ["insurance", "banking_finance"],
   description: "Assistants for insurers across Southeast Asia.",
   website: "https://www.pocketpolicy.example/",
 };
@@ -14,6 +15,7 @@ const lumenHealth = {
   name: "Lumen Health",
   type: "builder_team",
   country: "VN",
+  industries: [],
   description: null,
   website: null,
 };

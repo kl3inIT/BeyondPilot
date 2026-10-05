@@ -3296,9 +3296,7 @@ components:
         \ Fund's review."
       properties:
         country:
-          type:
-          - string
-          - "null"
+          type: string
           description: ISO 3166-1 alpha-2.
           pattern: "[A-Z]{2}"
         description:
@@ -3306,6 +3304,20 @@ components:
           - string
           - "null"
           maxLength: 2000
+          minLength: 0
+        industries:
+          type: array
+          description: "The industries it works in or serves, as the codes the solutions\
+            \ use."
+          items:
+            type: string
+            pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+          maxItems: 5
+          minItems: 1
+        jobTitle:
+          type: string
+          description: What the creator does in the organization.
+          maxLength: 120
           minLength: 0
         name:
           type: string
@@ -3320,9 +3332,7 @@ components:
           maxItems: 2
           minItems: 1
         teamSize:
-          type:
-          - string
-          - "null"
+          type: string
           pattern: just_me|2_9|10_49|50_99|100_499|500_999|1000_4999|5000_plus
         type:
           type: string
@@ -3340,8 +3350,12 @@ components:
           minLength: 0
           pattern: "https?://[^\\s]+"
       required:
+      - country
+      - industries
+      - jobTitle
       - name
       - roles
+      - teamSize
       - type
     CreateSolution:
       type: object
@@ -3630,6 +3644,12 @@ components:
         id:
           type: string
           format: uuid
+        industries:
+          type: array
+          description: The industries it works in or serves; empty until an owner
+            names them.
+          items:
+            type: string
         name:
           type: string
         roles:
@@ -3681,6 +3701,7 @@ components:
       - autoJoin
       - createdAt
       - id
+      - industries
       - name
       - roles
       - slug
@@ -4020,6 +4041,10 @@ components:
           type:
           - string
           - "null"
+        industries:
+          type: array
+          items:
+            type: string
         name:
           type: string
         slug:
@@ -4036,6 +4061,7 @@ components:
           - string
           - "null"
       required:
+      - industries
       - name
       - slug
       - type
@@ -4502,9 +4528,7 @@ components:
       description: The profile of an organization as its Profile screen holds it.
       properties:
         country:
-          type:
-          - string
-          - "null"
+          type: string
           description: ISO 3166-1 alpha-2.
           pattern: "[A-Z]{2}"
         description:
@@ -4513,6 +4537,15 @@ components:
           - "null"
           maxLength: 2000
           minLength: 0
+        industries:
+          type: array
+          description: "The industries it works in or serves, as the codes the solutions\
+            \ use."
+          items:
+            type: string
+            pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+          maxItems: 5
+          minItems: 1
         name:
           type: string
           maxLength: 120
@@ -4526,9 +4559,7 @@ components:
           maxItems: 2
           minItems: 1
         teamSize:
-          type:
-          - string
-          - "null"
+          type: string
           pattern: just_me|2_9|10_49|50_99|100_499|500_999|1000_4999|5000_plus
         type:
           type: string
@@ -4550,8 +4581,11 @@ components:
           minLength: 0
           pattern: "https?://[^\\s]+"
       required:
+      - country
+      - industries
       - name
       - roles
+      - teamSize
       - type
       - version
     SaveSolution:

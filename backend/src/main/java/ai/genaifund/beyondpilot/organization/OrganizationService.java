@@ -132,7 +132,7 @@ public class OrganizationService {
 				person.accountId());
 		organization.describe(request.name().strip(), OrganizationViews.roles(request.roles()), request.type(),
 				OrganizationViews.text(request.website()), request.country(), request.teamSize(),
-				OrganizationViews.text(request.description()));
+				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()));
 		// A work address vouches for its domain, unless an organization already holds it.
 		String domain = OrganizationViews.workDomain(person.email());
 		if (domain != null && organizations.findByEmailDomain(domain).isEmpty()) {
@@ -142,6 +142,7 @@ public class OrganizationService {
 		if (!memberships.add(organization.getId(), person.accountId(), MembershipRepository.OWNER)) {
 			throw alreadyMember(person);
 		}
+		memberships.changeJobTitle(person.accountId(), request.jobTitle().strip());
 		LOG.atInfo()
 			.addKeyValue("event", "organization.creation.submitted")
 			.addKeyValue("organization_id", organization.getId())
@@ -255,7 +256,7 @@ public class OrganizationService {
 		}
 		organization.describe(request.name().strip(), OrganizationViews.roles(request.roles()), request.type(),
 				OrganizationViews.text(request.website()), request.country(), request.teamSize(),
-				OrganizationViews.text(request.description()));
+				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()));
 		if (organization.isRejected()) {
 			organization.resubmit();
 		}

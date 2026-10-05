@@ -1,3 +1,6 @@
+/** A solution is filed under the industries an organization names its own from. */
+export { industries } from "@/features/organization/organization-codes";
+
 /** The codes of the solution module, in the order a select or a group of chips offers them. */
 export const focusAreas = [
   "conversational_ai",
@@ -12,28 +15,6 @@ export const focusAreas = [
   "search_knowledge",
   "data_platform",
   "ai_security",
-  "other",
-] as const;
-
-export const industries = [
-  "banking_finance",
-  "insurance",
-  "retail_ecommerce",
-  "manufacturing",
-  "logistics",
-  "healthcare",
-  "education",
-  "real_estate",
-  "telecom",
-  "energy",
-  "agriculture",
-  "travel_hospitality",
-  "media_entertainment",
-  "public_sector",
-  "professional_services",
-  "technology",
-  "automotive_mobility",
-  "consumer_goods",
   "other",
 ] as const;
 

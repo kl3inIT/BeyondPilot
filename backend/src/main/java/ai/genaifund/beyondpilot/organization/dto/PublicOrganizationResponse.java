@@ -1,5 +1,7 @@
 package ai.genaifund.beyondpilot.organization.dto;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.jspecify.annotations.Nullable;
 
@@ -9,6 +11,7 @@ public record PublicOrganizationResponse(@Schema(requiredMode = Schema.RequiredM
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "company", "builder_team", "independent_builder", "other" }) String type,
 		@Schema(types = { "string", "null" }, description = "ISO 3166-1 alpha-2.") @Nullable String country,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> industries,
 		@Schema(types = { "string", "null" }) @Nullable String website,
 		@Schema(types = { "string", "null" }) @Nullable String description) {
 }

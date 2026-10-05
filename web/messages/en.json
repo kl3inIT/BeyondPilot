@@ -572,7 +572,8 @@
         "declineClaim": "Decline",
         "members": "{count, plural, =0 {Members} one {# member} other {# members}}",
         "noMembers": "Nobody belongs to this organization yet.",
-        "invitations": "Open invitations"
+        "invitations": "Open invitations",
+        "industries": "Industries"
       },
       "review": {
         "title": "Review {name}",
@@ -1027,7 +1028,15 @@
         "title": "Discard your changes?",
         "lead": "The form goes back to the profile as it was last saved.",
         "cancel": "Keep editing"
-      }
+      },
+      "industries": "Industries",
+      "industriesRequired": "Choose at least one industry.",
+      "industriesHint": "The industries it works in or serves. Choose up to {count}. {chosen} chosen.",
+      "countryRequired": "Select a country.",
+      "teamSizeRequired": "Select a team size.",
+      "jobTitle": "Your role or job title",
+      "jobTitleRequired": "Enter your role or job title.",
+      "jobTitleHint": "What you do in the organization. It shows beside your name among its members."
     },
     "find": {
       "title": "Find your organization",
@@ -1303,7 +1312,8 @@
         "noDeployments": "No customer deployment published.",
         "type": "Type",
         "country": "Country",
-        "website": "Website"
+        "website": "Website",
+        "industries": "Industries"
       },
       "contact": {
         "title": "Work with {name}",

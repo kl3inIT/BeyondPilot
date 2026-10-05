@@ -52,6 +52,10 @@ public class Organization {
 
 	private @Nullable String teamSize;
 
+	@JdbcTypeCode(SqlTypes.ARRAY)
+	@Column(nullable = false, columnDefinition = "text[]")
+	private String[] industries = {};
+
 	private @Nullable String description;
 
 	private @Nullable String emailDomain;
@@ -102,13 +106,15 @@ public class Organization {
 	}
 
 	public void describe(String name, List<String> roles, String type, @Nullable String website,
-			@Nullable String country, @Nullable String teamSize, @Nullable String description) {
+			@Nullable String country, @Nullable String teamSize, List<String> industries,
+			@Nullable String description) {
 		this.name = name;
 		this.roles = roles.toArray(String[]::new);
 		this.type = type;
 		this.website = website;
 		this.country = country;
 		this.teamSize = teamSize;
+		this.industries = industries.toArray(String[]::new);
 		this.description = description;
 	}
 
@@ -182,6 +188,10 @@ public class Organization {
 
 	public @Nullable String getTeamSize() {
 		return teamSize;
+	}
+
+	public List<String> getIndustries() {
+		return List.of(industries);
 	}
 
 	public @Nullable String getDescription() {

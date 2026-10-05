@@ -15,15 +15,33 @@ import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { getPathname } from "@/i18n/navigation";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
-import { createOrganization, saveMyOrganization, type Organization } from "@/lib/api/generated";
+import {
+  createOrganization,
+  saveMyOrganization,
+  type Organization,
+  type SaveOrganization,
+} from "@/lib/api/generated";
 import { rejectedFields } from "@/lib/api/rejected-fields";
+import { focusField } from "@/lib/focus-field";
 import { siteRoutes } from "@/lib/site";
 
-import { organizationRoles, organizationTypes, teamSizes } from "./organization-codes";
+import { industries, organizationRoles, organizationTypes, teamSizes } from "./organization-codes";
 import { organizationError } from "./organization-errors";
 
 /** The longest description the backend takes. */
 const MAX_DESCRIPTION = 2000;
+/** The most industries the backend takes. */
+const MAX_INDUSTRIES = 5;
+
+/** The fields the form checks before it asks the backend, in the order the page shows them. */
+const checkedFields = [
+  { name: "jobTitle", id: "organization-job-title" },
+  { name: "name", id: "organization-name" },
+  { name: "teamSize", id: "organization-team-size" },
+  { name: "roles", id: "organization-roles" },
+  { name: "industries", id: "organization-industries" },
+  { name: "country", id: "organization-country" },
+] as const;
 
 type OrganizationFormProps = {
   /** The organization to change; without one the form creates it. */
@@ -39,6 +57,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
   const roleName = useVocabulary("organizationRole");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
+  const industryName = useVocabulary("industry");
   const countryName = useCountryName();
   const notify = useNotify();
   const router = useRouter();
@@ -48,6 +67,10 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
   const [type, setType] = useState<Organization["type"]>(organization?.type ?? "company");
   const [country, setCountry] = useState(organization?.country ?? "");
   const [teamSize, setTeamSize] = useState<string>(organization?.teamSize ?? "");
+  const [chosenIndustries, setChosenIndustries] = useState<string[]>(
+    organization?.industries ?? [],
+  );
+  const [jobTitle, setJobTitle] = useState("");
   const [website, setWebsite] = useState(organization?.website ?? "");
   const [description, setDescription] = useState(organization?.description ?? "");
   const [pending, setPending] = useState(false);
@@ -63,16 +86,30 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
     if (roles.length === 0) {
       missing.add("roles");
     }
+    if (!country) {
+      missing.add("country");
+    }
+    if (!teamSize) {
+      missing.add("teamSize");
+    }
+    if (chosenIndustries.length === 0) {
+      missing.add("industries");
+    }
+    if (!organization && !jobTitle.trim()) {
+      missing.add("jobTitle");
+    }
     setInvalid(missing);
     if (missing.size > 0) {
+      focusField(checkedFields.find((field) => missing.has(field.name))?.id ?? checkedFields[0].id);
       return;
     }
     const body = {
       name,
       roles,
       type,
-      country: country || null,
-      teamSize: teamSize || null,
+      country,
+      teamSize: teamSize as SaveOrganization["teamSize"],
+      industries: chosenIndustries,
       website: website.trim() || null,
       description: description.trim() || null,
     };
@@ -84,7 +121,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
         router.refresh();
         setPending(false);
       } else {
-        await createOrganization({ body });
+        await createOrganization({ body: { ...body, jobTitle } });
         notify.success("Organization.done.created");
         // The new organization opens on its own pages; the form stays pending until they arrive.
         router.push(getPathname({ href: siteRoutes.workspaceOrganization, locale }));
@@ -107,6 +144,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
     setType(organization.type);
     setCountry(organization.country ?? "");
     setTeamSize(organization.teamSize ?? "");
+    setChosenIndustries(organization.industries);
     setWebsite(organization.website ?? "");
     setDescription(organization.description ?? "");
     setInvalid(new Set());
@@ -116,13 +154,23 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
   const dirty =
     organization !== undefined &&
     !pending &&
-    JSON.stringify([name, roles, type, country, teamSize, website, description]) !==
+    JSON.stringify([
+      name,
+      roles,
+      type,
+      country,
+      teamSize,
+      chosenIndustries,
+      website,
+      description,
+    ]) !==
       JSON.stringify([
         organization.name,
         organization.roles,
         organization.type,
         organization.country ?? "",
         organization.teamSize ?? "",
+        organization.industries,
         organization.website ?? "",
         organization.description ?? "",
       ]);
@@ -145,6 +193,26 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
         </Title>
         <p className="text-muted-foreground">{t(organization ? "profileLead" : "createLead")}</p>
       </div>
+
+      {!organization && (
+        <Field data-invalid={bad("jobTitle")}>
+          <FieldLabel htmlFor="organization-job-title">{t("jobTitle")}</FieldLabel>
+          <Input
+            id="organization-job-title"
+            name="jobTitle"
+            autoComplete="organization-title"
+            maxLength={120}
+            value={jobTitle}
+            aria-describedby="organization-job-title-hint"
+            onChange={(event) => setJobTitle(event.target.value)}
+            aria-invalid={bad("jobTitle")}
+          />
+          {bad("jobTitle") && <FieldError>{t("jobTitleRequired")}</FieldError>}
+          <p id="organization-job-title-hint" className="text-xs text-muted-foreground">
+            {t("jobTitleHint")}
+          </p>
+        </Field>
+      )}
 
       <h3 className="border-t pt-6 text-lg font-semibold">{t("basics")}</h3>
       <div className="grid gap-x-3 gap-y-7 sm:grid-cols-2">
@@ -212,16 +280,14 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
             ))}
           </NativeSelect>
         </Field>
-        <Field>
-          <FieldLabel htmlFor="organization-team-size">
-            {t("teamSize")}
-            {optional}
-          </FieldLabel>
+        <Field data-invalid={bad("teamSize")}>
+          <FieldLabel htmlFor="organization-team-size">{t("teamSize")}</FieldLabel>
           <NativeSelect
             id="organization-team-size"
             className="w-full"
             value={teamSize}
             onChange={(event) => setTeamSize(event.target.value)}
+            aria-invalid={bad("teamSize")}
           >
             <NativeSelectOption value="">{t("teamSizePlaceholder")}</NativeSelectOption>
             {teamSizes.map((value) => (
@@ -230,6 +296,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
               </NativeSelectOption>
             ))}
           </NativeSelect>
+          {bad("teamSize") && <FieldError>{t("teamSizeRequired")}</FieldError>}
         </Field>
       </div>
 
@@ -237,6 +304,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
       <Field data-invalid={bad("roles")}>
         <FieldLabel>{t("roles")}</FieldLabel>
         <ChoiceChips
+          id="organization-roles"
           label={t("roles")}
           aria-describedby="organization-roles-hint"
           options={organizationRoles.map((value) => ({ value, label: roleName(value) }))}
@@ -248,17 +316,31 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
           {t("rolesHint")}
         </p>
       </Field>
+      <Field data-invalid={bad("industries")}>
+        <FieldLabel>{t("industries")}</FieldLabel>
+        <ChoiceChips
+          id="organization-industries"
+          label={t("industries")}
+          aria-describedby="organization-industries-hint"
+          options={industries.map((value) => ({ value, label: industryName(value) }))}
+          value={chosenIndustries}
+          onValueChange={setChosenIndustries}
+          max={MAX_INDUSTRIES}
+        />
+        {bad("industries") && <FieldError>{t("industriesRequired")}</FieldError>}
+        <p id="organization-industries-hint" className="text-xs text-muted-foreground">
+          {t("industriesHint", { count: MAX_INDUSTRIES, chosen: chosenIndustries.length })}
+        </p>
+      </Field>
       <div className="grid gap-x-3 gap-y-7 sm:grid-cols-2">
-        <Field>
-          <FieldLabel htmlFor="organization-country">
-            {t("country")}
-            {optional}
-          </FieldLabel>
+        <Field data-invalid={bad("country")}>
+          <FieldLabel htmlFor="organization-country">{t("country")}</FieldLabel>
           <NativeSelect
             id="organization-country"
             className="w-full"
             value={country}
             onChange={(event) => setCountry(event.target.value)}
+            aria-invalid={bad("country")}
           >
             <NativeSelectOption value="">{t("countryPlaceholder")}</NativeSelectOption>
             {countryCodes.map((value) => (
@@ -267,6 +349,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
               </NativeSelectOption>
             ))}
           </NativeSelect>
+          {bad("country") && <FieldError>{t("countryRequired")}</FieldError>}
         </Field>
       </div>
       <Field>

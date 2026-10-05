@@ -572,7 +572,8 @@
         "declineClaim": "Từ chối",
         "members": "{count, plural, =0 {Thành viên} other {# thành viên}}",
         "noMembers": "Chưa có ai thuộc tổ chức này.",
-        "invitations": "Lời mời đang chờ"
+        "invitations": "Lời mời đang chờ",
+        "industries": "Ngành"
       },
       "review": {
         "title": "Xem xét {name}",
@@ -1027,7 +1028,15 @@
         "title": "Bỏ các thay đổi?",
         "lead": "Biểu mẫu trở về hồ sơ như lần lưu gần nhất.",
         "cancel": "Sửa tiếp"
-      }
+      },
+      "industries": "Ngành",
+      "industriesRequired": "Chọn ít nhất một ngành.",
+      "industriesHint": "Những ngành tổ chức hoạt động hoặc phục vụ. Chọn tối đa {count}. Đã chọn {chosen}.",
+      "countryRequired": "Chọn một quốc gia.",
+      "teamSizeRequired": "Chọn quy mô đội ngũ.",
+      "jobTitle": "Vai trò hoặc chức danh của bạn",
+      "jobTitleRequired": "Nhập vai trò hoặc chức danh của bạn.",
+      "jobTitleHint": "Việc bạn làm trong tổ chức. Hiển thị cạnh tên bạn trong danh sách thành viên."
     },
     "find": {
       "title": "Tìm tổ chức của bạn",
@@ -1303,7 +1312,8 @@
         "noDeployments": "Chưa công bố triển khai khách hàng nào.",
         "type": "Loại hình",
         "country": "Quốc gia",
-        "website": "Website"
+        "website": "Website",
+        "industries": "Ngành"
       },
       "contact": {
         "title": "Làm việc với {name}",

@@ -7,6 +7,8 @@ Boundaries follow [conventions › Testing](../conventions.md#testing). Membersh
 | Contract                                                                                                        | Regression it catches                                                            |
 | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | A person creates an organization, becomes its owner, and it waits for review                                    | An organization visible before GenAI Fund saw it; a creator who is not its owner |
+| A new organization carries its industries, and its creator's job title is on their membership                   | Industries dropped on the way in; an owner without the title they gave           |
+| A creation without a country, a team size, an industry or a job title answers `400` and points at each          | An organization in review that lacks what the review reads                       |
 | A person belongs to one organization: creating, joining or accepting a second one is refused                    | Two memberships for one account                                                  |
 | A matching email domain joins at once when auto-join is on, and asks when it is off; another domain always asks | Anyone joining any organization; a colleague blocked from their own company      |
 | An owner invites by email; only that address sees, accepts or declines the invitation; an owner can withdraw it | An invitation accepted by another account; an invitation that cannot be undone   |

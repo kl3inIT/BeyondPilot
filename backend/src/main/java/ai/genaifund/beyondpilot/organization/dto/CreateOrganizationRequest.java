@@ -21,8 +21,16 @@ public record CreateOrganizationRequest(
 						regexp = OrganizationCodes.TYPE) String type,
 		@Schema(types = { "string", "null" }) @Size(max = 300) @Pattern(
 				regexp = OrganizationCodes.WEBSITE) @Nullable String website,
-		@Schema(types = { "string", "null" }, description = "ISO 3166-1 alpha-2.") @Pattern(
-				regexp = OrganizationCodes.COUNTRY) @Nullable String country,
-		@Schema(types = { "string", "null" }) @Pattern(regexp = OrganizationCodes.TEAM_SIZE) @Nullable String teamSize,
-		@Schema(types = { "string", "null" }) @Size(max = 2000) @Nullable String description) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "ISO 3166-1 alpha-2.") @NotNull @Pattern(
+				regexp = OrganizationCodes.COUNTRY) String country,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Pattern(
+				regexp = OrganizationCodes.TEAM_SIZE) String teamSize,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The industries it works in or serves, as the codes the solutions use.") @NotNull @Size(
+						min = 1,
+						max = 5) List<@NotNull @Pattern(regexp = OrganizationCodes.INDUSTRY) String> industries,
+		@Schema(types = { "string", "null" }) @Size(max = 2000) @Nullable String description,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "What the creator does in the organization.") @NotBlank @Size(
+						max = 120) String jobTitle) {
 }

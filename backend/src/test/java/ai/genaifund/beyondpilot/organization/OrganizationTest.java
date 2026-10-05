@@ -59,29 +59,32 @@ class OrganizationTest {
 	void aCreatedOrganizationWaitsForReviewAndItsCreatorOwnsIt() {
 		String founder = signIn("founder@created.test");
 
-		String created = body(post(founder, API + "/organizations", profile("Created Co", "provider")).expectStatus()
+		String created = body(post(founder, API + "/organizations", creation("Created Co", "provider")).expectStatus()
 			.isCreated());
 
 		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("pending");
 		assertThat(JsonPath.<String>read(created, "$.slug")).isEqualTo("created-co");
 		assertThat(JsonPath.<String>read(created, "$.emailDomain")).isEqualTo("created.test");
 		assertThat(JsonPath.<List<String>>read(created, "$.roles")).containsExactly("provider");
+		assertThat(JsonPath.<List<String>>read(created, "$.industries")).containsExactly("insurance",
+				"banking_finance");
 		String mine = mine(founder);
 		assertThat(JsonPath.<String>read(mine, "$.role")).isEqualTo("owner");
+		assertThat(JsonPath.<String>read(mine, "$.jobTitle")).isEqualTo("Founder");
 		assertThat(JsonPath.<String>read(mine, "$.organization.name")).isEqualTo("Created Co");
 		// A person belongs to one organization.
-		assertProblem(post(founder, API + "/organizations", profile("Second Co", "provider")), 409,
+		assertProblem(post(founder, API + "/organizations", creation("Second Co", "provider")), 409,
 				"ORGANIZATION_ALREADY_MEMBER");
 	}
 
 	@Test
 	void aPublicMailAddressVouchesForNoDomainAndTheSameNameGetsItsOwnAddress() {
 		String first = body(post(signIn("someone.one@gmail.com"), API + "/organizations",
-				profile("Same Name", "provider", "enterprise"))
+				creation("Same Name", "provider", "enterprise"))
 			.expectStatus()
 			.isCreated());
 		String second = body(post(signIn("someone.two@gmail.com"), API + "/organizations",
-				profile("Same Name", "enterprise", "provider"))
+				creation("Same Name", "enterprise", "provider"))
 			.expectStatus()
 			.isCreated());
 
@@ -95,13 +98,14 @@ class OrganizationTest {
 	@Test
 	void aRequestOutOfBoundsIsAValidationProblemThatPointsAtIt() {
 		String body = body(post(signIn("typo@invalid.test"), API + "/organizations",
-				Map.of("name", " ", "roles", List.of("investor"), "type", "club", "country", "vn", "website", "x"))
+				Map.of("name", " ", "roles", List.of("investor"), "type", "club", "country", "vn", "industries",
+						List.of("mining"), "website", "x"))
 			.expectStatus()
 			.isBadRequest());
 
 		assertThat(JsonPath.<String>read(body, "$.code")).isEqualTo("REQUEST_INVALID");
 		assertThat(JsonPath.<List<String>>read(body, "$.errors[*].pointer")).containsExactlyInAnyOrder("#/name",
-				"#/roles/0", "#/type", "#/country", "#/website");
+				"#/roles/0", "#/type", "#/country", "#/teamSize", "#/industries/0", "#/website", "#/jobTitle");
 	}
 
 	@Test
@@ -189,13 +193,13 @@ class OrganizationTest {
 				body(get(outsider, API + "/organizations?q=asked").expectStatus().isOk()), "$.items[0].way"))
 			.isEqualTo("request");
 		assertThat(outcome(post(outsider, API + "/organizations/" + id + "/join", Map.of()))).isEqualTo("requested");
-		assertProblem(post(outsider, API + "/organizations", profile("Elsewhere", "provider")), 409,
+		assertProblem(post(outsider, API + "/organizations", creation("Elsewhere", "provider")), 409,
 				"ORGANIZATION_REQUEST_PENDING");
 
 		post(outsider, API + "/join-request/withdraw", null).expectStatus().isNoContent();
 
 		assertThat(JsonPath.<Object>read(mine(outsider), "$.request")).isNull();
-		post(outsider, API + "/organizations", profile("Elsewhere", "provider")).expectStatus().isCreated();
+		post(outsider, API + "/organizations", creation("Elsewhere", "provider")).expectStatus().isCreated();
 	}
 
 	@Test
@@ -402,7 +406,14 @@ class OrganizationTest {
 
 	private static Map<String, Object> profile(String name, String... roles) {
 		return Map.of("name", name, "roles", List.of(roles), "type", "company", "country", "VN", "teamSize", "2_9",
-				"website", "https://example.test");
+				"industries", List.of("insurance", "banking_finance"), "website", "https://example.test");
+	}
+
+	/** A profile with what only its creation asks: what the creator does there. */
+	private static Map<String, Object> creation(String name, String... roles) {
+		Map<String, Object> request = new HashMap<>(profile(name, roles));
+		request.put("jobTitle", " Founder ");
+		return request;
 	}
 
 	private static Map<String, Object> save(Map<String, Object> profile, int version) {
@@ -413,7 +424,7 @@ class OrganizationTest {
 
 	private UUID create(String session, String name) {
 		return UUID.fromString(JsonPath.read(
-				body(post(session, API + "/organizations", profile(name, "provider")).expectStatus().isCreated()),
+				body(post(session, API + "/organizations", creation(name, "provider")).expectStatus().isCreated()),
 				"$.id"));
 	}
 

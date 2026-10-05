@@ -108,7 +108,7 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Create your organization");
   });
 
-  test("a new organization needs a name and a role, and goes to review", async ({
+  test("a new organization needs its facts and its creator's job title, and goes to review", async ({
     page,
     context,
     baseURL,
@@ -120,13 +120,22 @@ test.describe("workspace organization", () => {
     await page.getByRole("button", { name: "Create organization" }).click();
     await expect(page.getByText("Enter the organization's name.")).toBeVisible();
     await expect(page.getByText("Choose at least one.")).toBeVisible();
+    await expect(page.getByText("Enter your role or job title.")).toBeVisible();
+    await expect(page.getByText("Select a team size.")).toBeVisible();
+    await expect(page.getByText("Choose at least one industry.")).toBeVisible();
+    await expect(page.getByText("Select a country.")).toBeVisible();
+    // The first field that lacks something is where the person continues.
+    await expect(page.getByLabel("Your role or job title")).toBeFocused();
     expect(changes).toEqual([]);
     // The pointer still rests on the button; its hover colour is not what is checked here.
     await page.mouse.move(0, 0);
     await expectNoSeriousA11yViolations(page);
 
+    await page.getByLabel("Your role or job title").fill("  Head of operations ");
     await page.getByLabel("Organization name").fill("Sài Gòn Logistics");
+    await page.getByLabel("Team size").selectOption({ label: "2–9 people" });
     await page.getByRole("button", { name: "AI provider" }).click();
+    await page.getByRole("group", { name: "Industries" }).getByText("Logistics").click();
     await page.getByLabel("Country").selectOption({ label: "Vietnam" });
     await page.getByLabel("Short description").fill("Route planning for fleets.");
     await page.getByRole("button", { name: "Create organization" }).click();
@@ -141,9 +150,11 @@ test.describe("workspace organization", () => {
           roles: ["provider"],
           type: "company",
           country: "VN",
-          teamSize: null,
+          teamSize: "2_9",
+          industries: ["logistics"],
           website: null,
           description: "Route planning for fleets.",
+          jobTitle: "  Head of operations ",
         },
       },
     ]);
@@ -229,6 +240,7 @@ test.describe("workspace organization", () => {
 
     await description.fill("Assistants for insurers and brokers.");
     await page.getByRole("button", { name: "Enterprise" }).click();
+    await page.getByRole("group", { name: "Industries" }).getByText("Healthcare").click();
     await save.click();
 
     await expect(page.getByText("Profile saved.")).toBeVisible();
@@ -241,6 +253,7 @@ test.describe("workspace organization", () => {
           type: "company",
           country: "SG",
           teamSize: "10_49",
+          industries: ["insurance", "healthcare"],
           website: "https://pocketpolicy.example",
           description: "Assistants for insurers and brokers.",
           // The version the form loaded, so a save over someone else's change is refused.

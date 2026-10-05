@@ -11,6 +11,11 @@ final class OrganizationCodes {
 
 	static final String COUNTRY = "[A-Z]{2}";
 
+	/** The industries a solution is filed under; an organization names its own from the same list. */
+	static final String INDUSTRY = "banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare"
+			+ "|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment"
+			+ "|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other";
+
 	static final String MEMBER_ROLE = "owner|member";
 
 	static final String WEBSITE = "https?://[^\\s]+";

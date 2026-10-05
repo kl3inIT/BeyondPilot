@@ -22,6 +22,7 @@ function AdminOrganizationPage({ detail }: { detail: AdminOrganization }) {
   const roleName = useVocabulary("organizationRole");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
+  const industryName = useVocabulary("industry");
   const reasonName = useVocabulary("organizationRefusal");
   const memberRole = useVocabulary("memberRole");
   const countryName = useCountryName();
@@ -34,6 +35,7 @@ function AdminOrganizationPage({ detail }: { detail: AdminOrganization }) {
     { label: t("type"), value: typeName(organization.type) },
     { label: t("country"), value: organization.country && countryName(organization.country) },
     { label: t("teamSize"), value: organization.teamSize && sizeName(organization.teamSize) },
+    { label: t("industries"), value: organization.industries.map(industryName).join(", ") },
     { label: t("website"), value: organization.website },
     { label: t("emailDomain"), value: organization.emailDomain },
     {

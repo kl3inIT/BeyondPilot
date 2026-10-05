@@ -392,7 +392,7 @@ class SolutionTest {
 	private UUID organization(String session, String name, String role) {
 		return UUID.fromString(JsonPath.read(body(post(session, ORGANIZATION + "/organizations",
 				Map.of("name", name, "roles", List.of(role), "type", "company", "country", "VN", "teamSize", "2_9",
-						"website", "https://example.test"))
+						"industries", List.of("insurance"), "website", "https://example.test", "jobTitle", "Founder"))
 			.expectStatus()
 			.isCreated()), "$.id"));
 	}

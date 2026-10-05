@@ -16,6 +16,7 @@ function organization(id, name, status, more) {
     roles: ["provider"],
     country: "VN",
     teamSize: "10_49",
+    industries: ["insurance"],
     website: `https://${name.toLowerCase().replaceAll(" ", "")}.example`,
     emailDomain: null,
     description: null,

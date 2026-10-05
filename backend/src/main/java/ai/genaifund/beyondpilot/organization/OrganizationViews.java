@@ -39,7 +39,8 @@ final class OrganizationViews {
 	static OrganizationResponse organization(Organization organization) {
 		return new OrganizationResponse(organization.getId(), organization.getSlug(), organization.getName(),
 				organization.getRoles(), organization.getType(), organization.getWebsite(), organization.getCountry(),
-				organization.getTeamSize(), organization.getDescription(), organization.getEmailDomain(),
+				organization.getTeamSize(), organization.getIndustries(), organization.getDescription(),
+				organization.getEmailDomain(),
 				organization.isAutoJoin(), organization.getStatus(), organization.getDecisionReason(),
 				organization.getDecisionMessage(), organization.getVersion(), organization.getCreatedAt());
 	}
@@ -76,6 +77,11 @@ final class OrganizationViews {
 	/** The roles once each, in a fixed order, so the same choice always reads the same. */
 	static List<String> roles(List<String> roles) {
 		return ROLE_ORDER.stream().filter(roles::contains).toList();
+	}
+
+	/** The codes a person chose, each once, in the order chosen. */
+	static List<String> codes(List<String> codes) {
+		return codes.stream().distinct().toList();
 	}
 
 	/** What a person typed, or null when they typed nothing. */

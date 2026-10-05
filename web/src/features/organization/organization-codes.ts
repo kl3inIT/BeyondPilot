@@ -19,6 +19,29 @@ export const teamSizes = [
   "5000_plus",
 ] as const;
 
+/** The industries an organization works in or serves; a solution is filed under the same ones. */
+export const industries = [
+  "banking_finance",
+  "insurance",
+  "retail_ecommerce",
+  "manufacturing",
+  "logistics",
+  "healthcare",
+  "education",
+  "real_estate",
+  "telecom",
+  "energy",
+  "agriculture",
+  "travel_hospitality",
+  "media_entertainment",
+  "public_sector",
+  "professional_services",
+  "technology",
+  "automotive_mobility",
+  "consumer_goods",
+  "other",
+] as const;
+
 export const refusalReasons = [
   "duplicate",
   "not_a_real_organization",

@@ -110,7 +110,7 @@ public class OrganizationAdministration {
 				OrganizationViews.roles(request.roles()), request.type(), Organization.APPROVED,
 				operator.accountId());
 		organization.describe(request.name().strip(), OrganizationViews.roles(request.roles()), request.type(),
-				OrganizationViews.text(request.website()), request.country(), null, null);
+				OrganizationViews.text(request.website()), request.country(), null, List.of(), null);
 		organization.verifyDomain(domain);
 		organization.approve(Instant.now());
 		organizations.saveAndFlush(organization);
