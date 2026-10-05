@@ -11,6 +11,8 @@ export const auditActions = [
   "operator.withdraw",
   "program.create",
   "program.update",
+  "program.publish",
+  "program.unpublish",
 ] as const;
 
 /**

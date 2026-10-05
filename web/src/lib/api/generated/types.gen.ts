@@ -84,6 +84,10 @@ export type AdminProgram = {
      */
     partnerName?: string | null;
     /**
+     * What the program still lacks before it can be published, in the order the Settings screen shows its fields. Empty when it can be published.
+     */
+    publishIssues: Array<'summary' | 'cover' | 'dates'>;
+    /**
      * The address under /programs.
      */
     slug: string;
@@ -134,7 +138,7 @@ export type AdminProgramSummary = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -433,7 +437,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -846,6 +850,80 @@ export type SaveProgramResponses = {
 };
 
 export type SaveProgramResponse = SaveProgramResponses[keyof SaveProgramResponses];
+
+export type PublishProgramData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}/publish';
+};
+
+export type PublishProgramErrors = {
+    /**
+     * The program still lacks what its publishIssues list; nothing changed.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+};
+
+export type PublishProgramError = PublishProgramErrors[keyof PublishProgramErrors];
+
+export type PublishProgramResponses = {
+    /**
+     * The program is published. Its address is fixed from now on.
+     */
+    204: void;
+};
+
+export type PublishProgramResponse = PublishProgramResponses[keyof PublishProgramResponses];
+
+export type UnpublishProgramData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}/unpublish';
+};
+
+export type UnpublishProgramErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+};
+
+export type UnpublishProgramError = UnpublishProgramErrors[keyof UnpublishProgramErrors];
+
+export type UnpublishProgramResponses = {
+    /**
+     * The program is a draft again; it keeps its address.
+     */
+    204: void;
+};
+
+export type UnpublishProgramResponse = UnpublishProgramResponses[keyof UnpublishProgramResponses];
 
 export type GetPublicFileData = {
     body?: never;

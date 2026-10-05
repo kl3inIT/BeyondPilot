@@ -164,6 +164,33 @@ public class Program {
 		}
 	}
 
+	/**
+	 * Puts the program on the public site; the first time also fixes its address.
+	 * @return whether this changed anything
+	 */
+	public boolean publish(Instant at) {
+		if (status == ProgramStatus.PUBLISHED) {
+			return false;
+		}
+		status = ProgramStatus.PUBLISHED;
+		if (publishedAt == null) {
+			publishedAt = at;
+		}
+		return true;
+	}
+
+	/**
+	 * Takes the program off the public site. Everything it holds stays, and so does its address.
+	 * @return whether this changed anything
+	 */
+	public boolean unpublish() {
+		if (status == ProgramStatus.DRAFT) {
+			return false;
+		}
+		status = ProgramStatus.DRAFT;
+		return true;
+	}
+
 	/** The address is fixed from the first publication on. */
 	public boolean hasBeenPublished() {
 		return publishedAt != null;

@@ -247,6 +247,41 @@ public class ProgramAdministration {
 		}
 	}
 
+	/**
+	 * Puts the program on the public site. The first publication fixes its address. Publishing a published program
+	 * changes nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProgramException when the program does not exist, or it still lacks what publishing needs
+	 */
+	@Transactional
+	public void publish(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Program program = programs.findForUpdate(id).orElseThrow(() -> notFound(id));
+		List<PublishIssue> issues = PublishIssue.of(program);
+		if (!issues.isEmpty()) {
+			throw new ProgramException(ProgramErrorCode.NOT_READY_TO_PUBLISH,
+					"Publication of program " + id + " refused: " + issues);
+		}
+		if (program.publish(Instant.now())) {
+			record(AuditAction.PROGRAM_PUBLISH, operator, program);
+		}
+	}
+
+	/**
+	 * Takes the program off the public site; it keeps everything, its address included. Unpublishing a draft changes
+	 * nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProgramException when the program does not exist
+	 */
+	@Transactional
+	public void unpublish(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Program program = programs.findForUpdate(id).orElseThrow(() -> notFound(id));
+		if (program.unpublish()) {
+			record(AuditAction.PROGRAM_UNPUBLISH, operator, program);
+		}
+	}
+
 	private void record(AuditAction action, Operator operator, Program program) {
 		audit.record(new AuditRecord(action,
 				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
@@ -257,7 +292,7 @@ public class ProgramAdministration {
 		Instant opensAt = program.getApplicationsOpenAt();
 		Instant closesAt = program.getApplicationsCloseAt();
 		return new AdminProgramResponse(program.getId(), program.getSlug(), program.hasBeenPublished(),
-				program.getName(), program.getType().code(), program.getPartnerName(), program.getSummary(),
+				PublishIssue.of(program).stream().map(PublishIssue::code).toList(), program.getName(), program.getType().code(), program.getPartnerName(), program.getSummary(),
 				program.getAbout(), program.getStartsOn(), program.getEndsOn(), program.getStatus().code(),
 				program.getPageKind().code(), program.getExternalUrl(), program.getCoverFileId(),
 				opensAt == null || closesAt == null ? null

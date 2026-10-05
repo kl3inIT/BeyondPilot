@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetMeData, GetMeErrors, GetMeResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, SaveProgramData, SaveProgramErrors, SaveProgramResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
+import type { ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetMeData, GetMeErrors, GetMeResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, SaveProgramData, SaveProgramErrors, SaveProgramResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -167,6 +167,32 @@ export const saveProgram = <ThrowOnError extends boolean = true>(options: Option
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Put a program on the public site
+ */
+export const publishProgram = <ThrowOnError extends boolean = true>(options: Options<PublishProgramData, ThrowOnError>): RequestResult<PublishProgramResponses, PublishProgramErrors, ThrowOnError> => (options.client ?? client).post<PublishProgramResponses, PublishProgramErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/program/admin/programs/{id}/publish',
+    ...options
+});
+
+/**
+ * Take a program off the public site
+ */
+export const unpublishProgram = <ThrowOnError extends boolean = true>(options: Options<UnpublishProgramData, ThrowOnError>): RequestResult<UnpublishProgramResponses, UnpublishProgramErrors, ThrowOnError> => (options.client ?? client).post<UnpublishProgramResponses, UnpublishProgramErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/program/admin/programs/{id}/unpublish',
+    ...options
 });
 
 /**

@@ -96,4 +96,31 @@ class AdminProgramsController {
 		return programs.save(actor, id, request);
 	}
 
+	@PostMapping("/{id}/publish")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "publishProgram", summary = "Put a program on the public site",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The program is published. Its address is fixed from now on.",
+			content = @Content)
+	@ApiResponse(responseCode = "400",
+			description = "The program still lacks what its publishIssues list; nothing changed.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such program.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void publish(@CurrentActor Actor actor, @PathVariable UUID id) {
+		programs.publish(actor, id);
+	}
+
+	@PostMapping("/{id}/unpublish")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "unpublishProgram", summary = "Take a program off the public site",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The program is a draft again; it keeps its address.",
+			content = @Content)
+	@ApiResponse(responseCode = "404", description = "There is no such program.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void unpublish(@CurrentActor Actor actor, @PathVariable UUID id) {
+		programs.unpublish(actor, id);
+	}
+
 }

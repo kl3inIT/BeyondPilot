@@ -32,6 +32,9 @@ public enum ProgramErrorCode implements ErrorCode {
 	EXTERNAL_URL_REQUIRED("PROGRAM_EXTERNAL_URL_REQUIRED", ErrorCategory.VALIDATION,
 			"A program whose page is somewhere else needs the address of that page."),
 
+	NOT_READY_TO_PUBLISH("PROGRAM_NOT_READY_TO_PUBLISH", ErrorCategory.VALIDATION,
+			"This program cannot be published yet. Fill in what the Settings screen lists, then publish it."),
+
 	COVER_NOT_USABLE("PROGRAM_COVER_NOT_USABLE", ErrorCategory.VALIDATION,
 			"This file cannot be the cover. Upload the image again.");
 

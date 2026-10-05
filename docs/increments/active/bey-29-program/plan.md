@@ -6,7 +6,7 @@ Design: [design.md](design.md). Tracked in Linear as BEY-29.
 | --- | --- | --- |
 | 1 | Backend: `V4__program_create_programs.sql`; the `program` module, closed, depending on `identity` and `audit`, listed in `ModulithArchitectureTest`; an operator creates a draft, reads it and reads the list | Done |
 | 2 | Backend: the save of a program with its window, key dates, events and cover, with its rules and its audit event | Done |
-| 2b | Backend: publish and unpublish | Open |
+| 2b | Backend: publish and unpublish, with what still blocks publishing | Done |
 | 3 | Backend: the public list and the public program, with the phase worked out from the dates; `openapi.yml` and the generated web client refreshed | Open |
 | 4 | Web: the upload helper (reserve, send, confirm), then the admin Programs list and a program's Settings | Open |
 | 5 | Web: the public programs list | Open |
@@ -22,7 +22,7 @@ After this increment, in their own: free sections with their editor, judges and 
 
 - `./gradlew :backend:check`. The program tests start the application against PostgreSQL and speak HTTP:
   - an operator creates, saves, publishes and unpublishes; a caller who is not an operator is refused; each change leaves an audit event;
-  - a taken or malformed address, a window that closes before it opens, outcomes due before the window closes, publishing without a summary, and a save over someone else's save are refused, each naming its field or its reason;
+  - a taken or malformed address, a window that closes before it opens, outcomes due before the window closes, publishing while a summary, a cover or the days are missing, and a save over someone else's save are refused, each naming its field or its reason;
   - the public list shows published programs only, and a program's phase changes with the clock at each boundary: before the window, inside it, after it, after the last day;
   - a draft answers `404` at its public address.
 - `pnpm --dir web check` and `pnpm --dir web test:e2e`: the list in each phase, the standard page, the Tasco page with dates taken from the API, the admin list and Settings with a save and a refused save, at desktop and mobile widths, with axe.

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.jspecify.annotations.Nullable;
 
@@ -13,6 +14,9 @@ public record AdminProgramResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The address under /programs.") String slug,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "The program has been published at least once, so its address cannot change.") boolean slugFixed,
+		@ArraySchema(arraySchema = @Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "What the program still lacks before it can be published, in the order the Settings screen shows its fields. Empty when it can be published."),
+				schema = @Schema(allowableValues = { "summary", "cover", "dates" })) List<String> publishIssues,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "enterprise_challenge", "open_innovation_call", "accelerator", "hackathon",

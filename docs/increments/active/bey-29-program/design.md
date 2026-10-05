@@ -55,7 +55,9 @@ Status: accepted on 5 October 2026 and being implemented ([plan](plan.md)). It i
 | Public reading needs no session | `SecurityConfiguration` permits `GET /api/program/programs` and `GET /api/program/programs/*` | The list and the pages are for visitors; everything under `/admin` stays behind the session and the operator check |
 | A rule across members is a failure code | A window that closes before it opens, and the rules like it, answer `400` with a code of their own; a single malformed member answers `REQUEST_INVALID` with a pointer | A module's failure carries a code and no pointer ([API errors](../../../conventions.md#api-errors)); the screen maps each code to the field it sits beside |
 | The cover is one program's | A save names a stored `program_image` the caller uploaded; the program then owns it, and removes the file when it names another or none | Nothing else would ever remove a replaced cover, and a file two programs share could not be removed by either |
-| Changes are audited | Create, update, publish and unpublish each record an event with the operator and the program | The same rule the accounts screen follows |
+| What blocks publishing | A summary, a cover and the start and end days. The program read for editing carries them as `publishIssues` (`summary`, `cover`, `dates`); the Settings screen lists them beside a disabled Publish and leads to each field, and the server checks them again when the program is published | The list and the page show the summary and the cover, and the phase needs the days. A list the server computes is what pretix and eventyay do ([research](../../../research/2026-10-05-program-publish-flow.md)) |
+| Publishing is its own action | Publish and Unpublish are commands beside Save, each confirmed in the screen; unpublishing keeps everything and the address stays fixed | Going live is a decision with a consequence, the fixed address, and not a field saved with the form; taking a program down must be easy and lose nothing |
+| Changes are audited | Create, update, publish and unpublish each record an event (`program.create`, `program.update`, `program.publish`, `program.unpublish`) with the operator and the program | The same rule the accounts screen follows |
 
 ## The addresses
 
@@ -67,7 +69,7 @@ Status: accepted on 5 October 2026 and being implemented ([plan](plan.md)). It i
 | Create | `POST /api/program/admin/programs` with name, address and type | `201` with the draft. `400` naming the member that is malformed; `409` `PROGRAM_SLUG_TAKEN` for a taken address |
 | Read for editing | `GET /api/program/admin/programs/{id}` | The whole program as the Settings screen shows it |
 | Save | `PUT /api/program/admin/programs/{id}` with the version the screen read | The saved program with its new version. `400` naming the member that is malformed, or with the code of the rule that is broken (`PROGRAM_DAYS_OUT_OF_ORDER`, `PROGRAM_WINDOW_OUT_OF_ORDER`, `PROGRAM_OUTCOMES_BEFORE_CLOSE`, `PROGRAM_KEY_DATE_OUT_OF_ORDER`, `PROGRAM_EVENT_OUT_OF_ORDER`, `PROGRAM_EXTERNAL_URL_REQUIRED`, `PROGRAM_COVER_NOT_USABLE`); `409` `PROGRAM_CHANGED_MEANWHILE` when someone else saved it in the meantime, `PROGRAM_SLUG_TAKEN` or `PROGRAM_SLUG_FIXED` for the address |
-| Publish, unpublish | `POST /api/program/admin/programs/{id}/publish`, `…/unpublish` | `204`. Publishing is refused with `400` while the summary is empty |
+| Publish, unpublish | `POST /api/program/admin/programs/{id}/publish`, `…/unpublish` | `204`; repeating either changes nothing and records nothing. Publishing is refused with `400` `PROGRAM_NOT_READY_TO_PUBLISH` while `publishIssues` is not empty |
 
 The counts of applications on the admin list ("8 submitted · 2 to decide") arrive with `proposal`; until then the column is not shown.
 

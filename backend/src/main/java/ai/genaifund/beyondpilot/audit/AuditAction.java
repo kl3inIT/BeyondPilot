@@ -25,7 +25,11 @@ public enum AuditAction {
 
 	PROGRAM_CREATE("program.create"),
 
-	PROGRAM_UPDATE("program.update");
+	PROGRAM_UPDATE("program.update"),
+
+	PROGRAM_PUBLISH("program.publish"),
+
+	PROGRAM_UNPUBLISH("program.unpublish");
 
 	private final String value;
 

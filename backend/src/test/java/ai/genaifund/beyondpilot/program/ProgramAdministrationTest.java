@@ -74,6 +74,10 @@ class ProgramAdministrationTest {
 		assertProblem(create(user, "Mine", "mine", "event"), 403, "IDENTITY_OPERATOR_REQUIRED");
 		save(null, one, program(0, "Guarded", "guarded")).expectStatus().isUnauthorized();
 		assertProblem(save(user, one, program(0, "Taken over", "guarded")), 403, "IDENTITY_OPERATOR_REQUIRED");
+		for (String command : List.of("publish", "unpublish")) {
+			command(null, one, command).expectStatus().isUnauthorized();
+			assertProblem(command(user, one, command), 403, "IDENTITY_OPERATOR_REQUIRED");
+		}
 		assertThat(slugs()).doesNotContain("nobody", "mine");
 	}
 
@@ -156,7 +160,59 @@ class ProgramAdministrationTest {
 
 	@Test
 	void aProgramThatDoesNotExistIsNotFound() {
-		assertProblem(get(operator, PROGRAMS + "/00000000-0000-0000-0000-000000000000"), 404, "PROGRAM_NOT_FOUND");
+		String missing = PROGRAMS + "/00000000-0000-0000-0000-000000000000";
+		assertProblem(get(operator, missing), 404, "PROGRAM_NOT_FOUND");
+		assertProblem(command(operator, missing, "publish"), 404, "PROGRAM_NOT_FOUND");
+		assertProblem(command(operator, missing, "unpublish"), 404, "PROGRAM_NOT_FOUND");
+	}
+
+	@Test
+	void aProgramIsPublishedOnceItHasWhatTheListShowsAndUnpublishedAtWill() {
+		String one = created("Published", "published-at-will");
+		get(operator, one).expectBody()
+			.jsonPath("$.publishIssues")
+			.isEqualTo(List.of("summary", "cover", "dates"))
+			.jsonPath("$.status")
+			.isEqualTo("draft");
+
+		assertProblem(command(operator, one, "publish"), 400, "PROGRAM_NOT_READY_TO_PUBLISH");
+
+		Map<String, Object> program = program(0, "Published", "published-at-will");
+		program.put("summary", "Insurers name what they need; providers answer.");
+		program.put("coverFileId", storedImage("operator@program.test"));
+		program.put("startsOn", "2026-09-23");
+		program.put("endsOn", "2026-12-05");
+		save(operator, one, program).expectStatus().isOk().expectBody().jsonPath("$.publishIssues").isEmpty();
+
+		command(operator, one, "publish").expectStatus().isNoContent();
+		command(operator, one, "publish").expectStatus().isNoContent();
+		get(operator, one).expectBody()
+			.jsonPath("$.status")
+			.isEqualTo("published")
+			.jsonPath("$.slugFixed")
+			.isEqualTo(true);
+
+		command(operator, one, "unpublish").expectStatus().isNoContent();
+		command(operator, one, "unpublish").expectStatus().isNoContent();
+		// Taken down, the program keeps its address, and it stays fixed.
+		get(operator, one).expectBody()
+			.jsonPath("$.status")
+			.isEqualTo("draft")
+			.jsonPath("$.slug")
+			.isEqualTo("published-at-will")
+			.jsonPath("$.slugFixed")
+			.isEqualTo(true);
+		// A repeated command changes nothing and records nothing.
+		assertThat(eventsOf(one.substring(one.lastIndexOf('/') + 1))).extracting(event -> event.get("action"))
+			.containsExactly("program.create", "program.update", "program.publish", "program.unpublish");
+	}
+
+	private RestTestClient.ResponseSpec command(String session, String uri, String command) {
+		RestTestClient.RequestBodySpec request = client.post().uri(uri + "/" + command).header(TestSignIn.CSRF_HEADER, "1");
+		if (session != null) {
+			request = request.cookie(TestSignIn.SESSION_COOKIE, session);
+		}
+		return request.exchange();
 	}
 
 	@Test

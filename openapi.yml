@@ -46,6 +46,8 @@ paths:
           - operator.withdraw
           - program.create
           - program.update
+          - program.publish
+          - program.unpublish
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
         in: query
@@ -533,6 +535,85 @@ paths:
       summary: "Save a program with its application window, key dates and events"
       tags:
       - Program administration
+  /api/program/admin/programs/{id}/publish:
+    post:
+      operationId: publishProgram
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The program is published. Its address is fixed from now on.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The program still lacks what its publishIssues list; nothing
+            changed.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program.
+      security:
+      - session: []
+      summary: Put a program on the public site
+      tags:
+      - Program administration
+  /api/program/admin/programs/{id}/unpublish:
+    post:
+      operationId: unpublishProgram
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The program is a draft again; it keeps its address.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program.
+      security:
+      - session: []
+      summary: Take a program off the public site
+      tags:
+      - Program administration
   /api/storage/files/{id}:
     get:
       description: "The bytes of a file anyone may read, such as an image of a program,\
@@ -827,6 +908,17 @@ components:
           - string
           - "null"
           description: The organization the program is run with.
+        publishIssues:
+          type: array
+          description: "What the program still lacks before it can be published, in\
+            \ the order the Settings screen shows its fields. Empty when it can be\
+            \ published."
+          items:
+            type: string
+            enum:
+            - summary
+            - cover
+            - dates
         slug:
           type: string
           description: The address under /programs.
@@ -878,6 +970,7 @@ components:
       - keyDates
       - name
       - pageKind
+      - publishIssues
       - slug
       - slugFixed
       - status
@@ -960,6 +1053,8 @@ components:
           - operator.withdraw
           - program.create
           - program.update
+          - program.publish
+          - program.unpublish
         actor:
           type:
           - object

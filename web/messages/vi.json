@@ -406,7 +406,9 @@
         },
         "program": {
           "create": "Tạo chương trình",
-          "update": "Lưu chương trình"
+          "update": "Lưu chương trình",
+          "publish": "Công bố chương trình",
+          "unpublish": "Gỡ chương trình"
         }
       },
       "activity": {
@@ -420,7 +422,9 @@
         },
         "program": {
           "create": "Đã tạo chương trình <resource></resource>",
-          "update": "Đã lưu chương trình <resource></resource>"
+          "update": "Đã lưu chương trình <resource></resource>",
+          "publish": "Đã công bố chương trình <resource></resource>",
+          "unpublish": "Đã gỡ chương trình <resource></resource>"
         }
       },
       "columns": {

@@ -406,7 +406,9 @@
         },
         "program": {
           "create": "Created a program",
-          "update": "Saved a program"
+          "update": "Saved a program",
+          "publish": "Published a program",
+          "unpublish": "Unpublished a program"
         }
       },
       "activity": {
@@ -420,7 +422,9 @@
         },
         "program": {
           "create": "Created the program <resource></resource>",
-          "update": "Saved the program <resource></resource>"
+          "update": "Saved the program <resource></resource>",
+          "publish": "Published the program <resource></resource>",
+          "unpublish": "Unpublished the program <resource></resource>"
         }
       },
       "columns": {
