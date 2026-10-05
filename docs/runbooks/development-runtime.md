@@ -46,8 +46,26 @@ Local runs use no profile. Deployed environments run `production`; staging runs 
 | `BEYONDPILOT_STORAGE_S3_BUCKET`, `BEYONDPILOT_STORAGE_S3_REGION`                     | all          | The bucket of the S3 store and its region. Required when the provider is `s3`. Credentials come from the AWS SDK's default chain (the role of the instance or task), never from a variable of this application |
 | `BEYONDPILOT_STORAGE_S3_ENDPOINT`                                                    | all          | Another S3-compatible endpoint, addressed by path; only for running against MinIO. Default: none                                                                                                               |
 
-- `production` writes Logstash-format JSON logs to standard output; `staging` adds DEBUG logging for `ai.genaifund.beyondpilot`.
+- `production` writes Logstash-format JSON logs to standard output; `staging` adds DEBUG logging for `ai.genaifund.beyondpilot` and sends mail to the Mailpit container of its composition without an SMTP login or STARTTLS.
+- Under `production`, a secret may also be a file named after its variable in `/run/secrets` (a Spring configtree), which is how the deployed compositions pass them.
 - A missing database variable stops startup. Spring reports it as `'url' must start with "jdbc"` rather than naming the variable: check `BEYONDPILOT_DATABASE_URL` first.
+
+## Run the whole stack in containers
+
+To try the images rather than the development servers, build and start PostgreSQL, the api, the web application, Mailpit and a local reverse proxy in one command from the repository root. Docker is the only prerequisite.
+
+```text
+docker compose -f infrastructure/deployment/compose.base.yaml -f infrastructure/deployment/compose.local.yaml up --build --wait
+```
+
+- Open `http://localhost:8000`. The proxy (`infrastructure/deployment/local-proxy.conf`) sends `/api`, `/login`, `/logout`, `/oauth2` and `/ott` to the api and every other path to the web application, as the deployed reverse proxy does.
+- Sign-in codes land in this composition's Mailpit at `http://localhost:8026`, beside the one of `bootRun` on 8025. Set `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS` in the shell to sign in as an operator. Google sign-in is off.
+- The composition runs without a Spring profile and with development-only credentials. Its database and uploaded files live in the volumes `beyondpilot_postgres-data` and `beyondpilot_storage`, separate from those of `bootRun`.
+- Stop it with `down`; `down -v` also deletes its data:
+
+  ```text
+  docker compose -f infrastructure/deployment/compose.base.yaml -f infrastructure/deployment/compose.local.yaml down
+  ```
 
 ## Sign in locally
 

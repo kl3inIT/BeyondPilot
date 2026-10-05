@@ -1,0 +1,67 @@
+# Staging on the shared host (docs/runbooks/ci-cd.md). deploy.sh names the images by digest and reads the
+# rest from /apps/beyondpilot/.env.staging. The reverse proxy of the host, Nginx Proxy Manager on the external
+# proxy-network, reaches the web, the api and Mailpit by their container names; nothing publishes a host port.
+services:
+  postgres:
+    container_name: beyondpilot-postgres
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/database_password
+    secrets:
+      - database_password
+
+  api:
+    container_name: beyondpilot-api
+    image: ${BEYONDPILOT_API_IMAGE:?the api image is named by deploy.sh}
+    environment:
+      SPRING_PROFILES_ACTIVE: production,staging
+      BEYONDPILOT_DATABASE_URL: jdbc:postgresql://postgres:5432/beyondpilot
+      BEYONDPILOT_DATABASE_USERNAME: beyondpilot
+      BEYONDPILOT_MAIL_HOST: mailpit
+      BEYONDPILOT_MAIL_PORT: "1025"
+      BEYONDPILOT_MAIL_FROM: ${BEYONDPILOT_MAIL_FROM:?}
+      BEYONDPILOT_STORAGE_PROVIDER: local
+      BEYONDPILOT_IDENTITY_OPERATOR_EMAILS: ${BEYONDPILOT_IDENTITY_OPERATOR_EMAILS:?}
+      BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID: ${BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID:?}
+    # Each file is named after the variable it replaces; the production profile reads /run/secrets as a configtree.
+    secrets:
+      - source: database_password
+        target: BEYONDPILOT_DATABASE_PASSWORD
+      - source: google_client_secret
+        target: BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET
+    networks:
+      - internal
+      - proxy
+
+  web:
+    container_name: beyondpilot-web
+    image: ${BEYONDPILOT_WEB_IMAGE:?the web image is named by deploy.sh}
+    networks:
+      - internal
+      - proxy
+
+  # Its mail holds sign-in codes and it shares proxy-network with other tenants of the host, so the web interface
+  # asks for its own login whatever the reverse proxy in front of it does.
+  mailpit:
+    container_name: beyondpilot-mailpit
+    environment:
+      MP_UI_AUTH_FILE: /run/secrets/mailpit_ui_auth
+    secrets:
+      - mailpit_ui_auth
+    networks:
+      - internal
+      - proxy
+
+# Owned by root, mode 0400, uid 1654 (the api) as owner; Postgres reads its copy as root before it drops privileges.
+secrets:
+  database_password:
+    file: /apps/beyondpilot/secrets/database-password
+  google_client_secret:
+    file: /apps/beyondpilot/secrets/google-client-secret
+  # htpasswd lines (bcrypt) of the people who read staging mail.
+  mailpit_ui_auth:
+    file: /apps/beyondpilot/secrets/mailpit-ui-auth
+
+networks:
+  proxy:
+    external: true
+    name: proxy-network

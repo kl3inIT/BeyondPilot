@@ -220,7 +220,7 @@ The error contract follows [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.htm
 - Follow the [persistence guideline](guidelines/persistence.md).
 - Authorization is enforced on the server in application services, never only by hiding interface elements.
 - Fail closed on missing configuration, invalid credentials, unknown bindings and ownership conflicts.
-- Configuration comes from environment variables prefixed `BEYONDPILOT_`. Deployed environments mount secrets as files; the container entrypoint turns each `BEYONDPILOT_<NAME>_FILE` into `BEYONDPILOT_<NAME>` before the application starts.
+- Configuration comes from environment variables prefixed `BEYONDPILOT_`. Deployed environments mount each secret as a file named after its variable under `/run/secrets`, which the `production` profile imports as a Spring configtree; a secret never sits in the container's environment, where `docker inspect` and crash reports show it.
 - Never write passwords, tokens, private keys, authorization codes or secret values to Git, docs, Linear, logs or command history. Record only where a secret is managed and how to retrieve it.
 - Administrative or ownership-changing behavior requires an authorization and audit design; never expose an unauthenticated convenience endpoint.
 

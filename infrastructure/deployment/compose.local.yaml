@@ -1,0 +1,46 @@
+# The whole stack on a workstation, built from this checkout, in one command from the repository root:
+#   docker compose -f infrastructure/deployment/compose.base.yaml -f infrastructure/deployment/compose.local.yaml up --build --wait
+# It runs without a Spring profile, so the development credentials below are the only ones it knows.
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: beyondpilot
+
+  api:
+    image: beyondpilot-api:local
+    build:
+      context: ../..
+      dockerfile: backend/Dockerfile
+    environment:
+      # Without a profile the application reads Spring's own datasource settings.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/beyondpilot
+      SPRING_DATASOURCE_USERNAME: beyondpilot
+      SPRING_DATASOURCE_PASSWORD: beyondpilot
+      BEYONDPILOT_MAIL_HOST: mailpit
+      BEYONDPILOT_MAIL_PORT: "1025"
+      BEYONDPILOT_IDENTITY_OPERATOR_EMAILS: ${BEYONDPILOT_IDENTITY_OPERATOR_EMAILS:-}
+
+  web:
+    image: beyondpilot-web:local
+    build:
+      context: ../..
+      dockerfile: web/Dockerfile
+
+  # 8026, so it runs beside the Mailpit of bootRun on 8025.
+  mailpit:
+    ports:
+      - "127.0.0.1:8026:8025"
+
+  # Stands in for the reverse proxy of a deployed host: Spring's paths go to the api, the rest to the web.
+  proxy:
+    image: nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+    restart: unless-stopped
+    volumes:
+      - ./local-proxy.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "127.0.0.1:8000:80"
+    depends_on:
+      web:
+        condition: service_healthy
+    networks:
+      - internal
