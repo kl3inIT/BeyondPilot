@@ -85,6 +85,8 @@
   --tracking-display: -0.03em;
   --tracking-headline: -0.02em;
   --tracking-title: -0.01em;
+  /* The header's destinations sit between medium and semibold; Inter is a variable font. */
+  --font-weight-nav: 550;
   --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
   /* The desktop frame of the landing is 1440px wide. */
   --breakpoint-desktop: 90rem;

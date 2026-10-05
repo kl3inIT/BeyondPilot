@@ -22,7 +22,10 @@
       "open": "Menu tài khoản của {name}",
       "operator": "Operator",
       "signOut": "Đăng xuất",
-      "signOutFailed": "Chưa đăng xuất được. Bạn thử lại."
+      "signOutFailed": "Chưa đăng xuất được. Bạn thử lại.",
+      "organization": "Tổ chức của tôi",
+      "talentProfile": "Hồ sơ nhân lực",
+      "admin": "Quản trị"
     },
     "menu": {
       "open": "Mở menu",
@@ -276,12 +279,14 @@
   "Admin": {
     "metaTitle": "Quản trị · BeyondPilot",
     "title": "Quản trị",
-    "empty": "Chưa có màn quản trị nào.",
     "nav": {
       "label": "Điều hướng quản trị",
       "home": "Trang chủ",
       "accounts": "Tài khoản",
-      "auditLog": "Nhật ký thao tác"
+      "auditLog": "Nhật ký thao tác",
+      "organizations": "Tổ chức",
+      "solutions": "Giải pháp",
+      "talent": "Nhân lực"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
     "accounts": {
@@ -378,7 +383,7 @@
     "auditLog": {
       "metaTitle": "Nhật ký thao tác · BeyondPilot",
       "title": "Nhật ký thao tác",
-      "lead": "Những thay đổi mà operator và cấu hình máy chủ đã thực hiện với tài khoản và vai trò, mới nhất trước.",
+      "lead": "Những gì operator và cấu hình máy chủ đã thay đổi hoặc quyết định: tài khoản, vai trò, tổ chức, giải pháp và hồ sơ nhân lực. Mới nhất trước.",
       "search": "Tìm người hoặc tài khoản",
       "filters": {
         "period": {
@@ -403,6 +408,25 @@
         "operator": {
           "grant": "Cấp quyền operator",
           "withdraw": "Thu quyền operator"
+        },
+        "organization": {
+          "create": "Thêm tổ chức",
+          "approve": "Duyệt tổ chức",
+          "refuse": "Không duyệt tổ chức",
+          "claim_approve": "Chấp nhận yêu cầu nhận tổ chức",
+          "claim_decline": "Từ chối yêu cầu nhận tổ chức",
+          "member_role": "Đổi vai trò thành viên",
+          "member_remove": "Xóa thành viên"
+        },
+        "solution": {
+          "approve": "Duyệt giải pháp",
+          "reject": "Trả lại giải pháp",
+          "deployment_approve": "Duyệt triển khai khách hàng",
+          "deployment_reject": "Trả lại triển khai khách hàng"
+        },
+        "talent": {
+          "approve": "Duyệt hồ sơ nhân lực",
+          "reject": "Trả lại hồ sơ nhân lực"
         }
       },
       "activity": {
@@ -413,6 +437,25 @@
         "operator": {
           "grant": "Đã cấp quyền operator cho <resource></resource>",
           "withdraw": "Đã thu quyền operator của <resource></resource>"
+        },
+        "organization": {
+          "create": "Thêm tổ chức <resource></resource>",
+          "approve": "Duyệt tổ chức <resource></resource>",
+          "refuse": "Không duyệt tổ chức <resource></resource>",
+          "claim_approve": "Chấp nhận yêu cầu nhận <resource></resource>",
+          "claim_decline": "Từ chối yêu cầu nhận <resource></resource>",
+          "member_role": "Đổi vai trò một thành viên của <resource></resource>",
+          "member_remove": "Xóa một thành viên khỏi <resource></resource>"
+        },
+        "solution": {
+          "approve": "Duyệt giải pháp <resource></resource>",
+          "reject": "Trả lại giải pháp <resource></resource>",
+          "deployment_approve": "Duyệt triển khai khách hàng <resource></resource>",
+          "deployment_reject": "Trả lại triển khai khách hàng <resource></resource>"
+        },
+        "talent": {
+          "approve": "Duyệt hồ sơ nhân lực của <resource></resource>",
+          "reject": "Trả lại hồ sơ nhân lực của <resource></resource>"
         }
       },
       "columns": {
@@ -435,7 +478,7 @@
       },
       "empty": {
         "title": "{period, select, day {Không có sự kiện nào trong 24 giờ qua} week {Không có sự kiện nào trong 7 ngày qua} month {Không có sự kiện nào trong 30 ngày qua} other {Chưa có sự kiện nào}}",
-        "description": "Thay đổi về tài khoản và vai trò sẽ hiện ở đây.",
+        "description": "Các thay đổi và quyết định sẽ hiện ở đây.",
         "showAll": "Xem toàn bộ"
       },
       "noMatch": {
@@ -443,6 +486,1208 @@
         "description": "{period, select, day {Trong 24 giờ qua không có gì khớp với từ khóa và bộ lọc này.} week {Trong 7 ngày qua không có gì khớp với từ khóa và bộ lọc này.} month {Trong 30 ngày qua không có gì khớp với từ khóa và bộ lọc này.} other {Không có gì khớp với từ khóa và bộ lọc này.}}",
         "clear": "Xóa từ khóa và bộ lọc"
       }
+    },
+    "organizations": {
+      "metaTitle": "Tổ chức · BeyondPilot",
+      "title": "Tổ chức",
+      "lead": "Các công ty và nhóm trên BeyondPilot. Tổ chức mới và yêu cầu nhận tổ chức chờ quyết định tại đây.",
+      "search": "Tìm theo tên hoặc tên miền email",
+      "filters": {
+        "status": {
+          "label": "Trạng thái",
+          "all": "Mọi trạng thái"
+        }
+      },
+      "status": {
+        "pending": "Cần duyệt",
+        "approved": "Đã duyệt",
+        "rejected": "Không được duyệt"
+      },
+      "columns": {
+        "organization": "Tổ chức",
+        "request": "Yêu cầu",
+        "status": "Trạng thái",
+        "received": "Ngày nhận",
+        "actions": "Thao tác"
+      },
+      "request": {
+        "new": "Tổ chức mới",
+        "claim": "Yêu cầu nhận",
+        "none": "—"
+      },
+      "members": "{count} thành viên",
+      "unowned": "Chưa có chủ",
+      "actions": {
+        "open": "Thao tác với {name}",
+        "review": "Xem xét…",
+        "record": "Mở hồ sơ",
+        "claims": "Mở hồ sơ và yêu cầu nhận"
+      },
+      "needReview": "{count} cần duyệt",
+      "empty": {
+        "title": "Chưa có tổ chức nào",
+        "description": "Tổ chức hiện ở đây khi có người tạo, hoặc khi bạn thêm."
+      },
+      "noMatch": {
+        "title": "Không có tổ chức nào khớp",
+        "description": "Không có gì khớp với tìm kiếm và bộ lọc này.",
+        "clear": "Xóa tìm kiếm và bộ lọc"
+      },
+      "count": "{count} tổ chức",
+      "create": {
+        "open": "Thêm tổ chức",
+        "title": "Thêm tổ chức",
+        "lead": "Tổ chức được duyệt ngay. Dùng khi cần đăng một công ty trước khi người của họ đăng nhập.",
+        "name": "Tên tổ chức",
+        "nameRequired": "Hãy nhập tên tổ chức.",
+        "roles": "Vai trò trên BeyondPilot",
+        "rolesRequired": "Hãy chọn ít nhất một.",
+        "type": "Loại hình",
+        "emailDomain": "Tên miền email (không bắt buộc)",
+        "emailDomainHint": "Người đăng nhập bằng tên miền này sẽ được gợi ý tổ chức.",
+        "emailDomainInvalid": "Hãy nhập tên miền công ty như example.com mà chưa tổ chức nào dùng.",
+        "ownerEmail": "Email chủ sở hữu (không bắt buộc)",
+        "ownerEmailHint": "Người này được mời làm chủ sở hữu. Để trống để người khác tự nhận.",
+        "ownerEmailInvalid": "Hãy nhập địa chỉ email đầy đủ.",
+        "website": "Website (không bắt buộc)",
+        "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
+        "cancel": "Hủy",
+        "confirm": "Thêm tổ chức"
+      },
+      "detail": {
+        "back": "Tất cả tổ chức",
+        "roles": "Vai trò",
+        "type": "Loại hình",
+        "country": "Quốc gia",
+        "teamSize": "Quy mô",
+        "website": "Website",
+        "emailDomain": "Tên miền email",
+        "createdBy": "Tạo bởi",
+        "createdByOn": "{name}, ngày {day}",
+        "description": "Giới thiệu",
+        "notStated": "Chưa nêu",
+        "refused": "Không được duyệt: {reason}.",
+        "claims": "Yêu cầu nhận tổ chức",
+        "approveClaim": "Trao quyền chủ sở hữu",
+        "declineClaim": "Từ chối",
+        "members": "{count, plural, =0 {Thành viên} other {# thành viên}}",
+        "noMembers": "Chưa có ai thuộc tổ chức này.",
+        "invitations": "Lời mời đang chờ"
+      },
+      "review": {
+        "title": "Xem xét {name}",
+        "lead": "Tổ chức mới, do {creator} tạo ngày {day}. Cho tới khi bạn quyết định, tổ chức chưa hiển thị trong các danh mục.",
+        "leadUnknown": "Tổ chức mới, tạo ngày {day}. Cho tới khi bạn quyết định, tổ chức chưa hiển thị trong các danh mục.",
+        "note": "Khi được duyệt, tổ chức xuất hiện trong danh mục và được đăng giải pháp. Dù quyết định thế nào, các chủ sở hữu đều nhận email.",
+        "approve": "Duyệt",
+        "refuse": "Không duyệt…",
+        "refuseTitle": "Không duyệt {name}",
+        "refuseLead": "Các chủ sở hữu đọc được lý do, và có thể sửa tổ chức rồi gửi lại.",
+        "refuseConfirm": "Gửi quyết định",
+        "reason": "Lý do",
+        "message": "Lời nhắn cho các chủ sở hữu",
+        "messageHint": "Quyết định được ghi vào nhật ký kiểm toán.",
+        "back": "Quay lại",
+        "reasonPlaceholder": "Chọn lý do"
+      },
+      "clear": "Xóa bộ lọc",
+      "queueEmpty": {
+        "title": "Không có gì đang chờ duyệt",
+        "description": "Mọi tổ chức mới đều đã có quyết định.",
+        "home": "Về trang chủ Admin"
+      }
+    },
+    "solutions": {
+      "metaTitle": "Giải pháp · BeyondPilot",
+      "title": "Giải pháp",
+      "lead": "Mọi giải pháp nhà cung cấp đã gửi duyệt. Giải pháp còn chờ xếp trước, chờ lâu nhất ở trên cùng.",
+      "columns": {
+        "solution": "Giải pháp",
+        "maturity": "Giai đoạn",
+        "status": "Trạng thái",
+        "submitted": "Ngày gửi",
+        "actions": "Thao tác"
+      },
+      "notStated": "Chưa nêu",
+      "openNamed": "Mở {name}",
+      "empty": {
+        "title": "Chưa có gì cần duyệt",
+        "description": "Giải pháp hiện ở đây khi nhà cung cấp gửi duyệt."
+      },
+      "noMatch": {
+        "title": "Không có giải pháp nào khớp",
+        "description": "Không có gì khớp với tìm kiếm và bộ lọc này.",
+        "clear": "Xóa tìm kiếm và bộ lọc"
+      },
+      "count": "{count} giải pháp",
+      "open": "Mở",
+      "review": {
+        "open": "Duyệt",
+        "approve": "Duyệt",
+        "reject": "Trả lại…",
+        "takeDown": "Gỡ xuống…",
+        "rejectTitle": "Trả lại {name}?",
+        "rejectLead": "Giải pháp trở về tổ chức để chỉnh sửa. Chủ sở hữu đọc được lý do.",
+        "takeDownLead": "Giải pháp rời danh mục ngay. Chủ sở hữu đọc được lý do và có thể gửi lại.",
+        "reason": "Lý do",
+        "message": "Ghi chú (không bắt buộc)",
+        "messageHint": "Người nhận đọc nguyên văn. Hãy nêu cần sửa gì.",
+        "cancel": "Hủy",
+        "rejectConfirm": "Trả lại",
+        "takeDownConfirm": "Gỡ xuống",
+        "reasonPlaceholder": "Chọn lý do",
+        "takeDownTitle": "Gỡ {name} xuống?",
+        "keys": "Phím: A duyệt · S trả lại",
+        "keysApproved": "Phím: S gỡ xuống"
+      },
+      "detail": {
+        "back": "Tất cả giải pháp",
+        "submitted": "Gửi ngày {day}",
+        "unlisted": "Tổ chức đang ẩn",
+        "rejected": "Cần chỉnh sửa: {reason}.",
+        "next": "Chờ duyệt tiếp theo: {name}",
+        "position": "{place} trên {total} đang chờ",
+        "waitingSince": "Gửi {time}",
+        "public": "Mở trang công khai"
+      },
+      "queueEmpty": {
+        "title": "Không có gì đang chờ duyệt",
+        "description": "Mọi giải pháp đã gửi duyệt đều đã có quyết định.",
+        "home": "Về trang chủ Admin"
+      },
+      "waitingSince": "Gửi {time}",
+      "deployments": {
+        "title": "Triển khai khách hàng",
+        "problem": "Bài toán kinh doanh",
+        "delivered": "Những gì đã triển khai",
+        "channels": "Kênh",
+        "languages": "Ngôn ngữ",
+        "period": "Thời gian",
+        "result": "Kết quả",
+        "rejected": "Bị trả lại: {reason}.",
+        "rejectLead": "Nó không hiện trên trang giải pháp. Chủ sở hữu đọc lý do của bạn và có thể sửa.",
+        "takeDownLead": "Nó rời khỏi trang giải pháp ngay. Chủ sở hữu đọc lý do của bạn và có thể gửi lại."
+      },
+      "deploymentsWaiting": "{count} triển khai chờ duyệt"
+    },
+    "talent": {
+      "metaTitle": "Nhân lực · BeyondPilot",
+      "title": "Nhân lực",
+      "lead": "Mọi hồ sơ đã được gửi duyệt. Hồ sơ còn chờ xếp trước, chờ lâu nhất ở trên cùng.",
+      "columns": {
+        "person": "Người",
+        "headline": "Giới thiệu ngắn",
+        "status": "Trạng thái",
+        "submitted": "Ngày gửi",
+        "actions": "Thao tác"
+      },
+      "openNamed": "Mở hồ sơ của {name}",
+      "empty": {
+        "title": "Chưa có gì cần duyệt",
+        "description": "Hồ sơ hiện ở đây khi có người gửi duyệt."
+      },
+      "noMatch": {
+        "title": "Không có hồ sơ nào khớp",
+        "description": "Không có gì khớp với tìm kiếm và bộ lọc này.",
+        "clear": "Xóa tìm kiếm và bộ lọc"
+      },
+      "count": "{count} hồ sơ",
+      "open": "Mở",
+      "review": {
+        "open": "Duyệt",
+        "approve": "Duyệt",
+        "reject": "Trả lại…",
+        "takeDown": "Gỡ xuống…",
+        "rejectTitle": "Trả lại {name}?",
+        "rejectLead": "Hồ sơ trở về chủ nhân để chỉnh sửa. Họ đọc được lý do.",
+        "takeDownLead": "Hồ sơ rời danh mục ngay. Chủ nhân đọc được lý do và có thể gửi lại.",
+        "reason": "Lý do",
+        "message": "Ghi chú (không bắt buộc)",
+        "messageHint": "Người nhận đọc nguyên văn. Hãy nêu cần sửa gì.",
+        "cancel": "Hủy",
+        "rejectConfirm": "Trả lại",
+        "takeDownConfirm": "Gỡ xuống",
+        "reasonPlaceholder": "Chọn lý do",
+        "takeDownTitle": "Gỡ {name} xuống?",
+        "keys": "Phím: A duyệt · S trả lại",
+        "keysApproved": "Phím: S gỡ xuống"
+      },
+      "detail": {
+        "back": "Tất cả nhân lực",
+        "submitted": "Gửi ngày {day}",
+        "unlisted": "Chủ nhân đang ẩn",
+        "rejected": "Cần chỉnh sửa: {reason}.",
+        "next": "Chờ duyệt tiếp theo: {name}",
+        "position": "{place} trên {total} đang chờ",
+        "waitingSince": "Gửi {time}",
+        "public": "Mở trang công khai"
+      },
+      "queueEmpty": {
+        "title": "Không có gì đang chờ duyệt",
+        "description": "Mọi hồ sơ đã gửi duyệt đều đã có quyết định.",
+        "home": "Về trang chủ Admin"
+      },
+      "waitingSince": "Gửi {time}"
+    },
+    "home": {
+      "lead": "{count, plural, =0 {Không có gì đang chờ quyết định.} other {# hồ sơ đang chờ quyết định.}}",
+      "organizations": "Tổ chức chờ duyệt",
+      "solutions": "Giải pháp chờ duyệt",
+      "talent": "Hồ sơ nhân lực chờ duyệt",
+      "review": "Mở hàng chờ, chờ lâu nhất ở trên",
+      "none": "Không có gì đang chờ"
+    }
+  },
+  "Lists": {
+    "loadMore": "Xem thêm",
+    "pagination": {
+      "label": "Các trang",
+      "previous": "Trước",
+      "next": "Sau",
+      "goToPrevious": "Về trang trước",
+      "goToNext": "Sang trang sau",
+      "page": "Trang {page}"
+    },
+    "sort": {
+      "label": "Sắp xếp theo",
+      "newest": "Mới nhất",
+      "name": "Tên A–Z"
+    }
+  },
+  "Vocabulary": {
+    "organizationRole": {
+      "provider": "Nhà cung cấp AI",
+      "enterprise": "Doanh nghiệp"
+    },
+    "organizationType": {
+      "company": "Công ty",
+      "builder_team": "Nhóm phát triển",
+      "independent_builder": "Nhà phát triển độc lập",
+      "other": "Khác"
+    },
+    "teamSize": {
+      "just_me": "Chỉ mình tôi",
+      "2_9": "2–9 người",
+      "10_49": "10–49 người",
+      "50_99": "50–99 người",
+      "100_499": "100–499 người",
+      "500_999": "500–999 người",
+      "1000_4999": "1.000–4.999 người",
+      "5000_plus": "Từ 5.000 người"
+    },
+    "organizationRefusal": {
+      "duplicate": "Đã có trên BeyondPilot",
+      "not_a_real_organization": "Không xác minh được là một tổ chức",
+      "incomplete": "Hồ sơ chưa đầy đủ",
+      "out_of_scope": "Ngoài phạm vi của BeyondPilot",
+      "other": "Lý do khác"
+    },
+    "memberRole": {
+      "owner": "Chủ sở hữu",
+      "member": "Thành viên"
+    },
+    "reviewStatus": {
+      "draft": "Bản nháp",
+      "submitted": "Đang duyệt",
+      "approved": "Đã duyệt",
+      "rejected": "Cần chỉnh sửa"
+    },
+    "focusArea": {
+      "conversational_ai": "AI hội thoại",
+      "document_processing": "Xử lý tài liệu",
+      "computer_vision": "Thị giác máy tính",
+      "speech_voice": "Giọng nói",
+      "predictive_analytics": "Phân tích dự báo",
+      "recommendation": "Hệ gợi ý",
+      "process_automation": "Tự động hóa quy trình",
+      "ai_agents": "AI agent",
+      "generative_content": "Nội dung tạo sinh",
+      "search_knowledge": "Tìm kiếm và tri thức",
+      "data_platform": "Nền tảng dữ liệu",
+      "ai_security": "Bảo mật AI",
+      "other": "Khác"
+    },
+    "industry": {
+      "banking_finance": "Ngân hàng và tài chính",
+      "insurance": "Bảo hiểm",
+      "retail_ecommerce": "Bán lẻ và thương mại điện tử",
+      "manufacturing": "Sản xuất",
+      "logistics": "Logistics",
+      "healthcare": "Y tế",
+      "education": "Giáo dục",
+      "real_estate": "Bất động sản",
+      "telecom": "Viễn thông",
+      "energy": "Năng lượng",
+      "agriculture": "Nông nghiệp",
+      "travel_hospitality": "Du lịch và lưu trú",
+      "media_entertainment": "Truyền thông và giải trí",
+      "public_sector": "Khu vực công",
+      "professional_services": "Dịch vụ chuyên môn",
+      "technology": "Công nghệ",
+      "automotive_mobility": "Ô tô và di chuyển",
+      "consumer_goods": "Hàng tiêu dùng",
+      "other": "Khác"
+    },
+    "maturity": {
+      "idea": "Ý tưởng",
+      "prototype": "Bản mẫu",
+      "pilot": "Đang thí điểm",
+      "production": "Đang vận hành",
+      "scaled": "Đã mở rộng"
+    },
+    "deployment": {
+      "cloud_saas": "Đám mây (SaaS)",
+      "private_cloud": "Đám mây riêng",
+      "on_premise": "Tại chỗ",
+      "hybrid": "Kết hợp"
+    },
+    "solutionRejection": {
+      "incomplete": "Thiếu thông tin",
+      "not_an_ai_solution": "Không phải giải pháp AI",
+      "duplicate": "Đã được đăng",
+      "unverifiable": "Không xác minh được thông tin",
+      "other": "Lý do khác"
+    },
+    "talentRole": {
+      "ai_engineer": "Kỹ sư AI",
+      "ml_engineer": "Kỹ sư ML",
+      "forward_deployed_engineer": "Kỹ sư triển khai tại khách hàng",
+      "automation_specialist": "Chuyên gia tự động hóa",
+      "data_scientist": "Nhà khoa học dữ liệu",
+      "data_engineer": "Kỹ sư dữ liệu",
+      "ai_product_manager": "Quản lý sản phẩm AI",
+      "ai_consultant": "Tư vấn AI",
+      "ai_designer": "Nhà thiết kế AI",
+      "other": "Khác"
+    },
+    "availability": {
+      "available": "Sẵn sàng nhận việc",
+      "open_to_offers": "Sẵn sàng nhận đề nghị",
+      "not_available": "Chưa nhận việc"
+    },
+    "engagement": {
+      "full_time": "Toàn thời gian",
+      "part_time": "Bán thời gian",
+      "contract": "Theo hợp đồng",
+      "advisory": "Cố vấn"
+    },
+    "rateBand": {
+      "under_25": "Dưới 25 USD/giờ",
+      "25_50": "25–50 USD/giờ",
+      "50_100": "50–100 USD/giờ",
+      "100_150": "100–150 USD/giờ",
+      "150_plus": "Từ 150 USD/giờ"
+    },
+    "talentRejection": {
+      "incomplete": "Thiếu thông tin",
+      "unverifiable": "Không xác minh được kinh nghiệm",
+      "inappropriate": "Nội dung không phù hợp",
+      "other": "Lý do khác"
+    },
+    "country": {
+      "VN": "Việt Nam",
+      "SG": "Singapore",
+      "TH": "Thái Lan",
+      "MY": "Malaysia",
+      "ID": "Indonesia",
+      "PH": "Philippines",
+      "JP": "Nhật Bản",
+      "KR": "Hàn Quốc",
+      "CN": "Trung Quốc",
+      "HK": "Hồng Kông",
+      "TW": "Đài Loan",
+      "IN": "Ấn Độ",
+      "AU": "Úc",
+      "AE": "Các Tiểu vương quốc Ả Rập Thống nhất",
+      "US": "Hoa Kỳ",
+      "CA": "Canada",
+      "GB": "Vương quốc Anh",
+      "DE": "Đức",
+      "FR": "Pháp",
+      "NL": "Hà Lan"
+    },
+    "deploymentStage": {
+      "pilot": "Đang thí điểm",
+      "production": "Đang vận hành"
+    },
+    "deploymentRejection": {
+      "incomplete": "Thiếu thông tin",
+      "unverifiable": "Không xác minh được",
+      "other": "Lý do khác"
+    }
+  },
+  "Organization": {
+    "metaTitle": "Tổ chức của tôi · BeyondPilot",
+    "tabs": {
+      "label": "Các phần của tổ chức",
+      "profile": "Hồ sơ",
+      "members": "Thành viên",
+      "solutions": "Giải pháp"
+    },
+    "status": {
+      "pending": "Đang duyệt",
+      "approved": "Đã duyệt",
+      "rejected": "Không được duyệt"
+    },
+    "pending": {
+      "title": "GenAI Fund đang duyệt tổ chức của bạn",
+      "lead": "Cho tới khi được duyệt, {name} chưa xuất hiện trong các danh mục và chưa thể đăng giải pháp công khai. Bạn có thể hoàn thiện hồ sơ và mời mọi người ngay bây giờ.",
+      "foot": "Chúng tôi gửi email cho các chủ sở hữu khi có quyết định.",
+      "edit": "Sửa hồ sơ"
+    },
+    "rejected": {
+      "title": "GenAI Fund không duyệt {name}",
+      "reason": "Lý do: {reason}.",
+      "owner": "Hãy chỉnh sửa hồ sơ rồi lưu để gửi duyệt lại.",
+      "member": "Chủ sở hữu có thể chỉnh sửa hồ sơ và gửi duyệt lại.",
+      "edit": "Sửa và gửi lại"
+    },
+    "errors": {
+      "ORGANIZATION_NOT_FOUND": "Tổ chức này không còn tồn tại.",
+      "ORGANIZATION_MEMBERSHIP_REQUIRED": "Bạn không còn là thành viên của tổ chức này.",
+      "ORGANIZATION_OWNER_REQUIRED": "Chỉ chủ sở hữu mới làm được việc này.",
+      "ORGANIZATION_ALREADY_MEMBER": "Bạn đã thuộc một tổ chức. Hãy rời tổ chức đó trước.",
+      "ORGANIZATION_REQUEST_PENDING": "Bạn đang có một yêu cầu chờ xử lý. Hãy rút yêu cầu đó trước.",
+      "ORGANIZATION_INVITATION_NOT_FOUND": "Lời mời này không còn hiệu lực.",
+      "ORGANIZATION_REQUEST_NOT_FOUND": "Yêu cầu này không còn chờ xử lý.",
+      "ORGANIZATION_MEMBER_NOT_FOUND": "Người này không còn là thành viên.",
+      "ORGANIZATION_ALREADY_INVITED": "Địa chỉ này đã được mời.",
+      "ORGANIZATION_INVITEE_IS_MEMBER": "Người này đã thuộc một tổ chức.",
+      "ORGANIZATION_LAST_OWNER": "Tổ chức cần có chủ sở hữu. Hãy trao quyền chủ sở hữu cho người khác trước.",
+      "ORGANIZATION_CHANGED_MEANWHILE": "Có người vừa sửa hồ sơ này. Hãy tải lại trang rồi thử lại.",
+      "ORGANIZATION_NOT_AWAITING_REVIEW": "Tổ chức này đã được duyệt xong.",
+      "ORGANIZATION_DOMAIN_TAKEN": "Một tổ chức khác đã dùng tên miền email này.",
+      "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
+      "unknown": "Chưa thực hiện được. Hãy thử lại."
+    },
+    "done": {
+      "invitationAccepted": "Bạn đã tham gia tổ chức.",
+      "invitationDeclined": "Đã từ chối lời mời.",
+      "invitationRevoked": "Đã thu hồi lời mời.",
+      "requestApproved": "Đã chấp nhận. Người này đã là thành viên.",
+      "requestDeclined": "Đã từ chối yêu cầu.",
+      "requestWithdrawn": "Đã rút yêu cầu.",
+      "organizationApproved": "Đã duyệt tổ chức.",
+      "organizationRefused": "Đã từ chối tổ chức. Chủ sở hữu sẽ đọc được lý do.",
+      "claimApproved": "Đã chấp nhận. Người này đã là chủ sở hữu tổ chức.",
+      "claimDeclined": "Đã từ chối yêu cầu nhận tổ chức.",
+      "saved": "Đã lưu hồ sơ.",
+      "created": "Đã tạo tổ chức và gửi duyệt.",
+      "adminCreated": "Đã tạo {name}.",
+      "joined": "Bạn đã tham gia {name}.",
+      "owner": "Bạn đã là chủ sở hữu của {name}.",
+      "requested": "Đã gửi yêu cầu tới {name}.",
+      "madeOwner": "{name} đã là chủ sở hữu.",
+      "madeMember": "{name} đã là thành viên.",
+      "left": "Bạn đã rời tổ chức.",
+      "removed": "Đã xóa {name} khỏi tổ chức.",
+      "invited": "{count, plural, =1 {Đã gửi lời mời.} other {Đã gửi # lời mời.}}",
+      "jobTitleSaved": "Đã lưu chức danh.",
+      "autoJoinOn": "Đồng nghiệp cùng tên miền email giờ được tham gia ngay.",
+      "autoJoinOff": "Đồng nghiệp cùng tên miền email giờ phải xin tham gia."
+    },
+    "form": {
+      "metaTitle": "Tạo tổ chức · BeyondPilot",
+      "createTitle": "Tạo tổ chức của bạn",
+      "createLead": "Một công ty, một nhóm, hoặc chỉ mình bạn. GenAI Fund duyệt tổ chức mới trước khi tổ chức xuất hiện trong các danh mục. Trong lúc chờ, bạn có thể chuẩn bị hồ sơ.",
+      "profileTitle": "Hồ sơ tổ chức",
+      "profileLead": "Hiển thị cùng mọi giải pháp tổ chức đăng. Chỉ chủ sở hữu mới sửa được.",
+      "basics": "Thông tin cơ bản",
+      "about": "Giới thiệu",
+      "optional": "Không bắt buộc",
+      "name": "Tên tổ chức",
+      "nameRequired": "Hãy nhập tên tổ chức.",
+      "roles": "Tổ chức làm gì trên BeyondPilot?",
+      "rolesRequired": "Hãy chọn ít nhất một.",
+      "rolesHint": "Nhà cung cấp đăng giải pháp AI. Doanh nghiệp đăng bài toán cần giải. Chọn cả hai nếu đúng cả hai.",
+      "type": "Loại hình",
+      "country": "Quốc gia",
+      "countryPlaceholder": "Chọn quốc gia",
+      "teamSize": "Quy mô",
+      "teamSizePlaceholder": "Chọn quy mô",
+      "notStated": "Chưa nêu",
+      "website": "Website",
+      "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
+      "description": "Mô tả ngắn",
+      "descriptionHint": "Tổ chức làm gì, cho ai, trong vài câu.",
+      "counter": "{count} / {max}",
+      "save": "Lưu thay đổi",
+      "create": "Tạo tổ chức",
+      "cancel": "Hủy",
+      "emailDomain": "Tên miền email đã xác minh",
+      "emailDomainHint": "Tên miền email công việc của tổ chức. Ai được tham gia bằng tên miền này được đặt trong mục Thành viên.",
+      "leave": {
+        "title": "Rời trang mà không lưu?",
+        "lead": "Các thay đổi của bạn với hồ sơ tổ chức chưa được lưu.",
+        "leave": "Rời trang, không lưu",
+        "stay": "Ở lại"
+      },
+      "discard": "Bỏ thay đổi",
+      "confirmDiscard": {
+        "title": "Bỏ các thay đổi?",
+        "lead": "Biểu mẫu trở về hồ sơ như lần lưu gần nhất.",
+        "cancel": "Sửa tiếp"
+      }
+    },
+    "find": {
+      "title": "Tìm tổ chức của bạn",
+      "search": "Tên công ty hoặc nhóm",
+      "nothing": "Không có tổ chức nào khớp “{query}”. Hãy kiểm tra chính tả, hoặc tạo mới.",
+      "way": {
+        "join": "Bạn được tham gia ngay",
+        "joinDomain": "Email của bạn thuộc {domain} nên bạn được tham gia ngay",
+        "request": "Do các chủ sở hữu quản lý",
+        "claim": "Chưa có ai quản lý trang này"
+      },
+      "action": {
+        "join": "Tham gia",
+        "request": "Xin tham gia",
+        "claim": "Nhận trang này"
+      },
+      "or": "hoặc",
+      "create": "Tạo tổ chức mới",
+      "note": {
+        "create": "Làm việc một mình? Hãy tạo tổ chức cho riêng bạn. Bạn có thể thêm người sau.",
+        "claim": "Nếu email của bạn thuộc tên miền email của tổ chức, bạn trở thành chủ sở hữu ngay. Nếu không, GenAI Fund sẽ xem xét yêu cầu.",
+        "request": "Một chủ sở hữu của {name} sẽ quyết định.",
+        "requestDomain": "Email của bạn không thuộc {domain} nên một chủ sở hữu của {name} sẽ quyết định."
+      },
+      "ask": {
+        "request": {
+          "title": "Xin tham gia {name}?",
+          "lead": "Chủ sở hữu sẽ đọc yêu cầu của bạn và quyết định."
+        },
+        "claim": {
+          "title": "Nhận {name}?",
+          "lead": "Tổ chức này chưa có chủ sở hữu. GenAI Fund sẽ xác minh bạn đại diện cho tổ chức rồi trao quyền chủ sở hữu."
+        },
+        "join": {
+          "title": "Tham gia {name}?",
+          "lead": "Tên miền email của bạn trùng khớp nên bạn được tham gia ngay."
+        },
+        "message": "Lời nhắn (không bắt buộc)",
+        "cancel": "Hủy"
+      }
+    },
+    "entry": {
+      "back": "Về BeyondPilot",
+      "invitation": {
+        "title": "Tham gia {name} trên BeyondPilot",
+        "invitedOn": "{name} mời ngày {day}",
+        "jobTitle": "Chức danh của bạn",
+        "jobTitlePlaceholder": "ví dụ: Kỹ sư giải pháp",
+        "jobTitlePlaceholderOwner": "ví dụ: Trưởng bộ phận chuyển đổi số",
+        "accept": "Chấp nhận và tham gia",
+        "acceptOwner": "Chấp nhận và làm chủ sở hữu",
+        "decline": "Từ chối",
+        "noteMember": "{inviter} đã mời {email} tham gia với tư cách thành viên. Thành viên được hiển thị trong đội ngũ của {name}; chỉ chủ sở hữu mới sửa hồ sơ và giải pháp.",
+        "noteOwner": "{inviter} đã mời {email} tham gia với tư cách chủ sở hữu. Là chủ sở hữu, bạn có thể sửa hồ sơ, mời đồng nghiệp và quản lý các giải pháp."
+      },
+      "request": {
+        "claimTitle": "Yêu cầu nhận {name} của bạn đang ở GenAI Fund",
+        "joinTitle": "Yêu cầu tham gia {name} của bạn đang chờ các chủ sở hữu",
+        "claimSent": "Đã gửi yêu cầu nhận ngày {day}",
+        "joinSent": "Đã gửi yêu cầu ngày {day}",
+        "withdraw": "Rút yêu cầu",
+        "claimNote": "GenAI Fund kiểm tra yêu cầu một cách thủ công. Cho tới lúc đó, trang vẫn chưa có chủ sở hữu. Hãy rút yêu cầu nếu muốn chọn tổ chức khác.",
+        "joinNote": "Một chủ sở hữu sẽ quyết định. Hãy rút yêu cầu nếu muốn chọn tổ chức khác."
+      }
+    },
+    "members": {
+      "metaTitle": "Thành viên · BeyondPilot",
+      "title": "Thành viên",
+      "summary": {
+        "members": "{count} thành viên",
+        "invitations": "{count} lời mời đang chờ"
+      },
+      "columns": {
+        "member": "Thành viên",
+        "role": "Vai trò",
+        "jobTitle": "Chức danh",
+        "joined": "Ngày tham gia",
+        "actions": "Thao tác"
+      },
+      "you": "Bạn",
+      "none": "—",
+      "invited": "Mời ngày {day}",
+      "invitePending": "Chờ chấp nhận",
+      "requests": {
+        "title": "Yêu cầu tham gia",
+        "asked": "Xin tham gia ngày {day}.",
+        "onDomain": "Email thuộc tên miền đã xác minh {domain} của tổ chức.",
+        "foot": "Khi được chấp nhận, người này trở thành thành viên.",
+        "approve": "Chấp nhận",
+        "decline": "Từ chối"
+      },
+      "access": {
+        "title": "Ai được tham gia",
+        "domain": "Tên miền đã xác minh: {domain}",
+        "on": {
+          "title": "Ai có email @{domain} đều tham gia với tư cách thành viên",
+          "lead": "Họ tham gia khi đăng nhập bằng email công ty đã xác minh. Tắt đi nếu bạn muốn tự chấp nhận từng yêu cầu.",
+          "badge": "Bật",
+          "action": "Tắt"
+        },
+        "off": {
+          "title": "Người có email @{domain} phải xin tham gia",
+          "lead": "Bạn chấp nhận từng yêu cầu. Bật lên để họ tham gia ngay với tư cách thành viên.",
+          "badge": "Tắt",
+          "action": "Bật"
+        }
+      },
+      "actions": {
+        "open": "Thao tác với {name}",
+        "openInvitation": "Thao tác với lời mời gửi {email}",
+        "editJobTitle": "Sửa chức danh…",
+        "makeMember": "Chuyển thành thành viên",
+        "makeOwner": "Trao quyền chủ sở hữu",
+        "leave": "Rời tổ chức…",
+        "remove": "Xóa khỏi tổ chức…",
+        "revoke": "Thu hồi lời mời"
+      },
+      "jobTitle": {
+        "title": "Chức danh của bạn",
+        "lead": "Hiển thị bên cạnh tên bạn trong đội ngũ của tổ chức.",
+        "label": "Chức danh",
+        "placeholder": "ví dụ: Kỹ sư giải pháp",
+        "save": "Lưu",
+        "cancel": "Hủy"
+      },
+      "confirm": {
+        "leave": {
+          "title": "Rời tổ chức này?",
+          "lead": "Bạn sẽ mất quyền vào hồ sơ, thành viên và giải pháp của tổ chức.",
+          "confirm": "Rời tổ chức"
+        },
+        "remove": {
+          "title": "Xóa thành viên này?",
+          "lead": "Người này sẽ mất quyền vào hồ sơ, thành viên và giải pháp của tổ chức.",
+          "confirm": "Xóa thành viên"
+        },
+        "note": "Những gì tổ chức đã đăng vẫn giữ nguyên. Có thể mời lại bất cứ lúc nào.",
+        "cancel": "Hủy"
+      },
+      "invite": {
+        "open": "Mời mọi người",
+        "title": "Mời mọi người vào {name}",
+        "lead": "Mỗi người nhận một email có đường liên kết và tham gia khi chấp nhận.",
+        "emails": "Địa chỉ email",
+        "emailsPlaceholder": "ten@congty.com, ten@congty.com",
+        "emailsInvalid": "Hãy nhập các địa chỉ email đầy đủ, cách nhau bằng dấu phẩy.",
+        "role": "Vai trò",
+        "note": "Thành viên được hiển thị trong đội ngũ và tự sửa được chức danh của mình. Chỉ chủ sở hữu mới sửa hồ sơ và giải pháp, mời người và xóa thành viên.",
+        "cancel": "Hủy",
+        "send": "Gửi lời mời"
+      }
+    }
+  },
+  "Solution": {
+    "errors": {
+      "SOLUTION_NOT_FOUND": "Giải pháp này không còn tồn tại.",
+      "SOLUTION_PROVIDER_REQUIRED": "Chỉ chủ sở hữu của nhà cung cấp AI đã được duyệt mới làm được việc này.",
+      "SOLUTION_INCOMPLETE": "Hãy điền các trường được đánh dấu trước khi gửi duyệt.",
+      "SOLUTION_NOT_SUBMITTABLE": "Giải pháp này đang được duyệt hoặc đã duyệt.",
+      "SOLUTION_NOT_A_DRAFT": "Chỉ xóa được bản nháp.",
+      "SOLUTION_NOT_AWAITING_REVIEW": "Giải pháp này đã được duyệt xong.",
+      "SOLUTION_CHANGED_MEANWHILE": "Có người vừa sửa giải pháp này. Hãy tải lại trang rồi thử lại.",
+      "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
+      "SOLUTION_DEPLOYMENT_NOT_FOUND": "Triển khai khách hàng này không còn tồn tại.",
+      "SOLUTION_TOO_MANY_DEPLOYMENTS": "Một giải pháp có tối đa 12 triển khai khách hàng. Hãy gỡ một cái trước khi thêm.",
+      "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW": "Triển khai khách hàng này không chờ duyệt.",
+      "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Có người vừa lưu triển khai khách hàng này. Hãy tải lại trang rồi sửa lại.",
+      "unknown": "Chưa thực hiện được. Hãy thử lại."
+    },
+    "done": {
+      "saved": "Đã lưu giải pháp.",
+      "submitted": "Đã gửi GenAI Fund duyệt.",
+      "deleted": "Đã xóa {name}.",
+      "approved": "Đã duyệt {name}.",
+      "rejected": "Đã trả lại {name} kèm lý do.",
+      "deploymentSaved": "Đã gửi {name} cho GenAI Fund duyệt.",
+      "deploymentRemoved": "Đã gỡ {name}.",
+      "deploymentApproved": "Đã duyệt {name}.",
+      "deploymentRejected": "Đã trả lại {name}."
+    },
+    "directory": {
+      "metaTitle": "Giải pháp AI · BeyondPilot",
+      "title": "Giải pháp AI",
+      "lead": "Sản phẩm và dịch vụ AI, kèm bằng chứng đằng sau: ai xây dựng, đang chạy ở đâu và đã mang lại kết quả gì.",
+      "showing": "Đang hiện {shown} trên {total}",
+      "noCase": "Chưa công bố trường hợp khách hàng",
+      "strip": {
+        "title": "Bạn đang xây dựng giải pháp AI?",
+        "body": "Đăng giải pháp kèm bằng chứng đằng sau, để doanh nghiệp đang tìm dự án thí điểm tìm thấy bạn."
+      },
+      "list": "Đăng giải pháp của bạn",
+      "count": "{count} giải pháp",
+      "more": "+{count} nữa",
+      "by": "Của {name}",
+      "empty": {
+        "title": "Chưa có giải pháp nào",
+        "description": "Giải pháp đã duyệt sẽ hiện ở đây. Nhà cung cấp đăng giải pháp từ trang tổ chức."
+      },
+      "noMatch": {
+        "title": "Không có giải pháp nào khớp",
+        "description": "Không có gì khớp với tìm kiếm và bộ lọc này.",
+        "clear": "Xóa tìm kiếm và bộ lọc"
+      },
+      "ownLead": "Đây là giải pháp của tổ chức bạn, như người khác thấy.",
+      "ownEdit": "Sửa giải pháp này",
+      "deployments": "{count} triển khai khách hàng"
+    },
+    "filters": {
+      "search": "Tìm theo tên hoặc mô tả",
+      "toggle": "Bộ lọc",
+      "adminSearch": "Tìm theo giải pháp hoặc tổ chức",
+      "industry": {
+        "label": "Ngành",
+        "all": "Mọi ngành"
+      },
+      "focusArea": {
+        "label": "Năng lực",
+        "all": "Mọi năng lực"
+      },
+      "maturity": {
+        "label": "Giai đoạn",
+        "all": "Mọi giai đoạn"
+      },
+      "status": {
+        "label": "Trạng thái",
+        "all": "Mọi trạng thái"
+      },
+      "clear": "Xóa bộ lọc"
+    },
+    "view": {
+      "problemsSolved": "Bài toán giải quyết",
+      "valueProposition": "Giá trị mang lại",
+      "maturity": "Giai đoạn",
+      "focusAreas": "Lĩnh vực",
+      "industries": "Ngành",
+      "deployment": "Triển khai",
+      "website": "Mở website",
+      "nothingYet": "Chưa có nội dung."
+    },
+    "detail": {
+      "unknown": "Chưa có thông tin",
+      "proof": {
+        "title": "Bằng chứng",
+        "lead": "Mỗi nhận định đều ghi rõ loại bằng chứng và nguồn. Điều chưa biết được ghi là chưa biết.",
+        "customerCase": "Trường hợp khách hàng",
+        "noCase": "Chưa công bố trường hợp khách hàng nào."
+      },
+      "fit": {
+        "title": "Phù hợp ở đâu",
+        "industries": "Ngành",
+        "channels": "Kênh",
+        "deployment": "Triển khai",
+        "languages": "Ngôn ngữ"
+      },
+      "product": {
+        "title": "Sản phẩm và kinh doanh",
+        "capabilities": "Năng lực",
+        "stage": "Giai đoạn",
+        "notPublished": "Chưa công bố: công nghệ lõi, phân khúc, hồ sơ khách hàng phù hợp nhất, vốn đầu tư, nền tảng xây dựng, bản demo và tài liệu, mô hình giá, khách hàng tiêu biểu, giải pháp thay thế."
+      },
+      "offers": {
+        "title": "Ưu đãi",
+        "kind": "Ưu đãi",
+        "none": "Chưa có ưu đãi nào được công bố."
+      },
+      "company": {
+        "title": "Công ty đứng sau giải pháp này",
+        "view": "Xem công ty",
+        "solutions": "Giải pháp",
+        "noSolutions": "Chưa có giải pháp nào được đăng.",
+        "listedBelow": "{count} triển khai khách hàng, liệt kê bên dưới",
+        "deployments": "Triển khai khách hàng",
+        "noDeployments": "Chưa công bố triển khai khách hàng nào.",
+        "type": "Loại hình",
+        "country": "Quốc gia",
+        "website": "Website"
+      },
+      "contact": {
+        "title": "Làm việc với {name}",
+        "website": "Mở website",
+        "basedIn": "Trụ sở tại"
+      }
+    },
+    "mine": {
+      "metaTitle": "Giải pháp · BeyondPilot",
+      "title": "Giải pháp",
+      "summary": {
+        "listed": "{count} đang đăng",
+        "draft": "{count} bản nháp",
+        "submitted": "{count} đang duyệt",
+        "rejected": "{count} không được duyệt",
+        "hidden": "{count} đang ẩn"
+      },
+      "columns": {
+        "solution": "Giải pháp",
+        "status": "Trạng thái",
+        "updated": "Cập nhật",
+        "actions": "Thao tác"
+      },
+      "state": {
+        "listed": "Đang đăng trong danh mục",
+        "hidden": "Đã duyệt · đang ẩn khỏi danh mục",
+        "draft": "Chưa gửi duyệt · chỉ tổ chức của bạn thấy",
+        "submitted": "Đã gửi duyệt · chỉ tổ chức của bạn thấy",
+        "rejected": "Không được duyệt · chỉ tổ chức của bạn thấy"
+      },
+      "actions": {
+        "open": "Thao tác với {name}",
+        "edit": "Sửa",
+        "view": "Mở",
+        "viewPublic": "Xem trang công khai"
+      },
+      "create": {
+        "title": "Thêm giải pháp",
+        "lead": "Bắt đầu bằng tên. Giải pháp là bản nháp cho tới khi bạn gửi duyệt.",
+        "name": "Tên giải pháp",
+        "nameRequired": "Hãy nhập tên giải pháp.",
+        "cancel": "Hủy",
+        "submit": "Thêm giải pháp"
+      },
+      "afterApproval": "Bạn thêm được giải pháp sau khi GenAI Fund duyệt tổ chức.",
+      "empty": {
+        "title": "Chưa có giải pháp nào",
+        "owner": "Hãy thêm sản phẩm đầu tiên của tổ chức.",
+        "member": "Chủ sở hữu tổ chức là người thêm giải pháp."
+      }
+    },
+    "editor": {
+      "back": "Tất cả giải pháp",
+      "submitted": {
+        "title": "GenAI Fund đang duyệt giải pháp này",
+        "lead": "Thường mất một đến hai ngày làm việc. Bạn vẫn có thể chỉnh sửa."
+      },
+      "approved": {
+        "listed": "Đã duyệt và hiển thị trong danh mục",
+        "unlisted": "Đã duyệt nhưng đang ẩn khỏi danh mục",
+        "open": "Mở trang công khai",
+        "unlistedLead": "Bật “Hiển thị trong danh mục” bên dưới để đăng."
+      },
+      "rejected": {
+        "title": "Cần chỉnh sửa: {reason}",
+        "lead": "Hãy chỉnh sửa rồi gửi duyệt lại."
+      }
+    },
+    "form": {
+      "name": "Tên",
+      "nameRequired": "Hãy nhập tên giải pháp.",
+      "summary": "Tóm tắt",
+      "summaryHint": "Một hoặc hai câu. Danh mục hiển thị phần này.",
+      "problemsSolved": "Bài toán giải quyết",
+      "problemsSolvedHint": "Tình huống khách hàng gặp trước khi dùng giải pháp.",
+      "valueProposition": "Giá trị mang lại",
+      "valuePropositionHint": "Kết quả khách hàng đạt được, kèm số liệu nếu có.",
+      "focusAreas": "Lĩnh vực",
+      "industries": "Ngành",
+      "upTo": "Chọn tối đa {count}. Đã chọn {chosen}.",
+      "maturity": "Giai đoạn",
+      "notStated": "Chưa nêu",
+      "website": "Trang sản phẩm",
+      "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
+      "deployment": "Triển khai",
+      "listed": "Hiển thị trong danh mục",
+      "listedHint": "Có hiệu lực khi giải pháp được duyệt.",
+      "submit": "Gửi duyệt",
+      "resubmit": "Gửi duyệt lại",
+      "saveDraft": "Lưu nháp",
+      "save": "Lưu thay đổi",
+      "delete": "Xóa bản nháp…",
+      "confirmDelete": {
+        "title": "Xóa {name}?",
+        "lead": "Bản nháp bị xóa với mọi người trong tổ chức. Không thể hoàn tác.",
+        "confirm": "Xóa bản nháp",
+        "cancel": "Hủy"
+      },
+      "listedHintApproved": "Giải pháp đã được duyệt, nên lựa chọn này và mọi thay đổi đã lưu hiển thị ngay trong danh mục.",
+      "needed": {
+        "summary": "Viết một hoặc hai câu về việc giải pháp làm được.",
+        "focusAreas": "Chọn ít nhất một lĩnh vực.",
+        "industries": "Chọn ít nhất một ngành.",
+        "maturity": "Chọn giai đoạn."
+      },
+      "readiness": {
+        "missing": "Trước khi gửi duyệt, hãy bổ sung:",
+        "ready": "Đã sẵn sàng gửi duyệt",
+        "note": "GenAI Fund kiểm tra rằng giải pháp có thật, phần tóm tắt nói rõ giải pháp làm gì, và tổ chức của bạn cung cấp nó. Thường mất một đến hai ngày làm việc; kết quả hiển thị ngay trên trang này.",
+        "count": "{count, plural, other {Còn # mục cần bổ sung trước khi duyệt}}"
+      },
+      "discard": "Bỏ thay đổi",
+      "unsaved": "Có thay đổi chưa lưu",
+      "neededMark": "· cần để duyệt",
+      "leave": {
+        "title": "Rời trang mà không lưu?",
+        "lead": "Các thay đổi của bạn với giải pháp này chưa được lưu.",
+        "leave": "Rời trang, không lưu",
+        "stay": "Ở lại"
+      },
+      "confirmDiscard": {
+        "title": "Bỏ các thay đổi?",
+        "lead": "Biểu mẫu trở về giải pháp này như lần lưu gần nhất.",
+        "cancel": "Sửa tiếp"
+      },
+      "requiredMark": "· bắt buộc"
+    },
+    "deployment": {
+      "open": "Mở triển khai để đọc bài toán, những gì đã triển khai và kết quả.",
+      "eyebrow": "Triển khai khách hàng",
+      "line": "{solution} · {customer}",
+      "lead": "{solution}, do {organization} triển khai. {stage}; GenAI Fund duyệt ngày {day}.",
+      "problem": "Bài toán kinh doanh",
+      "delivered": "Những gì đã triển khai",
+      "scope": "Phạm vi và kết quả",
+      "channels": "Kênh",
+      "languages": "Ngôn ngữ",
+      "period": "Thời gian",
+      "result": "Kết quả",
+      "notPublished": "Chưa công bố",
+      "about": "Về dự án này",
+      "deliveredBy": "Đơn vị triển khai",
+      "customer": "Khách hàng",
+      "solutionUsed": "Giải pháp sử dụng",
+      "source": "Do công ty tự khai và GenAI Fund đã duyệt. Khách hàng chưa xác nhận tại đây."
+    },
+    "deployments": {
+      "title": "Triển khai khách hàng",
+      "lead": "Những dự án mà khách hàng đã đưa giải pháp này vào sử dụng. GenAI Fund duyệt từng dự án trước khi hiển thị, và duyệt lại sau mỗi lần sửa.",
+      "add": "Thêm triển khai",
+      "none": "Chưa có triển khai khách hàng nào. Một triển khai đã duyệt thuyết phục hơn mọi lời giới thiệu.",
+      "edit": "Sửa",
+      "remove": "Gỡ",
+      "rejected": "Bị trả lại: {reason}.",
+      "confirmRemove": {
+        "title": "Gỡ {name}?",
+        "lead": "Nó rời khỏi trang giải pháp ngay và không khôi phục được."
+      },
+      "form": {
+        "addTitle": "Thêm triển khai khách hàng",
+        "editTitle": "Sửa triển khai khách hàng",
+        "lead": "Chỉ viết những gì khách hàng đồng ý công bố. Khi lưu, nội dung được gửi cho GenAI Fund duyệt.",
+        "title": "Tiêu đề",
+        "titleHint": "Cái đã đưa vào sử dụng, ví dụ \"Trợ lý giọng nói cho câu hỏi về thẻ và khoản vay\".",
+        "customer": "Khách hàng",
+        "customerHint": "Tên, hoặc mô tả như \"Một ngân hàng bán lẻ tại Việt Nam\".",
+        "stage": "Giai đoạn",
+        "problem": "Bài toán kinh doanh",
+        "delivered": "Những gì đã triển khai",
+        "channels": "Kênh (không bắt buộc)",
+        "channelsHint": "Ví dụ chat và giọng nói.",
+        "languages": "Ngôn ngữ (không bắt buộc)",
+        "languagesHint": "Ví dụ tiếng Việt, tiếng Anh.",
+        "period": "Thời gian (không bắt buộc)",
+        "periodHint": "Ví dụ từ tháng 3/2026.",
+        "result": "Kết quả (không bắt buộc)",
+        "resultHint": "Một con số mà khách hàng xác nhận.",
+        "cancel": "Hủy",
+        "save": "Gửi duyệt"
+      }
+    }
+  },
+  "Talent": {
+    "errors": {
+      "TALENT_PROFILE_NOT_FOUND": "Hồ sơ này không còn tồn tại.",
+      "TALENT_INCOMPLETE": "Hãy điền các trường được đánh dấu trước khi gửi duyệt.",
+      "TALENT_NOT_SUBMITTABLE": "Hồ sơ này đang được duyệt hoặc đã duyệt.",
+      "TALENT_NOT_AWAITING_REVIEW": "Hồ sơ này đã được duyệt xong.",
+      "TALENT_CHANGED_MEANWHILE": "Hồ sơ vừa được sửa ở tab khác. Hãy tải lại trang rồi thử lại.",
+      "TALENT_OWN_PROFILE": "Đây là hồ sơ của chính bạn.",
+      "TALENT_ENQUIRY_TOO_SOON": "Hôm nay bạn đã viết cho người này. Hãy thử lại vào ngày mai.",
+      "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
+      "unknown": "Chưa thực hiện được. Hãy thử lại."
+    },
+    "done": {
+      "saved": "Đã lưu hồ sơ.",
+      "submitted": "Đã gửi GenAI Fund duyệt.",
+      "approved": "Đã duyệt {name}.",
+      "rejected": "Đã trả lại hồ sơ của {name} kèm lý do."
+    },
+    "directory": {
+      "metaTitle": "Nhân lực AI · BeyondPilot",
+      "title": "Nhân lực AI",
+      "lead": "Kỹ sư và người xây dựng triển khai AI cho doanh nghiệp, hiển thị cùng những dự án họ đã thực hiện.",
+      "create": "Tạo hồ sơ nhân lực",
+      "count": "Đang hiện {shown} trên {total}",
+      "total": "{count} người",
+      "more": "+{count}",
+      "allSkills": "Xem cả {count} kỹ năng",
+      "strip": {
+        "title": "Bạn triển khai AI cho doanh nghiệp?",
+        "body": "Tạo hồ sơ với kỹ năng và những dự án bạn đã thực hiện. Lời nhắn đến với bạn mà không để lộ địa chỉ email của bạn."
+      },
+      "empty": {
+        "title": "Hồ sơ nhân lực sẽ mở khi ra mắt",
+        "description": "Kỹ sư AI, kỹ sư triển khai tại khách hàng và chuyên gia tự động hóa sẽ được liệt kê ở đây, cùng kỹ năng và dự án của họ."
+      },
+      "noMatch": {
+        "title": "Không có hồ sơ nào khớp",
+        "description": "Không có gì khớp với tìm kiếm và bộ lọc này.",
+        "clear": "Xóa tìm kiếm và bộ lọc"
+      },
+      "edit": "Sửa hồ sơ của bạn"
+    },
+    "filters": {
+      "search": "Tìm nhân lực theo tên hoặc kỹ năng",
+      "open": "Bộ lọc",
+      "done": "Xem kết quả",
+      "close": "Đóng",
+      "adminSearch": "Tìm theo tên hoặc email",
+      "role": {
+        "label": "Vai trò",
+        "all": "Mọi vai trò"
+      },
+      "availability": {
+        "label": "Tình trạng",
+        "all": "Mọi tình trạng"
+      },
+      "status": {
+        "label": "Trạng thái",
+        "all": "Mọi trạng thái"
+      },
+      "clear": "Xóa bộ lọc"
+    },
+    "view": {
+      "roles": "Vai trò",
+      "skills": "Kỹ năng",
+      "engagement": "Hình thức làm việc",
+      "rate": "Mức phí",
+      "projects": "Dự án tiêu biểu",
+      "openProject": "Xem dự án",
+      "website": "Portfolio hoặc LinkedIn",
+      "nothingYet": "Chưa có nội dung."
+    },
+    "profile": {
+      "trail": "Bạn đang ở đây",
+      "about": "Giới thiệu",
+      "projects": {
+        "title": "Dự án đã triển khai",
+        "lead": "Mỗi dự án được hiển thị theo lời người này tự nêu.",
+        "stated": "Do người này tự nêu",
+        "open": "Xem dự án",
+        "empty": "Chưa có dự án đã triển khai nào được công bố."
+      },
+      "fit": {
+        "title": "Kỹ năng và tình trạng",
+        "skills": "Kỹ năng",
+        "availability": "Tình trạng",
+        "engagement": "Hình thức làm việc",
+        "rate": "Mức phí"
+      },
+      "facts": {
+        "country": "Nơi làm việc",
+        "role": "Vai trò",
+        "website": "Portfolio hoặc LinkedIn"
+      },
+      "notListed": "Chưa nêu",
+      "note": "Lời nhắn được gửi qua BeyondPilot. {name} nhận lời nhắn kèm tên và địa chỉ email của bạn; địa chỉ của họ chỉ hiện khi họ trả lời."
+    },
+    "enquiry": {
+      "title": "Làm việc với {name}",
+      "project": "Trao đổi về dự án",
+      "role": "Hỏi về một vị trí",
+      "projectLabel": "Kể cho {name} về dự án của bạn",
+      "projectPlaceholder": "Bạn đang xây dựng gì và cần gì ở họ.",
+      "roleLabel": "Hỏi {name} về một vị trí",
+      "rolePlaceholder": "Vị trí, nhóm làm việc và điều bạn muốn biết.",
+      "hint": "Họ nhận lời nhắn kèm tên và email của bạn, rồi trả lời trực tiếp.",
+      "required": "Hãy viết lời nhắn trước.",
+      "send": "Gửi lời nhắn",
+      "cancel": "Hủy",
+      "sentTitle": "Đã gửi lời nhắn tới {name}",
+      "sentLead": "Họ sẽ trả lời vào địa chỉ email của bạn.",
+      "signInLead": "Đăng nhập để viết cho {name}.",
+      "ownLead": "Đây là hồ sơ của bạn, như người khác nhìn thấy.",
+      "ownEdit": "Sửa hồ sơ"
+    },
+    "mine": {
+      "metaTitle": "Hồ sơ nhân lực · BeyondPilot",
+      "title": "Hồ sơ nhân lực của bạn",
+      "lead": "Cách các công ty nhìn thấy bạn trong danh mục nhân lực AI.",
+      "leadNew": "Hãy cho các công ty biết bạn làm được gì. GenAI Fund duyệt hồ sơ trước khi đăng.",
+      "submitted": {
+        "title": "GenAI Fund đang duyệt hồ sơ của bạn",
+        "lead": "Thường mất một đến hai ngày làm việc. Bạn vẫn có thể chỉnh sửa."
+      },
+      "approved": {
+        "listed": "Đã duyệt và hiển thị trong danh mục",
+        "unlisted": "Đã duyệt nhưng đang ẩn khỏi danh mục",
+        "open": "Mở hồ sơ công khai",
+        "unlistedLead": "Bật “Hiển thị trong danh mục” bên dưới để được đăng."
+      },
+      "rejected": {
+        "title": "Cần chỉnh sửa: {reason}",
+        "lead": "Hãy chỉnh sửa rồi gửi duyệt lại."
+      },
+      "enquiries": "{count} lời nhắn",
+      "reply": "Trả lời {email}"
+    },
+    "form": {
+      "name": "Họ tên",
+      "nameRequired": "Hãy nhập họ tên.",
+      "headline": "Giới thiệu ngắn",
+      "bio": "Về bạn",
+      "bioHint": "Bạn đã xây dựng gì, cho ai, và muốn làm gì tiếp theo.",
+      "roles": "Vai trò",
+      "upTo": "Chọn tối đa {count}. Đã chọn {chosen}.",
+      "skills": "Kỹ năng",
+      "skillsHint": "Cách nhau bằng dấu phẩy, tối đa {count}. Ví dụ: Python, LangGraph, RAG, MLOps.",
+      "skillsInvalid": "Nêu tối đa {count} kỹ năng, mỗi kỹ năng không quá 40 ký tự.",
+      "country": "Quốc gia",
+      "availability": "Tình trạng",
+      "rate": "Mức phí",
+      "notStated": "Chưa nêu",
+      "engagement": "Hình thức làm việc",
+      "website": "Portfolio hoặc LinkedIn",
+      "websiteHint": "Hiển thị trên hồ sơ. Địa chỉ email của bạn thì không bao giờ.",
+      "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
+      "projects": {
+        "title": "Dự án tiêu biểu",
+        "lead": "Tối đa {count} dự án cho thấy năng lực của bạn.",
+        "titleRequired": "Hãy đặt tên cho mỗi dự án, hoặc xóa đi.",
+        "name": "Dự án {number}",
+        "year": "Năm",
+        "summary": "Bạn đã làm gì",
+        "url": "Liên kết",
+        "remove": "Xóa dự án {number}",
+        "add": "Thêm dự án"
+      },
+      "listed": "Hiển thị trong danh mục",
+      "listedHint": "Có hiệu lực khi hồ sơ được duyệt.",
+      "submit": "Gửi duyệt",
+      "resubmit": "Gửi duyệt lại",
+      "saveDraft": "Lưu nháp",
+      "save": "Lưu thay đổi",
+      "listedHintApproved": "Hồ sơ đã được duyệt, nên lựa chọn này và mọi thay đổi đã lưu hiển thị ngay trong danh mục.",
+      "needed": {
+        "headline": "Nói bạn làm gì trong một dòng.",
+        "bio": "Viết vài câu về công việc của bạn.",
+        "roles": "Chọn ít nhất một vai trò.",
+        "skills": "Nêu ít nhất một kỹ năng."
+      },
+      "readiness": {
+        "missing": "Trước khi gửi duyệt, hãy bổ sung:",
+        "ready": "Đã sẵn sàng gửi duyệt",
+        "note": "GenAI Fund kiểm tra rằng hồ sơ là của một người thật và nói rõ bạn làm gì. Thường mất một đến hai ngày làm việc; kết quả hiển thị ngay trên trang này.",
+        "count": "{count, plural, other {Còn # mục cần bổ sung trước khi duyệt}}"
+      },
+      "discard": "Bỏ thay đổi",
+      "unsaved": "Có thay đổi chưa lưu",
+      "neededMark": "· cần để duyệt",
+      "leave": {
+        "title": "Rời trang mà không lưu?",
+        "lead": "Các thay đổi của bạn với hồ sơ của bạn chưa được lưu.",
+        "leave": "Rời trang, không lưu",
+        "stay": "Ở lại"
+      },
+      "confirmDiscard": {
+        "title": "Bỏ các thay đổi?",
+        "lead": "Biểu mẫu trở về hồ sơ của bạn như lần lưu gần nhất.",
+        "cancel": "Sửa tiếp"
+      },
+      "requiredMark": "· bắt buộc",
+      "headlineHint": "Một dòng về việc bạn làm. Ví dụ: Kỹ sư ML xây AI xử lý tài liệu cho ngân hàng."
     }
   }
 }

@@ -4,16 +4,23 @@ export const siteRoutes = {
   programs: "/programs",
   useCases: "/use-cases",
   solutions: "/solutions",
+  organizations: "/organizations",
   talent: "/talent",
   signIn: "/sign-in",
   getStarted: "/get-started",
   publishUseCase: "/use-cases/new",
-  talentProfile: "/talent/new",
+  talentProfile: "/workspace/talent",
   founders: "/founders",
   search: "/search",
   admin: "/admin",
   adminAccounts: "/admin/accounts",
   adminAuditLog: "/admin/audit-log",
+  adminOrganizations: "/admin/organizations",
+  adminSolutions: "/admin/solutions",
+  adminTalent: "/admin/talent",
+  workspaceOrganization: "/workspace/organization",
+  workspaceMembers: "/workspace/organization/members",
+  workspaceSolutions: "/workspace/organization/solutions",
 } as const;
 
 /** Planned pages without a screen yet; they share the coming-soon page. */
@@ -21,13 +28,13 @@ export const comingSoonPaths = [
   "programs",
   "use-cases",
   "use-cases/new",
-  "solutions",
-  "talent",
-  "talent/new",
   "get-started",
   "founders",
   "search",
 ] as const;
+
+/** The product's name, as the end of a page title that is a record's own name. */
+export const titleSuffix = " · BeyondPilot";
 
 /** The live campaign runs on GenAI Fund's interim page until campaigns move onto BeyondPilot. */
 export const liveCampaignUrl = "https://beyondpilot.genaifund.ai/insurance-ai-tasco";

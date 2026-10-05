@@ -9,6 +9,19 @@ export const auditActions = [
   "account.enable",
   "operator.grant",
   "operator.withdraw",
+  "organization.create",
+  "organization.approve",
+  "organization.refuse",
+  "organization.claim_approve",
+  "organization.claim_decline",
+  "organization.member_role",
+  "organization.member_remove",
+  "solution.approve",
+  "solution.reject",
+  "solution.deployment_approve",
+  "solution.deployment_reject",
+  "talent.approve",
+  "talent.reject",
 ] as const;
 
 /**

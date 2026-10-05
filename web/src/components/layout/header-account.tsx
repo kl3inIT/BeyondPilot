@@ -29,12 +29,10 @@ async function HeaderAccount() {
 
   return (
     <>
-      <Button prominence="tertiary" className="hidden md:inline-flex" href={siteRoutes.signIn}>
+      <Button prominence="secondary" className="hidden md:inline-flex" href={siteRoutes.signIn}>
         {t("signIn")}
       </Button>
-      <Button prominence="secondary" href={siteRoutes.getStarted}>
-        {t("getStarted")}
-      </Button>
+      <Button href={siteRoutes.getStarted}>{t("getStarted")}</Button>
       <MobileMenu />
     </>
   );

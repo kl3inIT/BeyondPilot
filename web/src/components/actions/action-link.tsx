@@ -1,6 +1,10 @@
 import { Link } from "@/i18n/navigation";
 
-type ActionLinkProps = Omit<React.ComponentProps<"a">, "href"> & { href: string };
+type ActionLinkProps = Omit<React.ComponentProps<"a">, "href"> & {
+  href: string;
+  /** False keeps the scroll position when an app path opens; the default goes to the top. */
+  scroll?: boolean;
+};
 
 /** Paths the backend serves (next.config.ts); they have no locale and are full page loads. */
 const backendPaths = ["/api/", "/login/", "/logout", "/oauth2/", "/ott/"];
@@ -10,9 +14,9 @@ const backendPaths = ["/api/", "/login/", "/logout", "/oauth2/", "/ott/"];
  * anything else (`https:`, `mailto:`, a backend path) is a plain anchor. Navigation stays a link
  * for assistive technology instead of taking the button role.
  */
-function ActionLink({ href, ...props }: ActionLinkProps) {
+function ActionLink({ href, scroll, ...props }: ActionLinkProps) {
   if (href.startsWith("/") && !backendPaths.some((path) => href.startsWith(path))) {
-    return <Link href={href} {...props} />;
+    return <Link href={href} scroll={scroll} {...props} />;
   }
   return <a href={href} {...props} />;
 }
