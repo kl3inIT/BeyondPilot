@@ -32,7 +32,9 @@ import ai.genaifund.beyondpilot.program.persistence.ProgramType;
 import ai.genaifund.beyondpilot.storage.FilePurpose;
 import ai.genaifund.beyondpilot.storage.StorageException;
 import ai.genaifund.beyondpilot.storage.StorageService;
+import org.hibernate.exception.ConstraintViolationException;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +47,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProgramAdministration {
 
 	private static final String PROGRAM = "program";
+
+	private static final String SLUG_KEY = "program_slug_key";
+
+	private static final String COVER_KEY = "program_cover_file_id_key";
 
 	/** Programs are run from Vietnam: a day an operator names is a day there. */
 	private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
@@ -59,13 +65,16 @@ public class ProgramAdministration {
 
 	private final AuditTrail audit;
 
+	private final ApplicationEventPublisher events;
+
 	ProgramAdministration(ProgramRepository programs, ProgramQueryRepository programList, IdentityService identity,
-			StorageService storage, AuditTrail audit) {
+			StorageService storage, AuditTrail audit, ApplicationEventPublisher events) {
 		this.programs = programs;
 		this.programList = programList;
 		this.identity = identity;
 		this.storage = storage;
 		this.audit = audit;
+		this.events = events;
 	}
 
 	/**
@@ -107,7 +116,10 @@ public class ProgramAdministration {
 		}
 		catch (DataIntegrityViolationException raced) {
 			// Two operators created the same address at the same moment; the unique constraint decided.
-			throw slugTaken(request.slug(), raced);
+			if (SLUG_KEY.equals(constraint(raced))) {
+				throw slugTaken(request.slug(), raced);
+			}
+			throw raced;
 		}
 		record(AuditAction.PROGRAM_CREATE, operator, program);
 		return response(program);
@@ -165,15 +177,21 @@ public class ProgramAdministration {
 			programs.flush();
 		}
 		catch (DataIntegrityViolationException raced) {
-			if (moved) {
+			// Another save took the address or the cover after this one looked; the unique constraint decided.
+			String constraint = constraint(raced);
+			if (SLUG_KEY.equals(constraint)) {
 				throw slugTaken(request.slug(), raced);
+			}
+			if (COVER_KEY.equals(constraint)) {
+				throw new ProgramException(ProgramErrorCode.COVER_NOT_USABLE,
+						"File " + cover + " became the cover of another program", raced);
 			}
 			throw raced;
 		}
 		record(AuditAction.PROGRAM_UPDATE, operator, program);
 		if (replacedCover != null) {
-			// The program no longer names the file, so nothing does.
-			storage.delete(replacedCover);
+			// The program no longer names the file, so nothing does. It goes once the save has committed.
+			events.publishEvent(new ReplacedCovers.CoverReplaced(id, replacedCover));
 		}
 		return response(program);
 	}
@@ -265,6 +283,16 @@ public class ProgramAdministration {
 	/** What a person typed, or null when they typed nothing. */
 	private static @Nullable String text(@Nullable String value) {
 		return value == null || value.isBlank() ? null : value.strip();
+	}
+
+	/** The unique constraint a write broke, as the database names it. */
+	private static @Nullable String constraint(DataIntegrityViolationException failure) {
+		for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
+			if (cause instanceof ConstraintViolationException violation) {
+				return violation.getConstraintName();
+			}
+		}
+		return null;
 	}
 
 	private static ProgramException notFound(UUID id) {
