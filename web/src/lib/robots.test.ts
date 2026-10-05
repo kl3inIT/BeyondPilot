@@ -12,13 +12,19 @@ describe("robotsTxt", () => {
     expect(robotsTxt(host)).toBe("User-agent: *\nDisallow: /\n");
   });
 
-  it("opens the public site to search and answers but not to training", () => {
-    const robots = robotsTxt("beyondpilot.ai");
-
-    expect(robots).toContain("Content-Signal: search=yes, ai-input=yes, ai-train=no");
-    expect(robots).toMatch(/User-agent: GPTBot\n(User-agent: .+\n)*Disallow: \/\n/);
-    expect(robots).toMatch(/User-agent: ChatGPT-User\n(User-agent: .+\n)*Allow: \/\n/);
-    expect(robots).toContain("Disallow: /admin");
-    expect(robots).toContain("Sitemap: https://beyondpilot.ai/sitemap.xml");
+  it("opens the public site to every crawler except the private areas", () => {
+    expect(robotsTxt("beyondpilot.ai")).toBe(
+      [
+        "User-agent: *",
+        "Content-Signal: search=yes, ai-input=yes, ai-train=yes",
+        "Allow: /",
+        "Disallow: /admin",
+        "Disallow: /vi/admin",
+        "Disallow: /api/",
+        "",
+        "Sitemap: https://beyondpilot.ai/sitemap.xml",
+        "",
+      ].join("\n"),
+    );
   });
 });
