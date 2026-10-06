@@ -25,7 +25,9 @@
       "signOutFailed": "We could not sign you out. Try again.",
       "organization": "My organization",
       "talentProfile": "Talent profile",
-      "admin": "Admin"
+      "admin": "Admin",
+      "applications": "My applications",
+      "reviews": "Reviews"
     },
     "menu": {
       "open": "Open menu",
@@ -288,6 +290,7 @@
       "organizations": "Organisations",
       "solutions": "AI solutions",
       "talent": "AI talent",
+      "introductions": "Introductions",
       "review": "Review",
       "system": "System"
     },
@@ -529,7 +532,62 @@
         "description": "Try another name, or look at every state.",
         "clear": "Show all programs"
       },
-      "countOf": "{count, plural, one {# program} other {# programs}} of {total}"
+      "countOf": "{count, plural, one {# program} other {# programs}} of {total}",
+      "tabs": {
+        "label": "Program",
+        "settings": "Settings",
+        "questions": "Questions",
+        "applications": "Applications",
+        "reviewers": "Reviewers"
+      },
+      "questions": {
+        "metaTitle": "Questions",
+        "title": "What the application form asks",
+        "lead": "After the applicant, their team and their solution, the form asks these, in this order. A program with no questions skips that step.",
+        "fixed": "Applications opened on {opened}, so the questions can no longer change: an answer may already name one.",
+        "none": "No questions yet. Applicants go straight from their solution to review and submit.",
+        "kinds": {
+          "short_text": "Short answer",
+          "long_text": "Long answer",
+          "single_choice": "One choice",
+          "file": "PDF file",
+          "link": "Link",
+          "confirm": "Confirmation"
+        },
+        "choiceCount": "{count, plural, one {# choice} other {# choices}}",
+        "optional": "Optional",
+        "notSaved": "Not saved yet",
+        "moveUp": "Move {label} up",
+        "moveDown": "Move {label} down",
+        "edit": "Edit",
+        "editNamed": "Edit {label}",
+        "add": "Add a question",
+        "save": "Save questions",
+        "unsaved": "You have unsaved changes.",
+        "saved": "Questions saved.",
+        "addTitle": "Add a question",
+        "editTitle": "Edit question",
+        "kind": "Answered with",
+        "label": "Question",
+        "help": "Help",
+        "helpHint": "Shown under the question, for what a good answer holds.",
+        "options": "Choices",
+        "optionsPlaceholder": "Add a choice",
+        "optionsHint": "Press Enter after each one. Two to {count}.",
+        "choicesRequired": "Add at least two choices.",
+        "maxLength": "Longest answer",
+        "maxLengthHint": "In characters. Leave empty for the default.",
+        "required": "An answer is required",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "update": "Update",
+        "addQuestion": "Add question",
+        "errors": {
+          "PROGRAM_QUESTIONS_FIXED": "Applications have opened, so the questions can no longer change.",
+          "PROGRAM_CHANGED_MEANWHILE": "Someone else changed this program in the meantime. Reload and make your changes again.",
+          "PROGRAM_CHOICES_REQUIRED": "A question answered by a choice needs at least two choices."
+        }
+      }
     },
     "accounts": {
       "metaTitle": "Accounts · BeyondPilot",
@@ -677,9 +735,26 @@
           "deployment_approve": "Approved a customer deployment",
           "deployment_reject": "Sent a customer deployment back"
         },
+        "introduction": {
+          "reply": "Replied to a request for an introduction",
+          "decline": "Declined a request for an introduction"
+        },
         "talent": {
           "approve": "Approved a talent profile",
-          "reject": "Sent a talent profile back"
+          "reject": "Sent a talent profile back",
+          "enquiry_accept": "Accepted a message through a talent profile",
+          "enquiry_decline": "Declined a message through a talent profile",
+          "enquiry_report": "Reported a message through a talent profile",
+          "request_changes": "Asked for changes to a talent profile",
+          "remove": "Removed a talent profile",
+          "delete": "Deleted a talent profile"
+        },
+        "proposal": {
+          "criteria_update": "Set the judging criteria",
+          "reviewer_invite": "Invited a judge",
+          "reviewer_remove": "Removed a judge",
+          "decide": "Decided on an application",
+          "release": "Released the outcomes"
         }
       },
       "activity": {
@@ -717,9 +792,26 @@
           "deployment_approve": "Approved the customer deployment <resource></resource>",
           "deployment_reject": "Sent the customer deployment <resource></resource> back"
         },
+        "introduction": {
+          "reply": "Replied to the request for an introduction about <resource></resource>",
+          "decline": "Declined the request for an introduction about <resource></resource>"
+        },
         "talent": {
           "approve": "Approved the talent profile of <resource></resource>",
-          "reject": "Sent the talent profile of <resource></resource> back"
+          "reject": "Sent the talent profile of <resource></resource> back",
+          "enquiry_accept": "Accepted a message to <resource></resource>",
+          "enquiry_decline": "Declined a message to <resource></resource>",
+          "enquiry_report": "Reported a message to <resource></resource>",
+          "request_changes": "Asked for changes to the talent profile of <resource></resource>",
+          "remove": "Removed the talent profile of <resource></resource>",
+          "delete": "Deleted the talent profile of <resource></resource>"
+        },
+        "proposal": {
+          "criteria_update": "Set the judging criteria of <resource></resource>",
+          "reviewer_invite": "Invited a judge to <resource></resource>",
+          "reviewer_remove": "Removed a judge from <resource></resource>",
+          "decide": "Decided on an application to <resource></resource>",
+          "release": "Released the outcomes of <resource></resource>"
         }
       },
       "columns": {
@@ -948,12 +1040,14 @@
       "lead": "Every solution providers sent for review. Those still waiting come first, the longest wait on top.",
       "columns": {
         "solution": "Solution",
-        "maturity": "Maturity",
+        "organization": "Organization",
         "status": "Status",
+        "sentBy": "Sent by",
         "submitted": "Submitted",
         "actions": "Actions"
       },
-      "notStated": "Not stated",
+      "senderUnknown": "Not recorded",
+      "awaiting": "{count, plural, one {# needs review} other {# need review}}",
       "openNamed": "Open {name}",
       "empty": {
         "title": "Nothing to review",
@@ -993,7 +1087,39 @@
         "next": "Next in review: {name}",
         "position": "{place} of {total} waiting",
         "waitingSince": "Sent {time}",
-        "public": "Open the public page"
+        "public": "Open the public page",
+        "decision": "Decision",
+        "status": "Status",
+        "organization": "Organization",
+        "sentBy": "Sent by",
+        "senderUnknown": "Not recorded",
+        "sent": "Sent",
+        "directory": "Directory",
+        "listed": "Listed once approved",
+        "deploymentsWaiting": "{count, plural, one {# customer deployment waits for review} other {# customer deployments wait for review}}"
+      },
+      "record": {
+        "basics": "Basics",
+        "audience": "Who it is for",
+        "evidence": "Evidence",
+        "name": "Solution name",
+        "summary": "What it does",
+        "problemsSolved": "Problem it solves",
+        "valueProposition": "Why it is worth it",
+        "maturity": "Stage",
+        "traction": "Milestones and traction",
+        "builtWith": "Built with",
+        "industries": "Industries",
+        "focusAreas": "AI capabilities",
+        "languages": "Languages",
+        "deployment": "Where it runs",
+        "bestCustomerProfile": "Best customer profile",
+        "website": "Website",
+        "demo": "Product demo",
+        "deck": "Solution deck",
+        "deployments": "Customer deployments",
+        "deploymentsSummary": "{total, plural, one {# deployment} other {# deployments}}{waiting, plural, =0 {} other {, # waiting for review}}",
+        "missing": "Not published yet"
       },
       "queueEmpty": {
         "title": "Nothing waits for review",
@@ -1041,38 +1167,60 @@
       "review": {
         "open": "Review",
         "approve": "Approve",
-        "reject": "Send back…",
-        "takeDown": "Take down…",
-        "rejectTitle": "Send {name} back?",
+        "reject": "Ask for changes…",
+        "takeDown": "Remove…",
+        "rejectTitle": "Ask for changes to {name}?",
         "rejectLead": "The profile goes back to its person to correct. They read your reason.",
-        "takeDownLead": "The profile leaves the directory at once. Its person reads your reason and can send it again.",
+        "takeDownLead": "The profile leaves the directory at once. Its person is emailed, reads your reason and can send it again.",
         "reason": "Reason",
         "message": "Note (optional)",
         "messageHint": "They read this word for word. Say what to change.",
         "cancel": "Cancel",
-        "rejectConfirm": "Send back",
-        "takeDownConfirm": "Take down",
+        "rejectConfirm": "Ask for changes",
+        "takeDownConfirm": "Remove",
         "reasonPlaceholder": "Choose a reason",
-        "takeDownTitle": "Take {name} down?",
-        "keys": "Keys: A approve · S send back",
-        "keysApproved": "Key: S take down"
+        "takeDownTitle": "Remove {name}?",
+        "keys": "Keys: A approve · S ask for changes",
+        "keysApproved": "Key: S remove"
       },
       "detail": {
         "back": "All talent",
         "submitted": "Submitted {day}",
         "unlisted": "Hidden by its person",
-        "rejected": "Changes needed: {reason}.",
+        "rejected": "Changes requested: {reason}.",
         "next": "Next in review: {name}",
         "position": "{place} of {total} waiting",
         "waitingSince": "Sent {time}",
-        "public": "Open the public page"
+        "public": "Open the public page",
+        "removed": "Removed: {reason}."
       },
       "queueEmpty": {
         "title": "Nothing waits for review",
         "description": "Every profile sent for review has a decision.",
         "home": "Back to Admin home"
       },
-      "waitingSince": "Sent {time}"
+      "waitingSince": "Sent {time}",
+      "reported": {
+        "link": "Reported messages",
+        "metaTitle": "Reported messages · BeyondPilot",
+        "title": "Reported messages",
+        "lead": "Messages people behind talent profiles reported as unwanted. The sender was told the message was declined.",
+        "back": "All talent",
+        "from": "From {sender}",
+        "to": "To {name}",
+        "topic": {
+          "project": "About a project",
+          "role": "About a role",
+          "other": "About something else"
+        },
+        "sent": "Sent {date}",
+        "reportedAt": "Reported {date}",
+        "empty": {
+          "title": "Nothing reported",
+          "description": "A message shows here when the person it was sent to reports it."
+        },
+        "count": "{count, plural, one {# message} other {# messages}}"
+      }
     },
     "home": {
       "lead": "{count, plural, =0 {Nothing waits for a decision.} one {# record waits for a decision.} other {# records wait for a decision.}}",
@@ -1081,6 +1229,40 @@
       "talent": "Talent profiles to review",
       "review": "Open the queue, longest wait first",
       "none": "Nothing waiting"
+    },
+    "introductions": {
+      "metaTitle": "Introductions · BeyondPilot",
+      "title": "Introductions",
+      "lead": "Requests for an introduction to the organization behind a solution. The owners of that organization answer; you read, and see which ones wait too long.",
+      "overdueNotice": "{count, plural, one {# request has} other {# requests have}} waited more than 3 days for an answer.",
+      "overdue": "Waiting over 3 days",
+      "search": "Search by solution",
+      "searchButton": "Search",
+      "filter": {
+        "label": "Filter by state",
+        "all": "All"
+      },
+      "status": {
+        "pending": "Waiting",
+        "replied": "Replied",
+        "declined": "Declined"
+      },
+      "route": "{sender} → {provider}",
+      "about": "About {solution}",
+      "sender": "{name} · {organization}",
+      "senderUnnamed": "Someone at {organization}",
+      "waitingSince": "Waiting since {time}",
+      "answered": "Answered {date}",
+      "count": "{count, plural, one {# request} other {# requests}}",
+      "empty": {
+        "title": "No requests yet",
+        "description": "When someone asks for an introduction to a solution, it appears here."
+      },
+      "noMatch": {
+        "title": "No request matches",
+        "description": "Try another solution name, or another state.",
+        "clear": "Clear search and filters"
+      }
     }
   },
   "Lists": {
@@ -1201,11 +1383,6 @@
       "ai_designer": "AI designer",
       "other": "Other"
     },
-    "availability": {
-      "available": "Available now",
-      "open_to_offers": "Open to offers",
-      "not_available": "Not available"
-    },
     "engagement": {
       "full_time": "Full-time",
       "part_time": "Part-time",
@@ -1261,6 +1438,35 @@
       "not_a_real_organization": "Not a real organization",
       "breaks_the_rules": "Breaks the rules",
       "other": "Other reason"
+    },
+    "talentStatus": {
+      "draft": "Draft",
+      "submitted": "In review",
+      "approved": "Approved",
+      "changes_requested": "Changes requested",
+      "removed": "Removed"
+    },
+    "language": {
+      "vi": "Vietnamese",
+      "en": "English",
+      "ja": "Japanese",
+      "ko": "Korean",
+      "zh": "Chinese",
+      "th": "Thai",
+      "id": "Indonesian",
+      "ms": "Malay",
+      "hi": "Hindi",
+      "fr": "French",
+      "de": "German",
+      "es": "Spanish",
+      "fil": "Filipino",
+      "other": "Other"
+    },
+    "projectStage": {
+      "prototype": "Prototype",
+      "pilot": "Pilot",
+      "in_production": "In production",
+      "internal_tool": "Internal tool"
     }
   },
   "Organization": {
@@ -1269,7 +1475,8 @@
       "label": "Sections of your organization",
       "profile": "Profile",
       "members": "Members",
-      "solutions": "Solutions"
+      "solutions": "Solutions",
+      "introductions": "Introductions"
     },
     "status": {
       "pending": "In review",
@@ -1605,8 +1812,9 @@
       "SOLUTION_TOO_MANY_DEPLOYMENTS": "A solution lists at most 12 customer deployments. Remove one before adding another.",
       "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW": "This customer deployment is not waiting for review.",
       "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Someone else saved this customer deployment in the meantime. Reload the page and make your changes again.",
-      "unknown": "That did not work. Try again.",
-      "SOLUTION_OWNER_REQUIRED": "Only an owner of an approved organization can do this."
+      "SOLUTION_MEMBER_REQUIRED": "Only a member of an organization can do this.",
+      "SOLUTION_DECK_NOT_USABLE": "This file cannot be the deck. Upload the PDF again.",
+      "unknown": "That did not work. Try again."
     },
     "done": {
       "saved": "Solution saved.",
@@ -1669,13 +1877,19 @@
       "clear": "Clear filters"
     },
     "view": {
-      "problemsSolved": "Problems it solves",
+      "problemsSolved": "Problem it solves",
       "valueProposition": "Why it is worth it",
-      "maturity": "Maturity",
-      "focusAreas": "Focus areas",
+      "traction": "Milestones and traction",
+      "bestCustomerProfile": "Best customer profile",
+      "maturity": "Stage",
+      "focusAreas": "AI capabilities",
       "industries": "Industries",
-      "deployment": "Deployment",
-      "website": "Visit website",
+      "languages": "Languages",
+      "deployment": "Where it runs",
+      "builtWith": "Built with",
+      "website": "Visit the product page",
+      "demo": "Watch the demo",
+      "deck": "Download the deck",
       "nothingYet": "Nothing written yet."
     },
     "detail": {
@@ -1697,7 +1911,10 @@
         "title": "Product and business",
         "capabilities": "Capabilities",
         "stage": "Stage",
-        "notPublished": "Not published yet: core technology, segment, best customer profile, funding, built with, demo and decks, pricing model, notable customers, alternatives."
+        "notPublished": "Not published yet: core technology, segment, funding, pricing model, notable customers, alternatives.",
+        "traction": "Milestones and traction",
+        "builtWith": "Built with",
+        "bestCustomerProfile": "Best customer profile"
       },
       "offers": {
         "title": "Offers",
@@ -1710,6 +1927,7 @@
         "solutions": "Solutions",
         "noSolutions": "No solution is listed yet.",
         "listedBelow": "{count, plural, one {# customer deployment, listed below} other {# customer deployments, listed below}}",
+        "explore": "Explore solution",
         "deployments": "Customer deployments",
         "noDeployments": "No customer deployment published.",
         "type": "Type",
@@ -1717,9 +1935,12 @@
         "website": "Website",
         "industries": "Industries"
       },
+      "unlisted": "This solution is not in the directory. You are reading it through its address.",
       "contact": {
         "title": "Work with {name}",
         "website": "Visit website",
+        "demo": "Watch the demo",
+        "deck": "Download the deck",
         "basedIn": "Based in"
       }
     },
@@ -1769,79 +1990,171 @@
     },
     "editor": {
       "back": "All solutions",
-      "submitted": {
-        "title": "GenAI Fund is reviewing this solution",
-        "lead": "This usually takes one or two working days. You can still correct it."
-      },
-      "approved": {
-        "listed": "Approved and listed in the directory",
-        "unlisted": "Approved, but hidden from the directory",
-        "open": "Open the public page",
-        "unlistedLead": "Turn on “Show in the directory” below to list it."
-      },
-      "rejected": {
-        "title": "Changes needed: {reason}",
-        "lead": "Correct it and send it for review again."
-      }
-    },
-    "form": {
-      "name": "Name",
-      "nameRequired": "Enter the solution's name.",
-      "summary": "Summary",
-      "summaryHint": "One or two sentences. This is what the directory shows.",
-      "problemsSolved": "Problems it solves",
-      "problemsSolvedHint": "The situations a customer is in before using it.",
-      "valueProposition": "Why it is worth it",
-      "valuePropositionHint": "Results customers got, with numbers where you have them.",
-      "focusAreas": "Focus areas",
-      "industries": "Industries",
-      "upTo": "Choose up to {count}. {chosen} chosen.",
-      "maturity": "Maturity",
-      "notStated": "Not stated",
-      "website": "Product page",
-      "websiteInvalid": "Enter a full address that starts with https://",
-      "deployment": "Deployment",
-      "listed": "Show in the directory",
-      "listedHint": "Takes effect once the solution is approved.",
-      "submit": "Send for review",
-      "resubmit": "Send for review again",
-      "saveDraft": "Save draft",
+      "heading": "{organization} · {name}",
+      "exit": "Save and exit",
+      "close": "Close",
       "save": "Save changes",
-      "delete": "Delete draft…",
-      "confirmDelete": {
-        "title": "Delete {name}?",
-        "lead": "The draft is removed for everyone in your organization. This cannot be undone.",
-        "confirm": "Delete draft",
-        "cancel": "Cancel"
+      "state": {
+        "saving": "Saving…",
+        "draftSaved": "Draft saved {time}",
+        "draftSavedShort": "Draft saved",
+        "saved": "Saved {time}",
+        "savedShort": "Saved",
+        "unsaved": "Unsaved changes",
+        "failed": "Not saved",
+        "retry": "Try again",
+        "reload": "Reload"
       },
-      "listedHintApproved": "The solution is approved, so this and every saved change show in the directory at once.",
+      "visibility": {
+        "draft": "Only {organization} sees a draft",
+        "draftShort": "Only {organization} sees it"
+      },
+      "steps": {
+        "label": "Your solution",
+        "progress": "Step {step} of {count} · {name}",
+        "toAdd": "{count, plural, one {# field to add} other {# fields to add}}",
+        "toCheck": "{count, plural, one {# field to check} other {# fields to check}}",
+        "complete": "Complete",
+        "basics": {
+          "title": "Basics",
+          "meta": "What it is, its stage and what it is built with",
+          "lead": "What the solution is. This is the first thing a visitor reads on its public page once GenAI Fund approves it."
+        },
+        "fit": {
+          "title": "Who it is for",
+          "meta": "Industries, capabilities and where it runs",
+          "lead": "Who should find this solution, and where it can run. Visitors filter the directory by these answers."
+        },
+        "evidence": {
+          "title": "Evidence",
+          "meta": "Deck, demo and customer cases",
+          "lead": "Proof that the solution works. Show what you know; what you leave out appears as not published yet."
+        },
+        "review": {
+          "title": "Review and submit",
+          "titleLive": "Review",
+          "meta": "Check everything, then ask for review",
+          "metaLive": "Check what visitors read",
+          "lead": "Check what visitors will read. GenAI Fund reviews the solution before it appears in the directory.",
+          "leadLive": "This is what visitors read. A saved change to an approved solution shows at once."
+        }
+      },
+      "note": "Changes save as you type. A draft is visible to your organization only.",
+      "noteLive": "Changes are kept when you choose Save changes. On an approved solution they show at once.",
+      "required": "All fields are required unless marked Optional.",
+      "allOptional": "Every field on this step is optional.",
+      "optional": "Optional",
+      "counter": "{count} / {max}",
+      "previous": "Back",
+      "continue": "Continue",
+      "fields": {
+        "name": "Solution name",
+        "summary": "What it does",
+        "summaryHint": "Two or three sentences.",
+        "problemsSolved": "Problem it solves",
+        "problemsSolvedHint": "Who you're helping, and what goes wrong for them today.",
+        "valueProposition": "Why it is worth it",
+        "valuePropositionHint": "Results customers got, with numbers where you have them.",
+        "maturity": "Stage",
+        "maturityPlaceholder": "Select a stage",
+        "traction": "Milestones and traction",
+        "tractionPlaceholder": "Customers, pilots, users or revenue so far.",
+        "builtWith": "Built with",
+        "builtWithPlaceholder": "Add a model, tool or framework",
+        "builtWithHint": "Press Enter after each one. Up to {max}.",
+        "removeTag": "Remove {name}",
+        "industries": "Industries",
+        "industriesPlaceholder": "Add an industry",
+        "focusAreas": "AI capabilities",
+        "focusAreasPlaceholder": "Add a capability",
+        "languages": "Languages",
+        "languagesPlaceholder": "Add a language",
+        "upTo": "Up to {max}. {chosen} chosen.",
+        "noMatch": "Nothing matches.",
+        "deployment": "Where it runs",
+        "bestCustomerProfile": "Best customer profile",
+        "bestCustomerProfilePlaceholder": "Who gets the most from it, in a sentence.",
+        "deck": "Solution deck",
+        "demoUrl": "Product demo",
+        "demoUrlHint": "A video, a Figma prototype or a live demo. Check it opens without signing in.",
+        "website": "Product page",
+        "websiteHint": "Where a visitor reads more about it.",
+        "linkInvalid": "Enter a full address that starts with https://"
+      },
       "needed": {
-        "summary": "Write one or two sentences about what it does.",
-        "focusAreas": "Choose at least one focus area.",
+        "name": "Enter the solution's name.",
+        "summary": "Write two or three sentences about what it does.",
+        "maturity": "Choose its stage.",
         "industries": "Choose at least one industry.",
-        "maturity": "Choose how mature it is."
+        "focusAreas": "Choose at least one capability."
       },
-      "readiness": {
-        "missing": "Before you send it for review, add:",
-        "ready": "Ready to send for review",
-        "note": "GenAI Fund checks that the solution is real, that the summary says what it does, and that your organization offers it. This usually takes one or two working days, and the decision shows on this page.",
-        "count": "{count, plural, one {# field to add before review} other {# fields to add before review}}"
+      "deck": {
+        "empty": "Upload the deck",
+        "limits": "PDF, up to 25 MB",
+        "uploading": "Uploading…",
+        "uploaded": "{size} · Uploaded {when}",
+        "waiting": "{size} · Not saved yet",
+        "download": "Download {name}",
+        "replace": "Replace",
+        "remove": "Remove",
+        "errors": {
+          "type": "Only a PDF can be uploaded here.",
+          "size": "This file is larger than 25 MB.",
+          "failed": "The deck was not uploaded. Try again."
+        }
       },
-      "discard": "Discard changes",
-      "unsaved": "Unsaved changes",
-      "neededMark": "· needed for review",
+      "review": {
+        "edit": "Edit",
+        "editStep": "Edit {step}",
+        "missing": "Missing",
+        "notPublished": "Not published yet",
+        "toAdd": "{count} to add",
+        "deploymentsApproved": "{count} published",
+        "deploymentsWaiting": "{count} waiting for review",
+        "deploymentsSentBack": "{count} sent back",
+        "customerDeployments": "Customer deployments",
+        "listed": "List this solution in the public directory. Turn it off to keep it approved but unlisted: anyone with the link can open it.",
+        "readiness": {
+          "missing": "Before you send it for review, add:",
+          "ready": "Ready to send for review",
+          "note": "GenAI Fund checks that the solution is real, that the summary says what it does, and that your organization offers it. This usually takes one or two working days, and the decision shows on this page."
+        },
+        "submit": "Send for review",
+        "resubmit": "Send for review again",
+        "confirm": {
+          "title": "Send this solution for review?",
+          "lead": "GenAI Fund reads it before it appears in the directory. You can keep editing while it waits, and the decision shows on this page.",
+          "confirm": "Send for review",
+          "cancel": "Keep editing"
+        },
+        "delete": "Delete draft…",
+        "confirmDelete": {
+          "title": "Delete {name}?",
+          "lead": "The draft is removed for everyone in your organization. This cannot be undone.",
+          "confirm": "Delete draft",
+          "cancel": "Cancel"
+        }
+      },
       "leave": {
         "title": "Leave without saving?",
         "lead": "Your changes to this solution are not saved yet.",
         "leave": "Leave without saving",
         "stay": "Stay"
       },
-      "confirmDiscard": {
-        "title": "Discard your changes?",
-        "lead": "The form goes back to this solution as it was last saved.",
-        "cancel": "Keep editing"
+      "submitted": {
+        "title": "GenAI Fund is reviewing this solution",
+        "lead": "This usually takes one or two working days. You can still correct it."
       },
-      "requiredMark": "· required"
+      "approved": {
+        "listed": "Approved and listed in the directory",
+        "unlisted": "Approved, but not listed in the directory",
+        "open": "Open the public page",
+        "unlistedLead": "Anyone with its link can open it. Turn on the listing in the last step to show it in the directory."
+      },
+      "rejected": {
+        "title": "Changes needed: {reason}",
+        "lead": "Correct it and send it for review again."
+      }
     },
     "deployment": {
       "open": "Open the deployment to read the problem, what was deployed and the result.",
@@ -1898,6 +2211,85 @@
       }
     }
   },
+  "Introduction": {
+    "errors": {
+      "INTRODUCTION_SOLUTION_NOT_FOUND": "This solution is no longer listed.",
+      "INTRODUCTION_NEEDS_ORGANIZATION": "Create or join an organization before you ask for an introduction.",
+      "INTRODUCTION_ORGANIZATION_NOT_APPROVED": "Your organization has not been approved yet, so it cannot ask for an introduction.",
+      "INTRODUCTION_OWN_SOLUTION": "This solution belongs to your own organization.",
+      "INTRODUCTION_ALREADY_PENDING": "You already asked for an introduction to this solution. Wait for the answer.",
+      "INTRODUCTION_UNREACHABLE": "Nobody at this organization can be asked right now. Try again later.",
+      "INTRODUCTION_REQUEST_NOT_FOUND": "This request no longer exists.",
+      "INTRODUCTION_OWNERS_ONLY": "Only an owner of your organization answers a request for an introduction.",
+      "INTRODUCTION_NOT_PENDING": "This request was already answered.",
+      "REQUEST_INVALID": "Check the message and try again.",
+      "unknown": "That did not work. Try again."
+    },
+    "request": {
+      "open": "Request an introduction",
+      "by": "By {provider}",
+      "title": "Request an introduction to {provider}",
+      "lead": "Introductions go through GenAI Fund. Neither email address is shown until {provider} replies.",
+      "organization": "Your organization",
+      "message": "What do you need?",
+      "placeholder": "What you are working on, and what you would like from them.",
+      "hint": "{provider} reads your name, your organization and this message before it answers.",
+      "required": "Write a message first.",
+      "send": "Send request",
+      "cancel": "Cancel",
+      "sent": {
+        "title": "Your request is with {provider}",
+        "lead": "We told them. When they reply, you both get an email with the other's name and address.",
+        "done": "Done"
+      },
+      "blocked": {
+        "organization": {
+          "title": "Join an organization first",
+          "lead": "An introduction is asked on behalf of an organization, so that the provider knows who is asking.",
+          "action": "Set up your organization"
+        },
+        "approval": {
+          "title": "Your organization is not approved yet",
+          "lead": "You can ask for an introduction as soon as GenAI Fund approves your organization."
+        }
+      }
+    },
+    "received": {
+      "metaTitle": "Introductions · BeyondPilot",
+      "title": "Introductions",
+      "waiting": "{count} waiting",
+      "sender": "{name} · {organization}",
+      "senderUnnamed": "Someone at {organization}",
+      "about": "About {solution}",
+      "sent": "Sent {date}",
+      "answered": "Answered {date}",
+      "introduced": "Introduced. Write to them at {email}.",
+      "ownersAnswer": "Only an owner of the organization answers a request.",
+      "status": {
+        "pending": "Waiting",
+        "replied": "Replied",
+        "declined": "Declined"
+      },
+      "empty": {
+        "title": "No introductions yet",
+        "description": "When someone asks for an introduction to one of your solutions, it appears here."
+      },
+      "actions": {
+        "reply": "Reply",
+        "decline": "Decline",
+        "confirmDecline": {
+          "title": "Decline the request about {name}?",
+          "lead": "The sender is told you will not take it further. No address is shared.",
+          "confirm": "Decline",
+          "cancel": "Keep it"
+        }
+      },
+      "done": {
+        "reply": "Introduced. Both of you got an email with the other's address.",
+        "decline": "Request declined."
+      }
+    }
+  },
   "Talent": {
     "errors": {
       "TALENT_PROFILE_NOT_FOUND": "This profile no longer exists.",
@@ -1906,7 +2298,11 @@
       "TALENT_NOT_AWAITING_REVIEW": "This profile has already been reviewed.",
       "TALENT_CHANGED_MEANWHILE": "This profile changed in another tab. Reload the page and try again.",
       "TALENT_OWN_PROFILE": "This is your own profile.",
-      "TALENT_ENQUIRY_TOO_SOON": "You already wrote to this person today. Try again tomorrow.",
+      "TALENT_ENQUIRY_PENDING": "Your message to this person waits for their answer.",
+      "TALENT_ENQUIRY_LIMIT": "You started ten conversations today. Write again tomorrow.",
+      "TALENT_ENQUIRY_NOT_FOUND": "This message no longer exists.",
+      "TALENT_ENQUIRY_NOT_PENDING": "This message was answered already, or it closed.",
+      "TALENT_NOT_APPROVED": "Only an approved profile can be removed.",
       "REQUEST_INVALID": "Check the marked fields and try again.",
       "unknown": "That did not work. Try again."
     },
@@ -1914,7 +2310,12 @@
       "saved": "Profile saved.",
       "submitted": "Sent to GenAI Fund for review.",
       "approved": "{name} is approved.",
-      "rejected": "{name} sent back with your reason."
+      "accepted": "Accepted. You both have each other's email address now.",
+      "declined": "Declined. The sender was told.",
+      "reported": "Reported to GenAI Fund. The sender was told it was declined.",
+      "changesRequested": "Changes asked of {name}.",
+      "removed": "{name} is removed.",
+      "deleted": "Your talent profile is deleted."
     },
     "directory": {
       "metaTitle": "AI talent · BeyondPilot",
@@ -1938,21 +2339,17 @@
         "description": "Nothing matches this search and these filters.",
         "clear": "Clear search and filters"
       },
-      "edit": "Edit your profile"
+      "edit": "Edit your profile",
+      "noProject": "No project published yet",
+      "projects": "{count, plural, one {# project} other {# projects}}",
+      "view": "View profile"
     },
     "filters": {
-      "search": "Search talent by name or skill",
-      "open": "Filters",
-      "done": "Show results",
-      "close": "Close",
+      "search": "Search by name, skill or project",
       "adminSearch": "Search by name or email",
       "role": {
         "label": "Role",
-        "all": "All roles"
-      },
-      "availability": {
-        "label": "Availability",
-        "all": "Any availability"
+        "all": "All talent"
       },
       "status": {
         "label": "Status",
@@ -1968,50 +2365,74 @@
       "projects": "Selected work",
       "openProject": "See the work",
       "website": "Portfolio or LinkedIn",
-      "nothingYet": "Nothing written yet."
+      "nothingYet": "Nothing written yet.",
+      "languages": "Languages",
+      "industries": "Industries"
     },
     "profile": {
       "trail": "You are here",
       "about": "About",
       "projects": {
         "title": "Deployed projects",
-        "lead": "Each project is shown as stated by the person.",
-        "stated": "Stated by the person",
+        "lead": "Each project shows how far it went, as the person states it.",
         "open": "View the project",
         "empty": "No deployed project published yet."
-      },
-      "fit": {
-        "title": "Skills and availability",
-        "skills": "Skills",
-        "availability": "Availability",
-        "engagement": "Open to",
-        "rate": "Rate"
       },
       "facts": {
         "country": "Based in",
         "role": "Role",
-        "website": "Portfolio or LinkedIn"
+        "website": "Portfolio or LinkedIn",
+        "city": "City",
+        "worksAt": "Works at",
+        "worksAtStated": "as stated by the person",
+        "languages": "Languages",
+        "industries": "Industries"
       },
-      "notListed": "Not listed yet",
-      "note": "Enquiries go through BeyondPilot. {name} gets your message with your name and email address; theirs is not shown until they reply."
+      "notListed": "Not stated",
+      "note": "Messages go through BeyondPilot. {name} reads your name and organization; neither email address is shared unless they accept.",
+      "photoAlt": "Photo of {name}",
+      "stats": {
+        "projects": "{count, plural, one {project on the profile} other {projects on the profile}}",
+        "inProduction": "in production",
+        "industries": "{count, plural, one {industry} other {industries}}",
+        "pilots": "{count, plural, one {pilot} other {pilots}}"
+      },
+      "openTo": "Open to {engagement}.",
+      "skills": {
+        "title": "Skills and industries",
+        "skills": "Skills",
+        "industries": "Industries"
+      }
     },
     "enquiry": {
       "title": "Work with {name}",
-      "project": "Discuss a project",
-      "role": "Ask about a role",
-      "projectLabel": "Tell {name} about your project",
-      "projectPlaceholder": "What you are building, and what you need from them.",
-      "roleLabel": "Ask {name} about a role",
-      "rolePlaceholder": "The role, the team, and what you would like to know.",
-      "hint": "They get your message with your name and email, and answer you directly.",
+      "open": "Contact {name}",
+      "openShort": "Contact",
+      "dialogTitle": "Contact {name}",
+      "dialogLead": "{name} reads your message, your name and your organization if GenAI Fund approved it. Neither email address is shared unless they accept.",
+      "topic": "What it is about",
+      "topics": {
+        "project": "A project",
+        "role": "A role",
+        "other": "Something else"
+      },
+      "message": "Your message",
+      "placeholder": "What you are building or hiring for, and what you need from them.",
+      "hint": "Up to 2,000 characters. They have 14 days to answer.",
       "required": "Write a message first.",
       "send": "Send message",
       "cancel": "Cancel",
-      "sentTitle": "Message sent to {name}",
-      "sentLead": "They will answer to your email address.",
+      "sentTitle": "Your message is on its way to {name}",
+      "sentLead": "You get an email when they answer. Until then, neither email address is shown.",
+      "done": "Done",
+      "waitingTitle": "Your message waits for {name}",
+      "waitingLead": "Sent {date}. You can write again once they answer or the message closes.",
       "signInLead": "Sign in to write to {name}.",
       "ownLead": "This is your profile, as others see it.",
-      "ownEdit": "Edit your profile"
+      "ownEdit": "Edit your profile",
+      "senderName": "Your name",
+      "senderNameHint": "{name} reads this name. Your email address stays hidden.",
+      "senderNameRequired": "Say who is writing."
     },
     "mine": {
       "metaTitle": "Talent profile · BeyondPilot",
@@ -2028,12 +2449,59 @@
         "open": "Open your public profile",
         "unlistedLead": "Turn on “Show in the directory” below to be listed."
       },
-      "rejected": {
-        "title": "Changes needed: {reason}",
+      "inbox": {
+        "title": "Messages",
+        "waiting": "{count, plural, one {# waits for your answer} other {# wait for your answer}}",
+        "lead": "Accept to share your email address with the sender. Decline or report shares nothing.",
+        "someone": "Someone",
+        "from": "{name} · {organization}",
+        "topic": {
+          "project": "About a project",
+          "role": "About a role",
+          "other": "About something else"
+        },
+        "status": {
+          "pending": "Waits for you",
+          "accepted": "Accepted",
+          "declined": "Declined",
+          "reported": "Reported",
+          "closed": "Closed unanswered"
+        },
+        "sent": "Sent {date}",
+        "closes": "Closes {date}",
+        "answered": "Answered {date}",
+        "write": "Write to {email}",
+        "accept": "Accept",
+        "decline": "Decline",
+        "report": "Report",
+        "confirmDecline": {
+          "title": "Decline this message?",
+          "lead": "The sender is told you will not take it further. No address is shared.",
+          "confirm": "Decline",
+          "cancel": "Keep it"
+        },
+        "confirmReport": {
+          "title": "Report this message?",
+          "lead": "GenAI Fund reads it. The sender is told it was declined, not that you reported it.",
+          "confirm": "Report",
+          "cancel": "Keep it"
+        }
+      },
+      "changesRequested": {
+        "title": "Changes requested: {reason}",
         "lead": "Correct it and send it for review again."
       },
-      "enquiries": "{count, plural, one {# message} other {# messages}}",
-      "reply": "Reply to {email}"
+      "removed": {
+        "title": "Removed from the directory: {reason}",
+        "lead": "Nobody else sees it now. Correct it and send it for review again."
+      },
+      "delete": {
+        "action": "Delete profile…",
+        "title": "Delete your talent profile?",
+        "lead": "Your profile, its projects and the messages sent through it are deleted for good. Nobody can find it in the directory.",
+        "confirm": "Delete profile",
+        "cancel": "Keep it"
+      }
     },
     "form": {
       "name": "Name",
@@ -2047,7 +2515,6 @@
       "skillsHint": "Separate with commas, up to {count}. For example: Python, LangGraph, RAG, MLOps.",
       "skillsInvalid": "Name at most {count} skills, each up to 40 characters.",
       "country": "Country",
-      "availability": "Availability",
       "rate": "Rate",
       "notStated": "Not stated",
       "engagement": "Open to",
@@ -2063,7 +2530,9 @@
         "summary": "What you did",
         "url": "Link",
         "remove": "Remove project {number}",
-        "add": "Add a project"
+        "add": "Add a project",
+        "stage": "Stage",
+        "stageNone": "Not stated"
       },
       "listed": "Show in the directory",
       "listedHint": "Takes effect once the profile is approved.",
@@ -2099,7 +2568,33 @@
         "cancel": "Keep editing"
       },
       "requiredMark": "· required",
-      "headlineHint": "One line on what you do. For example: ML engineer building document AI for banks."
+      "headlineHint": "One line on what you do. For example: ML engineer building document AI for banks.",
+      "photo": {
+        "label": "Photo",
+        "hint": "A clear photo of your face. PNG, JPEG or WebP, up to 2 MB.",
+        "choose": "Upload a photo",
+        "change": "Change photo",
+        "remove": "Remove photo",
+        "uploading": "Uploading…",
+        "alt": "Your photo",
+        "errors": {
+          "type": "Use a PNG, JPEG or WebP image.",
+          "size": "Use an image of 2 MB or less.",
+          "failed": "The photo did not upload. Try again."
+        }
+      },
+      "city": "City",
+      "worksAt": "Where you work",
+      "worksAtHint": "Shown as you state it. Leave empty if you work on your own.",
+      "languages": "Languages you work in",
+      "industries": "Industries you have worked in",
+      "sections": {
+        "about": "About you",
+        "work": "What you do",
+        "place": "Where you are",
+        "engagement": "Work you take on"
+      },
+      "rateHint": "Only you and GenAI Fund see the rate."
     }
   },
   "Form": {
@@ -2446,5 +2941,609 @@
       "title": "Ten teams present live on 22 October.",
       "text": "Submissions close 15 October at 23:59 ICT. Everyone hears back on 16 October."
     }
+  },
+  "EntryList": {
+    "remove": "Remove {entry} from {label}"
+  },
+  "Apply": {
+    "metaTitle": "Apply",
+    "saved": "Saved {time}",
+    "closes": "Closes {when}",
+    "saveAndExit": "Save and exit",
+    "yourApplication": "Your application",
+    "savesAsYouType": "Answers save as you type. Come back any time before {when}.",
+    "stepOf": "Step {step} of {count} · {title}",
+    "progress": "Progress through the application",
+    "allRequired": "All fields are required unless marked Optional.",
+    "optional": "Optional",
+    "closed": "Applications closed on {when}. Nothing can be changed or submitted now.",
+    "backToProgram": "Back to program",
+    "back": "Back",
+    "continue": "Continue",
+    "submit": "Submit application",
+    "submitAgain": "Submit changes",
+    "steps": {
+      "you": {
+        "title": "You and your team",
+        "what": "Contact details and who is applying",
+        "lead": "Judges look at the solution, not the size of the company behind it. These details stay with you, so your next application starts filled in."
+      },
+      "solution": {
+        "title": "Your solution",
+        "what": "What it does, its stage and deck",
+        "lead": "The product or prototype you're bringing. It stays on your organization's profile for your next application."
+      },
+      "questions": {
+        "title": "For this program",
+        "what": "The program's own questions",
+        "lead": "These answers go only to {program}."
+      },
+      "review": {
+        "title": "Review and submit",
+        "what": "Check everything, then send",
+        "lead": "You can change your application until {when}, even after you submit."
+      }
+    },
+    "you": {
+      "applyingFor": "Applying for",
+      "notListedYet": "Not in the directory yet",
+      "applyingForHint": "GenAI Fund checks a new organization before it is listed in the directory. That doesn't hold up your application.",
+      "applyingAs": "Applying as",
+      "who": {
+        "individual": {
+          "title": "Individual",
+          "what": "Just you, shown by your name. Nothing more to fill in."
+        },
+        "team": {
+          "title": "Team",
+          "what": "Two or more people, such as a student or hackathon team."
+        },
+        "company": {
+          "title": "Company",
+          "what": "Find your company on BeyondPilot and join it, or add it."
+        }
+      },
+      "individualHint": "Judges see you as {name} · Individual. If you join a company later, what you submitted stays under your name.",
+      "yourCompany": "Your company",
+      "companyRequired": "Join your company, or add it, before you continue.",
+      "aboutYou": "About you",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "emailHint": "You sign in with this address, so it can't be changed here.",
+      "phone": "Phone number",
+      "phoneRequired": "Enter a phone number with its country code.",
+      "country": "Country",
+      "countryPlaceholder": "Select a country",
+      "countryRequired": "Select a country.",
+      "linkedin": "LinkedIn profile",
+      "linkedinRequired": "Enter the full address of your LinkedIn profile, starting with https://",
+      "yourTeam": "Your team",
+      "teamName": "Team name",
+      "teamNameHint": "Shown to judges if you're shortlisted.",
+      "teamSize": "Team size",
+      "website": "Website",
+      "teamBackground": "Team background",
+      "teamBackgroundHint": "The experience that matters for this problem.",
+      "required": "Fill this in."
+    },
+    "solution": {
+      "choice": "Solution",
+      "newSolution": "New solution",
+      "choiceHint": "One your organization already has fills this step; changes here update it.",
+      "name": "Solution name",
+      "summary": "What it does",
+      "summaryHint": "Two or three sentences.",
+      "problemsSolved": "Problem it solves",
+      "problemsSolvedHint": "Who you're helping, and what goes wrong for them today.",
+      "maturity": "Stage",
+      "maturityPlaceholder": "Select a stage",
+      "maturityRequired": "Select a stage.",
+      "traction": "Milestones and traction",
+      "tractionPlaceholder": "Customers, pilots, users or revenue so far.",
+      "builtWith": "Built with",
+      "builtWithPlaceholder": "Add a model, tool or framework",
+      "deck": "Solution deck",
+      "deckHint": "A PDF only the program's reviewers read. It is kept as you submit it.",
+      "deckRequired": "Add the solution's deck, a PDF.",
+      "demoUrl": "Demo link",
+      "demoUrlHint": "A video, a prototype or a live demo. Check it opens without signing in.",
+      "required": "Fill this in."
+    },
+    "questions": {
+      "choose": "Choose one",
+      "uploaded": "Uploaded file",
+      "required": "Answer this question.",
+      "confirmRequired": "Confirm this to continue."
+    },
+    "review": {
+      "blocks": {
+        "you": "You and your team",
+        "solution": "Your solution",
+        "questions": "For this program"
+      },
+      "edit": "Edit",
+      "editNamed": "Edit {section}",
+      "notAdded": "Not added",
+      "applyingAs": "Applying as",
+      "name": "Name",
+      "teamSize": "Team size",
+      "solution": "Solution",
+      "summary": "What it does",
+      "problemsSolved": "Problem it solves",
+      "maturity": "Stage",
+      "traction": "Milestones and traction",
+      "builtWith": "Built with",
+      "deck": "Solution deck",
+      "confirmed": "Confirmed",
+      "uploaded": "Uploaded file",
+      "confirm": "I confirm the information is accurate.",
+      "confirmRequired": "Confirm the information to submit."
+    },
+    "errors": {
+      "saveFailed": "Your latest changes could not be saved. Check your connection; they are kept on this page.",
+      "unknown": "Something went wrong. Try again.",
+      "codes": {
+        "PROPOSAL_CLOSED": "Applications to this program have closed.",
+        "PROPOSAL_LOCKED": "This program takes no changes after submission.",
+        "PROPOSAL_CHANGED_MEANWHILE": "This application was changed in another tab. Reload the page and continue there.",
+        "PROPOSAL_ORGANIZATION_REQUIRED": "Say who applies in step 1.",
+        "PROPOSAL_ORGANIZATION_APPLIED": "Someone in your organization has already applied to this program.",
+        "PROPOSAL_CONTACT_INCOMPLETE": "Your contact details in step 1 are incomplete.",
+        "PROPOSAL_TEAM_BACKGROUND_REQUIRED": "Describe your team's background in step 1.",
+        "PROPOSAL_SOLUTION_REQUIRED": "Choose or add your solution in step 2.",
+        "PROPOSAL_SOLUTION_INCOMPLETE": "Your solution in step 2 needs what it does, the problem it solves and its stage.",
+        "PROPOSAL_DECK_REQUIRED": "Add your solution deck in step 2.",
+        "PROPOSAL_ANSWER_REQUIRED": "Answer every question of the program.",
+        "PROPOSAL_ANSWER_INVALID": "An answer does not fit its question.",
+        "ORGANIZATION_ALREADY_MEMBER": "You already belong to an organization. Reload the page."
+      }
+    }
+  },
+  "PdfUpload": {
+    "empty": "Choose a PDF",
+    "limits": "PDF, up to 25 MB.",
+    "uploading": "Uploading…",
+    "replace": "Replace",
+    "remove": "Remove",
+    "errors": {
+      "type": "Choose a PDF file.",
+      "size": "The file is larger than 25 MB.",
+      "failed": "The file could not be uploaded. Try again."
+    }
+  },
+  "MyApplications": {
+    "title": "My applications",
+    "none": "No applications yet",
+    "noneLead": "Programs that take applications on BeyondPilot show Apply on their page.",
+    "browse": "Browse programs",
+    "groups": {
+      "inProgress": "In progress",
+      "submitted": "Submitted",
+      "past": "Past"
+    },
+    "status": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "withdrawn": "Withdrawn"
+    },
+    "nothingYet": "Who applies and with what is not filled in yet",
+    "draftUntil": "Not submitted yet. Submit before {when}.",
+    "withdrawnUntil": "Withdrawn. You can submit it again until {when}.",
+    "hearBack": "You hear back on {day}, by email.",
+    "editUntil": "You can change it until {when}.",
+    "closedOn": "Applications closed on {when}.",
+    "continue": "Continue",
+    "edit": "Edit application",
+    "view": "View application",
+    "result": {
+      "shortlisted": "Shortlisted",
+      "not_selected": "Not selected"
+    },
+    "resultLead": {
+      "shortlisted": "You're shortlisted. GenAI Fund's email has what comes next.",
+      "not_selected": "Not selected this time. GenAI Fund's email has the details."
+    }
+  },
+  "Application": {
+    "metaTitle": "Application",
+    "back": "My applications",
+    "status": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "withdrawn": "Withdrawn"
+    },
+    "whereItStands": "Where it stands",
+    "submitted": "Submitted",
+    "notYet": "Not yet",
+    "versions": "Times submitted",
+    "closes": "Applications close",
+    "outcome": "You hear back",
+    "continue": "Continue application",
+    "edit": "Edit application",
+    "editHint": "You can change it until {when}. Reviewers read the latest version you submit.",
+    "locked": "This program takes no changes after submission.",
+    "closed": "Applications have closed, so this application can no longer change.",
+    "withdraw": {
+      "button": "Withdraw application",
+      "title": "Withdraw your application to {program}?",
+      "lead": "Reviewers will no longer read it. You can submit it again while the program takes applications.",
+      "confirm": "Withdraw",
+      "cancel": "Keep it",
+      "done": "Your application was withdrawn.",
+      "closed": "Applications have closed, so it can no longer be withdrawn.",
+      "failed": "It could not be withdrawn. Try again."
+    },
+    "receipt": {
+      "title": "Application submitted",
+      "titleAgain": "Changes submitted",
+      "emailed": "We've emailed a copy to {email}.",
+      "program": "Program",
+      "solution": "Solution",
+      "organization": "Applying for",
+      "submitted": "Submitted",
+      "editUntil": "You can edit until",
+      "next": "What happens next",
+      "nextOutcome": "GenAI Fund reads every application. You hear back on {day}, by email, whatever the outcome.",
+      "nextReview": "GenAI Fund reads every application and tells you the outcome by email.",
+      "view": "View my application",
+      "programs": "Back to programs"
+    },
+    "result": {
+      "shortlisted": "Shortlisted",
+      "not_selected": "Not selected"
+    },
+    "resultLead": {
+      "shortlisted": "You're shortlisted. GenAI Fund's email has what comes next.",
+      "not_selected": "Not selected this time. GenAI Fund's email has the details."
+    }
+  },
+  "Review": {
+    "nav": "Reviews",
+    "area": "Judging",
+    "errors": {
+      "unknown": "That did not go through. Try again in a moment.",
+      "released": "The outcomes of this program have been released, so the review no longer changes.",
+      "PROPOSAL_RELEASED": "The outcomes of this program have been released, so the review no longer changes.",
+      "PROPOSAL_NO_CRITERIA": "This program has no judging criteria yet. GenAI Fund sets them first.",
+      "PROPOSAL_ASSESSMENT_INVALID": "Score every criterion from 1 to 5, or declare a conflict.",
+      "PROPOSAL_OUTCOMES_NOT_READY": "Outcomes are released once applications have closed and every application has a decision.",
+      "PROPOSAL_REVIEWER_INVITED": "This address is already invited to judge this program.",
+      "PROPOSAL_REVIEWER_JOINED": "This judge has already signed in; there is no invitation to send again.",
+      "PROPOSAL_CRITERIA_FIXED": "Applications have been scored on these criteria, so they can no longer change.",
+      "PROPOSAL_CRITERIA_INVALID": "Give each criterion its own name."
+    },
+    "list": {
+      "metaTitle": "Applications",
+      "tabs": {
+        "label": "Show applications",
+        "all": "All",
+        "undecided": "To decide",
+        "shortlisted": "Shortlisted",
+        "not_selected": "Not selected",
+        "to_score": "To score",
+        "scored": "Scored"
+      },
+      "search": "Search applicants",
+      "clear": "Clear",
+      "allChoices": "{label}: all",
+      "kind": "Applying as",
+      "allKinds": "Applying as: all",
+      "selection": {
+        "label": "Selected applications",
+        "count": "{count, plural, one {# selected} other {# selected}}",
+        "shortlist": "Shortlist",
+        "notSelected": "Not selected",
+        "clear": "Clear selection",
+        "all": "Select every application shown",
+        "one": "Select {name}"
+      },
+      "decided": {
+        "shortlisted": "{count, plural, one {# application shortlisted.} other {# applications shortlisted.}}",
+        "not_selected": "{count, plural, one {# application marked not selected.} other {# applications marked not selected.}}"
+      },
+      "columns": {
+        "applicant": "Applicant",
+        "submitted": "Submitted",
+        "scores": "Scores",
+        "status": "Status",
+        "yourAverage": "Your average",
+        "open": "Open"
+      },
+      "openNamed": "Open {name}",
+      "decision": {
+        "under_review": "Under review",
+        "shortlisted": "Shortlisted",
+        "not_selected": "Not selected"
+      },
+      "mine": {
+        "conflict": "Conflict",
+        "none": "Not scored"
+      },
+      "average": "{value}",
+      "scored": "{count, plural, =0 {Not scored yet} one {# score} other {# scores}}",
+      "scoredAverage": "{count, plural, one {# score} other {# scores}} · average {value}",
+      "lead": {
+        "released": "Outcomes released on {day}.",
+        "open": "Applications close {closes}. Judges can score what has been submitted.",
+        "closed": "Applications have closed. Every applicant hears back on {day}.",
+        "closedNoDay": "Applications have closed."
+      },
+      "judgeLead": "You score each application on {count, plural, one {# criterion} other {# criteria}}. GenAI Fund decides and tells every applicant.",
+      "seeRelease": "See the release",
+      "release": "Release outcomes",
+      "noCriteria": {
+        "operator": "This program has no judging criteria yet. Set them under Reviewers before anyone scores.",
+        "judge": "GenAI Fund has not set the judging criteria yet. You can read the applications meanwhile."
+      },
+      "noMatch": {
+        "title": "No application matches",
+        "description": "Try other words, or clear the search and the filters.",
+        "clear": "Clear search and filters"
+      },
+      "empty": {
+        "title": "No applications yet",
+        "description": "Submitted applications appear here. Drafts are never listed."
+      },
+      "footer": "{shown, plural, one {# application} other {# applications}} · {drafts, plural, one {# draft was} other {# drafts were}} not submitted · {withdrawn} withdrawn",
+      "own": "Yours"
+    },
+    "application": {
+      "metaTitle": "Application",
+      "back": "{program}",
+      "position": "{place} of {total}",
+      "next": "Next application",
+      "decision": {
+        "under_review": "Under review",
+        "shortlisted": "Shortlisted",
+        "not_selected": "Not selected"
+      },
+      "meta": "{organization} · submitted {submitted} · version {version}",
+      "scores": {
+        "title": "Judges' scores",
+        "average": "{value} average",
+        "none": "No other judge has scored it yet.",
+        "conflict": "Declared a conflict",
+        "role": {
+          "operator": "GenAI Fund",
+          "reviewer": "Judge"
+        },
+        "onVersion": "on version {version}"
+      },
+      "history": {
+        "title": "History",
+        "submitted": "{version, plural, =1 {Submitted} other {Submitted again (version #)}}",
+        "decided": {
+          "under_review": "Back under review",
+          "shortlisted": "Shortlisted",
+          "not_selected": "Not selected"
+        }
+      },
+      "own": "This application is yours or your organization's, so you don't score or decide it. Other judges and GenAI Fund do."
+    },
+    "assessment": {
+      "title": "Your assessment · version {version}",
+      "earlierVersion": "You scored version {version}. The applicant has submitted again since; check what changed and save again.",
+      "conflictDeclared": "You declared a conflict with this applicant, so your score is left out. Score it below to take that back.",
+      "noCriteria": "Scoring opens once GenAI Fund sets the judging criteria.",
+      "criteria": "Criteria, 1 to 5",
+      "notScored": "Not scored",
+      "average": "Average {value}",
+      "score": "{score} out of 5",
+      "note": "Private note",
+      "readByJudge": "Only you and GenAI Fund read this.",
+      "readByOperator": "Only GenAI Fund reads this.",
+      "skip": "Skip",
+      "saveAndNext": "Save and next",
+      "save": "Save assessment",
+      "conflict": "I have a conflict with this applicant",
+      "saved": "Assessment saved.",
+      "conflictSaved": "Conflict recorded. Your score is left out."
+    },
+    "decision": {
+      "title": "Decision",
+      "state": {
+        "shortlisted": "Shortlisted",
+        "not_selected": "Not selected"
+      },
+      "released": "The outcomes have been released, so the decision no longer changes.",
+      "reason": "Reason",
+      "changeReason": "Reason for the change",
+      "shortlistAndNext": "Shortlist and next",
+      "shortlist": "Shortlist",
+      "changeToShortlisted": "Change to shortlisted",
+      "notSelectedAndNext": "Not selected and next",
+      "notSelected": "Not selected",
+      "changeToNotSelected": "Change to not selected",
+      "private": "Decisions and reasons stay private. The applicant sees only the outcome you release.",
+      "done": {
+        "shortlisted": "Shortlisted.",
+        "not_selected": "Marked not selected."
+      }
+    },
+    "record": {
+      "notGiven": "Not given",
+      "deck": "Deck",
+      "blocks": {
+        "team": "You and your team",
+        "solution": "Your solution",
+        "questions": "For this program",
+        "files": "Files and links"
+      },
+      "applyingAs": "Applying as",
+      "contact": "Contact",
+      "country": "Country",
+      "teamSize": "Team size",
+      "linkedin": "LinkedIn",
+      "website": "Website",
+      "teamBackground": "Team background",
+      "solution": "Solution",
+      "summary": "What it does",
+      "problemsSolved": "Problem it solves",
+      "maturity": "Stage",
+      "builtWith": "Built with",
+      "traction": "Traction",
+      "confirmed": "Confirmed",
+      "openLink": "Open link",
+      "open": "Open"
+    },
+    "release": {
+      "metaTitle": "Release outcomes",
+      "back": "Applications",
+      "title": "Release outcomes",
+      "lead": "Every applicant to {program} sees their result on My applications and gets the email of their group. Scores, notes and reasons stay private.",
+      "released": "Outcomes released {at}",
+      "releasedNote": "Every applicant has their result. A release is final.",
+      "blocked": {
+        "open": "Opens after {closes}",
+        "undecided": "{count, plural, one {# application still has no decision} other {# applications still have no decision}}",
+        "why": "Outcomes are released once applications have closed and every application has a decision, so every applicant hears back on the same day."
+      },
+      "groups": {
+        "undecided": "Under review",
+        "shortlisted": "Shortlisted",
+        "notSelected": "Not selected"
+      },
+      "count": "{count, plural, one {# applicant} other {# applicants}}",
+      "emptyGroup": "Nobody yet.",
+      "notScored": "Not scored",
+      "average": "Average {value}",
+      "withdrawn": "{count, plural, one {# withdrawn application gets} other {# withdrawn applications get}} no email.",
+      "sentTitle": "Emails as they were sent",
+      "emailsTitle": "Email to each group",
+      "subject": "Subject",
+      "message": "Message",
+      "placeholders": "{organization} and {solution} are filled in for each applicant.",
+      "confirmLabel": "Release",
+      "checked": "I've checked both lists. An outcome can't be recalled once it's sent.",
+      "release": "{count, plural, one {Release to # applicant} other {Release to # applicants}}",
+      "notReady": "Not ready to release",
+      "done": "Outcomes released. Every applicant is being emailed."
+    },
+    "reviewers": {
+      "metaTitle": "Reviewers",
+      "title": "Reviewers",
+      "lead": "They score this program's applications and see nothing else in the admin area. GenAI Fund makes the decisions and releases the outcomes.",
+      "empty": {
+        "title": "No judges yet",
+        "description": "Invite the people who score this program's applications."
+      },
+      "columns": {
+        "reviewer": "Reviewer",
+        "role": "Role",
+        "status": "Status",
+        "assessed": "Scored",
+        "actions": "Actions"
+      },
+      "role": {
+        "operator": "GenAI Fund",
+        "reviewer": "Judge"
+      },
+      "status": {
+        "active": "Active",
+        "invited": "Invited",
+        "lapsed": "Lapsed"
+      },
+      "assessed": "{done} of {total}",
+      "note": "An invitation lasts 7 days. Removing a judge keeps the scores they gave. Judges never see each other's scores.",
+      "invite": {
+        "open": "Invite a judge",
+        "title": "Invite a judge to {program}",
+        "description": "They get an email from BeyondPilot. Once they sign in with this address, they see this program's applications only.",
+        "email": "Email address",
+        "invalid": "Enter an email address, such as name@company.com.",
+        "note": "The email holds no link that acts; they sign in as anyone does.",
+        "cancel": "Cancel",
+        "send": "Send invitation",
+        "sent": "Invitation sent to {email}."
+      },
+      "row": {
+        "actions": "Actions for {email}",
+        "resend": "Send the invitation again",
+        "remove": "Remove judge",
+        "resent": "Invitation sent again to {email}.",
+        "removed": "{email} no longer judges this program.",
+        "confirm": {
+          "title": "Remove this judge?",
+          "description": "{email} will no longer see this program's applications.",
+          "note": "The scores they gave stay. You can invite them again.",
+          "remove": "Remove",
+          "keep": "Keep"
+        }
+      }
+    },
+    "criteria": {
+      "title": "Judging criteria",
+      "fixed": "Applications have been scored on these, so they no longer change.",
+      "lead": "Each judge scores every criterion from 1 to 5; an application's score is the average. They are fixed once the first score is saved.",
+      "none": "No criteria yet. Judges can read the applications but not score them.",
+      "edit": "Edit criteria",
+      "add": "Add criteria",
+      "dialogTitle": "Judging criteria",
+      "dialogDescription": "In the order judges score them. Each is scored from 1 to 5.",
+      "name": "Criterion {number}",
+      "namePlaceholder": "Practical impact",
+      "description": "What criterion {number} looks for",
+      "descriptionPlaceholder": "What a judge looks for (optional)",
+      "remove": "Remove criterion {number}",
+      "addOne": "Add a criterion",
+      "cancel": "Cancel",
+      "save": "Save criteria",
+      "saved": "Criteria saved."
+    },
+    "programs": {
+      "metaTitle": "Reviews",
+      "title": "Reviews",
+      "lead": "The programs you were invited to judge. You score; GenAI Fund decides and tells every applicant.",
+      "empty": {
+        "title": "Nothing to review",
+        "description": "When GenAI Fund invites you to judge a program, it appears here."
+      },
+      "released": "Outcomes released",
+      "done": "All scored",
+      "progress": "{done} of {total} scored",
+      "closes": "Applications close {closes}"
+    }
+  },
+  "Search": {
+    "metaTitle": "Search",
+    "metaTitleFor": "{q} · Search",
+    "label": "Search BeyondPilot",
+    "placeholder": "Search programs, solutions and talent",
+    "submit": "Search",
+    "clear": "Clear the search",
+    "results": "{count, plural, one {# result} other {# results}} for <query>“{q}”</query>",
+    "kindResults": {
+      "program": "{count, plural, one {# program} other {# programs}} for <query>“{q}”</query>",
+      "solution": "{count, plural, one {# AI solution} other {# AI solutions}} for <query>“{q}”</query>",
+      "talent": "{count, plural, one {# person} other {# people}} for <query>“{q}”</query>"
+    },
+    "kinds": {
+      "label": "Kinds of result",
+      "all": "All",
+      "program": "Programs",
+      "solution": "AI solutions",
+      "talent": "AI talent"
+    },
+    "seeAll": "See all {count}",
+    "count": "{count, plural, one {# result} other {# results}}",
+    "pastTheEnd": "No more results on this page.",
+    "directory": {
+      "program": "Browse the programs by type and phase",
+      "solution": "Narrow by industry, capability and stage in the AI solutions directory",
+      "talent": "Narrow by role, industry and country in the AI talent directory"
+    },
+    "by": "By {name}",
+    "customerCases": "{count, plural, =0 {No customer case yet} one {# customer case} other {# customer cases}}",
+    "start": {
+      "title": "Search BeyondPilot",
+      "description": "Find programs, AI solutions and AI talent by what they do."
+    },
+    "none": {
+      "title": "Nothing matches “{q}”",
+      "description": "Check the spelling or try a broader word."
+    },
+    "try": "Try",
+    "browse": "Or browse"
   }
 }

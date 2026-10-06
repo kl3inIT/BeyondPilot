@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.solution;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.Actor;
@@ -18,14 +19,21 @@ import ai.genaifund.beyondpilot.solution.persistence.CustomerDeployment;
 import ai.genaifund.beyondpilot.solution.persistence.CustomerDeploymentRepository;
 import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
+import ai.genaifund.beyondpilot.storage.FilePurpose;
+import ai.genaifund.beyondpilot.storage.StorageException;
+import ai.genaifund.beyondpilot.storage.StorageService;
+import ai.genaifund.beyondpilot.storage.StoredFile;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * What an organization does with its solutions. Every member reads them; only an owner of an approved organization
- * that is a provider writes them. What the caller is in their organization is read now, on every operation.
+ * What an organization does with its solutions. Every member of an organization reads and
+ * writes them, whether or not GenAI Fund has reviewed the organization yet: review decides what is listed, not who
+ * takes part (BEY-37). What the caller is in their organization is read now, on every operation.
  */
 @Service
 public class SolutionService {
@@ -43,12 +51,19 @@ public class SolutionService {
 
 	private final IdentityService identity;
 
+	private final StorageService storage;
+
+	private final ApplicationEventPublisher events;
+
 	SolutionService(SolutionRepository solutions, CustomerDeploymentRepository deployments,
-			OrganizationDirectory organizations, IdentityService identity) {
+			OrganizationDirectory organizations, IdentityService identity, StorageService storage,
+			ApplicationEventPublisher events) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.organizations = organizations;
 		this.identity = identity;
+		this.storage = storage;
+		this.events = events;
 	}
 
 	/** The solutions of the caller's organization, the newest first; none for a caller who belongs to no organization. */
@@ -65,7 +80,7 @@ public class SolutionService {
 					.map(solution -> SolutionViews.summary(solution, membership.organizationName(),
 							deployments.countBySolutionIdAndStatus(solution.getId(), CustomerDeployment.SUBMITTED)))
 					.toList(),
-				writes(membership));
+				true);
 	}
 
 	/**
@@ -84,7 +99,7 @@ public class SolutionService {
 
 	/**
 	 * Creates a draft, which only the organization sees.
-	 * @throws SolutionException when the caller is not an owner of an approved organization
+	 * @throws SolutionException when the caller is not a member
 	 */
 	@Transactional
 	public SolutionResponse create(Actor actor, CreateSolutionRequest request) {
@@ -96,14 +111,14 @@ public class SolutionService {
 		}
 		Solution solution = solutions.saveAndFlush(new Solution(UUID.randomUUID(), membership.organizationId(), slug,
 				request.name().strip(), actor.accountId()));
-		return SolutionViews.solution(solution, membership.organizationName(), List.of());
+		return SolutionViews.solution(solution, membership.organizationName(), null, List.of());
 	}
 
 	/**
-	 * Saves a solution as its edit screen holds it. A change to an approved solution shows at once; one to a rejected
-	 * solution waits for the owner to submit it again.
-	 * @throws SolutionException when the caller is not an owner of an approved organization, the organization has no such
-	 * solution, or it changed since the screen read it
+	 * Saves a solution as its editor holds it. A change to an approved solution shows at once; one to a rejected
+	 * solution waits for the owner to submit it again. A deck the solution stops naming is removed from the store.
+	 * @throws SolutionException when the caller is not a member, the organization has no such
+	 * solution, it changed since the screen read it, or the deck it names is not a stored PDF of the caller
 	 */
 	@Transactional
 	public SolutionResponse save(Actor actor, UUID id, SaveSolutionRequest request) {
@@ -115,20 +130,60 @@ public class SolutionService {
 		}
 		solution.describe(request.name().strip(), SolutionViews.text(request.summary()),
 				SolutionViews.text(request.problemsSolved()), SolutionViews.text(request.valueProposition()),
-				SolutionViews.codes(request.focusAreas()), SolutionViews.codes(request.industries()),
-				request.maturity(), SolutionViews.codes(request.deployment()), SolutionViews.text(request.website()));
+				request.maturity(), SolutionViews.text(request.traction()), SolutionViews.names(request.builtWith()));
+		solution.fit(SolutionViews.codes(request.industries()), SolutionViews.codes(request.focusAreas()),
+				SolutionViews.codes(request.languages()), SolutionViews.codes(request.deployment()),
+				SolutionViews.text(request.bestCustomerProfile()));
+		solution.link(SolutionViews.text(request.website()), SolutionViews.text(request.demoUrl()));
+		UUID replacedDeck = nameDeck(actor, solution, request.deckFileId());
 		solution.list(request.listed());
 		if (!solution.isDraft() && !solution.isRejected() && !solution.isComplete()) {
 			// What operators review, and what the directory shows, keeps what a submission needs.
 			throw incomplete(id);
 		}
 		solutions.flush();
+		if (replacedDeck != null) {
+			// The solution no longer names the file, so nothing does. It goes once the save has committed.
+			events.publishEvent(new ReplacedDecks.DeckReplaced(id, replacedDeck));
+		}
+		events.publishEvent(new SolutionChanged(id));
 		return view(solution, membership);
 	}
 
 	/**
+	 * Makes the solution name the deck the request names: the one it has, another stored PDF the caller uploaded for
+	 * a solution, or none.
+	 * @return the file the solution stopped naming, or null when it names the same as before
+	 * @throws SolutionException when the file is not a stored deck of the caller, or is the deck of another solution
+	 */
+	private @Nullable UUID nameDeck(Actor actor, Solution solution, @Nullable UUID wanted) {
+		UUID current = solution.getDeckFileId();
+		if (Objects.equals(current, wanted)) {
+			return null;
+		}
+		if (wanted == null) {
+			solution.removeDeck();
+			return current;
+		}
+		StoredFile file;
+		try {
+			file = storage.stored(wanted, FilePurpose.SOLUTION_DECK, actor);
+		}
+		catch (StorageException notUsable) {
+			throw new SolutionException(SolutionErrorCode.DECK_NOT_USABLE,
+					"File " + wanted + " as the deck of solution " + solution.getId(), notUsable);
+		}
+		if (solutions.existsByDeckFileId(wanted)) {
+			throw new SolutionException(SolutionErrorCode.DECK_NOT_USABLE,
+					"File " + wanted + " is the deck of another solution");
+		}
+		solution.attachDeck(file.id(), file.fileName(), file.sizeBytes(), Instant.now());
+		return current;
+	}
+
+	/**
 	 * Sends a draft, or a rejected solution that was corrected, to GenAI Fund for review.
-	 * @throws SolutionException when the caller is not an owner of an approved organization, the organization has no such
+	 * @throws SolutionException when the caller is not a member, the organization has no such
 	 * solution, it lacks what a submission needs, or it is already submitted or approved
 	 */
 	@Transactional
@@ -142,7 +197,7 @@ public class SolutionService {
 		if (!solution.isComplete()) {
 			throw incomplete(id);
 		}
-		solution.submit(Instant.now());
+		solution.submit(Instant.now(), actor.accountId());
 		// The response carries the version the next save must send.
 		solutions.flush();
 		LOG.atInfo()
@@ -154,8 +209,8 @@ public class SolutionService {
 	}
 
 	/**
-	 * Deletes a draft. Anything that was ever submitted stays.
-	 * @throws SolutionException when the caller is not an owner of an approved organization, the organization has no such
+	 * Deletes a draft, and its deck with it. Anything that was ever submitted stays.
+	 * @throws SolutionException when the caller is not a member, the organization has no such
 	 * solution, or it is not a draft
 	 */
 	@Transactional
@@ -165,13 +220,17 @@ public class SolutionService {
 			throw new SolutionException(SolutionErrorCode.NOT_A_DRAFT,
 					"Deletion of solution " + id + ", which is " + solution.getStatus());
 		}
+		UUID deck = solution.getDeckFileId();
 		solutions.delete(solution);
+		if (deck != null) {
+			events.publishEvent(new ReplacedDecks.DeckReplaced(id, deck));
+		}
 	}
 
 	/**
 	 * Adds a project in which a customer put the solution to work. It waits for GenAI Fund's review before anyone else
 	 * reads it.
-	 * @throws SolutionException when the caller is not an owner of an approved organization, the organization has no such
+	 * @throws SolutionException when the caller is not a member, the organization has no such
 	 * solution, or the solution already lists as many as it may
 	 */
 	@Transactional
@@ -183,13 +242,15 @@ public class SolutionService {
 		}
 		CustomerDeployment deployment = new CustomerDeployment(UUID.randomUUID(), solution.getId());
 		describe(deployment, request);
-		return SolutionViews.deployment(deployments.saveAndFlush(deployment));
+		CustomerDeploymentResponse added = SolutionViews.deployment(deployments.saveAndFlush(deployment));
+		events.publishEvent(new SolutionChanged(solutionId));
+		return added;
 	}
 
 	/**
 	 * Saves a customer deployment as its form holds it, which sends it to review again: what it says about a customer
 	 * is not shown until GenAI Fund has read it.
-	 * @throws SolutionException when the caller is not an owner of an approved organization, the solution has no such
+	 * @throws SolutionException when the caller is not a member, the solution has no such
 	 * deployment, or it changed since the form read it
 	 */
 	@Transactional
@@ -202,17 +263,20 @@ public class SolutionService {
 		}
 		describe(deployment, request);
 		deployments.flush();
+		// A deployment sent back to review no longer counts on the solution's card.
+		events.publishEvent(new SolutionChanged(solutionId));
 		return SolutionViews.deployment(deployment);
 	}
 
 	/**
 	 * Removes a customer deployment, whatever its review says.
-	 * @throws SolutionException when the caller is not an owner of an approved organization or the solution has no such
+	 * @throws SolutionException when the caller is not a member or the solution has no such
 	 * deployment
 	 */
 	@Transactional
 	public void deleteDeployment(Actor actor, UUID solutionId, UUID id) {
 		deployments.delete(ownDeployment(actor, solutionId, id));
+		events.publishEvent(new SolutionChanged(solutionId));
 	}
 
 	private CustomerDeployment ownDeployment(Actor actor, UUID solutionId, UUID id) {
@@ -232,19 +296,15 @@ public class SolutionService {
 
 	private SolutionResponse view(Solution solution, Membership membership) {
 		return SolutionViews.solution(solution, membership.organizationName(),
+				SolutionViews.sender(solution, identity),
 				deployments.findBySolutionIdOrderByCreatedAtDesc(solution.getId()));
 	}
 
 	private Membership writer(Actor actor) {
 		identity.requireActive(actor);
 		return organizations.membershipOf(actor)
-			.filter(SolutionService::writes)
-			.orElseThrow(() -> new SolutionException(SolutionErrorCode.OWNER_REQUIRED,
+			.orElseThrow(() -> new SolutionException(SolutionErrorCode.MEMBER_REQUIRED,
 					"Solution change by account " + actor.accountId()));
-	}
-
-	private static boolean writes(Membership membership) {
-		return membership.owner() && membership.approved();
 	}
 
 	private Solution own(Membership membership, UUID id) {

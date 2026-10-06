@@ -39,6 +39,7 @@ import ai.genaifund.beyondpilot.organization.persistence.OrganizationRepository;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,14 +79,18 @@ public class OrganizationService {
 
 	private final AuditTrail audit;
 
+	private final ApplicationEventPublisher events;
+
 	OrganizationService(OrganizationRepository organizations, OrganizationQueryRepository organizationList,
-			MembershipRepository memberships, IdentityService identity, EmailService email, AuditTrail audit) {
+			MembershipRepository memberships, IdentityService identity, EmailService email, AuditTrail audit,
+			ApplicationEventPublisher events) {
 		this.organizations = organizations;
 		this.organizationList = organizationList;
 		this.memberships = memberships;
 		this.identity = identity;
 		this.email = email;
 		this.audit = audit;
+		this.events = events;
 	}
 
 	/**
@@ -143,20 +148,57 @@ public class OrganizationService {
 	 */
 	@Transactional
 	public OrganizationResponse create(Actor actor, CreateOrganizationRequest request) {
+		return createOwned(actor, new Profile(request.name(), request.type(), request.website(), request.country(),
+				request.teamSize(), request.industries(), request.description(), request.foundedYear(),
+				request.logoUrl()), request.jobTitle());
+	}
+
+	/**
+	 * Makes the organization a person applies through when they belong to none (BEY-37): a builder on their own or a
+	 * team, which provides AI solutions. Like any organization a person creates, it waits for GenAI Fund's review,
+	 * which decides whether it is listed, not whether it applies; the rest of the profile is theirs to write later.
+	 * @return the new organization's identifier
+	 * @throws OrganizationException when the caller already belongs to an organization or waits on a request
+	 */
+	@Transactional
+	public UUID createForApplicant(Actor actor, ApplicantOrganization applicant) {
+		if (!"independent_builder".equals(applicant.type()) && !"builder_team".equals(applicant.type())) {
+			throw new IllegalArgumentException("An applicant makes a builder's or a team's organization, not "
+					+ applicant.type());
+		}
+		return createOwned(actor, new Profile(applicant.name(), applicant.type(), applicant.website(),
+				applicant.country(), applicant.teamSize(), List.of(), null, null, null), null)
+			.id();
+	}
+
+	/** What an organization's creator tells about it; a team or a builder applying may leave the rest for later. */
+	private record Profile(String name, String type, @Nullable String website, String country, String teamSize,
+			List<String> industries, @Nullable String description, @Nullable Integer foundedYear,
+			@Nullable String logoUrl) {
+	}
+
+	private OrganizationResponse createOwned(Actor actor, Profile profile, @Nullable String creatorJobTitle) {
 		Person person = identity.person(actor);
 		requireFree(person);
-		Organization organization = new Organization(UUID.randomUUID(), freeSlug(request.name()),
-				request.name().strip(), request.type(), Organization.PENDING,
-				person.accountId());
-		organization.describe(request.name().strip(), request.type(),
-				OrganizationViews.text(request.website()), request.country(), request.teamSize(),
-				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()),
-				request.foundedYear(), OrganizationViews.text(request.logoUrl()));
+		if ("company".equals(profile.type()) && profile.industries().isEmpty()) {
+			// A team or a builder on their own may not have settled on an industry; a company has.
+			throw new OrganizationException(OrganizationErrorCode.INDUSTRIES_REQUIRED,
+					"Company created by account " + person.accountId() + " without an industry");
+		}
+		Organization organization = new Organization(UUID.randomUUID(), freeSlug(profile.name()),
+				profile.name().strip(), profile.type(), Organization.PENDING, person.accountId());
+		organization.describe(profile.name().strip(), profile.type(), OrganizationViews.text(profile.website()),
+				profile.country(), profile.teamSize(), OrganizationViews.codes(profile.industries()),
+				OrganizationViews.text(profile.description()), profile.foundedYear(),
+				OrganizationViews.text(profile.logoUrl()));
 		organizations.saveAndFlush(organization);
 		if (!memberships.add(organization.getId(), person.accountId(), MembershipRepository.OWNER)) {
 			throw alreadyMember(person);
 		}
-		memberships.changeJobTitle(person.accountId(), request.jobTitle().strip());
+		String jobTitle = OrganizationViews.text(creatorJobTitle);
+		if (jobTitle != null) {
+			memberships.changeJobTitle(person.accountId(), jobTitle);
+		}
 		LOG.atInfo()
 			.addKeyValue("event", "organization.creation.submitted")
 			.addKeyValue("organization_id", organization.getId())
@@ -275,6 +317,7 @@ public class OrganizationService {
 			organization.resubmit();
 		}
 		organizations.flush();
+		events.publishEvent(new OrganizationChanged(organization.getId()));
 		return OrganizationViews.organization(organization);
 	}
 

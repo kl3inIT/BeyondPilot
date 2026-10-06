@@ -260,7 +260,12 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pocket Policy");
     await expect(page.getByText("Company · Singapore · pocketpolicy.example")).toBeVisible();
     const tabs = page.getByRole("navigation", { name: "Sections of your organization" });
-    await expect(tabs.getByRole("link")).toHaveText(["Profile", "Members2", "Solutions4"]);
+    await expect(tabs.getByRole("link")).toHaveText([
+      "Profile",
+      "Members2",
+      "Solutions4",
+      "Introductions",
+    ]);
     await expect(tabs.getByRole("link", { name: "Profile" })).toHaveAttribute(
       "aria-current",
       "page",

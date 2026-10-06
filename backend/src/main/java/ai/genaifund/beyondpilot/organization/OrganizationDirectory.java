@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.organization;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,6 +45,31 @@ public class OrganizationDirectory {
 						organization.isApproved())));
 	}
 
+	/** Who this organization is, read now; empty when it does not exist. */
+	@Transactional(readOnly = true)
+	public Optional<OrganizationProfile> profile(UUID organizationId) {
+		return organizations.findById(organizationId)
+			.map(organization -> new OrganizationProfile(organization.getId(), organization.getSlug(),
+					organization.getName(), organization.getType(), organization.getCountry(),
+					organization.getTeamSize(), organization.getWebsite(), organization.isApproved()));
+	}
+
+	/** Whether GenAI Fund has approved this organization, read now. */
+	@Transactional(readOnly = true)
+	public boolean isApproved(UUID organizationId) {
+		return organizations.findById(organizationId).filter(Organization::isApproved).isPresent();
+	}
+
+	/** The accounts that own an organization, read now; empty when it has no owner. */
+	@Transactional(readOnly = true)
+	public List<UUID> ownersOf(UUID organizationId) {
+		return memberships.members(organizationId)
+			.stream()
+			.filter(MembershipRepository.Member::isOwner)
+			.map(MembershipRepository.Member::accountId)
+			.toList();
+	}
+
 	/** The approved organization at this address, as another module shows it; empty when there is none. */
 	@Transactional(readOnly = true)
 	public Optional<OrganizationName> approvedAt(String slug) {
@@ -76,6 +102,15 @@ public class OrganizationDirectory {
 			.stream()
 			.collect(Collectors.toMap(OrganizationQueryRepository.Name::id,
 					name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country())));
+	}
+
+	/**
+	 * The organizations whose name contains the text, ignoring case and whatever their review says, for a module that
+	 * searches its own records by who they belong to.
+	 */
+	@Transactional(readOnly = true)
+	public List<UUID> named(String text) {
+		return organizationList.idsNamed(text);
 	}
 
 	/** The names of these organizations by identifier; an unknown one is left out. */

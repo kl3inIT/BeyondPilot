@@ -25,8 +25,7 @@ public record CreateOrganizationRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Pattern(
 				regexp = OrganizationCodes.TEAM_SIZE) String teamSize,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The industries it works in or serves, as the codes the solutions use.") @NotNull @Size(
-						min = 1,
+				description = "The industries it works in or serves, as the codes the solutions use. A company names one to five; a team or a builder may name none.") @NotNull @Size(
 						max = 5) List<@NotNull @Pattern(regexp = OrganizationCodes.INDUSTRY) String> industries,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "What it does and for whom, in at most 280 characters.") @NotBlank @Size(

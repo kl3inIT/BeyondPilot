@@ -1,8 +1,10 @@
 package ai.genaifund.beyondpilot.solution;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +22,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
@@ -62,15 +65,17 @@ class SolutionTest {
 	}
 
 	@Test
-	void onlyAnOwnerOfAnApprovedOrganizationWritesAndAMemberReads() {
+	void everyMemberWritesWhetherOrNotGenAiFundHasReviewedTheOrganization() {
 		String founder = signIn("founder@writers.test");
 		UUID organization = organization(founder, "Writers Co");
 
-		// An organization that waits for review publishes nothing yet.
-		assertProblem(post(founder, MINE, Map.of("name", "Too Early")), 403, "SOLUTION_OWNER_REQUIRED");
-		approve(organization);
+		// Review decides what is listed, not who takes part: an organization that waits for review writes already.
 		UUID solution = create(founder, "Writers Desk");
+		submitted(founder, "Writers Draft");
+		String forFounder = body(get(founder, MINE).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(forFounder, "$.editable")).isTrue();
 
+		approve(organization);
 		String colleague = signIn("colleague@writers.test");
 		post(founder, ORGANIZATION + "/mine/invitations", Map.of("email", "colleague@writers.test", "role", "member"))
 			.expectStatus()
@@ -79,11 +84,11 @@ class SolutionTest {
 				"$.invitations[0].id");
 		post(colleague, ORGANIZATION + "/invitations/" + invitation + "/accept", null).expectStatus().isNoContent();
 		String forMember = body(get(colleague, MINE).expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(forMember, "$.items[*].name")).containsExactly("Writers Desk");
-		assertThat(JsonPath.<Boolean>read(forMember, "$.editable")).isFalse();
-		get(colleague, MINE + "/" + solution).expectStatus().isOk();
-		assertProblem(post(colleague, MINE, Map.of("name", "By A Member")), 403, "SOLUTION_OWNER_REQUIRED");
-		assertProblem(post(colleague, MINE + "/" + solution + "/submit", null), 403, "SOLUTION_OWNER_REQUIRED");
+		assertThat(JsonPath.<List<String>>read(forMember, "$.items[*].name")).contains("Writers Desk");
+		assertThat(JsonPath.<Boolean>read(forMember, "$.editable")).isTrue();
+		String bySaved = body(put(colleague, MINE + "/" + solution, described("Writers Desk", 0)).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(bySaved, "$.summary")).isNotBlank();
+		create(colleague, "By A Member");
 
 		String buyer = signIn("buyer@other-company.test");
 		approve(organization(buyer, "Other Company"));
@@ -93,6 +98,21 @@ class SolutionTest {
 		String nobody = body(get(signIn("nobody@elsewhere.test"), MINE).expectStatus().isOk());
 		assertThat(JsonPath.<List<Object>>read(nobody, "$.items")).isEmpty();
 		assertThat(JsonPath.<Boolean>read(nobody, "$.editable")).isFalse();
+		assertProblem(post(signIn("nobody@elsewhere.test"), MINE, Map.of("name", "By Nobody")), 403,
+				"SOLUTION_MEMBER_REQUIRED");
+	}
+
+	@Test
+	void aSolutionIsListedOnlyOnceItsOrganizationIsApprovedToo() {
+		String founder = signIn("founder@unreviewed.test");
+		UUID organization = organization(founder, "Unreviewed Co");
+		UUID solution = submitted(founder, "Unreviewed Desk");
+
+		assertProblem(post(operator, ADMIN + "/" + solution + "/approve", null), 409,
+				"SOLUTION_ORGANIZATION_NOT_APPROVED");
+		approve(organization);
+		post(operator, ADMIN + "/" + solution + "/approve", null).expectStatus().isNoContent();
+		assertThat(names(DIRECTORY)).contains("Unreviewed Desk");
 	}
 
 	@Test
@@ -129,13 +149,17 @@ class SolutionTest {
 		request.put("industries", List.of("gardening"));
 		request.put("maturity", "finished");
 		request.put("website", "example.test");
+		request.put("demoUrl", "javascript:alert(1)");
+		request.put("languages", List.of("klingon"));
+		request.put("builtWith", List.of("Python", " "));
+		request.put("summary", "x".repeat(601));
 
 		String body = body(put(founder, MINE + "/" + JsonPath.<String>read(draft, "$.id"), request).expectStatus()
 			.isBadRequest());
 
 		assertThat(JsonPath.<String>read(body, "$.code")).isEqualTo("REQUEST_INVALID");
 		assertThat(JsonPath.<List<String>>read(body, "$.errors[*].pointer")).containsExactlyInAnyOrder("#/industries/0",
-				"#/maturity", "#/website");
+				"#/maturity", "#/website", "#/demoUrl", "#/languages/0", "#/builtWith/1", "#/summary");
 	}
 
 	@Test
@@ -197,6 +221,74 @@ class SolutionTest {
 	}
 
 	@Test
+	void theOperatorsListFindsASolutionByItsOrganizationNarrowsByIndustryAndNamesWhoSentIt() {
+		String founder = approvedOwner("founder@harbour.test", "Harbour Analytics");
+		long waiting = JsonPath
+			.<Number>read(body(get(operator, ADMIN).expectStatus().isOk()), "$.awaitingReview")
+			.longValue();
+		Map<String, Object> forLogistics = described("Quay Desk", 0);
+		forLogistics.put("industries", List.of("logistics"));
+		UUID id = submitted(founder, "Quay Desk", forLogistics);
+
+		// The name of the solution does not hold the text; the name of its organization does.
+		String byOrganization = body(get(operator, ADMIN + "?q=HARBOUR").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(byOrganization, "$.items[*].name")).containsExactly("Quay Desk");
+		assertThat(JsonPath.<String>read(byOrganization, "$.items[0].organizationName")).isEqualTo("Harbour Analytics");
+		assertThat(JsonPath.<String>read(byOrganization, "$.items[0].submittedBy")).isEqualTo("founder@harbour.test");
+		assertThat(JsonPath.<Number>read(byOrganization, "$.awaitingReview").longValue()).isEqualTo(waiting + 1);
+
+		assertThat(names(operator, ADMIN + "?q=quay&industry=logistics")).containsExactly("Quay Desk");
+		assertThat(names(operator, ADMIN + "?q=quay&industry=insurance")).isEmpty();
+		assertProblem(get(operator, ADMIN + "?industry=astrology"), 400, "REQUEST_INVALID");
+
+		String record = body(get(operator, ADMIN + "/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(record, "$.submittedBy")).isEqualTo("founder@harbour.test");
+		// A decision takes it out of what waits, whatever the list is narrowed to.
+		post(operator, ADMIN + "/" + id + "/approve", null).expectStatus().isNoContent();
+		assertThat(JsonPath
+			.<Number>read(body(get(operator, ADMIN + "?status=rejected").expectStatus().isOk()), "$.awaitingReview")
+			.longValue()).isEqualTo(waiting);
+	}
+
+	@Test
+	void theOperatorsListIsReadAPageAtATimeTheLongestWaitFirst() {
+		String founder = approvedOwner("founder@pager.test", "Pager Works");
+		for (int number = 1; number <= 26; number++) {
+			submitted(founder, "Pager Desk %02d".formatted(number));
+		}
+
+		String first = body(get(operator, ADMIN + "?q=pager desk").expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(first, "$.total")).isEqualTo(26);
+		assertThat(JsonPath.<Integer>read(first, "$.pageSize")).isEqualTo(25);
+		assertThat(JsonPath.<List<String>>read(first, "$.items[*].name")).hasSize(25).startsWith("Pager Desk 01");
+
+		String second = body(get(operator, ADMIN + "?q=pager desk&page=2").expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(second, "$.page")).isEqualTo(2);
+		assertThat(JsonPath.<List<String>>read(second, "$.items[*].name")).containsExactly("Pager Desk 26");
+		// A page past the last one is empty, not an error; a page before the first is refused.
+		assertThat(names(operator, ADMIN + "?q=pager desk&page=3")).isEmpty();
+		assertProblem(get(operator, ADMIN + "?page=0"), 400, "REQUEST_INVALID");
+	}
+
+	@Test
+	void aSolutionSentBeforeTheSenderWasRecordedNamesNobody() {
+		String founder = approvedOwner("founder@earlier.test", "Earlier Co");
+		UUID id = submitted(founder, "Earlier Desk");
+		// What a solution submitted before the column existed looks like.
+		jdbc.sql("update solution set submitted_by_account_id = null where id = ?").param(id).update();
+
+		String listed = body(get(operator, ADMIN + "?q=earlier desk").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(listed, "$.items[*].name")).containsExactly("Earlier Desk");
+		assertThat(JsonPath.<String>read(listed, "$.items[0].submittedBy")).isNull();
+		assertThat(JsonPath.<String>read(body(get(operator, ADMIN + "/" + id).expectStatus().isOk()), "$.submittedBy"))
+			.isNull();
+		// The owners read it the same way, and sending it again records who did.
+		post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "incomplete")).expectStatus().isNoContent();
+		String sentAgain = body(post(founder, MINE + "/" + id + "/submit", null).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(sentAgain, "$.submittedBy")).isEqualTo("founder@earlier.test");
+	}
+
+	@Test
 	void anOperatorTakesAnApprovedSolutionOutOfTheDirectory() {
 		String founder = approvedOwner("founder@removed.test", "Removed Co");
 		UUID id = approved(founder, "Removed Desk");
@@ -211,7 +303,7 @@ class SolutionTest {
 	}
 
 	@Test
-	void theDirectoryShowsOnlyApprovedListedSolutionsAndNarrowsThem() {
+	void theDirectoryListsOnlyApprovedListedSolutionsAndAnApprovedUnlistedOneOpensByItsAddress() {
 		String founder = approvedOwner("founder@listed.test", "Listed Co");
 		UUID claims = approved(founder, "Quokka Claims");
 		Map<String, Object> banking = described("Quokka Banking", 0);
@@ -255,8 +347,16 @@ class SolutionTest {
 		String one = body(client.get().uri(DIRECTORY + "/quokka-claims").exchange().expectStatus().isOk());
 		assertThat(JsonPath.<String>read(one, "$.summary")).isEqualTo("Reads claim files.");
 		assertThat(JsonPath.<String>read(one, "$.country")).isEqualTo("VN");
-		// An address does not reveal a solution that is not shown.
-		for (String slug : List.of("quokka-hidden", "quokka-waiting", "quokka-draft")) {
+		// The demo is a link the owners gave, there is no deck yet, and a listed solution says it is listed.
+		assertThat(JsonPath.<String>read(one, "$.demoUrl")).isEqualTo("https://example.test/demo");
+		assertThat(JsonPath.<Object>read(one, "$.deck")).isNull();
+		assertThat(JsonPath.<Boolean>read(one, "$.listed")).isTrue();
+		// An approved solution left unlisted is out of the directory but opens by its address, and says so.
+		assertThat(JsonPath.<Boolean>read(
+				body(client.get().uri(DIRECTORY + "/quokka-hidden").exchange().expectStatus().isOk()), "$.listed"))
+			.isFalse();
+		// An address does not reveal a solution that is not approved.
+		for (String slug : List.of("quokka-waiting", "quokka-draft")) {
 			assertProblem(client.get().uri(DIRECTORY + "/" + slug).exchange(), 404, "SOLUTION_NOT_FOUND");
 		}
 
@@ -276,6 +376,145 @@ class SolutionTest {
 		assertThat(JsonPath.<String>read(
 				body(client.get().uri(DIRECTORY + "/quokka-claims").exchange().expectStatus().isOk()), "$.summary"))
 			.isEqualTo("Reads claim files and flags gaps.");
+	}
+
+	@Test
+	void whatTheEditorHoldsBeyondTheNeededFieldsIsKeptAndShown() {
+		String founder = approvedOwner("founder@fields.test", "Fields Co");
+		Map<String, Object> filled = described("Numbat Desk", 0);
+		filled.put("traction", "  Three pilots with insurers.  ");
+		filled.put("builtWith", List.of(" Python ", "PostgreSQL", "Python"));
+		filled.put("languages", List.of("vi", "en", "vi"));
+		filled.put("bestCustomerProfile", "Insurers with a claims team of twenty or more.");
+		UUID id = approved(founder, "Numbat Desk", filled);
+
+		String mine = body(get(founder, MINE + "/" + id).expectStatus().isOk());
+		// What a person typed is trimmed, and a name or a code counts once.
+		assertThat(JsonPath.<String>read(mine, "$.traction")).isEqualTo("Three pilots with insurers.");
+		assertThat(JsonPath.<List<String>>read(mine, "$.builtWith")).containsExactly("Python", "PostgreSQL");
+		assertThat(JsonPath.<List<String>>read(mine, "$.languages")).containsExactly("vi", "en");
+		String page = body(client.get().uri(DIRECTORY + "/numbat-desk").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(page, "$.builtWith")).containsExactly("Python", "PostgreSQL");
+		assertThat(JsonPath.<List<String>>read(page, "$.languages")).containsExactly("vi", "en");
+		assertThat(JsonPath.<String>read(page, "$.bestCustomerProfile"))
+			.isEqualTo("Insurers with a claims team of twenty or more.");
+		assertThat(JsonPath.<String>read(page, "$.traction")).isEqualTo("Three pilots with insurers.");
+		// None of them is needed: a solution without them is still complete.
+		assertThat(JsonPath.<Boolean>read(body(get(founder, MINE + "/" + approved(founder, "Numbat Plain")).expectStatus()
+			.isOk()), "$.complete")).isTrue();
+	}
+
+	@Test
+	void aDeckIsAPdfOfTheCallerNamedByOneSolutionAndRemovedWhenItIsReplaced() {
+		String founder = approvedOwner("founder@decks.test", "Decks Co");
+		UUID id = create(founder, "Bilby Desk");
+		byte[] pdf = pdf(900);
+		UUID first = uploaded(founder, "solution_deck", "C:\\decks\\bilby.pdf", pdf);
+
+		Map<String, Object> request = described("Bilby Desk", 0);
+		request.put("deckFileId", first);
+		String saved = body(put(founder, MINE + "/" + id, request).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(saved, "$.deck.fileId")).isEqualTo(first.toString());
+		assertThat(JsonPath.<String>read(saved, "$.deck.fileName")).isEqualTo("bilby.pdf");
+		assertThat(JsonPath.<Integer>read(saved, "$.deck.sizeBytes")).isEqualTo(900);
+		assertThat(JsonPath.<String>read(saved, "$.deck.attachedAt")).isNotNull();
+		// Saving again with the deck it has changes nothing about the file.
+		request.put("version", versionOf(saved));
+		saved = body(put(founder, MINE + "/" + id, request).expectStatus().isOk());
+		assertThat(stored(first)).isTrue();
+
+		// A file of another purpose, another account's deck and the deck of another solution are refused.
+		String colleague = approvedOwner("founder@other-decks.test", "Other Decks Co");
+		UUID other = create(colleague, "Bilby Rival");
+		for (UUID notUsable : List.of(uploaded(founder, "application_file", "proposal.pdf", pdf),
+				uploaded(colleague, "solution_deck", "theirs.pdf", pdf), UUID.randomUUID())) {
+			request.put("version", versionOf(saved));
+			request.put("deckFileId", notUsable);
+			assertProblem(put(founder, MINE + "/" + id, request), 400, "SOLUTION_DECK_NOT_USABLE");
+		}
+		UUID second = create(founder, "Bilby Second");
+		Map<String, Object> borrowed = described("Bilby Second", 0);
+		borrowed.put("deckFileId", first);
+		assertProblem(put(founder, MINE + "/" + second, borrowed), 400, "SOLUTION_DECK_NOT_USABLE");
+		assertProblem(put(colleague, MINE + "/" + other, borrowed), 400, "SOLUTION_DECK_NOT_USABLE");
+
+		// A replaced deck goes from the store, and so does a removed one and the deck of a deleted draft.
+		UUID replacement = uploaded(founder, "solution_deck", "bilby-v2.pdf", pdf(1200));
+		request.put("version", versionOf(saved));
+		request.put("deckFileId", replacement);
+		saved = body(put(founder, MINE + "/" + id, request).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(saved, "$.deck.fileName")).isEqualTo("bilby-v2.pdf");
+		assertThat(stored(first)).isFalse();
+		assertThat(stored(replacement)).isTrue();
+		request.put("version", versionOf(saved));
+		request.put("deckFileId", null);
+		saved = body(put(founder, MINE + "/" + id, request).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(saved, "$.deck")).isNull();
+		assertThat(stored(replacement)).isFalse();
+		UUID last = uploaded(founder, "solution_deck", "bilby-v3.pdf", pdf);
+		request.put("version", versionOf(saved));
+		request.put("deckFileId", last);
+		put(founder, MINE + "/" + id, request).expectStatus().isOk();
+		delete(founder, MINE + "/" + id).expectStatus().isNoContent();
+		assertThat(stored(last)).isFalse();
+	}
+
+	@Test
+	void aDeckIsReadByItsOrganizationAndTheOperatorsUntilApprovalAndByAnyoneAfter() {
+		String founder = approvedOwner("founder@readers.test", "Readers Co");
+		String colleague = signIn("colleague@readers.test");
+		post(founder, ORGANIZATION + "/mine/invitations", Map.of("email", "colleague@readers.test", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		String invitation = JsonPath.read(body(get(colleague, ORGANIZATION + "/mine").expectStatus().isOk()),
+				"$.invitations[0].id");
+		post(colleague, ORGANIZATION + "/invitations/" + invitation + "/accept", null).expectStatus().isNoContent();
+		String outsider = approvedOwner("founder@outsiders.test", "Outsiders Co");
+		byte[] pdf = pdf(700);
+		String deck = DIRECTORY + "/quoll-desk/deck";
+
+		String draft = body(post(founder, MINE, Map.of("name", "Quoll Desk")).expectStatus().isCreated());
+		UUID id = UUID.fromString(JsonPath.read(draft, "$.id"));
+		// A solution without a deck has none to read, for anyone.
+		assertProblem(get(founder, deck), 404, "SOLUTION_NOT_FOUND");
+		Map<String, Object> request = described("Quoll Desk", versionOf(draft));
+		request.put("deckFileId", uploaded(founder, "solution_deck", "quoll.pdf", pdf));
+		put(founder, MINE + "/" + id, request).expectStatus().isOk();
+
+		// A draft is its organization's alone: an owner and a member read the deck, nobody else.
+		get(founder, deck).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(MediaType.APPLICATION_PDF)
+			.expectHeader()
+			.valueMatches(HttpHeaders.CONTENT_DISPOSITION, "attachment;.*quoll\\.pdf.*")
+			.expectBody(byte[].class)
+			.isEqualTo(pdf);
+		get(colleague, deck).expectStatus().isOk();
+		assertProblem(client.get().uri(deck).exchange(), 404, "SOLUTION_NOT_FOUND");
+		assertProblem(get(outsider, deck), 404, "SOLUTION_NOT_FOUND");
+		assertProblem(get(operator, deck), 404, "SOLUTION_NOT_FOUND");
+
+		// Sent for review, the operators read it too; the public still does not.
+		post(founder, MINE + "/" + id + "/submit", null).expectStatus().isOk();
+		get(operator, deck).expectStatus().isOk();
+		assertThat(JsonPath.<String>read(body(get(operator, ADMIN + "/" + id).expectStatus().isOk()), "$.deck.fileName"))
+			.isEqualTo("quoll.pdf");
+		assertProblem(client.get().uri(deck).exchange(), 404, "SOLUTION_NOT_FOUND");
+		assertProblem(get(outsider, deck), 404, "SOLUTION_NOT_FOUND");
+
+		// Approved, anyone reads it, and its page says what it is called and how large it is.
+		post(operator, ADMIN + "/" + id + "/approve", null).expectStatus().isNoContent();
+		client.get().uri(deck).exchange().expectStatus().isOk().expectBody(byte[].class).isEqualTo(pdf);
+		String page = body(client.get().uri(DIRECTORY + "/quoll-desk").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<String>read(page, "$.deck.fileName")).isEqualTo("quoll.pdf");
+		assertThat(JsonPath.<Integer>read(page, "$.deck.sizeBytes")).isEqualTo(700);
+
+		// Taken down, it is the organization's and the operators' again.
+		post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "unverifiable")).expectStatus().isNoContent();
+		assertProblem(client.get().uri(deck).exchange(), 404, "SOLUTION_NOT_FOUND");
+		get(founder, deck).expectStatus().isOk();
+		get(operator, deck).expectStatus().isOk();
 	}
 
 	@Test
@@ -371,8 +610,14 @@ class SolutionTest {
 		request.put("focusAreas", List.of("document_processing"));
 		request.put("industries", List.of("insurance"));
 		request.put("maturity", "pilot");
+		request.put("traction", null);
+		request.put("builtWith", List.of());
+		request.put("languages", List.of());
 		request.put("deployment", List.of("cloud_saas"));
+		request.put("bestCustomerProfile", null);
 		request.put("website", "https://example.test");
+		request.put("demoUrl", "https://example.test/demo");
+		request.put("deckFileId", null);
 		request.put("listed", true);
 		request.put("version", version);
 		return request;
@@ -387,6 +632,43 @@ class SolutionTest {
 		deployment.put("stage", "production");
 		deployment.put("version", version);
 		return deployment;
+	}
+
+	/** A PDF of the given length. */
+	private static byte[] pdf(int length) {
+		byte[] content = Arrays.copyOf("%PDF-1.7\n".getBytes(US_ASCII), length);
+		Arrays.fill(content, 9, length, (byte) 'x');
+		return content;
+	}
+
+	/** Uploads a file in the three requests of the storage module and returns the stored file. */
+	private UUID uploaded(String session, String purpose, String fileName, byte[] content) {
+		String ticket = body(post(session, "/api/storage/uploads", Map.of("purpose", purpose, "fileName", fileName,
+				"mediaType", "application/pdf", "sizeBytes", content.length))
+			.expectStatus()
+			.isCreated());
+		UUID id = UUID.fromString(JsonPath.read(ticket, "$.id"));
+		client.put()
+			.uri(JsonPath.<String>read(ticket, "$.url"))
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.contentType(MediaType.APPLICATION_OCTET_STREAM)
+			.body(content)
+			.exchange()
+			.expectStatus()
+			.isNoContent();
+		post(session, "/api/storage/uploads/" + id + "/confirm", null).expectStatus().isOk();
+		return id;
+	}
+
+	/** Whether the storage module still has the file. */
+	private boolean stored(UUID file) {
+		return jdbc.sql("select count(*) from storage_file where id = ?").param(file).query(Long.class).single() == 1;
+	}
+
+	private UUID organizationOf(String session) {
+		return UUID.fromString(
+				JsonPath.read(body(get(session, ORGANIZATION + "/mine").expectStatus().isOk()), "$.organization.id"));
 	}
 
 	private static long versionOf(String solution) {
@@ -444,6 +726,10 @@ class SolutionTest {
 
 	private List<String> names(String path) {
 		return JsonPath.read(body(client.get().uri(path).exchange().expectStatus().isOk()), "$.items[*].name");
+	}
+
+	private List<String> names(String session, String path) {
+		return JsonPath.read(body(get(session, path).expectStatus().isOk()), "$.items[*].name");
 	}
 
 	private RestTestClient.ResponseSpec get(String session, String path) {

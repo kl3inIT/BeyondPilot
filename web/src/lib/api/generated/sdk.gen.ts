@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcceptOrganizationInvitationData, AcceptOrganizationInvitationErrors, AcceptOrganizationInvitationResponses, AddCustomerDeploymentData, AddCustomerDeploymentErrors, AddCustomerDeploymentResponses, ApproveCustomerDeploymentData, ApproveCustomerDeploymentErrors, ApproveCustomerDeploymentResponses, ApproveJoinRequestData, ApproveJoinRequestErrors, ApproveJoinRequestResponses, ApproveOrganizationClaimData, ApproveOrganizationClaimErrors, ApproveOrganizationClaimResponses, ApproveOrganizationData, ApproveOrganizationErrors, ApproveOrganizationResponses, ApproveSolutionData, ApproveSolutionErrors, ApproveSolutionResponses, ApproveTalentData, ApproveTalentErrors, ApproveTalentResponses, ChangeAdminOrganizationMemberRoleData, ChangeAdminOrganizationMemberRoleErrors, ChangeAdminOrganizationMemberRoleResponses, ChangeMyJobTitleData, ChangeMyJobTitleErrors, ChangeMyJobTitleResponses, ChangeOrganizationAutoJoinData, ChangeOrganizationAutoJoinErrors, ChangeOrganizationAutoJoinResponses, ChangeOrganizationMemberRoleData, ChangeOrganizationMemberRoleErrors, ChangeOrganizationMemberRoleResponses, ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateAdminOrganizationData, CreateAdminOrganizationErrors, CreateAdminOrganizationResponses, CreateOrganizationData, CreateOrganizationErrors, CreateOrganizationResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, CreateSolutionData, CreateSolutionErrors, CreateSolutionResponses, DeclineJoinRequestData, DeclineJoinRequestErrors, DeclineJoinRequestResponses, DeclineOrganizationClaimData, DeclineOrganizationClaimErrors, DeclineOrganizationClaimResponses, DeclineOrganizationInvitationData, DeclineOrganizationInvitationErrors, DeclineOrganizationInvitationResponses, DeleteCustomerDeploymentData, DeleteCustomerDeploymentErrors, DeleteCustomerDeploymentResponses, DeleteSolutionDraftData, DeleteSolutionDraftErrors, DeleteSolutionDraftResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminOrganizationData, GetAdminOrganizationErrors, GetAdminOrganizationResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetAdminSolutionData, GetAdminSolutionErrors, GetAdminSolutionResponses, GetAdminTalentData, GetAdminTalentErrors, GetAdminTalentResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyOrganizationData, GetMyOrganizationErrors, GetMyOrganizationResponses, GetMySolutionData, GetMySolutionErrors, GetMySolutionResponses, GetMyTalentProfileData, GetMyTalentProfileErrors, GetMyTalentProfileResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetProgramData, GetProgramErrors, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GetSolutionData, GetSolutionErrors, GetSolutionResponses, GetTalentData, GetTalentErrors, GetTalentResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, InviteAdminOrganizationMemberData, InviteAdminOrganizationMemberErrors, InviteAdminOrganizationMemberResponses, InviteOrganizationMemberData, InviteOrganizationMemberErrors, InviteOrganizationMemberResponses, JoinOrganizationData, JoinOrganizationErrors, JoinOrganizationResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminOrganizationsData, ListAdminOrganizationsErrors, ListAdminOrganizationsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAdminSolutionsData, ListAdminSolutionsErrors, ListAdminSolutionsResponses, ListAdminTalentData, ListAdminTalentErrors, ListAdminTalentResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListCustomerDeploymentsData, ListCustomerDeploymentsErrors, ListCustomerDeploymentsResponses, ListMyOrganizationMembersData, ListMyOrganizationMembersErrors, ListMyOrganizationMembersResponses, ListMySolutionsData, ListMySolutionsErrors, ListMySolutionsResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, ListSolutionsData, ListSolutionsErrors, ListSolutionsResponses, ListTalentData, ListTalentErrors, ListTalentResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, RefuseOrganizationData, RefuseOrganizationErrors, RefuseOrganizationResponses, RejectCustomerDeploymentData, RejectCustomerDeploymentErrors, RejectCustomerDeploymentResponses, RejectSolutionData, RejectSolutionErrors, RejectSolutionResponses, RejectTalentData, RejectTalentErrors, RejectTalentResponses, RemoveAdminOrganizationMemberData, RemoveAdminOrganizationMemberErrors, RemoveAdminOrganizationMemberResponses, RemoveOrganizationMemberData, RemoveOrganizationMemberErrors, RemoveOrganizationMemberResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, RestoreOrganizationData, RestoreOrganizationErrors, RestoreOrganizationResponses, RevokeAdminOrganizationInvitationData, RevokeAdminOrganizationInvitationErrors, RevokeAdminOrganizationInvitationResponses, RevokeOrganizationInvitationData, RevokeOrganizationInvitationErrors, RevokeOrganizationInvitationResponses, SaveAdminOrganizationData, SaveAdminOrganizationErrors, SaveAdminOrganizationResponses, SaveCustomerDeploymentData, SaveCustomerDeploymentErrors, SaveCustomerDeploymentResponses, SaveMyOrganizationData, SaveMyOrganizationErrors, SaveMyOrganizationResponses, SaveMyTalentProfileData, SaveMyTalentProfileErrors, SaveMyTalentProfileResponses, SaveProgramData, SaveProgramErrors, SaveProgramResponses, SaveSolutionData, SaveSolutionErrors, SaveSolutionResponses, SearchOrganizationsData, SearchOrganizationsErrors, SearchOrganizationsResponses, SendTalentEnquiryData, SendTalentEnquiryErrors, SendTalentEnquiryResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, SubmitMyTalentProfileData, SubmitMyTalentProfileErrors, SubmitMyTalentProfileResponses, SubmitSolutionData, SubmitSolutionErrors, SubmitSolutionResponses, TakeDownOrganizationData, TakeDownOrganizationErrors, TakeDownOrganizationResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, WithdrawJoinRequestData, WithdrawJoinRequestErrors, WithdrawJoinRequestResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
+import type { AcceptOrganizationInvitationData, AcceptOrganizationInvitationErrors, AcceptOrganizationInvitationResponses, AcceptTalentEnquiryData, AcceptTalentEnquiryErrors, AcceptTalentEnquiryResponses, AddCustomerDeploymentData, AddCustomerDeploymentErrors, AddCustomerDeploymentResponses, ApproveCustomerDeploymentData, ApproveCustomerDeploymentErrors, ApproveCustomerDeploymentResponses, ApproveJoinRequestData, ApproveJoinRequestErrors, ApproveJoinRequestResponses, ApproveOrganizationClaimData, ApproveOrganizationClaimErrors, ApproveOrganizationClaimResponses, ApproveOrganizationData, ApproveOrganizationErrors, ApproveOrganizationResponses, ApproveSolutionData, ApproveSolutionErrors, ApproveSolutionResponses, ApproveTalentData, ApproveTalentErrors, ApproveTalentResponses, ChangeAdminOrganizationMemberRoleData, ChangeAdminOrganizationMemberRoleErrors, ChangeAdminOrganizationMemberRoleResponses, ChangeMyJobTitleData, ChangeMyJobTitleErrors, ChangeMyJobTitleResponses, ChangeOrganizationAutoJoinData, ChangeOrganizationAutoJoinErrors, ChangeOrganizationAutoJoinResponses, ChangeOrganizationMemberRoleData, ChangeOrganizationMemberRoleErrors, ChangeOrganizationMemberRoleResponses, ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateAdminOrganizationData, CreateAdminOrganizationErrors, CreateAdminOrganizationResponses, CreateOrganizationData, CreateOrganizationErrors, CreateOrganizationResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, CreateSolutionData, CreateSolutionErrors, CreateSolutionResponses, DecideApplicationsData, DecideApplicationsErrors, DecideApplicationsResponses, DeclineIntroductionData, DeclineIntroductionErrors, DeclineIntroductionResponses, DeclineJoinRequestData, DeclineJoinRequestErrors, DeclineJoinRequestResponses, DeclineOrganizationClaimData, DeclineOrganizationClaimErrors, DeclineOrganizationClaimResponses, DeclineOrganizationInvitationData, DeclineOrganizationInvitationErrors, DeclineOrganizationInvitationResponses, DeclineTalentEnquiryData, DeclineTalentEnquiryErrors, DeclineTalentEnquiryResponses, DeleteCustomerDeploymentData, DeleteCustomerDeploymentErrors, DeleteCustomerDeploymentResponses, DeleteMyTalentProfileData, DeleteMyTalentProfileErrors, DeleteMyTalentProfileResponses, DeleteSolutionDraftData, DeleteSolutionDraftErrors, DeleteSolutionDraftResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminOrganizationData, GetAdminOrganizationErrors, GetAdminOrganizationResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetAdminSolutionData, GetAdminSolutionErrors, GetAdminSolutionResponses, GetAdminTalentData, GetAdminTalentErrors, GetAdminTalentResponses, GetApplicationFormData, GetApplicationFormErrors, GetApplicationFormResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyApplicationData, GetMyApplicationErrors, GetMyApplicationResponses, GetMyOrganizationData, GetMyOrganizationErrors, GetMyOrganizationResponses, GetMySolutionData, GetMySolutionErrors, GetMySolutionResponses, GetMyTalentProfileData, GetMyTalentProfileErrors, GetMyTalentProfileResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetProgramData, GetProgramErrors, GetProgramQuestionsData, GetProgramQuestionsErrors, GetProgramQuestionsResponses, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GetReceivedIntroductionsData, GetReceivedIntroductionsErrors, GetReceivedIntroductionsResponses, GetReleaseData, GetReleaseErrors, GetReleaseResponses, GetReviewApplicationData, GetReviewApplicationErrors, GetReviewApplicationResponses, GetReviewCriteriaData, GetReviewCriteriaErrors, GetReviewCriteriaResponses, GetReviewFileData, GetReviewFileErrors, GetReviewFileResponses, GetSolutionData, GetSolutionDeckData, GetSolutionDeckErrors, GetSolutionDeckResponses, GetSolutionErrors, GetSolutionResponses, GetTalentData, GetTalentErrors, GetTalentResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, InviteAdminOrganizationMemberData, InviteAdminOrganizationMemberErrors, InviteAdminOrganizationMemberResponses, InviteOrganizationMemberData, InviteOrganizationMemberErrors, InviteOrganizationMemberResponses, InviteReviewerData, InviteReviewerErrors, InviteReviewerResponses, JoinOrganizationData, JoinOrganizationErrors, JoinOrganizationResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminIntroductionsData, ListAdminIntroductionsErrors, ListAdminIntroductionsResponses, ListAdminOrganizationsData, ListAdminOrganizationsErrors, ListAdminOrganizationsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAdminSolutionsData, ListAdminSolutionsErrors, ListAdminSolutionsResponses, ListAdminTalentData, ListAdminTalentErrors, ListAdminTalentResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListCustomerDeploymentsData, ListCustomerDeploymentsErrors, ListCustomerDeploymentsResponses, ListMyApplicationsData, ListMyApplicationsErrors, ListMyApplicationsResponses, ListMyOrganizationMembersData, ListMyOrganizationMembersErrors, ListMyOrganizationMembersResponses, ListMySolutionsData, ListMySolutionsErrors, ListMySolutionsResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, ListReportedTalentEnquiriesData, ListReportedTalentEnquiriesErrors, ListReportedTalentEnquiriesResponses, ListReviewApplicationsData, ListReviewApplicationsErrors, ListReviewApplicationsResponses, ListReviewersData, ListReviewersErrors, ListReviewersResponses, ListReviewProgramsData, ListReviewProgramsErrors, ListReviewProgramsResponses, ListSolutionsData, ListSolutionsErrors, ListSolutionsResponses, ListTalentData, ListTalentErrors, ListTalentResponses, OrganizeApplicantData, OrganizeApplicantErrors, OrganizeApplicantResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, RefuseOrganizationData, RefuseOrganizationErrors, RefuseOrganizationResponses, RejectCustomerDeploymentData, RejectCustomerDeploymentErrors, RejectCustomerDeploymentResponses, RejectSolutionData, RejectSolutionErrors, RejectSolutionResponses, ReleaseOutcomesData, ReleaseOutcomesErrors, ReleaseOutcomesResponses, RemoveAdminOrganizationMemberData, RemoveAdminOrganizationMemberErrors, RemoveAdminOrganizationMemberResponses, RemoveOrganizationMemberData, RemoveOrganizationMemberErrors, RemoveOrganizationMemberResponses, RemoveReviewerData, RemoveReviewerErrors, RemoveReviewerResponses, RemoveTalentData, RemoveTalentErrors, RemoveTalentResponses, ReplyToIntroductionData, ReplyToIntroductionErrors, ReplyToIntroductionResponses, ReportTalentEnquiryData, ReportTalentEnquiryErrors, ReportTalentEnquiryResponses, RequestIntroductionData, RequestIntroductionErrors, RequestIntroductionResponses, RequestTalentChangesData, RequestTalentChangesErrors, RequestTalentChangesResponses, ResendReviewerInvitationData, ResendReviewerInvitationErrors, ResendReviewerInvitationResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, RestoreOrganizationData, RestoreOrganizationErrors, RestoreOrganizationResponses, RevokeAdminOrganizationInvitationData, RevokeAdminOrganizationInvitationErrors, RevokeAdminOrganizationInvitationResponses, RevokeOrganizationInvitationData, RevokeOrganizationInvitationErrors, RevokeOrganizationInvitationResponses, SaveAdminOrganizationData, SaveAdminOrganizationErrors, SaveAdminOrganizationResponses, SaveApplicationData, SaveApplicationErrors, SaveApplicationResponses, SaveAssessmentData, SaveAssessmentErrors, SaveAssessmentResponses, SaveCustomerDeploymentData, SaveCustomerDeploymentErrors, SaveCustomerDeploymentResponses, SaveMyOrganizationData, SaveMyOrganizationErrors, SaveMyOrganizationResponses, SaveMyTalentProfileData, SaveMyTalentProfileErrors, SaveMyTalentProfileResponses, SaveProgramData, SaveProgramErrors, SaveProgramQuestionsData, SaveProgramQuestionsErrors, SaveProgramQuestionsResponses, SaveProgramResponses, SaveReviewCriteriaData, SaveReviewCriteriaErrors, SaveReviewCriteriaResponses, SaveSolutionData, SaveSolutionErrors, SaveSolutionResponses, SearchData, SearchErrors, SearchOrganizationsData, SearchOrganizationsErrors, SearchOrganizationsResponses, SearchResponses, SendTalentEnquiryData, SendTalentEnquiryErrors, SendTalentEnquiryResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, SubmitApplicationData, SubmitApplicationErrors, SubmitApplicationResponses, SubmitMyTalentProfileData, SubmitMyTalentProfileErrors, SubmitMyTalentProfileResponses, SubmitSolutionData, SubmitSolutionErrors, SubmitSolutionResponses, TakeDownOrganizationData, TakeDownOrganizationErrors, TakeDownOrganizationResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, WithdrawApplicationData, WithdrawApplicationErrors, WithdrawApplicationResponses, WithdrawJoinRequestData, WithdrawJoinRequestErrors, WithdrawJoinRequestResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -106,6 +106,75 @@ export const getMe = <ThrowOnError extends boolean = true>(options?: Options<Get
             type: 'apiKey'
         }],
     url: '/api/identity/me',
+    ...options
+});
+
+/**
+ * The requests for an introduction, those that wait first and the longest wait on top
+ */
+export const listAdminIntroductions = <ThrowOnError extends boolean = true>(options?: Options<ListAdminIntroductionsData, ThrowOnError>): RequestResult<ListAdminIntroductionsResponses, ListAdminIntroductionsErrors, ThrowOnError> => (options?.client ?? client).get<ListAdminIntroductionsResponses, ListAdminIntroductionsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/introduction/admin/introductions',
+    ...options
+});
+
+/**
+ * Ask for an introduction to the organization behind a solution
+ */
+export const requestIntroduction = <ThrowOnError extends boolean = true>(options: Options<RequestIntroductionData, ThrowOnError>): RequestResult<RequestIntroductionResponses, RequestIntroductionErrors, ThrowOnError> => (options.client ?? client).post<RequestIntroductionResponses, RequestIntroductionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/introduction/introductions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The requests for an introduction to the caller's organization
+ */
+export const getReceivedIntroductions = <ThrowOnError extends boolean = true>(options?: Options<GetReceivedIntroductionsData, ThrowOnError>): RequestResult<GetReceivedIntroductionsResponses, GetReceivedIntroductionsErrors, ThrowOnError> => (options?.client ?? client).get<GetReceivedIntroductionsResponses, GetReceivedIntroductionsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/introduction/mine/received',
+    ...options
+});
+
+/**
+ * Decline a request; the sender learns no address
+ */
+export const declineIntroduction = <ThrowOnError extends boolean = true>(options: Options<DeclineIntroductionData, ThrowOnError>): RequestResult<DeclineIntroductionResponses, DeclineIntroductionErrors, ThrowOnError> => (options.client ?? client).post<DeclineIntroductionResponses, DeclineIntroductionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/introduction/mine/received/{id}/decline',
+    ...options
+});
+
+/**
+ * Accept a request: both sides learn each other's address
+ */
+export const replyToIntroduction = <ThrowOnError extends boolean = true>(options: Options<ReplyToIntroductionData, ThrowOnError>): RequestResult<ReplyToIntroductionResponses, ReplyToIntroductionErrors, ThrowOnError> => (options.client ?? client).post<ReplyToIntroductionResponses, ReplyToIntroductionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/introduction/mine/received/{id}/reply',
     ...options
 });
 
@@ -651,6 +720,36 @@ export const publishProgram = <ThrowOnError extends boolean = true>(options: Opt
 });
 
 /**
+ * The questions a program asks its applicants
+ */
+export const getProgramQuestions = <ThrowOnError extends boolean = true>(options: Options<GetProgramQuestionsData, ThrowOnError>): RequestResult<GetProgramQuestionsResponses, GetProgramQuestionsErrors, ThrowOnError> => (options.client ?? client).get<GetProgramQuestionsResponses, GetProgramQuestionsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/program/admin/programs/{id}/questions',
+    ...options
+});
+
+/**
+ * Replace the questions a program asks its applicants
+ */
+export const saveProgramQuestions = <ThrowOnError extends boolean = true>(options: Options<SaveProgramQuestionsData, ThrowOnError>): RequestResult<SaveProgramQuestionsResponses, SaveProgramQuestionsErrors, ThrowOnError> => (options.client ?? client).put<SaveProgramQuestionsResponses, SaveProgramQuestionsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/program/admin/programs/{id}/questions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Take a program off the public site
  */
 export const unpublishProgram = <ThrowOnError extends boolean = true>(options: Options<UnpublishProgramData, ThrowOnError>): RequestResult<UnpublishProgramResponses, UnpublishProgramErrors, ThrowOnError> => (options.client ?? client).post<UnpublishProgramResponses, UnpublishProgramErrors, ThrowOnError>({
@@ -674,6 +773,314 @@ export const listPrograms = <ThrowOnError extends boolean = true>(options?: Opti
  * A published program, or a draft when an operator previews it.
  */
 export const getProgram = <ThrowOnError extends boolean = true>(options: Options<GetProgramData, ThrowOnError>): RequestResult<GetProgramResponses, GetProgramErrors, ThrowOnError> => (options.client ?? client).get<GetProgramResponses, GetProgramErrors, ThrowOnError>({ url: '/api/program/programs/{slug}', ...options });
+
+/**
+ * The caller's applications
+ */
+export const listMyApplications = <ThrowOnError extends boolean = true>(options?: Options<ListMyApplicationsData, ThrowOnError>): RequestResult<ListMyApplicationsResponses, ListMyApplicationsErrors, ThrowOnError> => (options?.client ?? client).get<ListMyApplicationsResponses, ListMyApplicationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/applications',
+    ...options
+});
+
+/**
+ * One of the caller's applications with its form
+ */
+export const getMyApplication = <ThrowOnError extends boolean = true>(options: Options<GetMyApplicationData, ThrowOnError>): RequestResult<GetMyApplicationResponses, GetMyApplicationErrors, ThrowOnError> => (options.client ?? client).get<GetMyApplicationResponses, GetMyApplicationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/applications/{id}',
+    ...options
+});
+
+/**
+ * Submit an application, or submit it again
+ */
+export const submitApplication = <ThrowOnError extends boolean = true>(options: Options<SubmitApplicationData, ThrowOnError>): RequestResult<SubmitApplicationResponses, SubmitApplicationErrors, ThrowOnError> => (options.client ?? client).post<SubmitApplicationResponses, SubmitApplicationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/applications/{id}/submit',
+    ...options
+});
+
+/**
+ * Withdraw a submitted application
+ */
+export const withdrawApplication = <ThrowOnError extends boolean = true>(options: Options<WithdrawApplicationData, ThrowOnError>): RequestResult<WithdrawApplicationResponses, WithdrawApplicationErrors, ThrowOnError> => (options.client ?? client).post<WithdrawApplicationResponses, WithdrawApplicationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/applications/{id}/withdraw',
+    ...options
+});
+
+/**
+ * The application form of a program for the caller
+ */
+export const getApplicationForm = <ThrowOnError extends boolean = true>(options: Options<GetApplicationFormData, ThrowOnError>): RequestResult<GetApplicationFormResponses, GetApplicationFormErrors, ThrowOnError> => (options.client ?? client).get<GetApplicationFormResponses, GetApplicationFormErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/programs/{slug}/application',
+    ...options
+});
+
+/**
+ * Keep what the application form holds
+ */
+export const saveApplication = <ThrowOnError extends boolean = true>(options: Options<SaveApplicationData, ThrowOnError>): RequestResult<SaveApplicationResponses, SaveApplicationErrors, ThrowOnError> => (options.client ?? client).put<SaveApplicationResponses, SaveApplicationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/programs/{slug}/application',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Make the organization of someone who applies on their own or with a team
+ */
+export const organizeApplicant = <ThrowOnError extends boolean = true>(options: Options<OrganizeApplicantData, ThrowOnError>): RequestResult<OrganizeApplicantResponses, OrganizeApplicantErrors, ThrowOnError> => (options.client ?? client).post<OrganizeApplicantResponses, OrganizeApplicantErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/programs/{slug}/application/organization',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * One application as it was submitted last
+ */
+export const getReviewApplication = <ThrowOnError extends boolean = true>(options: Options<GetReviewApplicationData, ThrowOnError>): RequestResult<GetReviewApplicationResponses, GetReviewApplicationErrors, ThrowOnError> => (options.client ?? client).get<GetReviewApplicationResponses, GetReviewApplicationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/applications/{id}',
+    ...options
+});
+
+/**
+ * Keep the caller's assessment of an application
+ */
+export const saveAssessment = <ThrowOnError extends boolean = true>(options: Options<SaveAssessmentData, ThrowOnError>): RequestResult<SaveAssessmentResponses, SaveAssessmentErrors, ThrowOnError> => (options.client ?? client).put<SaveAssessmentResponses, SaveAssessmentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/applications/{id}/assessment',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * A file of an application's last submission
+ */
+export const getReviewFile = <ThrowOnError extends boolean = true>(options: Options<GetReviewFileData, ThrowOnError>): RequestResult<GetReviewFileResponses, GetReviewFileErrors, ThrowOnError> => (options.client ?? client).get<GetReviewFileResponses, GetReviewFileErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/applications/{id}/files/{fileId}',
+    ...options
+});
+
+/**
+ * The programs whose applications the caller scores
+ */
+export const listReviewPrograms = <ThrowOnError extends boolean = true>(options?: Options<ListReviewProgramsData, ThrowOnError>): RequestResult<ListReviewProgramsResponses, ListReviewProgramsErrors, ThrowOnError> => (options?.client ?? client).get<ListReviewProgramsResponses, ListReviewProgramsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs',
+    ...options
+});
+
+/**
+ * A program's submitted applications to review
+ */
+export const listReviewApplications = <ThrowOnError extends boolean = true>(options: Options<ListReviewApplicationsData, ThrowOnError>): RequestResult<ListReviewApplicationsResponses, ListReviewApplicationsErrors, ThrowOnError> => (options.client ?? client).get<ListReviewApplicationsResponses, ListReviewApplicationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/applications',
+    ...options
+});
+
+/**
+ * What a program's applications are judged on
+ */
+export const getReviewCriteria = <ThrowOnError extends boolean = true>(options: Options<GetReviewCriteriaData, ThrowOnError>): RequestResult<GetReviewCriteriaResponses, GetReviewCriteriaErrors, ThrowOnError> => (options.client ?? client).get<GetReviewCriteriaResponses, GetReviewCriteriaErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/criteria',
+    ...options
+});
+
+/**
+ * Replace a program's judging criteria
+ */
+export const saveReviewCriteria = <ThrowOnError extends boolean = true>(options: Options<SaveReviewCriteriaData, ThrowOnError>): RequestResult<SaveReviewCriteriaResponses, SaveReviewCriteriaErrors, ThrowOnError> => (options.client ?? client).put<SaveReviewCriteriaResponses, SaveReviewCriteriaErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/criteria',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Shortlist applications, or mark them not selected
+ */
+export const decideApplications = <ThrowOnError extends boolean = true>(options: Options<DecideApplicationsData, ThrowOnError>): RequestResult<DecideApplicationsResponses, DecideApplicationsErrors, ThrowOnError> => (options.client ?? client).post<DecideApplicationsResponses, DecideApplicationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/decisions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * What releasing a program's outcomes would send, and whether it can
+ */
+export const getRelease = <ThrowOnError extends boolean = true>(options: Options<GetReleaseData, ThrowOnError>): RequestResult<GetReleaseResponses, GetReleaseErrors, ThrowOnError> => (options.client ?? client).get<GetReleaseResponses, GetReleaseErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/release',
+    ...options
+});
+
+/**
+ * Release a program's outcomes to every applicant
+ */
+export const releaseOutcomes = <ThrowOnError extends boolean = true>(options: Options<ReleaseOutcomesData, ThrowOnError>): RequestResult<ReleaseOutcomesResponses, ReleaseOutcomesErrors, ThrowOnError> => (options.client ?? client).post<ReleaseOutcomesResponses, ReleaseOutcomesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/release',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Who scores a program's applications, with their progress
+ */
+export const listReviewers = <ThrowOnError extends boolean = true>(options: Options<ListReviewersData, ThrowOnError>): RequestResult<ListReviewersResponses, ListReviewersErrors, ThrowOnError> => (options.client ?? client).get<ListReviewersResponses, ListReviewersErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/reviewers',
+    ...options
+});
+
+/**
+ * Invite an address to judge a program
+ */
+export const inviteReviewer = <ThrowOnError extends boolean = true>(options: Options<InviteReviewerData, ThrowOnError>): RequestResult<InviteReviewerResponses, InviteReviewerErrors, ThrowOnError> => (options.client ?? client).post<InviteReviewerResponses, InviteReviewerErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/reviewers',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Take a judge off a program
+ */
+export const removeReviewer = <ThrowOnError extends boolean = true>(options: Options<RemoveReviewerData, ThrowOnError>): RequestResult<RemoveReviewerResponses, RemoveReviewerErrors, ThrowOnError> => (options.client ?? client).delete<RemoveReviewerResponses, RemoveReviewerErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/reviewers/{reviewerId}',
+    ...options
+});
+
+/**
+ * Send an unused invitation again
+ */
+export const resendReviewerInvitation = <ThrowOnError extends boolean = true>(options: Options<ResendReviewerInvitationData, ThrowOnError>): RequestResult<ResendReviewerInvitationResponses, ResendReviewerInvitationErrors, ThrowOnError> => (options.client ?? client).post<ResendReviewerInvitationResponses, ResendReviewerInvitationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/reviewers/{reviewerId}/resend',
+    ...options
+});
+
+/**
+ * What matches the query, best first
+ *
+ * Matches words with or without Vietnamese marks, the start of the last word, and typos in titles.
+ */
+export const search = <ThrowOnError extends boolean = true>(options: Options<SearchData, ThrowOnError>): RequestResult<SearchResponses, SearchErrors, ThrowOnError> => (options.client ?? client).get<SearchResponses, SearchErrors, ThrowOnError>({ url: '/api/search', ...options });
 
 /**
  * Approve a customer deployment that waits for review
@@ -905,9 +1312,16 @@ export const saveCustomerDeployment = <ThrowOnError extends boolean = true>(opti
 export const listSolutions = <ThrowOnError extends boolean = true>(options?: Options<ListSolutionsData, ThrowOnError>): RequestResult<ListSolutionsResponses, ListSolutionsErrors, ThrowOnError> => (options?.client ?? client).get<ListSolutionsResponses, ListSolutionsErrors, ThrowOnError>({ url: '/api/solution/solutions', ...options });
 
 /**
- * One solution of the directory by its address
+ * One approved solution by its address, listed or not
  */
 export const getSolution = <ThrowOnError extends boolean = true>(options: Options<GetSolutionData, ThrowOnError>): RequestResult<GetSolutionResponses, GetSolutionErrors, ThrowOnError> => (options.client ?? client).get<GetSolutionResponses, GetSolutionErrors, ThrowOnError>({ url: '/api/solution/solutions/{slug}', ...options });
+
+/**
+ * The deck of a solution
+ *
+ * The PDF, saved under its name, or a redirect to where the object store serves it. No session is needed for an approved solution; before that the members of its organization and the operators read it.
+ */
+export const getSolutionDeck = <ThrowOnError extends boolean = true>(options: Options<GetSolutionDeckData, ThrowOnError>): RequestResult<GetSolutionDeckResponses, GetSolutionDeckErrors, ThrowOnError> => (options.client ?? client).get<GetSolutionDeckResponses, GetSolutionDeckErrors, ThrowOnError>({ url: '/api/solution/solutions/{slug}/deck', ...options });
 
 /**
  * A public file
@@ -1005,20 +1419,63 @@ export const approveTalent = <ThrowOnError extends boolean = true>(options: Opti
 });
 
 /**
- * Reject a talent profile that waits for review, or take an approved one out of the directory
+ * Remove an approved talent profile from the public, with a reason
  */
-export const rejectTalent = <ThrowOnError extends boolean = true>(options: Options<RejectTalentData, ThrowOnError>): RequestResult<RejectTalentResponses, RejectTalentErrors, ThrowOnError> => (options.client ?? client).post<RejectTalentResponses, RejectTalentErrors, ThrowOnError>({
+export const removeTalent = <ThrowOnError extends boolean = true>(options: Options<RemoveTalentData, ThrowOnError>): RequestResult<RemoveTalentResponses, RemoveTalentErrors, ThrowOnError> => (options.client ?? client).post<RemoveTalentResponses, RemoveTalentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
             name: 'BEYONDPILOT_SESSION',
             type: 'apiKey'
         }],
-    url: '/api/talent/admin/profiles/{id}/reject',
+    url: '/api/talent/admin/profiles/{id}/remove',
     ...options,
     headers: {
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Ask the person to change a talent profile that waits for review, with a reason
+ */
+export const requestTalentChanges = <ThrowOnError extends boolean = true>(options: Options<RequestTalentChangesData, ThrowOnError>): RequestResult<RequestTalentChangesResponses, RequestTalentChangesErrors, ThrowOnError> => (options.client ?? client).post<RequestTalentChangesResponses, RequestTalentChangesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/admin/profiles/{id}/request-changes',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The messages reported through talent profiles, the most recently reported first
+ */
+export const listReportedTalentEnquiries = <ThrowOnError extends boolean = true>(options?: Options<ListReportedTalentEnquiriesData, ThrowOnError>): RequestResult<ListReportedTalentEnquiriesResponses, ListReportedTalentEnquiriesErrors, ThrowOnError> => (options?.client ?? client).get<ListReportedTalentEnquiriesResponses, ListReportedTalentEnquiriesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/admin/reported-enquiries',
+    ...options
+});
+
+/**
+ * Delete the caller's talent profile with its projects and messages
+ */
+export const deleteMyTalentProfile = <ThrowOnError extends boolean = true>(options?: Options<DeleteMyTalentProfileData, ThrowOnError>): RequestResult<DeleteMyTalentProfileResponses, DeleteMyTalentProfileErrors, ThrowOnError> => (options?.client ?? client).delete<DeleteMyTalentProfileResponses, DeleteMyTalentProfileErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/mine',
+    ...options
 });
 
 /**
@@ -1049,6 +1506,45 @@ export const saveMyTalentProfile = <ThrowOnError extends boolean = true>(options
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Accept a message to the caller's profile; both sides are told each other's address
+ */
+export const acceptTalentEnquiry = <ThrowOnError extends boolean = true>(options: Options<AcceptTalentEnquiryData, ThrowOnError>): RequestResult<AcceptTalentEnquiryResponses, AcceptTalentEnquiryErrors, ThrowOnError> => (options.client ?? client).post<AcceptTalentEnquiryResponses, AcceptTalentEnquiryErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/mine/enquiries/{id}/accept',
+    ...options
+});
+
+/**
+ * Decline a message to the caller's profile; no address is shared
+ */
+export const declineTalentEnquiry = <ThrowOnError extends boolean = true>(options: Options<DeclineTalentEnquiryData, ThrowOnError>): RequestResult<DeclineTalentEnquiryResponses, DeclineTalentEnquiryErrors, ThrowOnError> => (options.client ?? client).post<DeclineTalentEnquiryResponses, DeclineTalentEnquiryErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/mine/enquiries/{id}/decline',
+    ...options
+});
+
+/**
+ * Report a message to the caller's profile as unwanted; the sender reads it as declined
+ */
+export const reportTalentEnquiry = <ThrowOnError extends boolean = true>(options: Options<ReportTalentEnquiryData, ThrowOnError>): RequestResult<ReportTalentEnquiryResponses, ReportTalentEnquiryErrors, ThrowOnError> => (options.client ?? client).post<ReportTalentEnquiryResponses, ReportTalentEnquiryErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/mine/enquiries/{id}/report',
+    ...options
 });
 
 /**

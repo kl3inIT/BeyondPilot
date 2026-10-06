@@ -12,6 +12,9 @@ What the team studied before designing BeyondPilot, kept so that a later reader 
 | [Admin: the Audit log screen](2026-10-05-admin-audit-log.md)                                       | How other products list who changed what, filter it by period and action, open one event and page a log that only grows; what the Audit log screen took from them                                        |
 | [Admin: creating and publishing a program](2026-10-05-program-publish-flow.md)                     | How event and content products create a record, show it before it is public, take it live, keep it right and take it down; read on Mobbin and in pretix, pretalx, indico, eventyay, Payload and Medusa   |
 | [What Payload teaches an App Router application](2026-10-04-payload-lessons.md)                    | What was read in Payload, the one reference built on the App Router: what was adopted, what waits for later increments, and what does not transfer to an application whose data is behind a separate API |
+| [Spring AI references for search and MCP](2026-10-05-spring-ai-references.md)                      | What two Spring AI repositories show about hybrid search, reranking, judging and MCP servers, and what the directory search and Phase 2 MCP take from them                                               |
+| [Search over several kinds of item](2026-10-06-search-references.md)                               | How odd-platform, an agent runtime, Spring Modulith, MemoryOS and GitLab store, update and rank a search over several kinds of item, and what the search index of `matching` takes from them             |
+| [Review and judging of applications](2026-10-06-review-and-judging.md)                             | How competitions and award programs judge applications and how product screens score, invite judges and release outcomes; what the review screens take from them                                         |
 | [Campaign pages and main-flow patterns](../increments/active/bey-27-main-flows-design/research.md) | Real campaign sites and the patterns behind the program page, the application flow and the directory                                                                                                     |
 
 ## Data
@@ -28,6 +31,7 @@ What the team studied before designing BeyondPilot, kept so that a later reader 
 | [sources/2026-10-02-kickoff-transcript.md](sources/2026-10-02-kickoff-transcript.md) | The automatic transcript of the kickoff with GenAI Fund, in Vietnamese and English, with one exchange about a test account removed |
 | [sources/use-case-solution-research.md](sources/use-case-solution-research.md)       | The skill GenAI Fund's project lead uses to research vendors for a use case: the three relevance buckets and the evidence rules    |
 | [sources/2026-10-03-landing-critique.md](sources/2026-10-03-landing-critique.md)     | The second design critique of the landing page, as scored                                                                          |
+| [sources/2026-10-06-judging-platforms.md](sources/2026-10-06-judging-platforms.md)   | How thirteen platforms and programs run judging, each claim with the public page it comes from                                     |
 | [data/landing-image-sources.json](data/landing-image-sources.json)                   | Where each image on the landing page comes from, and the candidates that were not used                                             |
 
 ## Captures

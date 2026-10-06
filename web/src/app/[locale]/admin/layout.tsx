@@ -5,6 +5,7 @@ import {
   HouseIcon,
   ScrollTextIcon,
   UserCogIcon,
+  HandshakeIcon,
   UsersIcon,
 } from "lucide-react";
 import { cookies } from "next/headers";
@@ -65,6 +66,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
           href: siteRoutes.adminOrganizations,
           label: t("nav.organizations"),
           icon: <Building2Icon aria-hidden="true" />,
+        },
+        {
+          href: siteRoutes.adminIntroductions,
+          label: t("nav.introductions"),
+          icon: <HandshakeIcon aria-hidden="true" />,
         },
       ],
     },

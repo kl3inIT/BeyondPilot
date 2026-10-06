@@ -2,13 +2,15 @@ import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } fro
 
 import { directorySorts } from "@/lib/directory-sort";
 
-import { availabilities, reviewedStatuses, talentRoles } from "./talent-codes";
+import { reviewedStatuses, talentRoles } from "./talent-codes";
 
-/** What narrows the public directory of talent, as the URL holds it: `?q=&role=&availability=&sort=&page=`. */
+/**
+ * What narrows the public directory of talent, as the URL holds it:
+ * `?q=&role=&sort=&page=`.
+ */
 export const talentSearch = {
   q: parseAsString.withDefault(""),
   role: parseAsStringLiteral(talentRoles),
-  availability: parseAsStringLiteral(availabilities),
   sort: parseAsStringLiteral(directorySorts).withDefault(directorySorts[0]),
   page: parseAsInteger.withDefault(1),
 };

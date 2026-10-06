@@ -129,6 +129,7 @@ export async function readAdminSolutions(search: AdminSolutionsSearch): Promise<
     query: {
       q: text(search.q),
       status: search.status ?? undefined,
+      industry: search.industry ?? undefined,
       page: Math.max(1, search.page),
     },
   });

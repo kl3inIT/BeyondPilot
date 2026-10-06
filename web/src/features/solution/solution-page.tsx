@@ -1,9 +1,10 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, DownloadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -20,6 +21,7 @@ import type { PublicSolution } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { CustomerDeploymentCard } from "./customer-deployment-card";
+import { deckAddress, useFileSize } from "./solution-deck";
 import { SolutionLogo } from "./solution-logo";
 
 const evidenceVariants = cva("flex flex-col items-start gap-2 rounded-xl border p-4", {
@@ -73,6 +75,8 @@ type SolutionPageProps = {
   solution: PublicSolution;
   /** The editor of this solution, when the visitor may change it. */
   editHref?: string;
+  /** The way to ask for an introduction to its company, put in by the route that knows the visitor. */
+  introduction?: React.ReactNode;
 };
 
 /**
@@ -80,7 +84,7 @@ type SolutionPageProps = {
  * itself, its proof and where it fits, beside the way to reach its company. What a solution cannot
  * state yet is shown as unknown, never filled in.
  */
-function SolutionPage({ solution, editHref }: SolutionPageProps) {
+function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
   const t = useTranslations("Solution.detail");
   const directory = useTranslations("Solution.directory");
   const view = useTranslations("Solution.view");
@@ -88,7 +92,9 @@ function SolutionPage({ solution, editHref }: SolutionPageProps) {
   const focusArea = useVocabulary("focusArea");
   const maturity = useVocabulary("maturity");
   const deployment = useVocabulary("deployment");
+  const language = useVocabulary("language");
   const countryName = useCountryName();
+  const size = useFileSize();
 
   const unknown = t("unknown");
   const company = `${siteRoutes.organizations}/${solution.organizationSlug}`;
@@ -113,6 +119,12 @@ function SolutionPage({ solution, editHref }: SolutionPageProps) {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
+      {!solution.listed && (
+        <Alert>
+          <AlertDescription>{t("unlisted")}</AlertDescription>
+        </Alert>
+      )}
 
       {editHref && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4">
@@ -191,7 +203,12 @@ function SolutionPage({ solution, editHref }: SolutionPageProps) {
                 value={solution.deployment.map(deployment).join(", ")}
                 unknown={unknown}
               />
-              <Fact look="tile" name={t("fit.languages")} value={undefined} unknown={unknown} />
+              <Fact
+                look="tile"
+                name={t("fit.languages")}
+                value={solution.languages.map(language).join(", ")}
+                unknown={unknown}
+              />
             </dl>
           </section>
 
@@ -208,6 +225,24 @@ function SolutionPage({ solution, editHref }: SolutionPageProps) {
                 look="ruled"
                 name={t("product.stage")}
                 value={solution.maturity && maturity(solution.maturity)}
+                unknown={unknown}
+              />
+              <Fact
+                look="ruled"
+                name={t("product.builtWith")}
+                value={solution.builtWith.join(", ")}
+                unknown={unknown}
+              />
+              <Fact
+                look="ruled"
+                name={t("product.bestCustomerProfile")}
+                value={solution.bestCustomerProfile ?? undefined}
+                unknown={unknown}
+              />
+              <Fact
+                look="ruled"
+                name={t("product.traction")}
+                value={solution.traction ?? undefined}
                 unknown={unknown}
               />
             </dl>
@@ -237,22 +272,52 @@ function SolutionPage({ solution, editHref }: SolutionPageProps) {
           </section>
         </div>
 
-        <aside className="flex flex-col gap-4 rounded-2xl border bg-card p-5 shadow-sm md:p-6 lg:w-75 lg:shrink-0 xl:w-95">
+        {/* Beside the page on a wide screen, the way to reach the company stays in view under the site header. */}
+        <aside className="flex flex-col gap-4 rounded-2xl border bg-card p-5 shadow-sm md:p-6 lg:sticky lg:top-23 lg:w-75 lg:shrink-0 xl:w-95">
           <h2 className="text-base font-medium">
             {t("contact.title", { name: solution.organizationName })}
           </h2>
-          {solution.website && (
+          {introduction}
+          {(solution.website || solution.demoUrl || solution.deck) && (
             <>
-              <Button
-                prominence="secondary"
-                size="lg"
-                href={solution.website}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full"
-              >
-                {t("contact.website")}
-              </Button>
+              {(
+                [
+                  ["website", solution.website],
+                  ["demo", solution.demoUrl],
+                ] as const
+              ).map(
+                ([key, href]) =>
+                  href && (
+                    <Button
+                      key={key}
+                      prominence="secondary"
+                      size="lg"
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full"
+                    >
+                      {t(`contact.${key}`)}
+                    </Button>
+                  ),
+              )}
+              {solution.deck && (
+                <Button
+                  prominence="secondary"
+                  size="lg"
+                  href={deckAddress(solution.slug)}
+                  aria-describedby="solution-deck-file"
+                  className="w-full"
+                >
+                  <DownloadIcon aria-hidden="true" />
+                  {t("contact.deck")}
+                </Button>
+              )}
+              {solution.deck && (
+                <p id="solution-deck-file" className="text-center text-xs text-muted-foreground">
+                  {solution.deck.fileName} · {size(solution.deck.sizeBytes)}
+                </p>
+              )}
               <Separator />
             </>
           )}

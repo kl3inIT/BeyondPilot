@@ -120,7 +120,8 @@ function OrganizationForm({ organization, admin }: OrganizationFormProps) {
     if (!teamSize) {
       missing.add("teamSize");
     }
-    if (chosenIndustries.length === 0) {
+    // A company names its industries; a team or a builder on their own may not have settled on one.
+    if (type === "company" && chosenIndustries.length === 0) {
       missing.add("industries");
     }
     if (!organization && !jobTitle.trim()) {
@@ -363,7 +364,7 @@ function OrganizationForm({ organization, admin }: OrganizationFormProps) {
       <FormSection icon={FileTextIcon} title={t("about")} lead={t("aboutLead")}>
         <Field data-invalid={bad("industries")}>
           <FieldLabel htmlFor="organization-industries">
-            {t("industries")} {required}
+            {t("industries")} {type === "company" && required}
           </FieldLabel>
           <ChoiceCombobox
             id="organization-industries"

@@ -108,16 +108,48 @@ test.describe("solutions directory", () => {
     await expect(fact("Deployment")).toContainText("Cloud (SaaS)");
     await expect(fact("Stage")).toContainText("In production");
     // What the solution's organization has not said is shown as unknown, never left out.
-    await expect(fact("Languages")).toContainText("Not listed yet");
+    await expect(fact("Channels")).toContainText("Not listed yet");
+    // What its owners added in the editor's steps is read here too.
+    await expect(fact("Languages")).toContainText("Vietnamese, English");
+    await expect(fact("Built with")).toContainText("Python, PostgreSQL");
+    await expect(fact("Best customer profile")).toContainText("Insurers with a call centre");
+    await expect(fact("Milestones and traction")).toContainText("Not listed yet");
     await expect(page.getByRole("link", { name: "Visit website" })).toHaveAttribute(
       "href",
       "https://pocketpolicy.example",
     );
+    await expect(page.getByRole("link", { name: "Watch the demo" })).toHaveAttribute(
+      "href",
+      "https://pocketpolicy.example/demo",
+    );
+    // The deck is a file the backend serves at the solution's address.
+    await expect(page.getByRole("link", { name: "Download the deck" })).toHaveAttribute(
+      "href",
+      "/api/solution/solutions/policy-chat/deck",
+    );
+    await expect(page.getByText("policy-chat-deck.pdf · 3.1 MB")).toBeVisible();
+    // A listed solution does not say it is hidden.
+    await expect(page.getByText("This solution is not in the directory")).toHaveCount(0);
     // Nobody is signed in, so nothing offers to edit it.
     await expect(page.getByRole("link", { name: "Edit this solution" })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
 
     expect((await page.goto("/solutions/no-such-solution"))?.status()).toBe(404);
+  });
+
+  test("an approved solution left unlisted opens by its address, says so and stays out of the directory and of search engines", async ({
+    page,
+  }) => {
+    await page.goto("/solutions");
+    await expect(page.getByRole("link", { name: "Private Pilot", exact: true })).toHaveCount(0);
+
+    await page.goto("/solutions/private-pilot");
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Private Pilot");
+    await expect(page.getByText("This solution is not in the directory")).toBeVisible();
+    await expect(page.locator("meta[name=robots]")).toHaveAttribute("content", /noindex/);
+    await expect(page.getByRole("link", { name: "Watch the demo" })).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
   });
 
   test("a customer deployment opens with its problem, what was deployed and its source", async ({
@@ -169,6 +201,9 @@ test.describe("solutions directory", () => {
       "Underwriting Radar",
       "Agent Coach",
     ]);
+    // Each card names the first industry of its solution and points to its page.
+    await expect(page.getByText("Insurance", { exact: true })).toHaveCount(4);
+    await expect(page.getByText("Explore solution")).toHaveCount(4);
     await expect(page.getByText("1 customer deployment, listed below")).toBeVisible();
     await expect(page.getByRole("button", { name: "Renewals at Mekong Life" })).toBeVisible();
     await expectNoSeriousA11yViolations(page);

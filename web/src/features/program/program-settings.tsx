@@ -126,7 +126,8 @@ type Editing = { index: number | null } | null;
  * dialog and stored with the rest when Settings is saved; a refusal of the backend is shown beside
  * the field it concerns.
  */
-function ProgramSettings({ program }: { program: AdminProgram }) {
+/** `tabs` are the screens of the program, which the route renders on the server. */
+function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React.ReactNode }) {
   const t = useTranslations("Admin.programs.settings");
   const states = useTranslations("Admin.programs.state");
   const types = useTranslations("Program.type");
@@ -269,6 +270,8 @@ function ProgramSettings({ program }: { program: AdminProgram }) {
           }
         </form.Subscribe>
       )}
+
+      {tabs}
 
       <div className="flex flex-col gap-8">
         <SettingsSection title={t("basics.title")} what={t("basics.what")}>

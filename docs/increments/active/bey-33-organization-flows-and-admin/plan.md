@@ -6,7 +6,7 @@ Design: [design.md](design.md). Tracked in Linear under BEY-33: slice 1 is BEY-6
 
 | #   | Step                                                                                                                                                                             | State |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| 1   | `V10__organization_verify_domains_and_limit_invitations.sql`                                                                                                                     | Done  |
+| 1   | `V26__organization_verify_domains_and_limit_invitations.sql`                                                                                                                     | Done  |
 | 2   | `OrganizationService`: no domain from the creator, a claim always reviewed, the declined answer, invitation limits, auto-join only on a verified domain; the two decision emails | Done  |
 | 3   | `OrganizationAdministration`: approve with a domain, the claim decision with a domain, the list's request, asker and date, the suggested domain                                  | Done  |
 | 4   | `OrganizationTest` for steps 2 and 3; `./gradlew :backend:check`; `openapi.yml` and the web client                                                                               | Done  |
@@ -25,7 +25,7 @@ Step 8 is in part: the admin home now counts a claim as an organization that wai
 
 | #   | Step                                                                                                                                   | State |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| 11  | `V13`: the `suspended` status with its reason; `OrganizationAdministration` takes down and restores; public reads hide a suspended one | Done  |
+| 11  | `V29`: the `suspended` status with its reason; `OrganizationAdministration` takes down and restores; public reads hide a suspended one | Done  |
 | 12  | Operator edits the profile and the verified domain, with the version check                                                             | Done  |
 | 13  | Operator changes a role, removes a member, invites and revokes; audit actions                                                          | Done  |
 | 14  | Web: the record page with Profile and Members tabs, the take-down and restore dialogs, the members table and its dialogs               | Done  |

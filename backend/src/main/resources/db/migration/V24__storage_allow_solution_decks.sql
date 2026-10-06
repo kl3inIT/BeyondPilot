@@ -1,0 +1,6 @@
+-- A solution's deck is an uploaded file too. Its purpose is one more of those a file is uploaded for, beside the
+-- photo of a talent profile that V23 added.
+alter table storage_file
+    drop constraint storage_file_purpose_check,
+    add constraint storage_file_purpose_check check (purpose in ('program_image', 'application_file', 'talent_photo',
+                                                                'solution_deck'));

@@ -112,6 +112,18 @@ class LocalStorageTest {
 	}
 
 	@Test
+	void aMemberStoresTheirTalentPhoto() {
+		String member = signIn("applicant@storage.test");
+		byte[] image = png(2048);
+
+		Map<String, Object> ticket = ticket(client, member, "talent_photo", "me.png", "image/png", image.length);
+		send(member, ticket, image).expectStatus().isNoContent();
+		confirm(client, member, ticket.get("id")).expectStatus().isOk();
+
+		client.get().uri("/api/storage/files/{id}", ticket.get("id")).exchange().expectStatus().isOk();
+	}
+
+	@Test
 	void aPurposeRefusesWhatItDoesNotAccept() {
 		String operator = signIn("operator@storage.test");
 		String applicant = signIn("applicant@storage.test");

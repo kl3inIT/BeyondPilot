@@ -108,6 +108,23 @@ class OrganizationTest {
 	}
 
 	@Test
+	void aTeamOrABuilderOnTheirOwnMayNameNoIndustryButACompanyNamesOne() {
+		Map<String, Object> builder = new HashMap<>(creation("Dat Phan"));
+		builder.put("type", "independent_builder");
+		builder.put("teamSize", "just_me");
+		builder.put("industries", List.of());
+		String created = body(post(signIn("dat@builder.test"), API + "/organizations", builder).expectStatus()
+			.isCreated());
+		assertThat(JsonPath.<String>read(created, "$.type")).isEqualTo("independent_builder");
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("pending");
+
+		Map<String, Object> company = new HashMap<>(creation("No Industry Co"));
+		company.put("industries", List.of());
+		assertProblem(post(signIn("founder@no-industry.test"), API + "/organizations", company), 400,
+				"ORGANIZATION_INDUSTRIES_REQUIRED");
+	}
+
+	@Test
 	void aCreationNeedsItsWebsiteDescriptionAndYearAndKeepsTheLogo() {
 		String session = signIn("facts@invalid.test");
 		String path = API + "/organizations";
