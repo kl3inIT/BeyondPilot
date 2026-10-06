@@ -7,6 +7,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import ai.genaifund.beyondpilot.identity.Actor;
+import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.solution.dto.PublicCustomerDeploymentListRequest;
@@ -20,13 +22,17 @@ import ai.genaifund.beyondpilot.solution.persistence.CustomerDeploymentRepositor
 import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionQueryRepository;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
+import ai.genaifund.beyondpilot.storage.FileDownload;
+import ai.genaifund.beyondpilot.storage.StorageService;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The public directory: the approved, listed solutions and their approved customer deployments, read by anyone
- * without a session.
+ * without a session. An approved solution left unlisted is read by its address alone. A deck is read at the address
+ * of its solution.
  */
 @Service
 public class SolutionDirectory {
@@ -41,12 +47,19 @@ public class SolutionDirectory {
 
 	private final OrganizationDirectory organizations;
 
+	private final IdentityService identity;
+
+	private final StorageService storage;
+
 	SolutionDirectory(SolutionRepository solutions, CustomerDeploymentRepository deployments,
-			SolutionQueryRepository solutionList, OrganizationDirectory organizations) {
+			SolutionQueryRepository solutionList, OrganizationDirectory organizations, IdentityService identity,
+			StorageService storage) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.solutionList = solutionList;
 		this.organizations = organizations;
+		this.identity = identity;
+		this.storage = storage;
 	}
 
 	/** One page of the directory the request selects, in the order it asks for. */
@@ -79,13 +92,14 @@ public class SolutionDirectory {
 
 	/**
 	 * One solution of the directory by its address.
-	 * @throws SolutionException when no approved, listed solution has the address; a draft or an unlisted one answers
-	 * the same, so the address does not reveal that one exists
+	 * @throws SolutionException when no approved solution has the address; a draft, a submitted or a rejected one
+	 * answers the same, so the address does not reveal that one exists. An approved solution the owners left unlisted
+	 * is read by anyone who has its address, and says so
 	 */
 	@Transactional(readOnly = true)
 	public PublicSolutionResponse get(String slug) {
 		Solution solution = solutions.findBySlug(slug)
-			.filter(found -> found.isApproved() && found.isListed())
+			.filter(Solution::isApproved)
 			.orElseThrow(() -> notFound(slug));
 		OrganizationName organization = organizations.names(List.of(solution.getOrganizationId()))
 			.get(solution.getOrganizationId());
@@ -94,12 +108,118 @@ public class SolutionDirectory {
 		}
 		return new PublicSolutionResponse(solution.getSlug(), solution.getName(), organization.name(),
 				organization.slug(), organization.country(), solution.getSummary(), solution.getProblemsSolved(),
-				solution.getValueProposition(), solution.getFocusAreas(), solution.getIndustries(),
-				solution.getMaturity(), solution.getDeployment(), solution.getWebsite(),
+				solution.getValueProposition(), solution.getMaturity(), solution.getTraction(), solution.getBuiltWith(),
+				solution.getIndustries(), solution.getFocusAreas(), solution.getLanguages(), solution.getDeployment(),
+				solution.getBestCustomerProfile(), solution.getWebsite(), solution.getDemoUrl(),
+				SolutionViews.publicDeck(solution), solution.isListed(),
 				deployments.findBySolutionIdAndStatusOrderByDecidedAtDesc(solution.getId(), CustomerDeployment.APPROVED)
 					.stream()
 					.map(deployment -> SolutionViews.publicDeployment(deployment, solution))
 					.toList());
+	}
+
+	/** The solutions of an organization, the newest first, for the module that applies with one. */
+	@Transactional(readOnly = true)
+	public List<OfferedSolution> offeredBy(UUID organizationId) {
+		return solutions.findByOrganizationIdOrderByCreatedAtDesc(organizationId)
+			.stream()
+			.map(SolutionDirectory::offered)
+			.toList();
+	}
+
+	/** One solution, for the module that applies with it; empty when it does not exist. */
+	@Transactional(readOnly = true)
+	public Optional<OfferedSolution> offered(UUID solutionId) {
+		return solutions.findById(solutionId).map(SolutionDirectory::offered);
+	}
+
+	private static OfferedSolution offered(Solution solution) {
+		return new OfferedSolution(solution.getId(), solution.getOrganizationId(), solution.getName(),
+				solution.getSummary(), solution.getProblemsSolved(), solution.getMaturity());
+	}
+
+	/**
+	 * The deck of the solution at this address. Anyone reads the deck of an approved solution, listed or not. Before
+	 * the approval, and after a solution is taken down, the members of its organization read it, and so do the
+	 * operators once it has been sent to them.
+	 * @throws SolutionException when the solution has no deck or the reader may not have it; both answer the same, so
+	 * the address does not reveal a solution that is not shown
+	 * @throws ai.genaifund.beyondpilot.storage.StorageException when the file is gone from the store
+	 */
+	@Transactional(readOnly = true)
+	public FileDownload deck(String slug, @Nullable Actor actor) {
+		Solution solution = solutions.findBySlug(slug)
+			.filter(found -> found.isApproved() || reads(actor, found))
+			.orElseThrow(() -> notFound(slug));
+		UUID deck = solution.getDeckFileId();
+		if (deck == null) {
+			throw notFound(slug);
+		}
+		return storage.download(deck);
+	}
+
+	/** Whether the caller reads a solution that is not approved: a member of its organization, or an operator. */
+	private boolean reads(@Nullable Actor actor, Solution solution) {
+		if (actor == null) {
+			return false;
+		}
+		if (!solution.isDraft() && identity.isOperator(actor)) {
+			return true;
+		}
+		return organizations.membershipOf(actor)
+			.filter(membership -> membership.organizationId().equals(solution.getOrganizationId()))
+			.isPresent();
+	}
+
+	/**
+	 * An approved solution as search indexes it, listed or not; empty for any other, or when its organization is gone.
+	 */
+	@Transactional(readOnly = true)
+	public Optional<IndexedSolution> indexed(UUID solutionId) {
+		return solutions.findById(solutionId).filter(Solution::isApproved).flatMap(solution -> indexed(List.of(solution))
+			.stream()
+			.findFirst());
+	}
+
+	/** Every approved solution as search indexes it, for a rebuild of the index. */
+	@Transactional(readOnly = true)
+	public List<IndexedSolution> indexedAll() {
+		return indexed(solutions.findByStatus(Solution.APPROVED));
+	}
+
+	/** The approved solutions of an organization as search indexes them, when what is shown of it changed. */
+	@Transactional(readOnly = true)
+	public List<IndexedSolution> indexedOf(UUID organizationId) {
+		return indexed(solutions.findByOrganizationIdOrderByCreatedAtDesc(organizationId)
+			.stream()
+			.filter(Solution::isApproved)
+			.toList());
+	}
+
+	private List<IndexedSolution> indexed(List<Solution> approved) {
+		Map<UUID, OrganizationName> names = organizations
+			.names(approved.stream().map(Solution::getOrganizationId).distinct().toList());
+		return approved.stream().filter(solution -> names.containsKey(solution.getOrganizationId())).map(solution -> {
+			OrganizationName organization = names.get(solution.getOrganizationId());
+			return new IndexedSolution(solution.getId(), solution.getSlug(), solution.getName(),
+					solution.getOrganizationId(), organization.name(), organization.slug(), organization.country(),
+					solution.getSummary(), solution.getProblemsSolved(), solution.getValueProposition(),
+					solution.getTraction(), solution.getBestCustomerProfile(), solution.getBuiltWith(),
+					solution.getFocusAreas(), solution.getIndustries(), solution.getMaturity(),
+					solution.getDeployment(),
+					deployments.countBySolutionIdAndStatus(solution.getId(), CustomerDeployment.APPROVED),
+					solution.isListed());
+		}).toList();
+	}
+
+	/**
+	 * The approved solution at this address, listed or not, as another module needs it; empty when there is none.
+	 */
+	@Transactional(readOnly = true)
+	public Optional<ApprovedSolution> approvedAt(String slug) {
+		return solutions.findBySlug(slug)
+			.filter(Solution::isApproved)
+			.map(found -> new ApprovedSolution(found.getId(), found.getName(), found.getOrganizationId()));
 	}
 
 	/**
@@ -128,6 +248,6 @@ public class SolutionDirectory {
 	}
 
 	private static SolutionException notFound(String slug) {
-		return new SolutionException(SolutionErrorCode.SOLUTION_NOT_FOUND, "No listed solution at " + slug);
+		return new SolutionException(SolutionErrorCode.SOLUTION_NOT_FOUND, "No approved solution at " + slug);
 	}
 }

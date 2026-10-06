@@ -15,19 +15,26 @@ import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentListRequest;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentListResponse;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentResponse;
-import ai.genaifund.beyondpilot.talent.dto.RejectTalentRequest;
+import ai.genaifund.beyondpilot.notification.EmailService;
+import ai.genaifund.beyondpilot.talent.dto.AdminTalentEnquiryListRequest;
+import ai.genaifund.beyondpilot.talent.dto.AdminTalentEnquiryListResponse;
+import ai.genaifund.beyondpilot.talent.dto.AdminTalentEnquiryResponse;
+import ai.genaifund.beyondpilot.talent.dto.TalentDecisionRequest;
 import ai.genaifund.beyondpilot.talent.dto.TalentSummaryResponse;
 import ai.genaifund.beyondpilot.talent.persistence.TalentDetailRepository;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfile;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfileRepository;
 import ai.genaifund.beyondpilot.talent.persistence.TalentQueryRepository;
+import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * What operators do with talent profiles: read those that were submitted, approve one, reject one with a reason. Every
- * operation first checks that the caller is an operator now, and every decision is recorded in the audit trail in its
- * own transaction. A draft is its person's alone and is never shown here.
+ * What operators do with talent profiles: read those that were submitted, approve one, ask for changes to one, remove
+ * one from the public, and read the messages people reported. Every operation first checks that the caller is an
+ * operator now; every decision is recorded in the audit trail in the transaction of the change, and its person is told
+ * by email. A draft is its person's alone and is never shown here.
  */
 @Service
 public class TalentAdministration {
@@ -46,13 +53,20 @@ public class TalentAdministration {
 
 	private final AuditTrail audit;
 
+	private final EmailService email;
+
+	private final ApplicationEventPublisher events;
+
 	TalentAdministration(TalentProfileRepository profiles, TalentQueryRepository profileList,
-			TalentDetailRepository details, IdentityService identity, AuditTrail audit) {
+			TalentDetailRepository details, IdentityService identity, AuditTrail audit, EmailService email,
+			ApplicationEventPublisher events) {
 		this.profiles = profiles;
 		this.profileList = profileList;
 		this.details = details;
 		this.identity = identity;
 		this.audit = audit;
+		this.email = email;
+		this.events = events;
 	}
 
 	/**
@@ -103,23 +117,77 @@ public class TalentAdministration {
 		}
 		profile.approve(Instant.now());
 		record(AuditAction.TALENT_APPROVE, operator, profile, Map.of());
+		events.publishEvent(new TalentProfileChanged(id));
+		tell(profile, EmailService.TalentDecision.APPROVED, null);
 	}
 
 	/**
-	 * Rejects a profile that waits for review, or takes an approved one out of the directory, with a reason its person
-	 * reads.
+	 * Asks the person to change a profile that waits for review, with a reason they read. They correct it and send it
+	 * again.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws TalentException when the profile does not exist, or is neither waiting for review nor approved
+	 * @throws TalentException when the profile does not exist or does not wait for review
 	 */
 	@Transactional
-	public void reject(Actor actor, UUID id, RejectTalentRequest request) {
+	public void requestChanges(Actor actor, UUID id, TalentDecisionRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		TalentProfile profile = reviewable(id);
-		if (!profile.isSubmitted() && !profile.isApproved()) {
+		if (!profile.isSubmitted()) {
 			throw notAwaiting(profile);
 		}
-		profile.reject(request.reason(), TalentViews.text(request.message()), Instant.now());
-		record(AuditAction.TALENT_REJECT, operator, profile, Map.of("reason", request.reason()));
+		String message = TalentViews.text(request.message());
+		profile.requestChanges(request.reason(), message, Instant.now());
+		record(AuditAction.TALENT_REQUEST_CHANGES, operator, profile, Map.of("reason", request.reason()));
+		events.publishEvent(new TalentProfileChanged(id));
+		tell(profile, EmailService.TalentDecision.CHANGES_REQUESTED, message);
+	}
+
+	/**
+	 * Removes an approved profile from the public, with a reason its person reads. They can correct it and send it
+	 * again.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws TalentException when the profile does not exist or is not approved
+	 */
+	@Transactional
+	public void remove(Actor actor, UUID id, TalentDecisionRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		TalentProfile profile = reviewable(id);
+		if (!profile.isApproved()) {
+			throw new TalentException(TalentErrorCode.NOT_APPROVED,
+					"Removal of talent profile " + profile.getId() + ", which is " + profile.getStatus());
+		}
+		String message = TalentViews.text(request.message());
+		profile.remove(request.reason(), message, Instant.now());
+		record(AuditAction.TALENT_REMOVE, operator, profile, Map.of("reason", request.reason()));
+		events.publishEvent(new TalentProfileChanged(id));
+		tell(profile, EmailService.TalentDecision.REMOVED, message);
+	}
+
+	/**
+	 * One page of the messages people reported as unwanted, the newest first, with who sent them and to whom.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public AdminTalentEnquiryListResponse reported(Actor actor, AdminTalentEnquiryListRequest request) {
+		identity.requireOperator(actor);
+		int page = request.page() == null ? 1 : request.page();
+		List<TalentDetailRepository.ReportedEnquiry> rows = details.reported(PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
+		Map<UUID, Person> senders = identity
+			.people(rows.stream().map(TalentDetailRepository.ReportedEnquiry::senderAccountId).distinct().toList());
+		return new AdminTalentEnquiryListResponse(rows.stream().map(row -> {
+			Person sender = senders.get(row.senderAccountId());
+			return new AdminTalentEnquiryResponse(row.id(), row.profileId(), row.profileName(),
+					row.senderName() != null ? row.senderName() : sender == null ? null : sender.displayName(),
+					email(senders, row.senderAccountId()), row.topic(),
+					row.message(), row.createdAt(), row.answeredAt());
+		}).toList(), page, PAGE_SIZE, details.reportedCount());
+	}
+
+	/** Tells the person what GenAI Fund decided; an account that no longer signs in is told nothing. */
+	private void tell(TalentProfile profile, EmailService.TalentDecision decision, @Nullable String message) {
+		Person person = identity.people(List.of(profile.getAccountId())).get(profile.getAccountId());
+		if (person != null) {
+			email.sendTalentDecision(person.email(), profile.getName(), decision, message);
+		}
 	}
 
 	private TalentProfile reviewable(UUID id) {

@@ -6,7 +6,7 @@ Design: [design.md](design.md). Tracked in Linear once an issue is assigned.
 
 | Step | What | Done when |
 | --- | --- | --- |
-| 1 | Migration `V10__usecase_create_use_cases.sql`, the `usecase` module (entity, repositories, `UseCaseAdministration`, controller, records), `OrganizationDirectory.approvedEnterprise(s)`, audit action `use_case.create` | `UseCaseAdministrationTest` and `ModulithArchitectureTest` pass |
+| 1 | Migration `V29__usecase_create_use_cases.sql`, the `usecase` module (entity, repositories, `UseCaseAdministration`, controller, records), `OrganizationDirectory.approvedEnterprise(s)`, audit action `use_case.create` | `UseCaseAdministrationTest` and `ModulithArchitectureTest` pass |
 | 2 | `openapi.yml` and the generated web client refreshed | `OpenApiContractTest` and the drift check pass |
 | 3 | Admin web: Use cases list, Create a use case, the audit log knows the new action, sidebar link | `pnpm --dir web check` passes; the screens match the Figma frames |
 

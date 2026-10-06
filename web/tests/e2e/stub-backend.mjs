@@ -4,11 +4,21 @@
 // sign-out) is answered by the test itself, with page.route.
 import { createServer } from "node:http";
 
+import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
+import { answerJudging } from "./stub-judging.mjs";
 import { answerReview } from "./stub-reviews.mjs";
+import { answerSearch } from "./stub-search.mjs";
 import { answerWorkspace } from "./stub-workspace.mjs";
 
 const accounts = {
+  // Invited by GenAI Fund to judge the Tasco challenge (stub-judging.mjs).
+  judge: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a20",
+    email: "judge@tasco.example",
+    displayName: "Lan Vu",
+    role: "user",
+  },
   operator: {
     id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a01",
     email: "dat.phan@example.com",
@@ -57,6 +67,13 @@ const accounts = {
     id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a15",
     email: "an.vo@example.com",
     displayName: "An Võ",
+    role: "user",
+  },
+  // The owner of an organization that GenAI Fund has not approved yet (stub-workspace.mjs).
+  waiting: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a16",
+    email: "lan.pham@newco.example",
+    displayName: "Lan Phạm",
     role: "user",
   },
 };
@@ -378,11 +395,17 @@ createServer((request, response) => {
     });
   }
   const record =
+    answerJudging(url, account) ??
+    answerApplication(url, account ? session : undefined, account?.email) ??
     answerReview(url, account) ??
     answerWorkspace(url, account ? session : undefined) ??
     answerDirectory(url);
   if (record) {
     return json(response, ...record);
+  }
+  const searched = answerSearch(url);
+  if (searched) {
+    return json(response, ...searched);
   }
   if (url.pathname === "/api/program/programs") {
     const items = Object.values(publicPrograms)
@@ -419,6 +442,33 @@ createServer((request, response) => {
       return json(response, account ? 403 : 401, {});
     }
     const id = url.pathname.split("/")[5];
+    if (id && url.pathname.endsWith("/questions")) {
+      const program = programs[id];
+      if (!program) {
+        return json(response, 404, {});
+      }
+      // The Tasco challenge's applications are open, which fixes its questions.
+      const opensAt = program.applications?.opensAt ?? null;
+      return json(response, 200, {
+        questions:
+          program.slug === "insurance-ai-tasco"
+            ? [
+                {
+                  id: "5f0c1d2e-3a4b-4c5d-8e6f-7a8b9c0d1e01",
+                  kind: "single_choice",
+                  label: "Direction",
+                  help: null,
+                  required: true,
+                  options: ["Buying", "Carrying", "Claiming"],
+                  maxLength: null,
+                },
+              ]
+            : [],
+        fixed: opensAt !== null && Date.parse(opensAt) <= Date.now(),
+        opensAt,
+        version: program.version,
+      });
+    }
     if (id) {
       return programs[id] ? json(response, 200, programs[id]) : json(response, 404, {});
     }

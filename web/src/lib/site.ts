@@ -21,10 +21,15 @@ export const siteRoutes = {
   adminTalent: "/admin/talent",
   adminUseCases: "/admin/use-cases",
   adminUseCasesNew: "/admin/use-cases/new",
+  adminTalentReported: "/admin/talent/reported",
+  adminIntroductions: "/admin/introductions",
   workspaceOrganization: "/workspace/organization",
+  myApplications: "/applications",
+  reviews: "/reviews",
   workspaceMembers: "/workspace/organization/members",
   workspaceSolutions: "/workspace/organization/solutions",
   workspaceUseCases: "/workspace/organization/use-cases",
+  workspaceIntroductions: "/workspace/organization/introductions",
 } as const;
 
 /** The host the public site is served from, as an operator sees a program's address written out. */
@@ -40,17 +45,46 @@ export function programRoute(slug: string) {
  * (BEY-37): the Tasco challenge still takes them on its interim page. A program without one shows
  * no Apply button.
  */
-export function programApplyUrl(slug: string): string | undefined {
-  return slug === "insurance-ai-tasco" ? `${liveCampaignUrl}/apply` : undefined;
+/**
+ * Where Apply leads for a program that takes applications: its form on BeyondPilot. The AI for
+ * Insurance Challenge keeps its interim form until it closes on 15 October 2026.
+ */
+export function programApplyUrl(slug: string): string {
+  return slug === "insurance-ai-tasco" ? `${liveCampaignUrl}/apply` : `${programRoute(slug)}/apply`;
 }
 
 /** A program's Settings in the admin area, the screen a program opens on. */
+/** Where an operator sets the questions a program's application form asks. */
+export function adminProgramQuestionsRoute(id: string) {
+  return `${siteRoutes.adminPrograms}/${id}/questions`;
+}
+
 export function adminProgramRoute(id: string) {
   return `${siteRoutes.adminPrograms}/${id}/settings`;
 }
 
+/** The applications of a program as GenAI Fund reviews them; one opens under it. */
+export function adminProgramApplicationsRoute(id: string) {
+  return `${siteRoutes.adminPrograms}/${id}/applications`;
+}
+
+/** Where GenAI Fund releases a program's outcomes. */
+export function adminProgramReleaseRoute(id: string) {
+  return `${siteRoutes.adminPrograms}/${id}/release`;
+}
+
+/** A program's judges and judging criteria. */
+export function adminProgramReviewersRoute(id: string) {
+  return `${siteRoutes.adminPrograms}/${id}/reviewers`;
+}
+
+/** The applications of a program as an invited judge scores them; one opens under it. */
+export function reviewProgramRoute(programId: string) {
+  return `${siteRoutes.reviews}/${programId}`;
+}
+
 /** Planned pages without a screen yet; they share the coming-soon page. */
-export const comingSoonPaths = ["use-cases/new", "get-started", "founders", "search"] as const;
+export const comingSoonPaths = ["use-cases/new", "get-started", "founders"] as const;
 
 /** The product's name, as the end of a page title that is a record's own name. */
 export const titleSuffix = " · BeyondPilot";
@@ -74,3 +108,8 @@ export const genaiFundLinks = {
   x: "https://twitter.com/genaifund_ai",
   email: "general@genaifund.ai",
 } as const;
+
+/** One of the signed-in person's applications. */
+export function myApplicationRoute(id: string) {
+  return `${siteRoutes.myApplications}/${id}`;
+}

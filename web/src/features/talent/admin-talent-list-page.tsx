@@ -7,13 +7,12 @@ import { TextButton } from "@/components/actions/text-button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
-import { ReviewStatus } from "@/components/composites/review-status";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalentList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { adminTalentSearch, type AdminTalentSearch } from "./talent-search";
+import { TalentStatus } from "./talent-status";
 import { TalentToolbar } from "./talent-toolbar";
 
 const address = createSerializer(adminTalentSearch);
@@ -29,7 +28,6 @@ type AdminTalentListPageProps = {
  */
 function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
   const t = useTranslations("Admin.talent");
-  const status = useVocabulary("reviewStatus");
   const format = useFormatter();
   const locale = useLocale();
 
@@ -39,7 +37,7 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
     name: profile.name,
     person: <Person name={profile.name} email={profile.email} />,
     headline: profile.headline ?? "",
-    status: <ReviewStatus state={profile.status}>{status(profile.status)}</ReviewStatus>,
+    status: <TalentStatus status={profile.status} />,
     // A record that waits says for how long; a decided one keeps the day it was sent.
     submitted: !profile.submittedAt
       ? ""
@@ -86,9 +84,12 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("lead")}</p>
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("lead")}</p>
+        </div>
+        <TextButton href={siteRoutes.adminTalentReported}>{t("reported.link")}</TextButton>
       </div>
       <TalentToolbar />
 

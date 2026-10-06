@@ -44,16 +44,16 @@ An operator may leave an organization without an owner: that is how a page is ha
 
 ## Data
 
-`V10__organization_verify_domains_and_limit_invitations.sql` (slice 1):
+`V26__organization_verify_domains_and_limit_invitations.sql` (slice 1):
 
 - `organization.email_domain` cleared, `auto_join` false for every row and by default.
 - `organization_join_request.claim boolean not null default false`, set for the open requests of organizations without an owner.
 - `organization_invitation.sent_by_operator boolean not null default false`, so an operator's invitation stays out of the organization's limits.
 - An index on `organization_invitation (organization_id, created_at)` for the daily count.
 
-`V11__organization_add_founded_year_and_logo.sql` (slice 1): `organization.founded_year integer` between 1800 and 2100, and `organization.logo_url text`. Both are null for an organization made before; its owner fills them in the next time the profile is saved.
+`V27__organization_add_founded_year_and_logo.sql` (slice 1): `organization.founded_year integer` between 1800 and 2100, and `organization.logo_url text`. Both are null for an organization made before; its owner fills them in the next time the profile is saved.
 
-`V12__organization_drop_roles.sql` (slice 1): drops `organization.roles` and its check constraint.
+`V28__organization_drop_roles.sql` (slice 1): drops `organization.roles` and its check constraint.
 
 Slice 2 adds `suspended` to the status check with `suspension_reason`, `suspension_message` and `suspended_at` in `V13`. Slice 3 adds `merged` and `merged_into_id` in `V14`.
 
@@ -80,7 +80,7 @@ The exact contract is `openapi.yml`, refreshed with each slice.
 - **Entry.** `OrganizationEntry` gains the declined state beside the waiting one; both name the organization with its type and country. The finder no longer offers "join as owner".
 - **Members.** The count line says what is left today; the invite button opens the limit dialog instead of the form when a limit is reached, and is absent while the organization waits for review. "Who can join" names the domain as verified by GenAI Fund, and offers the switch only when there is one.
 - **Admin list.** Columns Organisation, Request, Status, Asked by, Received. A waiting row opens the review dialog, which holds the domain field; a claim row opens the claim dialog. Status is a pastel pill.
-- **The profile form asks what the mockup of Kai asks.** A creation and a save require the website, the short description (at most 280 characters), the year founded, the country, the team size and at least one industry; the logo address is optional. The creation button reads "Submit for approval". The form has no role (provider, enterprise), as the mockup has none: every approved organization lists solutions, and will submit use cases when BEY-35 exists, so an owner has nothing to choose. The industries are searched and chosen from the fixed list in a combobox (at most five), because the solution directory filters on those codes. `Membership` carries `owner` and `approved` only; the solution error `SOLUTION_PROVIDER_REQUIRED` became `SOLUTION_OWNER_REQUIRED`.
+- **The profile form asks what the mockup of Kai asks.** A creation and a save require the website, the short description (at most 280 characters), the year founded, the country, the team size and at least one industry; the logo address is optional. The creation button reads "Submit for approval". The form has no role (provider, enterprise), as the mockup has none: every approved organization lists solutions, and will submit use cases when BEY-35 exists, so an owner has nothing to choose. The industries are searched and chosen from the fixed list in a combobox (at most five), because the solution directory filters on those codes. `Membership` carries `owner` and `approved` only. Every member of an organization writes its solutions, whether or not it is approved yet, and review decides what is listed (BEY-37); the solution error `SOLUTION_PROVIDER_REQUIRED` became `SOLUTION_MEMBER_REQUIRED`.
 - **Fixes.** "Clear search and filter" clears every parameter in one update in the six toolbars that use it, and the three admin specs stop reloading the page to work around it. Admin home counts waiting customer deployments.
 
 ## Known limits

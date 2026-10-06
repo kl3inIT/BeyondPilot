@@ -206,6 +206,16 @@ The error contract follows [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.htm
 - Every browser-session request other than GET, HEAD and OPTIONS carries `X-BeyondPilot-CSRF: 1`; the backend rejects an unsafe request without it.
 - Controllers do not write `Cache-Control: no-store` or `X-Content-Type-Options: nosniff`; Spring Security's default headers send them. Set `Cache-Control` only as a commented, deliberate override.
 
+## Events between modules
+
+A module tells others that something happened with a Spring application event, following [Spring Modulith's guidance on application events](https://docs.spring.io/spring-modulith/reference/events.html).
+
+- **The event.** A public record in the publishing module's root package, named for a past fact (`ProgramChanged`), carrying identifiers only. A listener that needs the state reads it through the publisher's published API, so it always sees the current state and the record never copies personal data into the event store.
+- **Publishing.** The application service publishes inside the transaction that made the change, through `ApplicationEventPublisher`. A rolled-back change publishes nothing.
+- **Listening.** The listener is a package-private method annotated `@ApplicationModuleListener`: it runs after the publisher's transaction commits, asynchronously, in a transaction of its own, so its failure never undoes the change. It is idempotent and does not depend on order, because a publication can be delivered again.
+- **Delivery.** The JDBC event publication registry records a publication for each `@ApplicationModuleListener` in the publisher's transaction and deletes it when the listener completes (`completion-mode: delete`). Incomplete publications are delivered again on startup, which is correct while one instance runs; more than one instance needs a resubmission that only one of them runs. Only `@ApplicationModuleListener` is recorded (`registry-trigger-annotation`), so an in-module `@TransactionalEventListener` stays a plain after-commit call whose event is never stored.
+- **Within a module**, an after-commit side effect such as a mail may use `@TransactionalEventListener` with a nested record; it is not part of the module's API.
+
 ## Logging
 
 - Log through the SLF4J fluent API (`LOG.atWarn().addKeyValue(...).log(...)`); positional `{}` placeholders are not used.

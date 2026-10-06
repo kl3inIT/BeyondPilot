@@ -29,8 +29,21 @@ export const auditActions = [
   "use_case.draft",
   "use_case.approve",
   "use_case.send_back",
+  "introduction.reply",
+  "introduction.decline",
   "talent.approve",
   "talent.reject",
+  "talent.enquiry_accept",
+  "talent.enquiry_decline",
+  "talent.enquiry_report",
+  "talent.request_changes",
+  "talent.remove",
+  "talent.delete",
+  "proposal.criteria_update",
+  "proposal.reviewer_invite",
+  "proposal.reviewer_remove",
+  "proposal.decide",
+  "proposal.release",
 ] as const;
 
 /**

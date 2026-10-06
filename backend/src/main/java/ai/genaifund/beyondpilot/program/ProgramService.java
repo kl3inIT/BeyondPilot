@@ -1,6 +1,13 @@
 package ai.genaifund.beyondpilot.program;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
@@ -10,6 +17,7 @@ import ai.genaifund.beyondpilot.program.dto.ProgramKeyDate;
 import ai.genaifund.beyondpilot.program.dto.ProgramListRequest;
 import ai.genaifund.beyondpilot.program.dto.ProgramListResponse;
 import ai.genaifund.beyondpilot.program.dto.ProgramResponse;
+import ai.genaifund.beyondpilot.program.persistence.PageKind;
 import ai.genaifund.beyondpilot.program.persistence.Program;
 import ai.genaifund.beyondpilot.program.persistence.ProgramQueryRepository;
 import ai.genaifund.beyondpilot.program.persistence.ProgramRepository;
@@ -43,6 +51,73 @@ public class ProgramService {
 			.stream()
 			.filter(program -> phase == null || phase.equals(program.phase()))
 			.toList());
+	}
+
+	/** The application form of a published program that takes applications; empty for any other address. */
+	@Transactional(readOnly = true)
+	public Optional<ApplicationForm> applicationForm(String slug) {
+		return programs.findBySlug(slug).flatMap(ProgramService::form);
+	}
+
+	/** The application forms of these programs by identifier; a draft or one that takes no applications is left out. */
+	@Transactional(readOnly = true)
+	public Map<UUID, ApplicationForm> applicationForms(Collection<UUID> programIds) {
+		return programs.findAllById(programIds)
+			.stream()
+			.flatMap(program -> form(program).stream())
+			.collect(Collectors.toMap(ApplicationForm::programId, Function.identity()));
+	}
+
+	/**
+	 * The application forms of these programs as their applications are reviewed: whatever the program's status, for
+	 * one taken off the site after its close is still judged. A program that takes no applications is left out.
+	 */
+	@Transactional(readOnly = true)
+	public Map<UUID, ApplicationForm> formsUnderReview(Collection<UUID> programIds) {
+		return programs.findAllById(programIds)
+			.stream()
+			.flatMap(program -> windowed(program).stream())
+			.collect(Collectors.toMap(ApplicationForm::programId, Function.identity()));
+	}
+
+	private static Optional<ApplicationForm> form(Program program) {
+		return program.getStatus() == ProgramStatus.PUBLISHED ? windowed(program) : Optional.empty();
+	}
+
+	private static Optional<ApplicationForm> windowed(Program program) {
+		Instant opensAt = program.getApplicationsOpenAt();
+		Instant closesAt = program.getApplicationsCloseAt();
+		if (opensAt == null || closesAt == null) {
+			return Optional.empty();
+		}
+		return Optional.of(new ApplicationForm(program.getId(), program.getSlug(), program.getName(), opensAt,
+				closesAt, program.getOutcomesDueOn(), program.isAllowUpdatesUntilClose(),
+				program.getQuestions()
+					.stream()
+					.map(question -> new ApplicationForm.Question(question.id(), question.kind(), question.label(),
+							question.help(), question.required(), List.of(question.options()), question.maxLength()))
+					.toList()));
+	}
+
+	/** The program as search indexes it, while it is published; empty for a draft or a program that is gone. */
+	@Transactional(readOnly = true)
+	public Optional<IndexedProgram> indexed(UUID id) {
+		return programs.findById(id)
+			.filter(program -> program.getStatus() == ProgramStatus.PUBLISHED)
+			.map(ProgramService::indexed);
+	}
+
+	/** Every published program as search indexes it, for a rebuild of the index. */
+	@Transactional(readOnly = true)
+	public List<IndexedProgram> indexedAll() {
+		return programs.findByStatus(ProgramStatus.PUBLISHED).stream().map(ProgramService::indexed).toList();
+	}
+
+	private static IndexedProgram indexed(Program program) {
+		return new IndexedProgram(program.getId(), program.getSlug(), program.getName(), program.getType().code(),
+				program.getPartnerName(), program.getSummary(), program.getAbout(), program.getCoverFileId(),
+				program.getPageKind() == PageKind.EXTERNAL ? program.getExternalUrl() : null, program.getStartsOn(),
+				program.getEndsOn(), program.getApplicationsOpenAt(), program.getApplicationsCloseAt());
 	}
 
 	/**

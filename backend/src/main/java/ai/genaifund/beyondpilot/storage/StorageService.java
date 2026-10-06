@@ -216,6 +216,18 @@ public class StorageService {
 							file.getSizeBytes(), file.getUploadedByAccountId())));
 	}
 
+	/**
+	 * What a stored file is, for the module whose record names it and shows its name and size; empty when no stored
+	 * file has this identifier.
+	 */
+	@Transactional(readOnly = true)
+	public Optional<StoredFile> describe(UUID id) {
+		return files.findById(id)
+			.filter(StorageFile::isStored)
+			.map(file -> new StoredFile(file.getId(), file.getPurpose(), file.getFileName(), file.getMediaType(),
+					file.getSizeBytes(), file.getUploadedByAccountId()));
+	}
+
 	/** Removes a file and its bytes, for the module whose record no longer names it. */
 	@Transactional
 	public void delete(UUID id) {

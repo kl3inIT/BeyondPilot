@@ -7,8 +7,11 @@ public enum SolutionErrorCode implements ErrorCode {
 
 	SOLUTION_NOT_FOUND("SOLUTION_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such solution."),
 
-	OWNER_REQUIRED("SOLUTION_OWNER_REQUIRED", ErrorCategory.NOT_PERMITTED,
-			"Only an owner of an approved organization can do this."),
+	MEMBER_REQUIRED("SOLUTION_MEMBER_REQUIRED", ErrorCategory.NOT_PERMITTED,
+			"Only a member of an organization can do this."),
+
+	ORGANIZATION_NOT_APPROVED("SOLUTION_ORGANIZATION_NOT_APPROVED", ErrorCategory.CONFLICT,
+			"Approve the organization first: a solution is listed only when its organization is."),
 
 	INCOMPLETE("SOLUTION_INCOMPLETE", ErrorCategory.VALIDATION,
 			"A solution needs a summary, a maturity, a focus area and an industry before it is submitted."),
@@ -23,6 +26,9 @@ public enum SolutionErrorCode implements ErrorCode {
 
 	CHANGED_MEANWHILE("SOLUTION_CHANGED_MEANWHILE", ErrorCategory.CONFLICT,
 			"Someone else saved this solution in the meantime. Reload it and make your changes again."),
+
+	DECK_NOT_USABLE("SOLUTION_DECK_NOT_USABLE", ErrorCategory.VALIDATION,
+			"This file cannot be the deck: upload a PDF and use it for one solution only."),
 
 	DEPLOYMENT_NOT_FOUND("SOLUTION_DEPLOYMENT_NOT_FOUND", ErrorCategory.NOT_FOUND,
 			"There is no such customer deployment."),

@@ -17,6 +17,11 @@ type ReviewReadinessProps = {
   missing: { id: string; label: string }[];
   /** True after a refused attempt to send: the list then reads as the error it is. */
   refused: boolean;
+  /**
+   * What choosing a field does, by its id. The default moves focus to it; a form in steps opens the
+   * step that holds it first.
+   */
+  onSelect?: (id: string) => void;
 };
 
 /**
@@ -30,6 +35,7 @@ function ReviewReadiness({
   note,
   missing,
   refused,
+  onSelect = focusField,
 }: ReviewReadinessProps) {
   if (missing.length === 0) {
     return (
@@ -52,7 +58,7 @@ function ReviewReadiness({
               <li key={field.id}>
                 <TextButton
                   tone={refused ? "danger" : "default"}
-                  onClick={() => focusField(field.id)}
+                  onClick={() => onSelect(field.id)}
                 >
                   {field.label}
                 </TextButton>

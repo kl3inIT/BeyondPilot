@@ -22,6 +22,9 @@ export const maturities = ["idea", "prototype", "pilot", "production", "scaled"]
 
 export const deployments = ["cloud_saas", "private_cloud", "on_premise", "hybrid"] as const;
 
+/** The languages a solution works in: English, then those of the region. */
+export const languages = ["en", "vi", "id", "ms", "th", "fil", "zh", "ja", "ko", "other"] as const;
+
 export const solutionRejections = [
   "incomplete",
   "not_an_ai_solution",

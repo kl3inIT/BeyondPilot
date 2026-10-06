@@ -24,6 +24,17 @@ const pocketPolicy = {
   createdAt: day,
 };
 
+/** An organization that waits for GenAI Fund's approval, with its owner. */
+const newCo = {
+  ...pocketPolicy,
+  id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04",
+  name: "Newco",
+  slug: "newco",
+  status: "pending",
+  roles: ["enterprise"],
+  emailDomain: "newco.example",
+};
+
 const ofPocketPolicy = { organizationId: pocketPolicy.id, organizationName: pocketPolicy.name };
 
 /** What a request to get into the organization says about it. */
@@ -102,6 +113,7 @@ const standing = {
   invited: { invitations: [invitation] },
   asked: { request },
   declined: { declined },
+  waiting: { role: "owner", organization: newCo },
 };
 
 function deployment(id, title, status, more) {
@@ -133,7 +145,13 @@ function solution(id, name, status, more) {
     summary: `${name} for insurers.`,
     problemsSolved: "Policy holders wait days for an answer.",
     valueProposition: null,
+    traction: null,
+    builtWith: [],
+    languages: [],
+    bestCustomerProfile: null,
     website: "https://pocketpolicy.example",
+    demoUrl: null,
+    deck: null,
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
     deployment: ["cloud_saas"],
@@ -152,6 +170,14 @@ function solution(id, name, status, more) {
 const solutions = [
   solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e11", "Policy Chat", "approved", {
     maturity: "production",
+    builtWith: ["Python", "PostgreSQL"],
+    languages: ["vi", "en"],
+    deck: {
+      fileId: "d0c1a2b3-4c5d-4e6f-8a9b-0c1d2e3f4a51",
+      fileName: "policy-chat-deck.pdf",
+      sizeBytes: 3250586,
+      attachedAt: day,
+    },
     customerDeployments: [
       deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f11", "Renewals at Mekong Life", "approved"),
       deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f12", "Claims line at Bảo An", "rejected", {
@@ -206,10 +232,22 @@ function profile(name, slug, status, more) {
     website: null,
     roles: ["ai_consultant"],
     skills: ["Strategy"],
-    availability: "available",
     engagement: ["advisory"],
     rateBand: "100_150",
-    projects: [{ title: "Claims assistant for an insurer", year: 2025, summary: null, url: null }],
+    photoFileId: null,
+    city: null,
+    languages: [],
+    industries: [],
+    worksAt: null,
+    projects: [
+      {
+        title: "Claims assistant for an insurer",
+        year: 2025,
+        summary: null,
+        url: null,
+        stage: null,
+      },
+    ],
     listed: true,
     complete: true,
     submittedAt: day,
@@ -227,14 +265,31 @@ const talent = {
       {
         id: "d08dabc9-7a75-4bca-8bc2-7e0a3a3c4b01",
         senderName: "Hà Lê",
-        senderEmail: "ha.le@example.com",
+        senderOrganization: "Mekong Insurance",
+        senderEmail: null,
+        topic: "project",
         message: "We are scoping a claims assistant and would like your view.",
+        status: "pending",
         createdAt: day,
+        answeredAt: null,
+        closesAt: "2026-10-20T03:00:00Z",
+      },
+      {
+        id: "5b1c2f0e-9d61-4a55-8f0c-2a6f3e0c9e12",
+        senderName: "Minh Trần",
+        senderOrganization: null,
+        senderEmail: "minh.tran@example.com",
+        topic: "role",
+        message: "Would you join our team for a pilot?",
+        status: "accepted",
+        createdAt: day,
+        answeredAt: day,
+        closesAt: null,
       },
     ],
   },
   member: {
-    profile: profile("Siti Rahma", "siti-rahma", "rejected", {
+    profile: profile("Siti Rahma", "siti-rahma", "changes_requested", {
       projects: [],
       decisionReason: "incomplete",
       decisionMessage: "Add a project.",
@@ -242,6 +297,43 @@ const talent = {
     enquiries: [],
   },
 };
+
+/** The requests for an introduction to Pocket Policy: one waiting, one answered each way. */
+const introductions = [
+  {
+    id: "e19ebcda-8b86-4cd9-9cd3-8f1b4b4d5c21",
+    solutionName: "Policy Chat",
+    senderOrganization: "Lumen Health",
+    senderName: "Hà Lê",
+    senderEmail: null,
+    message: "We want a renewals assistant for our clinics.",
+    status: "pending",
+    createdAt: day,
+    answeredAt: null,
+  },
+  {
+    id: "e19ebcda-8b86-4cd9-9cd3-8f1b4b4d5c22",
+    solutionName: "Claims Vision",
+    senderOrganization: "Mekong Life",
+    senderName: null,
+    senderEmail: "claims@mekong.example",
+    message: "Can it read our scanned claim forms?",
+    status: "replied",
+    createdAt: day,
+    answeredAt: day,
+  },
+  {
+    id: "e19ebcda-8b86-4cd9-9cd3-8f1b4b4d5c23",
+    solutionName: "Agent Coach",
+    senderOrganization: "Bảo An",
+    senderName: "Quang Vũ",
+    senderEmail: null,
+    message: "Do you coach agents in Vietnamese?",
+    status: "declined",
+    createdAt: day,
+    answeredAt: day,
+  },
+];
 
 const refused = (status, code) => [status, { status, code }];
 
@@ -256,6 +348,7 @@ export function answerWorkspace(url, session) {
     "/api/organization/mine/members",
     "/api/solution/mine",
     "/api/talent/mine",
+    "/api/introduction/mine/received",
   ];
   if (!known.includes(pathname) && !pathname.startsWith("/api/solution/mine/")) {
     return undefined;
@@ -265,6 +358,7 @@ export function answerWorkspace(url, session) {
   }
   const {
     role,
+    organization = pocketPolicy,
     crowd: crowded = false,
     invitations = [],
     request: asked = null,
@@ -276,7 +370,7 @@ export function answerWorkspace(url, session) {
     return [
       200,
       {
-        organization: role ? pocketPolicy : null,
+        organization: role ? organization : null,
         role,
         jobTitle,
         invitations,
@@ -284,6 +378,11 @@ export function answerWorkspace(url, session) {
         declined: refusedRequest,
       },
     ];
+  }
+  if (pathname === "/api/introduction/mine/received") {
+    return role
+      ? [200, { editable: role === "owner", items: introductions }]
+      : refused(403, "INTRODUCTION_NEEDS_ORGANIZATION");
   }
   if (pathname === "/api/talent/mine") {
     return [200, talent[session] ?? { profile: null, enquiries: [] }];
