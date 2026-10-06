@@ -130,6 +130,12 @@
   }
 }
 
+/* A thin scrollbar in the brand colour for the lists of a menu, so every list that scrolls looks alike. */
+@utility scrollbar-brand {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
 /*
  * A hit area of at least 44px on touch screens for a control drawn smaller (DESIGN.md › Buttons ›
  * Touch). The control keeps its size; an invisible box centred on it takes the tap.

@@ -44,7 +44,7 @@ final class OrganizationViews {
 		return new OrganizationResponse(organization.getId(), organization.getSlug(), organization.getName(),
 				organization.getType(), organization.getWebsite(), organization.getCountry(),
 				organization.getTeamSize(), organization.getIndustries(), organization.getDescription(),
-				organization.getFoundedYear(), organization.getLogoUrl(),
+				organization.getFoundedYear(), organization.getLogoFileId(),
 				organization.getEmailDomain(),
 				organization.isAutoJoin(), organization.getStatus(), organization.getDecisionReason(),
 				organization.getDecisionMessage(), organization.getVersion(), organization.getCreatedAt());

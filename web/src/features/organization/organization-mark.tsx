@@ -1,7 +1,28 @@
-import { initials } from "@/lib/initials";
+import Image from "next/image";
 
-/** Stands where an organization's logo goes: its initials in a rounded square. */
-function OrganizationMark({ name }: { name: string }) {
+import { initials } from "@/lib/initials";
+import { publicFileUrl } from "@/lib/storage/upload";
+
+type OrganizationMarkProps = {
+  name: string;
+  /** The stored logo; without one the mark holds the organization's initials. */
+  logoFileId?: string | null;
+};
+
+/** An organization's logo in a rounded square, or its initials where it has none. */
+function OrganizationMark({ name, logoFileId }: OrganizationMarkProps) {
+  if (logoFileId) {
+    return (
+      <Image
+        src={publicFileUrl(logoFileId)}
+        alt=""
+        width={44}
+        height={44}
+        unoptimized
+        className="size-11 shrink-0 rounded-lg border bg-card object-cover"
+      />
+    );
+  }
   return (
     <span
       aria-hidden="true"

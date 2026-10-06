@@ -10,6 +10,9 @@ public enum OrganizationErrorCode implements ErrorCode {
 	INDUSTRIES_REQUIRED("ORGANIZATION_INDUSTRIES_REQUIRED", ErrorCategory.VALIDATION,
 			"Name at least one industry the company works in or serves."),
 
+	LOGO_NOT_USABLE("ORGANIZATION_LOGO_NOT_USABLE", ErrorCategory.VALIDATION,
+			"This logo cannot be used. Upload the image again."),
+
 	MEMBERSHIP_REQUIRED("ORGANIZATION_MEMBERSHIP_REQUIRED", ErrorCategory.NOT_PERMITTED,
 			"This needs an organization you belong to."),
 
