@@ -108,7 +108,7 @@ test.describe("solutions directory", () => {
     const fact = (name: string) => page.locator('[data-slot="fact"]').filter({ hasText: name });
     await expect(fact("Industries")).toContainText("Insurance");
     await expect(fact("Deployment")).toContainText("Cloud (SaaS)");
-    await expect(page.getByText("In production")).toBeVisible();
+    await expect(page.getByText("In production").first()).toBeVisible();
     // What its owners added in the editor's steps is read here too.
     await expect(fact("Languages")).toContainText("Vietnamese, English");
     await expect(fact("Core technology")).toContainText("Python, PostgreSQL");

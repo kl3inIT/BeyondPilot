@@ -49,7 +49,7 @@ function SolutionCard({ solution }: { solution: PublicSolutionSummary }) {
           className="absolute -bottom-5 left-4 shadow-sm"
         />
       </div>
-      <div className="flex min-w-0 flex-col items-start gap-0.5">
+      <div className="flex min-w-0 flex-col items-start gap-1">
         <h2 className="max-w-full truncate text-base font-medium">
           <Link
             href={`${siteRoutes.solutions}/${solution.slug}`}
