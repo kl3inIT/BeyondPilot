@@ -910,6 +910,50 @@ export type ProgramList = {
 };
 
 /**
+ * A question a program asks its applicants.
+ */
+export type ProgramQuestion = {
+    /**
+     * What helps an applicant answer, shown under the field.
+     */
+    help?: string | null;
+    /**
+     * Null for a new question; an answer names its question by it.
+     */
+    id?: string | null;
+    kind: 'short_text' | 'long_text' | 'single_choice' | 'file' | 'link' | 'confirm';
+    label: string;
+    /**
+     * The longest answer to a text question; null takes the form's default.
+     */
+    maxLength?: number | null;
+    /**
+     * The choices of a single_choice question, two to twenty; empty otherwise.
+     */
+    options: Array<string>;
+    required: boolean;
+};
+
+/**
+ * The questions of a program as an operator edits them.
+ */
+export type ProgramQuestions = {
+    /**
+     * Whether the applications have opened, which fixes the questions.
+     */
+    fixed: boolean;
+    /**
+     * When the applications open; null while the program takes none.
+     */
+    opensAt?: string | null;
+    questions: Array<ProgramQuestion>;
+    /**
+     * Sent back with a save, which is refused when the program changed since.
+     */
+    version: number;
+};
+
+/**
  * A published program as the public list shows it.
  */
 export type ProgramSummary = {
@@ -1295,6 +1339,17 @@ export type SaveProgram = {
     type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
     /**
      * The version the screen read; the save is refused when the program changed since.
+     */
+    version: number;
+};
+
+/**
+ * Every question of a program, in the order the form asks them.
+ */
+export type SaveProgramQuestions = {
+    questions: Array<ProgramQuestion>;
+    /**
+     * The version of the program the screen read.
      */
     version: number;
 };
@@ -3140,6 +3195,84 @@ export type PublishProgramResponses = {
 };
 
 export type PublishProgramResponse = PublishProgramResponses[keyof PublishProgramResponses];
+
+export type GetProgramQuestionsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}/questions';
+};
+
+export type GetProgramQuestionsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+};
+
+export type GetProgramQuestionsError = GetProgramQuestionsErrors[keyof GetProgramQuestionsErrors];
+
+export type GetProgramQuestionsResponses = {
+    /**
+     * The questions, and whether they can still change.
+     */
+    200: ProgramQuestions;
+};
+
+export type GetProgramQuestionsResponse = GetProgramQuestionsResponses[keyof GetProgramQuestionsResponses];
+
+export type SaveProgramQuestionsData = {
+    body: SaveProgramQuestions;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}/questions';
+};
+
+export type SaveProgramQuestionsErrors = {
+    /**
+     * A member is not valid, or a question answered by a choice offers too few.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+    /**
+     * The program changed since it was read, or its applications have opened.
+     */
+    409: Problem;
+};
+
+export type SaveProgramQuestionsError = SaveProgramQuestionsErrors[keyof SaveProgramQuestionsErrors];
+
+export type SaveProgramQuestionsResponses = {
+    /**
+     * The questions as saved, with the program's new version.
+     */
+    200: ProgramQuestions;
+};
+
+export type SaveProgramQuestionsResponse = SaveProgramQuestionsResponses[keyof SaveProgramQuestionsResponses];
 
 export type UnpublishProgramData = {
     body?: never;

@@ -528,7 +528,60 @@
         "description": "Try another name, or look at every state.",
         "clear": "Show all programs"
       },
-      "countOf": "{count, plural, one {# program} other {# programs}} of {total}"
+      "countOf": "{count, plural, one {# program} other {# programs}} of {total}",
+      "tabs": {
+        "label": "Program",
+        "settings": "Settings",
+        "questions": "Questions"
+      },
+      "questions": {
+        "metaTitle": "Questions",
+        "title": "What the application form asks",
+        "lead": "After the applicant, their team and their solution, the form asks these, in this order. A program with no questions skips that step.",
+        "fixed": "Applications opened on {opened}, so the questions can no longer change: an answer may already name one.",
+        "none": "No questions yet. Applicants go straight from their solution to review and submit.",
+        "kinds": {
+          "short_text": "Short answer",
+          "long_text": "Long answer",
+          "single_choice": "One choice",
+          "file": "PDF file",
+          "link": "Link",
+          "confirm": "Confirmation"
+        },
+        "choiceCount": "{count, plural, one {# choice} other {# choices}}",
+        "optional": "Optional",
+        "notSaved": "Not saved yet",
+        "moveUp": "Move {label} up",
+        "moveDown": "Move {label} down",
+        "edit": "Edit",
+        "editNamed": "Edit {label}",
+        "add": "Add a question",
+        "save": "Save questions",
+        "unsaved": "You have unsaved changes.",
+        "saved": "Questions saved.",
+        "addTitle": "Add a question",
+        "editTitle": "Edit question",
+        "kind": "Answered with",
+        "label": "Question",
+        "help": "Help",
+        "helpHint": "Shown under the question, for what a good answer holds.",
+        "options": "Choices",
+        "optionsPlaceholder": "Add a choice",
+        "optionsHint": "Press Enter after each one. Two to {count}.",
+        "choicesRequired": "Add at least two choices.",
+        "maxLength": "Longest answer",
+        "maxLengthHint": "In characters. Leave empty for the default.",
+        "required": "An answer is required",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "update": "Update",
+        "addQuestion": "Add question",
+        "errors": {
+          "PROGRAM_QUESTIONS_FIXED": "Applications have opened, so the questions can no longer change.",
+          "PROGRAM_CHANGED_MEANWHILE": "Someone else changed this program in the meantime. Reload and make your changes again.",
+          "PROGRAM_CHOICES_REQUIRED": "A question answered by a choice needs at least two choices."
+        }
+      }
     },
     "accounts": {
       "metaTitle": "Accounts · BeyondPilot",

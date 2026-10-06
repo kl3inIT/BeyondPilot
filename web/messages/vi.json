@@ -528,7 +528,60 @@
         "description": "Thử tên khác, hoặc xem mọi trạng thái.",
         "clear": "Xem tất cả chương trình"
       },
-      "countOf": "{count, plural, other {# chương trình}} trên {total}"
+      "countOf": "{count, plural, other {# chương trình}} trên {total}",
+      "tabs": {
+        "label": "Chương trình",
+        "settings": "Cài đặt",
+        "questions": "Câu hỏi"
+      },
+      "questions": {
+        "metaTitle": "Câu hỏi",
+        "title": "Form nộp đơn hỏi gì",
+        "lead": "Sau phần người nộp, nhóm và giải pháp, form hỏi các câu này theo đúng thứ tự. Chương trình không có câu hỏi thì bỏ qua bước đó.",
+        "fixed": "Đợt nhận đơn đã mở lúc {opened}, nên không đổi câu hỏi được nữa: có thể đã có câu trả lời gắn với chúng.",
+        "none": "Chưa có câu hỏi nào. Người nộp đi thẳng từ phần giải pháp sang xem lại và nộp.",
+        "kinds": {
+          "short_text": "Trả lời ngắn",
+          "long_text": "Trả lời dài",
+          "single_choice": "Chọn một",
+          "file": "File PDF",
+          "link": "Đường link",
+          "confirm": "Xác nhận"
+        },
+        "choiceCount": "{count} lựa chọn",
+        "optional": "Không bắt buộc",
+        "notSaved": "Chưa lưu",
+        "moveUp": "Đưa {label} lên",
+        "moveDown": "Đưa {label} xuống",
+        "edit": "Sửa",
+        "editNamed": "Sửa {label}",
+        "add": "Thêm câu hỏi",
+        "save": "Lưu câu hỏi",
+        "unsaved": "Có thay đổi chưa lưu.",
+        "saved": "Đã lưu câu hỏi.",
+        "addTitle": "Thêm câu hỏi",
+        "editTitle": "Sửa câu hỏi",
+        "kind": "Trả lời bằng",
+        "label": "Câu hỏi",
+        "help": "Gợi ý",
+        "helpHint": "Hiện dưới câu hỏi, nói câu trả lời tốt cần có gì.",
+        "options": "Các lựa chọn",
+        "optionsPlaceholder": "Thêm lựa chọn",
+        "optionsHint": "Nhấn Enter sau mỗi lựa chọn. Từ hai tới {count}.",
+        "choicesRequired": "Thêm ít nhất hai lựa chọn.",
+        "maxLength": "Độ dài tối đa",
+        "maxLengthHint": "Tính theo ký tự. Để trống thì dùng mặc định.",
+        "required": "Bắt buộc trả lời",
+        "delete": "Xoá",
+        "cancel": "Huỷ",
+        "update": "Cập nhật",
+        "addQuestion": "Thêm câu hỏi",
+        "errors": {
+          "PROGRAM_QUESTIONS_FIXED": "Đợt nhận đơn đã mở, nên không đổi câu hỏi được nữa.",
+          "PROGRAM_CHANGED_MEANWHILE": "Có người vừa sửa chương trình này. Tải lại rồi sửa lại.",
+          "PROGRAM_CHOICES_REQUIRED": "Câu hỏi chọn một cần ít nhất hai lựa chọn."
+        }
+      }
     },
     "accounts": {
       "metaTitle": "Tài khoản · BeyondPilot",

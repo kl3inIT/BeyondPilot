@@ -44,6 +44,11 @@ export function programApplyUrl(slug: string): string | undefined {
 }
 
 /** A program's Settings in the admin area, the screen a program opens on. */
+/** Where an operator sets the questions a program's application form asks. */
+export function adminProgramQuestionsRoute(id: string) {
+  return `${siteRoutes.adminPrograms}/${id}/questions`;
+}
+
 export function adminProgramRoute(id: string) {
   return `${siteRoutes.adminPrograms}/${id}/settings`;
 }

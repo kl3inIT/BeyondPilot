@@ -413,6 +413,33 @@ createServer((request, response) => {
       return json(response, account ? 403 : 401, {});
     }
     const id = url.pathname.split("/")[5];
+    if (id && url.pathname.endsWith("/questions")) {
+      const program = programs[id];
+      if (!program) {
+        return json(response, 404, {});
+      }
+      // The Tasco challenge's applications are open, which fixes its questions.
+      const opensAt = program.applications?.opensAt ?? null;
+      return json(response, 200, {
+        questions:
+          program.slug === "insurance-ai-tasco"
+            ? [
+                {
+                  id: "5f0c1d2e-3a4b-4c5d-8e6f-7a8b9c0d1e01",
+                  kind: "single_choice",
+                  label: "Direction",
+                  help: null,
+                  required: true,
+                  options: ["Buying", "Carrying", "Claiming"],
+                  maxLength: null,
+                },
+              ]
+            : [],
+        fixed: opensAt !== null && Date.parse(opensAt) <= Date.now(),
+        opensAt,
+        version: program.version,
+      });
+    }
     if (id) {
       return programs[id] ? json(response, 200, programs[id]) : json(response, 404, {});
     }
