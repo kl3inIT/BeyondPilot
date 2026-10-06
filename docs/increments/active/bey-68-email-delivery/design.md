@@ -64,7 +64,7 @@ Alternatives:
 - **A second module for the email administration**, depending on `identity` and `notification`. Two modules would share one language, one owner of the tables and one lifecycle, which [boundary discovery](../../../conventions.md#boundary-discovery) keeps together.
 - **An interface in `identity` that `notification` implements** to send the code. One implementation by nature, which the [change design rules](../../../conventions.md#change-design) refuse.
 
-The edge change is recorded as an ADR once accepted.
+Accepted and recorded in [ADR 0005](../../../decisions/0005-operators-run-email-delivery.md), with the configuration in the database below.
 
 ## Configuration lives in the database
 
