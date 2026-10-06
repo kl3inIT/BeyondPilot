@@ -57,7 +57,8 @@ public class SearchService {
 		return new SearchResponse(
 				new SearchCounts(all, counts.getOrDefault(SearchDocumentRepository.PROGRAM, 0L),
 						counts.getOrDefault(SearchDocumentRepository.SOLUTION, 0L),
-						counts.getOrDefault(SearchDocumentRepository.TALENT, 0L)),
+						counts.getOrDefault(SearchDocumentRepository.TALENT, 0L),
+						counts.getOrDefault(SearchDocumentRepository.USE_CASE, 0L)),
 				items, page, PAGE_SIZE, kind == null ? all : counts.getOrDefault(kind, 0L));
 	}
 
@@ -74,7 +75,9 @@ public class SearchService {
 				facets.get(Cards.CUSTOMER_DEPLOYMENTS) instanceof Number count ? count.intValue() : null,
 				texts(facets, Cards.INDUSTRIES), texts(facets, Cards.FOCUS_AREAS), texts(facets, Cards.ROLES),
 				texts(facets, Cards.SKILLS), text(facets, Cards.CITY), text(facets, Cards.WORKS_AT),
-				uuid(facets, Cards.PHOTO));
+				uuid(facets, Cards.PHOTO), instant(facets, Cards.CLOSES), integer(facets, Cards.BUDGET_MIN),
+				integer(facets, Cards.BUDGET_MAX),
+				facets.get(Cards.BUDGET_TO_BE_DETERMINED) instanceof Boolean value ? value : null);
 	}
 
 	private static @Nullable String text(Map<String, Object> facets, String name) {
@@ -84,6 +87,10 @@ public class SearchService {
 	private static List<String> texts(Map<String, Object> facets, String name) {
 		return facets.get(name) instanceof List<?> values
 				? values.stream().filter(String.class::isInstance).map(String.class::cast).toList() : List.of();
+	}
+
+	private static @Nullable Integer integer(Map<String, Object> facets, String name) {
+		return facets.get(name) instanceof Number value ? value.intValue() : null;
 	}
 
 	private static @Nullable UUID uuid(Map<String, Object> facets, String name) {

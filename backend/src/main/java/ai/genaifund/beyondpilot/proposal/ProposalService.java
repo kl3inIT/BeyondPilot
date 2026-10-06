@@ -1,6 +1,8 @@
 package ai.genaifund.beyondpilot.proposal;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -72,6 +74,8 @@ public class ProposalService {
 
 	/** The reason the history gives for a decision that a withdrawal undid. */
 	private static final String WITHDRAWN_REASON = "The applicant withdrew the application.";
+
+	private static final ZoneId VIETNAM = ZoneId.of("Asia/Ho_Chi_Minh");
 
 	private static final Pattern WEB_ADDRESS = Pattern.compile("^https://\\S+$");
 
@@ -166,7 +170,7 @@ public class ProposalService {
 					organizationId == null ? null
 							: organizations.profile(organizationId).map(OrganizationProfile::name).orElse(null),
 					solutionId == null ? null : solutions.offered(solutionId).map(OfferedSolution::name).orElse(null),
-					proposal.getSubmittedAt(), proposal.getUpdatedAt(), outcome(proposal)));
+					proposal.getSubmittedAt(), proposal.getUpdatedAt(), outcome(proposal), nextStep(form)));
 		}
 		return new MyApplicationsResponse(items);
 	}
@@ -437,6 +441,21 @@ public class ProposalService {
 				json.readValue(proposal.getContact(), ContactDetails.class), proposal.getTeamBackground(),
 				proposal.getSolutionId(), deck(proposal), proposal.getBuiltWith(), proposal.getTraction(), answers, files, proposal.getSubmissions(), proposal.getSubmittedAt(),
 				proposal.getWithdrawnAt(), proposal.getVersion(), proposal.getUpdatedAt(), outcome(proposal));
+	}
+
+	/**
+	 * What comes after the outcome: the program's first key date after the day it is due, or after the close when no
+	 * day is set. Days are Vietnam's, as the program sets them.
+	 */
+	private static MyApplicationResponse.@Nullable NextStep nextStep(ApplicationForm form) {
+		LocalDate due = form.outcomesDueOn();
+		Instant after = due == null ? form.closesAt() : due.plusDays(1).atStartOfDay(VIETNAM).toInstant();
+		return form.keyDates()
+			.stream()
+			.filter(keyDate -> !keyDate.startsAt().isBefore(after))
+			.findFirst()
+			.map(keyDate -> new MyApplicationResponse.NextStep(keyDate.title(), keyDate.startsAt(), keyDate.allDay()))
+			.orElse(null);
 	}
 
 	/** GenAI Fund's decision on a submitted application, once its program's outcomes are released. */

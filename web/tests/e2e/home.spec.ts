@@ -43,7 +43,7 @@ test.describe("home page", () => {
     await page.getByRole("button", { name: "Search" }).click();
 
     await expect(page).toHaveURL("/search?q=AI");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("7 results for “AI”");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("8 results for “AI”");
   });
 
   test("a planned page renders the coming-soon screen", async ({ page }) => {

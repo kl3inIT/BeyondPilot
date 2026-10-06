@@ -4294,7 +4294,8 @@ paths:
           - program
           - solution
           - talent
-          pattern: program|solution|talent
+          - use_case
+          pattern: program|solution|talent|use_case
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -7920,6 +7921,21 @@ components:
       - submissions
       - updatedAt
       - version
+    ApplicationNextStep:
+      type: object
+      properties:
+        allDay:
+          type: boolean
+          description: "A day, not a moment."
+        at:
+          type: string
+          format: date-time
+        title:
+          type: string
+      required:
+      - allDay
+      - at
+      - title
     ApplicationStart:
       type: object
       description: "What the person's latest other application held, for a new one\
@@ -9509,6 +9525,13 @@ components:
         id:
           type: string
           format: uuid
+        next:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/ApplicationNextStep"
+          description: "The program's first key date after the outcome, such as a\
+            \ demo day; null when it has none."
         organizationName:
           type:
           - string
@@ -10796,6 +10819,12 @@ components:
           type: array
           items:
             type: string
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Its logo, read at /api/storage/files/{id}; null for none."
         name:
           type: string
         slug:
@@ -12945,21 +12974,48 @@ components:
         talent:
           type: integer
           format: int64
+        useCase:
+          type: integer
+          format: int64
       required:
       - all
       - program
       - solution
       - talent
+      - useCase
     SearchItem:
       type: object
       description: "One result, as its card shows it. Members of another kind are\
         \ null or empty."
       properties:
+        budgetMax:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: "A use case's budget, when its organization shows it."
+        budgetMin:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: "A use case's budget, when its organization shows it."
+        budgetToBeDetermined:
+          type:
+          - boolean
+          - "null"
+          description: Whether a use case's budget is still to be determined.
         city:
           type:
           - string
           - "null"
           description: A person's city.
+        closesAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When a use case stops taking proposals.
         country:
           type:
           - string
@@ -12995,7 +13051,7 @@ components:
             type: string
         industries:
           type: array
-          description: The industries of a solution or a person.
+          description: "The industries of a solution, a person or a use case."
           items:
             type: string
         kind:
@@ -13004,6 +13060,7 @@ components:
           - program
           - solution
           - talent
+          - use_case
         maturity:
           type:
           - string
@@ -13043,7 +13100,8 @@ components:
             type: string
         slug:
           type: string
-          description: The address of its page under the path of its kind.
+          description: The address of its page under the path of its kind; a use case's
+            identifier.
         snippet:
           type: string
           description: "The summary, or a person's headline, with each word the query\
@@ -13058,10 +13116,12 @@ components:
           - string
           - "null"
           description: "The partner of a program, the organization of a solution,\
-            \ the headline of a person."
+            \ the headline of a person, the organization of a use case unless it stays\
+            \ anonymous."
         summary:
           type: string
-          description: "A program's or a solution's summary, a person's bio."
+          description: "A program's or a solution's summary, a person's bio, a use\
+            \ case's goal."
         title:
           type: string
         type:

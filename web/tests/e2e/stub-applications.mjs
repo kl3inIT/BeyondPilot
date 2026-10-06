@@ -179,6 +179,31 @@ export function answerApplication(url, session, email) {
         solutionName: "Claim Copilot",
         submittedAt: view.application.submittedAt,
         updatedAt: view.application.updatedAt,
+        outcome: null,
+        next: {
+          title: "Demo day",
+          at: new Date(Date.now() + 18 * day).toISOString(),
+          allDay: false,
+        },
+      },
+      // An earlier program, closed and released, whose demo day is still to come.
+      {
+        id: "3e2d1c0b-0000-4000-8000-000000000031",
+        programSlug: "ai-for-logistics",
+        programName: "AI for Logistics Challenge",
+        closesAt: new Date(Date.now() - 20 * day).toISOString(),
+        outcomesDueOn: new Date(Date.now() - 6 * day).toISOString().slice(0, 10),
+        status: "submitted",
+        organizationName: "Pocket Policy",
+        solutionName: "Route Copilot",
+        submittedAt: new Date(Date.now() - 25 * day).toISOString(),
+        updatedAt: new Date(Date.now() - 25 * day).toISOString(),
+        outcome: "shortlisted",
+        next: {
+          title: "Demo day",
+          at: new Date(Date.now() + 4 * day).toISOString(),
+          allDay: false,
+        },
       },
     ];
     return [200, { items: applied ? items : [] }];

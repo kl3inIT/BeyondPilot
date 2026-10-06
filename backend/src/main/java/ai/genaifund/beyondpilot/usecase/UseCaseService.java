@@ -27,6 +27,7 @@ import ai.genaifund.beyondpilot.usecase.persistence.UseCase;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRepository;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRequirement;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,8 +53,11 @@ public class UseCaseService {
 
 	private final UseCasePeople people;
 
+	private final ApplicationEventPublisher events;
+
 	UseCaseService(UseCaseRepository useCases, OrganizationDirectory organizations, IdentityService identity,
-			AuditTrail audit, UseCaseAttachments files, UseCasePeople people) {
+			AuditTrail audit, UseCaseAttachments files, UseCasePeople people, ApplicationEventPublisher events) {
+		this.events = events;
 		this.useCases = useCases;
 		this.organizations = organizations;
 		this.identity = identity;
@@ -158,6 +162,7 @@ public class UseCaseService {
 		useCase.showCompanyName(request.hideOrganizationName());
 		useCase.editedBy(actor.accountId());
 		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(useCase.getId()));
 		return response(actor, membership, useCase);
 	}
 
@@ -184,6 +189,7 @@ public class UseCaseService {
 		useCase.submit(actor.accountId(), now);
 		useCase.editedBy(actor.accountId());
 		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(useCase.getId()));
 		record(AuditAction.USE_CASE_SUBMIT, actor, useCase, Map.of("organization", membership.organizationId().toString()));
 		return response(actor, membership, useCase);
 	}
@@ -203,6 +209,7 @@ public class UseCaseService {
 		useCase.backToDraft();
 		useCase.editedBy(actor.accountId());
 		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(useCase.getId()));
 		record(AuditAction.USE_CASE_DRAFT, actor, useCase,
 				Map.of("organization", membership.organizationId().toString(), "from", status));
 		return response(actor, membership, useCase);

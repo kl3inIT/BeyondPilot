@@ -342,6 +342,29 @@ test.describe("apply", () => {
       submitted.getByRole("link", { name: "AI for Insurance Challenge × Tasco" }),
     ).toBeVisible();
     await expect(submitted.getByText("Claim Copilot · Pocket Policy")).toBeVisible();
+
+    // Each submitted application shows its stages; what is behind it is marked done.
+    const open = submitted.getByRole("listitem").filter({ hasText: "Claim Copilot" });
+    const openStages = open.getByRole("list", { name: "Where your application stands" });
+    await expect(openStages.getByRole("listitem")).toHaveText([
+      /^Submitted \(done\)/,
+      /^Screening \(to come\)GenAI Fund$/,
+      /^Outcome \(to come\)/,
+      /^Demo day \(to come\)/,
+    ]);
+    const released = page
+      .getByRole("region", { name: "Past" })
+      .getByRole("listitem")
+      .filter({ hasText: "Route Copilot" });
+    await expect(released.getByText("Shortlisted").first()).toBeVisible();
+    await expect(
+      released.getByRole("list", { name: "Where your application stands" }).getByRole("listitem"),
+    ).toHaveText([
+      /^Submitted \(done\)/,
+      /^Screening \(done\)GenAI Fund$/,
+      /^Outcome \(done\)Shortlisted$/,
+      /^Demo day \(to come\)/,
+    ]);
     await settled(page);
     await shot(page, `apply-7-mine-${label}`);
   });

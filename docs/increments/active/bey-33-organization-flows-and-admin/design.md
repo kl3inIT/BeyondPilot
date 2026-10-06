@@ -87,7 +87,7 @@ The exact contract is `openapi.yml`, refreshed with each slice.
 
 - An invitation does not expire; the frames draw an expiry date, which is left out.
 - "Ask to change the domain" is left out: an owner writes to GenAI Fund by email, as for anything else.
-- The logo is an address the owner writes; it is not uploaded, and the screens still draw initials until a screen that shows the logo reads it. A year in the future is accepted up to 2100.
+- The logo is an uploaded image. The workspace and the public page of the organization draw it; the operators' list and the search results draw initials, as their frames do. A year in the future is accepted up to 2100.
 - What the mockup's "Complete your account" step asks (first and last name, phone, country, LinkedIn, photo) belongs to `identity` and is not in this increment.
 - The Use cases tab of an enterprise waits for the use case module (BEY-35). When it exists, an owner drafts and submits and members read.
 - The daily limit is a rolling 24 hours, while the screen says "today".
