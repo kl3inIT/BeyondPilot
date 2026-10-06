@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.notification.web;
 
 import ai.genaifund.beyondpilot.notification.EmailSettingsAdministration;
 import ai.genaifund.beyondpilot.notification.dto.EmailSettingsResponse;
+import ai.genaifund.beyondpilot.notification.dto.EmailSetupResponse;
 import ai.genaifund.beyondpilot.notification.dto.EmailTestResponse;
 import ai.genaifund.beyondpilot.notification.dto.SaveEmailAppearanceRequest;
 import ai.genaifund.beyondpilot.notification.dto.SaveEmailSettingsRequest;
@@ -58,6 +59,16 @@ class EmailSettingsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	EmailSettingsResponse save(@CurrentActor Actor actor, @Valid @RequestBody SaveEmailSettingsRequest request) {
 		return settings.save(actor, request);
+	}
+
+	@GetMapping(path = "/checks", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "checkEmailSetup",
+			summary = "Ask the saved provider whether email from the sender's domain can leave, and which DNS records it needs", security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "What the provider answered; a limit says why it could not be asked everything.")
+	@ApiResponse(responseCode = "400", description = "No provider and sender are saved.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	EmailSetupResponse checks(@CurrentActor Actor actor) {
+		return settings.checks(actor);
 	}
 
 	@PostMapping(path = "/test", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

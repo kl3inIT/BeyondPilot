@@ -27,6 +27,7 @@ import ai.genaifund.beyondpilot.notification.persistence.EmailTemplateOverride;
 import ai.genaifund.beyondpilot.notification.persistence.EmailTemplateOverrideRepository;
 import ai.genaifund.beyondpilot.notification.settings.DeliverySettings;
 import ai.genaifund.beyondpilot.notification.template.DefaultTemplates;
+import ai.genaifund.beyondpilot.notification.template.Appearance;
 import ai.genaifund.beyondpilot.notification.template.EmailKind;
 import ai.genaifund.beyondpilot.notification.template.EmailRenderer;
 import ai.genaifund.beyondpilot.notification.template.EmailTemplate;
@@ -167,7 +168,7 @@ public class EmailTemplateAdministration {
 		EmailKind kind = editableKind(kindValue);
 		EmailTemplate draft = new EmailTemplate(request.subject(), request.body());
 		List<TemplateProblem> problems = renderer.problems(kind, draft);
-		RenderedEmail email = sample(kind, problems.isEmpty() ? draft : defaults.template(kind));
+		RenderedEmail email = sample(kind, problems.isEmpty() ? draft : defaults.template(kind), appearance(request));
 		return new EmailPreviewResponse(email.subject(), email.html(), email.text(),
 				problems.stream()
 					.map(problem -> new EmailPreviewResponse.Problem(problem.type().name().toLowerCase(Locale.ROOT),
@@ -190,7 +191,7 @@ public class EmailTemplateAdministration {
 			throw new NotificationException(NotificationErrorCode.TEMPLATE_INVALID,
 					"The " + kind.value() + " draft does not pass the checks");
 		}
-		RenderedEmail email = sample(kind, draft);
+		RenderedEmail email = sample(kind, draft, appearance(request));
 		Optional<DeliveryFailure> failure = delivery.delivery()
 			.map(saved -> sender.sendTest(saved, operator.email(),
 					new RenderedEmail("[Test] " + email.subject(), email.html(), email.text())))
@@ -198,10 +199,19 @@ public class EmailTemplateAdministration {
 		return new EmailTestResponse(operator.email(), failure.isEmpty(), failure.map(DeliveryFailure::value).orElse(null));
 	}
 
-	private RenderedEmail sample(EmailKind kind, EmailTemplate template) {
+	private RenderedEmail sample(EmailKind kind, EmailTemplate template, Appearance appearance) {
 		Map<String, Object> samples = new HashMap<>();
 		kind.variables().forEach(variable -> samples.put(variable.name(), variable.sample()));
-		return renderer.render(kind, template, samples, delivery.appearance());
+		return renderer.render(kind, template, samples, appearance);
+	}
+
+	/** The appearance a draft is shown in: the one being edited when it brings one, the saved one otherwise. */
+	private Appearance appearance(EmailDraftRequest request) {
+		Appearance saved = delivery.appearance();
+		EmailDraftRequest.Appearance draft = request.appearance();
+		return draft == null ? saved
+				: new Appearance(draft.accentColor(), draft.footer().strip().isEmpty() ? saved.footer() : draft.footer().strip(),
+						saved.siteUrl());
 	}
 
 	private EmailTemplateResponse response(EmailKind kind, Optional<EmailTemplateOverride> override) {
