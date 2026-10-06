@@ -63,11 +63,12 @@ class SolutionIndexing {
 		Cards.put(facets, Cards.FOCUS_AREAS, solution.focusAreas());
 		String maturity = solution.maturity();
 		String keywords = Cards.words(solution.focusAreas(), solution.industries(),
-				maturity == null ? List.of() : List.of(maturity), solution.deployment());
+				maturity == null ? List.of() : List.of(maturity), solution.deployment(), solution.builtWith());
 		return new Document(SearchDocumentRepository.SOLUTION, solution.id(), solution.slug(), solution.name(),
 				solution.organizationName(), Objects.requireNonNullElse(solution.summary(), ""), keywords,
 				Cards.lines(solution.name(), solution.organizationName(), keywords, solution.summary(),
-						solution.problemsSolved(), solution.valueProposition()),
+						solution.problemsSolved(), solution.valueProposition(), solution.bestCustomerProfile(),
+						solution.traction()),
 				facets, solution.listed(), null, null);
 	}
 
