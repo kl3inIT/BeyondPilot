@@ -44,7 +44,6 @@ export const industries = [
 export const refusalReasons = [
   "duplicate",
   "not_a_real_organization",
-  "incomplete",
   "out_of_scope",
   "other",
 ] as const;
@@ -56,4 +55,11 @@ export const takeDownReasons = [
   "other",
 ] as const;
 
-export const organizationStatuses = ["pending", "approved", "rejected", "suspended"] as const;
+/** What the operators' list filters by: each review status, and `suspended` for those taken down. */
+export const organizationStatuses = [
+  "in_review",
+  "needs_changes",
+  "approved",
+  "rejected",
+  "suspended",
+] as const;

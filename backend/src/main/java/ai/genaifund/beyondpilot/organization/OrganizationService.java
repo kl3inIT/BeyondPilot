@@ -192,7 +192,7 @@ public class OrganizationService {
 			logos.requireUsable(actor, profile.logoFileId());
 		}
 		Organization organization = new Organization(UUID.randomUUID(), freeSlug(profile.name()),
-				profile.name().strip(), profile.type(), Organization.PENDING, person.accountId());
+				profile.name().strip(), profile.type(), Organization.IN_REVIEW, person.accountId());
 		organization.describe(profile.name().strip(), profile.type(), OrganizationViews.text(profile.website()),
 				profile.country(), profile.teamSize(), OrganizationViews.codes(profile.industries()),
 				OrganizationViews.text(profile.description()), profile.foundedYear(), profile.logoFileId());
@@ -302,7 +302,8 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Saves the profile. A refused organization that its owner saves waits for review again.
+	 * Saves the profile. An organization sent back that its owner saves waits for review again; a refused one stays
+	 * refused.
 	 * @throws OrganizationException when the caller is not an owner, or the organization changed since it was read
 	 */
 	@Transactional
@@ -323,7 +324,7 @@ public class OrganizationService {
 				OrganizationViews.text(request.website()), request.country(), request.teamSize(),
 				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()),
 				request.foundedYear(), logo);
-		if (organization.isRejected()) {
+		if (organization.isSentBack()) {
 			organization.resubmit();
 		}
 		organizations.flush();

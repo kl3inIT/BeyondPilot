@@ -121,7 +121,7 @@ test.describe("admin organizations", () => {
 
     await page.getByRole("combobox", { name: "Status" }).click();
     await page.getByRole("option", { name: "Needs review" }).click();
-    await expect(page).toHaveURL(/status=pending/);
+    await expect(page).toHaveURL(/status=in_review/);
     // A claim waits for a decision as a new organization does.
     await expect(shownOrganizations(page)).toHaveText(["Lumen Health", "Open Kitchen"]);
     await expect(page.getByText("2 need review")).toBeVisible();
@@ -239,26 +239,62 @@ test.describe("admin organizations", () => {
     const decisions = await answerDecisions(page, decisionsPath, 204);
     const dialog = await openReview(page);
 
-    await dialog.getByRole("button", { name: "Do not approve…" }).click();
-    await expect(dialog.getByRole("heading")).toHaveText("Do not approve Lumen Health");
+    await dialog.getByRole("button", { name: "Refuse…" }).click();
+    await expect(dialog.getByRole("heading")).toHaveText("Refuse Lumen Health");
     await expect(dialog.getByRole("button", { name: "Send decision" })).toBeDisabled();
 
     // Leaving the reason goes back to the review, where the organization can still be approved.
     await dialog.getByRole("button", { name: "Back" }).click();
     await expect(dialog.getByRole("heading")).toHaveText("Review Lumen Health");
-    await dialog.getByRole("button", { name: "Do not approve…" }).click();
+    await dialog.getByRole("button", { name: "Refuse…" }).click();
 
-    await giveReason(page, "Profile is incomplete", "  Say what you build.  ");
+    await giveReason(page, "Already on BeyondPilot", "  It is listed as Lumen Clinics.  ");
     await dialog.getByRole("button", { name: "Send decision" }).click();
 
     await expect(
-      page.getByText("Organization not approved. Its owners can read the reason."),
+      page.getByText("Organization refused. Its owners can read the reason."),
     ).toBeVisible();
     await expect(dialog).toHaveCount(0);
     expect(decisions).toEqual([
       {
         call: `POST /api/organization/admin/organizations/${lumen}/refuse`,
-        body: { reason: "incomplete", message: "Say what you build." },
+        body: { reason: "duplicate", message: "It is listed as Lumen Clinics." },
+      },
+    ]);
+  });
+
+  test("a send back is not sent without what to change, and goes back to the review", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    const dialog = await openReview(page);
+
+    await dialog.getByRole("button", { name: "Send back…" }).click();
+    await expect(dialog.getByRole("heading")).toHaveText("Send Lumen Health back");
+    const send = dialog.getByRole("button", { name: "Send back", exact: true });
+    await expect(send).toBeDisabled();
+
+    await dialog.getByRole("button", { name: "Back", exact: true }).click();
+    await expect(dialog.getByRole("heading")).toHaveText("Review Lumen Health");
+    await dialog.getByRole("button", { name: "Send back…" }).click();
+
+    await dialog
+      .getByRole("textbox", { name: "What should the owners change?" })
+      .fill("  Say what you build.  ");
+    await expectNoSeriousA11yViolations(page);
+    await send.click();
+
+    await expect(
+      page.getByText("Organization sent back. Its owners were told what to change."),
+    ).toBeVisible();
+    await expect(dialog).toHaveCount(0);
+    expect(decisions).toEqual([
+      {
+        call: `POST /api/organization/admin/organizations/${lumen}/send-back`,
+        body: { reason: "Say what you build." },
       },
     ]);
   });
@@ -492,7 +528,7 @@ test.describe("admin organizations", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto(`/admin/organizations/${firstcall}`);
 
-    await expect(page.getByText("Not approved: Profile is incomplete.")).toBeVisible();
+    await expect(page.getByText("Not approved: Already on BeyondPilot.")).toBeVisible();
     await expect(page.getByText("Say what the company builds.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Review…" })).toHaveCount(0);
 

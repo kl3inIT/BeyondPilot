@@ -53,6 +53,9 @@ public enum AuditAction {
 	/** {@code reason} is the code of the reason given. */
 	ORGANIZATION_REFUSE("organization.refuse", "reason"),
 
+	/** An operator sent an organization back to its owners with what to change. */
+	ORGANIZATION_SEND_BACK("organization.send_back"),
+
 	/** An operator let a person own an organization nobody owned. {@code account} is that person's identifier. */
 	ORGANIZATION_CLAIM_APPROVE("organization.claim_approve", "account"),
 

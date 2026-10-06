@@ -16,6 +16,7 @@ export const auditActions = [
   "organization.create",
   "organization.approve",
   "organization.refuse",
+  "organization.send_back",
   "organization.suspend",
   "organization.restore",
   "organization.update",

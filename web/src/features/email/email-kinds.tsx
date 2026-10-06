@@ -30,6 +30,7 @@ const kindIcons: Record<EmailKind, React.ComponentType<React.SVGProps<SVGSVGElem
   organization_invitation: UserPlusIcon,
   organization_approved: BadgeCheckIcon,
   organization_refused: BadgeXIcon,
+  organization_sent_back: FilePenIcon,
   organization_request_approved: DoorOpenIcon,
   organization_request_declined: DoorClosedIcon,
   organization_taken_down: EyeOffIcon,

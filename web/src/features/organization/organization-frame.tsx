@@ -92,17 +92,37 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
           <p className="text-sm text-muted-foreground">{kind.join(" · ")}</p>
         </div>
 
-        {organization.status === "pending" && (
+        {organization.status === "in_review" && (
           <NoticeCard
             titleAs="h2"
-            title={t("pending.title")}
-            description={<p>{t("pending.lead", { name: organization.name })}</p>}
-            badge={<Badge variant="info">{t("status.pending")}</Badge>}
-            foot={t("pending.foot")}
+            title={t("inReview.title")}
+            description={<p>{t("inReview.lead", { name: organization.name })}</p>}
+            badge={<Badge variant="info">{t("status.in_review")}</Badge>}
+            foot={t("inReview.foot")}
             actions={
               toProfile && (
                 <Button prominence="secondary" href={siteRoutes.workspaceOrganization}>
-                  {t("pending.edit")}
+                  {t("inReview.edit")}
+                </Button>
+              )
+            }
+          />
+        )}
+        {organization.status === "needs_changes" && (
+          <NoticeCard
+            titleAs="h2"
+            title={t("needsChanges.title", { name: organization.name })}
+            description={
+              organization.decisionMessage && (
+                <p className="whitespace-pre-line">{organization.decisionMessage}</p>
+              )
+            }
+            badge={<Badge variant="info">{t("status.needs_changes")}</Badge>}
+            foot={t(owner ? "needsChanges.owner" : "needsChanges.member")}
+            actions={
+              toProfile && (
+                <Button prominence="secondary" href={siteRoutes.workspaceOrganization}>
+                  {t("needsChanges.edit")}
                 </Button>
               )
             }
@@ -125,18 +145,11 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
               </>
             }
             badge={<Badge variant="info">{t("status.rejected")}</Badge>}
-            foot={t(owner ? "rejected.owner" : "rejected.member")}
-            actions={
-              toProfile && (
-                <Button prominence="secondary" href={siteRoutes.workspaceOrganization}>
-                  {t("rejected.edit")}
-                </Button>
-              )
-            }
+            foot={t("rejected.foot")}
           />
         )}
 
-        {organization.status === "suspended" && organization.suspensionReason && (
+        {organization.suspendedAt && organization.suspensionReason && (
           <NoticeCard
             titleAs="h2"
             title={t("suspended.title", { name: organization.name })}

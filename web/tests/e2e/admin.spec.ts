@@ -67,7 +67,7 @@ test.describe("admin", () => {
     // An organization waits when it is new, and when someone claims one nobody owns.
     await expect(page.getByText("6 records wait for a decision.")).toBeVisible();
     for (const [queue, count, href] of [
-      ["Organizations to review", 2, "/admin/organizations?status=pending"],
+      ["Organizations to review", 2, "/admin/organizations?status=in_review"],
       ["Solutions to review", 2, "/admin/solutions?status=submitted"],
       ["Talent profiles to review", 2, "/admin/talent?status=submitted"],
     ] as const) {

@@ -1,12 +1,18 @@
 import { Status } from "@/components/composites/status";
 
-/** What GenAI Fund's review made of a record, from a draft to a decision. */
-type ReviewState = "draft" | "pending" | "submitted" | "approved" | "rejected" | "suspended";
+/**
+ * What GenAI Fund's review made of a record, from a draft to a decision, and `suspended` for an
+ * approved record GenAI Fund took down. `submitted` is the name of in review for the kinds that
+ * have not moved to the one vocabulary yet.
+ */
+type ReviewState =
+  "draft" | "in_review" | "submitted" | "needs_changes" | "approved" | "rejected" | "suspended";
 
 const tones = {
   draft: "neutral",
-  pending: "warning",
+  in_review: "warning",
   submitted: "warning",
+  needs_changes: "warning",
   approved: "success",
   rejected: "destructive",
   suspended: "destructive",

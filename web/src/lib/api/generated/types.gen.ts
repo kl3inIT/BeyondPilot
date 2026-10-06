@@ -219,7 +219,14 @@ export type AdminOrganizationSummary = {
      */
     requestedAt?: string | null;
     slug: string;
-    status: 'pending' | 'approved' | 'rejected' | 'suspended';
+    /**
+     * GenAI Fund's review of the organization.
+     */
+    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
+    /**
+     * When it was taken down; null while it is not.
+     */
+    suspendedAt?: string | null;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
 };
 
@@ -690,7 +697,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -1614,13 +1621,13 @@ export type Organization = {
     country?: string | null;
     createdAt: string;
     /**
-     * What the operator wrote to the owners with the refusal.
+     * What the operator wrote to the owners when refusing it or sending it back.
      */
     decisionMessage?: string | null;
     /**
-     * Why it was last refused.
+     * Why it was refused; null when it was sent back.
      */
-    decisionReason?: 'duplicate' | 'not_a_real_organization' | 'incomplete' | 'out_of_scope' | 'other';
+    decisionReason?: 'duplicate' | 'not_a_real_organization' | 'out_of_scope' | 'other';
     description?: string | null;
     /**
      * The domain GenAI Fund verified as the organization's; null until it has.
@@ -1642,11 +1649,11 @@ export type Organization = {
     name: string;
     slug: string;
     /**
-     * GenAI Fund's review of the organization.
+     * GenAI Fund's review of the organization. One taken down stays `approved`; `suspendedAt` says it is down.
      */
-    status: 'pending' | 'approved' | 'rejected' | 'suspended';
+    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
     /**
-     * When it was last taken down.
+     * When it was taken down; null while it is not.
      */
     suspendedAt?: string | null;
     /**
@@ -2363,14 +2370,14 @@ export type ReceivedIntroductions = {
 };
 
 /**
- * Why an organization is not approved, and what its owners are told.
+ * Why an organization is refused for good, and what its owners are told. Missing information is a send back instead.
  */
 export type RefuseOrganization = {
     /**
      * Shown to the owners with the refusal.
      */
     message?: string | null;
-    reason: 'duplicate' | 'not_a_real_organization' | 'incomplete' | 'out_of_scope' | 'other';
+    reason: 'duplicate' | 'not_a_real_organization' | 'out_of_scope' | 'other';
 };
 
 /**
@@ -3241,6 +3248,16 @@ export type SearchResults = {
 };
 
 /**
+ * Why GenAI Fund sends an organization back to its owners.
+ */
+export type SendBackOrganization = {
+    /**
+     * What the owners should change. They read it and receive it by email.
+     */
+    reason: string;
+};
+
+/**
  * Why GenAI Fund sends a use case back to its organization.
  */
 export type SendBackUseCase = {
@@ -3714,7 +3731,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -4986,9 +5003,9 @@ export type ListAdminOrganizationsData = {
          */
         q?: string | null;
         /**
-         * Only organizations of this review status; `pending` also selects an approved one with an open claim.
+         * Only organizations of this review status; `in_review` also selects an approved one with an open claim, `approved` leaves out those taken down, and `suspended` selects those taken down.
          */
-        status?: 'pending' | 'approved' | 'rejected' | 'suspended';
+        status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended';
         /**
          * The page, counted from 1.
          */
@@ -5417,6 +5434,49 @@ export type RestoreOrganizationResponses = {
 };
 
 export type RestoreOrganizationResponse = RestoreOrganizationResponses[keyof RestoreOrganizationResponses];
+
+export type SendBackOrganizationData = {
+    body: SendBackOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/send-back';
+};
+
+export type SendBackOrganizationErrors = {
+    /**
+     * The reason is blank or over 1000 characters.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not waiting for review.
+     */
+    409: Problem;
+};
+
+export type SendBackOrganizationError = SendBackOrganizationErrors[keyof SendBackOrganizationErrors];
+
+export type SendBackOrganizationResponses = {
+    /**
+     * The organization needs changes; its owners are told why.
+     */
+    204: void;
+};
+
+export type SendBackOrganizationResponse = SendBackOrganizationResponses[keyof SendBackOrganizationResponses];
 
 export type TakeDownOrganizationData = {
     body: TakeDownOrganization;

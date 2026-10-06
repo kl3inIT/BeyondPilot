@@ -31,7 +31,8 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 /**
  * Solutions and talent in search over real HTTP against PostgreSQL, changed the way their owners and operators change
  * them: approved items are found without a session, an unlisted solution stays in the index for matching but out of a
- * visitor's results, a renamed organization is shown under its new name, and a rejected or unlisted item leaves. Only
+ * visitor's results, a renamed organization is shown under its new name, a rejected or unlisted item leaves, and so
+ * do the items of an organization taken down. Only
  * the SMTP server is replaced.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -101,6 +102,25 @@ class SearchDirectoriesTest {
 		post(operator, "/api/solution/admin/solutions/" + solution + "/reject",
 				Map.of("reason", "other", "message", "Tell us where the model is."));
 		await().atMost(WAIT).until(() -> listed(solution) == null);
+	}
+
+	@Test
+	void theSolutionsOfAnOrganizationTakenDownLeaveTheIndexUntilItIsRestored() {
+		String owner = TestSignIn.session(client, mail, "down-" + word + "@directories.test");
+		UUID organization = organization(owner, "Down " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		UUID solution = submittedSolution(owner, "Claims Desk " + word);
+		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
+		await().atMost(WAIT).until(() -> total("claims desk " + word) == 1);
+
+		post(operator, "/api/organization/admin/organizations/" + organization + "/take-down",
+				Map.of("reason", "breaks_the_rules"));
+		// Out of the results and out of matching while it is down.
+		await().atMost(WAIT).until(() -> listed(solution) == null);
+		assertThat(total("claims desk " + word)).isZero();
+
+		post(operator, "/api/organization/admin/organizations/" + organization + "/restore", null);
+		await().atMost(WAIT).until(() -> total("claims desk " + word) == 1);
 	}
 
 	@Test

@@ -723,6 +723,7 @@
           "create": "Thêm tổ chức",
           "approve": "Duyệt tổ chức",
           "refuse": "Không duyệt tổ chức",
+          "send_back": "Trả lại tổ chức",
           "claim_approve": "Chấp nhận yêu cầu nhận tổ chức",
           "claim_decline": "Từ chối yêu cầu nhận tổ chức",
           "member_role": "Đổi vai trò thành viên",
@@ -797,6 +798,7 @@
           "create": "Thêm tổ chức <resource></resource>",
           "approve": "Duyệt tổ chức <resource></resource>",
           "refuse": "Không duyệt tổ chức <resource></resource>",
+          "send_back": "Trả lại tổ chức <resource></resource>",
           "claim_approve": "Chấp nhận yêu cầu nhận <resource></resource>",
           "claim_decline": "Từ chối yêu cầu nhận <resource></resource>",
           "member_role": "Đổi vai trò một thành viên của <resource></resource>",
@@ -893,7 +895,8 @@
         }
       },
       "status": {
-        "pending": "Cần duyệt",
+        "in_review": "Cần duyệt",
+        "needs_changes": "Đã trả lại",
         "approved": "Đã duyệt",
         "rejected": "Không được duyệt",
         "suspended": "Đã gỡ xuống"
@@ -949,6 +952,7 @@
         "back": "Tất cả tổ chức",
         "createdByOn": "{name}, ngày {day}",
         "refused": "Không được duyệt: {reason}.",
+        "sentBack": "Đã trả lại cho các chủ sở hữu:",
         "claims": "Yêu cầu nhận tổ chức",
         "tabs": {
           "label": "Các phần của tổ chức này",
@@ -968,10 +972,15 @@
         "leadUnknown": "Tổ chức mới, tạo ngày {day}. Cho tới khi bạn quyết định, tổ chức chưa hiển thị trong các danh mục.",
         "note": "Khi được duyệt, tổ chức xuất hiện trong danh mục và được đăng giải pháp. Dù quyết định thế nào, các chủ sở hữu đều nhận email.",
         "approve": "Duyệt",
-        "refuse": "Không duyệt…",
-        "refuseTitle": "Không duyệt {name}",
-        "refuseLead": "Các chủ sở hữu đọc được lý do, và có thể sửa tổ chức rồi gửi lại.",
+        "refuse": "Từ chối…",
+        "refuseTitle": "Từ chối {name}",
+        "refuseLead": "Các chủ sở hữu đọc được lý do. Từ chối là quyết định cuối cùng; nếu cần sửa, hãy trả lại tổ chức.",
         "refuseConfirm": "Gửi quyết định",
+        "sendBack": "Trả lại…",
+        "sendBackTitle": "Trả lại {name}",
+        "sendBackLead": "Các chủ sở hữu đọc được cần sửa gì. Khi họ sửa và lưu tổ chức, tổ chức được gửi duyệt lại.",
+        "sendBackLabel": "Các chủ sở hữu cần sửa gì?",
+        "sendBackConfirm": "Trả lại",
         "reason": "Lý do",
         "message": "Lời nhắn cho các chủ sở hữu",
         "messageHint": "Quyết định được ghi vào nhật ký kiểm toán.",
@@ -1383,7 +1392,11 @@
         },
         "organization_refused": {
           "name": "Tổ chức chưa được duyệt",
-          "description": "Báo chủ sở hữu cần sửa gì trước khi được hiển thị."
+          "description": "Báo chủ sở hữu rằng tổ chức bị từ chối, và lý do."
+        },
+        "organization_sent_back": {
+          "name": "Tổ chức bị trả lại",
+          "description": "Báo chủ sở hữu cần sửa gì trước khi được duyệt."
         },
         "organization_request_approved": {
           "name": "Yêu cầu tham gia được chấp nhận",
@@ -2194,7 +2207,6 @@
     "organizationRefusal": {
       "duplicate": "Đã có trên BeyondPilot",
       "not_a_real_organization": "Không xác minh được là một tổ chức",
-      "incomplete": "Hồ sơ chưa đầy đủ",
       "out_of_scope": "Ngoài phạm vi của BeyondPilot",
       "other": "Lý do khác"
     },
@@ -2391,23 +2403,28 @@
       "useCases": "Use case"
     },
     "status": {
-      "pending": "Đang duyệt",
+      "in_review": "Đang duyệt",
+      "needs_changes": "Cần sửa",
       "approved": "Đã duyệt",
       "rejected": "Không được duyệt",
       "suspended": "Đã gỡ xuống"
     },
-    "pending": {
+    "inReview": {
       "title": "GenAI Fund đang duyệt tổ chức của bạn",
       "lead": "Cho tới khi được duyệt, {name} chưa xuất hiện trong các danh mục và chưa thể đăng giải pháp công khai. Bạn có thể hoàn thiện hồ sơ và mời mọi người ngay bây giờ.",
       "foot": "Chúng tôi gửi email cho các chủ sở hữu khi có quyết định.",
       "edit": "Sửa hồ sơ"
     },
-    "rejected": {
-      "title": "GenAI Fund không duyệt {name}",
-      "reason": "Lý do: {reason}.",
+    "needsChanges": {
+      "title": "GenAI Fund yêu cầu sửa {name}",
       "owner": "Hãy chỉnh sửa hồ sơ rồi lưu để gửi duyệt lại.",
       "member": "Chủ sở hữu có thể chỉnh sửa hồ sơ và gửi duyệt lại.",
       "edit": "Sửa và gửi lại"
+    },
+    "rejected": {
+      "title": "GenAI Fund không duyệt {name}",
+      "reason": "Lý do: {reason}.",
+      "foot": "Đây là quyết định cuối cùng. Hãy viết cho GenAI Fund nếu bạn cho rằng có nhầm lẫn."
     },
     "errors": {
       "ORGANIZATION_NOT_FOUND": "Tổ chức này không còn tồn tại.",
@@ -2441,6 +2458,7 @@
       "requestWithdrawn": "Đã rút yêu cầu.",
       "organizationApproved": "Đã duyệt tổ chức.",
       "organizationRefused": "Đã từ chối tổ chức. Chủ sở hữu sẽ đọc được lý do.",
+      "organizationSentBack": "Đã trả lại tổ chức. Chủ sở hữu đã được báo cần sửa gì.",
       "claimApproved": "Đã chấp nhận. Người này đã là chủ sở hữu tổ chức.",
       "claimDeclined": "Đã từ chối yêu cầu nhận tổ chức.",
       "saved": "Đã lưu hồ sơ.",

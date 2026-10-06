@@ -101,6 +101,7 @@ paths:
           - organization.invite
           - organization.invitation_revoke
           - organization.refuse
+          - organization.send_back
           - organization.claim_approve
           - organization.claim_decline
           - organization.member_role
@@ -1657,19 +1658,21 @@ paths:
           - "null"
           maxLength: 100
           minLength: 0
-      - description: Only organizations of this review status; `pending` also selects
-          an approved one with an open claim.
+      - description: "Only organizations of this review status; `in_review` also selects\
+          \ an approved one with an open claim, `approved` leaves out those taken\
+          \ down, and `suspended` selects those taken down."
         in: query
         name: status
         required: false
         schema:
           type: string
           enum:
-          - pending
+          - in_review
+          - needs_changes
           - approved
           - rejected
           - suspended
-          pattern: pending|approved|rejected|suspended
+          pattern: in_review|needs_changes|approved|rejected|suspended
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -2153,7 +2156,7 @@ paths:
           description: The organization is not waiting for review.
       security:
       - session: []
-      summary: Refuse an organization that waits for review
+      summary: Refuse an organization that waits for review for good
       tags:
       - Organization administration
   /api/organization/admin/organizations/{id}/restore:
@@ -2196,6 +2199,61 @@ paths:
       security:
       - session: []
       summary: Return a taken-down organization to the directories
+      tags:
+      - Organization administration
+  /api/organization/admin/organizations/{id}/send-back:
+    post:
+      operationId: sendBackOrganization
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendBackOrganization"
+        required: true
+      responses:
+        "204":
+          description: The organization needs changes; its owners are told why.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The reason is blank or over 1000 characters.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization is not waiting for review.
+      security:
+      - session: []
+      summary: Send an organization that waits for review back to its owners with
+        what to change
       tags:
       - Organization administration
   /api/organization/admin/organizations/{id}/take-down:
@@ -7158,11 +7216,18 @@ components:
           type: string
         status:
           type: string
+          description: GenAI Fund's review of the organization.
           enum:
-          - pending
+          - in_review
+          - needs_changes
           - approved
           - rejected
-          - suspended
+        suspendedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When it was taken down; null while it is not.
         type:
           type: string
           enum:
@@ -8163,6 +8228,7 @@ components:
           - organization.invite
           - organization.invitation_revoke
           - organization.refuse
+          - organization.send_back
           - organization.claim_approve
           - organization.claim_decline
           - organization.member_role
@@ -10059,16 +10125,16 @@ components:
           type:
           - string
           - "null"
-          description: What the operator wrote to the owners with the refusal.
+          description: What the operator wrote to the owners when refusing it or sending
+            it back.
         decisionReason:
           type:
           - string
           - "null"
-          description: Why it was last refused.
+          description: Why it was refused; null when it was sent back.
           enum:
           - duplicate
           - not_a_real_organization
-          - incomplete
           - out_of_scope
           - other
         description:
@@ -10108,18 +10174,19 @@ components:
           type: string
         status:
           type: string
-          description: GenAI Fund's review of the organization.
+          description: GenAI Fund's review of the organization. One taken down stays
+            `approved`; `suspendedAt` says it is down.
           enum:
-          - pending
+          - in_review
+          - needs_changes
           - approved
           - rejected
-          - suspended
         suspendedAt:
           type:
           - string
           - "null"
           format: date-time
-          description: When it was last taken down.
+          description: When it was taken down; null while it is not.
         suspensionMessage:
           type:
           - string
@@ -11512,7 +11579,8 @@ components:
       - items
     RefuseOrganization:
       type: object
-      description: "Why an organization is not approved, and what its owners are told."
+      description: "Why an organization is refused for good, and what its owners are\
+        \ told. Missing information is a send back instead."
       properties:
         message:
           type:
@@ -11526,10 +11594,9 @@ components:
           enum:
           - duplicate
           - not_a_real_organization
-          - incomplete
           - out_of_scope
           - other
-          pattern: duplicate|not_a_real_organization|incomplete|out_of_scope|other
+          pattern: duplicate|not_a_real_organization|out_of_scope|other
       required:
       - reason
     RejectCustomerDeployment:
@@ -13331,6 +13398,18 @@ components:
       - page
       - pageSize
       - total
+    SendBackOrganization:
+      type: object
+      description: Why GenAI Fund sends an organization back to its owners.
+      properties:
+        reason:
+          type: string
+          description: What the owners should change. They read it and receive it
+            by email.
+          maxLength: 1000
+          minLength: 0
+      required:
+      - reason
     SendBackUseCase:
       type: object
       description: Why GenAI Fund sends a use case back to its organization.

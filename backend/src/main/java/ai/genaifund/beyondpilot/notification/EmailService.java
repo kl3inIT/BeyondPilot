@@ -127,6 +127,16 @@ public class EmailService {
 	}
 
 	/**
+	 * Tells an owner that GenAI Fund sent their organization back with what to change.
+	 * @param reason what GenAI Fund asks them to change
+	 */
+	@Transactional
+	public void sendOrganizationSentBack(String recipient, String organizationName, String reason) {
+		queue(EmailKind.ORGANIZATION_SENT_BACK, recipient,
+				values("organizationName", organizationName, "reason", reason));
+	}
+
+	/**
 	 * Tells an owner that GenAI Fund took their organization down or restored it. The reason is read after signing in.
 	 * @param takenDown whether the organization was taken down; otherwise it is back
 	 */

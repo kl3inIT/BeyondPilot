@@ -26,6 +26,7 @@ import { ClaimDecisionButton } from "./claim-decision";
 import { MemberRole } from "./member-role";
 import { NoticeCard } from "./notice-card";
 import { OrganizationForm } from "./organization-form";
+import { reviewState } from "./organization-format";
 import { OrganizationReviewButton } from "./organization-review";
 import { RestoreButton, TakeDownMenu } from "./organization-take-down";
 
@@ -58,7 +59,8 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
   const { organization } = detail;
   const record = `${siteRoutes.adminOrganizations}/${organization.id}`;
   const day = (at: string) => format.dateTime(new Date(at), { dateStyle: "medium" });
-  const suspended = organization.status === "suspended";
+  const state = reviewState(organization);
+  const suspended = state === "suspended";
 
   const tabs = adminOrganizationTabs.map((key) => ({
     key,
@@ -82,11 +84,11 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold tracking-tight">{organization.name}</h1>
-          <ReviewStatus state={organization.status}>{s(organization.status)}</ReviewStatus>
+          <ReviewStatus state={state}>{s(state)}</ReviewStatus>
           <p className="text-sm text-muted-foreground">{kind.join(" · ")}</p>
         </div>
         <div className="flex items-center gap-2">
-          {organization.status === "approved" && (
+          {state === "approved" && (
             <>
               <Button
                 prominence="secondary"
@@ -97,17 +99,21 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
               <TakeDownMenu organization={organization} members={detail.members.length} />
             </>
           )}
-          {organization.status === "pending" && (
-            <OrganizationReviewButton organization={organization} />
-          )}
+          {state === "in_review" && <OrganizationReviewButton organization={organization} />}
         </div>
       </div>
 
-      {organization.status === "rejected" && (
+      {state === "rejected" && (
         <p className="rounded-lg border bg-muted p-3 text-sm">
           <span className="font-medium">
             {t("refused", { reason: reasonName(organization.decisionReason ?? "other") })}
           </span>
+          {organization.decisionMessage && <> {organization.decisionMessage}</>}
+        </p>
+      )}
+      {state === "needs_changes" && (
+        <p className="rounded-lg border bg-muted p-3 text-sm">
+          <span className="font-medium">{t("sentBack")}</span>
           {organization.decisionMessage && <> {organization.decisionMessage}</>}
         </p>
       )}

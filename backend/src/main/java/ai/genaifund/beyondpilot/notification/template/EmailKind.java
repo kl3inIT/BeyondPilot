@@ -30,6 +30,10 @@ public enum EmailKind {
 	ORGANIZATION_REFUSED("organization_refused", EmailGroup.ORGANIZATIONS, true, null,
 			Variable.required("organizationName", "Plain Cover")),
 
+	ORGANIZATION_SENT_BACK("organization_sent_back", EmailGroup.ORGANIZATIONS, true, "reason",
+			Variable.required("organizationName", "Plain Cover"),
+			Variable.quote("reason", "Add the website of the company.")),
+
 	ORGANIZATION_REQUEST_APPROVED("organization_request_approved", EmailGroup.ORGANIZATIONS, true, null,
 			Variable.required("organizationName", "Plain Cover"), Variable.optional("claim", Boolean.FALSE)),
 

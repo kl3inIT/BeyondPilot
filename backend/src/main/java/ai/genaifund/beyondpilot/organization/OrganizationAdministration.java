@@ -26,6 +26,7 @@ import ai.genaifund.beyondpilot.organization.dto.ApproveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.SaveOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.SendBackOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.TakeDownOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.Invitation;
@@ -168,11 +169,13 @@ public class OrganizationAdministration {
 		verifyDomain(organization, request.emailDomain());
 		organization.approve(Instant.now());
 		record(AuditAction.ORGANIZATION_APPROVE, operator, organization, Map.of());
+		events.publishEvent(new OrganizationChanged(organization.getId()));
 		tellOwners(organization, true);
 	}
 
 	/**
-	 * Refuses an organization that waits for review, with a reason its owners read, and tells them.
+	 * Refuses an organization that waits for review for good, with a reason its owners read, and tells them. Missing
+	 * information is a send back instead.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws OrganizationException when the organization does not exist or does not wait for review
 	 */
@@ -182,7 +185,26 @@ public class OrganizationAdministration {
 		Organization organization = awaitingReview(id);
 		organization.refuse(request.reason(), OrganizationViews.text(request.message()), Instant.now());
 		record(AuditAction.ORGANIZATION_REFUSE, operator, organization, Map.of("reason", request.reason()));
+		events.publishEvent(new OrganizationChanged(organization.getId()));
 		tellOwners(organization, false);
+	}
+
+	/**
+	 * Sends an organization that waits for review back to its owners with what to change, and tells them. They
+	 * correct it and it waits for review again.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist or does not wait for review
+	 */
+	@Transactional
+	public void sendBack(Actor actor, UUID id, SendBackOrganizationRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = awaitingReview(id);
+		String reason = request.reason().strip();
+		organization.sendBack(reason, Instant.now());
+		record(AuditAction.ORGANIZATION_SEND_BACK, operator, organization, Map.of());
+		events.publishEvent(new OrganizationChanged(organization.getId()));
+		owners(organization)
+			.forEach(owner -> email.sendOrganizationSentBack(owner.email(), organization.getName(), reason));
 	}
 
 	/**
@@ -305,7 +327,7 @@ public class OrganizationAdministration {
 	 * Takes an approved organization down, with a reason its owners read, and tells them. Its members keep their
 	 * workspace; it leaves the directories until it is restored.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws OrganizationException when the organization does not exist or is not approved
+	 * @throws OrganizationException when the organization does not exist, is not approved or is down already
 	 */
 	@Transactional
 	public void takeDown(Actor actor, UUID id, TakeDownOrganizationRequest request) {
@@ -313,10 +335,12 @@ public class OrganizationAdministration {
 		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
 		if (!organization.isApproved()) {
 			throw new OrganizationException(OrganizationErrorCode.CANNOT_TAKE_DOWN,
-					"Take-down of organization " + id + ", which is " + organization.getStatus());
+					"Take-down of organization " + id + ", which is " + organization.getStatus()
+							+ (organization.isSuspended() ? " and down" : ""));
 		}
 		organization.suspend(request.reason(), OrganizationViews.text(request.message()), Instant.now());
 		record(AuditAction.ORGANIZATION_SUSPEND, operator, organization, Map.of("reason", request.reason()));
+		events.publishEvent(new OrganizationChanged(organization.getId()));
 		tellOwnersOfSuspension(organization, true);
 	}
 
@@ -335,6 +359,7 @@ public class OrganizationAdministration {
 		}
 		organization.restore();
 		record(AuditAction.ORGANIZATION_RESTORE, operator, organization, Map.of());
+		events.publishEvent(new OrganizationChanged(organization.getId()));
 		tellOwnersOfSuspension(organization, false);
 	}
 
@@ -411,7 +436,7 @@ public class OrganizationAdministration {
 
 	private Organization awaitingReview(UUID id) {
 		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
-		if (!organization.isPending()) {
+		if (!organization.isInReview()) {
 			throw new OrganizationException(OrganizationErrorCode.NOT_AWAITING_REVIEW,
 					"Decision on organization " + id + ", which is " + organization.getStatus());
 		}
@@ -471,7 +496,7 @@ public class OrganizationAdministration {
 		if (organization.getEmailDomain() != null) {
 			return organization.getEmailDomain();
 		}
-		String fromCreator = organization.isPending() && creator != null
+		String fromCreator = organization.isInReview() && creator != null
 				? OrganizationViews.workDomain(creator.email()) : null;
 		String candidate = fromCreator != null ? fromCreator
 				: OrganizationViews.websiteDomain(organization.getWebsite());
@@ -483,21 +508,21 @@ public class OrganizationAdministration {
 		if (row.claimantAccountId() != null) {
 			return row.claimantAccountId();
 		}
-		return Organization.PENDING.equals(row.status()) ? row.createdByAccountId() : null;
+		return Organization.IN_REVIEW.equals(row.status()) ? row.createdByAccountId() : null;
 	}
 
 	private static AdminOrganizationSummaryResponse summary(AdminRow row, Map<UUID, Person> askers) {
 		UUID askerId = asker(row);
 		Person asker = askerId == null ? null : askers.get(askerId);
 		String request = null;
-		if (Organization.PENDING.equals(row.status())) {
+		if (Organization.IN_REVIEW.equals(row.status())) {
 			request = "new";
 		}
 		else if (row.claimId() != null) {
 			request = "claim";
 		}
 		return new AdminOrganizationSummaryResponse(row.id(), row.slug(), row.name(), row.type(),
-				row.country(), row.status(), row.members(), row.owned(), request, row.claimId(),
+				row.country(), row.status(), row.suspendedAt(), row.members(), row.owned(), request, row.claimId(),
 				asker == null ? null : asker.label(), row.claimedAt() != null ? row.claimedAt()
 						: request == null ? null : row.createdAt(),
 				row.createdAt());

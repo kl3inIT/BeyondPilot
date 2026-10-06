@@ -19,12 +19,14 @@ import {
   type AdminOrganizationsSearch,
 } from "./admin-organizations-search";
 import { AdminOrganizationsToolbar } from "./admin-organizations-toolbar";
+import { reviewState } from "./organization-format";
 
 const address = createSerializer(adminOrganizationsSearch);
 
 /** How each state of the review reads to the operator who decides it. */
 const tones = {
-  pending: "warning",
+  in_review: "warning",
+  needs_changes: "warning",
   approved: "success",
   rejected: "destructive",
   suspended: "destructive",
@@ -72,8 +74,8 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
       <span className="text-muted-foreground">{t("request.none")}</span>
     ),
     status: (
-      <Status appearance="pill" tone={tones[organization.status]}>
-        {t(`status.${organization.status}`)}
+      <Status appearance="pill" tone={tones[reviewState(organization)]}>
+        {t(`status.${reviewState(organization)}`)}
       </Status>
     ),
     askedBy: (
@@ -91,7 +93,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
     actions: <AdminOrganizationRowActions organization={organization} />,
   }));
 
-  const queue = search.q.trim() === "" && search.status === "pending";
+  const queue = search.q.trim() === "" && search.status === "in_review";
   const filtered = search.q.trim() !== "" || search.status !== null;
   const empty =
     rows.length > 0 ? null : queue ? (

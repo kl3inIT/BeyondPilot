@@ -174,7 +174,8 @@ public class SolutionDirectory {
 	}
 
 	/**
-	 * An approved solution as search indexes it, listed or not; empty for any other, or when its organization is gone.
+	 * An approved solution as search indexes it, listed or not; empty for any other, or when its organization is not
+	 * approved or is taken down.
 	 */
 	@Transactional(readOnly = true)
 	public Optional<IndexedSolution> indexed(UUID solutionId) {
@@ -189,7 +190,10 @@ public class SolutionDirectory {
 		return indexed(solutions.findByStatus(Solution.APPROVED));
 	}
 
-	/** The approved solutions of an organization as search indexes them, when what is shown of it changed. */
+	/**
+	 * The approved solutions of an organization as search indexes them, when what is shown of it changed; none while
+	 * the organization is not approved or is taken down.
+	 */
 	@Transactional(readOnly = true)
 	public List<IndexedSolution> indexedOf(UUID organizationId) {
 		return indexed(solutions.findByOrganizationIdOrderByCreatedAtDesc(organizationId)
@@ -198,9 +202,19 @@ public class SolutionDirectory {
 			.toList());
 	}
 
+	/** Every solution of an organization, whatever its review, so search can take out those it no longer shows. */
+	@Transactional(readOnly = true)
+	public List<UUID> idsOf(UUID organizationId) {
+		return solutions.findByOrganizationIdOrderByCreatedAtDesc(organizationId)
+			.stream()
+			.map(Solution::getId)
+			.toList();
+	}
+
+	/** Those of these approved solutions whose organization is approved and not taken down. */
 	private List<IndexedSolution> indexed(List<Solution> approved) {
 		Map<UUID, OrganizationName> names = organizations
-			.names(approved.stream().map(Solution::getOrganizationId).distinct().toList());
+			.approvedNames(approved.stream().map(Solution::getOrganizationId).distinct().toList());
 		return approved.stream().filter(solution -> names.containsKey(solution.getOrganizationId())).map(solution -> {
 			OrganizationName organization = names.get(solution.getOrganizationId());
 			return new IndexedSolution(solution.getId(), solution.getSlug(), solution.getName(),

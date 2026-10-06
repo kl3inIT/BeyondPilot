@@ -20,6 +20,7 @@ export const emailKinds = [
   "organization_invitation",
   "organization_approved",
   "organization_refused",
+  "organization_sent_back",
   "organization_request_approved",
   "organization_request_declined",
   "organization_taken_down",

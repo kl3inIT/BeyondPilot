@@ -39,9 +39,14 @@ const person = (accountId, name, email, role) => ({
 /** Every organization as an operator's record page reads it, those waiting for review first. */
 const organizations = [
   {
-    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c01", "Lumen Health", "pending", {
-      description: "Triage assistants for clinics.",
-    }),
+    organization: organization(
+      "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c01",
+      "Lumen Health",
+      "in_review",
+      {
+        description: "Triage assistants for clinics.",
+      },
+    ),
     createdBy: "Linh Nguyễn",
     createdByEmail: "linh.nguyen@lumenhealth.example",
     suggestedDomain: "lumenhealth.example",
@@ -111,7 +116,7 @@ const organizations = [
   },
   {
     organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04", "Firstcall", "rejected", {
-      decisionReason: "incomplete",
+      decisionReason: "duplicate",
       decisionMessage: "Say what the company builds.",
     }),
     createdBy: "Quang Vũ",
@@ -128,7 +133,7 @@ const organizations = [
     claims: [],
   },
   {
-    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c06", "Quiet Mill", "suspended", {
+    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c06", "Quiet Mill", "approved", {
       suspensionReason: "misleading_information",
       suspensionMessage: "Send us the contract or remove the customer.",
       suspendedAt: "2026-10-06T03:00:00Z",
@@ -400,23 +405,33 @@ const lists = {
   "/api/organization/admin/organizations": {
     records: organizations,
     idOf: (record) => record.organization.id,
-    // An open claim waits for a decision as a new organization does, whatever the review status.
-    statusOf: (record) => (record.claims.length > 0 ? "pending" : record.organization.status),
+    // An open claim waits for a decision as a new organization does, whatever the review status; one
+    // taken down is filtered as `suspended`, not as approved.
+    statusOf: (record) =>
+      record.claims.length > 0
+        ? "in_review"
+        : record.organization.suspendedAt
+          ? "suspended"
+          : record.organization.status,
     textOf: (record) => record.organization.name,
-    summaryOf: ({ organization: { id, name, slug, status, type, country }, ...record }) => ({
+    summaryOf: ({
+      organization: { id, name, slug, status, type, country, suspendedAt = null },
+      ...record
+    }) => ({
       id,
       name,
       slug,
       status,
+      suspendedAt,
       type,
       country,
       createdAt: day,
       members: record.members.length,
       owned: record.members.some((member) => member.role === "owner"),
-      request: status === "pending" ? "new" : record.claims.length > 0 ? "claim" : null,
+      request: status === "in_review" ? "new" : record.claims.length > 0 ? "claim" : null,
       claimId: record.claims[0]?.id ?? null,
-      askedBy: status === "pending" ? record.createdBy : (record.claims[0]?.name ?? null),
-      requestedAt: status === "pending" || record.claims.length > 0 ? day : null,
+      askedBy: status === "in_review" ? record.createdBy : (record.claims[0]?.name ?? null),
+      requestedAt: status === "in_review" || record.claims.length > 0 ? day : null,
     }),
   },
   "/api/solution/admin/solutions": {

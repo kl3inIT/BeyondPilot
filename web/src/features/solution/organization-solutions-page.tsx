@@ -59,7 +59,9 @@ function OrganizationSolutionsPage({
   const t = useTranslations("Solution.mine");
   const reason = useVocabulary("solutionRejection");
   const format = useFormatter();
-  const waiting = mine.role === "owner" && mine.organization.status !== "approved";
+  const waiting =
+    mine.role === "owner" &&
+    (mine.organization.status !== "approved" || !!mine.organization.suspendedAt);
   const day = (instant: string) => format.dateTime(new Date(instant), { dateStyle: "medium" });
 
   /** The line under a solution's name: what it does, or what its owners do next. */

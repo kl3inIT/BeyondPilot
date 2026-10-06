@@ -30,7 +30,7 @@ const newCo = {
   id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04",
   name: "Newco",
   slug: "newco",
-  status: "pending",
+  status: "in_review",
   roles: ["enterprise"],
   emailDomain: "newco.example",
 };
