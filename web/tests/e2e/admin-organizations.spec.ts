@@ -502,7 +502,7 @@ test.describe("admin organizations", () => {
     expect((await page.goto("/admin/organizations/no-such-record"))?.status()).toBe(404);
   });
 
-  test("an operator adds an organization, which needs a name", async ({
+  test("an operator adds an organization, which needs a name and a type", async ({
     page,
     context,
     baseURL,
@@ -518,9 +518,12 @@ test.describe("admin organizations", () => {
 
     await dialog.getByRole("button", { name: "Add organization" }).click();
     await expect(dialog.getByText("Enter the organization's name.")).toBeVisible();
+    await expect(dialog.getByText("Choose the type of organization.")).toBeVisible();
     expect(decisions).toEqual([]);
 
     await dialog.getByLabel("Organization name").fill("Sài Gòn Logistics");
+    await dialog.getByRole("combobox", { name: "Organization type" }).click();
+    await page.getByRole("option", { name: "Builder team" }).click();
     await dialog.getByLabel("Owner's email (optional)").fill("owner@saigonlogistics.example");
     await dialog.getByRole("button", { name: "Add organization" }).click();
 
@@ -531,7 +534,7 @@ test.describe("admin organizations", () => {
         call: "POST /api/organization/admin/organizations",
         body: {
           name: "Sài Gòn Logistics",
-          type: "company",
+          type: "builder_team",
           ownerEmail: "owner@saigonlogistics.example",
           website: null,
         },

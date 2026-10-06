@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { ChoiceSelect } from "@/components/composites/choice-select";
 import {
   Dialog,
   DialogContent,
@@ -16,12 +17,14 @@ import {
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useNotify } from "@/hooks/use-notify";
-import { createAdminOrganization } from "@/lib/api/generated";
+import { useVocabulary } from "@/i18n/vocabulary";
+import { createAdminOrganization, type AdminCreateOrganization } from "@/lib/api/generated";
 import { rejectedFields } from "@/lib/api/rejected-fields";
 
+import { organizationTypes } from "./organization-codes";
 import { organizationError } from "./organization-errors";
 
-const blank = { name: "", ownerEmail: "", website: "" };
+const blank = { name: "", type: "", ownerEmail: "", website: "" };
 
 /**
  * Creates an organization on behalf of its people, already approved: GenAI Fund lists a company
@@ -30,6 +33,7 @@ const blank = { name: "", ownerEmail: "", website: "" };
  */
 function AdminCreateOrganization() {
   const t = useTranslations("Admin.organizations.create");
+  const typeName = useVocabulary("organizationType");
   const notify = useNotify();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -47,6 +51,9 @@ function AdminCreateOrganization() {
     if (!text.name.trim()) {
       missing.add("name");
     }
+    if (!text.type) {
+      missing.add("type");
+    }
     setInvalid(missing);
     if (missing.size > 0) {
       return;
@@ -56,7 +63,7 @@ function AdminCreateOrganization() {
       await createAdminOrganization({
         body: {
           name: text.name,
-          type: "company",
+          type: text.type as AdminCreateOrganization["type"],
           ownerEmail: text.ownerEmail.trim() || null,
           website: text.website.trim() || null,
         },
@@ -96,6 +103,18 @@ function AdminCreateOrganization() {
                   aria-invalid={bad("name")}
                 />
                 {bad("name") && <FieldError>{t("nameRequired")}</FieldError>}
+              </Field>
+              <Field data-invalid={bad("type")}>
+                <FieldLabel htmlFor="admin-organization-type">{t("type")}</FieldLabel>
+                <ChoiceSelect
+                  id="admin-organization-type"
+                  placeholder={t("typePlaceholder")}
+                  options={organizationTypes.map((value) => ({ value, label: typeName(value) }))}
+                  value={text.type}
+                  onValueChange={(type) => setText((current) => ({ ...current, type }))}
+                  aria-invalid={bad("type")}
+                />
+                {bad("type") && <FieldError>{t("typeRequired")}</FieldError>}
               </Field>
               <Field data-invalid={bad("ownerEmail")}>
                 <FieldLabel htmlFor="admin-organization-owner">{t("ownerEmail")}</FieldLabel>
