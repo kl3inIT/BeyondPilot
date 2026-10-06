@@ -81,6 +81,8 @@ public class Solution {
 
 	private @Nullable Instant submittedAt;
 
+	private @Nullable UUID submittedByAccountId;
+
 	@Column(nullable = false)
 	private boolean listed = true;
 
@@ -133,9 +135,10 @@ public class Solution {
 		this.listed = listed;
 	}
 
-	public void submit(Instant at) {
+	public void submit(Instant at, UUID byAccountId) {
 		status = SUBMITTED;
 		submittedAt = at;
+		submittedByAccountId = byAccountId;
 	}
 
 	public void approve(Instant at) {
@@ -243,6 +246,10 @@ public class Solution {
 
 	public @Nullable Instant getSubmittedAt() {
 		return submittedAt;
+	}
+
+	public @Nullable UUID getSubmittedByAccountId() {
+		return submittedByAccountId;
 	}
 
 	public boolean isListed() {

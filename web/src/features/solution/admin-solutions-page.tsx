@@ -24,12 +24,11 @@ type AdminSolutionsPageProps = {
 
 /**
  * Admin › Solutions: every solution that was submitted, those waiting for review first and the
- * longest wait on top. The list arrives already read; search, the filter and paging are the URL.
+ * longest wait on top. The list arrives already read; search, the filters and paging are the URL.
  */
 function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
   const t = useTranslations("Admin.solutions");
   const status = useVocabulary("reviewStatus");
-  const maturity = useVocabulary("maturity");
   const format = useFormatter();
   const locale = useLocale();
 
@@ -37,8 +36,10 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
     id: solution.id,
     href: `${siteRoutes.adminSolutions}/${solution.id}`,
     name: solution.name,
+    summary: solution.summary,
     organization: solution.organizationName,
-    maturity: solution.maturity ? maturity(solution.maturity) : t("notStated"),
+    // A solution sent before the sender was recorded says so, rather than showing nothing.
+    sender: solution.submittedBy ?? t("senderUnknown"),
     status: (
       <span className="flex flex-col items-start gap-0.5">
         <ReviewStatus state={solution.status}>{status(solution.status)}</ReviewStatus>
@@ -58,9 +59,12 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
     waiting: solution.status === "submitted" || solution.deploymentsAwaitingReview > 0,
   }));
 
-  const filtered = search.q.trim() !== "" || search.status !== null;
+  const narrowed = search.status !== null || search.industry !== null;
+  const filtered = search.q.trim() !== "" || narrowed;
   const empty =
-    rows.length > 0 ? null : search.q.trim() === "" && search.status === "submitted" ? (
+    rows.length > 0 ? null : search.q.trim() === "" &&
+      search.status === "submitted" &&
+      search.industry === null ? (
       <DataTableEmpty
         icon={<BoxesIcon aria-hidden="true" />}
         title={t("queueEmpty.title")}
@@ -88,26 +92,45 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
       />
     );
   const open = (row: (typeof rows)[number]) => (
-    <TextButton href={row.href} aria-label={t("openNamed", { name: row.name })}>
+    <Button
+      prominence={row.waiting ? "secondary" : "tertiary"}
+      size="sm"
+      href={row.href}
+      aria-label={t("openNamed", { name: row.name })}
+    >
       {t(row.waiting ? "review.open" : "open")}
-    </TextButton>
+    </Button>
   );
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("lead")}</p>
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("lead")}</p>
+        </div>
+        {/* How much waits, whatever the list is narrowed to, and the way to only that. */}
+        {solutions.awaitingReview > 0 &&
+          (search.status === "submitted" ? (
+            <span className="text-sm font-medium">
+              {t("awaiting", { count: solutions.awaitingReview })}
+            </span>
+          ) : (
+            <TextButton href={address(siteRoutes.adminSolutions, { status: "submitted" })}>
+              {t("awaiting", { count: solutions.awaitingReview })}
+            </TextButton>
+          ))}
       </div>
       <SolutionsToolbar list="admin" />
 
-      {/* From 768px: a table. The Maturity column gives way first. */}
+      {/* From 768px: a table. The sender gives way first, then the organization joins the solution. */}
       <DataTable className="hidden md:block">
         <TableHeader>
           <TableRow>
             <TableHead>{t("columns.solution")}</TableHead>
-            <TableHead className="hidden xl:table-cell">{t("columns.maturity")}</TableHead>
+            <TableHead className="hidden lg:table-cell">{t("columns.organization")}</TableHead>
             <TableHead>{t("columns.status")}</TableHead>
+            <TableHead className="hidden xl:table-cell">{t("columns.sentBy")}</TableHead>
             <TableHead>{t("columns.submitted")}</TableHead>
             <TableHead>
               <span className="sr-only">{t("columns.actions")}</span>
@@ -117,14 +140,23 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
         <TableBody>
           {rows.map((row) => (
             <TableRow key={row.id}>
-              <TableCell>
-                <div className="flex flex-col">
-                  <span className="font-medium">{row.name}</span>
-                  <span className="text-muted-foreground">{row.organization}</span>
+              {/* The one column that gives its width up: a long name or summary is cut, not wrapped. */}
+              <TableCell className="w-full max-w-0">
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate font-medium">{row.name}</span>
+                  <span className="truncate text-muted-foreground lg:hidden">
+                    {row.organization}
+                  </span>
+                  {row.summary && (
+                    <span className="hidden truncate text-muted-foreground lg:block">
+                      {row.summary}
+                    </span>
+                  )}
                 </div>
               </TableCell>
-              <TableCell className="hidden xl:table-cell">{row.maturity}</TableCell>
+              <TableCell className="hidden lg:table-cell">{row.organization}</TableCell>
               <TableCell>{row.status}</TableCell>
+              <TableCell className="hidden xl:table-cell">{row.sender}</TableCell>
               <TableCell>
                 <span className="text-muted-foreground">{row.submitted}</span>
               </TableCell>
@@ -135,7 +167,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
           ))}
           {empty && (
             <TableRow>
-              <TableCell colSpan={5}>{empty}</TableCell>
+              <TableCell colSpan={6}>{empty}</TableCell>
             </TableRow>
           )}
         </TableBody>
