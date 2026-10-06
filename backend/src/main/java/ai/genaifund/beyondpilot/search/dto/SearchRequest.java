@@ -14,11 +14,12 @@ import org.jspecify.annotations.Nullable;
  * a person refines the query instead.
  */
 public record SearchRequest(
-		@Parameter(description = "What to search for, as the person typed it.", required = true,
-				schema = @Schema(minLength = 1, maxLength = 100)) @NotBlank @Size(max = 100) String q,
+		@Parameter(description = "What to search for, as the person typed it.", required = true) @NotBlank @Size(min = 1,
+				max = 100) String q,
 		@Parameter(description = "Only items of this kind; every kind when absent.",
 				schema = @Schema(allowableValues = { "program", "solution", "talent" })) @Pattern(
 						regexp = "program|solution|talent") @Nullable String kind,
-		@Parameter(description = "The page, from 1.",
-				schema = @Schema(minimum = "1", maximum = "50", defaultValue = "1")) @Min(1) @Max(50) @Nullable Integer page) {
+		@Parameter(description = "The page, counted from 1.",
+				schema = @Schema(type = "integer", format = "int32", defaultValue = "1", minimum = "1",
+						maximum = "50")) @Min(1) @Max(50) @Nullable Integer page) {
 }
