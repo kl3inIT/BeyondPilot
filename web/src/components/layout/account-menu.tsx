@@ -1,6 +1,13 @@
 "use client";
 
-import { Building2Icon, FileTextIcon, IdCardIcon, LogOutIcon, ShieldIcon } from "lucide-react";
+import {
+  Building2Icon,
+  ClipboardCheckIcon,
+  FileTextIcon,
+  IdCardIcon,
+  LogOutIcon,
+  ShieldIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -24,6 +31,8 @@ type AccountMenuProps = {
   name: string | null;
   email: string;
   operator: boolean;
+  /** Whether they judge a program's applications, which their Reviews lead to. */
+  reviewer?: boolean;
 };
 
 /**
@@ -31,7 +40,7 @@ type AccountMenuProps = {
  * area for an operator, and the way out. Signing
  * out keeps the menu open while the request runs, and says so there when it fails.
  */
-function AccountMenuPanel({ name, email, operator }: AccountMenuProps) {
+function AccountMenuPanel({ name, email, operator, reviewer = false }: AccountMenuProps) {
   const t = useTranslations("Site.account");
   const router = useRouter();
   const [state, setState] = useState<"idle" | "pending" | "failed">("idle");
@@ -70,6 +79,12 @@ function AccountMenuPanel({ name, email, operator }: AccountMenuProps) {
         <IdCardIcon aria-hidden="true" />
         {t("talentProfile")}
       </DropdownMenuItem>
+      {reviewer && (
+        <DropdownMenuItem render={<Link href={siteRoutes.reviews} />}>
+          <ClipboardCheckIcon aria-hidden="true" />
+          {t("reviews")}
+        </DropdownMenuItem>
+      )}
       {operator && (
         <DropdownMenuItem render={<Link href={siteRoutes.admin} />}>
           <ShieldIcon aria-hidden="true" />
@@ -91,7 +106,7 @@ function AccountMenuPanel({ name, email, operator }: AccountMenuProps) {
 }
 
 /** The signed-in person's place in the header: an avatar that opens their account menu. */
-function AccountMenu({ name, email, operator }: AccountMenuProps) {
+function AccountMenu({ name, email, operator, reviewer }: AccountMenuProps) {
   const t = useTranslations("Site.account");
 
   return (
@@ -108,7 +123,7 @@ function AccountMenu({ name, email, operator }: AccountMenuProps) {
         {initials(name, email)}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-66">
-        <AccountMenuPanel name={name} email={email} operator={operator} />
+        <AccountMenuPanel name={name} email={email} operator={operator} reviewer={reviewer} />
       </DropdownMenuContent>
     </DropdownMenu>
   );

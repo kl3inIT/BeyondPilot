@@ -16,5 +16,7 @@ public record MyApplicationResponse(@Schema(requiredMode = Schema.RequiredMode.R
 		@Schema(types = { "string", "null" }) @Nullable String organizationName,
 		@Schema(types = { "string", "null" }) @Nullable String solutionName,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant submittedAt,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt,
+		@Schema(types = { "string", "null" }, allowableValues = { "shortlisted", "not_selected" },
+				description = "GenAI Fund's decision, once the program's outcomes are released; null until then.") @Nullable String outcome) {
 }

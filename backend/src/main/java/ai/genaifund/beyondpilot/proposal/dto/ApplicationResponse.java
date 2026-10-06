@@ -25,5 +25,7 @@ public record ApplicationResponse(@Schema(requiredMode = Schema.RequiredMode.REQ
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant withdrawnAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Sent back with a save, which is refused when the application changed since.") long version,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt,
+		@Schema(types = { "string", "null" }, allowableValues = { "shortlisted", "not_selected" },
+				description = "GenAI Fund's decision, once the program's outcomes are released; null until then.") @Nullable String outcome) {
 }

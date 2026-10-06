@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcceptOrganizationInvitationData, AcceptOrganizationInvitationErrors, AcceptOrganizationInvitationResponses, AcceptTalentEnquiryData, AcceptTalentEnquiryErrors, AcceptTalentEnquiryResponses, AddCustomerDeploymentData, AddCustomerDeploymentErrors, AddCustomerDeploymentResponses, ApproveCustomerDeploymentData, ApproveCustomerDeploymentErrors, ApproveCustomerDeploymentResponses, ApproveJoinRequestData, ApproveJoinRequestErrors, ApproveJoinRequestResponses, ApproveOrganizationClaimData, ApproveOrganizationClaimErrors, ApproveOrganizationClaimResponses, ApproveOrganizationData, ApproveOrganizationErrors, ApproveOrganizationResponses, ApproveSolutionData, ApproveSolutionErrors, ApproveSolutionResponses, ApproveTalentData, ApproveTalentErrors, ApproveTalentResponses, ChangeMyJobTitleData, ChangeMyJobTitleErrors, ChangeMyJobTitleResponses, ChangeOrganizationAutoJoinData, ChangeOrganizationAutoJoinErrors, ChangeOrganizationAutoJoinResponses, ChangeOrganizationMemberRoleData, ChangeOrganizationMemberRoleErrors, ChangeOrganizationMemberRoleResponses, ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateAdminOrganizationData, CreateAdminOrganizationErrors, CreateAdminOrganizationResponses, CreateOrganizationData, CreateOrganizationErrors, CreateOrganizationResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, CreateSolutionData, CreateSolutionErrors, CreateSolutionResponses, DeclineIntroductionData, DeclineIntroductionErrors, DeclineIntroductionResponses, DeclineJoinRequestData, DeclineJoinRequestErrors, DeclineJoinRequestResponses, DeclineOrganizationClaimData, DeclineOrganizationClaimErrors, DeclineOrganizationClaimResponses, DeclineOrganizationInvitationData, DeclineOrganizationInvitationErrors, DeclineOrganizationInvitationResponses, DeclineTalentEnquiryData, DeclineTalentEnquiryErrors, DeclineTalentEnquiryResponses, DeleteCustomerDeploymentData, DeleteCustomerDeploymentErrors, DeleteCustomerDeploymentResponses, DeleteMyTalentProfileData, DeleteMyTalentProfileErrors, DeleteMyTalentProfileResponses, DeleteSolutionDraftData, DeleteSolutionDraftErrors, DeleteSolutionDraftResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminOrganizationData, GetAdminOrganizationErrors, GetAdminOrganizationResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetAdminSolutionData, GetAdminSolutionErrors, GetAdminSolutionResponses, GetAdminTalentData, GetAdminTalentErrors, GetAdminTalentResponses, GetApplicationFormData, GetApplicationFormErrors, GetApplicationFormResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyApplicationData, GetMyApplicationErrors, GetMyApplicationResponses, GetMyOrganizationData, GetMyOrganizationErrors, GetMyOrganizationResponses, GetMySolutionData, GetMySolutionErrors, GetMySolutionResponses, GetMyTalentProfileData, GetMyTalentProfileErrors, GetMyTalentProfileResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetProgramData, GetProgramErrors, GetProgramQuestionsData, GetProgramQuestionsErrors, GetProgramQuestionsResponses, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GetReceivedIntroductionsData, GetReceivedIntroductionsErrors, GetReceivedIntroductionsResponses, GetSolutionData, GetSolutionErrors, GetSolutionResponses, GetTalentData, GetTalentErrors, GetTalentResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, InviteOrganizationMemberData, InviteOrganizationMemberErrors, InviteOrganizationMemberResponses, JoinOrganizationData, JoinOrganizationErrors, JoinOrganizationResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminIntroductionsData, ListAdminIntroductionsErrors, ListAdminIntroductionsResponses, ListAdminOrganizationsData, ListAdminOrganizationsErrors, ListAdminOrganizationsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAdminSolutionsData, ListAdminSolutionsErrors, ListAdminSolutionsResponses, ListAdminTalentData, ListAdminTalentErrors, ListAdminTalentResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListCustomerDeploymentsData, ListCustomerDeploymentsErrors, ListCustomerDeploymentsResponses, ListMyApplicationsData, ListMyApplicationsErrors, ListMyApplicationsResponses, ListMyOrganizationMembersData, ListMyOrganizationMembersErrors, ListMyOrganizationMembersResponses, ListMySolutionsData, ListMySolutionsErrors, ListMySolutionsResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, ListReportedTalentEnquiriesData, ListReportedTalentEnquiriesErrors, ListReportedTalentEnquiriesResponses, ListSolutionsData, ListSolutionsErrors, ListSolutionsResponses, ListTalentData, ListTalentErrors, ListTalentResponses, OrganizeApplicantData, OrganizeApplicantErrors, OrganizeApplicantResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, RefuseOrganizationData, RefuseOrganizationErrors, RefuseOrganizationResponses, RejectCustomerDeploymentData, RejectCustomerDeploymentErrors, RejectCustomerDeploymentResponses, RejectSolutionData, RejectSolutionErrors, RejectSolutionResponses, RemoveOrganizationMemberData, RemoveOrganizationMemberErrors, RemoveOrganizationMemberResponses, RemoveTalentData, RemoveTalentErrors, RemoveTalentResponses, ReplyToIntroductionData, ReplyToIntroductionErrors, ReplyToIntroductionResponses, ReportTalentEnquiryData, ReportTalentEnquiryErrors, ReportTalentEnquiryResponses, RequestIntroductionData, RequestIntroductionErrors, RequestIntroductionResponses, RequestTalentChangesData, RequestTalentChangesErrors, RequestTalentChangesResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, RevokeOrganizationInvitationData, RevokeOrganizationInvitationErrors, RevokeOrganizationInvitationResponses, SaveApplicationData, SaveApplicationErrors, SaveApplicationResponses, SaveCustomerDeploymentData, SaveCustomerDeploymentErrors, SaveCustomerDeploymentResponses, SaveMyOrganizationData, SaveMyOrganizationErrors, SaveMyOrganizationResponses, SaveMyTalentProfileData, SaveMyTalentProfileErrors, SaveMyTalentProfileResponses, SaveProgramData, SaveProgramErrors, SaveProgramQuestionsData, SaveProgramQuestionsErrors, SaveProgramQuestionsResponses, SaveProgramResponses, SaveSolutionData, SaveSolutionErrors, SaveSolutionResponses, SearchData, SearchErrors, SearchOrganizationsData, SearchOrganizationsErrors, SearchOrganizationsResponses, SearchResponses, SendTalentEnquiryData, SendTalentEnquiryErrors, SendTalentEnquiryResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, SubmitApplicationData, SubmitApplicationErrors, SubmitApplicationResponses, SubmitMyTalentProfileData, SubmitMyTalentProfileErrors, SubmitMyTalentProfileResponses, SubmitSolutionData, SubmitSolutionErrors, SubmitSolutionResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, WithdrawApplicationData, WithdrawApplicationErrors, WithdrawApplicationResponses, WithdrawJoinRequestData, WithdrawJoinRequestErrors, WithdrawJoinRequestResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
+import type { AcceptOrganizationInvitationData, AcceptOrganizationInvitationErrors, AcceptOrganizationInvitationResponses, AcceptTalentEnquiryData, AcceptTalentEnquiryErrors, AcceptTalentEnquiryResponses, AddCustomerDeploymentData, AddCustomerDeploymentErrors, AddCustomerDeploymentResponses, ApproveCustomerDeploymentData, ApproveCustomerDeploymentErrors, ApproveCustomerDeploymentResponses, ApproveJoinRequestData, ApproveJoinRequestErrors, ApproveJoinRequestResponses, ApproveOrganizationClaimData, ApproveOrganizationClaimErrors, ApproveOrganizationClaimResponses, ApproveOrganizationData, ApproveOrganizationErrors, ApproveOrganizationResponses, ApproveSolutionData, ApproveSolutionErrors, ApproveSolutionResponses, ApproveTalentData, ApproveTalentErrors, ApproveTalentResponses, ChangeMyJobTitleData, ChangeMyJobTitleErrors, ChangeMyJobTitleResponses, ChangeOrganizationAutoJoinData, ChangeOrganizationAutoJoinErrors, ChangeOrganizationAutoJoinResponses, ChangeOrganizationMemberRoleData, ChangeOrganizationMemberRoleErrors, ChangeOrganizationMemberRoleResponses, ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateAdminOrganizationData, CreateAdminOrganizationErrors, CreateAdminOrganizationResponses, CreateOrganizationData, CreateOrganizationErrors, CreateOrganizationResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, CreateSolutionData, CreateSolutionErrors, CreateSolutionResponses, DecideApplicationsData, DecideApplicationsErrors, DecideApplicationsResponses, DeclineIntroductionData, DeclineIntroductionErrors, DeclineIntroductionResponses, DeclineJoinRequestData, DeclineJoinRequestErrors, DeclineJoinRequestResponses, DeclineOrganizationClaimData, DeclineOrganizationClaimErrors, DeclineOrganizationClaimResponses, DeclineOrganizationInvitationData, DeclineOrganizationInvitationErrors, DeclineOrganizationInvitationResponses, DeclineTalentEnquiryData, DeclineTalentEnquiryErrors, DeclineTalentEnquiryResponses, DeleteCustomerDeploymentData, DeleteCustomerDeploymentErrors, DeleteCustomerDeploymentResponses, DeleteMyTalentProfileData, DeleteMyTalentProfileErrors, DeleteMyTalentProfileResponses, DeleteSolutionDraftData, DeleteSolutionDraftErrors, DeleteSolutionDraftResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminOrganizationData, GetAdminOrganizationErrors, GetAdminOrganizationResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetAdminSolutionData, GetAdminSolutionErrors, GetAdminSolutionResponses, GetAdminTalentData, GetAdminTalentErrors, GetAdminTalentResponses, GetApplicationFormData, GetApplicationFormErrors, GetApplicationFormResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyApplicationData, GetMyApplicationErrors, GetMyApplicationResponses, GetMyOrganizationData, GetMyOrganizationErrors, GetMyOrganizationResponses, GetMySolutionData, GetMySolutionErrors, GetMySolutionResponses, GetMyTalentProfileData, GetMyTalentProfileErrors, GetMyTalentProfileResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetProgramData, GetProgramErrors, GetProgramQuestionsData, GetProgramQuestionsErrors, GetProgramQuestionsResponses, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GetReceivedIntroductionsData, GetReceivedIntroductionsErrors, GetReceivedIntroductionsResponses, GetReleaseData, GetReleaseErrors, GetReleaseResponses, GetReviewApplicationData, GetReviewApplicationErrors, GetReviewApplicationResponses, GetReviewCriteriaData, GetReviewCriteriaErrors, GetReviewCriteriaResponses, GetReviewFileData, GetReviewFileErrors, GetReviewFileResponses, GetSolutionData, GetSolutionErrors, GetSolutionResponses, GetTalentData, GetTalentErrors, GetTalentResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, InviteOrganizationMemberData, InviteOrganizationMemberErrors, InviteOrganizationMemberResponses, InviteReviewerData, InviteReviewerErrors, InviteReviewerResponses, JoinOrganizationData, JoinOrganizationErrors, JoinOrganizationResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminIntroductionsData, ListAdminIntroductionsErrors, ListAdminIntroductionsResponses, ListAdminOrganizationsData, ListAdminOrganizationsErrors, ListAdminOrganizationsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAdminSolutionsData, ListAdminSolutionsErrors, ListAdminSolutionsResponses, ListAdminTalentData, ListAdminTalentErrors, ListAdminTalentResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListCustomerDeploymentsData, ListCustomerDeploymentsErrors, ListCustomerDeploymentsResponses, ListMyApplicationsData, ListMyApplicationsErrors, ListMyApplicationsResponses, ListMyOrganizationMembersData, ListMyOrganizationMembersErrors, ListMyOrganizationMembersResponses, ListMySolutionsData, ListMySolutionsErrors, ListMySolutionsResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, ListReportedTalentEnquiriesData, ListReportedTalentEnquiriesErrors, ListReportedTalentEnquiriesResponses, ListReviewApplicationsData, ListReviewApplicationsErrors, ListReviewApplicationsResponses, ListReviewersData, ListReviewersErrors, ListReviewersResponses, ListReviewProgramsData, ListReviewProgramsErrors, ListReviewProgramsResponses, ListSolutionsData, ListSolutionsErrors, ListSolutionsResponses, ListTalentData, ListTalentErrors, ListTalentResponses, OrganizeApplicantData, OrganizeApplicantErrors, OrganizeApplicantResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, RefuseOrganizationData, RefuseOrganizationErrors, RefuseOrganizationResponses, RejectCustomerDeploymentData, RejectCustomerDeploymentErrors, RejectCustomerDeploymentResponses, RejectSolutionData, RejectSolutionErrors, RejectSolutionResponses, ReleaseOutcomesData, ReleaseOutcomesErrors, ReleaseOutcomesResponses, RemoveOrganizationMemberData, RemoveOrganizationMemberErrors, RemoveOrganizationMemberResponses, RemoveReviewerData, RemoveReviewerErrors, RemoveReviewerResponses, RemoveTalentData, RemoveTalentErrors, RemoveTalentResponses, ReplyToIntroductionData, ReplyToIntroductionErrors, ReplyToIntroductionResponses, ReportTalentEnquiryData, ReportTalentEnquiryErrors, ReportTalentEnquiryResponses, RequestIntroductionData, RequestIntroductionErrors, RequestIntroductionResponses, RequestTalentChangesData, RequestTalentChangesErrors, RequestTalentChangesResponses, ResendReviewerInvitationData, ResendReviewerInvitationErrors, ResendReviewerInvitationResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, RevokeOrganizationInvitationData, RevokeOrganizationInvitationErrors, RevokeOrganizationInvitationResponses, SaveApplicationData, SaveApplicationErrors, SaveApplicationResponses, SaveAssessmentData, SaveAssessmentErrors, SaveAssessmentResponses, SaveCustomerDeploymentData, SaveCustomerDeploymentErrors, SaveCustomerDeploymentResponses, SaveMyOrganizationData, SaveMyOrganizationErrors, SaveMyOrganizationResponses, SaveMyTalentProfileData, SaveMyTalentProfileErrors, SaveMyTalentProfileResponses, SaveProgramData, SaveProgramErrors, SaveProgramQuestionsData, SaveProgramQuestionsErrors, SaveProgramQuestionsResponses, SaveProgramResponses, SaveReviewCriteriaData, SaveReviewCriteriaErrors, SaveReviewCriteriaResponses, SaveSolutionData, SaveSolutionErrors, SaveSolutionResponses, SearchData, SearchErrors, SearchOrganizationsData, SearchOrganizationsErrors, SearchOrganizationsResponses, SearchResponses, SendTalentEnquiryData, SendTalentEnquiryErrors, SendTalentEnquiryResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, SubmitApplicationData, SubmitApplicationErrors, SubmitApplicationResponses, SubmitMyTalentProfileData, SubmitMyTalentProfileErrors, SubmitMyTalentProfileResponses, SubmitSolutionData, SubmitSolutionErrors, SubmitSolutionResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, WithdrawApplicationData, WithdrawApplicationErrors, WithdrawApplicationResponses, WithdrawJoinRequestData, WithdrawJoinRequestErrors, WithdrawJoinRequestResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -756,6 +756,208 @@ export const organizeApplicant = <ThrowOnError extends boolean = true>(options: 
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * One application as it was submitted last
+ */
+export const getReviewApplication = <ThrowOnError extends boolean = true>(options: Options<GetReviewApplicationData, ThrowOnError>): RequestResult<GetReviewApplicationResponses, GetReviewApplicationErrors, ThrowOnError> => (options.client ?? client).get<GetReviewApplicationResponses, GetReviewApplicationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/applications/{id}',
+    ...options
+});
+
+/**
+ * Keep the caller's assessment of an application
+ */
+export const saveAssessment = <ThrowOnError extends boolean = true>(options: Options<SaveAssessmentData, ThrowOnError>): RequestResult<SaveAssessmentResponses, SaveAssessmentErrors, ThrowOnError> => (options.client ?? client).put<SaveAssessmentResponses, SaveAssessmentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/applications/{id}/assessment',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * A file of an application's last submission
+ */
+export const getReviewFile = <ThrowOnError extends boolean = true>(options: Options<GetReviewFileData, ThrowOnError>): RequestResult<GetReviewFileResponses, GetReviewFileErrors, ThrowOnError> => (options.client ?? client).get<GetReviewFileResponses, GetReviewFileErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/applications/{id}/files/{fileId}',
+    ...options
+});
+
+/**
+ * The programs whose applications the caller scores
+ */
+export const listReviewPrograms = <ThrowOnError extends boolean = true>(options?: Options<ListReviewProgramsData, ThrowOnError>): RequestResult<ListReviewProgramsResponses, ListReviewProgramsErrors, ThrowOnError> => (options?.client ?? client).get<ListReviewProgramsResponses, ListReviewProgramsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs',
+    ...options
+});
+
+/**
+ * A program's submitted applications to review
+ */
+export const listReviewApplications = <ThrowOnError extends boolean = true>(options: Options<ListReviewApplicationsData, ThrowOnError>): RequestResult<ListReviewApplicationsResponses, ListReviewApplicationsErrors, ThrowOnError> => (options.client ?? client).get<ListReviewApplicationsResponses, ListReviewApplicationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/applications',
+    ...options
+});
+
+/**
+ * What a program's applications are judged on
+ */
+export const getReviewCriteria = <ThrowOnError extends boolean = true>(options: Options<GetReviewCriteriaData, ThrowOnError>): RequestResult<GetReviewCriteriaResponses, GetReviewCriteriaErrors, ThrowOnError> => (options.client ?? client).get<GetReviewCriteriaResponses, GetReviewCriteriaErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/criteria',
+    ...options
+});
+
+/**
+ * Replace a program's judging criteria
+ */
+export const saveReviewCriteria = <ThrowOnError extends boolean = true>(options: Options<SaveReviewCriteriaData, ThrowOnError>): RequestResult<SaveReviewCriteriaResponses, SaveReviewCriteriaErrors, ThrowOnError> => (options.client ?? client).put<SaveReviewCriteriaResponses, SaveReviewCriteriaErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/criteria',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Shortlist applications, or mark them not selected
+ */
+export const decideApplications = <ThrowOnError extends boolean = true>(options: Options<DecideApplicationsData, ThrowOnError>): RequestResult<DecideApplicationsResponses, DecideApplicationsErrors, ThrowOnError> => (options.client ?? client).post<DecideApplicationsResponses, DecideApplicationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/decisions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * What releasing a program's outcomes would send, and whether it can
+ */
+export const getRelease = <ThrowOnError extends boolean = true>(options: Options<GetReleaseData, ThrowOnError>): RequestResult<GetReleaseResponses, GetReleaseErrors, ThrowOnError> => (options.client ?? client).get<GetReleaseResponses, GetReleaseErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/release',
+    ...options
+});
+
+/**
+ * Release a program's outcomes to every applicant
+ */
+export const releaseOutcomes = <ThrowOnError extends boolean = true>(options: Options<ReleaseOutcomesData, ThrowOnError>): RequestResult<ReleaseOutcomesResponses, ReleaseOutcomesErrors, ThrowOnError> => (options.client ?? client).post<ReleaseOutcomesResponses, ReleaseOutcomesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/release',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Who scores a program's applications, with their progress
+ */
+export const listReviewers = <ThrowOnError extends boolean = true>(options: Options<ListReviewersData, ThrowOnError>): RequestResult<ListReviewersResponses, ListReviewersErrors, ThrowOnError> => (options.client ?? client).get<ListReviewersResponses, ListReviewersErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/reviewers',
+    ...options
+});
+
+/**
+ * Invite an address to judge a program
+ */
+export const inviteReviewer = <ThrowOnError extends boolean = true>(options: Options<InviteReviewerData, ThrowOnError>): RequestResult<InviteReviewerResponses, InviteReviewerErrors, ThrowOnError> => (options.client ?? client).post<InviteReviewerResponses, InviteReviewerErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/reviewers',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Take a judge off a program
+ */
+export const removeReviewer = <ThrowOnError extends boolean = true>(options: Options<RemoveReviewerData, ThrowOnError>): RequestResult<RemoveReviewerResponses, RemoveReviewerErrors, ThrowOnError> => (options.client ?? client).delete<RemoveReviewerResponses, RemoveReviewerErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/reviewers/{reviewerId}',
+    ...options
+});
+
+/**
+ * Send an unused invitation again
+ */
+export const resendReviewerInvitation = <ThrowOnError extends boolean = true>(options: Options<ResendReviewerInvitationData, ThrowOnError>): RequestResult<ResendReviewerInvitationResponses, ResendReviewerInvitationErrors, ThrowOnError> => (options.client ?? client).post<ResendReviewerInvitationResponses, ResendReviewerInvitationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/reviewers/{reviewerId}/resend',
+    ...options
 });
 
 /**
