@@ -104,7 +104,7 @@ function SolutionResult({ item }: { item: SearchItem }) {
 
   return (
     <Row
-      picture={<SolutionLogo name={item.title} size="card" />}
+      picture={<SolutionLogo name={item.title} fileId={item.photoFileId} size="card" />}
       title={item.title}
       href={`${siteRoutes.solutions}/${item.slug}`}
       subtitle={item.subtitle ? t("by", { name: item.subtitle }) : null}

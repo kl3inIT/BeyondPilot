@@ -46,7 +46,7 @@ public record SearchItem(
 		@Schema(types = { "string", "null" }, description = "A person's city.") @Nullable String city,
 		@Schema(types = { "string", "null" }, description = "Where a person works.") @Nullable String worksAt,
 		@Schema(types = { "string", "null" }, format = "uuid",
-				description = "A person's photo, read at the public address of stored files.") @Nullable UUID photoFileId,
+				description = "A person's photo or a solution's logo, read at the public address of stored files.") @Nullable UUID photoFileId,
 		@Schema(types = { "string", "null" }, format = "date-time",
 				description = "When a use case stops taking proposals.") @Nullable Instant closesAt,
 		@Schema(types = { "integer", "null" }, format = "int32",

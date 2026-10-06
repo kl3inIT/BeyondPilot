@@ -128,17 +128,44 @@ class SolutionTest {
 		assertProblem(post(founder, MINE, Map.of("name", " ")), 400, "REQUEST_INVALID");
 		assertProblem(post(founder, MINE + "/" + id + "/submit", null), 400, "SOLUTION_INCOMPLETE");
 
-		String saved = body(put(founder, MINE + "/" + id, described("Draft Desk", versionOf(draft))).expectStatus().isOk());
+		// Its facts alone are not enough: a review asks for a logo and a cover too.
+		Map<String, Object> request = described("Draft Desk", versionOf(draft));
+		String saved = body(put(founder, MINE + "/" + id, request).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(saved, "$.complete")).isFalse();
+		assertThat(JsonPath.<List<String>>read(body(get(founder, MINE).expectStatus().isOk()), "$.items[0].missing"))
+			.containsExactly("logo", "cover");
+		assertProblem(post(founder, MINE + "/" + id + "/submit", null), 400, "SOLUTION_INCOMPLETE");
+		request = pictured(founder, request);
+		request.put("version", versionOf(saved));
+		saved = body(put(founder, MINE + "/" + id, request).expectStatus().isOk());
 		assertThat(JsonPath.<Boolean>read(saved, "$.complete")).isTrue();
+		assertThat(JsonPath.<List<String>>read(body(get(founder, MINE).expectStatus().isOk()), "$.items[0].missing"))
+			.isEmpty();
 		String submitted = body(post(founder, MINE + "/" + id + "/submit", null).expectStatus().isOk());
 
 		assertThat(JsonPath.<String>read(submitted, "$.status")).isEqualTo("submitted");
 		assertThat(JsonPath.<String>read(submitted, "$.submittedAt")).isNotNull();
 		assertProblem(post(founder, MINE + "/" + id + "/submit", null), 409, "SOLUTION_NOT_SUBMITTABLE");
-		// What operators review keeps what a submission needs.
-		Map<String, Object> emptied = described("Draft Desk", versionOf(submitted));
+		// What operators review keeps what a submission needs: its facts, and its logo and cover.
+		request.put("version", versionOf(submitted));
+		Map<String, Object> emptied = new HashMap<>(request);
 		emptied.put("summary", null);
 		assertProblem(put(founder, MINE + "/" + id, emptied), 400, "SOLUTION_INCOMPLETE");
+		Map<String, Object> bare = new HashMap<>(request);
+		bare.put("coverFileId", null);
+		assertProblem(put(founder, MINE + "/" + id, bare), 400, "SOLUTION_INCOMPLETE");
+		assertThat(stored(UUID.fromString(request.get("coverFileId").toString()))).isTrue();
+
+		// A solution reviewed before a logo and a cover were asked for stays as it is: a save does not ask for them,
+		// and still takes nothing else away.
+		jdbc.sql("update solution set logo_file_id = null, cover_file_id = null where id = ?").param(id).update();
+		Map<String, Object> earlier = described("Draft Desk", versionOf(submitted));
+		earlier.put("listed", false);
+		String kept = body(put(founder, MINE + "/" + id, earlier).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(kept, "$.complete")).isFalse();
+		earlier.put("version", versionOf(kept));
+		earlier.put("summary", null);
+		assertProblem(put(founder, MINE + "/" + id, earlier), 400, "SOLUTION_INCOMPLETE");
 	}
 
 	@Test
@@ -370,7 +397,7 @@ class SolutionTest {
 
 		// A change to an approved solution shows at once.
 		String current = body(get(founder, MINE + "/" + claims).expectStatus().isOk());
-		Map<String, Object> renamed = described("Quokka Claims", versionOf(current));
+		Map<String, Object> renamed = keeping(current, described("Quokka Claims", versionOf(current)));
 		renamed.put("summary", "Reads claim files and flags gaps.");
 		put(founder, MINE + "/" + claims, renamed).expectStatus().isOk();
 		assertThat(JsonPath.<String>read(
@@ -460,6 +487,156 @@ class SolutionTest {
 	}
 
 	@Test
+	void aSolutionShowsALogoACoverAndUpToFourImagesOfItsOwn() {
+		String founder = approvedOwner("founder@pictures.test", "Pictures Co");
+		UUID id = create(founder, "Possum Desk");
+		UUID logo = uploaded(founder, "solution_logo", "C:\\brand\\possum-logo.png", png(400));
+		UUID cover = uploaded(founder, "solution_image", "possum-cover.png", png(1500));
+		UUID first = uploaded(founder, "solution_image", "inbox.png", png(700));
+		UUID second = uploaded(founder, "solution_image", "report.png", png(800));
+
+		Map<String, Object> request = described("Possum Desk", 0);
+		request.put("logoFileId", logo);
+		request.put("coverFileId", cover);
+		request.put("imageFileIds", List.of(first, second));
+		String saved = body(put(founder, MINE + "/" + id, request).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(saved, "$.logo.fileId")).isEqualTo(logo.toString());
+		assertThat(JsonPath.<String>read(saved, "$.logo.fileName")).isEqualTo("possum-logo.png");
+		assertThat(JsonPath.<Integer>read(saved, "$.logo.sizeBytes")).isEqualTo(400);
+		assertThat(JsonPath.<String>read(saved, "$.cover.fileName")).isEqualTo("possum-cover.png");
+		assertThat(JsonPath.<List<String>>read(saved, "$.images[*].fileName")).containsExactly("inbox.png", "report.png");
+
+		// What is not an image for that place is refused: a file of another kind, another account's upload, a file
+		// that does not exist, an image named twice, and more than four.
+		String rival = approvedOwner("founder@other-pictures.test", "Other Pictures Co");
+		UUID theirs = uploaded(rival, "solution_image", "theirs.png", png(600));
+		UUID third = uploaded(founder, "solution_image", "third.png", png(600));
+		List<Map<String, Object>> refused = List.of(Map.of("logoFileId", third), Map.of("coverFileId", logo),
+				Map.of("coverFileId", theirs), Map.of("coverFileId", UUID.randomUUID()),
+				Map.of("imageFileIds", List.of(first, first)), Map.of("imageFileIds", List.of(first, cover)));
+		for (Map<String, Object> change : refused) {
+			Map<String, Object> changed = new HashMap<>(request);
+			changed.putAll(change);
+			changed.put("version", versionOf(saved));
+			assertProblem(put(founder, MINE + "/" + id, changed), 400, "SOLUTION_IMAGE_NOT_USABLE");
+		}
+		Map<String, Object> tooMany = new HashMap<>(request);
+		tooMany.put("imageFileIds", List.of(first, second, third, UUID.randomUUID(), UUID.randomUUID()));
+		tooMany.put("version", versionOf(saved));
+		assertProblem(put(founder, MINE + "/" + id, tooMany), 400, "REQUEST_INVALID");
+		// An image belongs to one solution.
+		Map<String, Object> borrowed = described("Possum Second", 0);
+		borrowed.put("coverFileId", cover);
+		assertProblem(put(founder, MINE + "/" + create(founder, "Possum Second"), borrowed), 400,
+				"SOLUTION_IMAGE_NOT_USABLE");
+
+		// A colleague saves what a founder uploaded: an image the solution has stays, whoever uploaded it. The images
+		// change their order, and the cover changes place with one of them.
+		String colleague = signIn("colleague@pictures.test");
+		post(founder, ORGANIZATION + "/mine/invitations", Map.of("email", "colleague@pictures.test", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		String invitation = JsonPath.read(body(get(colleague, ORGANIZATION + "/mine").expectStatus().isOk()),
+				"$.invitations[0].id");
+		post(colleague, ORGANIZATION + "/invitations/" + invitation + "/accept", null).expectStatus().isNoContent();
+		request.put("coverFileId", second);
+		request.put("imageFileIds", List.of(cover, first));
+		request.put("version", versionOf(saved));
+		saved = body(put(colleague, MINE + "/" + id, request).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(saved, "$.cover.fileName")).isEqualTo("report.png");
+		assertThat(JsonPath.<List<String>>read(saved, "$.images[*].fileName")).containsExactly("possum-cover.png",
+				"inbox.png");
+		assertThat(List.of(logo, cover, first, second)).allMatch(this::stored);
+
+		// An image the solution stops naming goes from the store; the others stay.
+		request.put("imageFileIds", List.of(cover));
+		request.put("version", versionOf(saved));
+		saved = body(put(founder, MINE + "/" + id, request).expectStatus().isOk());
+		assertThat(stored(first)).isFalse();
+		assertThat(List.of(logo, cover, second)).allMatch(this::stored);
+
+		// Approved, anyone reads them: the card of the directory has the logo and the cover, the page has every image,
+		// and their bytes need no session.
+		post(founder, MINE + "/" + id + "/submit", null).expectStatus().isOk();
+		post(operator, ADMIN + "/" + id + "/approve", null).expectStatus().isNoContent();
+		String card = body(client.get().uri(DIRECTORY + "?q=possum").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<String>read(card, "$.items[0].logoFileId")).isEqualTo(logo.toString());
+		assertThat(JsonPath.<String>read(card, "$.items[0].coverFileId")).isEqualTo(second.toString());
+		String page = body(client.get().uri(DIRECTORY + "/possum-desk").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<String>read(page, "$.logoFileId")).isEqualTo(logo.toString());
+		assertThat(JsonPath.<String>read(page, "$.coverFileId")).isEqualTo(second.toString());
+		assertThat(JsonPath.<List<String>>read(page, "$.imageFileIds")).containsExactly(cover.toString());
+		client.get()
+			.uri("/api/storage/files/" + second)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(MediaType.IMAGE_PNG);
+		// The operators see what the organization sees.
+		assertThat(JsonPath.<String>read(body(get(operator, ADMIN + "/" + id).expectStatus().isOk()), "$.cover.fileName"))
+			.isEqualTo("report.png");
+
+		// A deleted draft takes its images with it.
+		UUID draft = create(founder, "Possum Draft");
+		Map<String, Object> sketch = pictured(founder, described("Possum Draft", 0));
+		put(founder, MINE + "/" + draft, sketch).expectStatus().isOk();
+		delete(founder, MINE + "/" + draft).expectStatus().isNoContent();
+		assertThat(stored(UUID.fromString(sketch.get("logoFileId").toString()))).isFalse();
+		assertThat(stored(UUID.fromString(sketch.get("coverFileId").toString()))).isFalse();
+	}
+
+	@Test
+	void onlyAnOperatorWritesWhatGenAiFundSaysOfASolution() {
+		String founder = approvedOwner("founder@backing.test", "Backing Co");
+		Map<String, Object> described = described("Bandicoot Desk", 0);
+		described.put("channels", "  Voice and chat  ");
+		UUID id = approved(founder, "Bandicoot Desk", described);
+		String backing = ADMIN + "/" + id + "/backing";
+		String address = DIRECTORY + "/bandicoot-desk";
+
+		// Its owners write the channels it works through; what GenAI Fund says of it is not theirs to write.
+		String page = body(client.get().uri(address).exchange().expectStatus().isOk());
+		assertThat(JsonPath.<String>read(page, "$.channels")).isEqualTo("Voice and chat");
+		assertThat(JsonPath.<Object>read(page, "$.backing")).isNull();
+		assertProblem(put(founder, backing, Map.of("program", "A programme of our own")), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
+
+		put(operator, backing,
+				Map.of("backedBy", "GenAI Fund portfolio", "program", " FastTrack AI Accelerator, Cohort 1 "))
+			.expectStatus()
+			.isNoContent();
+		page = body(client.get().uri(address).exchange().expectStatus().isOk());
+		assertThat(JsonPath.<String>read(page, "$.backing.backedBy")).isEqualTo("GenAI Fund portfolio");
+		assertThat(JsonPath.<String>read(page, "$.backing.program")).isEqualTo("FastTrack AI Accelerator, Cohort 1");
+		assertThat(JsonPath.<Object>read(page, "$.backing.funding")).isNull();
+		assertThat(JsonPath.<String>read(page, "$.backing.updatedAt")).isNotNull();
+		// A card says the programme, or else who backs the company.
+		String card = DIRECTORY + "?q=bandicoot";
+		assertThat(JsonPath.<String>read(body(client.get().uri(card).exchange().expectStatus().isOk()),
+				"$.items[0].backing"))
+			.isEqualTo("FastTrack AI Accelerator, Cohort 1");
+		assertThat(events(id)).contains("solution.back");
+
+		// A save by its owners leaves it as GenAI Fund wrote it.
+		String mine = body(get(founder, MINE + "/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(mine, "$.backing.backedBy")).isEqualTo("GenAI Fund portfolio");
+		put(founder, MINE + "/" + id, keeping(mine, described("Bandicoot Desk", versionOf(mine)))).expectStatus().isOk();
+		put(operator, backing, Map.of("backedBy", "GenAI Fund portfolio")).expectStatus().isNoContent();
+		assertThat(JsonPath.<String>read(body(client.get().uri(card).exchange().expectStatus().isOk()),
+				"$.items[0].backing"))
+			.isEqualTo("GenAI Fund portfolio");
+
+		// Emptied, it is gone. A draft has none to write, and a line has its length.
+		put(operator, backing, Map.of("backedBy", " ")).expectStatus().isNoContent();
+		assertThat(JsonPath.<Object>read(body(client.get().uri(address).exchange().expectStatus().isOk()), "$.backing"))
+			.isNull();
+		assertProblem(put(operator, ADMIN + "/" + create(founder, "Bandicoot Draft") + "/backing",
+				Map.of("program", "FastTrack")), 404, "SOLUTION_NOT_FOUND");
+		assertProblem(put(operator, backing, Map.of("program", "x".repeat(121))), 400, "REQUEST_INVALID");
+	}
+
+	@Test
 	void aDeckIsReadByItsOrganizationAndTheOperatorsUntilApprovalAndByAnyoneAfter() {
 		String founder = approvedOwner("founder@readers.test", "Readers Co");
 		String colleague = signIn("colleague@readers.test");
@@ -477,7 +654,7 @@ class SolutionTest {
 		UUID id = UUID.fromString(JsonPath.read(draft, "$.id"));
 		// A solution without a deck has none to read, for anyone.
 		assertProblem(get(founder, deck), 404, "SOLUTION_NOT_FOUND");
-		Map<String, Object> request = described("Quoll Desk", versionOf(draft));
+		Map<String, Object> request = pictured(founder, described("Quoll Desk", versionOf(draft)));
 		request.put("deckFileId", uploaded(founder, "solution_deck", "quoll.pdf", pdf));
 		put(founder, MINE + "/" + id, request).expectStatus().isOk();
 
@@ -618,8 +795,26 @@ class SolutionTest {
 		request.put("website", "https://example.test");
 		request.put("demoUrl", "https://example.test/demo");
 		request.put("deckFileId", null);
+		request.put("logoFileId", null);
+		request.put("coverFileId", null);
+		request.put("imageFileIds", List.of());
 		request.put("listed", true);
 		request.put("version", version);
+		return request;
+	}
+
+	/** The request with a logo and a cover the account of the session uploads for it, as a review asks. */
+	private Map<String, Object> pictured(String session, Map<String, Object> request) {
+		request.put("logoFileId", uploaded(session, "solution_logo", "logo.png", png(300)));
+		request.put("coverFileId", uploaded(session, "solution_image", "cover.png", png(900)));
+		return request;
+	}
+
+	/** The request with the images the solution was last answered with, so a save keeps them. */
+	private static Map<String, Object> keeping(String solution, Map<String, Object> request) {
+		request.put("logoFileId", JsonPath.<String>read(solution, "$.logo.fileId"));
+		request.put("coverFileId", JsonPath.<String>read(solution, "$.cover.fileId"));
+		request.put("imageFileIds", JsonPath.<List<String>>read(solution, "$.images[*].fileId"));
 		return request;
 	}
 
@@ -641,10 +836,17 @@ class SolutionTest {
 		return content;
 	}
 
+	/** A PNG of the given length. */
+	private static byte[] png(int length) {
+		byte[] content = Arrays.copyOf(new byte[] { (byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' }, length);
+		Arrays.fill(content, 8, length, (byte) 'x');
+		return content;
+	}
+
 	/** Uploads a file in the three requests of the storage module and returns the stored file. */
 	private UUID uploaded(String session, String purpose, String fileName, byte[] content) {
 		String ticket = body(post(session, "/api/storage/uploads", Map.of("purpose", purpose, "fileName", fileName,
-				"mediaType", "application/pdf", "sizeBytes", content.length))
+				"mediaType", fileName.endsWith(".png") ? "image/png" : "application/pdf", "sizeBytes", content.length))
 			.expectStatus()
 			.isCreated());
 		UUID id = UUID.fromString(JsonPath.read(ticket, "$.id"));
@@ -709,6 +911,9 @@ class SolutionTest {
 		String draft = body(post(session, MINE, Map.of("name", name)).expectStatus().isCreated());
 		UUID id = UUID.fromString(JsonPath.read(draft, "$.id"));
 		description.put("version", versionOf(draft));
+		if (description.get("logoFileId") == null) {
+			pictured(session, description);
+		}
 		put(session, MINE + "/" + id, description).expectStatus().isOk();
 		post(session, MINE + "/" + id + "/submit", null).expectStatus().isOk();
 		return id;

@@ -50,10 +50,12 @@ import {
   fieldId,
   fieldSteps,
   held,
+  limits,
   missingForReview,
   reviewFields,
   toRequest,
   type EditorStep,
+  type HeldImage,
   type LinkField,
   type SolutionDraft,
 } from "./solution-editor-state";
@@ -129,6 +131,15 @@ function SolutionEditor({ solution }: { solution: Solution }) {
       Object.keys(patch).forEach((field) => next.delete(field));
       return next.size === current.size ? current : next;
     });
+  }
+
+  /** An image under the cover whose upload ended; the list may have changed while it was on its way. */
+  function addImage(image: HeldImage) {
+    setDraft((current) =>
+      current.images.length < limits.images
+        ? { ...current, images: [...current.images, image] }
+        : current,
+    );
   }
 
   async function send(body: SolutionDraft): Promise<boolean> {
@@ -320,10 +331,18 @@ function SolutionEditor({ solution }: { solution: Solution }) {
     if (wrong > 0) {
       return t("steps.toCheck", { count: wrong });
     }
-    const lacking = reviewFields.filter(
-      (entry) => entry.step === id && entry.field !== "name" && missing.includes(entry.field),
-    ).length;
-    return asking && lacking > 0 ? t("steps.toAdd", { count: lacking }) : undefined;
+    const lacking = reviewFields
+      .filter(
+        (entry) => entry.step === id && entry.field !== "name" && missing.includes(entry.field),
+      )
+      .map((entry) => entry.field);
+    if (!asking || lacking.length === 0) {
+      return undefined;
+    }
+    // The images are named: "2 fields to add" would not say that a file is what is asked for.
+    return id === "evidence"
+      ? t("steps.evidence.toAdd", { missing: lacking.length > 1 ? "both" : lacking[0] })
+      : t("steps.toAdd", { count: lacking.length });
   }
 
   /** Whether a step still lacks something a review needs; such a step is not shown as done. */
@@ -589,7 +608,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               <p className="text-muted-foreground">{stepLead}</p>
               {step !== "review" && (
                 <p className="text-sm text-muted-foreground">
-                  {t(step === "evidence" ? "allOptional" : "required")}
+                  {t(step === "evidence" ? "imagesRequired" : "required")}
                 </p>
               )}
             </div>
@@ -604,6 +623,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
                   errorOf={errorOf}
                   solutionId={solution.id}
                   deckHref={deckHref}
+                  onImageAdded={addImage}
                   customerDeployments={solution.customerDeployments}
                   onLinkLeft={(field) => setLeftLinks((current) => new Set(current).add(field))}
                 />

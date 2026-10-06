@@ -39,7 +39,8 @@ public class SolutionQueryRepository {
 
 	private static final String ROW = """
 			select id, organization_id, slug, name, summary, focus_areas, industries, maturity, status, listed,
-			       submitted_at, submitted_by_account_id, updated_at,
+			       submitted_at, submitted_by_account_id, updated_at, logo_file_id, cover_file_id,
+			       coalesce(program, backed_by) as backing,
 			       (select count(*) from solution_customer_deployment d
 			        where d.solution_id = solution.id and d.status = 'approved') as deployments,
 			       (select count(*) from solution_customer_deployment d
@@ -56,7 +57,8 @@ public class SolutionQueryRepository {
 	/** One solution in a list, with how many of its customer deployments are approved and how many wait for review. */
 	public record Row(UUID id, UUID organizationId, String slug, String name, @Nullable String summary,
 			List<String> focusAreas, List<String> industries, @Nullable String maturity, String status, boolean listed,
-			@Nullable Instant submittedAt, @Nullable UUID submittedByAccountId, Instant updatedAt, int deployments,
+			@Nullable Instant submittedAt, @Nullable UUID submittedByAccountId, Instant updatedAt,
+			@Nullable UUID logoFileId, @Nullable UUID coverFileId, @Nullable String backing, int deployments,
 			int deploymentsAwaiting) {
 	}
 
@@ -145,7 +147,8 @@ public class SolutionQueryRepository {
 				row.getString("status"), row.getBoolean("listed"),
 				submittedAt == null ? null : submittedAt.toInstant(),
 				row.getObject("submitted_by_account_id", UUID.class), row.getTimestamp("updated_at").toInstant(),
-				row.getInt("deployments"), row.getInt("deployments_awaiting"));
+				row.getObject("logo_file_id", UUID.class), row.getObject("cover_file_id", UUID.class),
+				row.getString("backing"), row.getInt("deployments"), row.getInt("deployments_awaiting"));
 	}
 
 	private static List<String> strings(Array array) throws SQLException {
