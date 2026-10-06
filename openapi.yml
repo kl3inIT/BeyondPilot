@@ -12,56 +12,56 @@ tags:
   name: Review
 - description: "The record of sensitive changes, read by operators."
   name: Audit
-- description: The accounts operators manage.
-  name: Accounts
 - description: "The programs GenAI Fund runs, as the public site shows them."
   name: Programs
-- description: The public directory of approved AI solutions.
-  name: Solutions
 - description: The public directory of approved talent profiles.
   name: Talent
-- description: The requests for an introduction operators read.
-  name: Introduction administration
 - description: The organizations operators review.
   name: Organization administration
 - description: Requests for an introduction to the organization behind a solution.
   name: Introductions
-- description: The organization the caller belongs to.
-  name: My organization
 - description: The programs operators create and edit.
   name: Program administration
 - description: A person's applications to programs.
   name: Applications
 - description: "Search over the programs, solutions and talent the public site shows."
   name: Search
+- description: The projects in which a customer put a solution to work.
+  name: Customer deployments
+- description: The caller's own talent profile.
+  name: My talent profile
+- description: The use cases operators write and read.
+  name: Use case administration
+- description: The solutions operators review.
+  name: Solution administration
+- description: The solutions of the caller's organization.
+  name: My solutions
+- description: The accounts operators manage.
+  name: Accounts
+- description: "Reports of delivery, bounces and complaints, sent by the email provider\
+    \ and checked by signature."
+  name: Email delivery events
+- description: The public directory of approved AI solutions.
+  name: Solutions
+- description: The requests for an introduction operators read.
+  name: Introduction administration
+- description: The organization the caller belongs to.
+  name: My organization
 - description: Who is signed in.
   name: Identity
 - description: The use cases the members of an organization write.
   name: My organization's use cases
 - description: Uploading and reading files.
   name: Storage
-- description: The projects in which a customer put a solution to work.
-  name: Customer deployments
 - description: The public list of published use cases.
   name: Use cases
-- description: The caller's own talent profile.
-  name: My talent profile
-- description: The use cases operators write and read.
-  name: Use case administration
-- description: The talent profiles operators review.
-  name: Talent administration
-- description: The solutions operators review.
-  name: Solution administration
-- description: "Finding, joining and creating an organization."
-  name: Organizations
-- description: The solutions of the caller's organization.
-  name: My solutions
-- description: "Reports of delivery, bounces and complaints, sent by the email provider\
-    \ and checked by signature."
-  name: Email delivery events
 - description: "Who delivers BeyondPilot's email, its wording, what was sent and the\
     \ addresses it is not sent to."
   name: Email administration
+- description: The talent profiles operators review.
+  name: Talent administration
+- description: "Finding, joining and creating an organization."
+  name: Organizations
 paths:
   /api/audit/events:
     get:
