@@ -9,7 +9,7 @@ type OrganizationMarkProps = {
   logoFileId?: string | null;
 };
 
-/** An organization's logo in a rounded square, or its initials where it has none. */
+/** An organization's logo as uploaded, or its initials in a rounded square where it has none. */
 function OrganizationMark({ name, logoFileId }: OrganizationMarkProps) {
   if (logoFileId) {
     return (
@@ -19,7 +19,7 @@ function OrganizationMark({ name, logoFileId }: OrganizationMarkProps) {
         width={44}
         height={44}
         unoptimized
-        className="size-11 shrink-0 rounded-lg border bg-card object-cover"
+        className="size-11 shrink-0 rounded-lg object-contain"
       />
     );
   }

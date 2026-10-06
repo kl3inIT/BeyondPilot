@@ -88,7 +88,7 @@ function OrganizationLogoUpload({ value, onChange }: OrganizationLogoUploadProps
           onDragLeave={() => setDragging(false)}
           onDrop={drop}
           className={cn(
-            "flex h-28 w-full items-center justify-center overflow-hidden rounded-xl border bg-muted text-muted-foreground transition-colors hover:bg-accent hover:text-primary",
+            "flex size-28 items-center justify-center overflow-hidden rounded-xl border bg-muted text-muted-foreground transition-colors hover:bg-accent hover:text-primary",
             !value && "border-2 border-dashed border-muted-foreground/40",
             dragging && "border-primary bg-accent text-primary",
           )}
@@ -102,7 +102,7 @@ function OrganizationLogoUpload({ value, onChange }: OrganizationLogoUploadProps
               width={PREVIEW_SIZE}
               height={PREVIEW_SIZE}
               unoptimized
-              className="size-full object-contain"
+              className="size-full object-contain p-3"
             />
           ) : (
             <ImageUpIcon className="size-6" aria-hidden="true" />

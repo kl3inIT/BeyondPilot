@@ -273,16 +273,12 @@ test.describe("workspace organization", () => {
     await expect(page.getByLabel("Verified email domain")).toBeDisabled();
     await expectNoSeriousA11yViolations(page);
 
-    const description = page.getByLabel("Short description");
-    await description.fill("Something else.");
-    await page.getByRole("button", { name: "Discard changes" }).click();
-    const confirm = page.getByRole("alertdialog");
-    await expect(confirm.getByRole("heading")).toHaveText("Discard your changes?");
-    await confirm.getByRole("button", { name: "Discard changes" }).click();
-    await expect(description).toHaveValue("Assistants for insurers across Southeast Asia.");
-    await expect(save).toBeDisabled();
+    // Unsaved changes are dropped by leaving the page, where the leave guard asks; there is no discard.
+    await expect(page.getByRole("button", { name: "Discard changes" })).toHaveCount(0);
 
+    const description = page.getByLabel("Short description");
     await description.fill("Assistants for insurers and brokers.");
+    await expect(save).toBeEnabled();
     await page.getByRole("combobox", { name: "Industries" }).fill("Health");
     await page.getByRole("option", { name: "Healthcare" }).click();
     await save.click();

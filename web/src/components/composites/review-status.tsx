@@ -12,9 +12,20 @@ const tones = {
   suspended: "destructive",
 } as const;
 
+type ReviewStatusProps = {
+  state: ReviewState;
+  /** A dot before the word, or the word on a pastel ground beside a record's name. */
+  appearance?: "dot" | "pill";
+  children: React.ReactNode;
+};
+
 /** The review state of a record as a dot and its word; the word is given already translated. */
-function ReviewStatus({ state, children }: { state: ReviewState; children: React.ReactNode }) {
-  return <Status tone={tones[state]}>{children}</Status>;
+function ReviewStatus({ state, appearance, children }: ReviewStatusProps) {
+  return (
+    <Status tone={tones[state]} appearance={appearance}>
+      {children}
+    </Status>
+  );
 }
 
 export { ReviewStatus, type ReviewState };

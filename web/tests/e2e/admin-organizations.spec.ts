@@ -148,7 +148,7 @@ test.describe("admin organizations", () => {
 
     await expect(dialog.getByRole("heading")).toHaveText("Review Lumen Health");
     // Who created it and its website are read when the dialog opens.
-    await expect(dialog.getByText(/created by Linh Nguyễn on Oct 1, 2026/)).toBeVisible();
+    await expect(dialog.getByText(/Created by Linh Nguyễn on Oct 1, 2026/)).toBeVisible();
     await expect(dialog.getByText("Company · Vietnam · lumenhealth.example")).toBeVisible();
     // The creator's work domain is proposed, for the operator to confirm.
     await expect(dialog.getByLabel("Email domain to verify (optional)")).toHaveValue(
@@ -498,7 +498,7 @@ test.describe("admin organizations", () => {
 
     await expect(page.getByText("Not approved: Profile is incomplete.")).toBeVisible();
     await expect(page.getByText("Say what the company builds.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Review…" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Review" })).toHaveCount(0);
 
     expect((await page.goto("/admin/organizations/no-such-record"))?.status()).toBe(404);
   });

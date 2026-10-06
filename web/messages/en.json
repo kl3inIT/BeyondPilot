@@ -987,13 +987,13 @@
           "title": "Taken down on {day}",
           "reason": "Reason: {reason}.",
           "foot": "Its public page and its solutions are hidden. Its {members, plural, one {# member keeps} other {# members keep}} their workspace and read this reason there."
-        }
+        },
+        "review": "Review"
       },
       "review": {
         "title": "Review {name}",
-        "lead": "A new organization, created by {creator} on {day}. Until you decide, it is not shown in the directories.",
-        "leadUnknown": "A new organization, created on {day}. Until you decide, it is not shown in the directories.",
-        "note": "Approving lists the organization and lets it publish solutions. Its owners are told by email either way.",
+        "lead": "Created by {creator} on {day}.",
+        "leadUnknown": "Created on {day}.",
         "approve": "Approve",
         "refuse": "Do not approve…",
         "refuseTitle": "Do not approve {name}",
@@ -1005,7 +1005,7 @@
         "back": "Back",
         "reasonPlaceholder": "Choose a reason",
         "domain": "Email domain to verify (optional)",
-        "domainHint": "Confirm it is the company's own domain. Its owners can then let colleagues on it join at once.",
+        "domainHint": "Only the company's own domain. Colleagues on it can then join at once.",
         "domainInvalid": "Enter a domain such as example.com, or leave it empty.",
         "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate."
       },
@@ -2742,12 +2742,6 @@
         "leave": "Leave without saving",
         "stay": "Stay"
       },
-      "discard": "Discard changes",
-      "confirmDiscard": {
-        "title": "Discard your changes?",
-        "lead": "The form goes back to the profile as it was last saved.",
-        "cancel": "Keep editing"
-      },
       "industries": "Industries",
       "industriesRequired": "Choose at least one industry.",
       "industriesHint": "The industries it works in or serves. Choose up to {count}. {chosen} chosen.",
@@ -4064,7 +4058,6 @@
         "note": "GenAI Fund checks that the profile is a real person's and says what you do. This usually takes one or two working days, and the decision shows on this page.",
         "count": "{count, plural, one {# field to add before review} other {# fields to add before review}}"
       },
-      "discard": "Discard changes",
       "unsaved": "Unsaved changes",
       "neededMark": "· needed for review",
       "leave": {
@@ -4072,11 +4065,6 @@
         "lead": "Your changes to your profile are not saved yet.",
         "leave": "Leave without saving",
         "stay": "Stay"
-      },
-      "confirmDiscard": {
-        "title": "Discard your changes?",
-        "lead": "The form goes back to your profile as it was last saved.",
-        "cancel": "Keep editing"
       },
       "requiredMark": "· required",
       "headlineHint": "One line on what you do. For example: ML engineer building document AI for banks.",

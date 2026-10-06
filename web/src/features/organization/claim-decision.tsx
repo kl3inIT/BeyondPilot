@@ -99,7 +99,7 @@ function ClaimDecision({ organization, claimId, onClose }: ClaimDecisionProps) {
     <Dialog open onOpenChange={(open) => !open && !pending && onClose()}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>{t("title", { name })}</DialogTitle>
+          <DialogTitle size="lg">{t("title", { name })}</DialogTitle>
           <DialogDescription>
             {claim
               ? t("lead", {

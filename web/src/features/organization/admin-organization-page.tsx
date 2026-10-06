@@ -26,6 +26,7 @@ import { ClaimDecisionButton } from "./claim-decision";
 import { MemberRole } from "./member-role";
 import { NoticeCard } from "./notice-card";
 import { OrganizationForm } from "./organization-form";
+import { OrganizationMark } from "./organization-mark";
 import { OrganizationReviewButton } from "./organization-review";
 import { RestoreButton, TakeDownMenu } from "./organization-take-down";
 
@@ -80,10 +81,19 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
         </TextButton>
       </div>
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">{organization.name}</h1>
-          <ReviewStatus state={organization.status}>{s(organization.status)}</ReviewStatus>
-          <p className="text-sm text-muted-foreground">{kind.join(" · ")}</p>
+        <div className="flex min-w-0 items-center gap-3">
+          <OrganizationMark name={organization.name} logoFileId={organization.logoFileId} />
+          <div className="flex min-w-0 flex-col gap-1">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h1 className="text-2xl font-semibold tracking-tight break-words">
+                {organization.name}
+              </h1>
+              <ReviewStatus state={organization.status} appearance="pill">
+                {s(organization.status)}
+              </ReviewStatus>
+            </div>
+            <p className="text-sm text-muted-foreground">{kind.join(" · ")}</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {organization.status === "approved" && (

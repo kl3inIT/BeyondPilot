@@ -110,7 +110,7 @@ function InvitePeople({ organizationName, allowance }: InvitePeopleProps) {
           {reached ? (
             <>
               <DialogHeader>
-                <DialogTitle>{t("title", { name: organizationName })}</DialogTitle>
+                <DialogTitle size="lg">{t("title", { name: organizationName })}</DialogTitle>
                 <DialogDescription>
                   {t(`limit.${reached}.lead`, {
                     name: organizationName,
@@ -128,7 +128,7 @@ function InvitePeople({ organizationName, allowance }: InvitePeopleProps) {
           ) : (
             <form noValidate onSubmit={submit} className="flex flex-col gap-4">
               <DialogHeader>
-                <DialogTitle>{t("title", { name: organizationName })}</DialogTitle>
+                <DialogTitle size="lg">{t("title", { name: organizationName })}</DialogTitle>
                 <DialogDescription>
                   {t("lead", {
                     leftToday: allowance.leftToday,

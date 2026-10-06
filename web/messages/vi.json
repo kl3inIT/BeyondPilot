@@ -987,13 +987,13 @@
           "title": "Đã gỡ xuống ngày {day}",
           "reason": "Lý do: {reason}.",
           "foot": "Trang công khai và các giải pháp của tổ chức đang bị ẩn. {members} thành viên vẫn giữ workspace và đọc lý do này ở đó."
-        }
+        },
+        "review": "Xem xét"
       },
       "review": {
         "title": "Xem xét {name}",
-        "lead": "Tổ chức mới, do {creator} tạo ngày {day}. Cho tới khi bạn quyết định, tổ chức chưa hiển thị trong các danh mục.",
-        "leadUnknown": "Tổ chức mới, tạo ngày {day}. Cho tới khi bạn quyết định, tổ chức chưa hiển thị trong các danh mục.",
-        "note": "Khi được duyệt, tổ chức xuất hiện trong danh mục và được đăng giải pháp. Dù quyết định thế nào, các chủ sở hữu đều nhận email.",
+        "lead": "Do {creator} tạo ngày {day}.",
+        "leadUnknown": "Tạo ngày {day}.",
         "approve": "Duyệt",
         "refuse": "Không duyệt…",
         "refuseTitle": "Không duyệt {name}",
@@ -1005,7 +1005,7 @@
         "back": "Quay lại",
         "reasonPlaceholder": "Chọn lý do",
         "domain": "Tên miền email cần xác minh (không bắt buộc)",
-        "domainHint": "Hãy xác nhận đây là tên miền của chính công ty. Sau đó các chủ sở hữu có thể cho đồng nghiệp trên tên miền tham gia ngay.",
+        "domainHint": "Chỉ nhập tên miền của chính công ty. Đồng nghiệp dùng tên miền này sẽ tham gia được ngay.",
         "domainInvalid": "Nhập một tên miền như example.com, hoặc để trống.",
         "domainTaken": "Một tổ chức khác đã có tên miền này. Hãy để trống, hoặc xác định tổ chức nào là bản trùng."
       },
@@ -2742,12 +2742,6 @@
         "leave": "Rời trang, không lưu",
         "stay": "Ở lại"
       },
-      "discard": "Bỏ thay đổi",
-      "confirmDiscard": {
-        "title": "Bỏ các thay đổi?",
-        "lead": "Biểu mẫu trở về hồ sơ như lần lưu gần nhất.",
-        "cancel": "Sửa tiếp"
-      },
       "industries": "Ngành",
       "industriesRequired": "Chọn ít nhất một ngành.",
       "industriesHint": "Những ngành tổ chức hoạt động hoặc phục vụ. Chọn tối đa {count}. Đã chọn {chosen}.",
@@ -4064,7 +4058,6 @@
         "note": "GenAI Fund kiểm tra rằng hồ sơ là của một người thật và nói rõ bạn làm gì. Thường mất một đến hai ngày làm việc; kết quả hiển thị ngay trên trang này.",
         "count": "{count, plural, other {Còn # mục cần bổ sung trước khi duyệt}}"
       },
-      "discard": "Bỏ thay đổi",
       "unsaved": "Có thay đổi chưa lưu",
       "neededMark": "· cần để duyệt",
       "leave": {
@@ -4072,11 +4065,6 @@
         "lead": "Các thay đổi của bạn với hồ sơ của bạn chưa được lưu.",
         "leave": "Rời trang, không lưu",
         "stay": "Ở lại"
-      },
-      "confirmDiscard": {
-        "title": "Bỏ các thay đổi?",
-        "lead": "Biểu mẫu trở về hồ sơ của bạn như lần lưu gần nhất.",
-        "cancel": "Sửa tiếp"
       },
       "requiredMark": "· bắt buộc",
       "headlineHint": "Một dòng về việc bạn làm. Ví dụ: Kỹ sư ML xây AI xử lý tài liệu cho ngân hàng.",
