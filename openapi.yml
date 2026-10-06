@@ -125,6 +125,7 @@ paths:
           - talent.enquiry_report
           - talent.request_changes
           - talent.remove
+          - talent.restore
           - talent.delete
           - proposal.criteria_update
           - proposal.reviewer_invite
@@ -5539,18 +5540,20 @@ paths:
           - "null"
           maxLength: 100
           minLength: 0
-      - description: Only profiles of this status. Drafts are never listed.
+      - description: "Only profiles of this review status; `approved` leaves out those\
+          \ taken down, and `suspended` selects those taken down. Drafts are never\
+          \ listed."
         in: query
         name: status
         required: false
         schema:
           type: string
           enum:
-          - submitted
+          - in_review
+          - needs_changes
           - approved
-          - changes_requested
-          - removed
-          pattern: submitted|approved|changes_requested|removed
+          - suspended
+          pattern: in_review|needs_changes|approved|suspended
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -5672,9 +5675,9 @@ paths:
       summary: Approve a talent profile that waits for review
       tags:
       - Talent administration
-  /api/talent/admin/profiles/{id}/remove:
+  /api/talent/admin/profiles/{id}/restore:
     post:
-      operationId: removeTalent
+      operationId: restoreTalent
       parameters:
       - in: path
         name: id
@@ -5682,21 +5685,9 @@ paths:
         schema:
           type: string
           format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TalentDecision"
-        required: true
       responses:
         "204":
-          description: The profile is removed; the person was emailed.
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: A member is not valid.
+          description: The profile is back; the person was emailed.
         "401":
           content:
             application/problem+json:
@@ -5720,15 +5711,16 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The profile is not approved.
+          description: The profile is not taken down.
       security:
       - session: []
-      summary: "Remove an approved talent profile from the public, with a reason"
+      summary: "Put a talent profile that was taken down back in the public, without\
+        \ a new review"
       tags:
       - Talent administration
-  /api/talent/admin/profiles/{id}/request-changes:
+  /api/talent/admin/profiles/{id}/send-back:
     post:
-      operationId: requestTalentChanges
+      operationId: sendBackTalent
       parameters:
       - in: path
         name: id
@@ -5744,7 +5736,7 @@ paths:
         required: true
       responses:
         "204":
-          description: Changes are asked for; the person was emailed.
+          description: The profile needs changes; the person was emailed.
         "400":
           content:
             application/problem+json:
@@ -5777,8 +5769,63 @@ paths:
           description: The profile is not waiting for review.
       security:
       - session: []
-      summary: "Ask the person to change a talent profile that waits for review, with\
+      summary: "Send a talent profile that waits for review back to its person, with\
         \ a reason"
+      tags:
+      - Talent administration
+  /api/talent/admin/profiles/{id}/take-down:
+    post:
+      operationId: takeDownTalent
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TalentDecision"
+        required: true
+      responses:
+        "204":
+          description: The profile is taken down and stays approved; the person was
+            emailed.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted talent profile.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The profile is not approved, or is taken down already."
+      security:
+      - session: []
+      summary: "Take an approved talent profile down from the public, with a reason"
       tags:
       - Talent administration
   /api/talent/admin/reported-enquiries:
@@ -8252,6 +8299,7 @@ components:
           - talent.enquiry_report
           - talent.request_changes
           - talent.remove
+          - talent.restore
           - talent.delete
           - proposal.criteria_update
           - proposal.reviewer_invite
@@ -13937,8 +13985,8 @@ components:
       - reason
     TalentDecision:
       type: object
-      description: "Why GenAI Fund asks for changes to a talent profile or removes\
-        \ it, and what its person is told."
+      description: "Why GenAI Fund sends a talent profile back or takes it down, and\
+        \ what its person is told."
       properties:
         message:
           type:
@@ -14045,12 +14093,12 @@ components:
           type:
           - string
           - "null"
-          description: What the operator wrote to the person with the rejection.
+          description: What the operator wrote to the person when sending it back.
         decisionReason:
           type:
           - string
           - "null"
-          description: Why GenAI Fund last asked for changes or removed it.
+          description: Why GenAI Fund last sent it back.
           enum:
           - incomplete
           - unverifiable
@@ -14114,17 +14162,39 @@ components:
           type: string
         status:
           type: string
+          description: GenAI Fund's review of the profile.
           enum:
           - draft
-          - submitted
+          - in_review
+          - needs_changes
           - approved
-          - changes_requested
-          - removed
         submittedAt:
           type:
           - string
           - "null"
           format: date-time
+        suspendedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When GenAI Fund took it down from the public; null while it
+            is not.
+        suspensionMessage:
+          type:
+          - string
+          - "null"
+          description: What the operator wrote to the person when taking it down.
+        suspensionReason:
+          type:
+          - string
+          - "null"
+          description: Why GenAI Fund last took it down.
+          enum:
+          - incomplete
+          - unverifiable
+          - inappropriate
+          - other
         updatedAt:
           type: string
           format: date-time
@@ -14221,17 +14291,23 @@ components:
           type: string
         status:
           type: string
+          description: GenAI Fund's review of the profile.
           enum:
           - draft
-          - submitted
+          - in_review
+          - needs_changes
           - approved
-          - changes_requested
-          - removed
         submittedAt:
           type:
           - string
           - "null"
           format: date-time
+        suspendedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When it was taken down; null while it is not.
         updatedAt:
           type: string
           format: date-time

@@ -8,6 +8,7 @@ const bao = "cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a01";
 const mai = "cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a02";
 const arif = "cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a03";
 const siti = "cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a04";
+const dewi = "cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a05";
 
 const decisionsPath = "**/api/talent/admin/**";
 
@@ -44,15 +45,17 @@ test.describe("admin talent", () => {
       "Mai Phạm",
       "Arif Hidayat",
       "Siti Rahma",
+      "Dewi Lestari",
     ]);
     await expect(page.getByRole("link", { name: /^Open / })).toHaveText([
       "Review",
       "Review",
       "Open",
       "Open",
+      "Open",
     ]);
     await expect(page.getByText("Sent 5 hours ago").and(page.locator(":visible"))).toHaveCount(1);
-    await expect(page.getByText("4 profiles")).toBeVisible();
+    await expect(page.getByText("5 profiles")).toBeVisible();
     // A table from 768px, stacked rows below it.
     await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
     await expectNoSeriousA11yViolations(page);
@@ -70,6 +73,11 @@ test.describe("admin talent", () => {
     await page.getByRole("option", { name: "Approved" }).click();
     await expect(page).toHaveURL(/status=approved/);
     await expect(shownProfiles(page)).toHaveText(["Arif Hidayat"]);
+    // One taken down is not among the approved: it has a status of its own.
+    await page.getByRole("combobox", { name: "Status" }).click();
+    await page.getByRole("option", { name: "Taken down" }).click();
+    await expect(page).toHaveURL(/status=suspended/);
+    await expect(shownProfiles(page)).toHaveText(["Dewi Lestari"]);
 
     await page.getByRole("searchbox", { name: "Search by name or email" }).fill("mai.pham");
     await expect(page).toHaveURL(/[?&]q=mai\.pham/);
@@ -79,7 +87,7 @@ test.describe("admin talent", () => {
 
     await page.getByRole("link", { name: "Clear search and filter" }).click();
     await expect(page).toHaveURL("/admin/talent");
-    await expect(shownProfiles(page)).toHaveCount(4);
+    await expect(shownProfiles(page)).toHaveCount(5);
   });
 
   test("the queue is walked from its records: a decision opens the next that waits", async ({
@@ -110,7 +118,7 @@ test.describe("admin talent", () => {
     ]);
   });
 
-  test("changes are not asked for without a reason, and the note goes to the person", async ({
+  test("a profile is not sent back without a reason, and the note goes to the person", async ({
     page,
     context,
     baseURL,
@@ -119,26 +127,26 @@ test.describe("admin talent", () => {
     const decisions = await answerDecisions(page, decisionsPath, 204);
     await page.goto(`/admin/talent/${mai}`);
 
-    await page.getByRole("button", { name: "Ask for changes…" }).click();
+    await page.getByRole("button", { name: "Send back…" }).click();
     const dialog = page.getByRole("dialog");
-    await expect(dialog.getByRole("heading")).toHaveText("Ask for changes to Mai Phạm?");
-    await expect(dialog.getByRole("button", { name: "Ask for changes" })).toBeDisabled();
+    await expect(dialog.getByRole("heading")).toHaveText("Send Mai Phạm back?");
+    await expect(dialog.getByRole("button", { name: "Send back" })).toBeDisabled();
     await expectNoSeriousA11yViolations(page);
 
     await giveReason(page, "Experience could not be verified", "Link one shipped project.");
-    await dialog.getByRole("button", { name: "Ask for changes" }).click();
+    await dialog.getByRole("button", { name: "Send back" }).click();
 
-    await expect(page.getByText("Changes asked of Mai Phạm.")).toBeVisible();
+    await expect(page.getByText("Mai Phạm is sent back.")).toBeVisible();
     await expect(page).toHaveURL(`/admin/talent/${bao}`);
     expect(decisions).toEqual([
       {
-        call: `POST /api/talent/admin/profiles/${mai}/request-changes`,
+        call: `POST /api/talent/admin/profiles/${mai}/send-back`,
         body: { reason: "unverifiable", message: "Link one shipped project." },
       },
     ]);
   });
 
-  test("an approved profile can only be removed, and stays on its record", async ({
+  test("an approved profile can only be taken down, and stays on its record", async ({
     page,
     context,
     baseURL,
@@ -152,20 +160,47 @@ test.describe("admin talent", () => {
       "href",
       "/talent/arif-hidayat",
     );
-    await page.getByRole("button", { name: "Remove…" }).click();
+    await page.getByRole("button", { name: "Take down…" }).click();
     const dialog = page.getByRole("dialog");
-    await expect(dialog.getByRole("heading")).toHaveText("Remove Arif Hidayat?");
+    await expect(dialog.getByRole("heading")).toHaveText("Take Arif Hidayat down?");
 
     await giveReason(page, "Content does not belong here", "");
-    await dialog.getByRole("button", { name: "Remove", exact: true }).click();
+    await dialog.getByRole("button", { name: "Take down", exact: true }).click();
 
-    await expect(page.getByText("Arif Hidayat is removed.")).toBeVisible();
+    await expect(page.getByText("Arif Hidayat is taken down.")).toBeVisible();
     await expect(page).toHaveURL(`/admin/talent/${arif}`);
     expect(decisions).toEqual([
       {
-        call: `POST /api/talent/admin/profiles/${arif}/remove`,
+        call: `POST /api/talent/admin/profiles/${arif}/take-down`,
         body: { reason: "inappropriate", message: null },
       },
+    ]);
+  });
+
+  test("a profile taken down says why and is restored without a new review", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    await page.goto(`/admin/talent/${dewi}`);
+
+    await expect(
+      page.getByRole("heading", { name: "Taken down from the directory" }),
+    ).toBeVisible();
+    await expect(page.getByText("Taken down: Content does not belong here.")).toBeVisible();
+    await expect(page.getByText("Remove the client logos.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Take down…" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Restore" }).click();
+    const dialog = page.getByRole("alertdialog");
+    await expect(dialog.getByRole("heading")).toHaveText("Put Dewi Lestari back in the directory?");
+    await expectNoSeriousA11yViolations(page);
+    await dialog.getByRole("button", { name: "Restore" }).click();
+
+    await expect(page.getByText("Dewi Lestari is back in the directory.")).toBeVisible();
+    expect(decisions).toEqual([
+      { call: `POST /api/talent/admin/profiles/${dewi}/restore`, body: null },
     ]);
   });
 
@@ -194,10 +229,10 @@ test.describe("admin talent", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto(`/admin/talent/${siti}`);
 
-    await expect(page.getByText("Changes requested: Information is missing.")).toBeVisible();
+    await expect(page.getByText("Sent back: Information is missing.")).toBeVisible();
     await expect(page.getByText("Add a project.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Approve" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Ask for changes…" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Send back…" })).toHaveCount(0);
 
     expect((await page.goto("/admin/talent/no-such-record"))?.status()).toBe(404);
   });

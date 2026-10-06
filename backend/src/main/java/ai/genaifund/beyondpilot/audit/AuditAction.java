@@ -111,11 +111,14 @@ public enum AuditAction {
 	/** The person reported a message as unwanted; the sender was told it was declined. */
 	TALENT_ENQUIRY_REPORT("talent.enquiry_report"),
 
-	/** {@code reason} is the code of the reason given. */
+	/** An operator sent a profile back to its person. {@code reason} is the code of the reason given. */
 	TALENT_REQUEST_CHANGES("talent.request_changes", "reason"),
 
-	/** An operator took an approved profile away from the public. {@code reason} is the code of the reason given. */
+	/** {@code reason} is the code of the reason given. Its value is from when taking down was called removing. */
 	TALENT_REMOVE("talent.remove", "reason"),
+
+	/** An operator put a profile that was taken down back in the public. */
+	TALENT_RESTORE("talent.restore"),
 
 	/** The person deleted their own profile. */
 	TALENT_DELETE("talent.delete"),

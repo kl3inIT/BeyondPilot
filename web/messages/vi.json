@@ -752,7 +752,8 @@
           "enquiry_decline": "Đã từ chối một lời nhắn qua hồ sơ nhân lực",
           "enquiry_report": "Đã báo cáo một lời nhắn qua hồ sơ nhân lực",
           "request_changes": "Đã yêu cầu sửa một hồ sơ nhân lực",
-          "remove": "Đã gỡ một hồ sơ nhân lực",
+          "remove": "Đã gỡ xuống một hồ sơ nhân lực",
+          "restore": "Khôi phục một hồ sơ nhân lực",
           "delete": "Đã xoá một hồ sơ nhân lực"
         },
         "proposal": {
@@ -827,7 +828,8 @@
           "enquiry_decline": "Đã từ chối một lời nhắn tới <resource></resource>",
           "enquiry_report": "Đã báo cáo một lời nhắn tới <resource></resource>",
           "request_changes": "Đã yêu cầu sửa hồ sơ nhân lực của <resource></resource>",
-          "remove": "Đã gỡ hồ sơ nhân lực của <resource></resource>",
+          "remove": "Đã gỡ xuống hồ sơ nhân lực của <resource></resource>",
+          "restore": "Khôi phục hồ sơ nhân lực của <resource></resource>",
           "delete": "Đã xoá hồ sơ nhân lực của <resource></resource>"
         },
         "proposal": {
@@ -1242,7 +1244,7 @@
         "takeDown": "Gỡ…",
         "rejectTitle": "Yêu cầu {name} sửa hồ sơ?",
         "rejectLead": "Hồ sơ trở về chủ nhân để chỉnh sửa. Họ đọc được lý do.",
-        "takeDownLead": "Hồ sơ rời khỏi danh mục ngay. Người đó nhận email, đọc lý do của bạn và có thể gửi lại.",
+        "takeDownLead": "Hồ sơ rời khỏi danh mục ngay nhưng vẫn ở trạng thái đã duyệt. Người đó nhận email và đọc lý do; họ có thể sửa rồi gửi lại, hoặc bạn khôi phục.",
         "reason": "Lý do",
         "message": "Ghi chú (không bắt buộc)",
         "messageHint": "Người nhận đọc nguyên văn. Hãy nêu cần sửa gì.",
@@ -1250,40 +1252,43 @@
         "rejectConfirm": "Yêu cầu sửa",
         "takeDownConfirm": "Gỡ",
         "reasonPlaceholder": "Chọn lý do",
-        "takeDownTitle": "Gỡ hồ sơ {name}?",
+        "takeDownTitle": "Gỡ hồ sơ {name} xuống?",
         "keyA": "Phím: A",
-        "keyS": "Phím: S"
+        "keyS": "Phím: S",
+        "restore": "Khôi phục",
+        "restoreTitle": "Đưa {name} trở lại danh mục?",
+        "restoreLead": "Hồ sơ công khai trở lại khi người này để hiển thị, không cần duyệt lại. Người này nhận email."
       },
       "detail": {
         "back": "Tất cả nhân lực",
         "submitted": "Gửi ngày {day}",
         "unlisted": "Chủ nhân đang ẩn",
-        "rejected": "Cần sửa: {reason}.",
+        "sentBack": "Cần sửa: {reason}.",
         "next": "Chờ duyệt tiếp theo: {name}",
         "position": "{place} trên {total} đang chờ",
         "waitingSince": "Gửi {time}",
         "public": "Mở trang công khai",
-        "removed": "Đã gỡ: {reason}.",
+        "takenDown": "Đã gỡ xuống: {reason}.",
         "decision": {
           "draft": {
             "title": "Chưa gửi duyệt",
             "lead": "Người này vẫn đang viết hồ sơ. Chưa ai thấy hồ sơ cho tới khi được duyệt."
           },
-          "submitted": {
+          "in_review": {
             "title": "Đề nghị được hiển thị trong danh mục",
             "lead": "Kiểm tra rằng trang nói về công việc chuyên môn, không nêu tên khách hàng khi chưa được phép, và ghi rõ người này làm gì trong từng dự án. Duyệt sẽ mở trang và đưa vào danh mục."
           },
           "approved": {
             "title": "Đã duyệt",
-            "lead": "Trang công khai khi người này để hiển thị. Gỡ sẽ đưa trang khỏi danh mục ngay và báo lý do cho họ."
+            "lead": "Trang công khai khi người này để hiển thị. Gỡ xuống sẽ đưa trang khỏi danh mục ngay và báo lý do cho họ."
           },
-          "changes_requested": {
+          "needs_changes": {
             "title": "Đã yêu cầu sửa",
             "lead": "Hồ sơ đã trả về cho người này. Hồ sơ quay lại đây khi họ gửi lại."
           },
-          "removed": {
+          "suspended": {
             "title": "Đã gỡ khỏi danh mục",
-            "lead": "Trang không còn công khai. Hồ sơ quay lại đây nếu người này gửi lại."
+            "lead": "Trang không còn công khai nhưng hồ sơ vẫn ở trạng thái đã duyệt. Khôi phục để hiển thị lại; hồ sơ cũng quay lại đây nếu người này gửi lại."
           }
         },
         "audited": "Quyết định được ghi vào nhật ký kiểm tra."
@@ -1455,8 +1460,12 @@
           "description": "Báo một người cần sửa gì trước khi hồ sơ được hiển thị."
         },
         "talent_removed": {
-          "name": "Hồ sơ nhân lực bị gỡ",
+          "name": "Hồ sơ nhân lực bị gỡ xuống",
           "description": "Báo một người rằng hồ sơ đã rời danh mục."
+        },
+        "talent_restored": {
+          "name": "Hồ sơ nhân lực được khôi phục",
+          "description": "Báo một người rằng hồ sơ đã hiển thị lại trong danh mục."
         },
         "talent_enquiry": {
           "name": "Lời nhắn tới nhân lực",
@@ -2346,10 +2355,10 @@
     },
     "talentStatus": {
       "draft": "Bản nháp",
-      "submitted": "Đang duyệt",
+      "in_review": "Đang duyệt",
+      "needs_changes": "Cần sửa",
       "approved": "Đã duyệt",
-      "changes_requested": "Cần sửa",
-      "removed": "Đã gỡ"
+      "suspended": "Đã gỡ xuống"
     },
     "language": {
       "vi": "Tiếng Việt",
@@ -3583,7 +3592,8 @@
       "TALENT_ENQUIRY_LIMIT": "Hôm nay bạn đã bắt đầu mười cuộc trao đổi. Hãy viết lại vào ngày mai.",
       "TALENT_ENQUIRY_NOT_FOUND": "Lời nhắn này không còn tồn tại.",
       "TALENT_ENQUIRY_NOT_PENDING": "Lời nhắn này đã được trả lời hoặc đã đóng.",
-      "TALENT_NOT_APPROVED": "Chỉ có thể gỡ hồ sơ đã được duyệt.",
+      "TALENT_NOT_APPROVED": "Chỉ hồ sơ đã duyệt và chưa bị gỡ xuống mới gỡ xuống được.",
+      "TALENT_NOT_TAKEN_DOWN": "Hồ sơ này không bị gỡ xuống.",
       "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
       "unknown": "Chưa thực hiện được. Hãy thử lại."
     },
@@ -3594,8 +3604,9 @@
       "accepted": "Đã chấp nhận. Hai bên đã có email của nhau.",
       "declined": "Đã từ chối. Người gửi đã được báo.",
       "reported": "Đã báo cho GenAI Fund. Người gửi được báo là lời nhắn bị từ chối.",
-      "changesRequested": "Đã yêu cầu {name} sửa hồ sơ.",
-      "removed": "Đã gỡ {name}.",
+      "sentBack": "Đã yêu cầu {name} sửa hồ sơ.",
+      "takenDown": "Đã gỡ {name} xuống.",
+      "restored": "Đã khôi phục {name}.",
       "deleted": "Đã xoá hồ sơ nhân lực của bạn."
     },
     "directory": {
@@ -3766,11 +3777,11 @@
           "cancel": "Giữ lại"
         }
       },
-      "changesRequested": {
+      "sentBack": {
         "title": "Cần sửa: {reason}",
         "lead": "Hãy chỉnh sửa rồi gửi duyệt lại."
       },
-      "removed": {
+      "takenDown": {
         "title": "Đã gỡ khỏi danh mục: {reason}",
         "lead": "Hiện không ai khác thấy hồ sơ. Hãy chỉnh sửa rồi gửi duyệt lại."
       },

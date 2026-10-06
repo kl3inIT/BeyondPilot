@@ -7,7 +7,7 @@ import { TextButton } from "@/components/actions/text-button";
 import { DataTable } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
-import { ReviewStatus } from "@/components/composites/review-status";
+import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { Badge } from "@/components/ui/badge";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
@@ -26,7 +26,6 @@ import { ClaimDecisionButton } from "./claim-decision";
 import { MemberRole } from "./member-role";
 import { NoticeCard } from "./notice-card";
 import { OrganizationForm } from "./organization-form";
-import { reviewState } from "./organization-format";
 import { OrganizationReviewButton } from "./organization-review";
 import { RestoreButton, TakeDownMenu } from "./organization-take-down";
 

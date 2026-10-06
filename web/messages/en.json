@@ -751,8 +751,9 @@
           "enquiry_accept": "Accepted a message through a talent profile",
           "enquiry_decline": "Declined a message through a talent profile",
           "enquiry_report": "Reported a message through a talent profile",
-          "request_changes": "Asked for changes to a talent profile",
-          "remove": "Removed a talent profile",
+          "request_changes": "Sent a talent profile back",
+          "remove": "Took a talent profile down",
+          "restore": "Restored a talent profile",
           "delete": "Deleted a talent profile"
         },
         "proposal": {
@@ -826,8 +827,9 @@
           "enquiry_accept": "Accepted a message to <resource></resource>",
           "enquiry_decline": "Declined a message to <resource></resource>",
           "enquiry_report": "Reported a message to <resource></resource>",
-          "request_changes": "Asked for changes to the talent profile of <resource></resource>",
-          "remove": "Removed the talent profile of <resource></resource>",
+          "request_changes": "Sent back the talent profile of <resource></resource>",
+          "remove": "Took the talent profile of <resource></resource> down",
+          "restore": "Restored the talent profile of <resource></resource>",
           "delete": "Deleted the talent profile of <resource></resource>"
         },
         "proposal": {
@@ -1238,52 +1240,55 @@
       "review": {
         "open": "Review",
         "approve": "Approve and list",
-        "reject": "Ask for changes…",
-        "takeDown": "Remove…",
-        "rejectTitle": "Ask for changes to {name}?",
+        "reject": "Send back…",
+        "takeDown": "Take down…",
+        "rejectTitle": "Send {name} back?",
         "rejectLead": "The profile goes back to its person to correct. They read your reason.",
-        "takeDownLead": "The profile leaves the directory at once. Its person is emailed, reads your reason and can send it again.",
+        "takeDownLead": "The profile leaves the directory at once and stays approved. Its person is emailed and reads your reason; they can correct it and send it again, or you restore it.",
         "reason": "Reason",
         "message": "Note (optional)",
         "messageHint": "They read this word for word. Say what to change.",
         "cancel": "Cancel",
-        "rejectConfirm": "Ask for changes",
-        "takeDownConfirm": "Remove",
+        "rejectConfirm": "Send back",
+        "takeDownConfirm": "Take down",
         "reasonPlaceholder": "Choose a reason",
-        "takeDownTitle": "Remove {name}?",
+        "takeDownTitle": "Take {name} down?",
         "keyA": "Key: A",
-        "keyS": "Key: S"
+        "keyS": "Key: S",
+        "restore": "Restore",
+        "restoreTitle": "Put {name} back in the directory?",
+        "restoreLead": "The profile is public again while its person keeps it listed, without a new review. They are emailed."
       },
       "detail": {
         "back": "All talent",
         "submitted": "Submitted {day}",
         "unlisted": "Hidden by its person",
-        "rejected": "Changes requested: {reason}.",
+        "sentBack": "Sent back: {reason}.",
         "next": "Next in review: {name}",
         "position": "{place} of {total} waiting",
         "waitingSince": "Sent {time}",
         "public": "Open the public page",
-        "removed": "Removed: {reason}.",
+        "takenDown": "Taken down: {reason}.",
         "decision": {
           "draft": {
             "title": "Not sent for review yet",
             "lead": "The person is still writing the profile. Nobody sees it until it is approved."
           },
-          "submitted": {
+          "in_review": {
             "title": "Asks to be listed in the directory",
             "lead": "Check that the page is about professional work, names no customer without permission, and says what the person did in each project. Approving opens the page and lists it."
           },
           "approved": {
             "title": "Approved",
-            "lead": "The page is public while its person keeps it listed. Removing takes it out of the directory at once and tells them why."
+            "lead": "The page is public while its person keeps it listed. Taking it down removes it from the directory at once and tells them why."
           },
-          "changes_requested": {
-            "title": "Changes requested",
+          "needs_changes": {
+            "title": "Sent back",
             "lead": "The profile is back with its person. It returns here when they send it again."
           },
-          "removed": {
-            "title": "Removed from the directory",
-            "lead": "The page is not public. It returns here if its person sends it again."
+          "suspended": {
+            "title": "Taken down from the directory",
+            "lead": "The page is not public; the profile stays approved. Restore puts it back, and it returns here if its person sends it again."
           }
         },
         "audited": "The decision is recorded in the audit log."
@@ -1451,12 +1456,16 @@
           "description": "Tells a person their profile is in the directory."
         },
         "talent_changes_requested": {
-          "name": "Talent profile changes asked",
+          "name": "Talent profile sent back",
           "description": "Tells a person what to change before their profile is listed."
         },
         "talent_removed": {
-          "name": "Talent profile removed",
+          "name": "Talent profile taken down",
           "description": "Tells a person their profile left the directory."
+        },
+        "talent_restored": {
+          "name": "Talent profile restored",
+          "description": "Tells a person their profile is back in the directory."
         },
         "talent_enquiry": {
           "name": "Message to a talent",
@@ -2346,10 +2355,10 @@
     },
     "talentStatus": {
       "draft": "Draft",
-      "submitted": "In review",
+      "in_review": "In review",
+      "needs_changes": "Changes needed",
       "approved": "Approved",
-      "changes_requested": "Changes requested",
-      "removed": "Removed"
+      "suspended": "Taken down"
     },
     "language": {
       "vi": "Vietnamese",
@@ -3583,7 +3592,8 @@
       "TALENT_ENQUIRY_LIMIT": "You started ten conversations today. Write again tomorrow.",
       "TALENT_ENQUIRY_NOT_FOUND": "This message no longer exists.",
       "TALENT_ENQUIRY_NOT_PENDING": "This message was answered already, or it closed.",
-      "TALENT_NOT_APPROVED": "Only an approved profile can be removed.",
+      "TALENT_NOT_APPROVED": "Only an approved profile that is not taken down can be taken down.",
+      "TALENT_NOT_TAKEN_DOWN": "This profile is not taken down.",
       "REQUEST_INVALID": "Check the marked fields and try again.",
       "unknown": "That did not work. Try again."
     },
@@ -3594,8 +3604,9 @@
       "accepted": "Accepted. You both have each other's email address now.",
       "declined": "Declined. The sender was told.",
       "reported": "Reported to GenAI Fund. The sender was told it was declined.",
-      "changesRequested": "Changes asked of {name}.",
-      "removed": "{name} is removed.",
+      "sentBack": "{name} is sent back.",
+      "takenDown": "{name} is taken down.",
+      "restored": "{name} is back in the directory.",
       "deleted": "Your talent profile is deleted."
     },
     "directory": {
@@ -3766,12 +3777,12 @@
           "cancel": "Keep it"
         }
       },
-      "changesRequested": {
-        "title": "Changes requested: {reason}",
+      "sentBack": {
+        "title": "Sent back: {reason}",
         "lead": "Correct it and send it for review again."
       },
-      "removed": {
-        "title": "Removed from the directory: {reason}",
+      "takenDown": {
+        "title": "Taken down from the directory: {reason}",
         "lead": "Nobody else sees it now. Correct it and send it for review again."
       },
       "delete": {

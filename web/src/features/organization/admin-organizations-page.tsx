@@ -6,6 +6,7 @@ import { Button } from "@/components/actions/button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
+import { reviewState } from "@/components/composites/review-status";
 import { Status } from "@/components/composites/status";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
@@ -19,7 +20,6 @@ import {
   type AdminOrganizationsSearch,
 } from "./admin-organizations-search";
 import { AdminOrganizationsToolbar } from "./admin-organizations-toolbar";
-import { reviewState } from "./organization-format";
 
 const address = createSerializer(adminOrganizationsSearch);
 

@@ -36,6 +36,7 @@ export const emailKinds = [
   "talent_approved",
   "talent_changes_requested",
   "talent_removed",
+  "talent_restored",
   "talent_enquiry",
   "talent_enquiry_reminder",
   "talent_introduction",

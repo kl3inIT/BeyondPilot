@@ -313,7 +313,7 @@ const talent = {
     ],
   },
   member: {
-    profile: profile("Siti Rahma", "siti-rahma", "changes_requested", {
+    profile: profile("Siti Rahma", "siti-rahma", "needs_changes", {
       projects: [],
       decisionReason: "incomplete",
       decisionMessage: "Add a project.",

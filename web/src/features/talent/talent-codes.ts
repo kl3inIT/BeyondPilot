@@ -37,4 +37,4 @@ export const projectStages = ["prototype", "pilot", "in_production", "internal_t
 export const talentRejections = ["incomplete", "unverifiable", "inappropriate", "other"] as const;
 
 /** The statuses operators see; a draft is its person's alone. */
-export const reviewedStatuses = ["submitted", "approved", "changes_requested", "removed"] as const;
+export const reviewedStatuses = ["in_review", "needs_changes", "approved", "suspended"] as const;

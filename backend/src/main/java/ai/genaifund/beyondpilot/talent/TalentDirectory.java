@@ -65,7 +65,10 @@ public class TalentDirectory {
 	/** Every approved, listed profile as search indexes it, for a rebuild of the index. */
 	@Transactional(readOnly = true)
 	public List<IndexedTalent> indexedAll() {
-		return profiles.findByStatusAndListedTrue(TalentProfile.APPROVED).stream().map(TalentDirectory::indexed).toList();
+		return profiles.findByStatusAndListedTrueAndSuspendedAtIsNull(TalentProfile.APPROVED)
+			.stream()
+			.map(TalentDirectory::indexed)
+			.toList();
 	}
 
 	private static IndexedTalent indexed(TalentProfile profile) {

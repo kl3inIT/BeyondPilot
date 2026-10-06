@@ -27,7 +27,7 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
   const [organizations, solutions, talent] = await Promise.all([
     readAdminOrganizations({ q: "", status: "in_review", page: 1 }),
     readAdminSolutions({ q: "", status: "submitted", industry: null, page: 1 }),
-    readAdminTalentList({ q: "", status: "submitted", page: 1 }),
+    readAdminTalentList({ q: "", status: "in_review", page: 1 }),
   ]);
   const queues = [
     {
@@ -45,7 +45,7 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
     {
       key: "talent" as const,
       Icon: UsersIcon,
-      href: `${siteRoutes.adminTalent}?status=submitted`,
+      href: `${siteRoutes.adminTalent}?status=in_review`,
       count: talent.total,
     },
   ];

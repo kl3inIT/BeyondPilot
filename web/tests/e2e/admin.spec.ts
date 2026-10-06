@@ -69,7 +69,7 @@ test.describe("admin", () => {
     for (const [queue, count, href] of [
       ["Organizations to review", 2, "/admin/organizations?status=in_review"],
       ["Solutions to review", 2, "/admin/solutions?status=submitted"],
-      ["Talent profiles to review", 2, "/admin/talent?status=submitted"],
+      ["Talent profiles to review", 2, "/admin/talent?status=in_review"],
     ] as const) {
       const link = page.getByRole("main").getByRole("link", { name: queue });
       await expect(link).toHaveAttribute("href", href);

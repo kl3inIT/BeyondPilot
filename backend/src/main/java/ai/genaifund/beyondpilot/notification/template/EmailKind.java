@@ -90,6 +90,8 @@ public enum EmailKind {
 	TALENT_REMOVED("talent_removed", EmailGroup.TALENT, true, "note",
 			Variable.required("profileName", "Mei Tan"), Variable.quote("note", null)),
 
+	TALENT_RESTORED("talent_restored", EmailGroup.TALENT, true, null, Variable.required("profileName", "Mei Tan")),
+
 	TALENT_ENQUIRY("talent_enquiry", EmailGroup.TALENT, true, "message",
 			Variable.optional("senderName", "Minh Trần"), Variable.optional("senderOrganization", "Pocket Policy"),
 			Variable.optional("aboutProject", Boolean.TRUE), Variable.optional("aboutRole", Boolean.FALSE),

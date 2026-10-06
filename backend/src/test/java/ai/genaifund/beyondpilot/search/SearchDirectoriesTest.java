@@ -124,7 +124,7 @@ class SearchDirectoriesTest {
 	}
 
 	@Test
-	void anApprovedListedProfileIsFoundAndLeavesTheResultsWhenUnlisted() {
+	void anApprovedListedProfileIsFoundAndLeavesTheResultsWhenTakenDownOrUnlisted() {
 		String person = TestSignIn.session(client, mail, "person-" + word + "@directories.test");
 		String saved = body(put(person, "/api/talent/mine", profile("Lan " + word, null)));
 		UUID profile = UUID.fromString(JsonPath.read(saved, "$.id"));
@@ -139,6 +139,11 @@ class SearchDirectoriesTest {
 		assertThat(JsonPath.<List<String>>read(body, "$.items[0].roles")).containsExactly("ml_engineer");
 		assertThat(JsonPath.<String>read(body, "$.items[0].worksAt")).isEqualTo("Revve AI");
 		assertThat(JsonPath.<String>read(body, "$.items[0].city")).isEqualTo("Ho Chi Minh City");
+
+		post(operator, "/api/talent/admin/profiles/" + profile + "/take-down", Map.of("reason", "other"));
+		await().atMost(WAIT).until(() -> total("lan " + word) == 0);
+		post(operator, "/api/talent/admin/profiles/" + profile + "/restore", null);
+		await().atMost(WAIT).until(() -> total("lan " + word) == 1);
 
 		String mine = body(client.get()
 			.uri("/api/talent/mine")

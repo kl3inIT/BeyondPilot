@@ -31,8 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * What operators do with talent profiles: read those that were submitted, approve one, ask for changes to one, remove
- * one from the public, and read the messages people reported. Every operation first checks that the caller is an
+ * What operators do with talent profiles: read those that were submitted, approve one, send one back with what to
+ * change, take one down from the public and restore it, and read the messages people reported. Every operation first checks that the caller is an
  * operator now; every decision is recorded in the audit trail in the transaction of the change, and its person is told
  * by email. A draft is its person's alone and is never shown here.
  */
@@ -84,8 +84,8 @@ public class TalentAdministration {
 			.people(rows.stream().map(TalentQueryRepository.Row::accountId).toList());
 		return new AdminTalentListResponse(rows.stream()
 			.map(row -> new TalentSummaryResponse(row.id(), row.slug(), row.name(),
-					email(people, row.accountId()), row.headline(), row.status(), row.listed(), row.submittedAt(),
-					row.updatedAt()))
+					email(people, row.accountId()), row.headline(), row.status(), row.suspendedAt(), row.listed(),
+					row.submittedAt(), row.updatedAt()))
 			.toList(), page, PAGE_SIZE, profileList.adminCount(text, request.status()));
 	}
 
@@ -112,7 +112,7 @@ public class TalentAdministration {
 	public void approve(Actor actor, UUID id) {
 		Operator operator = identity.requireOperator(actor);
 		TalentProfile profile = reviewable(id);
-		if (!profile.isSubmitted()) {
+		if (!profile.isInReview()) {
 			throw notAwaiting(profile);
 		}
 		profile.approve(Instant.now());
@@ -122,44 +122,65 @@ public class TalentAdministration {
 	}
 
 	/**
-	 * Asks the person to change a profile that waits for review, with a reason they read. They correct it and send it
+	 * Sends a profile that waits for review back to its person, with a reason they read. They correct it and send it
 	 * again.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws TalentException when the profile does not exist or does not wait for review
 	 */
 	@Transactional
-	public void requestChanges(Actor actor, UUID id, TalentDecisionRequest request) {
+	public void sendBack(Actor actor, UUID id, TalentDecisionRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		TalentProfile profile = reviewable(id);
-		if (!profile.isSubmitted()) {
+		if (!profile.isInReview()) {
 			throw notAwaiting(profile);
 		}
 		String message = TalentViews.text(request.message());
-		profile.requestChanges(request.reason(), message, Instant.now());
+		profile.sendBack(request.reason(), message, Instant.now());
 		record(AuditAction.TALENT_REQUEST_CHANGES, operator, profile, Map.of("reason", request.reason()));
 		events.publishEvent(new TalentProfileChanged(id));
 		tell(profile, EmailService.TalentDecision.CHANGES_REQUESTED, message);
 	}
 
 	/**
-	 * Removes an approved profile from the public, with a reason its person reads. They can correct it and send it
-	 * again.
+	 * Takes an approved profile down from the public, with a reason its person reads. Its review stays approved; they
+	 * can correct it and send it again, or an operator restores it.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws TalentException when the profile does not exist or is not approved
+	 * @throws TalentException when the profile does not exist, or is not approved or already taken down
 	 */
 	@Transactional
-	public void remove(Actor actor, UUID id, TalentDecisionRequest request) {
+	public void takeDown(Actor actor, UUID id, TalentDecisionRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		TalentProfile profile = reviewable(id);
 		if (!profile.isApproved()) {
 			throw new TalentException(TalentErrorCode.NOT_APPROVED,
-					"Removal of talent profile " + profile.getId() + ", which is " + profile.getStatus());
+					"Takedown of talent profile " + profile.getId() + ", which is " + profile.getStatus()
+							+ (profile.isTakenDown() ? " and taken down" : ""));
 		}
 		String message = TalentViews.text(request.message());
-		profile.remove(request.reason(), message, Instant.now());
+		profile.takeDown(request.reason(), message, Instant.now());
 		record(AuditAction.TALENT_REMOVE, operator, profile, Map.of("reason", request.reason()));
 		events.publishEvent(new TalentProfileChanged(id));
 		tell(profile, EmailService.TalentDecision.REMOVED, message);
+	}
+
+	/**
+	 * Puts a profile taken down back in the public without a new review, and tells its person.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws TalentException when the profile does not exist, or is not an approved profile taken down
+	 */
+	@Transactional
+	public void restore(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		TalentProfile profile = reviewable(id);
+		if (!TalentProfile.APPROVED.equals(profile.getStatus()) || !profile.isTakenDown()) {
+			throw new TalentException(TalentErrorCode.NOT_TAKEN_DOWN,
+					"Restore of talent profile " + profile.getId() + ", which is " + profile.getStatus()
+							+ (profile.isTakenDown() ? " and taken down" : ""));
+		}
+		profile.restore();
+		record(AuditAction.TALENT_RESTORE, operator, profile, Map.of());
+		events.publishEvent(new TalentProfileChanged(id));
+		tell(profile, EmailService.TalentDecision.RESTORED, null);
 	}
 
 	/**

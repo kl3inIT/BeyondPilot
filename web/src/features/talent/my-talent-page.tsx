@@ -2,6 +2,7 @@ import { CircleAlertIcon, CircleCheckIcon, TimerIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
+import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { Status } from "@/components/composites/status";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useVocabulary } from "@/i18n/vocabulary";
@@ -11,7 +12,6 @@ import { siteRoutes } from "@/lib/site";
 import { DeleteTalentProfile } from "./delete-talent-profile";
 import { TalentEnquiryActions } from "./talent-enquiry-actions";
 import { TalentForm } from "./talent-form";
-import { TalentStatus } from "./talent-status";
 
 type MyTalentPageProps = {
   mine: MyTalent;
@@ -26,7 +26,9 @@ type MyTalentPageProps = {
 function MyTalentPage({ mine, accountName }: MyTalentPageProps) {
   const t = useTranslations("Talent.mine");
   const reason = useVocabulary("talentRejection");
+  const status = useVocabulary("talentStatus");
   const profile = mine.profile ?? null;
+  const state = profile && reviewState(profile);
   const waiting = mine.enquiries.filter((enquiry) => enquiry.status === "pending").length;
 
   return (
@@ -34,19 +36,19 @@ function MyTalentPage({ mine, accountName }: MyTalentPageProps) {
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          {profile && <TalentStatus status={profile.status} />}
+          {state && <ReviewStatus state={state}>{status(state)}</ReviewStatus>}
         </div>
         <p className="max-w-2xl text-muted-foreground">{t(profile ? "lead" : "leadNew")}</p>
       </div>
 
-      {profile?.status === "submitted" && (
+      {state === "in_review" && (
         <Alert className="max-w-3xl">
           <TimerIcon aria-hidden="true" />
           <AlertTitle>{t("submitted.title")}</AlertTitle>
           <AlertDescription>{t("submitted.lead")}</AlertDescription>
         </Alert>
       )}
-      {profile?.status === "approved" && (
+      {profile && state === "approved" && (
         <Alert className="max-w-3xl">
           <CircleCheckIcon aria-hidden="true" />
           <AlertTitle>{t(profile.listed ? "approved.listed" : "approved.unlisted")}</AlertTitle>
@@ -61,17 +63,27 @@ function MyTalentPage({ mine, accountName }: MyTalentPageProps) {
           </AlertDescription>
         </Alert>
       )}
-      {(profile?.status === "changes_requested" || profile?.status === "removed") && (
+      {profile && state === "suspended" && (
         <Alert variant="destructive" className="max-w-3xl">
           <CircleAlertIcon aria-hidden="true" />
           <AlertTitle>
-            {t(profile.status === "removed" ? "removed.title" : "changesRequested.title", {
-              reason: reason(profile.decisionReason ?? "other"),
-            })}
+            {t("takenDown.title", { reason: reason(profile.suspensionReason ?? "other") })}
+          </AlertTitle>
+          <AlertDescription>
+            {profile.suspensionMessage && <p>{profile.suspensionMessage}</p>}
+            <p>{t("takenDown.lead")}</p>
+          </AlertDescription>
+        </Alert>
+      )}
+      {profile && state === "needs_changes" && (
+        <Alert variant="destructive" className="max-w-3xl">
+          <CircleAlertIcon aria-hidden="true" />
+          <AlertTitle>
+            {t("sentBack.title", { reason: reason(profile.decisionReason ?? "other") })}
           </AlertTitle>
           <AlertDescription>
             {profile.decisionMessage && <p>{profile.decisionMessage}</p>}
-            <p>{t(profile.status === "removed" ? "removed.lead" : "changesRequested.lead")}</p>
+            <p>{t("sentBack.lead")}</p>
           </AlertDescription>
         </Alert>
       )}

@@ -46,6 +46,7 @@ const kindIcons: Record<EmailKind, React.ComponentType<React.SVGProps<SVGSVGElem
   talent_approved: BadgeCheckIcon,
   talent_changes_requested: CircleXIcon,
   talent_removed: BadgeXIcon,
+  talent_restored: BadgeCheckIcon,
   talent_enquiry: MessageSquareIcon,
   talent_enquiry_reminder: TimerIcon,
   talent_introduction: UsersIcon,

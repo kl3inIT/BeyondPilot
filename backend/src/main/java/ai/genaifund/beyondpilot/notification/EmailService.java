@@ -122,7 +122,7 @@ public class EmailService {
 	/** What GenAI Fund decided about a talent profile. */
 	public enum TalentDecision {
 
-		APPROVED, CHANGES_REQUESTED, REMOVED
+		APPROVED, CHANGES_REQUESTED, REMOVED, RESTORED
 
 	}
 
@@ -172,6 +172,7 @@ public class EmailService {
 			case APPROVED -> EmailKind.TALENT_APPROVED;
 			case CHANGES_REQUESTED -> EmailKind.TALENT_CHANGES_REQUESTED;
 			case REMOVED -> EmailKind.TALENT_REMOVED;
+			case RESTORED -> EmailKind.TALENT_RESTORED;
 		};
 		queue(kind, recipient, values("profileName", profileName, "note", note));
 	}

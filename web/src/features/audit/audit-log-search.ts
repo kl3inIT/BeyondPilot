@@ -45,6 +45,7 @@ export const auditActions = [
   "talent.enquiry_report",
   "talent.request_changes",
   "talent.remove",
+  "talent.restore",
   "talent.delete",
   "proposal.criteria_update",
   "proposal.reviewer_invite",

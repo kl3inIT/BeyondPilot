@@ -697,7 +697,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -3507,7 +3507,7 @@ export type TakeDownOrganization = {
 };
 
 /**
- * Why GenAI Fund asks for changes to a talent profile or removes it, and what its person is told.
+ * Why GenAI Fund sends a talent profile back or takes it down, and what its person is told.
  */
 export type TalentDecision = {
     /**
@@ -3563,11 +3563,11 @@ export type TalentProfile = {
      */
     country?: string | null;
     /**
-     * What the operator wrote to the person with the rejection.
+     * What the operator wrote to the person when sending it back.
      */
     decisionMessage?: string | null;
     /**
-     * Why GenAI Fund last asked for changes or removed it.
+     * Why GenAI Fund last sent it back.
      */
     decisionReason?: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
     engagement: Array<string>;
@@ -3595,8 +3595,23 @@ export type TalentProfile = {
     roles: Array<string>;
     skills: Array<string>;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'changes_requested' | 'removed';
+    /**
+     * GenAI Fund's review of the profile.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved';
     submittedAt?: string | null;
+    /**
+     * When GenAI Fund took it down from the public; null while it is not.
+     */
+    suspendedAt?: string | null;
+    /**
+     * What the operator wrote to the person when taking it down.
+     */
+    suspensionMessage?: string | null;
+    /**
+     * Why GenAI Fund last took it down.
+     */
+    suspensionReason?: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
     updatedAt: string;
     /**
      * Sent back with a save, which is refused when the profile changed since.
@@ -3639,8 +3654,15 @@ export type TalentSummary = {
     listed: boolean;
     name: string;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'changes_requested' | 'removed';
+    /**
+     * GenAI Fund's review of the profile.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved';
     submittedAt?: string | null;
+    /**
+     * When it was taken down; null while it is not.
+     */
+    suspendedAt?: string | null;
     updatedAt: string;
 };
 
@@ -3731,7 +3753,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -8212,9 +8234,9 @@ export type ListAdminTalentData = {
          */
         q?: string | null;
         /**
-         * Only profiles of this status. Drafts are never listed.
+         * Only profiles of this review status; `approved` leaves out those taken down, and `suspended` selects those taken down. Drafts are never listed.
          */
-        status?: 'submitted' | 'approved' | 'changes_requested' | 'removed';
+        status?: 'in_review' | 'needs_changes' | 'approved' | 'suspended';
         /**
          * The page, counted from 1.
          */
@@ -8323,20 +8345,16 @@ export type ApproveTalentResponses = {
 
 export type ApproveTalentResponse = ApproveTalentResponses[keyof ApproveTalentResponses];
 
-export type RemoveTalentData = {
-    body: TalentDecision;
+export type RestoreTalentData = {
+    body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/api/talent/admin/profiles/{id}/remove';
+    url: '/api/talent/admin/profiles/{id}/restore';
 };
 
-export type RemoveTalentErrors = {
-    /**
-     * A member is not valid.
-     */
-    400: Problem;
+export type RestoreTalentErrors = {
     /**
      * Nobody is signed in.
      */
@@ -8350,32 +8368,32 @@ export type RemoveTalentErrors = {
      */
     404: Problem;
     /**
-     * The profile is not approved.
+     * The profile is not taken down.
      */
     409: Problem;
 };
 
-export type RemoveTalentError = RemoveTalentErrors[keyof RemoveTalentErrors];
+export type RestoreTalentError = RestoreTalentErrors[keyof RestoreTalentErrors];
 
-export type RemoveTalentResponses = {
+export type RestoreTalentResponses = {
     /**
-     * The profile is removed; the person was emailed.
+     * The profile is back; the person was emailed.
      */
     204: void;
 };
 
-export type RemoveTalentResponse = RemoveTalentResponses[keyof RemoveTalentResponses];
+export type RestoreTalentResponse = RestoreTalentResponses[keyof RestoreTalentResponses];
 
-export type RequestTalentChangesData = {
+export type SendBackTalentData = {
     body: TalentDecision;
     path: {
         id: string;
     };
     query?: never;
-    url: '/api/talent/admin/profiles/{id}/request-changes';
+    url: '/api/talent/admin/profiles/{id}/send-back';
 };
 
-export type RequestTalentChangesErrors = {
+export type SendBackTalentErrors = {
     /**
      * A member is not valid.
      */
@@ -8398,16 +8416,59 @@ export type RequestTalentChangesErrors = {
     409: Problem;
 };
 
-export type RequestTalentChangesError = RequestTalentChangesErrors[keyof RequestTalentChangesErrors];
+export type SendBackTalentError = SendBackTalentErrors[keyof SendBackTalentErrors];
 
-export type RequestTalentChangesResponses = {
+export type SendBackTalentResponses = {
     /**
-     * Changes are asked for; the person was emailed.
+     * The profile needs changes; the person was emailed.
      */
     204: void;
 };
 
-export type RequestTalentChangesResponse = RequestTalentChangesResponses[keyof RequestTalentChangesResponses];
+export type SendBackTalentResponse = SendBackTalentResponses[keyof SendBackTalentResponses];
+
+export type TakeDownTalentData = {
+    body: TalentDecision;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/admin/profiles/{id}/take-down';
+};
+
+export type TakeDownTalentErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted talent profile.
+     */
+    404: Problem;
+    /**
+     * The profile is not approved, or is taken down already.
+     */
+    409: Problem;
+};
+
+export type TakeDownTalentError = TakeDownTalentErrors[keyof TakeDownTalentErrors];
+
+export type TakeDownTalentResponses = {
+    /**
+     * The profile is taken down and stays approved; the person was emailed.
+     */
+    204: void;
+};
+
+export type TakeDownTalentResponse = TakeDownTalentResponses[keyof TakeDownTalentResponses];
 
 export type ListReportedTalentEnquiriesData = {
     body?: never;

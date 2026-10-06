@@ -14,7 +14,10 @@ public record TalentSummaryResponse(@Schema(requiredMode = Schema.RequiredMode.R
 				description = "The address of the account the profile belongs to.") String email,
 		@Schema(types = { "string", "null" }) @Nullable String headline,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				allowableValues = { "draft", "submitted", "approved", "changes_requested", "removed" }) String status,
+				allowableValues = { "draft", "in_review", "needs_changes", "approved" },
+				description = "GenAI Fund's review of the profile.") String status,
+		@Schema(types = { "string", "null" }, format = "date-time",
+				description = "When it was taken down; null while it is not.") @Nullable Instant suspendedAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean listed,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant submittedAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt) {

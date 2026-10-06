@@ -299,13 +299,13 @@ function profile(id, name, status, more) {
 const talent = [
   {
     email: "bao.tran@example.com",
-    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a01", "Bảo Trần", "submitted", {
+    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a01", "Bảo Trần", "in_review", {
       submittedAt: ago(5),
     }),
   },
   {
     email: "mai.pham@example.com",
-    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a02", "Mai Phạm", "submitted", {
+    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a02", "Mai Phạm", "in_review", {
       submittedAt: ago(2),
       headline: "AI product manager",
       roles: ["ai_product_manager"],
@@ -321,9 +321,17 @@ const talent = [
   },
   {
     email: "siti@pocketpolicy.example",
-    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a04", "Siti Rahma", "changes_requested", {
+    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a04", "Siti Rahma", "needs_changes", {
       decisionReason: "incomplete",
       decisionMessage: "Add a project.",
+    }),
+  },
+  {
+    email: "dewi@example.com",
+    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a05", "Dewi Lestari", "approved", {
+      suspendedAt: ago(30),
+      suspensionReason: "inappropriate",
+      suspensionMessage: "Remove the client logos.",
     }),
   },
 ];
@@ -467,13 +475,18 @@ const lists = {
   "/api/talent/admin/profiles": {
     records: talent,
     idOf: (record) => record.profile.id,
-    statusOf: (record) => record.profile.status,
+    // A profile taken down is approved with the date it went down, and filters as `suspended`.
+    statusOf: (record) => (record.profile.suspendedAt ? "suspended" : record.profile.status),
     textOf: (record) => `${record.profile.name} ${record.email}`,
-    summaryOf: ({ email, profile: { id, name, slug, status, headline, ...record } }) => ({
+    summaryOf: ({
+      email,
+      profile: { id, name, slug, status, headline, suspendedAt = null, ...record },
+    }) => ({
       id,
       name,
       slug,
       status,
+      suspendedAt,
       headline,
       email,
       listed: record.listed,

@@ -10,14 +10,6 @@ export function websiteHost(website: string | null | undefined): string | null {
   }
 }
 
-/** How the review of an organization reads: its status, or `suspended` while it is taken down. */
-export function reviewState<Status extends string>(organization: {
-  status: Status;
-  suspendedAt?: string | null;
-}): Status | "suspended" {
-  return organization.suspendedAt ? "suspended" : organization.status;
-}
-
 /** Whether an organization is approved and not taken down, so it can have members and publish. */
 export function isApproved(organization: { status: string; suspendedAt?: string | null }): boolean {
   return organization.status === "approved" && !organization.suspendedAt;
