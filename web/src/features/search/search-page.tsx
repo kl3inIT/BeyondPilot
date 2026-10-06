@@ -27,6 +27,7 @@ const popular = ["agentic", "document", "insurance", "retail"] as const;
 
 /** Where each kind is browsed and narrowed further; programs are narrowed by type and phase, not by text. */
 const directories: Record<SearchKind, string> = {
+  use_case: siteRoutes.useCases,
   program: siteRoutes.programs,
   solution: siteRoutes.solutions,
   talent: siteRoutes.talent,
@@ -88,6 +89,11 @@ function SearchPage({ params, results }: SearchPageProps) {
   );
 }
 
+/** How many of a kind matched; the counts name use cases in camel case, as the API writes them. */
+function countOf(counts: SearchResults["counts"], kind: SearchKind) {
+  return kind === "use_case" ? counts.useCase : counts[kind];
+}
+
 /** The query, which a person corrects here; a new query starts again on the All tab. */
 function SearchField({ q }: { q: string }) {
   const t = useTranslations("Search");
@@ -141,10 +147,10 @@ function KindTabs({
   const tabs = [
     { key: "all" as const, count: counts.all, href: address(siteRoutes.search, { q }) },
     ...searchKinds
-      .filter((each) => counts[each] > 0 || each === kind)
+      .filter((each) => countOf(counts, each) > 0 || each === kind)
       .map((each) => ({
         key: each,
-        count: counts[each],
+        count: countOf(counts, each),
         href: address(siteRoutes.search, { q, kind: each }),
       })),
   ];
@@ -200,14 +206,16 @@ function AllResults({
           <div className="flex items-center justify-between gap-4">
             <h2 id={`results-${kind}`} className="text-lg font-semibold">
               {t(`kinds.${kind}`)}{" "}
-              <span className="text-sm font-normal text-muted-foreground">{counts[kind]}</span>
+              <span className="text-sm font-normal text-muted-foreground">
+                {countOf(counts, kind)}
+              </span>
             </h2>
-            {counts[kind] > group.length && (
+            {countOf(counts, kind) > group.length && (
               <Link
                 href={address(siteRoutes.search, { q, kind })}
                 className="hit-area inline-flex items-center gap-1 rounded-sm text-sm font-medium text-primary outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
               >
-                {t("seeAll", { count: counts[kind] })}
+                {t("seeAll", { count: countOf(counts, kind) })}
                 <ArrowRightIcon className="size-4" aria-hidden="true" />
               </Link>
             )}

@@ -15,12 +15,13 @@ test.describe("search", () => {
   }) => {
     await page.goto("/search?q=AI");
 
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("7 results for “AI”");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("8 results for “AI”");
     await expect(page.getByRole("searchbox", { name: "Search BeyondPilot" })).toHaveValue("AI");
     await expect(page.getByRole("main").getByRole("heading", { level: 2 })).toHaveText([
       "AI solutions 4",
       "Programs 2",
       "AI talent 1",
+      "Use cases 1",
     ]);
     await expect(shownResults(page)).toHaveText([
       "AI Voice Agent",
@@ -29,10 +30,11 @@ test.describe("search", () => {
       "AI Youth Challenge",
       "NextGen AI Open Innovation Japan 2025",
       "Hieu Nguyen",
+      "AI claims triage for motor insurance",
     ]);
 
     const tabs = page.getByRole("navigation", { name: "Kinds of result" });
-    await expect(tabs.getByRole("link", { name: "All 7" })).toHaveAttribute("aria-current", "page");
+    await expect(tabs.getByRole("link", { name: "All 8" })).toHaveAttribute("aria-current", "page");
     // A kind that has more than it shows leads to its own tab.
     await expect(page.getByRole("link", { name: "See all 4" })).toHaveAttribute(
       "href",
@@ -59,6 +61,15 @@ test.describe("search", () => {
     await expect(
       page.getByRole("link", { name: "NextGen AI Open Innovation Japan 2025" }),
     ).toHaveAttribute("href", "https://genaifund.ai/japan");
+    // A use case of an organization that stays anonymous says so, with its budget and closing date.
+    const useCase = row("AI claims triage for motor insurance");
+    await expect(useCase.getByText("Organization not named")).toBeVisible();
+    await expect(
+      useCase.getByText("Insurance · USD 10,000–50,000 · Apply by 30 Nov 2026"),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "AI claims triage for motor insurance" }),
+    ).toHaveAttribute("href", "/use-cases?q=AI%20claims%20triage%20for%20motor%20insurance");
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -114,7 +125,7 @@ test.describe("search", () => {
     await page.getByRole("button", { name: "Search", exact: true }).click();
 
     await expect(page).toHaveURL("/search?q=AI");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("7 results for “AI”");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("8 results for “AI”");
     await page.getByRole("link", { name: "Clear the search" }).click();
     await expect(page).toHaveURL("/search");
   });
@@ -126,7 +137,7 @@ test.describe("search on a phone", () => {
   test("the results fit the screen and the tabs scroll", async ({ page }) => {
     await page.goto("/search?q=AI");
 
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("7 results for “AI”");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("8 results for “AI”");
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
