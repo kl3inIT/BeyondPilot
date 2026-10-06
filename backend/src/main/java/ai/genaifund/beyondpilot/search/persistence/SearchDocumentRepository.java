@@ -30,6 +30,8 @@ public class SearchDocumentRepository {
 
 	public static final String TALENT = "talent";
 
+	public static final String USE_CASE = "use_case";
+
 	/** Reciprocal rank fusion's constant: a result's score is the sum of 1 / (k + its position) in each ranking. */
 	private static final int FUSION_K = 60;
 
@@ -65,9 +67,13 @@ public class SearchDocumentRepository {
 			    where distance <= :maxDistance
 			),
 			matched as (
-			    select kind, item_id, sum(1.0 / (:fusionK + position)) as score
+			    select ranked.kind, ranked.item_id, sum(1.0 / (:fusionK + ranked.position)) as score
 			    from (select * from by_text union all select * from by_title union all select * from by_meaning) ranked
-			    group by kind, item_id
+			    join search_document d on d.kind = ranked.kind and d.item_id = ranked.item_id
+			    -- A use case stops taking proposals at its close date and leaves the results then, not at the repair.
+			    where d.kind <> 'use_case' or d.facets ->> 'closesAt' is null
+			       or cast(d.facets ->> 'closesAt' as timestamptz) > now()
+			    group by ranked.kind, ranked.item_id
 			)
 			""";
 

@@ -3,8 +3,11 @@ package ai.genaifund.beyondpilot.search.persistence;
 import static ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.PROGRAM;
 import static ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.SOLUTION;
 import static ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.TALENT;
+import static ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.USE_CASE;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -150,6 +153,19 @@ class SearchDocumentRepositoryTest {
 
 		assertThat(best).extracting(Hit::kind).containsExactly(SOLUTION, SOLUTION, SOLUTION, TALENT);
 		assertThat(best).extracting(Hit::title).doesNotContain("Underwriting Copilot");
+	}
+
+	@Test
+	void aUseCaseLeavesTheResultsAtItsCloseDate() {
+		for (var closes : Map.of("Open claims triage", Duration.ofDays(1), "Closed claims triage", Duration.ofDays(-1))
+			.entrySet()) {
+			UUID id = UUID.randomUUID();
+			index.save(new Document(USE_CASE, id, id.toString(), closes.getKey(), null, "Claims wait days.", "",
+					closes.getKey(), Map.of("closesAt", Instant.now().plus(closes.getValue()).toString()), true, null,
+					null));
+		}
+
+		assertThat(titles("claims triage")).containsExactly("Open claims triage");
 	}
 
 	private List<String> titles(String query) {
