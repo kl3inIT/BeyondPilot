@@ -7,6 +7,7 @@ import {
   ScrollTextIcon,
   UserCogIcon,
   HandshakeIcon,
+  MailIcon,
   UsersIcon,
 } from "lucide-react";
 import { cookies } from "next/headers";
@@ -92,6 +93,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
           href: siteRoutes.adminAuditLog,
           label: t("nav.auditLog"),
           icon: <ScrollTextIcon aria-hidden="true" />,
+        },
+        {
+          href: siteRoutes.adminEmail,
+          label: t("nav.email"),
+          icon: <MailIcon aria-hidden="true" />,
         },
       ],
     },

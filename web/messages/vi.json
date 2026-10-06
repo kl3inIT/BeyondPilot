@@ -293,6 +293,7 @@
       "introductions": "Giới thiệu",
       "review": "Xét duyệt",
       "system": "Hệ thống",
+      "email": "Email",
       "useCases": "Use case",
       "useCasesNew": "Use case mới"
     },
@@ -640,7 +641,8 @@
         "makeOperator": "Cấp quyền operator…",
         "withdrawOperator": "Thu quyền operator…",
         "disable": "Khóa tài khoản…",
-        "enable": "Mở khóa tài khoản"
+        "enable": "Mở khóa tài khoản",
+        "emails": "Email đã gửi cho người này"
       },
       "confirm": {
         "cancel": "Hủy",
@@ -759,13 +761,6 @@
           "decide": "Quyết định một đơn",
           "release": "Công bố kết quả"
         },
-        "use_case": {
-          "create": "Tạo một use case",
-          "submit": "Gửi một use case đi duyệt",
-          "draft": "Chuyển một use case về bản nháp",
-          "approve": "Duyệt một use case",
-          "send_back": "Gửi lại một use case"
-        },
         "email": {
           "settings_update": "Đổi cấu hình email",
           "appearance_update": "Đổi giao diện email",
@@ -774,6 +769,13 @@
           "suppression_add": "Chặn gửi email tới một địa chỉ",
           "suppression_remove": "Bỏ chặn một địa chỉ email",
           "resend": "Gửi lại một email"
+        },
+        "use_case": {
+          "create": "Tạo một use case",
+          "submit": "Gửi một use case đi duyệt",
+          "draft": "Chuyển một use case về bản nháp",
+          "approve": "Duyệt một use case",
+          "send_back": "Gửi lại một use case"
         }
       },
       "activity": {
@@ -833,13 +835,6 @@
           "decide": "Quyết định một đơn nộp vào <resource></resource>",
           "release": "Công bố kết quả của <resource></resource>"
         },
-        "use_case": {
-          "create": "Đã tạo use case <resource></resource>",
-          "submit": "Đã gửi use case <resource></resource> đi duyệt",
-          "draft": "Đã chuyển use case <resource></resource> về bản nháp",
-          "approve": "Đã duyệt use case <resource></resource>",
-          "send_back": "Đã gửi lại use case <resource></resource>"
-        },
         "email": {
           "settings_update": "Đổi <resource></resource>",
           "appearance_update": "Đổi giao diện trong <resource></resource>",
@@ -848,6 +843,13 @@
           "suppression_add": "Chặn gửi email tới <resource></resource>",
           "suppression_remove": "Bỏ chặn <resource></resource>",
           "resend": "Gửi lại email <resource></resource>"
+        },
+        "use_case": {
+          "create": "Đã tạo use case <resource></resource>",
+          "submit": "Đã gửi use case <resource></resource> đi duyệt",
+          "draft": "Đã chuyển use case <resource></resource> về bản nháp",
+          "approve": "Đã duyệt use case <resource></resource>",
+          "send_back": "Đã gửi lại use case <resource></resource>"
         }
       },
       "columns": {
@@ -1340,6 +1342,498 @@
         "title": "Không có yêu cầu nào khớp",
         "description": "Hãy thử tên giải pháp khác, hoặc trạng thái khác.",
         "clear": "Xóa tìm kiếm và bộ lọc"
+      }
+    },
+    "email": {
+      "metaTitle": "Email",
+      "title": "Email",
+      "lead": "BeyondPilot gửi gì, nội dung ra sao, và mail đã tới chưa.",
+      "notReady": {
+        "title": "Chưa gửi được email nào",
+        "description": "Chọn nhà cung cấp và người gửi trong Cài đặt. Trước đó, email chờ trong Hoạt động và hết hạn sau một ngày.",
+        "action": "Mở Cài đặt"
+      },
+      "tabs": {
+        "label": "Email",
+        "templates": "Mẫu",
+        "activity": "Hoạt động",
+        "suppressions": "Địa chỉ bị chặn",
+        "settings": "Cài đặt"
+      },
+      "groups": {
+        "sign_in": "Đăng nhập",
+        "organizations": "Tổ chức",
+        "applications": "Chương trình và đơn",
+        "introductions": "Giới thiệu",
+        "use_cases": "Use case",
+        "talent": "Nhân lực"
+      },
+      "kinds": {
+        "sign_in_code": {
+          "name": "Mã đăng nhập",
+          "description": "Mã sáu chữ số người dùng nhập để đăng nhập."
+        },
+        "organization_invitation": {
+          "name": "Lời mời vào tổ chức",
+          "description": "Mời một người tham gia hoặc làm chủ sở hữu tổ chức."
+        },
+        "organization_approved": {
+          "name": "Tổ chức được duyệt",
+          "description": "Báo chủ sở hữu rằng tổ chức đã được hiển thị."
+        },
+        "organization_refused": {
+          "name": "Tổ chức chưa được duyệt",
+          "description": "Báo chủ sở hữu cần sửa gì trước khi được hiển thị."
+        },
+        "organization_request_approved": {
+          "name": "Yêu cầu tham gia được chấp nhận",
+          "description": "Báo một người rằng yêu cầu nhận quyền hoặc tham gia đã được chấp nhận."
+        },
+        "organization_request_declined": {
+          "name": "Yêu cầu tham gia bị từ chối",
+          "description": "Báo một người rằng yêu cầu nhận quyền hoặc tham gia bị từ chối."
+        },
+        "organization_taken_down": {
+          "name": "Tổ chức bị gỡ",
+          "description": "Báo chủ sở hữu rằng GenAI Fund đã gỡ tổ chức."
+        },
+        "organization_restored": {
+          "name": "Tổ chức được khôi phục",
+          "description": "Báo chủ sở hữu rằng tổ chức đã hiển thị lại."
+        },
+        "application_received": {
+          "name": "Đã nhận đơn",
+          "description": "Xác nhận đơn vào một chương trình đã được nộp."
+        },
+        "reviewer_invitation": {
+          "name": "Lời mời chấm đơn",
+          "description": "Mời một người chấm các đơn của một chương trình."
+        },
+        "application_outcome": {
+          "name": "Kết quả đơn",
+          "description": "Kết quả của đơn, do operator viết cho mỗi lần công bố."
+        },
+        "introduction_request": {
+          "name": "Yêu cầu giới thiệu",
+          "description": "Báo bên cung cấp giải pháp rằng có người muốn gặp."
+        },
+        "introduction_made": {
+          "name": "Đã giới thiệu",
+          "description": "Giới thiệu hai bên với nhau qua email."
+        },
+        "introduction_declined": {
+          "name": "Từ chối giới thiệu",
+          "description": "Báo người yêu cầu rằng bên cung cấp đã từ chối."
+        },
+        "use_case_approved": {
+          "name": "Use case được đăng",
+          "description": "Báo các thành viên của tổ chức rằng use case đã được duyệt và đăng."
+        },
+        "use_case_sent_back": {
+          "name": "Use case bị trả lại",
+          "description": "Báo các thành viên của tổ chức cần sửa gì trước khi use case được đăng."
+        },
+        "talent_approved": {
+          "name": "Hồ sơ nhân lực được duyệt",
+          "description": "Báo một người rằng hồ sơ đã vào danh mục."
+        },
+        "talent_changes_requested": {
+          "name": "Đề nghị sửa hồ sơ nhân lực",
+          "description": "Báo một người cần sửa gì trước khi hồ sơ được hiển thị."
+        },
+        "talent_removed": {
+          "name": "Hồ sơ nhân lực bị gỡ",
+          "description": "Báo một người rằng hồ sơ đã rời danh mục."
+        },
+        "talent_enquiry": {
+          "name": "Lời nhắn tới nhân lực",
+          "description": "Báo một người rằng có ai đó viết cho họ qua hồ sơ."
+        },
+        "talent_enquiry_reminder": {
+          "name": "Nhắc lời nhắn",
+          "description": "Nhắc một người rằng có lời nhắn đang chờ trả lời."
+        },
+        "talent_introduction": {
+          "name": "Giới thiệu nhân lực",
+          "description": "Chia sẻ địa chỉ hai bên khi lời nhắn được chấp nhận."
+        },
+        "talent_enquiry_declined": {
+          "name": "Lời nhắn bị từ chối",
+          "description": "Báo người gửi rằng người nhận không tiếp tục."
+        },
+        "talent_enquiry_closed": {
+          "name": "Lời nhắn đã đóng",
+          "description": "Báo người gửi rằng lời nhắn đã đóng vì không có trả lời."
+        }
+      },
+      "status": {
+        "queued": "Đang chờ",
+        "sent": "Đã gửi",
+        "delivered": "Đã tới",
+        "bounced": "Bị trả lại",
+        "complained": "Bị báo spam",
+        "failed": "Thất bại",
+        "skipped": "Không gửi"
+      },
+      "providers": {
+        "ses": {
+          "name": "Amazon SES"
+        },
+        "resend": {
+          "name": "Resend"
+        },
+        "smtp": {
+          "name": "SMTP"
+        }
+      },
+      "preview": {
+        "title": "Xem trước",
+        "width": "Khổ",
+        "desktop": "Máy tính",
+        "phone": "Điện thoại",
+        "subject": "Tiêu đề:"
+      },
+      "test": {
+        "notConfigured": "Cài đặt chưa đủ nên email thử chưa được gửi.",
+        "authentication": "Nhà cung cấp từ chối thông tin đăng nhập. Kiểm tra key hoặc tài khoản.",
+        "throttled": "Nhà cung cấp đang giới hạn gửi. Thử lại sau một phút.",
+        "unavailable": "Không kết nối được nhà cung cấp. Thử lại sau một phút.",
+        "rejected": "Nhà cung cấp từ chối email. Kiểm tra domain người gửi đã được xác thực chưa.",
+        "invalidRecipient": "Nhà cung cấp không nhận địa chỉ của bạn làm người nhận."
+      },
+      "templates": {
+        "metaTitle": "Mẫu email",
+        "appearance": {
+          "title": "Giao diện",
+          "description": "Màu của liên kết, nút bấm và dòng ghi chú cuối mỗi email.",
+          "action": "Sửa giao diện"
+        },
+        "edited": "Đã sửa",
+        "editedBy": "{name} · {when}"
+      },
+      "editor": {
+        "required": "Bắt buộc",
+        "saved": "Đã lưu nội dung. Email mới dùng nội dung này từ giờ.",
+        "resetDone": "Đã khôi phục nội dung mặc định.",
+        "testSent": "Đã gửi email thử tới {email}.",
+        "errors": {
+          "changed": "Có người đã lưu email này trong lúc bạn sửa. Tải lại trang để xem nội dung của họ.",
+          "invalid": "Nội dung còn lỗi. Sửa các chỗ được đánh dấu dưới mỗi ô.",
+          "unknown": "Chưa lưu được nội dung. Thử lại."
+        },
+        "problems": {
+          "unknownVariable": "{variable} không phải biến của email này.",
+          "missingVariable": "Phải có {variable}: email tồn tại vì nó.",
+          "subjectLine": "Tiêu đề phải nằm trên một dòng và không được trống.",
+          "syntax": "Có thẻ chưa đóng hoặc không được phép. Dùng '{{tên}}', '{{#tên}}…{{/tên}}' hoặc '{{^tên}}…{{/tên}}'."
+        },
+        "unsaved": "Có thay đổi chưa lưu",
+        "discard": "Bỏ thay đổi",
+        "save": "Lưu",
+        "edited": "Đã sửa",
+        "lastEdited": "{name} sửa lần cuối, {when}.",
+        "viewAudit": "Nhật ký",
+        "reset": "Khôi phục mặc định",
+        "test": "Gửi thử cho tôi",
+        "subject": "Tiêu đề",
+        "body": "Nội dung",
+        "bodyHint": "Markdown: # tiêu đề, **đậm**, [liên kết](https://…). Gõ '{{' để chèn biến.",
+        "variables": "Biến",
+        "variablesHint": "Bấm vào một biến để chèn vào chỗ con trỏ. Biến có dấu * phải xuất hiện.",
+        "previewTitle": "Xem trước {name}",
+        "leave": {
+          "title": "Rời trang mà không lưu?",
+          "lead": "Những thay đổi trên trang này chưa được lưu và sẽ mất.",
+          "leave": "Rời trang",
+          "stay": "Ở lại"
+        },
+        "resetConfirm": {
+          "title": "Khôi phục nội dung mặc định?",
+          "lead": "{name} quay về nội dung có sẵn của BeyondPilot.",
+          "note": "Nội dung của bạn sẽ bị xóa. Email mới dùng nội dung mặc định từ giờ; email đã gửi giữ nguyên.",
+          "confirm": "Khôi phục mặc định",
+          "cancel": "Hủy"
+        },
+        "back": "Mẫu"
+      },
+      "appearance": {
+        "metaTitle": "Giao diện email",
+        "back": "Mẫu",
+        "title": "Giao diện",
+        "lead": "Những gì mọi email dùng chung. Phần xem trước là một email mẫu như đang được gửi.",
+        "color": "Màu nhấn",
+        "colorPicker": "Chọn màu",
+        "colorHint": "Liên kết và nút bấm. Chọn màu đậm: chữ trắng nằm trên nó.",
+        "colorInvalid": "Viết màu theo dạng # và sáu chữ số hệ 16.",
+        "footer": "Ghi chú cuối email",
+        "footerHint": "Nằm dưới dải GenAI Fund của mọi email.",
+        "save": "Lưu giao diện",
+        "saved": "Đã lưu giao diện. Phần xem trước đã cập nhật.",
+        "changed": "Có người vừa đổi cài đặt email. Tải lại trang rồi lưu lại.",
+        "unknown": "Chưa lưu được giao diện. Thử lại.",
+        "previewTitle": "Xem trước một email mẫu",
+        "leave": {
+          "title": "Rời trang mà không lưu?",
+          "lead": "Những thay đổi trên trang này chưa được lưu và sẽ mất.",
+          "leave": "Rời trang",
+          "stay": "Ở lại"
+        }
+      },
+      "activity": {
+        "metaTitle": "Hoạt động email",
+        "period": {
+          "day": "24 giờ qua",
+          "week": "7 ngày qua",
+          "month": "30 ngày qua",
+          "all": "Toàn bộ"
+        },
+        "filters": {
+          "period": {
+            "label": "Khoảng thời gian"
+          },
+          "kind": {
+            "label": "Loại email",
+            "all": "Mọi email"
+          },
+          "status": {
+            "label": "Trạng thái",
+            "all": "Mọi trạng thái"
+          }
+        },
+        "search": "Tìm theo địa chỉ hoặc tiêu đề",
+        "counts": {
+          "total": "{period, select, day {Email, 24 giờ} week {Email, 7 ngày} month {Email, 30 ngày} other {Email}}",
+          "delivered": "Đã tới",
+          "sent": "Đã gửi",
+          "bounced": "Bị trả lại",
+          "complained": "Bị báo spam",
+          "notSent": "Không gửi được"
+        },
+        "columns": {
+          "time": "Thời gian",
+          "recipient": "Người nhận",
+          "email": "Email",
+          "status": "Trạng thái"
+        },
+        "noMatch": {
+          "title": "Không có email phù hợp",
+          "description": "Đổi từ khóa hoặc bộ lọc.",
+          "clear": "Xóa bộ lọc"
+        },
+        "empty": {
+          "title": "Không có email trong khoảng này",
+          "description": "Email hiện ở đây khi BeyondPilot gửi đi."
+        },
+        "pagination": {
+          "label": "Các trang email",
+          "previous": "Mới hơn",
+          "next": "Cũ hơn",
+          "goToPrevious": "Xem email mới hơn",
+          "goToNext": "Xem email cũ hơn"
+        }
+      },
+      "message": {
+        "metaTitle": "Email",
+        "back": "Hoạt động",
+        "lead": "{kind} gửi tới {recipient}",
+        "suppressed": {
+          "title": "Địa chỉ này không nhận email",
+          "bounce": "Mail tới địa chỉ này bị trả lại nên BeyondPilot đã ngừng gửi.",
+          "complaint": "Người nhận đã báo spam một email nên BeyondPilot đã ngừng gửi.",
+          "manual": "Một operator đã chặn gửi tới địa chỉ này.",
+          "manage": "Quản lý địa chỉ bị chặn"
+        },
+        "lastError": "Vì sao chưa gửi được",
+        "failures": {
+          "not_configured": "Email chưa được cài đặt khi tới lượt gửi.",
+          "authentication": "Nhà cung cấp từ chối thông tin đăng nhập.",
+          "throttled": "Nhà cung cấp đang giới hạn gửi; email được thử lại sau.",
+          "unavailable": "Không kết nối được nhà cung cấp.",
+          "rejected": "Nhà cung cấp từ chối email.",
+          "invalid_recipient": "Nhà cung cấp không nhận địa chỉ này.",
+          "suppressed": "Địa chỉ này không nhận email.",
+          "expired": "Không gửi được trong một ngày nên đã bỏ."
+        },
+        "facts": "Chi tiết",
+        "fields": {
+          "recipient": "Người nhận",
+          "kind": "Loại",
+          "created": "Tạo lúc",
+          "sent": "Gửi lúc",
+          "provider": "Nhà cung cấp",
+          "providerId": "Mã email ở nhà cung cấp",
+          "attempts": "Số lần thử"
+        },
+        "events": {
+          "title": "Diễn biến",
+          "none": "Nhà cung cấp chưa báo gì.",
+          "smtp": "SMTP không báo lại gì sau khi gửi.",
+          "types": {
+            "delivered": "Đã tới",
+            "bounced": "Bị trả lại",
+            "soft_bounced": "Tạm bị trả lại",
+            "complained": "Bị báo spam"
+          }
+        },
+        "previewTitle": "Email {subject}",
+        "resend": {
+          "action": "Gửi lại",
+          "title": "Gửi lại email này?",
+          "lead": "Cùng nội dung sẽ được gửi tới {email} như một email mới.",
+          "note": "Email mới hiện riêng trong Hoạt động.",
+          "confirm": "Gửi lại",
+          "cancel": "Hủy",
+          "done": "Đã gửi lại tới {email}.",
+          "errors": {
+            "notResendable": "Không gửi lại được email này.",
+            "suppressed": "Địa chỉ này không nhận email. Bỏ chặn trong Địa chỉ bị chặn trước.",
+            "notReady": "Email chưa được cài đặt. Hoàn tất Cài đặt trước.",
+            "unknown": "Chưa gửi lại được email. Thử lại."
+          }
+        }
+      },
+      "suppressions": {
+        "metaTitle": "Địa chỉ email bị chặn",
+        "search": "Tìm theo địa chỉ",
+        "clear": "Xóa",
+        "filters": {
+          "reason": {
+            "label": "Lý do",
+            "all": "Mọi lý do"
+          }
+        },
+        "reasons": {
+          "bounce": "Bị trả lại",
+          "complaint": "Bị báo spam",
+          "manual": "Operator thêm"
+        },
+        "columns": {
+          "address": "Địa chỉ",
+          "reason": "Lý do",
+          "origin": "Từ",
+          "since": "Từ ngày",
+          "actions": "Thao tác"
+        },
+        "theEmail": "Email",
+        "addedBy": "{name} thêm",
+        "count": "{count} địa chỉ",
+        "noMatch": {
+          "title": "Không có địa chỉ phù hợp",
+          "description": "Đổi từ khóa hoặc lý do.",
+          "clear": "Xóa bộ lọc"
+        },
+        "empty": {
+          "title": "Mọi địa chỉ đều nhận email",
+          "description": "Một địa chỉ hiện ở đây khi mail tới nó bị trả lại, bị báo spam, hoặc bạn chặn nó."
+        },
+        "add": {
+          "open": "Thêm địa chỉ",
+          "title": "Chặn gửi email tới một địa chỉ",
+          "lead": "BeyondPilot không gửi gì thêm tới địa chỉ này, kể cả mã đăng nhập, cho tới khi bạn bỏ chặn.",
+          "address": "Địa chỉ email",
+          "hint": "Ví dụ khi người nhận xin không nhận email nữa.",
+          "invalid": "Nhập một địa chỉ email.",
+          "exists": "Địa chỉ này đã bị chặn.",
+          "cancel": "Hủy",
+          "confirm": "Chặn",
+          "done": "{email} sẽ không nhận email nữa."
+        },
+        "remove": {
+          "open": "Bỏ chặn {email}",
+          "title": "Bỏ chặn địa chỉ này?",
+          "lead": "BeyondPilot sẽ gửi lại tới {email} từ giờ.",
+          "noteManual": "Các email đã bỏ sẽ không được gửi lại.",
+          "noteProvider": "Mail tới địa chỉ này từng bị trả lại hoặc bị báo spam. Nếu lặp lại, nhà cung cấp sẽ tính điểm xấu cho việc gửi của bạn.",
+          "confirm": "Bỏ chặn",
+          "cancel": "Hủy",
+          "done": "{email} đã nhận email trở lại."
+        },
+        "errors": {
+          "unknown": "Chưa thay đổi được. Thử lại."
+        }
+      },
+      "settings": {
+        "metaTitle": "Cài đặt email",
+        "copy": "Sao chép",
+        "secretKept": "Đã lưu. Để trống để giữ nguyên.",
+        "saved": "Đã lưu cài đặt.",
+        "testSent": "Đã gửi email thử tới {email}. Kiểm tra xem mail đã tới chưa.",
+        "errors": {
+          "address": "Nhập một địa chỉ email.",
+          "port": "Nhập số cổng.",
+          "changed": "Có người đã lưu cài đặt trong lúc bạn sửa. Tải lại trang rồi lưu lại.",
+          "incomplete": "Nhà cung cấp cần thêm thông tin: điền các ô bắt buộc.",
+          "encryption": "Máy chủ chưa có khóa mã hóa nên không lưu được thông tin bí mật. Báo người vận hành máy chủ.",
+          "unknown": "Chưa lưu được cài đặt. Thử lại."
+        },
+        "encryption": {
+          "title": "Máy chủ chưa lưu được thông tin bí mật",
+          "description": "Thiếu khóa mã hóa nên không lưu được key hay mật khẩu nào. Người vận hành máy chủ cần đặt BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY."
+        },
+        "notReady": {
+          "title": "Chưa gửi được email nào",
+          "description": "Điền người gửi và một nhà cung cấp, rồi gửi thử cho bạn trước khi lưu."
+        },
+        "sender": {
+          "title": "Người gửi",
+          "what": "Mọi email được gửi từ ai. Địa chỉ phải thuộc domain mà nhà cung cấp đã xác thực.",
+          "fromName": "Tên",
+          "fromAddress": "Địa chỉ",
+          "replyTo": "Trả lời tới",
+          "replyToHint": "Nơi nhận thư trả lời. Để trống thì trả lời về địa chỉ người gửi."
+        },
+        "provider": {
+          "title": "Nhà cung cấp",
+          "what": "Dịch vụ chuyển email đi. Mỗi lúc chỉ dùng một."
+        },
+        "ses": {
+          "region": "Region",
+          "accessKeyId": "Access key ID",
+          "secretAccessKey": "Secret access key",
+          "secretHint": "Của một IAM user có quyền ses:SendEmail. Đổi region hoặc key ID thì phải nhập lại."
+        },
+        "resend": {
+          "apiKey": "API key",
+          "apiKeyHint": "Một key có quyền gửi, lấy ở resend.com › API Keys."
+        },
+        "smtp": {
+          "host": "Máy chủ",
+          "port": "Cổng",
+          "security": "Bảo mật",
+          "securities": {
+            "starttls": "STARTTLS (cổng 587)",
+            "tls": "TLS (cổng 465)",
+            "none": "Không"
+          },
+          "username": "Tên đăng nhập",
+          "password": "Mật khẩu",
+          "passwordHint": "Đổi máy chủ, cổng hoặc tên đăng nhập thì phải nhập lại."
+        },
+        "reports": {
+          "title": "Báo cáo giao nhận",
+          "what": "Nhà cung cấp báo cho BeyondPilot từng email ra sao: đã tới, bị trả lại hay bị báo spam. Bị trả lại hoặc bị báo spam thì địa chỉ đó bị chặn.",
+          "smtp": "SMTP không báo gì sau khi gửi, nên Hoạt động chỉ hiện email là đã gửi, không bao giờ là đã tới.",
+          "endpoint": "Địa chỉ cho nhà cung cấp",
+          "resendEndpointHint": "Trong Resend › Webhooks, thêm địa chỉ này với các sự kiện email.delivered, email.bounced và email.complained.",
+          "resendSecret": "Signing secret",
+          "resendSecretHint": "Secret của webhook, bắt đầu bằng whsec_. Thiếu nó thì báo cáo bị từ chối.",
+          "configurationSet": "Configuration set",
+          "configurationSetHint": "Configuration set của SES gửi sự kiện tới SNS topic bên dưới.",
+          "sesEndpointHint": "Đăng ký địa chỉ này vào SNS topic qua HTTPS; BeyondPilot tự xác nhận đăng ký.",
+          "topicArn": "SNS topic ARN",
+          "topicArnHint": "Chỉ nhận báo cáo từ topic này."
+        },
+        "unsaved": "Có thay đổi chưa lưu.",
+        "lastSaved": "{name} lưu lần cuối, {when}.",
+        "neverSaved": "Chưa lưu lần nào.",
+        "test": "Gửi thử tới {email}",
+        "save": "Lưu cài đặt",
+        "leave": {
+          "title": "Rời trang mà không lưu?",
+          "lead": "Những thay đổi trên trang này chưa được lưu và sẽ mất.",
+          "leave": "Rời trang",
+          "stay": "Ở lại"
+        }
       }
     },
     "useCases": {
