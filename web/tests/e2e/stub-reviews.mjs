@@ -153,6 +153,7 @@ function solution(id, name, status, more) {
     status,
     organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
     organizationName: "Pocket Policy",
+    submittedBy: "Đạt Phan",
     summary: `${name} for insurers.`,
     problemsSolved: "Slow answers to policy holders.",
     valueProposition: "An answer in seconds, in Vietnamese and English.",
@@ -365,8 +366,10 @@ const lists = {
       organizationName,
       summary,
       maturity,
+      industries: record.industries,
       listed: record.listed,
       submittedAt: record.submittedAt,
+      submittedBy: record.submittedBy,
       updatedAt: record.updatedAt,
       deploymentsAwaitingReview: record.customerDeployments.filter(
         (item) => item.status === "submitted",
@@ -420,7 +423,12 @@ export function answerReview(url, account) {
       200,
       path === "/api/introduction/admin/introductions"
         ? { ...found, overdue: records.filter((record) => record.overdue).length }
-        : found,
+        : path === "/api/solution/admin/solutions"
+          ? {
+              ...found,
+              awaitingReview: records.filter((record) => record.status === "submitted").length,
+            }
+          : found,
     ];
   }
   const record = records.find(

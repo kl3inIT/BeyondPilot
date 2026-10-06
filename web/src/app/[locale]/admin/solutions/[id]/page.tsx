@@ -33,7 +33,12 @@ export default async function AdminSolutionRoute({
     notFound();
   }
 
-  const waiting = await readAdminSolutions({ q: "", status: "submitted", page: 1 });
+  const waiting = await readAdminSolutions({
+    q: "",
+    status: "submitted",
+    industry: null,
+    page: 1,
+  });
   // The queue is walked in its order: the record after this one, or its first when this is the last.
   const at = waiting.items.findIndex((item) => item.id === id);
   const other = waiting.items[at + 1] ?? waiting.items.find((item) => item.id !== id);

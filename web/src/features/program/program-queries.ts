@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 import { ApiError } from "@/lib/api/client";
 import {
   getAdminProgram,
+  getProgramQuestions,
   listAdminPrograms,
   type AdminProgram,
   type AdminProgramList,
+  type ProgramQuestions,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
 
@@ -29,6 +31,14 @@ export async function readAdminPrograms(): Promise<AdminProgramList> {
 /** One program as its Settings edit it. Server only. */
 export async function readAdminProgram(id: string): Promise<AdminProgram> {
   const { data } = await getAdminProgram({ ...(await sessionRequest()), path: { id } }).catch(
+    notFoundWhenRefused,
+  );
+  return data;
+}
+
+/** The questions of a program as an operator edits them. Server only. */
+export async function readProgramQuestions(id: string): Promise<ProgramQuestions> {
+  const { data } = await getProgramQuestions({ ...(await sessionRequest()), path: { id } }).catch(
     notFoundWhenRefused,
   );
   return data;

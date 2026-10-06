@@ -2,11 +2,14 @@ package ai.genaifund.beyondpilot.program;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditRecord;
@@ -20,12 +23,16 @@ import ai.genaifund.beyondpilot.program.dto.CreateProgramRequest;
 import ai.genaifund.beyondpilot.program.dto.ProgramApplications;
 import ai.genaifund.beyondpilot.program.dto.ProgramEventEntry;
 import ai.genaifund.beyondpilot.program.dto.ProgramKeyDate;
+import ai.genaifund.beyondpilot.program.dto.ProgramQuestionEntry;
+import ai.genaifund.beyondpilot.program.dto.ProgramQuestionsResponse;
+import ai.genaifund.beyondpilot.program.dto.SaveProgramQuestionsRequest;
 import ai.genaifund.beyondpilot.program.dto.SaveProgramRequest;
 import ai.genaifund.beyondpilot.program.persistence.PageKind;
 import ai.genaifund.beyondpilot.program.persistence.Program;
 import ai.genaifund.beyondpilot.program.persistence.ProgramEvent;
 import ai.genaifund.beyondpilot.program.persistence.ProgramMilestone;
 import ai.genaifund.beyondpilot.program.persistence.ProgramQueryRepository;
+import ai.genaifund.beyondpilot.program.persistence.ProgramQuestion;
 import ai.genaifund.beyondpilot.program.persistence.ProgramRepository;
 import ai.genaifund.beyondpilot.program.persistence.ProgramType;
 import ai.genaifund.beyondpilot.storage.FilePurpose;
@@ -185,6 +192,7 @@ public class ProgramAdministration {
 			throw raced;
 		}
 		record(AuditAction.PROGRAM_UPDATE, operator, program);
+		events.publishEvent(new ProgramChanged(id));
 		if (replacedCover != null) {
 			// The program no longer names the file, so nothing does. It goes once the save has committed.
 			events.publishEvent(new ReplacedCovers.CoverReplaced(id, replacedCover));
@@ -260,6 +268,7 @@ public class ProgramAdministration {
 		}
 		if (program.publish(Instant.now())) {
 			record(AuditAction.PROGRAM_PUBLISH, operator, program);
+			events.publishEvent(new ProgramChanged(id));
 		}
 	}
 
@@ -275,7 +284,70 @@ public class ProgramAdministration {
 		Program program = programs.findForUpdate(id).orElseThrow(() -> notFound(id));
 		if (program.unpublish()) {
 			record(AuditAction.PROGRAM_UNPUBLISH, operator, program);
+			events.publishEvent(new ProgramChanged(id));
 		}
+	}
+
+	/**
+	 * The questions a program asks its applicants, and whether they can still change.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProgramException when the program does not exist
+	 */
+	@Transactional(readOnly = true)
+	public ProgramQuestionsResponse questions(Actor actor, UUID id) {
+		identity.requireOperator(actor);
+		return questions(programs.findById(id).orElseThrow(() -> notFound(id)));
+	}
+
+	/**
+	 * Replaces the questions of a program, before its applications open. A question keeps its identifier, which its
+	 * answers name; a new one gets one.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProgramException when the program does not exist, it changed since the screen read it, its applications
+	 * have opened, or a question answered by a choice offers too few
+	 */
+	@Transactional
+	public ProgramQuestionsResponse saveQuestions(Actor actor, UUID id, SaveProgramQuestionsRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		Program program = programs.findForUpdate(id).orElseThrow(() -> notFound(id));
+		if (program.getVersion() != request.version()) {
+			throw new ProgramException(ProgramErrorCode.CHANGED_MEANWHILE, "Save of the questions of program " + id
+					+ " at version " + request.version() + ", which is at " + program.getVersion());
+		}
+		if (opened(program)) {
+			throw refused(ProgramErrorCode.QUESTIONS_FIXED, id);
+		}
+		Set<UUID> known = program.getQuestions().stream().map(ProgramQuestion::id).collect(Collectors.toSet());
+		List<ProgramQuestion> questions = new ArrayList<>();
+		for (ProgramQuestionEntry entry : request.questions()) {
+			boolean choice = ProgramQuestion.SINGLE_CHOICE.equals(entry.kind());
+			List<String> options = choice
+					? entry.options().stream().map(String::strip).distinct().toList() : List.of();
+			if (choice && options.size() < 2) {
+				throw refused(ProgramErrorCode.CHOICES_REQUIRED, id);
+			}
+			boolean text = "short_text".equals(entry.kind()) || "long_text".equals(entry.kind());
+			UUID questionId = entry.id() != null && known.contains(entry.id()) ? entry.id() : UUID.randomUUID();
+			questions.add(new ProgramQuestion(questionId, entry.kind(), entry.label().strip(), text(entry.help()),
+					entry.required(), options.toArray(String[]::new), text ? entry.maxLength() : null));
+		}
+		program.ask(questions);
+		programs.flush();
+		record(AuditAction.PROGRAM_UPDATE, operator, program);
+		return questions(program);
+	}
+
+	private static boolean opened(Program program) {
+		Instant opensAt = program.getApplicationsOpenAt();
+		return opensAt != null && !Instant.now().isBefore(opensAt);
+	}
+
+	private static ProgramQuestionsResponse questions(Program program) {
+		return new ProgramQuestionsResponse(program.getQuestions()
+			.stream()
+			.map(question -> new ProgramQuestionEntry(question.id(), question.kind(), question.label(),
+					question.help(), question.required(), List.of(question.options()), question.maxLength()))
+			.toList(), opened(program), program.getApplicationsOpenAt(), program.getVersion());
 	}
 
 	private void record(AuditAction action, Operator operator, Program program) {

@@ -104,6 +104,64 @@ public class SolutionDirectory {
 					.toList());
 	}
 
+	/** The solutions of an organization, the newest first, for the module that applies with one. */
+	@Transactional(readOnly = true)
+	public List<OfferedSolution> offeredBy(UUID organizationId) {
+		return solutions.findByOrganizationIdOrderByCreatedAtDesc(organizationId)
+			.stream()
+			.map(SolutionDirectory::offered)
+			.toList();
+	}
+
+	/** One solution, for the module that applies with it; empty when it does not exist. */
+	@Transactional(readOnly = true)
+	public Optional<OfferedSolution> offered(UUID solutionId) {
+		return solutions.findById(solutionId).map(SolutionDirectory::offered);
+	}
+
+	private static OfferedSolution offered(Solution solution) {
+		return new OfferedSolution(solution.getId(), solution.getOrganizationId(), solution.getName(),
+				solution.getSummary(), solution.getProblemsSolved(), solution.getMaturity());
+	}
+
+	/**
+	 * An approved solution as search indexes it, listed or not; empty for any other, or when its organization is gone.
+	 */
+	@Transactional(readOnly = true)
+	public Optional<IndexedSolution> indexed(UUID solutionId) {
+		return solutions.findById(solutionId).filter(Solution::isApproved).flatMap(solution -> indexed(List.of(solution))
+			.stream()
+			.findFirst());
+	}
+
+	/** Every approved solution as search indexes it, for a rebuild of the index. */
+	@Transactional(readOnly = true)
+	public List<IndexedSolution> indexedAll() {
+		return indexed(solutions.findByStatus(Solution.APPROVED));
+	}
+
+	/** The approved solutions of an organization as search indexes them, when what is shown of it changed. */
+	@Transactional(readOnly = true)
+	public List<IndexedSolution> indexedOf(UUID organizationId) {
+		return indexed(solutions.findByOrganizationIdOrderByCreatedAtDesc(organizationId)
+			.stream()
+			.filter(Solution::isApproved)
+			.toList());
+	}
+
+	private List<IndexedSolution> indexed(List<Solution> approved) {
+		Map<UUID, OrganizationName> names = organizations
+			.names(approved.stream().map(Solution::getOrganizationId).distinct().toList());
+		return approved.stream().filter(solution -> names.containsKey(solution.getOrganizationId())).map(solution -> {
+			OrganizationName organization = names.get(solution.getOrganizationId());
+			return new IndexedSolution(solution.getId(), solution.getSlug(), solution.getName(),
+					solution.getOrganizationId(), organization.name(), organization.slug(), organization.country(),
+					solution.getSummary(), solution.getProblemsSolved(), solution.getValueProposition(),
+					solution.getFocusAreas(), solution.getIndustries(), solution.getMaturity(),
+					solution.getDeployment(), solution.isListed());
+		}).toList();
+	}
+
 	/**
 	 * The approved solution at this address, listed or not, as another module needs it; empty when there is none.
 	 */

@@ -30,6 +30,7 @@ import ai.genaifund.beyondpilot.talent.persistence.TalentProfile;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,8 +71,11 @@ public class TalentService {
 
 	private final StorageService storage;
 
+	private final ApplicationEventPublisher events;
+
 	TalentService(TalentProfileRepository profiles, TalentDetailRepository details, IdentityService identity,
-			EmailService email, OrganizationDirectory organizations, AuditTrail audit, StorageService storage) {
+			EmailService email, OrganizationDirectory organizations, AuditTrail audit, StorageService storage,
+			ApplicationEventPublisher events) {
 		this.profiles = profiles;
 		this.details = details;
 		this.identity = identity;
@@ -79,6 +83,7 @@ public class TalentService {
 		this.organizations = organizations;
 		this.audit = audit;
 		this.storage = storage;
+		this.events = events;
 	}
 
 	/**
@@ -162,6 +167,7 @@ public class TalentService {
 			.toList();
 		profiles.flush();
 		details.replaceProjects(profile.getId(), projects);
+		events.publishEvent(new TalentProfileChanged(profile.getId()));
 		if (formerPhoto != null && !formerPhoto.equals(photo)) {
 			// The profile no longer names it, so nobody reads it again.
 			storage.delete(formerPhoto);
@@ -348,6 +354,7 @@ public class TalentService {
 				new AuditRecord.Resource(TALENT, profile.getId().toString(), profile.getName()), Map.of()));
 		UUID photo = profile.getPhotoFileId();
 		profiles.delete(profile);
+		events.publishEvent(new TalentProfileChanged(profile.getId()));
 		if (photo != null) {
 			profiles.flush();
 			storage.delete(photo);

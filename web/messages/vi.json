@@ -25,7 +25,8 @@
       "signOutFailed": "Chưa đăng xuất được. Bạn thử lại.",
       "organization": "Tổ chức của tôi",
       "talentProfile": "Hồ sơ nhân lực",
-      "admin": "Quản trị"
+      "admin": "Quản trị",
+      "applications": "Đơn của tôi"
     },
     "menu": {
       "open": "Mở menu",
@@ -528,7 +529,60 @@
         "description": "Thử tên khác, hoặc xem mọi trạng thái.",
         "clear": "Xem tất cả chương trình"
       },
-      "countOf": "{count, plural, other {# chương trình}} trên {total}"
+      "countOf": "{count, plural, other {# chương trình}} trên {total}",
+      "tabs": {
+        "label": "Chương trình",
+        "settings": "Cài đặt",
+        "questions": "Câu hỏi"
+      },
+      "questions": {
+        "metaTitle": "Câu hỏi",
+        "title": "Form nộp đơn hỏi gì",
+        "lead": "Sau phần người nộp, nhóm và giải pháp, form hỏi các câu này theo đúng thứ tự. Chương trình không có câu hỏi thì bỏ qua bước đó.",
+        "fixed": "Đợt nhận đơn đã mở lúc {opened}, nên không đổi câu hỏi được nữa: có thể đã có câu trả lời gắn với chúng.",
+        "none": "Chưa có câu hỏi nào. Người nộp đi thẳng từ phần giải pháp sang xem lại và nộp.",
+        "kinds": {
+          "short_text": "Trả lời ngắn",
+          "long_text": "Trả lời dài",
+          "single_choice": "Chọn một",
+          "file": "File PDF",
+          "link": "Đường link",
+          "confirm": "Xác nhận"
+        },
+        "choiceCount": "{count} lựa chọn",
+        "optional": "Không bắt buộc",
+        "notSaved": "Chưa lưu",
+        "moveUp": "Đưa {label} lên",
+        "moveDown": "Đưa {label} xuống",
+        "edit": "Sửa",
+        "editNamed": "Sửa {label}",
+        "add": "Thêm câu hỏi",
+        "save": "Lưu câu hỏi",
+        "unsaved": "Có thay đổi chưa lưu.",
+        "saved": "Đã lưu câu hỏi.",
+        "addTitle": "Thêm câu hỏi",
+        "editTitle": "Sửa câu hỏi",
+        "kind": "Trả lời bằng",
+        "label": "Câu hỏi",
+        "help": "Gợi ý",
+        "helpHint": "Hiện dưới câu hỏi, nói câu trả lời tốt cần có gì.",
+        "options": "Các lựa chọn",
+        "optionsPlaceholder": "Thêm lựa chọn",
+        "optionsHint": "Nhấn Enter sau mỗi lựa chọn. Từ hai tới {count}.",
+        "choicesRequired": "Thêm ít nhất hai lựa chọn.",
+        "maxLength": "Độ dài tối đa",
+        "maxLengthHint": "Tính theo ký tự. Để trống thì dùng mặc định.",
+        "required": "Bắt buộc trả lời",
+        "delete": "Xoá",
+        "cancel": "Huỷ",
+        "update": "Cập nhật",
+        "addQuestion": "Thêm câu hỏi",
+        "errors": {
+          "PROGRAM_QUESTIONS_FIXED": "Đợt nhận đơn đã mở, nên không đổi câu hỏi được nữa.",
+          "PROGRAM_CHANGED_MEANWHILE": "Có người vừa sửa chương trình này. Tải lại rồi sửa lại.",
+          "PROGRAM_CHOICES_REQUIRED": "Câu hỏi chọn một cần ít nhất hai lựa chọn."
+        }
+      }
     },
     "accounts": {
       "metaTitle": "Tài khoản · BeyondPilot",
@@ -877,12 +931,14 @@
       "lead": "Mọi giải pháp nhà cung cấp đã gửi duyệt. Giải pháp còn chờ xếp trước, chờ lâu nhất ở trên cùng.",
       "columns": {
         "solution": "Giải pháp",
-        "maturity": "Giai đoạn",
+        "organization": "Tổ chức",
         "status": "Trạng thái",
+        "sentBy": "Người gửi",
         "submitted": "Ngày gửi",
         "actions": "Thao tác"
       },
-      "notStated": "Chưa nêu",
+      "senderUnknown": "Chưa ghi nhận",
+      "awaiting": "{count} giải pháp chờ duyệt",
       "openNamed": "Mở {name}",
       "empty": {
         "title": "Chưa có gì cần duyệt",
@@ -922,7 +978,35 @@
         "next": "Chờ duyệt tiếp theo: {name}",
         "position": "{place} trên {total} đang chờ",
         "waitingSince": "Gửi {time}",
-        "public": "Mở trang công khai"
+        "public": "Mở trang công khai",
+        "decision": "Quyết định",
+        "status": "Trạng thái",
+        "organization": "Tổ chức",
+        "sentBy": "Người gửi",
+        "senderUnknown": "Chưa ghi nhận",
+        "sent": "Thời điểm gửi",
+        "directory": "Danh mục",
+        "listed": "Sẽ hiện khi được duyệt",
+        "deploymentsWaiting": "{count} triển khai khách hàng chờ duyệt"
+      },
+      "record": {
+        "basics": "Thông tin cơ bản",
+        "audience": "Dành cho ai",
+        "evidence": "Bằng chứng",
+        "name": "Tên giải pháp",
+        "summary": "Giải pháp làm gì",
+        "problemsSolved": "Bài toán giải quyết",
+        "valueProposition": "Giá trị mang lại",
+        "maturity": "Giai đoạn",
+        "industries": "Ngành",
+        "focusAreas": "Năng lực AI",
+        "deployment": "Nơi vận hành",
+        "website": "Website",
+        "demo": "Demo sản phẩm",
+        "deck": "Tài liệu giới thiệu",
+        "deployments": "Triển khai cho khách hàng",
+        "deploymentsSummary": "{total} triển khai{waiting, plural, =0 {} other {, # chờ duyệt}}",
+        "missing": "Chưa cung cấp"
       },
       "queueEmpty": {
         "title": "Không có gì đang chờ duyệt",
@@ -1387,7 +1471,6 @@
       "countryRequired": "Chọn một quốc gia.",
       "teamSizeRequired": "Chọn quy mô đội ngũ.",
       "jobTitle": "Vai trò hoặc chức danh của bạn",
-      "jobTitleRequired": "Nhập vai trò hoặc chức danh của bạn.",
       "jobTitleHint": "Việc bạn làm trong tổ chức. Hiển thị cạnh tên bạn trong danh sách thành viên."
     },
     "find": {
@@ -1662,6 +1745,7 @@
         "solutions": "Giải pháp",
         "noSolutions": "Chưa có giải pháp nào được đăng.",
         "listedBelow": "{count} triển khai khách hàng, liệt kê bên dưới",
+        "explore": "Xem giải pháp",
         "deployments": "Triển khai khách hàng",
         "noDeployments": "Chưa công bố triển khai khách hàng nào.",
         "type": "Loại hình",
@@ -2586,6 +2670,246 @@
     "closing": {
       "title": "Mười đội trình bày trực tiếp ngày 22 tháng 10.",
       "text": "Hạn nộp là 23:59 ICT ngày 15 tháng 10. Mọi người nhận kết quả vào ngày 16 tháng 10."
+    }
+  },
+  "EntryList": {
+    "remove": "Xoá {entry} khỏi {label}"
+  },
+  "Apply": {
+    "metaTitle": "Nộp đơn",
+    "saved": "Đã lưu {time}",
+    "closes": "Đóng {when}",
+    "saveAndExit": "Lưu và thoát",
+    "yourApplication": "Đơn của bạn",
+    "savesAsYouType": "Câu trả lời được lưu khi bạn gõ. Quay lại bất cứ lúc nào trước {when}.",
+    "stepOf": "Bước {step}/{count} · {title}",
+    "progress": "Tiến độ điền đơn",
+    "allRequired": "Mọi ô đều bắt buộc, trừ ô ghi Không bắt buộc.",
+    "optional": "Không bắt buộc",
+    "closed": "Đợt nhận đơn đã đóng lúc {when}. Giờ không sửa hay nộp được nữa.",
+    "backToProgram": "Về trang chương trình",
+    "back": "Quay lại",
+    "continue": "Tiếp tục",
+    "submit": "Nộp đơn",
+    "submitAgain": "Nộp thay đổi",
+    "steps": {
+      "you": {
+        "title": "Bạn và nhóm của bạn",
+        "what": "Thông tin liên hệ và ai nộp đơn",
+        "lead": "Giám khảo chấm giải pháp, không chấm quy mô công ty. Các thông tin này được giữ lại, nên lần nộp sau đã điền sẵn."
+      },
+      "solution": {
+        "title": "Giải pháp của bạn",
+        "what": "Làm gì, giai đoạn và deck",
+        "lead": "Sản phẩm hoặc bản thử bạn mang tới. Giải pháp ở lại trong hồ sơ tổ chức cho lần nộp sau."
+      },
+      "questions": {
+        "title": "Cho chương trình này",
+        "what": "Câu hỏi riêng của chương trình",
+        "lead": "Các câu trả lời này chỉ gửi tới {program}."
+      },
+      "review": {
+        "title": "Xem lại và nộp",
+        "what": "Kiểm tra lại rồi gửi",
+        "lead": "Bạn sửa được đơn tới {when}, kể cả sau khi nộp."
+      }
+    },
+    "you": {
+      "applyingFor": "Nộp cho",
+      "notListedYet": "Chưa có trên danh mục",
+      "applyingForHint": "GenAI Fund kiểm tra tổ chức mới trước khi đưa lên danh mục. Việc đó không làm chậm đơn của bạn.",
+      "applyingAs": "Nộp với tư cách",
+      "who": {
+        "individual": {
+          "title": "Cá nhân",
+          "what": "Chỉ mình bạn, hiện theo tên bạn. Không phải điền gì thêm."
+        },
+        "team": {
+          "title": "Nhóm",
+          "what": "Từ hai người, ví dụ nhóm sinh viên hay nhóm hackathon."
+        },
+        "company": {
+          "title": "Công ty",
+          "what": "Tìm công ty của bạn trên BeyondPilot để tham gia, hoặc thêm mới."
+        }
+      },
+      "individualHint": "Giám khảo thấy bạn là {name} · Cá nhân. Nếu sau này bạn vào một công ty, đơn đã nộp vẫn giữ dưới tên bạn.",
+      "yourCompany": "Công ty của bạn",
+      "companyRequired": "Tham gia công ty của bạn, hoặc thêm mới, rồi mới tiếp tục.",
+      "aboutYou": "Về bạn",
+      "firstName": "Tên",
+      "lastName": "Họ",
+      "email": "Email",
+      "emailHint": "Bạn đăng nhập bằng địa chỉ này, nên không đổi ở đây được.",
+      "phone": "Số điện thoại",
+      "phoneRequired": "Nhập số điện thoại kèm mã quốc gia.",
+      "country": "Quốc gia",
+      "countryPlaceholder": "Chọn quốc gia",
+      "countryRequired": "Chọn quốc gia.",
+      "linkedin": "Hồ sơ LinkedIn",
+      "linkedinRequired": "Nhập đầy đủ địa chỉ hồ sơ LinkedIn, bắt đầu bằng https://",
+      "yourTeam": "Nhóm của bạn",
+      "teamName": "Tên nhóm",
+      "teamNameHint": "Hiện cho giám khảo nếu bạn vào vòng trong.",
+      "teamSize": "Quy mô nhóm",
+      "website": "Website",
+      "teamBackground": "Kinh nghiệm của nhóm",
+      "teamBackgroundHint": "Kinh nghiệm liên quan tới bài toán này.",
+      "required": "Điền ô này."
+    },
+    "solution": {
+      "choice": "Giải pháp",
+      "newSolution": "Giải pháp mới",
+      "choiceHint": "Giải pháp tổ chức đã có sẽ điền sẵn bước này; sửa ở đây là sửa giải pháp đó.",
+      "name": "Tên giải pháp",
+      "summary": "Làm gì",
+      "summaryHint": "Hai hoặc ba câu.",
+      "problemsSolved": "Giải quyết vấn đề gì",
+      "problemsSolvedHint": "Bạn giúp ai, và hôm nay họ gặp khó khăn gì.",
+      "maturity": "Giai đoạn",
+      "maturityPlaceholder": "Chọn giai đoạn",
+      "maturityRequired": "Chọn giai đoạn.",
+      "traction": "Cột mốc và kết quả",
+      "tractionPlaceholder": "Khách hàng, dự án thử, người dùng hoặc doanh thu tới nay.",
+      "builtWith": "Xây bằng",
+      "builtWithPlaceholder": "Thêm model, công cụ hoặc framework",
+      "deck": "Deck giải pháp",
+      "deckHint": "File PDF chỉ người chấm của chương trình đọc. Được giữ đúng như lúc bạn nộp.",
+      "deckRequired": "Thêm deck của giải pháp, dạng PDF.",
+      "demoUrl": "Link demo",
+      "demoUrlHint": "Video, bản thử hoặc demo chạy thật. Kiểm tra là mở được mà không cần đăng nhập.",
+      "required": "Điền ô này."
+    },
+    "questions": {
+      "choose": "Chọn một",
+      "uploaded": "File đã tải lên",
+      "required": "Trả lời câu hỏi này.",
+      "confirmRequired": "Xác nhận để tiếp tục."
+    },
+    "review": {
+      "blocks": {
+        "you": "Bạn và nhóm của bạn",
+        "solution": "Giải pháp của bạn",
+        "questions": "Cho chương trình này"
+      },
+      "edit": "Sửa",
+      "editNamed": "Sửa {section}",
+      "notAdded": "Chưa thêm",
+      "applyingAs": "Nộp với tư cách",
+      "name": "Họ tên",
+      "teamSize": "Quy mô nhóm",
+      "solution": "Giải pháp",
+      "summary": "Làm gì",
+      "problemsSolved": "Giải quyết vấn đề gì",
+      "maturity": "Giai đoạn",
+      "traction": "Cột mốc và kết quả",
+      "builtWith": "Xây bằng",
+      "deck": "Deck giải pháp",
+      "confirmed": "Đã xác nhận",
+      "uploaded": "File đã tải lên",
+      "confirm": "Tôi xác nhận thông tin là chính xác.",
+      "confirmRequired": "Xác nhận thông tin để nộp."
+    },
+    "errors": {
+      "saveFailed": "Chưa lưu được thay đổi mới nhất. Kiểm tra kết nối; thay đổi vẫn còn trên trang này.",
+      "unknown": "Có lỗi xảy ra. Thử lại.",
+      "codes": {
+        "PROPOSAL_CLOSED": "Đợt nhận đơn của chương trình này đã đóng.",
+        "PROPOSAL_LOCKED": "Chương trình này không nhận thay đổi sau khi nộp.",
+        "PROPOSAL_CHANGED_MEANWHILE": "Đơn vừa được sửa ở tab khác. Tải lại trang rồi tiếp tục.",
+        "PROPOSAL_ORGANIZATION_REQUIRED": "Cho biết ai nộp đơn ở bước 1.",
+        "PROPOSAL_ORGANIZATION_APPLIED": "Một người trong tổ chức của bạn đã nộp đơn cho chương trình này.",
+        "PROPOSAL_CONTACT_INCOMPLETE": "Thông tin liên hệ ở bước 1 chưa đủ.",
+        "PROPOSAL_TEAM_BACKGROUND_REQUIRED": "Mô tả kinh nghiệm của nhóm ở bước 1.",
+        "PROPOSAL_SOLUTION_REQUIRED": "Chọn hoặc thêm giải pháp ở bước 2.",
+        "PROPOSAL_SOLUTION_INCOMPLETE": "Giải pháp ở bước 2 cần có làm gì, giải quyết vấn đề gì và giai đoạn.",
+        "PROPOSAL_DECK_REQUIRED": "Thêm deck giải pháp ở bước 2.",
+        "PROPOSAL_ANSWER_REQUIRED": "Trả lời mọi câu hỏi của chương trình.",
+        "PROPOSAL_ANSWER_INVALID": "Có câu trả lời không khớp với câu hỏi.",
+        "ORGANIZATION_ALREADY_MEMBER": "Bạn đã thuộc một tổ chức. Tải lại trang."
+      }
+    }
+  },
+  "PdfUpload": {
+    "empty": "Chọn file PDF",
+    "limits": "PDF, tối đa 25 MB.",
+    "uploading": "Đang tải lên…",
+    "replace": "Thay",
+    "remove": "Xoá",
+    "errors": {
+      "type": "Hãy chọn file PDF.",
+      "size": "File lớn hơn 25 MB.",
+      "failed": "Không tải file lên được. Thử lại."
+    }
+  },
+  "MyApplications": {
+    "title": "Đơn của tôi",
+    "none": "Chưa có đơn nào",
+    "noneLead": "Chương trình nhận đơn trên BeyondPilot có nút Nộp đơn trên trang của nó.",
+    "browse": "Xem các chương trình",
+    "groups": {
+      "inProgress": "Đang điền",
+      "submitted": "Đã nộp",
+      "past": "Đã qua"
+    },
+    "status": {
+      "draft": "Bản nháp",
+      "submitted": "Đã nộp",
+      "withdrawn": "Đã rút"
+    },
+    "nothingYet": "Chưa điền ai nộp và nộp giải pháp nào",
+    "draftUntil": "Chưa nộp. Hãy nộp trước {when}.",
+    "withdrawnUntil": "Đã rút. Bạn có thể nộp lại tới {when}.",
+    "hearBack": "Bạn nhận kết quả ngày {day}, qua email.",
+    "editUntil": "Bạn sửa được tới {when}.",
+    "closedOn": "Đợt nhận đơn đã đóng lúc {when}.",
+    "continue": "Tiếp tục",
+    "edit": "Sửa đơn",
+    "view": "Xem đơn"
+  },
+  "Application": {
+    "metaTitle": "Đơn nộp",
+    "back": "Đơn của tôi",
+    "status": {
+      "draft": "Bản nháp",
+      "submitted": "Đã nộp",
+      "withdrawn": "Đã rút"
+    },
+    "whereItStands": "Tình trạng",
+    "submitted": "Đã nộp",
+    "notYet": "Chưa",
+    "versions": "Số lần nộp",
+    "closes": "Hạn nộp",
+    "outcome": "Nhận kết quả",
+    "continue": "Tiếp tục điền đơn",
+    "edit": "Sửa đơn",
+    "editHint": "Bạn sửa được tới {when}. Người chấm đọc phiên bản bạn nộp gần nhất.",
+    "locked": "Chương trình này không nhận thay đổi sau khi nộp.",
+    "closed": "Đợt nhận đơn đã đóng, nên đơn này không sửa được nữa.",
+    "withdraw": {
+      "button": "Rút đơn",
+      "title": "Rút đơn gửi {program}?",
+      "lead": "Người chấm sẽ không đọc đơn này nữa. Bạn có thể nộp lại khi chương trình còn nhận đơn.",
+      "confirm": "Rút đơn",
+      "cancel": "Giữ lại",
+      "done": "Đã rút đơn của bạn.",
+      "closed": "Đợt nhận đơn đã đóng, nên không rút đơn được nữa.",
+      "failed": "Chưa rút được đơn. Thử lại."
+    },
+    "receipt": {
+      "title": "Đã nộp đơn",
+      "titleAgain": "Đã nộp thay đổi",
+      "emailed": "Chúng tôi đã gửi một bản tới {email}.",
+      "program": "Chương trình",
+      "solution": "Giải pháp",
+      "organization": "Nộp cho",
+      "submitted": "Thời điểm nộp",
+      "editUntil": "Sửa được tới",
+      "next": "Tiếp theo",
+      "nextOutcome": "GenAI Fund đọc mọi đơn. Bạn nhận kết quả ngày {day}, qua email, dù kết quả thế nào.",
+      "nextReview": "GenAI Fund đọc mọi đơn và báo kết quả cho bạn qua email.",
+      "view": "Xem đơn của tôi",
+      "programs": "Về danh sách chương trình"
     }
   }
 }

@@ -35,6 +35,7 @@ import ai.genaifund.beyondpilot.organization.persistence.OrganizationRepository;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,14 +67,18 @@ public class OrganizationService {
 
 	private final AuditTrail audit;
 
+	private final ApplicationEventPublisher events;
+
 	OrganizationService(OrganizationRepository organizations, OrganizationQueryRepository organizationList,
-			MembershipRepository memberships, IdentityService identity, EmailService email, AuditTrail audit) {
+			MembershipRepository memberships, IdentityService identity, EmailService email, AuditTrail audit,
+			ApplicationEventPublisher events) {
 		this.organizations = organizations;
 		this.organizationList = organizationList;
 		this.memberships = memberships;
 		this.identity = identity;
 		this.email = email;
 		this.audit = audit;
+		this.events = events;
 	}
 
 	/**
@@ -127,6 +132,11 @@ public class OrganizationService {
 	public OrganizationResponse create(Actor actor, CreateOrganizationRequest request) {
 		Person person = identity.person(actor);
 		requireFree(person);
+		if ("company".equals(request.type()) && request.industries().isEmpty()) {
+			// A team or a builder on their own may not have settled on an industry; a company has.
+			throw new OrganizationException(OrganizationErrorCode.INDUSTRIES_REQUIRED,
+					"Company created by account " + person.accountId() + " without an industry");
+		}
 		Organization organization = new Organization(UUID.randomUUID(), freeSlug(request.name()),
 				request.name().strip(), OrganizationViews.roles(request.roles()), request.type(), Organization.PENDING,
 				person.accountId());
@@ -142,13 +152,35 @@ public class OrganizationService {
 		if (!memberships.add(organization.getId(), person.accountId(), MembershipRepository.OWNER)) {
 			throw alreadyMember(person);
 		}
-		memberships.changeJobTitle(person.accountId(), request.jobTitle().strip());
+		String jobTitle = OrganizationViews.text(request.jobTitle());
+		if (jobTitle != null) {
+			memberships.changeJobTitle(person.accountId(), jobTitle);
+		}
 		LOG.atInfo()
 			.addKeyValue("event", "organization.creation.submitted")
 			.addKeyValue("organization_id", organization.getId())
 			.addKeyValue("account_id", person.accountId())
 			.log("Organization created, waiting for review");
 		return OrganizationViews.organization(organization);
+	}
+
+	/**
+	 * Makes the organization a person applies through when they belong to none (BEY-37): a builder on their own or a
+	 * team, which provides AI solutions. Like any organization a person creates, it waits for GenAI Fund's review,
+	 * which decides whether it is listed, not whether it applies.
+	 * @return the new organization's identifier
+	 * @throws OrganizationException when the caller already belongs to an organization or waits on a request
+	 */
+	@Transactional
+	public UUID createForApplicant(Actor actor, ApplicantOrganization applicant) {
+		if (!"independent_builder".equals(applicant.type()) && !"builder_team".equals(applicant.type())) {
+			throw new IllegalArgumentException("An applicant makes a builder's or a team's organization, not "
+					+ applicant.type());
+		}
+		return create(actor,
+				new CreateOrganizationRequest(applicant.name(), List.of("provider"), applicant.type(),
+						applicant.website(), applicant.country(), applicant.teamSize(), List.of(), null, null))
+			.id();
 	}
 
 	/**
@@ -261,6 +293,7 @@ public class OrganizationService {
 			organization.resubmit();
 		}
 		organizations.flush();
+		events.publishEvent(new OrganizationChanged(organization.getId()));
 		return OrganizationViews.organization(organization);
 	}
 

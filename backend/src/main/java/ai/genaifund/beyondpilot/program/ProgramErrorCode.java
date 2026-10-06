@@ -12,6 +12,12 @@ public enum ProgramErrorCode implements ErrorCode {
 	SLUG_FIXED("PROGRAM_SLUG_FIXED", ErrorCategory.CONFLICT,
 			"The address cannot change once the program has been published."),
 
+	QUESTIONS_FIXED("PROGRAM_QUESTIONS_FIXED", ErrorCategory.CONFLICT,
+			"The applications have opened, so the questions can no longer change."),
+
+	CHOICES_REQUIRED("PROGRAM_CHOICES_REQUIRED", ErrorCategory.VALIDATION,
+			"A question answered by a choice offers two to twenty choices."),
+
 	CHANGED_MEANWHILE("PROGRAM_CHANGED_MEANWHILE", ErrorCategory.CONFLICT,
 			"Someone else saved this program in the meantime. Reload it and make your changes again."),
 

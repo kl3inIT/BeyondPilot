@@ -48,6 +48,14 @@ public class OrganizationQueryRepository {
 				""").param("pattern", containing(text)).param("limit", limit).query(OrganizationQueryRepository::match).list();
 	}
 
+	/** The organizations whose name contains the text, whatever their review says. */
+	public List<UUID> idsNamed(String text) {
+		return jdbc.sql("select id from organization where lower(name) like :pattern escape '\\'")
+			.param("pattern", containing(text))
+			.query(UUID.class)
+			.list();
+	}
+
 	public List<Name> names(Collection<UUID> ids) {
 		if (ids.isEmpty()) {
 			return List.of();

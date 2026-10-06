@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -30,13 +31,15 @@ public class SolutionQueryRepository {
 
 	private static final String ADMIN_FILTER = """
 			where status <> 'draft'
-			  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\')
+			  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\'
+			       or organization_id = any(cast(:organizationIds as uuid[])))
 			  and (cast(:status as text) is null or status = :status)
+			  and (cast(:industry as text) is null or industries @> array[cast(:industry as text)])
 			""";
 
 	private static final String ROW = """
 			select id, organization_id, slug, name, summary, focus_areas, industries, maturity, status, listed,
-			       submitted_at, updated_at,
+			       submitted_at, submitted_by_account_id, updated_at,
 			       (select count(*) from solution_customer_deployment d
 			        where d.solution_id = solution.id and d.status = 'approved') as deployments,
 			       (select count(*) from solution_customer_deployment d
@@ -53,7 +56,8 @@ public class SolutionQueryRepository {
 	/** One solution in a list, with how many of its customer deployments are approved and how many wait for review. */
 	public record Row(UUID id, UUID organizationId, String slug, String name, @Nullable String summary,
 			List<String> focusAreas, List<String> industries, @Nullable String maturity, String status, boolean listed,
-			@Nullable Instant submittedAt, Instant updatedAt, int deployments, int deploymentsAwaiting) {
+			@Nullable Instant submittedAt, @Nullable UUID submittedByAccountId, Instant updatedAt, int deployments,
+			int deploymentsAwaiting) {
 	}
 
 	/** One page of the public directory, by name or with the most recently approved first. */
@@ -77,20 +81,33 @@ public class SolutionQueryRepository {
 
 	/**
 	 * One page for operators, drafts left out: those with something waiting for review first, the solution itself or
-	 * one of its customer deployments, the longest wait on top.
+	 * one of its customer deployments, the longest wait on top. The text matches the solution's name, or the
+	 * solution belongs to one of {@code organizationIds}, the organizations the caller found by that text.
 	 */
-	public List<Row> adminPage(@Nullable String text, @Nullable String status, int limit, long offset) {
+	public List<Row> adminPage(@Nullable String text, List<UUID> organizationIds, @Nullable String status,
+			@Nullable String industry, int limit, long offset) {
 		return adminFiltered(ROW + ADMIN_FILTER + """
 				order by case when status = 'submitted' or exists (
 				             select 1 from solution_customer_deployment d
 				             where d.solution_id = solution.id and d.status = 'submitted') then 0 else 1 end,
 				         submitted_at, id
 				limit :limit offset :offset
-				""", text, status).param("limit", limit).param("offset", offset).query(SolutionQueryRepository::row).list();
+				""", text, organizationIds, status, industry).param("limit", limit)
+			.param("offset", offset)
+			.query(SolutionQueryRepository::row)
+			.list();
 	}
 
-	public long adminCount(@Nullable String text, @Nullable String status) {
-		return adminFiltered("select count(*) from solution\n" + ADMIN_FILTER, text, status).query(Long.class).single();
+	public long adminCount(@Nullable String text, List<UUID> organizationIds, @Nullable String status,
+			@Nullable String industry) {
+		return adminFiltered("select count(*) from solution\n" + ADMIN_FILTER, text, organizationIds, status, industry)
+			.query(Long.class)
+			.single();
+	}
+
+	/** How many solutions wait for review. */
+	public long awaitingReview() {
+		return jdbc.sql("select count(*) from solution where status = 'submitted'").query(Long.class).single();
 	}
 
 	/** The orders of the public directory. The value is never the caller's text: it is chosen here by its name. */
@@ -108,10 +125,16 @@ public class SolutionQueryRepository {
 			.param("organizationId", organizationId, Types.OTHER);
 	}
 
-	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, @Nullable String status) {
+	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, List<UUID> organizationIds,
+			@Nullable String status, @Nullable String industry) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
-			.param("status", status, Types.VARCHAR);
+			// A PostgreSQL array literal: an identifier holds no character that needs quoting.
+			.param("organizationIds",
+					organizationIds.stream().map(UUID::toString).collect(Collectors.joining(",", "{", "}")),
+					Types.VARCHAR)
+			.param("status", status, Types.VARCHAR)
+			.param("industry", industry, Types.VARCHAR);
 	}
 
 	private static Row row(ResultSet row, int index) throws SQLException {
@@ -120,7 +143,8 @@ public class SolutionQueryRepository {
 				row.getString("slug"), row.getString("name"), row.getString("summary"),
 				strings(row.getArray("focus_areas")), strings(row.getArray("industries")), row.getString("maturity"),
 				row.getString("status"), row.getBoolean("listed"),
-				submittedAt == null ? null : submittedAt.toInstant(), row.getTimestamp("updated_at").toInstant(),
+				submittedAt == null ? null : submittedAt.toInstant(),
+				row.getObject("submitted_by_account_id", UUID.class), row.getTimestamp("updated_at").toInstant(),
 				row.getInt("deployments"), row.getInt("deployments_awaiting"));
 	}
 

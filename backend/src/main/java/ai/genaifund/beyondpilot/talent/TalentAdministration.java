@@ -26,6 +26,7 @@ import ai.genaifund.beyondpilot.talent.persistence.TalentProfile;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfileRepository;
 import ai.genaifund.beyondpilot.talent.persistence.TalentQueryRepository;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,14 +55,18 @@ public class TalentAdministration {
 
 	private final EmailService email;
 
+	private final ApplicationEventPublisher events;
+
 	TalentAdministration(TalentProfileRepository profiles, TalentQueryRepository profileList,
-			TalentDetailRepository details, IdentityService identity, AuditTrail audit, EmailService email) {
+			TalentDetailRepository details, IdentityService identity, AuditTrail audit, EmailService email,
+			ApplicationEventPublisher events) {
 		this.profiles = profiles;
 		this.profileList = profileList;
 		this.details = details;
 		this.identity = identity;
 		this.audit = audit;
 		this.email = email;
+		this.events = events;
 	}
 
 	/**
@@ -112,6 +117,7 @@ public class TalentAdministration {
 		}
 		profile.approve(Instant.now());
 		record(AuditAction.TALENT_APPROVE, operator, profile, Map.of());
+		events.publishEvent(new TalentProfileChanged(id));
 		tell(profile, EmailService.TalentDecision.APPROVED, null);
 	}
 
@@ -131,6 +137,7 @@ public class TalentAdministration {
 		String message = TalentViews.text(request.message());
 		profile.requestChanges(request.reason(), message, Instant.now());
 		record(AuditAction.TALENT_REQUEST_CHANGES, operator, profile, Map.of("reason", request.reason()));
+		events.publishEvent(new TalentProfileChanged(id));
 		tell(profile, EmailService.TalentDecision.CHANGES_REQUESTED, message);
 	}
 
@@ -151,6 +158,7 @@ public class TalentAdministration {
 		String message = TalentViews.text(request.message());
 		profile.remove(request.reason(), message, Instant.now());
 		record(AuditAction.TALENT_REMOVE, operator, profile, Map.of("reason", request.reason()));
+		events.publishEvent(new TalentProfileChanged(id));
 		tell(profile, EmailService.TalentDecision.REMOVED, message);
 	}
 

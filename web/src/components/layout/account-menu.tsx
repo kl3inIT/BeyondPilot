@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2Icon, IdCardIcon, LogOutIcon, ShieldIcon } from "lucide-react";
+import { Building2Icon, FileTextIcon, IdCardIcon, LogOutIcon, ShieldIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -58,6 +58,10 @@ function AccountMenuPanel({ name, email, operator }: AccountMenuProps) {
         <span className="truncate text-sm text-muted-foreground">{email}</span>
       </div>
       <DropdownMenuSeparator />
+      <DropdownMenuItem render={<Link href={siteRoutes.myApplications} />}>
+        <FileTextIcon aria-hidden="true" />
+        {t("applications")}
+      </DropdownMenuItem>
       <DropdownMenuItem render={<Link href={siteRoutes.workspaceOrganization} />}>
         <Building2Icon aria-hidden="true" />
         {t("organization")}
