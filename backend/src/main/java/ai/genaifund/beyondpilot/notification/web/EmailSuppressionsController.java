@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** The addresses BeyondPilot does not send to. */
 @RestController
-@RequestMapping("/api/notification/admin/suppressions")
+@RequestMapping("/api/notification/admin/email/suppressions")
 @Tag(name = "Email administration", description = "Who delivers BeyondPilot's email, its wording, what was sent and the addresses it is not sent to.")
 @ApiResponse(responseCode = "401", description = "Nobody is signed in.",
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = EmailSuppressionsController.PROBLEM)))

@@ -37,7 +37,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 @Import({ TestcontainersConfiguration.class, EmailAdministrationTest.Mail.class })
 class EmailAdministrationTest {
 
-	private static final String API = "/api/notification/admin";
+	private static final String API = "/api/notification/admin/email";
 
 	/** A key made for this run, so that no key is written in the repository. */
 	@DynamicPropertySource

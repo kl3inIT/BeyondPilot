@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** The wording of each kind of email, which operators change and put back to the default. */
 @RestController
-@RequestMapping("/api/notification/admin/templates")
+@RequestMapping("/api/notification/admin/email/templates")
 @Tag(name = "Email administration", description = "Who delivers BeyondPilot's email, its wording, what was sent and the addresses it is not sent to.")
 @ApiResponse(responseCode = "401", description = "Nobody is signed in.",
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = EmailTemplatesController.PROBLEM)))

@@ -134,25 +134,26 @@ The catalog is the seventeen kinds `EmailService` sends today:
 
 ## API
 
-All under `/api/notification`, operators only, checked in the application service with the caller's `Actor`. Every change records an audit event.
+The operators' operations live under `/api/notification/admin/email`: the module is `notification` and email is its channel, so the address names both and leaves room for another channel. Operators only, checked in the application service with the caller's `Actor`. Every change records an audit event. The provider's reports arrive under `/api/notification/email/events`, without a session.
 
-| Operation                               | Address                                                |
-| --------------------------------------- | ------------------------------------------------------ |
-| Settings, setup state, DNS records      | `GET /settings`                                        |
-| Save settings                           | `PUT /settings`                                        |
-| Test the connection (send to me)        | `POST /settings/test`                                  |
-| Templates by group, with override state | `GET /templates`                                       |
-| One template                            | `GET /templates/{kind}`                                |
-| Save an override                        | `PUT /templates/{kind}`                                |
-| Reset to default                        | `DELETE /templates/{kind}`                             |
-| Preview with sample data                | `POST /templates/{kind}/preview`                       |
-| Send a test of a template to me         | `POST /templates/{kind}/test`                          |
-| Activity, with counts                   | `GET /messages?from=&kind=&status=&q=&before=&after=`  |
-| One message, its events and content     | `GET /messages/{id}`                                   |
-| Send again                              | `POST /messages/{id}/resend`                           |
-| Suppressions                            | `GET /suppressions?reason=&q=&page=`                   |
-| Add, remove                             | `POST /suppressions`, `DELETE /suppressions/{address}` |
-| Delivery events                         | `POST /events/resend`, `POST /events/ses` (no session) |
+| Operation                               | Address                                                           |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| Settings, setup state, DNS records      | `GET /settings`                                                   |
+| Save settings                           | `PUT /settings`                                                   |
+| Test the connection (send to me)        | `POST /settings/test`                                             |
+| Accent colour and footer note           | `PUT /settings/appearance`                                        |
+| Templates by group, with override state | `GET /templates`                                                  |
+| One template                            | `GET /templates/{kind}`                                           |
+| Save an override                        | `PUT /templates/{kind}`                                           |
+| Reset to default                        | `DELETE /templates/{kind}`                                        |
+| Preview with sample data                | `POST /templates/{kind}/preview`                                  |
+| Send a test of a template to me         | `POST /templates/{kind}/test`                                     |
+| Activity, with counts                   | `GET /messages?from=&kind=&status=&q=&before=&after=`             |
+| One message, its events and content     | `GET /messages/{id}`                                              |
+| Send again                              | `POST /messages/{id}/resend`                                      |
+| Suppressions                            | `GET /suppressions?reason=&q=&page=`                              |
+| Add, remove                             | `POST /suppressions`, `DELETE /suppressions/{address}`            |
+| Delivery events                         | `POST /api/notification/email/events/resend`, `/ses` (no session) |
 
 Activity is paged by cursor like the audit log (it only grows and is read from the newest end). Suppressions are a small set an operator searches, paged by number like Accounts.
 

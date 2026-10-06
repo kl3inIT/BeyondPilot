@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** The email log: what was sent, to whom, and what became of it. */
 @RestController
-@RequestMapping("/api/notification/admin/messages")
+@RequestMapping("/api/notification/admin/email/messages")
 @Tag(name = "Email administration", description = "Who delivers BeyondPilot's email, its wording, what was sent and the addresses it is not sent to.")
 @ApiResponse(responseCode = "401", description = "Nobody is signed in.",
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = EmailMessagesController.PROBLEM)))

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** The email settings operators keep: the provider and its connection, the sender and the appearance. */
 @RestController
-@RequestMapping("/api/notification/admin/settings")
+@RequestMapping("/api/notification/admin/email/settings")
 @Tag(name = "Email administration", description = "Who delivers BeyondPilot's email, its wording, what was sent and the addresses it is not sent to.")
 @ApiResponse(responseCode = "401", description = "Nobody is signed in.",
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = EmailSettingsController.PROBLEM)))
