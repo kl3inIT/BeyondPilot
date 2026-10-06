@@ -21,17 +21,17 @@ import {
 import { talentRejections } from "./talent-codes";
 import { talentError } from "./talent-errors";
 
-/**
- * The decision on a talent profile: approve one that waits for review, or ask for changes with a
- * reason its person reads. An approved profile can be removed from the public, with a reason too.
- * Each decision is emailed to the person.
- */
 type TalentReviewProps = {
   profile: Pick<TalentProfile, "id" | "name" | "status">;
   /** The next record that waits for a decision; a decision on a waiting record goes there. */
   nextHref?: string;
 };
 
+/**
+ * The decision on a talent profile: approve one that waits for review, or ask for changes with a
+ * reason its person reads. An approved profile can be removed from the public, with a reason too.
+ * Each decision is emailed to the person.
+ */
 function TalentReview({ profile, nextHref }: TalentReviewProps) {
   const t = useTranslations("Admin.talent.review");
   const reason = useVocabulary("talentRejection");

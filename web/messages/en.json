@@ -1095,11 +1095,6 @@
         "back": "All talent",
         "from": "From {sender}",
         "to": "To {name}",
-        "topic": {
-          "project": "About a project",
-          "role": "About a role",
-          "other": "About something else"
-        },
         "sent": "Sent {date}",
         "reportedAt": "Reported {date}",
         "empty": {
@@ -1350,6 +1345,11 @@
       "pilot": "Pilot",
       "in_production": "In production",
       "internal_tool": "Internal tool"
+    },
+    "enquiryTopic": {
+      "project": "About a project",
+      "role": "About a role",
+      "other": "About something else"
     }
   },
   "Organization": {
@@ -2110,13 +2110,10 @@
       },
       "facts": {
         "country": "Based in",
-        "role": "Role",
         "website": "Portfolio or LinkedIn",
-        "city": "City",
         "worksAt": "Works at",
         "worksAtStated": "as stated by the person",
-        "languages": "Languages",
-        "industries": "Industries"
+        "languages": "Languages"
       },
       "notListed": "Not stated",
       "note": "Messages go through BeyondPilot. {name} reads your name and organization; neither email address is shared unless they accept.",
@@ -2185,11 +2182,6 @@
         "lead": "Accept to share your email address with the sender. Decline or report shares nothing.",
         "someone": "Someone",
         "from": "{name} · {organization}",
-        "topic": {
-          "project": "About a project",
-          "role": "About a role",
-          "other": "About something else"
-        },
         "status": {
           "pending": "Waits for you",
           "accepted": "Accepted",

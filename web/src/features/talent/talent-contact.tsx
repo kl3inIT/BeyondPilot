@@ -23,7 +23,7 @@ type TalentContactProps = {
   own: boolean;
   /** The caller's name as their account holds it, to sign a message with; empty when it has none. */
   senderName?: string;
-  /** Whether the person takes on work and how, under the title. */
+  /** The work the person takes on, under the title. */
   intro?: React.ReactNode;
   /** The facts about the person and the note on how an enquiry travels, under the actions. */
   children: React.ReactNode;
@@ -101,9 +101,7 @@ function TalentContact({
       </section>
       {idle && (
         <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t bg-background px-4 py-3 shadow-lg md:hidden">
-          <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-sm font-semibold">{name}</span>
-          </div>
+          <span className="min-w-0 flex-1 truncate text-sm font-semibold">{name}</span>
           <Button size="lg" {...opens}>
             {t("openShort")}
           </Button>

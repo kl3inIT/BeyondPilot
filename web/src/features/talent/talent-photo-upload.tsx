@@ -78,7 +78,8 @@ function TalentPhotoUpload({ name, value, onChange }: TalentPhotoUploadProps) {
           type="file"
           accept={accepted.join(",")}
           className="sr-only"
-          aria-describedby="talent-photo-hint"
+          // The button beside it is the one stop on the way: an unseen control takes no focus.
+          tabIndex={-1}
           onChange={(event) => {
             const file = event.target.files?.[0];
             if (file) {
@@ -91,6 +92,7 @@ function TalentPhotoUpload({ name, value, onChange }: TalentPhotoUploadProps) {
             prominence="secondary"
             size="sm"
             pending={uploading}
+            aria-describedby="talent-photo-hint"
             onClick={() => input.current?.click()}
           >
             <ImageUpIcon aria-hidden="true" />
@@ -102,7 +104,8 @@ function TalentPhotoUpload({ name, value, onChange }: TalentPhotoUploadProps) {
             </Button>
           )}
         </div>
-        <p id="talent-photo-hint" className="text-sm text-muted-foreground">
+        {/* A refused photo replaces the hint, and is announced as it does. */}
+        <p id="talent-photo-hint" aria-live="polite" className="text-sm text-muted-foreground">
           {problem ?? t("hint")}
         </p>
       </div>

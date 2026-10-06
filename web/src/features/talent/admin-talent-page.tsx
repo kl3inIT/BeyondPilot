@@ -11,7 +11,6 @@ import { TalentReview } from "./talent-review";
 import { TalentStatus } from "./talent-status";
 import { TalentView } from "./talent-view";
 
-/** Admin › Talent › one profile: what the person wrote, whose account it is, and the decision. */
 type AdminTalentPageProps = {
   detail: AdminTalent;
   /** The next record that waits for a decision, if another does. */
@@ -20,6 +19,7 @@ type AdminTalentPageProps = {
   queue: { place: number | null; total: number };
 };
 
+/** Admin › Talent › one profile: what the person wrote, whose account it is, and the decision. */
 function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
   const t = useTranslations("Admin.talent.detail");
   const reason = useVocabulary("talentRejection");

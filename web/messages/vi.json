@@ -1095,11 +1095,6 @@
         "back": "Tất cả nhân lực",
         "from": "Từ {sender}",
         "to": "Gửi {name}",
-        "topic": {
-          "project": "Về một dự án",
-          "role": "Về một vị trí công việc",
-          "other": "Về việc khác"
-        },
         "sent": "Gửi {date}",
         "reportedAt": "Báo cáo {date}",
         "empty": {
@@ -1350,6 +1345,11 @@
       "pilot": "Thí điểm",
       "in_production": "Đang vận hành",
       "internal_tool": "Công cụ nội bộ"
+    },
+    "enquiryTopic": {
+      "project": "Về một dự án",
+      "role": "Về một vị trí công việc",
+      "other": "Về việc khác"
     }
   },
   "Organization": {
@@ -2110,13 +2110,10 @@
       },
       "facts": {
         "country": "Sống tại",
-        "role": "Vai trò",
         "website": "Portfolio hoặc LinkedIn",
-        "city": "Thành phố",
         "worksAt": "Đang làm tại",
         "worksAtStated": "do người này tự nêu",
-        "languages": "Ngôn ngữ",
-        "industries": "Ngành"
+        "languages": "Ngôn ngữ"
       },
       "notListed": "Chưa ghi",
       "note": "Lời nhắn đi qua BeyondPilot. {name} thấy tên và tổ chức của bạn; hai bên chỉ thấy email của nhau nếu họ chấp nhận.",
@@ -2185,11 +2182,6 @@
         "lead": "Chấp nhận để chia sẻ email của bạn với người gửi. Từ chối hoặc báo cáo thì không chia sẻ gì.",
         "someone": "Một người",
         "from": "{name} · {organization}",
-        "topic": {
-          "project": "Về một dự án",
-          "role": "Về một vị trí công việc",
-          "other": "Về việc khác"
-        },
         "status": {
           "pending": "Chờ bạn trả lời",
           "accepted": "Đã chấp nhận",

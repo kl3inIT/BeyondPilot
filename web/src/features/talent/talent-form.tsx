@@ -301,6 +301,12 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
         {t(`needed.${field}`)}
       </FieldError>
     );
+  /** What a field a review needs says beside its label: needed for review, or required once sent. */
+  const reviewMark = (
+    <span className="font-normal text-muted-foreground">
+      {t(submittable ? "neededMark" : "requiredMark")}
+    </span>
+  );
   /** The hint and the error of a field, for the control they describe. */
   const about = (id: string) => `${id}-hint ${id}-error`;
   const lacking = missingForReview();
@@ -341,15 +347,13 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
               onChange={write("name")}
               aria-required
               aria-invalid={bad("name")}
+              aria-describedby={bad("name") && "talent-name-error"}
             />
-            {bad("name") && <FieldError>{t("nameRequired")}</FieldError>}
+            {bad("name") && <FieldError id="talent-name-error">{t("nameRequired")}</FieldError>}
           </Field>
           <Field data-invalid={bad("headline")}>
             <FieldLabel htmlFor="talent-headline">
-              {t("headline")}{" "}
-              <span className="font-normal text-muted-foreground">
-                {t(submittable ? "neededMark" : "requiredMark")}
-              </span>
+              {t("headline")} {reviewMark}
             </FieldLabel>
             <Input
               id="talent-headline"
@@ -365,10 +369,7 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
           </Field>
           <Field data-invalid={bad("bio")}>
             <FieldLabel htmlFor="talent-bio">
-              {t("bio")}{" "}
-              <span className="font-normal text-muted-foreground">
-                {t(submittable ? "neededMark" : "requiredMark")}
-              </span>
+              {t("bio")} {reviewMark}
             </FieldLabel>
             <Textarea
               id="talent-bio"
@@ -391,10 +392,7 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
         <FieldGroup>
           <Field data-invalid={bad("roles")}>
             <FieldLabel>
-              {t("roles")}{" "}
-              <span className="font-normal text-muted-foreground">
-                {t(submittable ? "neededMark" : "requiredMark")}
-              </span>
+              {t("roles")} {reviewMark}
             </FieldLabel>
             <ChoiceChips
               id="talent-roles"
@@ -412,10 +410,7 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
           </Field>
           <Field data-invalid={bad("skills")}>
             <FieldLabel htmlFor="talent-skills">
-              {t("skills")}{" "}
-              <span className="font-normal text-muted-foreground">
-                {t(submittable ? "neededMark" : "requiredMark")}
-              </span>
+              {t("skills")} {reviewMark}
             </FieldLabel>
             <Input
               id="talent-skills"
@@ -516,11 +511,12 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
               value={text.website}
               onChange={write("website")}
               aria-invalid={bad("website")}
+              aria-describedby={about("talent-website")}
             />
             {bad("website") ? (
-              <FieldError>{t("websiteInvalid")}</FieldError>
+              <FieldError id="talent-website-error">{t("websiteInvalid")}</FieldError>
             ) : (
-              <FieldDescription>{t("websiteHint")}</FieldDescription>
+              <FieldDescription id="talent-website-hint">{t("websiteHint")}</FieldDescription>
             )}
           </Field>
         </FieldGroup>
