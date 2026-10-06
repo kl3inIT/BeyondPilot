@@ -5,6 +5,7 @@ import ai.genaifund.beyondpilot.talent.dto.PublicTalentListRequest;
 import ai.genaifund.beyondpilot.talent.dto.PublicTalentListResponse;
 import ai.genaifund.beyondpilot.talent.dto.PublicTalentResponse;
 import ai.genaifund.beyondpilot.talent.dto.PublicTalentSummaryResponse;
+import ai.genaifund.beyondpilot.talent.dto.TalentProjectDto;
 import ai.genaifund.beyondpilot.talent.persistence.TalentDetailRepository;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfile;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfileRepository;
@@ -37,13 +38,16 @@ public class TalentDirectory {
 	public PublicTalentListResponse list(PublicTalentListRequest request) {
 		String text = TalentViews.text(request.q());
 		int page = request.page() == null ? 1 : request.page();
+		TalentQueryRepository.PublicFilter filter = new TalentQueryRepository.PublicFilter(text, request.role(),
+				request.availability(), request.country(), request.engagement());
 		return new PublicTalentListResponse(profileList
-			.publicPage(text, request.role(), request.availability(), request.sort(), PAGE_SIZE,
-					(long) (page - 1) * PAGE_SIZE)
+			.publicPage(filter, request.sort(), PAGE_SIZE, (long) (page - 1) * PAGE_SIZE)
 			.stream()
 			.map(row -> new PublicTalentSummaryResponse(row.slug(), row.name(), row.headline(), row.country(),
-					row.availability(), row.roles(), row.skills()))
-			.toList(), page, PAGE_SIZE, profileList.publicCount(text, request.role(), request.availability()));
+					row.city(), row.availability(), row.roles(), row.skills(), row.photoFileId(), row.projectCount(),
+					row.leadTitle() == null ? null
+							: new TalentProjectDto(row.leadTitle(), null, null, null, row.leadStage())))
+			.toList(), page, PAGE_SIZE, profileList.publicCount(filter));
 	}
 
 	/**
@@ -60,7 +64,8 @@ public class TalentDirectory {
 			.orElseThrow(() -> new TalentException(TalentErrorCode.PROFILE_NOT_FOUND, "No listed talent at " + slug));
 		return new PublicTalentResponse(profile.getSlug(), profile.getName(), profile.getHeadline(), profile.getBio(),
 				profile.getRoles(), profile.getSkills(), profile.getCountry(), profile.getAvailability(),
-				profile.getEngagement(), profile.getRateBand(), profile.getWebsite(),
+				profile.getEngagement(), profile.getWebsite(), profile.getPhotoFileId(), profile.getCity(),
+				profile.getLanguages(), profile.getIndustries(), profile.getWorksAt(),
 				TalentViews.projects(details.projects(profile.getId())),
 				actor == null ? null : details.waitingSince(profile.getId(), actor.accountId()).orElse(null));
 	}

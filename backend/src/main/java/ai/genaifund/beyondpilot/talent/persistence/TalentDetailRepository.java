@@ -27,7 +27,8 @@ public class TalentDetailRepository {
 	}
 
 	/** One project a profile shows. */
-	public record Project(String title, @Nullable String summary, @Nullable String url, @Nullable Integer year) {
+	public record Project(String title, @Nullable String summary, @Nullable String url, @Nullable Integer year,
+			@Nullable String stage) {
 	}
 
 	/** The states of an enquiry. Only {@code accepted} has shared the two addresses. */
@@ -63,10 +64,11 @@ public class TalentDetailRepository {
 
 	/** The projects of a profile, in the order the person put them. */
 	public List<Project> projects(UUID profileId) {
-		return jdbc.sql("select title, summary, url, year from talent_project where profile_id = ? order by position")
+		return jdbc
+			.sql("select title, summary, url, year, stage from talent_project where profile_id = ? order by position")
 			.param(profileId)
 			.query((row, index) -> new Project(row.getString("title"), row.getString("summary"), row.getString("url"),
-					row.getObject("year", Integer.class)))
+					row.getObject("year", Integer.class), row.getString("stage")))
 			.list();
 	}
 
@@ -76,8 +78,8 @@ public class TalentDetailRepository {
 		for (int position = 0; position < projects.size(); position++) {
 			Project project = projects.get(position);
 			jdbc.sql("""
-					insert into talent_project (id, profile_id, position, title, summary, url, year)
-					values (:id, :profileId, :position, :title, :summary, :url, :year)
+					insert into talent_project (id, profile_id, position, title, summary, url, year, stage)
+					values (:id, :profileId, :position, :title, :summary, :url, :year, :stage)
 					""")
 				.param("id", UUID.randomUUID())
 				.param("profileId", profileId)
@@ -86,6 +88,7 @@ public class TalentDetailRepository {
 				.param("summary", project.summary(), Types.VARCHAR)
 				.param("url", project.url(), Types.VARCHAR)
 				.param("year", project.year(), Types.INTEGER)
+				.param("stage", project.stage(), Types.VARCHAR)
 				.update();
 		}
 	}

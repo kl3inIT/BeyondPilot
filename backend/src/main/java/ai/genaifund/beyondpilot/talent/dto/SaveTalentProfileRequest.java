@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.talent.dto;
 
 import java.util.List;
+import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -32,6 +33,15 @@ public record SaveTalentProfileRequest(
 						regexp = TalentCodes.RATE_BAND) @Nullable String rateBand,
 		@Schema(types = { "string", "null" }) @Size(max = 300) @Pattern(
 				regexp = TalentCodes.URL) @Nullable String website,
+		@Schema(types = { "string", "null" }, format = "uuid",
+				description = "A photo the caller uploaded for a talent profile; null for none.") @Nullable UUID photoFileId,
+		@Schema(types = { "string", "null" }) @Size(max = 80) @Nullable String city,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "ISO 639-1 codes.") @NotNull @Size(
+				max = 6) List<@NotNull @Pattern(regexp = TalentCodes.LANGUAGE) String> languages,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Size(
+				max = 5) List<@NotNull @Pattern(regexp = TalentCodes.INDUSTRY) String> industries,
+		@Schema(types = { "string", "null" },
+				description = "Where the person works, as they state it.") @Size(max = 120) @Nullable String worksAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Size(
 				max = 6) List<@NotNull @Valid TalentProjectDto> projects,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

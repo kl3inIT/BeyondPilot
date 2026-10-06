@@ -419,6 +419,44 @@ class TalentTest {
 	}
 
 	@Test
+	void aProfileStatesItsFactsAndTheDirectoryNarrowsByCountryAndEngagement() {
+		Map<String, Object> facts = described("Echidna Engineer", null);
+		facts.put("country", "SG");
+		facts.put("engagement", List.of("advisory"));
+		facts.put("projects", List.of(Map.of("title", "Voice agent for a bank", "stage", "in_production"),
+				Map.of("title", "Evaluation set")));
+		approved(signIn("echidna@profile.test"), facts);
+		approved(signIn("echidna.other@profile.test"), described("Echidna Other", null));
+
+		String one = body(client.get().uri(DIRECTORY + "/echidna-engineer").exchange().expectStatus().isOk());
+
+		assertThat(JsonPath.<String>read(one, "$.city")).isEqualTo("Ho Chi Minh City");
+		assertThat(JsonPath.<List<String>>read(one, "$.languages")).containsExactly("vi", "en");
+		assertThat(JsonPath.<List<String>>read(one, "$.industries")).containsExactly("insurance");
+		assertThat(JsonPath.<String>read(one, "$.worksAt")).isEqualTo("Revee AI");
+		assertThat(JsonPath.<List<String>>read(one, "$.projects[*].stage")).containsExactly("in_production", null);
+		// The rate is the person's and GenAI Fund's, not the public's.
+		assertThat(one).doesNotContain("rateBand");
+
+		String bySingapore = body(client.get().uri(DIRECTORY + "?q=echidna&country=SG").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(bySingapore, "$.items[*].name")).containsExactly("Echidna Engineer");
+		assertThat(JsonPath.<Integer>read(bySingapore, "$.items[0].projectCount")).isEqualTo(2);
+		assertThat(JsonPath.<String>read(bySingapore, "$.items[0].leadProject.title")).isEqualTo("Voice agent for a bank");
+		assertThat(JsonPath.<String>read(bySingapore, "$.items[0].leadProject.stage")).isEqualTo("in_production");
+		assertThat(names(DIRECTORY + "?q=echidna&engagement=advisory")).containsExactly("Echidna Engineer");
+		assertThat(names(DIRECTORY + "?q=echidna&engagement=contract")).containsExactly("Echidna Other");
+		assertProblem(client.get().uri(DIRECTORY + "?country=sg").exchange(), 400, "REQUEST_INVALID");
+	}
+
+	@Test
+	void aPhotoMustBeAnUploadOfTheCallerForAProfile() {
+		Map<String, Object> request = described("Bilby Person", null);
+		request.put("photoFileId", UUID.randomUUID().toString());
+
+		assertProblem(put(signIn("bilby@profile.test"), MINE, request), 400, "TALENT_PHOTO_NOT_USABLE");
+	}
+
+	@Test
 	void everythingButTheDirectoryNeedsASession() {
 		client.get().uri(DIRECTORY).exchange().expectStatus().isOk();
 
@@ -439,7 +477,12 @@ class TalentTest {
 		request.put("engagement", List.of("contract"));
 		request.put("rateBand", "50_100");
 		request.put("website", "https://example.test");
-		request.put("projects", List.of(Map.of("title", "Claims triage", "year", 2025)));
+		request.put("photoFileId", null);
+		request.put("city", "Ho Chi Minh City");
+		request.put("languages", List.of("vi", "en"));
+		request.put("industries", List.of("insurance"));
+		request.put("worksAt", "Revee AI");
+		request.put("projects", List.of(Map.of("title", "Claims triage", "year", 2025, "stage", "pilot")));
 		request.put("listed", true);
 		request.put("version", version);
 		return request;

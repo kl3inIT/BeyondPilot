@@ -15,6 +15,10 @@ public record PublicTalentListRequest(
 				regexp = TalentCodes.ROLE) @Nullable String role,
 		@Parameter(description = "Only profiles of this availability.") @Pattern(
 				regexp = TalentCodes.AVAILABILITY) @Nullable String availability,
+		@Parameter(description = "Only profiles in this country, ISO 3166-1 alpha-2.") @Pattern(
+				regexp = TalentCodes.COUNTRY) @Nullable String country,
+		@Parameter(description = "Only profiles open to this kind of engagement.") @Pattern(
+				regexp = TalentCodes.ENGAGEMENT) @Nullable String engagement,
 		@Parameter(description = "The order: by name, or the most recently approved first.",
 				schema = @Schema(type = "string", allowableValues = { "name", "newest" },
 						defaultValue = "name")) @Pattern(regexp = TalentCodes.SORT) @Nullable String sort,

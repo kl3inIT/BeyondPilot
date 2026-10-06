@@ -72,6 +72,20 @@ public class TalentProfile {
 
 	private @Nullable String website;
 
+	private @Nullable UUID photoFileId;
+
+	private @Nullable String city;
+
+	@JdbcTypeCode(SqlTypes.ARRAY)
+	@Column(nullable = false, columnDefinition = "text[]")
+	private String[] languages = {};
+
+	@JdbcTypeCode(SqlTypes.ARRAY)
+	@Column(nullable = false, columnDefinition = "text[]")
+	private String[] industries = {};
+
+	private @Nullable String worksAt;
+
 	@Column(nullable = false)
 	private String status = DRAFT;
 
@@ -123,6 +137,19 @@ public class TalentProfile {
 		this.engagement = engagement.toArray(String[]::new);
 		this.rateBand = rateBand;
 		this.website = website;
+	}
+
+	/** The facts a profile states besides its description; each may be left out. */
+	public void state(@Nullable String city, List<String> languages, List<String> industries,
+			@Nullable String worksAt) {
+		this.city = city;
+		this.languages = languages.toArray(String[]::new);
+		this.industries = industries.toArray(String[]::new);
+		this.worksAt = worksAt;
+	}
+
+	public void picture(@Nullable UUID photoFileId) {
+		this.photoFileId = photoFileId;
 	}
 
 	public void list(boolean listed) {
@@ -228,6 +255,26 @@ public class TalentProfile {
 
 	public @Nullable String getWebsite() {
 		return website;
+	}
+
+	public @Nullable UUID getPhotoFileId() {
+		return photoFileId;
+	}
+
+	public @Nullable String getCity() {
+		return city;
+	}
+
+	public List<String> getLanguages() {
+		return List.of(languages);
+	}
+
+	public List<String> getIndustries() {
+		return List.of(industries);
+	}
+
+	public @Nullable String getWorksAt() {
+		return worksAt;
 	}
 
 	public String getStatus() {

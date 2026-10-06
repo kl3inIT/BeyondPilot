@@ -29,4 +29,6 @@ public interface TalentProfileRepository extends JpaRepository<TalentProfile, UU
 	Optional<TalentProfile> findBySlug(String slug);
 
 	boolean existsBySlug(String slug);
+
+	boolean existsByPhotoFileId(UUID photoFileId);
 }

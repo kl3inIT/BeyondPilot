@@ -17,6 +17,9 @@ import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
+import ai.genaifund.beyondpilot.storage.FilePurpose;
+import ai.genaifund.beyondpilot.storage.StorageException;
+import ai.genaifund.beyondpilot.storage.StorageService;
 import ai.genaifund.beyondpilot.talent.dto.MyTalentResponse;
 import ai.genaifund.beyondpilot.talent.dto.SaveTalentProfileRequest;
 import ai.genaifund.beyondpilot.talent.dto.SendTalentEnquiryRequest;
@@ -65,14 +68,17 @@ public class TalentService {
 
 	private final AuditTrail audit;
 
+	private final StorageService storage;
+
 	TalentService(TalentProfileRepository profiles, TalentDetailRepository details, IdentityService identity,
-			EmailService email, OrganizationDirectory organizations, AuditTrail audit) {
+			EmailService email, OrganizationDirectory organizations, AuditTrail audit, StorageService storage) {
 		this.profiles = profiles;
 		this.details = details;
 		this.identity = identity;
 		this.email = email;
 		this.organizations = organizations;
 		this.audit = audit;
+		this.storage = storage;
 	}
 
 	/**
@@ -133,6 +139,14 @@ public class TalentService {
 				TalentViews.distinct(request.roles()), TalentViews.distinct(request.skills()), request.country(),
 				request.availability(), TalentViews.distinct(request.engagement()), request.rateBand(),
 				TalentViews.text(request.website()));
+		profile.state(TalentViews.text(request.city()), TalentViews.distinct(request.languages()),
+				TalentViews.distinct(request.industries()), TalentViews.text(request.worksAt()));
+		UUID formerPhoto = profile.getPhotoFileId();
+		UUID photo = request.photoFileId();
+		if (photo != null && !photo.equals(formerPhoto)) {
+			requireUsablePhoto(actor, photo);
+		}
+		profile.picture(photo);
 		profile.list(request.listed());
 		if (!profile.isDraft() && !profile.isReturned() && !profile.isComplete()) {
 			// What operators review, and what the directory shows, keeps what a submission needs.
@@ -141,10 +155,15 @@ public class TalentService {
 		List<TalentDetailRepository.Project> projects = request.projects()
 			.stream()
 			.map(project -> new TalentDetailRepository.Project(project.title().strip(),
-					TalentViews.text(project.summary()), TalentViews.text(project.url()), project.year()))
+					TalentViews.text(project.summary()), TalentViews.text(project.url()), project.year(),
+					project.stage()))
 			.toList();
 		profiles.flush();
 		details.replaceProjects(profile.getId(), projects);
+		if (formerPhoto != null && !formerPhoto.equals(photo)) {
+			// The profile no longer names it, so nobody reads it again.
+			storage.delete(formerPhoto);
+		}
 		return TalentViews.profile(profile, projects);
 	}
 
@@ -322,11 +341,30 @@ public class TalentService {
 		audit.record(new AuditRecord(AuditAction.TALENT_DELETE,
 				new AuditRecord.Actor(actor.accountId(), person.label(), person.email()),
 				new AuditRecord.Resource(TALENT, profile.getId().toString(), profile.getName()), Map.of()));
+		UUID photo = profile.getPhotoFileId();
 		profiles.delete(profile);
+		if (photo != null) {
+			profiles.flush();
+			storage.delete(photo);
+		}
 		LOG.atInfo()
 			.addKeyValue("event", "talent.profile.deleted")
 			.addKeyValue("profile_id", profile.getId())
 			.log("Talent profile deleted by its person");
+	}
+
+	/** A photo is a stored image the caller uploaded for a profile, and the photo of no other profile. */
+	private void requireUsablePhoto(Actor actor, UUID photo) {
+		try {
+			storage.stored(photo, FilePurpose.TALENT_PHOTO, actor);
+		}
+		catch (StorageException notUsable) {
+			throw new TalentException(TalentErrorCode.PHOTO_NOT_USABLE, "File " + photo + " as a talent photo",
+					notUsable);
+		}
+		if (profiles.existsByPhotoFileId(photo)) {
+			throw new TalentException(TalentErrorCode.PHOTO_NOT_USABLE, "File " + photo + " is another profile's photo");
+		}
 	}
 
 	private String freeSlug(String name) {

@@ -3548,6 +3548,24 @@ paths:
           - string
           - "null"
           pattern: available|open_to_offers|not_available
+      - description: "Only profiles in this country, ISO 3166-1 alpha-2."
+        in: query
+        name: country
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: "[A-Z]{2}"
+      - description: Only profiles open to this kind of engagement.
+        in: query
+        name: engagement
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: full_time|part_time|contract|advisory
       - description: "The order: by name, or the most recently approved first."
         in: query
         name: sort
@@ -5786,7 +5804,7 @@ components:
     PublicTalent:
       type: object
       description: "An approved, listed talent profile as anyone reads it. It carries\
-        \ no address of the person."
+        \ no address of the person, and no rate."
       properties:
         availability:
           type:
@@ -5797,6 +5815,10 @@ components:
           - open_to_offers
           - not_available
         bio:
+          type:
+          - string
+          - "null"
+        city:
           type:
           - string
           - "null"
@@ -5813,23 +5835,27 @@ components:
           type:
           - string
           - "null"
+        industries:
+          type: array
+          items:
+            type: string
+        languages:
+          type: array
+          description: ISO 639-1 codes.
+          items:
+            type: string
         name:
           type: string
+        photoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Read at /api/storage/files/{id}; null for none."
         projects:
           type: array
           items:
             $ref: "#/components/schemas/TalentProject"
-        rateBand:
-          type:
-          - string
-          - "null"
-          description: US dollars an hour. Null is not stated.
-          enum:
-          - under_25
-          - 25_50
-          - 50_100
-          - 100_150
-          - 150_plus
         roles:
           type: array
           items:
@@ -5851,8 +5877,15 @@ components:
           type:
           - string
           - "null"
+        worksAt:
+          type:
+          - string
+          - "null"
+          description: "Where the person works, as they state it."
       required:
       - engagement
+      - industries
+      - languages
       - name
       - projects
       - roles
@@ -5894,6 +5927,10 @@ components:
           - available
           - open_to_offers
           - not_available
+        city:
+          type:
+          - string
+          - "null"
         country:
           type:
           - string
@@ -5903,8 +5940,26 @@ components:
           type:
           - string
           - "null"
+        leadProject:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/TalentProject"
+          description: The first project the profile shows; null when it shows none.
+          oneOf:
+          - $ref: "#/components/schemas/TalentProject"
         name:
           type: string
+        photoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Read at /api/storage/files/{id}; null for none."
+        projectCount:
+          type: integer
+          format: int32
+          description: How many projects the profile shows.
         roles:
           type: array
           items:
@@ -5917,6 +5972,7 @@ components:
           type: string
       required:
       - name
+      - projectCount
       - roles
       - skills
       - slug
@@ -6038,6 +6094,7 @@ components:
             and the largest size.
           enum:
           - program_image
+          - talent_photo
           - application_file
         sizeBytes:
           type: integer
@@ -6403,6 +6460,12 @@ components:
           - "null"
           maxLength: 4000
           minLength: 0
+        city:
+          type:
+          - string
+          - "null"
+          maxLength: 80
+          minLength: 0
         country:
           type:
           - string
@@ -6423,6 +6486,21 @@ components:
           description: One line shown in lists.
           maxLength: 160
           minLength: 0
+        industries:
+          type: array
+          items:
+            type: string
+            pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+          maxItems: 5
+          minItems: 0
+        languages:
+          type: array
+          description: ISO 639-1 codes.
+          items:
+            type: string
+            pattern: "[a-z]{2}"
+          maxItems: 6
+          minItems: 0
         listed:
           type: boolean
           description: Whether it appears in the public directory once approved.
@@ -6430,6 +6508,13 @@ components:
           type: string
           maxLength: 120
           minLength: 0
+        photoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: A photo the caller uploaded for a talent profile; null for
+            none.
         projects:
           type: array
           items:
@@ -6476,8 +6561,17 @@ components:
           maxLength: 300
           minLength: 0
           pattern: "https?://[^\\s]+"
+        worksAt:
+          type:
+          - string
+          - "null"
+          description: "Where the person works, as they state it."
+          maxLength: 120
+          minLength: 0
       required:
       - engagement
+      - industries
+      - languages
       - listed
       - name
       - projects
@@ -6806,6 +6900,10 @@ components:
           type:
           - string
           - "null"
+        city:
+          type:
+          - string
+          - "null"
         complete:
           type: boolean
           description: "Whether it has what a submission needs: a headline, a bio,\
@@ -6841,11 +6939,26 @@ components:
         id:
           type: string
           format: uuid
+        industries:
+          type: array
+          items:
+            type: string
+        languages:
+          type: array
+          description: ISO 639-1 codes.
+          items:
+            type: string
         listed:
           type: boolean
           description: Whether it appears in the public directory once approved.
         name:
           type: string
+        photoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Read at /api/storage/files/{id}; null for none."
         projects:
           type: array
           items:
@@ -6896,10 +7009,17 @@ components:
           type:
           - string
           - "null"
+        worksAt:
+          type:
+          - string
+          - "null"
+          description: "Where the person works, as they state it."
       required:
       - complete
       - engagement
       - id
+      - industries
+      - languages
       - listed
       - name
       - projects
@@ -6913,6 +7033,17 @@ components:
       type: object
       description: One piece of work a talent profile shows.
       properties:
+        stage:
+          type:
+          - string
+          - "null"
+          description: How far the work went; null when not stated.
+          enum:
+          - prototype
+          - pilot
+          - in_production
+          - internal_tool
+          pattern: prototype|pilot|in_production|internal_tool
         summary:
           type:
           - string
