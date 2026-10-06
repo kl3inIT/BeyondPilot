@@ -8,7 +8,6 @@ const solutionLogoVariants = cva(
     variants: {
       size: {
         card: "size-12 rounded-xl text-sm",
-        profile: "size-11 rounded-lg text-sm",
         page: "size-14 rounded-2xl text-lg md:size-18 md:text-xl",
       },
     },
@@ -20,7 +19,7 @@ type SolutionLogoProps = Required<VariantProps<typeof solutionLogoVariants>> & {
   name: string;
 };
 
-/** The logo slot of a solution or its organization, on a card and at the head of a page. */
+/** The logo slot of a solution, on a card and at the head of its page. */
 function SolutionLogo({ name, size }: SolutionLogoProps) {
   return (
     <span data-slot="solution-logo" aria-hidden="true" className={solutionLogoVariants({ size })}>

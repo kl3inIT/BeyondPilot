@@ -123,7 +123,7 @@ public class OrganizationDirectory {
 					"No approved organization at " + slug));
 		return new PublicOrganizationResponse(organization.getSlug(), organization.getName(), organization.getType(),
 				organization.getCountry(), organization.getIndustries(), organization.getWebsite(),
-				organization.getDescription());
+				organization.getDescription(), organization.getLogoFileId());
 	}
 
 	/** The names of the approved ones of these organizations by identifier; one taken down or in review is left out. */

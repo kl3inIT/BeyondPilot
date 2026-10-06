@@ -13,6 +13,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Badge } from "@/components/ui/badge";
+import { OrganizationMark } from "@/features/organization/organization-mark";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type {
@@ -150,7 +151,7 @@ function CompanyPage({ organization, solutions, more, deployments }: CompanyPage
         <div className="flex min-w-0 flex-1 flex-col gap-10">
           <header className="flex flex-col gap-2.5">
             <div className="flex items-center gap-3.5">
-              <SolutionLogo name={organization.name} size="profile" />
+              <OrganizationMark name={organization.name} logoFileId={organization.logoFileId} />
               <h1 className="text-3xl font-semibold tracking-title text-balance md:text-4xl xl:text-5xl xl:leading-none">
                 {organization.name}
               </h1>
