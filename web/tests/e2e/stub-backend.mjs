@@ -6,10 +6,18 @@ import { createServer } from "node:http";
 
 import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
+import { answerJudging } from "./stub-judging.mjs";
 import { answerReview } from "./stub-reviews.mjs";
 import { answerWorkspace } from "./stub-workspace.mjs";
 
 const accounts = {
+  // Invited by GenAI Fund to judge the Tasco challenge (stub-judging.mjs).
+  judge: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a20",
+    email: "judge@tasco.example",
+    displayName: "Lan Vu",
+    role: "user",
+  },
   operator: {
     id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a01",
     email: "dat.phan@example.com",
@@ -373,6 +381,7 @@ createServer((request, response) => {
     });
   }
   const record =
+    answerJudging(url, account) ??
     answerApplication(url, account ? session : undefined, account?.email) ??
     answerReview(url, account) ??
     answerWorkspace(url, account ? session : undefined) ??

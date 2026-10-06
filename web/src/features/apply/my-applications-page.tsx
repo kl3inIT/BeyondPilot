@@ -69,20 +69,29 @@ async function MyApplicationsPage({ list }: { list: MyApplications }) {
                             t("nothingYet")}
                         </span>
                       </div>
-                      <Badge variant={statusVariant[item.status]}>
-                        {t(`status.${item.status}`)}
-                      </Badge>
+                      {/* Once the outcomes are released, the outcome is what the application stands at. */}
+                      {item.outcome ? (
+                        <Badge variant={item.outcome === "shortlisted" ? "success" : "outline"}>
+                          {t(`result.${item.outcome}`)}
+                        </Badge>
+                      ) : (
+                        <Badge variant={statusVariant[item.status]}>
+                          {t(`status.${item.status}`)}
+                        </Badge>
+                      )}
                     </div>
                     <p className="border-t pt-3 text-sm">
-                      {!open(item)
-                        ? t("closedOn", { when: format.moment(item.closesAt) })
-                        : item.status === "draft"
-                          ? t("draftUntil", { when: format.deadline(item.closesAt) })
-                          : item.status === "withdrawn"
-                            ? t("withdrawnUntil", { when: format.deadline(item.closesAt) })
-                            : item.outcomesDueOn
-                              ? t("hearBack", { day: format.day(item.outcomesDueOn) })
-                              : t("editUntil", { when: format.deadline(item.closesAt) })}
+                      {item.outcome
+                        ? t(`resultLead.${item.outcome}`)
+                        : !open(item)
+                          ? t("closedOn", { when: format.moment(item.closesAt) })
+                          : item.status === "draft"
+                            ? t("draftUntil", { when: format.deadline(item.closesAt) })
+                            : item.status === "withdrawn"
+                              ? t("withdrawnUntil", { when: format.deadline(item.closesAt) })
+                              : item.outcomesDueOn
+                                ? t("hearBack", { day: format.day(item.outcomesDueOn) })
+                                : t("editUntil", { when: format.deadline(item.closesAt) })}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {open(item) && (

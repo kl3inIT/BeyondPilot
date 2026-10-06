@@ -26,7 +26,8 @@
       "organization": "Tổ chức của tôi",
       "talentProfile": "Hồ sơ nhân lực",
       "admin": "Quản trị",
-      "applications": "Đơn của tôi"
+      "applications": "Đơn của tôi",
+      "reviews": "Chấm đơn"
     },
     "menu": {
       "open": "Mở menu",
@@ -533,7 +534,9 @@
       "tabs": {
         "label": "Chương trình",
         "settings": "Cài đặt",
-        "questions": "Câu hỏi"
+        "questions": "Câu hỏi",
+        "applications": "Đơn nộp",
+        "reviewers": "Giám khảo"
       },
       "questions": {
         "metaTitle": "Câu hỏi",
@@ -738,6 +741,13 @@
           "request_changes": "Đã yêu cầu sửa một hồ sơ nhân lực",
           "remove": "Đã gỡ một hồ sơ nhân lực",
           "delete": "Đã xoá một hồ sơ nhân lực"
+        },
+        "proposal": {
+          "criteria_update": "Đặt tiêu chí chấm",
+          "reviewer_invite": "Mời giám khảo",
+          "reviewer_remove": "Gỡ giám khảo",
+          "decide": "Quyết định một đơn",
+          "release": "Công bố kết quả"
         }
       },
       "activity": {
@@ -783,6 +793,13 @@
           "request_changes": "Đã yêu cầu sửa hồ sơ nhân lực của <resource></resource>",
           "remove": "Đã gỡ hồ sơ nhân lực của <resource></resource>",
           "delete": "Đã xoá hồ sơ nhân lực của <resource></resource>"
+        },
+        "proposal": {
+          "criteria_update": "Đặt tiêu chí chấm của <resource></resource>",
+          "reviewer_invite": "Mời một giám khảo chấm <resource></resource>",
+          "reviewer_remove": "Gỡ một giám khảo khỏi <resource></resource>",
+          "decide": "Quyết định một đơn nộp vào <resource></resource>",
+          "release": "Công bố kết quả của <resource></resource>"
         }
       },
       "columns": {
@@ -2865,7 +2882,15 @@
     "closedOn": "Đợt nhận đơn đã đóng lúc {when}.",
     "continue": "Tiếp tục",
     "edit": "Sửa đơn",
-    "view": "Xem đơn"
+    "view": "Xem đơn",
+    "result": {
+      "shortlisted": "Vào vòng trong",
+      "not_selected": "Không được chọn"
+    },
+    "resultLead": {
+      "shortlisted": "Bạn đã vào vòng trong. Email của GenAI Fund có các bước tiếp theo.",
+      "not_selected": "Lần này đơn chưa được chọn. Email của GenAI Fund có thông tin chi tiết."
+    }
   },
   "Application": {
     "metaTitle": "Đơn nộp",
@@ -2910,6 +2935,319 @@
       "nextReview": "GenAI Fund đọc mọi đơn và báo kết quả cho bạn qua email.",
       "view": "Xem đơn của tôi",
       "programs": "Về danh sách chương trình"
+    },
+    "result": {
+      "shortlisted": "Vào vòng trong",
+      "not_selected": "Không được chọn"
+    },
+    "resultLead": {
+      "shortlisted": "Bạn đã vào vòng trong. Email của GenAI Fund có các bước tiếp theo.",
+      "not_selected": "Lần này đơn chưa được chọn. Email của GenAI Fund có thông tin chi tiết."
+    }
+  },
+  "Review": {
+    "nav": "Chấm đơn",
+    "area": "Giám khảo",
+    "errors": {
+      "unknown": "Chưa thực hiện được. Hãy thử lại sau giây lát.",
+      "released": "Kết quả của chương trình đã được công bố, nên việc chấm không còn thay đổi được.",
+      "PROPOSAL_RELEASED": "Kết quả của chương trình đã được công bố, nên việc chấm không còn thay đổi được.",
+      "PROPOSAL_NO_CRITERIA": "Chương trình chưa có tiêu chí chấm. GenAI Fund cần đặt tiêu chí trước.",
+      "PROPOSAL_ASSESSMENT_INVALID": "Hãy chấm mọi tiêu chí từ 1 đến 5, hoặc khai xung đột lợi ích.",
+      "PROPOSAL_OUTCOMES_NOT_READY": "Kết quả chỉ được công bố khi đã hết hạn nộp và mọi đơn đều có quyết định.",
+      "PROPOSAL_REVIEWER_INVITED": "Địa chỉ này đã được mời chấm chương trình.",
+      "PROPOSAL_REVIEWER_JOINED": "Giám khảo này đã đăng nhập; không còn lời mời nào để gửi lại.",
+      "PROPOSAL_CRITERIA_FIXED": "Đã có đơn được chấm theo các tiêu chí này, nên không thể sửa nữa.",
+      "PROPOSAL_CRITERIA_INVALID": "Mỗi tiêu chí cần một tên riêng."
+    },
+    "list": {
+      "metaTitle": "Đơn nộp",
+      "tabs": {
+        "label": "Hiển thị đơn",
+        "all": "Tất cả",
+        "undecided": "Chưa quyết định",
+        "shortlisted": "Vào vòng trong",
+        "not_selected": "Không được chọn",
+        "to_score": "Chưa chấm",
+        "scored": "Đã chấm"
+      },
+      "search": "Tìm người nộp",
+      "clear": "Xoá lọc",
+      "allChoices": "{label}: tất cả",
+      "kind": "Nộp với tư cách",
+      "allKinds": "Nộp với tư cách: tất cả",
+      "selection": {
+        "label": "Đơn đã chọn",
+        "count": "Đã chọn {count}",
+        "shortlist": "Vào vòng trong",
+        "notSelected": "Không được chọn",
+        "clear": "Bỏ chọn",
+        "all": "Chọn mọi đơn đang hiển thị",
+        "one": "Chọn {name}"
+      },
+      "decided": {
+        "shortlisted": "Đã đưa {count} đơn vào vòng trong.",
+        "not_selected": "Đã đánh dấu {count} đơn không được chọn."
+      },
+      "columns": {
+        "applicant": "Người nộp",
+        "submitted": "Nộp lúc",
+        "scores": "Điểm",
+        "status": "Trạng thái",
+        "yourAverage": "Điểm của bạn",
+        "open": "Mở"
+      },
+      "openNamed": "Mở {name}",
+      "decision": {
+        "under_review": "Đang xem",
+        "shortlisted": "Vào vòng trong",
+        "not_selected": "Không được chọn"
+      },
+      "mine": {
+        "conflict": "Xung đột",
+        "none": "Chưa chấm"
+      },
+      "average": "{value}",
+      "scored": "{count, plural, =0 {Chưa ai chấm} other {# lượt chấm}}",
+      "scoredAverage": "{count} lượt chấm · trung bình {value}",
+      "lead": {
+        "released": "Đã công bố kết quả ngày {day}.",
+        "open": "Hạn nộp {closes}. Giám khảo có thể chấm những đơn đã nộp.",
+        "closed": "Đã hết hạn nộp. Mọi người nộp nhận kết quả ngày {day}.",
+        "closedNoDay": "Đã hết hạn nộp."
+      },
+      "judgeLead": "Bạn chấm mỗi đơn theo {count} tiêu chí. GenAI Fund quyết định và báo kết quả cho người nộp.",
+      "seeRelease": "Xem đợt công bố",
+      "release": "Công bố kết quả",
+      "noCriteria": {
+        "operator": "Chương trình chưa có tiêu chí chấm. Hãy đặt tiêu chí ở tab Giám khảo trước khi ai đó chấm.",
+        "judge": "GenAI Fund chưa đặt tiêu chí chấm. Trong lúc chờ, bạn có thể đọc các đơn."
+      },
+      "noMatch": {
+        "title": "Không có đơn nào khớp",
+        "description": "Thử từ khác, hoặc xoá tìm kiếm và bộ lọc.",
+        "clear": "Xoá tìm kiếm và bộ lọc"
+      },
+      "empty": {
+        "title": "Chưa có đơn nào",
+        "description": "Các đơn đã nộp sẽ hiện ở đây. Bản nháp không bao giờ được liệt kê."
+      },
+      "footer": "{shown} đơn · {drafts} bản nháp chưa nộp · {withdrawn} đơn đã rút"
+    },
+    "application": {
+      "metaTitle": "Đơn nộp",
+      "back": "{program}",
+      "position": "{place} / {total}",
+      "next": "Đơn tiếp theo",
+      "decision": {
+        "under_review": "Đang xem",
+        "shortlisted": "Vào vòng trong",
+        "not_selected": "Không được chọn"
+      },
+      "meta": "{organization} · nộp {submitted} · phiên bản {version}",
+      "scores": {
+        "title": "Điểm của giám khảo",
+        "average": "trung bình {value}",
+        "none": "Chưa giám khảo nào khác chấm đơn này.",
+        "conflict": "Đã khai xung đột",
+        "role": {
+          "operator": "GenAI Fund",
+          "reviewer": "Giám khảo"
+        },
+        "onVersion": "chấm trên phiên bản {version}"
+      },
+      "history": {
+        "title": "Lịch sử",
+        "submitted": "{version, plural, =1 {Đã nộp} other {Nộp lại (phiên bản #)}}",
+        "decided": {
+          "under_review": "Quay lại đang xem",
+          "shortlisted": "Vào vòng trong",
+          "not_selected": "Không được chọn"
+        }
+      }
+    },
+    "assessment": {
+      "title": "Đánh giá của bạn · phiên bản {version}",
+      "earlierVersion": "Bạn đã chấm phiên bản {version}. Người nộp đã nộp lại sau đó; hãy xem phần thay đổi và lưu lại.",
+      "conflictDeclared": "Bạn đã khai xung đột lợi ích với người nộp này, nên điểm của bạn không được tính. Chấm bên dưới để rút lại.",
+      "noCriteria": "Chỉ chấm được khi GenAI Fund đã đặt tiêu chí chấm.",
+      "criteria": "Tiêu chí, 1 đến 5",
+      "notScored": "Chưa chấm",
+      "average": "Trung bình {value}",
+      "score": "{score} trên 5",
+      "note": "Ghi chú riêng",
+      "readByJudge": "Chỉ bạn và GenAI Fund đọc được.",
+      "readByOperator": "Chỉ GenAI Fund đọc được.",
+      "skip": "Bỏ qua",
+      "saveAndNext": "Lưu và sang đơn tiếp",
+      "save": "Lưu đánh giá",
+      "conflict": "Tôi có xung đột lợi ích với người nộp này",
+      "saved": "Đã lưu đánh giá.",
+      "conflictSaved": "Đã ghi nhận xung đột. Điểm của bạn không được tính."
+    },
+    "decision": {
+      "title": "Quyết định",
+      "state": {
+        "shortlisted": "Vào vòng trong",
+        "not_selected": "Không được chọn"
+      },
+      "released": "Kết quả đã được công bố, nên quyết định không còn thay đổi được.",
+      "reason": "Lý do",
+      "changeReason": "Lý do thay đổi",
+      "shortlistAndNext": "Vào vòng trong và sang đơn tiếp",
+      "shortlist": "Vào vòng trong",
+      "changeToShortlisted": "Đổi sang vào vòng trong",
+      "notSelectedAndNext": "Không chọn và sang đơn tiếp",
+      "notSelected": "Không được chọn",
+      "changeToNotSelected": "Đổi sang không được chọn",
+      "private": "Quyết định và lý do chỉ nội bộ. Người nộp chỉ thấy kết quả bạn công bố.",
+      "done": {
+        "shortlisted": "Đã đưa vào vòng trong.",
+        "not_selected": "Đã đánh dấu không được chọn."
+      }
+    },
+    "record": {
+      "notGiven": "Không có",
+      "deck": "Deck",
+      "blocks": {
+        "team": "Bạn và đội của bạn",
+        "solution": "Giải pháp của bạn",
+        "questions": "Cho chương trình này",
+        "files": "Tệp và liên kết"
+      },
+      "applyingAs": "Nộp với tư cách",
+      "contact": "Liên hệ",
+      "country": "Quốc gia",
+      "teamSize": "Quy mô đội",
+      "linkedin": "LinkedIn",
+      "website": "Website",
+      "teamBackground": "Kinh nghiệm của đội",
+      "solution": "Giải pháp",
+      "summary": "Giải pháp làm gì",
+      "problemsSolved": "Vấn đề giải quyết",
+      "maturity": "Giai đoạn",
+      "builtWith": "Xây dựng bằng",
+      "traction": "Kết quả đạt được",
+      "confirmed": "Đã xác nhận",
+      "openLink": "Mở liên kết",
+      "open": "Mở"
+    },
+    "release": {
+      "metaTitle": "Công bố kết quả",
+      "back": "Đơn nộp",
+      "title": "Công bố kết quả",
+      "lead": "Mỗi người nộp vào {program} sẽ thấy kết quả ở Đơn của tôi và nhận email của nhóm mình. Điểm, ghi chú và lý do đều giữ kín.",
+      "released": "Đã công bố kết quả {at}",
+      "releasedNote": "Mọi người nộp đã có kết quả. Một đợt công bố không thể thu hồi.",
+      "blocked": {
+        "open": "Mở sau {closes}",
+        "undecided": "Còn {count} đơn chưa có quyết định",
+        "why": "Kết quả chỉ được công bố khi đã hết hạn nộp và mọi đơn đều có quyết định, để mọi người nộp nhận kết quả cùng một ngày."
+      },
+      "groups": {
+        "undecided": "Đang xem",
+        "shortlisted": "Vào vòng trong",
+        "notSelected": "Không được chọn"
+      },
+      "count": "{count} người nộp",
+      "emptyGroup": "Chưa có ai.",
+      "notScored": "Chưa chấm",
+      "average": "Trung bình {value}",
+      "withdrawn": "{count} đơn đã rút sẽ không nhận email.",
+      "sentTitle": "Email đã gửi",
+      "emailsTitle": "Email cho từng nhóm",
+      "subject": "Tiêu đề",
+      "message": "Nội dung",
+      "placeholders": "{organization} và {solution} được điền theo từng người nộp.",
+      "confirmLabel": "Công bố",
+      "checked": "Tôi đã kiểm tra cả hai danh sách. Kết quả đã gửi thì không thu hồi được.",
+      "release": "Công bố cho {count} người nộp",
+      "notReady": "Chưa thể công bố",
+      "done": "Đã công bố kết quả. Email đang được gửi tới từng người nộp."
+    },
+    "reviewers": {
+      "metaTitle": "Giám khảo",
+      "title": "Giám khảo",
+      "lead": "Họ chấm các đơn của chương trình này và không thấy gì khác trong khu quản trị. GenAI Fund quyết định và công bố kết quả.",
+      "empty": {
+        "title": "Chưa có giám khảo",
+        "description": "Mời những người sẽ chấm các đơn của chương trình này."
+      },
+      "columns": {
+        "reviewer": "Người chấm",
+        "role": "Vai trò",
+        "status": "Trạng thái",
+        "assessed": "Đã chấm",
+        "actions": "Thao tác"
+      },
+      "role": {
+        "operator": "GenAI Fund",
+        "reviewer": "Giám khảo"
+      },
+      "status": {
+        "active": "Đang chấm",
+        "invited": "Đã mời",
+        "lapsed": "Lời mời hết hạn"
+      },
+      "assessed": "{done} / {total}",
+      "note": "Lời mời có hiệu lực 7 ngày. Gỡ một giám khảo vẫn giữ các điểm họ đã chấm. Giám khảo không bao giờ thấy điểm của nhau.",
+      "invite": {
+        "open": "Mời giám khảo",
+        "title": "Mời giám khảo chấm {program}",
+        "description": "Họ nhận email từ BeyondPilot. Khi đăng nhập bằng địa chỉ này, họ chỉ thấy các đơn của chương trình này.",
+        "email": "Địa chỉ email",
+        "invalid": "Nhập một địa chỉ email, ví dụ ten@congty.com.",
+        "note": "Email không chứa liên kết nào tự thực hiện hành động; họ đăng nhập như mọi người.",
+        "cancel": "Huỷ",
+        "send": "Gửi lời mời",
+        "sent": "Đã gửi lời mời tới {email}."
+      },
+      "row": {
+        "actions": "Thao tác với {email}",
+        "resend": "Gửi lại lời mời",
+        "remove": "Gỡ giám khảo",
+        "resent": "Đã gửi lại lời mời tới {email}.",
+        "removed": "{email} không còn chấm chương trình này.",
+        "confirm": {
+          "title": "Gỡ giám khảo này?",
+          "description": "{email} sẽ không còn thấy các đơn của chương trình này.",
+          "note": "Các điểm họ đã chấm vẫn được giữ. Bạn có thể mời lại.",
+          "remove": "Gỡ",
+          "keep": "Giữ lại"
+        }
+      }
+    },
+    "criteria": {
+      "title": "Tiêu chí chấm",
+      "fixed": "Đã có đơn được chấm theo các tiêu chí này, nên không thể sửa nữa.",
+      "lead": "Mỗi giám khảo chấm từng tiêu chí từ 1 đến 5; điểm của một đơn là trung bình. Tiêu chí bị khoá khi có điểm đầu tiên.",
+      "none": "Chưa có tiêu chí. Giám khảo đọc được đơn nhưng chưa chấm được.",
+      "edit": "Sửa tiêu chí",
+      "add": "Thêm tiêu chí",
+      "dialogTitle": "Tiêu chí chấm",
+      "dialogDescription": "Theo thứ tự giám khảo chấm. Mỗi tiêu chí chấm từ 1 đến 5.",
+      "name": "Tiêu chí {number}",
+      "namePlaceholder": "Tác động thực tế",
+      "description": "Tiêu chí {number} xem xét điều gì",
+      "descriptionPlaceholder": "Giám khảo xem xét điều gì (không bắt buộc)",
+      "remove": "Xoá tiêu chí {number}",
+      "addOne": "Thêm một tiêu chí",
+      "cancel": "Huỷ",
+      "save": "Lưu tiêu chí",
+      "saved": "Đã lưu tiêu chí."
+    },
+    "programs": {
+      "metaTitle": "Chấm đơn",
+      "title": "Chấm đơn",
+      "lead": "Các chương trình bạn được mời chấm. Bạn chấm điểm; GenAI Fund quyết định và báo kết quả cho người nộp.",
+      "empty": {
+        "title": "Chưa có gì để chấm",
+        "description": "Khi GenAI Fund mời bạn chấm một chương trình, nó sẽ hiện ở đây."
+      },
+      "released": "Đã công bố kết quả",
+      "done": "Đã chấm hết",
+      "progress": "Đã chấm {done} / {total}",
+      "closes": "Hạn nộp {closes}"
     }
   }
 }

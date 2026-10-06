@@ -18,9 +18,22 @@ import { siteRoutes } from "@/lib/site";
 
 /**
  * The admin area's sidebar, the stock shadcn one that collapses to icons: the brand, the
- * destinations it is given, and the signed-in person at the foot.
+ * destinations it is given, and the signed-in person at the foot. A judge's Reviews use it too,
+ * with their own home and name.
  */
-function AdminSidebar({ account, items }: { account: AccountMenuProps; items: AdminNavItem[] }) {
+function AdminSidebar({
+  account,
+  items,
+  home = siteRoutes.admin,
+  area,
+}: {
+  account: AccountMenuProps;
+  items: AdminNavItem[];
+  /** Where the brand leads. */
+  home?: string;
+  /** The name of the area under the brand; the admin area's by default. */
+  area?: string;
+}) {
   const t = useTranslations("Admin");
   const s = useTranslations("Site");
 
@@ -29,7 +42,7 @@ function AdminSidebar({ account, items }: { account: AccountMenuProps; items: Ad
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<Link href={siteRoutes.admin} />}>
+            <SidebarMenuButton size="lg" render={<Link href={home} />}>
               <div
                 aria-hidden="true"
                 className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary font-semibold text-sidebar-primary-foreground"
@@ -38,7 +51,7 @@ function AdminSidebar({ account, items }: { account: AccountMenuProps; items: Ad
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{s("brand")}</span>
-                <span className="truncate text-xs">{t("title")}</span>
+                <span className="truncate text-xs">{area ?? t("title")}</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -36,13 +36,13 @@ The new edges are `talent → organization` and `talent → storage`. Neither mo
 5. **An answer is final.** An accepted, declined, reported or closed enquiry cannot change; the sender may write again.
 6. **The clock is a scheduled task in `talent`.** Each hour it closes the enquiries older than 14 days and sends the seventh-day reminders, each at most once. The application runs as one instance; a second instance would need a lock, recorded as a known limit.
 7. **An approved profile is shown in the directory or hidden.** There is no page reachable only by its link. Showing or hiding needs no review. A hidden profile takes no enquiry; the ones that wait keep their course.
-8. **A profile no longer states an availability.** The product owner dropped the field on 6 October 2026 (`V20__talent_drop_availability.sql`); what kind of work the person is open to stays.
+8. **A profile no longer states an availability.** The product owner dropped the field on 6 October 2026 (`V21__talent_drop_availability.sql`); what kind of work the person is open to stays.
 9. **Three decisions by GenAI Fund.** Approve, ask for changes (`changes_requested`) to a profile that waits, remove (`removed`) an approved one. The last two need a reason from the closed list and allow a note. Each is emailed in both languages, as an organization decision is: the email says to sign in for the reason and quotes the operator's note. The audit catalog keeps `talent.reject` for the decisions recorded before.
 10. **The new facts are optional.** Photo, city, languages, industries (the list the organizations use), where the person works (as stated) and the stage of each project (`prototype`, `pilot`, `in_production`, `internal_tool`). A submission still needs a headline, a bio, a role and a skill.
 11. **The rate band is not public.** The person and operators read it; the public profile and directory do not.
 12. **Projects are stated by the person.** Nobody confirms them: the brief (§7.9) asks for relevant work, not its confirmation, and an enterprise outside BeyondPilot has no way to confirm. The profile says once, above the projects, that they are as the person states them.
 13. **The photo is the person's own upload.** It is a public file of the purpose `talent_photo`, at most 2 MB, named by one profile. A photo the profile no longer names, or the photo of a deleted profile, is removed from the store.
-14. **A message is signed with a name.** The sender gives the name the person reads (`V21__talent_enquiry_sender_name.sql`); an account without a name of its own would otherwise reach the person as "someone", and an acceptance would hand an address to a stranger.
+14. **A message is signed with a name.** The sender gives the name the person reads (`V22__talent_enquiry_sender_name.sql`); an account without a name of its own would otherwise reach the person as "someone", and an acceptance would hand an address to a stranger.
 15. **Buyers find people by industry and by the words of a project.** The directory filters by industry, and its search reads project titles as well as names, headlines and skills.
 
 ## HTTP
@@ -71,9 +71,9 @@ The exact contract is `openapi.yml`.
 
 ## Data
 
-- `V17__talent_enquiry_answers.sql`: `talent_enquiry` gains `topic`, `status` (`pending`, `accepted`, `declined`, `reported`, `closed`), `answered_at`, `reminded_at`, and a unique index on `(sender_account_id, profile_id)` where `status = 'pending'`. The rows that exist were emailed with the sender's address, so they become `accepted`.
-- `V18__talent_profile_decisions.sql`: `talent_profile.status` gains `changes_requested` and `removed` in place of `rejected`. A rejected row may have waited for changes or been taken down, and nothing tells them apart, so each becomes `changes_requested`.
-- `V19__talent_profile_facts.sql`: `talent_profile` adds `photo_file_id`, `city`, `languages`, `industries`, `works_at`; `talent_project` gains `stage`.
+- `V18__talent_enquiry_answers.sql`: `talent_enquiry` gains `topic`, `status` (`pending`, `accepted`, `declined`, `reported`, `closed`), `answered_at`, `reminded_at`, and a unique index on `(sender_account_id, profile_id)` where `status = 'pending'`. The rows that exist were emailed with the sender's address, so they become `accepted`.
+- `V19__talent_profile_decisions.sql`: `talent_profile.status` gains `changes_requested` and `removed` in place of `rejected`. A rejected row may have waited for changes or been taken down, and nothing tells them apart, so each becomes `changes_requested`.
+- `V20__talent_profile_facts.sql`: `talent_profile` adds `photo_file_id`, `city`, `languages`, `industries`, `works_at`; `talent_project` gains `stage`.
 
 ## Known limits
 

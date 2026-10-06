@@ -85,7 +85,21 @@ public enum AuditAction {
 	TALENT_REMOVE("talent.remove", "reason"),
 
 	/** The person deleted their own profile. */
-	TALENT_DELETE("talent.delete");
+	TALENT_DELETE("talent.delete"),
+
+	/** An operator replaced the criteria a program's applications are judged on. {@code count} is how many. */
+	PROPOSAL_CRITERIA_UPDATE("proposal.criteria_update", "count"),
+
+	/** An operator invited an address to judge a program, or sent the invitation again. */
+	PROPOSAL_REVIEWER_INVITE("proposal.reviewer_invite", "email"),
+
+	PROPOSAL_REVIEWER_REMOVE("proposal.reviewer_remove", "email"),
+
+	/** An operator decided on an application. {@code decision} is {@code shortlisted} or {@code not_selected}. */
+	PROPOSAL_DECIDE("proposal.decide", "decision"),
+
+	/** An operator released a program's outcomes. The counts are how many applicants each group had. */
+	PROPOSAL_RELEASE("proposal.release", "shortlisted", "not_selected");
 
 	private final String value;
 
