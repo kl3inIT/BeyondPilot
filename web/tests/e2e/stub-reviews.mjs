@@ -214,6 +214,17 @@ function solution(id, name, status, more) {
     website: "https://pocketpolicy.example",
     demoUrl: null,
     deck: null,
+    logo: {
+      fileId: `1090a2b3-4c5d-4e6f-8a9b-${id.slice(-12)}`,
+      fileName: "logo.png",
+      sizeBytes: 86016,
+    },
+    cover: {
+      fileId: `c0fea2b3-4c5d-4e6f-8a9b-${id.slice(-12)}`,
+      fileName: "cover.png",
+      sizeBytes: 1258291,
+    },
+    images: [],
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
     deployment: ["cloud_saas"],

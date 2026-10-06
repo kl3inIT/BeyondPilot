@@ -14,7 +14,8 @@ public enum SolutionErrorCode implements ErrorCode {
 			"Approve the organization first: a solution is listed only when its organization is."),
 
 	INCOMPLETE("SOLUTION_INCOMPLETE", ErrorCategory.VALIDATION,
-			"A solution needs a summary, a maturity, a focus area and an industry before it is submitted."),
+			"A solution needs a summary, a maturity, a focus area, an industry, a logo and a cover image before it "
+					+ "is submitted."),
 
 	NOT_SUBMITTABLE("SOLUTION_NOT_SUBMITTABLE", ErrorCategory.CONFLICT,
 			"This solution is already submitted or approved."),
@@ -30,6 +31,8 @@ public enum SolutionErrorCode implements ErrorCode {
 	DECK_NOT_USABLE("SOLUTION_DECK_NOT_USABLE", ErrorCategory.VALIDATION,
 			"This file cannot be the deck: upload a PDF and use it for one solution only."),
 
+	IMAGE_NOT_USABLE("SOLUTION_IMAGE_NOT_USABLE", ErrorCategory.VALIDATION,
+			"This image cannot be used: upload a PNG, JPG or WebP for this solution and use it once."),
 	DEPLOYMENT_NOT_FOUND("SOLUTION_DEPLOYMENT_NOT_FOUND", ErrorCategory.NOT_FOUND,
 			"There is no such customer deployment."),
 

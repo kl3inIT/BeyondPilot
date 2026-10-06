@@ -27,6 +27,7 @@ export const auditActions = [
   "organization.member_remove",
   "solution.approve",
   "solution.reject",
+  "solution.back",
   "solution.deployment_approve",
   "solution.deployment_reject",
   "use_case.create",
