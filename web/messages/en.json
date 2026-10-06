@@ -1210,6 +1210,18 @@
       "incomplete": "Information is missing",
       "unverifiable": "Could not be verified",
       "other": "Another reason"
+    },
+    "language": {
+      "en": "English",
+      "vi": "Vietnamese",
+      "id": "Bahasa Indonesia",
+      "ms": "Malay",
+      "th": "Thai",
+      "fil": "Filipino",
+      "zh": "Chinese",
+      "ja": "Japanese",
+      "ko": "Korean",
+      "other": "Other"
     }
   },
   "Organization": {
@@ -1500,6 +1512,7 @@
       "SOLUTION_TOO_MANY_DEPLOYMENTS": "A solution lists at most 12 customer deployments. Remove one before adding another.",
       "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW": "This customer deployment is not waiting for review.",
       "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Someone else saved this customer deployment in the meantime. Reload the page and make your changes again.",
+      "SOLUTION_DECK_NOT_USABLE": "This file cannot be the deck. Upload the PDF again.",
       "unknown": "That did not work. Try again."
     },
     "done": {
@@ -1563,15 +1576,19 @@
       "clear": "Clear filters"
     },
     "view": {
-      "problemsSolved": "Problems it solves",
+      "problemsSolved": "Problem it solves",
       "valueProposition": "Why it is worth it",
-      "maturity": "Maturity",
-      "focusAreas": "Focus areas",
+      "traction": "Milestones and traction",
+      "bestCustomerProfile": "Best customer profile",
+      "maturity": "Stage",
+      "focusAreas": "AI capabilities",
       "industries": "Industries",
-      "deployment": "Deployment",
-      "website": "Visit website",
+      "languages": "Languages",
+      "deployment": "Where it runs",
+      "builtWith": "Built with",
+      "website": "Visit the product page",
       "demo": "Watch the demo",
-      "deck": "View the presentation",
+      "deck": "Download the deck",
       "nothingYet": "Nothing written yet."
     },
     "detail": {
@@ -1593,7 +1610,10 @@
         "title": "Product and business",
         "capabilities": "Capabilities",
         "stage": "Stage",
-        "notPublished": "Not published yet: core technology, segment, best customer profile, funding, built with, demo and decks, pricing model, notable customers, alternatives."
+        "notPublished": "Not published yet: core technology, segment, funding, pricing model, notable customers, alternatives.",
+        "traction": "Milestones and traction",
+        "builtWith": "Built with",
+        "bestCustomerProfile": "Best customer profile"
       },
       "offers": {
         "title": "Offers",
@@ -1618,7 +1638,7 @@
         "title": "Work with {name}",
         "website": "Visit website",
         "demo": "Watch the demo",
-        "deck": "View the presentation",
+        "deck": "Download the deck",
         "basedIn": "Based in"
       }
     },
@@ -1668,83 +1688,171 @@
     },
     "editor": {
       "back": "All solutions",
-      "submitted": {
-        "title": "GenAI Fund is reviewing this solution",
-        "lead": "This usually takes one or two working days. You can still correct it."
-      },
-      "approved": {
-        "listed": "Approved and listed in the directory",
-        "unlisted": "Approved, but hidden from the directory",
-        "open": "Open the public page",
-        "unlistedLead": "Turn on “Show in the directory” below to list it."
-      },
-      "rejected": {
-        "title": "Changes needed: {reason}",
-        "lead": "Correct it and send it for review again."
-      }
-    },
-    "form": {
-      "name": "Name",
-      "nameRequired": "Enter the solution's name.",
-      "summary": "Summary",
-      "summaryHint": "One or two sentences. This is what the directory shows.",
-      "problemsSolved": "Problems it solves",
-      "problemsSolvedHint": "The situations a customer is in before using it.",
-      "valueProposition": "Why it is worth it",
-      "valuePropositionHint": "Results customers got, with numbers where you have them.",
-      "focusAreas": "Focus areas",
-      "industries": "Industries",
-      "upTo": "Choose up to {count}. {chosen} chosen.",
-      "maturity": "Maturity",
-      "notStated": "Not stated",
-      "website": "Product page",
-      "websiteInvalid": "Enter a full address that starts with https://",
-      "demoUrl": "Demo link",
-      "demoUrlHint": "A video or a live demo of the solution at work.",
-      "deckUrl": "Presentation link",
-      "deckUrlHint": "A deck that people can open without signing in.",
-      "deployment": "Deployment",
-      "listed": "Show in the directory",
-      "listedHint": "Takes effect once the solution is approved.",
-      "submit": "Send for review",
-      "resubmit": "Send for review again",
-      "saveDraft": "Save draft",
+      "heading": "{organization} · {name}",
+      "exit": "Save and exit",
+      "close": "Close",
       "save": "Save changes",
-      "delete": "Delete draft…",
-      "confirmDelete": {
-        "title": "Delete {name}?",
-        "lead": "The draft is removed for everyone in your organization. This cannot be undone.",
-        "confirm": "Delete draft",
-        "cancel": "Cancel"
+      "state": {
+        "saving": "Saving…",
+        "draftSaved": "Draft saved {time}",
+        "draftSavedShort": "Draft saved",
+        "saved": "Saved {time}",
+        "savedShort": "Saved",
+        "unsaved": "Unsaved changes",
+        "failed": "Not saved",
+        "retry": "Try again",
+        "reload": "Reload"
       },
-      "listedHintApproved": "The solution is approved, so this and every saved change show in the directory at once.",
+      "visibility": {
+        "draft": "Only {organization} sees a draft",
+        "draftShort": "Only {organization} sees it"
+      },
+      "steps": {
+        "label": "Your solution",
+        "progress": "Step {step} of {count} · {name}",
+        "toAdd": "{count, plural, one {# field to add} other {# fields to add}}",
+        "toCheck": "{count, plural, one {# field to check} other {# fields to check}}",
+        "complete": "Complete",
+        "basics": {
+          "title": "Basics",
+          "meta": "What it is, its stage and what it is built with",
+          "lead": "What the solution is. This is the first thing a visitor reads on its public page once GenAI Fund approves it."
+        },
+        "fit": {
+          "title": "Who it is for",
+          "meta": "Industries, capabilities and where it runs",
+          "lead": "Who should find this solution, and where it can run. Visitors filter the directory by these answers."
+        },
+        "evidence": {
+          "title": "Evidence",
+          "meta": "Deck, demo and customer cases",
+          "lead": "Proof that the solution works. Show what you know; what you leave out appears as not published yet."
+        },
+        "review": {
+          "title": "Review and submit",
+          "titleLive": "Review",
+          "meta": "Check everything, then ask for review",
+          "metaLive": "Check what visitors read",
+          "lead": "Check what visitors will read. GenAI Fund reviews the solution before it appears in the directory.",
+          "leadLive": "This is what visitors read. A saved change to an approved solution shows at once."
+        }
+      },
+      "note": "Changes save as you type. A draft is visible to your organization only.",
+      "noteLive": "Changes are kept when you choose Save changes. On an approved solution they show at once.",
+      "required": "All fields are required unless marked Optional.",
+      "allOptional": "Every field on this step is optional.",
+      "optional": "Optional",
+      "counter": "{count} / {max}",
+      "previous": "Back",
+      "continue": "Continue",
+      "fields": {
+        "name": "Solution name",
+        "summary": "What it does",
+        "summaryHint": "Two or three sentences.",
+        "problemsSolved": "Problem it solves",
+        "problemsSolvedHint": "Who you're helping, and what goes wrong for them today.",
+        "valueProposition": "Why it is worth it",
+        "valuePropositionHint": "Results customers got, with numbers where you have them.",
+        "maturity": "Stage",
+        "maturityPlaceholder": "Select a stage",
+        "traction": "Milestones and traction",
+        "tractionPlaceholder": "Customers, pilots, users or revenue so far.",
+        "builtWith": "Built with",
+        "builtWithPlaceholder": "Add a model, tool or framework",
+        "builtWithHint": "Press Enter after each one. Up to {max}.",
+        "removeTag": "Remove {name}",
+        "industries": "Industries",
+        "industriesPlaceholder": "Add an industry",
+        "focusAreas": "AI capabilities",
+        "focusAreasPlaceholder": "Add a capability",
+        "languages": "Languages",
+        "languagesPlaceholder": "Add a language",
+        "upTo": "Up to {max}. {chosen} chosen.",
+        "noMatch": "Nothing matches.",
+        "deployment": "Where it runs",
+        "bestCustomerProfile": "Best customer profile",
+        "bestCustomerProfilePlaceholder": "Who gets the most from it, in a sentence.",
+        "deck": "Solution deck",
+        "demoUrl": "Product demo",
+        "demoUrlHint": "A video, a Figma prototype or a live demo. Check it opens without signing in.",
+        "website": "Product page",
+        "websiteHint": "Where a visitor reads more about it.",
+        "linkInvalid": "Enter a full address that starts with https://"
+      },
       "needed": {
-        "summary": "Write one or two sentences about what it does.",
-        "focusAreas": "Choose at least one focus area.",
+        "name": "Enter the solution's name.",
+        "summary": "Write two or three sentences about what it does.",
+        "maturity": "Choose its stage.",
         "industries": "Choose at least one industry.",
-        "maturity": "Choose how mature it is."
+        "focusAreas": "Choose at least one capability."
       },
-      "readiness": {
-        "missing": "Before you send it for review, add:",
-        "ready": "Ready to send for review",
-        "note": "GenAI Fund checks that the solution is real, that the summary says what it does, and that your organization offers it. This usually takes one or two working days, and the decision shows on this page.",
-        "count": "{count, plural, one {# field to add before review} other {# fields to add before review}}"
+      "deck": {
+        "empty": "Upload the deck",
+        "limits": "PDF, up to 25 MB",
+        "uploading": "Uploading…",
+        "uploaded": "{size} · Uploaded {when}",
+        "waiting": "{size} · Not saved yet",
+        "download": "Download {name}",
+        "replace": "Replace",
+        "remove": "Remove",
+        "errors": {
+          "type": "Only a PDF can be uploaded here.",
+          "size": "This file is larger than 25 MB.",
+          "failed": "The deck was not uploaded. Try again."
+        }
       },
-      "discard": "Discard changes",
-      "unsaved": "Unsaved changes",
-      "neededMark": "· needed for review",
+      "review": {
+        "edit": "Edit",
+        "editStep": "Edit {step}",
+        "missing": "Missing",
+        "notPublished": "Not published yet",
+        "toAdd": "{count} to add",
+        "deploymentsApproved": "{count} published",
+        "deploymentsWaiting": "{count} waiting for review",
+        "deploymentsSentBack": "{count} sent back",
+        "customerDeployments": "Customer deployments",
+        "listed": "List this solution in the public directory. Turn it off to keep it approved but unlisted: anyone with the link can open it.",
+        "readiness": {
+          "missing": "Before you send it for review, add:",
+          "ready": "Ready to send for review",
+          "note": "GenAI Fund checks that the solution is real, that the summary says what it does, and that your organization offers it. This usually takes one or two working days, and the decision shows on this page."
+        },
+        "submit": "Send for review",
+        "resubmit": "Send for review again",
+        "confirm": {
+          "title": "Send this solution for review?",
+          "lead": "GenAI Fund reads it before it appears in the directory. You can keep editing while it waits, and the decision shows on this page.",
+          "confirm": "Send for review",
+          "cancel": "Keep editing"
+        },
+        "delete": "Delete draft…",
+        "confirmDelete": {
+          "title": "Delete {name}?",
+          "lead": "The draft is removed for everyone in your organization. This cannot be undone.",
+          "confirm": "Delete draft",
+          "cancel": "Cancel"
+        }
+      },
       "leave": {
         "title": "Leave without saving?",
         "lead": "Your changes to this solution are not saved yet.",
         "leave": "Leave without saving",
         "stay": "Stay"
       },
-      "confirmDiscard": {
-        "title": "Discard your changes?",
-        "lead": "The form goes back to this solution as it was last saved.",
-        "cancel": "Keep editing"
+      "submitted": {
+        "title": "GenAI Fund is reviewing this solution",
+        "lead": "This usually takes one or two working days. You can still correct it."
       },
-      "requiredMark": "· required"
+      "approved": {
+        "listed": "Approved and listed in the directory",
+        "unlisted": "Approved, but not listed in the directory",
+        "open": "Open the public page",
+        "unlistedLead": "Anyone with its link can open it. Turn on the listing in the last step to show it in the directory."
+      },
+      "rejected": {
+        "title": "Changes needed: {reason}",
+        "lead": "Correct it and send it for review again."
+      }
     },
     "deployment": {
       "open": "Open the deployment to read the problem, what was deployed and the result.",
