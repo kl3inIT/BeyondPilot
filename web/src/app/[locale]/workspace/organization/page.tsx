@@ -38,10 +38,7 @@ export default async function MyOrganizationRoute({
     );
   }
 
-  const [members, solutions] = await Promise.all([
-    readMembers(),
-    organization.roles.includes("provider") ? readMySolutions() : null,
-  ]);
+  const [members, solutions] = await Promise.all([readMembers(), readMySolutions()]);
   const counts = {
     members: members?.members.length ?? 0,
     solutions: solutions?.items.length ?? null,

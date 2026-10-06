@@ -15,9 +15,6 @@ import org.jspecify.annotations.Nullable;
 public record SaveOrganizationRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 120) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "One or both of `provider` and `enterprise`.") @NotNull @Size(min = 1,
-						max = 2) List<@NotNull @Pattern(regexp = OrganizationCodes.ROLE) String> roles,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "company", "builder_team", "independent_builder", "other" }) @NotNull @Pattern(
 						regexp = OrganizationCodes.TYPE) String type,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 300) @Pattern(

@@ -143,9 +143,9 @@ public class OrganizationService {
 		Person person = identity.person(actor);
 		requireFree(person);
 		Organization organization = new Organization(UUID.randomUUID(), freeSlug(request.name()),
-				request.name().strip(), OrganizationViews.roles(request.roles()), request.type(), Organization.PENDING,
+				request.name().strip(), request.type(), Organization.PENDING,
 				person.accountId());
-		organization.describe(request.name().strip(), OrganizationViews.roles(request.roles()), request.type(),
+		organization.describe(request.name().strip(), request.type(),
 				OrganizationViews.text(request.website()), request.country(), request.teamSize(),
 				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()),
 				request.foundedYear(), OrganizationViews.text(request.logoUrl()));
@@ -264,7 +264,7 @@ public class OrganizationService {
 					"Save of organization " + organization.getId() + " at version " + request.version()
 							+ ", which is at " + organization.getVersion());
 		}
-		organization.describe(request.name().strip(), OrganizationViews.roles(request.roles()), request.type(),
+		organization.describe(request.name().strip(), request.type(),
 				OrganizationViews.text(request.website()), request.country(), request.teamSize(),
 				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()),
 				request.foundedYear(), OrganizationViews.text(request.logoUrl()));

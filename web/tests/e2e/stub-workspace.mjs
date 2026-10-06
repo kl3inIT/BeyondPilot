@@ -1,6 +1,6 @@
 // What the stub backend holds of a signed-in person's own records: their organization and its
 // members, its solutions, and their talent profile. The account behind the request decides what it
-// reads: an owner and a member of the same approved provider, a person invited to it, a person who
+// reads: an owner and a member of the same approved organization, a person invited to it, a person who
 // asked to join it, a person its owners declined, and people who belong to no organization.
 
 const day = "2026-10-01T03:00:00Z";
@@ -11,7 +11,6 @@ const pocketPolicy = {
   slug: "pocket-policy",
   status: "approved",
   type: "company",
-  roles: ["provider"],
   country: "SG",
   teamSize: "10_49",
   industries: ["insurance"],

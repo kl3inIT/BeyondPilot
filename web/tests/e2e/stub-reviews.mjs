@@ -13,7 +13,6 @@ function organization(id, name, status, more) {
     slug: name.toLowerCase().replaceAll(" ", "-"),
     status,
     type: "company",
-    roles: ["provider"],
     country: "VN",
     teamSize: "10_49",
     industries: ["insurance"],
@@ -60,7 +59,6 @@ const organizations = [
   {
     organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c02", "Open Kitchen", "approved", {
       type: "builder_team",
-      roles: ["enterprise"],
     }),
     createdBy: "Đạt Phan",
     createdByEmail: "dat.phan@example.com",
@@ -278,13 +276,12 @@ const lists = {
     // An open claim waits for a decision as a new organization does, whatever the review status.
     statusOf: (record) => (record.claims.length > 0 ? "pending" : record.organization.status),
     textOf: (record) => record.organization.name,
-    summaryOf: ({ organization: { id, name, slug, status, type, roles, country }, ...record }) => ({
+    summaryOf: ({ organization: { id, name, slug, status, type, country }, ...record }) => ({
       id,
       name,
       slug,
       status,
       type,
-      roles,
       country,
       createdAt: day,
       members: record.members.length,

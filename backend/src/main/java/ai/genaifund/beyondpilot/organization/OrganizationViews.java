@@ -33,8 +33,6 @@ final class OrganizationViews {
 			"mail.com", "yandex.com", "yandex.ru", "zoho.com", "qq.com", "163.com", "126.com", "naver.com",
 			"fastmail.com", "hey.com", "tutanota.com", "tuta.io");
 
-	private static final List<String> ROLE_ORDER = List.of("provider", "enterprise");
-
 	private static final int MAX_SLUG_LENGTH = 60;
 
 	private static final String WWW = "www.";
@@ -44,7 +42,7 @@ final class OrganizationViews {
 
 	static OrganizationResponse organization(Organization organization) {
 		return new OrganizationResponse(organization.getId(), organization.getSlug(), organization.getName(),
-				organization.getRoles(), organization.getType(), organization.getWebsite(), organization.getCountry(),
+				organization.getType(), organization.getWebsite(), organization.getCountry(),
 				organization.getTeamSize(), organization.getIndustries(), organization.getDescription(),
 				organization.getFoundedYear(), organization.getLogoUrl(),
 				organization.getEmailDomain(),
@@ -84,11 +82,6 @@ final class OrganizationViews {
 				requests.stream().map(JoinRequest::accountId))
 			.distinct()
 			.toList();
-	}
-
-	/** The roles once each, in a fixed order, so the same choice always reads the same. */
-	static List<String> roles(List<String> roles) {
-		return ROLE_ORDER.stream().filter(roles::contains).toList();
 	}
 
 	/** The codes a person chose, each once, in the order chosen. */

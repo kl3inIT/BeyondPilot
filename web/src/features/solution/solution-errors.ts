@@ -4,7 +4,7 @@ import { ApiError } from "@/lib/api/client";
 /** The refusals the solution screens can meet, each with its own words in the catalog. */
 const known = [
   "SOLUTION_NOT_FOUND",
-  "SOLUTION_PROVIDER_REQUIRED",
+  "SOLUTION_OWNER_REQUIRED",
   "SOLUTION_INCOMPLETE",
   "SOLUTION_NOT_SUBMITTABLE",
   "SOLUTION_NOT_A_DRAFT",

@@ -17,6 +17,7 @@ Design: [design.md](design.md). Tracked in Linear under BEY-33: slice 1 is BEY-6
 | 9   | Both message catalogs; end-to-end tests for the new states; `pnpm --dir web check`; each flow walked in the browser                                                              | Done  |
 | 10  | `docs/tests/organization.md`; the first increment's design where this one replaces it                                                                                            | Done  |
 | 10a | `V11`: the founded year and the logo; the profile form requires the website, the description (280), the year and asks the logo; "Submit for approval"                            | Done  |
+| 10b | `V12`: the roles are dropped; every approved organization lists solutions; industries become a searchable multi-select                                                           | Done  |
 
 Step 8 is in part: the admin home now counts a claim as an organization that waits. The way back from an empty list still races the toolbar's delayed write of the address, once in forty runs of `admin-organizations.spec.ts` without its reload, so the reload stays in the seven list specs; the cause is in `FilterToolbar`, which every list shares. The admin home does not count customer deployments: `solution` has no count of them across solutions.
 
@@ -24,7 +25,7 @@ Step 8 is in part: the admin home now counts a claim as an organization that wai
 
 | #   | Step                                                                                                                                   | State |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| 11  | `V12`: the `suspended` status with its reason; `OrganizationAdministration` takes down and restores; public reads hide a suspended one | Open  |
+| 11  | `V13`: the `suspended` status with its reason; `OrganizationAdministration` takes down and restores; public reads hide a suspended one | Open  |
 | 12  | Operator edits the profile and the verified domain, with the version check                                                             | Open  |
 | 13  | Operator changes a role, removes a member, invites and revokes; audit actions                                                          | Open  |
 | 14  | Web: the record page with Profile and Members tabs, the take-down and restore dialogs, the members table and its dialogs               | Open  |
@@ -35,7 +36,7 @@ Step 8 is in part: the admin home now counts a claim as an organization that wai
 
 | #   | Step                                                                                                          | State |
 | --- | ------------------------------------------------------------------------------------------------------------- | ----- |
-| 17  | `V13`: the `merged` status and `merged_into_id`; the merge in one transaction; `OrganizationMerged`           | Open  |
+| 17  | `V14`: the `merged` status and `merged_into_id`; the merge in one transaction; `OrganizationMerged`           | Open  |
 | 18  | `solution` moves its solutions on `OrganizationMerged`; the public address answers with the kept organization | Open  |
 | 19  | Web: the merge dialog, the merged record, the Merged filter, the notice to a moved member, the redirect       | Open  |
 | 20  | Tests, gates, catalogs, the verification matrix; move both organization increments to `completed`             | Open  |

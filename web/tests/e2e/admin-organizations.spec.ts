@@ -358,9 +358,7 @@ test.describe("admin organizations", () => {
         call: "POST /api/organization/admin/organizations",
         body: {
           name: "Sài Gòn Logistics",
-          roles: ["enterprise"],
           type: "company",
-          emailDomain: null,
           ownerEmail: "owner@saigonlogistics.example",
           website: null,
         },

@@ -119,7 +119,6 @@ test.describe("workspace organization", () => {
 
     await page.getByRole("button", { name: "Submit for approval" }).click();
     await expect(page.getByText("Enter the organization's name.")).toBeVisible();
-    await expect(page.getByText("Choose at least one.")).toBeVisible();
     await expect(page.getByText("Enter your role or job title.")).toBeVisible();
     await expect(page.getByText("Select a team size.")).toBeVisible();
     await expect(page.getByText("Choose at least one industry.")).toBeVisible();
@@ -138,10 +137,12 @@ test.describe("workspace organization", () => {
     await page.getByLabel("Your role or job title").fill("  Head of operations ");
     await page.getByLabel("Organization name").fill("Sài Gòn Logistics");
     await page.getByLabel("Website").fill("https://saigonlogistics.example");
-    await page.getByLabel("Team size").selectOption({ label: "2–9 people" });
-    await page.getByRole("button", { name: "AI provider" }).click();
-    await page.getByRole("group", { name: "Industries" }).getByText("Logistics").click();
-    await page.getByLabel("Country").selectOption({ label: "Vietnam" });
+    await page.getByRole("combobox", { name: "Team size" }).click();
+    await page.getByRole("option", { name: "2–9 people" }).click();
+    await page.getByRole("combobox", { name: "Industries" }).fill("Logis");
+    await page.getByRole("option", { name: "Logistics" }).click();
+    await page.getByRole("combobox", { name: "Country" }).click();
+    await page.getByRole("option", { name: "Vietnam" }).click();
     await page.getByLabel("Year founded").fill("2019");
     await page.getByLabel("Short description").fill("Route planning for fleets.");
     await page.getByRole("button", { name: "Submit for approval" }).click();
@@ -153,7 +154,6 @@ test.describe("workspace organization", () => {
         call: "POST /api/organization/organizations",
         body: {
           name: "Sài Gòn Logistics",
-          roles: ["provider"],
           type: "company",
           country: "VN",
           teamSize: "2_9",
@@ -280,8 +280,8 @@ test.describe("workspace organization", () => {
     await expect(save).toBeDisabled();
 
     await description.fill("Assistants for insurers and brokers.");
-    await page.getByRole("button", { name: "Enterprise" }).click();
-    await page.getByRole("group", { name: "Industries" }).getByText("Healthcare").click();
+    await page.getByRole("combobox", { name: "Industries" }).fill("Health");
+    await page.getByRole("option", { name: "Healthcare" }).click();
     await save.click();
 
     await expect(page.getByText("Profile saved.")).toBeVisible();
@@ -290,7 +290,6 @@ test.describe("workspace organization", () => {
         call: "PUT /api/organization/mine",
         body: {
           name: "Pocket Policy",
-          roles: ["provider", "enterprise"],
           type: "company",
           country: "SG",
           teamSize: "10_49",
@@ -347,7 +346,6 @@ test.describe("workspace organization", () => {
 
     await expect(page.getByRole("heading", { name: "Organization profile" })).toBeVisible();
     await expect(page.getByText("Assistants for insurers across Southeast Asia.")).toBeVisible();
-    await expect(page.getByText("AI provider")).toBeVisible();
     await expect(page.getByRole("textbox")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Save changes" })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);

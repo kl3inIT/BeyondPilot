@@ -69,7 +69,6 @@ export type AdminCreateOrganization = {
      * The address invited to own it.
      */
     ownerEmail?: string | null;
-    roles: Array<string>;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     website?: string | null;
 };
@@ -141,7 +140,6 @@ export type AdminOrganizationSummary = {
      * When they asked.
      */
     requestedAt?: string | null;
-    roles: Array<string>;
     slug: string;
     status: 'pending' | 'approved' | 'rejected';
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
@@ -391,10 +389,6 @@ export type CreateOrganization = {
      */
     logoUrl?: string | null;
     name: string;
-    /**
-     * One or both of `provider` and `enterprise`.
-     */
-    roles: Array<string>;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     website: string;
@@ -578,7 +572,7 @@ export type MyOrganization = {
  */
 export type MySolutions = {
     /**
-     * Whether the caller may add and change solutions: an owner of an approved organization that is a provider.
+     * Whether the caller may add and change solutions: an owner of an approved organization.
      */
     editable: boolean;
     items: Array<SolutionSummary>;
@@ -638,10 +632,6 @@ export type Organization = {
      */
     logoUrl?: string | null;
     name: string;
-    /**
-     * What it does here: `provider` lists AI solutions, `enterprise` posts use cases.
-     */
-    roles: Array<string>;
     slug: string;
     /**
      * GenAI Fund's review of the organization.
@@ -1247,10 +1237,6 @@ export type SaveOrganization = {
      */
     logoUrl?: string | null;
     name: string;
-    /**
-     * One or both of `provider` and `enterprise`.
-     */
-    roles: Array<string>;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     /**
@@ -3347,7 +3333,7 @@ export type CreateSolutionErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
 };
@@ -3378,7 +3364,7 @@ export type DeleteSolutionDraftErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
     /**
@@ -3452,7 +3438,7 @@ export type SaveSolutionErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
     /**
@@ -3495,7 +3481,7 @@ export type SubmitSolutionErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
     /**
@@ -3538,7 +3524,7 @@ export type AddCustomerDeploymentErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
     /**
@@ -3578,7 +3564,7 @@ export type DeleteCustomerDeploymentErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
     /**
@@ -3618,7 +3604,7 @@ export type SaveCustomerDeploymentErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
     /**

@@ -31,7 +31,7 @@ export default async function OrganizationMembersRoute({
     redirect(getPathname({ href: siteRoutes.workspaceOrganization, locale }));
   }
 
-  const solutions = organization.roles.includes("provider") ? await readMySolutions() : null;
+  const solutions = await readMySolutions();
 
   return (
     <OrganizationMembersPage

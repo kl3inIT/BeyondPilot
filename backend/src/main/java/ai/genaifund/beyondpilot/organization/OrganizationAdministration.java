@@ -119,9 +119,8 @@ public class OrganizationAdministration {
 			slug = base + "-" + suffix;
 		}
 		Organization organization = new Organization(UUID.randomUUID(), slug, request.name().strip(),
-				OrganizationViews.roles(request.roles()), request.type(), Organization.APPROVED,
-				operator.accountId());
-		organization.describe(request.name().strip(), OrganizationViews.roles(request.roles()), request.type(),
+				request.type(), Organization.APPROVED, operator.accountId());
+		organization.describe(request.name().strip(), request.type(),
 				OrganizationViews.text(request.website()), request.country(), null, List.of(), null, null, null);
 		organization.verifyDomain(domain);
 		organization.approve(Instant.now());
@@ -310,7 +309,7 @@ public class OrganizationAdministration {
 		else if (row.claimId() != null) {
 			request = "claim";
 		}
-		return new AdminOrganizationSummaryResponse(row.id(), row.slug(), row.name(), row.roles(), row.type(),
+		return new AdminOrganizationSummaryResponse(row.id(), row.slug(), row.name(), row.type(),
 				row.country(), row.status(), row.members(), row.owned(), request, row.claimId(),
 				asker == null ? null : asker.label(), row.claimedAt() != null ? row.claimedAt()
 						: request == null ? null : row.createdAt(),

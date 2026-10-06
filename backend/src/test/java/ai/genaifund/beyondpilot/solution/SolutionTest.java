@@ -62,12 +62,12 @@ class SolutionTest {
 	}
 
 	@Test
-	void onlyAnOwnerOfAnApprovedProviderWritesAndAMemberReads() {
+	void onlyAnOwnerOfAnApprovedOrganizationWritesAndAMemberReads() {
 		String founder = signIn("founder@writers.test");
-		UUID organization = organization(founder, "Writers Co", "provider");
+		UUID organization = organization(founder, "Writers Co");
 
 		// An organization that waits for review publishes nothing yet.
-		assertProblem(post(founder, MINE, Map.of("name", "Too Early")), 403, "SOLUTION_PROVIDER_REQUIRED");
+		assertProblem(post(founder, MINE, Map.of("name", "Too Early")), 403, "SOLUTION_OWNER_REQUIRED");
 		approve(organization);
 		UUID solution = create(founder, "Writers Desk");
 
@@ -82,12 +82,11 @@ class SolutionTest {
 		assertThat(JsonPath.<List<String>>read(forMember, "$.items[*].name")).containsExactly("Writers Desk");
 		assertThat(JsonPath.<Boolean>read(forMember, "$.editable")).isFalse();
 		get(colleague, MINE + "/" + solution).expectStatus().isOk();
-		assertProblem(post(colleague, MINE, Map.of("name", "By A Member")), 403, "SOLUTION_PROVIDER_REQUIRED");
-		assertProblem(post(colleague, MINE + "/" + solution + "/submit", null), 403, "SOLUTION_PROVIDER_REQUIRED");
+		assertProblem(post(colleague, MINE, Map.of("name", "By A Member")), 403, "SOLUTION_OWNER_REQUIRED");
+		assertProblem(post(colleague, MINE + "/" + solution + "/submit", null), 403, "SOLUTION_OWNER_REQUIRED");
 
-		String buyer = signIn("buyer@enterprise-only.test");
-		approve(organization(buyer, "Enterprise Only", "enterprise"));
-		assertProblem(post(buyer, MINE, Map.of("name", "By An Enterprise")), 403, "SOLUTION_PROVIDER_REQUIRED");
+		String buyer = signIn("buyer@other-company.test");
+		approve(organization(buyer, "Other Company"));
 		// Another organization does not see it at all.
 		assertProblem(get(buyer, MINE + "/" + solution), 404, "SOLUTION_NOT_FOUND");
 
@@ -98,7 +97,7 @@ class SolutionTest {
 
 	@Test
 	void aDraftNeedsOnlyANameAndASubmissionNeedsMore() {
-		String founder = provider("founder@drafts.test", "Drafts Co");
+		String founder = approvedOwner("founder@drafts.test", "Drafts Co");
 
 		String draft = body(post(founder, MINE, Map.of("name", "  Draft Desk  ")).expectStatus().isCreated());
 		UUID id = UUID.fromString(JsonPath.read(draft, "$.id"));
@@ -124,7 +123,7 @@ class SolutionTest {
 
 	@Test
 	void aSaveOutOfBoundsIsAValidationProblemThatPointsAtIt() {
-		String founder = provider("founder@bounds.test", "Bounds Co");
+		String founder = approvedOwner("founder@bounds.test", "Bounds Co");
 		String draft = body(post(founder, MINE, Map.of("name", "Bounds Desk")).expectStatus().isCreated());
 		Map<String, Object> request = described("Bounds Desk", versionOf(draft));
 		request.put("industries", List.of("gardening"));
@@ -141,7 +140,7 @@ class SolutionTest {
 
 	@Test
 	void aSaveFromAStaleScreenIsRefused() {
-		String founder = provider("founder@stale.test", "Stale Co");
+		String founder = approvedOwner("founder@stale.test", "Stale Co");
 		String draft = body(post(founder, MINE, Map.of("name", "Stale Desk")).expectStatus().isCreated());
 		String path = MINE + "/" + JsonPath.<String>read(draft, "$.id");
 
@@ -155,7 +154,7 @@ class SolutionTest {
 
 	@Test
 	void onlyADraftIsDeleted() {
-		String founder = provider("founder@deleted.test", "Deleted Co");
+		String founder = approvedOwner("founder@deleted.test", "Deleted Co");
 		UUID draft = create(founder, "Deleted Desk");
 		UUID sent = submitted(founder, "Kept Desk");
 
@@ -168,7 +167,7 @@ class SolutionTest {
 
 	@Test
 	void anOperatorRejectsWithAReasonAndApprovesWhatIsSentAgain() {
-		String founder = provider("founder@reviewed.test", "Reviewed Co");
+		String founder = approvedOwner("founder@reviewed.test", "Reviewed Co");
 		UUID draft = create(founder, "Unsent Desk");
 		UUID id = submitted(founder, "Reviewed Desk");
 
@@ -199,7 +198,7 @@ class SolutionTest {
 
 	@Test
 	void anOperatorTakesAnApprovedSolutionOutOfTheDirectory() {
-		String founder = provider("founder@removed.test", "Removed Co");
+		String founder = approvedOwner("founder@removed.test", "Removed Co");
 		UUID id = approved(founder, "Removed Desk");
 		client.get().uri(DIRECTORY + "/removed-desk").exchange().expectStatus().isOk();
 
@@ -213,7 +212,7 @@ class SolutionTest {
 
 	@Test
 	void theDirectoryShowsOnlyApprovedListedSolutionsAndNarrowsThem() {
-		String founder = provider("founder@listed.test", "Listed Co");
+		String founder = approvedOwner("founder@listed.test", "Listed Co");
 		UUID claims = approved(founder, "Quokka Claims");
 		Map<String, Object> banking = described("Quokka Banking", 0);
 		banking.put("industries", List.of("banking_finance"));
@@ -281,7 +280,7 @@ class SolutionTest {
 
 	@Test
 	void aCustomerDeploymentIsReviewedBeforeAnyoneElseReadsIt() {
-		String founder = provider("founder@deployers.test", "Deployers Co");
+		String founder = approvedOwner("founder@deployers.test", "Deployers Co");
 		UUID solution = approved(founder, "Wombat Desk");
 		String deployments = MINE + "/" + solution + "/deployments";
 		String page = DIRECTORY + "/wombat-desk";
@@ -340,7 +339,7 @@ class SolutionTest {
 			.list()).containsExactly("solution.deployment_approve", "solution.deployment_reject");
 
 		// Another organization cannot touch it, and its owners remove it.
-		String other = provider("founder@bystanders.test", "Bystanders Co");
+		String other = approvedOwner("founder@bystanders.test", "Bystanders Co");
 		assertProblem(delete(other, deployments + "/" + id), 404, "SOLUTION_NOT_FOUND");
 		delete(founder, deployments + "/" + id).expectStatus().isNoContent();
 		assertProblem(delete(founder, deployments + "/" + id), 404, "SOLUTION_DEPLOYMENT_NOT_FOUND");
@@ -394,9 +393,9 @@ class SolutionTest {
 		return JsonPath.<Number>read(solution, "$.version").longValue();
 	}
 
-	private UUID organization(String session, String name, String role) {
+	private UUID organization(String session, String name) {
 		return UUID.fromString(JsonPath.read(body(post(session, ORGANIZATION + "/organizations",
-				Map.of("name", name, "roles", List.of(role), "type", "company", "country", "VN", "teamSize", "2_9",
+				Map.of("name", name, "type", "company", "country", "VN", "teamSize", "2_9",
 						"industries", List.of("insurance"), "website", "https://example.test", "description",
 						"Assistants for insurers.", "foundedYear", 2021, "jobTitle", "Founder"))
 			.expectStatus()
@@ -408,10 +407,10 @@ class SolutionTest {
 			.isNoContent();
 	}
 
-	/** The session of an owner of an approved organization that provides solutions. */
-	private String provider(String email, String name) {
+	/** The session of an owner of an approved organization. */
+	private String approvedOwner(String email, String name) {
 		String session = signIn(email);
-		approve(organization(session, name, "provider"));
+		approve(organization(session, name));
 		return session;
 	}
 

@@ -1,7 +1,6 @@
 package ai.genaifund.beyondpilot.organization.dto;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,7 +10,6 @@ import org.jspecify.annotations.Nullable;
 public record AdminOrganizationSummaryResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String slug,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> roles,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "company", "builder_team", "independent_builder", "other" }) String type,
 		@Schema(types = { "string", "null" }) @Nullable String country,

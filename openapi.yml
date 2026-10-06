@@ -2148,8 +2148,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The caller is not an owner of an approved organization that
-            is a provider.
+          description: The caller is not an owner of an approved organization.
       security:
       - session: []
       summary: Create a solution as a draft
@@ -2179,8 +2178,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The caller is not an owner of an approved organization that
-            is a provider.
+          description: The caller is not an owner of an approved organization.
         "404":
           content:
             application/problem+json:
@@ -2271,8 +2269,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The caller is not an owner of an approved organization that
-            is a provider.
+          description: The caller is not an owner of an approved organization.
         "404":
           content:
             application/problem+json:
@@ -2324,8 +2321,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The caller is not an owner of an approved organization that
-            is a provider.
+          description: The caller is not an owner of an approved organization.
         "404":
           content:
             application/problem+json:
@@ -2383,8 +2379,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The caller is not an owner of an approved organization that
-            is a provider.
+          description: The caller is not an owner of an approved organization.
         "404":
           content:
             application/problem+json:
@@ -2432,8 +2427,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The caller is not an owner of an approved organization that
-            is a provider.
+          description: The caller is not an owner of an approved organization.
         "404":
           content:
             application/problem+json:
@@ -2490,8 +2484,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The caller is not an owner of an approved organization that
-            is a provider.
+          description: The caller is not an owner of an approved organization.
         "404":
           content:
             application/problem+json:
@@ -3339,13 +3332,6 @@ components:
           description: The address invited to own it.
           maxLength: 254
           minLength: 0
-        roles:
-          type: array
-          items:
-            type: string
-            pattern: provider|enterprise
-          maxItems: 2
-          minItems: 1
         type:
           type: string
           enum:
@@ -3363,7 +3349,6 @@ components:
           pattern: "https?://[^\\s]+"
       required:
       - name
-      - roles
       - type
     AdminOrganization:
       type: object
@@ -3478,10 +3463,6 @@ components:
           - "null"
           format: date-time
           description: When they asked.
-        roles:
-          type: array
-          items:
-            type: string
         slug:
           type: string
         status:
@@ -3503,7 +3484,6 @@ components:
       - members
       - name
       - owned
-      - roles
       - slug
       - status
       - type
@@ -3969,14 +3949,6 @@ components:
           type: string
           maxLength: 120
           minLength: 0
-        roles:
-          type: array
-          description: One or both of `provider` and `enterprise`.
-          items:
-            type: string
-            pattern: provider|enterprise
-          maxItems: 2
-          minItems: 1
         teamSize:
           type: string
           pattern: just_me|2_9|10_49|50_99|100_499|500_999|1000_4999|5000_plus
@@ -4000,7 +3972,6 @@ components:
       - industries
       - jobTitle
       - name
-      - roles
       - teamSize
       - type
       - website
@@ -4326,7 +4297,7 @@ components:
         editable:
           type: boolean
           description: "Whether the caller may add and change solutions: an owner\
-            \ of an approved organization that is a provider."
+            \ of an approved organization."
         items:
           type: array
           items:
@@ -4418,12 +4389,6 @@ components:
           description: The address of its logo.
         name:
           type: string
-        roles:
-          type: array
-          description: "What it does here: `provider` lists AI solutions, `enterprise`\
-            \ posts use cases."
-          items:
-            type: string
         slug:
           type: string
         status:
@@ -4469,7 +4434,6 @@ components:
       - id
       - industries
       - name
-      - roles
       - slug
       - status
       - type
@@ -5658,14 +5622,6 @@ components:
           type: string
           maxLength: 120
           minLength: 0
-        roles:
-          type: array
-          description: One or both of `provider` and `enterprise`.
-          items:
-            type: string
-            pattern: provider|enterprise
-          maxItems: 2
-          minItems: 1
         teamSize:
           type: string
           pattern: just_me|2_9|10_49|50_99|100_499|500_999|1000_4999|5000_plus
@@ -5692,7 +5648,6 @@ components:
       - foundedYear
       - industries
       - name
-      - roles
       - teamSize
       - type
       - version

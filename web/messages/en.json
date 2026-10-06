@@ -792,15 +792,8 @@
       "create": {
         "open": "Add organization",
         "title": "Add an organization",
-        "lead": "It is approved at once. Use this to list a company before anyone from it signs in.",
         "name": "Organization name",
         "nameRequired": "Enter the organization's name.",
-        "roles": "Role on BeyondPilot",
-        "rolesRequired": "Choose at least one.",
-        "type": "Type",
-        "emailDomain": "Email domain (optional)",
-        "emailDomainHint": "You vouch for this domain. People on it can join once an owner lets them.",
-        "emailDomainInvalid": "Enter a company domain such as example.com that no other organization uses.",
         "ownerEmail": "Owner's email (optional)",
         "ownerEmailHint": "They are invited to own it. Leave empty to let someone claim it.",
         "ownerEmailInvalid": "Enter a full email address.",
@@ -811,7 +804,6 @@
       },
       "detail": {
         "back": "All organizations",
-        "roles": "Role",
         "type": "Type",
         "country": "Country",
         "teamSize": "Team size",
@@ -1025,10 +1017,6 @@
     }
   },
   "Vocabulary": {
-    "organizationRole": {
-      "provider": "AI provider",
-      "enterprise": "Enterprise"
-    },
     "organizationType": {
       "company": "Company",
       "builder_team": "Builder team",
@@ -1263,17 +1251,13 @@
     "form": {
       "metaTitle": "Create an organization · BeyondPilot",
       "createTitle": "Create your organization",
-      "createLead": "A company, a team or just you. GenAI Fund reviews a new organization before it appears in the directories. You can prepare your profile in the meantime.",
+      "createLead": "Everyone belongs to one organization. Independent builders can create a practice or team.",
       "profileTitle": "Organization profile",
       "profileLead": "Shown with every solution the organization lists. Only owners can edit it.",
       "basics": "Basics",
       "about": "About",
-      "optional": "Optional",
       "name": "Organization name",
       "nameRequired": "Enter the organization's name.",
-      "roles": "What does it do on BeyondPilot?",
-      "rolesRequired": "Choose at least one.",
-      "rolesHint": "A provider lists AI solutions. An enterprise publishes use cases it wants solved. Choose both if both are true.",
       "type": "Type",
       "country": "Country",
       "countryPlaceholder": "Select a country",
@@ -1315,7 +1299,12 @@
       "foundedYearHint": "For an independent builder, the year the practice started.",
       "foundedYearInvalid": "Enter a four-digit year, such as 2021.",
       "descriptionRequired": "Describe the organization in a few words.",
-      "logoUrl": "Logo address"
+      "logoUrl": "Logo address",
+      "basicsLead": "Who you are and where to find you.",
+      "aboutLead": "What you do, who you serve and how long you have been doing it.",
+      "industriesPlaceholder": "Type to find an industry",
+      "industriesEmpty": "No industry matches.",
+      "industriesRemove": "Remove {industry}"
     },
     "find": {
       "title": "Find your organization",
@@ -1501,7 +1490,6 @@
   "Solution": {
     "errors": {
       "SOLUTION_NOT_FOUND": "This solution no longer exists.",
-      "SOLUTION_PROVIDER_REQUIRED": "Only an owner of an approved AI provider can do this.",
       "SOLUTION_INCOMPLETE": "Fill in the marked fields before sending for review.",
       "SOLUTION_NOT_SUBMITTABLE": "This solution is already in review or approved.",
       "SOLUTION_NOT_A_DRAFT": "Only a draft can be deleted.",
@@ -1512,7 +1500,8 @@
       "SOLUTION_TOO_MANY_DEPLOYMENTS": "A solution lists at most 12 customer deployments. Remove one before adding another.",
       "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW": "This customer deployment is not waiting for review.",
       "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Someone else saved this customer deployment in the meantime. Reload the page and make your changes again.",
-      "unknown": "That did not work. Try again."
+      "unknown": "That did not work. Try again.",
+      "SOLUTION_OWNER_REQUIRED": "Only an owner of an approved organization can do this."
     },
     "done": {
       "saved": "Solution saved.",

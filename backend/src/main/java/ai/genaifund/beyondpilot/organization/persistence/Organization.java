@@ -17,7 +17,7 @@ import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 /**
- * One company, team or builder. Its codes (roles, type, team size, status) are the lowercase values of the API and of
+ * One company, team or builder. Its codes (type, team size, status) are the lowercase values of the API and of
  * the database; the request records and the constraints of the table keep them to the known ones.
  */
 @Entity
@@ -38,10 +38,6 @@ public class Organization {
 
 	@Column(nullable = false)
 	private String name;
-
-	@JdbcTypeCode(SqlTypes.ARRAY)
-	@Column(nullable = false, columnDefinition = "text[]")
-	private String[] roles;
 
 	@Column(nullable = false)
 	private String type;
@@ -98,22 +94,20 @@ public class Organization {
 	 * @param status {@link #PENDING} for one a person creates, {@link #APPROVED} for one an operator creates
 	 */
 	@SuppressWarnings("NullAway.Init")
-	public Organization(UUID id, String slug, String name, List<String> roles, String type, String status,
+	public Organization(UUID id, String slug, String name, String type, String status,
 			UUID createdByAccountId) {
 		this.id = id;
 		this.slug = slug;
 		this.name = name;
-		this.roles = roles.toArray(String[]::new);
 		this.type = type;
 		this.status = status;
 		this.createdByAccountId = createdByAccountId;
 	}
 
-	public void describe(String name, List<String> roles, String type, @Nullable String website,
+	public void describe(String name, String type, @Nullable String website,
 			@Nullable String country, @Nullable String teamSize, List<String> industries,
 			@Nullable String description, @Nullable Integer foundedYear, @Nullable String logoUrl) {
 		this.name = name;
-		this.roles = roles.toArray(String[]::new);
 		this.type = type;
 		this.website = website;
 		this.country = country;
@@ -179,10 +173,6 @@ public class Organization {
 
 	public String getName() {
 		return name;
-	}
-
-	public List<String> getRoles() {
-		return List.of(roles);
 	}
 
 	public String getType() {

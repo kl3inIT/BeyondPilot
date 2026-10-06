@@ -12,8 +12,6 @@ public record OrganizationResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String slug,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "What it does here: `provider` lists AI solutions, `enterprise` posts use cases.") List<String> roles,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "company", "builder_team", "independent_builder", "other" }) String type,
 		@Schema(types = { "string", "null" }) @Nullable String website,
 		@Schema(types = { "string", "null" }, description = "ISO 3166-1 alpha-2.") @Nullable String country,

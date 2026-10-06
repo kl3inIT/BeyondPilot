@@ -47,7 +47,7 @@ public class OrganizationQueryRepository {
 	 * One organization in the operators' list, with the claim that waits on it when there is one.
 	 * @param claimId the oldest open claim, a request to own it that operators decide; null when nobody asks
 	 */
-	public record AdminRow(UUID id, String slug, String name, List<String> roles, String type,
+	public record AdminRow(UUID id, String slug, String name, String type,
 			@Nullable String country, String status, int members, boolean owned, UUID createdByAccountId,
 			Instant createdAt, @Nullable UUID claimId, @Nullable UUID claimantAccountId,
 			@Nullable Instant claimedAt) {
@@ -83,7 +83,7 @@ public class OrganizationQueryRepository {
 	 */
 	public List<AdminRow> adminPage(@Nullable String text, @Nullable String status, int limit, long offset) {
 		return adminFiltered("""
-				select o.id, o.slug, o.name, o.roles, o.type, o.country, o.status, o.created_by_account_id, o.created_at,
+				select o.id, o.slug, o.name, o.type, o.country, o.status, o.created_by_account_id, o.created_at,
 				       (select count(*) from organization_member m where m.organization_id = o.id) as members,
 				       exists (select 1 from organization_member m
 				               where m.organization_id = o.id and m.role = 'owner') as owned,
@@ -95,7 +95,7 @@ public class OrganizationQueryRepository {
 				""", text, status).param("limit", limit).param("offset", offset).query((row, index) -> {
 			Timestamp claimedAt = row.getTimestamp("claimed_at");
 			return new AdminRow(row.getObject("id", UUID.class), row.getString("slug"), row.getString("name"),
-					strings(row.getArray("roles")), row.getString("type"), row.getString("country"),
+					row.getString("type"), row.getString("country"),
 					row.getString("status"), row.getInt("members"), row.getBoolean("owned"),
 					row.getObject("created_by_account_id", UUID.class), row.getTimestamp("created_at").toInstant(),
 					row.getObject("claim_id", UUID.class), row.getObject("claimant_account_id", UUID.class),

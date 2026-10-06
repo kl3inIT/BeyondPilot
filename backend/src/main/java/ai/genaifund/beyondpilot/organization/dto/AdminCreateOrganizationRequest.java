@@ -1,7 +1,5 @@
 package ai.genaifund.beyondpilot.organization.dto;
 
-import java.util.List;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -15,8 +13,6 @@ import org.jspecify.annotations.Nullable;
 		has no member until someone accepts the invitation to own it, or claims it.""")
 public record AdminCreateOrganizationRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 120) String name,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Size(min = 1,
-				max = 2) List<@NotNull @Pattern(regexp = OrganizationCodes.ROLE) String> roles,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "company", "builder_team", "independent_builder", "other" }) @NotNull @Pattern(
 						regexp = OrganizationCodes.TYPE) String type,

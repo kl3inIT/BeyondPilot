@@ -19,7 +19,6 @@ import { OrganizationReviewButton } from "./organization-review";
 function AdminOrganizationPage({ detail }: { detail: AdminOrganization }) {
   const t = useTranslations("Admin.organizations.detail");
   const s = useTranslations("Organization.status");
-  const roleName = useVocabulary("organizationRole");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
   const industryName = useVocabulary("industry");
@@ -30,7 +29,6 @@ function AdminOrganizationPage({ detail }: { detail: AdminOrganization }) {
   const { organization } = detail;
 
   const facts = [
-    { label: t("roles"), value: organization.roles.map(roleName).join(", ") },
     { label: t("type"), value: typeName(organization.type) },
     { label: t("country"), value: organization.country && countryName(organization.country) },
     { label: t("teamSize"), value: organization.teamSize && sizeName(organization.teamSize) },

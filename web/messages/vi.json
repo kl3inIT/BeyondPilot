@@ -792,15 +792,8 @@
       "create": {
         "open": "Thêm tổ chức",
         "title": "Thêm tổ chức",
-        "lead": "Tổ chức được duyệt ngay. Dùng khi cần đăng một công ty trước khi người của họ đăng nhập.",
         "name": "Tên tổ chức",
         "nameRequired": "Hãy nhập tên tổ chức.",
-        "roles": "Vai trò trên BeyondPilot",
-        "rolesRequired": "Hãy chọn ít nhất một.",
-        "type": "Loại hình",
-        "emailDomain": "Tên miền email (không bắt buộc)",
-        "emailDomainHint": "Bạn bảo đảm cho tên miền này. Người thuộc tên miền có thể tham gia khi một chủ sở hữu cho phép.",
-        "emailDomainInvalid": "Hãy nhập tên miền công ty như example.com mà chưa tổ chức nào dùng.",
         "ownerEmail": "Email chủ sở hữu (không bắt buộc)",
         "ownerEmailHint": "Người này được mời làm chủ sở hữu. Để trống để người khác tự nhận.",
         "ownerEmailInvalid": "Hãy nhập địa chỉ email đầy đủ.",
@@ -811,7 +804,6 @@
       },
       "detail": {
         "back": "Tất cả tổ chức",
-        "roles": "Vai trò",
         "type": "Loại hình",
         "country": "Quốc gia",
         "teamSize": "Quy mô",
@@ -1025,10 +1017,6 @@
     }
   },
   "Vocabulary": {
-    "organizationRole": {
-      "provider": "Nhà cung cấp AI",
-      "enterprise": "Doanh nghiệp"
-    },
     "organizationType": {
       "company": "Công ty",
       "builder_team": "Nhóm phát triển",
@@ -1263,17 +1251,13 @@
     "form": {
       "metaTitle": "Tạo tổ chức · BeyondPilot",
       "createTitle": "Tạo tổ chức của bạn",
-      "createLead": "Một công ty, một nhóm, hoặc chỉ mình bạn. GenAI Fund duyệt tổ chức mới trước khi tổ chức xuất hiện trong các danh mục. Trong lúc chờ, bạn có thể chuẩn bị hồ sơ.",
+      "createLead": "Ai cũng thuộc về một tổ chức. Người làm độc lập có thể tạo một studio hoặc một nhóm.",
       "profileTitle": "Hồ sơ tổ chức",
       "profileLead": "Hiển thị cùng mọi giải pháp tổ chức đăng. Chỉ chủ sở hữu mới sửa được.",
       "basics": "Thông tin cơ bản",
       "about": "Giới thiệu",
-      "optional": "Không bắt buộc",
       "name": "Tên tổ chức",
       "nameRequired": "Hãy nhập tên tổ chức.",
-      "roles": "Tổ chức làm gì trên BeyondPilot?",
-      "rolesRequired": "Hãy chọn ít nhất một.",
-      "rolesHint": "Nhà cung cấp đăng giải pháp AI. Doanh nghiệp đăng bài toán cần giải. Chọn cả hai nếu đúng cả hai.",
       "type": "Loại hình",
       "country": "Quốc gia",
       "countryPlaceholder": "Chọn quốc gia",
@@ -1315,7 +1299,12 @@
       "foundedYearHint": "Với người làm độc lập, là năm bắt đầu hoạt động.",
       "foundedYearInvalid": "Nhập năm gồm bốn chữ số, ví dụ 2021.",
       "descriptionRequired": "Hãy mô tả tổ chức bằng vài câu ngắn.",
-      "logoUrl": "Địa chỉ logo"
+      "logoUrl": "Địa chỉ logo",
+      "basicsLead": "Bạn là ai và liên hệ bạn ở đâu.",
+      "aboutLead": "Bạn làm gì, phục vụ ai và đã làm được bao lâu.",
+      "industriesPlaceholder": "Gõ để tìm ngành",
+      "industriesEmpty": "Không có ngành nào khớp.",
+      "industriesRemove": "Bỏ {industry}"
     },
     "find": {
       "title": "Tìm tổ chức của bạn",
@@ -1501,7 +1490,6 @@
   "Solution": {
     "errors": {
       "SOLUTION_NOT_FOUND": "Giải pháp này không còn tồn tại.",
-      "SOLUTION_PROVIDER_REQUIRED": "Chỉ chủ sở hữu của nhà cung cấp AI đã được duyệt mới làm được việc này.",
       "SOLUTION_INCOMPLETE": "Hãy điền các trường được đánh dấu trước khi gửi duyệt.",
       "SOLUTION_NOT_SUBMITTABLE": "Giải pháp này đang được duyệt hoặc đã duyệt.",
       "SOLUTION_NOT_A_DRAFT": "Chỉ xóa được bản nháp.",
@@ -1512,7 +1500,8 @@
       "SOLUTION_TOO_MANY_DEPLOYMENTS": "Một giải pháp có tối đa 12 triển khai khách hàng. Hãy gỡ một cái trước khi thêm.",
       "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW": "Triển khai khách hàng này không chờ duyệt.",
       "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Có người vừa lưu triển khai khách hàng này. Hãy tải lại trang rồi sửa lại.",
-      "unknown": "Chưa thực hiện được. Hãy thử lại."
+      "unknown": "Chưa thực hiện được. Hãy thử lại.",
+      "SOLUTION_OWNER_REQUIRED": "Chỉ chủ sở hữu của tổ chức đã được duyệt mới làm được việc này."
     },
     "done": {
       "saved": "Đã lưu giải pháp.",

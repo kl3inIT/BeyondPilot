@@ -59,7 +59,7 @@ class OrganizationTest {
 	void aCreatedOrganizationWaitsForReviewAndItsCreatorOwnsIt() {
 		String founder = signIn("founder@created.test");
 
-		String created = body(post(founder, API + "/organizations", creation("Created Co", "provider")).expectStatus()
+		String created = body(post(founder, API + "/organizations", creation("Created Co")).expectStatus()
 			.isCreated());
 
 		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("pending");
@@ -67,7 +67,6 @@ class OrganizationTest {
 		// A work address vouches for nothing: an operator verifies the domain.
 		assertThat(JsonPath.<String>read(created, "$.emailDomain")).isNull();
 		assertThat(JsonPath.<Boolean>read(created, "$.autoJoin")).isFalse();
-		assertThat(JsonPath.<List<String>>read(created, "$.roles")).containsExactly("provider");
 		assertThat(JsonPath.<List<String>>read(created, "$.industries")).containsExactly("insurance",
 				"banking_finance");
 		String mine = mine(founder);
@@ -75,38 +74,36 @@ class OrganizationTest {
 		assertThat(JsonPath.<String>read(mine, "$.jobTitle")).isEqualTo("Founder");
 		assertThat(JsonPath.<String>read(mine, "$.organization.name")).isEqualTo("Created Co");
 		// A person belongs to one organization.
-		assertProblem(post(founder, API + "/organizations", creation("Second Co", "provider")), 409,
+		assertProblem(post(founder, API + "/organizations", creation("Second Co")), 409,
 				"ORGANIZATION_ALREADY_MEMBER");
 	}
 
 	@Test
 	void anOrganizationOfTheSameNameGetsItsOwnAddress() {
 		String first = body(post(signIn("someone.one@gmail.com"), API + "/organizations",
-				creation("Same Name", "provider", "enterprise"))
+				creation("Same Name"))
 			.expectStatus()
 			.isCreated());
 		String second = body(post(signIn("someone.two@gmail.com"), API + "/organizations",
-				creation("Same Name", "enterprise", "provider"))
+				creation("Same Name"))
 			.expectStatus()
 			.isCreated());
 
 		assertThat(JsonPath.<String>read(first, "$.slug")).isEqualTo("same-name");
 		assertThat(JsonPath.<String>read(second, "$.slug")).isEqualTo("same-name-2");
-		// The roles read the same whatever order they were sent in.
-		assertThat(JsonPath.<List<String>>read(second, "$.roles")).containsExactly("provider", "enterprise");
 	}
 
 	@Test
 	void aRequestOutOfBoundsIsAValidationProblemThatPointsAtIt() {
 		String body = body(post(signIn("typo@invalid.test"), API + "/organizations",
-				Map.of("name", " ", "roles", List.of("investor"), "type", "club", "country", "vn", "industries",
+				Map.of("name", " ", "type", "club", "country", "vn", "industries",
 						List.of("mining"), "website", "x"))
 			.expectStatus()
 			.isBadRequest());
 
 		assertThat(JsonPath.<String>read(body, "$.code")).isEqualTo("REQUEST_INVALID");
 		assertThat(JsonPath.<List<String>>read(body, "$.errors[*].pointer")).containsExactlyInAnyOrder("#/name",
-				"#/roles/0", "#/type", "#/country", "#/teamSize", "#/industries/0", "#/website", "#/description",
+				"#/type", "#/country", "#/teamSize", "#/industries/0", "#/website", "#/description",
 				"#/foundedYear", "#/jobTitle");
 	}
 
@@ -119,13 +116,13 @@ class OrganizationTest {
 		for (Map.Entry<String, Object> broken : Map.<String, Object>of("website", " ", "description", "x".repeat(281),
 				"foundedYear", 1799, "logoUrl", "logo.png")
 			.entrySet()) {
-			Map<String, Object> request = new HashMap<>(creation("Facts Co", "provider"));
+			Map<String, Object> request = new HashMap<>(creation("Facts Co"));
 			request.put(broken.getKey(), broken.getValue());
 			String problem = body(post(session, path, request).expectStatus().isBadRequest());
 			assertThat(JsonPath.<List<String>>read(problem, "$.errors[*].pointer")).contains("#/" + broken.getKey());
 		}
 
-		Map<String, Object> request = new HashMap<>(creation("Facts Co", "provider"));
+		Map<String, Object> request = new HashMap<>(creation("Facts Co"));
 		request.put("logoUrl", "https://example.test/logo.png");
 		String created = body(post(session, path, request).expectStatus().isCreated());
 
@@ -191,7 +188,7 @@ class OrganizationTest {
 			.isEqualTo("Tell us what you build.");
 		assertThat(events(id)).containsExactly("organization.refuse");
 
-		Map<String, Object> corrected = save(profile("Refused Co", "provider"),
+		Map<String, Object> corrected = save(profile("Refused Co"),
 				JsonPath.<Integer>read(refused, "$.organization.version"));
 		put(founder, API + "/mine", corrected).expectStatus().isOk();
 		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("pending");
@@ -287,13 +284,13 @@ class OrganizationTest {
 				body(get(outsider, API + "/organizations?q=asked").expectStatus().isOk()), "$.items[0].way"))
 			.isEqualTo("request");
 		assertThat(outcome(post(outsider, API + "/organizations/" + id + "/join", Map.of()))).isEqualTo("requested");
-		assertProblem(post(outsider, API + "/organizations", creation("Elsewhere", "provider")), 409,
+		assertProblem(post(outsider, API + "/organizations", creation("Elsewhere")), 409,
 				"ORGANIZATION_REQUEST_PENDING");
 
 		post(outsider, API + "/join-request/withdraw", null).expectStatus().isNoContent();
 
 		assertThat(JsonPath.<Object>read(mine(outsider), "$.request")).isNull();
-		post(outsider, API + "/organizations", creation("Elsewhere", "provider")).expectStatus().isCreated();
+		post(outsider, API + "/organizations", creation("Elsewhere")).expectStatus().isCreated();
 	}
 
 	@Test
@@ -461,7 +458,7 @@ class OrganizationTest {
 	@Test
 	void anOperatorCreatesAnOrganizationAndTheInvitedPersonOwnsIt() {
 		String created = body(post(operator, API + "/admin/organizations",
-				Map.of("name", "Handed Over", "roles", List.of("enterprise"), "type", "company", "emailDomain",
+				Map.of("name", "Handed Over", "type", "company", "emailDomain",
 						"handed.test", "ownerEmail", "chief@handed.test"))
 			.expectStatus()
 			.isCreated());
@@ -472,7 +469,7 @@ class OrganizationTest {
 		assertThat(mail.latestSubjectTo("chief@handed.test"))
 			.isEqualTo("You are invited to Handed Over on BeyondPilot");
 		assertProblem(post(operator, API + "/admin/organizations",
-				Map.of("name", "Handed Twice", "roles", List.of("enterprise"), "type", "company", "emailDomain",
+				Map.of("name", "Handed Twice", "type", "company", "emailDomain",
 						"handed.test")),
 				409, "ORGANIZATION_DOMAIN_TAKEN");
 
@@ -482,7 +479,6 @@ class OrganizationTest {
 
 		String mine = mine(chief);
 		assertThat(JsonPath.<String>read(mine, "$.role")).isEqualTo("owner");
-		assertThat(JsonPath.<List<String>>read(mine, "$.organization.roles")).containsExactly("enterprise");
 		// What GenAI Fund sent does not count against what the organization may send.
 		assertThat(JsonPath.<Integer>read(members(chief), "$.allowance.leftToday")).isEqualTo(20);
 	}
@@ -490,7 +486,7 @@ class OrganizationTest {
 	@Test
 	void anOrganizationNobodyOwnsIsClaimedEvenFromItsDomainAndAnOperatorDecides() {
 		String unowned = JsonPath.read(body(post(operator, API + "/admin/organizations",
-				Map.of("name", "Unowned One", "roles", List.of("enterprise"), "type", "company", "emailDomain",
+				Map.of("name", "Unowned One", "type", "company", "emailDomain",
 						"unowned-one.test"))
 			.expectStatus()
 			.isCreated()), "$.organization.id");
@@ -531,7 +527,7 @@ class OrganizationTest {
 	void anApprovedClaimMakesItsOwnerAndVerifiesTheDomain() {
 		approved(signIn("founder@claimed-taken.test"), "Claimed Taken", "claimed-taken.test");
 		String unowned = JsonPath.read(body(post(operator, API + "/admin/organizations",
-				Map.of("name", "Claimed Co", "roles", List.of("enterprise"), "type", "company", "website",
+				Map.of("name", "Claimed Co", "type", "company", "website",
 						"https://www.claimed.test/about"))
 			.expectStatus()
 			.isCreated()), "$.organization.id");
@@ -603,15 +599,15 @@ class OrganizationTest {
 				"ORGANIZATION_MEMBERSHIP_REQUIRED");
 	}
 
-	private static Map<String, Object> profile(String name, String... roles) {
-		return Map.of("name", name, "roles", List.of(roles), "type", "company", "country", "VN", "teamSize", "2_9",
+	private static Map<String, Object> profile(String name) {
+		return Map.of("name", name, "type", "company", "country", "VN", "teamSize", "2_9",
 				"industries", List.of("insurance", "banking_finance"), "website", "https://example.test", "description",
 				"Assistants for insurers.", "foundedYear", 2021);
 	}
 
 	/** A profile with what only its creation asks: what the creator does there. */
-	private static Map<String, Object> creation(String name, String... roles) {
-		Map<String, Object> request = new HashMap<>(profile(name, roles));
+	private static Map<String, Object> creation(String name) {
+		Map<String, Object> request = new HashMap<>(profile(name));
 		request.put("jobTitle", " Founder ");
 		return request;
 	}
@@ -624,7 +620,7 @@ class OrganizationTest {
 
 	private UUID create(String session, String name) {
 		return UUID.fromString(JsonPath.read(
-				body(post(session, API + "/organizations", creation(name, "provider")).expectStatus().isCreated()),
+				body(post(session, API + "/organizations", creation(name)).expectStatus().isCreated()),
 				"$.id"));
 	}
 
