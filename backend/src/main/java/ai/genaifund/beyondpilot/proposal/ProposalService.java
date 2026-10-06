@@ -36,6 +36,8 @@ import ai.genaifund.beyondpilot.proposal.dto.SolutionOptionResponse;
 import ai.genaifund.beyondpilot.proposal.persistence.Proposal;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalReleaseRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalRepository;
+import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecision;
+import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecisionRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersion;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersionRepository;
 import ai.genaifund.beyondpilot.solution.OfferedSolution;
@@ -68,6 +70,9 @@ public class ProposalService {
 
 	private static final int LINK = 500;
 
+	/** The reason the history gives for a decision that a withdrawal undid. */
+	private static final String WITHDRAWN_REASON = "The applicant withdrew the application.";
+
 	private static final Pattern WEB_ADDRESS = Pattern.compile("^https://\\S+$");
 
 	private static final TypeReference<Map<String, String>> ANSWERS = new TypeReference<>() {
@@ -95,11 +100,14 @@ public class ProposalService {
 
 	private final ProposalReleaseRepository releases;
 
+	private final ProposalReviewDecisionRepository decisions;
+
 	ProposalService(ProposalRepository proposals, ProposalVersionRepository versions, ProgramService programs,
 			OrganizationDirectory organizations, OrganizationService organizationService, SolutionDirectory solutions,
 			StorageService storage, IdentityService identity, ApplicationEventPublisher events, JsonMapper json,
-			ProposalReleaseRepository releases) {
+			ProposalReleaseRepository releases, ProposalReviewDecisionRepository decisions) {
 		this.releases = releases;
+		this.decisions = decisions;
 		this.proposals = proposals;
 		this.versions = versions;
 		this.programs = programs;
@@ -316,8 +324,17 @@ public class ProposalService {
 		if (!proposal.isSubmitted()) {
 			throw refused(ProposalErrorCode.NOT_SUBMITTED, id);
 		}
-		proposal.withdraw(Instant.now());
+		Instant now = Instant.now();
+		proposal.withdraw(now);
 		proposals.flush();
+		// A decision was made on what the applicant has now taken back; whatever they submit next is decided afresh.
+		// The history keeps the decision that was undone.
+		String decided = proposal.getReviewStatus();
+		if (!Proposal.UNDER_REVIEW.equals(decided)) {
+			decisions.save(new ProposalReviewDecision(UUID.randomUUID(), id, actor.accountId(), decided,
+					Proposal.UNDER_REVIEW, WITHDRAWN_REASON, now));
+			proposals.decide(id, Proposal.UNDER_REVIEW);
+		}
 		LOG.atInfo()
 			.addKeyValue("event", "proposal.withdrawal.accepted")
 			.addKeyValue("proposal_id", id)
