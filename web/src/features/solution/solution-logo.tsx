@@ -11,7 +11,6 @@ const solutionLogoVariants = cva(
     variants: {
       size: {
         card: "size-12 rounded-xl text-sm",
-        profile: "size-11 rounded-lg text-sm",
         page: "size-14 rounded-2xl text-lg md:size-18 md:text-xl",
       },
     },
@@ -19,10 +18,10 @@ const solutionLogoVariants = cva(
 );
 
 /** The widest a logo is drawn at each size, so the browser asks for no more than that. */
-const widths = { card: "48px", profile: "44px", page: "72px" } as const;
+const widths = { card: "48px", page: "72px" } as const;
 
 type SolutionLogoProps = Required<VariantProps<typeof solutionLogoVariants>> & {
-  /** The name of the solution or the organization; its initials stand in the slot without a logo. */
+  /** The name of the solution; its initials stand in the slot without a logo. */
   name: string;
   /** The stored logo, read at the public address of stored files. */
   fileId?: string | null;
@@ -30,8 +29,8 @@ type SolutionLogoProps = Required<VariantProps<typeof solutionLogoVariants>> & {
 };
 
 /**
- * The logo slot of a solution or its organization, on a card and at the head of a page. The name
- * stands beside it wherever it is drawn, so the logo itself says nothing to a screen reader.
+ * The logo slot of a solution, on a card and at the head of its page. The name stands beside it
+ * wherever it is drawn, so the logo itself says nothing to a screen reader.
  */
 function SolutionLogo({ name, fileId, size, className }: SolutionLogoProps) {
   return (

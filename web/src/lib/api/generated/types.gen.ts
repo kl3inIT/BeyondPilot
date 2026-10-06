@@ -1731,6 +1731,10 @@ export type PublicOrganization = {
     country?: string | null;
     description?: string | null;
     industries: Array<string>;
+    /**
+     * Its logo, read at /api/storage/files/{id}; null for none.
+     */
+    logoFileId?: string | null;
     name: string;
     slug: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';

@@ -9357,6 +9357,12 @@ components:
           type: array
           items:
             type: string
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Its logo, read at /api/storage/files/{id}; null for none."
         name:
           type: string
         slug:

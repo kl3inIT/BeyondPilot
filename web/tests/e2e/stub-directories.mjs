@@ -9,6 +9,7 @@ const pocketPolicy = {
   industries: ["insurance", "banking_finance"],
   description: "Assistants for insurers across Southeast Asia.",
   website: "https://www.pocketpolicy.example/",
+  logoFileId: "0b6f2f0e-5d0e-4c57-9a55-6f6f3c1d2a10",
 };
 const lumenHealth = {
   slug: "lumen-health",
@@ -18,6 +19,7 @@ const lumenHealth = {
   industries: [],
   description: null,
   website: null,
+  logoFileId: null,
 };
 const organizations = [pocketPolicy, lumenHealth];
 

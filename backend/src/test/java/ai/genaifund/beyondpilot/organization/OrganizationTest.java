@@ -693,6 +693,10 @@ class OrganizationTest {
 			.isEqualTo("Routes parcels for small shops.");
 		assertThat(JsonPath.<Integer>read(created, "$.organization.foundedYear")).isEqualTo(2019);
 		assertThat(JsonPath.<String>read(created, "$.organization.logoFileId")).isEqualTo(logo.toString());
+		// Anyone reads the logo on the organization's public page.
+		String publicPage = body(get(signIn("reader@logo.test"), API + "/organizations/fully-described").expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(publicPage, "$.logoFileId")).isEqualTo(logo.toString());
 		assertProblem(post(operator, API + "/admin/organizations",
 				Map.of("name", "Too Many", "type", "company", "industries",
 						List.of("logistics", "insurance", "retail_ecommerce", "healthcare", "manufacturing",
