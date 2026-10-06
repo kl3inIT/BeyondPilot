@@ -152,6 +152,7 @@ test.describe("workspace solutions", () => {
       .click();
     await page.getByRole("group", { name: "Industries" }).getByText("Insurance").click();
     await page.getByLabel("Maturity").selectOption({ label: "Prototype" });
+    await page.getByLabel("Demo link").fill("https://fraudlens.example/demo");
     await expect(page.getByRole("note").getByText("Ready to send for review")).toBeVisible();
     await expect(page.getByText("Unsaved changes")).toBeVisible();
 
@@ -167,6 +168,8 @@ test.describe("workspace solutions", () => {
           problemsSolved: null,
           valueProposition: null,
           website: null,
+          demoUrl: "https://fraudlens.example/demo",
+          deckUrl: null,
           focusAreas: ["predictive_analytics"],
           industries: ["insurance"],
           deployment: [],

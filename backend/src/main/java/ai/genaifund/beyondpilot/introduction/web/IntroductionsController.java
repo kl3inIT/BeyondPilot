@@ -51,7 +51,7 @@ class IntroductionsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "403", description = "The caller belongs to no approved organization.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "404", description = "No listed solution has the address.",
+	@ApiResponse(responseCode = "404", description = "No approved solution has the address.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "409",
 			description = "The solution is the caller's own, or an earlier request about it still waits.",

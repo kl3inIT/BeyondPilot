@@ -41,9 +41,9 @@ class SolutionDirectoryController {
 	}
 
 	@GetMapping(path = "/{slug}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getSolution", summary = "One solution of the directory by its address")
+	@Operation(operationId = "getSolution", summary = "One approved solution by its address, listed or not")
 	@ApiResponse(responseCode = "200", description = "The solution.")
-	@ApiResponse(responseCode = "404", description = "No approved, listed solution has this address.",
+	@ApiResponse(responseCode = "404", description = "No approved solution has this address.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	PublicSolutionResponse get(@PathVariable String slug) {
 		return directory.get(slug);

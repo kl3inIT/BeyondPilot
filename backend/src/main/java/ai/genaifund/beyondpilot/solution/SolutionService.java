@@ -116,7 +116,8 @@ public class SolutionService {
 		solution.describe(request.name().strip(), SolutionViews.text(request.summary()),
 				SolutionViews.text(request.problemsSolved()), SolutionViews.text(request.valueProposition()),
 				SolutionViews.codes(request.focusAreas()), SolutionViews.codes(request.industries()),
-				request.maturity(), SolutionViews.codes(request.deployment()), SolutionViews.text(request.website()));
+				request.maturity(), SolutionViews.codes(request.deployment()), SolutionViews.text(request.website()),
+				SolutionViews.text(request.demoUrl()), SolutionViews.text(request.deckUrl()));
 		solution.list(request.listed());
 		if (!solution.isDraft() && !solution.isRejected() && !solution.isComplete()) {
 			// What operators review, and what the directory shows, keeps what a submission needs.

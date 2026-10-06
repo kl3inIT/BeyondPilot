@@ -113,7 +113,7 @@ class IntroductionTest {
 	}
 
 	@Test
-	void aSolutionThatIsNotListedIsNotAsked() {
+	void aSolutionLeftUnlistedIsStillAskedByItsAddress() {
 		String provider = organizationOwner("owner@unlisted-provider.test", "Unlisted Provider", "provider");
 		String slug = listedSolution(provider, "Unlisted Triage");
 		String buyer = organizationOwner("buyer@unlisted-buyer.test", "Unlisted Buyer", "enterprise");
@@ -126,8 +126,8 @@ class IntroductionTest {
 		hidden.put("listed", false);
 		put(provider, SOLUTION + "/mine/" + id, hidden).expectStatus().isOk();
 
-		assertProblem(post(buyer, INTRODUCTION + "/introductions", Map.of("solutionSlug", slug, "message", "Hello.")),
-				404, "INTRODUCTION_SOLUTION_NOT_FOUND");
+		post(buyer, INTRODUCTION + "/introductions", Map.of("solutionSlug", slug, "message", "Hello.")).expectStatus()
+			.isNoContent();
 	}
 
 	@Test

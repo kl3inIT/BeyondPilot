@@ -19,3 +19,6 @@ Boundaries follow [conventions › Testing](../conventions.md#testing). Who may 
 | A customer deployment is read by its organization and by operators at once, and by the public only after an operator approves it | An unreviewed claim about a customer on a public page |
 | A change to an approved customer deployment takes it off the public pages until it is approved again; a save from a stale form is refused | An edited claim shown without review; a silent overwrite |
 | Only an operator decides on a customer deployment, each decision is recorded in the audit trail, and only the owners of its solution change or remove it | A provider approving its own claim; another organization editing it |
+| An approved solution left unlisted is absent from the directory, opens by its address and says it is not listed; a draft, a submitted or a rejected one still answers `404` | An unlisted solution answering `404`, or a solution that is not approved read by its address |
+| The demo and the deck are optional `http(s)` links written by the owners and shown on the public page; another scheme is refused | A required field blocking an early-stage provider; a `javascript:` address on a public page |
+| A request for an introduction is accepted for an approved solution, listed or not | The way to reach a provider closed by a visibility choice |

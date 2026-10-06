@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -115,6 +116,12 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
+      {!solution.listed && (
+        <Alert>
+          <AlertDescription>{t("unlisted")}</AlertDescription>
+        </Alert>
+      )}
 
       {editHref && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4">
@@ -244,18 +251,30 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
             {t("contact.title", { name: solution.organizationName })}
           </h2>
           {introduction}
-          {solution.website && (
+          {(solution.website || solution.demoUrl || solution.deckUrl) && (
             <>
-              <Button
-                prominence="secondary"
-                size="lg"
-                href={solution.website}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full"
-              >
-                {t("contact.website")}
-              </Button>
+              {(
+                [
+                  ["website", solution.website],
+                  ["demo", solution.demoUrl],
+                  ["deck", solution.deckUrl],
+                ] as const
+              ).map(
+                ([key, href]) =>
+                  href && (
+                    <Button
+                      key={key}
+                      prominence="secondary"
+                      size="lg"
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full"
+                    >
+                      {t(`contact.${key}`)}
+                    </Button>
+                  ),
+              )}
               <Separator />
             </>
           )}

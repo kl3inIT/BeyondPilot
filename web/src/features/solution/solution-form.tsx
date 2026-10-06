@@ -59,6 +59,8 @@ function saved(solution: Solution) {
       problemsSolved: solution.problemsSolved ?? "",
       valueProposition: solution.valueProposition ?? "",
       website: solution.website ?? "",
+      demoUrl: solution.demoUrl ?? "",
+      deckUrl: solution.deckUrl ?? "",
     },
     chosen: {
       focusAreas: solution.focusAreas,
@@ -178,6 +180,8 @@ function SolutionForm({ solution }: { solution: Solution }) {
           problemsSolved: text.problemsSolved.trim() || null,
           valueProposition: text.valueProposition.trim() || null,
           website: text.website.trim() || null,
+          demoUrl: text.demoUrl.trim() || null,
+          deckUrl: text.deckUrl.trim() || null,
           focusAreas: chosen.focusAreas,
           industries: chosen.industries,
           deployment: chosen.deployment,
@@ -383,6 +387,44 @@ function SolutionForm({ solution }: { solution: Solution }) {
               aria-invalid={bad("website")}
             />
             {bad("website") && <FieldError>{t("websiteInvalid")}</FieldError>}
+          </Field>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field data-invalid={bad("demoUrl")}>
+            <FieldLabel htmlFor="solution-demo-url">{t("demoUrl")}</FieldLabel>
+            <Input
+              id="solution-demo-url"
+              type="url"
+              inputMode="url"
+              placeholder="https://"
+              maxLength={300}
+              value={text.demoUrl}
+              onChange={write("demoUrl")}
+              aria-invalid={bad("demoUrl")}
+            />
+            {bad("demoUrl") ? (
+              <FieldError>{t("websiteInvalid")}</FieldError>
+            ) : (
+              <FieldDescription>{t("demoUrlHint")}</FieldDescription>
+            )}
+          </Field>
+          <Field data-invalid={bad("deckUrl")}>
+            <FieldLabel htmlFor="solution-deck-url">{t("deckUrl")}</FieldLabel>
+            <Input
+              id="solution-deck-url"
+              type="url"
+              inputMode="url"
+              placeholder="https://"
+              maxLength={300}
+              value={text.deckUrl}
+              onChange={write("deckUrl")}
+              aria-invalid={bad("deckUrl")}
+            />
+            {bad("deckUrl") ? (
+              <FieldError>{t("websiteInvalid")}</FieldError>
+            ) : (
+              <FieldDescription>{t("deckUrlHint")}</FieldDescription>
+            )}
           </Field>
         </div>
         <Field>

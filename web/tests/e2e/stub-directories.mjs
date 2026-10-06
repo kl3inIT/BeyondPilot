@@ -32,6 +32,9 @@ function solution(organization, name, more) {
     problemsSolved: "Policy holders wait days for an answer.",
     valueProposition: "An answer in seconds, in Vietnamese and English.",
     website: "https://pocketpolicy.example",
+    demoUrl: null,
+    deckUrl: null,
+    listed: true,
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
     deployment: ["cloud_saas"],
@@ -42,7 +45,11 @@ function solution(organization, name, more) {
 
 /** The approved solutions, the most recently approved first. */
 const solutions = [
-  solution(pocketPolicy, "Policy Chat", { maturity: "production" }),
+  solution(pocketPolicy, "Policy Chat", {
+    maturity: "production",
+    demoUrl: "https://pocketpolicy.example/demo",
+    deckUrl: "https://pocketpolicy.example/deck.pdf",
+  }),
   solution(lumenHealth, "Clinic Triage", {
     summary: "Triage for clinics before the first visit.",
     industries: ["healthcare"],
@@ -56,6 +63,9 @@ const solutions = [
   solution(pocketPolicy, "Agent Coach", { focusAreas: ["speech_voice"] }),
   solution(pocketPolicy, "Broker Desk", { focusAreas: ["search_knowledge"] }),
 ];
+
+/** Approved but unlisted: out of the directory, read by its address. */
+const unlisted = solution(pocketPolicy, "Private Pilot", { listed: false });
 
 /** The approved customer deployments, the most recently approved first. */
 const deployments = [
@@ -156,7 +166,7 @@ export function answerDirectory(url) {
 
   if (area === "solution" && list === "solutions") {
     if (slug) {
-      const found = solutions.find((item) => item.slug === slug);
+      const found = [...solutions, unlisted].find((item) => item.slug === slug);
       return found ? [200, { ...found, customerDeployments: deploymentsOf(slug) }] : missing;
     }
     const items = solutions.filter(

@@ -17,7 +17,12 @@ export async function generateMetadata({
   const solution = await readSolution(slug);
 
   return solution
-    ? { title: solution.name + titleSuffix, description: solution.summary ?? undefined }
+    ? {
+        title: solution.name + titleSuffix,
+        description: solution.summary ?? undefined,
+        // An unlisted solution is shared by its address, not found through a search engine.
+        robots: solution.listed ? undefined : { index: false },
+      }
     : { robots: { index: false } };
 }
 
