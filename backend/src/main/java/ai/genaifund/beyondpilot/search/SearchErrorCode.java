@@ -27,6 +27,9 @@ public enum SearchErrorCode implements ErrorCode {
 	MODEL_REJECTED("SEARCH_MODEL_REJECTED", ErrorCategory.VALIDATION,
 			"The provider did not embed a test sentence with this key and model. Test the connection to see why."),
 
+	RETRY_ITEM_INCOMPLETE("SEARCH_RETRY_ITEM_INCOMPLETE", ErrorCategory.VALIDATION,
+			"Name the kind of the item to try again, or neither to try every item again."),
+
 	SETTINGS_CHANGED("SEARCH_SETTINGS_CHANGED", ErrorCategory.CONFLICT,
 			"Someone changed the search settings since you opened them. Reload and try again."),
 

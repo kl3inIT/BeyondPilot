@@ -168,7 +168,7 @@ class SearchAdminController {
 			summary = "Let held-back items be embedded at the next run: one, or all",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "How many items the next run tries.")
-	@ApiResponse(responseCode = "400", description = "A member is not valid.",
+	@ApiResponse(responseCode = "400", description = "A member is not valid, or an item is named without its kind.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	RetriedEmbeddingsResponse retry(@CurrentActor Actor actor, @Valid @RequestBody RetryEmbeddingsRequest request) {
 		return administration.retry(actor, request);

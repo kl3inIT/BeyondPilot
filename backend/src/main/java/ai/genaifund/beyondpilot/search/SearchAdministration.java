@@ -29,6 +29,7 @@ import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Kind
 import ai.genaifund.beyondpilot.search.persistence.SearchSettings;
 import ai.genaifund.beyondpilot.search.persistence.SearchSettingsRepository;
 import org.jspecify.annotations.Nullable;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -157,7 +158,12 @@ public class SearchAdministration {
 		};
 		provider.connectWith(request.vendor(), name, baseUrl, key);
 		provider.changedBy(operator.accountId(), operator.label(), Instant.now());
-		providers.saveAndFlush(provider);
+		try {
+			providers.saveAndFlush(provider);
+		}
+		catch (ObjectOptimisticLockingFailureException raced) {
+			throw new SearchException(SearchErrorCode.PROVIDER_CHANGED, "Provider " + id + " changed while it was saved");
+		}
 		String change = switch (request.key()) {
 			case "replace" -> "replaced";
 			case "remove" -> "removed";
@@ -233,7 +239,7 @@ public class SearchAdministration {
 		Instant now = Instant.now();
 		row.embedWith(provider.getId(), model, now);
 		row.changedBy(operator.accountId(), operator.label(), now);
-		settings.saveAndFlush(row);
+		saveSettings(row, request.version());
 		audit.record(new AuditRecord(AuditAction.SEARCH_MODEL_CHANGE, actorOf(operator),
 				new AuditRecord.Resource("search_settings", "1", "Search settings"), Map.of("model", model)));
 		changedForSearch();
@@ -266,7 +272,7 @@ public class SearchAdministration {
 		if (row.isSemanticEnabled() != request.enabled()) {
 			row.semantic(request.enabled());
 			row.changedBy(operator.accountId(), operator.label(), Instant.now());
-			settings.saveAndFlush(row);
+			saveSettings(row, request.version());
 			audit.record(new AuditRecord(
 					request.enabled() ? AuditAction.SEARCH_SEMANTIC_ENABLE : AuditAction.SEARCH_SEMANTIC_DISABLE,
 					actorOf(operator), new AuditRecord.Resource("search_settings", "1", "Search settings"), Map.of()));
@@ -297,6 +303,10 @@ public class SearchAdministration {
 	@Transactional
 	public RetriedEmbeddingsResponse retry(Actor actor, RetryEmbeddingsRequest request) {
 		Operator operator = identity.requireOperator(actor);
+		if (request.itemId() != null && request.kind() == null) {
+			throw new SearchException(SearchErrorCode.RETRY_ITEM_INCOMPLETE,
+					"Item " + request.itemId() + " was named without its kind");
+		}
 		int count = index.retryEmbeddings(request.kind(), request.itemId());
 		if (count > 0) {
 			audit.record(new AuditRecord(AuditAction.SEARCH_EMBEDDING_RETRY, actorOf(operator),
@@ -391,6 +401,16 @@ public class SearchAdministration {
 
 	private SearchSettings settings() {
 		return settings.current();
+	}
+
+	/** Saves the settings, refusing them when another change was saved since they were read. */
+	private void saveSettings(SearchSettings row, long read) {
+		try {
+			settings.saveAndFlush(row);
+		}
+		catch (ObjectOptimisticLockingFailureException raced) {
+			throw changed(read, row.getVersion());
+		}
 	}
 
 	private void record(AuditAction action, Operator operator, AiProvider provider, Map<String, String> details) {

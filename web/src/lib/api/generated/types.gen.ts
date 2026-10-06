@@ -7585,7 +7585,7 @@ export type RetrySearchEmbeddingsData = {
 
 export type RetrySearchEmbeddingsErrors = {
     /**
-     * A member is not valid.
+     * A member is not valid, or an item is named without its kind.
      */
     400: Problem;
     /**

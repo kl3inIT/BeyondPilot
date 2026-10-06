@@ -1727,6 +1727,7 @@
         "SEARCH_PROVIDER_KEY_MISSING": "Hãy nhập API key. Key đã lưu chỉ được dùng với đúng địa chỉ nó được lưu kèm.",
         "SEARCH_MODEL_UNKNOWN": "Nhà cung cấp này không có model đó.",
         "SEARCH_MODEL_REJECTED": "Nhà cung cấp không embed được câu thử với key và model này. Hãy thử kết nối để xem lý do.",
+        "SEARCH_RETRY_ITEM_INCOMPLETE": "Hãy nêu loại của mục cần thử lại.",
         "SEARCH_SETTINGS_CHANGED": "Có người vừa sửa cấu hình tìm kiếm sau khi bạn mở. Hãy tải lại rồi thử lại.",
         "SEARCH_ENCRYPTION_KEY_MISSING": "Chưa lưu được key: máy chủ chưa có khoá mã hoá. Hãy báo đội kỹ thuật thêm vào.",
         "unknown": "Đã có lỗi. Hãy thử lại sau ít phút."

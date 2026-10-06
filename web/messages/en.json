@@ -1727,6 +1727,7 @@
         "SEARCH_PROVIDER_KEY_MISSING": "Enter the API key. A saved key is only used with the address it was saved for.",
         "SEARCH_MODEL_UNKNOWN": "This provider does not offer that model.",
         "SEARCH_MODEL_REJECTED": "The provider did not embed a test sentence with this key and model. Test the connection to see why.",
+        "SEARCH_RETRY_ITEM_INCOMPLETE": "Name the kind of the item to try again.",
         "SEARCH_SETTINGS_CHANGED": "Someone changed the search settings since you opened them. Reload and try again.",
         "SEARCH_ENCRYPTION_KEY_MISSING": "Keys cannot be saved: the server has no encryption key for them. Ask the team to add it.",
         "unknown": "Something went wrong. Try again in a moment."

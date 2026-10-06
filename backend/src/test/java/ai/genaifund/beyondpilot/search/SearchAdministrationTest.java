@@ -186,6 +186,15 @@ class SearchAdministrationTest {
 	}
 
 	@Test
+	void anItemIsTriedAgainOnlyWhenItsKindIsNamed() {
+		Map<String, Object> request = new HashMap<>();
+		request.put("kind", null);
+		request.put("itemId", UUID.randomUUID().toString());
+
+		assertProblem(send("POST", operator, API + "/index/retry", request), 400, "SEARCH_RETRY_ITEM_INCOMPLETE");
+	}
+
+	@Test
 	void aProviderIsReachedOnlyAtItsVendorsOwnAddress() {
 		for (String address : new String[] { "http://openrouter.ai/api/v1", "https://user:pass@openrouter.ai/api/v1",
 				"https://openrouter.ai/api/v1?token=x", "https://169.254.169.254/latest", "https://localhost:8080/v1",
