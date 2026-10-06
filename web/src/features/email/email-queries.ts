@@ -39,19 +39,25 @@ function notFoundWhenRefused(error: unknown): never {
 
 /** The email settings, without their secrets. Server only. */
 export async function readEmailSettings(): Promise<EmailSettings> {
-  const { data } = await getEmailSettings({ ...(await sessionRequest()) }).catch(notFoundWhenRefused);
+  const { data } = await getEmailSettings({ ...(await sessionRequest()) }).catch(
+    notFoundWhenRefused,
+  );
   return data;
 }
 
 /** Every kind of email operators word. Server only. */
 export async function readEmailTemplates(): Promise<EmailTemplateList> {
-  const { data } = await listEmailTemplates({ ...(await sessionRequest()) }).catch(notFoundWhenRefused);
+  const { data } = await listEmailTemplates({ ...(await sessionRequest()) }).catch(
+    notFoundWhenRefused,
+  );
   return data;
 }
 
 /** One kind's wording, its default and its variables. Server only. */
 export async function readEmailTemplate(kind: string): Promise<EmailTemplate> {
-  const { data } = await getEmailTemplate({ ...(await sessionRequest()), path: { kind } }).catch(notFoundWhenRefused);
+  const { data } = await getEmailTemplate({ ...(await sessionRequest()), path: { kind } }).catch(
+    notFoundWhenRefused,
+  );
   return data;
 }
 
@@ -77,7 +83,9 @@ export async function readEmailActivity(search: EmailActivitySearch): Promise<Em
 
 /** One email as it was sent, with what happened to it. Server only. */
 export async function readEmailMessage(id: string): Promise<EmailMessage> {
-  const { data } = await getEmailMessage({ ...(await sessionRequest()), path: { id } }).catch(notFoundWhenRefused);
+  const { data } = await getEmailMessage({ ...(await sessionRequest()), path: { id } }).catch(
+    notFoundWhenRefused,
+  );
   return data;
 }
 

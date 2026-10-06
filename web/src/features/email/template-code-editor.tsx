@@ -33,7 +33,10 @@ const TAG = /\{\{[#/^]?\s*[\w.]+\s*\}\}/g;
 const FORBIDDEN = /\{\{[{&>=<$]/g;
 
 /** Every tag in the colour of a variable, so the parts that change per person stand out. */
-const tags = new MatchDecorator({ regexp: TAG, decoration: Decoration.mark({ class: "cm-variable" }) });
+const tags = new MatchDecorator({
+  regexp: TAG,
+  decoration: Decoration.mark({ class: "cm-variable" }),
+});
 
 const tagHighlighter = ViewPlugin.fromClass(
   class {
@@ -86,7 +89,11 @@ const appearance = EditorView.theme({
     backgroundColor: "var(--accent)",
     color: "var(--accent-foreground)",
   },
-  ".cm-completionDetail": { marginLeft: "8px", color: "var(--muted-foreground)", fontStyle: "normal" },
+  ".cm-completionDetail": {
+    marginLeft: "8px",
+    color: "var(--muted-foreground)",
+    fontStyle: "normal",
+  },
   ".cm-diagnostic": { padding: "4px 10px", fontFamily: "var(--font-sans)" },
 });
 
@@ -159,11 +166,6 @@ function TemplateCodeEditor({
   ref?: React.Ref<TemplateCodeEditorHandle>;
 }) {
   const editor = useRef<ReactCodeMirrorRef>(null);
-  // The latest blur handler, read when the editor loses focus, so a new one does not rebuild the editor.
-  const blur = useRef(onBlur);
-  useEffect(() => {
-    blur.current = onBlur;
-  });
 
   useImperativeHandle(ref, () => ({
     insert(variable) {
@@ -213,7 +215,6 @@ function TemplateCodeEditor({
         ...(describedBy ? { "aria-describedby": describedBy } : {}),
         ...(invalid ? { "aria-invalid": "true" } : {}),
       }),
-      EditorView.domEventHandlers({ blur: () => blur.current?.() }),
       ...(singleLine
         ? // One line: a pasted or typed line break is refused.
           [EditorState.transactionFilter.of((tr) => (tr.newDoc.lines > 1 ? [] : tr))]
@@ -234,6 +235,7 @@ function TemplateCodeEditor({
       ref={editor}
       value={value}
       onChange={onChange}
+      onBlur={onBlur}
       extensions={extensions}
       theme="none"
       basicSetup={{
@@ -246,7 +248,7 @@ function TemplateCodeEditor({
       }}
       data-invalid={invalid || undefined}
       className={cn(
-        "rounded-lg border border-input bg-transparent transition-[color,box-shadow] focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 data-invalid:border-destructive data-invalid:ring-destructive/20 dark:bg-input/30",
+        "rounded-lg border border-input bg-transparent focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 data-invalid:border-destructive data-invalid:ring-destructive/20 dark:bg-input/30",
         !singleLine && "[&_.cm-editor]:min-h-64",
       )}
     />

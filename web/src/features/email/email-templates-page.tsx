@@ -57,7 +57,10 @@ async function EmailTemplatesPage({
                     href={adminEmailTemplateRoute(item.kind)}
                     className="flex items-center gap-3 px-4 py-3 outline-none hover:bg-muted/50 focus-visible:bg-muted/50"
                   >
-                    <KindIcon kind={item.kind} className="size-4.5 shrink-0 text-muted-foreground" />
+                    <KindIcon
+                      kind={item.kind}
+                      className="size-4.5 shrink-0 text-muted-foreground"
+                    />
                     <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <span className="flex items-center gap-2">
                         <span className="text-sm font-medium">
@@ -66,7 +69,9 @@ async function EmailTemplatesPage({
                         {item.edited && <Badge variant="outline">{t("templates.edited")}</Badge>}
                       </span>
                       <span className="text-sm text-muted-foreground">
-                        {isEmailKind(item.kind) ? t(`kinds.${item.kind}.description`) : item.subject}
+                        {isEmailKind(item.kind)
+                          ? t(`kinds.${item.kind}.description`)
+                          : item.subject}
                       </span>
                     </span>
                     {item.edited && item.updatedBy && item.updatedAt && (
@@ -83,7 +88,10 @@ async function EmailTemplatesPage({
                         })}
                       </span>
                     )}
-                    <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+                    <ChevronRightIcon
+                      aria-hidden="true"
+                      className="size-4 shrink-0 text-muted-foreground"
+                    />
                   </Link>
                 </li>
               ))}

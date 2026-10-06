@@ -6,6 +6,7 @@ import { createServer } from "node:http";
 
 import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
+import { answerEmail } from "./stub-email.mjs";
 import { answerJudging } from "./stub-judging.mjs";
 import { answerReview } from "./stub-reviews.mjs";
 import { answerSearch } from "./stub-search.mjs";
@@ -399,6 +400,7 @@ createServer((request, response) => {
     answerApplication(url, account ? session : undefined, account?.email) ??
     answerReview(url, account) ??
     answerWorkspace(url, account ? session : undefined) ??
+    answerEmail(url, account) ??
     answerDirectory(url);
   if (record) {
     return json(response, ...record);

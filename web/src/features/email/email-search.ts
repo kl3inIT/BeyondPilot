@@ -1,9 +1,4 @@
-import {
-  createLoader,
-  parseAsInteger,
-  parseAsString,
-  parseAsStringLiteral,
-} from "nuqs/server";
+import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
 
 /** How far back the log looks; `week` is the default and `all` has no bound. */
 export const emailPeriods = ["day", "week", "month", "all"] as const;
@@ -25,6 +20,10 @@ export const emailKinds = [
   "organization_invitation",
   "organization_approved",
   "organization_refused",
+  "organization_request_approved",
+  "organization_request_declined",
+  "organization_taken_down",
+  "organization_restored",
   "application_received",
   "reviewer_invitation",
   "application_outcome",

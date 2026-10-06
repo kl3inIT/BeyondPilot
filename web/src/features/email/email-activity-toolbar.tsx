@@ -50,7 +50,6 @@ function EmailActivityToolbar() {
       label: t("activity.filters.period.label"),
       items: periods,
       value: search.period,
-      width: "md:w-36",
       change: (value: string) =>
         setSearch({ period: emailPeriods.find((period) => period === value), ...newest }),
     },
@@ -59,7 +58,6 @@ function EmailActivityToolbar() {
       label: t("activity.filters.kind.label"),
       items: kinds,
       value: search.kind ?? ALL,
-      width: "md:w-56",
       change: (value: string) =>
         setSearch({ kind: emailKinds.find((kind) => kind === value) ?? null, ...newest }),
     },
@@ -68,7 +66,6 @@ function EmailActivityToolbar() {
       label: t("activity.filters.status.label"),
       items: statuses,
       value: search.status ?? ALL,
-      width: "md:w-40",
       change: (value: string) =>
         setSearch({
           status: emailStatuses.find((status) => status === value) ?? null,
@@ -108,7 +105,7 @@ function EmailActivityToolbar() {
             <SelectTrigger
               size="sm"
               aria-label={select.label}
-              className={`flex-1 md:flex-none ${select.width}`}
+              className="flex-1 md:w-44 md:flex-none"
             >
               <SelectValue />
             </SelectTrigger>

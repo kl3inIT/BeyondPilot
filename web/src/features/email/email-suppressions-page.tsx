@@ -4,7 +4,6 @@ import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
-import { FilterToolbar } from "@/components/composites/filter-toolbar";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Badge } from "@/components/ui/badge";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,12 +13,9 @@ import { adminEmailMessageRoute, siteRoutes } from "@/lib/site";
 
 import { EmailHeader } from "./email-header";
 import { isEmailKind } from "./email-kinds";
-import {
-  emailSuppressionsSearch,
-  suppressionReasons,
-  type EmailSuppressionsSearch,
-} from "./email-search";
+import { emailSuppressionsSearch, type EmailSuppressionsSearch } from "./email-search";
 import { AddSuppressionButton, RemoveSuppressionButton } from "./email-suppression-actions";
+import { EmailSuppressionsToolbar } from "./email-suppressions-toolbar";
 
 const address = createSerializer(emailSuppressionsSearch);
 
@@ -82,22 +78,7 @@ async function EmailSuppressionsPage({
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8">
       <EmailHeader current="suppressions" ready={ready} action={<AddSuppressionButton />} />
 
-      <FilterToolbar
-        parsers={emailSuppressionsSearch}
-        searchLabel={t("suppressions.search")}
-        clearLabel={t("suppressions.clear")}
-        filters={[
-          {
-            key: "reason",
-            label: t("suppressions.filters.reason.label"),
-            all: t("suppressions.filters.reason.all"),
-            options: suppressionReasons.map((value) => ({
-              value,
-              label: t(`suppressions.reasons.${value}`),
-            })),
-          },
-        ]}
-      />
+      <EmailSuppressionsToolbar />
 
       <DataTable className="hidden md:block">
         <TableHeader>
@@ -114,13 +95,19 @@ async function EmailSuppressionsPage({
         <TableBody>
           {suppressions.items.map((item) => (
             <TableRow key={item.address}>
-              <TableCell className="font-medium">{item.address}</TableCell>
+              <TableCell>
+                <span className="font-medium">{item.address}</span>
+              </TableCell>
               <TableCell>
                 <Badge variant="outline">{t(`suppressions.reasons.${item.reason}`)}</Badge>
               </TableCell>
-              <TableCell className="text-muted-foreground">{origin(item)}</TableCell>
-              <TableCell className="text-muted-foreground">
-                <time dateTime={item.createdAt}>{date(item.createdAt)}</time>
+              <TableCell>
+                <span className="text-muted-foreground">{origin(item)}</span>
+              </TableCell>
+              <TableCell>
+                <time dateTime={item.createdAt} className="text-muted-foreground">
+                  {date(item.createdAt)}
+                </time>
               </TableCell>
               <TableCell>
                 <RemoveSuppressionButton address={item.address} reason={item.reason} />

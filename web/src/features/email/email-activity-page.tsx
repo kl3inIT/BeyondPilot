@@ -80,7 +80,9 @@ async function EmailActivityPage({
         {counts.map((count) => (
           <div key={count.key} className="flex flex-col gap-0.5 bg-background px-4 py-3">
             <dt className="text-xs text-muted-foreground">
-              {t(`activity.counts.${count.key}`, { period: search.period })}
+              {count.key === "total"
+                ? t("activity.counts.total", { period: search.period })
+                : t(`activity.counts.${count.key}`)}
             </dt>
             <dd className="text-xl font-semibold tabular-nums">{format.number(count.value)}</dd>
           </div>
@@ -102,10 +104,14 @@ async function EmailActivityPage({
         <TableBody>
           {messages.items.map((message) => (
             <TableRow key={message.id} className="relative">
-              <TableCell className="text-muted-foreground">
-                <time dateTime={message.createdAt}>{time(message.createdAt)}</time>
+              <TableCell>
+                <time dateTime={message.createdAt} className="text-muted-foreground">
+                  {time(message.createdAt)}
+                </time>
               </TableCell>
-              <TableCell className="max-w-56 truncate">{message.recipient}</TableCell>
+              <TableCell>
+                <span className="block max-w-56 truncate">{message.recipient}</span>
+              </TableCell>
               <TableCell>
                 <Link
                   href={adminEmailMessageRoute(message.id)}
@@ -114,7 +120,9 @@ async function EmailActivityPage({
                   <KindIcon kind={message.kind} />
                   <span className="flex min-w-0 flex-col">
                     <span className="truncate font-medium">{kindName(message.kind)}</span>
-                    <span className="truncate text-xs text-muted-foreground">{message.subject}</span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      {message.subject}
+                    </span>
                   </span>
                 </Link>
               </TableCell>

@@ -88,12 +88,12 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
           label: t("nav.auditLog"),
           icon: <ScrollTextIcon aria-hidden="true" />,
         },
+        {
+          href: siteRoutes.adminEmail,
+          label: t("nav.email"),
+          icon: <MailIcon aria-hidden="true" />,
+        },
       ],
-    },
-    {
-      href: siteRoutes.adminEmail,
-      label: t("nav.email"),
-      icon: <MailIcon aria-hidden="true" />,
     },
   ];
   const destinations = groups.flatMap((group) => group.items);

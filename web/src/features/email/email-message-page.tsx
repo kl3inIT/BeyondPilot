@@ -133,7 +133,9 @@ async function EmailMessagePage({ message }: { message: EmailMessage }) {
             <dl className="flex flex-col divide-y rounded-lg border">
               {facts.map((fact) => (
                 <div key={fact.key} className="flex flex-col gap-0.5 px-4 py-2.5">
-                  <dt className="text-xs text-muted-foreground">{t(`message.fields.${fact.key}`)}</dt>
+                  <dt className="text-xs text-muted-foreground">
+                    {t(`message.fields.${fact.key}`)}
+                  </dt>
                   <dd className="min-w-0 text-sm break-words">{fact.value}</dd>
                 </div>
               ))}

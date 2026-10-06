@@ -1,7 +1,7 @@
 "use client";
 
 import { useStore } from "@tanstack/react-form";
-import { AsteriskIcon, CircleAlertIcon, CircleDotIcon } from "lucide-react";
+import { ArrowLeftIcon, AsteriskIcon, CircleAlertIcon, CircleDotIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -212,6 +212,14 @@ function EmailTemplateEditor({
         </div>
       )}
 
+      <Link
+        href={siteRoutes.adminEmailTemplates}
+        className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:underline"
+      >
+        <ArrowLeftIcon aria-hidden="true" className="size-4" />
+        {t("back")}
+      </Link>
+
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="flex flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-2">
@@ -228,7 +236,10 @@ function EmailTemplateEditor({
                   timeStyle: "short",
                 }),
               })}{" "}
-              <Link href={siteRoutes.adminAuditLog} className="font-medium text-primary underline-offset-4 hover:underline">
+              <Link
+                href={siteRoutes.adminAuditLog}
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
                 {t("viewAudit")}
               </Link>
             </p>
@@ -327,7 +338,7 @@ function EmailTemplateEditor({
             subject={preview.subject}
             html={preview.html}
             title={t("previewTitle", { name })}
-            className="lg:w-[560px] lg:shrink-0"
+            className="lg:w-140 lg:shrink-0"
           />
         )}
       </div>

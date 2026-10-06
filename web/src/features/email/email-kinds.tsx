@@ -2,6 +2,10 @@ import {
   BadgeCheckIcon,
   BadgeXIcon,
   CircleXIcon,
+  DoorClosedIcon,
+  DoorOpenIcon,
+  EyeIcon,
+  EyeOffIcon,
   ClipboardCheckIcon,
   FileCheckIcon,
   GavelIcon,
@@ -24,6 +28,10 @@ const kindIcons: Record<EmailKind, React.ComponentType<React.SVGProps<SVGSVGElem
   organization_invitation: UserPlusIcon,
   organization_approved: BadgeCheckIcon,
   organization_refused: BadgeXIcon,
+  organization_request_approved: DoorOpenIcon,
+  organization_request_declined: DoorClosedIcon,
+  organization_taken_down: EyeOffIcon,
+  organization_restored: EyeIcon,
   application_received: FileCheckIcon,
   reviewer_invitation: GavelIcon,
   application_outcome: ClipboardCheckIcon,
@@ -47,7 +55,9 @@ function isEmailKind(kind: string): kind is EmailKind {
 /** The icon of a kind; an envelope for one this version of the screen does not know. */
 function KindIcon({ kind, className }: { kind: string; className?: string }) {
   const Icon = isEmailKind(kind) ? kindIcons[kind] : MailIcon;
-  return <Icon aria-hidden="true" className={className ?? "size-4 shrink-0 text-muted-foreground"} />;
+  return (
+    <Icon aria-hidden="true" className={className ?? "size-4 shrink-0 text-muted-foreground"} />
+  );
 }
 
 export { isEmailKind, KindIcon };
