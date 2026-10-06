@@ -23,6 +23,12 @@ export const siteRoutes = {
   adminUseCasesNew: "/admin/use-cases/new",
   adminTalentReported: "/admin/talent/reported",
   adminIntroductions: "/admin/introductions",
+  adminEmail: "/admin/email",
+  adminEmailTemplates: "/admin/email/templates",
+  adminEmailAppearance: "/admin/email/appearance",
+  adminEmailActivity: "/admin/email/activity",
+  adminEmailSuppressions: "/admin/email/suppressions",
+  adminEmailSettings: "/admin/email/settings",
   workspaceOrganization: "/workspace/organization",
   myApplications: "/applications",
   reviews: "/reviews",
@@ -51,6 +57,16 @@ export function programRoute(slug: string) {
  */
 export function programApplyUrl(slug: string): string {
   return slug === "insurance-ai-tasco" ? `${liveCampaignUrl}/apply` : `${programRoute(slug)}/apply`;
+}
+
+/** One kind of email's wording in the admin area. */
+export function adminEmailTemplateRoute(kind: string) {
+  return `${siteRoutes.adminEmailTemplates}/${kind}`;
+}
+
+/** One sent email in the admin area's log. */
+export function adminEmailMessageRoute(id: string) {
+  return `${siteRoutes.adminEmailActivity}/${id}`;
 }
 
 /** A program's Settings in the admin area, the screen a program opens on. */

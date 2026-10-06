@@ -984,6 +984,41 @@ paths:
       summary: Set the accent colour and footer note of every email
       tags:
       - Email administration
+  /api/notification/admin/email/settings/checks:
+    get:
+      operationId: checkEmailSetup
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSetup"
+          description: What the provider answered; a limit says why it could not be
+            asked everything.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No provider and sender are saved.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "Ask the saved provider whether email from the sender's domain can\
+        \ leave, and which DNS records it needs"
+      tags:
+      - Email administration
   /api/notification/admin/email/settings/test:
     post:
       operationId: testEmailSettings
@@ -8751,6 +8786,13 @@ components:
       type: object
       description: "Wording being edited, to preview or to send as a test."
       properties:
+        appearance:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/EmailDraftAppearance"
+          description: "An appearance being edited, to see it before it is saved;\
+            \ null for the saved one."
         body:
           type: string
           description: Markdown.
@@ -8763,6 +8805,20 @@ components:
       required:
       - body
       - subject
+    EmailDraftAppearance:
+      type: object
+      properties:
+        accentColor:
+          type: string
+          example: "#0070C0"
+          pattern: "#[0-9A-Fa-f]{6}"
+        footer:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+      - accentColor
+      - footer
     EmailEvent:
       type: object
       description: What the provider reported about the email.
@@ -9068,6 +9124,109 @@ components:
       - ses
       - smtp
       - version
+    EmailSetup:
+      type: object
+      description: "What the saved provider says about whether email from the sender's\
+        \ domain can leave, read from its API just now."
+      properties:
+        checkedAt:
+          type: string
+          format: date-time
+        checks:
+          type: array
+          description: "Each step the provider answered, in order. Empty for SMTP,\
+            \ which has no API to ask."
+          items:
+            $ref: "#/components/schemas/EmailSetupCheck"
+        domain:
+          type: string
+          description: The domain of the sender's address.
+        limit:
+          type:
+          - string
+          - "null"
+          description: Why the provider could not be asked everything; null when it
+            answered.
+          enum:
+          - permission_missing
+          - credentials_refused
+          - unreachable
+        provider:
+          type: string
+          enum:
+          - ses
+          - resend
+          - smtp
+        records:
+          type: array
+          description: The DNS records the domain must hold.
+          items:
+            $ref: "#/components/schemas/EmailSetupDnsRecord"
+      required:
+      - checkedAt
+      - checks
+      - domain
+      - provider
+      - records
+    EmailSetupCheck:
+      type: object
+      properties:
+        state:
+          type: string
+          enum:
+          - ok
+          - pending
+          - failed
+          - unknown
+        step:
+          type: string
+          enum:
+          - credentials
+          - domain_added
+          - domain_verified
+          - dkim
+          - mail_from
+          - production_access
+          - sending_enabled
+      required:
+      - state
+      - step
+    EmailSetupDnsRecord:
+      type: object
+      properties:
+        host:
+          type: string
+          description: "The name relative to the domain, as DNS hosts ask for it;\
+            \ @ for the domain itself."
+        priority:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: The MX priority; null for any other type.
+        purpose:
+          type: string
+          description: "dkim, spf, mail_from, dmarc, or the provider's own word."
+        state:
+          type: string
+          description: Whether the provider found it; unknown for a record it does
+            not look for.
+          enum:
+          - ok
+          - pending
+          - failed
+          - unknown
+        type:
+          type: string
+          example: TXT
+        value:
+          type: string
+      required:
+      - host
+      - purpose
+      - state
+      - type
+      - value
     EmailSmtpSettings:
       type: object
       properties:
