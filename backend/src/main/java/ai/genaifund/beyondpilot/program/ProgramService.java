@@ -17,6 +17,7 @@ import ai.genaifund.beyondpilot.program.dto.ProgramKeyDate;
 import ai.genaifund.beyondpilot.program.dto.ProgramListRequest;
 import ai.genaifund.beyondpilot.program.dto.ProgramListResponse;
 import ai.genaifund.beyondpilot.program.dto.ProgramResponse;
+import ai.genaifund.beyondpilot.program.persistence.PageKind;
 import ai.genaifund.beyondpilot.program.persistence.Program;
 import ai.genaifund.beyondpilot.program.persistence.ProgramQueryRepository;
 import ai.genaifund.beyondpilot.program.persistence.ProgramRepository;
@@ -96,6 +97,27 @@ public class ProgramService {
 					.map(question -> new ApplicationForm.Question(question.id(), question.kind(), question.label(),
 							question.help(), question.required(), List.of(question.options()), question.maxLength()))
 					.toList()));
+	}
+
+	/** The program as search indexes it, while it is published; empty for a draft or a program that is gone. */
+	@Transactional(readOnly = true)
+	public Optional<IndexedProgram> indexed(UUID id) {
+		return programs.findById(id)
+			.filter(program -> program.getStatus() == ProgramStatus.PUBLISHED)
+			.map(ProgramService::indexed);
+	}
+
+	/** Every published program as search indexes it, for a rebuild of the index. */
+	@Transactional(readOnly = true)
+	public List<IndexedProgram> indexedAll() {
+		return programs.findByStatus(ProgramStatus.PUBLISHED).stream().map(ProgramService::indexed).toList();
+	}
+
+	private static IndexedProgram indexed(Program program) {
+		return new IndexedProgram(program.getId(), program.getSlug(), program.getName(), program.getType().code(),
+				program.getPartnerName(), program.getSummary(), program.getAbout(), program.getCoverFileId(),
+				program.getPageKind() == PageKind.EXTERNAL ? program.getExternalUrl() : null, program.getStartsOn(),
+				program.getEndsOn(), program.getApplicationsOpenAt(), program.getApplicationsCloseAt());
 	}
 
 	/**

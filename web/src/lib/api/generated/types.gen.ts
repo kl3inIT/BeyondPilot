@@ -2020,6 +2020,65 @@ export type SaveTalentProfile = {
 };
 
 /**
+ * How many items of each kind match, whatever kind is shown.
+ */
+export type SearchCounts = {
+    all: number;
+    program: number;
+    solution: number;
+    talent: number;
+};
+
+/**
+ * One result, as its card shows it.
+ */
+export type SearchItem = {
+    /**
+     * The cover, read at the public address of stored files.
+     */
+    coverFileId?: string | null;
+    endsOn?: string | null;
+    /**
+     * Where a program's page is when it has none here.
+     */
+    externalUrl?: string | null;
+    kind: 'program' | 'solution' | 'talent';
+    /**
+     * Where a program stands now; null for other kinds.
+     */
+    phase?: 'upcoming' | 'open' | 'running' | 'done';
+    /**
+     * The address of its page under the path of its kind.
+     */
+    slug: string;
+    startsOn?: string | null;
+    /**
+     * The partner of a program, the organization of a solution, the headline of a person.
+     */
+    subtitle?: string | null;
+    summary: string;
+    title: string;
+    /**
+     * A program's type; null for other kinds.
+     */
+    type?: string | null;
+};
+
+/**
+ * One page of what matches, best first, with the counts of every kind.
+ */
+export type SearchResults = {
+    counts: SearchCounts;
+    items: Array<SearchItem>;
+    page: number;
+    pageSize: number;
+    /**
+     * How many items of the kind shown match, every kind when none is chosen.
+     */
+    total: number;
+};
+
+/**
  * A message to the person behind a talent profile.
  */
 export type SendTalentEnquiry = {
@@ -4757,6 +4816,44 @@ export type ResendReviewerInvitationResponses = {
 };
 
 export type ResendReviewerInvitationResponse = ResendReviewerInvitationResponses[keyof ResendReviewerInvitationResponses];
+
+export type SearchData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * What to search for, as the person typed it.
+         */
+        q: string;
+        /**
+         * Only items of this kind; every kind when absent.
+         */
+        kind?: 'program' | 'solution' | 'talent';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/search';
+};
+
+export type SearchErrors = {
+    /**
+     * The query is missing or too long, or a parameter is not valid.
+     */
+    400: Problem;
+};
+
+export type SearchError = SearchErrors[keyof SearchErrors];
+
+export type SearchResponses = {
+    /**
+     * A page of results and the counts of every kind.
+     */
+    200: SearchResults;
+};
+
+export type SearchResponse = SearchResponses[keyof SearchResponses];
 
 export type ApproveCustomerDeploymentData = {
     body?: never;

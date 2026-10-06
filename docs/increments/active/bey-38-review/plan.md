@@ -5,7 +5,7 @@ Design: [design.md](design.md). Tracked in Linear as BEY-38.
 | #   | Step                                                                                                                            | State |
 | --- | ------------------------------------------------------------------------------------------------------------------------------- | ----- |
 | 1   | Research, this design and plan; Figma O1–O3 revised with criteria, judges and the applicant's outcome                           | Done  |
-| 2   | Backend: `V16`; a program's criteria; inviting, sending again and removing judges, with the invitation email and the audit      | Done  |
+| 2   | Backend: `V17`; a program's criteria; inviting, sending again and removing judges, with the invitation email and the audit      | Done  |
 | 3   | Backend: the applications to review, one application as submitted, saving an assessment, a conflict                             | Done  |
 | 4   | Backend: decisions, the release with its emails, the outcome shown to the applicant; `openapi.yml` and the web client refreshed | Done  |
 | 5   | Web for operators: the Applications, Reviewers and Release screens and the review of one application                            | Done  |

@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.program.persistence;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,6 +21,8 @@ public interface ProgramRepository extends JpaRepository<Program, UUID> {
 	Optional<Program> findForUpdate(UUID id);
 
 	Optional<Program> findBySlug(String slug);
+
+	List<Program> findByStatus(ProgramStatus status);
 
 	boolean existsBySlug(String slug);
 
