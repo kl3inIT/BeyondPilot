@@ -1,12 +1,14 @@
 "use client";
 
-import { SlidersHorizontalIcon } from "lucide-react";
+import { cn } from "cn";
+import { SlidersHorizontalIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useQueryStates } from "nuqs";
-import { useId } from "react";
+import { debounce, useQueryStates } from "nuqs";
+import { useId, useState, useTransition } from "react";
 
 import { Button } from "@/components/actions/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { DirectorySearch } from "@/components/composites/directory-search";
+import { DirectorySortSelect } from "@/components/composites/directory-sort";
 import {
   Select,
   SelectContent,
@@ -15,188 +17,196 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
 
 import { availabilities, engagements, talentRoles } from "./talent-codes";
 import { talentSearch } from "./talent-search";
 
-type Facet = {
-  key: string;
+/** How long the search waits after the last keystroke before it asks the server. */
+const SEARCH_DELAY_MS = 300;
+
+/** The roles the chips offer; the others are reached by search. */
+const chipRoles = [
+  "forward_deployed_engineer",
+  "ai_engineer",
+  "ml_engineer",
+  "automation_specialist",
+  "data_engineer",
+  "data_scientist",
+] as const;
+
+/** The value of the chip that lifts the role filter. */
+const ALL = "all";
+
+/** The code among `codes` that a control answered, or none when it answered "all". */
+function pick<Code extends string>(codes: readonly Code[], value: string | null): Code | null {
+  return codes.find((code) => code === value) ?? null;
+}
+
+type FacetSelectProps = {
   label: string;
-  /** The words of the select when the filter is off: "All roles". */
+  /** The words of the select when the facet is off: "Any availability". */
   all: string;
-  value: string | null;
   options: { value: string; label: string }[];
-  choose: (value: string | null) => void;
+  value: string | null;
+  onChange: (value: string | null) => void;
+};
+
+/** One facet of the directory. Off, it reads as a placeholder; the URL then has no such parameter. */
+function FacetSelect({ label, all, options, value, onChange }: FacetSelectProps) {
+  const items = [{ value: null, label: all }, ...options];
+
+  return (
+    <Select items={items} value={value} onValueChange={onChange}>
+      <SelectTrigger aria-label={label} className="w-full md:w-47.5">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          {items.map((item) => (
+            <SelectItem key={item.value ?? ""} value={item.value}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
+}
+
+type TalentFiltersProps = {
+  /** How much of the list shows, already worded: "Showing 12 of 21". Absent when nothing matches. */
+  count: string | null;
 };
 
 /**
- * The facets the directory can be narrowed by. Each is one parameter of the URL holding one value,
- * because that is what the API takes; a change returns to page 1.
+ * The search, the role chips and the facets above the directory of talent, as the directories of
+ * use cases and solutions have them. They are the URL: a change writes it and the server reads the
+ * list again, from page 1 (docs/conventions.md › Lists). On a phone the chips scroll sideways and
+ * the facets fold behind one button.
  */
-function useFacets(): Facet[] {
+function TalentFilters({ count }: TalentFiltersProps) {
   const t = useTranslations("Talent.filters");
   const role = useVocabulary("talentRole");
   const availability = useVocabulary("availability");
   const engagement = useVocabulary("engagement");
   const countryName = useCountryName();
-  const [search, setSearch] = useQueryStates(talentSearch, { shallow: false });
-
-  return [
-    {
-      key: "role",
-      label: t("role.label"),
-      all: t("role.all"),
-      value: search.role,
-      options: talentRoles.map((value) => ({ value, label: role(value) })),
-      choose: (value) =>
-        setSearch({ role: talentRoles.find((code) => code === value) ?? null, page: null }),
-    },
-    {
-      key: "availability",
-      label: t("availability.label"),
-      all: t("availability.all"),
-      value: search.availability,
-      options: availabilities.map((value) => ({ value, label: availability(value) })),
-      choose: (value) =>
-        setSearch({
-          availability: availabilities.find((code) => code === value) ?? null,
-          page: null,
-        }),
-    },
-    {
-      key: "engagement",
-      label: t("engagement.label"),
-      all: t("engagement.all"),
-      value: search.engagement,
-      options: engagements.map((value) => ({ value, label: engagement(value) })),
-      choose: (value) =>
-        setSearch({
-          engagement: engagements.find((code) => code === value) ?? null,
-          page: null,
-        }),
-    },
-    {
-      key: "country",
-      label: t("country.label"),
-      all: t("country.all"),
-      value: search.country,
-      options: countryCodes.map((value) => ({ value, label: countryName(value) })),
-      choose: (value) =>
-        setSearch({ country: countryCodes.find((code) => code === value) ?? null, page: null }),
-    },
+  const [loading, startTransition] = useTransition();
+  const [search, setSearch] = useQueryStates(talentSearch, { shallow: false, startTransition });
+  const narrowed =
+    search.availability !== null || search.engagement !== null || search.country !== null;
+  const [open, setOpen] = useState(narrowed);
+  const facets = useId();
+  // A role the chips do not offer, chosen by an address, still shows as chosen.
+  const roles = [
+    ...chipRoles,
+    ...(search.role && !pick(chipRoles, search.role) ? [search.role] : []),
   ];
-}
-
-/** One facet as a list of check boxes. Checking a value replaces the one checked before. */
-function FacetGroup({ facet }: { facet: Facet }) {
-  const labelId = useId();
 
   return (
-    <div role="group" aria-labelledby={labelId} className="flex flex-col gap-3">
-      <p id={labelId} className="text-sm">
-        {facet.label}
-      </p>
-      {facet.options.map((option) => (
-        <label key={option.value} className="flex items-center gap-2 text-sm">
-          {/* The page floor is tinted; the box itself stays white, as a field does. */}
-          <span className="flex rounded-sm bg-background">
-            <Checkbox
-              checked={facet.value === option.value}
-              onCheckedChange={(checked) => facet.choose(checked ? option.value : null)}
-            />
-          </span>
-          {option.label}
-        </label>
-      ))}
-    </div>
-  );
-}
+    <>
+      <DirectorySearch
+        label={t("search")}
+        value={search.q}
+        loading={loading}
+        onChange={(q) =>
+          setSearch(
+            { q, page: null },
+            { limitUrlUpdates: q ? debounce(SEARCH_DELAY_MS) : undefined },
+          )
+        }
+      />
 
-function FacetGroups() {
-  const facets = useFacets();
-
-  return (
-    <div className="flex flex-col gap-6">
-      {facets.map((facet) => (
-        <FacetGroup key={facet.key} facet={facet} />
-      ))}
-    </div>
-  );
-}
-
-/** The filters beside the results on a wide screen. */
-function TalentFilterSidebar() {
-  const t = useTranslations("Talent.filters");
-
-  return (
-    <aside aria-label={t("open")} className="w-60 shrink-0 max-xl:hidden">
-      <FacetGroups />
-    </aside>
-  );
-}
-
-/**
- * The filters above the results where the sidebar does not fit: a select per facet on a tablet, and
- * on a phone one button that opens them in a sheet.
- */
-function TalentFilterBar() {
-  const t = useTranslations("Talent.filters");
-  const facets = useFacets();
-
-  return (
-    <div className="flex gap-2 xl:hidden">
-      {facets.map((facet) => {
-        const items = [{ value: null, label: facet.all }, ...facet.options];
-        return (
-          <div key={facet.key} className="w-48 rounded-lg bg-background max-md:hidden">
-            <Select items={items} value={facet.value} onValueChange={facet.choose}>
-              <SelectTrigger aria-label={facet.label} className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {items.map((item) => (
-                    <SelectItem key={item.value ?? ""} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-        );
-      })}
-      <Sheet>
-        <SheetTrigger
-          render={<Button prominence="secondary" size="lg" className="flex-1 md:hidden" />}
+      {/* On a phone the chips scroll sideways, edge to edge. */}
+      <div className="-mx-5 overflow-x-auto px-5 md:mx-0 md:overflow-visible md:px-0">
+        <ToggleGroup
+          aria-label={t("role.label")}
+          variant="outline"
+          size="sm"
+          className="w-max md:w-full md:flex-wrap"
+          value={[search.role ?? ALL]}
+          onValueChange={(value) => {
+            const chosen = value[0] ?? ALL;
+            setSearch({ role: pick(talentRoles, chosen), page: null });
+          }}
         >
-          <SlidersHorizontalIcon aria-hidden="true" />
+          <ToggleGroupItem value={ALL} className="shrink-0">
+            {t("role.all")}
+          </ToggleGroupItem>
+          {roles.map((value) => (
+            <ToggleGroupItem key={value} value={value} className="shrink-0">
+              {role(value)}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </div>
+
+      <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={facets}
+          className="flex h-10 items-center justify-center gap-2 rounded-lg border border-input bg-background px-3.5 text-sm font-medium transition-colors outline-none hover:bg-accent focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
+          onClick={() => setOpen(!open)}
+        >
+          <SlidersHorizontalIcon className="size-4" aria-hidden="true" />
           {t("open")}
-        </SheetTrigger>
-        <SheetContent side="bottom" closeLabel={t("close")} className="max-h-dvh">
-          <SheetHeader>
-            <SheetTitle>{t("open")}</SheetTitle>
-          </SheetHeader>
-          <div className="overflow-y-auto px-4">
-            <FacetGroups />
-          </div>
-          <SheetFooter>
-            <SheetClose render={<Button size="lg" />}>{t("done")}</SheetClose>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
-    </div>
+        </button>
+        <div
+          id={facets}
+          className={cn(
+            open ? "flex" : "hidden",
+            "flex-col gap-2 md:flex md:flex-row md:flex-wrap md:items-center",
+          )}
+        >
+          <FacetSelect
+            label={t("availability.label")}
+            all={t("availability.all")}
+            options={availabilities.map((value) => ({ value, label: availability(value) }))}
+            value={search.availability}
+            onChange={(value) =>
+              setSearch({ availability: pick(availabilities, value), page: null })
+            }
+          />
+          <FacetSelect
+            label={t("engagement.label")}
+            all={t("engagement.all")}
+            options={engagements.map((value) => ({ value, label: engagement(value) }))}
+            value={search.engagement}
+            onChange={(value) => setSearch({ engagement: pick(engagements, value), page: null })}
+          />
+          <FacetSelect
+            label={t("country.label")}
+            all={t("country.all")}
+            options={countryCodes.map((value) => ({ value, label: countryName(value) }))}
+            value={search.country}
+            onChange={(value) => setSearch({ country: pick(countryCodes, value), page: null })}
+          />
+          {narrowed && (
+            <Button
+              prominence="tertiary"
+              size="sm"
+              className="self-start md:self-auto"
+              onClick={() =>
+                setSearch({ availability: null, engagement: null, country: null, page: null })
+              }
+            >
+              <XIcon aria-hidden="true" />
+              {t("clear")}
+            </Button>
+          )}
+        </div>
+        <div className="flex items-center justify-between gap-3 md:justify-end">
+          {count && <p className="text-sm text-muted-foreground">{count}</p>}
+          <DirectorySortSelect
+            value={search.sort}
+            onChange={(sort) => setSearch({ sort, page: null })}
+          />
+        </div>
+      </div>
+    </>
   );
 }
 
-export { TalentFilterBar, TalentFilterSidebar };
+export { TalentFilters };

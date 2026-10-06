@@ -1990,7 +1990,9 @@
         "description": "Nothing matches this search and these filters.",
         "clear": "Clear search and filters"
       },
-      "edit": "Edit your profile"
+      "edit": "Edit your profile",
+      "noProject": "No project published yet",
+      "projects": "{count} projects on the profile"
     },
     "filters": {
       "search": "Search talent by name or skill",
@@ -2000,7 +2002,7 @@
       "adminSearch": "Search by name or email",
       "role": {
         "label": "Role",
-        "all": "All roles"
+        "all": "All talent"
       },
       "availability": {
         "label": "Availability",
@@ -2037,18 +2039,10 @@
       "about": "About",
       "projects": {
         "title": "Deployed projects",
-        "lead": "Each project is shown as stated by the person.",
+        "lead": "Each project shows how far it went. Nobody else has confirmed it yet: it is shown as stated by the person.",
         "stated": "Stated by the person",
         "open": "View the project",
         "empty": "No deployed project published yet."
-      },
-      "fit": {
-        "title": "Skills and availability",
-        "skills": "Skills",
-        "availability": "Availability",
-        "engagement": "Open to",
-        "languages": "Languages",
-        "industries": "Industries"
       },
       "facts": {
         "country": "Based in",
@@ -2062,7 +2056,18 @@
       },
       "notListed": "Not listed yet",
       "note": "Messages go through BeyondPilot. {name} reads your name and organization; neither email address is shared unless they accept.",
-      "photoAlt": "Photo of {name}"
+      "photoAlt": "Photo of {name}",
+      "stats": {
+        "projects": "{count, plural, one {project on the profile} other {projects on the profile}}",
+        "inProduction": "in production",
+        "industries": "{count, plural, one {industry} other {industries}}"
+      },
+      "openTo": "Open to {engagement}.",
+      "skills": {
+        "title": "Skills and industries",
+        "skills": "Skills",
+        "industries": "Industries"
+      }
     },
     "enquiry": {
       "title": "Work with {name}",

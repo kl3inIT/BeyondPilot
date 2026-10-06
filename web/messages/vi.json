@@ -1990,7 +1990,9 @@
         "description": "Không có gì khớp với tìm kiếm và bộ lọc này.",
         "clear": "Xóa tìm kiếm và bộ lọc"
       },
-      "edit": "Sửa hồ sơ của bạn"
+      "edit": "Sửa hồ sơ của bạn",
+      "noProject": "Chưa có dự án nào",
+      "projects": "{count} dự án trên hồ sơ"
     },
     "filters": {
       "search": "Tìm nhân lực theo tên hoặc kỹ năng",
@@ -2000,7 +2002,7 @@
       "adminSearch": "Tìm theo tên hoặc email",
       "role": {
         "label": "Vai trò",
-        "all": "Mọi vai trò"
+        "all": "Tất cả nhân tài"
       },
       "availability": {
         "label": "Tình trạng",
@@ -2037,18 +2039,10 @@
       "about": "Giới thiệu",
       "projects": {
         "title": "Dự án đã triển khai",
-        "lead": "Mỗi dự án được hiển thị theo lời người này tự nêu.",
+        "lead": "Mỗi dự án ghi rõ đã đi tới giai đoạn nào. Chưa có ai xác nhận: dự án được hiển thị như người đó tự khai.",
         "stated": "Do người này tự nêu",
         "open": "Xem dự án",
         "empty": "Chưa có dự án đã triển khai nào được công bố."
-      },
-      "fit": {
-        "title": "Kỹ năng và tình trạng",
-        "skills": "Kỹ năng",
-        "availability": "Tình trạng",
-        "engagement": "Hình thức làm việc",
-        "languages": "Ngôn ngữ",
-        "industries": "Ngành"
       },
       "facts": {
         "country": "Nơi làm việc",
@@ -2062,7 +2056,18 @@
       },
       "notListed": "Chưa nêu",
       "note": "Lời nhắn đi qua BeyondPilot. {name} thấy tên và tổ chức của bạn; hai bên chỉ thấy email của nhau nếu họ chấp nhận.",
-      "photoAlt": "Ảnh của {name}"
+      "photoAlt": "Ảnh của {name}",
+      "stats": {
+        "projects": "dự án trên hồ sơ",
+        "inProduction": "đang vận hành",
+        "industries": "ngành"
+      },
+      "openTo": "Nhận làm: {engagement}.",
+      "skills": {
+        "title": "Kỹ năng và ngành",
+        "skills": "Kỹ năng",
+        "industries": "Ngành"
+      }
     },
     "enquiry": {
       "title": "Làm việc với {name}",

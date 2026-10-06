@@ -25,6 +25,8 @@ type TalentContactProps = {
   signInHref?: string;
   /** True when the profile is the caller's own: they edit it instead of writing to it. */
   own: boolean;
+  /** Whether the person takes on work and how, under the title. */
+  intro?: React.ReactNode;
   /** The facts about the person and the note on how an enquiry travels, under the actions. */
   children: React.ReactNode;
 };
@@ -42,6 +44,7 @@ function TalentContact({
   waitingSince,
   signInHref,
   own,
+  intro,
   children,
 }: TalentContactProps) {
   const t = useTranslations("Talent.enquiry");
@@ -61,6 +64,7 @@ function TalentContact({
         <h2 id="talent-contact" className="font-medium">
           {t("title", { name })}
         </h2>
+        {intro}
         {own && (
           <div className="flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">{t("ownLead")}</p>

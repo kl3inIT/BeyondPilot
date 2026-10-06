@@ -16,6 +16,7 @@ import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { PublicTalent, TalentProject } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { TalentAvailability } from "./talent-availability";
 import { TalentContact } from "./talent-contact";
 import { TalentPhoto } from "./talent-photo";
 
@@ -32,7 +33,12 @@ function hostOf(address: string) {
   return URL.canParse(address) ? new URL(address).host.replace(/^www\./, "") : address;
 }
 
-/** One profile of the public directory: who the person is, what they did, and the way to write to them. */
+/**
+ * One profile of the public directory, as the Figma frame draws it: who the person is, the counts
+ * that sum up their work, the projects as a timeline with how far each went, their skills and
+ * industries, and beside it the one way to write to them with whether they take on work. On a
+ * phone that card comes first, under the head.
+ */
 function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps) {
   const t = useTranslations("Talent.profile");
   const d = useTranslations("Talent.directory");
@@ -42,10 +48,35 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
   const language = useVocabulary("language");
   const industry = useVocabulary("industry");
   const countryName = useCountryName();
-  const roles = profile.roles.map(role).join(", ");
+  const kind = [
+    profile.roles.length > 0 && role(profile.roles[0]),
+    [profile.city, profile.country && countryName(profile.country)].filter(Boolean).join(", "),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const inProduction = profile.projects.filter(
+    (project) => project.stage === "in_production",
+  ).length;
+  const stats = [
+    {
+      value: profile.projects.length,
+      label: t("stats.projects", { count: profile.projects.length }),
+    },
+    ...(inProduction > 0
+      ? [{ value: inProduction, label: t("stats.inProduction", { count: inProduction }) }]
+      : []),
+    ...(profile.industries.length > 0
+      ? [
+          {
+            value: profile.industries.length,
+            label: t("stats.industries", { count: profile.industries.length }),
+          },
+        ]
+      : []),
+  ];
 
   return (
-    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-5 px-5 pt-4 pb-24 md:gap-7 md:px-8 md:pt-6 xl:px-16">
+    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-6 px-5 pt-4 pb-24 md:gap-8 md:px-8 md:pt-6 xl:px-16">
       <Breadcrumb aria-label={t("trail")}>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -58,86 +89,38 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="flex items-start gap-3.5 md:items-center md:gap-5">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
         <TalentPhoto
           name={profile.name}
           photoFileId={profile.photoFileId}
           size={96}
           alt={t("photoAlt", { name: profile.name })}
-          className="size-14 text-lg md:size-24 md:text-2xl"
+          className="size-18 text-xl md:size-24 md:text-2xl"
         />
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <h1 className="text-3xl font-semibold tracking-title text-balance md:text-4xl md:tracking-normal xl:text-5xl xl:leading-none xl:tracking-title">
+        <div className="flex min-w-0 flex-col gap-1">
+          <h1 className="text-3xl font-semibold tracking-title text-balance md:text-4xl xl:text-5xl xl:leading-none">
             {profile.name}
           </h1>
-          <p className="text-muted-foreground md:text-lg">{profile.headline ?? roles}</p>
+          {kind && <p className="text-muted-foreground">{kind}</p>}
+          {profile.headline && (
+            <p className="text-muted-foreground md:text-lg">{profile.headline}</p>
+          )}
         </div>
       </div>
 
-      <div className="flex flex-col gap-8 md:flex-row md:items-start xl:gap-12">
-        <div className="flex min-w-0 flex-1 flex-col gap-7 md:gap-9">
-          {profile.bio && (
-            <section aria-labelledby="talent-about" className="flex flex-col gap-2">
-              <h2 id="talent-about" className="text-xl font-semibold">
-                {t("about")}
-              </h2>
-              <p className="whitespace-pre-line text-muted-foreground">{profile.bio}</p>
-            </section>
-          )}
-
-          <section aria-labelledby="talent-projects" className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1">
-              <h2 id="talent-projects" className="text-xl font-semibold">
-                {t("projects.title")}
-              </h2>
-              {profile.projects.length > 0 && (
-                <p className="text-sm text-muted-foreground">{t("projects.lead")}</p>
-              )}
+      {profile.projects.length > 0 && (
+        <dl className="grid grid-cols-3 gap-4 border-y py-5 md:flex md:gap-12">
+          {stats.map((stat) => (
+            <div key={stat.label} className="flex flex-col gap-0.5">
+              <dt className="text-sm text-muted-foreground">{stat.label}</dt>
+              {/* The number reads first; the term still comes first for assistive technology. */}
+              <dd className="order-first text-2xl font-semibold">{stat.value}</dd>
             </div>
-            {profile.projects.length > 0 ? (
-              <ul className="flex flex-col gap-3">
-                {profile.projects.map((project, index) => (
-                  <ProjectItem key={`${index}-${project.title}`} project={project} />
-                ))}
-              </ul>
-            ) : (
-              <p className="rounded-xl border border-dashed bg-muted p-4 text-sm text-muted-foreground">
-                {t("projects.empty")}
-              </p>
-            )}
-          </section>
+          ))}
+        </dl>
+      )}
 
-          <section aria-labelledby="talent-fit" className="flex flex-col gap-3">
-            <h2 id="talent-fit" className="text-xl font-semibold">
-              {t("fit.title")}
-            </h2>
-            <dl className="grid gap-3 md:grid-cols-2">
-              {[
-                { key: t("fit.skills"), value: profile.skills.join(", ") },
-                {
-                  key: t("fit.availability"),
-                  value: profile.availability && availability(profile.availability),
-                },
-                {
-                  key: t("fit.engagement"),
-                  value: profile.engagement.map(engagement).join(", "),
-                },
-                { key: t("fit.languages"), value: profile.languages.map(language).join(", ") },
-                { key: t("fit.industries"), value: profile.industries.map(industry).join(", ") },
-              ].map((fact) => (
-                <div key={fact.key} className="flex flex-col gap-0.5 rounded-xl bg-muted p-4">
-                  <dt className="text-xs text-muted-foreground">{fact.key}</dt>
-                  {fact.value ? (
-                    <dd className="text-sm font-medium">{fact.value}</dd>
-                  ) : (
-                    <dd className="text-sm text-muted-foreground">{t("notListed")}</dd>
-                  )}
-                </div>
-              ))}
-            </dl>
-          </section>
-        </div>
-
+      <div className="flex flex-col gap-8 md:flex-row-reverse md:items-start xl:gap-12">
         <div className="md:w-75 md:shrink-0 xl:w-95">
           <TalentContact
             slug={profile.slug}
@@ -147,6 +130,16 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
             waitingSince={profile.waitingEnquirySentAt}
             signInHref={signInHref}
             own={own}
+            intro={
+              <div className="flex flex-col gap-1">
+                {profile.availability && <TalentAvailability availability={profile.availability} />}
+                {profile.engagement.length > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    {t("openTo", { engagement: profile.engagement.map(engagement).join(", ") })}
+                  </p>
+                )}
+              </div>
+            }
           >
             <dl className="flex flex-col gap-2.5">
               <ContactFact name={t("facts.country")}>
@@ -154,6 +147,11 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
                   .filter(Boolean)
                   .join(", ") || t("notListed")}
               </ContactFact>
+              {profile.languages.length > 0 && (
+                <ContactFact name={t("facts.languages")}>
+                  {profile.languages.map(language).join(", ")}
+                </ContactFact>
+              )}
               {profile.worksAt && (
                 <ContactFact name={t("facts.worksAt")}>
                   {profile.worksAt}{" "}
@@ -162,7 +160,6 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
                   </span>
                 </ContactFact>
               )}
-              <ContactFact name={t("facts.role")}>{roles || t("notListed")}</ContactFact>
               {profile.website && (
                 <ContactFact name={t("facts.website")}>
                   <TextButton
@@ -180,37 +177,110 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
             <p className="text-xs text-muted-foreground">{t("note", { name: profile.name })}</p>
           </TalentContact>
         </div>
+
+        <div className="flex min-w-0 flex-1 flex-col gap-8 md:gap-10">
+          {profile.bio && (
+            <section aria-labelledby="talent-about" className="flex flex-col gap-2">
+              <h2 id="talent-about" className="text-xl font-semibold">
+                {t("about")}
+              </h2>
+              <p className="max-w-180 whitespace-pre-line text-muted-foreground">{profile.bio}</p>
+            </section>
+          )}
+
+          <section aria-labelledby="talent-projects" className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1">
+              <h2 id="talent-projects" className="text-xl font-semibold">
+                {t("projects.title")}
+              </h2>
+              {profile.projects.length > 0 && (
+                <p className="text-sm text-muted-foreground">{t("projects.lead")}</p>
+              )}
+            </div>
+            {profile.projects.length > 0 ? (
+              <ol className="flex flex-col">
+                {profile.projects.map((project, index) => (
+                  <ProjectEntry key={`${index}-${project.title}`} project={project} />
+                ))}
+              </ol>
+            ) : (
+              <p className="rounded-xl border border-dashed bg-muted p-4 text-sm text-muted-foreground">
+                {t("projects.empty")}
+              </p>
+            )}
+          </section>
+
+          {(profile.skills.length > 0 || profile.industries.length > 0) && (
+            <section aria-labelledby="talent-skills" className="flex flex-col gap-3">
+              <h2 id="talent-skills" className="text-xl font-semibold">
+                {t("skills.title")}
+              </h2>
+              <BadgeGroup title={t("skills.skills")} labels={profile.skills} />
+              <BadgeGroup
+                title={t("skills.industries")}
+                labels={profile.industries.map(industry)}
+              />
+            </section>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
 /**
- * One project as the person stated it, with how far it went. Nobody else has confirmed it, and the
- * badge says so.
+ * One project on the timeline: the year and how far it went on the left, what it was and the
+ * person's part on the right. Nobody else has confirmed it, and the line under it says so.
  */
-function ProjectItem({ project }: { project: TalentProject }) {
+function ProjectEntry({ project }: { project: TalentProject }) {
   const t = useTranslations("Talent.profile.projects");
   const stage = useVocabulary("projectStage");
 
   return (
-    <li className="flex flex-col items-start gap-2 rounded-xl border bg-background p-4">
-      <div className="flex flex-wrap gap-2">
+    <li className="flex flex-col gap-3 border-t py-5 md:flex-row md:gap-6">
+      <div className="flex shrink-0 flex-row items-center gap-2 md:w-32 md:flex-col md:items-start">
+        {project.year && <span className="text-sm text-muted-foreground">{project.year}</span>}
         {project.stage && <Badge variant="outline">{stage(project.stage)}</Badge>}
-        <Badge variant="outline">{t("stated")}</Badge>
       </div>
-      <h3 className="text-sm">{project.title}</h3>
-      {project.summary && (
-        <p className="text-sm whitespace-pre-line text-muted-foreground">{project.summary}</p>
-      )}
-      {project.year && <p className="text-xs font-medium text-muted-foreground">{project.year}</p>}
-      {project.url && (
-        <TextButton href={project.url} target="_blank" rel="noreferrer" className="font-normal">
-          {t("open")}
-          <ArrowRightIcon aria-hidden="true" />
-        </TextButton>
-      )}
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <h3 className="font-medium">{project.title}</h3>
+        {project.summary && (
+          <p className="max-w-180 text-sm whitespace-pre-line text-muted-foreground">
+            {project.summary}
+          </p>
+        )}
+        <p className="text-xs font-medium text-muted-foreground">{t("stated")}</p>
+        {project.url && (
+          <TextButton
+            href={project.url}
+            target="_blank"
+            rel="noreferrer"
+            className="self-start font-normal"
+          >
+            {t("open")}
+            <ArrowRightIcon aria-hidden="true" />
+          </TextButton>
+        )}
+      </div>
     </li>
+  );
+}
+
+function BadgeGroup({ title, labels }: { title: string; labels: string[] }) {
+  if (labels.length === 0) {
+    return null;
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      <h3 className="text-sm text-muted-foreground">{title}</h3>
+      <ul className="flex flex-wrap gap-1.5">
+        {labels.map((label) => (
+          <li key={label}>
+            <Badge variant="outline">{label}</Badge>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

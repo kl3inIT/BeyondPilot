@@ -48,8 +48,15 @@ test.describe("talent directory", () => {
     await page.goto("/talent?sort=name");
     await expect(shownPeople(page)).toHaveText(["Arif Hidayat", "Đạt Phan", "Linh Nguyễn"]);
 
+    await page.goto("/talent");
+    await page.getByRole("button", { name: "ML engineer" }).click();
+    await expect(page).toHaveURL(/[?&]role=ml_engineer/);
+    await expect(shownPeople(page)).toHaveText(["Arif Hidayat"]);
+    await page.getByRole("button", { name: "All talent" }).click();
+    await expect(shownPeople(page)).toHaveCount(3);
+
     await page.goto("/talent?q=nobody");
-    await expect(page.getByRole("heading", { name: "No profile matches" })).toBeVisible();
+    await expect(page.getByText("No profile matches")).toBeVisible();
     await page.getByRole("link", { name: "Clear search and filters" }).click();
     await expect(page).toHaveURL("/talent");
     await expect(shownPeople(page)).toHaveCount(3);
@@ -77,7 +84,8 @@ test.describe("talent directory", () => {
     await expect(page.getByText("Claims assistant for an insurer")).toBeVisible();
     await expect(page.getByText("Stated by the person", { exact: true })).toBeVisible();
     await expect(page.getByText("Contract, Advisory")).toBeVisible();
-    await expect(page.getByText("In production")).toBeVisible();
+    await expect(page.getByText("In production", { exact: true })).toBeVisible();
+    await expect(page.getByText("project on the profile")).toBeVisible();
     await expect(page.getByText("Vietnamese, English")).toBeVisible();
     await expect(page.getByText("Revee AI")).toBeVisible();
     // The rate is for the person and GenAI Fund, not the public.
@@ -101,7 +109,8 @@ test.describe("talent directory", () => {
     await page.goto("/talent/arif-hidayat");
 
     await expect(page.getByText("No deployed project published yet.")).toBeVisible();
-    await expect(page.getByText("Not listed yet")).toBeVisible();
+    // With no project there is nothing to count.
+    await expect(page.getByText("on the profile")).toHaveCount(0);
 
     expect((await page.goto("/talent/no-such-person"))?.status()).toBe(404);
   });
