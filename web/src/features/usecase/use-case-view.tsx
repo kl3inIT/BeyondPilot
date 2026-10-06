@@ -14,6 +14,7 @@ import { describeUseCaseError } from "./my-use-case-errors";
 import { draftValuesOf } from "./use-case-draft";
 import { UseCaseSummary } from "./use-case-summary";
 import { WizardShell } from "./wizard-shell";
+import { LiveRefresh } from "./live-refresh";
 
 /**
  * A use case the members cannot change now, laid out as it was written: one that waits for GenAI Fund,
@@ -67,6 +68,7 @@ function UseCaseView({ useCase }: { useCase: MyUseCase }) {
       done={(step) => step !== "review"}
       notes={[inReview ? t("inReview.note") : t("closed.note")]}
     >
+      <LiveRefresh />
       <div className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">
           {inReview ? t("inReview.title") : t("closed.title")}

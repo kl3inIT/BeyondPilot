@@ -17,6 +17,7 @@ import { siteRoutes } from "@/lib/site";
 
 import { MyUseCaseActions } from "./my-use-case-actions";
 import { PostUseCase } from "./post-use-case";
+import { LiveRefresh } from "./live-refresh";
 
 type MyUseCasesPageProps = {
   mine: MyOrganization & { organization: Organization };
@@ -99,6 +100,7 @@ function MyUseCasesPage({ mine, useCases, members, solutions }: MyUseCasesPagePr
       current="useCases"
       counts={{ members, solutions, useCases: useCases.items.length }}
     >
+      <LiveRefresh />
       <OrganizationSection
         id="use-cases-list"
         title={t("title")}

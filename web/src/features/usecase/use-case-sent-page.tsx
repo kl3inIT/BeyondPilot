@@ -6,6 +6,7 @@ import type { MyUseCase } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { PostUseCase } from "./post-use-case";
+import { LiveRefresh } from "./live-refresh";
 
 /** What the people of the organization see once they have sent a use case: what was sent and what happens next. */
 function UseCaseSentPage({ useCase }: { useCase: MyUseCase }) {
@@ -36,6 +37,7 @@ function UseCaseSentPage({ useCase }: { useCase: MyUseCase }) {
 
   return (
     <div className="flex flex-1 justify-center bg-muted px-5 py-10 md:py-16">
+      <LiveRefresh />
       <div className="flex w-full max-w-2xl flex-col gap-8 rounded-3xl border bg-background p-6 md:p-10">
         <div className="flex flex-col gap-3">
           <h1 className="flex items-center gap-3 text-3xl font-semibold tracking-tight">
