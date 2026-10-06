@@ -3,6 +3,8 @@ package ai.genaifund.beyondpilot.search;
 import static ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.SOLUTION;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -28,8 +30,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 /**
  * Search by meaning against PostgreSQL with pgvector. The model is a stand-in whose vectors are exact: each text points
@@ -39,6 +44,14 @@ import org.springframework.test.annotation.DirtiesContext;
 @SpringBootTest
 @Import({ TestcontainersConfiguration.class, SearchMeaningTest.Model.class })
 class SearchMeaningTest {
+
+	/** A key made for this run, so that no key is written in the repository. */
+	@DynamicPropertySource
+	static void encryptionKey(DynamicPropertyRegistry registry) {
+		byte[] key = new byte[32];
+		new SecureRandom().nextBytes(key);
+		registry.add("beyondpilot.search.embedding.encryption-key", () -> Base64.getEncoder().encodeToString(key));
+	}
 
 	@Autowired
 	private SearchDocumentRepository index;
@@ -55,9 +68,28 @@ class SearchMeaningTest {
 	@Autowired
 	private JdbcClient jdbc;
 
+	@Autowired
+	private ProviderKeys keys;
+
+	@Autowired
+	private EmbeddingClients clients;
+
+	/** An empty index, and OpenAI's large model set the way an operator sets it, with semantic search on. */
 	@BeforeEach
 	void emptyIndex() {
 		jdbc.sql("delete from search_document").update();
+		jdbc.sql("update search_settings set provider_id = null, model = null, semantic_enabled = true").update();
+		jdbc.sql("delete from ai_provider").update();
+		UUID provider = UUID.randomUUID();
+		jdbc.sql("""
+				insert into ai_provider (id, purpose, vendor, name, base_url, api_key, updated_by, updated_by_label)
+				values (?, 'embedding', 'openai', 'OpenAI', 'https://api.openai.com/v1', ?, ?, 'Test')
+				""").params(provider, keys.seal("sk-test"), UUID.randomUUID()).update();
+		jdbc.sql("update search_settings set provider_id = ?, model = 'text-embedding-3-large', model_since = now()")
+			.param(provider)
+			.update();
+		clients.reload();
+		embeddings.forget();
 		model.failing.set(false);
 	}
 
@@ -102,6 +134,40 @@ class SearchMeaningTest {
 
 		assertThat(titles("customer calls")).containsExactly("Hotline Assist");
 		assertThat(titles("chăm sóc khách hàng")).isEmpty();
+	}
+
+	@Test
+	void turnedOffSearchMatchesKeywordsOnlyAndSendsTheProviderNothing() {
+		save("Hotline Assist", "Answers inbound customer calls.");
+		jdbc.sql("update search_settings set semantic_enabled = false").update();
+		clients.reload();
+
+		embeddings.embedPending();
+		assertThat(jdbc.sql("select count(embedding) from search_document").query(Long.class).single()).isZero();
+		assertThat(titles("customer calls")).containsExactly("Hotline Assist");
+		assertThat(titles("chăm sóc khách hàng")).isEmpty();
+
+		// Turned on again, it first embeds what changed meanwhile.
+		jdbc.sql("update search_settings set semantic_enabled = true").update();
+		clients.reload();
+		embeddings.embedPending();
+		assertThat(titles("chăm sóc khách hàng")).containsExactly("Hotline Assist");
+	}
+
+	@Test
+	void anotherModelEmbedsEveryItemAgainAndIsUsedAtOnce() {
+		save("Hotline Assist", "Answers inbound customer calls.");
+		embeddings.embedPending();
+		assertThat(index.pendingEmbeddings("text-embedding-3-large", 10)).isEmpty();
+
+		jdbc.sql("update search_settings set model = 'text-embedding-3-small'").update();
+		clients.reload();
+		embeddings.forget();
+		assertThat(index.pendingEmbeddings("text-embedding-3-small", 10)).hasSize(1);
+		// Until it is embedded again, its vector of the other model is never compared: only the words find it.
+		assertThat(titles("chăm sóc khách hàng")).isEmpty();
+		embeddings.embedPending();
+		assertThat(titles("chăm sóc khách hàng")).containsExactly("Hotline Assist");
 	}
 
 	@Test
@@ -188,12 +254,24 @@ class SearchMeaningTest {
 
 	}
 
+	/** The stand-in model answers for every provider, key and model an operator sets. */
 	@TestConfiguration(proxyBeanMethods = false)
 	static class Model {
 
 		@Bean
 		Topics topics() {
 			return new Topics();
+		}
+
+		@Bean
+		@Primary
+		OpenAiEmbeddings topicsForEveryProvider(Topics topics) {
+			return new OpenAiEmbeddings() {
+				@Override
+				EmbeddingModel connect(String baseUrl, String apiKey, String model) {
+					return topics;
+				}
+			};
 		}
 
 	}

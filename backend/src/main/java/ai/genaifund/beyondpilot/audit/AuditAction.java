@@ -150,7 +150,29 @@ public enum AuditAction {
 	EMAIL_SUPPRESSION_REMOVE("email.suppression_remove", "reason"),
 
 	/** An operator sent an email again; the resource is the message sent again. */
-	EMAIL_RESEND("email.resend");
+	EMAIL_RESEND("email.resend"),
+
+	/** An operator connected an AI provider. {@code vendor} is {@code openai} or {@code openrouter}. */
+	AI_PROVIDER_CREATE("ai.provider_create", "vendor"),
+
+	/** An operator changed an AI provider. {@code key} is {@code kept}, {@code replaced} or {@code removed}. */
+	AI_PROVIDER_UPDATE("ai.provider_update", "vendor", "key"),
+
+	AI_PROVIDER_DELETE("ai.provider_delete"),
+
+	/** An operator chose the provider and model search embeds with. {@code model} is the model. */
+	SEARCH_MODEL_CHANGE("search.model_change", "model"),
+
+	SEARCH_SEMANTIC_ENABLE("search.semantic_enable"),
+
+	/** An operator turned semantic search off: search matches keywords only and calls no provider. */
+	SEARCH_SEMANTIC_DISABLE("search.semantic_disable"),
+
+	/** An operator rebuilt the search index from the published items. */
+	SEARCH_INDEX_REBUILD("search.index_rebuild"),
+
+	/** An operator let held-back items be embedded again at once. {@code count} is how many. */
+	SEARCH_EMBEDDING_RETRY("search.embedding_retry", "count");
 
 	private final String value;
 
