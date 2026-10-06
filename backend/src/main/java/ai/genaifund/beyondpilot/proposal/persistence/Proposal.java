@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.proposal.persistence;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -51,6 +52,14 @@ public class Proposal {
 
 	private @Nullable String teamBackground;
 
+	private @Nullable UUID deckFileId;
+
+	@JdbcTypeCode(SqlTypes.ARRAY)
+	@Column(nullable = false, columnDefinition = "text[]")
+	private String[] builtWith = {};
+
+	private @Nullable String traction;
+
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(nullable = false, columnDefinition = "jsonb")
 	private String answers = "{}";
@@ -86,9 +95,13 @@ public class Proposal {
 
 	/** Keeps what the form holds now. A withdrawn application that is changed is a draft again. */
 	public void write(String contact, @Nullable String teamBackground, @Nullable UUID organizationId,
-			@Nullable UUID solutionId, String answers) {
+			@Nullable UUID solutionId, @Nullable UUID deckFileId, List<String> builtWith, @Nullable String traction,
+			String answers) {
 		this.contact = contact;
 		this.teamBackground = teamBackground;
+		this.deckFileId = deckFileId;
+		this.builtWith = builtWith.toArray(String[]::new);
+		this.traction = traction;
 		this.organizationId = organizationId;
 		this.solutionId = solutionId;
 		this.answers = answers;
@@ -152,6 +165,18 @@ public class Proposal {
 
 	public @Nullable String getTeamBackground() {
 		return teamBackground;
+	}
+
+	public @Nullable UUID getDeckFileId() {
+		return deckFileId;
+	}
+
+	public List<String> getBuiltWith() {
+		return List.of(builtWith);
+	}
+
+	public @Nullable String getTraction() {
+		return traction;
 	}
 
 	public String getAnswers() {

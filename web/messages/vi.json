@@ -1787,21 +1787,7 @@
         "lead": "Biểu mẫu trở về giải pháp này như lần lưu gần nhất.",
         "cancel": "Sửa tiếp"
       },
-      "requiredMark": "· bắt buộc",
-      "materials": {
-        "title": "Dùng khi nộp đơn",
-        "lead": "Nhập một lần ở đây, các mục này đi cùng giải pháp tới mọi chương trình bạn nộp. Chỉ tổ chức của bạn và các chương trình bạn nộp thấy được.",
-        "deck": "Deck giải pháp",
-        "deckHint": "Giải pháp làm gì, cho ai, và đã đi được tới đâu.",
-        "demoUrl": "Link demo",
-        "demoUrlHint": "Video, bản thử hoặc demo chạy thật. Kiểm tra là mở được mà không cần đăng nhập.",
-        "builtWith": "Xây bằng",
-        "builtWithPlaceholder": "Thêm model, công cụ hoặc framework",
-        "builtWithHint": "Nhấn Enter sau mỗi mục. Tối đa {count}.",
-        "traction": "Cột mốc và kết quả",
-        "tractionHint": "Khách hàng, dự án thử, người dùng hoặc doanh thu tới nay."
-      },
-      "optional": "Không bắt buộc"
+      "requiredMark": "· bắt buộc"
     },
     "deployment": {
       "open": "Mở triển khai để đọc bài toán, những gì đã triển khai và kết quả.",

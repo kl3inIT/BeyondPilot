@@ -5,7 +5,7 @@ Design: [design.md](design.md). Tracked in Linear as BEY-37.
 | #   | Step                                                                                                                                                                                         | State |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
 | 1   | This design and plan                                                                                                                                                                         | Done  |
-| 2   | Backend and web: `V11`; review decides listing only; members write solutions; a light organization for one person or a team; a solution's deck, demo link, built-with and traction           | Done  |
+| 2   | Backend and web: review decides listing only; members write solutions; a light organization for one person or a team                                                                         | Done  |
 | 3   | Backend and web: `V12`; a program's questions, fixed once applications open; the Questions tab of Settings                                                                                   | Done  |
 | 4   | Backend: `V13`; the `proposal` module: start, save, set up an individual or a team, submit with its version and email, withdraw, my applications; `openapi.yml` and the web client refreshed | Done  |
 | 5   | Web: Apply steps 1 to 4 with their states                                                                                                                                                    | Open  |

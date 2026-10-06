@@ -107,44 +107,6 @@ class SolutionTest {
 	}
 
 	@Test
-	void aSolutionKeepsItsDeckDemoBuiltWithAndTractionForTheNextApplication() {
-		String founder = provider("founder@materials.test", "Materials Co");
-		String draft = body(post(founder, MINE, Map.of("name", "Materials Desk")).expectStatus().isCreated());
-		UUID id = UUID.fromString(JsonPath.read(draft, "$.id"));
-		UUID deck = file("founder@materials.test", "application_file");
-		Map<String, Object> request = described("Materials Desk", versionOf(draft));
-		request.put("deckFileId", deck.toString());
-		request.put("demoUrl", "https://demo.materials.test");
-		request.put("builtWith", List.of(" OpenAI GPT ", "Whisper", "Whisper"));
-		request.put("traction", "Two pilots with insurers.");
-
-		String saved = body(put(founder, MINE + "/" + id, request).expectStatus().isOk());
-
-		assertThat(JsonPath.<String>read(saved, "$.deck.fileId")).isEqualTo(deck.toString());
-		assertThat(JsonPath.<String>read(saved, "$.deck.fileName")).isEqualTo("deck.pdf");
-		assertThat(JsonPath.<String>read(saved, "$.demoUrl")).isEqualTo("https://demo.materials.test");
-		assertThat(JsonPath.<List<String>>read(saved, "$.builtWith")).containsExactly("OpenAI GPT", "Whisper");
-		assertThat(JsonPath.<String>read(saved, "$.traction")).isEqualTo("Two pilots with insurers.");
-
-		// A deck is one the caller uploaded for an application, not someone else's file.
-		Map<String, Object> borrowed = described("Materials Desk", versionOf(saved));
-		borrowed.put("deckFileId", file("operator@genaifund.test", "application_file").toString());
-		assertProblem(put(founder, MINE + "/" + id, borrowed), 404, "STORAGE_FILE_NOT_FOUND");
-	}
-
-	/** The record of a stored file as storage keeps it; a save reads the record, never the bytes. */
-	private UUID file(String uploader, String purpose) {
-		UUID id = UUID.randomUUID();
-		jdbc.sql("""
-				insert into storage_file (id, provider, object_key, purpose, public_read, file_name, media_type,
-				                          size_bytes, status, uploaded_by_account_id, upload_expires_at)
-				select ?, 'local', ?, ?, false, 'deck.pdf', 'application/pdf', 2048, 'stored', id, now()
-				from identity_account where email = ?
-				""").params(id, "test/" + id, purpose, uploader).update();
-		return id;
-	}
-
-	@Test
 	void aDraftNeedsOnlyANameAndASubmissionNeedsMore() {
 		String founder = provider("founder@drafts.test", "Drafts Co");
 

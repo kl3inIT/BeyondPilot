@@ -2,7 +2,6 @@ package ai.genaifund.beyondpilot.solution;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.Actor;
@@ -19,8 +18,6 @@ import ai.genaifund.beyondpilot.solution.persistence.CustomerDeployment;
 import ai.genaifund.beyondpilot.solution.persistence.CustomerDeploymentRepository;
 import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
-import ai.genaifund.beyondpilot.storage.FilePurpose;
-import ai.genaifund.beyondpilot.storage.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -47,15 +44,12 @@ public class SolutionService {
 
 	private final IdentityService identity;
 
-	private final StorageService storage;
-
 	SolutionService(SolutionRepository solutions, CustomerDeploymentRepository deployments,
-			OrganizationDirectory organizations, IdentityService identity, StorageService storage) {
+			OrganizationDirectory organizations, IdentityService identity) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.organizations = organizations;
 		this.identity = identity;
-		this.storage = storage;
 	}
 
 	/** The solutions of the caller's organization, the newest first; none for a caller who belongs to no organization. */
@@ -103,7 +97,7 @@ public class SolutionService {
 		}
 		Solution solution = solutions.saveAndFlush(new Solution(UUID.randomUUID(), membership.organizationId(), slug,
 				request.name().strip(), actor.accountId()));
-		return SolutionViews.solution(solution, membership.organizationName(), null, List.of());
+		return SolutionViews.solution(solution, membership.organizationName(), List.of());
 	}
 
 	/**
@@ -124,14 +118,6 @@ public class SolutionService {
 				SolutionViews.text(request.problemsSolved()), SolutionViews.text(request.valueProposition()),
 				SolutionViews.codes(request.focusAreas()), SolutionViews.codes(request.industries()),
 				request.maturity(), SolutionViews.codes(request.deployment()), SolutionViews.text(request.website()));
-		UUID deck = request.deckFileId();
-		if (deck != null && !deck.equals(solution.getDeckFileId())) {
-			// A new deck is one the caller uploaded for an application; the one it replaces stays, since a submitted
-			// application may still name it.
-			storage.stored(deck, FilePurpose.APPLICATION_FILE, actor);
-		}
-		solution.present(deck, SolutionViews.text(request.demoUrl()), SolutionViews.entries(Objects.requireNonNullElse(request.builtWith(), List.of())),
-				SolutionViews.text(request.traction()));
 		solution.list(request.listed());
 		if (!solution.isDraft() && !solution.isRejected() && !solution.isComplete()) {
 			// What operators review, and what the directory shows, keeps what a submission needs.
@@ -246,7 +232,7 @@ public class SolutionService {
 	}
 
 	private SolutionResponse view(Solution solution, Membership membership) {
-		return SolutionViews.solution(solution, membership.organizationName(), SolutionViews.deck(solution, storage),
+		return SolutionViews.solution(solution, membership.organizationName(),
 				deployments.findBySolutionIdOrderByCreatedAtDesc(solution.getId()));
 	}
 

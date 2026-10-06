@@ -42,7 +42,10 @@ public enum ProposalErrorCode implements ErrorCode {
 			"Choose or add the solution you apply with."),
 
 	SOLUTION_INCOMPLETE("PROPOSAL_SOLUTION_INCOMPLETE", ErrorCategory.VALIDATION,
-			"The solution needs what it does, the problem it solves, its stage and a deck."),
+			"The solution needs what it does, the problem it solves and its stage."),
+
+	DECK_REQUIRED("PROPOSAL_DECK_REQUIRED", ErrorCategory.VALIDATION,
+			"Add the solution's deck, a PDF."),
 
 	ANSWER_INVALID("PROPOSAL_ANSWER_INVALID", ErrorCategory.VALIDATION,
 			"An answer does not fit its question."),

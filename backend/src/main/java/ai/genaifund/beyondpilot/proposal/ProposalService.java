@@ -21,6 +21,7 @@ import ai.genaifund.beyondpilot.organization.OrganizationService;
 import ai.genaifund.beyondpilot.program.ApplicationForm;
 import ai.genaifund.beyondpilot.program.ProgramService;
 import ai.genaifund.beyondpilot.proposal.dto.ApplicantOrganizationRequest;
+import ai.genaifund.beyondpilot.proposal.dto.ApplicationMaterialsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ApplicationResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ApplicationViewResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ApplyingOrganizationResponse;
@@ -185,8 +186,15 @@ public class ProposalService {
 			ownSolution(membership, solutionId);
 		}
 		Map<String, String> answers = answers(actor, form, request.answers(), read(proposal.getAnswers()));
+		UUID deck = request.deckFileId();
+		if (deck != null && !deck.equals(proposal.getDeckFileId())) {
+			// A deck is one the applicant uploaded for an application; one an earlier application named is theirs too.
+			storage.stored(deck, FilePurpose.APPLICATION_FILE, actor);
+		}
 		proposal.write(json.writeValueAsString(request.contact()), text(request.teamBackground()),
-				membership == null ? null : membership.organizationId(), solutionId, json.writeValueAsString(answers));
+				membership == null ? null : membership.organizationId(), solutionId, deck,
+				request.builtWith().stream().map(String::strip).distinct().toList(), text(request.traction()),
+				json.writeValueAsString(answers));
 		proposals.saveAndFlush(proposal);
 		return view(actor, form, proposal);
 	}
@@ -254,6 +262,9 @@ public class ProposalService {
 		OfferedSolution solution = ownSolution(membership, solutionId);
 		if (!complete(solution)) {
 			throw refused(ProposalErrorCode.SOLUTION_INCOMPLETE, id);
+		}
+		if (proposal.getDeckFileId() == null) {
+			throw refused(ProposalErrorCode.DECK_REQUIRED, id);
 		}
 		Map<String, String> answers = read(proposal.getAnswers());
 		for (ApplicationForm.Question question : form.questions()) {
@@ -363,12 +374,14 @@ public class ProposalService {
 			.orElse(null);
 		List<SolutionOptionResponse> offered = organization == null ? List.of()
 				: solutions.offeredBy(organization.id()).stream().map(this::option).toList();
-		// The contact details of the person's latest other application start a new one.
-		ContactDetails previous = proposal != null ? null
+		// What the person's latest other application held starts a new one.
+		ApplicationMaterialsResponse previous = proposal != null ? null
 				: proposals.findByAccountIdOrderByUpdatedAtDesc(actor.accountId())
 					.stream()
 					.findFirst()
-					.map(other -> json.readValue(other.getContact(), ContactDetails.class))
+					.map(other -> new ApplicationMaterialsResponse(
+							json.readValue(other.getContact(), ContactDetails.class), deck(other), other.getBuiltWith(),
+							other.getTraction()))
 					.orElse(null);
 		return new ApplicationViewResponse(program(form), proposal == null ? null : application(form, proposal),
 				person.email(), previous,
@@ -400,15 +413,18 @@ public class ProposalService {
 		}
 		return new ApplicationResponse(proposal.getId(), proposal.getStatus(),
 				json.readValue(proposal.getContact(), ContactDetails.class), proposal.getTeamBackground(),
-				proposal.getSolutionId(), answers, files, proposal.getSubmissions(), proposal.getSubmittedAt(),
+				proposal.getSolutionId(), deck(proposal), proposal.getBuiltWith(), proposal.getTraction(), answers, files, proposal.getSubmissions(), proposal.getSubmittedAt(),
 				proposal.getWithdrawnAt(), proposal.getVersion(), proposal.getUpdatedAt());
 	}
 
 	private SolutionOptionResponse option(OfferedSolution solution) {
-		UUID deck = solution.deckFileId();
 		return new SolutionOptionResponse(solution.id(), solution.name(), solution.summary(),
-				solution.problemsSolved(), solution.maturity(), deck == null ? null : attached(deck).orElse(null),
-				solution.demoUrl(), solution.builtWith(), solution.traction(), complete(solution));
+				solution.problemsSolved(), solution.maturity(), complete(solution));
+	}
+
+	private @Nullable AttachedFileResponse deck(Proposal proposal) {
+		UUID deck = proposal.getDeckFileId();
+		return deck == null ? null : attached(deck).orElse(null);
 	}
 
 	private Optional<AttachedFileResponse> attached(UUID fileId) {
@@ -435,11 +451,12 @@ public class ProposalService {
 		solutionCopy.put("summary", solution.summary());
 		solutionCopy.put("problemsSolved", solution.problemsSolved());
 		solutionCopy.put("maturity", solution.maturity());
-		solutionCopy.put("deck", solution.deckFileId() == null ? null : attached(solution.deckFileId()).orElse(null));
-		solutionCopy.put("demoUrl", solution.demoUrl());
-		solutionCopy.put("builtWith", solution.builtWith());
-		solutionCopy.put("traction", solution.traction());
 		snapshot.put("solution", solutionCopy);
+		Map<String, Object> materials = new LinkedHashMap<>();
+		materials.put("deck", deck(proposal));
+		materials.put("builtWith", proposal.getBuiltWith());
+		materials.put("traction", proposal.getTraction());
+		snapshot.put("materials", materials);
 		List<Map<String, Object>> answered = new ArrayList<>();
 		for (ApplicationForm.Question question : form.questions()) {
 			String value = answers.get(question.id().toString());
@@ -461,8 +478,7 @@ public class ProposalService {
 	}
 
 	private static boolean complete(OfferedSolution solution) {
-		return !blank(solution.summary()) && !blank(solution.problemsSolved()) && solution.maturity() != null
-				&& solution.deckFileId() != null;
+		return !blank(solution.summary()) && !blank(solution.problemsSolved()) && solution.maturity() != null;
 	}
 
 	private OfferedSolution ownSolution(@Nullable Membership membership, UUID solutionId) {

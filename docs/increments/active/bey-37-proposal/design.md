@@ -12,7 +12,7 @@ A person reads an open program, signs in, applies in four steps and follows the 
   - _Team_: a team name, its size and country.
   - _Company_: find the company on BeyondPilot and join it (at once on a matching email domain; otherwise its owner lets them in, and the draft waits), or add it.
     Contact details (name, phone, country, LinkedIn) and the team's background belong to the application, and the next application starts from them.
-- **Bring a solution** (step 2): one the organization already has, or a new one. What is entered here is the solution's profile, deck and demo included, so it is entered once and reused.
+- **Bring a solution** (step 2): one the organization already has, or a new one made from its name, what it does, the problem it solves and its stage, the fields a solution holds. The deck (a PDF), what the solution is built with and its traction belong to the application; the next application starts from them.
 - **Answer the program's questions** (step 3): the questions an operator set for this program. A program without questions has no step 3.
 - **Review and submit** (step 4) before the window closes. A copy goes by email. The application can be changed and submitted again until the window closes; each submission is a version, and reviewers read the latest.
 - **Withdraw** before the window closes, and submit again later if the window is still open.
@@ -23,7 +23,7 @@ A person reads an open program, signs in, applies in four steps and follows the 
 1. **Review decides listing, not taking part** (changes BEY-33). An organization or a solution waiting for GenAI Fund's review can do everything except appear in the public directory. The brief keeps "public listing approval" apart from "application eligibility", and an applicant must not wait for a review near a deadline. A solution is in the directory only when it is approved and listed and its organization is approved.
 2. **Every member writes the organization's solutions** (changes BEY-33). Owners keep the profile and the members. A person who joined a company can then bring its solution to an application without waiting for an owner.
 3. **A one-person or team organization is light** (changes BEY-33). Industries are required of a company only, and a creator's job title is optional. An individual's organization is made by the application, not by a form.
-4. **A solution holds its deck, demo link, what it is built with and its traction** (changes BEY-33). They describe the solution, so they are reused; the deck is private (`application_file`), like every file of an application.
+4. **What an application brings stays with the application** (decided 6 October 2026, after BEY-34 gave a solution a public demo and deck link). The deck an application sends is a private PDF that reviewers read as it was submitted, which a link cannot promise; what the solution is built with and its traction are said for this application. They are copied into the next application, so they are entered once, and the solution module is unchanged by them.
 5. **The application keeps what it was given.** Each submission stores a snapshot of the applicant, the organization, the solution and the answers. A later change to a profile leaves a submitted version unchanged ("historical submissions must remain understandable when a profile changes", brief §8).
 6. **The working copy is one record.** A draft holds the contact details, the team's background and the answers as JSON, validated by the application service against the program's questions. Versions hold their snapshot as JSON too. Answers are read whole, never queried one by one, so separate answer rows would add joins and nothing else.
 7. **Questions belong to the program and are fixed once applications open.** An operator edits them in Settings until the window opens; after that a change could invalidate answers already given. Kinds: short text, long text, one choice, file, link, confirmation.
@@ -44,12 +44,12 @@ New dependency edges: `proposal → program, organization, solution, storage, no
 
 ## Data
 
-`V11` changes `organization` and `solution` (decisions 1 to 4). `V12` adds `program_question`: `program_id`, `position`, `kind`, `label`, `help`, `required`, `options jsonb`, `max_length`. `V13` adds:
+Decisions 1 to 3 change the rules of `organization` and `solution`, not their tables. `V12` adds `program_question`: `program_id`, `position`, `kind`, `label`, `help`, `required`, `options jsonb`, `max_length`. `V13` adds:
 
-| Table              | Columns                                                                                                                                                                                                                                                                                |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `proposal`         | `program_id`, `account_id`, `organization_id` (null until step 1), `solution_id` (null until step 2), `status` (`draft`, `submitted`, `withdrawn`), `contact jsonb`, `team_background`, `answers jsonb`, `submitted_at`, `withdrawn_at`, `version`; unique on `program_id, account_id` |
-| `proposal_version` | `proposal_id`, `number`, `submitted_at`, `snapshot jsonb`                                                                                                                                                                                                                              |
+| Table              | Columns                                                                                                                                                                                                                                                                                                                          |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `proposal`         | `program_id`, `account_id`, `organization_id` (null until step 1), `solution_id` (null until step 2), `deck_file_id`, `built_with`, `traction`, `status` (`draft`, `submitted`, `withdrawn`), `contact jsonb`, `team_background`, `answers jsonb`, `submitted_at`, `withdrawn_at`, `version`; unique on `program_id, account_id` |
+| `proposal_version` | `proposal_id`, `number`, `submitted_at`, `snapshot jsonb`                                                                                                                                                                                                                                                                        |
 
 ## HTTP
 

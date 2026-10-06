@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.proposal.dto;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -13,6 +14,9 @@ public record ApplicationResponse(@Schema(requiredMode = Schema.RequiredMode.REQ
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) ContactDetails contact,
 		@Schema(types = { "string", "null" }) @Nullable String teamBackground,
 		@Schema(types = { "string", "null" }, format = "uuid") @Nullable UUID solutionId,
+		@Schema(types = { "object", "null" }) @Nullable AttachedFileResponse deck,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> builtWith,
+		@Schema(types = { "string", "null" }) @Nullable String traction,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Map<String, String> answers,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "The files the answers name, by question identifier.") Map<String, AttachedFileResponse> files,

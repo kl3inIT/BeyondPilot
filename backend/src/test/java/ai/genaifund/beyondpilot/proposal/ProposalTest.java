@@ -93,10 +93,14 @@ class ProposalTest {
 		UUID solution = completeSolution(applicant, email, "Claim Copilot");
 
 		String saved = body(put(applicant, form.path(),
-				application(contact(), solution, answers(form, email), versionOf(organized)))
+				withDeck(application(contact(), solution, answers(form, email), versionOf(organized)), email))
 			.expectStatus()
 			.isOk());
 		assertThat(JsonPath.<Integer>read(saved, "$.application.files.length()")).isEqualTo(1);
+		assertThat(JsonPath.<String>read(saved, "$.application.deck.fileName")).isEqualTo("proposal.pdf");
+		assertThat(JsonPath.<List<String>>read(saved, "$.application.builtWith")).containsExactly("OpenAI GPT",
+				"Whisper");
+		String deck = JsonPath.read(saved, "$.application.deck.fileId");
 		String submitted = body(post(applicant, API + "/applications/" + id + "/submit", null).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(submitted, "$.application.status")).isEqualTo("submitted");
 		assertThat(JsonPath.<Integer>read(submitted, "$.application.submissions")).isEqualTo(1);
@@ -106,8 +110,9 @@ class ProposalTest {
 		// It can change until the close; each submission is a version, and the earlier one stays as it was.
 		Map<String, String> changed = answers(form, email);
 		changed.put(form.direction().toString(), "Carrying");
-		put(applicant, form.path(), application(contact(), solution, changed, versionOf(submitted))).expectStatus()
-			.isOk();
+		Map<String, Object> change = application(contact(), solution, changed, versionOf(submitted));
+		change.put("deckFileId", deck);
+		put(applicant, form.path(), change).expectStatus().isOk();
 		String again = body(post(applicant, API + "/applications/" + id + "/submit", null).expectStatus().isOk());
 		assertThat(JsonPath.<Integer>read(again, "$.application.submissions")).isEqualTo(2);
 		assertThat(answerOf(id, 1, form.direction())).isEqualTo("Claiming");
@@ -121,6 +126,13 @@ class ProposalTest {
 		assertThat(JsonPath.<List<String>>read(mine, "$.items[*].solutionName")).containsExactly("Claim Copilot");
 		assertProblem(get(TestSignIn.session(client, mail, "other@individual.test"), API + "/applications/" + id), 404,
 				"PROPOSAL_APPLICATION_NOT_FOUND");
+
+		// The next application starts from what this one held, the deck included.
+		Form next = program("next-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		String fresh = body(get(applicant, next.path()).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(fresh, "$.previous.deck.fileId")).isEqualTo(deck);
+		assertThat(JsonPath.<String>read(fresh, "$.previous.contact.lastName")).isEqualTo("Phan");
+		assertThat(JsonPath.<String>read(fresh, "$.previous.traction")).isEqualTo("Two pilots with insurers.");
 	}
 
 	@Test
@@ -145,7 +157,11 @@ class ProposalTest {
 
 		Map<String, Object> withBackground = application(contact(), solution, answers, versionOf(draft));
 		withBackground.put("teamBackground", "Two engineers from an insurer.");
-		String saved = body(put(applicant, form.path(), withBackground).expectStatus().isOk());
+		String noDeck = body(put(applicant, form.path(), withBackground).expectStatus().isOk());
+		assertProblem(post(applicant, submit, null), 400, "PROPOSAL_DECK_REQUIRED");
+		Map<String, Object> withDeck = withDeck(application(contact(), solution, answers, versionOf(noDeck)), email);
+		withDeck.put("teamBackground", "Two engineers from an insurer.");
+		String saved = body(put(applicant, form.path(), withDeck).expectStatus().isOk());
 		assertProblem(post(applicant, submit, null), 400, "PROPOSAL_ANSWER_REQUIRED");
 
 		Map<String, String> wrongChoice = answers(form, email);
@@ -190,7 +206,8 @@ class ProposalTest {
 			.expectStatus()
 			.isOk();
 		UUID solution = completeSolution(early, email, "Final Desk");
-		String draft = body(put(early, fixed.path(), application(contact(), solution, answers(fixed, email), null))
+		String draft = body(put(early, fixed.path(),
+				withDeck(application(contact(), solution, answers(fixed, email), null), email))
 			.expectStatus()
 			.isOk());
 		String submitted = body(post(early, API + "/applications/" + JsonPath.read(draft, "$.application.id")
@@ -220,7 +237,8 @@ class ProposalTest {
 		String colleagueEmail = "colleague@company.test";
 		String colleague = TestSignIn.session(client, mail, colleagueEmail);
 		post(colleague, "/api/organization/organizations/" + organizationId + "/join", Map.of()).expectStatus().isOk();
-		Map<String, Object> second = application(contact(), solution, answers(form, colleagueEmail), null);
+		Map<String, Object> second = withDeck(application(contact(), solution, answers(form, colleagueEmail), null),
+				colleagueEmail);
 		second.put("teamBackground", "The same company.");
 		String draft = body(put(colleague, form.path(), second).expectStatus().isOk());
 		assertProblem(post(colleague, API + "/applications/" + JsonPath.read(draft, "$.application.id") + "/submit",
@@ -277,7 +295,6 @@ class ProposalTest {
 		solution.put("industries", List.of());
 		solution.put("deployment", List.of());
 		solution.put("maturity", "pilot");
-		solution.put("deckFileId", file(email).toString());
 		solution.put("listed", true);
 		solution.put("version", JsonPath.<Integer>read(draft, "$.version"));
 		String id = JsonPath.read(draft, "$.id");
@@ -286,7 +303,7 @@ class ProposalTest {
 	}
 
 	private void submitted(String session, String email, Form form, UUID solution) {
-		Map<String, Object> request = application(contact(), solution, answers(form, email), null);
+		Map<String, Object> request = withDeck(application(contact(), solution, answers(form, email), null), email);
 		request.put("teamBackground", "Claims tooling at an insurer.");
 		String draft = body(put(session, form.path(), request).expectStatus().isOk());
 		post(session, API + "/applications/" + JsonPath.read(draft, "$.application.id") + "/submit", null)
@@ -303,13 +320,21 @@ class ProposalTest {
 		return answers;
 	}
 
-	private static Map<String, Object> application(Map<String, String> contact, UUID solutionId,
+	private Map<String, Object> application(Map<String, String> contact, UUID solutionId,
 			Map<String, String> answers, Object version) {
 		Map<String, Object> application = new HashMap<>();
 		application.put("contact", contact);
 		application.put("solutionId", solutionId == null ? null : solutionId.toString());
+		application.put("builtWith", List.of(" OpenAI GPT ", "Whisper"));
+		application.put("traction", "Two pilots with insurers.");
 		application.put("answers", answers);
 		application.put("version", version);
+		return application;
+	}
+
+	/** An application with its deck, a PDF the applicant uploaded. */
+	private Map<String, Object> withDeck(Map<String, Object> application, String uploader) {
+		application.put("deckFileId", file(uploader).toString());
 		return application;
 	}
 

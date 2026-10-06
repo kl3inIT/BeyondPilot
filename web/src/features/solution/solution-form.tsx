@@ -8,9 +8,7 @@ import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { ChoiceChips } from "@/components/composites/choice-chips";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
-import { EntryList } from "@/components/composites/entry-list";
 import { LeaveGuard } from "@/components/composites/leave-guard";
-import { PdfUpload } from "@/components/composites/pdf-upload";
 import { ReviewReadiness } from "@/components/composites/review-readiness";
 import {
   Field,
@@ -44,9 +42,6 @@ import { solutionError } from "./solution-errors";
 /** How many focus areas and industries a solution names; more would stop meaning anything. */
 const MAX_CHOICES = 5;
 
-/** How many tools a solution says it is built with, and how long one may be (the backend's bounds). */
-const MAX_BUILT_WITH = 10;
-
 /** The fields a review needs, in the order of the form, each with the id of its control. */
 const reviewFields = [
   { field: "summary", id: "solution-summary" },
@@ -64,16 +59,12 @@ function saved(solution: Solution) {
       problemsSolved: solution.problemsSolved ?? "",
       valueProposition: solution.valueProposition ?? "",
       website: solution.website ?? "",
-      demoUrl: solution.demoUrl ?? "",
-      traction: solution.traction ?? "",
     },
     chosen: {
       focusAreas: solution.focusAreas,
       industries: solution.industries,
       deployment: solution.deployment,
-      builtWith: solution.builtWith,
     },
-    deck: solution.deck ?? null,
     stage: (solution.maturity ?? "") as string,
     listed: solution.listed,
   };
@@ -99,7 +90,6 @@ function SolutionForm({ solution }: { solution: Solution }) {
   const [chosen, setChosen] = useState(initial.chosen);
   const [stage, setStage] = useState(initial.stage);
   const [listed, setListed] = useState(initial.listed);
-  const [deck, setDeck] = useState(initial.deck);
   const [pending, setPending] = useState<"save" | "submit" | "delete" | null>(null);
   const [invalid, setInvalid] = useState<Set<string>>(new Set());
   const [discarding, setDiscarding] = useState(false);
@@ -107,8 +97,7 @@ function SolutionForm({ solution }: { solution: Solution }) {
 
   const submittable = solution.status === "draft" || solution.status === "rejected";
   const dirty =
-    pending === null &&
-    JSON.stringify({ text, chosen, deck, stage, listed }) !== JSON.stringify(initial);
+    pending === null && JSON.stringify({ text, chosen, stage, listed }) !== JSON.stringify(initial);
 
   /** A field that changes is no longer marked: its message was about what it held before. */
   const settle = (field: string) =>
@@ -131,16 +120,12 @@ function SolutionForm({ solution }: { solution: Solution }) {
     settle(field);
   };
   const bad = (field: string) => invalid.has(field) || undefined;
-  const optional = (
-    <span className="text-xs font-normal text-muted-foreground">{t("optional")}</span>
-  );
 
   function discard() {
     setText(initial.text);
     setChosen(initial.chosen);
     setStage(initial.stage);
     setListed(initial.listed);
-    setDeck(initial.deck);
     setInvalid(new Set());
     setDiscarding(false);
   }
@@ -196,10 +181,6 @@ function SolutionForm({ solution }: { solution: Solution }) {
           focusAreas: chosen.focusAreas,
           industries: chosen.industries,
           deployment: chosen.deployment,
-          deckFileId: deck?.fileId ?? null,
-          demoUrl: text.demoUrl.trim() || null,
-          builtWith: chosen.builtWith,
-          traction: text.traction.trim() || null,
           maturity: (stage || undefined) as SaveSolution["maturity"],
           listed,
           version: solution.version,
@@ -413,84 +394,6 @@ function SolutionForm({ solution }: { solution: Solution }) {
             onValueChange={choose("deployment")}
           />
         </Field>
-      </FieldGroup>
-
-      {/* What an application reuses: entered once here, brought to every application. */}
-      <FieldGroup>
-        <div className="flex flex-col gap-1">
-          <h2 className="text-base font-medium">{t("materials.title")}</h2>
-          <p className="text-sm text-muted-foreground">{t("materials.lead")}</p>
-        </div>
-        <Field>
-          <FieldLabel htmlFor="solution-deck">
-            {t("materials.deck")}
-            {optional}
-          </FieldLabel>
-          <PdfUpload
-            id="solution-deck"
-            value={deck}
-            onChange={setDeck}
-            describedBy="solution-deck-hint"
-          />
-          <FieldDescription id="solution-deck-hint">{t("materials.deckHint")}</FieldDescription>
-        </Field>
-        <Field data-invalid={bad("demoUrl")}>
-          <FieldLabel htmlFor="solution-demo">
-            {t("materials.demoUrl")}
-            {optional}
-          </FieldLabel>
-          <Input
-            id="solution-demo"
-            type="url"
-            inputMode="url"
-            placeholder="https://"
-            maxLength={300}
-            value={text.demoUrl}
-            onChange={write("demoUrl")}
-            aria-invalid={bad("demoUrl")}
-            aria-describedby="solution-demo-hint"
-          />
-          {bad("demoUrl") && <FieldError>{t("websiteInvalid")}</FieldError>}
-          <FieldDescription id="solution-demo-hint">{t("materials.demoUrlHint")}</FieldDescription>
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="solution-built-with">
-            {t("materials.builtWith")}
-            {optional}
-          </FieldLabel>
-          <EntryList
-            id="solution-built-with"
-            label={t("materials.builtWith")}
-            value={chosen.builtWith}
-            onChange={choose("builtWith")}
-            placeholder={t("materials.builtWithPlaceholder")}
-            max={MAX_BUILT_WITH}
-            maxLength={60}
-            describedBy="solution-built-with-hint"
-          />
-          <FieldDescription id="solution-built-with-hint">
-            {t("materials.builtWithHint", { count: MAX_BUILT_WITH })}
-          </FieldDescription>
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="solution-traction">
-            {t("materials.traction")}
-            {optional}
-          </FieldLabel>
-          <Textarea
-            id="solution-traction"
-            maxLength={600}
-            value={text.traction}
-            onChange={write("traction")}
-            aria-describedby="solution-traction-hint"
-          />
-          <FieldDescription id="solution-traction-hint">
-            {t("materials.tractionHint")}
-          </FieldDescription>
-        </Field>
-      </FieldGroup>
-
-      <FieldGroup>
         <Field orientation="horizontal">
           <FieldContent>
             <FieldLabel htmlFor="solution-listed">{t("listed")}</FieldLabel>

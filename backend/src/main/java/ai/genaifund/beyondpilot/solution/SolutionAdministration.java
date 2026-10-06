@@ -23,7 +23,6 @@ import ai.genaifund.beyondpilot.solution.persistence.CustomerDeploymentRepositor
 import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionQueryRepository;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
-import ai.genaifund.beyondpilot.storage.StorageService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,18 +53,15 @@ public class SolutionAdministration {
 
 	private final AuditTrail audit;
 
-	private final StorageService storage;
-
 	SolutionAdministration(SolutionRepository solutions, CustomerDeploymentRepository deployments,
 			SolutionQueryRepository solutionList, OrganizationDirectory organizations, IdentityService identity,
-			AuditTrail audit, StorageService storage) {
+			AuditTrail audit) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.solutionList = solutionList;
 		this.organizations = organizations;
 		this.identity = identity;
 		this.audit = audit;
-		this.storage = storage;
 	}
 
 	/**
@@ -97,7 +93,7 @@ public class SolutionAdministration {
 		Solution solution = solutions.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
 		return SolutionViews.solution(solution,
 				name(organizations.names(List.of(solution.getOrganizationId())), solution.getOrganizationId()),
-				SolutionViews.deck(solution, storage), deployments.findBySolutionIdOrderByCreatedAtDesc(id));
+				deployments.findBySolutionIdOrderByCreatedAtDesc(id));
 	}
 
 	/**

@@ -119,8 +119,7 @@ public class SolutionDirectory {
 
 	private static OfferedSolution offered(Solution solution) {
 		return new OfferedSolution(solution.getId(), solution.getOrganizationId(), solution.getName(),
-				solution.getSummary(), solution.getProblemsSolved(), solution.getMaturity(), solution.getDeckFileId(),
-				solution.getDemoUrl(), solution.getBuiltWith(), solution.getTraction());
+				solution.getSummary(), solution.getProblemsSolved(), solution.getMaturity());
 	}
 
 	/** The approved, listed solution at this address, as another module needs it; empty when there is none. */

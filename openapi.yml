@@ -4441,8 +4441,17 @@ components:
           type: object
           additionalProperties:
             type: string
+        builtWith:
+          type: array
+          items:
+            type: string
         contact:
           $ref: "#/components/schemas/ContactDetails"
+        deck:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/AttachedFile"
         files:
           type: object
           additionalProperties:
@@ -4475,6 +4484,10 @@ components:
           type:
           - string
           - "null"
+        traction:
+          type:
+          - string
+          - "null"
         updatedAt:
           type: string
           format: date-time
@@ -4490,6 +4503,7 @@ components:
           format: date-time
       required:
       - answers
+      - builtWith
       - contact
       - files
       - id
@@ -4497,6 +4511,29 @@ components:
       - submissions
       - updatedAt
       - version
+    ApplicationStart:
+      type: object
+      description: "What the person's latest other application held, for a new one\
+        \ to start from."
+      properties:
+        builtWith:
+          type: array
+          items:
+            type: string
+        contact:
+          $ref: "#/components/schemas/ContactDetails"
+        deck:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/AttachedFile"
+        traction:
+          type:
+          - string
+          - "null"
+      required:
+      - builtWith
+      - contact
     ApplicationView:
       type: object
       description: Everything the application form of a program needs for the signed-in
@@ -4518,13 +4555,13 @@ components:
           $ref: "#/components/schemas/ApplyingOrganization"
           description: The organization the person belongs to; null when they belong
             to none.
-        previousContact:
+        previous:
           type:
           - object
           - "null"
-          $ref: "#/components/schemas/ContactDetails"
-          description: "The contact details of the person's latest other application,\
-            \ to start from."
+          $ref: "#/components/schemas/ApplicationStart"
+          description: "What the person's latest other application held, for a new\
+            \ one to start from; null once this one exists."
         program:
           $ref: "#/components/schemas/ProgramForm"
         solutions:
@@ -6569,8 +6606,24 @@ components:
             type: string
           description: "The answers to the program's questions by question identifier.\
             \ A file is named by its identifier, a confirmation is \"true\"."
+        builtWith:
+          type: array
+          description: "The models, tools and frameworks the solution is built with."
+          items:
+            type: string
+            maxLength: 60
+            minLength: 0
+          maxItems: 10
+          minItems: 0
         contact:
           $ref: "#/components/schemas/ContactDetails"
+        deckFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The solution's deck for this application: a PDF the applicant\
+            \ uploaded for `application_file`."
         solutionId:
           type:
           - string
@@ -6585,6 +6638,13 @@ components:
             or a company.
           maxLength: 2000
           minLength: 0
+        traction:
+          type:
+          - string
+          - "null"
+          description: "Customers, pilots, users or revenue so far."
+          maxLength: 600
+          minLength: 0
         version:
           type:
           - integer
@@ -6593,6 +6653,7 @@ components:
           description: The version the form read; null for the first save.
       required:
       - answers
+      - builtWith
       - contact
     SaveCustomerDeployment:
       type: object
@@ -6854,33 +6915,6 @@ components:
       type: object
       description: A solution as its edit screen holds it.
       properties:
-        builtWith:
-          type:
-          - array
-          - "null"
-          description: "The models, tools and frameworks it is built with; null names\
-            \ none."
-          items:
-            type: string
-            maxLength: 60
-            minLength: 0
-          maxItems: 10
-          minItems: 0
-        deckFileId:
-          type:
-          - string
-          - "null"
-          format: uuid
-          description: "The deck: a PDF the caller uploaded for `application_file`.\
-            \ Private."
-        demoUrl:
-          type:
-          - string
-          - "null"
-          description: "A video, a prototype or a live demo."
-          maxLength: 300
-          minLength: 0
-          pattern: "https?://[^\\s]+"
         deployment:
           type: array
           items:
@@ -6932,13 +6966,6 @@ components:
           - "null"
           description: One or two sentences shown in lists.
           maxLength: 300
-          minLength: 0
-        traction:
-          type:
-          - string
-          - "null"
-          description: "Customers, pilots, users or revenue so far."
-          maxLength: 600
           minLength: 0
         valueProposition:
           type:
@@ -7077,10 +7104,6 @@ components:
       type: object
       description: "A solution as its organization, and operators, see it."
       properties:
-        builtWith:
-          type: array
-          items:
-            type: string
         complete:
           type: boolean
           description: "Whether it has what a submission needs: a summary, a maturity,\
@@ -7107,15 +7130,6 @@ components:
           - duplicate
           - unverifiable
           - other
-        deck:
-          type:
-          - object
-          - "null"
-          $ref: "#/components/schemas/SolutionDeck"
-        demoUrl:
-          type:
-          - string
-          - "null"
         deployment:
           type: array
           items:
@@ -7174,10 +7188,6 @@ components:
           type:
           - string
           - "null"
-        traction:
-          type:
-          - string
-          - "null"
         updatedAt:
           type: string
           format: date-time
@@ -7195,7 +7205,6 @@ components:
           - string
           - "null"
       required:
-      - builtWith
       - complete
       - customerDeployments
       - deployment
@@ -7210,43 +7219,14 @@ components:
       - status
       - updatedAt
       - version
-    SolutionDeck:
-      type: object
-      description: A solution's deck as its organization sees it. The file is private.
-      properties:
-        fileId:
-          type: string
-          format: uuid
-        fileName:
-          type: string
-        sizeBytes:
-          type: integer
-          format: int64
-      required:
-      - fileId
-      - fileName
-      - sizeBytes
     SolutionOption:
       type: object
       description: "A solution of the applicant's organization, as step 2 shows it."
       properties:
-        builtWith:
-          type: array
-          items:
-            type: string
         complete:
           type: boolean
-          description: "Whether it has what an application needs: a summary, the problem\
-            \ it solves, a stage and a deck."
-        deck:
-          type:
-          - object
-          - "null"
-          $ref: "#/components/schemas/AttachedFile"
-        demoUrl:
-          type:
-          - string
-          - "null"
+          description: "Whether it has what an application needs: what it does, the\
+            \ problem it solves and its stage."
         id:
           type: string
           format: uuid
@@ -7264,12 +7244,7 @@ components:
           type:
           - string
           - "null"
-        traction:
-          type:
-          - string
-          - "null"
       required:
-      - builtWith
       - complete
       - id
       - name

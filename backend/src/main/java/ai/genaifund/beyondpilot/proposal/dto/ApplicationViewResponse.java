@@ -12,7 +12,7 @@ public record ApplicationViewResponse(@Schema(requiredMode = Schema.RequiredMode
 				description = "The person's application; null until they first save.") @Nullable ApplicationResponse application,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The address the person signs in with.") String email,
 		@Schema(types = { "object", "null" },
-				description = "The contact details of the person's latest other application, to start from.") @Nullable ContactDetails previousContact,
+				description = "What the person's latest other application held, for a new one to start from; null once this one exists.") @Nullable ApplicationMaterialsResponse previous,
 		@Schema(types = { "object", "null" },
 				description = "The organization the person belongs to; null when they belong to none.") @Nullable ApplyingOrganizationResponse organization,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<SolutionOptionResponse> solutions) {

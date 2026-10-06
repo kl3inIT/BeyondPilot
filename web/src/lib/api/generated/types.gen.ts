@@ -349,7 +349,9 @@ export type Application = {
     answers: {
         [key: string]: string;
     };
+    builtWith: Array<string>;
     contact: ContactDetails;
+    deck?: AttachedFile | null;
     /**
      * The files the answers name, by question identifier.
      */
@@ -365,12 +367,23 @@ export type Application = {
     submissions: number;
     submittedAt?: string | null;
     teamBackground?: string | null;
+    traction?: string | null;
     updatedAt: string;
     /**
      * Sent back with a save, which is refused when the application changed since.
      */
     version: number;
     withdrawnAt?: string | null;
+};
+
+/**
+ * What the person's latest other application held, for a new one to start from.
+ */
+export type ApplicationStart = {
+    builtWith: Array<string>;
+    contact: ContactDetails;
+    deck?: AttachedFile | null;
+    traction?: string | null;
 };
 
 /**
@@ -390,9 +403,9 @@ export type ApplicationView = {
      */
     organization?: ApplyingOrganization | null;
     /**
-     * The contact details of the person's latest other application, to start from.
+     * What the person's latest other application held, for a new one to start from; null once this one exists.
      */
-    previousContact?: ContactDetails | null;
+    previous?: ApplicationStart | null;
     program: ProgramForm;
     solutions: Array<SolutionOption>;
 };
@@ -1438,7 +1451,15 @@ export type SaveApplication = {
     answers: {
         [key: string]: string;
     };
+    /**
+     * The models, tools and frameworks the solution is built with.
+     */
+    builtWith: Array<string>;
     contact: ContactDetails;
+    /**
+     * The solution's deck for this application: a PDF the applicant uploaded for `application_file`.
+     */
+    deckFileId?: string | null;
     /**
      * A solution of the applicant's organization.
      */
@@ -1447,6 +1468,10 @@ export type SaveApplication = {
      * The experience that matters for the problem; asked of a team or a company.
      */
     teamBackground?: string | null;
+    /**
+     * Customers, pilots, users or revenue so far.
+     */
+    traction?: string | null;
     /**
      * The version the form read; null for the first save.
      */
@@ -1556,18 +1581,6 @@ export type SaveProgramQuestions = {
  * A solution as its edit screen holds it.
  */
 export type SaveSolution = {
-    /**
-     * The models, tools and frameworks it is built with; null names none.
-     */
-    builtWith?: Array<string> | null;
-    /**
-     * The deck: a PDF the caller uploaded for `application_file`. Private.
-     */
-    deckFileId?: string | null;
-    /**
-     * A video, a prototype or a live demo.
-     */
-    demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     industries: Array<string>;
@@ -1582,10 +1595,6 @@ export type SaveSolution = {
      * One or two sentences shown in lists.
      */
     summary?: string | null;
-    /**
-     * Customers, pilots, users or revenue so far.
-     */
-    traction?: string | null;
     valueProposition?: string | null;
     /**
      * The version the screen read.
@@ -1636,7 +1645,6 @@ export type SendTalentEnquiry = {
  * A solution as its organization, and operators, see it.
  */
 export type Solution = {
-    builtWith: Array<string>;
     /**
      * Whether it has what a submission needs: a summary, a maturity, a focus area and an industry.
      */
@@ -1653,8 +1661,6 @@ export type Solution = {
      * Why it was last rejected.
      */
     decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
-    deck?: SolutionDeck | null;
-    demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     id: string;
@@ -1675,7 +1681,6 @@ export type Solution = {
     status: 'draft' | 'submitted' | 'approved' | 'rejected';
     submittedAt?: string | null;
     summary?: string | null;
-    traction?: string | null;
     updatedAt: string;
     valueProposition?: string | null;
     /**
@@ -1686,31 +1691,18 @@ export type Solution = {
 };
 
 /**
- * A solution's deck as its organization sees it. The file is private.
- */
-export type SolutionDeck = {
-    fileId: string;
-    fileName: string;
-    sizeBytes: number;
-};
-
-/**
  * A solution of the applicant's organization, as step 2 shows it.
  */
 export type SolutionOption = {
-    builtWith: Array<string>;
     /**
-     * Whether it has what an application needs: a summary, the problem it solves, a stage and a deck.
+     * Whether it has what an application needs: what it does, the problem it solves and its stage.
      */
     complete: boolean;
-    deck?: AttachedFile | null;
-    demoUrl?: string | null;
     id: string;
     maturity?: string | null;
     name: string;
     problemsSolved?: string | null;
     summary?: string | null;
-    traction?: string | null;
 };
 
 /**

@@ -1787,21 +1787,7 @@
         "lead": "The form goes back to this solution as it was last saved.",
         "cancel": "Keep editing"
       },
-      "requiredMark": "· required",
-      "materials": {
-        "title": "For applications",
-        "lead": "Entered once here, these go with the solution to every program it applies to. Only your organization and the programs you apply to see them.",
-        "deck": "Solution deck",
-        "deckHint": "What the solution does, for whom, and how far it has come.",
-        "demoUrl": "Demo link",
-        "demoUrlHint": "A video, a prototype or a live demo. Check it opens without signing in.",
-        "builtWith": "Built with",
-        "builtWithPlaceholder": "Add a model, tool or framework",
-        "builtWithHint": "Press Enter after each one. Up to {count}.",
-        "traction": "Milestones and traction",
-        "tractionHint": "Customers, pilots, users or revenue so far."
-      },
-      "optional": "Optional"
+      "requiredMark": "· required"
     },
     "deployment": {
       "open": "Open the deployment to read the problem, what was deployed and the result.",

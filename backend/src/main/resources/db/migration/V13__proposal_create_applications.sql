@@ -11,6 +11,11 @@ create table proposal (
     -- First and last name, phone, country and LinkedIn, as the applicant typed them.
     contact         jsonb       not null default '{}'::jsonb,
     team_background text,
+    -- What the applicant brings for this application: the deck (a private PDF), what the solution is built with and
+    -- its traction so far. The next application starts from them.
+    deck_file_id    uuid references storage_file (id),
+    built_with      text[]      not null default '{}',
+    traction        text,
     -- The answers to the program's questions, by question identifier.
     answers         jsonb       not null default '{}'::jsonb,
     -- How many times it was submitted; the latest version is what reviewers read.

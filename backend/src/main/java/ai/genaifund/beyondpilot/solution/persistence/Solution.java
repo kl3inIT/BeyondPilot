@@ -66,16 +66,6 @@ public class Solution {
 
 	private @Nullable String website;
 
-	private @Nullable UUID deckFileId;
-
-	private @Nullable String demoUrl;
-
-	@JdbcTypeCode(SqlTypes.ARRAY)
-	@Column(nullable = false, columnDefinition = "text[]")
-	private String[] builtWith = {};
-
-	private @Nullable String traction;
-
 	@Column(nullable = false)
 	private String status = DRAFT;
 
@@ -130,15 +120,6 @@ public class Solution {
 		this.maturity = maturity;
 		this.deployment = deployment.toArray(String[]::new);
 		this.website = website;
-	}
-
-	/** What an application reuses: the deck, a demo link, what it is built with and its traction. */
-	public void present(@Nullable UUID deckFileId, @Nullable String demoUrl, List<String> builtWith,
-			@Nullable String traction) {
-		this.deckFileId = deckFileId;
-		this.demoUrl = demoUrl;
-		this.builtWith = builtWith.toArray(String[]::new);
-		this.traction = traction;
 	}
 
 	public void list(boolean listed) {
@@ -227,22 +208,6 @@ public class Solution {
 
 	public List<String> getDeployment() {
 		return List.of(deployment);
-	}
-
-	public @Nullable UUID getDeckFileId() {
-		return deckFileId;
-	}
-
-	public @Nullable String getDemoUrl() {
-		return demoUrl;
-	}
-
-	public List<String> getBuiltWith() {
-		return List.of(builtWith);
-	}
-
-	public @Nullable String getTraction() {
-		return traction;
 	}
 
 	public @Nullable String getWebsite() {
