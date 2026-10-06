@@ -167,6 +167,7 @@ public class SolutionAdministration {
 		}
 		deployment.approve(Instant.now());
 		record(AuditAction.SOLUTION_DEPLOYMENT_APPROVE, operator, deployment, Map.of());
+		events.publishEvent(new SolutionChanged(deployment.getSolutionId()));
 	}
 
 	/**
@@ -184,6 +185,7 @@ public class SolutionAdministration {
 		}
 		deployment.reject(request.reason(), SolutionViews.text(request.message()), Instant.now());
 		record(AuditAction.SOLUTION_DEPLOYMENT_REJECT, operator, deployment, Map.of("reason", request.reason()));
+		events.publishEvent(new SolutionChanged(deployment.getSolutionId()));
 	}
 
 	private CustomerDeployment deployment(UUID id) {

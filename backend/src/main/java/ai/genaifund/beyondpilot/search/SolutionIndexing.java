@@ -61,6 +61,7 @@ class SolutionIndexing {
 		Cards.put(facets, Cards.MATURITY, solution.maturity());
 		Cards.put(facets, Cards.INDUSTRIES, solution.industries());
 		Cards.put(facets, Cards.FOCUS_AREAS, solution.focusAreas());
+		facets.put(Cards.CUSTOMER_DEPLOYMENTS, solution.customerDeployments());
 		String maturity = solution.maturity();
 		String keywords = Cards.words(solution.focusAreas(), solution.industries(),
 				maturity == null ? List.of() : List.of(maturity), solution.deployment(), solution.builtWith());
