@@ -4,14 +4,17 @@ import java.text.Normalizer;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.UUID;
 
 import ai.genaifund.beyondpilot.solution.dto.CustomerDeploymentResponse;
 import ai.genaifund.beyondpilot.solution.dto.PublicCustomerDeploymentResponse;
+import ai.genaifund.beyondpilot.solution.dto.SolutionDeckResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionSummaryResponse;
 import ai.genaifund.beyondpilot.solution.persistence.CustomerDeployment;
 import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionQueryRepository;
+import ai.genaifund.beyondpilot.storage.StorageService;
 import org.jspecify.annotations.Nullable;
 
 /** What the application services of the module derive the same way: the response records and a slug. */
@@ -22,14 +25,25 @@ final class SolutionViews {
 	private SolutionViews() {
 	}
 
-	static SolutionResponse solution(Solution solution, String organizationName, List<CustomerDeployment> deployments) {
+	static SolutionResponse solution(Solution solution, String organizationName, @Nullable SolutionDeckResponse deck,
+			List<CustomerDeployment> deployments) {
 		return new SolutionResponse(solution.getId(), solution.getOrganizationId(), organizationName,
 				solution.getSlug(), solution.getName(), solution.getSummary(), solution.getProblemsSolved(),
 				solution.getValueProposition(), solution.getFocusAreas(), solution.getIndustries(),
-				solution.getMaturity(), solution.getDeployment(), solution.getWebsite(), solution.getStatus(),
+				solution.getMaturity(), solution.getDeployment(), solution.getWebsite(), deck, solution.getDemoUrl(),
+				solution.getBuiltWith(), solution.getTraction(), solution.getStatus(),
 				solution.getDecisionReason(), solution.getDecisionMessage(), solution.isListed(), solution.isComplete(),
 				solution.getSubmittedAt(), solution.getVersion(), solution.getUpdatedAt(),
 				deployments.stream().map(SolutionViews::deployment).toList());
+	}
+
+	/** The deck a solution names, with its name and size; null when it names none. */
+	static @Nullable SolutionDeckResponse deck(Solution solution, StorageService storage) {
+		UUID fileId = solution.getDeckFileId();
+		return fileId == null ? null
+				: storage.describe(fileId)
+					.map(file -> new SolutionDeckResponse(file.id(), file.fileName(), file.sizeBytes()))
+					.orElse(null);
 	}
 
 	static CustomerDeploymentResponse deployment(CustomerDeployment deployment) {
@@ -58,6 +72,11 @@ final class SolutionViews {
 		return new SolutionSummaryResponse(row.id(), organizationName, row.slug(), row.name(), row.summary(),
 				row.maturity(), row.status(), row.listed(), row.submittedAt(), row.updatedAt(),
 				row.deploymentsAwaiting());
+	}
+
+	/** What a person typed into a list, stripped, without blanks or repeats, in the order they gave. */
+	static List<String> entries(List<String> entries) {
+		return entries.stream().map(String::strip).filter(entry -> !entry.isEmpty()).distinct().toList();
 	}
 
 	/** The codes once each, in the order they were given. */

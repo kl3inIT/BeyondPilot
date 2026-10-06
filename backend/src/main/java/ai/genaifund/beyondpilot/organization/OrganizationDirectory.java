@@ -45,6 +45,12 @@ public class OrganizationDirectory {
 						organization.isApproved(), organization.getRoles())));
 	}
 
+	/** Whether GenAI Fund has approved this organization, read now. */
+	@Transactional(readOnly = true)
+	public boolean isApproved(UUID organizationId) {
+		return organizations.findById(organizationId).filter(Organization::isApproved).isPresent();
+	}
+
 	/** The accounts that own an organization, read now; empty when it has no owner. */
 	@Transactional(readOnly = true)
 	public List<UUID> ownersOf(UUID organizationId) {

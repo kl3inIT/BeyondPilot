@@ -4170,14 +4170,16 @@ components:
         industries:
           type: array
           description: "The industries it works in or serves, as the codes the solutions\
-            \ use."
+            \ use. A company names one to five; a team or a builder may name none."
           items:
             type: string
             pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
           maxItems: 5
-          minItems: 1
+          minItems: 0
         jobTitle:
-          type: string
+          type:
+          - string
+          - "null"
           description: What the creator does in the organization.
           maxLength: 120
           minLength: 0
@@ -4214,7 +4216,6 @@ components:
       required:
       - country
       - industries
-      - jobTitle
       - name
       - roles
       - teamSize
@@ -5978,6 +5979,33 @@ components:
       type: object
       description: A solution as its edit screen holds it.
       properties:
+        builtWith:
+          type:
+          - array
+          - "null"
+          description: "The models, tools and frameworks it is built with; null names\
+            \ none."
+          items:
+            type: string
+            maxLength: 60
+            minLength: 0
+          maxItems: 10
+          minItems: 0
+        deckFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The deck: a PDF the caller uploaded for `application_file`.\
+            \ Private."
+        demoUrl:
+          type:
+          - string
+          - "null"
+          description: "A video, a prototype or a live demo."
+          maxLength: 300
+          minLength: 0
+          pattern: "https?://[^\\s]+"
         deployment:
           type: array
           items:
@@ -6029,6 +6057,13 @@ components:
           - "null"
           description: One or two sentences shown in lists.
           maxLength: 300
+          minLength: 0
+        traction:
+          type:
+          - string
+          - "null"
+          description: "Customers, pilots, users or revenue so far."
+          maxLength: 600
           minLength: 0
         valueProposition:
           type:
@@ -6167,6 +6202,10 @@ components:
       type: object
       description: "A solution as its organization, and operators, see it."
       properties:
+        builtWith:
+          type: array
+          items:
+            type: string
         complete:
           type: boolean
           description: "Whether it has what a submission needs: a summary, a maturity,\
@@ -6193,6 +6232,15 @@ components:
           - duplicate
           - unverifiable
           - other
+        deck:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/SolutionDeck"
+        demoUrl:
+          type:
+          - string
+          - "null"
         deployment:
           type: array
           items:
@@ -6251,6 +6299,10 @@ components:
           type:
           - string
           - "null"
+        traction:
+          type:
+          - string
+          - "null"
         updatedAt:
           type: string
           format: date-time
@@ -6268,6 +6320,7 @@ components:
           - string
           - "null"
       required:
+      - builtWith
       - complete
       - customerDeployments
       - deployment
@@ -6282,6 +6335,22 @@ components:
       - status
       - updatedAt
       - version
+    SolutionDeck:
+      type: object
+      description: A solution's deck as its organization sees it. The file is private.
+      properties:
+        fileId:
+          type: string
+          format: uuid
+        fileName:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+      required:
+      - fileId
+      - fileName
+      - sizeBytes
     SolutionSummary:
       type: object
       description: One solution in a list of its organization or of the operators.

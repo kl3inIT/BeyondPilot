@@ -62,23 +62,25 @@ class SolutionTest {
 	}
 
 	@Test
-	void onlyAnOwnerOfAnApprovedProviderWritesAndAMemberReads() {
+	void everyMemberOfAProviderWritesWhetherOrNotGenAiFundHasReviewedIt() {
 		String founder = signIn("founder@writers.test");
 		UUID organization = organization(founder, "Writers Co", "provider");
 
-		// An organization that waits for review publishes nothing yet.
-		assertProblem(post(founder, MINE, Map.of("name", "Too Early")), 403, "SOLUTION_PROVIDER_REQUIRED");
-		approve(organization);
+		// Review decides what is listed, not who takes part: an organization that waits for review writes already.
 		UUID solution = create(founder, "Writers Desk");
+		submitted(founder, "Writers Draft");
+		String forFounder = body(get(founder, MINE).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(forFounder, "$.editable")).isTrue();
 
+		approve(organization);
 		String colleague = signIn("colleague@writers.test");
 		post(colleague, ORGANIZATION + "/organizations/" + organization + "/join", Map.of()).expectStatus().isOk();
 		String forMember = body(get(colleague, MINE).expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(forMember, "$.items[*].name")).containsExactly("Writers Desk");
-		assertThat(JsonPath.<Boolean>read(forMember, "$.editable")).isFalse();
-		get(colleague, MINE + "/" + solution).expectStatus().isOk();
-		assertProblem(post(colleague, MINE, Map.of("name", "By A Member")), 403, "SOLUTION_PROVIDER_REQUIRED");
-		assertProblem(post(colleague, MINE + "/" + solution + "/submit", null), 403, "SOLUTION_PROVIDER_REQUIRED");
+		assertThat(JsonPath.<List<String>>read(forMember, "$.items[*].name")).contains("Writers Desk");
+		assertThat(JsonPath.<Boolean>read(forMember, "$.editable")).isTrue();
+		String bySaved = body(put(colleague, MINE + "/" + solution, described("Writers Desk", 0)).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(bySaved, "$.summary")).isNotBlank();
+		create(colleague, "By A Member");
 
 		String buyer = signIn("buyer@enterprise-only.test");
 		approve(organization(buyer, "Enterprise Only", "enterprise"));
@@ -89,6 +91,57 @@ class SolutionTest {
 		String nobody = body(get(signIn("nobody@elsewhere.test"), MINE).expectStatus().isOk());
 		assertThat(JsonPath.<List<Object>>read(nobody, "$.items")).isEmpty();
 		assertThat(JsonPath.<Boolean>read(nobody, "$.editable")).isFalse();
+	}
+
+	@Test
+	void aSolutionIsListedOnlyOnceItsOrganizationIsApprovedToo() {
+		String founder = signIn("founder@unreviewed.test");
+		UUID organization = organization(founder, "Unreviewed Co", "provider");
+		UUID solution = submitted(founder, "Unreviewed Desk");
+
+		assertProblem(post(operator, ADMIN + "/" + solution + "/approve", null), 409,
+				"SOLUTION_ORGANIZATION_NOT_APPROVED");
+		approve(organization);
+		post(operator, ADMIN + "/" + solution + "/approve", null).expectStatus().isNoContent();
+		assertThat(names(DIRECTORY)).contains("Unreviewed Desk");
+	}
+
+	@Test
+	void aSolutionKeepsItsDeckDemoBuiltWithAndTractionForTheNextApplication() {
+		String founder = provider("founder@materials.test", "Materials Co");
+		String draft = body(post(founder, MINE, Map.of("name", "Materials Desk")).expectStatus().isCreated());
+		UUID id = UUID.fromString(JsonPath.read(draft, "$.id"));
+		UUID deck = file("founder@materials.test", "application_file");
+		Map<String, Object> request = described("Materials Desk", versionOf(draft));
+		request.put("deckFileId", deck.toString());
+		request.put("demoUrl", "https://demo.materials.test");
+		request.put("builtWith", List.of(" OpenAI GPT ", "Whisper", "Whisper"));
+		request.put("traction", "Two pilots with insurers.");
+
+		String saved = body(put(founder, MINE + "/" + id, request).expectStatus().isOk());
+
+		assertThat(JsonPath.<String>read(saved, "$.deck.fileId")).isEqualTo(deck.toString());
+		assertThat(JsonPath.<String>read(saved, "$.deck.fileName")).isEqualTo("deck.pdf");
+		assertThat(JsonPath.<String>read(saved, "$.demoUrl")).isEqualTo("https://demo.materials.test");
+		assertThat(JsonPath.<List<String>>read(saved, "$.builtWith")).containsExactly("OpenAI GPT", "Whisper");
+		assertThat(JsonPath.<String>read(saved, "$.traction")).isEqualTo("Two pilots with insurers.");
+
+		// A deck is one the caller uploaded for an application, not someone else's file.
+		Map<String, Object> borrowed = described("Materials Desk", versionOf(saved));
+		borrowed.put("deckFileId", file("operator@genaifund.test", "application_file").toString());
+		assertProblem(put(founder, MINE + "/" + id, borrowed), 404, "STORAGE_FILE_NOT_FOUND");
+	}
+
+	/** The record of a stored file as storage keeps it; a save reads the record, never the bytes. */
+	private UUID file(String uploader, String purpose) {
+		UUID id = UUID.randomUUID();
+		jdbc.sql("""
+				insert into storage_file (id, provider, object_key, purpose, public_read, file_name, media_type,
+				                          size_bytes, status, uploaded_by_account_id, upload_expires_at)
+				select ?, 'local', ?, ?, false, 'deck.pdf', 'application/pdf', 2048, 'stored', id, now()
+				from identity_account where email = ?
+				""").params(id, "test/" + id, purpose, uploader).update();
+		return id;
 	}
 
 	@Test

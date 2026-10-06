@@ -12,6 +12,7 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
+import ai.genaifund.beyondpilot.storage.StorageService;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListRequest;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListResponse;
@@ -53,15 +54,18 @@ public class SolutionAdministration {
 
 	private final AuditTrail audit;
 
+	private final StorageService storage;
+
 	SolutionAdministration(SolutionRepository solutions, CustomerDeploymentRepository deployments,
 			SolutionQueryRepository solutionList, OrganizationDirectory organizations, IdentityService identity,
-			AuditTrail audit) {
+			AuditTrail audit, StorageService storage) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.solutionList = solutionList;
 		this.organizations = organizations;
 		this.identity = identity;
 		this.audit = audit;
+		this.storage = storage;
 	}
 
 	/**
@@ -93,7 +97,7 @@ public class SolutionAdministration {
 		Solution solution = solutions.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
 		return SolutionViews.solution(solution,
 				name(organizations.names(List.of(solution.getOrganizationId())), solution.getOrganizationId()),
-				deployments.findBySolutionIdOrderByCreatedAtDesc(id));
+				SolutionViews.deck(solution, storage), deployments.findBySolutionIdOrderByCreatedAtDesc(id));
 	}
 
 	/**
@@ -108,6 +112,11 @@ public class SolutionAdministration {
 		Solution solution = reviewable(id);
 		if (!solution.isSubmitted()) {
 			throw notAwaiting(solution);
+		}
+		if (!organizations.isApproved(solution.getOrganizationId())) {
+			// The directory lists a solution only when GenAI Fund has approved who offers it too.
+			throw new SolutionException(SolutionErrorCode.ORGANIZATION_NOT_APPROVED,
+					"Approval of solution " + id + " whose organization is not approved");
 		}
 		solution.approve(Instant.now());
 		record(AuditAction.SOLUTION_APPROVE, operator, solution, Map.of());

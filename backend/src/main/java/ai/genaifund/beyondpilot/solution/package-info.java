@@ -3,7 +3,7 @@
  * directory of the approved ones. A solution belongs to an organization, which it names by its identifier.
  */
 @ApplicationModule(displayName = "Solution", type = ApplicationModule.Type.CLOSED,
-		allowedDependencies = { "audit", "identity", "organization" })
+		allowedDependencies = { "audit", "identity", "organization", "storage" })
 @NullMarked
 package ai.genaifund.beyondpilot.solution;
 

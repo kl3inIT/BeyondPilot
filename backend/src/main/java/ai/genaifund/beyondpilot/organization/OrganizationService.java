@@ -127,6 +127,11 @@ public class OrganizationService {
 	public OrganizationResponse create(Actor actor, CreateOrganizationRequest request) {
 		Person person = identity.person(actor);
 		requireFree(person);
+		if ("company".equals(request.type()) && request.industries().isEmpty()) {
+			// A team or a builder on their own may not have settled on an industry; a company has.
+			throw new OrganizationException(OrganizationErrorCode.INDUSTRIES_REQUIRED,
+					"Company created by account " + person.accountId() + " without an industry");
+		}
 		Organization organization = new Organization(UUID.randomUUID(), freeSlug(request.name()),
 				request.name().strip(), OrganizationViews.roles(request.roles()), request.type(), Organization.PENDING,
 				person.accountId());
@@ -142,7 +147,10 @@ public class OrganizationService {
 		if (!memberships.add(organization.getId(), person.accountId(), MembershipRepository.OWNER)) {
 			throw alreadyMember(person);
 		}
-		memberships.changeJobTitle(person.accountId(), request.jobTitle().strip());
+		String jobTitle = OrganizationViews.text(request.jobTitle());
+		if (jobTitle != null) {
+			memberships.changeJobTitle(person.accountId(), jobTitle);
+		}
 		LOG.atInfo()
 			.addKeyValue("event", "organization.creation.submitted")
 			.addKeyValue("organization_id", organization.getId())
