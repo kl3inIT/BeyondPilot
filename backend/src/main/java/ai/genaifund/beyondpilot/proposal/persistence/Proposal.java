@@ -30,6 +30,12 @@ public class Proposal {
 
 	public static final String WITHDRAWN = "withdrawn";
 
+	public static final String UNDER_REVIEW = "under_review";
+
+	public static final String SHORTLISTED = "shortlisted";
+
+	public static final String NOT_SELECTED = "not_selected";
+
 	@Id
 	private UUID id;
 
@@ -70,6 +76,13 @@ public class Proposal {
 	private @Nullable Instant submittedAt;
 
 	private @Nullable Instant withdrawnAt;
+
+	/**
+	 * GenAI Fund's decision, internal until the outcomes are released. It is written by its own statement, so a
+	 * decision neither changes the application's version under an applicant who is editing it nor when it last changed.
+	 */
+	@Column(nullable = false, insertable = false, updatable = false)
+	private String reviewStatus = UNDER_REVIEW;
 
 	@Version
 	private long version;
@@ -193,6 +206,10 @@ public class Proposal {
 
 	public @Nullable Instant getWithdrawnAt() {
 		return withdrawnAt;
+	}
+
+	public String getReviewStatus() {
+		return reviewStatus;
 	}
 
 	public long getVersion() {

@@ -172,6 +172,34 @@ public class EmailService {
 				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
 	}
 
+	/**
+	 * Tells an address that it was asked to judge a program's applications, in both languages. Like an organization
+	 * invitation it carries no link that acts: the person signs in with this address and finds the program under
+	 * Reviews.
+	 * @param inviterName who asked, as they are shown
+	 * @param expiresAt when the invitation lapses if nobody signs in with the address
+	 */
+	public void sendReviewerInvitation(String recipient, String programName, String inviterName, Instant expiresAt) {
+		String until = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH).withZone(VIETNAM).format(expiresAt);
+		String english = inviterName + " invited you to judge the applications to " + programName
+				+ " on BeyondPilot. Sign in with this email address by " + until
+				+ " and open Reviews. Your scores and notes are read only by you and GenAI Fund.";
+		String vietnamese = inviterName + " mời bạn chấm các đơn nộp vào " + programName
+				+ " trên BeyondPilot. Hãy đăng nhập bằng địa chỉ email này trước " + until
+				+ " và mở mục Reviews. Điểm và ghi chú của bạn chỉ bạn và GenAI Fund đọc được.";
+		send("reviewer_invitation", recipient, "Judge the applications to " + programName,
+				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+	}
+
+	/**
+	 * Sends an applicant the outcome of their application, as the operator wrote it for the applicant's group. The
+	 * message is plain text; its paragraphs are kept.
+	 */
+	public void sendApplicationOutcome(String recipient, String subject, String message) {
+		send("application_outcome", recipient, subject, message.strip() + "\n",
+				paragraphs(message.strip().split("\\R\\s*\\R")));
+	}
+
 	private static String paragraphs(String... texts) {
 		StringBuilder html = new StringBuilder();
 		for (String text : texts) {

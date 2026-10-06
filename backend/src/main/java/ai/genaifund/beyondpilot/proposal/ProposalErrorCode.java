@@ -54,7 +54,40 @@ public enum ProposalErrorCode implements ErrorCode {
 			"Answer every question the program asks."),
 
 	NOT_SUBMITTED("PROPOSAL_NOT_SUBMITTED", ErrorCategory.CONFLICT,
-			"Only a submitted application can be withdrawn.");
+			"Only a submitted application can be withdrawn."),
+
+	REVIEW_PROGRAM_NOT_FOUND("PROPOSAL_REVIEW_PROGRAM_NOT_FOUND", ErrorCategory.NOT_FOUND,
+			"There is no such program taking applications."),
+
+	REVIEW_NOT_ALLOWED("PROPOSAL_REVIEW_NOT_ALLOWED", ErrorCategory.NOT_PERMITTED,
+			"You do not review this program's applications."),
+
+	CRITERIA_FIXED("PROPOSAL_CRITERIA_FIXED", ErrorCategory.CONFLICT,
+			"Applications have been scored on these criteria, so they can no longer change."),
+
+	CRITERIA_INVALID("PROPOSAL_CRITERIA_INVALID", ErrorCategory.VALIDATION,
+			"Give each criterion its own name."),
+
+	NO_CRITERIA("PROPOSAL_NO_CRITERIA", ErrorCategory.CONFLICT,
+			"This program has no judging criteria yet."),
+
+	REVIEWER_INVITED("PROPOSAL_REVIEWER_INVITED", ErrorCategory.CONFLICT,
+			"This address is already invited to judge this program."),
+
+	REVIEWER_NOT_FOUND("PROPOSAL_REVIEWER_NOT_FOUND", ErrorCategory.NOT_FOUND,
+			"There is no such judge of this program."),
+
+	REVIEWER_JOINED("PROPOSAL_REVIEWER_JOINED", ErrorCategory.CONFLICT,
+			"This judge has already signed in; there is no invitation to send again."),
+
+	ASSESSMENT_INVALID("PROPOSAL_ASSESSMENT_INVALID", ErrorCategory.VALIDATION,
+			"Score every criterion from 1 to 5, or declare a conflict."),
+
+	RELEASED("PROPOSAL_RELEASED", ErrorCategory.CONFLICT,
+			"The outcomes of this program have been released, so the review can no longer change."),
+
+	OUTCOMES_NOT_READY("PROPOSAL_OUTCOMES_NOT_READY", ErrorCategory.CONFLICT,
+			"Outcomes are released once applications have closed and every application has a decision.");
 
 	private final String code;
 	private final ErrorCategory category;

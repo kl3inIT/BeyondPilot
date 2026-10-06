@@ -22,6 +22,7 @@ export const siteRoutes = {
   adminIntroductions: "/admin/introductions",
   workspaceOrganization: "/workspace/organization",
   myApplications: "/applications",
+  reviews: "/reviews",
   workspaceMembers: "/workspace/organization/members",
   workspaceSolutions: "/workspace/organization/solutions",
   workspaceIntroductions: "/workspace/organization/introductions",
@@ -56,6 +57,26 @@ export function adminProgramQuestionsRoute(id: string) {
 
 export function adminProgramRoute(id: string) {
   return `${siteRoutes.adminPrograms}/${id}/settings`;
+}
+
+/** The applications of a program as GenAI Fund reviews them; one opens under it. */
+export function adminProgramApplicationsRoute(id: string) {
+  return `${siteRoutes.adminPrograms}/${id}/applications`;
+}
+
+/** Where GenAI Fund releases a program's outcomes. */
+export function adminProgramReleaseRoute(id: string) {
+  return `${siteRoutes.adminPrograms}/${id}/release`;
+}
+
+/** A program's judges and judging criteria. */
+export function adminProgramReviewersRoute(id: string) {
+  return `${siteRoutes.adminPrograms}/${id}/reviewers`;
+}
+
+/** The applications of a program as an invited judge scores them; one opens under it. */
+export function reviewProgramRoute(programId: string) {
+  return `${siteRoutes.reviews}/${programId}`;
 }
 
 /** Planned pages without a screen yet; they share the coming-soon page. */
