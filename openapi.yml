@@ -7651,11 +7651,11 @@ components:
       description: "One result, as its card shows it. Members of another kind are\
         \ null or empty."
       properties:
-        availability:
+        city:
           type:
           - string
           - "null"
-          description: A person's availability.
+          description: A person's city.
         country:
           type:
           - string
@@ -7685,7 +7685,7 @@ components:
             type: string
         industries:
           type: array
-          description: A solution's industries.
+          description: The industries of a solution or a person.
           items:
             type: string
         kind:
@@ -7714,6 +7714,12 @@ components:
           - open
           - running
           - done
+        photoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "A person's photo, read at the public address of stored files."
         roles:
           type: array
           description: A person's roles.
@@ -7748,6 +7754,11 @@ components:
           - string
           - "null"
           description: A program's type.
+        worksAt:
+          type:
+          - string
+          - "null"
+          description: Where a person works.
       required:
       - focusAreas
       - industries

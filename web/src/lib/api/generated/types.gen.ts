@@ -1756,9 +1756,9 @@ export type SearchCounts = {
  */
 export type SearchItem = {
     /**
-     * A person's availability.
+     * A person's city.
      */
-    availability?: string | null;
+    city?: string | null;
     /**
      * The country of a solution's organization, or of a person.
      */
@@ -1777,7 +1777,7 @@ export type SearchItem = {
      */
     focusAreas: Array<string>;
     /**
-     * A solution's industries.
+     * The industries of a solution or a person.
      */
     industries: Array<string>;
     kind: 'program' | 'solution' | 'talent';
@@ -1793,6 +1793,10 @@ export type SearchItem = {
      * Where a program stands now.
      */
     phase?: 'upcoming' | 'open' | 'running' | 'done';
+    /**
+     * A person's photo, read at the public address of stored files.
+     */
+    photoFileId?: string | null;
     /**
      * A person's roles.
      */
@@ -1819,6 +1823,10 @@ export type SearchItem = {
      * A program's type.
      */
     type?: string | null;
+    /**
+     * Where a person works.
+     */
+    worksAt?: string | null;
 };
 
 /**
