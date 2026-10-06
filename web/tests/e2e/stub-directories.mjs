@@ -31,9 +31,13 @@ function solution(organization, name, more) {
     summary: `${name} for insurers.`,
     problemsSolved: "Policy holders wait days for an answer.",
     valueProposition: "An answer in seconds, in Vietnamese and English.",
+    traction: null,
+    builtWith: [],
+    languages: [],
+    bestCustomerProfile: null,
     website: "https://pocketpolicy.example",
     demoUrl: null,
-    deckUrl: null,
+    deck: null,
     listed: true,
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
@@ -48,7 +52,10 @@ const solutions = [
   solution(pocketPolicy, "Policy Chat", {
     maturity: "production",
     demoUrl: "https://pocketpolicy.example/demo",
-    deckUrl: "https://pocketpolicy.example/deck.pdf",
+    deck: { fileName: "policy-chat-deck.pdf", sizeBytes: 3250586 },
+    languages: ["vi", "en"],
+    builtWith: ["Python", "PostgreSQL"],
+    bestCustomerProfile: "Insurers with a call centre of fifty seats or more.",
   }),
   solution(lumenHealth, "Clinic Triage", {
     summary: "Triage for clinics before the first visit.",
@@ -118,10 +125,21 @@ function person(name, more) {
     website: "https://www.linkedin.com/in/example",
     roles: ["forward_deployed_engineer"],
     skills: ["Python", "RAG"],
-    availability: "available",
     engagement: ["contract", "advisory"],
-    rateBand: "50_100",
-    projects: [{ title: "Claims assistant for an insurer", year: 2025, summary: null, url: null }],
+    photoFileId: null,
+    city: "Ho Chi Minh City",
+    languages: ["vi", "en"],
+    industries: ["insurance"],
+    worksAt: "Revee AI",
+    projects: [
+      {
+        title: "Claims assistant for an insurer",
+        year: 2025,
+        summary: null,
+        url: null,
+        stage: "in_production",
+      },
+    ],
     ...more,
   };
 }
@@ -134,17 +152,22 @@ const talent = [
     country: "ID",
     roles: ["ml_engineer"],
     skills: ["PyTorch", "OCR"],
-    availability: "open_to_offers",
     projects: [],
-    rateBand: undefined,
+    languages: [],
+    city: null,
+    worksAt: null,
     website: null,
   }),
   // The operator of these tests has a profile of their own.
   person("Đạt Phan", { slug: "dat-phan", roles: ["ai_consultant"], skills: ["Strategy"] }),
 ];
 
-const personSummaryOf = (item) =>
-  only(item, "slug", "name", "headline", "country", "roles", "skills", "availability");
+const personSummaryOf = (item) => ({
+  ...only(item, "slug", "name", "headline", "country", "city", "roles", "skills"),
+  photoFileId: item.photoFileId,
+  projectCount: item.projects.length,
+  leadProject: item.projects[0] ?? null,
+});
 
 const has = (text, ...fields) =>
   !text || fields.some((field) => (field ?? "").toLowerCase().includes(text.toLowerCase()));
@@ -204,7 +227,8 @@ export function answerDirectory(url) {
       (item) =>
         has(query.get("q"), item.name, item.headline, ...item.skills) &&
         (!query.get("role") || item.roles.includes(query.get("role"))) &&
-        (!query.get("availability") || item.availability === query.get("availability")),
+        (!query.get("country") || item.country === query.get("country")) &&
+        (!query.get("engagement") || item.engagement.includes(query.get("engagement"))),
     );
     return [200, page(url, items.map(personSummaryOf))];
   }

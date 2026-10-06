@@ -100,12 +100,15 @@ class SearchDocumentRepositoryTest {
 	}
 
 	@Test
-	void savingAgainReplacesTheRowAndChangesItsHashOnlyWhenTheTextChanges() {
+	void savingAgainReplacesTheRowOnlyWhenSomethingChangedAndItsHashOnlyWhenTheTextDid() {
 		UUID id = save(PROGRAM, "Build Week", null, "Five days of building", true);
 		String first = hash(id);
+		Object indexedAt = indexedAt(id);
 
 		index.save(document(PROGRAM, id, "Build Week", null, "Five days of building", true));
 		assertThat(hash(id)).isEqualTo(first);
+		// A save that changes nothing writes nothing.
+		assertThat(indexedAt(id)).isEqualTo(indexedAt);
 
 		index.save(document(PROGRAM, id, "Build Week 2026", null, "Five days of building", true));
 		assertThat(hash(id)).isNotEqualTo(first);
@@ -139,6 +142,10 @@ class SearchDocumentRepositoryTest {
 				title + "\n" + summary, Map.of("country", "VN"), listed,
 				kind.equals(PROGRAM) ? LocalDate.of(2026, 11, 1) : null,
 				kind.equals(PROGRAM) ? LocalDate.of(2026, 11, 30) : null);
+	}
+
+	private Object indexedAt(UUID id) {
+		return jdbc.sql("select indexed_at from search_document where item_id = ?").param(id).query().singleValue();
 	}
 
 	private String hash(UUID id) {

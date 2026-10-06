@@ -216,7 +216,7 @@ function ComboboxChip({
   ...props
 }: ComboboxPrimitive.Chip.Props & {
   showRemove?: boolean;
-  /** The name of the remove button for assistive technology; an icon alone has none. */
+  /** The accessible name of the button that removes the chip, which holds only an icon. */
   removeLabel?: string;
 }) {
   return (

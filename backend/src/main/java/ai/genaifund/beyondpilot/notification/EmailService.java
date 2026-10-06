@@ -83,6 +83,13 @@ public class EmailService {
 				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
 	}
 
+	/** What GenAI Fund decided about a talent profile. */
+	public enum TalentDecision {
+
+		APPROVED, CHANGES_REQUESTED, REMOVED
+
+	}
+
 	/**
 	 * Tells a person the answer to their request to get into an organization, in both languages.
 	 * @param claim whether they asked to own an organization nobody owned, which GenAI Fund decides; otherwise they
@@ -121,19 +128,132 @@ public class EmailService {
 	}
 
 	/**
-	 * Passes a message on to a person who has a talent profile. The sender is named with their address so the person
-	 * can answer by email; the sender never learns the address this is sent to.
-	 * @param senderName who wrote the message, as they are shown
-	 * @param senderEmail where the person answers
+	 * Tells a person what GenAI Fund decided about their talent profile, in both languages. The reason is read after
+	 * signing in; the operator's note, when there is one, is quoted as written.
+	 * @param profileName the profile, as it names its person
+	 * @param note what the operator wrote to the person; null when nothing
+	 */
+	public void sendTalentDecision(String recipient, String profileName, TalentDecision decision,
+			@Nullable String note) {
+		String english = switch (decision) {
+			case APPROVED -> "Your talent profile " + profileName + " is approved on BeyondPilot and shows in the"
+					+ " directory unless you hid it.";
+			case CHANGES_REQUESTED -> "GenAI Fund asks for changes to your talent profile " + profileName
+					+ " on BeyondPilot. Sign in to read why, correct it and send it again.";
+			case REMOVED -> "GenAI Fund removed your talent profile " + profileName + " from BeyondPilot's directory."
+					+ " Sign in to read why; you can correct it and send it again.";
+		};
+		String vietnamese = switch (decision) {
+			case APPROVED -> "Hồ sơ nhân lực " + profileName + " của bạn đã được duyệt trên BeyondPilot và hiện trong"
+					+ " danh mục, trừ khi bạn ẩn nó.";
+			case CHANGES_REQUESTED -> "GenAI Fund đề nghị bạn sửa hồ sơ nhân lực " + profileName
+					+ " trên BeyondPilot. Hãy đăng nhập để xem lý do, chỉnh sửa và gửi lại.";
+			case REMOVED -> "GenAI Fund đã gỡ hồ sơ nhân lực " + profileName + " khỏi danh mục của BeyondPilot."
+					+ " Hãy đăng nhập để xem lý do; bạn có thể chỉnh sửa và gửi lại.";
+		};
+		String subject = switch (decision) {
+			case APPROVED -> "Your BeyondPilot talent profile is approved";
+			case CHANGES_REQUESTED -> "Changes asked for your BeyondPilot talent profile";
+			case REMOVED -> "Your BeyondPilot talent profile was removed";
+		};
+		if (note == null) {
+			send("talent_decision", recipient, subject, english + "\n\n" + vietnamese + "\n",
+					paragraphs(english, vietnamese));
+		}
+		else {
+			send("talent_decision", recipient, subject, english + "\n\n" + vietnamese + "\n\n" + note + "\n",
+					paragraphs(english, vietnamese, note));
+		}
+	}
+
+	/**
+	 * Tells a person with a talent profile that someone wrote to them. The sender's address is not in it: the person
+	 * signs in and answers under their talent profile, and only an acceptance shares the two addresses.
+	 * @param senderName who wrote, by the name they gave; null when they gave none, never their address
+	 * @param senderOrganization the organization the sender belongs to; null when none
+	 * @param topic what the message is about: {@code project}, {@code role} or {@code other}
 	 * @param message what the sender wrote
 	 */
-	public void sendTalentEnquiry(String recipient, String senderName, String senderEmail, String message) {
-		String english = senderName + " (" + senderEmail + ") sent you a message through your BeyondPilot talent profile."
-				+ " Answer them at that address.";
-		String vietnamese = senderName + " (" + senderEmail + ") đã gửi cho bạn một lời nhắn qua hồ sơ nhân tài của bạn"
-				+ " trên BeyondPilot. Hãy trả lời họ qua địa chỉ đó.";
+	public void sendTalentEnquiry(String recipient, @Nullable String senderName, @Nullable String senderOrganization,
+			String topic, String message) {
+		String name = senderName != null ? senderName : "Someone";
+		String nameVi = senderName != null ? senderName : "Một người";
+		String english = (senderOrganization != null ? name + " (" + senderOrganization + ")" : name) + " wrote to you through your BeyondPilot talent profile, " + switch (topic) {
+			case "project" -> "about a project";
+			case "role" -> "about a role";
+			default -> "about something else";
+		} + ". Sign in and open your talent profile > Enquiries to accept or decline. Your address is shared only if"
+				+ " you accept.";
+		String vietnamese = (senderOrganization != null ? nameVi + " (" + senderOrganization + ")" : nameVi)
+				+ " đã viết cho bạn qua hồ sơ nhân lực trên BeyondPilot, " + switch (topic) {
+			case "project" -> "về một dự án";
+			case "role" -> "về một vị trí công việc";
+			default -> "về một việc khác";
+		} + ". Hãy đăng nhập và mở Hồ sơ nhân lực > Lời nhắn để chấp nhận hoặc từ chối. Địa chỉ email của bạn chỉ"
+				+ " được chia sẻ khi bạn chấp nhận.";
 		send("talent_enquiry", recipient, "A message through your BeyondPilot talent profile",
 				english + "\n\n" + vietnamese + "\n\n" + message + "\n", paragraphs(english, vietnamese, message));
+	}
+
+	/**
+	 * Reminds a person that a message waits for their answer and when it closes.
+	 * @param senderName who wrote, by the name they gave; null when they gave none, never their address
+	 * @param daysLeft the whole days before the message closes unanswered
+	 */
+	public void sendTalentEnquiryReminder(String recipient, @Nullable String senderName, long daysLeft) {
+		String english = (senderName != null ? "A message from " + senderName : "A message") + " waits for your answer on BeyondPilot. It closes in "
+				+ daysLeft + " days if you do not answer. Sign in and open your talent profile > Enquiries.";
+		String vietnamese = (senderName != null ? "Lời nhắn của " + senderName : "Một lời nhắn") + " đang chờ bạn trả lời trên BeyondPilot. Lời nhắn sẽ tự đóng"
+				+ " sau " + daysLeft + " ngày nếu bạn không trả lời. Hãy đăng nhập và mở Hồ sơ nhân lực > Lời nhắn.";
+		send("talent_enquiry_reminder", recipient, "A message waits for your answer on BeyondPilot",
+				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+	}
+
+	/**
+	 * Introduces the two sides of a message the person accepted: each is told who the other is and where to write.
+	 * @param otherName who the recipient is introduced to, as they are shown
+	 * @param otherEmail where the recipient writes to them
+	 * @param otherOrganization the organization the other person belongs to; null when none or not known
+	 */
+	public void sendTalentIntroduction(String recipient, String otherName, String otherEmail,
+			@Nullable String otherOrganization) {
+		String who = otherName + " (" + otherEmail + ")"
+				+ (otherOrganization != null ? " at " + otherOrganization : "");
+		String whoVi = otherName + " (" + otherEmail + ")"
+				+ (otherOrganization != null ? " tại " + otherOrganization : "");
+		String english = "The message through BeyondPilot was accepted. You can now write to " + who
+				+ " at this address.";
+		String vietnamese = "Lời nhắn qua BeyondPilot đã được chấp nhận. Giờ bạn có thể viết cho " + whoVi
+				+ " qua địa chỉ này.";
+		send("talent_introduction", recipient, "Your BeyondPilot introduction to " + otherName,
+				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+	}
+
+	/**
+	 * Tells the sender that the person will not take their message further. A report reads the same, so the person who
+	 * reported is not exposed. It carries no address and no reason.
+	 * @param talentName the person written to, as their profile names them
+	 */
+	public void sendTalentEnquiryDeclined(String recipient, String talentName) {
+		String english = talentName + " will not take your message on BeyondPilot further. You can look for other"
+				+ " people in the talent directory.";
+		String vietnamese = talentName + " sẽ không tiếp tục lời nhắn của bạn trên BeyondPilot. Bạn có thể tìm người"
+				+ " khác trong danh mục nhân lực.";
+		send("talent_enquiry_declined", recipient, "Your message to " + talentName,
+				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+	}
+
+	/**
+	 * Tells the sender that their message closed because the person did not answer in time. They may write again.
+	 * @param talentName the person written to, as their profile names them
+	 */
+	public void sendTalentEnquiryClosed(String recipient, String talentName) {
+		String english = talentName + " did not answer your message on BeyondPilot in time, so it closed. You can"
+				+ " write again from their profile.";
+		String vietnamese = talentName + " chưa trả lời lời nhắn của bạn trên BeyondPilot đúng hạn nên lời nhắn đã"
+				+ " đóng. Bạn có thể viết lại từ hồ sơ của họ.";
+		send("talent_enquiry_closed", recipient, "Your message to " + talentName + " closed",
+				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
 	}
 
 	/**

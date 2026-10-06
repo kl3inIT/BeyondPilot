@@ -9,6 +9,7 @@ const claimsVision = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e12";
 const fraudLens = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e13";
 const quoteBot = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e14";
 const sentBack = "be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f12";
+const deckFile = "d0c1a2b3-4c5d-4e6f-8a9b-0c1d2e3f4a77";
 
 const list = "/workspace/organization/solutions";
 const changesPath = "**/api/solution/mine**";
@@ -18,10 +19,74 @@ function shownSolutions(page: Page) {
   return page.locator(`a[href^="${list}/"]:visible`);
 }
 
-/** The form of a solution, once it answers a change: text typed before that is not the form's yet. */
-async function openEditor(page: Page, id: string) {
-  await page.goto(`${list}/${id}`);
-  await expect(page.getByRole("link", { name: "All solutions" })).toBeVisible();
+/** One step of the editor of a solution, shown once its heading is. */
+async function openEditor(page: Page, id: string, step?: "fit" | "evidence" | "review") {
+  await page.goto(`${list}/${id}${step ? `?step=${step}` : ""}`);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+}
+
+type Write = { call: string; body: Record<string, unknown> | null };
+
+/**
+ * Answers what the editor of one solution writes, as the backend would: a save with the solution as
+ * saved at its next version, a submission with it waiting for review. Returns the writes it saw.
+ */
+async function answerEditor(page: Page, id: string, status: "draft" | "rejected") {
+  const writes: Write[] = [];
+  let saved: Record<string, unknown> = {};
+  let version = 0;
+  await page.route(`**/api/solution/mine/${id}**`, async (route) => {
+    const request = route.request();
+    if (request.method() === "GET") {
+      return route.fallback();
+    }
+    expect(request.headers()["x-beyondpilot-csrf"]).toBe("1");
+    const body = request.postDataJSON() as Write["body"];
+    writes.push({ call: `${request.method()} ${new URL(request.url()).pathname}`, body });
+    if (request.method() === "DELETE") {
+      return route.fulfill({ status: 204 });
+    }
+    const submitted = request.url().endsWith("/submit");
+    if (body) {
+      const { version: read, deckFileId, ...fields } = body;
+      version = Number(read) + 1;
+      saved = {
+        ...fields,
+        deck: deckFileId
+          ? {
+              fileId: deckFileId,
+              fileName: "fraud-lens.pdf",
+              sizeBytes: 2048,
+              attachedAt: "2026-10-03T07:32:00Z",
+            }
+          : null,
+      };
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id,
+        organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+        organizationName: "Pocket Policy",
+        slug: "fraud-lens",
+        status: submitted ? "submitted" : status,
+        complete: true,
+        customerDeployments: [],
+        submittedAt: null,
+        updatedAt: "2026-10-03T07:32:00Z",
+        ...saved,
+        version,
+      }),
+    });
+  });
+  return writes;
+}
+
+/** Chooses one option of a field whose list narrows as a person types. */
+async function choose(page: Page, field: string, typed: string, option: string) {
+  await page.getByLabel(field).fill(typed);
+  await page.getByRole("option", { name: option }).click();
 }
 
 test.describe("workspace solutions", () => {
@@ -76,10 +141,20 @@ test.describe("workspace solutions", () => {
     await expect(page).toHaveURL(`${list}/${fraudLens}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Fraud Lens");
     await expect(page.getByText("Nothing written yet.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "All solutions" })).toHaveAttribute("href", list);
     await expect(page.getByRole("textbox")).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Send for review" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Continue" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Add a deployment" })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
+
+    // What a solution holds beyond its text is read back too, with the way to its deck.
+    await page.goto(`${list}/${policyChat}`);
+    await expect(page.getByText("Vietnamese")).toBeVisible();
+    await expect(page.getByText("PostgreSQL")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Download the deck" })).toHaveAttribute(
+      "href",
+      "/api/solution/solutions/policy-chat/deck",
+    );
   });
 
   test("a person without an organization is shown the ways into one", async ({
@@ -112,80 +187,220 @@ test.describe("workspace solutions", () => {
     expect(changes).toEqual([{ call: "POST /api/solution/mine", body: { name: "Fraud Lens" } }]);
   });
 
-  test("a draft says what review needs, and is sent once it has it", async ({
+  test("a draft is written in four steps, saves as it is typed and is sent from the review", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const writes = await answerEditor(page, fraudLens, "draft");
+    await openEditor(page, fraudLens);
+
+    // The editor stands alone: the site's navigation does not pull a person away mid-way.
+    await expect(page.getByRole("link", { name: "AI talent" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Basics");
+    await expect(page.getByText("All fields are required unless marked Optional.")).toBeVisible();
+    if (!isMobile) {
+      await expect(page.getByText("Only Pocket Policy sees a draft")).toBeVisible();
+      await expect(
+        page.getByRole("navigation", { name: "Your solution" }).getByRole("button"),
+      ).toHaveText([/Basics/, /Who it is for/, /Evidence/, /Review and submit/]);
+    }
+    await expectNoSeriousA11yViolations(page);
+
+    // What is typed is saved without being asked.
+    await expect(async () => {
+      await page.getByLabel("What it does").fill("Finds claims that do not add up.");
+      await expect(page.getByText("32 / 600")).toBeVisible({ timeout: 1000 });
+    }).toPass();
+    await page.getByLabel("Stage").selectOption({ label: "Prototype" });
+    await page.getByLabel("Built with").fill("Python");
+    await page.getByLabel("Built with").press("Enter");
+    await expect(page.getByRole("button", { name: "Remove Python" })).toBeVisible();
+    await expect.poll(() => writes.length).toBeGreaterThan(0);
+    await expect(page.getByRole("status").filter({ hasText: /Draft saved/ })).toBeVisible();
+
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page).toHaveURL(`${list}/${fraudLens}?step=fit`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Who it is for");
+    await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
+    await choose(page, "Industries", "insur", "Insurance");
+    await choose(page, "AI capabilities", "predict", "Predictive analytics");
+    await choose(page, "Languages", "viet", "Vietnamese");
+    await page.getByRole("group", { name: "Where it runs" }).getByText("Cloud (SaaS)").click();
+    await expectNoSeriousA11yViolations(page);
+
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Evidence");
+    await expect(page.getByText("Every field on this step is optional.")).toBeVisible();
+    await page.getByLabel("Product demo").fill("https://fraudlens.example/demo");
+
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Review and submit");
+    await expect(page.getByRole("note").getByText("Ready to send for review")).toBeVisible();
+    await expect(page.getByText("Finds claims that do not add up.")).toBeVisible();
+    await expect(page.getByText("Insurance", { exact: true })).toBeVisible();
+    await expect(page.getByText("Not published yet").first()).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+
+    await page.getByRole("button", { name: "Send for review" }).click();
+    const confirm = page.getByRole("alertdialog");
+    await expect(confirm.getByRole("heading")).toHaveText("Send this solution for review?");
+    await confirm.getByRole("button", { name: "Send for review" }).click();
+
+    await expect(page.getByText("Sent to GenAI Fund for review.")).toBeVisible();
+    await expect(page).toHaveURL(list);
+    const saves = writes.filter((write) => write.call.startsWith("PUT"));
+    expect(saves.at(-1)?.body).toMatchObject({
+      name: "Fraud Lens",
+      summary: "Finds claims that do not add up.",
+      maturity: "prototype",
+      builtWith: ["Python"],
+      industries: ["insurance"],
+      focusAreas: ["predictive_analytics"],
+      languages: ["vi"],
+      deployment: ["cloud_saas"],
+      demoUrl: "https://fraudlens.example/demo",
+      website: null,
+      deckFileId: null,
+      listed: true,
+    });
+    // Each save carries the version the one before it answered with.
+    expect(saves.map((write) => write.body?.version)).toEqual(saves.map((_, index) => index));
+    expect(writes.at(-1)).toEqual({
+      call: `POST /api/solution/mine/${fraudLens}/submit`,
+      body: null,
+    });
+  });
+
+  test("the review names what a draft lacks and leads to each field", async ({
     page,
     context,
     baseURL,
   }) => {
     await signInAs(context, "owner", baseURL!);
-    const changes = await answerDecisions(page, changesPath, 200, {});
-    await openEditor(page, fraudLens);
+    const writes = await answerEditor(page, fraudLens, "draft");
+    await openEditor(page, fraudLens, "review");
 
     const readiness = page.getByRole("note").filter({ hasText: "Before you send it for review" });
     await expect(readiness.getByRole("button")).toHaveText([
-      "Summary",
-      "Focus areas",
+      "What it does",
+      "Stage",
       "Industries",
-      "Maturity",
+      "AI capabilities",
     ]);
-    await expect(page.getByRole("button", { name: "4 fields to add before review" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Save draft" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Send for review" })).toBeDisabled();
+    await expect(page.getByText("Missing")).toHaveCount(4);
+    await expect(page.getByText("2 to add")).toHaveCount(2);
     await expectNoSeriousA11yViolations(page);
 
     await expect(async () => {
-      await page.getByRole("button", { name: "Send for review" }).click();
-      await expect(page.getByText("Write one or two sentences about what it does.")).toBeVisible({
+      await readiness.getByRole("button", { name: "Stage" }).click();
+      // The first step is the editor's own address.
+      await expect(page).toHaveURL(`${list}/${fraudLens}`, { timeout: 1000 });
+    }).toPass();
+    await expect(page.getByLabel("Stage")).toBeFocused();
+    await expect(page.getByText("Choose its stage.")).toBeVisible();
+    await expect(page.getByText("Write two or three sentences about what it does.")).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+    expect(writes).toEqual([]);
+  });
+
+  test("a link that is not an address is said under it and keeps the draft unsaved", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const writes = await answerEditor(page, fraudLens, "draft");
+    await openEditor(page, fraudLens, "evidence");
+
+    const demo = page.getByLabel("Product demo");
+    await expect(async () => {
+      await demo.fill("fraudlens.example/demo");
+      await expect(page.getByRole("status").filter({ hasText: "Unsaved changes" })).toBeVisible({
         timeout: 1000,
       });
     }).toPass();
-    await expect(
-      page.getByText("Fill in the marked fields before sending for review.").first(),
-    ).toBeVisible();
-    await expect(page.getByLabel("Summary")).toBeFocused();
-    await expect(page.getByText("Choose how mature it is.")).toBeVisible();
-    expect(changes).toEqual([]);
+    await demo.blur();
+    await expect(page.getByText("Enter a full address that starts with https://")).toBeVisible();
+    expect(writes).toEqual([]);
 
-    await page.getByLabel("Summary").fill("Finds claims that do not add up.");
-    await page
-      .getByRole("group", { name: "Focus areas" })
-      .getByText("Predictive analytics")
-      .click();
-    await page.getByRole("group", { name: "Industries" }).getByText("Insurance").click();
-    await page.getByLabel("Maturity").selectOption({ label: "Prototype" });
-    await page.getByLabel("Demo link").fill("https://fraudlens.example/demo");
-    await expect(page.getByRole("note").getByText("Ready to send for review")).toBeVisible();
-    await expect(page.getByText("Unsaved changes")).toBeVisible();
+    await demo.fill("https://fraudlens.example/demo");
+    await expect(page.getByText("Enter a full address that starts with https://")).toHaveCount(0);
+    await expect.poll(() => writes.length).toBe(1);
+    expect(writes[0].body).toMatchObject({ demoUrl: "https://fraudlens.example/demo" });
+  });
 
-    await page.getByRole("button", { name: "Send for review" }).click();
+  test("a deck is uploaded as a PDF and named by the save that follows", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const writes = await answerEditor(page, fraudLens, "draft");
+    const uploads = await answerDecisions(page, "**/api/storage/uploads", 201, {
+      id: deckFile,
+      method: "PUT",
+      url: `/api/storage/uploads/${deckFile}/content?token=once`,
+      headers: {},
+      expiresAt: "2026-10-03T08:00:00Z",
+    });
+    await page.route(`**/api/storage/uploads/${deckFile}/content**`, (route) =>
+      route.fulfill({ status: 204 }),
+    );
+    await page.route(`**/api/storage/uploads/${deckFile}/confirm`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          id: deckFile,
+          fileName: "fraud-lens.pdf",
+          mediaType: "application/pdf",
+          sizeBytes: 2048,
+        }),
+      }),
+    );
+    await openEditor(page, fraudLens, "evidence");
+    await expect(page.getByRole("button", { name: /Upload the deck/ })).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
 
-    await expect(page.getByText("Sent to GenAI Fund for review.")).toBeVisible();
-    expect(changes).toEqual([
-      {
-        call: `PUT /api/solution/mine/${fraudLens}`,
-        body: {
-          name: "Fraud Lens",
-          summary: "Finds claims that do not add up.",
-          problemsSolved: null,
-          valueProposition: null,
-          website: null,
-          demoUrl: "https://fraudlens.example/demo",
-          deckUrl: null,
-          focusAreas: ["predictive_analytics"],
-          industries: ["insurance"],
-          deployment: [],
-          maturity: "prototype",
-          listed: true,
-          version: 0,
-        },
-      },
-      { call: `POST /api/solution/mine/${fraudLens}/submit`, body: null },
-    ]);
+    // Anything but a PDF is refused before it is sent.
+    const file = page.locator('input[type="file"]');
+    await file.setInputFiles({
+      name: "notes.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.from("x"),
+    });
+    await expect(page.getByText("Only a PDF can be uploaded here.")).toBeVisible();
+    expect(uploads).toEqual([]);
+
+    await file.setInputFiles({
+      name: "fraud-lens.pdf",
+      mimeType: "application/pdf",
+      buffer: Buffer.from("%PDF-1.7\n"),
+    });
+    await expect(page.getByText("fraud-lens.pdf")).toBeVisible();
+    expect(uploads[0].body).toMatchObject({ purpose: "solution_deck", fileName: "fraud-lens.pdf" });
+    await expect.poll(() => writes.length).toBe(1);
+    expect(writes[0].body).toMatchObject({ deckFileId: deckFile });
+    // Once the solution names the file, its row is the way to read it.
+    await expect(page.getByRole("link", { name: "Download fraud-lens.pdf" })).toHaveAttribute(
+      "href",
+      "/api/solution/solutions/fraud-lens/deck",
+    );
+
+    await page.getByRole("button", { name: "Remove", exact: true }).click();
+    await expect(page.getByRole("button", { name: /Upload the deck/ })).toBeVisible();
+    await expect.poll(() => writes.length).toBe(2);
+    expect(writes[1].body).toMatchObject({ deckFileId: null });
   });
 
   test("a draft is deleted only after a confirmation", async ({ page, context, baseURL }) => {
     await signInAs(context, "owner", baseURL!);
     const changes = await answerDecisions(page, changesPath, 204);
-    await openEditor(page, fraudLens);
+    await openEditor(page, fraudLens, "review");
 
     await expect(async () => {
       await page.getByRole("button", { name: "Delete draft…" }).click();
@@ -206,15 +421,16 @@ test.describe("workspace solutions", () => {
     baseURL,
   }) => {
     await signInAs(context, "owner", baseURL!);
-    await openEditor(page, claimsVision);
+    await openEditor(page, claimsVision, "review");
 
     await expect(page.getByText("GenAI Fund is reviewing this solution")).toBeVisible();
-    // What is in review is no longer a draft: it is saved, not sent or deleted.
-    await expect(page.getByRole("button", { name: "Save changes" })).toBeDisabled();
+    // What is in review is read by others: it is saved when asked, not sent or deleted.
+    await expect(page.getByRole("button", { name: "Save changes" }).first()).toBeDisabled();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Review");
     await expect(page.getByRole("button", { name: "Send for review" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Delete draft…" })).toHaveCount(0);
 
-    await openEditor(page, quoteBot);
+    await openEditor(page, quoteBot, "review");
     await expect(page.getByText("Changes needed: Already listed")).toBeVisible();
     await expect(page.getByText("It is Policy Chat under another name.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Send for review again" })).toBeEnabled();
@@ -227,7 +443,12 @@ test.describe("workspace solutions", () => {
     baseURL,
   }) => {
     await signInAs(context, "owner", baseURL!);
-    await answerDecisions(page, changesPath, 409, refusal("SOLUTION_CHANGED_MEANWHILE"));
+    const changes = await answerDecisions(
+      page,
+      changesPath,
+      409,
+      refusal("SOLUTION_CHANGED_MEANWHILE"),
+    );
     await openEditor(page, policyChat);
 
     await expect(page.getByText("Approved and listed in the directory")).toBeVisible();
@@ -237,14 +458,18 @@ test.describe("workspace solutions", () => {
     );
     const save = page.getByRole("button", { name: "Save changes" });
     await expect(async () => {
-      await page.getByLabel("Summary").fill("Answers policy holders in seconds.");
+      await page.getByLabel("What it does").fill("Answers policy holders in seconds.");
       await expect(save).toBeEnabled({ timeout: 1000 });
     }).toPass();
+    // An approved solution is read by anyone, so nothing is sent until the person asks.
+    await expect(page.getByRole("status").filter({ hasText: "Unsaved changes" })).toBeVisible();
+    expect(changes).toEqual([]);
     await save.click();
 
     await expect(
       page.getByText("Someone else changed this solution. Reload the page and try again."),
     ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reload" })).toBeVisible();
     await expect(page.getByText("text of the backend that must not be shown")).toHaveCount(0);
   });
 
@@ -255,11 +480,12 @@ test.describe("workspace solutions", () => {
   }) => {
     await signInAs(context, "owner", baseURL!);
     const changes = await answerDecisions(page, changesPath, 200, {});
-    await openEditor(page, policyChat);
+    await openEditor(page, policyChat, "evidence");
 
     const deployments = page
       .locator("section")
-      .filter({ has: page.getByRole("heading", { name: "Customer deployments" }) });
+      .filter({ has: page.getByRole("heading", { name: "Customer deployments" }) })
+      .last();
     await expect(deployments.getByRole("heading", { level: 3 })).toHaveText([
       "Renewals at Mekong Life",
       "Claims line at Bảo An",
@@ -267,6 +493,12 @@ test.describe("workspace solutions", () => {
     await expect(
       deployments.getByText("Sent back: Could not be verified. Who can confirm it?"),
     ).toBeVisible();
+    // The deck the solution names is read from its row.
+    await expect(page.getByRole("link", { name: "Download policy-chat-deck.pdf" })).toHaveAttribute(
+      "href",
+      "/api/solution/solutions/policy-chat/deck",
+    );
+    await expect(page.getByText("3.1 MB · Uploaded Oct 1, 10:00")).toBeVisible();
 
     await expect(async () => {
       await deployments.getByRole("button", { name: "Add a deployment" }).click();

@@ -12,13 +12,29 @@ export const talentRoles = [
   "other",
 ] as const;
 
-export const availabilities = ["available", "open_to_offers", "not_available"] as const;
-
 export const engagements = ["full_time", "part_time", "contract", "advisory"] as const;
 
 export const rateBands = ["under_25", "25_50", "50_100", "100_150", "150_plus"] as const;
 
+/** The languages a profile can name, by ISO 639-1 code; the region first. */
+export const languageCodes = [
+  "vi",
+  "en",
+  "ja",
+  "ko",
+  "zh",
+  "th",
+  "id",
+  "ms",
+  "hi",
+  "fr",
+  "de",
+  "es",
+] as const;
+
+export const projectStages = ["prototype", "pilot", "in_production", "internal_tool"] as const;
+
 export const talentRejections = ["incomplete", "unverifiable", "inappropriate", "other"] as const;
 
 /** The statuses operators see; a draft is its person's alone. */
-export const reviewedStatuses = ["submitted", "approved", "rejected"] as const;
+export const reviewedStatuses = ["submitted", "approved", "changes_requested", "removed"] as const;

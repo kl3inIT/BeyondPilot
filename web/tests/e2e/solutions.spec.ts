@@ -108,7 +108,12 @@ test.describe("solutions directory", () => {
     await expect(fact("Deployment")).toContainText("Cloud (SaaS)");
     await expect(fact("Stage")).toContainText("In production");
     // What the solution's organization has not said is shown as unknown, never left out.
-    await expect(fact("Languages")).toContainText("Not listed yet");
+    await expect(fact("Channels")).toContainText("Not listed yet");
+    // What its owners added in the editor's steps is read here too.
+    await expect(fact("Languages")).toContainText("Vietnamese, English");
+    await expect(fact("Built with")).toContainText("Python, PostgreSQL");
+    await expect(fact("Best customer profile")).toContainText("Insurers with a call centre");
+    await expect(fact("Milestones and traction")).toContainText("Not listed yet");
     await expect(page.getByRole("link", { name: "Visit website" })).toHaveAttribute(
       "href",
       "https://pocketpolicy.example",
@@ -117,10 +122,12 @@ test.describe("solutions directory", () => {
       "href",
       "https://pocketpolicy.example/demo",
     );
-    await expect(page.getByRole("link", { name: "View the presentation" })).toHaveAttribute(
+    // The deck is a file the backend serves at the solution's address.
+    await expect(page.getByRole("link", { name: "Download the deck" })).toHaveAttribute(
       "href",
-      "https://pocketpolicy.example/deck.pdf",
+      "/api/solution/solutions/policy-chat/deck",
     );
+    await expect(page.getByText("policy-chat-deck.pdf · 3.1 MB")).toBeVisible();
     // A listed solution does not say it is hidden.
     await expect(page.getByText("This solution is not in the directory")).toHaveCount(0);
     // Nobody is signed in, so nothing offers to edit it.

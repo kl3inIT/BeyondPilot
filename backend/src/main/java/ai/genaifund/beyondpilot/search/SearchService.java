@@ -53,17 +53,30 @@ public class SearchService {
 	private static SearchItem item(Hit hit, Instant now) {
 		Map<String, Object> facets = hit.facets();
 		String phase = SearchDocumentRepository.PROGRAM.equals(hit.kind())
-				? ProgramPhase.of(hit.startsOn(), hit.endsOn(), instant(facets, ProgramIndexing.OPENS_AT),
-						instant(facets, ProgramIndexing.CLOSES_AT), now).code()
+				? ProgramPhase.of(hit.startsOn(), hit.endsOn(), instant(facets, Cards.OPENS_AT),
+						instant(facets, Cards.CLOSES_AT), now).code()
 				: null;
-		String cover = text(facets, ProgramIndexing.COVER);
 		return new SearchItem(hit.kind(), hit.slug(), hit.title(), hit.subtitle(), hit.summary(),
-				text(facets, ProgramIndexing.TYPE), phase, hit.startsOn(), hit.endsOn(),
-				cover == null ? null : UUID.fromString(cover), text(facets, ProgramIndexing.EXTERNAL_URL));
+				text(facets, Cards.TYPE), phase, hit.startsOn(), hit.endsOn(),
+				uuid(facets, Cards.COVER), text(facets, Cards.EXTERNAL_URL),
+				text(facets, Cards.ORGANIZATION_SLUG), text(facets, Cards.COUNTRY), text(facets, Cards.MATURITY),
+				texts(facets, Cards.INDUSTRIES), texts(facets, Cards.FOCUS_AREAS), texts(facets, Cards.ROLES),
+				texts(facets, Cards.SKILLS), text(facets, Cards.CITY), text(facets, Cards.WORKS_AT),
+				uuid(facets, Cards.PHOTO));
 	}
 
 	private static @Nullable String text(Map<String, Object> facets, String name) {
 		return facets.get(name) instanceof String value ? value : null;
+	}
+
+	private static List<String> texts(Map<String, Object> facets, String name) {
+		return facets.get(name) instanceof List<?> values
+				? values.stream().filter(String.class::isInstance).map(String.class::cast).toList() : List.of();
+	}
+
+	private static @Nullable UUID uuid(Map<String, Object> facets, String name) {
+		String value = text(facets, name);
+		return value == null ? null : UUID.fromString(value);
 	}
 
 	private static @Nullable Instant instant(Map<String, Object> facets, String name) {

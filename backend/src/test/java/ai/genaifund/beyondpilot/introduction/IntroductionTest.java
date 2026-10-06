@@ -261,6 +261,8 @@ class IntroductionTest {
 		request.put("focusAreas", List.of("document_processing"));
 		request.put("industries", List.of("insurance"));
 		request.put("maturity", "pilot");
+		request.put("builtWith", List.of());
+		request.put("languages", List.of());
 		request.put("deployment", List.of("cloud_saas"));
 		request.put("website", "https://example.test");
 		request.put("listed", true);

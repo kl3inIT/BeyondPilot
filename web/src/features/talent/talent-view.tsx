@@ -3,13 +3,22 @@ import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { CodeList } from "@/components/composites/code-list";
+import { Badge } from "@/components/ui/badge";
 import { useVocabulary } from "@/i18n/vocabulary";
-import type { PublicTalent } from "@/lib/api/generated";
+import type { TalentProfile } from "@/lib/api/generated";
 
-/** What a profile says about its person, in every place it is read. */
+/** What a profile says about its person, as operators review it. */
 type TalentContent = Pick<
-  PublicTalent,
-  "bio" | "roles" | "skills" | "engagement" | "rateBand" | "website" | "projects"
+  TalentProfile,
+  | "bio"
+  | "roles"
+  | "skills"
+  | "engagement"
+  | "rateBand"
+  | "website"
+  | "projects"
+  | "languages"
+  | "industries"
 >;
 
 /**
@@ -21,11 +30,16 @@ function TalentView({ profile }: { profile: TalentContent }) {
   const role = useVocabulary("talentRole");
   const engagement = useVocabulary("engagement");
   const rateBand = useVocabulary("rateBand");
+  const language = useVocabulary("language");
+  const industry = useVocabulary("industry");
+  const stage = useVocabulary("projectStage");
 
   const facts = [
     { title: t("roles"), labels: profile.roles.map(role) },
     { title: t("skills"), labels: profile.skills },
     { title: t("engagement"), labels: profile.engagement.map(engagement) },
+    { title: t("languages"), labels: profile.languages.map(language) },
+    { title: t("industries"), labels: profile.industries.map(industry) },
     { title: t("rate"), labels: profile.rateBand ? [rateBand(profile.rateBand)] : [] },
   ].filter((fact) => fact.labels.length > 0);
 
@@ -48,6 +62,7 @@ function TalentView({ profile }: { profile: TalentContent }) {
                     {project.year && (
                       <span className="text-sm text-muted-foreground">{project.year}</span>
                     )}
+                    {project.stage && <Badge variant="outline">{stage(project.stage)}</Badge>}
                   </div>
                   {project.summary && (
                     <p className="max-w-prose text-sm whitespace-pre-line text-muted-foreground">

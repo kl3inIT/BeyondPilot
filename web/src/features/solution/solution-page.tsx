@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, DownloadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
@@ -21,6 +21,7 @@ import type { PublicSolution } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { CustomerDeploymentCard } from "./customer-deployment-card";
+import { deckAddress, useFileSize } from "./solution-deck";
 import { SolutionLogo } from "./solution-logo";
 
 const evidenceVariants = cva("flex flex-col items-start gap-2 rounded-xl border p-4", {
@@ -91,7 +92,9 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
   const focusArea = useVocabulary("focusArea");
   const maturity = useVocabulary("maturity");
   const deployment = useVocabulary("deployment");
+  const language = useVocabulary("language");
   const countryName = useCountryName();
+  const size = useFileSize();
 
   const unknown = t("unknown");
   const company = `${siteRoutes.organizations}/${solution.organizationSlug}`;
@@ -200,7 +203,12 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                 value={solution.deployment.map(deployment).join(", ")}
                 unknown={unknown}
               />
-              <Fact look="tile" name={t("fit.languages")} value={undefined} unknown={unknown} />
+              <Fact
+                look="tile"
+                name={t("fit.languages")}
+                value={solution.languages.map(language).join(", ")}
+                unknown={unknown}
+              />
             </dl>
           </section>
 
@@ -217,6 +225,24 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                 look="ruled"
                 name={t("product.stage")}
                 value={solution.maturity && maturity(solution.maturity)}
+                unknown={unknown}
+              />
+              <Fact
+                look="ruled"
+                name={t("product.builtWith")}
+                value={solution.builtWith.join(", ")}
+                unknown={unknown}
+              />
+              <Fact
+                look="ruled"
+                name={t("product.bestCustomerProfile")}
+                value={solution.bestCustomerProfile ?? undefined}
+                unknown={unknown}
+              />
+              <Fact
+                look="ruled"
+                name={t("product.traction")}
+                value={solution.traction ?? undefined}
                 unknown={unknown}
               />
             </dl>
@@ -246,18 +272,18 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
           </section>
         </div>
 
-        <aside className="flex flex-col gap-4 rounded-2xl border bg-card p-5 shadow-sm md:p-6 lg:w-75 lg:shrink-0 xl:w-95">
+        {/* Beside the page on a wide screen, the way to reach the company stays in view under the site header. */}
+        <aside className="flex flex-col gap-4 rounded-2xl border bg-card p-5 shadow-sm md:p-6 lg:sticky lg:top-23 lg:w-75 lg:shrink-0 xl:w-95">
           <h2 className="text-base font-medium">
             {t("contact.title", { name: solution.organizationName })}
           </h2>
           {introduction}
-          {(solution.website || solution.demoUrl || solution.deckUrl) && (
+          {(solution.website || solution.demoUrl || solution.deck) && (
             <>
               {(
                 [
                   ["website", solution.website],
                   ["demo", solution.demoUrl],
-                  ["deck", solution.deckUrl],
                 ] as const
               ).map(
                 ([key, href]) =>
@@ -274,6 +300,23 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                       {t(`contact.${key}`)}
                     </Button>
                   ),
+              )}
+              {solution.deck && (
+                <Button
+                  prominence="secondary"
+                  size="lg"
+                  href={deckAddress(solution.slug)}
+                  aria-describedby="solution-deck-file"
+                  className="w-full"
+                >
+                  <DownloadIcon aria-hidden="true" />
+                  {t("contact.deck")}
+                </Button>
+              )}
+              {solution.deck && (
+                <p id="solution-deck-file" className="text-center text-xs text-muted-foreground">
+                  {solution.deck.fileName} · {size(solution.deck.sizeBytes)}
+                </p>
               )}
               <Separator />
             </>

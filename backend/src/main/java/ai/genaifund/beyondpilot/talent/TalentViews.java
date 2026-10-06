@@ -21,15 +21,17 @@ final class TalentViews {
 	static TalentProfileResponse profile(TalentProfile profile, List<TalentDetailRepository.Project> projects) {
 		return new TalentProfileResponse(profile.getId(), profile.getSlug(), profile.getName(), profile.getHeadline(),
 				profile.getBio(), profile.getRoles(), profile.getSkills(), profile.getCountry(),
-				profile.getAvailability(), profile.getEngagement(), profile.getRateBand(), profile.getWebsite(),
-				projects(projects), profile.getStatus(), profile.getDecisionReason(), profile.getDecisionMessage(),
+				profile.getEngagement(), profile.getRateBand(), profile.getWebsite(),
+				profile.getPhotoFileId(), profile.getCity(), profile.getLanguages(), profile.getIndustries(),
+				profile.getWorksAt(), projects(projects), profile.getStatus(), profile.getDecisionReason(), profile.getDecisionMessage(),
 				profile.isListed(), profile.isComplete(), profile.getSubmittedAt(), profile.getVersion(),
 				profile.getUpdatedAt());
 	}
 
 	static List<TalentProjectDto> projects(List<TalentDetailRepository.Project> projects) {
 		return projects.stream()
-			.map(project -> new TalentProjectDto(project.title(), project.summary(), project.url(), project.year()))
+			.map(project -> new TalentProjectDto(project.title(), project.summary(), project.url(), project.year(),
+					project.stage()))
 			.toList();
 	}
 

@@ -12,8 +12,9 @@ import { getPathname } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import {
   approveTalent,
-  rejectTalent,
-  type RejectTalent,
+  removeTalent,
+  requestTalentChanges,
+  type TalentDecision,
   type TalentProfile,
 } from "@/lib/api/generated";
 
@@ -21,8 +22,9 @@ import { talentRejections } from "./talent-codes";
 import { talentError } from "./talent-errors";
 
 /**
- * The decision on a talent profile: approve one that waits for review, or reject it with a reason
- * its person reads. An approved profile can be rejected too, which takes it out of the directory.
+ * The decision on a talent profile: approve one that waits for review, or ask for changes with a
+ * reason its person reads. An approved profile can be removed from the public, with a reason too.
+ * Each decision is emailed to the person.
  */
 type TalentReviewProps = {
   profile: Pick<TalentProfile, "id" | "name" | "status">;
@@ -49,9 +51,14 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
     setPending(kind);
     try {
       await run();
-      notify.success(kind === "approve" ? "Talent.done.approved" : "Talent.done.rejected", {
-        name: profile.name,
-      });
+      notify.success(
+        kind === "approve"
+          ? "Talent.done.approved"
+          : profile.status === "approved"
+            ? "Talent.done.removed"
+            : "Talent.done.changesRequested",
+        { name: profile.name },
+      );
       setRejecting(false);
       // A decision on a record of the queue moves on to the next one that waits.
       // It stays pending until that page arrives, so a second press cannot decide twice.
@@ -106,15 +113,18 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
             cancelLabel={t("cancel")}
             pending={pending === "reject"}
             onConfirm={(chosen, message) =>
-              decide("reject", () =>
-                rejectTalent({
+              decide("reject", () => {
+                const decision = {
                   path: { id: profile.id },
                   body: {
-                    reason: chosen as RejectTalent["reason"],
+                    reason: chosen as TalentDecision["reason"],
                     message: message.trim() || null,
                   },
-                }),
-              )
+                };
+                return profile.status === "approved"
+                  ? removeTalent(decision)
+                  : requestTalentChanges(decision);
+              })
             }
           />
         )}

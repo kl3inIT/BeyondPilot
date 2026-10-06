@@ -44,16 +44,16 @@ An operator may leave an organization without an owner: that is how a page is ha
 
 ## Data
 
-`V18__organization_verify_domains_and_limit_invitations.sql` (slice 1):
+`V26__organization_verify_domains_and_limit_invitations.sql` (slice 1):
 
 - `organization.email_domain` cleared, `auto_join` false for every row and by default.
 - `organization_join_request.claim boolean not null default false`, set for the open requests of organizations without an owner.
 - `organization_invitation.sent_by_operator boolean not null default false`, so an operator's invitation stays out of the organization's limits.
 - An index on `organization_invitation (organization_id, created_at)` for the daily count.
 
-`V19__organization_add_founded_year_and_logo.sql` (slice 1): `organization.founded_year integer` between 1800 and 2100, and `organization.logo_url text`. Both are null for an organization made before; its owner fills them in the next time the profile is saved.
+`V27__organization_add_founded_year_and_logo.sql` (slice 1): `organization.founded_year integer` between 1800 and 2100, and `organization.logo_url text`. Both are null for an organization made before; its owner fills them in the next time the profile is saved.
 
-`V20__organization_drop_roles.sql` (slice 1): drops `organization.roles` and its check constraint.
+`V28__organization_drop_roles.sql` (slice 1): drops `organization.roles` and its check constraint.
 
 Slice 2 adds `suspended` to the status check with `suspension_reason`, `suspension_message` and `suspended_at` in `V13`. Slice 3 adds `merged` and `merged_into_id` in `V14`.
 

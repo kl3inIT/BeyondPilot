@@ -8,7 +8,7 @@ import ai.genaifund.beyondpilot.talent.TalentAdministration;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentListRequest;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentListResponse;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentResponse;
-import ai.genaifund.beyondpilot.talent.dto.RejectTalentRequest;
+import ai.genaifund.beyondpilot.talent.dto.TalentDecisionRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -82,19 +82,37 @@ class AdminTalentController {
 		talent.approve(actor, id);
 	}
 
-	@PostMapping(path = "/{id}/reject", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(path = "/{id}/request-changes", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "rejectTalent",
-			summary = "Reject a talent profile that waits for review, or take an approved one out of the directory",
+	@Operation(operationId = "requestTalentChanges",
+			summary = "Ask the person to change a talent profile that waits for review, with a reason",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "204", description = "The profile is rejected, with the reason.", content = @Content)
+	@ApiResponse(responseCode = "204", description = "Changes are asked for; the person was emailed.",
+			content = @Content)
 	@ApiResponse(responseCode = "400", description = "A member is not valid.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "The profile is neither waiting for review nor approved.",
+	@ApiResponse(responseCode = "409", description = "The profile is not waiting for review.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	void reject(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody RejectTalentRequest request) {
-		talent.reject(actor, id, request);
+	void requestChanges(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody TalentDecisionRequest request) {
+		talent.requestChanges(actor, id, request);
+	}
+
+	@PostMapping(path = "/{id}/remove", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "removeTalent", summary = "Remove an approved talent profile from the public, with a reason",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The profile is removed; the person was emailed.",
+			content = @Content)
+	@ApiResponse(responseCode = "400", description = "A member is not valid.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The profile is not approved.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void remove(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody TalentDecisionRequest request) {
+		talent.remove(actor, id, request);
 	}
 }

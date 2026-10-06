@@ -237,14 +237,14 @@ function CustomerDeploymentsEditor({ solutionId, deployments }: CustomerDeployme
   }
 
   return (
-    <section className="flex max-w-3xl flex-col gap-4 border-t pt-6">
+    <section className="flex flex-col gap-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold">{t("title")}</h2>
+          <h2 className="text-sm font-medium">{t("title")}</h2>
           <p className="text-sm text-muted-foreground">{t("lead")}</p>
         </div>
         {deployments.length < MAX_DEPLOYMENTS && (
-          <Button prominence="secondary" onClick={() => setEditing(null)}>
+          <Button prominence="secondary" size="sm" onClick={() => setEditing(null)}>
             <PlusIcon aria-hidden="true" />
             {t("add")}
           </Button>
@@ -257,7 +257,10 @@ function CustomerDeploymentsEditor({ solutionId, deployments }: CustomerDeployme
       ) : (
         <ul className="flex flex-col gap-3">
           {deployments.map((deployment) => (
-            <li key={deployment.id} className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+            <li
+              key={deployment.id}
+              className="flex flex-col gap-2 rounded-xl border bg-background p-4"
+            >
               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                 <h3 className="text-base font-medium">{deployment.title}</h3>
                 <ReviewStatus state={deployment.status}>{status(deployment.status)}</ReviewStatus>

@@ -1,46 +1,60 @@
-import { ExternalLinkIcon } from "lucide-react";
+import { DownloadIcon, ExternalLinkIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { CodeList } from "@/components/composites/code-list";
 import { useVocabulary } from "@/i18n/vocabulary";
-import type { PublicSolution } from "@/lib/api/generated";
+import type { Solution } from "@/lib/api/generated";
 
-/** What a solution says about itself, in every place it is read. */
+import { deckAddress, useFileSize } from "./solution-deck";
+
+/** What a solution says about itself, as its organization and the operators read it. */
 type SolutionContent = Pick<
-  PublicSolution,
+  Solution,
+  | "slug"
   | "summary"
   | "problemsSolved"
   | "valueProposition"
+  | "traction"
+  | "bestCustomerProfile"
   | "focusAreas"
   | "industries"
+  | "languages"
   | "maturity"
   | "deployment"
+  | "builtWith"
   | "website"
   | "demoUrl"
-  | "deckUrl"
+  | "deck"
 >;
 
 /**
- * A solution as its organization wrote it: its long answers on the left, its facts on the right.
- * It serves the operators' review and a member who may not edit; the public page has its own layout.
+ * A solution as its organization wrote it: its long answers on the left, its facts and its links on
+ * the right. It serves the operators' review and a member who may not edit; the public page has its
+ * own layout.
  */
 function SolutionView({ solution }: { solution: SolutionContent }) {
   const t = useTranslations("Solution.view");
   const focusArea = useVocabulary("focusArea");
   const industry = useVocabulary("industry");
+  const language = useVocabulary("language");
   const maturity = useVocabulary("maturity");
   const deployment = useVocabulary("deployment");
+  const size = useFileSize();
 
   const answers = [
     { title: t("problemsSolved"), body: solution.problemsSolved },
     { title: t("valueProposition"), body: solution.valueProposition },
+    { title: t("traction"), body: solution.traction },
+    { title: t("bestCustomerProfile"), body: solution.bestCustomerProfile },
   ].filter((answer) => answer.body);
   const facts = [
     { title: t("maturity"), labels: solution.maturity ? [maturity(solution.maturity)] : [] },
-    { title: t("focusAreas"), labels: solution.focusAreas.map(focusArea) },
     { title: t("industries"), labels: solution.industries.map(industry) },
+    { title: t("focusAreas"), labels: solution.focusAreas.map(focusArea) },
+    { title: t("languages"), labels: solution.languages.map(language) },
     { title: t("deployment"), labels: solution.deployment.map(deployment) },
+    { title: t("builtWith"), labels: solution.builtWith },
   ].filter((fact) => fact.labels.length > 0);
 
   return (
@@ -68,7 +82,6 @@ function SolutionView({ solution }: { solution: SolutionContent }) {
           [
             ["website", solution.website],
             ["demo", solution.demoUrl],
-            ["deck", solution.deckUrl],
           ] as const
         ).map(
           ([key, href]) =>
@@ -84,6 +97,17 @@ function SolutionView({ solution }: { solution: SolutionContent }) {
                 <ExternalLinkIcon aria-hidden="true" />
               </TextButton>
             ),
+        )}
+        {solution.deck && (
+          <div className="flex flex-col gap-0.5">
+            <TextButton href={deckAddress(solution.slug)} className="self-start">
+              {t("deck")}
+              <DownloadIcon aria-hidden="true" />
+            </TextButton>
+            <span className="text-xs text-muted-foreground">
+              {solution.deck.fileName} · {size(solution.deck.sizeBytes)}
+            </span>
+          </div>
         )}
       </aside>
     </div>

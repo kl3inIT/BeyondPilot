@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.solution;
 
 import java.text.Normalizer;
+import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -11,6 +12,8 @@ import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionSummaryResponse;
 import ai.genaifund.beyondpilot.solution.dto.CustomerDeploymentResponse;
 import ai.genaifund.beyondpilot.solution.dto.PublicCustomerDeploymentResponse;
+import ai.genaifund.beyondpilot.solution.dto.PublicSolutionDeckResponse;
+import ai.genaifund.beyondpilot.solution.dto.SolutionDeckResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionSummaryResponse;
 import ai.genaifund.beyondpilot.solution.persistence.CustomerDeployment;
@@ -30,12 +33,32 @@ final class SolutionViews {
 			List<CustomerDeployment> deployments) {
 		return new SolutionResponse(solution.getId(), solution.getOrganizationId(), organizationName,
 				solution.getSlug(), solution.getName(), solution.getSummary(), solution.getProblemsSolved(),
-				solution.getValueProposition(), solution.getFocusAreas(), solution.getIndustries(),
-				solution.getMaturity(), solution.getDeployment(), solution.getWebsite(), solution.getDemoUrl(),
-				solution.getDeckUrl(), solution.getStatus(),
+				solution.getValueProposition(), solution.getMaturity(), solution.getTraction(), solution.getBuiltWith(),
+				solution.getIndustries(), solution.getFocusAreas(), solution.getLanguages(), solution.getDeployment(),
+				solution.getBestCustomerProfile(), solution.getWebsite(), solution.getDemoUrl(), deck(solution),
+				solution.getStatus(),
 				solution.getDecisionReason(), solution.getDecisionMessage(), solution.isListed(), solution.isComplete(),
 				solution.getSubmittedAt(), submittedBy, solution.getVersion(), solution.getUpdatedAt(),
 				deployments.stream().map(SolutionViews::deployment).toList());
+	}
+
+	/** The deck as the organization and the operators see it, or null when the solution names none. */
+	private static @Nullable SolutionDeckResponse deck(Solution solution) {
+		UUID fileId = solution.getDeckFileId();
+		String fileName = solution.getDeckFileName();
+		Long sizeBytes = solution.getDeckSizeBytes();
+		Instant attachedAt = solution.getDeckAttachedAt();
+		if (fileId == null || fileName == null || sizeBytes == null || attachedAt == null) {
+			return null;
+		}
+		return new SolutionDeckResponse(fileId, fileName, sizeBytes, attachedAt);
+	}
+
+	/** The deck as the public reads of it: what it is called and how large it is. */
+	static @Nullable PublicSolutionDeckResponse publicDeck(Solution solution) {
+		String fileName = solution.getDeckFileName();
+		Long sizeBytes = solution.getDeckSizeBytes();
+		return fileName == null || sizeBytes == null ? null : new PublicSolutionDeckResponse(fileName, sizeBytes);
 	}
 
 	static CustomerDeploymentResponse deployment(CustomerDeployment deployment) {
@@ -80,6 +103,11 @@ final class SolutionViews {
 	/** The codes once each, in the order they were given. */
 	static List<String> codes(List<String> codes) {
 		return codes.stream().distinct().toList();
+	}
+
+	/** What a person typed as a list of names: each trimmed and once, in the order they were given. */
+	static List<String> names(List<String> names) {
+		return names.stream().map(String::strip).distinct().toList();
 	}
 
 	/** What a person typed, or null when they typed nothing. */
