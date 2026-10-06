@@ -4,25 +4,34 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Locale;
-import java.util.Objects;
-import java.util.stream.Stream;
+import java.util.Map;
+import java.util.UUID;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-
+import ai.genaifund.beyondpilot.notification.adapter.EmailDeliveryException.DeliveryFailure;
+import ai.genaifund.beyondpilot.notification.delivery.EmailDelivery;
+import ai.genaifund.beyondpilot.notification.delivery.EmailQueued;
+import ai.genaifund.beyondpilot.notification.persistence.EmailMessageRepository;
+import ai.genaifund.beyondpilot.notification.persistence.EmailSuppressionRepository;
+import ai.genaifund.beyondpilot.notification.settings.DeliverySettings;
+import ai.genaifund.beyondpilot.notification.template.EmailKind;
+import ai.genaifund.beyondpilot.notification.template.EmailRenderer;
+import ai.genaifund.beyondpilot.notification.template.EmailTemplates;
+import ai.genaifund.beyondpilot.notification.template.RenderedEmail;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.HtmlUtils;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The emails the application sends. Delivery goes over SMTP, so the mail provider is a matter of configuration.
+ * The emails the application sends. Each method renders its kind of email from the wording in use and queues it in
+ * the caller's transaction: a change that rolls back sends nothing, and the email leaves after the change commits,
+ * through the provider operators configured. A failure to deliver never undoes the caller's change.
  */
 @Service
 @EnableConfigurationProperties(NotificationProperties.class)
@@ -33,56 +42,81 @@ public class EmailService {
 	/** Deadlines are set in Vietnam time, whoever reads them. */
 	private static final ZoneId VIETNAM = ZoneId.of("Asia/Ho_Chi_Minh");
 
-	private final JavaMailSender mailSender;
-	private final NotificationProperties properties;
+	/** What the log keeps of a sign-in code in place of the code. */
+	private static final String MASKED_CODE = "••••••";
 
-	EmailService(JavaMailSender mailSender, NotificationProperties properties) {
-		this.mailSender = mailSender;
-		this.properties = properties;
+	private final EmailRenderer renderer;
+
+	private final EmailTemplates templates;
+
+	private final DeliverySettings settings;
+
+	private final EmailMessageRepository messages;
+
+	private final EmailSuppressionRepository suppressions;
+
+	private final EmailDelivery delivery;
+
+	private final ApplicationEventPublisher events;
+
+	EmailService(EmailRenderer renderer, EmailTemplates templates, DeliverySettings settings,
+			EmailMessageRepository messages, EmailSuppressionRepository suppressions, EmailDelivery delivery,
+			ApplicationEventPublisher events) {
+		this.renderer = renderer;
+		this.templates = templates;
+		this.settings = settings;
+		this.messages = messages;
+		this.suppressions = suppressions;
+		this.delivery = delivery;
+		this.events = events;
 	}
 
 	/**
-	 * Sends the code that signs its recipient in.
-	 * @param recipient the address the code is sent to
-	 * @param code the code to type into the screen that is waiting for it
-	 * @param validFor how long the code works
-	 * @param locale the language of the email; Vietnamese for {@code vi}, English otherwise
+	 * Sends the code that signs its recipient in, before returning: the person waits on the screen for it. The log
+	 * keeps the email with the code masked.
+	 * @throws NotificationException when the code could not be sent
 	 */
-	public void sendSignInCode(String recipient, String code, Duration validFor, Locale locale) {
-		SignInCodeEmail email = SignInCodeEmail.of(code, validFor, locale);
-		send("sign_in_code", recipient, email.subject(), email.text(), email.html());
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	void sendSignInCode(String recipient, String code, Duration validFor) {
+		long minutes = Math.max(1, validFor.toMinutes());
+		UUID id = UUID.randomUUID();
+		RenderedEmail sent = render(EmailKind.SIGN_IN_CODE, Map.of("code", code, "minutes", Long.toString(minutes)));
+		if (suppressions.isSuppressed(recipient)) {
+			RenderedEmail logged = masked(minutes);
+			messages.insertSkipped(id, EmailKind.SIGN_IN_CODE.value(), recipient, logged.subject(), logged.html(),
+					logged.text(), DeliveryFailure.SUPPRESSED.value());
+			throw notSent(DeliveryFailure.SUPPRESSED);
+		}
+		RenderedEmail logged = masked(minutes);
+		messages.insertQueued(id, EmailKind.SIGN_IN_CODE.value(), recipient, logged.subject(), logged.html(),
+				logged.text());
+		delivery.sendNow(id, sent).ifPresent(failure -> {
+			throw notSent(failure);
+		});
 	}
 
 	/**
-	 * Tells an address that it was asked to join an organization. The email carries no link that acts: the person signs
-	 * in with this address and finds the invitation there. Its language is not known, so it is written in both.
+	 * Tells an address that it was asked to join an organization. The email carries no link that acts: the person
+	 * signs in with this address and finds the invitation there.
 	 * @param organizationName the organization that asks
 	 * @param inviterName who asked, as they are shown
 	 * @param owner whether the person is asked to own the organization, not only to belong to it
 	 */
+	@Transactional
 	public void sendOrganizationInvitation(String recipient, String organizationName, String inviterName,
 			boolean owner) {
-		String english = inviterName + " invited you to " + (owner ? "own " : "join ") + organizationName
-				+ " on BeyondPilot. Sign in with this email address to accept or decline.";
-		String vietnamese = inviterName + " mời bạn " + (owner ? "làm chủ sở hữu " : "tham gia ") + organizationName
-				+ " trên BeyondPilot. Hãy đăng nhập bằng địa chỉ email này để chấp nhận hoặc từ chối.";
-		sendParagraphs("organization_invitation", recipient,
-				"You are invited to " + organizationName + " on BeyondPilot", english, vietnamese);
+		queue(EmailKind.ORGANIZATION_INVITATION, recipient,
+				values("organizationName", organizationName, "inviterName", inviterName, "owner", owner));
 	}
 
 	/**
-	 * Tells an owner what GenAI Fund decided about their organization, in both languages.
+	 * Tells an owner what GenAI Fund decided about their organization.
 	 * @param approved whether the organization was approved; a refusal's reason is read after signing in
 	 */
+	@Transactional
 	public void sendOrganizationDecision(String recipient, String organizationName, boolean approved) {
-		String english = approved
-				? organizationName + " has been approved on BeyondPilot. Sign in to manage it."
-				: organizationName + " was not approved on BeyondPilot. Sign in to read why and to correct it.";
-		String vietnamese = approved
-				? organizationName + " đã được duyệt trên BeyondPilot. Hãy đăng nhập để quản lý."
-				: organizationName + " chưa được duyệt trên BeyondPilot. Hãy đăng nhập để xem lý do và chỉnh sửa.";
-		sendParagraphs("organization_decision", recipient, organizationName + " on BeyondPilot", english,
-				vietnamese);
+		queue(approved ? EmailKind.ORGANIZATION_APPROVED : EmailKind.ORGANIZATION_REFUSED, recipient,
+				values("organizationName", organizationName));
 	}
 
 	/** What GenAI Fund decided about a talent profile. */
@@ -93,89 +127,43 @@ public class EmailService {
 	}
 
 	/**
-	 * Tells an owner that GenAI Fund took their organization down or restored it, in both languages. A reason is read
-	 * after signing in.
+	 * Tells an owner that GenAI Fund took their organization down or restored it. The reason is read after signing in.
 	 * @param takenDown whether the organization was taken down; otherwise it is back
 	 */
+	@Transactional
 	public void sendOrganizationSuspension(String recipient, String organizationName, boolean takenDown) {
-		String english = takenDown
-				? organizationName + " was taken down on BeyondPilot. Sign in to read why."
-				: organizationName + " is back on BeyondPilot. Sign in to manage it.";
-		String vietnamese = takenDown
-				? organizationName + " đã bị gỡ khỏi BeyondPilot. Hãy đăng nhập để xem lý do."
-				: organizationName + " đã được khôi phục trên BeyondPilot. Hãy đăng nhập để quản lý.";
-		sendParagraphs("organization_suspension", recipient, organizationName + " on BeyondPilot", english,
-				vietnamese);
+		queue(takenDown ? EmailKind.ORGANIZATION_TAKEN_DOWN : EmailKind.ORGANIZATION_RESTORED, recipient,
+				values("organizationName", organizationName));
 	}
 
 	/**
-	 * Tells a person the answer to their request to get into an organization, in both languages.
+	 * Tells a person the answer to their request to get into an organization.
 	 * @param claim whether they asked to own an organization nobody owned, which GenAI Fund decides; otherwise they
 	 * asked its owners to join
 	 * @param approved whether they are in now
 	 */
+	@Transactional
 	public void sendOrganizationRequestDecision(String recipient, String organizationName, boolean claim,
 			boolean approved) {
-		String english;
-		String vietnamese;
-		if (claim) {
-			english = approved
-					? "GenAI Fund approved your claim: you now own " + organizationName
-							+ " on BeyondPilot. Sign in to manage it."
-					: "GenAI Fund declined your claim for " + organizationName
-							+ " on BeyondPilot. Sign in to read what you can do next.";
-			vietnamese = approved
-					? "GenAI Fund đã chấp thuận yêu cầu nhận quyền: bạn hiện là chủ sở hữu của " + organizationName
-							+ " trên BeyondPilot. Hãy đăng nhập để quản lý."
-					: "GenAI Fund đã từ chối yêu cầu nhận quyền " + organizationName
-							+ " trên BeyondPilot. Hãy đăng nhập để xem bạn có thể làm gì tiếp.";
-		}
-		else {
-			english = approved
-					? "An owner of " + organizationName + " let you in on BeyondPilot. Sign in to see your organization."
-					: "An owner of " + organizationName
-							+ " declined your request to join on BeyondPilot. Sign in to read what you can do next.";
-			vietnamese = approved
-					? "Một chủ sở hữu của " + organizationName
-							+ " đã cho bạn tham gia trên BeyondPilot. Hãy đăng nhập để xem tổ chức của bạn."
-					: "Một chủ sở hữu của " + organizationName
-							+ " đã từ chối yêu cầu tham gia của bạn trên BeyondPilot. Hãy đăng nhập để xem bạn có thể làm gì tiếp.";
-		}
-		sendParagraphs("organization_request_decision", recipient,
-				"Your request for " + organizationName + " on BeyondPilot", english, vietnamese);
+		queue(approved ? EmailKind.ORGANIZATION_REQUEST_APPROVED : EmailKind.ORGANIZATION_REQUEST_DECLINED, recipient,
+				values("organizationName", organizationName, "claim", claim));
 	}
 
 	/**
-	 * Tells a person what GenAI Fund decided about their talent profile, in both languages. The reason is read after
-	 * signing in; the operator's note, when there is one, is quoted as written.
+	 * Tells a person what GenAI Fund decided about their talent profile. The reason is read after signing in; the
+	 * operator's note, when there is one, is quoted as written.
 	 * @param profileName the profile, as it names its person
 	 * @param note what the operator wrote to the person; null when nothing
 	 */
+	@Transactional
 	public void sendTalentDecision(String recipient, String profileName, TalentDecision decision,
 			@Nullable String note) {
-		String english = switch (decision) {
-			case APPROVED -> "Your talent profile " + profileName + " is approved on BeyondPilot and shows in the"
-					+ " directory unless you hid it.";
-			case CHANGES_REQUESTED -> "GenAI Fund asks for changes to your talent profile " + profileName
-					+ " on BeyondPilot. Sign in to read why, correct it and send it again.";
-			case REMOVED -> "GenAI Fund removed your talent profile " + profileName + " from BeyondPilot's directory."
-					+ " Sign in to read why; you can correct it and send it again.";
+		EmailKind kind = switch (decision) {
+			case APPROVED -> EmailKind.TALENT_APPROVED;
+			case CHANGES_REQUESTED -> EmailKind.TALENT_CHANGES_REQUESTED;
+			case REMOVED -> EmailKind.TALENT_REMOVED;
 		};
-		String vietnamese = switch (decision) {
-			case APPROVED -> "Hồ sơ nhân lực " + profileName + " của bạn đã được duyệt trên BeyondPilot và hiện trong"
-					+ " danh mục, trừ khi bạn ẩn nó.";
-			case CHANGES_REQUESTED -> "GenAI Fund đề nghị bạn sửa hồ sơ nhân lực " + profileName
-					+ " trên BeyondPilot. Hãy đăng nhập để xem lý do, chỉnh sửa và gửi lại.";
-			case REMOVED -> "GenAI Fund đã gỡ hồ sơ nhân lực " + profileName + " khỏi danh mục của BeyondPilot."
-					+ " Hãy đăng nhập để xem lý do; bạn có thể chỉnh sửa và gửi lại.";
-		};
-		String subject = switch (decision) {
-			case APPROVED -> "Your BeyondPilot talent profile is approved";
-			case CHANGES_REQUESTED -> "Changes asked for your BeyondPilot talent profile";
-			case REMOVED -> "Your BeyondPilot talent profile was removed";
-		};
-		sendParagraphs("talent_decision", recipient, subject,
-				Stream.of(english, vietnamese, note).filter(Objects::nonNull).toArray(String[]::new));
+		queue(kind, recipient, values("profileName", profileName, "note", note));
 	}
 
 	/**
@@ -186,45 +174,26 @@ public class EmailService {
 	 * @param topic what the message is about: {@code project}, {@code role} or {@code other}
 	 * @param message what the sender wrote
 	 */
-	public void sendTalentEnquiry(String recipient, String senderName, @Nullable String senderOrganization,
+	@Transactional
+	public void sendTalentEnquiry(String recipient, @Nullable String senderName, @Nullable String senderOrganization,
 			String topic, String message) {
-		String sender = senderOrganization != null ? senderName + " (" + senderOrganization + ")" : senderName;
-		String english = sender + " wrote to you through your BeyondPilot talent profile, " + switch (topic) {
-			case "project" -> "about a project";
-			case "role" -> "about a role";
-			default -> "about something else";
-		} + ". Sign in and open your talent profile > Enquiries to accept or decline. Your address is shared only if"
-				+ " you accept.";
-		String vietnamese = sender + " đã viết cho bạn qua hồ sơ nhân lực trên BeyondPilot, " + switch (topic) {
-			case "project" -> "về một dự án";
-			case "role" -> "về một vị trí công việc";
-			default -> "về một việc khác";
-		} + ". Hãy đăng nhập và mở Hồ sơ nhân lực > Lời nhắn để chấp nhận hoặc từ chối. Địa chỉ email của bạn chỉ"
-				+ " được chia sẻ khi bạn chấp nhận.";
-		sendParagraphs("talent_enquiry", recipient, "A message through your BeyondPilot talent profile", english,
-				vietnamese, message);
+		queue(EmailKind.TALENT_ENQUIRY, recipient,
+				values("senderName", senderName, "senderOrganization", senderOrganization, "aboutProject",
+						"project".equals(topic), "aboutRole", "role".equals(topic), "aboutOther",
+						!"project".equals(topic) && !"role".equals(topic), "message", message));
 	}
 
 	/**
-	 * Tells a member of an organization what GenAI Fund decided about one of its use cases, in both languages.
+	 * Tells a member of an organization what GenAI Fund decided about one of its use cases. The reason, when GenAI
+	 * Fund sent the use case back, is quoted as written.
 	 * @param approved whether the use case was approved and published; otherwise it was sent back
 	 * @param reason what GenAI Fund asked to change, when it sent the use case back
 	 */
+	@Transactional
 	public void sendUseCaseDecision(String recipient, String organizationName, String useCaseTitle, boolean approved,
 			@Nullable String reason) {
-		String english = approved
-				? "\u201c" + useCaseTitle + "\u201d of " + organizationName
-						+ " was approved and is published on BeyondPilot. Providers can send proposals until its close date."
-				: "GenAI Fund asked for changes to \u201c" + useCaseTitle + "\u201d of " + organizationName + ": "
-						+ reason + " Sign in to edit it and send it again.";
-		String vietnamese = approved
-				? "\u201c" + useCaseTitle + "\u201d c\u1ee7a " + organizationName
-						+ " \u0111\u00e3 \u0111\u01b0\u1ee3c duy\u1ec7t v\u00e0 \u0111\u00e3 \u0111\u0103ng tr\u00ean BeyondPilot. Nh\u00e0 cung c\u1ea5p c\u00f3 th\u1ec3 g\u1eedi \u0111\u1ec1 xu\u1ea5t \u0111\u1ebfn h\u1ea1n \u0111\u00f3ng."
-				: "GenAI Fund y\u00eau c\u1ea7u ch\u1ec9nh s\u1eeda \u201c" + useCaseTitle + "\u201d c\u1ee7a " + organizationName + ": "
-						+ reason + " H\u00e3y \u0111\u0103ng nh\u1eadp \u0111\u1ec3 s\u1eeda v\u00e0 g\u1eedi l\u1ea1i.";
-		sendParagraphs("use_case_decision", recipient,
-				approved ? useCaseTitle + " is published on BeyondPilot" : "Changes needed: " + useCaseTitle, english,
-				vietnamese);
+		queue(approved ? EmailKind.USE_CASE_APPROVED : EmailKind.USE_CASE_SENT_BACK, recipient,
+				values("useCaseTitle", useCaseTitle, "organizationName", organizationName, "reason", reason));
 	}
 
 	/**
@@ -232,15 +201,10 @@ public class EmailService {
 	 * @param senderName who wrote, by the name they gave; null when they gave none, never their address
 	 * @param daysLeft the whole days before the message closes unanswered
 	 */
+	@Transactional
 	public void sendTalentEnquiryReminder(String recipient, @Nullable String senderName, long daysLeft) {
-		String english = (senderName != null ? "A message from " + senderName : "A message")
-				+ " waits for your answer on BeyondPilot. It closes in " + daysLeft
-				+ " days if you do not answer. Sign in and open your talent profile > Enquiries.";
-		String vietnamese = (senderName != null ? "Lời nhắn của " + senderName : "Một lời nhắn")
-				+ " đang chờ bạn trả lời trên BeyondPilot. Lời nhắn sẽ tự đóng sau " + daysLeft
-				+ " ngày nếu bạn không trả lời. Hãy đăng nhập và mở Hồ sơ nhân lực > Lời nhắn.";
-		sendParagraphs("talent_enquiry_reminder", recipient, "A message waits for your answer on BeyondPilot",
-				english, vietnamese);
+		queue(EmailKind.TALENT_ENQUIRY_REMINDER, recipient,
+				values("senderName", senderName, "daysLeft", Long.toString(daysLeft)));
 	}
 
 	/**
@@ -249,15 +213,11 @@ public class EmailService {
 	 * @param otherEmail where the recipient writes to them
 	 * @param otherOrganization the organization the other person belongs to; null when none or not known
 	 */
+	@Transactional
 	public void sendTalentIntroduction(String recipient, String otherName, String otherEmail,
 			@Nullable String otherOrganization) {
-		String who = otherName + " (" + otherEmail + ")";
-		String english = "The message through BeyondPilot was accepted. You can now write to " + who
-				+ (otherOrganization != null ? " at " + otherOrganization : "") + " at this address.";
-		String vietnamese = "Lời nhắn qua BeyondPilot đã được chấp nhận. Giờ bạn có thể viết cho " + who
-				+ (otherOrganization != null ? " tại " + otherOrganization : "") + " qua địa chỉ này.";
-		sendParagraphs("talent_introduction", recipient, "Your BeyondPilot introduction to " + otherName, english,
-				vietnamese);
+		queue(EmailKind.TALENT_INTRODUCTION, recipient,
+				values("otherName", otherName, "otherEmail", otherEmail, "otherOrganization", otherOrganization));
 	}
 
 	/**
@@ -265,25 +225,18 @@ public class EmailService {
 	 * reported is not exposed. It carries no address and no reason.
 	 * @param talentName the person written to, as their profile names them
 	 */
+	@Transactional
 	public void sendTalentEnquiryDeclined(String recipient, String talentName) {
-		String english = talentName + " will not take your message on BeyondPilot further. You can look for other"
-				+ " people in the talent directory.";
-		String vietnamese = talentName + " sẽ không tiếp tục lời nhắn của bạn trên BeyondPilot. Bạn có thể tìm người"
-				+ " khác trong danh mục nhân lực.";
-		sendParagraphs("talent_enquiry_declined", recipient, "Your message to " + talentName, english, vietnamese);
+		queue(EmailKind.TALENT_ENQUIRY_DECLINED, recipient, values("talentName", talentName));
 	}
 
 	/**
 	 * Tells the sender that their message closed because the person did not answer in time. They may write again.
 	 * @param talentName the person written to, as their profile names them
 	 */
+	@Transactional
 	public void sendTalentEnquiryClosed(String recipient, String talentName) {
-		String english = talentName + " did not answer your message on BeyondPilot in time, so it closed. You can"
-				+ " write again from their profile.";
-		String vietnamese = talentName + " chưa trả lời lời nhắn của bạn trên BeyondPilot đúng hạn nên lời nhắn đã"
-				+ " đóng. Bạn có thể viết lại từ hồ sơ của họ.";
-		sendParagraphs("talent_enquiry_closed", recipient, "Your message to " + talentName + " closed", english,
-				vietnamese);
+		queue(EmailKind.TALENT_ENQUIRY_CLOSED, recipient, values("talentName", talentName));
 	}
 
 	/**
@@ -294,16 +247,11 @@ public class EmailService {
 	 * @param solutionName what they asked about
 	 * @param message what the sender needs
 	 */
+	@Transactional
 	public void sendIntroductionRequest(String recipient, @Nullable String senderName, String senderOrganization,
 			String solutionName, String message) {
-		String english = (senderName != null ? senderName : "Someone") + " at " + senderOrganization
-				+ " asked GenAI Fund for an introduction to your solution " + solutionName
-				+ " on BeyondPilot. Sign in and open My organization > Introductions to answer.";
-		String vietnamese = (senderName != null ? senderName : "Một người") + " tại " + senderOrganization
-				+ " đã nhờ GenAI Fund giới thiệu tới giải pháp " + solutionName
-				+ " của bạn trên BeyondPilot. Hãy đăng nhập và mở Tổ chức của tôi > Giới thiệu để trả lời.";
-		sendParagraphs("introduction_request", recipient, "A request for an introduction to " + solutionName,
-				english, vietnamese, message);
+		queue(EmailKind.INTRODUCTION_REQUEST, recipient, values("senderName", senderName, "senderOrganization",
+				senderOrganization, "solutionName", solutionName, "message", message));
 	}
 
 	/**
@@ -313,131 +261,97 @@ public class EmailService {
 	 * @param otherOrganization the organization the other person acts for
 	 * @param solutionName the solution the introduction is about
 	 */
+	@Transactional
 	public void sendIntroduction(String recipient, @Nullable String otherName, String otherEmail,
 			String otherOrganization, String solutionName) {
-		String who = otherName != null ? otherName + " (" + otherEmail + ")" : otherEmail;
-		String english = "GenAI Fund introduces you to " + who + " at " + otherOrganization + ", about the solution "
-				+ solutionName + " on BeyondPilot. You can write to each other at these addresses.";
-		String vietnamese = "GenAI Fund giới thiệu bạn với " + who + " tại " + otherOrganization + ", về giải pháp "
-				+ solutionName + " trên BeyondPilot. Hai bên có thể viết cho nhau qua các địa chỉ này.";
-		sendParagraphs("introduction", recipient, "Your introduction about " + solutionName, english, vietnamese);
+		queue(EmailKind.INTRODUCTION_MADE, recipient, values("otherName", otherName, "otherEmail", otherEmail,
+				"otherOrganization", otherOrganization, "solutionName", solutionName));
 	}
 
 	/**
 	 * Tells the sender that the provider will not take their request further. It carries no address and no reason.
 	 */
+	@Transactional
 	public void sendIntroductionDeclined(String recipient, String providerName, String solutionName) {
-		String english = providerName + " will not take your request for an introduction about " + solutionName
-				+ " further. You can look for another solution on BeyondPilot.";
-		String vietnamese = providerName + " sẽ không tiếp tục yêu cầu giới thiệu của bạn về giải pháp "
-				+ solutionName + ". Bạn có thể tìm giải pháp khác trên BeyondPilot.";
-		sendParagraphs("introduction_declined", recipient, "Your request about " + solutionName, english,
-				vietnamese);
+		queue(EmailKind.INTRODUCTION_DECLINED, recipient,
+				values("providerName", providerName, "solutionName", solutionName));
 	}
 
 	/**
-	 * Confirms to an applicant that their application reached the program, in both languages.
+	 * Confirms to an applicant that their application reached the program.
 	 * @param version which submission this is: 1 for the first, more when it was submitted again
 	 * @param editableUntil until when the application can still change; null when it cannot
 	 */
+	@Transactional
 	public void sendApplicationReceived(String recipient, String programName, int version,
 			@Nullable Instant editableUntil) {
 		String until = editableUntil == null ? null
 				: DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.ENGLISH)
 					.withZone(VIETNAM)
 					.format(editableUntil) + " ICT";
-		String english = (version == 1 ? "Your application to " + programName + " was submitted."
-				: "Your changed application to " + programName + " was submitted.")
-				+ (until == null ? "" : " You can change it on BeyondPilot until " + until + ".")
-				+ " Sign in and open My applications to see where it stands.";
-		String vietnamese = (version == 1 ? "Đơn của bạn gửi " + programName + " đã được nộp."
-				: "Đơn đã chỉnh sửa của bạn gửi " + programName + " đã được nộp.")
-				+ (until == null ? "" : " Bạn có thể sửa đơn trên BeyondPilot tới " + until + ".")
-				+ " Hãy đăng nhập và mở Đơn của tôi để xem tình trạng.";
-		sendParagraphs("application_received", recipient, "Application submitted: " + programName, english,
-				vietnamese);
+		queue(EmailKind.APPLICATION_RECEIVED, recipient,
+				values("programName", programName, "resubmitted", version > 1, "editableUntil", until));
 	}
 
 	/**
-	 * Tells an address that it was asked to judge a program's applications, in both languages. Like an organization
-	 * invitation it carries no link that acts: the person signs in with this address and finds the program under
-	 * Reviews.
+	 * Tells an address that it was asked to judge a program's applications. Like an organization invitation it carries
+	 * no link that acts: the person signs in with this address and finds the program under Reviews.
 	 * @param inviterName who asked, as they are shown
 	 * @param expiresAt when the invitation lapses if nobody signs in with the address
 	 */
+	@Transactional
 	public void sendReviewerInvitation(String recipient, String programName, String inviterName, Instant expiresAt) {
 		String until = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH).withZone(VIETNAM).format(expiresAt);
-		String english = inviterName + " invited you to judge the applications to " + programName
-				+ " on BeyondPilot. Sign in with this email address by " + until
-				+ " and open Reviews. Your scores and notes are read only by you and GenAI Fund.";
-		String vietnamese = inviterName + " mời bạn chấm các đơn nộp vào " + programName
-				+ " trên BeyondPilot. Hãy đăng nhập bằng địa chỉ email này trước " + until
-				+ " và mở mục Reviews. Điểm và ghi chú của bạn chỉ bạn và GenAI Fund đọc được.";
-		sendParagraphs("reviewer_invitation", recipient, "Judge the applications to " + programName, english,
-				vietnamese);
+		queue(EmailKind.REVIEWER_INVITATION, recipient,
+				values("programName", programName, "inviterName", inviterName, "expiresOn", until));
 	}
 
 	/**
 	 * Sends an applicant the outcome of their application, as the operator wrote it for the applicant's group. The
-	 * message is plain text; its paragraphs are kept.
+	 * message is plain text; its line breaks are kept.
 	 */
+	@Transactional
 	public void sendApplicationOutcome(String recipient, String subject, String message) {
-		sendParagraphs("application_outcome", recipient, subject, message.strip().split("\\R\\s*\\R"));
+		queue(EmailKind.APPLICATION_OUTCOME, recipient, values("subject", subject, "message", message.strip()));
 	}
 
-	/** Sends the paragraphs as they are written, one after the other, as plain text and as HTML. */
-	private void sendParagraphs(String kind, String recipient, String subject, String... paragraphs) {
-		StringBuilder html = new StringBuilder();
-		for (String paragraph : paragraphs) {
-			html.append("<p>").append(HtmlUtils.htmlEscape(paragraph)).append("</p>");
+	private void queue(EmailKind kind, String recipient, Map<String, @Nullable Object> values) {
+		RenderedEmail email = render(kind, values);
+		UUID id = UUID.randomUUID();
+		if (suppressions.isSuppressed(recipient)) {
+			messages.insertSkipped(id, kind.value(), recipient, email.subject(), email.html(), email.text(),
+					DeliveryFailure.SUPPRESSED.value());
+			LOG.atInfo()
+				.addKeyValue("event", "notification.email.skipped")
+				.addKeyValue("email_id", id)
+				.addKeyValue("email_kind", kind.value())
+				.log("Email not sent to a suppressed address");
+			return;
 		}
-		send(kind, recipient, subject, String.join("\n\n", paragraphs) + "\n", html.toString());
+		messages.insertQueued(id, kind.value(), recipient, email.subject(), email.html(), email.text());
+		events.publishEvent(new EmailQueued(id));
 	}
 
-	private void send(String kind, String recipient, String subject, String text, String html) {
-		try {
-			MimeMessage message = mailSender.createMimeMessage();
-			MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-			helper.setFrom(properties.from());
-			helper.setTo(recipient);
-			helper.setSubject(subject);
-			helper.setText(text, html);
-			mailSender.send(message);
-		}
-		catch (MailException | MessagingException exception) {
-			LOG.atError()
-				.addKeyValue("event", "notification.email.failed")
-				.addKeyValue("email_kind", kind)
-				.addKeyValue("error_type", exception.getClass().getName())
-				.addKeyValue("error_code", NotificationErrorCode.EMAIL_NOT_SENT.code())
-				.log("Email not sent");
-			throw new NotificationException(NotificationErrorCode.EMAIL_NOT_SENT, "Sending the " + kind + " email failed",
-					exception);
-		}
-		LOG.atInfo().addKeyValue("event", "notification.email.sent").addKeyValue("email_kind", kind).log("Email sent");
+	private RenderedEmail render(EmailKind kind, Map<String, ?> values) {
+		return renderer.render(kind, templates.current(kind), values, settings.appearance());
 	}
 
-	private record SignInCodeEmail(String subject, String text, String html) {
-
-		static SignInCodeEmail of(String code, Duration validFor, Locale locale) {
-			long minutes = Math.max(1, validFor.toMinutes());
-			String shown = HtmlUtils.htmlEscape(code);
-			if ("vi".equals(locale.getLanguage())) {
-				return new SignInCodeEmail(code + " là mã đăng nhập BeyondPilot của bạn",
-						"Mã đăng nhập BeyondPilot của bạn:\n\n" + code
-								+ "\n\nNhập mã này vào màn hình đang chờ. Mã có hiệu lực trong " + minutes
-								+ " phút. Đừng chia sẻ mã với ai; nếu bạn không yêu cầu, hãy bỏ qua email này.\n",
-						"<p>Mã đăng nhập BeyondPilot của bạn:</p><p><strong>" + shown
-								+ "</strong></p><p>Nhập mã này vào màn hình đang chờ. Mã có hiệu lực trong " + minutes
-								+ " phút. Đừng chia sẻ mã với ai; nếu bạn không yêu cầu, hãy bỏ qua email này.</p>");
-			}
-			return new SignInCodeEmail(code + " is your BeyondPilot sign-in code",
-					"Your BeyondPilot sign-in code:\n\n" + code
-							+ "\n\nType it into the screen that is waiting for it. It works for " + minutes
-							+ " minutes. Do not share it with anyone; if you did not ask for it, ignore this email.\n",
-					"<p>Your BeyondPilot sign-in code:</p><p><strong>" + shown
-							+ "</strong></p><p>Type it into the screen that is waiting for it. It works for " + minutes
-							+ " minutes. Do not share it with anyone; if you did not ask for it, ignore this email.</p>");
-		}
+	private RenderedEmail masked(long minutes) {
+		return render(EmailKind.SIGN_IN_CODE, Map.of("code", MASKED_CODE, "minutes", Long.toString(minutes)));
 	}
+
+	private static NotificationException notSent(DeliveryFailure failure) {
+		return new NotificationException(NotificationErrorCode.EMAIL_NOT_SENT,
+				"The sign-in code was not sent: " + failure.value());
+	}
+
+	/** Pairs of name and value; a value may be null when the variable is absent. */
+	private static Map<String, @Nullable Object> values(@Nullable Object... pairs) {
+		Map<String, @Nullable Object> values = new HashMap<>();
+		for (int index = 0; index < pairs.length; index += 2) {
+			values.put((String) pairs[index], pairs[index + 1]);
+		}
+		return values;
+	}
+
 }

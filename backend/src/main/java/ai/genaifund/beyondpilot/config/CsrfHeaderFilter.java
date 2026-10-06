@@ -21,10 +21,17 @@ class CsrfHeaderFilter extends OncePerRequestFilter {
 
 	private static final Set<String> SAFE_METHODS = Set.of("GET", "HEAD", "OPTIONS", "TRACE");
 
+	/**
+	 * Where an email provider posts its reports. The provider cannot send the header, and these requests act on no
+	 * session: each report is accepted only by its signature.
+	 */
+	static final String PROVIDER_REPORTS = "/api/notification/email/events/";
+
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws ServletException, IOException {
-		if (!SAFE_METHODS.contains(request.getMethod()) && !"1".equals(request.getHeader(HEADER))) {
+		if (!SAFE_METHODS.contains(request.getMethod()) && !"1".equals(request.getHeader(HEADER))
+				&& !request.getRequestURI().startsWith(PROVIDER_REPORTS)) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}

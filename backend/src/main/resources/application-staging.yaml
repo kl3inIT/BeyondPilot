@@ -1,5 +1,5 @@
-# Staging runs with `production,staging,mailpit`: the production settings, diagnosis logging for our own code, and
-# mail kept on the host.
+# Staging runs with `production,staging`: the production settings and diagnosis logging for our own code. Email goes
+# through the provider operators configure in Admin › Email, as in production.
 logging:
   level:
     ai.genaifund.beyondpilot: DEBUG

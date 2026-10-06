@@ -47,7 +47,15 @@ dependencies {
 		exclude(group = "software.amazon.awssdk", module = "apache5-client")
 		exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
 	}
+	implementation(libs.aws.sdk.sesv2) {
+		exclude(group = "software.amazon.awssdk", module = "apache5-client")
+		exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
+	}
 	implementation(libs.aws.sdk.url.connection.client)
+	// Email: templates operators edit (logic-less, so a template cannot reach code), their Markdown, and Resend.
+	implementation(libs.jmustache)
+	implementation(libs.commonmark)
+	implementation(libs.resend.java)
 	developmentOnly(libs.spring.boot.docker.compose)
 	runtimeOnly(libs.postgresql)
 	testImplementation(libs.spring.boot.starter.actuator.test)
@@ -63,6 +71,7 @@ dependencies {
 	testImplementation(libs.spring.modulith.starter.test)
 	testImplementation(libs.testcontainers.junit.jupiter)
 	testImplementation(libs.testcontainers.postgresql)
+	testImplementation(libs.greenmail.junit5)
 	testRuntimeOnly(libs.junit.platform.launcher)
 }
 
