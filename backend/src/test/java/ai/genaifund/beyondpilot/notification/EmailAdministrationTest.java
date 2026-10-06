@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
@@ -205,6 +208,81 @@ class EmailAdministrationTest {
 		assertThat(events("email_address")).contains("email.suppression_add", "email.suppression_remove");
 
 		TestSignIn.session(client, mail, "Gone@Email.test");
+	}
+
+	@Test
+	void aSignedResendReportBouncesTheEmailAndSuppressesTheAddressOnce() throws Exception {
+		String read = body(get(operator, API + "/settings").expectStatus().isOk());
+		Map<String, Object> resend = settings("resend", version(read), smtp(null), ses(null, null, null), "re_test_key");
+		byte[] secret = new byte[24];
+		new SecureRandom().nextBytes(secret);
+		String signing = "whsec_" + Base64.getEncoder().encodeToString(secret);
+		@SuppressWarnings("unchecked")
+		Map<String, Object> keys = (Map<String, Object>) resend.get("resend");
+		keys.put("webhookSecret", signing);
+		put(operator, API + "/settings", resend).expectStatus().isOk();
+		UUID message = UUID.randomUUID();
+		jdbc.sql("""
+				insert into email_message (id, kind, recipient, subject, html, text, status, provider, provider_message_id)
+				values (?, 'talent_enquiry', 'Bounced@Email.test', 'Hello', '<p>Hello</p>', 'Hello', 'sent', 'resend', 'em_1')
+				""").param(message).update();
+		String payload = """
+				{"type":"email.bounced","created_at":"2026-10-06T08:00:00.000Z",
+				 "data":{"email_id":"em_1","bounce":{"type":"Permanent","subType":"General","message":"no such user"}}}""";
+
+		resendEvent("msg_1", payload, secret).expectStatus().isNoContent();
+		resendEvent("msg_1", payload, secret).expectStatus().isNoContent();
+
+		String logged = body(get(operator, API + "/messages/" + message).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(logged, "$.status")).isEqualTo("bounced");
+		assertThat(JsonPath.<List<String>>read(logged, "$.events[*].type")).containsExactly("bounced");
+		assertThat(JsonPath.<String>read(logged, "$.events[0].detail")).isEqualTo("General");
+		assertThat(JsonPath.<String>read(logged, "$.suppression.reason")).isEqualTo("bounce");
+		assertThat(JsonPath.<Boolean>read(logged, "$.resendable")).isFalse();
+		// A report signed with another secret is refused before it is read.
+		byte[] other = new byte[24];
+		new SecureRandom().nextBytes(other);
+		assertProblem(resendEvent("msg_2", payload, other), 403, "NOTIFICATION_EVENT_REFUSED");
+	}
+
+	@Test
+	void anSnsReportIsRefusedWithoutItsTopicOrAValidSignature() {
+		String unsigned = """
+				{"Type":"Notification","MessageId":"m1","TopicArn":"arn:aws:sns:ap-southeast-1:123456789012:beyondpilot-email",
+				 "Message":"{}","Timestamp":"2026-10-06T08:00:00.000Z","SignatureVersion":"2","Signature":"forged",
+				 "SigningCertURL":"https://sns.ap-southeast-1.amazonaws.com/SimpleNotificationService-x.pem"}""";
+		assertProblem(snsEvent(unsigned), 403, "NOTIFICATION_EVENT_REFUSED");
+
+		String read = body(get(operator, API + "/settings").expectStatus().isOk());
+		Map<String, Object> ses = ses("ap-southeast-1", "AKIATESTKEY", "a-secret");
+		ses.put("eventsTopicArn", "arn:aws:sns:ap-southeast-1:123456789012:beyondpilot-email");
+		put(operator, API + "/settings", settings("ses", version(read), smtp(null), ses, null)).expectStatus().isOk();
+
+		assertProblem(snsEvent(unsigned), 403, "NOTIFICATION_EVENT_REFUSED");
+	}
+
+	private RestTestClient.ResponseSpec resendEvent(String id, String payload, byte[] secret) throws Exception {
+		String timestamp = Long.toString(System.currentTimeMillis() / 1000);
+		Mac mac = Mac.getInstance("HmacSHA256");
+		mac.init(new SecretKeySpec(secret, "HmacSHA256"));
+		String signature = Base64.getEncoder()
+			.encodeToString(mac.doFinal((id + "." + timestamp + "." + payload).getBytes(UTF_8)));
+		return client.post()
+			.uri("/api/notification/email/events/resend")
+			.header("svix-id", id)
+			.header("svix-timestamp", timestamp)
+			.header("svix-signature", "v1," + signature)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(payload)
+			.exchange();
+	}
+
+	private RestTestClient.ResponseSpec snsEvent(String payload) {
+		return client.post()
+			.uri("/api/notification/email/events/ses")
+			.contentType(MediaType.TEXT_PLAIN)
+			.body(payload)
+			.exchange();
 	}
 
 	private static Map<String, Object> settings(String provider, long version, Map<String, Object> smtp,

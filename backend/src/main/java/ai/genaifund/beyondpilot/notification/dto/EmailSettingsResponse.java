@@ -31,11 +31,16 @@ public record EmailSettingsResponse(
 	@Schema(name = "EmailSesSettings")
 	public record Ses(@Schema(types = { "string", "null" }) @Nullable String region,
 			@Schema(types = { "string", "null" }) @Nullable String accessKeyId,
-			@Schema(types = { "string", "null" }) @Nullable String configurationSet, @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean secretAccessKeySet) {
+			@Schema(types = { "string", "null" }) @Nullable String configurationSet,
+			@Schema(types = { "string", "null" }, description = "The SNS topic whose reports are accepted.") @Nullable String eventsTopicArn,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean secretAccessKeySet,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Where to subscribe the SNS topic over HTTPS.") String eventsUrl) {
 	}
 
 	@Schema(name = "EmailResendSettings")
-	public record Resend(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean apiKeySet) {
+	public record Resend(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean apiKeySet,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean webhookSecretSet,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The endpoint to give Resend's webhook.") String eventsUrl) {
 	}
 
 }

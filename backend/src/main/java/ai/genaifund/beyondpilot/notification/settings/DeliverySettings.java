@@ -58,6 +58,29 @@ public class DeliverySettings {
 			.map(connection -> new Delivery(connection, fromName, row.getFromAddress(), row.getReplyTo()));
 	}
 
+	/**
+	 * How the providers' reports are recognised.
+	 * @param resendWebhookSecret the secret Resend signs with, opened; null when none is stored or it cannot be read
+	 * @param sesRegion the region whose SNS certificates sign SES reports; null when none is set
+	 * @param sesEventsTopicArn the only SNS topic whose reports are accepted; null when none is set
+	 */
+	public record Reporting(@Nullable String resendWebhookSecret, @Nullable String sesRegion,
+			@Nullable String sesEventsTopicArn) {
+
+		@Override
+		public String toString() {
+			return "Reporting[sesRegion=" + sesRegion + ", sesEventsTopicArn=" + sesEventsTopicArn + "]";
+		}
+
+	}
+
+	@Transactional(readOnly = true)
+	public Reporting reporting() {
+		EmailSettings row = settings.current();
+		return new Reporting(secrets.open(row.getResendWebhookSecret()).orElse(null), row.getSesRegion(),
+				row.getSesEventsTopicArn());
+	}
+
 	/** What the layout of every email takes from the settings and the site. */
 	@Transactional(readOnly = true)
 	public Appearance appearance() {

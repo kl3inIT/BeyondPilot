@@ -48,7 +48,11 @@ public class EmailSettings {
 
 	private @Nullable String sesConfigurationSet;
 
+	private @Nullable String sesEventsTopicArn;
+
 	private byte @Nullable [] resendApiKey;
+
+	private byte @Nullable [] resendWebhookSecret;
 
 	private @Nullable String accentColor;
 
@@ -91,6 +95,15 @@ public class EmailSettings {
 		this.sesSecretAccessKey = sesSecretAccessKey;
 		this.sesConfigurationSet = sesConfigurationSet;
 		this.resendApiKey = resendApiKey;
+	}
+
+	/**
+	 * Sets how the providers' reports are recognised: the SNS topic Amazon SES reports to and the secret Resend signs
+	 * with, sealed. A null secret is cleared.
+	 */
+	public void reportWith(@Nullable String sesEventsTopicArn, byte @Nullable [] resendWebhookSecret) {
+		this.sesEventsTopicArn = sesEventsTopicArn;
+		this.resendWebhookSecret = resendWebhookSecret;
 	}
 
 	public void appearWith(String accentColor, String footer) {
@@ -159,6 +172,14 @@ public class EmailSettings {
 
 	public byte @Nullable [] getResendApiKey() {
 		return resendApiKey;
+	}
+
+	public @Nullable String getSesEventsTopicArn() {
+		return sesEventsTopicArn;
+	}
+
+	public byte @Nullable [] getResendWebhookSecret() {
+		return resendWebhookSecret;
 	}
 
 	public @Nullable String getAccentColor() {

@@ -29,6 +29,7 @@ aws-sdk-bom = { module = "software.amazon.awssdk:bom", version.ref = "aws-sdk" }
 aws-sdk-s3 = { module = "software.amazon.awssdk:s3" }
 aws-sdk-url-connection-client = { module = "software.amazon.awssdk:url-connection-client" }
 aws-sdk-sesv2 = { module = "software.amazon.awssdk:sesv2" }
+aws-sdk-sns-message-manager = { module = "software.amazon.awssdk:sns-message-manager" }
 jmustache = { module = "com.samskivert:jmustache" }
 commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
 resend-java = { module = "com.resend:resend-java", version.ref = "resend" }

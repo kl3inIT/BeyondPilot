@@ -16,7 +16,11 @@ create table email_settings (
     ses_access_key_id      text,
     ses_secret_access_key  bytea,
     ses_configuration_set  text,
+    -- The SNS topic the configuration set reports to; reports from any other topic are refused.
+    ses_events_topic_arn   text,
     resend_api_key         bytea,
+    -- The secret Resend signs its reports with.
+    resend_webhook_secret  bytea,
     -- The appearance every email is wrapped in; null keeps the default.
     accent_color           text,
     footer                 text,
@@ -80,6 +84,8 @@ create table email_event (
     message_id  uuid        not null references email_message (id) on delete cascade,
     type        text        not null,
     occurred_at timestamptz not null,
+    -- The provider's identifier of the report, so that a report delivered twice is recorded once.
+    source_id   text        unique,
     -- A typed summary such as an SMTP status code; never a provider's free text.
     detail      text,
     constraint email_event_type check (type in ('delivered', 'bounced', 'soft_bounced', 'complained'))

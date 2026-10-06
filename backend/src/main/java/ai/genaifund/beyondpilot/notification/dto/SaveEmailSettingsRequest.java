@@ -36,11 +36,13 @@ public record SaveEmailSettingsRequest(
 	public record Ses(@Schema(types = { "string", "null" }, example = "ap-southeast-1") @Pattern(regexp = "[a-z]{2}(-[a-z]+)+-\\d") @Nullable String region,
 			@Schema(types = { "string", "null" }) @Size(max = 128) @Nullable String accessKeyId,
 			@Schema(types = { "string", "null" }, description = "Empty to keep the stored one.") @Size(max = 256) @Nullable String secretAccessKey,
-			@Schema(types = { "string", "null" }) @Size(max = 64) @Nullable String configurationSet) {
+			@Schema(types = { "string", "null" }) @Size(max = 64) @Nullable String configurationSet,
+			@Schema(types = { "string", "null" }, description = "The SNS topic the configuration set reports to.") @Pattern(regexp = "arn:aws[a-z-]*:sns:[a-z0-9-]+:[0-9]{12}:[A-Za-z0-9_-]{1,256}") @Nullable String eventsTopicArn) {
 	}
 
 	@Schema(name = "SaveEmailResendSettings")
-	public record Resend(@Schema(types = { "string", "null" }, description = "Empty to keep the stored one.") @Size(max = 256) @Nullable String apiKey) {
+	public record Resend(@Schema(types = { "string", "null" }, description = "Empty to keep the stored one.") @Size(max = 256) @Nullable String apiKey,
+			@Schema(types = { "string", "null" }, description = "The secret Resend signs its webhooks with; empty to keep the stored one.") @Size(max = 256) @Nullable String webhookSecret) {
 	}
 
 }

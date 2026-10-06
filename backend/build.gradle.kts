@@ -48,6 +48,12 @@ dependencies {
 		exclude(group = "software.amazon.awssdk", module = "apache5-client")
 		exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
 	}
+	// Checks the signature of what Amazon SNS reports about sent email.
+	implementation(libs.aws.sdk.sns.message.manager) {
+		exclude(group = "software.amazon.awssdk", module = "apache5-client")
+		exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
+		exclude(group = "org.apache.httpcomponents.client5", module = "httpclient5")
+	}
 	implementation(libs.aws.sdk.url.connection.client)
 	// Email: templates operators edit (logic-less, so a template cannot reach code), their Markdown, and Resend.
 	implementation(libs.jmustache)

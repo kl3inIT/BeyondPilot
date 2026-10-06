@@ -39,7 +39,13 @@ public enum NotificationErrorCode implements ErrorCode {
 	SUPPRESSION_NOT_FOUND("NOTIFICATION_SUPPRESSION_NOT_FOUND", ErrorCategory.NOT_FOUND,
 			"This address is not suppressed."),
 
-	SUPPRESSION_EXISTS("NOTIFICATION_SUPPRESSION_EXISTS", ErrorCategory.CONFLICT, "This address is already suppressed.");
+	SUPPRESSION_EXISTS("NOTIFICATION_SUPPRESSION_EXISTS", ErrorCategory.CONFLICT, "This address is already suppressed."),
+
+	EVENT_REFUSED("NOTIFICATION_EVENT_REFUSED", ErrorCategory.NOT_PERMITTED,
+			"The report could not be verified as coming from the configured provider."),
+
+	SUBSCRIPTION_NOT_CONFIRMED("NOTIFICATION_SUBSCRIPTION_NOT_CONFIRMED", ErrorCategory.SERVICE_UNAVAILABLE,
+			"The subscription could not be confirmed now. Amazon SNS will ask again.");
 
 	private final String code;
 	private final ErrorCategory category;

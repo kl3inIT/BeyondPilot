@@ -105,6 +105,8 @@ public class EmailSettingsAdministration {
 				blankToNull(request.smtp().username()), kept.smtpPassword(), request.smtp().security(),
 				blankToNull(request.ses().region()), blankToNull(request.ses().accessKeyId()), kept.sesSecretAccessKey(),
 				blankToNull(request.ses().configurationSet()), kept.resendApiKey());
+		row.reportWith(blankToNull(request.ses().eventsTopicArn()),
+				secret(request.resend().webhookSecret(), row.getResendWebhookSecret()));
 		row.changedBy(operator.accountId(), operator.label(), Instant.now());
 		EmailSettings saved = settings.saveAndFlush(row);
 		record(AuditAction.EMAIL_SETTINGS_UPDATE, operator, Map.of("provider", request.provider()));
@@ -209,8 +211,11 @@ public class EmailSettingsAdministration {
 				new EmailSettingsResponse.Smtp(row.getSmtpHost(), row.getSmtpPort(), row.getSmtpUsername(),
 						row.getSmtpSecurity(), row.getSmtpPassword() != null),
 				new EmailSettingsResponse.Ses(row.getSesRegion(), row.getSesAccessKeyId(), row.getSesConfigurationSet(),
-						row.getSesSecretAccessKey() != null),
-				new EmailSettingsResponse.Resend(row.getResendApiKey() != null), delivery.delivery().isPresent(),
+						row.getSesEventsTopicArn(), row.getSesSecretAccessKey() != null,
+						appearance.siteUrl() + "/api/notification/email/events/ses"),
+				new EmailSettingsResponse.Resend(row.getResendApiKey() != null, row.getResendWebhookSecret() != null,
+						appearance.siteUrl() + "/api/notification/email/events/resend"),
+				delivery.delivery().isPresent(),
 				secrets.open(), appearance.accentColor(), appearance.footer(), row.getUpdatedByLabel(),
 				row.getUpdatedBy() == null ? null : row.getUpdatedAt(), row.getVersion());
 	}
