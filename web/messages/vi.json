@@ -293,9 +293,12 @@
       "introductions": "Giới thiệu",
       "review": "Xét duyệt",
       "system": "Hệ thống",
-      "email": "Email",
       "useCases": "Use case",
-      "useCasesNew": "Use case mới"
+      "useCasesNew": "Use case mới",
+      "ai": "AI",
+      "aiProviders": "Nhà cung cấp",
+      "searchIndex": "Chỉ mục tìm kiếm",
+      "email": "Email"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
     "programs": {
@@ -763,6 +766,13 @@
           "decide": "Quyết định một đơn",
           "release": "Công bố kết quả"
         },
+        "use_case": {
+          "create": "Tạo một use case",
+          "submit": "Gửi một use case đi duyệt",
+          "draft": "Chuyển một use case về bản nháp",
+          "approve": "Duyệt một use case",
+          "send_back": "Gửi lại một use case"
+        },
         "email": {
           "settings_update": "Đổi cấu hình email",
           "appearance_update": "Đổi giao diện email",
@@ -772,12 +782,17 @@
           "suppression_remove": "Bỏ chặn một địa chỉ email",
           "resend": "Gửi lại một email"
         },
-        "use_case": {
-          "create": "Tạo một use case",
-          "submit": "Gửi một use case đi duyệt",
-          "draft": "Chuyển một use case về bản nháp",
-          "approve": "Duyệt một use case",
-          "send_back": "Gửi lại một use case"
+        "ai": {
+          "provider_create": "Kết nối nhà cung cấp AI",
+          "provider_update": "Sửa nhà cung cấp AI",
+          "provider_delete": "Xoá nhà cung cấp AI"
+        },
+        "search": {
+          "model_change": "Đổi model embedding",
+          "semantic_enable": "Bật semantic search",
+          "semantic_disable": "Tắt semantic search",
+          "index_rebuild": "Dựng lại chỉ mục tìm kiếm",
+          "embedding_retry": "Cho embed lại các mục bị từ chối"
         }
       },
       "activity": {
@@ -839,6 +854,13 @@
           "decide": "Quyết định một đơn nộp vào <resource></resource>",
           "release": "Công bố kết quả của <resource></resource>"
         },
+        "use_case": {
+          "create": "Đã tạo use case <resource></resource>",
+          "submit": "Đã gửi use case <resource></resource> đi duyệt",
+          "draft": "Đã chuyển use case <resource></resource> về bản nháp",
+          "approve": "Đã duyệt use case <resource></resource>",
+          "send_back": "Đã gửi lại use case <resource></resource>"
+        },
         "email": {
           "settings_update": "Đổi <resource></resource>",
           "appearance_update": "Đổi giao diện trong <resource></resource>",
@@ -848,12 +870,17 @@
           "suppression_remove": "Bỏ chặn <resource></resource>",
           "resend": "Gửi lại email <resource></resource>"
         },
-        "use_case": {
-          "create": "Đã tạo use case <resource></resource>",
-          "submit": "Đã gửi use case <resource></resource> đi duyệt",
-          "draft": "Đã chuyển use case <resource></resource> về bản nháp",
-          "approve": "Đã duyệt use case <resource></resource>",
-          "send_back": "Đã gửi lại use case <resource></resource>"
+        "ai": {
+          "provider_create": "Kết nối nhà cung cấp AI <resource></resource>",
+          "provider_update": "Sửa nhà cung cấp AI <resource></resource>",
+          "provider_delete": "Xoá nhà cung cấp AI <resource></resource>"
+        },
+        "search": {
+          "model_change": "Đổi model embedding trong <resource></resource>",
+          "semantic_enable": "Bật semantic search trong <resource></resource>",
+          "semantic_disable": "Tắt semantic search trong <resource></resource>",
+          "index_rebuild": "Dựng lại <resource></resource>",
+          "embedding_retry": "Cho embed lại các mục bị từ chối của <resource></resource>"
         }
       },
       "columns": {
@@ -1356,6 +1383,460 @@
         "title": "Không có yêu cầu nào khớp",
         "description": "Hãy thử tên giải pháp khác, hoặc trạng thái khác.",
         "clear": "Xóa tìm kiếm và bộ lọc"
+      }
+    },
+    "useCases": {
+      "metaTitle": "Use case · BeyondPilot",
+      "title": "Use case",
+      "lead": "Use case của mọi tổ chức. Duyệt những use case được gửi đến bạn, hoặc tạo một use case cho tổ chức.",
+      "create": "Tạo use case",
+      "search": "Tìm theo tiêu đề hoặc tổ chức",
+      "clear": "Xóa tìm kiếm",
+      "filters": {
+        "status": {
+          "label": "Trạng thái",
+          "all": "Mọi trạng thái"
+        },
+        "organization": {
+          "label": "Tổ chức",
+          "all": "Tổ chức"
+        }
+      },
+      "status": {
+        "draft": "Bản nháp",
+        "in_review": "Đang duyệt",
+        "needs_changes": "Cần chỉnh sửa",
+        "published": "Đã đăng",
+        "closed": "Đã đóng"
+      },
+      "note": {
+        "draft": "Chỉ {organization} xem được",
+        "in_review": "Đang chờ GenAI Fund",
+        "needs_changes": "Đã gửi lại cho {organization}",
+        "published": "Hiển thị trong danh mục",
+        "closed": "Đã hết hạn · bị khóa, không ai sửa được"
+      },
+      "columns": {
+        "useCase": "Use case",
+        "organization": "Tổ chức",
+        "status": "Trạng thái",
+        "closes": "Hạn đề xuất",
+        "updated": "Cập nhật",
+        "actions": "Hành động"
+      },
+      "count": "{count, plural, other {# use case}}",
+      "inReview": "{count} đang duyệt",
+      "empty": {
+        "title": "Chưa có use case nào",
+        "description": "Use case xuất hiện ở đây khi tổ chức soạn, hoặc khi bạn tạo thay cho một tổ chức."
+      },
+      "noMatch": {
+        "title": "Không có use case phù hợp",
+        "description": "Không có gì khớp với tìm kiếm và bộ lọc này.",
+        "clear": "Xóa tìm kiếm và bộ lọc"
+      },
+      "form": {
+        "metaTitle": "Tạo use case · BeyondPilot",
+        "title": "Tạo use case",
+        "lead": "Soạn thay cho một tổ chức. Nhật ký thao tác ghi nhận use case do GenAI Fund tạo.",
+        "sections": {
+          "organization": "Tổ chức",
+          "challenge": "Bài toán",
+          "outcomes": {
+            "title": "Kết quả và người dùng",
+            "description": "Kết quả mong đợi, quy trình hiện tại, giải pháp hiện có, người dùng đích"
+          },
+          "requirements": {
+            "title": "Yêu cầu và dữ liệu",
+            "description": "Yêu cầu (bắt buộc hoặc tùy chọn), mức sẵn sàng của dữ liệu, tích hợp, tệp đính kèm"
+          },
+          "budget": {
+            "title": "Ngân sách và thời gian",
+            "description": "Khoảng ngân sách, thời gian mong muốn, hiện hoặc ẩn tên công ty"
+          }
+        },
+        "open": "Mở",
+        "close": "Đóng",
+        "organization": "Tạo use case này cho",
+        "organizationPlaceholder": "Chọn một tổ chức",
+        "organizationHint": "Chỉ liệt kê các tổ chức đã được duyệt.",
+        "choose": "Chọn",
+        "useCaseTitle": "Tiêu đề use case",
+        "useCaseTitleHint": "Đặt tên theo kết quả mong muốn, không theo công nghệ.",
+        "problemStatement": "Mô tả vấn đề",
+        "problemStatementHint": "Hiện đang xảy ra điều gì, ảnh hưởng đến ai và tốn bao nhiêu.",
+        "industry": "Ngành",
+        "technologies": "Công nghệ AI liên quan",
+        "expectedOutcomes": "Kết quả mong đợi và chỉ số thành công",
+        "expectedOutcomesHint": "Dùng con số khi có thể.",
+        "currentProcess": "Quy trình hiện tại",
+        "currentProcessHint": "Công việc hiện được làm như thế nào.",
+        "currentSolutions": "Giải pháp hiện có",
+        "currentSolutionsHint": "Tùy chọn. Công cụ hoặc nhà cung cấp đang dùng hoặc đã thử.",
+        "targetUsers": "Người dùng đích và các nhóm bị ảnh hưởng",
+        "targetUsersHint": "Ai dùng giải pháp, và ai chịu ảnh hưởng bởi nó.",
+        "requirement": "Yêu cầu {number}",
+        "addRequirement": "Thêm yêu cầu",
+        "necessity": {
+          "label": "Loại",
+          "required": "Bắt buộc",
+          "optional": "Tùy chọn"
+        },
+        "dataReadiness": "Dữ liệu sẵn có và mức sẵn sàng",
+        "dataReadinessHint": "Có dữ liệu gì, ở định dạng nào, và nhà cung cấp truy cập bằng cách nào.",
+        "integrationRequirements": "Tích hợp, triển khai và hạ tầng",
+        "integrationRequirementsHint": "Hệ thống cần kết nối, nơi chạy, bảo mật và nơi lưu trữ dữ liệu.",
+        "budgetMin": "Ngân sách tối thiểu (USD)",
+        "budgetMax": "Ngân sách tối đa (USD)",
+        "budgetToBeDetermined": "Ngân sách sẽ xác định sau",
+        "budgetMembersOnly": "Chỉ hiện ngân sách cho thành viên đã đăng nhập",
+        "timeline": {
+          "label": "Thời gian mong muốn",
+          "under_4": "Dưới 4 tuần",
+          "4_8": "4–8 tuần",
+          "8_12": "8–12 tuần",
+          "12_24": "12–24 tuần",
+          "over_24": "Từ 24 tuần trở lên"
+        },
+        "hideOrganizationName": "Ẩn tên công ty trên use case công khai",
+        "publish": {
+          "title": "Đăng",
+          "when": "Khi lưu",
+          "thisOrganization": "tổ chức",
+          "publish": {
+            "title": "Đăng ngay",
+            "description": "Hiển thị ngay trong danh mục. Nhà cung cấp gửi đề xuất được đến hết ngày dưới đây."
+          },
+          "draft": {
+            "title": "Lưu thành bản nháp",
+            "description": "Chỉ thành viên của {organization} xem được. Họ chỉnh sửa rồi gửi cho GenAI Fund duyệt."
+          }
+        },
+        "closes": "Hạn nhận đề xuất",
+        "closesTime": "Giờ, theo giờ Việt Nam",
+        "closesHint": "Nhà cung cấp không gửi được đề xuất sau thời điểm này (giờ Việt Nam, ICT).",
+        "draftSubmit": "Lưu bản nháp",
+        "publishSubmit": "Đăng use case",
+        "cancel": "Hủy",
+        "saved": "Đã lưu “{title}” thành bản nháp.",
+        "published": "Đã đăng “{title}”.",
+        "errors": {
+          "budgetOutOfOrder": "Mức tối đa thấp hơn mức tối thiểu.",
+          "USECASE_ORGANIZATION_NOT_ELIGIBLE": "Tổ chức này không phải doanh nghiệp đã được duyệt.",
+          "USECASE_CLOSES_IN_THE_PAST": "Chọn một ngày sau hôm nay.",
+          "USECASE_BUDGET_INCOMPLETE": "Nhập cả hai mức, hoặc đánh dấu ngân sách sẽ xác định sau.",
+          "USECASE_BUDGET_OUT_OF_ORDER": "Mức tối đa thấp hơn mức tối thiểu.",
+          "unknown": "Chưa lưu được use case. Hãy thử lại.",
+          "USECASE_ATTACHMENT_NOT_USABLE": "Hãy tải tệp lên lại: không thể đính kèm tệp này."
+        },
+        "attachments": {
+          "label": "Tệp đính kèm",
+          "add": "Thêm tệp đính kèm",
+          "replace": "Thay thế",
+          "uploaded": "Tải lên {time}",
+          "uploading": "Đang tải lên…",
+          "errors": {
+            "type": "Đính kèm tệp PDF, Word, Excel hoặc PowerPoint, hoặc ảnh PNG, JPEG.",
+            "size": "Mỗi tệp tối đa 25 MB.",
+            "failed": "Chưa tải được tệp. Hãy thử lại."
+          }
+        }
+      },
+      "untitled": "Use case chưa đặt tên",
+      "actions": {
+        "open": "Hành động cho {name}",
+        "review": "Duyệt use case",
+        "view": "Mở use case",
+        "organisation": "Xem tổ chức"
+      },
+      "errors": {
+        "USECASE_NOT_AWAITING_REVIEW": "Use case này không còn ở trạng thái đang duyệt. Trạng thái đã được đọc lại.",
+        "USECASE_NOT_FOUND": "Use case này không còn tồn tại.",
+        "unknown": "Chưa lưu được quyết định. Hãy thử lại."
+      },
+      "decision": {
+        "title": "Quyết định",
+        "lead": "Duyệt là đăng ngay và gửi email cho các thành viên của {organization}. Gửi lại cần kèm lý do để họ đọc được.",
+        "approve": "Duyệt và đăng",
+        "sendBack": "Gửi lại…",
+        "approved": "“{name}” đã được đăng.",
+        "sentBack": "“{name}” đã được gửi lại cho {organization}.",
+        "dialog": {
+          "title": "Gửi lại cho {organization}",
+          "description": "Các thành viên của {organization} nhận lý do của bạn qua email và thấy nó khi mở use case. Họ chỉnh sửa rồi gửi lại.",
+          "label": "{organization} cần thay đổi gì?",
+          "hint": "Lý do được lưu cùng use case. Các thành viên của {organization} thấy nó cho đến khi họ gửi lại use case.",
+          "cancel": "Hủy",
+          "confirm": "Gửi lại"
+        },
+        "leadPublished": "Use case đang công khai. Trả lại sẽ gỡ nó khỏi danh sách và gửi lý do cho thành viên {organization}; họ chỉnh sửa rồi gửi lại."
+      },
+      "detail": {
+        "metaTitle": "Use case · BeyondPilot",
+        "untitled": "Use case chưa đặt tên",
+        "subtitle": {
+          "in_review": "{organization} · đang chờ GenAI Fund",
+          "needs_changes": "{organization} · đã gửi lại, đang chờ các thành viên",
+          "draft": "{organization} · chỉ các thành viên của họ xem được",
+          "published": "{organization} · có trong danh mục",
+          "closed": "{organization} · đã đóng"
+        },
+        "history": {
+          "title": "Lịch sử trạng thái",
+          "created": "{name} tạo",
+          "createdMeta": "{date}, cho {organization}",
+          "sent": "Đã gửi duyệt",
+          "sentBack": "Đã gửi lại",
+          "published": "Đã đăng",
+          "by": "{date}, bởi {name}",
+          "closed": "Đã đóng",
+          "closedMeta": "{date}. Tự động: đã hết hạn.",
+          "now": {
+            "in_review": {
+              "title": "Đang duyệt",
+              "meta": "Đang chờ GenAI Fund duyệt hoặc gửi lại."
+            },
+            "needs_changes": {
+              "title": "Cần chỉnh sửa",
+              "meta": "Đang chờ {organization} chỉnh sửa rồi gửi lại."
+            },
+            "draft": {
+              "title": "Bản nháp",
+              "meta": "Đang chờ {organization} gửi duyệt."
+            }
+          },
+          "sentBackMeta": "{date}, bởi {name} · “{note}”"
+        },
+        "review": {
+          "title": "Duyệt use case",
+          "lead": "Xem từng phần như {organization} đã viết. Bạn không sửa được: hãy duyệt, hoặc gửi lại kèm điều cần sửa."
+        },
+        "readOnly": "Chỉ xem: đây là nội dung {organization} đã viết. Bạn không sửa được.",
+        "viewDetails": "Xem chi tiết",
+        "backToReview": "Về trang duyệt"
+      }
+    },
+    "ai": {
+      "providers": {
+        "metaTitle": "Nhà cung cấp AI",
+        "title": "Nhà cung cấp AI",
+        "lead": "Các dịch vụ AI mà BeyondPilot gọi tới, và model mỗi tính năng dùng.",
+        "tabs": "Mục đích",
+        "embedding": "Embedding",
+        "noEncryption": {
+          "title": "Chưa lưu được key",
+          "lead": "Máy chủ chưa có khoá mã hoá cho key của nhà cung cấp. Hãy báo đội kỹ thuật thêm BEYONDPILOT_AI_ENCRYPTION_KEY."
+        }
+      },
+      "model": {
+        "heading": "Model embedding",
+        "headingLead": "Biến văn bản thành vector để tìm kiếm semantic. Mọi mục và mọi câu tìm kiếm đều dùng nó.",
+        "active": "Đang dùng",
+        "through": "Qua {name}",
+        "dimensions": "Số chiều",
+        "embedded": "Đã embed",
+        "embeddedOf": "{embedded} / {total}",
+        "since": "Dùng từ",
+        "usedBy": "Dùng cho",
+        "search": "Tìm kiếm · {count} mục",
+        "openIndex": "Mở chỉ mục tìm kiếm",
+        "none": {
+          "title": "Chưa có nhà cung cấp embedding",
+          "lead": "Tìm kiếm đang chỉ theo từ khoá. Hãy kết nối một nhà cung cấp bên dưới để bật semantic search."
+        },
+        "notChosen": {
+          "title": "Chưa chọn model",
+          "lead": "Hãy chọn nhà cung cấp và model để bật semantic search."
+        },
+        "change": "Đổi model",
+        "choose": "Chọn model",
+        "title": "Đổi model embedding",
+        "lead": "Tìm kiếm vẫn chạy trong lúc các mục được embed lại.",
+        "provider": "Nhà cung cấp",
+        "model": "Model",
+        "dimensionsHint": "Các model có sẵn đều cho 1.536 chiều, đúng kích thước chỉ mục lưu.",
+        "test": "Thử kết nối",
+        "testHint": "Embed thử một câu bằng model ở trên.",
+        "testButton": "Thử",
+        "warning": "Toàn bộ {count} mục sẽ được embed lại, mất khoảng {minutes} phút với tốc độ 32 mục mỗi phút. Trong lúc đó, mục chưa embed lại chỉ tìm được theo từ khoá. Mỗi mục bị nhà cung cấp tính phí một lần.",
+        "cancel": "Huỷ",
+        "embedAgain": "Embed lại",
+        "use": "Dùng model này"
+      },
+      "connected": {
+        "heading": "Nhà cung cấp đã kết nối",
+        "lead": "Nơi giữ key. Key được mã hoá và không bao giờ hiện lại, kể cả một phần.",
+        "inUse": "Đang dùng",
+        "keySaved": "Đã lưu key",
+        "noKey": "Chưa có key",
+        "meta": "{address} · {name} lưu ngày {date}",
+        "inUseNote": "Tìm kiếm đang embed bằng nhà cung cấp này. Hãy đổi model sang nhà cung cấp khác rồi mới xoá."
+      },
+      "add": {
+        "heading": "Thêm nhà cung cấp",
+        "lead": "Cả hai đều dùng API của OpenAI; chỉ khác địa chỉ và nơi tính tiền.",
+        "openai": "Model embedding của OpenAI, OpenAI tính tiền.",
+        "openrouter": "Một key dùng được model của nhiều hãng, OpenRouter tính tiền."
+      },
+      "editor": {
+        "vendor": {
+          "openai": "OpenAI",
+          "openrouter": "OpenRouter"
+        },
+        "edit": "Sửa",
+        "connect": "Kết nối",
+        "connectLabel": "Kết nối {name}",
+        "connectTitle": "Kết nối {name}",
+        "connectLead": "Nhà cung cấp đã lưu có thể chọn trong phần Đổi model. Hãy thử key trước khi lưu.",
+        "editTitle": "Sửa {name}",
+        "editLead": "Thay đổi có hiệu lực với mọi lượt tìm kiếm ngay khi bạn lưu.",
+        "name": "Tên",
+        "address": "Base URL",
+        "addressHint": "Địa chỉ API của chính nhà cung cấp. Key chỉ được gửi tới đây.",
+        "apiKey": "API key",
+        "keyKeep": "Giữ key đã lưu",
+        "keyReplace": "Thay key",
+        "keyRemove": "Xoá key",
+        "newKey": "API key mới",
+        "keyHint": {
+          "openai": "Tạo key tại platform.openai.com/api-keys. Key được mã hoá và không bao giờ hiện lại.",
+          "openrouter": "Tạo key tại openrouter.ai/keys, nên đặt giới hạn hằng tháng. Key được mã hoá và không bao giờ hiện lại."
+        },
+        "test": "Thử kết nối",
+        "model": "Model để thử",
+        "testButton": "Thử",
+        "testHint": "Embed thử một câu bằng key và model này, đã lưu hay chưa. Không có gì được lưu lại.",
+        "cancel": "Huỷ",
+        "save": "Lưu nhà cung cấp"
+      },
+      "probe": {
+        "connected": "Đã kết nối · {model} · {dimensions, number} chiều · {ms} ms",
+        "failed": "Kết nối thất bại · {ms} ms",
+        "reason": {
+          "rejected": "Nhà cung cấp từ chối API key. Hãy kiểm tra key được chép đủ và chưa bị thu hồi.",
+          "model_refused": "Nhà cung cấp không cho key này dùng model này.",
+          "unreachable": "Nhà cung cấp không trả lời kịp. Hãy thử lại sau ít phút.",
+          "wrong_dimensions": "Model trả về vector có độ dài khác 1.536 chiều mà chỉ mục lưu."
+        }
+      },
+      "delete": {
+        "open": "Xoá",
+        "title": "Xoá {name}?",
+        "lead": "Nhà cung cấp và key đã lưu sẽ bị xoá. Muốn dùng lại thì phải kết nối lại.",
+        "confirm": "Xoá nhà cung cấp",
+        "cancel": "Huỷ"
+      },
+      "done": {
+        "connected": "Đã kết nối {name}",
+        "saved": "Đã lưu {name}",
+        "deleted": "Đã xoá {name}",
+        "modelChosen": "Từ giờ tìm kiếm embed bằng {model}"
+      },
+      "errors": {
+        "SEARCH_PROVIDER_NOT_FOUND": "Nhà cung cấp này không còn nữa. Hãy tải lại trang.",
+        "SEARCH_PROVIDER_INVALID": "Địa chỉ phải là địa chỉ API của chính nhà cung cấp.",
+        "SEARCH_PROVIDER_NAME_TAKEN": "Đã có nhà cung cấp khác mang tên này.",
+        "SEARCH_PROVIDER_CHANGED": "Có người vừa sửa nhà cung cấp này sau khi bạn mở. Hãy tải lại rồi thử lại.",
+        "SEARCH_PROVIDER_IN_USE": "Tìm kiếm đang embed bằng nhà cung cấp này. Hãy đổi model sang nhà cung cấp khác trước.",
+        "SEARCH_PROVIDER_KEY_MISSING": "Hãy nhập API key. Key đã lưu chỉ được dùng với đúng địa chỉ nó được lưu kèm.",
+        "SEARCH_MODEL_UNKNOWN": "Nhà cung cấp này không có model đó.",
+        "SEARCH_MODEL_REJECTED": "Nhà cung cấp không embed được câu thử với key và model này. Hãy thử kết nối để xem lý do.",
+        "SEARCH_RETRY_ITEM_INCOMPLETE": "Hãy nêu loại của mục cần thử lại.",
+        "SEARCH_SETTINGS_CHANGED": "Có người vừa sửa cấu hình tìm kiếm sau khi bạn mở. Hãy tải lại rồi thử lại.",
+        "SEARCH_ENCRYPTION_KEY_MISSING": "Chưa lưu được key: máy chủ chưa có khoá mã hoá. Hãy báo đội kỹ thuật thêm vào.",
+        "unknown": "Đã có lỗi. Hãy thử lại sau ít phút."
+      }
+    },
+    "searchIndex": {
+      "metaTitle": "Chỉ mục tìm kiếm",
+      "title": "Chỉ mục tìm kiếm",
+      "lead": "Những gì tìm kiếm tìm được theo từ khoá, và bao nhiêu trong đó đã được embed cho semantic search.",
+      "rebuild": "Dựng lại chỉ mục",
+      "semantic": {
+        "label": "Semantic search",
+        "switch": "Semantic search",
+        "openProviders": "Mở nhà cung cấp",
+        "on": {
+          "title": "Semantic search đang bật",
+          "lead": "Kết quả theo từ khoá và theo ngữ nghĩa được xếp hạng chung. {provider} · {model} · lần embed gần nhất {last}.",
+          "noBatch": "chưa có từ lần khởi động gần nhất"
+        },
+        "off": {
+          "title": "Semantic search đang tắt",
+          "lead": "Tìm kiếm chỉ theo từ khoá và không gửi gì tới nhà cung cấp. Khi bật lại, hệ thống sẽ embed bù những gì đã thay đổi trong lúc tắt."
+        },
+        "paused": {
+          "title": "Semantic search tạm dừng đến {until}",
+          "reason": {
+            "rejected": "Nhà cung cấp từ chối API key. Tìm kiếm chỉ theo từ khoá cho tới khi nhà cung cấp trả lời; hãy kiểm tra key trong mục Nhà cung cấp.",
+            "model_refused": "Nhà cung cấp từ chối model. Tìm kiếm chỉ theo từ khoá cho tới khi nhà cung cấp trả lời; hãy kiểm tra model trong mục Nhà cung cấp.",
+            "unreachable": "Nhà cung cấp không trả lời. Tìm kiếm chỉ theo từ khoá cho tới khi có trả lời; hệ thống sẽ tự thử lại."
+          }
+        },
+        "noProvider": {
+          "title": "Semantic search đang tắt",
+          "lead": "Chưa kết nối nhà cung cấp embedding nên tìm kiếm chỉ theo từ khoá. Hãy kết nối trong mục Nhà cung cấp để bật."
+        }
+      },
+      "stats": {
+        "indexed": "Trong chỉ mục",
+        "listed": "{count} mục công khai",
+        "embedded": "Đã embed",
+        "embeddedOf": "{embedded} / {total} · {model}",
+        "noModel": "Chưa có model embedding",
+        "waiting": "Đang chờ",
+        "waitingNote": "Sẽ embed ở lượt chạy tới",
+        "heldBack": "Lỗi",
+        "heldBackNote": "Bị nhà cung cấp từ chối"
+      },
+      "kinds": {
+        "heading": "Theo loại",
+        "kind": "Loại",
+        "total": "Trong chỉ mục",
+        "listed": "Công khai",
+        "embedded": "Đã embed",
+        "waiting": "Đang chờ",
+        "heldBack": "Lỗi",
+        "name": {
+          "program": "Chương trình",
+          "solution": "Giải pháp AI",
+          "talent": "Nhân lực AI",
+          "use_case": "Use case"
+        },
+        "embeddedShare": "{count} · {share}",
+        "embeddedOf": "{embedded} / {total} đã embed",
+        "mobileFacts": "{listed} công khai · {waiting} đang chờ",
+        "heldBackCount": "{count} lỗi",
+        "note": "Giải pháp và hồ sơ nhân lực đã ẩn vẫn nằm trong chỉ mục để operator ghép với use case, nhưng không bao giờ hiện trong kết quả công khai."
+      },
+      "heldBack": {
+        "heading": "Chưa embed được",
+        "lead": "Vẫn tìm được theo từ khoá cho tới khi embed xong. Hệ thống tự thử lại, mỗi lần chờ lâu hơn.",
+        "retryAll": "Thử lại tất cả",
+        "retry": "Thử lại",
+        "retryOne": "Thử lại {title}",
+        "item": "Mục",
+        "reason": "Lý do",
+        "attempts": "Số lần thử",
+        "next": "Thử lại lúc",
+        "actions": "Thao tác",
+        "soon": "ở lượt chạy tới",
+        "mobileNext": "{count} lần thử · lần tới {next}",
+        "reasons": {
+          "bad_request": "Nhà cung cấp từ chối văn bản (400 Bad request).",
+          "unprocessable": "Nhà cung cấp từ chối văn bản (422 Unprocessable).",
+          "refused": "Nhà cung cấp từ chối văn bản."
+        }
+      },
+      "repair": {
+        "last": "Chỉ mục được dựng lại từ nguồn mỗi lần khởi động và mỗi đêm lúc 03:30. Lần gần nhất {when}: đọc {saved} mục, xoá {removed}.",
+        "never": "Chỉ mục được dựng lại từ nguồn mỗi lần khởi động và mỗi đêm lúc 03:30."
+      },
+      "done": {
+        "on": "Đã bật semantic search",
+        "off": "Đã tắt semantic search",
+        "rebuilt": "Đã dựng lại chỉ mục: đọc {saved} mục, xoá {removed}",
+        "retried": "{count, plural, =0 {Không có mục nào cần thử lại} other {# mục sẽ được thử lại ở lượt chạy tới}}"
       }
     },
     "email": {
@@ -1946,237 +2427,6 @@
             "unknown": "Không kiểm"
           }
         }
-      }
-    },
-    "useCases": {
-      "metaTitle": "Use case · BeyondPilot",
-      "title": "Use case",
-      "lead": "Use case của mọi tổ chức. Duyệt những use case được gửi đến bạn, hoặc tạo một use case cho tổ chức.",
-      "create": "Tạo use case",
-      "search": "Tìm theo tiêu đề hoặc tổ chức",
-      "clear": "Xóa tìm kiếm",
-      "filters": {
-        "status": {
-          "label": "Trạng thái",
-          "all": "Mọi trạng thái"
-        },
-        "organization": {
-          "label": "Tổ chức",
-          "all": "Tổ chức"
-        }
-      },
-      "status": {
-        "draft": "Bản nháp",
-        "in_review": "Đang duyệt",
-        "needs_changes": "Cần chỉnh sửa",
-        "published": "Đã đăng",
-        "closed": "Đã đóng"
-      },
-      "note": {
-        "draft": "Chỉ {organization} xem được",
-        "in_review": "Đang chờ GenAI Fund",
-        "needs_changes": "Đã gửi lại cho {organization}",
-        "published": "Hiển thị trong danh mục",
-        "closed": "Đã hết hạn · bị khóa, không ai sửa được"
-      },
-      "columns": {
-        "useCase": "Use case",
-        "organization": "Tổ chức",
-        "status": "Trạng thái",
-        "closes": "Hạn đề xuất",
-        "updated": "Cập nhật",
-        "actions": "Hành động"
-      },
-      "count": "{count, plural, other {# use case}}",
-      "inReview": "{count} đang duyệt",
-      "empty": {
-        "title": "Chưa có use case nào",
-        "description": "Use case xuất hiện ở đây khi tổ chức soạn, hoặc khi bạn tạo thay cho một tổ chức."
-      },
-      "noMatch": {
-        "title": "Không có use case phù hợp",
-        "description": "Không có gì khớp với tìm kiếm và bộ lọc này.",
-        "clear": "Xóa tìm kiếm và bộ lọc"
-      },
-      "form": {
-        "metaTitle": "Tạo use case · BeyondPilot",
-        "title": "Tạo use case",
-        "lead": "Soạn thay cho một tổ chức. Nhật ký thao tác ghi nhận use case do GenAI Fund tạo.",
-        "sections": {
-          "organization": "Tổ chức",
-          "challenge": "Bài toán",
-          "outcomes": {
-            "title": "Kết quả và người dùng",
-            "description": "Kết quả mong đợi, quy trình hiện tại, giải pháp hiện có, người dùng đích"
-          },
-          "requirements": {
-            "title": "Yêu cầu và dữ liệu",
-            "description": "Yêu cầu (bắt buộc hoặc tùy chọn), mức sẵn sàng của dữ liệu, tích hợp, tệp đính kèm"
-          },
-          "budget": {
-            "title": "Ngân sách và thời gian",
-            "description": "Khoảng ngân sách, thời gian mong muốn, hiện hoặc ẩn tên công ty"
-          }
-        },
-        "open": "Mở",
-        "close": "Đóng",
-        "organization": "Tạo use case này cho",
-        "organizationPlaceholder": "Chọn một tổ chức",
-        "organizationHint": "Chỉ liệt kê các tổ chức đã được duyệt.",
-        "choose": "Chọn",
-        "useCaseTitle": "Tiêu đề use case",
-        "useCaseTitleHint": "Đặt tên theo kết quả mong muốn, không theo công nghệ.",
-        "problemStatement": "Mô tả vấn đề",
-        "problemStatementHint": "Hiện đang xảy ra điều gì, ảnh hưởng đến ai và tốn bao nhiêu.",
-        "industry": "Ngành",
-        "technologies": "Công nghệ AI liên quan",
-        "expectedOutcomes": "Kết quả mong đợi và chỉ số thành công",
-        "expectedOutcomesHint": "Dùng con số khi có thể.",
-        "currentProcess": "Quy trình hiện tại",
-        "currentProcessHint": "Công việc hiện được làm như thế nào.",
-        "currentSolutions": "Giải pháp hiện có",
-        "currentSolutionsHint": "Tùy chọn. Công cụ hoặc nhà cung cấp đang dùng hoặc đã thử.",
-        "targetUsers": "Người dùng đích và các nhóm bị ảnh hưởng",
-        "targetUsersHint": "Ai dùng giải pháp, và ai chịu ảnh hưởng bởi nó.",
-        "requirement": "Yêu cầu {number}",
-        "addRequirement": "Thêm yêu cầu",
-        "necessity": {
-          "label": "Loại",
-          "required": "Bắt buộc",
-          "optional": "Tùy chọn"
-        },
-        "dataReadiness": "Dữ liệu sẵn có và mức sẵn sàng",
-        "dataReadinessHint": "Có dữ liệu gì, ở định dạng nào, và nhà cung cấp truy cập bằng cách nào.",
-        "integrationRequirements": "Tích hợp, triển khai và hạ tầng",
-        "integrationRequirementsHint": "Hệ thống cần kết nối, nơi chạy, bảo mật và nơi lưu trữ dữ liệu.",
-        "budgetMin": "Ngân sách tối thiểu (USD)",
-        "budgetMax": "Ngân sách tối đa (USD)",
-        "budgetToBeDetermined": "Ngân sách sẽ xác định sau",
-        "budgetMembersOnly": "Chỉ hiện ngân sách cho thành viên đã đăng nhập",
-        "timeline": {
-          "label": "Thời gian mong muốn",
-          "under_4": "Dưới 4 tuần",
-          "4_8": "4–8 tuần",
-          "8_12": "8–12 tuần",
-          "12_24": "12–24 tuần",
-          "over_24": "Từ 24 tuần trở lên"
-        },
-        "hideOrganizationName": "Ẩn tên công ty trên use case công khai",
-        "publish": {
-          "title": "Đăng",
-          "when": "Khi lưu",
-          "thisOrganization": "tổ chức",
-          "publish": {
-            "title": "Đăng ngay",
-            "description": "Hiển thị ngay trong danh mục. Nhà cung cấp gửi đề xuất được đến hết ngày dưới đây."
-          },
-          "draft": {
-            "title": "Lưu thành bản nháp",
-            "description": "Chỉ thành viên của {organization} xem được. Họ chỉnh sửa rồi gửi cho GenAI Fund duyệt."
-          }
-        },
-        "closes": "Hạn nhận đề xuất",
-        "closesTime": "Giờ, theo giờ Việt Nam",
-        "closesHint": "Nhà cung cấp không gửi được đề xuất sau thời điểm này (giờ Việt Nam, ICT).",
-        "draftSubmit": "Lưu bản nháp",
-        "publishSubmit": "Đăng use case",
-        "cancel": "Hủy",
-        "saved": "Đã lưu “{title}” thành bản nháp.",
-        "published": "Đã đăng “{title}”.",
-        "errors": {
-          "budgetOutOfOrder": "Mức tối đa thấp hơn mức tối thiểu.",
-          "USECASE_ORGANIZATION_NOT_ELIGIBLE": "Tổ chức này không phải doanh nghiệp đã được duyệt.",
-          "USECASE_CLOSES_IN_THE_PAST": "Chọn một ngày sau hôm nay.",
-          "USECASE_BUDGET_INCOMPLETE": "Nhập cả hai mức, hoặc đánh dấu ngân sách sẽ xác định sau.",
-          "USECASE_BUDGET_OUT_OF_ORDER": "Mức tối đa thấp hơn mức tối thiểu.",
-          "unknown": "Chưa lưu được use case. Hãy thử lại.",
-          "USECASE_ATTACHMENT_NOT_USABLE": "Hãy tải tệp lên lại: không thể đính kèm tệp này."
-        },
-        "attachments": {
-          "label": "Tệp đính kèm",
-          "add": "Thêm tệp đính kèm",
-          "replace": "Thay thế",
-          "uploaded": "Tải lên {time}",
-          "uploading": "Đang tải lên…",
-          "errors": {
-            "type": "Đính kèm tệp PDF, Word, Excel hoặc PowerPoint, hoặc ảnh PNG, JPEG.",
-            "size": "Mỗi tệp tối đa 25 MB.",
-            "failed": "Chưa tải được tệp. Hãy thử lại."
-          }
-        }
-      },
-      "untitled": "Use case chưa đặt tên",
-      "actions": {
-        "open": "Hành động cho {name}",
-        "review": "Duyệt use case",
-        "view": "Mở use case",
-        "organisation": "Xem tổ chức"
-      },
-      "errors": {
-        "USECASE_NOT_AWAITING_REVIEW": "Use case này không còn ở trạng thái đang duyệt. Trạng thái đã được đọc lại.",
-        "USECASE_NOT_FOUND": "Use case này không còn tồn tại.",
-        "unknown": "Chưa lưu được quyết định. Hãy thử lại."
-      },
-      "decision": {
-        "title": "Quyết định",
-        "lead": "Duyệt là đăng ngay và gửi email cho các thành viên của {organization}. Gửi lại cần kèm lý do để họ đọc được.",
-        "approve": "Duyệt và đăng",
-        "sendBack": "Gửi lại…",
-        "approved": "“{name}” đã được đăng.",
-        "sentBack": "“{name}” đã được gửi lại cho {organization}.",
-        "dialog": {
-          "title": "Gửi lại cho {organization}",
-          "description": "Các thành viên của {organization} nhận lý do của bạn qua email và thấy nó khi mở use case. Họ chỉnh sửa rồi gửi lại.",
-          "label": "{organization} cần thay đổi gì?",
-          "hint": "Lý do được lưu cùng use case. Các thành viên của {organization} thấy nó cho đến khi họ gửi lại use case.",
-          "cancel": "Hủy",
-          "confirm": "Gửi lại"
-        },
-        "leadPublished": "Use case đang công khai. Trả lại sẽ gỡ nó khỏi danh sách và gửi lý do cho thành viên {organization}; họ chỉnh sửa rồi gửi lại."
-      },
-      "detail": {
-        "metaTitle": "Use case · BeyondPilot",
-        "untitled": "Use case chưa đặt tên",
-        "subtitle": {
-          "in_review": "{organization} · đang chờ GenAI Fund",
-          "needs_changes": "{organization} · đã gửi lại, đang chờ các thành viên",
-          "draft": "{organization} · chỉ các thành viên của họ xem được",
-          "published": "{organization} · có trong danh mục",
-          "closed": "{organization} · đã đóng"
-        },
-        "history": {
-          "title": "Lịch sử trạng thái",
-          "created": "{name} tạo",
-          "createdMeta": "{date}, cho {organization}",
-          "sent": "Đã gửi duyệt",
-          "sentBack": "Đã gửi lại",
-          "published": "Đã đăng",
-          "by": "{date}, bởi {name}",
-          "closed": "Đã đóng",
-          "closedMeta": "{date}. Tự động: đã hết hạn.",
-          "now": {
-            "in_review": {
-              "title": "Đang duyệt",
-              "meta": "Đang chờ GenAI Fund duyệt hoặc gửi lại."
-            },
-            "needs_changes": {
-              "title": "Cần chỉnh sửa",
-              "meta": "Đang chờ {organization} chỉnh sửa rồi gửi lại."
-            },
-            "draft": {
-              "title": "Bản nháp",
-              "meta": "Đang chờ {organization} gửi duyệt."
-            }
-          },
-          "sentBackMeta": "{date}, bởi {name} · “{note}”"
-        },
-        "review": {
-          "title": "Duyệt use case",
-          "lead": "Xem từng phần như {organization} đã viết. Bạn không sửa được: hãy duyệt, hoặc gửi lại kèm điều cần sửa."
-        },
-        "readOnly": "Chỉ xem: đây là nội dung {organization} đã viết. Bạn không sửa được.",
-        "viewDetails": "Xem chi tiết",
-        "backToReview": "Về trang duyệt"
       }
     }
   },

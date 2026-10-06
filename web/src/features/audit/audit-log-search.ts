@@ -59,6 +59,14 @@ export const auditActions = [
   "email.suppression_add",
   "email.suppression_remove",
   "email.resend",
+  "ai.provider_create",
+  "ai.provider_update",
+  "ai.provider_delete",
+  "search.model_change",
+  "search.semantic_enable",
+  "search.semantic_disable",
+  "search.index_rebuild",
+  "search.embedding_retry",
 ] as const;
 
 /**
