@@ -93,6 +93,22 @@ public class EmailService {
 	}
 
 	/**
+	 * Tells an owner that GenAI Fund took their organization down or restored it, in both languages. A reason is read
+	 * after signing in.
+	 * @param takenDown whether the organization was taken down; otherwise it is back
+	 */
+	public void sendOrganizationSuspension(String recipient, String organizationName, boolean takenDown) {
+		String english = takenDown
+				? organizationName + " was taken down on BeyondPilot. Sign in to read why."
+				: organizationName + " is back on BeyondPilot. Sign in to manage it.";
+		String vietnamese = takenDown
+				? organizationName + " đã bị gỡ khỏi BeyondPilot. Hãy đăng nhập để xem lý do."
+				: organizationName + " đã được khôi phục trên BeyondPilot. Hãy đăng nhập để quản lý.";
+		sendParagraphs("organization_suspension", recipient, organizationName + " on BeyondPilot", english,
+				vietnamese);
+	}
+
+	/**
 	 * Tells a person the answer to their request to get into an organization, in both languages.
 	 * @param claim whether they asked to own an organization nobody owned, which GenAI Fund decides; otherwise they
 	 * asked its owners to join

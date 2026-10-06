@@ -48,6 +48,11 @@ public enum OrganizationErrorCode implements ErrorCode {
 	NOT_AWAITING_REVIEW("ORGANIZATION_NOT_AWAITING_REVIEW", ErrorCategory.CONFLICT,
 			"This organization is not waiting for review."),
 
+	CANNOT_TAKE_DOWN("ORGANIZATION_CANNOT_TAKE_DOWN", ErrorCategory.CONFLICT,
+			"Only an approved organization can be taken down."),
+
+	NOT_TAKEN_DOWN("ORGANIZATION_NOT_TAKEN_DOWN", ErrorCategory.CONFLICT, "This organization is not taken down."),
+
 	DOMAIN_TAKEN("ORGANIZATION_DOMAIN_TAKEN", ErrorCategory.CONFLICT,
 			"Another organization already has this email domain."),
 

@@ -75,10 +75,19 @@ public class OrganizationQueryRepository {
 	}
 
 	public List<Name> names(Collection<UUID> ids) {
+		return names(ids, "");
+	}
+
+	/** The names of those of these organizations that are approved; one taken down or in review is left out. */
+	public List<Name> approvedNames(Collection<UUID> ids) {
+		return names(ids, " and status = 'approved'");
+	}
+
+	private List<Name> names(Collection<UUID> ids, String condition) {
 		if (ids.isEmpty()) {
 			return List.of();
 		}
-		return jdbc.sql("select id, slug, name, country from organization where id in (:ids)")
+		return jdbc.sql("select id, slug, name, country from organization where id in (:ids)" + condition)
 			.param("ids", ids)
 			.query((row, index) -> new Name(row.getObject("id", UUID.class), row.getString("slug"),
 					row.getString("name"), row.getString("country")))

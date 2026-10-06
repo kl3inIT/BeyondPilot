@@ -49,4 +49,11 @@ export const refusalReasons = [
   "other",
 ] as const;
 
-export const organizationStatuses = ["pending", "approved", "rejected"] as const;
+export const takeDownReasons = [
+  "misleading_information",
+  "not_a_real_organization",
+  "breaks_the_rules",
+  "other",
+] as const;
+
+export const organizationStatuses = ["pending", "approved", "rejected", "suspended"] as const;

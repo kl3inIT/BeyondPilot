@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2Icon, FileTextIcon, type LucideIcon } from "lucide-react";
+import { Building2Icon, FileTextIcon, ShieldCheckIcon, type LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -18,6 +18,7 @@ import { getPathname } from "@/i18n/navigation";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import {
   createOrganization,
+  saveAdminOrganization,
   saveMyOrganization,
   type Organization,
   type SaveOrganization,
@@ -28,15 +29,9 @@ import { siteRoutes } from "@/lib/site";
 
 import { industries, organizationTypes, teamSizes } from "./organization-codes";
 import { organizationError } from "./organization-errors";
+import { MAX_DESCRIPTION, MAX_INDUSTRIES, yearOf } from "./organization-format";
+import { useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
 import { OrganizationLogoUpload } from "./organization-logo-upload";
-
-/** The longest description the backend takes. */
-const MAX_DESCRIPTION = 280;
-/** The years the backend takes for when an organization started. */
-const FIRST_YEAR = 1800;
-const LAST_YEAR = 2100;
-/** The most industries the backend takes. */
-const MAX_INDUSTRIES = 5;
 
 /** The fields the form checks before it asks the backend, in the order the page shows them. */
 const checkedFields = [
@@ -48,12 +43,6 @@ const checkedFields = [
   { name: "foundedYear", id: "organization-founded-year" },
   { name: "description", id: "organization-description" },
 ] as const;
-
-/** The year written in the field when it is one the backend takes; otherwise null. */
-function yearOf(text: string) {
-  const year = Number(text);
-  return /^\d{4}$/.test(text.trim()) && year >= FIRST_YEAR && year <= LAST_YEAR ? year : null;
-}
 
 /** A group of related fields on a tinted panel, with what the group is about under its title. */
 function FormSection({
@@ -84,13 +73,15 @@ function FormSection({
 type OrganizationFormProps = {
   /** The organization to change; without one the form creates it. */
   organization?: Organization;
+  /** Set when an operator changes the organization: the form then also holds its verified domain. */
+  admin?: boolean;
 };
 
 /**
  * The profile of an organization, as its owner writes it: to create one, or to change the one they
  * own. The backend decides what is valid; a member it rejects is marked here by its name.
  */
-function OrganizationForm({ organization }: OrganizationFormProps) {
+function OrganizationForm({ organization, admin }: OrganizationFormProps) {
   const t = useTranslations("Organization.form");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
@@ -110,6 +101,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
   const [description, setDescription] = useState(organization?.description ?? "");
   const [foundedYear, setFoundedYear] = useState(String(organization?.foundedYear ?? ""));
   const [logoFileId, setLogoFileId] = useState(organization?.logoFileId ?? "");
+  const domain = useVerifiedDomain(organization?.emailDomain);
   const [pending, setPending] = useState(false);
   const [invalid, setInvalid] = useState<Set<string>>(new Set());
   const [discarding, setDiscarding] = useState(false);
@@ -141,7 +133,8 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
       missing.add("foundedYear");
     }
     setInvalid(missing);
-    if (missing.size > 0 || year === null) {
+    const emailDomain = admin ? domain.read() : null;
+    if (missing.size > 0 || year === null || emailDomain === undefined) {
       focusField(checkedFields.find((field) => missing.has(field.name))?.id ?? checkedFields[0].id);
       return;
     }
@@ -158,7 +151,15 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
     };
     setPending(true);
     try {
-      if (organization) {
+      if (organization && admin) {
+        await saveAdminOrganization({
+          path: { id: organization.id },
+          body: { profile: { ...body, version: organization.version }, emailDomain },
+        });
+        notify.success("Organization.done.saved");
+        router.refresh();
+        setPending(false);
+      } else if (organization) {
         await saveMyOrganization({ body: { ...body, version: organization.version } });
         notify.success("Organization.done.saved");
         router.refresh();
@@ -171,7 +172,10 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
       }
     } catch (error) {
       setInvalid(rejectedFields(error));
-      notify.error(organizationError(error));
+      // A domain another organization has is said at its field; anything else in a toast.
+      if (!domain.refused(error)) {
+        notify.error(organizationError(error));
+      }
       setPending(false);
     }
   }
@@ -191,6 +195,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
     setDescription(organization.description ?? "");
     setFoundedYear(String(organization.foundedYear ?? ""));
     setLogoFileId(organization.logoFileId ?? "");
+    domain.change(organization.emailDomain ?? "");
     setInvalid(new Set());
     setDiscarding(false);
   }
@@ -208,6 +213,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
       description,
       foundedYear,
       logoFileId,
+      domain.text,
     ]) !==
       JSON.stringify([
         organization.name,
@@ -219,6 +225,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
         organization.description ?? "",
         String(organization.foundedYear ?? ""),
         organization.logoFileId ?? "",
+        organization.emailDomain ?? "",
       ]);
 
   // The form's title is the page's on the create page; on the profile it sits under the organization's name.
@@ -414,6 +421,19 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
           </Field>
         </div>
       </FormSection>
+
+      {admin && (
+        <FormSection icon={ShieldCheckIcon} title={t("domain.title")} lead={t("domain.lead")}>
+          <VerifiedDomainField
+            id="organization-email-domain"
+            domain={domain}
+            label={t("domain.label")}
+            hint={t("domain.hint")}
+            problems={{ invalid: t("domain.invalid"), taken: t("domain.taken") }}
+            disabled={pending}
+          />
+        </FormSection>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
         {organization ? (
