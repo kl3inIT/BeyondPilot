@@ -40,14 +40,7 @@ import { focusField } from "@/lib/focus-field";
 
 import { industries } from "@/features/organization/organization-codes";
 
-import {
-  availabilities,
-  engagements,
-  languageCodes,
-  projectStages,
-  rateBands,
-  talentRoles,
-} from "./talent-codes";
+import { engagements, languageCodes, projectStages, rateBands, talentRoles } from "./talent-codes";
 import { talentError } from "./talent-errors";
 import { TalentPhotoUpload } from "./talent-photo-upload";
 
@@ -119,7 +112,6 @@ function saved(profile: TalentProfile | null, suggestedName: string) {
     photo: profile?.photoFileId ?? "",
     picked: {
       country: profile?.country ?? "",
-      availability: (profile?.availability ?? "") as string,
       rateBand: (profile?.rateBand ?? "") as string,
     },
     projects: (profile?.projects ?? []).map((project, key): ProjectDraft => ({
@@ -143,7 +135,6 @@ function saved(profile: TalentProfile | null, suggestedName: string) {
 function TalentForm({ profile, suggestedName }: TalentFormProps) {
   const t = useTranslations("Talent.form");
   const role = useVocabulary("talentRole");
-  const availability = useVocabulary("availability");
   const engagement = useVocabulary("engagement");
   const rateBand = useVocabulary("rateBand");
   const countryName = useCountryName();
@@ -270,7 +261,6 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
           roles: chosen.roles,
           skills,
           country: picked.country || null,
-          availability: (picked.availability || undefined) as SaveTalentProfile["availability"],
           engagement: chosen.engagement,
           rateBand: (picked.rateBand || undefined) as SaveTalentProfile["rateBand"],
           website: text.website.trim() || null,
@@ -331,148 +321,222 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
         void save(false);
       }}
     >
-      <FieldGroup>
-        <Field>
-          <FieldLabel htmlFor="talent-photo">{t("photo.label")}</FieldLabel>
-          <TalentPhotoUpload name={text.name} value={photo} onChange={setPhoto} />
-        </Field>
-        <Field data-invalid={bad("name")}>
-          <FieldLabel htmlFor="talent-name">
-            {t("name")}{" "}
-            <span className="font-normal text-muted-foreground">{t("requiredMark")}</span>
-          </FieldLabel>
-          <Input
-            id="talent-name"
-            autoComplete="name"
-            maxLength={120}
-            value={text.name}
-            onChange={write("name")}
-            aria-required
-            aria-invalid={bad("name")}
-          />
-          {bad("name") && <FieldError>{t("nameRequired")}</FieldError>}
-        </Field>
-        <Field data-invalid={bad("headline")}>
-          <FieldLabel htmlFor="talent-headline">
-            {t("headline")}{" "}
-            <span className="font-normal text-muted-foreground">
-              {t(submittable ? "neededMark" : "requiredMark")}
-            </span>
-          </FieldLabel>
-          <Input
-            id="talent-headline"
-            aria-describedby={about("talent-headline")}
-            maxLength={160}
-            value={text.headline}
-            onChange={write("headline")}
-            aria-required
-            aria-invalid={bad("headline")}
-          />
-          {needed("headline")}
-          <FieldDescription id="talent-headline-hint">{t("headlineHint")}</FieldDescription>
-        </Field>
-        <Field data-invalid={bad("bio")}>
-          <FieldLabel htmlFor="talent-bio">
-            {t("bio")}{" "}
-            <span className="font-normal text-muted-foreground">
-              {t(submittable ? "neededMark" : "requiredMark")}
-            </span>
-          </FieldLabel>
-          <Textarea
-            id="talent-bio"
-            aria-describedby={about("talent-bio")}
-            rows={6}
-            maxLength={4000}
-            value={text.bio}
-            onChange={write("bio")}
-            aria-required
-            aria-invalid={bad("bio")}
-          />
-          {needed("bio")}
-          <FieldDescription id="talent-bio-hint">{t("bioHint")}</FieldDescription>
-        </Field>
-      </FieldGroup>
-
-      <FieldGroup>
-        <Field data-invalid={bad("roles")}>
-          <FieldLabel>
-            {t("roles")}{" "}
-            <span className="font-normal text-muted-foreground">
-              {t(submittable ? "neededMark" : "requiredMark")}
-            </span>
-          </FieldLabel>
-          <ChoiceChips
-            id="talent-roles"
-            aria-describedby={about("talent-roles")}
-            label={t("roles")}
-            options={talentRoles.map((value) => ({ value, label: role(value) }))}
-            value={chosen.roles}
-            onValueChange={choose("roles")}
-            max={MAX_ROLES}
-          />
-          {needed("roles")}
-          <FieldDescription id="talent-roles-hint">
-            {t("upTo", { count: MAX_ROLES, chosen: chosen.roles.length })}
-          </FieldDescription>
-        </Field>
-        <Field data-invalid={bad("skills")}>
-          <FieldLabel htmlFor="talent-skills">
-            {t("skills")}{" "}
-            <span className="font-normal text-muted-foreground">
-              {t(submittable ? "neededMark" : "requiredMark")}
-            </span>
-          </FieldLabel>
-          <Input
-            id="talent-skills"
-            aria-describedby={about("talent-skills")}
-            value={text.skills}
-            onChange={write("skills")}
-            aria-required
-            aria-invalid={bad("skills")}
-          />
-          {bad("skills") && skillsOf(text.skills).length > 0 ? (
-            <FieldError id="talent-skills-error">
-              {t("skillsInvalid", { count: MAX_SKILLS })}
-            </FieldError>
-          ) : (
-            needed("skills")
-          )}
-          <FieldDescription id="talent-skills-hint">
-            {t("skillsHint", { count: MAX_SKILLS })}
-          </FieldDescription>
-        </Field>
-        <div className="grid gap-4 sm:grid-cols-3">
+      <FieldSet>
+        <FieldLegend>{t("sections.about")}</FieldLegend>
+        <FieldGroup>
           <Field>
-            <FieldLabel htmlFor="talent-country">{t("country")}</FieldLabel>
-            <NativeSelect
-              id="talent-country"
-              className="w-full"
-              value={picked.country}
-              onChange={pick("country")}
-            >
-              <NativeSelectOption value="">{t("notStated")}</NativeSelectOption>
-              {countryCodes.map((value) => (
-                <NativeSelectOption key={value} value={value}>
-                  {countryName(value)}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
+            <FieldLabel htmlFor="talent-photo">{t("photo.label")}</FieldLabel>
+            <TalentPhotoUpload name={text.name} value={photo} onChange={setPhoto} />
+          </Field>
+          <Field data-invalid={bad("name")}>
+            <FieldLabel htmlFor="talent-name">
+              {t("name")}{" "}
+              <span className="font-normal text-muted-foreground">{t("requiredMark")}</span>
+            </FieldLabel>
+            <Input
+              id="talent-name"
+              autoComplete="name"
+              maxLength={120}
+              value={text.name}
+              onChange={write("name")}
+              aria-required
+              aria-invalid={bad("name")}
+            />
+            {bad("name") && <FieldError>{t("nameRequired")}</FieldError>}
+          </Field>
+          <Field data-invalid={bad("headline")}>
+            <FieldLabel htmlFor="talent-headline">
+              {t("headline")}{" "}
+              <span className="font-normal text-muted-foreground">
+                {t(submittable ? "neededMark" : "requiredMark")}
+              </span>
+            </FieldLabel>
+            <Input
+              id="talent-headline"
+              aria-describedby={about("talent-headline")}
+              maxLength={160}
+              value={text.headline}
+              onChange={write("headline")}
+              aria-required
+              aria-invalid={bad("headline")}
+            />
+            {needed("headline")}
+            <FieldDescription id="talent-headline-hint">{t("headlineHint")}</FieldDescription>
+          </Field>
+          <Field data-invalid={bad("bio")}>
+            <FieldLabel htmlFor="talent-bio">
+              {t("bio")}{" "}
+              <span className="font-normal text-muted-foreground">
+                {t(submittable ? "neededMark" : "requiredMark")}
+              </span>
+            </FieldLabel>
+            <Textarea
+              id="talent-bio"
+              aria-describedby={about("talent-bio")}
+              rows={6}
+              maxLength={4000}
+              value={text.bio}
+              onChange={write("bio")}
+              aria-required
+              aria-invalid={bad("bio")}
+            />
+            {needed("bio")}
+            <FieldDescription id="talent-bio-hint">{t("bioHint")}</FieldDescription>
+          </Field>
+        </FieldGroup>
+      </FieldSet>
+
+      <FieldSet>
+        <FieldLegend>{t("sections.work")}</FieldLegend>
+        <FieldGroup>
+          <Field data-invalid={bad("roles")}>
+            <FieldLabel>
+              {t("roles")}{" "}
+              <span className="font-normal text-muted-foreground">
+                {t(submittable ? "neededMark" : "requiredMark")}
+              </span>
+            </FieldLabel>
+            <ChoiceChips
+              id="talent-roles"
+              aria-describedby={about("talent-roles")}
+              label={t("roles")}
+              options={talentRoles.map((value) => ({ value, label: role(value) }))}
+              value={chosen.roles}
+              onValueChange={choose("roles")}
+              max={MAX_ROLES}
+            />
+            {needed("roles")}
+            <FieldDescription id="talent-roles-hint">
+              {t("upTo", { count: MAX_ROLES, chosen: chosen.roles.length })}
+            </FieldDescription>
+          </Field>
+          <Field data-invalid={bad("skills")}>
+            <FieldLabel htmlFor="talent-skills">
+              {t("skills")}{" "}
+              <span className="font-normal text-muted-foreground">
+                {t(submittable ? "neededMark" : "requiredMark")}
+              </span>
+            </FieldLabel>
+            <Input
+              id="talent-skills"
+              aria-describedby={about("talent-skills")}
+              value={text.skills}
+              onChange={write("skills")}
+              aria-required
+              aria-invalid={bad("skills")}
+            />
+            {bad("skills") && skillsOf(text.skills).length > 0 ? (
+              <FieldError id="talent-skills-error">
+                {t("skillsInvalid", { count: MAX_SKILLS })}
+              </FieldError>
+            ) : (
+              needed("skills")
+            )}
+            <FieldDescription id="talent-skills-hint">
+              {t("skillsHint", { count: MAX_SKILLS })}
+            </FieldDescription>
           </Field>
           <Field>
-            <FieldLabel htmlFor="talent-availability">{t("availability")}</FieldLabel>
-            <NativeSelect
-              id="talent-availability"
-              className="w-full"
-              value={picked.availability}
-              onChange={pick("availability")}
-            >
-              <NativeSelectOption value="">{t("notStated")}</NativeSelectOption>
-              {availabilities.map((value) => (
-                <NativeSelectOption key={value} value={value}>
-                  {availability(value)}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
+            <FieldLabel>{t("industries")}</FieldLabel>
+            <ChoiceChips
+              label={t("industries")}
+              options={industries.map((value) => ({ value, label: industry(value) }))}
+              value={chosen.industries}
+              onValueChange={choose("industries")}
+              max={MAX_INDUSTRIES}
+            />
+            <FieldDescription>
+              {t("upTo", { count: MAX_INDUSTRIES, chosen: chosen.industries.length })}
+            </FieldDescription>
+          </Field>
+          <Field>
+            <FieldLabel>{t("languages")}</FieldLabel>
+            <ChoiceChips
+              label={t("languages")}
+              options={languageCodes.map((value) => ({ value, label: language(value) }))}
+              value={chosen.languages}
+              onValueChange={choose("languages")}
+              max={MAX_LANGUAGES}
+            />
+          </Field>
+        </FieldGroup>
+      </FieldSet>
+
+      <FieldSet>
+        <FieldLegend>{t("sections.place")}</FieldLegend>
+        <FieldGroup>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="talent-country">{t("country")}</FieldLabel>
+              <NativeSelect
+                id="talent-country"
+                className="w-full"
+                value={picked.country}
+                onChange={pick("country")}
+              >
+                <NativeSelectOption value="">{t("notStated")}</NativeSelectOption>
+                {countryCodes.map((value) => (
+                  <NativeSelectOption key={value} value={value}>
+                    {countryName(value)}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="talent-city">{t("city")}</FieldLabel>
+              <Input
+                id="talent-city"
+                autoComplete="address-level2"
+                maxLength={80}
+                value={text.city}
+                onChange={write("city")}
+              />
+            </Field>
+          </div>
+          <Field>
+            <FieldLabel htmlFor="talent-works-at">{t("worksAt")}</FieldLabel>
+            <Input
+              id="talent-works-at"
+              autoComplete="organization"
+              aria-describedby="talent-works-at-hint"
+              maxLength={120}
+              value={text.worksAt}
+              onChange={write("worksAt")}
+            />
+            <FieldDescription id="talent-works-at-hint">{t("worksAtHint")}</FieldDescription>
+          </Field>
+          <Field data-invalid={bad("website")}>
+            <FieldLabel htmlFor="talent-website">{t("website")}</FieldLabel>
+            <Input
+              id="talent-website"
+              type="url"
+              inputMode="url"
+              placeholder="https://"
+              maxLength={300}
+              value={text.website}
+              onChange={write("website")}
+              aria-invalid={bad("website")}
+            />
+            {bad("website") ? (
+              <FieldError>{t("websiteInvalid")}</FieldError>
+            ) : (
+              <FieldDescription>{t("websiteHint")}</FieldDescription>
+            )}
+          </Field>
+        </FieldGroup>
+      </FieldSet>
+
+      <FieldSet>
+        <FieldLegend>{t("sections.engagement")}</FieldLegend>
+        <FieldGroup>
+          <Field>
+            <FieldLabel>{t("engagement")}</FieldLabel>
+            <ChoiceChips
+              label={t("engagement")}
+              options={engagements.map((value) => ({ value, label: engagement(value) }))}
+              value={chosen.engagement}
+              onValueChange={choose("engagement")}
+            />
           </Field>
           <Field>
             <FieldLabel htmlFor="talent-rate">{t("rate")}</FieldLabel>
@@ -489,83 +553,10 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
                 </NativeSelectOption>
               ))}
             </NativeSelect>
+            <FieldDescription>{t("rateHint")}</FieldDescription>
           </Field>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field>
-            <FieldLabel htmlFor="talent-city">{t("city")}</FieldLabel>
-            <Input
-              id="talent-city"
-              autoComplete="address-level2"
-              maxLength={80}
-              value={text.city}
-              onChange={write("city")}
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="talent-works-at">{t("worksAt")}</FieldLabel>
-            <Input
-              id="talent-works-at"
-              autoComplete="organization"
-              aria-describedby="talent-works-at-hint"
-              maxLength={120}
-              value={text.worksAt}
-              onChange={write("worksAt")}
-            />
-            <FieldDescription id="talent-works-at-hint">{t("worksAtHint")}</FieldDescription>
-          </Field>
-        </div>
-        <Field>
-          <FieldLabel>{t("languages")}</FieldLabel>
-          <ChoiceChips
-            label={t("languages")}
-            options={languageCodes.map((value) => ({ value, label: language(value) }))}
-            value={chosen.languages}
-            onValueChange={choose("languages")}
-            max={MAX_LANGUAGES}
-          />
-        </Field>
-        <Field>
-          <FieldLabel>{t("industries")}</FieldLabel>
-          <ChoiceChips
-            label={t("industries")}
-            options={industries.map((value) => ({ value, label: industry(value) }))}
-            value={chosen.industries}
-            onValueChange={choose("industries")}
-            max={MAX_INDUSTRIES}
-          />
-          <FieldDescription>
-            {t("upTo", { count: MAX_INDUSTRIES, chosen: chosen.industries.length })}
-          </FieldDescription>
-        </Field>
-        <Field>
-          <FieldLabel>{t("engagement")}</FieldLabel>
-          <ChoiceChips
-            label={t("engagement")}
-            options={engagements.map((value) => ({ value, label: engagement(value) }))}
-            value={chosen.engagement}
-            onValueChange={choose("engagement")}
-          />
-        </Field>
-        <Field data-invalid={bad("website")}>
-          <FieldLabel htmlFor="talent-website">{t("website")}</FieldLabel>
-          <Input
-            id="talent-website"
-            type="url"
-            inputMode="url"
-            placeholder="https://"
-            maxLength={300}
-            value={text.website}
-            onChange={write("website")}
-            aria-invalid={bad("website")}
-          />
-          {bad("website") ? (
-            <FieldError>{t("websiteInvalid")}</FieldError>
-          ) : (
-            <FieldDescription>{t("websiteHint")}</FieldDescription>
-          )}
-        </Field>
-      </FieldGroup>
+        </FieldGroup>
+      </FieldSet>
 
       <FieldSet>
         <FieldLegend>{t("projects.title")}</FieldLegend>

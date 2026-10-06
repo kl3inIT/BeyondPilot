@@ -28,12 +28,7 @@ type TalentDirectoryPageProps = {
  */
 function TalentDirectoryPage({ talent, search, hasProfile }: TalentDirectoryPageProps) {
   const t = useTranslations("Talent.directory");
-  const filtered =
-    search.q.trim() !== "" ||
-    search.role !== null ||
-    search.availability !== null ||
-    search.engagement !== null ||
-    search.country !== null;
+  const filtered = search.q.trim() !== "" || search.role !== null;
   const shown = talent.items.length;
 
   return (

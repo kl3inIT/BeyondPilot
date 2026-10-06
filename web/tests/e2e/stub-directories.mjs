@@ -118,7 +118,6 @@ function person(name, more) {
     website: "https://www.linkedin.com/in/example",
     roles: ["forward_deployed_engineer"],
     skills: ["Python", "RAG"],
-    availability: "available",
     engagement: ["contract", "advisory"],
     photoFileId: null,
     city: "Ho Chi Minh City",
@@ -146,7 +145,6 @@ const talent = [
     country: "ID",
     roles: ["ml_engineer"],
     skills: ["PyTorch", "OCR"],
-    availability: "open_to_offers",
     projects: [],
     languages: [],
     city: null,
@@ -158,7 +156,7 @@ const talent = [
 ];
 
 const personSummaryOf = (item) => ({
-  ...only(item, "slug", "name", "headline", "country", "city", "roles", "skills", "availability"),
+  ...only(item, "slug", "name", "headline", "country", "city", "roles", "skills"),
   photoFileId: item.photoFileId,
   projectCount: item.projects.length,
   leadProject: item.projects[0] ?? null,
@@ -222,7 +220,6 @@ export function answerDirectory(url) {
       (item) =>
         has(query.get("q"), item.name, item.headline, ...item.skills) &&
         (!query.get("role") || item.roles.includes(query.get("role"))) &&
-        (!query.get("availability") || item.availability === query.get("availability")) &&
         (!query.get("country") || item.country === query.get("country")) &&
         (!query.get("engagement") || item.engagement.includes(query.get("engagement"))),
     );

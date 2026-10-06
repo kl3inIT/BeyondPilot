@@ -678,12 +678,12 @@
         "talent": {
           "approve": "Duyệt hồ sơ nhân lực",
           "reject": "Trả lại hồ sơ nhân lực",
-          "enquiry_accept": "Đã chấp nhận một lời nhắn qua hồ sơ nhân tài",
-          "enquiry_decline": "Đã từ chối một lời nhắn qua hồ sơ nhân tài",
-          "enquiry_report": "Đã báo cáo một lời nhắn qua hồ sơ nhân tài",
-          "request_changes": "Đã yêu cầu sửa một hồ sơ nhân tài",
-          "remove": "Đã gỡ một hồ sơ nhân tài",
-          "delete": "Đã xoá một hồ sơ nhân tài"
+          "enquiry_accept": "Đã chấp nhận một lời nhắn qua hồ sơ nhân lực",
+          "enquiry_decline": "Đã từ chối một lời nhắn qua hồ sơ nhân lực",
+          "enquiry_report": "Đã báo cáo một lời nhắn qua hồ sơ nhân lực",
+          "request_changes": "Đã yêu cầu sửa một hồ sơ nhân lực",
+          "remove": "Đã gỡ một hồ sơ nhân lực",
+          "delete": "Đã xoá một hồ sơ nhân lực"
         }
       },
       "activity": {
@@ -726,9 +726,9 @@
           "enquiry_accept": "Đã chấp nhận một lời nhắn tới <resource></resource>",
           "enquiry_decline": "Đã từ chối một lời nhắn tới <resource></resource>",
           "enquiry_report": "Đã báo cáo một lời nhắn tới <resource></resource>",
-          "request_changes": "Đã yêu cầu sửa hồ sơ nhân tài của <resource></resource>",
-          "remove": "Đã gỡ hồ sơ nhân tài của <resource></resource>",
-          "delete": "Đã xoá hồ sơ nhân tài của <resource></resource>"
+          "request_changes": "Đã yêu cầu sửa hồ sơ nhân lực của <resource></resource>",
+          "remove": "Đã gỡ hồ sơ nhân lực của <resource></resource>",
+          "delete": "Đã xoá hồ sơ nhân lực của <resource></resource>"
         }
       },
       "columns": {
@@ -1007,8 +1007,8 @@
         "link": "Lời nhắn bị báo cáo",
         "metaTitle": "Lời nhắn bị báo cáo · BeyondPilot",
         "title": "Lời nhắn bị báo cáo",
-        "lead": "Những lời nhắn mà người có hồ sơ nhân tài đã báo cáo là không mong muốn. Người gửi chỉ được báo là bị từ chối.",
-        "back": "Tất cả nhân tài",
+        "lead": "Những lời nhắn mà người có hồ sơ nhân lực đã báo cáo là không mong muốn. Người gửi chỉ được báo là bị từ chối.",
+        "back": "Tất cả nhân lực",
         "from": "Từ {sender}",
         "to": "Gửi {name}",
         "topic": {
@@ -1189,11 +1189,6 @@
       "ai_consultant": "Tư vấn AI",
       "ai_designer": "Nhà thiết kế AI",
       "other": "Khác"
-    },
-    "availability": {
-      "available": "Sẵn sàng nhận việc",
-      "open_to_offers": "Sẵn sàng nhận đề nghị",
-      "not_available": "Chưa nhận việc"
     },
     "engagement": {
       "full_time": "Toàn thời gian",
@@ -1966,14 +1961,14 @@
       "reported": "Đã báo cho GenAI Fund. Người gửi được báo là lời nhắn bị từ chối.",
       "changesRequested": "Đã yêu cầu {name} sửa hồ sơ.",
       "removed": "Đã gỡ {name}.",
-      "deleted": "Đã xoá hồ sơ nhân tài của bạn."
+      "deleted": "Đã xoá hồ sơ nhân lực của bạn."
     },
     "directory": {
       "metaTitle": "Nhân lực AI · BeyondPilot",
       "title": "Nhân lực AI",
       "lead": "Kỹ sư và người xây dựng triển khai AI cho doanh nghiệp, hiển thị cùng những dự án họ đã thực hiện.",
       "create": "Tạo hồ sơ nhân lực",
-      "count": "Đang hiện {shown} trên {total}",
+      "count": "Hiển thị {shown}/{total}",
       "total": "{count} người",
       "more": "+{count}",
       "allSkills": "Xem cả {count} kỹ năng",
@@ -1992,35 +1987,21 @@
       },
       "edit": "Sửa hồ sơ của bạn",
       "noProject": "Chưa có dự án nào",
-      "projects": "{count} dự án trên hồ sơ"
+      "projects": "{count} dự án",
+      "view": "Xem hồ sơ"
     },
     "filters": {
-      "search": "Tìm nhân lực theo tên hoặc kỹ năng",
-      "open": "Bộ lọc",
-      "done": "Xem kết quả",
-      "close": "Đóng",
+      "search": "Tìm theo tên, kỹ năng hoặc dự án",
       "adminSearch": "Tìm theo tên hoặc email",
       "role": {
         "label": "Vai trò",
-        "all": "Tất cả nhân tài"
-      },
-      "availability": {
-        "label": "Tình trạng",
-        "all": "Mọi tình trạng"
+        "all": "Tất cả nhân lực"
       },
       "status": {
         "label": "Trạng thái",
         "all": "Mọi trạng thái"
       },
-      "clear": "Xóa bộ lọc",
-      "country": {
-        "label": "Quốc gia",
-        "all": "Mọi quốc gia"
-      },
-      "engagement": {
-        "label": "Nhận làm",
-        "all": "Mọi hình thức"
-      }
+      "clear": "Xóa bộ lọc"
     },
     "view": {
       "roles": "Vai trò",
@@ -2039,28 +2020,28 @@
       "about": "Giới thiệu",
       "projects": {
         "title": "Dự án đã triển khai",
-        "lead": "Mỗi dự án ghi rõ đã đi tới giai đoạn nào. Chưa có ai xác nhận: dự án được hiển thị như người đó tự khai.",
-        "stated": "Do người này tự nêu",
+        "lead": "Mỗi dự án ghi giai đoạn đã đạt được, theo lời người này.",
         "open": "Xem dự án",
         "empty": "Chưa có dự án đã triển khai nào được công bố."
       },
       "facts": {
-        "country": "Nơi làm việc",
+        "country": "Sống tại",
         "role": "Vai trò",
         "website": "Portfolio hoặc LinkedIn",
         "city": "Thành phố",
-        "worksAt": "Nơi làm việc",
-        "worksAtStated": "do người đó tự ghi",
+        "worksAt": "Đang làm tại",
+        "worksAtStated": "do người này tự nêu",
         "languages": "Ngôn ngữ",
         "industries": "Ngành"
       },
-      "notListed": "Chưa nêu",
+      "notListed": "Chưa ghi",
       "note": "Lời nhắn đi qua BeyondPilot. {name} thấy tên và tổ chức của bạn; hai bên chỉ thấy email của nhau nếu họ chấp nhận.",
       "photoAlt": "Ảnh của {name}",
       "stats": {
         "projects": "dự án trên hồ sơ",
         "inProduction": "đang vận hành",
-        "industries": "ngành"
+        "industries": "ngành",
+        "pilots": "thí điểm"
       },
       "openTo": "Nhận làm: {engagement}.",
       "skills": {
@@ -2074,7 +2055,7 @@
       "open": "Liên hệ {name}",
       "openShort": "Liên hệ",
       "dialogTitle": "Liên hệ {name}",
-      "dialogLead": "{name} đọc lời nhắn, tên và tổ chức của bạn. Hai bên chỉ thấy email của nhau nếu họ chấp nhận.",
+      "dialogLead": "{name} thấy lời nhắn, tên của bạn và tổ chức của bạn nếu đã được GenAI Fund duyệt. Hai bên chỉ thấy email của nhau nếu họ chấp nhận.",
       "topic": "Bạn muốn trao đổi về",
       "topics": {
         "project": "Một dự án",
@@ -2084,7 +2065,6 @@
       "message": "Lời nhắn",
       "placeholder": "Bạn đang xây dựng hoặc tuyển gì, và cần gì ở họ.",
       "hint": "Tối đa 2.000 ký tự. Họ có 14 ngày để trả lời.",
-      "notAvailable": "{name} hiện chưa tìm việc. Bạn vẫn có thể viết cho họ.",
       "required": "Hãy viết lời nhắn trước.",
       "send": "Gửi lời nhắn",
       "cancel": "Hủy",
@@ -2095,7 +2075,10 @@
       "waitingLead": "Đã gửi {date}. Bạn có thể viết lại khi họ trả lời hoặc lời nhắn đóng.",
       "signInLead": "Đăng nhập để viết cho {name}.",
       "ownLead": "Đây là hồ sơ của bạn, như người khác nhìn thấy.",
-      "ownEdit": "Sửa hồ sơ"
+      "ownEdit": "Sửa hồ sơ",
+      "senderName": "Tên của bạn",
+      "senderNameHint": "{name} sẽ thấy tên này. Email của bạn vẫn được ẩn.",
+      "senderNameRequired": "Hãy cho biết ai đang viết."
     },
     "mine": {
       "metaTitle": "Hồ sơ nhân lực · BeyondPilot",
@@ -2160,7 +2143,7 @@
       },
       "delete": {
         "action": "Xoá hồ sơ…",
-        "title": "Xoá hồ sơ nhân tài của bạn?",
+        "title": "Xoá hồ sơ nhân lực của bạn?",
         "lead": "Hồ sơ, các dự án và lời nhắn gửi qua hồ sơ sẽ bị xoá vĩnh viễn. Không ai tìm thấy hồ sơ trong danh mục nữa.",
         "confirm": "Xoá hồ sơ",
         "cancel": "Giữ lại"
@@ -2178,7 +2161,6 @@
       "skillsHint": "Cách nhau bằng dấu phẩy, tối đa {count}. Ví dụ: Python, LangGraph, RAG, MLOps.",
       "skillsInvalid": "Nêu tối đa {count} kỹ năng, mỗi kỹ năng không quá 40 ký tự.",
       "country": "Quốc gia",
-      "availability": "Tình trạng",
       "rate": "Mức phí",
       "notStated": "Chưa nêu",
       "engagement": "Hình thức làm việc",
@@ -2251,7 +2233,14 @@
       "worksAt": "Nơi bạn làm việc",
       "worksAtHint": "Hiển thị đúng như bạn ghi. Để trống nếu bạn làm độc lập.",
       "languages": "Ngôn ngữ làm việc",
-      "industries": "Ngành bạn đã làm"
+      "industries": "Ngành bạn đã làm",
+      "sections": {
+        "about": "Về bạn",
+        "work": "Bạn làm gì",
+        "place": "Nơi bạn ở và làm việc",
+        "engagement": "Hình thức nhận làm"
+      },
+      "rateHint": "Chỉ bạn và GenAI Fund thấy mức giá."
     }
   },
   "Form": {

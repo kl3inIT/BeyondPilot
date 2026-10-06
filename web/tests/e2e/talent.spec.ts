@@ -37,12 +37,12 @@ test.describe("talent directory", () => {
   test("search and the facets are the address, and the server answers them", async ({ page }) => {
     await page.goto("/talent");
 
-    await page.getByRole("searchbox", { name: "Search talent by name or skill" }).fill("ocr");
+    await page.getByRole("searchbox", { name: "Search by name, skill or project" }).fill("ocr");
     await expect(page).toHaveURL(/[?&]q=ocr/);
     await expect(shownPeople(page)).toHaveText(["Arif Hidayat"]);
     await expect(page.getByText("Showing 1 of 1")).toBeVisible();
 
-    await page.goto("/talent?role=forward_deployed_engineer&availability=available&sort=name");
+    await page.goto("/talent?role=forward_deployed_engineer&sort=name");
     await expect(shownPeople(page)).toHaveText(["Linh Nguyễn"]);
 
     await page.goto("/talent?sort=name");
@@ -62,17 +62,6 @@ test.describe("talent directory", () => {
     await expect(shownPeople(page)).toHaveCount(3);
   });
 
-  test("the directory narrows by country and by what a person is open to, in the URL", async ({
-    page,
-  }) => {
-    await page.goto("/talent?country=ID");
-    await expect(shownPeople(page)).toHaveText(["Arif Hidayat"]);
-
-    await page.goto("/talent?engagement=contract");
-    await expect(shownPeople(page)).toHaveCount(3);
-    await expect(page.getByText("Ho Chi Minh City").first()).toBeVisible();
-  });
-
   test("a profile says who the person is, and a visitor signs in before writing to them", async ({
     page,
   }) => {
@@ -82,7 +71,9 @@ test.describe("talent directory", () => {
     await expect(page).toHaveURL("/talent/linh-nguyen");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Linh Nguyễn");
     await expect(page.getByText("Claims assistant for an insurer")).toBeVisible();
-    await expect(page.getByText("Stated by the person", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Each project shows how far it went, as the person states it."),
+    ).toBeVisible();
     await expect(page.getByText("Contract, Advisory")).toBeVisible();
     await expect(page.getByText("In production", { exact: true })).toBeVisible();
     await expect(page.getByText("project on the profile")).toBeVisible();
@@ -131,11 +122,14 @@ test.describe("talent directory", () => {
     ).toBeVisible();
     await dialog.getByRole("button", { name: "Send message" }).click();
     await expect(dialog.getByText("Write a message first.")).toBeVisible();
+    // An account without a name signs the message with one; an address is never shown in its place.
+    await expect(dialog.getByText("Say who is writing.")).toBeVisible();
     expect(sent).toEqual([]);
     // The pointer rests on the button that was pressed; its hover colour is not what is checked.
     await page.mouse.move(0, 0);
     await expectNoSeriousA11yViolations(page);
 
+    await dialog.getByLabel("Your name").fill("Lan Trần");
     await dialog.getByLabel("What it is about").selectOption("role");
     await dialog.getByRole("textbox", { name: "Your message" }).fill("Would you lead our pilot?");
     await dialog.getByRole("button", { name: "Send message" }).click();
@@ -144,7 +138,7 @@ test.describe("talent directory", () => {
     expect(sent).toEqual([
       {
         call: "POST /api/talent/profiles/arif-hidayat/enquiries",
-        body: { topic: "role", message: "Would you lead our pilot?" },
+        body: { senderName: "Lan Trần", topic: "role", message: "Would you lead our pilot?" },
       },
     ]);
   });
@@ -159,6 +153,7 @@ test.describe("talent directory", () => {
     await page.goto("/talent/arif-hidayat");
 
     await contact(page, "Arif Hidayat").click();
+    await page.getByLabel("Your name").fill("Lan Trần");
     await page.getByRole("textbox", { name: "Your message" }).fill("Again.");
     await page.getByRole("button", { name: "Send message" }).click();
 
@@ -167,7 +162,7 @@ test.describe("talent directory", () => {
     ).toBeVisible();
     await expect(page.getByText("text of the backend that must not be shown")).toHaveCount(0);
     // The message is kept, so it can be sent another day.
-    await expect(page.getByRole("textbox")).toHaveValue("Again.");
+    await expect(page.getByRole("textbox", { name: "Your message" })).toHaveValue("Again.");
   });
 
   test("the person behind a profile edits it instead of writing to it", async ({

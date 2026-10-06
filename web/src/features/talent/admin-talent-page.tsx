@@ -23,7 +23,6 @@ type AdminTalentPageProps = {
 function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
   const t = useTranslations("Admin.talent.detail");
   const reason = useVocabulary("talentRejection");
-  const availability = useVocabulary("availability");
   const countryName = useCountryName();
   const format = useFormatter();
   const locale = useLocale();
@@ -53,7 +52,6 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
             <TalentStatus status={profile.status} />
             <span>{detail.email}</span>
             {profile.country && <span>{countryName(profile.country)}</span>}
-            {profile.availability && <span>{availability(profile.availability)}</span>}
             {profile.submittedAt && (
               <span>
                 {profile.status === "submitted"

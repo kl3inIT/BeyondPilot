@@ -15,16 +15,14 @@ type TalentContactProps = {
   slug: string;
   /** The person the card leads to, as their profile names them. */
   name: string;
-  /** Whether the person takes on work, already worded; the bar on a phone shows it under the name. */
-  availability?: string;
-  /** True when the person says they are not looking for work; they can still be written to. */
-  notAvailable: boolean;
   /** When the caller's message to the person was sent, while it waits for their answer. */
   waitingSince?: string | null;
   /** Where a visitor signs in to write to the person; absent for someone signed in, who writes here. */
   signInHref?: string;
   /** True when the profile is the caller's own: they edit it instead of writing to it. */
   own: boolean;
+  /** The caller's name as their account holds it, to sign a message with; empty when it has none. */
+  senderName?: string;
   /** Whether the person takes on work and how, under the title. */
   intro?: React.ReactNode;
   /** The facts about the person and the note on how an enquiry travels, under the actions. */
@@ -39,11 +37,10 @@ type TalentContactProps = {
 function TalentContact({
   slug,
   name,
-  availability,
-  notAvailable,
   waitingSince,
   signInHref,
   own,
+  senderName = "",
   intro,
   children,
 }: TalentContactProps) {
@@ -106,7 +103,6 @@ function TalentContact({
         <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t bg-background px-4 py-3 shadow-lg md:hidden">
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="truncate text-sm font-semibold">{name}</span>
-            {availability && <span className="text-xs text-muted-foreground">{availability}</span>}
           </div>
           <Button size="lg" {...opens}>
             {t("openShort")}
@@ -117,7 +113,7 @@ function TalentContact({
         <TalentEnquiry
           slug={slug}
           name={name}
-          notAvailable={notAvailable}
+          senderName={senderName}
           open={open}
           onOpenChange={setOpen}
         />

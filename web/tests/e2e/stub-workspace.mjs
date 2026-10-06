@@ -185,7 +185,6 @@ function profile(name, slug, status, more) {
     website: null,
     roles: ["ai_consultant"],
     skills: ["Strategy"],
-    availability: "available",
     engagement: ["advisory"],
     rateBand: "100_150",
     photoFileId: null,

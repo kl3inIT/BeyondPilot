@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
@@ -29,37 +30,41 @@ type TalentEnquiryProps = {
   slug: string;
   /** The person the message goes to, as their profile names them. */
   name: string;
-  /** True when the person says they are not looking for work; the dialog says so and still sends. */
-  notAvailable: boolean;
+  /** The caller's name as their account holds it, to start the field with; empty when it has none. */
+  senderName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
 /**
- * "Contact …": what the message is about and the message itself. The person reads it with the
- * sender's name and organization and answers in their workspace; neither address is shared unless
+ * "Contact …": the name the sender signs with, what the message is about and the message itself.
+ * The person reads it with that name and the sender's organization and answers in their workspace; neither address is shared unless
  * they accept. Once sent, the page is read again so it shows the message waiting.
  */
-function TalentEnquiry({ slug, name, notAvailable, open, onOpenChange }: TalentEnquiryProps) {
+function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnquiryProps) {
   const t = useTranslations("Talent.enquiry");
   const notify = useNotify();
   const router = useRouter();
   const [topic, setTopic] = useState<EnquiryTopic>("project");
   const [message, setMessage] = useState("");
+  const [signature, setSignature] = useState(senderName);
   const [pending, setPending] = useState(false);
   const [invalid, setInvalid] = useState(false);
+  const [unsigned, setUnsigned] = useState(false);
   const [sent, setSent] = useState(false);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!message.trim()) {
-      setInvalid(true);
+    const missingName = !signature.trim();
+    const missingMessage = !message.trim();
+    setUnsigned(missingName);
+    setInvalid(missingMessage);
+    if (missingName || missingMessage) {
       return;
     }
-    setInvalid(false);
     setPending(true);
     try {
-      await sendTalentEnquiry({ path: { slug }, body: { topic, message } });
+      await sendTalentEnquiry({ path: { slug }, body: { senderName: signature, topic, message } });
       setSent(true);
     } catch (error) {
       notify.error(talentError(error));
@@ -99,11 +104,25 @@ function TalentEnquiry({ slug, name, notAvailable, open, onOpenChange }: TalentE
               <DialogTitle>{t("dialogTitle", { name })}</DialogTitle>
               <DialogDescription>{t("dialogLead", { name })}</DialogDescription>
             </DialogHeader>
-            {notAvailable && (
-              <p className="rounded-lg border bg-muted px-3 py-2 text-sm">
-                {t("notAvailable", { name })}
-              </p>
-            )}
+            <Field data-invalid={unsigned || undefined}>
+              <FieldLabel htmlFor="talent-enquiry-name">{t("senderName")}</FieldLabel>
+              <Input
+                id="talent-enquiry-name"
+                autoComplete="name"
+                maxLength={120}
+                value={signature}
+                onChange={(event) => setSignature(event.target.value)}
+                aria-invalid={unsigned || undefined}
+                aria-describedby="talent-enquiry-name-hint"
+              />
+              {unsigned ? (
+                <FieldError>{t("senderNameRequired")}</FieldError>
+              ) : (
+                <FieldDescription id="talent-enquiry-name-hint">
+                  {t("senderNameHint", { name })}
+                </FieldDescription>
+              )}
+            </Field>
             <Field>
               <FieldLabel htmlFor="talent-enquiry-topic">{t("topic")}</FieldLabel>
               <NativeSelect

@@ -16,7 +16,6 @@ import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { PublicTalent, TalentProject } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { TalentAvailability } from "./talent-availability";
 import { TalentContact } from "./talent-contact";
 import { TalentPhoto } from "./talent-photo";
 
@@ -26,6 +25,8 @@ type TalentProfilePageProps = {
   signInHref?: string;
   /** True when the profile is the caller's own: they edit it instead of writing to it. */
   own: boolean;
+  /** The signed-in caller's name, to sign a message with; empty when the account has none. */
+  senderName?: string;
 };
 
 /** The host of an address, which is what a reader recognises of it: "linkedin.com". */
@@ -39,11 +40,10 @@ function hostOf(address: string) {
  * industries, and beside it the one way to write to them with whether they take on work. On a
  * phone that card comes first, under the head.
  */
-function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps) {
+function TalentProfilePage({ profile, signInHref, own, senderName }: TalentProfilePageProps) {
   const t = useTranslations("Talent.profile");
   const d = useTranslations("Talent.directory");
   const role = useVocabulary("talentRole");
-  const availability = useVocabulary("availability");
   const engagement = useVocabulary("engagement");
   const language = useVocabulary("language");
   const industry = useVocabulary("industry");
@@ -57,6 +57,7 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
   const inProduction = profile.projects.filter(
     (project) => project.stage === "in_production",
   ).length;
+  const pilots = profile.projects.filter((project) => project.stage === "pilot").length;
   const stats = [
     {
       value: profile.projects.length,
@@ -65,6 +66,7 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
     ...(inProduction > 0
       ? [{ value: inProduction, label: t("stats.inProduction", { count: inProduction }) }]
       : []),
+    ...(pilots > 0 ? [{ value: pilots, label: t("stats.pilots", { count: pilots }) }] : []),
     ...(profile.industries.length > 0
       ? [
           {
@@ -109,7 +111,7 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
       </div>
 
       {profile.projects.length > 0 && (
-        <dl className="grid grid-cols-3 gap-4 border-y py-5 md:flex md:gap-12">
+        <dl className="grid grid-cols-2 gap-4 border-y py-5 md:flex md:gap-12">
           {stats.map((stat) => (
             <div key={stat.label} className="flex flex-col gap-0.5">
               <dt className="text-sm text-muted-foreground">{stat.label}</dt>
@@ -125,20 +127,16 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
           <TalentContact
             slug={profile.slug}
             name={profile.name}
-            availability={profile.availability && availability(profile.availability)}
-            notAvailable={profile.availability === "not_available"}
             waitingSince={profile.waitingEnquirySentAt}
             signInHref={signInHref}
             own={own}
+            senderName={senderName}
             intro={
-              <div className="flex flex-col gap-1">
-                {profile.availability && <TalentAvailability availability={profile.availability} />}
-                {profile.engagement.length > 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    {t("openTo", { engagement: profile.engagement.map(engagement).join(", ") })}
-                  </p>
-                )}
-              </div>
+              profile.engagement.length > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {t("openTo", { engagement: profile.engagement.map(engagement).join(", ") })}
+                </p>
+              )
             }
           >
             <dl className="flex flex-col gap-2.5">
@@ -184,7 +182,7 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
               <h2 id="talent-about" className="text-xl font-semibold">
                 {t("about")}
               </h2>
-              <p className="max-w-180 whitespace-pre-line text-muted-foreground">{profile.bio}</p>
+              <p className="max-w-prose whitespace-pre-line text-muted-foreground">{profile.bio}</p>
             </section>
           )}
 
@@ -230,7 +228,7 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
 
 /**
  * One project on the timeline: the year and how far it went on the left, what it was and the
- * person's part on the right. Nobody else has confirmed it, and the line under it says so.
+ * person's part on the right, as the person states them.
  */
 function ProjectEntry({ project }: { project: TalentProject }) {
   const t = useTranslations("Talent.profile.projects");
@@ -249,7 +247,6 @@ function ProjectEntry({ project }: { project: TalentProject }) {
             {project.summary}
           </p>
         )}
-        <p className="text-xs font-medium text-muted-foreground">{t("stated")}</p>
         {project.url && (
           <TextButton
             href={project.url}

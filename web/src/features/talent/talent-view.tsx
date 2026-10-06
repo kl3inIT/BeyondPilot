@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { CodeList } from "@/components/composites/code-list";
+import { Badge } from "@/components/ui/badge";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { TalentProfile } from "@/lib/api/generated";
 
@@ -31,6 +32,7 @@ function TalentView({ profile }: { profile: TalentContent }) {
   const rateBand = useVocabulary("rateBand");
   const language = useVocabulary("language");
   const industry = useVocabulary("industry");
+  const stage = useVocabulary("projectStage");
 
   const facts = [
     { title: t("roles"), labels: profile.roles.map(role) },
@@ -60,6 +62,7 @@ function TalentView({ profile }: { profile: TalentContent }) {
                     {project.year && (
                       <span className="text-sm text-muted-foreground">{project.year}</span>
                     )}
+                    {project.stage && <Badge variant="outline">{stage(project.stage)}</Badge>}
                   </div>
                   {project.summary && (
                     <p className="max-w-prose text-sm whitespace-pre-line text-muted-foreground">

@@ -1,20 +1,16 @@
 import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
 
-import { countryCodes } from "@/i18n/vocabulary";
 import { directorySorts } from "@/lib/directory-sort";
 
-import { availabilities, engagements, reviewedStatuses, talentRoles } from "./talent-codes";
+import { reviewedStatuses, talentRoles } from "./talent-codes";
 
 /**
  * What narrows the public directory of talent, as the URL holds it:
- * `?q=&role=&availability=&country=&engagement=&sort=&page=`.
+ * `?q=&role=&sort=&page=`.
  */
 export const talentSearch = {
   q: parseAsString.withDefault(""),
   role: parseAsStringLiteral(talentRoles),
-  availability: parseAsStringLiteral(availabilities),
-  country: parseAsStringLiteral(countryCodes),
-  engagement: parseAsStringLiteral(engagements),
   sort: parseAsStringLiteral(directorySorts).withDefault(directorySorts[0]),
   page: parseAsInteger.withDefault(1),
 };

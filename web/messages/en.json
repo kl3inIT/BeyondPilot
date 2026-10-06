@@ -1190,11 +1190,6 @@
       "ai_designer": "AI designer",
       "other": "Other"
     },
-    "availability": {
-      "available": "Available now",
-      "open_to_offers": "Open to offers",
-      "not_available": "Not available"
-    },
     "engagement": {
       "full_time": "Full-time",
       "part_time": "Part-time",
@@ -1992,35 +1987,21 @@
       },
       "edit": "Edit your profile",
       "noProject": "No project published yet",
-      "projects": "{count} projects on the profile"
+      "projects": "{count, plural, one {# project} other {# projects}}",
+      "view": "View profile"
     },
     "filters": {
-      "search": "Search talent by name or skill",
-      "open": "Filters",
-      "done": "Show results",
-      "close": "Close",
+      "search": "Search by name, skill or project",
       "adminSearch": "Search by name or email",
       "role": {
         "label": "Role",
         "all": "All talent"
       },
-      "availability": {
-        "label": "Availability",
-        "all": "Any availability"
-      },
       "status": {
         "label": "Status",
         "all": "All statuses"
       },
-      "clear": "Clear filters",
-      "country": {
-        "label": "Country",
-        "all": "All countries"
-      },
-      "engagement": {
-        "label": "Open to",
-        "all": "Open to anything"
-      }
+      "clear": "Clear filters"
     },
     "view": {
       "roles": "Roles",
@@ -2039,8 +2020,7 @@
       "about": "About",
       "projects": {
         "title": "Deployed projects",
-        "lead": "Each project shows how far it went. Nobody else has confirmed it yet: it is shown as stated by the person.",
-        "stated": "Stated by the person",
+        "lead": "Each project shows how far it went, as the person states it.",
         "open": "View the project",
         "empty": "No deployed project published yet."
       },
@@ -2054,13 +2034,14 @@
         "languages": "Languages",
         "industries": "Industries"
       },
-      "notListed": "Not listed yet",
+      "notListed": "Not stated",
       "note": "Messages go through BeyondPilot. {name} reads your name and organization; neither email address is shared unless they accept.",
       "photoAlt": "Photo of {name}",
       "stats": {
         "projects": "{count, plural, one {project on the profile} other {projects on the profile}}",
         "inProduction": "in production",
-        "industries": "{count, plural, one {industry} other {industries}}"
+        "industries": "{count, plural, one {industry} other {industries}}",
+        "pilots": "{count, plural, one {pilot} other {pilots}}"
       },
       "openTo": "Open to {engagement}.",
       "skills": {
@@ -2074,7 +2055,7 @@
       "open": "Contact {name}",
       "openShort": "Contact",
       "dialogTitle": "Contact {name}",
-      "dialogLead": "{name} reads your message, your name and your organization. Neither email address is shared unless they accept.",
+      "dialogLead": "{name} reads your message, your name and your organization if GenAI Fund approved it. Neither email address is shared unless they accept.",
       "topic": "What it is about",
       "topics": {
         "project": "A project",
@@ -2084,7 +2065,6 @@
       "message": "Your message",
       "placeholder": "What you are building or hiring for, and what you need from them.",
       "hint": "Up to 2,000 characters. They have 14 days to answer.",
-      "notAvailable": "{name} is not looking for work right now. You can still write.",
       "required": "Write a message first.",
       "send": "Send message",
       "cancel": "Cancel",
@@ -2095,7 +2075,10 @@
       "waitingLead": "Sent {date}. You can write again once they answer or the message closes.",
       "signInLead": "Sign in to write to {name}.",
       "ownLead": "This is your profile, as others see it.",
-      "ownEdit": "Edit your profile"
+      "ownEdit": "Edit your profile",
+      "senderName": "Your name",
+      "senderNameHint": "{name} reads this name. Your email address stays hidden.",
+      "senderNameRequired": "Say who is writing."
     },
     "mine": {
       "metaTitle": "Talent profile · BeyondPilot",
@@ -2178,7 +2161,6 @@
       "skillsHint": "Separate with commas, up to {count}. For example: Python, LangGraph, RAG, MLOps.",
       "skillsInvalid": "Name at most {count} skills, each up to 40 characters.",
       "country": "Country",
-      "availability": "Availability",
       "rate": "Rate",
       "notStated": "Not stated",
       "engagement": "Open to",
@@ -2251,7 +2233,14 @@
       "worksAt": "Where you work",
       "worksAtHint": "Shown as you state it. Leave empty if you work on your own.",
       "languages": "Languages you work in",
-      "industries": "Industries you have worked in"
+      "industries": "Industries you have worked in",
+      "sections": {
+        "about": "About you",
+        "work": "What you do",
+        "place": "Where you are",
+        "engagement": "Work you take on"
+      },
+      "rateHint": "Only you and GenAI Fund see the rate."
     }
   },
   "Form": {

@@ -12,8 +12,6 @@ export const talentRoles = [
   "other",
 ] as const;
 
-export const availabilities = ["available", "open_to_offers", "not_available"] as const;
-
 export const engagements = ["full_time", "part_time", "contract", "advisory"] as const;
 
 export const rateBands = ["under_25", "25_50", "50_100", "100_150", "150_plus"] as const;

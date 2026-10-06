@@ -208,7 +208,6 @@ function profile(id, name, status, more) {
     website: null,
     roles: ["forward_deployed_engineer"],
     skills: ["Python", "RAG"],
-    availability: "available",
     engagement: ["contract"],
     rateBand: "50_100",
     projects: [{ title: "Claims assistant", year: 2025, summary: null, url: null }],
