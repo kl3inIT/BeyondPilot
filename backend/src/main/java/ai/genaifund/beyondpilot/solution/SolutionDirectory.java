@@ -7,6 +7,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import ai.genaifund.beyondpilot.identity.Actor;
+import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.solution.dto.PublicCustomerDeploymentListRequest;
@@ -20,13 +22,17 @@ import ai.genaifund.beyondpilot.solution.persistence.CustomerDeploymentRepositor
 import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionQueryRepository;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
+import ai.genaifund.beyondpilot.storage.FileDownload;
+import ai.genaifund.beyondpilot.storage.StorageService;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The public directory: the approved, listed solutions and their approved customer deployments, read by anyone
- * without a session. An approved solution left unlisted is read by its address alone.
+ * without a session. An approved solution left unlisted is read by its address alone. A deck is read at the address
+ * of its solution.
  */
 @Service
 public class SolutionDirectory {
@@ -41,12 +47,19 @@ public class SolutionDirectory {
 
 	private final OrganizationDirectory organizations;
 
+	private final IdentityService identity;
+
+	private final StorageService storage;
+
 	SolutionDirectory(SolutionRepository solutions, CustomerDeploymentRepository deployments,
-			SolutionQueryRepository solutionList, OrganizationDirectory organizations) {
+			SolutionQueryRepository solutionList, OrganizationDirectory organizations, IdentityService identity,
+			StorageService storage) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.solutionList = solutionList;
 		this.organizations = organizations;
+		this.identity = identity;
+		this.storage = storage;
 	}
 
 	/** One page of the directory the request selects, in the order it asks for. */
@@ -95,13 +108,47 @@ public class SolutionDirectory {
 		}
 		return new PublicSolutionResponse(solution.getSlug(), solution.getName(), organization.name(),
 				organization.slug(), organization.country(), solution.getSummary(), solution.getProblemsSolved(),
-				solution.getValueProposition(), solution.getFocusAreas(), solution.getIndustries(),
-				solution.getMaturity(), solution.getDeployment(), solution.getWebsite(), solution.getDemoUrl(),
-				solution.getDeckUrl(), solution.isListed(),
+				solution.getValueProposition(), solution.getMaturity(), solution.getTraction(), solution.getBuiltWith(),
+				solution.getIndustries(), solution.getFocusAreas(), solution.getLanguages(), solution.getDeployment(),
+				solution.getBestCustomerProfile(), solution.getWebsite(), solution.getDemoUrl(),
+				SolutionViews.publicDeck(solution), solution.isListed(),
 				deployments.findBySolutionIdAndStatusOrderByDecidedAtDesc(solution.getId(), CustomerDeployment.APPROVED)
 					.stream()
 					.map(deployment -> SolutionViews.publicDeployment(deployment, solution))
 					.toList());
+	}
+
+	/**
+	 * The deck of the solution at this address. Anyone reads the deck of an approved solution, listed or not. Before
+	 * the approval, and after a solution is taken down, the members of its organization read it, and so do the
+	 * operators once it has been sent to them.
+	 * @throws SolutionException when the solution has no deck or the reader may not have it; both answer the same, so
+	 * the address does not reveal a solution that is not shown
+	 * @throws ai.genaifund.beyondpilot.storage.StorageException when the file is gone from the store
+	 */
+	@Transactional(readOnly = true)
+	public FileDownload deck(String slug, @Nullable Actor actor) {
+		Solution solution = solutions.findBySlug(slug)
+			.filter(found -> found.isApproved() || reads(actor, found))
+			.orElseThrow(() -> notFound(slug));
+		UUID deck = solution.getDeckFileId();
+		if (deck == null) {
+			throw notFound(slug);
+		}
+		return storage.download(deck);
+	}
+
+	/** Whether the caller reads a solution that is not approved: a member of its organization, or an operator. */
+	private boolean reads(@Nullable Actor actor, Solution solution) {
+		if (actor == null) {
+			return false;
+		}
+		if (!solution.isDraft() && identity.isOperator(actor)) {
+			return true;
+		}
+		return organizations.membershipOf(actor)
+			.filter(membership -> membership.organizationId().equals(solution.getOrganizationId()))
+			.isPresent();
 	}
 
 	/**

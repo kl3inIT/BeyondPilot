@@ -22,6 +22,8 @@ public interface SolutionRepository extends JpaRepository<Solution, UUID> {
 
 	boolean existsBySlug(String slug);
 
+	boolean existsByDeckFileId(UUID deckFileId);
+
 	Optional<Solution> findBySlug(String slug);
 
 	List<Solution> findByOrganizationIdOrderByCreatedAtDesc(UUID organizationId);

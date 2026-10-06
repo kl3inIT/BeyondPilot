@@ -50,6 +50,18 @@ public class Solution {
 
 	private @Nullable String valueProposition;
 
+	private @Nullable String traction;
+
+	private @Nullable String bestCustomerProfile;
+
+	@JdbcTypeCode(SqlTypes.ARRAY)
+	@Column(nullable = false, columnDefinition = "text[]")
+	private String[] builtWith = {};
+
+	@JdbcTypeCode(SqlTypes.ARRAY)
+	@Column(nullable = false, columnDefinition = "text[]")
+	private String[] languages = {};
+
 	@JdbcTypeCode(SqlTypes.ARRAY)
 	@Column(nullable = false, columnDefinition = "text[]")
 	private String[] focusAreas = {};
@@ -68,7 +80,13 @@ public class Solution {
 
 	private @Nullable String demoUrl;
 
-	private @Nullable String deckUrl;
+	private @Nullable UUID deckFileId;
+
+	private @Nullable String deckFileName;
+
+	private @Nullable Long deckSizeBytes;
+
+	private @Nullable Instant deckAttachedAt;
 
 	@Column(nullable = false)
 	private String status = DRAFT;
@@ -112,21 +130,48 @@ public class Solution {
 		this.createdByAccountId = createdByAccountId;
 	}
 
+	/** What the solution is: its name, what it does, how far it has come and what it is built with. */
 	public void describe(String name, @Nullable String summary, @Nullable String problemsSolved,
-			@Nullable String valueProposition, List<String> focusAreas, List<String> industries,
-			@Nullable String maturity, List<String> deployment, @Nullable String website, @Nullable String demoUrl,
-			@Nullable String deckUrl) {
+			@Nullable String valueProposition, @Nullable String maturity, @Nullable String traction,
+			List<String> builtWith) {
 		this.name = name;
 		this.summary = summary;
 		this.problemsSolved = problemsSolved;
 		this.valueProposition = valueProposition;
-		this.focusAreas = focusAreas.toArray(String[]::new);
-		this.industries = industries.toArray(String[]::new);
 		this.maturity = maturity;
+		this.traction = traction;
+		this.builtWith = builtWith.toArray(String[]::new);
+	}
+
+	/** Who should find the solution and where it can run. */
+	public void fit(List<String> industries, List<String> focusAreas, List<String> languages, List<String> deployment,
+			@Nullable String bestCustomerProfile) {
+		this.industries = industries.toArray(String[]::new);
+		this.focusAreas = focusAreas.toArray(String[]::new);
+		this.languages = languages.toArray(String[]::new);
 		this.deployment = deployment.toArray(String[]::new);
+		this.bestCustomerProfile = bestCustomerProfile;
+	}
+
+	/** Where a visitor reads or sees more of the solution. */
+	public void link(@Nullable String website, @Nullable String demoUrl) {
 		this.website = website;
 		this.demoUrl = demoUrl;
-		this.deckUrl = deckUrl;
+	}
+
+	/** Names a stored file as the deck, with the name and the size it was uploaded under. */
+	public void attachDeck(UUID fileId, String fileName, long sizeBytes, Instant at) {
+		deckFileId = fileId;
+		deckFileName = fileName;
+		deckSizeBytes = sizeBytes;
+		deckAttachedAt = at;
+	}
+
+	public void removeDeck() {
+		deckFileId = null;
+		deckFileName = null;
+		deckSizeBytes = null;
+		deckAttachedAt = null;
 	}
 
 	public void list(boolean listed) {
@@ -225,8 +270,36 @@ public class Solution {
 		return demoUrl;
 	}
 
-	public @Nullable String getDeckUrl() {
-		return deckUrl;
+	public @Nullable String getTraction() {
+		return traction;
+	}
+
+	public @Nullable String getBestCustomerProfile() {
+		return bestCustomerProfile;
+	}
+
+	public List<String> getBuiltWith() {
+		return List.of(builtWith);
+	}
+
+	public List<String> getLanguages() {
+		return List.of(languages);
+	}
+
+	public @Nullable UUID getDeckFileId() {
+		return deckFileId;
+	}
+
+	public @Nullable String getDeckFileName() {
+		return deckFileName;
+	}
+
+	public @Nullable Long getDeckSizeBytes() {
+		return deckSizeBytes;
+	}
+
+	public @Nullable Instant getDeckAttachedAt() {
+		return deckAttachedAt;
 	}
 
 	public String getStatus() {

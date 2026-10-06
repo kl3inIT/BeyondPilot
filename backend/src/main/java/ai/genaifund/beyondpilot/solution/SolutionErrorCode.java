@@ -24,6 +24,9 @@ public enum SolutionErrorCode implements ErrorCode {
 	CHANGED_MEANWHILE("SOLUTION_CHANGED_MEANWHILE", ErrorCategory.CONFLICT,
 			"Someone else saved this solution in the meantime. Reload it and make your changes again."),
 
+	DECK_NOT_USABLE("SOLUTION_DECK_NOT_USABLE", ErrorCategory.VALIDATION,
+			"This file cannot be the deck: upload a PDF and use it for one solution only."),
+
 	DEPLOYMENT_NOT_FOUND("SOLUTION_DEPLOYMENT_NOT_FOUND", ErrorCategory.NOT_FOUND,
 			"There is no such customer deployment."),
 

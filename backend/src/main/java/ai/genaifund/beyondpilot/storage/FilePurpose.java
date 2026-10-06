@@ -15,7 +15,10 @@ public enum FilePurpose {
 	PROGRAM_IMAGE("program_image", true, true, Set.of("image/png", "image/jpeg", "image/webp")),
 
 	/** A deck or a proposal attached to an application. */
-	APPLICATION_FILE("application_file", false, false, Set.of("application/pdf"));
+	APPLICATION_FILE("application_file", false, false, Set.of("application/pdf")),
+
+	/** The deck of a solution. The solution module decides who reads it. */
+	SOLUTION_DECK("solution_deck", false, false, Set.of("application/pdf"));
 
 	private final String value;
 	private final boolean publicRead;

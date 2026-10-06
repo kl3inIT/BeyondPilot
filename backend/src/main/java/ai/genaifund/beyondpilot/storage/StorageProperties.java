@@ -17,6 +17,7 @@ import org.springframework.validation.annotation.Validated;
  * @param readAddressLifetime how long a direct read address of an object store works
  * @param programImageMaxSize the largest image of a program
  * @param applicationFileMaxSize the largest file of an application
+ * @param solutionDeckMaxSize the largest deck of a solution
  * @param local the directory of the local store
  * @param s3 the bucket of the S3 store; credentials come from the AWS SDK's default chain, never from here
  */
@@ -24,12 +25,14 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties("beyondpilot.storage")
 public record StorageProperties(ObjectStorageProvider provider, @DefaultValue("15m") Duration ticketLifetime,
 		@DefaultValue("1h") Duration readAddressLifetime, @DefaultValue("5MB") DataSize programImageMaxSize,
-		@DefaultValue("25MB") DataSize applicationFileMaxSize, @DefaultValue Local local, @DefaultValue S3 s3) {
+		@DefaultValue("25MB") DataSize applicationFileMaxSize, @DefaultValue("25MB") DataSize solutionDeckMaxSize,
+		@DefaultValue Local local, @DefaultValue S3 s3) {
 
 	long maxSizeBytes(FilePurpose purpose) {
 		return switch (purpose) {
 			case PROGRAM_IMAGE -> programImageMaxSize.toBytes();
 			case APPLICATION_FILE -> applicationFileMaxSize.toBytes();
+			case SOLUTION_DECK -> solutionDeckMaxSize.toBytes();
 		};
 	}
 
