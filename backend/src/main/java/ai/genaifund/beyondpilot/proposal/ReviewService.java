@@ -132,7 +132,7 @@ public class ReviewService {
 					proposal.getSubmissions(), reviewing.operator() ? proposal.getReviewStatus() : null,
 					reviewing.operator() ? average(all) : mine == null ? null : mean(mine),
 					reviewing.operator() ? (int) all.stream().filter(assessment -> !assessment.isConflict()).count() : null,
-					mine == null ? "none" : mine.isConflict() ? "conflict" : "scored"));
+					mine == null ? "none" : mine.isConflict() ? "conflict" : "scored", reviewing.owns(proposal)));
 		}
 		return new ReviewApplicationsResponse(head, items,
 				proposals.countByProgramIdAndStatus(programId, Proposal.DRAFT),
@@ -163,6 +163,7 @@ public class ReviewService {
 		Proposal proposal = submitted(id);
 		ApplicationForm form = setup.form(proposal.getProgramId());
 		Reviewing reviewing = access.of(actor, proposal.getProgramId());
+		requireNotOwn(reviewing, proposal);
 		requireNotReleased(form);
 		List<CriterionResponse> criteria = setup.criteriaOf(form.programId()).criteria();
 		if (criteria.isEmpty()) {
@@ -246,6 +247,17 @@ public class ReviewService {
 					"No submitted application " + id));
 	}
 
+	/**
+	 * Refuses a reviewer the application of their own or of their organization.
+	 * @throws ProposalException when the application is theirs
+	 */
+	void requireNotOwn(Reviewing reviewing, Proposal proposal) {
+		if (reviewing.owns(proposal)) {
+			throw new ProposalException(ProposalErrorCode.OWN_APPLICATION,
+					"Account " + reviewing.accountId() + " reviewing its own application " + proposal.getId());
+		}
+	}
+
 	void requireNotReleased(ApplicationForm form) {
 		if (releases.existsById(form.programId())) {
 			throw new ProposalException(ProposalErrorCode.RELEASED,
@@ -314,7 +326,8 @@ public class ReviewService {
 				Objects.requireNonNull(proposal.getSubmittedAt()), submitted(snapshot),
 				reviewing.operator() ? proposal.getReviewStatus() : null, mine, others,
 				reviewing.operator() ? average(all) : null, history, index + 1, order.size(),
-				index > 0 ? order.get(index - 1) : null, index >= 0 && index + 1 < order.size() ? order.get(index + 1) : null);
+				index > 0 ? order.get(index - 1) : null, index >= 0 && index + 1 < order.size() ? order.get(index + 1) : null,
+				reviewing.owns(proposal));
 	}
 
 	private ReviewApplicationResponse.Assessment shown(ProposalAssessment assessment, @Nullable Person person,

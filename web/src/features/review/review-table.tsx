@@ -27,6 +27,8 @@ type ReviewRow = {
   scores: string | null;
   /** The decision for an operator, the caller's own score for a judge. */
   status: { label: string; variant: "success" | "outline" | "warning" | "info" };
+  /** The caller's own application, or their organization's: never selected for a decision. */
+  own: boolean;
 };
 
 type ReviewTableProps = {
@@ -51,7 +53,8 @@ function ReviewTable({ programId, rows, choiceLabel, operator, released }: Revie
   const [selected, setSelected] = useState<string[]>([]);
   const [pending, setPending] = useState(false);
   const selecting = operator && !released;
-  const all = rows.length > 0 && rows.every((row) => selected.includes(row.id));
+  const selectable = rows.filter((row) => !row.own);
+  const all = selectable.length > 0 && selectable.every((row) => selected.includes(row.id));
 
   async function decide(decision: "shortlisted" | "not_selected") {
     setPending(true);
@@ -110,7 +113,7 @@ function ReviewTable({ programId, rows, choiceLabel, operator, released }: Revie
                   aria-label={t("selection.all")}
                   checked={all}
                   onCheckedChange={(checked) =>
-                    setSelected(checked ? rows.map((row) => row.id) : [])
+                    setSelected(checked ? selectable.map((row) => row.id) : [])
                   }
                 />
               </TableHead>
@@ -131,6 +134,7 @@ function ReviewTable({ programId, rows, choiceLabel, operator, released }: Revie
               {selecting && (
                 <TableCell>
                   <Checkbox
+                    disabled={row.own}
                     aria-label={t("selection.one", { name: row.solution })}
                     checked={selected.includes(row.id)}
                     onCheckedChange={(checked) =>

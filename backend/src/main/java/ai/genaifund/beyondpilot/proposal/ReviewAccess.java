@@ -9,8 +9,12 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
+import ai.genaifund.beyondpilot.organization.Membership;
+import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
+import ai.genaifund.beyondpilot.proposal.persistence.Proposal;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewer;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewerRepository;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -28,9 +32,12 @@ class ReviewAccess {
 
 	private final ProposalReviewerRepository reviewers;
 
-	ReviewAccess(IdentityService identity, ProposalReviewerRepository reviewers) {
+	private final OrganizationDirectory organizations;
+
+	ReviewAccess(IdentityService identity, ProposalReviewerRepository reviewers, OrganizationDirectory organizations) {
 		this.identity = identity;
 		this.reviewers = reviewers;
+		this.organizations = organizations;
 	}
 
 	/**
@@ -39,15 +46,16 @@ class ReviewAccess {
 	 */
 	Reviewing of(Actor actor, UUID programId) {
 		Person person = identity.person(actor);
+		@Nullable UUID organizationId = organizations.membershipOf(actor).map(Membership::organizationId).orElse(null);
 		if (identity.isOperator(actor)) {
-			return new Reviewing(person, true);
+			return new Reviewing(person, true, organizationId);
 		}
 		ProposalReviewer reviewer = reviewers.findOpen(programId, person.email())
 			.filter(found -> found.isActiveAt(Instant.now()))
 			.orElseThrow(() -> new ProposalException(ProposalErrorCode.REVIEW_NOT_ALLOWED,
 					"Account " + actor.accountId() + " does not review program " + programId));
 		join(reviewer, person);
-		return new Reviewing(person, false);
+		return new Reviewing(person, false, organizationId);
 	}
 
 	/** The programs an invited judge reviews now; an operator reviews every program and needs none. */
@@ -84,11 +92,18 @@ class ReviewAccess {
 	/**
 	 * Someone reviewing a program.
 	 * @param operator whether they are GenAI Fund staff, who read every score and decide
+	 * @param organizationId the organization they belong to, whose applications they never score or decide
 	 */
-	record Reviewing(Person person, boolean operator) {
+	record Reviewing(Person person, boolean operator, @Nullable UUID organizationId) {
 
 		UUID accountId() {
 			return person.accountId();
+		}
+
+		/** Whether the application is theirs, or their organization's. */
+		boolean owns(Proposal proposal) {
+			return proposal.getAccountId().equals(person.accountId())
+					|| (organizationId != null && organizationId.equals(proposal.getOrganizationId()));
 		}
 	}
 }

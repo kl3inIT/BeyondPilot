@@ -3180,7 +3180,8 @@
         "title": "No applications yet",
         "description": "Submitted applications appear here. Drafts are never listed."
       },
-      "footer": "{shown, plural, one {# application} other {# applications}} · {drafts, plural, one {# draft was} other {# drafts were}} not submitted · {withdrawn} withdrawn"
+      "footer": "{shown, plural, one {# application} other {# applications}} · {drafts, plural, one {# draft was} other {# drafts were}} not submitted · {withdrawn} withdrawn",
+      "own": "Yours"
     },
     "application": {
       "metaTitle": "Application",
@@ -3212,7 +3213,8 @@
           "shortlisted": "Shortlisted",
           "not_selected": "Not selected"
         }
-      }
+      },
+      "own": "This application is yours or your organization's, so you don't score or decide it. Other judges and GenAI Fund do."
     },
     "assessment": {
       "title": "Your assessment · version {version}",

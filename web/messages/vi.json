@@ -3180,7 +3180,8 @@
         "title": "Chưa có đơn nào",
         "description": "Các đơn đã nộp sẽ hiện ở đây. Bản nháp không bao giờ được liệt kê."
       },
-      "footer": "{shown} đơn · {drafts} bản nháp chưa nộp · {withdrawn} đơn đã rút"
+      "footer": "{shown} đơn · {drafts} bản nháp chưa nộp · {withdrawn} đơn đã rút",
+      "own": "Của bạn"
     },
     "application": {
       "metaTitle": "Đơn nộp",
@@ -3212,7 +3213,8 @@
           "shortlisted": "Vào vòng trong",
           "not_selected": "Không được chọn"
         }
-      }
+      },
+      "own": "Đây là đơn của bạn hoặc của tổ chức bạn, nên bạn không chấm và không quyết định đơn này. Các giám khảo khác và GenAI Fund sẽ làm việc đó."
     },
     "assessment": {
       "title": "Đánh giá của bạn · phiên bản {version}",

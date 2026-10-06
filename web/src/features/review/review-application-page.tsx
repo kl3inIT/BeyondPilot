@@ -68,16 +68,20 @@ async function ReviewApplicationPage({ review, base }: ReviewApplicationPageProp
 
       <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
         <div className="flex flex-col gap-4 lg:sticky lg:top-4 lg:order-2">
-          <AssessmentPanel
-            key={`${review.id}-${review.mine?.savedAt ?? "none"}`}
-            applicationId={review.id}
-            criteria={head.criteria}
-            mine={review.mine ?? null}
-            version={review.version}
-            judge={!head.operator}
-            released={released}
-            nextHref={nextHref}
-          />
+          {review.own ? (
+            <p className="rounded-lg border bg-muted p-4 text-sm">{t("own")}</p>
+          ) : (
+            <AssessmentPanel
+              key={`${review.id}-${review.mine?.savedAt ?? "none"}`}
+              applicationId={review.id}
+              criteria={head.criteria}
+              mine={review.mine ?? null}
+              version={review.version}
+              judge={!head.operator}
+              released={released}
+              nextHref={nextHref}
+            />
+          )}
           {head.operator && (
             <section
               aria-labelledby="scores-title"
@@ -137,7 +141,7 @@ async function ReviewApplicationPage({ review, base }: ReviewApplicationPageProp
               )}
             </section>
           )}
-          {head.operator && (
+          {head.operator && !review.own && (
             <DecisionPanel
               key={`${review.id}-${review.reviewStatus}`}
               programId={head.programId}
