@@ -121,12 +121,19 @@ class SearchAdministrationTest {
 		elsewhere.put("baseUrl", "https://collector.example/v1");
 		elsewhere.put("apiKey", null);
 		elsewhere.put("model", "openai/text-embedding-3-large");
-		assertProblem(send("POST", operator, API + "/providers/test", elsewhere), 400, "SEARCH_PROVIDER_KEY_MISSING");
+		assertProblem(send("POST", operator, API + "/providers/test", elsewhere), 400, "SEARCH_PROVIDER_INVALID");
 
+		// Moved to the other vendor, the provider needs that vendor's key: the saved one is not sent to it.
 		Map<String, Object> moved = provider("OpenRouter", null);
-		moved.put("baseUrl", "https://collector.example/v1");
+		moved.put("vendor", "openai");
+		moved.put("baseUrl", "https://api.openai.com/v1");
 		moved.put("key", "keep");
 		assertProblem(send("PUT", operator, API + "/providers/" + id, moved), 400, "SEARCH_PROVIDER_KEY_MISSING");
+		Map<String, Object> otherVendor = new HashMap<>(elsewhere);
+		otherVendor.put("vendor", "openai");
+		otherVendor.put("baseUrl", "https://api.openai.com/v1");
+		otherVendor.put("model", "text-embedding-3-large");
+		assertProblem(send("POST", operator, API + "/providers/test", otherVendor), 400, "SEARCH_PROVIDER_KEY_MISSING");
 
 		// At its own address the saved key is used.
 		elsewhere.put("baseUrl", "https://openrouter.ai/api/v1");
@@ -178,9 +185,10 @@ class SearchAdministrationTest {
 	}
 
 	@Test
-	void aProviderIsReachedOnlyOverHttpsWithoutExtras() {
+	void aProviderIsReachedOnlyAtItsVendorsOwnAddress() {
 		for (String address : new String[] { "http://openrouter.ai/api/v1", "https://user:pass@openrouter.ai/api/v1",
-				"https://openrouter.ai/api/v1?token=x" }) {
+				"https://openrouter.ai/api/v1?token=x", "https://169.254.169.254/latest", "https://localhost:8080/v1",
+				"https://api.openai.com/v1" }) {
 			Map<String, Object> request = provider("OpenRouter", "sk-good-" + SECRET);
 			request.put("baseUrl", address);
 			assertProblem(send("POST", operator, API + "/providers", request), 400, "SEARCH_PROVIDER_INVALID");

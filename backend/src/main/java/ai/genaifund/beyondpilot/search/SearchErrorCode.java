@@ -8,7 +8,7 @@ public enum SearchErrorCode implements ErrorCode {
 	PROVIDER_NOT_FOUND("SEARCH_PROVIDER_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such AI provider."),
 
 	PROVIDER_INVALID("SEARCH_PROVIDER_INVALID", ErrorCategory.VALIDATION,
-			"The address must be an https URL without a user, a query or a fragment."),
+			"The address must be the provider's own API address."),
 
 	PROVIDER_NAME_TAKEN("SEARCH_PROVIDER_NAME_TAKEN", ErrorCategory.CONFLICT,
 			"Another provider already has this name."),

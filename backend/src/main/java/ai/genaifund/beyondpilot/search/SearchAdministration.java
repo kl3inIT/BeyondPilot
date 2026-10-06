@@ -1,11 +1,8 @@
 package ai.genaifund.beyondpilot.search;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -115,7 +112,7 @@ public class SearchAdministration {
 		}
 		Instant now = Instant.now();
 		AiProvider provider = new AiProvider(AiProvider.EMBEDDING, operator.accountId(), operator.label(), now);
-		provider.connectWith(request.vendor(), name, address(request.baseUrl()),
+		provider.connectWith(request.vendor(), name, address(request.vendor(), request.baseUrl()),
 				keys.seal(Objects.requireNonNull(request.apiKey()).strip()));
 		providers.saveAndFlush(provider);
 		record(AuditAction.AI_PROVIDER_CREATE, operator, provider, Map.of("vendor", request.vendor()));
@@ -141,7 +138,7 @@ public class SearchAdministration {
 				&& providers.existsByPurposeAndNameIgnoreCase(AiProvider.EMBEDDING, name)) {
 			throw new SearchException(SearchErrorCode.PROVIDER_NAME_TAKEN, "A provider is already named " + name);
 		}
-		String baseUrl = address(request.baseUrl());
+		String baseUrl = address(request.vendor(), request.baseUrl());
 		byte[] key = switch (request.key()) {
 			case "replace" -> {
 				if (blank(request.apiKey())) {
@@ -200,7 +197,7 @@ public class SearchAdministration {
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public AiProviderTestResponse test(Actor actor, TestAiProviderRequest request) {
 		identity.requireOperator(actor);
-		String baseUrl = address(request.baseUrl());
+		String baseUrl = address(request.vendor(), request.baseUrl());
 		String model = model(request.vendor(), request.model());
 		String key = blank(request.apiKey()) ? savedKey(request.providerId(), baseUrl)
 				: Objects.requireNonNull(request.apiKey()).strip();
@@ -416,23 +413,16 @@ public class SearchAdministration {
 	}
 
 	/**
-	 * The address, when it is an https URL without a user, a query or a fragment, without its trailing slash. The key
-	 * is sent to it, so nothing else is accepted.
+	 * The vendor's own API address, which is the only one accepted: the server sends a key to it and calls it from
+	 * inside the network, so an operator cannot point either at another host. A trailing slash is ignored.
 	 */
-	static String address(String baseUrl) {
+	private static String address(String vendor, String baseUrl) {
 		String text = baseUrl.strip();
-		try {
-			URI uri = new URI(text);
-			if (!"https".equals(uri.getScheme() == null ? null : uri.getScheme().toLowerCase(Locale.ROOT))
-					|| uri.getHost() == null || uri.getRawUserInfo() != null || uri.getRawQuery() != null
-					|| uri.getRawFragment() != null) {
-				throw invalid(text);
-			}
-		}
-		catch (URISyntaxException malformed) {
+		String own = EmbeddingVendor.of(vendor).map(EmbeddingVendor::baseUrl).orElse("");
+		if (own.isEmpty() || !own.equals(text.endsWith("/") ? text.substring(0, text.length() - 1) : text)) {
 			throw invalid(text);
 		}
-		return text.endsWith("/") ? text.substring(0, text.length() - 1) : text;
+		return own;
 	}
 
 	/** The kind of failure an item was held back for, as the screen names it. */
@@ -447,7 +437,7 @@ public class SearchAdministration {
 	private static SearchException invalid(String baseUrl) {
 		// The address is not repeated: a query or a user part can carry a secret.
 		return new SearchException(SearchErrorCode.PROVIDER_INVALID,
-				"Not an https address without a user, a query or a fragment (" + baseUrl.length() + " characters)");
+				"Not the vendor's own API address (" + baseUrl.length() + " characters)");
 	}
 
 	private static SearchException changed(long read, long now) {

@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
  * A provider as the editor holds it. A saved key is kept only while the address is unchanged, so a stored key never
  * goes to an address it was not given for.
  */
-@Schema(name = "SaveAiProvider", description = "A provider to connect or change. A saved key is kept only while the address is unchanged.")
+@Schema(name = "SaveAiProvider", description = "A provider to connect or change. The address must be the vendor's own; a saved key is kept only while it is unchanged.")
 public record SaveAiProviderRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "openai", "openrouter" }) @NotNull @Pattern(regexp = "openai|openrouter") String vendor,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 60) String name,
