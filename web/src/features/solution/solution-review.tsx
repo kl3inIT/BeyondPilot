@@ -79,14 +79,19 @@ function SolutionReview({ solution, nextHref }: SolutionReviewProps) {
   });
 
   return (
-    <div className="flex flex-col items-end gap-2">
-      <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
         {solution.status === "submitted" && (
-          <Button pending={pending === "approve"} onClick={approve}>
+          <Button className="w-full" pending={pending === "approve"} onClick={approve}>
             {t("approve")}
           </Button>
         )}
-        <Button prominence="secondary" tone="danger" onClick={() => setRejecting(true)}>
+        <Button
+          className="w-full"
+          prominence="secondary"
+          tone="danger"
+          onClick={() => setRejecting(true)}
+        >
           {t(solution.status === "approved" ? "takeDown" : "reject")}
         </Button>
         {rejecting && (

@@ -108,7 +108,7 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Create your organization");
   });
 
-  test("a new organization needs its facts and its creator's job title, and goes to review", async ({
+  test("a new organization needs its facts, and goes to review", async ({
     page,
     context,
     baseURL,
@@ -120,12 +120,11 @@ test.describe("workspace organization", () => {
     await page.getByRole("button", { name: "Create organization" }).click();
     await expect(page.getByText("Enter the organization's name.")).toBeVisible();
     await expect(page.getByText("Choose at least one.")).toBeVisible();
-    await expect(page.getByText("Enter your role or job title.")).toBeVisible();
     await expect(page.getByText("Select a team size.")).toBeVisible();
     await expect(page.getByText("Choose at least one industry.")).toBeVisible();
     await expect(page.getByText("Select a country.")).toBeVisible();
     // The first field that lacks something is where the person continues.
-    await expect(page.getByLabel("Your role or job title")).toBeFocused();
+    await expect(page.getByLabel("Organization name")).toBeFocused();
     expect(changes).toEqual([]);
     // The pointer still rests on the button; its hover colour is not what is checked here.
     await page.mouse.move(0, 0);
@@ -154,7 +153,7 @@ test.describe("workspace organization", () => {
           industries: ["logistics"],
           website: null,
           description: "Route planning for fleets.",
-          jobTitle: "  Head of operations ",
+          jobTitle: "Head of operations",
         },
       },
     ]);

@@ -376,4 +376,75 @@ test.describe("admin programs", () => {
     expect(saved).toHaveLength(1);
     expect(published).toHaveLength(1);
   });
+
+  test("an operator sets the questions of the form, until the applications open", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const saved = await answer(page, `/api/program/admin/programs/${draft}/questions`, 200, {
+      questions: [],
+      fixed: false,
+      opensAt: null,
+      version: 1,
+    });
+    await openSettings(page, draft);
+    await page.getByRole("link", { name: "Questions" }).click();
+    await expect(page).toHaveURL(`/admin/programs/${draft}/questions`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("No questions yet.", { exact: false })).toBeVisible();
+
+    await page.getByRole("button", { name: "Add a question" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByRole("combobox", { name: "Answered with" }).click();
+    await page.getByRole("option", { name: "One choice" }).click();
+    await dialog.getByRole("textbox", { name: "Question" }).fill("Direction");
+    await dialog.getByRole("button", { name: "Add question" }).click();
+    await expect(dialog.getByText("Add at least two choices.")).toBeVisible();
+    const choices = dialog.getByRole("textbox", { name: "Choices" });
+    await choices.fill("Buying");
+    await choices.press("Enter");
+    await choices.fill("Claiming");
+    await choices.press("Enter");
+    // The pointer rests where the choice was picked; its hover colour is not what is checked here.
+    await page.mouse.move(0, 0);
+    await expectNoSeriousA11yViolations(page);
+    await dialog.getByRole("button", { name: "Add question" }).click();
+
+    await expect(page.getByText("One choice · 2 choices")).toBeVisible();
+    await expect(page.getByText("Not saved yet")).toBeVisible();
+    await page.getByRole("button", { name: "Save questions" }).click();
+    await expect(page.getByText("Questions saved.")).toBeVisible();
+    expect(saved).toEqual([
+      {
+        questions: [
+          {
+            id: null,
+            kind: "single_choice",
+            label: "Direction",
+            help: null,
+            required: true,
+            options: ["Buying", "Claiming"],
+            maxLength: null,
+          },
+        ],
+        version: 0,
+      },
+    ]);
+  });
+
+  test("the questions of a program whose applications are open are fixed", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto(`/admin/programs/${tasco}/questions`);
+
+    await expect(page.getByRole("status")).toContainText("the questions can no longer change");
+    await expect(page.getByText("Direction")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Add a question" })).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+  });
 });

@@ -25,7 +25,8 @@
       "signOutFailed": "We could not sign you out. Try again.",
       "organization": "My organization",
       "talentProfile": "Talent profile",
-      "admin": "Admin"
+      "admin": "Admin",
+      "applications": "My applications"
     },
     "menu": {
       "open": "Open menu",
@@ -528,7 +529,60 @@
         "description": "Try another name, or look at every state.",
         "clear": "Show all programs"
       },
-      "countOf": "{count, plural, one {# program} other {# programs}} of {total}"
+      "countOf": "{count, plural, one {# program} other {# programs}} of {total}",
+      "tabs": {
+        "label": "Program",
+        "settings": "Settings",
+        "questions": "Questions"
+      },
+      "questions": {
+        "metaTitle": "Questions",
+        "title": "What the application form asks",
+        "lead": "After the applicant, their team and their solution, the form asks these, in this order. A program with no questions skips that step.",
+        "fixed": "Applications opened on {opened}, so the questions can no longer change: an answer may already name one.",
+        "none": "No questions yet. Applicants go straight from their solution to review and submit.",
+        "kinds": {
+          "short_text": "Short answer",
+          "long_text": "Long answer",
+          "single_choice": "One choice",
+          "file": "PDF file",
+          "link": "Link",
+          "confirm": "Confirmation"
+        },
+        "choiceCount": "{count, plural, one {# choice} other {# choices}}",
+        "optional": "Optional",
+        "notSaved": "Not saved yet",
+        "moveUp": "Move {label} up",
+        "moveDown": "Move {label} down",
+        "edit": "Edit",
+        "editNamed": "Edit {label}",
+        "add": "Add a question",
+        "save": "Save questions",
+        "unsaved": "You have unsaved changes.",
+        "saved": "Questions saved.",
+        "addTitle": "Add a question",
+        "editTitle": "Edit question",
+        "kind": "Answered with",
+        "label": "Question",
+        "help": "Help",
+        "helpHint": "Shown under the question, for what a good answer holds.",
+        "options": "Choices",
+        "optionsPlaceholder": "Add a choice",
+        "optionsHint": "Press Enter after each one. Two to {count}.",
+        "choicesRequired": "Add at least two choices.",
+        "maxLength": "Longest answer",
+        "maxLengthHint": "In characters. Leave empty for the default.",
+        "required": "An answer is required",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "update": "Update",
+        "addQuestion": "Add question",
+        "errors": {
+          "PROGRAM_QUESTIONS_FIXED": "Applications have opened, so the questions can no longer change.",
+          "PROGRAM_CHANGED_MEANWHILE": "Someone else changed this program in the meantime. Reload and make your changes again.",
+          "PROGRAM_CHOICES_REQUIRED": "A question answered by a choice needs at least two choices."
+        }
+      }
     },
     "accounts": {
       "metaTitle": "Accounts · BeyondPilot",
@@ -865,12 +919,14 @@
       "lead": "Every solution providers sent for review. Those still waiting come first, the longest wait on top.",
       "columns": {
         "solution": "Solution",
-        "maturity": "Maturity",
+        "organization": "Organization",
         "status": "Status",
+        "sentBy": "Sent by",
         "submitted": "Submitted",
         "actions": "Actions"
       },
-      "notStated": "Not stated",
+      "senderUnknown": "Not recorded",
+      "awaiting": "{count, plural, one {# needs review} other {# need review}}",
       "openNamed": "Open {name}",
       "empty": {
         "title": "Nothing to review",
@@ -910,7 +966,39 @@
         "next": "Next in review: {name}",
         "position": "{place} of {total} waiting",
         "waitingSince": "Sent {time}",
-        "public": "Open the public page"
+        "public": "Open the public page",
+        "decision": "Decision",
+        "status": "Status",
+        "organization": "Organization",
+        "sentBy": "Sent by",
+        "senderUnknown": "Not recorded",
+        "sent": "Sent",
+        "directory": "Directory",
+        "listed": "Listed once approved",
+        "deploymentsWaiting": "{count, plural, one {# customer deployment waits for review} other {# customer deployments wait for review}}"
+      },
+      "record": {
+        "basics": "Basics",
+        "audience": "Who it is for",
+        "evidence": "Evidence",
+        "name": "Solution name",
+        "summary": "What it does",
+        "problemsSolved": "Problem it solves",
+        "valueProposition": "Why it is worth it",
+        "maturity": "Stage",
+        "traction": "Milestones and traction",
+        "builtWith": "Built with",
+        "industries": "Industries",
+        "focusAreas": "AI capabilities",
+        "languages": "Languages",
+        "deployment": "Where it runs",
+        "bestCustomerProfile": "Best customer profile",
+        "website": "Website",
+        "demo": "Product demo",
+        "deck": "Solution deck",
+        "deployments": "Customer deployments",
+        "deploymentsSummary": "{total, plural, one {# deployment} other {# deployments}}{waiting, plural, =0 {} other {, # waiting for review}}",
+        "missing": "Not published yet"
       },
       "queueEmpty": {
         "title": "Nothing waits for review",
@@ -1343,7 +1431,6 @@
       "countryRequired": "Select a country.",
       "teamSizeRequired": "Select a team size.",
       "jobTitle": "Your role or job title",
-      "jobTitleRequired": "Enter your role or job title.",
       "jobTitleHint": "What you do in the organization. It shows beside your name among its members."
     },
     "find": {
@@ -1626,6 +1713,7 @@
         "solutions": "Solutions",
         "noSolutions": "No solution is listed yet.",
         "listedBelow": "{count, plural, one {# customer deployment, listed below} other {# customer deployments, listed below}}",
+        "explore": "Explore solution",
         "deployments": "Customer deployments",
         "noDeployments": "No customer deployment published.",
         "type": "Type",
@@ -2535,6 +2623,246 @@
     "closing": {
       "title": "Ten teams present live on 22 October.",
       "text": "Submissions close 15 October at 23:59 ICT. Everyone hears back on 16 October."
+    }
+  },
+  "EntryList": {
+    "remove": "Remove {entry} from {label}"
+  },
+  "Apply": {
+    "metaTitle": "Apply",
+    "saved": "Saved {time}",
+    "closes": "Closes {when}",
+    "saveAndExit": "Save and exit",
+    "yourApplication": "Your application",
+    "savesAsYouType": "Answers save as you type. Come back any time before {when}.",
+    "stepOf": "Step {step} of {count} · {title}",
+    "progress": "Progress through the application",
+    "allRequired": "All fields are required unless marked Optional.",
+    "optional": "Optional",
+    "closed": "Applications closed on {when}. Nothing can be changed or submitted now.",
+    "backToProgram": "Back to program",
+    "back": "Back",
+    "continue": "Continue",
+    "submit": "Submit application",
+    "submitAgain": "Submit changes",
+    "steps": {
+      "you": {
+        "title": "You and your team",
+        "what": "Contact details and who is applying",
+        "lead": "Judges look at the solution, not the size of the company behind it. These details stay with you, so your next application starts filled in."
+      },
+      "solution": {
+        "title": "Your solution",
+        "what": "What it does, its stage and deck",
+        "lead": "The product or prototype you're bringing. It stays on your organization's profile for your next application."
+      },
+      "questions": {
+        "title": "For this program",
+        "what": "The program's own questions",
+        "lead": "These answers go only to {program}."
+      },
+      "review": {
+        "title": "Review and submit",
+        "what": "Check everything, then send",
+        "lead": "You can change your application until {when}, even after you submit."
+      }
+    },
+    "you": {
+      "applyingFor": "Applying for",
+      "notListedYet": "Not in the directory yet",
+      "applyingForHint": "GenAI Fund checks a new organization before it is listed in the directory. That doesn't hold up your application.",
+      "applyingAs": "Applying as",
+      "who": {
+        "individual": {
+          "title": "Individual",
+          "what": "Just you, shown by your name. Nothing more to fill in."
+        },
+        "team": {
+          "title": "Team",
+          "what": "Two or more people, such as a student or hackathon team."
+        },
+        "company": {
+          "title": "Company",
+          "what": "Find your company on BeyondPilot and join it, or add it."
+        }
+      },
+      "individualHint": "Judges see you as {name} · Individual. If you join a company later, what you submitted stays under your name.",
+      "yourCompany": "Your company",
+      "companyRequired": "Join your company, or add it, before you continue.",
+      "aboutYou": "About you",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "emailHint": "You sign in with this address, so it can't be changed here.",
+      "phone": "Phone number",
+      "phoneRequired": "Enter a phone number with its country code.",
+      "country": "Country",
+      "countryPlaceholder": "Select a country",
+      "countryRequired": "Select a country.",
+      "linkedin": "LinkedIn profile",
+      "linkedinRequired": "Enter the full address of your LinkedIn profile, starting with https://",
+      "yourTeam": "Your team",
+      "teamName": "Team name",
+      "teamNameHint": "Shown to judges if you're shortlisted.",
+      "teamSize": "Team size",
+      "website": "Website",
+      "teamBackground": "Team background",
+      "teamBackgroundHint": "The experience that matters for this problem.",
+      "required": "Fill this in."
+    },
+    "solution": {
+      "choice": "Solution",
+      "newSolution": "New solution",
+      "choiceHint": "One your organization already has fills this step; changes here update it.",
+      "name": "Solution name",
+      "summary": "What it does",
+      "summaryHint": "Two or three sentences.",
+      "problemsSolved": "Problem it solves",
+      "problemsSolvedHint": "Who you're helping, and what goes wrong for them today.",
+      "maturity": "Stage",
+      "maturityPlaceholder": "Select a stage",
+      "maturityRequired": "Select a stage.",
+      "traction": "Milestones and traction",
+      "tractionPlaceholder": "Customers, pilots, users or revenue so far.",
+      "builtWith": "Built with",
+      "builtWithPlaceholder": "Add a model, tool or framework",
+      "deck": "Solution deck",
+      "deckHint": "A PDF only the program's reviewers read. It is kept as you submit it.",
+      "deckRequired": "Add the solution's deck, a PDF.",
+      "demoUrl": "Demo link",
+      "demoUrlHint": "A video, a prototype or a live demo. Check it opens without signing in.",
+      "required": "Fill this in."
+    },
+    "questions": {
+      "choose": "Choose one",
+      "uploaded": "Uploaded file",
+      "required": "Answer this question.",
+      "confirmRequired": "Confirm this to continue."
+    },
+    "review": {
+      "blocks": {
+        "you": "You and your team",
+        "solution": "Your solution",
+        "questions": "For this program"
+      },
+      "edit": "Edit",
+      "editNamed": "Edit {section}",
+      "notAdded": "Not added",
+      "applyingAs": "Applying as",
+      "name": "Name",
+      "teamSize": "Team size",
+      "solution": "Solution",
+      "summary": "What it does",
+      "problemsSolved": "Problem it solves",
+      "maturity": "Stage",
+      "traction": "Milestones and traction",
+      "builtWith": "Built with",
+      "deck": "Solution deck",
+      "confirmed": "Confirmed",
+      "uploaded": "Uploaded file",
+      "confirm": "I confirm the information is accurate.",
+      "confirmRequired": "Confirm the information to submit."
+    },
+    "errors": {
+      "saveFailed": "Your latest changes could not be saved. Check your connection; they are kept on this page.",
+      "unknown": "Something went wrong. Try again.",
+      "codes": {
+        "PROPOSAL_CLOSED": "Applications to this program have closed.",
+        "PROPOSAL_LOCKED": "This program takes no changes after submission.",
+        "PROPOSAL_CHANGED_MEANWHILE": "This application was changed in another tab. Reload the page and continue there.",
+        "PROPOSAL_ORGANIZATION_REQUIRED": "Say who applies in step 1.",
+        "PROPOSAL_ORGANIZATION_APPLIED": "Someone in your organization has already applied to this program.",
+        "PROPOSAL_CONTACT_INCOMPLETE": "Your contact details in step 1 are incomplete.",
+        "PROPOSAL_TEAM_BACKGROUND_REQUIRED": "Describe your team's background in step 1.",
+        "PROPOSAL_SOLUTION_REQUIRED": "Choose or add your solution in step 2.",
+        "PROPOSAL_SOLUTION_INCOMPLETE": "Your solution in step 2 needs what it does, the problem it solves and its stage.",
+        "PROPOSAL_DECK_REQUIRED": "Add your solution deck in step 2.",
+        "PROPOSAL_ANSWER_REQUIRED": "Answer every question of the program.",
+        "PROPOSAL_ANSWER_INVALID": "An answer does not fit its question.",
+        "ORGANIZATION_ALREADY_MEMBER": "You already belong to an organization. Reload the page."
+      }
+    }
+  },
+  "PdfUpload": {
+    "empty": "Choose a PDF",
+    "limits": "PDF, up to 25 MB.",
+    "uploading": "Uploading…",
+    "replace": "Replace",
+    "remove": "Remove",
+    "errors": {
+      "type": "Choose a PDF file.",
+      "size": "The file is larger than 25 MB.",
+      "failed": "The file could not be uploaded. Try again."
+    }
+  },
+  "MyApplications": {
+    "title": "My applications",
+    "none": "No applications yet",
+    "noneLead": "Programs that take applications on BeyondPilot show Apply on their page.",
+    "browse": "Browse programs",
+    "groups": {
+      "inProgress": "In progress",
+      "submitted": "Submitted",
+      "past": "Past"
+    },
+    "status": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "withdrawn": "Withdrawn"
+    },
+    "nothingYet": "Who applies and with what is not filled in yet",
+    "draftUntil": "Not submitted yet. Submit before {when}.",
+    "withdrawnUntil": "Withdrawn. You can submit it again until {when}.",
+    "hearBack": "You hear back on {day}, by email.",
+    "editUntil": "You can change it until {when}.",
+    "closedOn": "Applications closed on {when}.",
+    "continue": "Continue",
+    "edit": "Edit application",
+    "view": "View application"
+  },
+  "Application": {
+    "metaTitle": "Application",
+    "back": "My applications",
+    "status": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "withdrawn": "Withdrawn"
+    },
+    "whereItStands": "Where it stands",
+    "submitted": "Submitted",
+    "notYet": "Not yet",
+    "versions": "Times submitted",
+    "closes": "Applications close",
+    "outcome": "You hear back",
+    "continue": "Continue application",
+    "edit": "Edit application",
+    "editHint": "You can change it until {when}. Reviewers read the latest version you submit.",
+    "locked": "This program takes no changes after submission.",
+    "closed": "Applications have closed, so this application can no longer change.",
+    "withdraw": {
+      "button": "Withdraw application",
+      "title": "Withdraw your application to {program}?",
+      "lead": "Reviewers will no longer read it. You can submit it again while the program takes applications.",
+      "confirm": "Withdraw",
+      "cancel": "Keep it",
+      "done": "Your application was withdrawn.",
+      "closed": "Applications have closed, so it can no longer be withdrawn.",
+      "failed": "It could not be withdrawn. Try again."
+    },
+    "receipt": {
+      "title": "Application submitted",
+      "titleAgain": "Changes submitted",
+      "emailed": "We've emailed a copy to {email}.",
+      "program": "Program",
+      "solution": "Solution",
+      "organization": "Applying for",
+      "submitted": "Submitted",
+      "editUntil": "You can edit until",
+      "next": "What happens next",
+      "nextOutcome": "GenAI Fund reads every application. You hear back on {day}, by email, whatever the outcome.",
+      "nextReview": "GenAI Fund reads every application and tells you the outcome by email.",
+      "view": "View my application",
+      "programs": "Back to programs"
     }
   }
 }

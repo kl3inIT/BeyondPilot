@@ -45,6 +45,21 @@ public class OrganizationDirectory {
 						organization.isApproved(), organization.getRoles())));
 	}
 
+	/** Who this organization is, read now; empty when it does not exist. */
+	@Transactional(readOnly = true)
+	public Optional<OrganizationProfile> profile(UUID organizationId) {
+		return organizations.findById(organizationId)
+			.map(organization -> new OrganizationProfile(organization.getId(), organization.getSlug(),
+					organization.getName(), organization.getType(), organization.getCountry(),
+					organization.getTeamSize(), organization.getWebsite(), organization.isApproved()));
+	}
+
+	/** Whether GenAI Fund has approved this organization, read now. */
+	@Transactional(readOnly = true)
+	public boolean isApproved(UUID organizationId) {
+		return organizations.findById(organizationId).filter(Organization::isApproved).isPresent();
+	}
+
 	/** The accounts that own an organization, read now; empty when it has no owner. */
 	@Transactional(readOnly = true)
 	public List<UUID> ownersOf(UUID organizationId) {
@@ -78,6 +93,15 @@ public class OrganizationDirectory {
 		return new PublicOrganizationResponse(organization.getSlug(), organization.getName(), organization.getType(),
 				organization.getCountry(), organization.getIndustries(), organization.getWebsite(),
 				organization.getDescription());
+	}
+
+	/**
+	 * The organizations whose name contains the text, ignoring case and whatever their review says, for a module that
+	 * searches its own records by who they belong to.
+	 */
+	@Transactional(readOnly = true)
+	public List<UUID> named(String text) {
+		return organizationList.idsNamed(text);
 	}
 
 	/** The names of these organizations by identifier; an unknown one is left out. */

@@ -7,6 +7,9 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.identity.IdentityService;
+import ai.genaifund.beyondpilot.identity.Person;
+import ai.genaifund.beyondpilot.solution.dto.AdminSolutionSummaryResponse;
 import ai.genaifund.beyondpilot.solution.dto.CustomerDeploymentResponse;
 import ai.genaifund.beyondpilot.solution.dto.PublicCustomerDeploymentResponse;
 import ai.genaifund.beyondpilot.solution.dto.PublicSolutionDeckResponse;
@@ -26,7 +29,8 @@ final class SolutionViews {
 	private SolutionViews() {
 	}
 
-	static SolutionResponse solution(Solution solution, String organizationName, List<CustomerDeployment> deployments) {
+	static SolutionResponse solution(Solution solution, String organizationName, @Nullable String submittedBy,
+			List<CustomerDeployment> deployments) {
 		return new SolutionResponse(solution.getId(), solution.getOrganizationId(), organizationName,
 				solution.getSlug(), solution.getName(), solution.getSummary(), solution.getProblemsSolved(),
 				solution.getValueProposition(), solution.getMaturity(), solution.getTraction(), solution.getBuiltWith(),
@@ -34,7 +38,7 @@ final class SolutionViews {
 				solution.getBestCustomerProfile(), solution.getWebsite(), solution.getDemoUrl(), deck(solution),
 				solution.getStatus(),
 				solution.getDecisionReason(), solution.getDecisionMessage(), solution.isListed(), solution.isComplete(),
-				solution.getSubmittedAt(), solution.getVersion(), solution.getUpdatedAt(),
+				solution.getSubmittedAt(), submittedBy, solution.getVersion(), solution.getUpdatedAt(),
 				deployments.stream().map(SolutionViews::deployment).toList());
 	}
 
@@ -79,10 +83,21 @@ final class SolutionViews {
 				solution.getSubmittedAt(), solution.getUpdatedAt(), deploymentsAwaiting);
 	}
 
-	static SolutionSummaryResponse summary(SolutionQueryRepository.Row row, String organizationName) {
-		return new SolutionSummaryResponse(row.id(), organizationName, row.slug(), row.name(), row.summary(),
-				row.maturity(), row.status(), row.listed(), row.submittedAt(), row.updatedAt(),
-				row.deploymentsAwaiting());
+	static AdminSolutionSummaryResponse adminSummary(SolutionQueryRepository.Row row, String organizationName,
+			@Nullable String submittedBy) {
+		return new AdminSolutionSummaryResponse(row.id(), organizationName, row.slug(), row.name(), row.summary(),
+				row.industries(), row.maturity(), row.status(), row.listed(), row.submittedAt(), submittedBy,
+				row.updatedAt(), row.deploymentsAwaiting());
+	}
+
+	/** The name the sender of a solution is shown by; null when nobody is recorded or the account is gone. */
+	static @Nullable String sender(Solution solution, IdentityService identity) {
+		UUID accountId = solution.getSubmittedByAccountId();
+		if (accountId == null) {
+			return null;
+		}
+		Person person = identity.people(List.of(accountId)).get(accountId);
+		return person == null ? null : person.label();
 	}
 
 	/** The codes once each, in the order they were given. */

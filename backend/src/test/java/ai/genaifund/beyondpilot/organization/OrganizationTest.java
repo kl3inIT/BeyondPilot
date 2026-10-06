@@ -105,7 +105,25 @@ class OrganizationTest {
 
 		assertThat(JsonPath.<String>read(body, "$.code")).isEqualTo("REQUEST_INVALID");
 		assertThat(JsonPath.<List<String>>read(body, "$.errors[*].pointer")).containsExactlyInAnyOrder("#/name",
-				"#/roles/0", "#/type", "#/country", "#/teamSize", "#/industries/0", "#/website", "#/jobTitle");
+				"#/roles/0", "#/type", "#/country", "#/teamSize", "#/industries/0", "#/website");
+	}
+
+	@Test
+	void aTeamOrABuilderOnTheirOwnIsLightAndACompanyNamesItsIndustries() {
+		Map<String, Object> builder = new HashMap<>(profile("Dat Phan", "provider"));
+		builder.put("type", "independent_builder");
+		builder.put("teamSize", "just_me");
+		builder.put("industries", List.of());
+		builder.remove("website");
+		String created = body(post(signIn("dat@builder.test"), API + "/organizations", builder).expectStatus()
+			.isCreated());
+		assertThat(JsonPath.<String>read(created, "$.type")).isEqualTo("independent_builder");
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("pending");
+
+		Map<String, Object> company = new HashMap<>(profile("No Industry Co", "provider"));
+		company.put("industries", List.of());
+		assertProblem(post(signIn("founder@no-industry.test"), API + "/organizations", company), 400,
+				"ORGANIZATION_INDUSTRIES_REQUIRED");
 	}
 
 	@Test

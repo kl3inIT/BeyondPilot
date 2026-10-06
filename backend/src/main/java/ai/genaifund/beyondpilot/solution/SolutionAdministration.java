@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.solution;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
@@ -11,6 +12,7 @@ import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
+import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListRequest;
@@ -23,6 +25,7 @@ import ai.genaifund.beyondpilot.solution.persistence.CustomerDeploymentRepositor
 import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionQueryRepository;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,7 +68,8 @@ public class SolutionAdministration {
 	}
 
 	/**
-	 * One page of the submitted solutions the request selects: those waiting for review first.
+	 * One page of the submitted solutions the request selects: those waiting for review first. The text matches a
+	 * solution by its name or by its organization's name.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 */
 	@Transactional(readOnly = true)
@@ -73,13 +77,21 @@ public class SolutionAdministration {
 		identity.requireOperator(actor);
 		String text = SolutionViews.text(request.q());
 		int page = request.page() == null ? 1 : request.page();
-		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(text, request.status(), PAGE_SIZE,
-				(long) (page - 1) * PAGE_SIZE);
+		List<UUID> named = text == null ? List.of() : organizations.named(text);
+		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(text, named, request.status(),
+				request.industry(), PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
-		return new AdminSolutionListResponse(
-				rows.stream().map(row -> SolutionViews.summary(row, name(names, row.organizationId()))).toList(), page,
-				PAGE_SIZE, solutionList.adminCount(text, request.status()));
+		Map<UUID, Person> senders = identity.people(rows.stream()
+			.map(SolutionQueryRepository.Row::submittedByAccountId)
+			.filter(Objects::nonNull)
+			.distinct()
+			.toList());
+		return new AdminSolutionListResponse(rows.stream()
+			.map(row -> SolutionViews.adminSummary(row, name(names, row.organizationId()),
+					sender(senders, row.submittedByAccountId())))
+			.toList(), page, PAGE_SIZE, solutionList.adminCount(text, named, request.status(), request.industry()),
+				solutionList.awaitingReview());
 	}
 
 	/**
@@ -93,7 +105,7 @@ public class SolutionAdministration {
 		Solution solution = solutions.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
 		return SolutionViews.solution(solution,
 				name(organizations.names(List.of(solution.getOrganizationId())), solution.getOrganizationId()),
-				deployments.findBySolutionIdOrderByCreatedAtDesc(id));
+				SolutionViews.sender(solution, identity), deployments.findBySolutionIdOrderByCreatedAtDesc(id));
 	}
 
 	/**
@@ -108,6 +120,11 @@ public class SolutionAdministration {
 		Solution solution = reviewable(id);
 		if (!solution.isSubmitted()) {
 			throw notAwaiting(solution);
+		}
+		if (!organizations.isApproved(solution.getOrganizationId())) {
+			// The directory lists a solution only when GenAI Fund has approved who offers it too.
+			throw new SolutionException(SolutionErrorCode.ORGANIZATION_NOT_APPROVED,
+					"Approval of solution " + id + " whose organization is not approved");
 		}
 		solution.approve(Instant.now());
 		record(AuditAction.SOLUTION_APPROVE, operator, solution, Map.of());
@@ -195,6 +212,11 @@ public class SolutionAdministration {
 	private static String name(Map<UUID, OrganizationName> names, UUID organizationId) {
 		OrganizationName name = names.get(organizationId);
 		return name == null ? "" : name.name();
+	}
+
+	private static @Nullable String sender(Map<UUID, Person> senders, @Nullable UUID accountId) {
+		Person person = accountId == null ? null : senders.get(accountId);
+		return person == null ? null : person.label();
 	}
 
 	private static SolutionException notFound(UUID id) {

@@ -85,6 +85,11 @@ public class Program {
 	@OrderColumn(name = "position")
 	private List<ProgramEvent> events = new ArrayList<>();
 
+	@ElementCollection
+	@CollectionTable(name = "program_question", joinColumns = @JoinColumn(name = "program_id"))
+	@OrderColumn(name = "position")
+	private List<ProgramQuestion> questions = new ArrayList<>();
+
 	@Version
 	private long version;
 
@@ -162,6 +167,16 @@ public class Program {
 			this.events.clear();
 			this.events.addAll(events);
 		}
+	}
+
+	/** The questions are replaced as given, in that order. */
+	public void ask(List<ProgramQuestion> questions) {
+		this.questions.clear();
+		this.questions.addAll(questions);
+	}
+
+	public List<ProgramQuestion> getQuestions() {
+		return List.copyOf(questions);
 	}
 
 	/**

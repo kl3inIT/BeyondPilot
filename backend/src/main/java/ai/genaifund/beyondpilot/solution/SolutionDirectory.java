@@ -118,6 +118,26 @@ public class SolutionDirectory {
 					.toList());
 	}
 
+	/** The solutions of an organization, the newest first, for the module that applies with one. */
+	@Transactional(readOnly = true)
+	public List<OfferedSolution> offeredBy(UUID organizationId) {
+		return solutions.findByOrganizationIdOrderByCreatedAtDesc(organizationId)
+			.stream()
+			.map(SolutionDirectory::offered)
+			.toList();
+	}
+
+	/** One solution, for the module that applies with it; empty when it does not exist. */
+	@Transactional(readOnly = true)
+	public Optional<OfferedSolution> offered(UUID solutionId) {
+		return solutions.findById(solutionId).map(SolutionDirectory::offered);
+	}
+
+	private static OfferedSolution offered(Solution solution) {
+		return new OfferedSolution(solution.getId(), solution.getOrganizationId(), solution.getName(),
+				solution.getSummary(), solution.getProblemsSolved(), solution.getMaturity());
+	}
+
 	/**
 	 * The deck of the solution at this address. Anyone reads the deck of an approved solution, listed or not. Before
 	 * the approval, and after a solution is taken down, the members of its organization read it, and so do the
