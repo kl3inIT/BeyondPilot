@@ -34,7 +34,9 @@ test.describe("talent directory", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
-  test("search and the facets are the address, and the server answers them", async ({ page }) => {
+  test("search, the role and the sort are the address, and the server answers them", async ({
+    page,
+  }) => {
     await page.goto("/talent");
 
     await page.getByRole("searchbox", { name: "Search by name, skill or project" }).fill("ocr");

@@ -2,7 +2,7 @@ import { useTranslations } from "next-intl";
 
 import type { AccountMenuProps } from "@/components/layout/account-menu";
 import { AdminAccount } from "@/components/layout/admin-account";
-import { AdminNav, type AdminNavItem } from "@/components/layout/admin-nav";
+import { AdminNav, type AdminNavGroup } from "@/components/layout/admin-nav";
 import {
   Sidebar,
   SidebarContent,
@@ -18,17 +18,17 @@ import { siteRoutes } from "@/lib/site";
 
 /**
  * The admin area's sidebar, the stock shadcn one that collapses to icons: the brand, the
- * destinations it is given, and the signed-in person at the foot. A judge's Reviews use it too,
- * with their own home and name.
+ * destinations it is given, in their groups, and the signed-in person at the foot. A judge's Reviews
+ * use it too, with their own home and name.
  */
 function AdminSidebar({
   account,
-  items,
+  groups,
   home = siteRoutes.admin,
   area,
 }: {
   account: AccountMenuProps;
-  items: AdminNavItem[];
+  groups: AdminNavGroup[];
   /** Where the brand leads. */
   home?: string;
   /** The name of the area under the brand; the admin area's by default. */
@@ -58,7 +58,7 @@ function AdminSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <AdminNav label={t("nav.label")} items={items} />
+        <AdminNav label={t("nav.label")} groups={groups} />
       </SidebarContent>
       <SidebarFooter>
         <AdminAccount {...account} />

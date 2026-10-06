@@ -59,6 +59,16 @@
   --color-use-case: var(--use-case);
   --color-solution: var(--solution);
   --color-talent: var(--talent);
+  --color-lemon: var(--lemon);
+  --color-lemon-foreground: var(--lemon-foreground);
+  --color-sky: var(--sky);
+  --color-sky-foreground: var(--sky-foreground);
+  --color-mint: var(--mint);
+  --color-mint-foreground: var(--mint-foreground);
+  --color-peach: var(--peach);
+  --color-peach-foreground: var(--peach-foreground);
+  --color-rose: var(--rose);
+  --color-rose-foreground: var(--rose-foreground);
   /* Elevations of the landing (DESIGN.md › Elevation & Depth), all in the --elevation colour. */
   --shadow-card: 0 4px 16px -4px color-mix(in oklch, var(--elevation) 5%, transparent);
   --shadow-tile:
@@ -118,6 +128,31 @@
   html {
     @apply font-sans;
   }
+  /* Tailwind resets buttons to the arrow; anything that can be clicked shows the hand. */
+  :where(
+    button,
+    [role="button"],
+    [role="combobox"],
+    [role="menuitem"],
+    [role="menuitemcheckbox"],
+    [role="menuitemradio"],
+    [role="option"],
+    [role="tab"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="radio"],
+    summary,
+    label[for],
+    select
+  ):not(:disabled, [aria-disabled="true"], [data-disabled]) {
+    cursor: pointer;
+  }
+}
+
+/* A thin scrollbar in the brand colour for the lists of a menu, so every list that scrolls looks alike. */
+@utility scrollbar-brand {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
 }
 
 /*

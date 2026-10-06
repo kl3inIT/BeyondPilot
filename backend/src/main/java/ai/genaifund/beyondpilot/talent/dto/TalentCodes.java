@@ -28,7 +28,7 @@ final class TalentCodes {
 
 	static final String ENQUIRY_TOPIC = "project|role|other";
 
-	static final String REJECTION = "incomplete|unverifiable|inappropriate|other";
+	static final String DECISION_REASON = "incomplete|unverifiable|inappropriate|other";
 
 	private TalentCodes() {
 	}

@@ -288,9 +288,11 @@
       "accounts": "Accounts",
       "auditLog": "Audit log",
       "organizations": "Organisations",
-      "solutions": "Solutions",
-      "talent": "Talent",
-      "introductions": "Introductions"
+      "solutions": "AI solutions",
+      "talent": "AI talent",
+      "introductions": "Introductions",
+      "review": "Review",
+      "system": "System"
     },
     "toggleSidebar": "Toggle sidebar",
     "programs": {
@@ -720,7 +722,12 @@
           "claim_approve": "Approved a claim",
           "claim_decline": "Declined a claim",
           "member_role": "Changed a member's role",
-          "member_remove": "Removed a member"
+          "member_remove": "Removed a member",
+          "suspend": "Took an organization down",
+          "restore": "Restored an organization",
+          "update": "Saved an organization's profile",
+          "invite": "Invited someone to an organization",
+          "invitation_revoke": "Withdrew an invitation"
         },
         "solution": {
           "approve": "Approved a solution",
@@ -781,7 +788,12 @@
           "claim_approve": "Approved a claim to own <resource></resource>",
           "claim_decline": "Declined a claim to own <resource></resource>",
           "member_role": "Changed a member's role in <resource></resource>",
-          "member_remove": "Removed a member from <resource></resource>"
+          "member_remove": "Removed a member from <resource></resource>",
+          "suspend": "Took down the organization <resource></resource>",
+          "restore": "Restored the organization <resource></resource>",
+          "update": "Saved the profile of <resource></resource>",
+          "invite": "Invited someone to <resource></resource>",
+          "invitation_revoke": "Withdrew an invitation to <resource></resource>"
         },
         "solution": {
           "approve": "Approved the solution <resource></resource>",
@@ -863,27 +875,28 @@
       "status": {
         "pending": "Needs review",
         "approved": "Approved",
-        "rejected": "Not approved"
+        "rejected": "Not approved",
+        "suspended": "Taken down"
       },
       "columns": {
         "organization": "Organisation",
         "request": "Request",
         "status": "Status",
         "received": "Received",
-        "actions": "Actions"
+        "actions": "Actions",
+        "askedBy": "Asked by"
       },
       "request": {
         "new": "New organization",
         "claim": "Claim",
         "none": "—"
       },
-      "members": "{count, plural, one {# member} other {# members}}",
       "unowned": "No owner",
       "actions": {
         "open": "Actions for {name}",
         "review": "Review…",
         "record": "Open record",
-        "claims": "Open record and claims"
+        "claim": "Decide claim…"
       },
       "needReview": "{count, plural, one {# needs review} other {# need review}}",
       "empty": {
@@ -899,43 +912,35 @@
       "create": {
         "open": "Add organization",
         "title": "Add an organization",
-        "lead": "It is approved at once. Use this to list a company before anyone from it signs in.",
         "name": "Organization name",
         "nameRequired": "Enter the organization's name.",
-        "roles": "Role on BeyondPilot",
-        "rolesRequired": "Choose at least one.",
-        "type": "Type",
-        "emailDomain": "Email domain (optional)",
-        "emailDomainHint": "People who sign in with this domain are offered the organization.",
-        "emailDomainInvalid": "Enter a company domain such as example.com that no other organization uses.",
-        "ownerEmail": "Owner's email (optional)",
-        "ownerEmailHint": "They are invited to own it. Leave empty to let someone claim it.",
+        "type": "Organization type",
+        "typePlaceholder": "Choose a type",
+        "typeRequired": "Choose the type of organization.",
+        "ownerEmail": "Owner's email",
+        "emailDomain": "Email domain",
         "ownerEmailInvalid": "Enter a full email address.",
-        "website": "Website (optional)",
+        "website": "Website",
         "websiteInvalid": "Enter a full address that starts with https://",
         "cancel": "Cancel",
         "confirm": "Add organization"
       },
       "detail": {
         "back": "All organizations",
-        "roles": "Role",
-        "type": "Type",
-        "country": "Country",
-        "teamSize": "Team size",
-        "website": "Website",
-        "emailDomain": "Email domain",
-        "createdBy": "Created",
         "createdByOn": "{name} on {day}",
-        "description": "About",
-        "notStated": "Not stated",
         "refused": "Not approved: {reason}.",
         "claims": "Claims to own it",
-        "approveClaim": "Make owner",
-        "declineClaim": "Decline",
-        "members": "{count, plural, =0 {Members} one {# member} other {# members}}",
-        "noMembers": "Nobody belongs to this organization yet.",
-        "invitations": "Open invitations",
-        "industries": "Industries"
+        "tabs": {
+          "label": "Sections of this organization",
+          "profile": "Profile",
+          "members": "Members"
+        },
+        "viewPage": "View page",
+        "takenDown": {
+          "title": "Taken down on {day}",
+          "reason": "Reason: {reason}.",
+          "foot": "Its public page and its solutions are hidden. Its {members, plural, one {# member keeps} other {# members keep}} their workspace and read this reason there."
+        }
       },
       "review": {
         "title": "Review {name}",
@@ -951,14 +956,101 @@
         "message": "Message to the owners",
         "messageHint": "The decision is recorded in the audit log.",
         "back": "Back",
-        "reasonPlaceholder": "Choose a reason"
+        "reasonPlaceholder": "Choose a reason",
+        "domain": "Email domain to verify (optional)",
+        "domainHint": "Confirm it is the company's own domain. Its owners can then let colleagues on it join at once.",
+        "domainInvalid": "Enter a domain such as example.com, or leave it empty.",
+        "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate."
       },
       "clear": "Clear filters",
       "queueEmpty": {
         "title": "Nothing waits for review",
         "description": "Every new organization has a decision.",
         "home": "Back to Admin home"
-      }
+      },
+      "claim": {
+        "title": "Decide the claim for {name}",
+        "lead": "Nobody owns this organization yet. This person asked to own it on {day}.",
+        "leadUnknown": "Nobody owns this organization yet, and someone asked to own it.",
+        "domain": "Email domain to verify (optional)",
+        "domainHint": "Confirm it is the company's own domain. Its owner can then let colleagues on it join at once.",
+        "domainInvalid": "Enter a domain such as example.com, or leave it empty.",
+        "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate.",
+        "note": "Approving makes the person its owner; other claims then go to them. The person is told by email either way, and the decision is recorded in the audit log.",
+        "decline": "Decline",
+        "approve": "Make owner"
+      },
+      "takeDown": {
+        "open": "Actions for {name}",
+        "menu": "Take down…",
+        "title": "Take down {name}",
+        "lead": "Its public page and its solutions leave the directories at once. Its {members, plural, one {# member keeps} other {# members keep}} their workspace and read the reason there.",
+        "reason": "Reason",
+        "reasonPlaceholder": "Choose a reason",
+        "message": "Message to the owners",
+        "messageHint": "The owners are told by email. You can restore the organization at any time; both are recorded in the audit log.",
+        "confirm": "Take down",
+        "cancel": "Cancel",
+        "restore": "Restore",
+        "restoreTitle": "Restore {name}?",
+        "restoreLead": "Its public page, its solutions and its approved deployments are shown again, and its owners can invite people and publish.",
+        "restoreNote": "The owners are told by email. The take-down and its reason stay in the audit log."
+      },
+      "people": {
+        "title": "Members",
+        "summary": {
+          "members": "{count, plural, =0 {No members} one {# member} other {# members}}",
+          "invitations": "{count, plural, one {# invitation open} other {# invitations open}}"
+        },
+        "empty": "Nobody belongs to this organization yet. Invite its first owner.",
+        "invited": "Invited {day}",
+        "invitePending": "Invited",
+        "columns": {
+          "member": "Member",
+          "role": "Role",
+          "joined": "Joined",
+          "actions": "Actions"
+        },
+        "actions": {
+          "open": "Actions for {name}",
+          "makeOwner": "Make owner",
+          "makeMember": "Make member",
+          "remove": "Remove from organization"
+        },
+        "demote": {
+          "title": "Make the only owner a member?",
+          "lead": "The organization will have no owner. Nobody can invite people or change its profile until you invite one.",
+          "confirm": "Make member"
+        },
+        "remove": {
+          "title": "Remove this member?",
+          "lead": "They lose access to the organization's profile, members and solutions.",
+          "lastOwnerLead": "They are the only owner. The organization will have none until you invite one.",
+          "confirm": "Remove member"
+        },
+        "confirm": {
+          "note": "What the organization published stays. They can be invited again at any time.",
+          "cancel": "Cancel"
+        },
+        "revoke": {
+          "open": "Withdraw the invitation to {email}",
+          "title": "Withdraw this invitation?",
+          "lead": "The link in the email stops working. You can invite them again.",
+          "confirm": "Withdraw invitation"
+        },
+        "invite": {
+          "open": "Invite a person",
+          "title": "Invite someone to {name}",
+          "lead": "They get an email, and join after signing in. Your invitations do not count against the organization's limits.",
+          "email": "Email address",
+          "emailInvalid": "Enter one email address.",
+          "role": "Role",
+          "note": "The invitation is recorded in the audit log.",
+          "cancel": "Cancel",
+          "send": "Send invitation"
+        }
+      },
+      "members": "{count, plural, one {# member} other {# members}}"
     },
     "solutions": {
       "metaTitle": "Solutions · BeyondPilot",
@@ -1092,7 +1184,7 @@
       "open": "Open",
       "review": {
         "open": "Review",
-        "approve": "Approve",
+        "approve": "Approve and list",
         "reject": "Ask for changes…",
         "takeDown": "Remove…",
         "rejectTitle": "Ask for changes to {name}?",
@@ -1106,8 +1198,8 @@
         "takeDownConfirm": "Remove",
         "reasonPlaceholder": "Choose a reason",
         "takeDownTitle": "Remove {name}?",
-        "keys": "Keys: A approve · S ask for changes",
-        "keysApproved": "Key: S remove"
+        "keyA": "Key: A",
+        "keyS": "Key: S"
       },
       "detail": {
         "back": "All talent",
@@ -1118,7 +1210,30 @@
         "position": "{place} of {total} waiting",
         "waitingSince": "Sent {time}",
         "public": "Open the public page",
-        "removed": "Removed: {reason}."
+        "removed": "Removed: {reason}.",
+        "decision": {
+          "draft": {
+            "title": "Not sent for review yet",
+            "lead": "The person is still writing the profile. Nobody sees it until it is approved."
+          },
+          "submitted": {
+            "title": "Asks to be listed in the directory",
+            "lead": "Check that the page is about professional work, names no customer without permission, and says what the person did in each project. Approving opens the page and lists it."
+          },
+          "approved": {
+            "title": "Approved",
+            "lead": "The page is public while its person keeps it listed. Removing takes it out of the directory at once and tells them why."
+          },
+          "changes_requested": {
+            "title": "Changes requested",
+            "lead": "The profile is back with its person. It returns here when they send it again."
+          },
+          "removed": {
+            "title": "Removed from the directory",
+            "lead": "The page is not public. It returns here if its person sends it again."
+          }
+        },
+        "audited": "The decision is recorded in the audit log."
       },
       "queueEmpty": {
         "title": "Nothing waits for review",
@@ -1134,11 +1249,6 @@
         "back": "All talent",
         "from": "From {sender}",
         "to": "To {name}",
-        "topic": {
-          "project": "About a project",
-          "role": "About a role",
-          "other": "About something else"
-        },
         "sent": "Sent {date}",
         "reportedAt": "Reported {date}",
         "empty": {
@@ -1208,10 +1318,6 @@
     }
   },
   "Vocabulary": {
-    "organizationRole": {
-      "provider": "AI provider",
-      "enterprise": "Enterprise"
-    },
     "organizationType": {
       "company": "Company",
       "builder_team": "Builder team",
@@ -1363,6 +1469,12 @@
       "unverifiable": "Could not be verified",
       "other": "Another reason"
     },
+    "organizationTakeDown": {
+      "misleading_information": "Misleading or false information",
+      "not_a_real_organization": "Not a real organization",
+      "breaks_the_rules": "Breaks the rules",
+      "other": "Other reason"
+    },
     "talentStatus": {
       "draft": "Draft",
       "submitted": "In review",
@@ -1391,6 +1503,11 @@
       "pilot": "Pilot",
       "in_production": "In production",
       "internal_tool": "Internal tool"
+    },
+    "enquiryTopic": {
+      "project": "About a project",
+      "role": "About a role",
+      "other": "About something else"
     }
   },
   "Organization": {
@@ -1405,7 +1522,8 @@
     "status": {
       "pending": "In review",
       "approved": "Approved",
-      "rejected": "Not approved"
+      "rejected": "Not approved",
+      "suspended": "Taken down"
     },
     "pending": {
       "title": "GenAI Fund is reviewing your organization",
@@ -1424,6 +1542,7 @@
       "ORGANIZATION_NOT_FOUND": "This organization no longer exists.",
       "ORGANIZATION_MEMBERSHIP_REQUIRED": "You are no longer a member of this organization.",
       "ORGANIZATION_OWNER_REQUIRED": "Only an owner can do this.",
+      "ORGANIZATION_LOGO_NOT_USABLE": "This logo cannot be used. Upload the image again.",
       "ORGANIZATION_ALREADY_MEMBER": "You already belong to an organization. Leave it first.",
       "ORGANIZATION_REQUEST_PENDING": "You already have a request waiting. Withdraw it first.",
       "ORGANIZATION_INVITATION_NOT_FOUND": "This invitation is no longer open.",
@@ -1436,7 +1555,11 @@
       "ORGANIZATION_NOT_AWAITING_REVIEW": "This organization has already been reviewed.",
       "ORGANIZATION_DOMAIN_TAKEN": "Another organization already uses this email domain.",
       "REQUEST_INVALID": "Check the marked fields and try again.",
-      "unknown": "That did not work. Try again."
+      "unknown": "That did not work. Try again.",
+      "ORGANIZATION_DOMAIN_NOT_VERIFIED": "People join at once only on a domain GenAI Fund verified for an approved organization.",
+      "ORGANIZATION_NOT_APPROVED": "You can invite people once GenAI Fund has approved the organization.",
+      "ORGANIZATION_INVITATION_DAILY_LIMIT": "The organization has sent the most invitations it can in a day. Invite more people tomorrow.",
+      "ORGANIZATION_INVITATION_OPEN_LIMIT": "The organization has the most invitations it can keep open. Revoke some, or wait for people to answer."
     },
     "done": {
       "invitationAccepted": "You joined the organization.",
@@ -1453,7 +1576,6 @@
       "created": "Organization created and sent for review.",
       "adminCreated": "{name} created.",
       "joined": "You joined {name}.",
-      "owner": "You now own {name}.",
       "requested": "Request sent to {name}.",
       "madeOwner": "{name} is now an owner.",
       "madeMember": "{name} is now a member.",
@@ -1461,23 +1583,22 @@
       "removed": "{name} was removed.",
       "invited": "{count, plural, one {Invitation sent.} other {# invitations sent.}}",
       "jobTitleSaved": "Job title saved.",
-      "autoJoinOn": "Colleagues on your email domain now join without asking.",
-      "autoJoinOff": "Colleagues on your email domain now ask to join."
+      "autoJoinOn": "Colleagues on your verified domain now join without asking.",
+      "autoJoinOff": "Colleagues on your verified domain now ask to join.",
+      "askedAgain": "Request sent.",
+      "takenDown": "{name} was taken down. Its owners were told.",
+      "restored": "{name} is back. Its owners were told."
     },
     "form": {
       "metaTitle": "Create an organization · BeyondPilot",
       "createTitle": "Create your organization",
-      "createLead": "A company, a team or just you. GenAI Fund reviews a new organization before it appears in the directories. You can prepare your profile in the meantime.",
+      "createLead": "Everyone belongs to one organization. Independent builders can create a practice or team.",
       "profileTitle": "Organization profile",
       "profileLead": "Shown with every solution the organization lists. Only owners can edit it.",
       "basics": "Basics",
       "about": "About",
-      "optional": "Optional",
       "name": "Organization name",
       "nameRequired": "Enter the organization's name.",
-      "roles": "What does it do on BeyondPilot?",
-      "rolesRequired": "Choose at least one.",
-      "rolesHint": "A provider lists AI solutions. An enterprise publishes use cases it wants solved. Choose both if both are true.",
       "type": "Type",
       "country": "Country",
       "countryPlaceholder": "Select a country",
@@ -1487,10 +1608,10 @@
       "website": "Website",
       "websiteInvalid": "Enter a full address that starts with https://",
       "description": "Short description",
-      "descriptionHint": "What the organization does and for whom, in a few sentences.",
+      "descriptionHint": "What the organization does and for whom, in at most 280 characters.",
       "counter": "{count} / {max}",
       "save": "Save changes",
-      "create": "Create organization",
+      "create": "Submit for approval",
       "cancel": "Cancel",
       "emailDomain": "Verified email domain",
       "emailDomainHint": "The domain of the organization's work email. Who can join with it is set in Members.",
@@ -1511,8 +1632,36 @@
       "industriesHint": "The industries it works in or serves. Choose up to {count}. {chosen} chosen.",
       "countryRequired": "Select a country.",
       "teamSizeRequired": "Select a team size.",
-      "jobTitle": "Your role or job title",
-      "jobTitleHint": "What you do in the organization. It shows beside your name among its members."
+      "websiteHint": "Independent builders can use their portfolio website.",
+      "foundedYear": "Year founded",
+      "foundedYearHint": "For an independent builder, the year the practice started.",
+      "foundedYearInvalid": "Enter a four-digit year, such as 2021.",
+      "descriptionRequired": "Describe the organization in a few words.",
+      "logo": {
+        "label": "Logo",
+        "upload": "Upload logo",
+        "change": "Change logo",
+        "remove": "Remove logo",
+        "alt": "The organization's logo",
+        "errors": {
+          "type": "Use a PNG, JPEG or WebP image.",
+          "size": "Use an image of 5 MB or less.",
+          "failed": "The logo did not upload. Try again."
+        }
+      },
+      "basicsLead": "Who you are and where to find you.",
+      "aboutLead": "What you do, who you serve and how long you have been doing it.",
+      "industriesPlaceholder": "Type to find an industry",
+      "industriesEmpty": "No industry matches.",
+      "industriesRemove": "Remove {industry}",
+      "domain": {
+        "title": "Email domain",
+        "lead": "Verified by GenAI Fund. A person who signs in with an address on it is pointed to this organization.",
+        "label": "Verified domain",
+        "hint": "Leave it empty when the organization has no domain of its own, such as a team on Gmail. Joining without asking is off; the owners turn it on from their Members page.",
+        "invalid": "Enter a domain such as example.com, or leave it empty.",
+        "taken": "Another organization already has this domain."
+      }
     },
     "find": {
       "title": "Find your organization",
@@ -1533,7 +1682,7 @@
       "create": "Create a new organization",
       "note": {
         "create": "Working alone? Create an organization for just you. You can add people later.",
-        "claim": "If your email is on the organization's email domain, you become its owner at once. Otherwise GenAI Fund reviews the claim.",
+        "claim": "GenAI Fund reviews every claim before it makes you the owner. We email you the result.",
         "request": "An owner of {name} decides.",
         "requestDomain": "Your email is not on {domain}, so an owner of {name} decides."
       },
@@ -1548,7 +1697,7 @@
         },
         "join": {
           "title": "Join {name}?",
-          "lead": "Your email domain matches, so you join at once."
+          "lead": "Your email is on its verified domain, so you join at once."
         },
         "message": "Message (optional)",
         "cancel": "Cancel"
@@ -1571,11 +1720,22 @@
       "request": {
         "claimTitle": "Your claim for {name} is with GenAI Fund",
         "joinTitle": "Your request to join {name} is with its owners",
-        "claimSent": "Claim sent on {day}",
-        "joinSent": "Request sent on {day}",
-        "withdraw": "Withdraw request",
-        "claimNote": "GenAI Fund checks the claim by hand. Until then the page stays without an owner. Withdraw the request to choose another organization.",
-        "joinNote": "An owner decides. Withdraw the request to choose another organization."
+        "claimSent": "claim sent on {day}",
+        "joinSent": "asked on {day}",
+        "withdraw": "Withdraw the request",
+        "claimNote": "GenAI Fund checks every claim by hand, whatever address you signed in with. We email you the result. Until then the page stays without an owner.",
+        "joinNote": "An owner decides. We email you the answer. You can withdraw the request and look for another organization.",
+        "joinNoteDomain": "Joining at once is off for {domain}, or your email is not on it, so an owner decides. We email you the answer. You can withdraw the request and look for another organization."
+      },
+      "declined": {
+        "claimTitle": "Your claim for {name} was declined",
+        "joinTitle": "Your request to join {name} was declined",
+        "on": "declined on {day}",
+        "claimAgain": "Claim again",
+        "joinAgain": "Ask again",
+        "findAnother": "Find another organization",
+        "claimNote": "GenAI Fund could not confirm that you act for {name}. Sign in with a company address and claim again, or ask an owner to invite you.",
+        "joinNote": "An owner of {name} declined the request. Ask them directly if this is a mistake, or create your own organization."
       }
     },
     "members": {
@@ -1583,7 +1743,9 @@
       "title": "Members",
       "summary": {
         "members": "{count, plural, one {# member} other {# members}}",
-        "invitations": "{count, plural, one {# invitation pending} other {# invitations pending}}"
+        "invitations": "{count, plural, one {# invitation pending} other {# invitations pending}}",
+        "left": "{left} of {limit} invitations left today",
+        "notApproved": "you can invite people once the organization is approved"
       },
       "columns": {
         "member": "Member",
@@ -1606,7 +1768,7 @@
       },
       "access": {
         "title": "Who can join",
-        "domain": "Verified domain: {domain}",
+        "domain": "Domain verified by GenAI Fund: {domain}",
         "on": {
           "title": "Anyone with an @{domain} email joins as a member",
           "lead": "They join when they sign in with a verified company email. Turn this off to approve each request yourself.",
@@ -1618,6 +1780,11 @@
           "lead": "You approve each request. Turn this on to let them join at once as members.",
           "badge": "Off",
           "action": "Turn on"
+        },
+        "none": {
+          "title": "People ask to join, or you invite them",
+          "lead": "GenAI Fund has not verified an email domain for this organization, so nobody joins by their address alone.",
+          "foot": "No verified domain. Write to GenAI Fund to have one verified."
         }
       },
       "actions": {
@@ -1655,21 +1822,36 @@
       "invite": {
         "open": "Invite people",
         "title": "Invite people to {name}",
-        "lead": "Each person gets an email with a link, and joins when they accept.",
+        "lead": "Each person gets an email and sees the invitation after signing in with that address. {leftToday} of {dailyLimit} invitations left today; {leftOpen} of {openLimit} can still be open at once.",
         "emails": "Email addresses",
         "emailsPlaceholder": "name@company.com, name@company.com",
         "emailsInvalid": "Enter full email addresses, separated by commas.",
         "role": "Role",
         "note": "Members are shown on the team and can edit their own job title. Only owners edit the profile and the solutions, invite people and remove members.",
         "cancel": "Cancel",
-        "send": "Send invitations"
+        "send": "Send invitations",
+        "limit": {
+          "daily": {
+            "lead": "{name} has sent {limit} invitations today, the most an organization can send in a day. You can invite more people tomorrow.",
+            "note": "Revoking an invitation nobody answered does not give today's count back. Write to GenAI Fund if you are bringing a larger team."
+          },
+          "open": {
+            "lead": "{name} has {limit} invitations that nobody has answered yet, the most an organization can keep open. Revoke the ones you no longer need, or wait for people to answer.",
+            "note": "An invitation is open until the person answers or you revoke it. Write to GenAI Fund if you are bringing a larger team."
+          },
+          "close": "Close"
+        }
       }
+    },
+    "suspended": {
+      "title": "GenAI Fund took {name} down",
+      "reason": "Reason: {reason}.",
+      "foot": "Its public page and solutions are hidden. You keep your workspace; write to GenAI Fund to have it restored."
     }
   },
   "Solution": {
     "errors": {
       "SOLUTION_NOT_FOUND": "This solution no longer exists.",
-      "SOLUTION_PROVIDER_REQUIRED": "Only an owner of an approved AI provider can do this.",
       "SOLUTION_INCOMPLETE": "Fill in the marked fields before sending for review.",
       "SOLUTION_NOT_SUBMITTABLE": "This solution is already in review or approved.",
       "SOLUTION_NOT_A_DRAFT": "Only a draft can be deleted.",
@@ -1680,6 +1862,7 @@
       "SOLUTION_TOO_MANY_DEPLOYMENTS": "A solution lists at most 12 customer deployments. Remove one before adding another.",
       "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW": "This customer deployment is not waiting for review.",
       "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Someone else saved this customer deployment in the meantime. Reload the page and make your changes again.",
+      "SOLUTION_MEMBER_REQUIRED": "Only a member of an organization can do this.",
       "SOLUTION_DECK_NOT_USABLE": "This file cannot be the deck. Upload the PDF again.",
       "unknown": "That did not work. Try again."
     },
@@ -2229,12 +2412,18 @@
       "skills": "Skills",
       "engagement": "Open to",
       "rate": "Rate",
-      "projects": "Selected work",
-      "openProject": "See the work",
+      "projects": "Deployed projects",
+      "openProject": "View the project",
       "website": "Portfolio or LinkedIn",
       "nothingYet": "Nothing written yet.",
       "languages": "Languages",
-      "industries": "Industries"
+      "industries": "Industries",
+      "about": "About",
+      "projectsLead": "Each project shows how far it went, as the person states it.",
+      "noProject": "No deployed project yet.",
+      "facts": "Skills and industries",
+      "place": "Based in",
+      "worksAt": "Works at"
     },
     "profile": {
       "trail": "You are here",
@@ -2247,13 +2436,10 @@
       },
       "facts": {
         "country": "Based in",
-        "role": "Role",
         "website": "Portfolio or LinkedIn",
-        "city": "City",
         "worksAt": "Works at",
         "worksAtStated": "as stated by the person",
-        "languages": "Languages",
-        "industries": "Industries"
+        "languages": "Languages"
       },
       "notListed": "Not stated",
       "note": "Messages go through BeyondPilot. {name} reads your name and organization; neither email address is shared unless they accept.",
@@ -2322,11 +2508,6 @@
         "lead": "Accept to share your email address with the sender. Decline or report shares nothing.",
         "someone": "Someone",
         "from": "{name} · {organization}",
-        "topic": {
-          "project": "About a project",
-          "role": "About a role",
-          "other": "About something else"
-        },
         "status": {
           "pending": "Waits for you",
           "accepted": "Accepted",
@@ -3152,7 +3333,8 @@
         "title": "No applications yet",
         "description": "Submitted applications appear here. Drafts are never listed."
       },
-      "footer": "{shown, plural, one {# application} other {# applications}} · {drafts, plural, one {# draft was} other {# drafts were}} not submitted · {withdrawn} withdrawn"
+      "footer": "{shown, plural, one {# application} other {# applications}} · {drafts, plural, one {# draft was} other {# drafts were}} not submitted · {withdrawn} withdrawn",
+      "own": "Yours"
     },
     "application": {
       "metaTitle": "Application",
@@ -3184,7 +3366,8 @@
           "shortlisted": "Shortlisted",
           "not_selected": "Not selected"
         }
-      }
+      },
+      "own": "This application is yours or your organization's, so you don't score or decide it. Other judges and GenAI Fund do."
     },
     "assessment": {
       "title": "Your assessment · version {version}",
@@ -3369,5 +3552,46 @@
       "progress": "{done} of {total} scored",
       "closes": "Applications close {closes}"
     }
+  },
+  "Search": {
+    "metaTitle": "Search",
+    "metaTitleFor": "{q} · Search",
+    "label": "Search BeyondPilot",
+    "placeholder": "Search programs, solutions and talent",
+    "submit": "Search",
+    "clear": "Clear the search",
+    "results": "{count, plural, one {# result} other {# results}} for <query>“{q}”</query>",
+    "kindResults": {
+      "program": "{count, plural, one {# program} other {# programs}} for <query>“{q}”</query>",
+      "solution": "{count, plural, one {# AI solution} other {# AI solutions}} for <query>“{q}”</query>",
+      "talent": "{count, plural, one {# person} other {# people}} for <query>“{q}”</query>"
+    },
+    "kinds": {
+      "label": "Kinds of result",
+      "all": "All",
+      "program": "Programs",
+      "solution": "AI solutions",
+      "talent": "AI talent"
+    },
+    "seeAll": "See all {count}",
+    "count": "{count, plural, one {# result} other {# results}}",
+    "pastTheEnd": "No more results on this page.",
+    "directory": {
+      "program": "Browse the programs by type and phase",
+      "solution": "Narrow by industry, capability and stage in the AI solutions directory",
+      "talent": "Narrow by role, industry and country in the AI talent directory"
+    },
+    "by": "By {name}",
+    "customerCases": "{count, plural, =0 {No customer case yet} one {# customer case} other {# customer cases}}",
+    "start": {
+      "title": "Search BeyondPilot",
+      "description": "Find programs, AI solutions and AI talent by what they do."
+    },
+    "none": {
+      "title": "Nothing matches “{q}”",
+      "description": "Check the spelling or try a broader word."
+    },
+    "try": "Try",
+    "browse": "Or browse"
   }
 }

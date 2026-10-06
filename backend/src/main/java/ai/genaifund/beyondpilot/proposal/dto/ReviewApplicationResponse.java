@@ -28,7 +28,9 @@ public record ReviewApplicationResponse(@Schema(requiredMode = Schema.RequiredMo
 				description = "Its place among the program's submitted applications, from 1.") int position,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) int total,
 		@Schema(types = { "string", "null" }, format = "uuid") @Nullable UUID previousId,
-		@Schema(types = { "string", "null" }, format = "uuid") @Nullable UUID nextId) {
+		@Schema(types = { "string", "null" }, format = "uuid") @Nullable UUID nextId,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The caller's own application, or their organization's, which they never score or decide.") boolean own) {
 
 	@Schema(name = "SubmittedApplication", description = "What the applicant sent, as it was.")
 	public record Submitted(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String email,

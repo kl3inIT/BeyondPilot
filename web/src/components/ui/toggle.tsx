@@ -12,6 +12,9 @@ const toggleVariants = cva(
         default: "bg-transparent",
         outline:
           "border border-input bg-transparent text-foreground hover:bg-muted aria-pressed:border-primary aria-pressed:bg-accent aria-pressed:text-primary",
+        // A score from a scale (Figma RatingOption): the chosen one is filled, so it reads at a glance.
+        rating:
+          "border border-input bg-background text-foreground hover:bg-muted aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary",
       },
       size: {
         default:

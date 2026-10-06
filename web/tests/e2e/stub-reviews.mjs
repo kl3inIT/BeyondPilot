@@ -13,7 +13,6 @@ function organization(id, name, status, more) {
     slug: name.toLowerCase().replaceAll(" ", "-"),
     status,
     type: "company",
-    roles: ["provider"],
     country: "VN",
     teamSize: "10_49",
     industries: ["insurance"],
@@ -45,6 +44,7 @@ const organizations = [
     }),
     createdBy: "Linh Nguyễn",
     createdByEmail: "linh.nguyen@lumenhealth.example",
+    suggestedDomain: "lumenhealth.example",
     members: [
       person(
         "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a11",
@@ -59,10 +59,10 @@ const organizations = [
   {
     organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c02", "Open Kitchen", "approved", {
       type: "builder_team",
-      roles: ["enterprise"],
     }),
     createdBy: "Đạt Phan",
     createdByEmail: "dat.phan@example.com",
+    suggestedDomain: "openkitchen.example",
     members: [],
     invitations: [],
     claims: [
@@ -74,6 +74,9 @@ const organizations = [
         message: "I founded the team.",
         organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c02",
         organizationName: "Open Kitchen",
+        organizationType: "builder_team",
+        organizationCountry: "VN",
+        organizationDomain: null,
         createdAt: day,
       },
     ],
@@ -122,6 +125,53 @@ const organizations = [
       ),
     ],
     invitations: [],
+    claims: [],
+  },
+  {
+    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c06", "Quiet Mill", "suspended", {
+      suspensionReason: "misleading_information",
+      suspensionMessage: "Send us the contract or remove the customer.",
+      suspendedAt: "2026-10-06T03:00:00Z",
+    }),
+    createdBy: "Hana Lê",
+    createdByEmail: "hana.le@quietmill.example",
+    members: [
+      person(
+        "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a21",
+        "Hana Lê",
+        "hana.le@quietmill.example",
+        "owner",
+      ),
+    ],
+    invitations: [],
+    claims: [],
+  },
+  {
+    // Twelve people and an open invitation: the Members tab pages ten at a time.
+    organization: organization(
+      "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c07",
+      "Harbor Bank",
+      "approved",
+      {},
+    ),
+    createdBy: "Bao Tran",
+    createdByEmail: "bao.tran@harborbank.example",
+    members: Array.from({ length: 12 }, (_, index) =>
+      person(
+        `6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a${String(30 + index)}`,
+        `Teller ${String(index + 1).padStart(2, "0")}`,
+        `teller${index + 1}@harborbank.example`,
+        index === 0 ? "owner" : "member",
+      ),
+    ),
+    invitations: [
+      {
+        id: "7d5a7e96-4d42-4e97-9e99-4b7dad0f1e01",
+        email: "newhire@harborbank.example",
+        role: "member",
+        createdAt: day,
+      },
+    ],
     claims: [],
   },
 ];
@@ -223,11 +273,8 @@ function profile(id, name, status, more) {
     submittedAt: day,
     updatedAt: day,
     version: 1,
-    photoFileId: null,
-    city: null,
     languages: [],
     industries: [],
-    worksAt: null,
     ...more,
   };
 }
@@ -321,7 +368,6 @@ const introductions = [
 const reportedEnquiries = [
   {
     id: "7c1d7f0e-2b9a-4f3e-9d52-6a1f0b3c2e91",
-    profileId: "cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a04",
     profileName: "Siti Rahma",
     senderName: null,
     senderEmail: "growth@spam.example",
@@ -343,20 +389,23 @@ const lists = {
   "/api/organization/admin/organizations": {
     records: organizations,
     idOf: (record) => record.organization.id,
-    statusOf: (record) => record.organization.status,
+    // An open claim waits for a decision as a new organization does, whatever the review status.
+    statusOf: (record) => (record.claims.length > 0 ? "pending" : record.organization.status),
     textOf: (record) => record.organization.name,
-    summaryOf: ({ organization: { id, name, slug, status, type, roles, country }, ...record }) => ({
+    summaryOf: ({ organization: { id, name, slug, status, type, country }, ...record }) => ({
       id,
       name,
       slug,
       status,
       type,
-      roles,
       country,
       createdAt: day,
       members: record.members.length,
       owned: record.members.some((member) => member.role === "owner"),
-      openClaims: record.claims.length,
+      request: status === "pending" ? "new" : record.claims.length > 0 ? "claim" : null,
+      claimId: record.claims[0]?.id ?? null,
+      askedBy: status === "pending" ? record.createdBy : (record.claims[0]?.name ?? null),
+      requestedAt: status === "pending" || record.claims.length > 0 ? day : null,
     }),
   },
   "/api/solution/admin/solutions": {

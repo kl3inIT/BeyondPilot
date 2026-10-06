@@ -27,7 +27,6 @@ async function ReviewApplicationPage({ review, base }: ReviewApplicationPageProp
   const { head, submitted } = review;
   const released = Boolean(head.releasedAt);
   const nextHref = review.nextId ? `${base}/${review.nextId}` : null;
-  const criteria = new Map(head.criteria.map((criterion) => [criterion.id, criterion.name]));
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
@@ -69,16 +68,20 @@ async function ReviewApplicationPage({ review, base }: ReviewApplicationPageProp
 
       <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
         <div className="flex flex-col gap-4 lg:sticky lg:top-4 lg:order-2">
-          <AssessmentPanel
-            key={`${review.id}-${review.mine?.savedAt ?? "none"}`}
-            applicationId={review.id}
-            criteria={head.criteria}
-            mine={review.mine ?? null}
-            version={review.version}
-            judge={!head.operator}
-            released={released}
-            nextHref={nextHref}
-          />
+          {review.own ? (
+            <p className="rounded-lg border bg-muted p-4 text-sm">{t("own")}</p>
+          ) : (
+            <AssessmentPanel
+              key={`${review.id}-${review.mine?.savedAt ?? "none"}`}
+              applicationId={review.id}
+              criteria={head.criteria}
+              mine={review.mine ?? null}
+              version={review.version}
+              judge={!head.operator}
+              released={released}
+              nextHref={nextHref}
+            />
+          )}
           {head.operator && (
             <section
               aria-labelledby="scores-title"
@@ -124,8 +127,10 @@ async function ReviewApplicationPage({ review, base }: ReviewApplicationPageProp
                       </span>
                       {!other.conflict && (
                         <span className="text-muted-foreground">
-                          {Object.entries(other.scores)
-                            .map(([id, score]) => `${criteria.get(id) ?? "?"} ${score}`)
+                          {/* In the order the program lists its criteria. */}
+                          {head.criteria
+                            .filter((criterion) => other.scores[criterion.id] !== undefined)
+                            .map((criterion) => `${criterion.name} ${other.scores[criterion.id]}`)
                             .join(" · ")}
                         </span>
                       )}
@@ -136,7 +141,7 @@ async function ReviewApplicationPage({ review, base }: ReviewApplicationPageProp
               )}
             </section>
           )}
-          {head.operator && (
+          {head.operator && !review.own && (
             <DecisionPanel
               key={`${review.id}-${review.reviewStatus}`}
               programId={head.programId}

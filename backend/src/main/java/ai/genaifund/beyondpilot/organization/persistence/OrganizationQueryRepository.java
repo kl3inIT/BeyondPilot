@@ -3,13 +3,14 @@ package ai.genaifund.beyondpilot.organization.persistence;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationSummaryResponse;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -18,10 +19,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class OrganizationQueryRepository {
 
-	private static final String ADMIN_FILTER = """
+	/** The organizations the operators' list selects, each with the oldest open claim on it. */
+	private static final String ADMIN_SOURCE = """
+			from organization o
+			left join lateral (select r.id, r.account_id, r.created_at
+			                   from organization_join_request r
+			                   where r.organization_id = o.id and r.status = 'pending' and r.claim
+			                   order by r.created_at, r.id
+			                   limit 1) c on true
 			where (cast(:pattern as text) is null or lower(o.name) like :pattern escape '\\'
 			       or lower(o.email_domain) like :pattern escape '\\')
-			  and (cast(:status as text) is null or o.status = :status)
+			  and (cast(:status as text) is null or o.status = :status or (:status = 'pending' and c.id is not null))
 			""";
 
 	private final JdbcClient jdbc;
@@ -33,6 +41,16 @@ public class OrganizationQueryRepository {
 	/** What a person choosing an organization to join sees of one. */
 	public record Match(UUID id, String name, String type, @Nullable String country, @Nullable String emailDomain,
 			boolean autoJoin, boolean owned) {
+	}
+
+	/**
+	 * One organization in the operators' list, with the claim that waits on it when there is one.
+	 * @param claimId the oldest open claim, a request to own it that operators decide; null when nobody asks
+	 */
+	public record AdminRow(UUID id, String slug, String name, String type,
+			@Nullable String country, String status, int members, boolean owned, UUID createdByAccountId,
+			Instant createdAt, @Nullable UUID claimId, @Nullable UUID claimantAccountId,
+			@Nullable Instant claimedAt) {
 	}
 
 	/** What another module shows of an organization. */
@@ -57,43 +75,53 @@ public class OrganizationQueryRepository {
 	}
 
 	public List<Name> names(Collection<UUID> ids) {
+		return names(ids, "");
+	}
+
+	/** The names of those of these organizations that are approved; one taken down or in review is left out. */
+	public List<Name> approvedNames(Collection<UUID> ids) {
+		return names(ids, " and status = 'approved'");
+	}
+
+	private List<Name> names(Collection<UUID> ids, String condition) {
 		if (ids.isEmpty()) {
 			return List.of();
 		}
-		return jdbc.sql("select id, slug, name, country from organization where id in (:ids)")
+		return jdbc.sql("select id, slug, name, country from organization where id in (:ids)" + condition)
 			.param("ids", ids)
 			.query((row, index) -> new Name(row.getObject("id", UUID.class), row.getString("slug"),
 					row.getString("name"), row.getString("country")))
 			.list();
 	}
 
-	/** One page for operators: those waiting for review first, then the newest. */
-	public List<AdminOrganizationSummaryResponse> adminPage(@Nullable String text, @Nullable String status, int limit,
-			long offset) {
+	/**
+	 * One page for operators: those a decision waits on first, a new organization or a claim, then the newest.
+	 * @param status a review status; {@code pending} also selects an organization with an open claim
+	 */
+	public List<AdminRow> adminPage(@Nullable String text, @Nullable String status, int limit, long offset) {
 		return adminFiltered("""
-				select o.id, o.slug, o.name, o.roles, o.type, o.country, o.status, o.created_at,
+				select o.id, o.slug, o.name, o.type, o.country, o.status, o.created_by_account_id, o.created_at,
 				       (select count(*) from organization_member m where m.organization_id = o.id) as members,
-				       (select count(*) from organization_member m
-				        where m.organization_id = o.id and m.role = 'owner') as owners,
-				       (select count(*) from organization_join_request r
-				        where r.organization_id = o.id and r.status = 'pending') as requests
-				from organization o
-				""" + ADMIN_FILTER + """
-				order by case o.status when 'pending' then 0 else 1 end, o.created_at desc, o.id
+				       exists (select 1 from organization_member m
+				               where m.organization_id = o.id and m.role = 'owner') as owned,
+				       c.id as claim_id, c.account_id as claimant_account_id, c.created_at as claimed_at
+				""" + ADMIN_SOURCE + """
+				order by case when o.status = 'pending' or c.id is not null then 0 else 1 end,
+				         coalesce(c.created_at, o.created_at) desc, o.id
 				limit :limit offset :offset
 				""", text, status).param("limit", limit).param("offset", offset).query((row, index) -> {
-			boolean owned = row.getInt("owners") > 0;
-			return new AdminOrganizationSummaryResponse(row.getObject("id", UUID.class), row.getString("slug"),
-					row.getString("name"), strings(row.getArray("roles")), row.getString("type"),
-					row.getString("country"), row.getString("status"), row.getInt("members"), owned,
-					// A request to an organization nobody owns is a claim, which operators decide.
-					owned ? 0 : row.getInt("requests"), row.getTimestamp("created_at").toInstant());
+			Timestamp claimedAt = row.getTimestamp("claimed_at");
+			return new AdminRow(row.getObject("id", UUID.class), row.getString("slug"), row.getString("name"),
+					row.getString("type"), row.getString("country"),
+					row.getString("status"), row.getInt("members"), row.getBoolean("owned"),
+					row.getObject("created_by_account_id", UUID.class), row.getTimestamp("created_at").toInstant(),
+					row.getObject("claim_id", UUID.class), row.getObject("claimant_account_id", UUID.class),
+					claimedAt == null ? null : claimedAt.toInstant());
 		}).list();
 	}
 
 	public long adminCount(@Nullable String text, @Nullable String status) {
-		return adminFiltered("select count(*) from organization o\n" + ADMIN_FILTER, text, status).query(Long.class)
-			.single();
+		return adminFiltered("select count(*)\n" + ADMIN_SOURCE, text, status).query(Long.class).single();
 	}
 
 	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, @Nullable String status) {

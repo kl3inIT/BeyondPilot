@@ -42,7 +42,7 @@ public class OrganizationDirectory {
 		return memberships.memberOf(actor.accountId())
 			.flatMap(member -> organizations.findById(member.organizationId())
 				.map(organization -> new Membership(organization.getId(), organization.getName(), member.isOwner(),
-						organization.isApproved(), organization.getRoles())));
+						organization.isApproved())));
 	}
 
 	/** Who this organization is, read now; empty when it does not exist. */
@@ -93,6 +93,15 @@ public class OrganizationDirectory {
 		return new PublicOrganizationResponse(organization.getSlug(), organization.getName(), organization.getType(),
 				organization.getCountry(), organization.getIndustries(), organization.getWebsite(),
 				organization.getDescription());
+	}
+
+	/** The names of the approved ones of these organizations by identifier; one taken down or in review is left out. */
+	@Transactional(readOnly = true)
+	public Map<UUID, OrganizationName> approvedNames(Collection<UUID> organizationIds) {
+		return organizationList.approvedNames(organizationIds)
+			.stream()
+			.collect(Collectors.toMap(OrganizationQueryRepository.Name::id,
+					name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country())));
 	}
 
 	/**

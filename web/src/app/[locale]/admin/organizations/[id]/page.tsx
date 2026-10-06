@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { AdminOrganizationPage } from "@/features/organization/admin-organization-page";
+import { loadAdminOrganizationSearch } from "@/features/organization/admin-organization-search";
 import { readAdminOrganization } from "@/features/organization/organization-queries";
 import { requireRole } from "@/lib/auth/session";
 import { siteRoutes, titleSuffix } from "@/lib/site";
@@ -24,14 +25,16 @@ export async function generateMetadata({
 
 export default async function AdminOrganizationRoute({
   params,
+  searchParams,
 }: PageProps<"/[locale]/admin/organizations/[id]">) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   await requireRole("operator", `${siteRoutes.adminOrganizations}/${id}`);
+  const { tab, page } = await loadAdminOrganizationSearch(searchParams);
   const detail = await readAdminOrganization(id);
   if (!detail) {
     notFound();
   }
 
-  return <AdminOrganizationPage detail={detail} />;
+  return <AdminOrganizationPage detail={detail} tab={tab} page={page} />;
 }

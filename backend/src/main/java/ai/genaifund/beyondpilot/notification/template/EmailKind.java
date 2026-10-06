@@ -30,6 +30,18 @@ public enum EmailKind {
 	ORGANIZATION_REFUSED("organization_refused", EmailGroup.ORGANIZATIONS, true, null,
 			Variable.required("organizationName", "Plain Cover")),
 
+	ORGANIZATION_REQUEST_APPROVED("organization_request_approved", EmailGroup.ORGANIZATIONS, true, null,
+			Variable.required("organizationName", "Plain Cover"), Variable.optional("claim", Boolean.FALSE)),
+
+	ORGANIZATION_REQUEST_DECLINED("organization_request_declined", EmailGroup.ORGANIZATIONS, true, null,
+			Variable.required("organizationName", "Plain Cover"), Variable.optional("claim", Boolean.FALSE)),
+
+	ORGANIZATION_TAKEN_DOWN("organization_taken_down", EmailGroup.ORGANIZATIONS, true, null,
+			Variable.required("organizationName", "Plain Cover")),
+
+	ORGANIZATION_RESTORED("organization_restored", EmailGroup.ORGANIZATIONS, true, null,
+			Variable.required("organizationName", "Plain Cover")),
+
 	APPLICATION_RECEIVED("application_received", EmailGroup.APPLICATIONS, true, null,
 			Variable.required("programName", "AI for Insurance Challenge × Tasco"),
 			Variable.optional("resubmitted", Boolean.FALSE),

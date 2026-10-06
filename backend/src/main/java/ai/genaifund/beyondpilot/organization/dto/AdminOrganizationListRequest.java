@@ -11,9 +11,9 @@ import org.jspecify.annotations.Nullable;
 public record AdminOrganizationListRequest(
 		@Parameter(description = "Organizations whose name or domain contains this, ignoring case.") @Size(
 				max = 100) @Nullable String q,
-		@Parameter(description = "Only organizations of this review status.",
-				schema = @Schema(allowableValues = { "pending", "approved", "rejected" })) @Pattern(
-						regexp = "pending|approved|rejected") @Nullable String status,
+		@Parameter(description = "Only organizations of this review status; `pending` also selects an approved one with an open claim.",
+				schema = @Schema(allowableValues = { "pending", "approved", "rejected", "suspended" })) @Pattern(
+						regexp = "pending|approved|rejected|suspended") @Nullable String status,
 		@Parameter(description = "The page, counted from 1.",
 				schema = @Schema(type = "integer", format = "int32", defaultValue = "1", minimum = "1")) @Min(1) @Nullable Integer page) {
 }

@@ -38,8 +38,9 @@ type TalentEnquiryProps = {
 
 /**
  * "Contact …": the name the sender signs with, what the message is about and the message itself.
- * The person reads it with that name and the sender's organization and answers in their workspace; neither address is shared unless
- * they accept. Once sent, the page is read again so it shows the message waiting.
+ * The person reads it with that name and the sender's organization and answers in their workspace;
+ * neither address is shared unless they accept. Once sent, the page is read again so it shows the
+ * message waiting.
  */
 function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnquiryProps) {
   const t = useTranslations("Talent.enquiry");
@@ -116,7 +117,7 @@ function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnq
                 aria-describedby="talent-enquiry-name-hint"
               />
               {unsigned ? (
-                <FieldError>{t("senderNameRequired")}</FieldError>
+                <FieldError id="talent-enquiry-name-hint">{t("senderNameRequired")}</FieldError>
               ) : (
                 <FieldDescription id="talent-enquiry-name-hint">
                   {t("senderNameHint", { name })}
@@ -148,11 +149,12 @@ function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnq
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
                 aria-invalid={invalid || undefined}
+                aria-describedby="talent-enquiry-hint"
               />
               {invalid ? (
-                <FieldError>{t("required")}</FieldError>
+                <FieldError id="talent-enquiry-hint">{t("required")}</FieldError>
               ) : (
-                <FieldDescription>{t("hint")}</FieldDescription>
+                <FieldDescription id="talent-enquiry-hint">{t("hint")}</FieldDescription>
               )}
             </Field>
             <DialogFooter>

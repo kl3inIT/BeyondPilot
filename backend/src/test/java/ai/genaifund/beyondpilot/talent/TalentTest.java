@@ -569,12 +569,12 @@ class TalentTest {
 	private String organizationOwner(String email, String name) {
 		String session = signIn(email);
 		UUID organization = UUID.fromString(JsonPath.read(body(post(session, "/api/organization/organizations",
-				Map.of("name", name, "roles", List.of("enterprise"), "type", "company", "country", "VN", "teamSize",
-						"2_9", "industries", List.of("insurance"), "website", "https://example.test", "jobTitle",
-						"Founder"))
+				Map.of("name", name, "type", "company", "country", "VN", "teamSize", "2_9", "industries",
+						List.of("insurance"), "website", "https://example.test", "description",
+						"Assistants for insurers.", "foundedYear", 2021, "jobTitle", "Founder"))
 			.expectStatus()
 			.isCreated()), "$.id"));
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", null).expectStatus()
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of()).expectStatus()
 			.isNoContent();
 		return session;
 	}

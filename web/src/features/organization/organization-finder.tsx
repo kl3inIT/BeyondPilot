@@ -27,7 +27,6 @@ import { OrganizationMark } from "./organization-mark";
 /** What each outcome of joining is said as. */
 const done = {
   joined: "Organization.done.joined",
-  owner: "Organization.done.owner",
   requested: "Organization.done.requested",
 } as const;
 
@@ -43,8 +42,9 @@ type OrganizationFinderProps = {
 
 /**
  * How a person without an organization finds theirs: the one their email domain points at, then a
- * search by name. What happens on a click depends on the organization: joining at once, asking its
- * owners, or claiming one that nobody owns yet. Creating a new one is always offered beside it.
+ * search by name. What happens on a click depends on the organization: joining at once on its
+ * verified domain, asking its owners, or claiming one that nobody owns yet, which GenAI Fund reviews.
+ * Creating a new one is always offered beside it.
  */
 function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinderProps) {
   const t = useTranslations("Organization.find");

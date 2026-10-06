@@ -92,7 +92,10 @@ type DataTableFooterProps = {
  */
 function DataTableFooter({ count, page, pages, href, labels }: DataTableFooterProps) {
   return (
-    <div data-slot="data-table-footer" className="flex items-center justify-between gap-4">
+    <div
+      data-slot="data-table-footer"
+      className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+    >
       <p className="text-sm text-muted-foreground">{count}</p>
       {pages > 1 && (
         <Pagination aria-label={labels.navigation} className="mx-0 w-auto">
