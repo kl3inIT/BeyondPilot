@@ -145,10 +145,10 @@ The [local composition](development-runtime.md#run-the-whole-stack-in-containers
 Mailpit is on no network the proxy reaches. Open a tunnel to the environment's container and sign in as `team`; the password is in `<root>/secrets/mailpit-ui-password`, readable by root. Staging:
 
 ```sh
-ssh -L 8025:$(ssh aioffice-app "docker inspect --format '{{.NetworkSettings.Networks.beyondpilot-staging_internal.IPAddress}}' beyondpilot-staging-mailpit"):8025 aioffice-app
+ssh -L 8025:$(ssh aioffice-app "docker inspect --format '{{(index .NetworkSettings.Networks \"beyondpilot-staging_internal\").IPAddress}}' beyondpilot-staging-mailpit"):8025 aioffice-app
 ```
 
-Production uses `beyondpilot_internal` and `beyondpilot-mailpit`.
+Production uses `beyondpilot_internal` and `beyondpilot-mailpit`. A network name with a hyphen is read with `index`, as above; a plain field path stops at the hyphen.
 
 Then open `http://localhost:8025`.
 
