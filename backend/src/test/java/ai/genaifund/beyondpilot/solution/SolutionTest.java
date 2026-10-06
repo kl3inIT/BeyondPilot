@@ -239,6 +239,44 @@ class SolutionTest {
 	}
 
 	@Test
+	void theOperatorsListIsReadAPageAtATimeTheLongestWaitFirst() {
+		String founder = provider("founder@pager.test", "Pager Works");
+		for (int number = 1; number <= 26; number++) {
+			submitted(founder, "Pager Desk %02d".formatted(number));
+		}
+
+		String first = body(get(operator, ADMIN + "?q=pager desk").expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(first, "$.total")).isEqualTo(26);
+		assertThat(JsonPath.<Integer>read(first, "$.pageSize")).isEqualTo(25);
+		assertThat(JsonPath.<List<String>>read(first, "$.items[*].name")).hasSize(25).startsWith("Pager Desk 01");
+
+		String second = body(get(operator, ADMIN + "?q=pager desk&page=2").expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(second, "$.page")).isEqualTo(2);
+		assertThat(JsonPath.<List<String>>read(second, "$.items[*].name")).containsExactly("Pager Desk 26");
+		// A page past the last one is empty, not an error; a page before the first is refused.
+		assertThat(names(operator, ADMIN + "?q=pager desk&page=3")).isEmpty();
+		assertProblem(get(operator, ADMIN + "?page=0"), 400, "REQUEST_INVALID");
+	}
+
+	@Test
+	void aSolutionSentBeforeTheSenderWasRecordedNamesNobody() {
+		String founder = provider("founder@earlier.test", "Earlier Co");
+		UUID id = submitted(founder, "Earlier Desk");
+		// What a solution submitted before the column existed looks like.
+		jdbc.sql("update solution set submitted_by_account_id = null where id = ?").param(id).update();
+
+		String listed = body(get(operator, ADMIN + "?q=earlier desk").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(listed, "$.items[*].name")).containsExactly("Earlier Desk");
+		assertThat(JsonPath.<String>read(listed, "$.items[0].submittedBy")).isNull();
+		assertThat(JsonPath.<String>read(body(get(operator, ADMIN + "/" + id).expectStatus().isOk()), "$.submittedBy"))
+			.isNull();
+		// The owners read it the same way, and sending it again records who did.
+		post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "incomplete")).expectStatus().isNoContent();
+		String sentAgain = body(post(founder, MINE + "/" + id + "/submit", null).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(sentAgain, "$.submittedBy")).isEqualTo("founder@earlier.test");
+	}
+
+	@Test
 	void anOperatorTakesAnApprovedSolutionOutOfTheDirectory() {
 		String founder = provider("founder@removed.test", "Removed Co");
 		UUID id = approved(founder, "Removed Desk");

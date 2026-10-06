@@ -23,3 +23,5 @@ Boundaries follow [conventions › Testing](../conventions.md#testing). Who may 
 | The demo and the deck are optional `http(s)` links written by the owners and shown on the public page; another scheme is refused | A required field blocking an early-stage provider; a `javascript:` address on a public page |
 | A request for an introduction is accepted for an approved solution, listed or not | The way to reach a provider closed by a visibility choice |
 | The operators' list matches a solution by its name or by its organization's name, narrows by industry, names who sent each one, and counts what waits whatever narrows it | A search field that promises the organization and matches the solution only; a queue that hides how much waits |
+| The operators' list is read 25 at a time, the longest wait first; a page past the last is empty and a page before the first is refused | A queue that drops or repeats a solution between pages |
+| A solution sent before the sender was recorded names nobody, to operators and to its owners, and names the sender once it is sent again | A guess shown as the sender; a failure on the rows that existed before the column |
