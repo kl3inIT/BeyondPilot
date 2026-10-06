@@ -47,6 +47,33 @@ The history lists what happened to an application in order: its submission and e
 
 The rows in these tables are sample data: applications are private, and none exists in the new system yet. The operator area uses a sidebar (`AppSidebar`, full at 1440, icons at 1024) and a top bar with a breadcrumb. Still to draw, with the AI milestone: the candidate board per use case. After that: approving use cases and solutions, creating and editing a program, and the workspaces of providers and enterprises.
 
+### AI talent: directory, profile, enquiries and review
+
+One section, `AI talent — directory, profile, enquiries and review`, holds every talent screen of the flow agreed on 6 October 2026, with the flow map at its top. Its rows are labelled A to G:
+
+| Row | Screens                                                                                                                                              | Widths                         |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| A   | Directory, built on the AI solutions list: role chips, filters for availability, what the person is open to and country; each card shows a round photo, role and city, skills, the first project with how it was confirmed, the number of projects and the availability as a status; empty at launch, no match for the filters, the filters sheet | 1440, 1024 (two columns), 390 (one column, filters in a sheet) |
+| B   | Public talent profile: name, role and city, a row of counts (projects, confirmed by the enterprise, in production), the projects as a timeline whose entries carry the stage and who confirmed them, skills and industries as badges; one Contact card with the availability beside the content (first on a phone, then a sticky bar). The Contact dialog, its confirmation and the Contact sheet | 1440, 1024, 390                |
+| C   | Edit the profile and save a draft; sent for review, changes requested, removed by GenAI Fund                                                         | 1440 (edit also at 390)        |
+| D   | Approved and shown in the directory, or hidden; Enquiries tab and one enquiry to accept, decline or report                                          | 1440                           |
+| E   | Admin: profiles to review, one profile with Approve or Ask for changes, the reason dialog                                                           | 1440                           |
+| F   | Rows C and D at 390 (the enquiry as a bottom sheet); row E at 1024                                                                                   | 390, 1024                      |
+| G   | The talent's workspace at 1024: edit, in review, listed, Enquiries and one enquiry                                                                   | 1024                           |
+
+The suggestion to create a talent profile sits on the application receipt in row 8 of `Main flows — 6/10`, at all three widths.
+
+What the screens encode:
+
+1. **A talent profile never gates an application** ([brief §5-E, §7.9](../../../brief/BeyondPilot-Vendor-Product-Brief-and-Scope.md#79-ai-talent)); the receipt only suggests one.
+2. **A profile needs no organisation.** A project may name one, shown as stated by the person.
+3. **Nobody else opens a page before GenAI Fund approves it.** An approved profile is either shown in the directory or hidden from everyone but its owner; there is no page reachable only by its link, because people on BeyondPilot have no other way to pass one. Hiding or showing needs no new review, and an edit to an approved profile is public at once ([BEY-33, decision 5](../bey-33-organization-solution-talent/design.md#decisions)).
+4. **One Contact action** opens the enquiry, with "What it is about" as a field rather than two buttons.
+5. **An enquiry shares contacts only on acceptance.** The talent accepts, declines or reports it; neither email is shown before that. A report reads as a decline to the sender. An enquiry nobody answers closes after 14 days, with a reminder to the talent on day 7.
+6. **Every decision by GenAI Fund carries a reason** the talent sees, and reaches them by email. Asking for changes and removing a profile are two decisions; a removed profile can be corrected and sent again.
+
+The icons `Globe` and `EyeOff` (Lucide) are in the Icons frame for the two visibility choices, shown and hidden; the link-only choice was dropped on 6 October 2026, and its frames with it.
+
 New components are on the page `Foundations & Components`, section `Form and flow primitives`. The pairs that exist in code are recorded in [docs/figma-component-map.md](../../../figma-component-map.md).
 
 ## Decisions
@@ -87,7 +114,7 @@ Drawn in Figma and still to be written in code, with their first screen:
 
 - No behavior ships with this increment. The screens are implemented by the increments that follow (program pages, application submission, directory).
 - Sample answers inside the application form ("Claim Copilot", "Pocket Policy") are sample copy, as the Figma guide allows for text in the file. Programs, dates, partners, judges, use cases, solutions and results are real and sourced in [research.md](research.md).
-- The talent list, the profile, the deployment and the company page use sample people and sample projects, attached to the real company Revve AI and not labelled as sample data in the frames; where talent data comes from is undecided (BEY-5). Their portraits are stock photographs from Unsplash of people unrelated to the sample names, and must be replaced before anything ships.
+- The talent list, the profile, the deployment and the company page use sample people and sample projects, attached to the real company Revve AI and not labelled as sample data in the frames. Talent data arrives with the v1 export, and the mapping of the old data is still to be decided. Their portraits are stock photographs from Unsplash of people unrelated to the sample names, and must be replaced before anything ships.
 
 - The section "My organization" on the Screens page is a draft at 1440 only, drawn before the organization increment (BEY-33) has a design. It shows three ways in on one's own (join by verified email domain, claim a page nobody manages, create a new organization), two ways in by invitation (from an owner as a member, from GenAI Fund as the owner of a page it created) and the pages inside (Members with pending invitations and the domain setting, Invite people, Profile, Solutions), with the states that wait on someone: a request to join an organization on another domain, a request an owner approves when joining by domain is off, a search with no result, a new organization in review and one not approved, and a claim sent. Every organization has four tabs, Profile, Members, Solutions and Use cases; the Use cases tab is drawn for an enterprise (Tasco) with one draft. Three operator frames show the Organisations queue for a new organization and a claim, with a dialog to approve and one to refuse with a reason. The frames assume three rules no document records yet, which belong in the BEY-33 design: the domain is verified from an owner's work email, GenAI Fund can create a page and invite a person to own it, and a member edits only their own job title while owners edit the profile and the solutions. Its members, the pending invitation, the draft solution and the Tasco hand-over are sample data.
 
