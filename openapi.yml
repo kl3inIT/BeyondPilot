@@ -9308,6 +9308,12 @@ components:
           - "null"
           format: uuid
           description: "A program's cover, read at the public address of stored files."
+        customerDeployments:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: How many of a solution's customer deployments GenAI Fund approved.
         endsOn:
           type:
           - string
@@ -9374,6 +9380,10 @@ components:
         slug:
           type: string
           description: The address of its page under the path of its kind.
+        snippet:
+          type: string
+          description: "The summary, or a person's headline, with each word the query\
+            \ matched between U+0002 and U+0003, to be shown in bold."
         startsOn:
           type:
           - string
@@ -9407,6 +9417,7 @@ components:
       - roles
       - skills
       - slug
+      - snippet
       - summary
       - title
     SearchResults:

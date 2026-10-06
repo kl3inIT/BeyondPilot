@@ -3397,5 +3397,46 @@
       "progress": "{done} of {total} scored",
       "closes": "Applications close {closes}"
     }
+  },
+  "Search": {
+    "metaTitle": "Search",
+    "metaTitleFor": "{q} · Search",
+    "label": "Search BeyondPilot",
+    "placeholder": "Search programs, solutions and talent",
+    "submit": "Search",
+    "clear": "Clear the search",
+    "results": "{count, plural, one {# result} other {# results}} for <query>“{q}”</query>",
+    "kindResults": {
+      "program": "{count, plural, one {# program} other {# programs}} for <query>“{q}”</query>",
+      "solution": "{count, plural, one {# AI solution} other {# AI solutions}} for <query>“{q}”</query>",
+      "talent": "{count, plural, one {# person} other {# people}} for <query>“{q}”</query>"
+    },
+    "kinds": {
+      "label": "Kinds of result",
+      "all": "All",
+      "program": "Programs",
+      "solution": "AI solutions",
+      "talent": "AI talent"
+    },
+    "seeAll": "See all {count}",
+    "count": "{count, plural, one {# result} other {# results}}",
+    "pastTheEnd": "No more results on this page.",
+    "directory": {
+      "program": "Browse the programs by type and phase",
+      "solution": "Narrow by industry, capability and stage in the AI solutions directory",
+      "talent": "Narrow by role, industry and country in the AI talent directory"
+    },
+    "by": "By {name}",
+    "customerCases": "{count, plural, =0 {No customer case yet} one {# customer case} other {# customer cases}}",
+    "start": {
+      "title": "Search BeyondPilot",
+      "description": "Find programs, AI solutions and AI talent by what they do."
+    },
+    "none": {
+      "title": "Nothing matches “{q}”",
+      "description": "Check the spelling or try a broader word."
+    },
+    "try": "Try",
+    "browse": "Or browse"
   }
 }

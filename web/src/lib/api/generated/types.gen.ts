@@ -2247,6 +2247,10 @@ export type SearchItem = {
      * A program's cover, read at the public address of stored files.
      */
     coverFileId?: string | null;
+    /**
+     * How many of a solution's customer deployments GenAI Fund approved.
+     */
+    customerDeployments?: number | null;
     endsOn?: string | null;
     /**
      * Where a program's page is when it has none here.
@@ -2289,6 +2293,10 @@ export type SearchItem = {
      * The address of its page under the path of its kind.
      */
     slug: string;
+    /**
+     * The summary, or a person's headline, with each word the query matched between U+0002 and U+0003, to be shown in bold.
+     */
+    snippet: string;
     startsOn?: string | null;
     /**
      * The partner of a program, the organization of a solution, the headline of a person.

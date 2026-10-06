@@ -206,7 +206,9 @@ public class SolutionDirectory {
 					solution.getSummary(), solution.getProblemsSolved(), solution.getValueProposition(),
 					solution.getTraction(), solution.getBestCustomerProfile(), solution.getBuiltWith(),
 					solution.getFocusAreas(), solution.getIndustries(), solution.getMaturity(),
-					solution.getDeployment(), solution.isListed());
+					solution.getDeployment(),
+					deployments.countBySolutionIdAndStatus(solution.getId(), CustomerDeployment.APPROVED),
+					solution.isListed());
 		}).toList();
 	}
 
