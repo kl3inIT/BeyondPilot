@@ -26,11 +26,12 @@ import { siteRoutes } from "@/lib/site";
 
 import { adminUseCasesSearch, type AdminUseCasesSearch } from "./admin-use-cases-search";
 import { AdminUseCasesToolbar } from "./admin-use-cases-toolbar";
+import { LiveRefresh } from "./live-refresh";
 
 const address = createSerializer(adminUseCasesSearch);
 
 /** How each status reads to the operator; draft and closed are quiet, the rest ask for attention. */
-const variants = {
+const statusVariants = {
   draft: "secondary",
   in_review: "warning",
   needs_changes: "info",
@@ -77,7 +78,7 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
       </div>
     ),
     organization: <span className="text-muted-foreground">{useCase.organization.name}</span>,
-    status: <Badge variant={variants[useCase.status]}>{t(`status.${useCase.status}`)}</Badge>,
+    status: <Badge variant={statusVariants[useCase.status]}>{t(`status.${useCase.status}`)}</Badge>,
     closes: <span className="font-medium">{useCase.closesAt ? day(useCase.closesAt) : "—"}</span>,
     updated: <span className="text-muted-foreground">{day(useCase.updatedAt)}</span>,
     actions: (
@@ -131,6 +132,7 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
+      <LiveRefresh />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
@@ -209,4 +211,4 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
   );
 }
 
-export { AdminUseCasesPage };
+export { AdminUseCasesPage, statusVariants };

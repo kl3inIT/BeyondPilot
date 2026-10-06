@@ -1198,7 +1198,8 @@
           "hint": "Lý do được lưu cùng use case. Các thành viên của {organization} thấy nó cho đến khi họ gửi lại use case.",
           "cancel": "Hủy",
           "confirm": "Gửi lại"
-        }
+        },
+        "leadPublished": "Use case đang công khai. Trả lại sẽ gỡ nó khỏi danh sách và gửi lý do cho thành viên {organization}; họ chỉnh sửa rồi gửi lại."
       },
       "detail": {
         "metaTitle": "Use case · BeyondPilot",
@@ -1209,28 +1210,6 @@
           "draft": "{organization} · chỉ các thành viên của họ xem được",
           "published": "{organization} · có trong danh mục",
           "closed": "{organization} · đã đóng"
-        },
-        "banner": {
-          "in_review": {
-            "title": "Đang chờ quyết định của bạn",
-            "text": "Đọc bản mô tả bên dưới, rồi duyệt để đăng ngay, hoặc gửi lại kèm điều cần sửa. Khi đang duyệt, các thành viên của {organization} không sửa được trừ khi rút về bản nháp."
-          },
-          "needs_changes": {
-            "title": "Đã gửi lại cho {organization}",
-            "text": "“{note}” Các thành viên chỉnh sửa rồi gửi lại."
-          },
-          "draft": {
-            "title": "Bản nháp",
-            "text": "Chỉ các thành viên của {organization} xem được. Họ chỉnh sửa rồi gửi cho GenAI Fund duyệt."
-          },
-          "published": {
-            "title": "Đã đăng",
-            "text": "Use case có trong danh mục. Nhà cung cấp gửi đề xuất được đến {closes}."
-          },
-          "closed": {
-            "title": "Đã đóng và khóa",
-            "text": "Hạn chót đã qua vào {closes}. Không ai sửa được, đổi trạng thái được hoặc gửi đề xuất được, kể cả GenAI Fund. Use case vẫn nằm trong danh mục như một bản ghi."
-          }
         },
         "history": {
           "title": "Lịch sử trạng thái",
@@ -1255,7 +1234,8 @@
               "title": "Bản nháp",
               "meta": "Đang chờ {organization} gửi duyệt."
             }
-          }
+          },
+          "sentBackMeta": "{date}, bởi {name} · “{note}”"
         },
         "review": {
           "title": "Duyệt use case",
@@ -1843,7 +1823,8 @@
         "USECASE_TIMELINE_OUT_OF_ORDER": "Thời gian dài nhất ngắn hơn thời gian ngắn nhất.",
         "USECASE_ATTACHMENT_NOT_USABLE": "Hãy tải tệp lên lại: không thể đính kèm tệp này.",
         "REQUEST_INVALID": "Có chỗ bạn nhập chưa hợp lệ. Kiểm tra các trường rồi thử lại.",
-        "unknown": "Chưa lưu được use case. Hãy thử lại."
+        "unknown": "Chưa lưu được use case. Hãy thử lại.",
+        "USECASE_NOT_CHANGED": "Hãy chỉnh sửa use case trước khi gửi lại."
       },
       "wizard": {
         "brand": "BeyondPilot",
@@ -1851,7 +1832,7 @@
         "saving": "Đang lưu…",
         "notSaved": "Chưa lưu",
         "saved": "Đã lưu {time}",
-        "saveAndExit": "Lưu và thoát",
+        "saveAndExit": "Lưu nháp",
         "stepsLabel": "Các bước của use case",
         "yourUseCase": "Use case của bạn",
         "steps": {
@@ -1943,7 +1924,8 @@
           "title": "Hãy bổ sung những mục này trước khi gửi"
         },
         "confirm": "Tôi xác nhận thông tin này chính xác và có thể hiển thị công khai.",
-        "confirmRequired": "Hãy xác nhận thông tin trước khi gửi."
+        "confirmRequired": "Hãy xác nhận thông tin trước khi gửi.",
+        "unchanged": "Hãy chỉnh sửa use case trước khi gửi lại: GenAI Fund đã yêu cầu thay đổi."
       },
       "review": {
         "edit": "Sửa",

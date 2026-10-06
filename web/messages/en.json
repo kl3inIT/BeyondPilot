@@ -1198,7 +1198,8 @@
           "hint": "Your reason is kept with the use case. {organization}’s members see it until they send the use case again.",
           "cancel": "Cancel",
           "confirm": "Send back"
-        }
+        },
+        "leadPublished": "It is public now. Sending it back takes it out of the directory and gives {organization}’s members a reason they can read; they edit it and send it again."
       },
       "detail": {
         "metaTitle": "Use case · BeyondPilot",
@@ -1209,28 +1210,6 @@
           "draft": "{organization} · only its members can see it",
           "published": "{organization} · in the directory",
           "closed": "{organization} · closed"
-        },
-        "banner": {
-          "in_review": {
-            "title": "Waiting for your decision",
-            "text": "Read the brief below, then approve it to publish it at once, or send it back with what to change. While it is in review, {organization}’s members cannot edit it unless they pull it back to Draft."
-          },
-          "needs_changes": {
-            "title": "Sent back to {organization}",
-            "text": "“{note}” Its members edit it and send it again."
-          },
-          "draft": {
-            "title": "Draft",
-            "text": "Only {organization}’s members can see it. They edit it and send it to GenAI Fund for review."
-          },
-          "published": {
-            "title": "Published",
-            "text": "It is in the directory. Providers can send proposals until {closes}."
-          },
-          "closed": {
-            "title": "Closed and locked",
-            "text": "The deadline passed on {closes}. Nobody can edit it, change its status or send a proposal, including GenAI Fund. It stays in the directory as a record."
-          }
         },
         "history": {
           "title": "Status history",
@@ -1255,7 +1234,8 @@
               "title": "Draft",
               "meta": "Waiting for {organization} to send it for review."
             }
-          }
+          },
+          "sentBackMeta": "{date}, by {name} · “{note}”"
         },
         "review": {
           "title": "Review the use case",
@@ -1843,7 +1823,8 @@
         "USECASE_TIMELINE_OUT_OF_ORDER": "The longest timeline is shorter than the shortest.",
         "USECASE_ATTACHMENT_NOT_USABLE": "Upload the attachment again: it cannot be attached.",
         "REQUEST_INVALID": "Something you wrote is not valid. Check the fields and try again.",
-        "unknown": "The use case was not saved. Try again."
+        "unknown": "The use case was not saved. Try again.",
+        "USECASE_NOT_CHANGED": "Change the use case before sending it again."
       },
       "wizard": {
         "brand": "BeyondPilot",
@@ -1851,7 +1832,7 @@
         "saving": "Saving…",
         "notSaved": "Not saved",
         "saved": "Saved {time}",
-        "saveAndExit": "Save and exit",
+        "saveAndExit": "Save draft",
         "stepsLabel": "Steps of the use case",
         "yourUseCase": "Your use case",
         "steps": {
@@ -1943,7 +1924,8 @@
           "title": "Add these before you submit"
         },
         "confirm": "I confirm this information is accurate and can be shown publicly.",
-        "confirmRequired": "Confirm the information before you submit."
+        "confirmRequired": "Confirm the information before you submit.",
+        "unchanged": "Change the use case before sending it again: GenAI Fund asked for changes."
       },
       "review": {
         "edit": "Edit",

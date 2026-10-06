@@ -22,6 +22,8 @@ import { approveAdminUseCase, sendBackAdminUseCase } from "@/lib/api/generated";
 const MAX_REASON = 1000;
 
 type AdminUseCaseDecisionProps = {
+  /** A published use case can only be sent back; one in review can also be approved. */
+  published?: boolean;
   id: string;
   title: string;
   organization: string;
@@ -41,7 +43,12 @@ function refusal(error: unknown): MessageKey {
  * What an operator decides about a use case in review: approve it, which publishes it at once, or send it
  * back with a reason its organization's members read. Both end with the page read again.
  */
-function AdminUseCaseDecision({ id, title, organization }: AdminUseCaseDecisionProps) {
+function AdminUseCaseDecision({
+  id,
+  title,
+  organization,
+  published = false,
+}: AdminUseCaseDecisionProps) {
   const t = useTranslations("Admin.useCases.decision");
   const notify = useNotify();
   const router = useRouter();
@@ -82,17 +89,19 @@ function AdminUseCaseDecision({ id, title, organization }: AdminUseCaseDecisionP
   return (
     <>
       <div className="flex flex-col gap-3">
+        {!published && (
+          <Button
+            size="lg"
+            pending={pending === "approve"}
+            disabled={pending !== null}
+            onClick={approve}
+          >
+            {t("approve")}
+          </Button>
+        )}
         <Button
           size="lg"
-          pending={pending === "approve"}
-          disabled={pending !== null}
-          onClick={approve}
-        >
-          {t("approve")}
-        </Button>
-        <Button
-          size="lg"
-          prominence="secondary"
+          prominence={published ? "primary" : "secondary"}
           disabled={pending !== null}
           onClick={() => setOpen(true)}
         >

@@ -1,13 +1,13 @@
 import { CheckIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AdminUseCase } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
 
 import { AdminUseCaseDecision } from "./admin-use-case-decision";
 import { AdminUseCaseReview } from "./admin-use-case-review";
+import { LiveRefresh } from "./live-refresh";
 
 type AdminUseCasePageProps = {
   useCase: AdminUseCase;
@@ -39,20 +39,6 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
     format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
   const closes = useCase.closesAt ? when(useCase.closesAt) : "";
 
-  const banner = {
-    in_review: {
-      title: t("banner.in_review.title"),
-      text: t("banner.in_review.text", { organization }),
-    },
-    needs_changes: {
-      title: t("banner.needs_changes.title", { organization }),
-      text: t("banner.needs_changes.text", { note: useCase.reviewNote ?? "" }),
-    },
-    draft: { title: t("banner.draft.title"), text: t("banner.draft.text", { organization }) },
-    published: { title: t("banner.published.title"), text: t("banner.published.text", { closes }) },
-    closed: { title: t("banner.closed.title"), text: t("banner.closed.text", { closes }) },
-  }[status];
-
   /** What happened to the use case, oldest first, and where it waits now. */
   const history: { key: string; title: string; meta: string; current?: boolean }[] = [
     {
@@ -72,7 +58,11 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
     history.push({
       key: "sentBack",
       title: t("history.sentBack"),
-      meta: t("history.by", { date: when(useCase.reviewedAt), name: useCase.reviewedBy.name }),
+      meta: t("history.sentBackMeta", {
+        date: when(useCase.reviewedAt),
+        name: useCase.reviewedBy.name,
+        note: useCase.reviewNote ?? "",
+      }),
     });
   }
   if (useCase.publishedAt) {
@@ -103,6 +93,7 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
+      <LiveRefresh />
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         <p className="text-sm text-muted-foreground">{t(`subtitle.${status}`, { organization })}</p>
@@ -110,24 +101,27 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-4 lg:col-span-2">
-          <Alert>
-            <AlertTitle>{banner.title}</AlertTitle>
-            <AlertDescription>{banner.text}</AlertDescription>
-          </Alert>
           <AdminUseCaseReview useCase={useCase} />
         </div>
 
         {/* The decision and the history stay in view while the use case is read. */}
         <div className="flex flex-col gap-4 lg:sticky lg:top-4">
-          {status === "in_review" && (
+          {(status === "in_review" || status === "published") && (
             <Card size="lg">
               <CardHeader>
                 <CardTitle>{d("title")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-4">
-                  <p className="text-sm text-muted-foreground">{d("lead", { organization })}</p>
-                  <AdminUseCaseDecision id={useCase.id} title={title} organization={organization} />
+                  <p className="text-sm text-muted-foreground">
+                    {d(status === "published" ? "leadPublished" : "lead", { organization })}
+                  </p>
+                  <AdminUseCaseDecision
+                    id={useCase.id}
+                    title={title}
+                    organization={organization}
+                    published={status === "published"}
+                  />
                 </div>
               </CardContent>
             </Card>

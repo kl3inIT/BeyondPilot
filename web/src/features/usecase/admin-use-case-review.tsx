@@ -4,8 +4,10 @@ import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { Badge } from "@/components/ui/badge";
 import type { AdminUseCase } from "@/lib/api/generated";
 
+import { statusVariants } from "./admin-use-cases-page";
 import { draftValuesOf, steps, type Step } from "./use-case-draft";
 import { UseCaseStepFields } from "./use-case-step-fields";
 import { UseCaseSummary } from "./use-case-summary";
@@ -22,10 +24,14 @@ type View = "review" | (typeof fieldSteps)[number];
  */
 function AdminUseCaseReview({ useCase }: { useCase: AdminUseCase }) {
   const t = useTranslations("Admin.useCases.detail");
+  const list = useTranslations("Admin.useCases");
   const w = useTranslations("Organization.useCases.wizard");
   const values = useMemo(() => draftValuesOf(useCase), [useCase]);
   const [view, setView] = useState<View>("review");
   const organization = useCase.organization.name;
+  const status = (
+    <Badge variant={statusVariants[useCase.status]}>{list(`status.${useCase.status}`)}</Badge>
+  );
 
   function go(step: Step) {
     setView(step === "review" ? "review" : step);
@@ -35,9 +41,12 @@ function AdminUseCaseReview({ useCase }: { useCase: AdminUseCase }) {
   if (view === "review") {
     return (
       <div className="flex flex-col gap-5 rounded-3xl border bg-background p-6 md:p-10">
-        <div className="flex flex-col gap-3">
-          <h2 className="text-3xl font-semibold tracking-tight">{t("review.title")}</h2>
-          <p className="text-base text-muted-foreground">{t("review.lead", { organization })}</p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-3">
+            <h2 className="text-3xl font-semibold tracking-tight">{t("review.title")}</h2>
+            <p className="text-base text-muted-foreground">{t("review.lead", { organization })}</p>
+          </div>
+          {status}
         </div>
         <UseCaseSummary values={values} onEdit={go} viewLabel={t("viewDetails")} />
       </div>
@@ -50,10 +59,13 @@ function AdminUseCaseReview({ useCase }: { useCase: AdminUseCase }) {
 
   return (
     <div className="flex flex-col gap-5 rounded-3xl border bg-background p-6 md:p-10">
-      <div className="flex flex-col gap-3">
-        <h2 className="text-3xl font-semibold tracking-tight">{w(`steps.${view}.title`)}</h2>
-        <p className="text-base text-muted-foreground">{w(`steps.${view}.lead`)}</p>
-        <p className="text-sm text-muted-foreground">{t("readOnly", { organization })}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-3">
+          <h2 className="text-3xl font-semibold tracking-tight">{w(`steps.${view}.title`)}</h2>
+          <p className="text-base text-muted-foreground">{w(`steps.${view}.lead`)}</p>
+          <p className="text-sm text-muted-foreground">{t("readOnly", { organization })}</p>
+        </div>
+        {status}
       </div>
       <UseCaseStepFields step={view} values={values} onChange={() => undefined} readOnly />
       <div className="flex items-center justify-between gap-3 border-t pt-6">
