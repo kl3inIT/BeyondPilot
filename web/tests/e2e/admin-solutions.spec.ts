@@ -80,9 +80,6 @@ test.describe("admin solutions", () => {
       "No solution matches",
     );
 
-    // The way back is checked on a page read from its address: a click within moments of typing
-    // races the toolbar's delayed write of the address, which puts the search back.
-    await page.reload();
     await page.getByRole("link", { name: "Clear search and filter" }).click();
     await expect(page).toHaveURL("/admin/solutions");
     await expect(shownSolutions(page)).toHaveCount(4);

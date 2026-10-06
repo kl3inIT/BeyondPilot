@@ -19,7 +19,7 @@ Design: [design.md](design.md). Tracked in Linear under BEY-33: slice 1 is BEY-6
 | 10a | `V11`: the founded year and the logo; the profile form requires the website, the description (280), the year and asks the logo; "Submit for approval"                            | Done  |
 | 10b | `V12`: the roles are dropped; every approved organization lists solutions; industries become a searchable multi-select                                                           | Done  |
 
-Step 8 is in part: the admin home now counts a claim as an organization that waits. The way back from an empty list still races the toolbar's delayed write of the address, once in forty runs of `admin-organizations.spec.ts` without its reload, so the reload stays in the seven list specs; the cause is in `FilterToolbar`, which every list shares. The admin home does not count customer deployments: `solution` has no count of them across solutions.
+Step 8 is in part: the admin home now counts a claim as an organization that waits. The way back from an empty list no longer races the toolbar: typing wrote the address twice about 150 ms apart, once in fifty runs, because nuqs debounces the search and the page on separate timers, and the second write could land after the link. `FilterToolbar` now waits itself and writes both as one change, and the three admin specs click the way back without a reload. The admin home does not count customer deployments: `solution` has no count of them across solutions.
 
 ## Slice 2: take down, operator edits, members (BEY-62)
 
