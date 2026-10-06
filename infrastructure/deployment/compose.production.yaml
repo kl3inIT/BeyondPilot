@@ -23,12 +23,19 @@ services:
       BEYONDPILOT_STORAGE_PROVIDER: local
       BEYONDPILOT_IDENTITY_OPERATOR_EMAILS: ${BEYONDPILOT_IDENTITY_OPERATOR_EMAILS:?}
       BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID: ${BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID:?}
+      # Search by meaning: embeddings through OpenRouter, an OpenAI-compatible API, until GenAI Fund's OpenAI key
+      # replaces it by these two settings and the key file alone.
+      BEYONDPILOT_AI_EMBEDDING: openai
+      BEYONDPILOT_AI_BASE_URL: https://openrouter.ai/api/v1
+      BEYONDPILOT_AI_EMBEDDING_MODEL: openai/text-embedding-3-large
     # Each file is named after the variable it replaces; the production profile reads /run/secrets as a configtree.
     secrets:
       - source: database_password
         target: BEYONDPILOT_DATABASE_PASSWORD
       - source: google_client_secret
         target: BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET
+      - source: ai_api_key
+        target: BEYONDPILOT_AI_API_KEY
     networks:
       - internal
       - proxy
@@ -56,6 +63,9 @@ secrets:
     file: /apps/beyondpilot/secrets/database-password
   google_client_secret:
     file: /apps/beyondpilot/secrets/google-client-secret
+  # The key of the embedding provider.
+  ai_api_key:
+    file: /apps/beyondpilot/secrets/ai-api-key
   # htpasswd lines (bcrypt) of the people who read staging mail.
   mailpit_ui_auth:
     file: /apps/beyondpilot/secrets/mailpit-ui-auth

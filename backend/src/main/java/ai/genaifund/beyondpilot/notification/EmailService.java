@@ -206,6 +206,28 @@ public class EmailService {
 	}
 
 	/**
+	 * Tells a member of an organization what GenAI Fund decided about one of its use cases, in both languages.
+	 * @param approved whether the use case was approved and published; otherwise it was sent back
+	 * @param reason what GenAI Fund asked to change, when it sent the use case back
+	 */
+	public void sendUseCaseDecision(String recipient, String organizationName, String useCaseTitle, boolean approved,
+			@Nullable String reason) {
+		String english = approved
+				? "\u201c" + useCaseTitle + "\u201d of " + organizationName
+						+ " was approved and is published on BeyondPilot. Providers can send proposals until its close date."
+				: "GenAI Fund asked for changes to \u201c" + useCaseTitle + "\u201d of " + organizationName + ": "
+						+ reason + " Sign in to edit it and send it again.";
+		String vietnamese = approved
+				? "\u201c" + useCaseTitle + "\u201d c\u1ee7a " + organizationName
+						+ " \u0111\u00e3 \u0111\u01b0\u1ee3c duy\u1ec7t v\u00e0 \u0111\u00e3 \u0111\u0103ng tr\u00ean BeyondPilot. Nh\u00e0 cung c\u1ea5p c\u00f3 th\u1ec3 g\u1eedi \u0111\u1ec1 xu\u1ea5t \u0111\u1ebfn h\u1ea1n \u0111\u00f3ng."
+				: "GenAI Fund y\u00eau c\u1ea7u ch\u1ec9nh s\u1eeda \u201c" + useCaseTitle + "\u201d c\u1ee7a " + organizationName + ": "
+						+ reason + " H\u00e3y \u0111\u0103ng nh\u1eadp \u0111\u1ec3 s\u1eeda v\u00e0 g\u1eedi l\u1ea1i.";
+		sendParagraphs("use_case_decision", recipient,
+				approved ? useCaseTitle + " is published on BeyondPilot" : "Changes needed: " + useCaseTitle, english,
+				vietnamese);
+	}
+
+	/**
 	 * Reminds a person that a message waits for their answer and when it closes.
 	 * @param senderName who wrote, by the name they gave; null when they gave none, never their address
 	 * @param daysLeft the whole days before the message closes unanswered
