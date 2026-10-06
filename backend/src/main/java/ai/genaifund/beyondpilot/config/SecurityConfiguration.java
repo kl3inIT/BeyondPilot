@@ -64,7 +64,7 @@ class SecurityConfiguration {
 				// without a session. So is the deck of an approved solution; a session only adds the deck of one that
 				// is not approved, for those who may read it.
 				.requestMatchers(HttpMethod.GET, "/api/solution/solutions", "/api/solution/solutions/*",
-						"/api/solution/solutions/*/deck", "/api/solution/deployments",
+						"/api/solution/solutions/*/deck", "/api/solution/deployments", "/api/usecase/use-cases",
 						"/api/talent/profiles", "/api/talent/profiles/*", "/api/organization/organizations/*")
 				.permitAll()
 				// Search returns only what the public site shows.

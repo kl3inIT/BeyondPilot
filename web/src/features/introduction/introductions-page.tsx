@@ -21,6 +21,8 @@ type IntroductionsPageProps = {
   members: number;
   /** How many solutions it lists, for the tab beside this one. */
   solutions: number;
+  /** How many use cases it has, for the tab beside this one; null when it has no such tab. */
+  useCases: number | null;
 };
 
 const tones = { pending: "warning", replied: "success", declined: "neutral" } as const;
@@ -73,12 +75,22 @@ function IntroductionCard({
  * solutions. An owner replies, which shares both addresses, or declines; a member only reads. A
  * sender's address is shown only once the request was replied to.
  */
-function IntroductionsPage({ mine, introductions, members, solutions }: IntroductionsPageProps) {
+function IntroductionsPage({
+  mine,
+  introductions,
+  members,
+  solutions,
+  useCases,
+}: IntroductionsPageProps) {
   const t = useTranslations("Introduction.received");
   const waiting = introductions.items.filter((item) => item.status === "pending").length;
 
   return (
-    <OrganizationFrame mine={mine} current="introductions" counts={{ members, solutions }}>
+    <OrganizationFrame
+      mine={mine}
+      current="introductions"
+      counts={{ members, solutions, useCases }}
+    >
       <OrganizationSection
         id="introductions-list"
         title={t("title")}

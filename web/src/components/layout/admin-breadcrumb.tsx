@@ -16,12 +16,16 @@ type AdminBreadcrumbProps = {
   area: { href: string; label: string };
   /** The destinations of the sidebar; the one the path belongs to is the second crumb. */
   items: Pick<AdminNavItem, "href" | "label">[];
+  /** Pages below a destination that have no sidebar entry, such as "New use case"; each is a third crumb. */
+  subpages?: Pick<AdminNavItem, "href" | "label">[];
 };
 
-/** Where a person is in the admin area: the area, then the destination the page belongs to. */
-function AdminBreadcrumb({ area, items }: AdminBreadcrumbProps) {
-  const current = currentItem(items, usePathname());
+/** Where a person is in the admin area: the area, the destination, and a page below it when there is one. */
+function AdminBreadcrumb({ area, items, subpages = [] }: AdminBreadcrumbProps) {
+  const pathname = usePathname();
+  const current = currentItem(items, pathname);
   const destination = current && current.href !== area.href ? current : undefined;
+  const subpage = subpages.find((candidate) => candidate.href === pathname);
 
   return (
     <Breadcrumb>
@@ -32,9 +36,23 @@ function AdminBreadcrumb({ area, items }: AdminBreadcrumbProps) {
               <BreadcrumbLink render={<Link href={area.href} />}>{area.label}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{destination.label}</BreadcrumbPage>
-            </BreadcrumbItem>
+            {subpage ? (
+              <>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink render={<Link href={destination.href} />}>
+                    {destination.label}
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{subpage.label}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </>
+            ) : (
+              <BreadcrumbItem>
+                <BreadcrumbPage>{destination.label}</BreadcrumbPage>
+              </BreadcrumbItem>
+            )}
           </>
         ) : (
           <BreadcrumbItem>
