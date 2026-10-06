@@ -16,13 +16,24 @@ public enum TalentErrorCode implements ErrorCode {
 	NOT_AWAITING_REVIEW("TALENT_NOT_AWAITING_REVIEW", ErrorCategory.CONFLICT,
 			"This talent profile is not waiting for review."),
 
+	NOT_APPROVED("TALENT_NOT_APPROVED", ErrorCategory.CONFLICT,
+			"Only an approved talent profile can be removed."),
+
 	CHANGED_MEANWHILE("TALENT_CHANGED_MEANWHILE", ErrorCategory.CONFLICT,
 			"This talent profile was saved somewhere else in the meantime. Reload it and make your changes again."),
 
 	OWN_PROFILE("TALENT_OWN_PROFILE", ErrorCategory.CONFLICT, "You cannot send a message to your own profile."),
 
-	ENQUIRY_TOO_SOON("TALENT_ENQUIRY_TOO_SOON", ErrorCategory.LIMIT_EXCEEDED,
-			"You already sent this person a message today. Wait for their answer, or write again tomorrow.");
+	ENQUIRY_PENDING("TALENT_ENQUIRY_PENDING", ErrorCategory.CONFLICT,
+			"Your message to this person waits for their answer. You can write again once they answer or it closes."),
+
+	ENQUIRY_LIMIT("TALENT_ENQUIRY_LIMIT", ErrorCategory.LIMIT_EXCEEDED,
+			"You started ten conversations today. Write again tomorrow."),
+
+	ENQUIRY_NOT_FOUND("TALENT_ENQUIRY_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such message."),
+
+	ENQUIRY_NOT_PENDING("TALENT_ENQUIRY_NOT_PENDING", ErrorCategory.CONFLICT,
+			"This message was answered already, or it closed.");
 
 	private final String code;
 	private final ErrorCategory category;

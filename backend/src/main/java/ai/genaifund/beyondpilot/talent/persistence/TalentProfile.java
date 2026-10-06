@@ -30,7 +30,11 @@ public class TalentProfile {
 
 	public static final String APPROVED = "approved";
 
-	public static final String REJECTED = "rejected";
+	/** GenAI Fund asked the person to change a profile that waited for review. */
+	public static final String CHANGES_REQUESTED = "changes_requested";
+
+	/** GenAI Fund took the profile away from the public. */
+	public static final String REMOVED = "removed";
 
 	@Id
 	private UUID id;
@@ -137,8 +141,16 @@ public class TalentProfile {
 		decidedAt = at;
 	}
 
-	public void reject(String reason, @Nullable String message, Instant at) {
-		status = REJECTED;
+	public void requestChanges(String reason, @Nullable String message, Instant at) {
+		decide(CHANGES_REQUESTED, reason, message, at);
+	}
+
+	public void remove(String reason, @Nullable String message, Instant at) {
+		decide(REMOVED, reason, message, at);
+	}
+
+	private void decide(String status, String reason, @Nullable String message, Instant at) {
+		this.status = status;
 		decisionReason = reason;
 		decisionMessage = message;
 		decidedAt = at;
@@ -161,8 +173,9 @@ public class TalentProfile {
 		return APPROVED.equals(status);
 	}
 
-	public boolean isRejected() {
-		return REJECTED.equals(status);
+	/** Whether GenAI Fund sent the profile back to its person, who corrects it and sends it again. */
+	public boolean isReturned() {
+		return CHANGES_REQUESTED.equals(status) || REMOVED.equals(status);
 	}
 
 	public UUID getId() {
