@@ -6,7 +6,7 @@
 
 ## Context
 
-`notification` sent seventeen kinds of email over SMTP from the caller's thread, configured from the environment, and `identity` depended on it to send sign-in codes. Production had no provider, and nothing recorded what was sent. [BEY-68](../increments/active/bey-68-email-delivery/design.md) gives operators Admin › Email: they choose the provider (Amazon SES, Resend or SMTP), edit the wording, read what was sent and manage suppressed addresses.
+`notification` sent seventeen kinds of email over SMTP from the caller's thread, configured from the environment, and `identity` depended on it to send sign-in codes. Production had no provider, and nothing recorded what was sent. [BEY-68](../increments/completed/bey-68-email-delivery/design.md) gives operators Admin › Email: they choose the provider (Amazon SES, Resend or SMTP), edit the wording, read what was sent and manage suppressed addresses.
 
 Those screens need the caller, the operator role and the operator's name and address, which belong to `identity`. With `identity` depending on `notification`, `notification` could not depend on `identity` without a cycle.
 

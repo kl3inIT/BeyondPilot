@@ -2,6 +2,7 @@
 
 ## Delivered
 
+- [BEY-68 — Email that operators run](increments/completed/bey-68-email-delivery/design.md), 6 October 2026: email through Amazon SES, Resend or SMTP, chosen and set up by operators in Admin › Email with their secrets sealed; twenty-four kinds of email worded as English templates operators can edit with a live preview; a queue and log with retries, delivery reports and suppressed addresses; a setup checklist that asks the provider about the domain and its DNS records. Staging sends from `beyondpilot.vadan.app`; production waits on the DNS of `beyondpilot.ai`.
 - [BEY-29 — Programs](increments/completed/bey-29-program/design.md), 6 October 2026: operators create, edit, publish and unpublish programs with their window, key dates, events and cover, each change audited; the public list by phase and type, the standard program page and the page made for the AI for Insurance Challenge. The 2026 programs are entered on production.
 - [BEY-49 — Admin: the audit log](increments/completed/bey-49-admin-audit-log/design.md), 5 October 2026: the operators' reading of the audit record at `/admin/audit-log`, narrowed by period, action and a search, and walked by cursor.
 - [BEY-48 — Admin: accounts](increments/completed/bey-48-admin-accounts/design.md), 4 October 2026: the operators' list of everyone who has signed in, granting and withdrawing the operator role, disabling and enabling an account, and the audit record of each change.
