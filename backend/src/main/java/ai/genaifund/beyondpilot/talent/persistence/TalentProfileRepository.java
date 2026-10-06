@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.talent.persistence;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,6 +28,8 @@ public interface TalentProfileRepository extends JpaRepository<TalentProfile, UU
 	Optional<TalentProfile> findByAccountId(UUID accountId);
 
 	Optional<TalentProfile> findBySlug(String slug);
+
+	List<TalentProfile> findByStatusAndListedTrue(String status);
 
 	boolean existsBySlug(String slug);
 }

@@ -2030,11 +2030,19 @@ export type SearchCounts = {
 };
 
 /**
- * One result, as its card shows it.
+ * One result, as its card shows it. Members of another kind are null or empty.
  */
 export type SearchItem = {
     /**
-     * The cover, read at the public address of stored files.
+     * A person's availability.
+     */
+    availability?: string | null;
+    /**
+     * The country of a solution's organization, or of a person.
+     */
+    country?: string | null;
+    /**
+     * A program's cover, read at the public address of stored files.
      */
     coverFileId?: string | null;
     endsOn?: string | null;
@@ -2042,11 +2050,35 @@ export type SearchItem = {
      * Where a program's page is when it has none here.
      */
     externalUrl?: string | null;
+    /**
+     * A solution's focus areas.
+     */
+    focusAreas: Array<string>;
+    /**
+     * A solution's industries.
+     */
+    industries: Array<string>;
     kind: 'program' | 'solution' | 'talent';
     /**
-     * Where a program stands now; null for other kinds.
+     * A solution's maturity.
+     */
+    maturity?: string | null;
+    /**
+     * The address of the page of a solution's organization.
+     */
+    organizationSlug?: string | null;
+    /**
+     * Where a program stands now.
      */
     phase?: 'upcoming' | 'open' | 'running' | 'done';
+    /**
+     * A person's roles.
+     */
+    roles: Array<string>;
+    /**
+     * A person's skills.
+     */
+    skills: Array<string>;
     /**
      * The address of its page under the path of its kind.
      */
@@ -2056,10 +2088,13 @@ export type SearchItem = {
      * The partner of a program, the organization of a solution, the headline of a person.
      */
     subtitle?: string | null;
+    /**
+     * A program's or a solution's summary, a person's bio.
+     */
     summary: string;
     title: string;
     /**
-     * A program's type; null for other kinds.
+     * A program's type.
      */
     type?: string | null;
 };
