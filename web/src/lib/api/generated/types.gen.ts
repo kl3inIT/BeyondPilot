@@ -1057,10 +1057,19 @@ export type EmailCounts = {
  */
 export type EmailDraft = {
     /**
+     * An appearance being edited, to see it before it is saved; null for the saved one.
+     */
+    appearance?: EmailDraftAppearance | null;
+    /**
      * Markdown.
      */
     body: string;
     subject: string;
+};
+
+export type EmailDraftAppearance = {
+    accentColor: string;
+    footer: string;
 };
 
 /**
@@ -1207,6 +1216,56 @@ export type EmailSettings = {
      * Send it back with a change; a change made meanwhile is refused.
      */
     version: number;
+};
+
+/**
+ * What the saved provider says about whether email from the sender's domain can leave, read from its API just now.
+ */
+export type EmailSetup = {
+    checkedAt: string;
+    /**
+     * Each step the provider answered, in order. Empty for SMTP, which has no API to ask.
+     */
+    checks: Array<EmailSetupCheck>;
+    /**
+     * The domain of the sender's address.
+     */
+    domain: string;
+    /**
+     * Why the provider could not be asked everything; null when it answered.
+     */
+    limit?: 'permission_missing' | 'credentials_refused' | 'unreachable';
+    provider: 'ses' | 'resend' | 'smtp';
+    /**
+     * The DNS records the domain must hold.
+     */
+    records: Array<EmailSetupDnsRecord>;
+};
+
+export type EmailSetupCheck = {
+    state: 'ok' | 'pending' | 'failed' | 'unknown';
+    step: 'credentials' | 'domain_added' | 'domain_verified' | 'dkim' | 'mail_from' | 'production_access' | 'sending_enabled';
+};
+
+export type EmailSetupDnsRecord = {
+    /**
+     * The name relative to the domain, as DNS hosts ask for it; @ for the domain itself.
+     */
+    host: string;
+    /**
+     * The MX priority; null for any other type.
+     */
+    priority?: number | null;
+    /**
+     * dkim, spf, mail_from, dmarc, or the provider's own word.
+     */
+    purpose: string;
+    /**
+     * Whether the provider found it; unknown for a record it does not look for.
+     */
+    state: 'ok' | 'pending' | 'failed' | 'unknown';
+    type: string;
+    value: string;
 };
 
 export type EmailSmtpSettings = {
@@ -4598,6 +4657,39 @@ export type SaveEmailAppearanceResponses = {
 };
 
 export type SaveEmailAppearanceResponse = SaveEmailAppearanceResponses[keyof SaveEmailAppearanceResponses];
+
+export type CheckEmailSetupData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/notification/admin/email/settings/checks';
+};
+
+export type CheckEmailSetupErrors = {
+    /**
+     * No provider and sender are saved.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type CheckEmailSetupError = CheckEmailSetupErrors[keyof CheckEmailSetupErrors];
+
+export type CheckEmailSetupResponses = {
+    /**
+     * What the provider answered; a limit says why it could not be asked everything.
+     */
+    200: EmailSetup;
+};
+
+export type CheckEmailSetupResponse = CheckEmailSetupResponses[keyof CheckEmailSetupResponses];
 
 export type TestEmailSettingsData = {
     body: SaveEmailSettings;

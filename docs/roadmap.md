@@ -2,6 +2,7 @@
 
 ## Delivered
 
+- [BEY-29 — Programs](increments/completed/bey-29-program/design.md), 6 October 2026: operators create, edit, publish and unpublish programs with their window, key dates, events and cover, each change audited; the public list by phase and type, the standard program page and the page made for the AI for Insurance Challenge. The 2026 programs are entered on production.
 - [BEY-49 — Admin: the audit log](increments/completed/bey-49-admin-audit-log/design.md), 5 October 2026: the operators' reading of the audit record at `/admin/audit-log`, narrowed by period, action and a search, and walked by cursor.
 - [BEY-48 — Admin: accounts](increments/completed/bey-48-admin-accounts/design.md), 4 October 2026: the operators' list of everyone who has signed in, granting and withdrawing the operator role, disabling and enabling an account, and the audit record of each change.
 

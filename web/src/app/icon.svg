@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+  <title>BeyondPilot</title>
+  <defs>
+    <linearGradient id="wing" x1="2" y1="30" x2="30" y2="2" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0A6FD6"/>
+      <stop offset="1" stop-color="#1E9BF0"/>
+    </linearGradient>
+    <linearGradient id="face" x1="2" y1="30" x2="30" y2="2" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5CC8FA"/>
+      <stop offset="1" stop-color="#A5E3FD"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#wing)" d="M2.5 14.8 29.5 3.5 18 29.5l-3.6-10.6z"/>
+  <path fill="url(#face)" d="M14.4 18.9 29.5 3.5 18 29.5z"/>
+</svg>

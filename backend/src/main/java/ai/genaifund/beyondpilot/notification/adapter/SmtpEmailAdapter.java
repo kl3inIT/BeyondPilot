@@ -40,6 +40,12 @@ class SmtpEmailAdapter implements EmailAdapter {
 		return new EmailProviderCapabilities(false);
 	}
 
+	/** An SMTP server has no API to ask; the test email is the check. */
+	@Override
+	public EmailSetup inspect(EmailConnection connection, String domain) {
+		return EmailSetup.nothingToAsk();
+	}
+
 	@Override
 	public EmailResult send(EmailRequest request, EmailConnection connection) {
 		JavaMailSenderImpl mailSender = mailSender((EmailConnection.SmtpConnection) connection);

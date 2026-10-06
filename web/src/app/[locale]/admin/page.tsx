@@ -1,3 +1,4 @@
+import { BoxesIcon, BuildingIcon, UsersIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
@@ -31,16 +32,19 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
   const queues = [
     {
       key: "organizations" as const,
+      Icon: BuildingIcon,
       href: `${siteRoutes.adminOrganizations}?status=pending`,
       count: organizations.total,
     },
     {
       key: "solutions" as const,
+      Icon: BoxesIcon,
       href: `${siteRoutes.adminSolutions}?status=submitted`,
       count: solutions.total,
     },
     {
       key: "talent" as const,
+      Icon: UsersIcon,
       href: `${siteRoutes.adminTalent}?status=submitted`,
       count: talent.total,
     },
@@ -63,7 +67,15 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
               <span className="text-3xl font-semibold tracking-tight tabular-nums">
                 {queue.count}
               </span>
-              <span className="text-sm font-medium">{t(`home.${queue.key}`)}</span>
+              <span className="flex items-center gap-2 text-sm font-medium">
+                {/* The destination's icon in the sidebar, so the card and the menu read as one place. */}
+                <queue.Icon
+                  aria-hidden="true"
+                  strokeWidth={1.75}
+                  className="size-4 shrink-0 text-muted-foreground"
+                />
+                {t(`home.${queue.key}`)}
+              </span>
               <span className="text-sm text-muted-foreground">
                 {t(queue.count > 0 ? "home.review" : "home.none")}
               </span>

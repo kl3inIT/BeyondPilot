@@ -297,7 +297,8 @@
       "useCasesNew": "New use case",
       "ai": "AI",
       "aiProviders": "Providers",
-      "searchIndex": "Search index"
+      "searchIndex": "Search index",
+      "email": "Email"
     },
     "toggleSidebar": "Toggle sidebar",
     "programs": {
@@ -643,7 +644,8 @@
         "makeOperator": "Make operator…",
         "withdrawOperator": "Withdraw operator role…",
         "disable": "Disable account…",
-        "enable": "Enable account"
+        "enable": "Enable account",
+        "emails": "Emails sent to them"
       },
       "confirm": {
         "cancel": "Cancel",
@@ -1820,6 +1822,588 @@
         "off": "Semantic search is off",
         "rebuilt": "Index rebuilt: {saved} items read, {removed} removed",
         "retried": "{count, plural, =0 {Nothing to try again} one {# item is tried again at the next run} other {# items are tried again at the next run}}"
+      }
+    },
+    "email": {
+      "metaTitle": "Email",
+      "title": "Email",
+      "lead": "What BeyondPilot sends, how it reads, and whether it arrived.",
+      "notReady": {
+        "title": "No email can leave yet",
+        "description": "Choose a provider and a sender in Settings. Until then, emails wait in Activity and expire after a day.",
+        "action": "Open Settings"
+      },
+      "tabs": {
+        "label": "Email",
+        "templates": "Templates",
+        "activity": "Activity",
+        "suppressions": "Suppressions",
+        "settings": "Settings"
+      },
+      "groups": {
+        "sign_in": "Sign-in",
+        "organizations": "Organizations",
+        "applications": "Programs and applications",
+        "introductions": "Introductions",
+        "use_cases": "Use cases",
+        "talent": "Talent"
+      },
+      "kinds": {
+        "sign_in_code": {
+          "name": "Sign-in code",
+          "description": "The six-digit code a person types to sign in."
+        },
+        "organization_invitation": {
+          "name": "Organization invitation",
+          "description": "Asks someone to join or own an organization."
+        },
+        "organization_approved": {
+          "name": "Organization approved",
+          "description": "Tells the owners their organization is listed."
+        },
+        "organization_refused": {
+          "name": "Organization not approved",
+          "description": "Tells the owners what to correct before it is listed."
+        },
+        "organization_request_approved": {
+          "name": "Request to join approved",
+          "description": "Tells a person their claim or request to join was accepted."
+        },
+        "organization_request_declined": {
+          "name": "Request to join declined",
+          "description": "Tells a person their claim or request to join was declined."
+        },
+        "organization_taken_down": {
+          "name": "Organization taken down",
+          "description": "Tells the owners GenAI Fund took their organization down."
+        },
+        "organization_restored": {
+          "name": "Organization restored",
+          "description": "Tells the owners their organization is back."
+        },
+        "application_received": {
+          "name": "Application received",
+          "description": "Confirms an application to a program was submitted."
+        },
+        "reviewer_invitation": {
+          "name": "Judge invitation",
+          "description": "Asks someone to judge the applications to a program."
+        },
+        "application_outcome": {
+          "name": "Application outcome",
+          "description": "The result of an application, written by an operator for each release."
+        },
+        "introduction_request": {
+          "name": "Introduction requested",
+          "description": "Tells a solution's provider that someone asked to meet them."
+        },
+        "introduction_made": {
+          "name": "Introduction made",
+          "description": "Introduces the two sides to each other by email."
+        },
+        "introduction_declined": {
+          "name": "Introduction declined",
+          "description": "Tells the person who asked that the provider declined."
+        },
+        "use_case_approved": {
+          "name": "Use case published",
+          "description": "Tells an organization's members their use case is approved and published."
+        },
+        "use_case_sent_back": {
+          "name": "Use case sent back",
+          "description": "Tells an organization's members what to change before their use case is published."
+        },
+        "talent_approved": {
+          "name": "Talent profile approved",
+          "description": "Tells a person their profile is in the directory."
+        },
+        "talent_changes_requested": {
+          "name": "Talent profile changes asked",
+          "description": "Tells a person what to change before their profile is listed."
+        },
+        "talent_removed": {
+          "name": "Talent profile removed",
+          "description": "Tells a person their profile left the directory."
+        },
+        "talent_enquiry": {
+          "name": "Message to a talent",
+          "description": "Tells a person someone wrote to them through their profile."
+        },
+        "talent_enquiry_reminder": {
+          "name": "Message reminder",
+          "description": "Reminds a person a message waits for their answer."
+        },
+        "talent_introduction": {
+          "name": "Talent introduction",
+          "description": "Shares the two addresses once a message is accepted."
+        },
+        "talent_enquiry_declined": {
+          "name": "Message declined",
+          "description": "Tells the sender the person will not take it further."
+        },
+        "talent_enquiry_closed": {
+          "name": "Message closed",
+          "description": "Tells the sender the message closed without an answer."
+        }
+      },
+      "status": {
+        "queued": "Queued",
+        "sent": "Sent",
+        "delivered": "Delivered",
+        "bounced": "Bounced",
+        "complained": "Marked as spam",
+        "failed": "Failed",
+        "skipped": "Not sent"
+      },
+      "providers": {
+        "ses": {
+          "name": "Amazon SES"
+        },
+        "resend": {
+          "name": "Resend"
+        },
+        "smtp": {
+          "name": "SMTP"
+        }
+      },
+      "preview": {
+        "title": "Preview",
+        "width": "Width",
+        "desktop": "Desktop",
+        "phone": "Phone",
+        "subject": "Subject:"
+      },
+      "test": {
+        "notConfigured": "The settings are not complete, so the test email did not leave.",
+        "authentication": "The provider refused the credentials. Check the key or the login.",
+        "throttled": "The provider is limiting sending right now. Try again in a minute.",
+        "unavailable": "The provider could not be reached. Try again in a minute.",
+        "rejected": "The provider refused the email. Check that the sender's domain is verified.",
+        "invalidRecipient": "The provider refused your address as a recipient."
+      },
+      "templates": {
+        "metaTitle": "Email templates",
+        "appearance": {
+          "title": "Appearance",
+          "description": "The colour of links and buttons and the note at the foot of every email.",
+          "action": "Edit appearance"
+        },
+        "edited": "Edited",
+        "editedBy": "{name} · {when}"
+      },
+      "editor": {
+        "required": "Required",
+        "saved": "Wording saved. New emails use it from now.",
+        "resetDone": "Default wording restored.",
+        "testSent": "Test email sent to {email}.",
+        "errors": {
+          "changed": "Someone saved this email while you were editing. Reload the page to see their wording.",
+          "invalid": "The wording has problems. Fix those marked under the fields.",
+          "unknown": "The wording could not be saved. Try again."
+        },
+        "problems": {
+          "unknownVariable": "{variable} is not a variable of this email.",
+          "missingVariable": "{variable} must appear: it is what this email is for.",
+          "subjectLine": "The subject must be one line and not empty.",
+          "syntax": "A tag is not closed or not allowed. Use '{{name}}', '{{#name}}…{{/name}}' or '{{^name}}…{{/name}}'."
+        },
+        "unsaved": "You have unsaved changes",
+        "discard": "Discard",
+        "save": "Save",
+        "edited": "Edited",
+        "lastEdited": "Last edited by {name}, {when}.",
+        "viewAudit": "Audit log",
+        "reset": "Restore default",
+        "test": "Send me a test",
+        "subject": "Subject",
+        "body": "Body",
+        "bodyHint": "Markdown: # heading, **bold**, [link](https://…). Type '{{' to add a variable.",
+        "variables": "Variables",
+        "variablesHint": "Click one to add it where the cursor is. Those with * must appear.",
+        "previewTitle": "Preview of {name}",
+        "leave": {
+          "title": "Leave without saving?",
+          "lead": "Your changes on this page are not saved and will be lost.",
+          "leave": "Leave",
+          "stay": "Stay"
+        },
+        "resetConfirm": {
+          "title": "Restore the default wording?",
+          "lead": "{name} goes back to the wording BeyondPilot ships with.",
+          "note": "Your wording is removed. New emails use the default from now; emails already sent stay as they were.",
+          "confirm": "Restore default",
+          "cancel": "Cancel"
+        },
+        "back": "Templates"
+      },
+      "appearance": {
+        "metaTitle": "Email appearance",
+        "back": "Templates",
+        "title": "Appearance",
+        "lead": "What every email shares. The preview shows a sample email in the colour and footer you are editing.",
+        "color": "Accent colour",
+        "colorPicker": "Pick a colour",
+        "colorHint": "Links and buttons. Choose a dark colour: white text sits on it.",
+        "colorInvalid": "Write a colour as # and six hexadecimal digits.",
+        "footer": "Footer note",
+        "footerHint": "Under the GenAI Fund band of every email.",
+        "save": "Save appearance",
+        "saved": "Appearance saved. The preview shows it.",
+        "changed": "Someone changed the email settings meanwhile. Reload the page and save again.",
+        "unknown": "The appearance could not be saved. Try again.",
+        "previewTitle": "Preview of a sample email",
+        "leave": {
+          "title": "Leave without saving?",
+          "lead": "Your changes on this page are not saved and will be lost.",
+          "leave": "Leave",
+          "stay": "Stay"
+        }
+      },
+      "activity": {
+        "metaTitle": "Email activity",
+        "period": {
+          "day": "Last 24 hours",
+          "week": "Last 7 days",
+          "month": "Last 30 days",
+          "all": "All time"
+        },
+        "filters": {
+          "period": {
+            "label": "Period"
+          },
+          "kind": {
+            "label": "Kind of email",
+            "all": "All emails"
+          },
+          "status": {
+            "label": "Status",
+            "all": "All statuses"
+          }
+        },
+        "search": "Search by address or subject",
+        "counts": {
+          "total": "{period, select, day {Emails, 24 hours} week {Emails, 7 days} month {Emails, 30 days} other {Emails}}",
+          "delivered": "Delivered",
+          "sent": "Sent",
+          "bounced": "Bounced",
+          "complained": "Spam reports",
+          "notSent": "Not sent"
+        },
+        "columns": {
+          "time": "Time",
+          "recipient": "To",
+          "email": "Email",
+          "status": "Status"
+        },
+        "noMatch": {
+          "title": "No email matches",
+          "description": "Change the search or the filters.",
+          "clear": "Clear filters"
+        },
+        "empty": {
+          "title": "No email in this period",
+          "description": "Emails appear here as BeyondPilot sends them."
+        },
+        "pagination": {
+          "label": "Pages of emails",
+          "previous": "Newer",
+          "next": "Older",
+          "goToPrevious": "Go to newer emails",
+          "goToNext": "Go to older emails"
+        }
+      },
+      "message": {
+        "metaTitle": "Email",
+        "back": "Activity",
+        "lead": "{kind} to {recipient}",
+        "suppressed": {
+          "title": "This address receives no email",
+          "bounce": "Mail to it bounced, so BeyondPilot stopped writing to it.",
+          "complaint": "Its reader marked an email as spam, so BeyondPilot stopped writing to it.",
+          "manual": "An operator stopped email to it.",
+          "manage": "Manage suppressions"
+        },
+        "lastError": "Why it was not sent",
+        "failures": {
+          "not_configured": "Email was not set up when it was due.",
+          "authentication": "The provider refused the credentials.",
+          "throttled": "The provider was limiting sending; it was tried again later.",
+          "unavailable": "The provider could not be reached.",
+          "rejected": "The provider refused the email.",
+          "invalid_recipient": "The provider refused the address.",
+          "suppressed": "The address receives no email.",
+          "expired": "It could not leave within a day, so it was given up."
+        },
+        "facts": "Details",
+        "fields": {
+          "recipient": "To",
+          "kind": "Kind",
+          "created": "Created",
+          "sent": "Sent",
+          "provider": "Provider",
+          "providerId": "Provider's message ID",
+          "attempts": "Attempts"
+        },
+        "events": {
+          "title": "What happened",
+          "none": "The provider has reported nothing yet.",
+          "smtp": "SMTP reports nothing after sending.",
+          "types": {
+            "delivered": "Delivered",
+            "bounced": "Bounced",
+            "soft_bounced": "Bounced for now",
+            "complained": "Marked as spam"
+          }
+        },
+        "previewTitle": "The email {subject}",
+        "resend": {
+          "action": "Send again",
+          "title": "Send this email again?",
+          "lead": "The same content goes to {email} as a new email.",
+          "note": "It appears in Activity on its own.",
+          "confirm": "Send again",
+          "cancel": "Cancel",
+          "done": "Sent again to {email}.",
+          "errors": {
+            "notResendable": "This email cannot be sent again.",
+            "suppressed": "The address receives no email. Remove it from Suppressions first.",
+            "notReady": "Email is not set up. Complete Settings first.",
+            "unknown": "The email could not be sent again. Try again."
+          }
+        }
+      },
+      "suppressions": {
+        "metaTitle": "Email suppressions",
+        "search": "Search by address",
+        "clear": "Clear",
+        "filters": {
+          "reason": {
+            "label": "Reason",
+            "all": "All reasons"
+          }
+        },
+        "reasons": {
+          "bounce": "Bounced",
+          "complaint": "Spam report",
+          "manual": "Added by an operator"
+        },
+        "columns": {
+          "address": "Address",
+          "reason": "Reason",
+          "origin": "From",
+          "since": "Since",
+          "actions": "Actions"
+        },
+        "theEmail": "The email",
+        "addedBy": "Added by {name}",
+        "count": "{count, plural, one {# address} other {# addresses}}",
+        "noMatch": {
+          "title": "No address matches",
+          "description": "Change the search or the reason.",
+          "clear": "Clear filters"
+        },
+        "empty": {
+          "title": "Every address receives email",
+          "description": "An address appears here when mail to it bounces, its reader reports spam, or you stop it."
+        },
+        "add": {
+          "open": "Add address",
+          "title": "Stop email to an address",
+          "lead": "BeyondPilot sends nothing more to it, sign-in codes included, until you remove it.",
+          "address": "Email address",
+          "hint": "As when its reader asks to receive no more email.",
+          "invalid": "Write one email address.",
+          "exists": "This address already receives no email.",
+          "cancel": "Cancel",
+          "confirm": "Stop email",
+          "done": "{email} receives no more email."
+        },
+        "remove": {
+          "open": "Let email reach {email} again",
+          "title": "Let email reach this address again?",
+          "lead": "BeyondPilot writes to {email} again from now.",
+          "noteManual": "Emails already given up are not sent again.",
+          "noteProvider": "Mail to it bounced or was reported as spam. If it happens again, the provider counts it against your sending.",
+          "confirm": "Remove",
+          "cancel": "Cancel",
+          "done": "{email} receives email again."
+        },
+        "errors": {
+          "unknown": "The change could not be made. Try again."
+        }
+      },
+      "settings": {
+        "metaTitle": "Email settings",
+        "copy": "Copy",
+        "secretKept": "Saved. Leave it empty to keep it.",
+        "saved": "Settings saved.",
+        "testSent": "Test email sent to {email}. Check that it arrived.",
+        "errors": {
+          "address": "Write one email address.",
+          "port": "Write a port number.",
+          "changed": "Someone saved the settings while you were editing. Reload the page and save again.",
+          "incomplete": "The provider needs more: fill in the fields marked as required.",
+          "encryption": "The server has no encryption key, so it cannot keep secrets. Ask whoever runs it.",
+          "unknown": "The settings could not be saved. Try again."
+        },
+        "encryption": {
+          "title": "The server cannot keep secrets",
+          "description": "Its encryption key is missing, so no provider key or password can be saved. Whoever runs the server sets BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY."
+        },
+        "notReady": {
+          "title": "No email can leave yet",
+          "description": "Fill in the sender and a provider, then send yourself a test before you save."
+        },
+        "sender": {
+          "title": "Sender",
+          "what": "Who every email comes from. The address must be on a domain your provider verified.",
+          "fromName": "Name",
+          "fromAddress": "Address",
+          "replyTo": "Reply-to",
+          "replyToHint": "Where answers go. Without one, they go to the sender's address."
+        },
+        "provider": {
+          "title": "Provider",
+          "what": "The service that delivers the email. Only one is used at a time."
+        },
+        "ses": {
+          "region": "Region",
+          "accessKeyId": "Access key ID",
+          "secretAccessKey": "Secret access key",
+          "secretHint": "Of an IAM user allowed ses:SendEmail. Changing the region or the key ID asks for it again."
+        },
+        "resend": {
+          "apiKey": "API key",
+          "apiKeyHint": "A key with sending access, from resend.com › API Keys."
+        },
+        "smtp": {
+          "host": "Server",
+          "port": "Port",
+          "security": "Security",
+          "securities": {
+            "starttls": "STARTTLS (port 587)",
+            "tls": "TLS (port 465)",
+            "none": "None"
+          },
+          "username": "Username",
+          "password": "Password",
+          "passwordHint": "Changing the server, the port or the username asks for it again."
+        },
+        "reports": {
+          "title": "Delivery reports",
+          "what": "The provider tells BeyondPilot what became of each email: delivered, bounced or reported as spam. A bounce or a report stops email to that address.",
+          "smtp": "SMTP reports nothing after sending, so Activity shows emails as sent, never delivered.",
+          "endpoint": "Address for the provider",
+          "resendEndpointHint": "In Resend › Webhooks, add this address with the events email.delivered, email.bounced and email.complained.",
+          "resendSecret": "Signing secret",
+          "resendSecretHint": "The webhook's secret, starting with whsec_. Without it, reports are refused.",
+          "configurationSet": "Configuration set",
+          "configurationSetHint": "The SES configuration set that sends its events to the SNS topic below.",
+          "sesEndpointHint": "Subscribe this address to the SNS topic over HTTPS; BeyondPilot confirms the subscription.",
+          "topicArn": "SNS topic ARN",
+          "topicArnHint": "Only reports from this topic are accepted."
+        },
+        "unsaved": "You have unsaved changes.",
+        "lastSaved": "Last saved by {name}, {when}.",
+        "neverSaved": "Not saved yet.",
+        "test": "Send a test to {email}",
+        "save": "Save settings",
+        "leave": {
+          "title": "Leave without saving?",
+          "lead": "Your changes on this page are not saved and will be lost.",
+          "leave": "Leave",
+          "stay": "Stay"
+        }
+      },
+      "checks": {
+        "title": "Setup",
+        "done": "{done} of {total} done",
+        "lead": "What the provider says about sending from {domain}, checked at {when}.",
+        "leadChecking": "Asking the provider whether email can leave.",
+        "again": "Check again",
+        "checking": "Asking the provider…",
+        "failed": "The provider could not be asked. Try again in a minute.",
+        "smtp": "An SMTP server has no API to ask. Send yourself a test from the form below: if it arrives, email leaves.",
+        "limits": {
+          "permission_missing": {
+            "ses": "This IAM user may send but not read the account or the domain. Add ses:GetAccount and ses:GetEmailIdentity to its policy to see the checks.",
+            "resend": "This API key may only send, so it cannot read the domain. Your email still leaves; check the domain at resend.com › Domains."
+          },
+          "credentials_refused": {
+            "ses": "AWS refused the access key. Check its ID and secret, and that the user is active.",
+            "resend": "Resend refused the API key. Create a new one at resend.com › API Keys."
+          },
+          "unreachable": {
+            "ses": "Amazon SES did not answer. Check again in a minute.",
+            "resend": "Resend did not answer. Check again in a minute."
+          }
+        },
+        "steps": {
+          "credentials": {
+            "ok": "The provider takes the credentials",
+            "pending": "Checking the credentials",
+            "failed": "The provider refuses the credentials",
+            "unknown": "The credentials could not be checked",
+            "next": "Check the key or the login in the form below."
+          },
+          "domain_added": {
+            "ok": "The domain is added to the provider",
+            "pending": "The domain is being added",
+            "failed": "The domain is not added to the provider",
+            "unknown": "The domain could not be read",
+            "next": "Add the sender's domain in the provider's console, then publish the records below."
+          },
+          "domain_verified": {
+            "ok": "The domain is verified",
+            "pending": "Waiting for DNS to verify the domain",
+            "failed": "The domain could not be verified",
+            "unknown": "The domain's state is not known",
+            "next": "Publish the records below; DNS can take up to 72 hours."
+          },
+          "dkim": {
+            "ok": "Email is signed with DKIM",
+            "pending": "Waiting for the DKIM records",
+            "failed": "The DKIM records are not found",
+            "unknown": "DKIM could not be checked",
+            "next": "Publish the DKIM records below exactly as shown."
+          },
+          "mail_from": {
+            "ok": "Bounces return to your own subdomain",
+            "pending": "Waiting for the MAIL FROM records",
+            "failed": "The MAIL FROM records are not found",
+            "unknown": "MAIL FROM could not be checked",
+            "next": "Publish the MX and TXT records of the MAIL FROM subdomain below."
+          },
+          "production_access": {
+            "ok": "Production access: email reaches anyone",
+            "pending": "Sandbox: only verified addresses receive email",
+            "failed": "Production access was refused",
+            "unknown": "Production access could not be checked",
+            "next": "Ask AWS for production access in the SES console › Account dashboard."
+          },
+          "sending_enabled": {
+            "ok": "The account may send",
+            "pending": "Sending is being enabled",
+            "failed": "AWS paused sending for this account",
+            "unknown": "Sending could not be checked",
+            "next": "Read why in the SES console › Account dashboard; bounces or complaints ran high."
+          }
+        },
+        "records": {
+          "title": "DNS records for {domain}",
+          "status": "Status",
+          "type": "Type",
+          "host": "Host",
+          "value": "Value",
+          "copy": "Copy {what}",
+          "dmarc": "Recommended. Gmail and Yahoo expect DMARC from anyone who sends in bulk; the provider does not check it.",
+          "states": {
+            "ok": "Found",
+            "pending": "Waiting",
+            "failed": "Not found",
+            "unknown": "Not checked"
+          }
+        }
       }
     }
   },
