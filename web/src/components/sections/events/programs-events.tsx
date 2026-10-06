@@ -120,8 +120,25 @@ function LiveCampaign() {
   return (
     <article className="flex flex-col gap-1 rounded-3xl border bg-card p-2 text-card-foreground shadow-raised md:gap-2 md:p-3 xl:flex-row xl:gap-8">
       <div className="flex h-55 shrink-0 flex-col justify-between gap-4 rounded-xl bg-primary bg-linear-150 from-foreground/60 via-transparent via-60% to-transparent p-5 md:p-7 xl:h-auto xl:w-120 dark:from-transparent">
-        <p className="text-xs font-semibold text-brand-foreground dark:text-primary-foreground">
-          {c("partners")}
+        {/* The two logos, in white on the cover; the words are what a screen reader hears. */}
+        <p className="flex items-center gap-2.5" aria-label={c("partners")}>
+          <Image
+            src="/brand/genaifund-logo-white.png"
+            alt=""
+            width={1200}
+            height={254}
+            className="h-5 w-auto"
+          />
+          <span aria-hidden="true" className="text-sm font-semibold text-primary-foreground">
+            ×
+          </span>
+          <Image
+            src="/programs/tasco/tasco-white.png"
+            alt=""
+            width={1238}
+            height={178}
+            className="h-3.5 w-auto"
+          />
         </p>
         <p className="text-2xl font-semibold text-primary-foreground md:text-3xl md:tracking-title">
           {c("question")}

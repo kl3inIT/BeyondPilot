@@ -1,0 +1,30 @@
+name: Deploy production
+
+# beyondpilot.ai is never deployed automatically: an operator picks the CI run whose release already runs well on
+# staging, and the GitHub `production` environment asks for an approval before it goes (docs/runbooks/ci-cd.md).
+"on":
+  workflow_dispatch:
+    inputs:
+      ci_run_id:
+        description: Successful main CI run whose release to deploy; pick one already accepted on staging
+        required: true
+        type: string
+
+permissions:
+  contents: read # Check out the deployment files of the release.
+  actions: read # Verify the CI run and download its release.
+  packages: read # Let the server pull the private images.
+
+# A running deployment always finishes; the next one waits behind it.
+concurrency:
+  group: beyondpilot-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: production
+      ci_run_id: ${{ inputs.ci_run_id }}
+    secrets: inherit

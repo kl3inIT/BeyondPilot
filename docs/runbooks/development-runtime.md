@@ -28,7 +28,7 @@ From the repository root:
 
 ## Profiles and environment variables
 
-Local runs use no profile. Deployed environments run `production`; staging runs `production,staging`.
+Local runs use no profile. Deployed environments run `production`; staging runs `production,staging,mailpit`, and production adds `mailpit` until it has an email provider.
 
 | Variable                                                                             | Profile      | Purpose                                                                                                                                                                                                        |
 | ------------------------------------------------------------------------------------ | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -1,4 +1,5 @@
-# Every deployed environment runs this profile; staging adds `staging` on top.
+# Every deployed environment runs this profile; staging adds `staging`, and an environment whose mail stays on the
+# host adds `mailpit`.
 # Database settings have no defaults so a missing value stops startup.
 spring:
   config:

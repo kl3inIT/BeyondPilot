@@ -1,28 +1,37 @@
 #!/usr/bin/env bash
-# Rolls a verified release out on the staging host (docs/runbooks/ci-cd.md). Deploy staging uploads this script, the
-# compositions and images.env to /apps/beyondpilot/incoming/<release>/ and runs it under the one sudo rule of the
-# deployment user:
+# Rolls a verified release out to one environment of the shared host (docs/runbooks/ci-cd.md). The Deploy workflow
+# uploads this script, the compositions and images.env to <root>/incoming/<release>/ and runs it under a sudo rule of
+# the deployment user:
 #
-#   sudo -n bash /apps/beyondpilot/incoming/<release>/deploy.sh <release> <actor>   (registry token on standard input)
+#   sudo -n bash <root>/incoming/<release>/deploy.sh <environment> <release> <actor>   (registry token on standard input)
 #
-# <release> is <source SHA>-<CI run>-<attempt>. Nothing here rolls back on its own: a failure leaves the database
-# backup and the previous release recorded for an operator.
+# <environment> is production or staging; it selects the directory, the Compose project, the containers, the
+# environment file and the overlay, so the two never touch each other. <release> is <source SHA>-<CI run>-<attempt>.
+# Nothing here rolls back on its own: a failure leaves the database backup and the previous release recorded for an
+# operator.
 set -euo pipefail
 umask 077
-
-readonly root=/apps/beyondpilot
-readonly env_file="$root/.env.staging"
-readonly deployments="$root/deployments"
-readonly backups="$root/backups"
 
 fail() {
     echo "deploy: $*" >&2
     exit 1
 }
 
-[[ $# -eq 2 ]] || fail "usage: deploy.sh <release> <actor>"
-release=$1
-actor=$2
+[[ $# -eq 3 ]] || fail "usage: deploy.sh <environment> <release> <actor>"
+environment=$1
+case "$environment" in
+    production) project=beyondpilot ;;
+    staging) project=beyondpilot-staging ;;
+    *) fail "environment must be production or staging" ;;
+esac
+readonly environment project
+readonly root="/apps/$project"
+readonly env_file="$root/.env.$environment"
+readonly deployments="$root/deployments"
+readonly backups="$root/backups"
+
+release=$2
+actor=$3
 [[ "$release" =~ ^([0-9a-f]{40})-[1-9][0-9]*-[1-9][0-9]*$ ]] || fail "release must be <sha>-<run>-<attempt>"
 sha=${BASH_REMATCH[1]}
 [[ "$actor" =~ ^[A-Za-z0-9][A-Za-z0-9-]*(\[bot\])?$ ]] || fail "actor is not a GitHub login"
@@ -42,7 +51,7 @@ for secret in database-password google-client-secret mailpit-ui-auth; do
     [[ -s "$root/secrets/$secret" ]] || fail "secret file $root/secrets/$secret is missing or empty"
 done
 
-for file in images.env compose.base.yaml compose.staging.yaml; do
+for file in images.env compose.base.yaml "compose.$environment.yaml"; do
     [[ -f "$incoming/$file" && ! -L "$incoming/$file" ]] || fail "$incoming/$file is missing"
 done
 
@@ -73,24 +82,24 @@ for image in "$api_image" "$web_image"; do
 done
 docker logout ghcr.io >/dev/null
 
-compose=(docker compose --project-name beyondpilot
+compose=(docker compose --project-name "$project"
     --env-file "$env_file" --env-file "$incoming/images.env"
-    --file "$incoming/compose.base.yaml" --file "$incoming/compose.staging.yaml")
+    --file "$incoming/compose.base.yaml" --file "$incoming/compose.$environment.yaml")
 "${compose[@]}" config --quiet
 
 # Before Flyway touches a database that holds data, stop the writer and keep a dump that pg_restore can read.
-if [[ "$(docker inspect --format '{{.State.Running}}' beyondpilot-postgres 2>/dev/null || true)" == true ]]; then
+if [[ "$(docker inspect --format '{{.State.Running}}' "$project-postgres" 2>/dev/null || true)" == true ]]; then
     "${compose[@]}" stop api
     dump="$backups/pre-deploy-$release.dump"
-    docker exec beyondpilot-postgres pg_dump --username=beyondpilot --dbname=beyondpilot --format=custom >"$dump"
-    docker exec --interactive beyondpilot-postgres pg_restore --list <"$dump" >/dev/null
+    docker exec "$project-postgres" pg_dump --username=beyondpilot --dbname=beyondpilot --format=custom >"$dump"
+    docker exec --interactive "$project-postgres" pg_restore --list <"$dump" >/dev/null
     echo "deploy: database saved to $dump"
 fi
 
 # Postgres first, then the api (Flyway runs as it starts), then the web application once the api is healthy.
 "${compose[@]}" up --detach --wait --wait-timeout 300 --remove-orphans
 
-for container in beyondpilot-api beyondpilot-web; do
+for container in "$project-api" "$project-web"; do
     revision=$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$container")
     [[ "$revision" == "$sha" ]] || fail "$container runs $revision, not $sha"
 done
@@ -120,4 +129,4 @@ done
 find "$backups" -maxdepth 1 -name 'pre-deploy-*.dump' -printf '%T@ %p\n' | sort --numeric-sort --reverse |
     tail --lines=+6 | cut --delimiter=' ' --fields=2- | xargs --no-run-if-empty rm -f --
 
-echo "deploy: $release is running on staging"
+echo "deploy: $release is running on $environment"
