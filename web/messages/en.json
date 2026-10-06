@@ -292,7 +292,9 @@
       "talent": "AI talent",
       "introductions": "Introductions",
       "review": "Review",
-      "system": "System"
+      "system": "System",
+      "useCases": "Use cases",
+      "useCasesNew": "New use case"
     },
     "toggleSidebar": "Toggle sidebar",
     "programs": {
@@ -755,6 +757,13 @@
           "reviewer_remove": "Removed a judge",
           "decide": "Decided on an application",
           "release": "Released the outcomes"
+        },
+        "use_case": {
+          "create": "Created a use case",
+          "submit": "Sent a use case for review",
+          "draft": "Moved a use case back to Draft",
+          "approve": "Approved a use case",
+          "send_back": "Sent a use case back"
         }
       },
       "activity": {
@@ -812,6 +821,13 @@
           "reviewer_remove": "Removed a judge from <resource></resource>",
           "decide": "Decided on an application to <resource></resource>",
           "release": "Released the outcomes of <resource></resource>"
+        },
+        "use_case": {
+          "create": "Created the use case <resource></resource>",
+          "submit": "Sent the use case <resource></resource> for review",
+          "draft": "Moved the use case <resource></resource> back to Draft",
+          "approve": "Approved the use case <resource></resource>",
+          "send_back": "Sent the use case <resource></resource> back"
         }
       },
       "columns": {
@@ -1281,6 +1297,237 @@
         "description": "Try another solution name, or another state.",
         "clear": "Clear search and filters"
       }
+    },
+    "useCases": {
+      "metaTitle": "Use cases · BeyondPilot",
+      "title": "Use cases",
+      "lead": "Use cases of every organisation. Review the ones sent to you, or create one for an organisation.",
+      "create": "Create use case",
+      "search": "Search by title or organisation",
+      "clear": "Clear search",
+      "filters": {
+        "status": {
+          "label": "Status",
+          "all": "All statuses"
+        },
+        "organization": {
+          "label": "Organisation",
+          "all": "Organisation"
+        }
+      },
+      "status": {
+        "draft": "Draft",
+        "in_review": "In review",
+        "needs_changes": "Needs changes",
+        "published": "Published",
+        "closed": "Closed"
+      },
+      "note": {
+        "draft": "Only {organization} can see it",
+        "in_review": "Waiting for GenAI Fund",
+        "needs_changes": "Sent back to {organization}",
+        "published": "Visible in the directory",
+        "closed": "Deadline passed · locked, nobody can change it"
+      },
+      "columns": {
+        "useCase": "Use case",
+        "organization": "Organisation",
+        "status": "Status",
+        "closes": "Proposals close",
+        "updated": "Updated",
+        "actions": "Actions"
+      },
+      "count": "{count, plural, one {# use case} other {# use cases}}",
+      "inReview": "{count} in review",
+      "empty": {
+        "title": "No use cases yet",
+        "description": "Use cases appear here when organisations write them, or when you create one for an organisation."
+      },
+      "noMatch": {
+        "title": "No use case matches",
+        "description": "Nothing matches this search and these filters.",
+        "clear": "Clear search and filters"
+      },
+      "form": {
+        "metaTitle": "Create a use case · BeyondPilot",
+        "title": "Create a use case",
+        "lead": "Write it for an organisation. The audit log records it as created by GenAI Fund.",
+        "sections": {
+          "organization": "Organisation",
+          "challenge": "The challenge",
+          "outcomes": {
+            "title": "Outcomes and users",
+            "description": "Expected outcomes, current process, current solutions, target users"
+          },
+          "requirements": {
+            "title": "Requirements and data",
+            "description": "Requirements (required or optional), data readiness, integration, attachments"
+          },
+          "budget": {
+            "title": "Budget and timeline",
+            "description": "Budget range, preferred timeline, show or hide the company name"
+          }
+        },
+        "open": "Open",
+        "close": "Close",
+        "organization": "Create this use case for",
+        "organizationPlaceholder": "Choose an organisation",
+        "organizationHint": "Only approved organisations are listed.",
+        "choose": "Choose",
+        "useCaseTitle": "Use case title",
+        "useCaseTitleHint": "Name the outcome you want, not a technology.",
+        "problemStatement": "Problem statement",
+        "problemStatementHint": "What happens today, who it affects and what it costs.",
+        "industry": "Industry",
+        "technologies": "Relevant AI technologies",
+        "expectedOutcomes": "Expected outcomes and success metrics",
+        "expectedOutcomesHint": "Use numbers where you can.",
+        "currentProcess": "Current process",
+        "currentProcessHint": "How the work is done today.",
+        "currentSolutions": "Current solutions",
+        "currentSolutionsHint": "Optional. Tools or vendors you use or have tried.",
+        "targetUsers": "Target users and impacted teams",
+        "targetUsersHint": "Who uses the solution, and who is affected by it.",
+        "requirement": "Requirement {number}",
+        "addRequirement": "Add a requirement",
+        "necessity": {
+          "label": "Type",
+          "required": "Required",
+          "optional": "Optional"
+        },
+        "dataReadiness": "Data availability and readiness",
+        "dataReadinessHint": "What data exists, in what format, and how providers can access it.",
+        "integrationRequirements": "Integration, deployment and infrastructure",
+        "integrationRequirementsHint": "Systems to connect to, where it runs, security and data residency.",
+        "budgetMin": "Minimum budget (USD)",
+        "budgetMax": "Maximum budget (USD)",
+        "budgetToBeDetermined": "Budget to be determined",
+        "budgetMembersOnly": "Show the budget to signed-in members only",
+        "timeline": {
+          "label": "Preferred timeline",
+          "under_4": "Under 4 weeks",
+          "4_8": "4–8 weeks",
+          "8_12": "8–12 weeks",
+          "12_24": "12–24 weeks",
+          "over_24": "24 weeks or more"
+        },
+        "hideOrganizationName": "Hide the company name on the public use case",
+        "publish": {
+          "title": "Publish",
+          "when": "When you save",
+          "thisOrganization": "the organisation",
+          "publish": {
+            "title": "Publish now",
+            "description": "Visible in the directory at once. Providers can send proposals until the date below."
+          },
+          "draft": {
+            "title": "Save as a draft",
+            "description": "Only {organization}’s members can see it. They edit it, then send it to GenAI Fund for review."
+          }
+        },
+        "closes": "Proposals close",
+        "closesTime": "Time, Vietnam time",
+        "closesHint": "Providers cannot send proposals after this time (Vietnam time, ICT).",
+        "draftSubmit": "Save draft",
+        "publishSubmit": "Publish use case",
+        "cancel": "Cancel",
+        "saved": "Saved “{title}” as a draft.",
+        "published": "Published “{title}”.",
+        "errors": {
+          "budgetOutOfOrder": "The maximum is below the minimum.",
+          "USECASE_ORGANIZATION_NOT_ELIGIBLE": "This organisation is not an approved enterprise.",
+          "USECASE_CLOSES_IN_THE_PAST": "Choose a day after today.",
+          "USECASE_BUDGET_INCOMPLETE": "Give both amounts, or mark the budget to be determined.",
+          "USECASE_BUDGET_OUT_OF_ORDER": "The maximum is below the minimum.",
+          "unknown": "The use case was not saved. Try again.",
+          "USECASE_ATTACHMENT_NOT_USABLE": "Upload the file again: it cannot be attached."
+        },
+        "attachments": {
+          "label": "Attachments",
+          "add": "Add an attachment",
+          "replace": "Replace",
+          "uploaded": "Uploaded {time}",
+          "uploading": "Uploading…",
+          "errors": {
+            "type": "Attach a PDF, Word, Excel or PowerPoint file, or a PNG or JPEG image.",
+            "size": "Keep each file to 25 MB.",
+            "failed": "The file was not uploaded. Try again."
+          }
+        }
+      },
+      "untitled": "Untitled use case",
+      "actions": {
+        "open": "Actions for {name}",
+        "review": "Review use case",
+        "view": "Open use case",
+        "organisation": "View organisation"
+      },
+      "errors": {
+        "USECASE_NOT_AWAITING_REVIEW": "This use case is no longer in review. Its status was read again.",
+        "USECASE_NOT_FOUND": "This use case does not exist any more.",
+        "unknown": "The decision was not saved. Try again."
+      },
+      "decision": {
+        "title": "Decision",
+        "lead": "Approving publishes it at once and emails {organization}’s members. Sending it back needs a reason they can read.",
+        "approve": "Approve and publish",
+        "sendBack": "Send back…",
+        "approved": "“{name}” is published.",
+        "sentBack": "“{name}” was sent back to {organization}.",
+        "dialog": {
+          "title": "Send back to {organization}",
+          "description": "{organization}’s members get your reason by email and see it when they open the use case. They edit it and send it again.",
+          "label": "What should {organization} change?",
+          "hint": "Your reason is kept with the use case. {organization}’s members see it until they send the use case again.",
+          "cancel": "Cancel",
+          "confirm": "Send back"
+        },
+        "leadPublished": "It is public now. Sending it back takes it out of the directory and gives {organization}’s members a reason they can read; they edit it and send it again."
+      },
+      "detail": {
+        "metaTitle": "Use case · BeyondPilot",
+        "untitled": "Untitled use case",
+        "subtitle": {
+          "in_review": "{organization} · waiting for GenAI Fund",
+          "needs_changes": "{organization} · sent back, waiting for its members",
+          "draft": "{organization} · only its members can see it",
+          "published": "{organization} · in the directory",
+          "closed": "{organization} · closed"
+        },
+        "history": {
+          "title": "Status history",
+          "created": "Created by {name}",
+          "createdMeta": "{date}, for {organization}",
+          "sent": "Sent for review",
+          "sentBack": "Sent back",
+          "published": "Published",
+          "by": "{date}, by {name}",
+          "closed": "Closed",
+          "closedMeta": "{date}. Automatic: the deadline passed.",
+          "now": {
+            "in_review": {
+              "title": "In review",
+              "meta": "Waiting for GenAI Fund to approve it or send it back."
+            },
+            "needs_changes": {
+              "title": "Needs changes",
+              "meta": "Waiting for {organization} to edit it and send it again."
+            },
+            "draft": {
+              "title": "Draft",
+              "meta": "Waiting for {organization} to send it for review."
+            }
+          },
+          "sentBackMeta": "{date}, by {name} · “{note}”"
+        },
+        "review": {
+          "title": "Review the use case",
+          "lead": "Check each section as {organization} wrote it. You cannot edit it: approve it, or send it back with what to change."
+        },
+        "readOnly": "Read only: this is what {organization} wrote. You cannot edit it.",
+        "viewDetails": "View details",
+        "backToReview": "Back to review"
+      }
     }
   },
   "Lists": {
@@ -1490,6 +1737,19 @@
       "project": "About a project",
       "role": "About a role",
       "other": "About something else"
+    },
+    "technology": {
+      "recommendation": "Recommendation Systems / Personalization",
+      "predictive_analytics": "Predictive Analytics / Forecasting",
+      "generative_ai": "Generative AI",
+      "conversational_ai": "Conversational AI / Chatbots",
+      "computer_vision": "Computer Vision",
+      "document_intelligence": "Document Intelligence",
+      "voice_ai": "Voice AI",
+      "anomaly_detection": "Anomaly Detection / Fraud Detection",
+      "knowledge_retrieval": "Search & Knowledge Retrieval",
+      "process_automation": "Robotic Process Automation (RPA)",
+      "other": "Other"
     }
   },
   "Organization": {
@@ -1499,7 +1759,8 @@
       "profile": "Profile",
       "members": "Members",
       "solutions": "Solutions",
-      "introductions": "Introductions"
+      "introductions": "Introductions",
+      "useCases": "Use cases"
     },
     "status": {
       "pending": "In review",
@@ -1829,6 +2090,256 @@
       "title": "GenAI Fund took {name} down",
       "reason": "Reason: {reason}.",
       "foot": "Its public page and solutions are hidden. You keep your workspace; write to GenAI Fund to have it restored."
+    },
+    "useCases": {
+      "metaTitle": "Use cases · BeyondPilot",
+      "title": "Use cases",
+      "post": "Post a use case",
+      "postAnother": "Post another use case",
+      "untitled": "Untitled use case",
+      "you": "You",
+      "genaiFund": "GenAI Fund",
+      "cancel": "Cancel",
+      "summary": {
+        "published": "{count} published",
+        "in_review": "{count} in review",
+        "needs_changes": "{count} needs changes",
+        "draft": "{count, plural, one {# draft} other {# drafts}}",
+        "closed": "{count} closed"
+      },
+      "status": {
+        "draft": "Draft",
+        "in_review": "In review",
+        "needs_changes": "Needs changes",
+        "published": "Published",
+        "closed": "Closed"
+      },
+      "note": {
+        "in_review": "Sent {date} · GenAI Fund is reviewing it",
+        "published": "In the directory · closes {date}",
+        "needs_changes": "GenAI Fund asked for changes · open it to see what",
+        "draft": "Not submitted · visible to your organisation only",
+        "closed": "Closed {date}"
+      },
+      "columns": {
+        "useCase": "Use case",
+        "status": "Status",
+        "editedBy": "Last edited by",
+        "updated": "Updated",
+        "actions": "Actions"
+      },
+      "empty": {
+        "title": "No use cases yet",
+        "description": "Describe a problem you want solved with AI. Providers read it and send proposals once GenAI Fund has published it."
+      },
+      "actions": {
+        "open": "Actions for {name}",
+        "edit": "Edit use case",
+        "view": "Open use case",
+        "pullBack": "Pull back to draft",
+        "moveToDraft": "Move back to Draft"
+      },
+      "editPublished": {
+        "title": "Edit a published use case?",
+        "description": "When you save your changes, GenAI Fund reviews them again. The use case leaves the directory until they approve it.",
+        "note": "Prefer not to send it again yet? Move it back to Draft instead: it leaves the directory and nobody reviews it until you submit it.",
+        "confirm": "Edit use case"
+      },
+      "moveToDraft": {
+        "title": "Move “{name}” back to Draft?",
+        "description": "It leaves the directory and nobody reviews it until you submit it again. Your members can edit it meanwhile.",
+        "confirm": "Move back to Draft"
+      },
+      "done": {
+        "draft": "“{name}” is a draft again."
+      },
+      "errors": {
+        "USECASE_NOT_FOUND": "This organisation has no such use case.",
+        "USECASE_ENTERPRISE_REQUIRED": "Only the members of an approved organisation can write its use cases.",
+        "USECASE_CHANGED_MEANWHILE": "Someone saved this use case in the meantime. Reload it to see their changes.",
+        "USECASE_NOT_EDITABLE": "This use case cannot be edited now: it waits for GenAI Fund, or its deadline has passed.",
+        "USECASE_INCOMPLETE": "Fill in every section before sending the use case.",
+        "USECASE_NOT_SUBMITTABLE": "Only a draft, or one GenAI Fund sent back, can be sent for review.",
+        "USECASE_CANNOT_MOVE_TO_DRAFT": "Only a use case in review or published can move back to Draft.",
+        "USECASE_CLOSES_IN_THE_PAST": "Choose a close date after today.",
+        "USECASE_BUDGET_INCOMPLETE": "Give both amounts, or mark the budget to be determined.",
+        "USECASE_BUDGET_OUT_OF_ORDER": "The maximum budget is below the minimum.",
+        "USECASE_TIMELINE_OUT_OF_ORDER": "The longest timeline is shorter than the shortest.",
+        "USECASE_ATTACHMENT_NOT_USABLE": "Upload the attachment again: it cannot be attached.",
+        "REQUEST_INVALID": "Something you wrote is not valid. Check the fields and try again.",
+        "unknown": "The use case was not saved. Try again.",
+        "USECASE_NOT_CHANGED": "Change the use case before sending it again."
+      },
+      "wizard": {
+        "brand": "BeyondPilot",
+        "untitled": "New use case",
+        "saving": "Saving…",
+        "notSaved": "Not saved",
+        "saved": "Saved {time}",
+        "saveAndExit": "Save draft",
+        "stepsLabel": "Steps of the use case",
+        "yourUseCase": "Your use case",
+        "steps": {
+          "challenge": {
+            "title": "The challenge",
+            "meta": "Problem, industry and technologies",
+            "lead": "Describe the business problem you want solved. Providers read this first to decide whether to send a proposal."
+          },
+          "outcomes": {
+            "title": "Outcomes and users",
+            "meta": "Goals, current solution, who benefits",
+            "lead": "Say what success looks like and who the solution is for."
+          },
+          "requirements": {
+            "title": "Requirements and data",
+            "meta": "What it must do, data and integration",
+            "lead": "List what the solution must do and mark each item required or optional. Then describe your data and systems."
+          },
+          "budget": {
+            "title": "Budget and timeline",
+            "meta": "Budget, duration and deadline",
+            "lead": "Set the budget, how long the work should take and when proposals close."
+          },
+          "review": {
+            "title": "Review and submit",
+            "meta": "Check everything, then send for approval",
+            "lead": "Check each section. After you submit, GenAI Fund reviews the use case before it is published."
+          }
+        },
+        "saveNote": "Your draft saves as you type. Only people at {name} can see it.",
+        "reviewNote": "GenAI Fund reviews every use case before it is published. A clear, measurable problem is approved faster.",
+        "reload": "Reload",
+        "backToList": "Back to use cases",
+        "back": "Back",
+        "continue": "Continue",
+        "submit": "Submit for approval",
+        "sentBack": {
+          "title": "GenAI Fund asked for changes",
+          "note": "“{note}” Make the changes, then submit the use case again."
+        },
+        "editingPublished": {
+          "title": "You are editing a published use case",
+          "description": "Your first change takes it out of the directory. It comes back when you submit it again and GenAI Fund approves it."
+        },
+        "allRequired": "All fields are required unless marked Optional.",
+        "title": "Use case title",
+        "titleHint": "Name the outcome you want, not a technology.",
+        "problemStatement": "Problem statement",
+        "problemStatementHint": "What happens today, who it affects and what it costs.",
+        "industry": "Industry",
+        "choose": "Choose",
+        "technologies": "Relevant AI technologies",
+        "expectedOutcomes": "Expected outcomes and success metrics",
+        "expectedOutcomesHint": "Use numbers where you can.",
+        "currentProcess": "Current process",
+        "currentProcessHint": "How the work is done today.",
+        "currentSolutions": "Current solutions",
+        "currentSolutionsHint": "Optional. Tools or vendors you use or have tried.",
+        "targetUsers": "Target users and impacted teams",
+        "targetUsersHint": "Who uses the solution, and who is affected by it.",
+        "requirement": "Requirement {number}",
+        "necessity": {
+          "label": "Type",
+          "required": "Required",
+          "optional": "Optional"
+        },
+        "addRequirement": "Add a requirement",
+        "dataReadiness": "Data availability and readiness",
+        "dataReadinessHint": "What data exists, in what format, and how providers can access it.",
+        "integrationRequirements": "Integration, deployment and infrastructure",
+        "integrationRequirementsHint": "Systems to connect to, where it runs, security and data residency.",
+        "budgetMin": "Minimum budget (USD)",
+        "budgetMax": "Maximum budget (USD)",
+        "budgetToBeDetermined": "Budget to be determined",
+        "budgetMembersOnly": "Show the budget to signed-in members only",
+        "timeline": {
+          "label": "Preferred timeline",
+          "under_4": "Under 4 weeks",
+          "4_8": "4–8 weeks",
+          "8_12": "8–12 weeks",
+          "12_24": "12–24 weeks",
+          "over_24": "24 weeks or more"
+        },
+        "closes": "Proposals close",
+        "closesTime": "Time, Vietnam time",
+        "closesHint": "Providers cannot send proposals after this time (Vietnam time, ICT).",
+        "hideOrganizationName": "Hide our company name on the public use case",
+        "missing": {
+          "title": "Add these before you submit"
+        },
+        "confirm": "I confirm this information is accurate and can be shown publicly.",
+        "confirmRequired": "Confirm the information before you submit.",
+        "unchanged": "Change the use case before sending it again: GenAI Fund asked for changes."
+      },
+      "review": {
+        "edit": "Edit",
+        "missing": "Not written yet",
+        "requirementsCount": "{total, plural, one {# requirement} other {# requirements}}: {required} required, {optional} optional",
+        "budgetTbd": "To be determined",
+        "budgetRange": "USD {min}–{max}",
+        "closesAt": "{date}, {time} ICT",
+        "companyShown": "Shown on the use case",
+        "companyHidden": "Hidden on the use case",
+        "field": {
+          "title": "Title",
+          "problemStatement": "Problem statement",
+          "industry": "Industry",
+          "technologies": "AI technologies",
+          "expectedOutcomes": "Expected outcomes",
+          "currentProcess": "Current process",
+          "currentSolutions": "Current solutions",
+          "targetUsers": "Target users",
+          "requirements": "Requirements",
+          "dataReadiness": "Data readiness",
+          "integration": "Integration",
+          "attachments": "Attachments",
+          "budget": "Budget",
+          "timeline": "Timeline",
+          "closes": "Proposals close",
+          "companyName": "Company name"
+        }
+      },
+      "view": {
+        "inReview": {
+          "title": "Waiting for GenAI Fund",
+          "lead": "You sent this on {date} ICT. We'll email you when GenAI Fund has decided. To change something first, pull it back to Draft.",
+          "note": "It is read-only while GenAI Fund reviews it. Pulling it back to Draft lets you edit it again."
+        },
+        "closed": {
+          "title": "Closed",
+          "lead": "The deadline passed on {date}. Nobody can change this use case now.",
+          "note": "A closed use case stays in the directory as a record."
+        },
+        "pullBack": "Pull back to draft"
+      },
+      "sent": {
+        "metaTitle": "Sent for approval · BeyondPilot",
+        "title": "Sent for approval",
+        "lead": "GenAI Fund reviews every use case before it is published. We'll email you the result.",
+        "rows": {
+          "useCase": "Use case",
+          "organization": "Organisation",
+          "status": "Status",
+          "sent": "Sent",
+          "closes": "Proposals close"
+        },
+        "next": {
+          "title": "What happens next",
+          "review": {
+            "title": "Review by GenAI Fund",
+            "meta": "An operator checks that the brief is clear and complete."
+          },
+          "hearBack": {
+            "title": "You hear back",
+            "meta": "By email: approved, or what to change."
+          },
+          "published": {
+            "title": "Published",
+            "meta": "It appears in the use case directory and providers can send proposals."
+          }
+        },
+        "viewMine": "View my use cases"
+      }
     }
   },
   "Solution": {
@@ -3575,5 +4086,61 @@
     },
     "try": "Try",
     "browse": "Or browse"
+  },
+  "UseCases": {
+    "metaTitle": "Use cases · BeyondPilot",
+    "title": "Use cases",
+    "lead": "Business problems that enterprises want solved with AI. Read the brief, then send a proposal.",
+    "search": "Search use cases",
+    "sort": {
+      "label": "Sort by",
+      "newest": "Newest",
+      "deadline": "Closing soonest",
+      "budget": "Highest budget"
+    },
+    "industry": {
+      "label": "Industry",
+      "all": "All use cases"
+    },
+    "technology": {
+      "label": "Relevant AI technologies",
+      "more": "+{count, number}"
+    },
+    "goal": "Goal: {goal}",
+    "budget": {
+      "label": "Budget",
+      "range": "USD {min, number}–{max, number}",
+      "toBeDetermined": "To be determined",
+      "membersOnly": "Shown to members"
+    },
+    "timeline": {
+      "label": "Timeline",
+      "range": "{min, number}–{max, number} weeks"
+    },
+    "deadline": {
+      "date": "Apply by {date}",
+      "time": "{time} ICT"
+    },
+    "posted": "Posted {when}",
+    "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
+    "empty": {
+      "title": "No use cases match",
+      "description": "No use case matches this search and industry.",
+      "clear": "Clear search and filters"
+    },
+    "pagination": {
+      "label": "Pages of use cases",
+      "previous": "Previous",
+      "next": "Next",
+      "goToPrevious": "Go to the previous page",
+      "goToNext": "Go to the next page",
+      "page": "Page {page}"
+    },
+    "publish": {
+      "title": "Have a business problem AI could solve?",
+      "description": "Publish a use case, review proposals in one place and pick providers for a pilot.",
+      "action": "Publish a use case"
+    },
+    "anonymous": "Organization not named"
   }
 }
