@@ -106,6 +106,15 @@ function EmailSetupChecklist() {
         <div className="flex flex-col gap-0.5">
           <h2 id="email-checks" className="text-base font-medium">
             {t("title")}
+            {setup && setup.checks.length > 0 && (
+              <span className="font-normal text-muted-foreground">
+                {" · "}
+                {t("done", {
+                  done: setup.checks.filter((item) => item.state === "ok").length,
+                  total: setup.checks.length,
+                })}
+              </span>
+            )}
           </h2>
           <p className="text-sm text-muted-foreground">
             {setup

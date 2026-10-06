@@ -1837,6 +1837,7 @@
       },
       "checks": {
         "title": "Thiết lập",
+        "done": "Xong {done}/{total}",
         "lead": "Nhà cung cấp nói gì về việc gửi từ {domain}, kiểm lúc {when}.",
         "leadChecking": "Đang hỏi nhà cung cấp email có gửi được không.",
         "again": "Kiểm tra lại",

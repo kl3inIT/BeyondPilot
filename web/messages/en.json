@@ -1837,6 +1837,7 @@
       },
       "checks": {
         "title": "Setup",
+        "done": "{done} of {total} done",
         "lead": "What the provider says about sending from {domain}, checked at {when}.",
         "leadChecking": "Asking the provider whether email can leave.",
         "again": "Check again",

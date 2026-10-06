@@ -194,6 +194,7 @@ test.describe("admin email", () => {
 
     const setup = page.getByRole("region", { name: "Setup" });
     await expect(setup).toContainText("What the provider says about sending from beyondpilot.ai");
+    await expect(setup.getByRole("heading", { level: 2 })).toHaveText("Setup · 4 of 6 done");
     await expect(setup).toContainText("Sandbox: only verified addresses receive email");
     await expect(setup).toContainText("Waiting for the DKIM records");
     await expect(setup).toContainText("The domain is verified");
