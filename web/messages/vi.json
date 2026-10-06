@@ -229,6 +229,62 @@
     "description": "Phần này của BeyondPilot đang được xây dựng. Trong lúc chờ, AI for Insurance Challenge × Tasco đang nhận đơn ứng tuyển.",
     "back": "Về trang chủ"
   },
+  "UseCases": {
+    "metaTitle": "Bài toán · BeyondPilot",
+    "title": "Bài toán",
+    "lead": "Những bài toán kinh doanh mà doanh nghiệp muốn giải bằng AI. Đọc đề bài rồi gửi đề xuất.",
+    "search": "Tìm bài toán",
+    "sort": {
+      "label": "Sắp xếp",
+      "newest": "Mới nhất",
+      "deadline": "Sắp hết hạn",
+      "budget": "Ngân sách cao nhất"
+    },
+    "industry": {
+      "label": "Ngành",
+      "all": "Tất cả bài toán"
+    },
+    "technology": {
+      "label": "Công nghệ AI liên quan",
+      "more": "+{count, number}"
+    },
+    "goal": "Mục tiêu: {goal}",
+    "budget": {
+      "label": "Ngân sách",
+      "range": "{min, number}–{max, number} USD",
+      "toBeDetermined": "Chưa xác định",
+      "membersOnly": "Chỉ thành viên xem được"
+    },
+    "timeline": {
+      "label": "Thời gian",
+      "range": "{min, number}–{max, number} tuần"
+    },
+    "deadline": {
+      "date": "Hạn nộp {date}",
+      "time": "{time} ICT"
+    },
+    "posted": "Đăng {when}",
+    "count": "{count, plural, =0 {Không có bài toán nào} other {# bài toán}}",
+    "empty": {
+      "title": "Không có bài toán nào khớp",
+      "description": "Không có bài toán nào khớp với từ khóa và ngành này.",
+      "clear": "Xóa từ khóa và bộ lọc"
+    },
+    "pagination": {
+      "label": "Các trang bài toán",
+      "previous": "Trước",
+      "next": "Sau",
+      "goToPrevious": "Về trang trước",
+      "goToNext": "Sang trang sau",
+      "page": "Trang {page}"
+    },
+    "publish": {
+      "title": "Doanh nghiệp bạn có bài toán AI có thể giải?",
+      "description": "Đăng bài toán, xem các đề xuất ở một nơi và chọn nhà cung cấp cho giai đoạn thí điểm.",
+      "action": "Đăng bài toán"
+    },
+    "anonymous": "Tổ chức ẩn danh"
+  },
   "NotFound": {
     "title": "Không tìm thấy trang",
     "description": "Trang bạn tìm không tồn tại hoặc đã được chuyển đi.",

@@ -229,6 +229,62 @@
     "description": "This part of BeyondPilot is being built. In the meantime, the AI for Insurance Challenge × Tasco is open for applications.",
     "back": "Back to home"
   },
+  "UseCases": {
+    "metaTitle": "Use cases · BeyondPilot",
+    "title": "Use cases",
+    "lead": "Business problems that enterprises want solved with AI. Read the brief, then send a proposal.",
+    "search": "Search use cases",
+    "sort": {
+      "label": "Sort by",
+      "newest": "Newest",
+      "deadline": "Closing soonest",
+      "budget": "Highest budget"
+    },
+    "industry": {
+      "label": "Industry",
+      "all": "All use cases"
+    },
+    "technology": {
+      "label": "Relevant AI technologies",
+      "more": "+{count, number}"
+    },
+    "goal": "Goal: {goal}",
+    "budget": {
+      "label": "Budget",
+      "range": "USD {min, number}–{max, number}",
+      "toBeDetermined": "To be determined",
+      "membersOnly": "Shown to members"
+    },
+    "timeline": {
+      "label": "Timeline",
+      "range": "{min, number}–{max, number} weeks"
+    },
+    "deadline": {
+      "date": "Apply by {date}",
+      "time": "{time} ICT"
+    },
+    "posted": "Posted {when}",
+    "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
+    "empty": {
+      "title": "No use cases match",
+      "description": "No use case matches this search and industry.",
+      "clear": "Clear search and filters"
+    },
+    "pagination": {
+      "label": "Pages of use cases",
+      "previous": "Previous",
+      "next": "Next",
+      "goToPrevious": "Go to the previous page",
+      "goToNext": "Go to the next page",
+      "page": "Page {page}"
+    },
+    "publish": {
+      "title": "Have a business problem AI could solve?",
+      "description": "Publish a use case, review proposals in one place and pick providers for a pilot.",
+      "action": "Publish a use case"
+    },
+    "anonymous": "Organization not named"
+  },
   "NotFound": {
     "title": "Page not found",
     "description": "The page you are looking for does not exist or has moved.",
