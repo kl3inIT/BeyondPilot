@@ -85,7 +85,7 @@ The exact contract is `openapi.yml`, refreshed with each slice.
 
 ## Known limits
 
-- An invitation lapses seven days after it is sent (`V41`, BEY-71). A lapsed one is not open: nobody reads or answers it, it does not count against the open limit, and its address may be invited again. Nobody is told that it lapsed, and it still counts in the day it was sent.
+- An invitation lapses seven days after it is sent (`V42`, BEY-71). A lapsed one is not open: nobody reads or answers it, it does not count against the open limit, and its address may be invited again. Nobody is told that it lapsed, and it still counts in the day it was sent.
 - "Ask to change the domain" is left out: an owner writes to GenAI Fund by email, as for anything else.
 - The logo is an uploaded image. The workspace and the public page of the organization draw it; the operators' list and the search results draw initials, as their frames do. A year in the future is accepted up to 2100.
 - What the mockup's "Complete your account" step asks (first and last name, phone, country, LinkedIn, photo) belongs to `identity` and is not in this increment.
