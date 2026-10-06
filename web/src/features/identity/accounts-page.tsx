@@ -6,6 +6,7 @@ import { Button } from "@/components/actions/button";
 import { DataTable, DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
 import { Person } from "@/components/composites/person";
 import { Status } from "@/components/composites/status";
+import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { Badge } from "@/components/ui/badge";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { AccountList, AccountSummary, Me } from "@/lib/api/generated";
@@ -99,7 +100,7 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <AdminPageTitle destination="accounts">{t("title")}</AdminPageTitle>
         <p className="text-sm text-muted-foreground">{t("lead")}</p>
       </div>
       <AccountsToolbar />

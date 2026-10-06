@@ -2,6 +2,7 @@ import { PlugZapIcon, ScanSearchIcon } from "lucide-react";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
+import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -70,7 +71,7 @@ async function AiProvidersPage({ data }: { data: AiProviders }) {
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("providers.title")}</h1>
+        <AdminPageTitle destination="aiProviders">{t("providers.title")}</AdminPageTitle>
         <p className="text-sm text-muted-foreground">{t("providers.lead")}</p>
       </div>
 

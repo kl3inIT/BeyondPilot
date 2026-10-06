@@ -7,6 +7,7 @@ import { TextButton } from "@/components/actions/text-button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
+import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminSolutionList } from "@/lib/api/generated";
@@ -106,7 +107,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <AdminPageTitle destination="solutions">{t("title")}</AdminPageTitle>
           <p className="text-sm text-muted-foreground">{t("lead")}</p>
         </div>
         {/* How much waits, whatever the list is narrowed to, and the way to only that. */}

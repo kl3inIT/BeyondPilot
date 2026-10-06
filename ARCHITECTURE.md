@@ -79,7 +79,7 @@ The home page links its campaign call to action to the interim campaign page tha
 
 ## Identity and authorization
 
-Sign-in is Spring Security inside the backend; there is no separate identity server ([identity increment](docs/increments/active/bey-30-identity/design.md)).
+Sign-in is Spring Security inside the backend; there is no separate identity server ([identity increment](docs/increments/completed/bey-30-identity/design.md)).
 
 - **Two ways in, one account per address.** A six-digit code emailed to an address and Google sign-in. The code works only in the browser that asked for it, once, for 15 minutes and for five guesses. A typed code and a Google sign-in with the same verified address reach the same account. Google sign-in exists only where an OAuth client is configured.
 - **Session.** Spring Session stores it in PostgreSQL; it ends 30 days after the last request. The cookie `BEYONDPILOT_SESSION` is `HttpOnly` and `SameSite=Lax`, and `Secure` under the `production` profile. The session holds only the account identifier; role and status are read from the database.
