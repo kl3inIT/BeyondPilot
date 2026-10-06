@@ -1069,13 +1069,24 @@ paths:
   /api/organization/mine/members:
     get:
       operationId: listMyOrganizationMembers
+      parameters:
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
       responses:
         "200":
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/OrganizationMembers"
-          description: "The members, and for an owner the open invitations and requests."
+          description: "One page of the members, and for an owner all the open invitations\
+            \ and requests."
         "401":
           content:
             application/problem+json:
@@ -4601,8 +4612,9 @@ components:
       - self
     OrganizationMembers:
       type: object
-      description: "Who belongs to an organization, owners first. Invitations and\
-        \ requests are empty, and the allowance null, for a caller who is not an owner."
+      description: "One page of who belongs to an organization, owners first. Invitations\
+        \ and requests, all of them, are empty, and the allowance null, for a caller\
+        \ who is not an owner."
       properties:
         allowance:
           type:
@@ -4617,14 +4629,28 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/OrganizationMember"
+        page:
+          type: integer
+          format: int32
+          description: "The page of members returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
         requests:
           type: array
           items:
             $ref: "#/components/schemas/OrganizationJoinRequest"
+        total:
+          type: integer
+          format: int64
+          description: "How many members the organization has, over all pages."
       required:
       - invitations
       - members
+      - page
+      - pageSize
       - requests
+      - total
     OrganizationSearch:
       type: object
       description: "The approved organizations a search finds, by name; ten at most."

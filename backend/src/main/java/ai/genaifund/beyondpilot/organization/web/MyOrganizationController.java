@@ -9,6 +9,7 @@ import ai.genaifund.beyondpilot.organization.dto.AutoJoinRequest;
 import ai.genaifund.beyondpilot.organization.dto.ChangeMemberRoleRequest;
 import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.JobTitleRequest;
+import ai.genaifund.beyondpilot.organization.dto.MemberListRequest;
 import ai.genaifund.beyondpilot.organization.dto.MembersResponse;
 import ai.genaifund.beyondpilot.organization.dto.MyOrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationResponse;
@@ -20,6 +21,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -76,11 +78,11 @@ class MyOrganizationController {
 	@GetMapping(path = "/members", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "listMyOrganizationMembers", summary = "Who belongs to the caller's organization",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "200", description = "The members, and for an owner the open invitations and requests.")
+	@ApiResponse(responseCode = "200", description = "One page of the members, and for an owner all the open invitations and requests.")
 	@ApiResponse(responseCode = "403", description = "The caller belongs to no organization.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	MembersResponse members(@CurrentActor Actor actor) {
-		return organizations.members(actor);
+	MembersResponse members(@CurrentActor Actor actor, @Valid @ParameterObject MemberListRequest request) {
+		return organizations.members(actor, request);
 	}
 
 	@PostMapping(path = "/invitations", consumes = MediaType.APPLICATION_JSON_VALUE)

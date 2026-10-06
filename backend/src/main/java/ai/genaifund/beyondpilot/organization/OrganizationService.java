@@ -20,6 +20,7 @@ import ai.genaifund.beyondpilot.organization.dto.InvitationResponse;
 import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.JoinOutcomeResponse;
 import ai.genaifund.beyondpilot.organization.dto.JoinRequestResponse;
+import ai.genaifund.beyondpilot.organization.dto.MemberListRequest;
 import ai.genaifund.beyondpilot.organization.dto.MembersResponse;
 import ai.genaifund.beyondpilot.organization.dto.MyOrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationMatchResponse;
@@ -54,6 +55,8 @@ public class OrganizationService {
 	private static final String ORGANIZATION = "organization";
 
 	private static final int SEARCH_LIMIT = 10;
+
+	private static final int MEMBERS_PAGE_SIZE = 10;
 
 	private static final int MIN_SEARCH_LENGTH = 2;
 
@@ -281,10 +284,12 @@ public class OrganizationService {
 	 * @throws OrganizationException when the caller belongs to no organization
 	 */
 	@Transactional(readOnly = true)
-	public MembersResponse members(Actor actor) {
+	public MembersResponse members(Actor actor, MemberListRequest list) {
 		Member caller = member(actor);
 		Organization organization = organizations.findById(caller.organizationId()).orElseThrow();
-		List<Member> members = memberships.members(organization.getId());
+		int page = list.page() == null ? 1 : list.page();
+		List<Member> members = memberships.members(organization.getId(), MEMBERS_PAGE_SIZE,
+				(long) (page - 1) * MEMBERS_PAGE_SIZE);
 		List<Invitation> invitations = caller.isOwner() ? memberships.openInvitationsOf(organization.getId())
 				: List.of();
 		List<JoinRequest> requests = caller.isOwner() ? memberships.openRequestsTo(organization.getId()) : List.of();
@@ -292,7 +297,8 @@ public class OrganizationService {
 			.concat(members.stream().map(Member::accountId),
 					OrganizationViews.accounts(invitations, requests).stream())
 			.toList());
-		return new MembersResponse(OrganizationViews.members(members, people, caller.accountId()),
+		return new MembersResponse(OrganizationViews.members(members, people, caller.accountId()), page,
+				MEMBERS_PAGE_SIZE, memberships.countMembers(organization.getId()),
 				invitations.stream()
 					.map(invitation -> OrganizationViews.invitation(invitation, organization.getName(), people))
 					.toList(),

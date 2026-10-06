@@ -1,10 +1,13 @@
 import { useFormatter, useTranslations } from "next-intl";
+import { createSerializer } from "nuqs/server";
 
 import { DataTable } from "@/components/composites/data-table";
+import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
 import { Badge } from "@/components/ui/badge";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { MyOrganization, Organization, OrganizationMembers } from "@/lib/api/generated";
+import { siteRoutes } from "@/lib/site";
 
 import { InvitationActions } from "./invitation-actions";
 import { InvitePeople } from "./invite-people";
@@ -14,7 +17,10 @@ import { MemberRole } from "./member-role";
 import { NoticeCard } from "./notice-card";
 import { OrganizationAction } from "./organization-action";
 import { OrganizationFrame } from "./organization-frame";
+import { organizationMembersSearch } from "./organization-members-search";
 import { OrganizationSection } from "./organization-section";
+
+const address = createSerializer(organizationMembersSearch);
 
 type OrganizationMembersPageProps = {
   mine: MyOrganization & { organization: Organization };
@@ -50,7 +56,9 @@ function OrganizationMembersPage({ mine, members, solutions }: OrganizationMembe
     joined: <span className="text-muted-foreground">{day(member.joinedAt)}</span>,
     actions: <MemberActions member={member} owner={owner} />,
   }));
-  const invited = members.invitations.map((invitation) => ({
+  // The open invitations are not paged: they close the list, on its last page.
+  const lastPage = members.page * members.pageSize >= members.total;
+  const invited = (lastPage ? members.invitations : []).map((invitation) => ({
     key: invitation.id,
     person: (
       <Person name={invitation.email} email={t("invited", { day: day(invitation.createdAt) })} />
@@ -64,7 +72,7 @@ function OrganizationMembersPage({ mine, members, solutions }: OrganizationMembe
 
   const allowance = owner ? (members.allowance ?? null) : null;
   const summary = [
-    t("summary.members", { count: members.members.length }),
+    t("summary.members", { count: members.total }),
     members.invitations.length > 0 &&
       t("summary.invitations", { count: members.invitations.length }),
     allowance &&
@@ -76,11 +84,7 @@ function OrganizationMembersPage({ mine, members, solutions }: OrganizationMembe
     .join(" · ");
 
   return (
-    <OrganizationFrame
-      mine={mine}
-      current="members"
-      counts={{ members: members.members.length, solutions }}
-    >
+    <OrganizationFrame mine={mine} current="members" counts={{ members: members.total, solutions }}>
       {owner && members.requests.length > 0 && (
         <OrganizationSection
           id="members-requests"
@@ -178,6 +182,14 @@ function OrganizationMembersPage({ mine, members, solutions }: OrganizationMembe
             </li>
           ))}
         </ul>
+
+        <ListFooter
+          count={t("summary.members", { count: members.total })}
+          page={members.page}
+          pageSize={members.pageSize}
+          total={members.total}
+          href={(page) => address(siteRoutes.workspaceMembers, { page })}
+        />
       </OrganizationSection>
 
       {owner && organization.status === "approved" && (

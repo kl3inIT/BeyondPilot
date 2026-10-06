@@ -351,6 +351,30 @@ test.describe("workspace organization", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("the members are paged, and the open invitations close the last page", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "crowd", baseURL!);
+    await page.goto("/workspace/organization/members");
+
+    await expect(shownPeople(page)).toHaveCount(10);
+    await expect(page.getByText("12 members · 1 invitation pending")).toBeVisible();
+    await expect(page.getByText("hoa.le@example.com")).toHaveCount(0);
+    const pages = page.getByRole("navigation", { name: "Pages" });
+    await expect(pages.getByRole("link", { name: "Go to the previous page" })).toHaveCount(0);
+
+    await pages.getByRole("link", { name: "Go to the next page" }).click();
+    await expect(page).toHaveURL("/workspace/organization/members?page=2");
+    await expect(shownPeople(page)).toHaveText(["Member 11", "Member 12", "hoa.le@example.com"]);
+    await expect(pages.getByRole("link", { name: "Go to the next page" })).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+
+    await pages.getByRole("link", { name: "Go to the previous page" }).click();
+    await expect(page).toHaveURL("/workspace/organization/members");
+  });
+
   test("an owner sees members, requests and invitations, and decides a request", async ({
     page,
     context,

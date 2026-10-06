@@ -726,13 +726,22 @@ export type OrganizationMember = {
 };
 
 /**
- * Who belongs to an organization, owners first. Invitations and requests are empty, and the allowance null, for a caller who is not an owner.
+ * One page of who belongs to an organization, owners first. Invitations and requests, all of them, are empty, and the allowance null, for a caller who is not an owner.
  */
 export type OrganizationMembers = {
     allowance?: InvitationAllowance | null;
     invitations: Array<OrganizationInvitation>;
     members: Array<OrganizationMember>;
+    /**
+     * The page of members returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
     requests: Array<OrganizationJoinRequest>;
+    /**
+     * How many members the organization has, over all pages.
+     */
+    total: number;
 };
 
 /**
@@ -2414,7 +2423,12 @@ export type ChangeMyJobTitleResponse = ChangeMyJobTitleResponses[keyof ChangeMyJ
 export type ListMyOrganizationMembersData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
     url: '/api/organization/mine/members';
 };
 
@@ -2433,7 +2447,7 @@ export type ListMyOrganizationMembersError = ListMyOrganizationMembersErrors[key
 
 export type ListMyOrganizationMembersResponses = {
     /**
-     * The members, and for an owner the open invitations and requests.
+     * One page of the members, and for an owner all the open invitations and requests.
      */
     200: OrganizationMembers;
 };

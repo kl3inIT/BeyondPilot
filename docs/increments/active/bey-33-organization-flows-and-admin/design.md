@@ -64,7 +64,7 @@ Slice 1 changes, all under `/api/organization`:
 | Path                                     | Change                                                                                             |
 | ---------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `GET /mine`                              | `request` carries the organization's type, country and domain; `declined` is the declined answer   |
-| `GET /mine/members`                      | `allowance` for an owner: whether inviting is open, and how many invitations are left today / open |
+| `GET /mine/members`                      | `allowance` for an owner: whether inviting is open, and how many invitations are left today / open; `?page=` reads ten members at a time with `page`, `pageSize` and `total`, while invitations and requests stay whole |
 | `POST /mine/invitations`                 | `409 ORGANIZATION_NOT_APPROVED`; `429 ORGANIZATION_INVITATION_DAILY_LIMIT` and `…_OPEN_LIMIT`      |
 | `PUT /mine/auto-join`                    | `409 ORGANIZATION_DOMAIN_NOT_VERIFIED` when turned on without an approved, verified domain         |
 | `POST /organizations/{id}/join`          | The outcome `owner` is gone; an unowned organization always answers `requested`                    |

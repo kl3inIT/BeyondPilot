@@ -83,6 +83,22 @@ public class MembershipRepository {
 				""").param(organizationId).query(MembershipRepository::member).list();
 	}
 
+	/** One page of the members of an organization, in the order of {@link #members(UUID)}. */
+	public List<Member> members(UUID organizationId, int limit, long offset) {
+		return jdbc.sql(MEMBERS + """
+				where organization_id = ?
+				order by case role when 'owner' then 0 else 1 end, created_at, account_id
+				limit ? offset ?
+				""").params(organizationId, limit, offset).query(MembershipRepository::member).list();
+	}
+
+	public long countMembers(UUID organizationId) {
+		return jdbc.sql("select count(*) from organization_member where organization_id = ?")
+			.param(organizationId)
+			.query(Long.class)
+			.single();
+	}
+
 	public int owners(UUID organizationId) {
 		return jdbc.sql("select count(*) from organization_member where organization_id = ? and role = 'owner'")
 			.param(organizationId)

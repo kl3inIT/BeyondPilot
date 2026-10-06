@@ -4,7 +4,7 @@ import { expect, type BrowserContext, type Page } from "@playwright/test";
 // the account it answers with (tests/e2e/stub-backend.mjs).
 export async function signInAs(
   context: BrowserContext,
-  account: "operator" | "unnamed" | "owner" | "member" | "invited" | "asked" | "declined",
+  account: "operator" | "unnamed" | "owner" | "crowd" | "member" | "invited" | "asked" | "declined",
   baseURL: string,
 ) {
   await context.addCookies([{ name: "BEYONDPILOT_SESSION", value: account, url: baseURL }]);

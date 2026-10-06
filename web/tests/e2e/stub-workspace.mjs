@@ -78,9 +78,26 @@ const members = [
   },
 ];
 
+/** The members read at a time, as the backend pages them. */
+const membersPageSize = 10;
+
+/** An organization of twelve: the two above and ten more, so the members take two pages. */
+const crowd = [
+  ...members,
+  ...Array.from({ length: 10 }, (_, index) => ({
+    accountId: `6f1c3a52-0f0e-4a53-9a55-0d3f6f6b8a${String(index).padStart(2, "0")}`,
+    name: `Member ${index + 3}`,
+    email: `member${index + 3}@pocketpolicy.example`,
+    role: "member",
+    jobTitle: null,
+    joinedAt: day,
+  })),
+];
+
 /** Whom each signed-in account is to the organization: `[its role in it, what waits for it]`. */
 const standing = {
   owner: { role: "owner" },
+  crowd: { role: "owner", crowd: true },
   member: { role: "member" },
   invited: { invitations: [invitation] },
   asked: { request },
@@ -248,6 +265,7 @@ export function answerWorkspace(url, session) {
   }
   const {
     role,
+    crowd: crowded = false,
     invitations = [],
     request: asked = null,
     declined: refusedRequest = null,
@@ -274,10 +292,20 @@ export function answerWorkspace(url, session) {
     if (!role) {
       return refused(403, "ORGANIZATION_MEMBERSHIP_REQUIRED");
     }
+    const everyone = crowded ? crowd : members;
+    const page = Number(url.searchParams.get("page") ?? 1);
     return [
       200,
       {
-        members: members.map((person) => ({ ...person, self: person.role === role })),
+        members: everyone
+          .slice((page - 1) * membersPageSize, page * membersPageSize)
+          .map((person) => ({
+            ...person,
+            self: person === everyone.find((one) => one.role === role),
+          })),
+        page,
+        pageSize: membersPageSize,
+        total: everyone.length,
         invitations: [invitation],
         requests: [request],
         allowance: role === "owner" ? allowance : null,

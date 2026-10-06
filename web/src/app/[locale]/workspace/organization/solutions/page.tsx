@@ -38,7 +38,7 @@ export default async function OrganizationSolutionsRoute({
     <OrganizationSolutionsPage
       mine={{ ...mine, organization }}
       solutions={solutions}
-      members={members?.members.length ?? 0}
+      members={members?.total ?? 0}
     />
   );
 }

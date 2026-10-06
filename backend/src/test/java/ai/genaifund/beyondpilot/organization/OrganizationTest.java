@@ -197,6 +197,37 @@ class OrganizationTest {
 	}
 
 	@Test
+	void theMembersAreReadOnePageAtATimeOwnersFirstWithAllInvitationsAndTheTotal() {
+		String founder = signIn("founder@paging.test");
+		UUID id = create(founder, "Paging Co");
+		post(operator, API + "/admin/organizations/" + id + "/approve", Map.of("emailDomain", "paging.test"))
+			.expectStatus()
+			.isNoContent();
+		put(founder, API + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
+		for (int person = 1; person <= 11; person++) {
+			String joiner = signIn("person" + person + "@paging.test");
+			assertThat(outcome(post(joiner, API + "/organizations/" + id + "/join", Map.of()))).isEqualTo("joined");
+		}
+		post(founder, API + "/mine/invitations", Map.of("email", "invited@elsewhere.test", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+
+		String first = members(founder);
+		assertThat(JsonPath.<Integer>read(first, "$.page")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(first, "$.pageSize")).isEqualTo(10);
+		assertThat(JsonPath.<Integer>read(first, "$.total")).isEqualTo(12);
+		assertThat(JsonPath.<List<Object>>read(first, "$.members")).hasSize(10);
+		assertThat(JsonPath.<String>read(first, "$.members[0].role")).isEqualTo("owner");
+		String second = members(founder, 2);
+		assertThat(JsonPath.<Integer>read(second, "$.page")).isEqualTo(2);
+		assertThat(JsonPath.<List<Object>>read(second, "$.members")).hasSize(2);
+		// Invitations are not paged: the owner reads every open one on any page.
+		assertThat(JsonPath.<List<Object>>read(second, "$.invitations")).hasSize(1);
+		assertThat(JsonPath.<List<Object>>read(members(founder, 3), "$.members")).isEmpty();
+		assertProblem(get(founder, API + "/mine/members?page=0"), 400, "REQUEST_INVALID");
+	}
+
+	@Test
 	void anAddressOnTheVerifiedDomainJoinsAtOnceOnlyWhileItsOwnersAllowIt() {
 		String founder = signIn("founder@domain.test");
 		UUID id = create(founder, "Domain Co");
@@ -644,6 +675,10 @@ class OrganizationTest {
 
 	private String members(String session) {
 		return body(get(session, API + "/mine/members").expectStatus().isOk());
+	}
+
+	private String members(String session, int page) {
+		return body(get(session, API + "/mine/members?page=" + page).expectStatus().isOk());
 	}
 
 	private static String outcome(RestTestClient.ResponseSpec response) {
