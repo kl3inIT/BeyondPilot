@@ -2483,5 +2483,172 @@
   },
   "EntryList": {
     "remove": "Remove {entry} from {label}"
+  },
+  "Apply": {
+    "metaTitle": "Apply",
+    "saved": "Saved {time}",
+    "closes": "Closes {when}",
+    "saveAndExit": "Save and exit",
+    "yourApplication": "Your application",
+    "savesAsYouType": "Answers save as you type. Come back any time before {when}.",
+    "stepOf": "Step {step} of {count} · {title}",
+    "progress": "Progress through the application",
+    "allRequired": "All fields are required unless marked Optional.",
+    "optional": "Optional",
+    "closed": "Applications closed on {when}. Nothing can be changed or submitted now.",
+    "backToProgram": "Back to program",
+    "back": "Back",
+    "continue": "Continue",
+    "submit": "Submit application",
+    "submitAgain": "Submit changes",
+    "steps": {
+      "you": {
+        "title": "You and your team",
+        "what": "Contact details and who is applying",
+        "lead": "Judges look at the solution, not the size of the company behind it. These details stay with you, so your next application starts filled in."
+      },
+      "solution": {
+        "title": "Your solution",
+        "what": "What it does, its stage and deck",
+        "lead": "The product or prototype you're bringing. It stays on your organization's profile for your next application."
+      },
+      "questions": {
+        "title": "For this program",
+        "what": "The program's own questions",
+        "lead": "These answers go only to {program}."
+      },
+      "review": {
+        "title": "Review and submit",
+        "what": "Check everything, then send",
+        "lead": "You can change your application until {when}, even after you submit."
+      }
+    },
+    "you": {
+      "applyingFor": "Applying for",
+      "notListedYet": "Not in the directory yet",
+      "applyingForHint": "GenAI Fund checks a new organization before it is listed in the directory. That doesn't hold up your application.",
+      "applyingAs": "Applying as",
+      "who": {
+        "individual": {
+          "title": "Individual",
+          "what": "Just you, shown by your name. Nothing more to fill in."
+        },
+        "team": {
+          "title": "Team",
+          "what": "Two or more people, such as a student or hackathon team."
+        },
+        "company": {
+          "title": "Company",
+          "what": "Find your company on BeyondPilot and join it, or add it."
+        }
+      },
+      "individualHint": "Judges see you as {name} · Individual. If you join a company later, what you submitted stays under your name.",
+      "yourCompany": "Your company",
+      "companyRequired": "Join your company, or add it, before you continue.",
+      "aboutYou": "About you",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "emailHint": "You sign in with this address, so it can't be changed here.",
+      "phone": "Phone number",
+      "phoneRequired": "Enter a phone number with its country code.",
+      "country": "Country",
+      "countryPlaceholder": "Select a country",
+      "countryRequired": "Select a country.",
+      "linkedin": "LinkedIn profile",
+      "linkedinRequired": "Enter the full address of your LinkedIn profile, starting with https://",
+      "yourTeam": "Your team",
+      "teamName": "Team name",
+      "teamNameHint": "Shown to judges if you're shortlisted.",
+      "teamSize": "Team size",
+      "website": "Website",
+      "teamBackground": "Team background",
+      "teamBackgroundHint": "The experience that matters for this problem.",
+      "required": "Fill this in."
+    },
+    "solution": {
+      "choice": "Solution",
+      "newSolution": "New solution",
+      "choiceHint": "One your organization already has fills this step; changes here update it.",
+      "name": "Solution name",
+      "summary": "What it does",
+      "summaryHint": "Two or three sentences.",
+      "problemsSolved": "Problem it solves",
+      "problemsSolvedHint": "Who you're helping, and what goes wrong for them today.",
+      "maturity": "Stage",
+      "maturityPlaceholder": "Select a stage",
+      "maturityRequired": "Select a stage.",
+      "traction": "Milestones and traction",
+      "tractionPlaceholder": "Customers, pilots, users or revenue so far.",
+      "builtWith": "Built with",
+      "builtWithPlaceholder": "Add a model, tool or framework",
+      "deck": "Solution deck",
+      "deckHint": "A PDF only the program's reviewers read. It is kept as you submit it.",
+      "deckRequired": "Add the solution's deck, a PDF.",
+      "demoUrl": "Demo link",
+      "demoUrlHint": "A video, a prototype or a live demo. Check it opens without signing in.",
+      "required": "Fill this in."
+    },
+    "questions": {
+      "choose": "Choose one",
+      "uploaded": "Uploaded file",
+      "required": "Answer this question.",
+      "confirmRequired": "Confirm this to continue."
+    },
+    "review": {
+      "blocks": {
+        "you": "You and your team",
+        "solution": "Your solution",
+        "questions": "For this program"
+      },
+      "edit": "Edit",
+      "editNamed": "Edit {section}",
+      "notAdded": "Not added",
+      "applyingAs": "Applying as",
+      "name": "Name",
+      "teamSize": "Team size",
+      "solution": "Solution",
+      "summary": "What it does",
+      "problemsSolved": "Problem it solves",
+      "maturity": "Stage",
+      "traction": "Milestones and traction",
+      "builtWith": "Built with",
+      "deck": "Solution deck",
+      "confirmed": "Confirmed",
+      "uploaded": "Uploaded file",
+      "confirm": "I confirm the information is accurate.",
+      "confirmRequired": "Confirm the information to submit."
+    },
+    "errors": {
+      "saveFailed": "Your latest changes could not be saved. Check your connection; they are kept on this page.",
+      "unknown": "Something went wrong. Try again.",
+      "codes": {
+        "PROPOSAL_CLOSED": "Applications to this program have closed.",
+        "PROPOSAL_LOCKED": "This program takes no changes after submission.",
+        "PROPOSAL_CHANGED_MEANWHILE": "This application was changed in another tab. Reload the page and continue there.",
+        "PROPOSAL_ORGANIZATION_REQUIRED": "Say who applies in step 1.",
+        "PROPOSAL_ORGANIZATION_APPLIED": "Someone in your organization has already applied to this program.",
+        "PROPOSAL_CONTACT_INCOMPLETE": "Your contact details in step 1 are incomplete.",
+        "PROPOSAL_TEAM_BACKGROUND_REQUIRED": "Describe your team's background in step 1.",
+        "PROPOSAL_SOLUTION_REQUIRED": "Choose or add your solution in step 2.",
+        "PROPOSAL_SOLUTION_INCOMPLETE": "Your solution in step 2 needs what it does, the problem it solves and its stage.",
+        "PROPOSAL_DECK_REQUIRED": "Add your solution deck in step 2.",
+        "PROPOSAL_ANSWER_REQUIRED": "Answer every question of the program.",
+        "PROPOSAL_ANSWER_INVALID": "An answer does not fit its question.",
+        "ORGANIZATION_ALREADY_MEMBER": "You already belong to an organization. Reload the page."
+      }
+    }
+  },
+  "PdfUpload": {
+    "empty": "Choose a PDF",
+    "limits": "PDF, up to 25 MB.",
+    "uploading": "Uploading…",
+    "replace": "Replace",
+    "remove": "Remove",
+    "errors": {
+      "type": "Choose a PDF file.",
+      "size": "The file is larger than 25 MB.",
+      "failed": "The file could not be uploaded. Try again."
+    }
   }
 }
