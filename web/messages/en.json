@@ -728,7 +728,8 @@
           "approve": "Approved a solution",
           "reject": "Sent a solution back",
           "deployment_approve": "Approved a customer deployment",
-          "deployment_reject": "Sent a customer deployment back"
+          "deployment_reject": "Sent a customer deployment back",
+          "back": "Wrote what GenAI Fund says of a solution"
         },
         "introduction": {
           "reply": "Replied to a request for an introduction",
@@ -780,7 +781,8 @@
           "approve": "Approved the solution <resource></resource>",
           "reject": "Sent the solution <resource></resource> back",
           "deployment_approve": "Approved the customer deployment <resource></resource>",
-          "deployment_reject": "Sent the customer deployment <resource></resource> back"
+          "deployment_reject": "Sent the customer deployment <resource></resource> back",
+          "back": "Wrote what GenAI Fund says of the solution <resource></resource>"
         },
         "introduction": {
           "reply": "Replied to the request for an introduction about <resource></resource>",
@@ -1036,7 +1038,14 @@
         "deck": "Solution deck",
         "deployments": "Customer deployments",
         "deploymentsSummary": "{total, plural, one {# deployment} other {# deployments}}{waiting, plural, =0 {} other {, # waiting for review}}",
-        "missing": "Not published yet"
+        "missing": "Not published yet",
+        "images": "Images",
+        "logo": "Logo",
+        "cover": "Cover",
+        "coverImage": "Cover image",
+        "moreImages": "More images",
+        "openImage": "View {name}",
+        "channels": "Channels"
       },
       "queueEmpty": {
         "title": "Nothing waits for review",
@@ -1056,7 +1065,24 @@
         "rejectLead": "It stays off the solution's page. The owners read your reason and can correct it.",
         "takeDownLead": "It leaves the solution's page at once. The owners read your reason and can send it again."
       },
-      "deploymentsWaiting": "{count, plural, one {# deployment waits} other {# deployments wait}}"
+      "deploymentsWaiting": "{count, plural, one {# deployment waits} other {# deployments wait}}",
+      "backing": {
+        "title": "What GenAI Fund says",
+        "lead": "Shown on the solution's card and page, marked as GenAI Fund's. Its owners cannot change it.",
+        "fields": {
+          "backedBy": "Backed by",
+          "program": "Program",
+          "funding": "Funding"
+        },
+        "placeholders": {
+          "backedBy": "GenAI Fund portfolio",
+          "program": "FastTrack AI Accelerator, Cohort 1",
+          "funding": "Seed"
+        },
+        "hint": "Leave a line empty to take it away.",
+        "save": "Save",
+        "saved": "Saved for {name}."
+      }
     },
     "talent": {
       "metaTitle": "Talent · BeyondPilot",
@@ -1732,7 +1758,9 @@
       "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Someone else saved this customer deployment in the meantime. Reload the page and make your changes again.",
       "SOLUTION_MEMBER_REQUIRED": "Only a member of an organization can do this.",
       "SOLUTION_DECK_NOT_USABLE": "This file cannot be the deck. Upload the PDF again.",
-      "unknown": "That did not work. Try again."
+      "unknown": "That did not work. Try again.",
+      "SOLUTION_IMAGE_NOT_USABLE": "This image cannot be used. Upload it again.",
+      "linkNotCopied": "The link was not copied. Try again."
     },
     "done": {
       "saved": "Solution saved.",
@@ -1743,7 +1771,10 @@
       "deploymentSaved": "{name} sent to GenAI Fund for review.",
       "deploymentRemoved": "{name} removed.",
       "deploymentApproved": "{name} approved.",
-      "deploymentRejected": "{name} sent back."
+      "deploymentRejected": "{name} sent back.",
+      "shown": "{name} is listed in the directory.",
+      "hidden": "{name} is hidden from the directory.",
+      "linkCopied": "Link copied"
     },
     "directory": {
       "metaTitle": "AI solutions · BeyondPilot",
@@ -1770,7 +1801,8 @@
       },
       "ownLead": "This is your organization's solution, as others see it.",
       "ownEdit": "Edit this solution",
-      "deployments": "{count, plural, one {# customer deployment} other {# customer deployments}}"
+      "deployments": "{count, plural, one {# customer deployment} other {# customer deployments}}",
+      "backing": "Confirmed by GenAI Fund:"
     },
     "filters": {
       "search": "Search by name or summary",
@@ -1816,28 +1848,13 @@
         "title": "Proof",
         "lead": "Every claim shows its kind of evidence and where it comes from. What isn't known is shown as unknown.",
         "customerCase": "Customer case",
-        "noCase": "No customer case published."
-      },
-      "fit": {
-        "title": "Where it fits",
-        "industries": "Industries",
-        "channels": "Channels",
-        "deployment": "Deployment",
-        "languages": "Languages"
-      },
-      "product": {
-        "title": "Product and business",
-        "capabilities": "Capabilities",
-        "stage": "Stage",
-        "notPublished": "Not published yet: core technology, segment, funding, pricing model, notable customers, alternatives.",
-        "traction": "Milestones and traction",
-        "builtWith": "Built with",
-        "bestCustomerProfile": "Best customer profile"
-      },
-      "offers": {
-        "title": "Offers",
-        "kind": "Offer",
-        "none": "No offer has been published yet."
+        "noCase": "No customer case published.",
+        "programme": "Programme selection",
+        "selected": "Selected for {program}.",
+        "byGenAiFund": "Confirmed by GenAI Fund · {date}",
+        "stated": "Stated by the company",
+        "byCompany": "Stated by {name}",
+        "cases": "{count, plural, one {One customer deployment reviewed by GenAI Fund, shown below.} other {# customer deployments reviewed by GenAI Fund, shown below.}}"
       },
       "company": {
         "title": "The company behind this solution",
@@ -1859,37 +1876,75 @@
         "website": "Visit website",
         "demo": "Watch the demo",
         "deck": "Download the deck",
-        "basedIn": "Based in"
+        "basedIn": "Based in",
+        "lead": "Get introduced by GenAI Fund. Your email stays private until you reply."
+      },
+      "facts": {
+        "stage": "Stage",
+        "industries": "Industries",
+        "capabilities": "AI capabilities",
+        "deployment": "Deployment",
+        "languages": "Languages",
+        "builtWith": "Core technology",
+        "bestCustomerProfile": "Best customer profile",
+        "backedBy": "Backed by",
+        "program": "Program",
+        "channels": "Channels",
+        "funding": "Funding"
+      },
+      "gallery": {
+        "open": "Open image {position} of {count}",
+        "cover": "The cover image of {name}",
+        "image": "{name}, image {position} of {count}",
+        "title": "Images of {name}",
+        "position": "Image {position} of {count}",
+        "previous": "Previous image",
+        "next": "Next image"
+      },
+      "references": {
+        "title": "Customer references & case studies",
+        "lead": "How enterprises have used this solution."
       }
     },
     "mine": {
       "metaTitle": "Solutions · BeyondPilot",
       "title": "Solutions",
-      "summary": {
-        "listed": "{count} listed",
-        "draft": "{count, plural, one {# draft} other {# drafts}}",
-        "submitted": "{count} in review",
-        "rejected": "{count} not approved",
-        "hidden": "{count} hidden"
-      },
       "columns": {
         "solution": "Solution",
-        "status": "Status",
+        "status": "Review",
         "updated": "Updated",
-        "actions": "Actions"
-      },
-      "state": {
-        "listed": "Listed in the directory",
-        "hidden": "Approved · hidden from the directory",
-        "draft": "Not submitted · visible to your organization only",
-        "submitted": "Sent for review · visible to your organization only",
-        "rejected": "Not approved · visible to your organization only"
+        "actions": "Actions",
+        "listing": "Public listing"
       },
       "actions": {
         "open": "Actions for {name}",
         "edit": "Edit",
-        "view": "Open",
-        "viewPublic": "View public page"
+        "viewPublic": "View public page",
+        "continue": "Continue editing",
+        "send": "Send for review",
+        "filled": "{filled} of {total} required fields filled",
+        "delete": "Delete draft…",
+        "viewSent": "View what was sent",
+        "editLive": "Changes are saved when you ask",
+        "inReview": "GenAI Fund is reviewing it",
+        "fix": "Read the reason and fix",
+        "sendAgain": "Send again",
+        "openByLink": "Open by its link",
+        "copyLink": "Copy link",
+        "hide": "Hide from the directory",
+        "show": "Show in the directory",
+        "cancel": "Cancel",
+        "confirmDelete": {
+          "title": "Delete {name}?",
+          "lead": "The draft, its images and its deck are removed. This cannot be undone.",
+          "confirm": "Delete draft"
+        },
+        "confirmHide": {
+          "title": "Hide from the directory?",
+          "lead": "People with the link can still open it. It leaves the directory and search at once.",
+          "confirm": "Hide"
+        },
+        "view": "Open"
       },
       "create": {
         "title": "Add a solution",
@@ -1902,8 +1957,26 @@
       "afterApproval": "You can add solutions once GenAI Fund approves your organization.",
       "empty": {
         "title": "No solutions yet",
-        "owner": "Add the first product your organization offers.",
+        "owner": "Add a solution to show what {name} offers. It stays a draft until you send it for review.",
         "member": "An owner of the organization adds its solutions."
+      },
+      "listing": {
+        "listed": "Listed",
+        "unlisted": "Unlisted · link only",
+        "notYet": "Not public yet",
+        "notPublic": "Not public"
+      },
+      "about": {
+        "draft": "Draft · {filled} of {total} required fields filled",
+        "sentBack": "Sent back: {reason}",
+        "sentBackPlain": "Sent back"
+      },
+      "sent": "Sent {date}",
+      "review": {
+        "draft": "Draft",
+        "submitted": "In review",
+        "approved": "Approved",
+        "rejected": "Sent back"
       }
     },
     "editor": {
@@ -1946,7 +2019,8 @@
         "evidence": {
           "title": "Evidence",
           "meta": "Deck, demo and customer cases",
-          "lead": "Proof that the solution works. Show what you know; what you leave out appears as not published yet."
+          "lead": "Proof that the solution works. Show what you know; what you leave out appears as not published yet.",
+          "toAdd": "{missing, select, both {Logo and cover image to add} logo {Logo to add} other {Cover image to add}}"
         },
         "review": {
           "title": "Review and submit",
@@ -1960,7 +2034,6 @@
       "note": "Changes save as you type. A draft is visible to your organization only.",
       "noteLive": "Changes are kept when you choose Save changes. On an approved solution they show at once.",
       "required": "All fields are required unless marked Optional.",
-      "allOptional": "Every field on this step is optional.",
       "optional": "Optional",
       "counter": "{count} / {max}",
       "previous": "Back",
@@ -1997,14 +2070,21 @@
         "demoUrlHint": "A video, a Figma prototype or a live demo. Check it opens without signing in.",
         "website": "Product page",
         "websiteHint": "Where a visitor reads more about it.",
-        "linkInvalid": "Enter a full address that starts with https://"
+        "linkInvalid": "Enter a full address that starts with https://",
+        "logo": "Logo",
+        "cover": "Cover image",
+        "images": "More images",
+        "channels": "Channels",
+        "channelsPlaceholder": "Voice, chat, email…"
       },
       "needed": {
         "name": "Enter the solution's name.",
         "summary": "Write two or three sentences about what it does.",
         "maturity": "Choose its stage.",
         "industries": "Choose at least one industry.",
-        "focusAreas": "Choose at least one capability."
+        "focusAreas": "Choose at least one capability.",
+        "logo": "Add a logo.",
+        "cover": "Add a cover image."
       },
       "deck": {
         "empty": "Upload the deck",
@@ -2051,7 +2131,8 @@
           "lead": "The draft is removed for everyone in your organization. This cannot be undone.",
           "confirm": "Delete draft",
           "cancel": "Cancel"
-        }
+        },
+        "images": "{count, plural, one {# image} other {# images}}"
       },
       "leave": {
         "title": "Leave without saving?",
@@ -2072,6 +2153,43 @@
       "rejected": {
         "title": "Changes needed: {reason}",
         "lead": "Correct it and send it for review again."
+      },
+      "imagesRequired": "A logo and a cover image are needed for review. Everything else on this step is optional.",
+      "images": {
+        "uploading": "Uploading…",
+        "details": "{size} · {dimensions}",
+        "replace": "Replace",
+        "remove": "Remove",
+        "replaceNamed": "Replace {name}",
+        "removeNamed": "Remove {name}",
+        "logo": {
+          "add": "Add a logo",
+          "alt": "The logo",
+          "hint": "A square PNG, JPG or WebP, up to 2 MB."
+        },
+        "cover": {
+          "add": "Add a cover image",
+          "alt": "The cover image",
+          "hint": "PNG, JPG or WebP, 16:9, up to 5 MB. Shown on your card in the directory and at the top of the solution page."
+        },
+        "more": {
+          "add": "Add image",
+          "alt": "Image {position} of {count}",
+          "hint": "PNG, JPG or WebP, up to 5 MB each, 4 at most. Shown under the cover. Drag to reorder, or use the arrows on an image.",
+          "earlier": "Move image {position} earlier",
+          "later": "Move image {position} later",
+          "remove": "Remove image {position}",
+          "moved": "Image moved to position {position} of {count}."
+        },
+        "errors": {
+          "type": "Only a PNG, JPG or WebP image can be uploaded here.",
+          "size": {
+            "logo": "This image is larger than 2 MB.",
+            "cover": "This image is larger than 5 MB.",
+            "more": "This image is larger than 5 MB."
+          },
+          "failed": "The image was not uploaded. Try again."
+        }
       }
     },
     "deployment": {

@@ -728,7 +728,8 @@
           "approve": "Duyệt giải pháp",
           "reject": "Trả lại giải pháp",
           "deployment_approve": "Duyệt triển khai khách hàng",
-          "deployment_reject": "Trả lại triển khai khách hàng"
+          "deployment_reject": "Trả lại triển khai khách hàng",
+          "back": "Ghi xác nhận của GenAI Fund về giải pháp"
         },
         "introduction": {
           "reply": "Trả lời yêu cầu giới thiệu",
@@ -780,7 +781,8 @@
           "approve": "Duyệt giải pháp <resource></resource>",
           "reject": "Trả lại giải pháp <resource></resource>",
           "deployment_approve": "Duyệt triển khai khách hàng <resource></resource>",
-          "deployment_reject": "Trả lại triển khai khách hàng <resource></resource>"
+          "deployment_reject": "Trả lại triển khai khách hàng <resource></resource>",
+          "back": "Ghi xác nhận của GenAI Fund về giải pháp <resource></resource>"
         },
         "introduction": {
           "reply": "Trả lời yêu cầu giới thiệu về <resource></resource>",
@@ -1036,7 +1038,14 @@
         "deck": "Tài liệu giới thiệu",
         "deployments": "Triển khai cho khách hàng",
         "deploymentsSummary": "{total} triển khai{waiting, plural, =0 {} other {, # chờ duyệt}}",
-        "missing": "Chưa cung cấp"
+        "missing": "Chưa cung cấp",
+        "images": "Ảnh",
+        "logo": "Logo",
+        "cover": "Ảnh bìa",
+        "coverImage": "Ảnh bìa",
+        "moreImages": "Ảnh khác",
+        "openImage": "Xem {name}",
+        "channels": "Kênh"
       },
       "queueEmpty": {
         "title": "Không có gì đang chờ duyệt",
@@ -1056,7 +1065,24 @@
         "rejectLead": "Nó không hiện trên trang giải pháp. Chủ sở hữu đọc lý do của bạn và có thể sửa.",
         "takeDownLead": "Nó rời khỏi trang giải pháp ngay. Chủ sở hữu đọc lý do của bạn và có thể gửi lại."
       },
-      "deploymentsWaiting": "{count} triển khai chờ duyệt"
+      "deploymentsWaiting": "{count} triển khai chờ duyệt",
+      "backing": {
+        "title": "GenAI Fund xác nhận",
+        "lead": "Hiện trên thẻ và trang của giải pháp, ghi rõ là của GenAI Fund. Chủ giải pháp không sửa được.",
+        "fields": {
+          "backedBy": "Được hậu thuẫn bởi",
+          "program": "Chương trình",
+          "funding": "Vốn đầu tư"
+        },
+        "placeholders": {
+          "backedBy": "GenAI Fund portfolio",
+          "program": "FastTrack AI Accelerator, Cohort 1",
+          "funding": "Seed"
+        },
+        "hint": "Để trống một dòng để gỡ nó.",
+        "save": "Lưu",
+        "saved": "Đã lưu cho {name}."
+      }
     },
     "talent": {
       "metaTitle": "Nhân lực · BeyondPilot",
@@ -1732,7 +1758,9 @@
       "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Có người vừa lưu triển khai khách hàng này. Hãy tải lại trang rồi sửa lại.",
       "SOLUTION_MEMBER_REQUIRED": "Chỉ thành viên của một tổ chức mới làm được việc này.",
       "SOLUTION_DECK_NOT_USABLE": "Tệp này không dùng làm tài liệu giới thiệu được. Hãy tải PDF lên lại.",
-      "unknown": "Chưa thực hiện được. Hãy thử lại."
+      "unknown": "Chưa thực hiện được. Hãy thử lại.",
+      "SOLUTION_IMAGE_NOT_USABLE": "Ảnh này không dùng được. Hãy tải lên lại.",
+      "linkNotCopied": "Chưa sao chép được liên kết. Hãy thử lại."
     },
     "done": {
       "saved": "Đã lưu giải pháp.",
@@ -1743,7 +1771,10 @@
       "deploymentSaved": "Đã gửi {name} cho GenAI Fund duyệt.",
       "deploymentRemoved": "Đã gỡ {name}.",
       "deploymentApproved": "Đã duyệt {name}.",
-      "deploymentRejected": "Đã trả lại {name}."
+      "deploymentRejected": "Đã trả lại {name}.",
+      "shown": "{name} đã được đăng trong danh mục.",
+      "hidden": "{name} đã ẩn khỏi danh mục.",
+      "linkCopied": "Đã sao chép liên kết"
     },
     "directory": {
       "metaTitle": "Giải pháp AI · BeyondPilot",
@@ -1770,7 +1801,8 @@
       },
       "ownLead": "Đây là giải pháp của tổ chức bạn, như người khác thấy.",
       "ownEdit": "Sửa giải pháp này",
-      "deployments": "{count} triển khai khách hàng"
+      "deployments": "{count} triển khai khách hàng",
+      "backing": "GenAI Fund xác nhận:"
     },
     "filters": {
       "search": "Tìm theo tên hoặc mô tả",
@@ -1816,28 +1848,13 @@
         "title": "Bằng chứng",
         "lead": "Mỗi nhận định đều ghi rõ loại bằng chứng và nguồn. Điều chưa biết được ghi là chưa biết.",
         "customerCase": "Trường hợp khách hàng",
-        "noCase": "Chưa công bố trường hợp khách hàng nào."
-      },
-      "fit": {
-        "title": "Phù hợp ở đâu",
-        "industries": "Ngành",
-        "channels": "Kênh",
-        "deployment": "Triển khai",
-        "languages": "Ngôn ngữ"
-      },
-      "product": {
-        "title": "Sản phẩm và kinh doanh",
-        "capabilities": "Năng lực",
-        "stage": "Giai đoạn",
-        "notPublished": "Chưa công bố: công nghệ lõi, phân khúc, vốn đầu tư, mô hình giá, khách hàng tiêu biểu, giải pháp thay thế.",
-        "traction": "Cột mốc và kết quả",
-        "builtWith": "Xây dựng bằng",
-        "bestCustomerProfile": "Khách hàng phù hợp nhất"
-      },
-      "offers": {
-        "title": "Ưu đãi",
-        "kind": "Ưu đãi",
-        "none": "Chưa có ưu đãi nào được công bố."
+        "noCase": "Chưa công bố trường hợp khách hàng nào.",
+        "programme": "Được chọn vào chương trình",
+        "selected": "Được chọn vào {program}.",
+        "byGenAiFund": "GenAI Fund xác nhận · {date}",
+        "stated": "Công ty tự công bố",
+        "byCompany": "Do {name} công bố",
+        "cases": "{count} triển khai khách hàng đã được GenAI Fund duyệt, liệt kê bên dưới."
       },
       "company": {
         "title": "Công ty đứng sau giải pháp này",
@@ -1859,37 +1876,75 @@
         "website": "Mở website",
         "demo": "Xem demo",
         "deck": "Tải tài liệu giới thiệu",
-        "basedIn": "Trụ sở tại"
+        "basedIn": "Trụ sở tại",
+        "lead": "GenAI Fund đứng ra giới thiệu. Email của bạn được giữ kín cho đến khi bạn trả lời."
+      },
+      "facts": {
+        "stage": "Giai đoạn",
+        "industries": "Ngành",
+        "capabilities": "Năng lực AI",
+        "deployment": "Triển khai",
+        "languages": "Ngôn ngữ",
+        "builtWith": "Công nghệ lõi",
+        "bestCustomerProfile": "Khách hàng phù hợp nhất",
+        "backedBy": "Được hậu thuẫn bởi",
+        "program": "Chương trình",
+        "channels": "Kênh",
+        "funding": "Vốn đầu tư"
+      },
+      "gallery": {
+        "open": "Mở ảnh {position} trên {count}",
+        "cover": "Ảnh bìa của {name}",
+        "image": "{name}, ảnh {position} trên {count}",
+        "title": "Ảnh của {name}",
+        "position": "Ảnh {position} trên {count}",
+        "previous": "Ảnh trước",
+        "next": "Ảnh sau"
+      },
+      "references": {
+        "title": "Khách hàng tham chiếu và trường hợp thực tế",
+        "lead": "Doanh nghiệp đã dùng giải pháp này như thế nào."
       }
     },
     "mine": {
       "metaTitle": "Giải pháp · BeyondPilot",
       "title": "Giải pháp",
-      "summary": {
-        "listed": "{count} đang đăng",
-        "draft": "{count} bản nháp",
-        "submitted": "{count} đang duyệt",
-        "rejected": "{count} không được duyệt",
-        "hidden": "{count} đang ẩn"
-      },
       "columns": {
         "solution": "Giải pháp",
-        "status": "Trạng thái",
+        "status": "Xét duyệt",
         "updated": "Cập nhật",
-        "actions": "Thao tác"
-      },
-      "state": {
-        "listed": "Đang đăng trong danh mục",
-        "hidden": "Đã duyệt · đang ẩn khỏi danh mục",
-        "draft": "Chưa gửi duyệt · chỉ tổ chức của bạn thấy",
-        "submitted": "Đã gửi duyệt · chỉ tổ chức của bạn thấy",
-        "rejected": "Không được duyệt · chỉ tổ chức của bạn thấy"
+        "actions": "Thao tác",
+        "listing": "Hiển thị công khai"
       },
       "actions": {
         "open": "Thao tác với {name}",
         "edit": "Sửa",
-        "view": "Mở",
-        "viewPublic": "Xem trang công khai"
+        "viewPublic": "Xem trang công khai",
+        "continue": "Sửa tiếp",
+        "send": "Gửi duyệt",
+        "filled": "Đã điền {filled}/{total} mục bắt buộc",
+        "delete": "Xóa bản nháp…",
+        "viewSent": "Xem nội dung đã gửi",
+        "editLive": "Thay đổi chỉ được lưu khi bạn bấm lưu",
+        "inReview": "GenAI Fund đang duyệt",
+        "fix": "Xem lý do và chỉnh sửa",
+        "sendAgain": "Gửi duyệt lại",
+        "openByLink": "Mở bằng liên kết",
+        "copyLink": "Sao chép liên kết",
+        "hide": "Ẩn khỏi danh mục",
+        "show": "Đăng lên danh mục",
+        "cancel": "Hủy",
+        "confirmDelete": {
+          "title": "Xóa {name}?",
+          "lead": "Bản nháp cùng ảnh và tài liệu giới thiệu của nó sẽ bị xóa. Không hoàn tác được.",
+          "confirm": "Xóa bản nháp"
+        },
+        "confirmHide": {
+          "title": "Ẩn khỏi danh mục?",
+          "lead": "Ai có liên kết vẫn mở được. Giải pháp rời danh mục và kết quả tìm kiếm ngay.",
+          "confirm": "Ẩn"
+        },
+        "view": "Mở"
       },
       "create": {
         "title": "Thêm giải pháp",
@@ -1902,8 +1957,26 @@
       "afterApproval": "Bạn thêm được giải pháp sau khi GenAI Fund duyệt tổ chức.",
       "empty": {
         "title": "Chưa có giải pháp nào",
-        "owner": "Hãy thêm sản phẩm đầu tiên của tổ chức.",
+        "owner": "Hãy thêm giải pháp để giới thiệu những gì {name} cung cấp. Giải pháp là bản nháp cho tới khi bạn gửi duyệt.",
         "member": "Chủ sở hữu tổ chức là người thêm giải pháp."
+      },
+      "listing": {
+        "listed": "Đang đăng",
+        "unlisted": "Không đăng · chỉ mở bằng liên kết",
+        "notYet": "Chưa công khai",
+        "notPublic": "Không công khai"
+      },
+      "about": {
+        "draft": "Bản nháp · đã điền {filled}/{total} mục bắt buộc",
+        "sentBack": "Bị trả lại: {reason}",
+        "sentBackPlain": "Bị trả lại"
+      },
+      "sent": "Gửi ngày {date}",
+      "review": {
+        "draft": "Bản nháp",
+        "submitted": "Đang duyệt",
+        "approved": "Đã duyệt",
+        "rejected": "Bị trả lại"
       }
     },
     "editor": {
@@ -1946,7 +2019,8 @@
         "evidence": {
           "title": "Bằng chứng",
           "meta": "Tài liệu giới thiệu, demo và trường hợp khách hàng",
-          "lead": "Bằng chứng cho thấy giải pháp hoạt động. Hãy nêu những gì bạn có; phần bỏ trống sẽ hiện là chưa công bố."
+          "lead": "Bằng chứng cho thấy giải pháp hoạt động. Hãy nêu những gì bạn có; phần bỏ trống sẽ hiện là chưa công bố.",
+          "toAdd": "{missing, select, both {Còn thiếu logo và ảnh bìa} logo {Còn thiếu logo} other {Còn thiếu ảnh bìa}}"
         },
         "review": {
           "title": "Xem lại và gửi duyệt",
@@ -1960,7 +2034,6 @@
       "note": "Thay đổi được lưu khi bạn nhập. Chỉ tổ chức của bạn thấy bản nháp.",
       "noteLive": "Thay đổi được giữ lại khi bạn chọn Lưu thay đổi. Với giải pháp đã duyệt, chúng hiển thị ngay.",
       "required": "Mọi mục đều bắt buộc, trừ mục ghi Không bắt buộc.",
-      "allOptional": "Mọi mục ở bước này đều không bắt buộc.",
       "optional": "Không bắt buộc",
       "counter": "{count} / {max}",
       "previous": "Quay lại",
@@ -1997,14 +2070,21 @@
         "demoUrlHint": "Video, bản mẫu Figma hoặc demo trực tiếp. Hãy kiểm tra rằng nó mở được mà không cần đăng nhập.",
         "website": "Trang sản phẩm",
         "websiteHint": "Nơi khách đọc thêm về giải pháp.",
-        "linkInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://"
+        "linkInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
+        "logo": "Logo",
+        "cover": "Ảnh bìa",
+        "images": "Ảnh khác",
+        "channels": "Kênh",
+        "channelsPlaceholder": "Thoại, chat, email…"
       },
       "needed": {
         "name": "Hãy nhập tên giải pháp.",
         "summary": "Viết hai hoặc ba câu về việc giải pháp làm được.",
         "maturity": "Chọn giai đoạn.",
         "industries": "Chọn ít nhất một ngành.",
-        "focusAreas": "Chọn ít nhất một năng lực."
+        "focusAreas": "Chọn ít nhất một năng lực.",
+        "logo": "Hãy thêm logo.",
+        "cover": "Hãy thêm ảnh bìa."
       },
       "deck": {
         "empty": "Tải tài liệu giới thiệu lên",
@@ -2051,7 +2131,8 @@
           "lead": "Bản nháp bị xóa với mọi người trong tổ chức. Không thể hoàn tác.",
           "confirm": "Xóa bản nháp",
           "cancel": "Hủy"
-        }
+        },
+        "images": "{count} ảnh"
       },
       "leave": {
         "title": "Rời trang mà không lưu?",
@@ -2072,6 +2153,43 @@
       "rejected": {
         "title": "Cần chỉnh sửa: {reason}",
         "lead": "Hãy chỉnh sửa rồi gửi duyệt lại."
+      },
+      "imagesRequired": "Cần có logo và ảnh bìa để gửi duyệt. Các mục còn lại ở bước này không bắt buộc.",
+      "images": {
+        "uploading": "Đang tải lên…",
+        "details": "{size} · {dimensions}",
+        "replace": "Thay ảnh",
+        "remove": "Bỏ ảnh",
+        "replaceNamed": "Thay {name}",
+        "removeNamed": "Bỏ {name}",
+        "logo": {
+          "add": "Thêm logo",
+          "alt": "Logo",
+          "hint": "Ảnh vuông PNG, JPG hoặc WebP, tối đa 2 MB."
+        },
+        "cover": {
+          "add": "Thêm ảnh bìa",
+          "alt": "Ảnh bìa",
+          "hint": "PNG, JPG hoặc WebP, tỷ lệ 16:9, tối đa 5 MB. Hiện trên thẻ của bạn trong danh mục và ở đầu trang giải pháp."
+        },
+        "more": {
+          "add": "Thêm ảnh",
+          "alt": "Ảnh {position} trên {count}",
+          "hint": "PNG, JPG hoặc WebP, mỗi ảnh tối đa 5 MB, nhiều nhất 4 ảnh. Hiện bên dưới ảnh bìa. Kéo để đổi thứ tự, hoặc dùng mũi tên trên ảnh.",
+          "earlier": "Chuyển ảnh {position} lên trước",
+          "later": "Chuyển ảnh {position} ra sau",
+          "remove": "Bỏ ảnh {position}",
+          "moved": "Đã chuyển ảnh tới vị trí {position} trên {count}."
+        },
+        "errors": {
+          "type": "Ở đây chỉ tải lên được ảnh PNG, JPG hoặc WebP.",
+          "size": {
+            "logo": "Ảnh này lớn hơn 2 MB.",
+            "cover": "Ảnh này lớn hơn 5 MB.",
+            "more": "Ảnh này lớn hơn 5 MB."
+          },
+          "failed": "Chưa tải ảnh lên được. Hãy thử lại."
+        }
       }
     },
     "deployment": {

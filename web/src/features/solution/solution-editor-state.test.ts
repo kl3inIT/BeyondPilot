@@ -27,10 +27,15 @@ const solution: Solution = {
   focusAreas: ["conversational_ai"],
   languages: ["vi"],
   deployment: ["cloud_saas"],
+  channels: null,
   bestCustomerProfile: null,
+  backing: null,
   website: null,
   demoUrl: null,
   deck: null,
+  logo: { fileId: "l1", fileName: "logo.png", sizeBytes: 20 },
+  cover: { fileId: "c1", fileName: "cover.png", sizeBytes: 30 },
+  images: [],
   status: "draft",
   decisionMessage: null,
   listed: true,
@@ -56,6 +61,10 @@ describe("toRequest", () => {
         languages: ["vi", "en", "vi"],
         maturity: "",
         deck: { fileId: "f1", fileName: "deck.pdf", sizeBytes: 10, attachedAt: null },
+        images: [
+          { fileId: "i2", fileName: "second.png", sizeBytes: 40 },
+          { fileId: "i1", fileName: "first.png", sizeBytes: 40 },
+        ],
       }),
       7,
     );
@@ -67,6 +76,10 @@ describe("toRequest", () => {
       languages: ["vi", "en"],
       maturity: null,
       deckFileId: "f1",
+      logoFileId: "l1",
+      coverFileId: "c1",
+      // The images keep the order the editor holds them in.
+      imageFileIds: ["i2", "i1"],
       version: 7,
     });
   });
@@ -87,6 +100,15 @@ describe("contentOf", () => {
     ).not.toBe(contentOf(draft()));
   });
 
+  it("differs when the images change their order", () => {
+    const first = { fileId: "i1", fileName: "first.png", sizeBytes: 40 };
+    const second = { fileId: "i2", fileName: "second.png", sizeBytes: 40 };
+
+    expect(contentOf(draft({ images: [first, second] }))).not.toBe(
+      contentOf(draft({ images: [second, first] })),
+    );
+  });
+
   it("does not depend on when a deck was attached", () => {
     const deck = { fileId: "f1", fileName: "deck.pdf", sizeBytes: 10 };
 
@@ -100,15 +122,30 @@ describe("missingForReview", () => {
   it("names what a review needs and the draft lacks, in the order of the editor", () => {
     expect(
       missingForReview(
-        draft({ name: " ", summary: "", maturity: "", industries: [], focusAreas: [] }),
+        draft({
+          name: " ",
+          summary: "",
+          maturity: "",
+          industries: [],
+          focusAreas: [],
+          logo: null,
+          cover: null,
+        }),
       ),
-    ).toEqual(["name", "summary", "maturity", "industries", "focusAreas"]);
+    ).toEqual(["name", "summary", "maturity", "industries", "focusAreas", "logo", "cover"]);
   });
 
-  it("asks for nothing more than the name, what it does, its stage, an industry and a capability", () => {
+  it("asks for nothing more than the name, what it does, its stage, an industry, a capability, a logo and a cover", () => {
     expect(
       missingForReview(
-        draft({ problemsSolved: "", builtWith: [], languages: [], deployment: [], deck: null }),
+        draft({
+          problemsSolved: "",
+          builtWith: [],
+          languages: [],
+          deployment: [],
+          deck: null,
+          images: [],
+        }),
       ),
     ).toEqual([]);
   });
