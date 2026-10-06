@@ -1659,6 +1659,7 @@
         "solutions": "Solutions",
         "noSolutions": "No solution is listed yet.",
         "listedBelow": "{count, plural, one {# customer deployment, listed below} other {# customer deployments, listed below}}",
+        "explore": "Explore solution",
         "deployments": "Customer deployments",
         "noDeployments": "No customer deployment published.",
         "type": "Type",

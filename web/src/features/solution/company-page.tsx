@@ -1,3 +1,4 @@
+import { ArrowRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
@@ -31,23 +32,38 @@ const address = createSerializer(companySearch);
 /** How many capabilities a solution names here before it counts the rest. */
 const CAPABILITY_LIMIT = 3;
 
-/** One solution in the list of its organization: its name leads to its page. */
+/**
+ * One solution in the list of its organization: its logo slot, its name, which leads to its page,
+ * and the first industry it is filed under. The whole card is that link, so the words at its foot
+ * only point to it.
+ */
 function CompanySolution({ solution }: { solution: PublicSolutionSummary }) {
   const t = useTranslations("Solution.detail.company");
   const directory = useTranslations("Solution.directory");
   const focusArea = useVocabulary("focusArea");
+  const industry = useVocabulary("industry");
   const rest = solution.focusAreas.length - CAPABILITY_LIMIT;
 
   return (
-    <article className="relative flex flex-col gap-2.5 rounded-2xl border bg-card p-5 transition-colors hover:border-ring has-[a:focus-visible]:border-ring has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring/50">
-      <h3 className="text-lg font-semibold">
-        <Link
-          href={`${siteRoutes.solutions}/${solution.slug}`}
-          className="outline-none after:absolute after:inset-0 after:rounded-2xl"
-        >
-          {solution.name}
-        </Link>
-      </h3>
+    <article className="group relative flex flex-col gap-2.5 rounded-2xl border bg-card p-5 transition-colors hover:border-ring has-[a:focus-visible]:border-ring has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring/50">
+      <div className="flex items-center gap-3">
+        <SolutionLogo name={solution.name} size="card" />
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <h3 className="text-lg font-semibold">
+            <Link
+              href={`${siteRoutes.solutions}/${solution.slug}`}
+              className="outline-none after:absolute after:inset-0 after:rounded-2xl"
+            >
+              {solution.name}
+            </Link>
+          </h3>
+          {solution.industries.length > 0 && (
+            <p className="text-xs font-medium text-muted-foreground">
+              {industry(solution.industries[0])}
+            </p>
+          )}
+        </div>
+      </div>
       {solution.summary && <p className="text-sm text-muted-foreground">{solution.summary}</p>}
       {solution.focusAreas.length > 0 && (
         <ul className="flex flex-wrap items-center gap-x-2 gap-y-1.5 pt-1">
@@ -63,11 +79,20 @@ function CompanySolution({ solution }: { solution: PublicSolutionSummary }) {
           )}
         </ul>
       )}
-      <p className="text-xs text-muted-foreground">
-        {solution.customerDeployments > 0
-          ? t("listedBelow", { count: solution.customerDeployments })
-          : directory("noCase")}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5">
+        <p className="text-xs text-muted-foreground">
+          {solution.customerDeployments > 0
+            ? t("listedBelow", { count: solution.customerDeployments })
+            : directory("noCase")}
+        </p>
+        <span
+          aria-hidden="true"
+          className="inline-flex items-center gap-1 text-sm font-semibold text-primary underline-offset-4 group-hover:underline"
+        >
+          {t("explore")}
+          <ArrowRightIcon className="size-3.5" />
+        </span>
+      </div>
     </article>
   );
 }
