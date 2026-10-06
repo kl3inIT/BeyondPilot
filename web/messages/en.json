@@ -3684,6 +3684,20 @@
     "resultLead": {
       "shortlisted": "You're shortlisted. GenAI Fund's email has what comes next.",
       "not_selected": "Not selected this time. GenAI Fund's email has the details."
+    },
+    "tracker": {
+      "label": "Where your application stands",
+      "submitted": "Submitted",
+      "screening": "Screening",
+      "screeningBy": "GenAI Fund",
+      "outcome": "Outcome",
+      "toCome": "To come",
+      "result": {
+        "shortlisted": "Shortlisted",
+        "not_selected": "Not selected"
+      },
+      "done": " (done)",
+      "ahead": " (to come)"
     }
   },
   "Application": {

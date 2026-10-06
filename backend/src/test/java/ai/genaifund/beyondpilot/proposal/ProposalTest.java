@@ -98,6 +98,7 @@ class ProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<List<String>>read(mine, "$.items[*].programName")).containsExactly("Claims challenge");
 		assertThat(JsonPath.<List<String>>read(mine, "$.items[*].status")).containsExactly("withdrawn");
 		assertThat(JsonPath.<List<String>>read(mine, "$.items[*].solutionName")).containsExactly("Claim Copilot");
+		assertThat(JsonPath.<List<String>>read(mine, "$.items[*].next.title")).containsExactly("Demo day");
 		assertProblem(get(TestSignIn.session(client, mail, "other@individual.test"), API + "/applications/" + id), 404,
 				"PROPOSAL_APPLICATION_NOT_FOUND");
 

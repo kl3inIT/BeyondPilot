@@ -10,6 +10,7 @@ import { myApplicationRoute, programApplyUrl, siteRoutes } from "@/lib/site";
 import { renderedAt } from "@/features/program/program-format";
 
 import { applyFormatter } from "./apply-format";
+import { ApplicationTracker } from "./application-tracker";
 
 const statusVariant = { draft: "outline", submitted: "info", withdrawn: "outline" } as const;
 
@@ -80,6 +81,7 @@ async function MyApplicationsPage({ list }: { list: MyApplications }) {
                         </Badge>
                       )}
                     </div>
+                    {item.status === "submitted" && <ApplicationTracker item={item} now={now} />}
                     <p className="border-t pt-3 text-sm">
                       {item.outcome
                         ? t(`resultLead.${item.outcome}`)

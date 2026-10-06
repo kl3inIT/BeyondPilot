@@ -91,7 +91,14 @@ abstract class ApplicationsHttpTest {
 		applications.put("closesAt", closesAt.toString());
 		applications.put("allowUpdatesUntilClose", allowUpdates);
 		program.put("applications", applications);
-		program.put("keyDates", new ArrayList<>());
+		// What comes after the outcome, which My applications names as the next step.
+		Map<String, Object> demoDay = new LinkedHashMap<>();
+		demoDay.put("title", "Demo day");
+		demoDay.put("startsAt", closesAt.plus(Duration.ofDays(7)).toString());
+		demoDay.put("endsAt", null);
+		demoDay.put("allDay", false);
+		demoDay.put("note", null);
+		program.put("keyDates", List.of(demoDay));
 		program.put("events", new ArrayList<>());
 		put(operator, uri, program).expectStatus().isOk();
 		post(operator, uri + "/publish", null).expectStatus().isNoContent();

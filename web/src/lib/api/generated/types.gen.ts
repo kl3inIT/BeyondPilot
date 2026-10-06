@@ -580,6 +580,15 @@ export type Application = {
     withdrawnAt?: string | null;
 };
 
+export type ApplicationNextStep = {
+    /**
+     * A day, not a moment.
+     */
+    allDay: boolean;
+    at: string;
+    title: string;
+};
+
 /**
  * What the person's latest other application held, for a new one to start from.
  */
@@ -1054,6 +1063,10 @@ export type Me = {
 export type MyApplication = {
     closesAt: string;
     id: string;
+    /**
+     * The program's first key date after the outcome, such as a demo day; null when it has none.
+     */
+    next?: ApplicationNextStep | null;
     organizationName?: string | null;
     /**
      * GenAI Fund's decision, once the program's outcomes are released; null until then.

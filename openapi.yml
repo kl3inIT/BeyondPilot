@@ -7015,6 +7015,21 @@ components:
       - submissions
       - updatedAt
       - version
+    ApplicationNextStep:
+      type: object
+      properties:
+        allDay:
+          type: boolean
+          description: "A day, not a moment."
+        at:
+          type: string
+          format: date-time
+        title:
+          type: string
+      required:
+      - allDay
+      - at
+      - title
     ApplicationStart:
       type: object
       description: "What the person's latest other application held, for a new one\
@@ -7970,6 +7985,13 @@ components:
         id:
           type: string
           format: uuid
+        next:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/ApplicationNextStep"
+          description: "The program's first key date after the outcome, such as a\
+            \ demo day; null when it has none."
         organizationName:
           type:
           - string

@@ -3684,6 +3684,20 @@
     "resultLead": {
       "shortlisted": "Bạn đã vào vòng trong. Email của GenAI Fund có các bước tiếp theo.",
       "not_selected": "Lần này đơn chưa được chọn. Email của GenAI Fund có thông tin chi tiết."
+    },
+    "tracker": {
+      "label": "Đơn của bạn đang ở đâu",
+      "submitted": "Đã nộp",
+      "screening": "Xét duyệt",
+      "screeningBy": "GenAI Fund",
+      "outcome": "Kết quả",
+      "toCome": "Sắp có",
+      "result": {
+        "shortlisted": "Vào vòng trong",
+        "not_selected": "Không được chọn"
+      },
+      "done": " (đã xong)",
+      "ahead": " (sắp tới)"
     }
   },
   "Application": {
