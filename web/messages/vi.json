@@ -3351,5 +3351,46 @@
       "progress": "Đã chấm {done} / {total}",
       "closes": "Hạn nộp {closes}"
     }
+  },
+  "Search": {
+    "metaTitle": "Tìm kiếm",
+    "metaTitleFor": "{q} · Tìm kiếm",
+    "label": "Tìm kiếm trên BeyondPilot",
+    "placeholder": "Tìm chương trình, giải pháp và nhân lực",
+    "submit": "Tìm",
+    "clear": "Xoá nội dung tìm kiếm",
+    "results": "{count} kết quả cho <query>“{q}”</query>",
+    "kindResults": {
+      "program": "{count} chương trình cho <query>“{q}”</query>",
+      "solution": "{count} giải pháp AI cho <query>“{q}”</query>",
+      "talent": "{count} người cho <query>“{q}”</query>"
+    },
+    "kinds": {
+      "label": "Loại kết quả",
+      "all": "Tất cả",
+      "program": "Chương trình",
+      "solution": "Giải pháp AI",
+      "talent": "Nhân lực AI"
+    },
+    "seeAll": "Xem cả {count}",
+    "count": "{count} kết quả",
+    "pastTheEnd": "Trang này không còn kết quả nào.",
+    "directory": {
+      "program": "Xem các chương trình theo loại và giai đoạn",
+      "solution": "Lọc theo ngành, năng lực và mức phát triển trong danh mục giải pháp AI",
+      "talent": "Lọc theo vai trò, ngành và quốc gia trong danh mục nhân lực AI"
+    },
+    "by": "Của {name}",
+    "customerCases": "{count, plural, =0 {Chưa có khách hàng triển khai} other {# khách hàng triển khai}}",
+    "start": {
+      "title": "Tìm kiếm trên BeyondPilot",
+      "description": "Tìm chương trình, giải pháp AI và nhân lực AI theo việc họ làm."
+    },
+    "none": {
+      "title": "Không có kết quả cho “{q}”",
+      "description": "Kiểm tra chính tả hoặc thử một từ rộng hơn."
+    },
+    "try": "Thử",
+    "browse": "Hoặc xem"
   }
 }

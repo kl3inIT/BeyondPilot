@@ -36,14 +36,14 @@ test.describe("home page", () => {
     ).toBeHidden();
   });
 
-  test("the search leads to the planned search page", async ({ page }) => {
+  test("the search leads to its results", async ({ page }) => {
     await page.goto("/");
 
-    await page.getByRole("searchbox", { name: "Search the directory" }).fill("claims");
+    await page.getByRole("searchbox", { name: "Search the directory" }).fill("AI");
     await page.getByRole("button", { name: "Search" }).click();
 
-    await expect(page).toHaveURL("/search?q=claims");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Coming soon");
+    await expect(page).toHaveURL("/search?q=AI");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("7 results for “AI”");
   });
 
   test("a planned page renders the coming-soon screen", async ({ page }) => {

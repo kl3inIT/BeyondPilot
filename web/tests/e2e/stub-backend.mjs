@@ -8,6 +8,7 @@ import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
 import { answerJudging } from "./stub-judging.mjs";
 import { answerReview } from "./stub-reviews.mjs";
+import { answerSearch } from "./stub-search.mjs";
 import { answerWorkspace } from "./stub-workspace.mjs";
 
 const accounts = {
@@ -388,6 +389,10 @@ createServer((request, response) => {
     answerDirectory(url);
   if (record) {
     return json(response, ...record);
+  }
+  const searched = answerSearch(url);
+  if (searched) {
+    return json(response, ...searched);
   }
   if (url.pathname === "/api/program/programs") {
     const items = Object.values(publicPrograms)
