@@ -7,6 +7,9 @@ servers:
 - description: Same origin as the web application
   url: /
 tags:
+- description: "Scoring a program's applications, deciding on them and releasing the\
+    \ outcomes."
+  name: Review
 - description: "The record of sensitive changes, read by operators."
   name: Audit
 - description: The accounts operators manage.
@@ -91,6 +94,11 @@ paths:
           - introduction.decline
           - talent.approve
           - talent.reject
+          - proposal.criteria_update
+          - proposal.reviewer_invite
+          - proposal.reviewer_remove
+          - proposal.decide
+          - proposal.release
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
         in: query
@@ -2322,6 +2330,673 @@ paths:
         team
       tags:
       - Applications
+  /api/proposal/review/applications/{id}:
+    get:
+      operationId: getReviewApplication
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewApplication"
+          description: The application with the caller's assessment; an operator also
+            reads every score and the decisions.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted application.
+      security:
+      - session: []
+      summary: One application as it was submitted last
+      tags:
+      - Review
+  /api/proposal/review/applications/{id}/assessment:
+    put:
+      operationId: saveAssessment
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveAssessment"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewApplication"
+          description: The application with the assessment as saved.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A criterion is not scored from 1 to 5.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted application.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The program has no criteria, or its outcomes were released."
+      security:
+      - session: []
+      summary: Keep the caller's assessment of an application
+      tags:
+      - Review
+  /api/proposal/review/applications/{id}/files/{fileId}:
+    get:
+      operationId: getReviewFile
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: fileId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+          description: "The bytes of the file, saved under its name."
+        "302":
+          description: "The address the object store serves the file at, for a while."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The submission holds no such file.
+      security:
+      - session: []
+      summary: A file of an application's last submission
+      tags:
+      - Review
+  /api/proposal/review/programs:
+    get:
+      operationId: listReviewPrograms
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewPrograms"
+          description: "For an operator, every program with a submitted application;\
+            \ for a judge, the programs they were invited to."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: The programs whose applications the caller scores
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/applications:
+    get:
+      operationId: listReviewApplications
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewApplications"
+          description: The applications with the caller's scores; an operator also
+            reads the decisions and every judge's average.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+      security:
+      - session: []
+      summary: A program's submitted applications to review
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/criteria:
+    get:
+      operationId: getReviewCriteria
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewCriteria"
+          description: "The criteria in order, and whether they are fixed."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller does not review this program.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+      security:
+      - session: []
+      summary: What a program's applications are judged on
+      tags:
+      - Review
+    put:
+      operationId: saveReviewCriteria
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveReviewCriteria"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewCriteria"
+          description: The criteria as saved.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A criterion is not valid, or two share a name."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: An application has been scored on the criteria.
+      security:
+      - session: []
+      summary: Replace a program's judging criteria
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/decisions:
+    post:
+      operationId: decideApplications
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Decide"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewApplications"
+          description: The program's applications with the decisions recorded.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The decision is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: An application is not one of the program's submitted ones.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The outcomes were released.
+      security:
+      - session: []
+      summary: "Shortlist applications, or mark them not selected"
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/release:
+    get:
+      operationId: getRelease
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Release"
+          description: "The groups, their emails and whether the release is ready."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+      security:
+      - session: []
+      summary: "What releasing a program's outcomes would send, and whether it can"
+      tags:
+      - Review
+    post:
+      operationId: releaseOutcomes
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReleaseEmails"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Release"
+          description: The release as made. Each applicant gets their group's email.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: An email is missing its subject or message.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "Applications have not closed, an application has no decision,\
+            \ or the outcomes were released."
+      security:
+      - session: []
+      summary: Release a program's outcomes to every applicant
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/reviewers:
+    get:
+      operationId: listReviewers
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reviewers"
+          description: "The judges and the operators who scored, with how many each\
+            \ scored."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+      security:
+      - session: []
+      summary: "Who scores a program's applications, with their progress"
+      tags:
+      - Review
+    post:
+      operationId: inviteReviewer
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InviteReviewer"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reviewers"
+          description: "The judges, the new one invited. The invitation goes by email."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The address is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The address is already invited to this program.
+      security:
+      - session: []
+      summary: Invite an address to judge a program
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/reviewers/{reviewerId}:
+    delete:
+      operationId: removeReviewer
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: reviewerId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reviewers"
+          description: The judges that remain. The scores the judge gave stay.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The program has no such judge.
+      security:
+      - session: []
+      summary: Take a judge off a program
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/reviewers/{reviewerId}/resend:
+    post:
+      operationId: resendReviewerInvitation
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: reviewerId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reviewers"
+          description: The judges; the invitation is open for another seven days.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The program has no such judge.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The judge has already signed in.
+      security:
+      - session: []
+      summary: Send an unused invitation again
+      tags:
+      - Review
   /api/solution/admin/deployments/{id}/approve:
     post:
       operationId: approveCustomerDeployment
@@ -4543,6 +5218,15 @@ components:
         id:
           type: string
           format: uuid
+        outcome:
+          type:
+          - string
+          - "null"
+          description: "GenAI Fund's decision, once the program's outcomes are released;\
+            \ null until then."
+          enum:
+          - shortlisted
+          - not_selected
         solutionId:
           type:
           - string
@@ -4688,6 +5372,50 @@ components:
       - id
       - name
       - type
+    Assessment:
+      type: object
+      description: One person's assessment of the application.
+      properties:
+        average:
+          type:
+          - number
+          - "null"
+          format: double
+        conflict:
+          type: boolean
+        note:
+          type:
+          - string
+          - "null"
+        reviewer:
+          type: string
+        role:
+          type: string
+          enum:
+          - operator
+          - reviewer
+        savedAt:
+          type: string
+          format: date-time
+        scores:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+          description: "The score of each criterion, by its identifier; empty for\
+            \ a conflict."
+        version:
+          type: integer
+          format: int32
+          description: The version it was made on; earlier than the application's
+            when it was submitted again since.
+      required:
+      - conflict
+      - reviewer
+      - role
+      - savedAt
+      - scores
+      - version
     AttachedFile:
       type: object
       description: "A private PDF an application names, with its name and size."
@@ -4734,6 +5462,11 @@ components:
           - introduction.decline
           - talent.approve
           - talent.reject
+          - proposal.criteria_update
+          - proposal.reviewer_invite
+          - proposal.reviewer_remove
+          - proposal.decide
+          - proposal.release
         actor:
           type:
           - object
@@ -5061,6 +5794,33 @@ components:
       - title
       - updatedAt
       - version
+    Decide:
+      type: object
+      description: GenAI Fund's decision on one application or several of a program.
+      properties:
+        applicationIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 500
+          minItems: 0
+        decision:
+          type: string
+          enum:
+          - shortlisted
+          - not_selected
+          pattern: shortlisted|not_selected
+        reason:
+          type:
+          - string
+          - "null"
+          description: Private; the applicant never sees it.
+          maxLength: 1000
+          minLength: 0
+      required:
+      - applicationIds
+      - decision
     FormQuestion:
       type: object
       description: "One of the program's own questions, as the form asks it."
@@ -5160,6 +5920,17 @@ components:
       required:
       - email
       - role
+    InviteReviewer:
+      type: object
+      description: The address of a judge to invite to a program.
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          minLength: 0
+      required:
+      - email
     JobTitle:
       type: object
       description: What the caller does in their organization; null or blank removes
@@ -5235,6 +6006,15 @@ components:
           type:
           - string
           - "null"
+        outcome:
+          type:
+          - string
+          - "null"
+          description: "GenAI Fund's decision, once the program's outcomes are released;\
+            \ null until then."
+          enum:
+          - shortlisted
+          - not_selected
         outcomesDueOn:
           type:
           - string
@@ -6644,6 +7424,96 @@ components:
           pattern: incomplete|unverifiable|inappropriate|other
       required:
       - reason
+    Release:
+      type: object
+      description: "What releasing a program's outcomes sends, to whom, and whether\
+        \ it can be done now."
+      properties:
+        emails:
+          $ref: "#/components/schemas/ReleaseEmails"
+          description: "The emails as they were sent, or a starting point until then."
+        head:
+          $ref: "#/components/schemas/ReviewHead"
+        notSelected:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReleaseItem"
+        ready:
+          type: boolean
+          description: "Applications have closed, every one has a decision, and nothing\
+            \ was released yet."
+        shortlisted:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReleaseItem"
+        undecided:
+          type: array
+          description: Still waiting for a decision.
+          items:
+            $ref: "#/components/schemas/ReleaseItem"
+        withdrawn:
+          type: integer
+          format: int64
+      required:
+      - emails
+      - head
+      - notSelected
+      - ready
+      - shortlisted
+      - undecided
+      - withdrawn
+    ReleaseEmails:
+      type: object
+      description: "The email each group gets. {organization} and {solution} are filled\
+        \ in for each applicant."
+      properties:
+        notSelectedMessage:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        notSelectedSubject:
+          type: string
+          maxLength: 200
+          minLength: 0
+        shortlistedMessage:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        shortlistedSubject:
+          type: string
+          maxLength: 200
+          minLength: 0
+      required:
+      - notSelectedMessage
+      - notSelectedSubject
+      - shortlistedMessage
+      - shortlistedSubject
+    ReleaseItem:
+      type: object
+      properties:
+        average:
+          type:
+          - number
+          - "null"
+          format: double
+        country:
+          type:
+          - string
+          - "null"
+        id:
+          type: string
+          format: uuid
+        organizationName:
+          type: string
+        organizationType:
+          type: string
+        solutionName:
+          type: string
+      required:
+      - id
+      - organizationName
+      - organizationType
+      - solutionName
     RequestIntroduction:
       type: object
       description: A request for an introduction to the organization behind a solution.
@@ -6692,6 +7562,424 @@ components:
       - mediaType
       - purpose
       - sizeBytes
+    ReviewApplication:
+      type: object
+      description: "One application as its applicant submitted it last, with the caller's\
+        \ assessment and, for an operator, every score and the decisions."
+      properties:
+        average:
+          type:
+          - number
+          - "null"
+          format: double
+          description: "The mean of every judge's score, for an operator; null for\
+            \ a judge."
+        head:
+          $ref: "#/components/schemas/ReviewHead"
+        history:
+          type: array
+          description: "Submissions and, for an operator, decisions, the oldest first."
+          items:
+            $ref: "#/components/schemas/ReviewEvent"
+        id:
+          type: string
+          format: uuid
+        mine:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/Assessment"
+        nextId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        others:
+          type: array
+          description: "Every other assessment, for an operator; empty for a judge."
+          items:
+            $ref: "#/components/schemas/Assessment"
+        position:
+          type: integer
+          format: int32
+          description: "Its place among the program's submitted applications, from\
+            \ 1."
+        previousId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        reviewStatus:
+          type:
+          - string
+          - "null"
+          description: GenAI Fund's decision; null for a judge.
+          enum:
+          - under_review
+          - shortlisted
+          - not_selected
+        submitted:
+          $ref: "#/components/schemas/SubmittedApplication"
+        submittedAt:
+          type: string
+          format: date-time
+        total:
+          type: integer
+          format: int32
+        version:
+          type: integer
+          format: int32
+          description: The number of the version shown.
+      required:
+      - head
+      - history
+      - id
+      - others
+      - position
+      - submitted
+      - submittedAt
+      - total
+      - version
+    ReviewApplicationItem:
+      type: object
+      properties:
+        average:
+          type:
+          - number
+          - "null"
+          format: double
+          description: For an operator the mean of every judge's score; for a judge
+            their own.
+        choice:
+          type:
+          - string
+          - "null"
+          description: The answer to the program's first one-choice question.
+        country:
+          type:
+          - string
+          - "null"
+        id:
+          type: string
+          format: uuid
+        mine:
+          type: string
+          description: What the caller did with it.
+          enum:
+          - none
+          - scored
+          - conflict
+        organizationName:
+          type: string
+        organizationType:
+          type: string
+          description: "The organization's type, such as independent_builder, builder_team\
+            \ or company."
+        reviewStatus:
+          type:
+          - string
+          - "null"
+          description: GenAI Fund's decision; null for a judge.
+          enum:
+          - under_review
+          - shortlisted
+          - not_selected
+        scored:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: How many scored it; null for a judge.
+        solutionName:
+          type: string
+        submittedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int32
+          description: The number of the version under review.
+      required:
+      - id
+      - mine
+      - organizationName
+      - organizationType
+      - solutionName
+      - submittedAt
+      - version
+    ReviewApplications:
+      type: object
+      description: "A program's submitted applications as the caller reviews them,\
+        \ the earliest submitted first."
+      properties:
+        drafts:
+          type: integer
+          format: int64
+          description: Applications started and never submitted.
+        head:
+          $ref: "#/components/schemas/ReviewHead"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewApplicationItem"
+        withdrawn:
+          type: integer
+          format: int64
+          description: Applications withdrawn by their applicant.
+      required:
+      - drafts
+      - head
+      - items
+      - withdrawn
+    ReviewChoiceQuestion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+      required:
+      - id
+      - label
+      - options
+    ReviewCriteria:
+      type: object
+      description: "What a program's applications are judged on, in order."
+      properties:
+        criteria:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewCriterion"
+        fixed:
+          type: boolean
+          description: "Whether an application has been scored on them, which fixes\
+            \ them."
+      required:
+      - criteria
+      - fixed
+    ReviewCriterion:
+      type: object
+      description: "One thing a program's applications are judged on, scored 1 to\
+        \ 5."
+      properties:
+        description:
+          type:
+          - string
+          - "null"
+          description: What a judge looks for.
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+      - id
+      - name
+    ReviewEvent:
+      type: object
+      properties:
+        at:
+          type: string
+          format: date-time
+        by:
+          type:
+          - string
+          - "null"
+          description: Who decided.
+        decision:
+          type:
+          - string
+          - "null"
+          enum:
+          - under_review
+          - shortlisted
+          - not_selected
+        kind:
+          type: string
+          enum:
+          - submitted
+          - decided
+        reason:
+          type:
+          - string
+          - "null"
+        version:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: The version a submission made.
+      required:
+      - at
+      - kind
+    ReviewHead:
+      type: object
+      description: The program under review and what the caller may do in it.
+      properties:
+        choice:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/ReviewChoiceQuestion"
+          description: "The program's first one-choice question, whose answer the\
+            \ list shows and filters by."
+        closed:
+          type: boolean
+          description: Whether applications have closed.
+        closesAt:
+          type: string
+          format: date-time
+        criteria:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewCriterion"
+        name:
+          type: string
+        operator:
+          type: boolean
+          description: "Whether the caller is GenAI Fund staff, who read every score\
+            \ and decide."
+        outcomesDueOn:
+          type:
+          - string
+          - "null"
+          format: date
+        programId:
+          type: string
+          format: uuid
+        releasedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the outcomes were released; null until then.
+        slug:
+          type: string
+      required:
+      - closed
+      - closesAt
+      - criteria
+      - name
+      - operator
+      - programId
+      - slug
+    ReviewProgram:
+      type: object
+      description: A program whose applications the caller scores.
+      properties:
+        applications:
+          type: integer
+          format: int64
+          description: How many submitted applications there are.
+        assessed:
+          type: integer
+          format: int64
+          description: How many of them the caller scored or stepped back from.
+        closesAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        outcomesDueOn:
+          type:
+          - string
+          - "null"
+          format: date
+        released:
+          type: boolean
+        slug:
+          type: string
+      required:
+      - applications
+      - assessed
+      - closesAt
+      - id
+      - name
+      - released
+      - slug
+    ReviewPrograms:
+      type: object
+      description: The programs whose applications the caller scores.
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewProgram"
+      required:
+      - items
+    Reviewer:
+      type: object
+      description: "Someone who scores a program's applications: a judge GenAI Fund\
+        \ invited, or an operator who scored one."
+      properties:
+        assessed:
+          type: integer
+          format: int64
+          description: How many submitted applications they scored or stepped back
+            from.
+        email:
+          type: string
+        expiresAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        id:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The invitation; null for an operator, who needs none."
+        invitedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        name:
+          type:
+          - string
+          - "null"
+        role:
+          type: string
+          enum:
+          - operator
+          - reviewer
+        status:
+          type: string
+          description: A judge is active once they signed in with the address; an
+            invitation nobody used lapses.
+          enum:
+          - active
+          - invited
+          - lapsed
+      required:
+      - assessed
+      - email
+      - role
+      - status
+    Reviewers:
+      type: object
+      description: "The people who score a program's applications, with their progress."
+      properties:
+        applications:
+          type: integer
+          format: int64
+          description: How many submitted applications there are to score.
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Reviewer"
+      required:
+      - applications
+      - items
     SaveApplication:
       type: object
       description: What the application form holds now. Nothing is checked for completeness
@@ -6752,6 +8040,29 @@ components:
       - answers
       - builtWith
       - contact
+    SaveAssessment:
+      type: object
+      description: "The caller's assessment: a score from 1 to 5 for every criterion\
+        \ and a private note, or a conflict of interest without scores."
+      properties:
+        conflict:
+          type: boolean
+          description: "The caller knows the applicant, so their score is left out."
+        note:
+          type:
+          - string
+          - "null"
+          maxLength: 2000
+          minLength: 0
+        scores:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+          description: By criterion identifier.
+      required:
+      - conflict
+      - scores
     SaveCustomerDeployment:
       type: object
       description: A customer deployment as its form holds it.
@@ -7008,6 +8319,33 @@ components:
       required:
       - questions
       - version
+    SaveReviewCriteria:
+      type: object
+      description: "A program's judging criteria, replaced whole, in order."
+      properties:
+        criteria:
+          type: array
+          items:
+            $ref: "#/components/schemas/SaveReviewCriterion"
+          maxItems: 12
+          minItems: 0
+      required:
+      - criteria
+    SaveReviewCriterion:
+      type: object
+      properties:
+        description:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+        name:
+          type: string
+          maxLength: 80
+          minLength: 0
+      required:
+      - name
     SaveSolution:
       type: object
       description: A solution as its edit screen holds it.
@@ -7452,6 +8790,95 @@ components:
       - id
       - mediaType
       - sizeBytes
+    SubmittedAnswer:
+      type: object
+      properties:
+        file:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/AttachedFile"
+        kind:
+          type: string
+        label:
+          type: string
+        questionId:
+          type: string
+          format: uuid
+        value:
+          type: string
+      required:
+      - kind
+      - label
+      - questionId
+      - value
+    SubmittedApplication:
+      type: object
+      description: "What the applicant sent, as it was."
+      properties:
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubmittedAnswer"
+        builtWith:
+          type: array
+          items:
+            type: string
+        contact:
+          $ref: "#/components/schemas/ContactDetails"
+        country:
+          type:
+          - string
+          - "null"
+        deck:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/AttachedFile"
+        email:
+          type: string
+        maturity:
+          type:
+          - string
+          - "null"
+        organizationName:
+          type: string
+        organizationType:
+          type: string
+        problemsSolved:
+          type:
+          - string
+          - "null"
+        solutionName:
+          type: string
+        summary:
+          type:
+          - string
+          - "null"
+        teamBackground:
+          type:
+          - string
+          - "null"
+        teamSize:
+          type:
+          - string
+          - "null"
+        traction:
+          type:
+          - string
+          - "null"
+        website:
+          type:
+          - string
+          - "null"
+      required:
+      - answers
+      - builtWith
+      - contact
+      - email
+      - organizationName
+      - organizationType
+      - solutionName
     TalentEnquiry:
       type: object
       description: A message someone sent through the caller's talent profile.

@@ -732,6 +732,13 @@
         "talent": {
           "approve": "Approved a talent profile",
           "reject": "Sent a talent profile back"
+        },
+        "proposal": {
+          "criteria_update": "Set the judging criteria",
+          "reviewer_invite": "Invited a judge",
+          "reviewer_remove": "Removed a judge",
+          "decide": "Decided on an application",
+          "release": "Released the outcomes"
         }
       },
       "activity": {
@@ -771,6 +778,13 @@
         "talent": {
           "approve": "Approved the talent profile of <resource></resource>",
           "reject": "Sent the talent profile of <resource></resource> back"
+        },
+        "proposal": {
+          "criteria_update": "Set the judging criteria of <resource></resource>",
+          "reviewer_invite": "Invited a judge to <resource></resource>",
+          "reviewer_remove": "Removed a judge from <resource></resource>",
+          "decide": "Decided on an application to <resource></resource>",
+          "release": "Released the outcomes of <resource></resource>"
         }
       },
       "columns": {

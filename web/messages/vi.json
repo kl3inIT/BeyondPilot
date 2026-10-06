@@ -732,6 +732,13 @@
         "talent": {
           "approve": "Duyệt hồ sơ nhân lực",
           "reject": "Trả lại hồ sơ nhân lực"
+        },
+        "proposal": {
+          "criteria_update": "Đặt tiêu chí chấm",
+          "reviewer_invite": "Mời giám khảo",
+          "reviewer_remove": "Gỡ giám khảo",
+          "decide": "Quyết định một đơn",
+          "release": "Công bố kết quả"
         }
       },
       "activity": {
@@ -771,6 +778,13 @@
         "talent": {
           "approve": "Duyệt hồ sơ nhân lực của <resource></resource>",
           "reject": "Trả lại hồ sơ nhân lực của <resource></resource>"
+        },
+        "proposal": {
+          "criteria_update": "Đặt tiêu chí chấm của <resource></resource>",
+          "reviewer_invite": "Mời một giám khảo chấm <resource></resource>",
+          "reviewer_remove": "Gỡ một giám khảo khỏi <resource></resource>",
+          "decide": "Quyết định một đơn nộp vào <resource></resource>",
+          "release": "Công bố kết quả của <resource></resource>"
         }
       },
       "columns": {
