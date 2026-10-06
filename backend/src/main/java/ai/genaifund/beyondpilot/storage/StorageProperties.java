@@ -20,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
  * @param solutionDeckMaxSize the largest deck of a solution
  * @param useCaseAttachmentMaxSize the largest file attached to a use case
  * @param talentPhotoMaxSize the largest photo of a talent profile
+ * @param organizationLogoMaxSize the largest logo of an organization
  * @param local the directory of the local store
  * @param s3 the bucket of the S3 store; credentials come from the AWS SDK's default chain, never from here
  */
@@ -28,7 +29,8 @@ import org.springframework.validation.annotation.Validated;
 public record StorageProperties(ObjectStorageProvider provider, @DefaultValue("15m") Duration ticketLifetime,
 		@DefaultValue("1h") Duration readAddressLifetime, @DefaultValue("5MB") DataSize programImageMaxSize,
 		@DefaultValue("25MB") DataSize applicationFileMaxSize, @DefaultValue("25MB") DataSize solutionDeckMaxSize,
-		@DefaultValue("2MB") DataSize talentPhotoMaxSize, @DefaultValue("25MB") DataSize useCaseAttachmentMaxSize,
+		@DefaultValue("2MB") DataSize talentPhotoMaxSize, @DefaultValue("5MB") DataSize organizationLogoMaxSize,
+		@DefaultValue("25MB") DataSize useCaseAttachmentMaxSize,
 		@DefaultValue Local local, @DefaultValue S3 s3) {
 
 	long maxSizeBytes(FilePurpose purpose) {
@@ -38,6 +40,7 @@ public record StorageProperties(ObjectStorageProvider provider, @DefaultValue("1
 			case SOLUTION_DECK -> solutionDeckMaxSize.toBytes();
 			case TALENT_PHOTO -> talentPhotoMaxSize.toBytes();
 			case USE_CASE_ATTACHMENT -> useCaseAttachmentMaxSize.toBytes();
+			case ORGANIZATION_LOGO -> organizationLogoMaxSize.toBytes();
 		};
 	}
 

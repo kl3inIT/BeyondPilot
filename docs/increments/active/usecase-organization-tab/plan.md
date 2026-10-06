@@ -6,7 +6,7 @@ Design: [design.md](design.md). Tracked in Linear once an issue is assigned.
 
 | Step | What | Done when |
 | --- | --- | --- |
-| 1 | Migration `V32__usecase_allow_partial_drafts.sql`; the entity holds partial drafts; `UseCaseService` and `MyUseCasesController` | `UseCaseServiceTest` passes; the admin tests still pass |
+| 1 | Migration `V33__usecase_allow_partial_drafts.sql`; the entity holds partial drafts; `UseCaseService` and `MyUseCasesController` | `UseCaseServiceTest` passes; the admin tests still pass |
 | 2 | Audit actions `use_case.submit`, `use_case.draft`; the audit log knows them in both languages | `ModulithArchitectureTest`, the audit log screen |
 | 3 | `openapi.yml` and the generated web client refreshed | `OpenApiContractTest` and the drift check pass |
 | 4 | Web: the tab (counts, list, row menu, dialogs), the wizard with autosave, the read-only page, the sent page | `pnpm --dir web check` passes; the screens match the Figma frames |

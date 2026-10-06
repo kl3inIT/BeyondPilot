@@ -750,11 +750,11 @@ export type CreateOrganization = {
     /**
      * What the creator does in the organization.
      */
-    jobTitle: string;
+    jobTitle?: string | null;
     /**
-     * The address of its logo.
+     * A logo the caller uploaded for an organization; null for none.
      */
-    logoUrl?: string | null;
+    logoFileId?: string | null;
     name: string;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
@@ -1222,9 +1222,9 @@ export type Organization = {
      */
     industries: Array<string>;
     /**
-     * The address of its logo.
+     * Its logo, read at /api/storage/files/{id}; null for none.
      */
-    logoUrl?: string | null;
+    logoFileId?: string | null;
     name: string;
     slug: string;
     /**
@@ -2003,7 +2003,7 @@ export type ReserveUpload = {
     /**
      * Why the file is uploaded; it fixes the allowed media types and the largest size.
      */
-    purpose: 'program_image' | 'talent_photo' | 'application_file' | 'use_case_attachment' | 'solution_deck';
+    purpose: 'program_image' | 'talent_photo' | 'organization_logo' | 'application_file' | 'use_case_attachment' | 'solution_deck';
     /**
      * The exact length of the file in bytes.
      */
@@ -2386,9 +2386,9 @@ export type SaveOrganization = {
      */
     industries: Array<string>;
     /**
-     * The address of its logo.
+     * A logo the caller uploaded for an organization; null for none.
      */
-    logoUrl?: string | null;
+    logoFileId?: string | null;
     name: string;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';

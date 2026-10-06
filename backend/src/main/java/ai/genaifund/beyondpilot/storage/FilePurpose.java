@@ -17,6 +17,9 @@ public enum FilePurpose {
 	/** The photo of a person on their talent profile, which they upload themselves. */
 	TALENT_PHOTO("talent_photo", true, false, Set.of("image/png", "image/jpeg", "image/webp")),
 
+	/** The logo of an organization, which one of its owners uploads. */
+	ORGANIZATION_LOGO("organization_logo", true, false, Set.of("image/png", "image/jpeg", "image/webp")),
+
 	/** A deck or a proposal attached to an application. */
 	APPLICATION_FILE("application_file", false, false, Set.of("application/pdf")),
 
