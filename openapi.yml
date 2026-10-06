@@ -4496,7 +4496,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: A member is not valid, or an item is named without its kind.
+          description: "A member is not valid, or an item is named without its kind."
         "401":
           content:
             application/problem+json:
