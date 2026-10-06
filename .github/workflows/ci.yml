@@ -112,6 +112,12 @@ jobs:
       fail-fast: false
       matrix:
         shard: [1, 2, 3, 4]
+    # Microsoft's image of the Playwright version web/pnpm-lock.yaml locks (1.63.0) carries Chromium and the system
+    # libraries it needs, so no shard waits on apt mirrors to install them; one stalled for 19 minutes on 6 October.
+    # Bump the tag and its digest with @playwright/test: a mismatch fails at once, asking for a browser it lacks.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
+      options: --ipc=host
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -125,10 +131,6 @@ jobs:
           working-directory: web
           cache: true
           require-lockfile: true
-
-      # Both Playwright projects (desktop and Pixel 7) run on Chromium.
-      - name: Install Chromium
-        run: pnpm --dir web exec playwright install --with-deps chromium
 
       - name: Build and test in the browser
         run: pnpm --dir web test:e2e --shard=${{ matrix.shard }}/${{ strategy.job-total }}
