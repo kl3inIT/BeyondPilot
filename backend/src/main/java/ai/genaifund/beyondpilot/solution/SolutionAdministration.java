@@ -26,6 +26,7 @@ import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionQueryRepository;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,15 +57,18 @@ public class SolutionAdministration {
 
 	private final AuditTrail audit;
 
+	private final ApplicationEventPublisher events;
+
 	SolutionAdministration(SolutionRepository solutions, CustomerDeploymentRepository deployments,
 			SolutionQueryRepository solutionList, OrganizationDirectory organizations, IdentityService identity,
-			AuditTrail audit) {
+			AuditTrail audit, ApplicationEventPublisher events) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.solutionList = solutionList;
 		this.organizations = organizations;
 		this.identity = identity;
 		this.audit = audit;
+		this.events = events;
 	}
 
 	/**
@@ -128,6 +132,7 @@ public class SolutionAdministration {
 		}
 		solution.approve(Instant.now());
 		record(AuditAction.SOLUTION_APPROVE, operator, solution, Map.of());
+		events.publishEvent(new SolutionChanged(id));
 	}
 
 	/**
@@ -145,6 +150,7 @@ public class SolutionAdministration {
 		}
 		solution.reject(request.reason(), SolutionViews.text(request.message()), Instant.now());
 		record(AuditAction.SOLUTION_REJECT, operator, solution, Map.of("reason", request.reason()));
+		events.publishEvent(new SolutionChanged(id));
 	}
 
 	/**

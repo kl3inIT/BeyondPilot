@@ -20,6 +20,7 @@ import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,12 +45,15 @@ public class SolutionService {
 
 	private final IdentityService identity;
 
+	private final ApplicationEventPublisher events;
+
 	SolutionService(SolutionRepository solutions, CustomerDeploymentRepository deployments,
-			OrganizationDirectory organizations, IdentityService identity) {
+			OrganizationDirectory organizations, IdentityService identity, ApplicationEventPublisher events) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.organizations = organizations;
 		this.identity = identity;
+		this.events = events;
 	}
 
 	/** The solutions of the caller's organization, the newest first; none for a caller who belongs to no organization. */
@@ -125,6 +129,7 @@ public class SolutionService {
 			throw incomplete(id);
 		}
 		solutions.flush();
+		events.publishEvent(new SolutionChanged(id));
 		return view(solution, membership);
 	}
 

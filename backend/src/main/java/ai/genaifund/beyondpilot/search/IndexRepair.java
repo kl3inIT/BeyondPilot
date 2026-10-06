@@ -21,19 +21,29 @@ class IndexRepair {
 
 	private final ProgramIndexing programs;
 
-	IndexRepair(ProgramIndexing programs) {
+	private final SolutionIndexing solutions;
+
+	private final TalentIndexing talent;
+
+	IndexRepair(ProgramIndexing programs, SolutionIndexing solutions, TalentIndexing talent) {
 		this.programs = programs;
+		this.solutions = solutions;
+		this.talent = talent;
 	}
 
 	@EventListener(ApplicationReadyEvent.class)
 	@Scheduled(cron = "0 30 3 * * *", zone = "Asia/Ho_Chi_Minh")
 	@Transactional
 	void repair() {
-		ProgramIndexing.Rebuilt rebuilt = programs.rebuild();
+		Rebuilt programs = this.programs.rebuild();
+		Rebuilt solutions = this.solutions.rebuild();
+		Rebuilt talent = this.talent.rebuild();
 		LOG.atInfo()
 			.addKeyValue("event", "search.index.repaired")
-			.addKeyValue("programs_saved", rebuilt.saved())
-			.addKeyValue("rows_removed", rebuilt.removed())
+			.addKeyValue("programs_saved", programs.saved())
+			.addKeyValue("solutions_saved", solutions.saved())
+			.addKeyValue("talent_saved", talent.saved())
+			.addKeyValue("rows_removed", programs.removed() + solutions.removed() + talent.removed())
 			.log("The search index was rebuilt from the published items");
 	}
 
