@@ -101,11 +101,11 @@ public class EmailService {
 					+ " Sign in to read why; you can correct it and send it again.";
 		};
 		String vietnamese = switch (decision) {
-			case APPROVED -> "Hồ sơ nhân tài " + profileName + " của bạn đã được duyệt trên BeyondPilot và hiện trong"
+			case APPROVED -> "Hồ sơ nhân lực " + profileName + " của bạn đã được duyệt trên BeyondPilot và hiện trong"
 					+ " danh mục, trừ khi bạn ẩn nó.";
-			case CHANGES_REQUESTED -> "GenAI Fund đề nghị bạn sửa hồ sơ nhân tài " + profileName
+			case CHANGES_REQUESTED -> "GenAI Fund đề nghị bạn sửa hồ sơ nhân lực " + profileName
 					+ " trên BeyondPilot. Hãy đăng nhập để xem lý do, chỉnh sửa và gửi lại.";
-			case REMOVED -> "GenAI Fund đã gỡ hồ sơ nhân tài " + profileName + " khỏi danh mục của BeyondPilot."
+			case REMOVED -> "GenAI Fund đã gỡ hồ sơ nhân lực " + profileName + " khỏi danh mục của BeyondPilot."
 					+ " Hãy đăng nhập để xem lý do; bạn có thể chỉnh sửa và gửi lại.";
 		};
 		String subject = switch (decision) {
@@ -142,11 +142,11 @@ public class EmailService {
 		} + ". Sign in and open your talent profile > Enquiries to accept or decline. Your address is shared only if"
 				+ " you accept.";
 		String vietnamese = (senderOrganization != null ? nameVi + " (" + senderOrganization + ")" : nameVi)
-				+ " đã viết cho bạn qua hồ sơ nhân tài trên BeyondPilot, " + switch (topic) {
+				+ " đã viết cho bạn qua hồ sơ nhân lực trên BeyondPilot, " + switch (topic) {
 			case "project" -> "về một dự án";
 			case "role" -> "về một vị trí công việc";
 			default -> "về một việc khác";
-		} + ". Hãy đăng nhập và mở Hồ sơ nhân tài > Lời nhắn để chấp nhận hoặc từ chối. Địa chỉ email của bạn chỉ"
+		} + ". Hãy đăng nhập và mở Hồ sơ nhân lực > Lời nhắn để chấp nhận hoặc từ chối. Địa chỉ email của bạn chỉ"
 				+ " được chia sẻ khi bạn chấp nhận.";
 		send("talent_enquiry", recipient, "A message through your BeyondPilot talent profile",
 				english + "\n\n" + vietnamese + "\n\n" + message + "\n", paragraphs(english, vietnamese, message));
@@ -161,7 +161,7 @@ public class EmailService {
 		String english = (senderName != null ? "A message from " + senderName : "A message") + " waits for your answer on BeyondPilot. It closes in "
 				+ daysLeft + " days if you do not answer. Sign in and open your talent profile > Enquiries.";
 		String vietnamese = (senderName != null ? "Lời nhắn của " + senderName : "Một lời nhắn") + " đang chờ bạn trả lời trên BeyondPilot. Lời nhắn sẽ tự đóng"
-				+ " sau " + daysLeft + " ngày nếu bạn không trả lời. Hãy đăng nhập và mở Hồ sơ nhân tài > Lời nhắn.";
+				+ " sau " + daysLeft + " ngày nếu bạn không trả lời. Hãy đăng nhập và mở Hồ sơ nhân lực > Lời nhắn.";
 		send("talent_enquiry_reminder", recipient, "A message waits for your answer on BeyondPilot",
 				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
 	}
@@ -195,7 +195,7 @@ public class EmailService {
 		String english = talentName + " will not take your message on BeyondPilot further. You can look for other"
 				+ " people in the talent directory.";
 		String vietnamese = talentName + " sẽ không tiếp tục lời nhắn của bạn trên BeyondPilot. Bạn có thể tìm người"
-				+ " khác trong danh mục nhân tài.";
+				+ " khác trong danh mục nhân lực.";
 		send("talent_enquiry_declined", recipient, "Your message to " + talentName,
 				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
 	}

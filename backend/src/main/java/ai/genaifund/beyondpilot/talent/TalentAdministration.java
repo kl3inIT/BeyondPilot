@@ -168,7 +168,8 @@ public class TalentAdministration {
 		return new AdminTalentEnquiryListResponse(rows.stream().map(row -> {
 			Person sender = senders.get(row.senderAccountId());
 			return new AdminTalentEnquiryResponse(row.id(), row.profileId(), row.profileName(),
-					sender == null ? null : sender.displayName(), email(senders, row.senderAccountId()), row.topic(),
+					row.senderName() != null ? row.senderName() : sender == null ? null : sender.displayName(),
+					email(senders, row.senderAccountId()), row.topic(),
 					row.message(), row.createdAt(), row.answeredAt());
 		}).toList(), page, PAGE_SIZE, details.reportedCount());
 	}

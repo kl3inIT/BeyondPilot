@@ -21,7 +21,7 @@ final class TalentViews {
 	static TalentProfileResponse profile(TalentProfile profile, List<TalentDetailRepository.Project> projects) {
 		return new TalentProfileResponse(profile.getId(), profile.getSlug(), profile.getName(), profile.getHeadline(),
 				profile.getBio(), profile.getRoles(), profile.getSkills(), profile.getCountry(),
-				profile.getAvailability(), profile.getEngagement(), profile.getRateBand(), profile.getWebsite(),
+				profile.getEngagement(), profile.getRateBand(), profile.getWebsite(),
 				profile.getPhotoFileId(), profile.getCity(), profile.getLanguages(), profile.getIndustries(),
 				profile.getWorksAt(), projects(projects), profile.getStatus(), profile.getDecisionReason(), profile.getDecisionMessage(),
 				profile.isListed(), profile.isComplete(), profile.getSubmittedAt(), profile.getVersion(),

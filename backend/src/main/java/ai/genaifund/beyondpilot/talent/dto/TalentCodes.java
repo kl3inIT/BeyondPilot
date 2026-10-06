@@ -6,8 +6,6 @@ final class TalentCodes {
 	static final String ROLE = "ai_engineer|ml_engineer|forward_deployed_engineer|automation_specialist"
 			+ "|data_scientist|data_engineer|ai_product_manager|ai_consultant|ai_designer|other";
 
-	static final String AVAILABILITY = "available|open_to_offers|not_available";
-
 	static final String SORT = "name|newest";
 
 	static final String ENGAGEMENT = "full_time|part_time|contract|advisory";

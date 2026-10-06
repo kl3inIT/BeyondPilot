@@ -12,8 +12,6 @@ public record PublicTalentSummaryResponse(@Schema(requiredMode = Schema.Required
 		@Schema(types = { "string", "null" }) @Nullable String headline,
 		@Schema(types = { "string", "null" }, description = "ISO 3166-1 alpha-2.") @Nullable String country,
 		@Schema(types = { "string", "null" }) @Nullable String city,
-		@Schema(types = { "string", "null" },
-				allowableValues = { "available", "open_to_offers", "not_available" }) @Nullable String availability,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> roles,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> skills,
 		@Schema(types = { "string", "null" }, format = "uuid",

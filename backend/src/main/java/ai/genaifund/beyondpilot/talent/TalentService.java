@@ -109,7 +109,9 @@ public class TalentService {
 					boolean waiting = TalentDetailRepository.PENDING.equals(enquiry.status());
 					boolean accepted = TalentDetailRepository.ACCEPTED.equals(enquiry.status());
 					// Before an acceptance the sender is named only by the name they gave, never by their address.
-					return new TalentEnquiryResponse(enquiry.id(), accepted ? sender.label() : sender.displayName(),
+					String name = enquiry.senderName() != null ? enquiry.senderName()
+							: accepted ? sender.label() : sender.displayName();
+					return new TalentEnquiryResponse(enquiry.id(), name,
 							organization == null ? null : organization.name(),
 							accepted ? sender.email() : null,
 							enquiry.topic(), enquiry.message(), enquiry.status(), enquiry.createdAt(),
@@ -137,7 +139,7 @@ public class TalentService {
 		}
 		profile.describe(name, TalentViews.text(request.headline()), TalentViews.text(request.bio()),
 				TalentViews.distinct(request.roles()), TalentViews.distinct(request.skills()), request.country(),
-				request.availability(), TalentViews.distinct(request.engagement()), request.rateBand(),
+				TalentViews.distinct(request.engagement()), request.rateBand(),
 				TalentViews.text(request.website()));
 		profile.state(TalentViews.text(request.city()), TalentViews.distinct(request.languages()),
 				TalentViews.distinct(request.industries()), TalentViews.text(request.worksAt()));
@@ -197,8 +199,9 @@ public class TalentService {
 	}
 
 	/**
-	 * Sends a message to the person behind a listed profile. They are told by email who wrote, about what and from which
-	 * organization, without the sender's address; the two addresses are shared only if they accept.
+	 * Sends a message to the person behind a listed profile, signed with the name the sender gives. They are told by
+	 * email who wrote, about what and from which organization, without the sender's address; the two addresses are
+	 * shared only if they accept.
 	 * @throws TalentException when no approved, listed profile has the address, it is the caller's own, the caller's
 	 * earlier message to it still waits, or the caller started ten conversations within the last day
 	 */
@@ -226,11 +229,12 @@ public class TalentService {
 		// The person reads the sender's organization only once GenAI Fund approved it.
 		Membership membership = organizations.membershipOf(actor).filter(Membership::approved).orElse(null);
 		String message = request.message().strip();
-		if (!details.addEnquiry(profile.getId(), actor.accountId(),
+		String senderName = request.senderName().strip();
+		if (!details.addEnquiry(profile.getId(), actor.accountId(), senderName,
 				membership == null ? null : membership.organizationId(), request.topic(), message)) {
 			throw pending(profile);
 		}
-		email.sendTalentEnquiry(recipient.email(), sender.displayName(),
+		email.sendTalentEnquiry(recipient.email(), senderName,
 				membership == null ? null : membership.organizationName(), request.topic(), message);
 		LOG.atInfo()
 			.addKeyValue("event", "talent.enquiry.sent")
@@ -258,7 +262,8 @@ public class TalentService {
 				: organizations.names(List.of(organizationId)).get(organizationId);
 		details.answer(id, TalentDetailRepository.ACCEPTED);
 		email.sendTalentIntroduction(sender.email(), profile.getName(), person.email(), null);
-		email.sendTalentIntroduction(person.email(), sender.label(), sender.email(),
+		email.sendTalentIntroduction(person.email(),
+				enquiry.senderName() != null ? enquiry.senderName() : sender.label(), sender.email(),
 				senderOrganization == null ? null : senderOrganization.name());
 		record(AuditAction.TALENT_ENQUIRY_ACCEPT, person, actor, enquiry, profile);
 	}

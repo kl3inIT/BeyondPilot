@@ -43,23 +43,25 @@ public class TalentDetailRepository {
 	public static final String CLOSED = "closed";
 
 	private static final String SELECT_ENQUIRY = """
-			select id, profile_id, sender_account_id, sender_organization_id, topic, message, status, created_at,
-			       answered_at
+			select id, profile_id, sender_account_id, sender_name, sender_organization_id, topic, message, status,
+			       created_at, answered_at
 			from talent_enquiry
 			""";
 
 	/**
 	 * One message sent through a profile, with what became of it.
+	 * @param senderName the name the sender gave with the message; null on a message sent before it was asked for
 	 * @param senderOrganizationId the organization the sender belonged to when they wrote; null when none
 	 * @param answeredAt when the person answered it or it closed; null while it waits
 	 */
-	public record Enquiry(UUID id, UUID profileId, UUID senderAccountId, @Nullable UUID senderOrganizationId,
-			String topic, String message, String status, Instant createdAt, @Nullable Instant answeredAt) {
+	public record Enquiry(UUID id, UUID profileId, UUID senderAccountId, @Nullable String senderName,
+			@Nullable UUID senderOrganizationId, String topic, String message, String status, Instant createdAt,
+			@Nullable Instant answeredAt) {
 	}
 
 	/** A message its person reported, with the profile it was sent through. */
-	public record ReportedEnquiry(UUID id, UUID profileId, String profileName, UUID senderAccountId, String topic,
-			String message, Instant createdAt, @Nullable Instant answeredAt) {
+	public record ReportedEnquiry(UUID id, UUID profileId, String profileName, UUID senderAccountId,
+			@Nullable String senderName, String topic, String message, Instant createdAt, @Nullable Instant answeredAt) {
 	}
 
 	/** The projects of a profile, in the order the person put them. */
@@ -97,16 +99,18 @@ public class TalentDetailRepository {
 	 * Records a message that waits for the person's answer.
 	 * @return false when the sender already has one waiting for this profile
 	 */
-	public boolean addEnquiry(UUID profileId, UUID senderAccountId, @Nullable UUID senderOrganizationId, String topic,
-			String message) {
+	public boolean addEnquiry(UUID profileId, UUID senderAccountId, String senderName,
+			@Nullable UUID senderOrganizationId, String topic, String message) {
 		return jdbc.sql("""
-				insert into talent_enquiry (id, profile_id, sender_account_id, sender_organization_id, topic, message)
-				values (:id, :profileId, :sender, :organization, :topic, :message)
+				insert into talent_enquiry (id, profile_id, sender_account_id, sender_name, sender_organization_id, topic,
+				                            message)
+				values (:id, :profileId, :sender, :senderName, :organization, :topic, :message)
 				on conflict (sender_account_id, profile_id) where status = 'pending' do nothing
 				""")
 			.param("id", UUID.randomUUID())
 			.param("profileId", profileId)
 			.param("sender", senderAccountId)
+			.param("senderName", senderName)
 			.param("organization", senderOrganizationId, Types.OTHER)
 			.param("topic", topic)
 			.param("message", message)
@@ -170,13 +174,15 @@ public class TalentDetailRepository {
 	/** The reported messages, the most recently reported first. */
 	public List<ReportedEnquiry> reported(int limit, long offset) {
 		return jdbc.sql("""
-				select e.id, e.profile_id, p.name, e.sender_account_id, e.topic, e.message, e.created_at, e.answered_at
+				select e.id, e.profile_id, p.name, e.sender_account_id, e.sender_name, e.topic, e.message, e.created_at,
+				       e.answered_at
 				from talent_enquiry e join talent_profile p on p.id = e.profile_id
 				where e.status = 'reported' order by e.answered_at desc nulls last, e.id limit ? offset ?
 				""").params(limit, offset).query((row, index) -> {
 			Timestamp answeredAt = row.getTimestamp("answered_at");
 			return new ReportedEnquiry(row.getObject("id", UUID.class), row.getObject("profile_id", UUID.class),
-					row.getString("name"), row.getObject("sender_account_id", UUID.class), row.getString("topic"),
+					row.getString("name"), row.getObject("sender_account_id", UUID.class), row.getString("sender_name"),
+					row.getString("topic"),
 					row.getString("message"), row.getTimestamp("created_at").toInstant(),
 					answeredAt == null ? null : answeredAt.toInstant());
 		}).list();
@@ -193,7 +199,8 @@ public class TalentDetailRepository {
 	private static Enquiry enquiry(ResultSet row, int index) throws SQLException {
 		Timestamp answeredAt = row.getTimestamp("answered_at");
 		return new Enquiry(row.getObject("id", UUID.class), row.getObject("profile_id", UUID.class),
-				row.getObject("sender_account_id", UUID.class), row.getObject("sender_organization_id", UUID.class),
+				row.getObject("sender_account_id", UUID.class), row.getString("sender_name"),
+				row.getObject("sender_organization_id", UUID.class),
 				row.getString("topic"), row.getString("message"), row.getString("status"),
 				row.getTimestamp("created_at").toInstant(), answeredAt == null ? null : answeredAt.toInstant());
 	}

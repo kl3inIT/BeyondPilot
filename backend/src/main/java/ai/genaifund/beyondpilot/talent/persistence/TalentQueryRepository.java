@@ -22,10 +22,12 @@ public class TalentQueryRepository {
 			where status = 'approved' and listed
 			  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\'
 			       or lower(headline) like :pattern escape '\\'
-			       or exists (select 1 from unnest(skills) skill where lower(skill) like :pattern escape '\\'))
+			       or exists (select 1 from unnest(skills) skill where lower(skill) like :pattern escape '\\')
+			       or exists (select 1 from talent_project p
+			                  where p.profile_id = talent_profile.id and lower(p.title) like :pattern escape '\\'))
 			  and (cast(:role as text) is null or roles @> array[cast(:role as text)])
-			  and (cast(:availability as text) is null or availability = :availability)
 			  and (cast(:country as text) is null or country = :country)
+			  and (cast(:industry as text) is null or industries @> array[cast(:industry as text)])
 			  and (cast(:engagement as text) is null or engagement @> array[cast(:engagement as text)])
 			""";
 
@@ -36,7 +38,7 @@ public class TalentQueryRepository {
 			""";
 
 	private static final String ROW = """
-			select id, account_id, slug, name, headline, roles, skills, country, city, availability, status, listed,
+			select id, account_id, slug, name, headline, roles, skills, country, city, status, listed,
 			       submitted_at, updated_at, photo_file_id,
 			       (select count(*) from talent_project p where p.profile_id = talent_profile.id) as project_count,
 			       (select array[p.title, p.stage] from talent_project p where p.profile_id = talent_profile.id
@@ -56,14 +58,13 @@ public class TalentQueryRepository {
 	 * @param leadStage how far that project went; null when not stated
 	 */
 	public record Row(UUID id, UUID accountId, String slug, String name, @Nullable String headline, List<String> roles,
-			List<String> skills, @Nullable String country, @Nullable String city, @Nullable String availability,
-			String status, boolean listed, @Nullable Instant submittedAt, Instant updatedAt, @Nullable UUID photoFileId,
+			List<String> skills, @Nullable String country, @Nullable String city, String status, boolean listed, @Nullable Instant submittedAt, Instant updatedAt, @Nullable UUID photoFileId,
 			int projectCount, @Nullable String leadTitle, @Nullable String leadStage) {
 	}
 
 	/** What narrows the public directory; a null member narrows nothing. */
-	public record PublicFilter(@Nullable String text, @Nullable String role, @Nullable String availability,
-			@Nullable String country, @Nullable String engagement) {
+	public record PublicFilter(@Nullable String text, @Nullable String role, @Nullable String country,
+			@Nullable String industry, @Nullable String engagement) {
 	}
 
 	/** One page of the public directory, by name or with the most recently approved first. */
@@ -102,8 +103,8 @@ public class TalentQueryRepository {
 		return jdbc.sql(sql)
 			.param("pattern", filter.text() == null ? null : containing(filter.text()), Types.VARCHAR)
 			.param("role", filter.role(), Types.VARCHAR)
-			.param("availability", filter.availability(), Types.VARCHAR)
 			.param("country", filter.country(), Types.VARCHAR)
+			.param("industry", filter.industry(), Types.VARCHAR)
 			.param("engagement", filter.engagement(), Types.VARCHAR);
 	}
 
@@ -120,7 +121,7 @@ public class TalentQueryRepository {
 		return new Row(row.getObject("id", UUID.class), row.getObject("account_id", UUID.class), row.getString("slug"),
 				row.getString("name"), row.getString("headline"), strings(row.getArray("roles")),
 				strings(row.getArray("skills")), row.getString("country"), row.getString("city"),
-				row.getString("availability"), row.getString("status"), row.getBoolean("listed"),
+row.getString("status"), row.getBoolean("listed"),
 				submittedAt == null ? null : submittedAt.toInstant(), row.getTimestamp("updated_at").toInstant(),
 				row.getObject("photo_file_id", UUID.class), row.getInt("project_count"), leadProject[0],
 				leadProject[1]);

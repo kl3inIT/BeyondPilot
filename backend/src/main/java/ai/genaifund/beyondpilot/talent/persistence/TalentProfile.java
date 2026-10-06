@@ -62,8 +62,6 @@ public class TalentProfile {
 
 	private @Nullable String country;
 
-	private @Nullable String availability;
-
 	@JdbcTypeCode(SqlTypes.ARRAY)
 	@Column(nullable = false, columnDefinition = "text[]")
 	private String[] engagement = {};
@@ -125,15 +123,14 @@ public class TalentProfile {
 	}
 
 	public void describe(String name, @Nullable String headline, @Nullable String bio, List<String> roles,
-			List<String> skills, @Nullable String country, @Nullable String availability, List<String> engagement,
-			@Nullable String rateBand, @Nullable String website) {
+			List<String> skills, @Nullable String country, List<String> engagement, @Nullable String rateBand,
+			@Nullable String website) {
 		this.name = name;
 		this.headline = headline;
 		this.bio = bio;
 		this.roles = roles.toArray(String[]::new);
 		this.skills = skills.toArray(String[]::new);
 		this.country = country;
-		this.availability = availability;
 		this.engagement = engagement.toArray(String[]::new);
 		this.rateBand = rateBand;
 		this.website = website;
@@ -239,10 +236,6 @@ public class TalentProfile {
 
 	public @Nullable String getCountry() {
 		return country;
-	}
-
-	public @Nullable String getAvailability() {
-		return availability;
 	}
 
 	public List<String> getEngagement() {

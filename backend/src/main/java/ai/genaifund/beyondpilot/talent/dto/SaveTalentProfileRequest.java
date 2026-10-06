@@ -23,9 +23,6 @@ public record SaveTalentProfileRequest(
 				max = 15) List<@NotBlank @Size(max = 40) String> skills,
 		@Schema(types = { "string", "null" }, description = "ISO 3166-1 alpha-2.") @Pattern(
 				regexp = TalentCodes.COUNTRY) @Nullable String country,
-		@Schema(types = { "string", "null" },
-				allowableValues = { "available", "open_to_offers", "not_available" }) @Pattern(
-						regexp = TalentCodes.AVAILABILITY) @Nullable String availability,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Size(
 				max = 4) List<@NotNull @Pattern(regexp = TalentCodes.ENGAGEMENT) String> engagement,
 		@Schema(types = { "string", "null" },

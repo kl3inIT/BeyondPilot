@@ -3519,8 +3519,8 @@ paths:
     get:
       operationId: listTalent
       parameters:
-      - description: "Profiles whose name, headline or a skill contains this, ignoring\
-          \ case."
+      - description: "Profiles whose name, headline, a skill or a project title contains\
+          \ this, ignoring case."
         in: query
         name: q
         required: false
@@ -3539,15 +3539,6 @@ paths:
           - string
           - "null"
           pattern: ai_engineer|ml_engineer|forward_deployed_engineer|automation_specialist|data_scientist|data_engineer|ai_product_manager|ai_consultant|ai_designer|other
-      - description: Only profiles of this availability.
-        in: query
-        name: availability
-        required: false
-        schema:
-          type:
-          - string
-          - "null"
-          pattern: available|open_to_offers|not_available
       - description: "Only profiles in this country, ISO 3166-1 alpha-2."
         in: query
         name: country
@@ -3557,6 +3548,15 @@ paths:
           - string
           - "null"
           pattern: "[A-Z]{2}"
+      - description: Only profiles that worked in this industry.
+        in: query
+        name: industry
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
       - description: Only profiles open to this kind of engagement.
         in: query
         name: engagement
@@ -5806,14 +5806,6 @@ components:
       description: "An approved, listed talent profile as anyone reads it. It carries\
         \ no address of the person, and no rate."
       properties:
-        availability:
-          type:
-          - string
-          - "null"
-          enum:
-          - available
-          - open_to_offers
-          - not_available
         bio:
           type:
           - string
@@ -5919,14 +5911,6 @@ components:
       type: object
       description: One profile in the public directory of talent.
       properties:
-        availability:
-          type:
-          - string
-          - "null"
-          enum:
-          - available
-          - open_to_offers
-          - not_available
         city:
           type:
           - string
@@ -6445,15 +6429,6 @@ components:
       type: object
       description: A talent profile as its edit screen holds it.
       properties:
-        availability:
-          type:
-          - string
-          - "null"
-          enum:
-          - available
-          - open_to_offers
-          - not_available
-          pattern: available|open_to_offers|not_available
         bio:
           type:
           - string
@@ -6585,6 +6560,11 @@ components:
           type: string
           maxLength: 2000
           minLength: 0
+        senderName:
+          type: string
+          description: The name the person written to reads; never an address.
+          maxLength: 120
+          minLength: 0
         topic:
           type: string
           description: What the message is about.
@@ -6595,6 +6575,7 @@ components:
           pattern: project|role|other
       required:
       - message
+      - senderName
       - topic
     Solution:
       type: object
@@ -6888,14 +6869,6 @@ components:
       type: object
       description: "A talent profile as its person, and operators, see it."
       properties:
-        availability:
-          type:
-          - string
-          - "null"
-          enum:
-          - available
-          - open_to_offers
-          - not_available
         bio:
           type:
           - string

@@ -16,8 +16,6 @@ public record TalentProfileResponse(@Schema(requiredMode = Schema.RequiredMode.R
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> roles,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> skills,
 		@Schema(types = { "string", "null" }, description = "ISO 3166-1 alpha-2.") @Nullable String country,
-		@Schema(types = { "string", "null" },
-				allowableValues = { "available", "open_to_offers", "not_available" }) @Nullable String availability,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> engagement,
 		@Schema(types = { "string", "null" }, description = "US dollars an hour. Null is not stated.",
 				allowableValues = { "under_25", "25_50", "50_100", "100_150", "150_plus" }) @Nullable String rateBand,

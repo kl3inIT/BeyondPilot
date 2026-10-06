@@ -194,7 +194,7 @@ class TalentTest {
 		String person = signIn("possum@profile.test");
 		UUID id = approved(person, "Possum Person");
 		post(signIn("asker@possum.test"), DIRECTORY + "/possum-person/enquiries",
-				Map.of("topic", "project", "message", "Hello")).expectStatus().isNoContent();
+				Map.of("senderName", "Lan Tran", "topic", "project", "message", "Hello")).expectStatus().isNoContent();
 
 		client.delete()
 			.uri(MINE)
@@ -215,7 +215,7 @@ class TalentTest {
 	void operatorsReadTheReportedMessagesAndNobodyElse() {
 		approved(signIn("wallaby@profile.test"), "Wallaby Person");
 		String sender = signIn("spammer@wallaby.test");
-		post(sender, DIRECTORY + "/wallaby-person/enquiries", Map.of("topic", "other", "message", "Cheap followers"))
+		post(sender, DIRECTORY + "/wallaby-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "other", "message", "Cheap followers"))
 			.expectStatus()
 			.isNoContent();
 		String person = signIn("wallaby@profile.test");
@@ -236,7 +236,6 @@ class TalentTest {
 		approved(signIn("wombat.engineer@profile.test"), "Wombat Engineer");
 		Map<String, Object> scientist = described("Wombat Scientist", null);
 		scientist.put("roles", List.of("data_scientist"));
-		scientist.put("availability", "not_available");
 		approved(signIn("wombat.scientist@profile.test"), scientist);
 		Map<String, Object> hidden = described("Wombat Hidden", null);
 		hidden.put("listed", false);
@@ -251,7 +250,6 @@ class TalentTest {
 		assertThat(JsonPath.<Integer>read(all, "$.total")).isEqualTo(2);
 		assertThat(all).doesNotContain("@profile.test");
 		assertThat(names(DIRECTORY + "?q=wombat&role=data_scientist")).containsExactly("Wombat Scientist");
-		assertThat(names(DIRECTORY + "?q=wombat&availability=available")).containsExactly("Wombat Engineer");
 		// A skill is searched too.
 		assertThat(names(DIRECTORY + "?q=langgraph")).contains("Wombat Engineer", "Wombat Scientist");
 		// The most recently approved comes first when that order is asked for.
@@ -281,7 +279,7 @@ class TalentTest {
 		String person = signIn("numbat@profile.test");
 		approved(person, "Numbat Person");
 		String path = DIRECTORY + "/numbat-person/enquiries";
-		Map<String, Object> message = Map.of("topic", "project", "message", "  We need a claims model by March.  ");
+		Map<String, Object> message = Map.of("senderName", "Lan Tran", "topic", "project", "message", "  We need a claims model by March.  ");
 
 		client.post()
 			.uri(path)
@@ -293,8 +291,12 @@ class TalentTest {
 			.isUnauthorized();
 		assertProblem(post(person, path, message), 409, "TALENT_OWN_PROFILE");
 		String buyer = organizationOwner("buyer@numbat.test", "Numbat Insurance");
-		assertProblem(post(buyer, path, Map.of("topic", "project", "message", " ")), 400, "REQUEST_INVALID");
-		assertProblem(post(buyer, path, Map.of("topic", "gossip", "message", "Hello")), 400, "REQUEST_INVALID");
+		assertProblem(post(buyer, path, Map.of("senderName", "Lan Tran", "topic", "project", "message", " ")), 400, "REQUEST_INVALID");
+		assertProblem(post(buyer, path, Map.of("senderName", "Lan Tran", "topic", "gossip", "message", "Hello")), 400,
+				"REQUEST_INVALID");
+		// A message is always signed with a name.
+		assertProblem(post(buyer, path, Map.of("senderName", " ", "topic", "project", "message", "Hello")), 400,
+				"REQUEST_INVALID");
 		assertProblem(post(buyer, DIRECTORY + "/nobody-here/enquiries", message), 404, "TALENT_PROFILE_NOT_FOUND");
 		assertThat(JsonPath.<Object>read(body(get(buyer, DIRECTORY + "/numbat-person").expectStatus().isOk()),
 				"$.waitingEnquirySentAt")).isNull();
@@ -316,8 +318,8 @@ class TalentTest {
 		assertThat(JsonPath.<String>read(read, "$.enquiries[0].status")).isEqualTo("pending");
 		assertThat(JsonPath.<String>read(read, "$.enquiries[0].senderOrganization")).isEqualTo("Numbat Insurance");
 		assertThat(JsonPath.<Object>read(read, "$.enquiries[0].senderEmail")).isNull();
-		// A sender who gave no name is not named by their address either.
-		assertThat(JsonPath.<Object>read(read, "$.enquiries[0].senderName")).isNull();
+		// The person reads the name the sender gave, never the sender's address.
+		assertThat(JsonPath.<String>read(read, "$.enquiries[0].senderName")).isEqualTo("Lan Tran");
 		assertThat(read).doesNotContain("buyer@numbat.test");
 		assertThat(JsonPath.<String>read(read, "$.enquiries[0].closesAt")).isNotNull();
 		String id = JsonPath.read(read, "$.enquiries[0].id");
@@ -337,7 +339,7 @@ class TalentTest {
 		assertProblem(post(person, MINE + "/enquiries/" + id + "/decline", null), 409, "TALENT_ENQUIRY_NOT_PENDING");
 		assertThat(events("talent_enquiry", UUID.fromString(id))).containsExactly("talent.enquiry_accept");
 		// An answer lets the sender write again.
-		post(buyer, path, Map.of("topic", "role", "message", "And a role?")).expectStatus().isNoContent();
+		post(buyer, path, Map.of("senderName", "Lan Tran", "topic", "role", "message", "And a role?")).expectStatus().isNoContent();
 		// The sender reads nothing of it on their own page.
 		assertThat(JsonPath.<List<Object>>read(mine(buyer), "$.enquiries")).isEmpty();
 	}
@@ -349,8 +351,8 @@ class TalentTest {
 		String path = DIRECTORY + "/quokka-person/enquiries";
 		String first = signIn("first@quokka.test");
 		String second = signIn("second@quokka.test");
-		post(first, path, Map.of("topic", "other", "message", "Can we talk?")).expectStatus().isNoContent();
-		post(second, path, Map.of("topic", "other", "message", "Buy followers now")).expectStatus().isNoContent();
+		post(first, path, Map.of("senderName", "Lan Tran", "topic", "other", "message", "Can we talk?")).expectStatus().isNoContent();
+		post(second, path, Map.of("senderName", "Lan Tran", "topic", "other", "message", "Buy followers now")).expectStatus().isNoContent();
 		String read = mine(person);
 		String fromSecond = JsonPath.<List<String>>read(read, "$.enquiries[?(@.message == 'Buy followers now')].id")
 			.get(0);
@@ -385,7 +387,7 @@ class TalentTest {
 		}
 		approved(signIn("emu@profile.test"), "Emu Person");
 
-		assertProblem(post(sender, DIRECTORY + "/emu-person/enquiries", Map.of("topic", "role", "message", "Hi")), 429,
+		assertProblem(post(sender, DIRECTORY + "/emu-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "role", "message", "Hi")), 429,
 				"TALENT_ENQUIRY_LIMIT");
 	}
 
@@ -394,7 +396,7 @@ class TalentTest {
 		String person = signIn("koala@profile.test");
 		approved(person, "Koala Person");
 		String sender = signIn("patient@koala.test");
-		post(sender, DIRECTORY + "/koala-person/enquiries", Map.of("topic", "project", "message", "Still there?"))
+		post(sender, DIRECTORY + "/koala-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "project", "message", "Still there?"))
 			.expectStatus()
 			.isNoContent();
 		Instant now = Instant.now();
@@ -413,7 +415,7 @@ class TalentTest {
 		assertThat(mail.latestSubjectTo("patient@koala.test")).isEqualTo("Your message to Koala Person closed");
 		assertThat(mail.latestTextTo("patient@koala.test")).doesNotContain("koala@profile.test");
 		// The sender may write again.
-		post(sender, DIRECTORY + "/koala-person/enquiries", Map.of("topic", "project", "message", "Once more"))
+		post(sender, DIRECTORY + "/koala-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "project", "message", "Once more"))
 			.expectStatus()
 			.isNoContent();
 	}
@@ -444,6 +446,11 @@ class TalentTest {
 		assertThat(JsonPath.<String>read(bySingapore, "$.items[0].leadProject.title")).isEqualTo("Voice agent for a bank");
 		assertThat(JsonPath.<String>read(bySingapore, "$.items[0].leadProject.stage")).isEqualTo("in_production");
 		assertThat(names(DIRECTORY + "?q=echidna&engagement=advisory")).containsExactly("Echidna Engineer");
+		// A buyer finds people by the industry they worked in, and by the words of a project.
+		assertThat(names(DIRECTORY + "?q=echidna&industry=insurance")).containsExactly("Echidna Engineer",
+				"Echidna Other");
+		assertThat(names(DIRECTORY + "?q=echidna&industry=healthcare")).isEmpty();
+		assertThat(names(DIRECTORY + "?q=bank")).containsExactly("Echidna Engineer");
 		assertThat(names(DIRECTORY + "?q=echidna&engagement=contract")).containsExactly("Echidna Other");
 		assertProblem(client.get().uri(DIRECTORY + "?country=sg").exchange(), 400, "REQUEST_INVALID");
 	}
@@ -473,7 +480,6 @@ class TalentTest {
 		request.put("roles", List.of("ml_engineer"));
 		request.put("skills", List.of("Python", "LangGraph"));
 		request.put("country", "VN");
-		request.put("availability", "available");
 		request.put("engagement", List.of("contract"));
 		request.put("rateBand", "50_100");
 		request.put("website", "https://example.test");

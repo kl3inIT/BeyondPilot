@@ -1111,7 +1111,6 @@ export type PublicSolutionSummary = {
  * An approved, listed talent profile as anyone reads it. It carries no address of the person, and no rate.
  */
 export type PublicTalent = {
-    availability?: 'available' | 'open_to_offers' | 'not_available';
     bio?: string | null;
     city?: string | null;
     /**
@@ -1165,7 +1164,6 @@ export type PublicTalentList = {
  * One profile in the public directory of talent.
  */
 export type PublicTalentSummary = {
-    availability?: 'available' | 'open_to_offers' | 'not_available';
     city?: string | null;
     /**
      * ISO 3166-1 alpha-2.
@@ -1396,7 +1394,6 @@ export type SaveSolution = {
  * A talent profile as its edit screen holds it.
  */
 export type SaveTalentProfile = {
-    availability?: 'available' | 'open_to_offers' | 'not_available';
     bio?: string | null;
     city?: string | null;
     /**
@@ -1442,6 +1439,10 @@ export type SaveTalentProfile = {
  */
 export type SendTalentEnquiry = {
     message: string;
+    /**
+     * The name the person written to reads; never an address.
+     */
+    senderName: string;
     /**
      * What the message is about.
      */
@@ -1575,7 +1576,6 @@ export type TalentEnquiry = {
  * A talent profile as its person, and operators, see it.
  */
 export type TalentProfile = {
-    availability?: 'available' | 'open_to_offers' | 'not_available';
     bio?: string | null;
     city?: string | null;
     /**
@@ -4649,7 +4649,7 @@ export type ListTalentData = {
     path?: never;
     query?: {
         /**
-         * Profiles whose name, headline or a skill contains this, ignoring case.
+         * Profiles whose name, headline, a skill or a project title contains this, ignoring case.
          */
         q?: string | null;
         /**
@@ -4657,13 +4657,13 @@ export type ListTalentData = {
          */
         role?: string | null;
         /**
-         * Only profiles of this availability.
-         */
-        availability?: string | null;
-        /**
          * Only profiles in this country, ISO 3166-1 alpha-2.
          */
         country?: string | null;
+        /**
+         * Only profiles that worked in this industry.
+         */
+        industry?: string | null;
         /**
          * Only profiles open to this kind of engagement.
          */
