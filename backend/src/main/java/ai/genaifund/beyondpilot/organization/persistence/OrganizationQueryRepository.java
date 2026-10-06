@@ -48,6 +48,26 @@ public class OrganizationQueryRepository {
 				""").param("pattern", containing(text)).param("limit", limit).query(OrganizationQueryRepository::match).list();
 	}
 
+	/**
+	 * The approved organizations with the enterprise role, the ones that can have use cases, by name; at most
+	 * {@code limit}.
+	 * @param text only those whose name contains it, ignoring case; every one when null
+	 */
+	public List<Name> approvedEnterprises(@Nullable String text, int limit) {
+		return jdbc.sql("""
+				select id, slug, name, country from organization
+				where status = 'approved' and 'enterprise' = any(roles)
+				  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\')
+				order by lower(name), id
+				limit :limit
+				""")
+			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
+			.param("limit", limit)
+			.query((row, index) -> new Name(row.getObject("id", UUID.class), row.getString("slug"),
+					row.getString("name"), row.getString("country")))
+			.list();
+	}
+
 	public List<Name> names(Collection<UUID> ids) {
 		if (ids.isEmpty()) {
 			return List.of();

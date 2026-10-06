@@ -10,21 +10,24 @@ import { siteRoutes } from "@/lib/site";
 import { NoticeCard } from "./notice-card";
 import { websiteHost } from "./organization-format";
 
-type OrganizationTab = "profile" | "members" | "solutions";
+type OrganizationTab = "profile" | "members" | "solutions" | "useCases";
 
 type OrganizationFrameProps = {
   /** The caller's membership; the frame is drawn only for a person who belongs to an organization. */
   mine: MyOrganization & { organization: Organization };
   current: OrganizationTab;
-  /** How many members the organization has, and how many solutions when it is a provider. */
-  counts: { members: number; solutions: number | null };
+  /**
+   * How many members the organization has, how many solutions when it is a provider and how many
+   * use cases when it is an approved enterprise.
+   */
+  counts: { members: number; solutions: number | null; useCases: number | null };
   children: React.ReactNode;
 };
 
 /**
  * What every page of My organization shares: the organization's name and what it is, where its
  * review stands, and the tabs. The tabs follow the organization's role: only a provider has
- * solutions.
+ * solutions, only an approved enterprise has use cases.
  */
 function OrganizationFrame({ mine, current, counts, children }: OrganizationFrameProps) {
   const t = useTranslations("Organization");
@@ -50,6 +53,16 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
             href: siteRoutes.workspaceSolutions,
             label: t("tabs.solutions"),
             count: counts.solutions,
+          },
+        ]),
+    ...(counts.useCases === null
+      ? []
+      : [
+          {
+            key: "useCases" as const,
+            href: siteRoutes.workspaceUseCases,
+            label: t("tabs.useCases"),
+            count: counts.useCases,
           },
         ]),
   ];

@@ -8,7 +8,7 @@ import { OrganizationFrame } from "./organization-frame";
 
 type OrganizationProfilePageProps = {
   mine: MyOrganization & { organization: Organization };
-  counts: { members: number; solutions: number | null };
+  counts: { members: number; solutions: number | null; useCases: number | null };
 };
 
 /**

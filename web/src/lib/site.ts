@@ -19,9 +19,12 @@ export const siteRoutes = {
   adminOrganizations: "/admin/organizations",
   adminSolutions: "/admin/solutions",
   adminTalent: "/admin/talent",
+  adminUseCases: "/admin/use-cases",
+  adminUseCasesNew: "/admin/use-cases/new",
   workspaceOrganization: "/workspace/organization",
   workspaceMembers: "/workspace/organization/members",
   workspaceSolutions: "/workspace/organization/solutions",
+  workspaceUseCases: "/workspace/organization/use-cases",
 } as const;
 
 /** The host the public site is served from, as an operator sees a program's address written out. */

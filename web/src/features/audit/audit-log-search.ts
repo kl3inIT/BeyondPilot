@@ -24,6 +24,11 @@ export const auditActions = [
   "solution.reject",
   "solution.deployment_approve",
   "solution.deployment_reject",
+  "use_case.create",
+  "use_case.submit",
+  "use_case.draft",
+  "use_case.approve",
+  "use_case.send_back",
   "talent.approve",
   "talent.reject",
 ] as const;

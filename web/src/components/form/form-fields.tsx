@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import type { ComponentProps, ReactNode } from "react";
 
 import { Button } from "@/components/actions/button";
@@ -65,10 +65,20 @@ function TextField({ label, optional, description, ...input }: TextFieldProps) {
 }
 
 type TextareaFieldProps = Labelled &
-  Omit<ComponentProps<"textarea">, "id" | "name" | "value" | "onChange" | "onBlur">;
+  Omit<ComponentProps<"textarea">, "id" | "name" | "value" | "onChange" | "onBlur"> & {
+    /** Shows how much of `maxLength` is used, at the end of the line that holds the hint. */
+    showCount?: boolean;
+  };
 
-function TextareaField({ label, optional, description, ...textarea }: TextareaFieldProps) {
+function TextareaField({
+  label,
+  optional,
+  description,
+  showCount,
+  ...textarea
+}: TextareaFieldProps) {
   const { field, invalid, errors } = useFieldValidity<string>();
+  const format = useFormatter();
   return (
     <Field data-invalid={invalid || undefined}>
       <FieldLabelText label={label} optional={optional} htmlFor={field.name} />
@@ -81,7 +91,16 @@ function TextareaField({ label, optional, description, ...textarea }: TextareaFi
         onBlur={field.handleBlur}
         onChange={(event) => field.handleChange(event.target.value)}
       />
-      {description && <FieldDescription>{description}</FieldDescription>}
+      {(description || showCount) && (
+        <div className="flex items-start justify-between gap-3">
+          {description ? <FieldDescription>{description}</FieldDescription> : <span />}
+          {showCount && textarea.maxLength !== undefined && (
+            <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+              {format.number(field.state.value.length)} / {format.number(textarea.maxLength)}
+            </span>
+          )}
+        </div>
+      )}
       {invalid && <FieldError errors={errors} />}
     </Field>
   );

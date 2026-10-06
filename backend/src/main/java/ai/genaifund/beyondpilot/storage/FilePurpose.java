@@ -15,7 +15,14 @@ public enum FilePurpose {
 	PROGRAM_IMAGE("program_image", true, true, Set.of("image/png", "image/jpeg", "image/webp")),
 
 	/** A deck or a proposal attached to an application. */
-	APPLICATION_FILE("application_file", false, false, Set.of("application/pdf"));
+	APPLICATION_FILE("application_file", false, false, Set.of("application/pdf")),
+
+	/** A document or an image that explains a use case: samples of the data, a process, a form. */
+	USE_CASE_ATTACHMENT("use_case_attachment", false, false,
+			Set.of("application/pdf", "image/png", "image/jpeg",
+					"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+					"application/vnd.openxmlformats-officedocument.presentationml.presentation"));
 
 	private final String value;
 	private final boolean publicRead;

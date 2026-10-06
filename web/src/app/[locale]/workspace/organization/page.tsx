@@ -7,6 +7,7 @@ import { OrganizationEntryFrame } from "@/features/organization/organization-ent
 import { OrganizationProfilePage } from "@/features/organization/organization-profile-page";
 import { readMembers, readMyOrganization } from "@/features/organization/organization-queries";
 import { readMySolutions } from "@/features/solution/solution-queries";
+import { readUseCaseCount } from "@/features/usecase/my-use-case-queries";
 import { requireAccount } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
 
@@ -37,13 +38,15 @@ export default async function MyOrganizationRoute({
     );
   }
 
-  const [members, solutions] = await Promise.all([
+  const [members, solutions, useCases] = await Promise.all([
     readMembers(),
     organization.roles.includes("provider") ? readMySolutions() : null,
+    readUseCaseCount({ ...mine, organization }),
   ]);
   const counts = {
     members: members?.members.length ?? 0,
     solutions: solutions?.items.length ?? null,
+    useCases,
   };
 
   return (

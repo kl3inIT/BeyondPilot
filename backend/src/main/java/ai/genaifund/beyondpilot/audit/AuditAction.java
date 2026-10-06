@@ -60,6 +60,20 @@ public enum AuditAction {
 	/** {@code reason} is the code of the reason given. */
 	SOLUTION_DEPLOYMENT_REJECT("solution.deployment_reject", "reason"),
 
+	/**
+	 * An operator created a use case for an organization. {@code organization} is that organization's identifier,
+	 * {@code status} is {@code draft} or {@code published}.
+	 */
+	USE_CASE_CREATE("use_case.create", "organization", "status"),
+
+	USE_CASE_SUBMIT("use_case.submit", "organization"),
+
+	USE_CASE_DRAFT("use_case.draft", "organization", "from"),
+
+	USE_CASE_APPROVE("use_case.approve", "organization"),
+
+	USE_CASE_SEND_BACK("use_case.send_back", "organization"),
+
 	TALENT_APPROVE("talent.approve"),
 
 	/** {@code reason} is the code of the reason given. */

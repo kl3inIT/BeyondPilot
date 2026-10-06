@@ -30,6 +30,8 @@ type OrganizationSolutionsPageProps = {
   solutions: MySolutions;
   /** How many members the organization has, for the tab beside this one. */
   members: number;
+  /** How many use cases it has, when it is an approved enterprise. */
+  useCases: number | null;
 };
 
 /** The states a solution is counted under, in the order the summary says them. */
@@ -47,7 +49,12 @@ function stateOf(solution: SolutionSummary): (typeof states)[number] {
  * My organization › Solutions: what the organization offers, each with where its review stands.
  * Owners of an approved provider add and change them; members read.
  */
-function OrganizationSolutionsPage({ mine, solutions, members }: OrganizationSolutionsPageProps) {
+function OrganizationSolutionsPage({
+  mine,
+  solutions,
+  members,
+  useCases,
+}: OrganizationSolutionsPageProps) {
   const t = useTranslations("Solution.mine");
   const status = useVocabulary("reviewStatus");
   const format = useFormatter();
@@ -121,7 +128,7 @@ function OrganizationSolutionsPage({ mine, solutions, members }: OrganizationSol
     <OrganizationFrame
       mine={mine}
       current="solutions"
-      counts={{ members, solutions: solutions.items.length }}
+      counts={{ members, solutions: solutions.items.length, useCases }}
     >
       <OrganizationSection
         id="solutions-list"
