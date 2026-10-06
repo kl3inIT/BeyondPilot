@@ -120,11 +120,11 @@ function LiveCampaign() {
   return (
     <article className="flex flex-col gap-1 rounded-3xl border bg-card p-2 text-card-foreground shadow-raised md:gap-2 md:p-3 xl:flex-row xl:gap-8">
       <div className="flex h-55 shrink-0 flex-col justify-between gap-4 rounded-xl bg-primary bg-linear-150 from-foreground/60 via-transparent via-60% to-transparent p-5 md:p-7 xl:h-auto xl:w-120 dark:from-transparent">
-        {/* The two logos, in white on the cover; the words are what a screen reader hears. */}
-        <p className="flex items-center gap-2.5" aria-label={c("partners")}>
+        {/* The two logos, in white on the cover; their names are what a screen reader hears. */}
+        <p className="flex items-center gap-2.5">
           <Image
             src="/brand/genaifund-logo-white.png"
-            alt=""
+            alt="GenAI Fund"
             width={1200}
             height={254}
             className="h-5 w-auto"
@@ -134,7 +134,7 @@ function LiveCampaign() {
           </span>
           <Image
             src="/programs/tasco/tasco-white.png"
-            alt=""
+            alt="Tasco"
             width={1238}
             height={178}
             className="h-3.5 w-auto"
