@@ -1,7 +1,7 @@
 import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
 
 /** The kinds a search returns, each with a tab of its own. */
-export const searchKinds = ["program", "solution", "talent"] as const;
+export const searchKinds = ["program", "solution", "talent", "use_case"] as const;
 
 export type SearchKind = (typeof searchKinds)[number];
 

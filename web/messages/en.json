@@ -4189,14 +4189,16 @@
     "kindResults": {
       "program": "{count, plural, one {# program} other {# programs}} for <query>“{q}”</query>",
       "solution": "{count, plural, one {# AI solution} other {# AI solutions}} for <query>“{q}”</query>",
-      "talent": "{count, plural, one {# person} other {# people}} for <query>“{q}”</query>"
+      "talent": "{count, plural, one {# person} other {# people}} for <query>“{q}”</query>",
+      "use_case": "{count, plural, one {# use case} other {# use cases}} for <query>“{q}”</query>"
     },
     "kinds": {
       "label": "Kinds of result",
       "all": "All",
       "program": "Programs",
       "solution": "AI solutions",
-      "talent": "AI talent"
+      "talent": "AI talent",
+      "use_case": "Use cases"
     },
     "seeAll": "See all {count}",
     "count": "{count, plural, one {# result} other {# results}}",
@@ -4204,7 +4206,8 @@
     "directory": {
       "program": "Browse the programs by type and phase",
       "solution": "Narrow by industry, capability and stage in the AI solutions directory",
-      "talent": "Narrow by role, industry and country in the AI talent directory"
+      "talent": "Narrow by role, industry and country in the AI talent directory",
+      "use_case": "Narrow by industry in the use cases"
     },
     "by": "By {name}",
     "customerCases": "{count, plural, =0 {No customer case yet} one {# customer case} other {# customer cases}}",

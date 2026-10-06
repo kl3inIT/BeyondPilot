@@ -4189,14 +4189,16 @@
     "kindResults": {
       "program": "{count} chương trình cho <query>“{q}”</query>",
       "solution": "{count} giải pháp AI cho <query>“{q}”</query>",
-      "talent": "{count} người cho <query>“{q}”</query>"
+      "talent": "{count} người cho <query>“{q}”</query>",
+      "use_case": "{count} use case cho <query>“{q}”</query>"
     },
     "kinds": {
       "label": "Loại kết quả",
       "all": "Tất cả",
       "program": "Chương trình",
       "solution": "Giải pháp AI",
-      "talent": "Nhân lực AI"
+      "talent": "Nhân lực AI",
+      "use_case": "Use case"
     },
     "seeAll": "Xem cả {count}",
     "count": "{count} kết quả",
@@ -4204,7 +4206,8 @@
     "directory": {
       "program": "Xem các chương trình theo loại và giai đoạn",
       "solution": "Lọc theo ngành, năng lực và mức phát triển trong danh mục giải pháp AI",
-      "talent": "Lọc theo vai trò, ngành và quốc gia trong danh mục nhân lực AI"
+      "talent": "Lọc theo vai trò, ngành và quốc gia trong danh mục nhân lực AI",
+      "use_case": "Lọc theo ngành trong danh sách use case"
     },
     "by": "Của {name}",
     "customerCases": "{count, plural, =0 {Chưa có khách hàng triển khai} other {# khách hàng triển khai}}",

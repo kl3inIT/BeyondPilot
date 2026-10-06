@@ -23,6 +23,10 @@ const item = (fields) => ({
   city: null,
   worksAt: null,
   photoFileId: null,
+  closesAt: null,
+  budgetMin: null,
+  budgetMax: null,
+  budgetToBeDetermined: null,
   ...fields,
 });
 
@@ -111,10 +115,25 @@ const results = {
       country: "VN",
     }),
   ],
+  use_case: [
+    item({
+      kind: "use_case",
+      slug: "6c1f8f2e-0b1a-4c56-9a3e-0d5b2f4e7a10",
+      title: "AI claims triage for motor insurance",
+      subtitle: null,
+      summary: "A first assessment of every claim within an hour.",
+      snippet: `A first assessment of every claim within an hour, by ${mark("AI")}.`,
+      industries: ["insurance"],
+      closesAt: "2026-11-30T16:59:00Z",
+      budgetMin: 10000,
+      budgetMax: 50000,
+      budgetToBeDetermined: false,
+    }),
+  ],
 };
 
 /** The order of the kinds in the All tab: the kind of the best result first. */
-const kindOrder = ["solution", "program", "talent"];
+const kindOrder = ["solution", "program", "talent", "use_case"];
 
 export function answerSearch(url) {
   if (url.pathname !== "/api/search") {
@@ -124,20 +143,20 @@ export function answerSearch(url) {
   if (!q) {
     return [400, { code: "REQUEST_INVALID" }];
   }
-  const found = q.toLowerCase() === "ai" ? results : { solution: [], program: [], talent: [] };
+  const found =
+    q.toLowerCase() === "ai" ? results : { solution: [], program: [], talent: [], use_case: [] };
   const counts = {
-    all: found.solution.length + found.program.length + found.talent.length,
+    all: found.solution.length + found.program.length + found.talent.length + found.use_case.length,
     program: found.program.length,
     solution: found.solution.length,
     talent: found.talent.length,
+    useCase: found.use_case.length,
   };
   const kind = url.searchParams.get("kind");
   if (kind) {
+    const total = kind === "use_case" ? counts.useCase : counts[kind];
     const page = Number(url.searchParams.get("page") ?? "1");
-    return [
-      200,
-      { counts, items: page === 1 ? found[kind] : [], page, pageSize: 12, total: counts[kind] },
-    ];
+    return [200, { counts, items: page === 1 ? found[kind] : [], page, pageSize: 12, total }];
   }
   return [
     200,

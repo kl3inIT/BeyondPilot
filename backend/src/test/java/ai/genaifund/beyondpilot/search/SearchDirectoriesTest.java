@@ -135,6 +135,66 @@ class SearchDirectoriesTest {
 		assertThat(listed(profile)).isNull();
 	}
 
+	@Test
+	void aPublishedUseCaseIsFoundUntilItIsSentBackAndNeverByTheNameOfAnOrganizationThatHidesIt() {
+		String owner = TestSignIn.session(client, mail, "bank-" + word + "@directories.test");
+		UUID organization = organization(owner, "Bank " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		String created = body(client.post()
+			.uri("/api/usecase/admin/use-cases")
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(useCase("Claims triage " + word, organization))
+			.exchange()
+			.expectStatus()
+			.is2xxSuccessful());
+		String id = JsonPath.read(created, "$.id");
+
+		await().atMost(WAIT).until(() -> total("claims triage " + word) == 1);
+		String body = search("claims%20triage%20" + word);
+		assertThat(JsonPath.<String>read(body, "$.items[0].kind")).isEqualTo("use_case");
+		assertThat(JsonPath.<String>read(body, "$.items[0].slug")).isEqualTo(id);
+		assertThat(JsonPath.<Object>read(body, "$.items[0].subtitle")).isNull();
+		assertThat(JsonPath.<Integer>read(body, "$.counts.useCase")).isEqualTo(1);
+		// Search reads only what the index holds: the goal the public list shows, never the problem statement members
+		// read, and no name of an organization that stays anonymous.
+		assertThat(total("first assessment " + word)).isEqualTo(1);
+		String indexed = jdbc.sql("select concat_ws(' ', title, subtitle, summary, keywords, card) from search_document"
+				+ " where item_id = cast(? as uuid)").param(id).query(String.class).single();
+		assertThat(indexed).contains("first assessment").doesNotContain("wait days").doesNotContain("Bank");
+
+		post(operator, "/api/usecase/admin/use-cases/" + id + "/send-back", Map.of("reason", "Say what the data is."));
+		await().atMost(WAIT).until(() -> total("claims triage " + word) == 0);
+	}
+
+	private static Map<String, Object> useCase(String title, UUID organization) {
+		Map<String, Object> request = new HashMap<>();
+		request.put("organizationId", organization);
+		request.put("title", title);
+		request.put("problemStatement", "Claims wait days for a first look.");
+		request.put("industry", "insurance");
+		request.put("technologies", List.of("generative_ai"));
+		request.put("expectedOutcomes", "A first assessment within an hour.");
+		request.put("currentProcess", "Adjusters read every file.");
+		request.put("currentSolutions", null);
+		request.put("targetUsers", "Claims adjusters");
+		request.put("requirements", List.of(Map.of("statement", "Reads Vietnamese forms", "necessity", "required")));
+		request.put("dataReadiness", "Five years of claim files.");
+		request.put("integrationRequirements", "Our claims system's API.");
+		request.put("attachmentFileIds", List.of());
+		request.put("budgetMin", 10000);
+		request.put("budgetMax", 50000);
+		request.put("budgetToBeDetermined", false);
+		request.put("budgetMembersOnly", false);
+		request.put("timelineMinWeeks", 4);
+		request.put("timelineMaxWeeks", 12);
+		request.put("closesAt", java.time.Instant.now().plus(Duration.ofDays(30)).toString());
+		request.put("hideOrganizationName", true);
+		request.put("publishNow", true);
+		return request;
+	}
+
 	/** Whether the item's row is listed, or null when the index has no row for it. */
 	private @Nullable Boolean listed(UUID itemId) {
 		return jdbc.sql("select listed from search_document where item_id = ?")
