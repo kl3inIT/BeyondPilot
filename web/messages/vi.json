@@ -1451,16 +1451,13 @@
       },
       "providers": {
         "ses": {
-          "name": "Amazon SES",
-          "description": "Qua tài khoản AWS của bạn."
+          "name": "Amazon SES"
         },
         "resend": {
-          "name": "Resend",
-          "description": "Bằng API key của resend.com."
+          "name": "Resend"
         },
         "smtp": {
-          "name": "SMTP",
-          "description": "Bất kỳ máy chủ mail nào nhận SMTP."
+          "name": "SMTP"
         }
       },
       "preview": {

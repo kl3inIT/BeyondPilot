@@ -2,6 +2,7 @@
 
 import { autocompletion, type CompletionContext } from "@codemirror/autocomplete";
 import { markdown } from "@codemirror/lang-markdown";
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { lintGutter, setDiagnostics, type Diagnostic } from "@codemirror/lint";
 import { EditorState, type Extension } from "@codemirror/state";
 import {
@@ -12,6 +13,7 @@ import {
   type DecorationSet,
   type ViewUpdate,
 } from "@codemirror/view";
+import { tags as markup } from "@lezer/highlight";
 import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { useEffect, useImperativeHandle, useMemo, useRef } from "react";
 
@@ -50,6 +52,18 @@ const tagHighlighter = ViewPlugin.fromClass(
   },
   { decorations: (plugin) => plugin.decorations },
 );
+
+/** Markdown as it will read: headings and bold heavier, links in the accent, the marks quieter. */
+const markdownStyle = HighlightStyle.define([
+  { tag: markup.heading, fontWeight: "600" },
+  { tag: markup.strong, fontWeight: "600" },
+  { tag: markup.emphasis, fontStyle: "italic" },
+  { tag: [markup.link, markup.url], color: "var(--primary)" },
+  {
+    tag: [markup.processingInstruction, markup.contentSeparator, markup.quote],
+    color: "var(--muted-foreground)",
+  },
+]);
 
 /** The editor in the app's colours and type, read from its CSS variables so dark mode follows. */
 const appearance = EditorView.theme({
@@ -218,7 +232,7 @@ function TemplateCodeEditor({
       ...(singleLine
         ? // One line: a pasted or typed line break is refused.
           [EditorState.transactionFilter.of((tr) => (tr.newDoc.lines > 1 ? [] : tr))]
-        : [markdown(), EditorView.lineWrapping, lintGutter()]),
+        : [markdown(), syntaxHighlighting(markdownStyle), EditorView.lineWrapping, lintGutter()]),
     ];
   }, [variables, singleLine, id, labelledBy, describedBy, invalid]);
 
@@ -245,6 +259,7 @@ function TemplateCodeEditor({
         highlightActiveLineGutter: false,
         autocompletion: false,
         searchKeymap: false,
+        syntaxHighlighting: false,
       }}
       data-invalid={invalid || undefined}
       className={cn(

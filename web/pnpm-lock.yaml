@@ -20,6 +20,9 @@ importers:
       '@codemirror/lang-markdown':
         specifier: 6.5.2
         version: 6.5.2
+      '@codemirror/language':
+        specifier: 6.12.4
+        version: 6.12.4
       '@codemirror/lint':
         specifier: 6.9.7
         version: 6.9.7
@@ -29,6 +32,9 @@ importers:
       '@codemirror/view':
         specifier: 6.43.13
         version: 6.43.13
+      '@lezer/highlight':
+        specifier: 1.2.5
+        version: 1.2.5
       '@shadcn/react':
         specifier: ^0.3.1
         version: 0.3.1(@types/react@19.3.0)(react@19.3.0)

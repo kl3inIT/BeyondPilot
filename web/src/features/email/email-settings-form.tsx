@@ -1,7 +1,15 @@
 "use client";
 
 import { revalidateLogic, useStore } from "@tanstack/react-form";
-import { CheckIcon, CopyIcon, KeyRoundIcon, TriangleAlertIcon } from "lucide-react";
+import {
+  CheckIcon,
+  CloudIcon,
+  CopyIcon,
+  KeyRoundIcon,
+  SendIcon,
+  ServerIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -37,6 +45,9 @@ import { testFailures } from "./email-test-failures";
 
 const providers = ["ses", "resend", "smtp"] as const;
 const securities = ["starttls", "tls", "none"] as const;
+
+/** Each provider's icon on its card: plain, beside its name. */
+const providerIcons = { ses: CloudIcon, resend: SendIcon, smtp: ServerIcon } as const;
 
 type Provider = (typeof providers)[number];
 
@@ -358,256 +369,264 @@ function EmailSettingsForm({
         <form.FormError />
       </form.AppForm>
 
-      <Section title={t("sender.title")} what={t("sender.what")}>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <form.AppField name="fromName">
-            {(field) => <field.TextField label={t("sender.fromName")} maxLength={100} />}
-          </form.AppField>
-          <form.AppField name="fromAddress">
+      <div className="flex flex-col gap-8">
+        <Section title={t("sender.title")} what={t("sender.what")}>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <form.AppField name="fromName">
+              {(field) => <field.TextField label={t("sender.fromName")} maxLength={100} />}
+            </form.AppField>
+            <form.AppField name="fromAddress">
+              {(field) => (
+                <field.TextField
+                  label={t("sender.fromAddress")}
+                  type="email"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  maxLength={254}
+                  placeholder="no-reply@beyondpilot.ai"
+                />
+              )}
+            </form.AppField>
+          </div>
+          <form.AppField name="replyTo">
             {(field) => (
               <field.TextField
-                label={t("sender.fromAddress")}
+                label={t("sender.replyTo")}
+                optional
                 type="email"
                 inputMode="email"
                 autoCapitalize="none"
                 spellCheck={false}
                 maxLength={254}
-                placeholder="no-reply@beyondpilot.ai"
+                description={t("sender.replyToHint")}
               />
             )}
           </form.AppField>
-        </div>
-        <form.AppField name="replyTo">
-          {(field) => (
-            <field.TextField
-              label={t("sender.replyTo")}
-              optional
-              type="email"
-              inputMode="email"
-              autoCapitalize="none"
-              spellCheck={false}
-              maxLength={254}
-              description={t("sender.replyToHint")}
-            />
-          )}
-        </form.AppField>
-      </Section>
+        </Section>
 
-      <Section title={t("provider.title")} what={t("provider.what")}>
-        <form.Field name="provider">
-          {(field) => (
-            <RadioGroup
-              aria-label={t("provider.title")}
-              value={field.state.value}
-              onValueChange={(value) => {
-                const next = providers.find((provider) => provider === value);
-                if (next) {
-                  field.handleChange(next);
-                }
-              }}
-              className="sm:grid-cols-3"
-            >
-              {providers.map((provider) => (
-                <FieldLabel key={provider} htmlFor={`provider-${provider}`}>
-                  <Field orientation="horizontal">
-                    <FieldContent>
-                      <FieldTitle>{names(`${provider}.name`)}</FieldTitle>
-                      <FieldDescription>{names(`${provider}.description`)}</FieldDescription>
-                    </FieldContent>
-                    <RadioGroupItem value={provider} id={`provider-${provider}`} />
-                  </Field>
-                </FieldLabel>
-              ))}
-            </RadioGroup>
-          )}
-        </form.Field>
-
-        {values.provider === "ses" && (
-          <>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <form.AppField name="ses.region">
-                {(field) => (
-                  <field.TextField
-                    label={t("ses.region")}
-                    placeholder="ap-southeast-1"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    maxLength={40}
-                  />
-                )}
-              </form.AppField>
-              <form.AppField name="ses.accessKeyId">
-                {(field) => (
-                  <field.TextField
-                    label={t("ses.accessKeyId")}
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    maxLength={128}
-                  />
-                )}
-              </form.AppField>
-            </div>
-            <form.AppField name="ses.secretAccessKey">
-              {(field) => (
-                <field.TextField
-                  label={t("ses.secretAccessKey")}
-                  type="password"
-                  autoComplete="off"
-                  maxLength={500}
-                  placeholder={sesSecretKept(values) ? "••••••••••••" : undefined}
-                  description={secretHint(sesSecretKept(values), t("ses.secretHint"))}
-                />
-              )}
-            </form.AppField>
-          </>
-        )}
-
-        {values.provider === "resend" && (
-          <form.AppField name="resend.apiKey">
+        <Section title={t("provider.title")} what={t("provider.what")}>
+          <form.Field name="provider">
             {(field) => (
-              <field.TextField
-                label={t("resend.apiKey")}
-                type="password"
-                autoComplete="off"
-                maxLength={500}
-                placeholder={current.resend.apiKeySet ? "••••••••••••" : "re_…"}
-                description={secretHint(current.resend.apiKeySet, t("resend.apiKeyHint"))}
-              />
+              <RadioGroup
+                aria-label={t("provider.title")}
+                value={field.state.value}
+                onValueChange={(value) => {
+                  const next = providers.find((provider) => provider === value);
+                  if (next) {
+                    field.handleChange(next);
+                  }
+                }}
+                className="sm:grid-cols-3"
+              >
+                {providers.map((provider) => {
+                  const Icon = providerIcons[provider];
+                  return (
+                    <FieldLabel key={provider} htmlFor={`provider-${provider}`}>
+                      <Field orientation="horizontal">
+                        <Icon
+                          aria-hidden="true"
+                          className="size-4 shrink-0 text-muted-foreground"
+                        />
+                        <FieldContent>
+                          <FieldTitle>{names(`${provider}.name`)}</FieldTitle>
+                        </FieldContent>
+                        <RadioGroupItem value={provider} id={`provider-${provider}`} />
+                      </Field>
+                    </FieldLabel>
+                  );
+                })}
+              </RadioGroup>
             )}
-          </form.AppField>
-        )}
+          </form.Field>
 
-        {values.provider === "smtp" && (
-          <>
-            <div className="grid gap-5 sm:grid-cols-3">
-              <div className="sm:col-span-2">
-                <form.AppField name="smtp.host">
+          {values.provider === "ses" && (
+            <>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <form.AppField name="ses.region">
                   {(field) => (
                     <field.TextField
-                      label={t("smtp.host")}
-                      placeholder="smtp.example.com"
+                      label={t("ses.region")}
+                      placeholder="ap-southeast-1"
                       autoCapitalize="none"
                       spellCheck={false}
-                      maxLength={255}
+                      maxLength={40}
+                    />
+                  )}
+                </form.AppField>
+                <form.AppField name="ses.accessKeyId">
+                  {(field) => (
+                    <field.TextField
+                      label={t("ses.accessKeyId")}
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      maxLength={128}
                     />
                   )}
                 </form.AppField>
               </div>
-              <form.AppField name="smtp.port">
-                {(field) => (
-                  <field.TextField label={t("smtp.port")} inputMode="numeric" maxLength={5} />
-                )}
-              </form.AppField>
-            </div>
-            <form.AppField name="smtp.security">
-              {(field) => (
-                <field.SelectField
-                  label={t("smtp.security")}
-                  options={securities.map((value) => ({
-                    value,
-                    label: t(`smtp.securities.${value}`),
-                  }))}
-                />
-              )}
-            </form.AppField>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <form.AppField name="smtp.username">
+              <form.AppField name="ses.secretAccessKey">
                 {(field) => (
                   <field.TextField
-                    label={t("smtp.username")}
-                    optional
-                    autoCapitalize="none"
-                    spellCheck={false}
+                    label={t("ses.secretAccessKey")}
+                    type="password"
                     autoComplete="off"
-                    maxLength={255}
+                    maxLength={500}
+                    placeholder={sesSecretKept(values) ? "••••••••••••" : undefined}
+                    description={secretHint(sesSecretKept(values), t("ses.secretHint"))}
                   />
                 )}
               </form.AppField>
-              <form.AppField name="smtp.password">
+            </>
+          )}
+
+          {values.provider === "resend" && (
+            <form.AppField name="resend.apiKey">
+              {(field) => (
+                <field.TextField
+                  label={t("resend.apiKey")}
+                  type="password"
+                  autoComplete="off"
+                  maxLength={500}
+                  placeholder={current.resend.apiKeySet ? "••••••••••••" : "re_…"}
+                  description={secretHint(current.resend.apiKeySet, t("resend.apiKeyHint"))}
+                />
+              )}
+            </form.AppField>
+          )}
+
+          {values.provider === "smtp" && (
+            <>
+              <div className="grid gap-5 sm:grid-cols-3">
+                <div className="sm:col-span-2">
+                  <form.AppField name="smtp.host">
+                    {(field) => (
+                      <field.TextField
+                        label={t("smtp.host")}
+                        placeholder="smtp.example.com"
+                        autoCapitalize="none"
+                        spellCheck={false}
+                        maxLength={255}
+                      />
+                    )}
+                  </form.AppField>
+                </div>
+                <form.AppField name="smtp.port">
+                  {(field) => (
+                    <field.TextField label={t("smtp.port")} inputMode="numeric" maxLength={5} />
+                  )}
+                </form.AppField>
+              </div>
+              <form.AppField name="smtp.security">
+                {(field) => (
+                  <field.SelectField
+                    label={t("smtp.security")}
+                    options={securities.map((value) => ({
+                      value,
+                      label: t(`smtp.securities.${value}`),
+                    }))}
+                  />
+                )}
+              </form.AppField>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <form.AppField name="smtp.username">
+                  {(field) => (
+                    <field.TextField
+                      label={t("smtp.username")}
+                      optional
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      autoComplete="off"
+                      maxLength={255}
+                    />
+                  )}
+                </form.AppField>
+                <form.AppField name="smtp.password">
+                  {(field) => (
+                    <field.TextField
+                      label={t("smtp.password")}
+                      optional
+                      type="password"
+                      autoComplete="off"
+                      maxLength={500}
+                      placeholder={smtpPasswordKept(values) ? "••••••••••••" : undefined}
+                      description={secretHint(smtpPasswordKept(values), t("smtp.passwordHint"))}
+                    />
+                  )}
+                </form.AppField>
+              </div>
+            </>
+          )}
+        </Section>
+
+        <Section title={t("reports.title")} what={t("reports.what")}>
+          {values.provider === "smtp" && (
+            <p className="text-sm text-muted-foreground">{t("reports.smtp")}</p>
+          )}
+          {values.provider === "resend" && (
+            <>
+              <CopyField
+                id="resend-events-url"
+                label={t("reports.endpoint")}
+                value={current.resend.eventsUrl}
+                description={t("reports.resendEndpointHint")}
+              />
+              <form.AppField name="resend.webhookSecret">
                 {(field) => (
                   <field.TextField
-                    label={t("smtp.password")}
+                    label={t("reports.resendSecret")}
                     optional
                     type="password"
                     autoComplete="off"
                     maxLength={500}
-                    placeholder={smtpPasswordKept(values) ? "••••••••••••" : undefined}
-                    description={secretHint(smtpPasswordKept(values), t("smtp.passwordHint"))}
+                    placeholder={current.resend.webhookSecretSet ? "••••••••••••" : "whsec_…"}
+                    description={secretHint(
+                      current.resend.webhookSecretSet,
+                      t("reports.resendSecretHint"),
+                    )}
                   />
                 )}
               </form.AppField>
-            </div>
-          </>
-        )}
-      </Section>
-
-      <Section title={t("reports.title")} what={t("reports.what")}>
-        {values.provider === "smtp" && (
-          <p className="text-sm text-muted-foreground">{t("reports.smtp")}</p>
-        )}
-        {values.provider === "resend" && (
-          <>
-            <CopyField
-              id="resend-events-url"
-              label={t("reports.endpoint")}
-              value={current.resend.eventsUrl}
-              description={t("reports.resendEndpointHint")}
-            />
-            <form.AppField name="resend.webhookSecret">
-              {(field) => (
-                <field.TextField
-                  label={t("reports.resendSecret")}
-                  optional
-                  type="password"
-                  autoComplete="off"
-                  maxLength={500}
-                  placeholder={current.resend.webhookSecretSet ? "••••••••••••" : "whsec_…"}
-                  description={secretHint(
-                    current.resend.webhookSecretSet,
-                    t("reports.resendSecretHint"),
-                  )}
-                />
-              )}
-            </form.AppField>
-          </>
-        )}
-        {values.provider === "ses" && (
-          <>
-            <form.AppField name="ses.configurationSet">
-              {(field) => (
-                <field.TextField
-                  label={t("reports.configurationSet")}
-                  optional
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  maxLength={64}
-                  description={t("reports.configurationSetHint")}
-                />
-              )}
-            </form.AppField>
-            <CopyField
-              id="ses-events-url"
-              label={t("reports.endpoint")}
-              value={current.ses.eventsUrl}
-              description={t("reports.sesEndpointHint")}
-            />
-            <form.AppField name="ses.eventsTopicArn">
-              {(field) => (
-                <field.TextField
-                  label={t("reports.topicArn")}
-                  optional
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  maxLength={300}
-                  className="font-mono"
-                  placeholder="arn:aws:sns:ap-southeast-1:123456789012:beyondpilot-email"
-                  description={t("reports.topicArnHint")}
-                />
-              )}
-            </form.AppField>
-          </>
-        )}
-      </Section>
+            </>
+          )}
+          {values.provider === "ses" && (
+            <>
+              <form.AppField name="ses.configurationSet">
+                {(field) => (
+                  <field.TextField
+                    label={t("reports.configurationSet")}
+                    optional
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    maxLength={64}
+                    description={t("reports.configurationSetHint")}
+                  />
+                )}
+              </form.AppField>
+              <CopyField
+                id="ses-events-url"
+                label={t("reports.endpoint")}
+                value={current.ses.eventsUrl}
+                description={t("reports.sesEndpointHint")}
+              />
+              <form.AppField name="ses.eventsTopicArn">
+                {(field) => (
+                  <field.TextField
+                    label={t("reports.topicArn")}
+                    optional
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    maxLength={300}
+                    className="font-mono"
+                    placeholder="arn:aws:sns:ap-southeast-1:123456789012:beyondpilot-email"
+                    description={t("reports.topicArnHint")}
+                  />
+                )}
+              </form.AppField>
+            </>
+          )}
+        </Section>
+      </div>
 
       <div className="-mx-4 flex flex-col gap-3 border-t bg-background/95 px-4 py-3 backdrop-blur md:sticky md:bottom-0 md:-mx-6 md:flex-row md:items-center md:px-6 lg:-mx-8 lg:px-8">
         <p className="flex-1 text-xs text-muted-foreground">

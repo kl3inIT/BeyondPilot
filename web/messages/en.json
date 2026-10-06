@@ -1451,16 +1451,13 @@
       },
       "providers": {
         "ses": {
-          "name": "Amazon SES",
-          "description": "Through your AWS account."
+          "name": "Amazon SES"
         },
         "resend": {
-          "name": "Resend",
-          "description": "With an API key from resend.com."
+          "name": "Resend"
         },
         "smtp": {
-          "name": "SMTP",
-          "description": "Any mail server that takes SMTP."
+          "name": "SMTP"
         }
       },
       "preview": {
