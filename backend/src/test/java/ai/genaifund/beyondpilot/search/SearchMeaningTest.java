@@ -109,7 +109,8 @@ class SearchMeaningTest {
 		save("Hotline Assist", "Answers inbound customer calls.");
 		embeddings.embedPending();
 
-		assertThat(titles("refused customer calls")).containsExactly("Hotline Assist");
+		// The words still find it.
+		assertThat(titles("customer calls !!")).containsExactly("Hotline Assist");
 		// The refused query paused nothing: the next one is still searched by meaning.
 		assertThat(titles("chăm sóc khách hàng")).containsExactly("Hotline Assist");
 	}
@@ -146,7 +147,7 @@ class SearchMeaningTest {
 				throw new IllegalStateException("The provider is down");
 			}
 			List<String> texts = request.getInstructions();
-			if (texts.stream().anyMatch(text -> text.startsWith("refused"))) {
+			if (texts.stream().anyMatch(text -> text.contains("!!"))) {
 				throw BadRequestException.builder().headers(Headers.builder().build()).build();
 			}
 			return new EmbeddingResponse(
