@@ -209,6 +209,36 @@ class SolutionTest {
 	}
 
 	@Test
+	void theOperatorsListFindsASolutionByItsOrganizationNarrowsByIndustryAndNamesWhoSentIt() {
+		String founder = provider("founder@harbour.test", "Harbour Analytics");
+		long waiting = JsonPath
+			.<Number>read(body(get(operator, ADMIN).expectStatus().isOk()), "$.awaitingReview")
+			.longValue();
+		Map<String, Object> forLogistics = described("Quay Desk", 0);
+		forLogistics.put("industries", List.of("logistics"));
+		UUID id = submitted(founder, "Quay Desk", forLogistics);
+
+		// The name of the solution does not hold the text; the name of its organization does.
+		String byOrganization = body(get(operator, ADMIN + "?q=HARBOUR").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(byOrganization, "$.items[*].name")).containsExactly("Quay Desk");
+		assertThat(JsonPath.<String>read(byOrganization, "$.items[0].organizationName")).isEqualTo("Harbour Analytics");
+		assertThat(JsonPath.<String>read(byOrganization, "$.items[0].submittedBy")).isEqualTo("founder@harbour.test");
+		assertThat(JsonPath.<Number>read(byOrganization, "$.awaitingReview").longValue()).isEqualTo(waiting + 1);
+
+		assertThat(names(operator, ADMIN + "?q=quay&industry=logistics")).containsExactly("Quay Desk");
+		assertThat(names(operator, ADMIN + "?q=quay&industry=insurance")).isEmpty();
+		assertProblem(get(operator, ADMIN + "?industry=astrology"), 400, "REQUEST_INVALID");
+
+		String record = body(get(operator, ADMIN + "/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(record, "$.submittedBy")).isEqualTo("founder@harbour.test");
+		// A decision takes it out of what waits, whatever the list is narrowed to.
+		post(operator, ADMIN + "/" + id + "/approve", null).expectStatus().isNoContent();
+		assertThat(JsonPath
+			.<Number>read(body(get(operator, ADMIN + "?status=rejected").expectStatus().isOk()), "$.awaitingReview")
+			.longValue()).isEqualTo(waiting);
+	}
+
+	@Test
 	void anOperatorTakesAnApprovedSolutionOutOfTheDirectory() {
 		String founder = provider("founder@removed.test", "Removed Co");
 		UUID id = approved(founder, "Removed Desk");
@@ -465,6 +495,10 @@ class SolutionTest {
 
 	private List<String> names(String path) {
 		return JsonPath.read(body(client.get().uri(path).exchange().expectStatus().isOk()), "$.items[*].name");
+	}
+
+	private List<String> names(String session, String path) {
+		return JsonPath.read(body(get(session, path).expectStatus().isOk()), "$.items[*].name");
 	}
 
 	private RestTestClient.ResponseSpec get(String session, String path) {

@@ -2423,7 +2423,8 @@ paths:
     get:
       operationId: listAdminSolutions
       parameters:
-      - description: "Solutions whose name contains this, ignoring case."
+      - description: "Solutions whose name, or whose organization's name, contains\
+          \ this, ignoring case."
         in: query
         name: q
         required: false
@@ -2444,6 +2445,15 @@ paths:
           - approved
           - rejected
           pattern: submitted|approved|rejected
+      - description: Only solutions for this industry.
+        in: query
+        name: industry
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -4334,10 +4344,15 @@ components:
       description: "One page of submitted solutions: those waiting for review first,\
         \ the longest wait on top."
       properties:
+        awaitingReview:
+          type: integer
+          format: int64
+          description: "How many solutions wait for review, whatever narrows this\
+            \ list."
         items:
           type: array
           items:
-            $ref: "#/components/schemas/SolutionSummary"
+            $ref: "#/components/schemas/AdminSolutionSummary"
         page:
           type: integer
           format: int32
@@ -4350,10 +4365,78 @@ components:
           format: int64
           description: "How many solutions match, over all pages."
       required:
+      - awaitingReview
       - items
       - page
       - pageSize
       - total
+    AdminSolutionSummary:
+      type: object
+      description: One solution in the operators' list.
+      properties:
+        deploymentsAwaitingReview:
+          type: integer
+          format: int32
+          description: How many of its customer deployments wait for review.
+        id:
+          type: string
+          format: uuid
+        industries:
+          type: array
+          items:
+            type: string
+        listed:
+          type: boolean
+        maturity:
+          type:
+          - string
+          - "null"
+          enum:
+          - idea
+          - prototype
+          - pilot
+          - production
+          - scaled
+        name:
+          type: string
+        organizationName:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+          enum:
+          - submitted
+          - approved
+          - rejected
+        submittedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        submittedBy:
+          type:
+          - string
+          - "null"
+          description: "Who sent it for review last: their name, or their address\
+            \ until they have one. Null when it was sent before the sender was recorded."
+        summary:
+          type:
+          - string
+          - "null"
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - deploymentsAwaitingReview
+      - id
+      - industries
+      - listed
+      - name
+      - organizationName
+      - slug
+      - status
+      - updatedAt
     AdminTalent:
       type: object
       description: A talent profile as an operator reviews it.
@@ -7222,6 +7305,13 @@ components:
           - string
           - "null"
           format: date-time
+        submittedBy:
+          type:
+          - string
+          - "null"
+          description: "Who sent it for review last: their name, or their address\
+            \ until they have one. Null when it was never sent, or was sent before\
+            \ the sender was recorded."
         summary:
           type:
           - string

@@ -36,6 +36,9 @@ public record SolutionResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIR
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether it has what a submission needs: a summary, a maturity, a focus area and an industry.") boolean complete,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant submittedAt,
+		@Schema(types = { "string", "null" },
+				description = "Who sent it for review last: their name, or their address until they have one. "
+						+ "Null when it was never sent, or was sent before the sender was recorded.") @Nullable String submittedBy,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Sent back with a save, which is refused when the solution changed since.") long version,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt,

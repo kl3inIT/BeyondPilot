@@ -283,7 +283,11 @@ export type AdminProgramSummary = {
  * One page of submitted solutions: those waiting for review first, the longest wait on top.
  */
 export type AdminSolutionList = {
-    items: Array<SolutionSummary>;
+    /**
+     * How many solutions wait for review, whatever narrows this list.
+     */
+    awaitingReview: number;
+    items: Array<AdminSolutionSummary>;
     /**
      * The page returned, counted from 1.
      */
@@ -293,6 +297,31 @@ export type AdminSolutionList = {
      * How many solutions match, over all pages.
      */
     total: number;
+};
+
+/**
+ * One solution in the operators' list.
+ */
+export type AdminSolutionSummary = {
+    /**
+     * How many of its customer deployments wait for review.
+     */
+    deploymentsAwaitingReview: number;
+    id: string;
+    industries: Array<string>;
+    listed: boolean;
+    maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
+    name: string;
+    organizationName: string;
+    slug: string;
+    status: 'submitted' | 'approved' | 'rejected';
+    submittedAt?: string | null;
+    /**
+     * Who sent it for review last: their name, or their address until they have one. Null when it was sent before the sender was recorded.
+     */
+    submittedBy?: string | null;
+    summary?: string | null;
+    updatedAt: string;
 };
 
 /**
@@ -1696,6 +1725,10 @@ export type Solution = {
     slug: string;
     status: 'draft' | 'submitted' | 'approved' | 'rejected';
     submittedAt?: string | null;
+    /**
+     * Who sent it for review last: their name, or their address until they have one. Null when it was never sent, or was sent before the sender was recorded.
+     */
+    submittedBy?: string | null;
     summary?: string | null;
     updatedAt: string;
     valueProposition?: string | null;
@@ -3913,13 +3946,17 @@ export type ListAdminSolutionsData = {
     path?: never;
     query?: {
         /**
-         * Solutions whose name contains this, ignoring case.
+         * Solutions whose name, or whose organization's name, contains this, ignoring case.
          */
         q?: string | null;
         /**
          * Only solutions of this status. Drafts are never listed.
          */
         status?: 'submitted' | 'approved' | 'rejected';
+        /**
+         * Only solutions for this industry.
+         */
+        industry?: string | null;
         /**
          * The page, counted from 1.
          */
