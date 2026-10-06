@@ -44,10 +44,13 @@ export async function readTalent(search: TalentSearch): Promise<PublicTalentList
   return data;
 }
 
-/** One profile of the directory by its address, or `null`. */
+/**
+ * One profile of the directory by its address, or `null`. Read as the person behind this request,
+ * so it says when their message to the profile still waits. Server only.
+ */
 export async function readTalentProfile(slug: string): Promise<PublicTalent | null> {
   try {
-    const { data } = await getTalent({ cache: "no-store", path: { slug } });
+    const { data } = await getTalent({ ...(await sessionRequest()), path: { slug } });
     return data;
   } catch (error) {
     return absent(error);

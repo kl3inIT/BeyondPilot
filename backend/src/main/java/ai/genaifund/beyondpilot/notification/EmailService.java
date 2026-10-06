@@ -5,6 +5,8 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -64,8 +66,8 @@ public class EmailService {
 				+ " on BeyondPilot. Sign in with this email address to accept or decline.";
 		String vietnamese = inviterName + " mời bạn " + (owner ? "làm chủ sở hữu " : "tham gia ") + organizationName
 				+ " trên BeyondPilot. Hãy đăng nhập bằng địa chỉ email này để chấp nhận hoặc từ chối.";
-		send("organization_invitation", recipient, "You are invited to " + organizationName + " on BeyondPilot",
-				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+		sendParagraphs("organization_invitation", recipient,
+				"You are invited to " + organizationName + " on BeyondPilot", english, vietnamese);
 	}
 
 	/**
@@ -79,8 +81,8 @@ public class EmailService {
 		String vietnamese = approved
 				? organizationName + " đã được duyệt trên BeyondPilot. Hãy đăng nhập để quản lý."
 				: organizationName + " chưa được duyệt trên BeyondPilot. Hãy đăng nhập để xem lý do và chỉnh sửa.";
-		send("organization_decision", recipient, organizationName + " on BeyondPilot",
-				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+		sendParagraphs("organization_decision", recipient, organizationName + " on BeyondPilot", english,
+				vietnamese);
 	}
 
 	/** What GenAI Fund decided about a talent profile. */
@@ -123,8 +125,8 @@ public class EmailService {
 					: "Một chủ sở hữu của " + organizationName
 							+ " đã từ chối yêu cầu tham gia của bạn trên BeyondPilot. Hãy đăng nhập để xem bạn có thể làm gì tiếp.";
 		}
-		send("organization_request_decision", recipient, "Your request for " + organizationName + " on BeyondPilot",
-				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+		sendParagraphs("organization_request_decision", recipient,
+				"Your request for " + organizationName + " on BeyondPilot", english, vietnamese);
 	}
 
 	/**
@@ -156,43 +158,35 @@ public class EmailService {
 			case CHANGES_REQUESTED -> "Changes asked for your BeyondPilot talent profile";
 			case REMOVED -> "Your BeyondPilot talent profile was removed";
 		};
-		if (note == null) {
-			send("talent_decision", recipient, subject, english + "\n\n" + vietnamese + "\n",
-					paragraphs(english, vietnamese));
-		}
-		else {
-			send("talent_decision", recipient, subject, english + "\n\n" + vietnamese + "\n\n" + note + "\n",
-					paragraphs(english, vietnamese, note));
-		}
+		sendParagraphs("talent_decision", recipient, subject,
+				Stream.of(english, vietnamese, note).filter(Objects::nonNull).toArray(String[]::new));
 	}
 
 	/**
 	 * Tells a person with a talent profile that someone wrote to them. The sender's address is not in it: the person
 	 * signs in and answers under their talent profile, and only an acceptance shares the two addresses.
-	 * @param senderName who wrote, by the name they gave; null when they gave none, never their address
+	 * @param senderName who wrote, by the name they gave, never their address
 	 * @param senderOrganization the organization the sender belongs to; null when none
 	 * @param topic what the message is about: {@code project}, {@code role} or {@code other}
 	 * @param message what the sender wrote
 	 */
-	public void sendTalentEnquiry(String recipient, @Nullable String senderName, @Nullable String senderOrganization,
+	public void sendTalentEnquiry(String recipient, String senderName, @Nullable String senderOrganization,
 			String topic, String message) {
-		String name = senderName != null ? senderName : "Someone";
-		String nameVi = senderName != null ? senderName : "Một người";
-		String english = (senderOrganization != null ? name + " (" + senderOrganization + ")" : name) + " wrote to you through your BeyondPilot talent profile, " + switch (topic) {
+		String sender = senderOrganization != null ? senderName + " (" + senderOrganization + ")" : senderName;
+		String english = sender + " wrote to you through your BeyondPilot talent profile, " + switch (topic) {
 			case "project" -> "about a project";
 			case "role" -> "about a role";
 			default -> "about something else";
 		} + ". Sign in and open your talent profile > Enquiries to accept or decline. Your address is shared only if"
 				+ " you accept.";
-		String vietnamese = (senderOrganization != null ? nameVi + " (" + senderOrganization + ")" : nameVi)
-				+ " đã viết cho bạn qua hồ sơ nhân lực trên BeyondPilot, " + switch (topic) {
+		String vietnamese = sender + " đã viết cho bạn qua hồ sơ nhân lực trên BeyondPilot, " + switch (topic) {
 			case "project" -> "về một dự án";
 			case "role" -> "về một vị trí công việc";
 			default -> "về một việc khác";
 		} + ". Hãy đăng nhập và mở Hồ sơ nhân lực > Lời nhắn để chấp nhận hoặc từ chối. Địa chỉ email của bạn chỉ"
 				+ " được chia sẻ khi bạn chấp nhận.";
-		send("talent_enquiry", recipient, "A message through your BeyondPilot talent profile",
-				english + "\n\n" + vietnamese + "\n\n" + message + "\n", paragraphs(english, vietnamese, message));
+		sendParagraphs("talent_enquiry", recipient, "A message through your BeyondPilot talent profile", english,
+				vietnamese, message);
 	}
 
 	/**
@@ -201,12 +195,14 @@ public class EmailService {
 	 * @param daysLeft the whole days before the message closes unanswered
 	 */
 	public void sendTalentEnquiryReminder(String recipient, @Nullable String senderName, long daysLeft) {
-		String english = (senderName != null ? "A message from " + senderName : "A message") + " waits for your answer on BeyondPilot. It closes in "
-				+ daysLeft + " days if you do not answer. Sign in and open your talent profile > Enquiries.";
-		String vietnamese = (senderName != null ? "Lời nhắn của " + senderName : "Một lời nhắn") + " đang chờ bạn trả lời trên BeyondPilot. Lời nhắn sẽ tự đóng"
-				+ " sau " + daysLeft + " ngày nếu bạn không trả lời. Hãy đăng nhập và mở Hồ sơ nhân lực > Lời nhắn.";
-		send("talent_enquiry_reminder", recipient, "A message waits for your answer on BeyondPilot",
-				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+		String english = (senderName != null ? "A message from " + senderName : "A message")
+				+ " waits for your answer on BeyondPilot. It closes in " + daysLeft
+				+ " days if you do not answer. Sign in and open your talent profile > Enquiries.";
+		String vietnamese = (senderName != null ? "Lời nhắn của " + senderName : "Một lời nhắn")
+				+ " đang chờ bạn trả lời trên BeyondPilot. Lời nhắn sẽ tự đóng sau " + daysLeft
+				+ " ngày nếu bạn không trả lời. Hãy đăng nhập và mở Hồ sơ nhân lực > Lời nhắn.";
+		sendParagraphs("talent_enquiry_reminder", recipient, "A message waits for your answer on BeyondPilot",
+				english, vietnamese);
 	}
 
 	/**
@@ -217,16 +213,13 @@ public class EmailService {
 	 */
 	public void sendTalentIntroduction(String recipient, String otherName, String otherEmail,
 			@Nullable String otherOrganization) {
-		String who = otherName + " (" + otherEmail + ")"
-				+ (otherOrganization != null ? " at " + otherOrganization : "");
-		String whoVi = otherName + " (" + otherEmail + ")"
-				+ (otherOrganization != null ? " tại " + otherOrganization : "");
+		String who = otherName + " (" + otherEmail + ")";
 		String english = "The message through BeyondPilot was accepted. You can now write to " + who
-				+ " at this address.";
-		String vietnamese = "Lời nhắn qua BeyondPilot đã được chấp nhận. Giờ bạn có thể viết cho " + whoVi
-				+ " qua địa chỉ này.";
-		send("talent_introduction", recipient, "Your BeyondPilot introduction to " + otherName,
-				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+				+ (otherOrganization != null ? " at " + otherOrganization : "") + " at this address.";
+		String vietnamese = "Lời nhắn qua BeyondPilot đã được chấp nhận. Giờ bạn có thể viết cho " + who
+				+ (otherOrganization != null ? " tại " + otherOrganization : "") + " qua địa chỉ này.";
+		sendParagraphs("talent_introduction", recipient, "Your BeyondPilot introduction to " + otherName, english,
+				vietnamese);
 	}
 
 	/**
@@ -239,8 +232,7 @@ public class EmailService {
 				+ " people in the talent directory.";
 		String vietnamese = talentName + " sẽ không tiếp tục lời nhắn của bạn trên BeyondPilot. Bạn có thể tìm người"
 				+ " khác trong danh mục nhân lực.";
-		send("talent_enquiry_declined", recipient, "Your message to " + talentName,
-				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+		sendParagraphs("talent_enquiry_declined", recipient, "Your message to " + talentName, english, vietnamese);
 	}
 
 	/**
@@ -252,8 +244,8 @@ public class EmailService {
 				+ " write again from their profile.";
 		String vietnamese = talentName + " chưa trả lời lời nhắn của bạn trên BeyondPilot đúng hạn nên lời nhắn đã"
 				+ " đóng. Bạn có thể viết lại từ hồ sơ của họ.";
-		send("talent_enquiry_closed", recipient, "Your message to " + talentName + " closed",
-				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+		sendParagraphs("talent_enquiry_closed", recipient, "Your message to " + talentName + " closed", english,
+				vietnamese);
 	}
 
 	/**
@@ -272,8 +264,8 @@ public class EmailService {
 		String vietnamese = (senderName != null ? senderName : "Một người") + " tại " + senderOrganization
 				+ " đã nhờ GenAI Fund giới thiệu tới giải pháp " + solutionName
 				+ " của bạn trên BeyondPilot. Hãy đăng nhập và mở Tổ chức của tôi > Giới thiệu để trả lời.";
-		send("introduction_request", recipient, "A request for an introduction to " + solutionName,
-				english + "\n\n" + vietnamese + "\n\n" + message + "\n", paragraphs(english, vietnamese, message));
+		sendParagraphs("introduction_request", recipient, "A request for an introduction to " + solutionName,
+				english, vietnamese, message);
 	}
 
 	/**
@@ -290,8 +282,7 @@ public class EmailService {
 				+ solutionName + " on BeyondPilot. You can write to each other at these addresses.";
 		String vietnamese = "GenAI Fund giới thiệu bạn với " + who + " tại " + otherOrganization + ", về giải pháp "
 				+ solutionName + " trên BeyondPilot. Hai bên có thể viết cho nhau qua các địa chỉ này.";
-		send("introduction", recipient, "Your introduction about " + solutionName,
-				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+		sendParagraphs("introduction", recipient, "Your introduction about " + solutionName, english, vietnamese);
 	}
 
 	/**
@@ -302,8 +293,8 @@ public class EmailService {
 				+ " further. You can look for another solution on BeyondPilot.";
 		String vietnamese = providerName + " sẽ không tiếp tục yêu cầu giới thiệu của bạn về giải pháp "
 				+ solutionName + ". Bạn có thể tìm giải pháp khác trên BeyondPilot.";
-		send("introduction_declined", recipient, "Your request about " + solutionName,
-				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+		sendParagraphs("introduction_declined", recipient, "Your request about " + solutionName, english,
+				vietnamese);
 	}
 
 	/**
@@ -325,8 +316,8 @@ public class EmailService {
 				: "Đơn đã chỉnh sửa của bạn gửi " + programName + " đã được nộp.")
 				+ (until == null ? "" : " Bạn có thể sửa đơn trên BeyondPilot tới " + until + ".")
 				+ " Hãy đăng nhập và mở Đơn của tôi để xem tình trạng.";
-		send("application_received", recipient, "Application submitted: " + programName,
-				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+		sendParagraphs("application_received", recipient, "Application submitted: " + programName, english,
+				vietnamese);
 	}
 
 	/**
@@ -344,8 +335,8 @@ public class EmailService {
 		String vietnamese = inviterName + " mời bạn chấm các đơn nộp vào " + programName
 				+ " trên BeyondPilot. Hãy đăng nhập bằng địa chỉ email này trước " + until
 				+ " và mở mục Reviews. Điểm và ghi chú của bạn chỉ bạn và GenAI Fund đọc được.";
-		send("reviewer_invitation", recipient, "Judge the applications to " + programName,
-				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+		sendParagraphs("reviewer_invitation", recipient, "Judge the applications to " + programName, english,
+				vietnamese);
 	}
 
 	/**
@@ -353,16 +344,16 @@ public class EmailService {
 	 * message is plain text; its paragraphs are kept.
 	 */
 	public void sendApplicationOutcome(String recipient, String subject, String message) {
-		send("application_outcome", recipient, subject, message.strip() + "\n",
-				paragraphs(message.strip().split("\\R\\s*\\R")));
+		sendParagraphs("application_outcome", recipient, subject, message.strip().split("\\R\\s*\\R"));
 	}
 
-	private static String paragraphs(String... texts) {
+	/** Sends the paragraphs as they are written, one after the other, as plain text and as HTML. */
+	private void sendParagraphs(String kind, String recipient, String subject, String... paragraphs) {
 		StringBuilder html = new StringBuilder();
-		for (String text : texts) {
-			html.append("<p>").append(HtmlUtils.htmlEscape(text)).append("</p>");
+		for (String paragraph : paragraphs) {
+			html.append("<p>").append(HtmlUtils.htmlEscape(paragraph)).append("</p>");
 		}
-		return html.toString();
+		send(kind, recipient, subject, String.join("\n\n", paragraphs) + "\n", html.toString());
 	}
 
 	private void send(String kind, String recipient, String subject, String text, String html) {
