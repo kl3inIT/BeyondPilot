@@ -84,7 +84,8 @@ function CodeCombobox({
       </ComboboxChips>
       <ComboboxContent anchor={anchor}>
         <ComboboxEmpty>{emptyLabel}</ComboboxEmpty>
-        <ComboboxList>
+        {/* The list names itself: a listbox without a name is nothing to a screen reader. */}
+        <ComboboxList aria-label={placeholder}>
           {(option: Option) => (
             <ComboboxItem
               key={option.value}
