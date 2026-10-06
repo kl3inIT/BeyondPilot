@@ -1,5 +1,9 @@
 package ai.genaifund.beyondpilot.program.web;
 
+import ai.genaifund.beyondpilot.program.dto.SaveProgramQuestionsRequest;
+
+import ai.genaifund.beyondpilot.program.dto.ProgramQuestionsResponse;
+
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.Actor;
@@ -94,6 +98,34 @@ class AdminProgramsController {
 	AdminProgramResponse save(@CurrentActor Actor actor, @PathVariable UUID id,
 			@Valid @RequestBody SaveProgramRequest request) {
 		return programs.save(actor, id, request);
+	}
+
+	@GetMapping(path = "/{id}/questions", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getProgramQuestions", summary = "The questions a program asks its applicants",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The questions, and whether they can still change.")
+	@ApiResponse(responseCode = "404", description = "There is no such program.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ProgramQuestionsResponse questions(@CurrentActor Actor actor, @PathVariable UUID id) {
+		return programs.questions(actor, id);
+	}
+
+	@PutMapping(path = "/{id}/questions", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "saveProgramQuestions", summary = "Replace the questions a program asks its applicants",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The questions as saved, with the program's new version.")
+	@ApiResponse(responseCode = "400",
+			description = "A member is not valid, or a question answered by a choice offers too few.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such program.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409",
+			description = "The program changed since it was read, or its applications have opened.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ProgramQuestionsResponse saveQuestions(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody SaveProgramQuestionsRequest request) {
+		return programs.saveQuestions(actor, id, request);
 	}
 
 	@PostMapping("/{id}/publish")
