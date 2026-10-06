@@ -15,7 +15,7 @@ Design: [design.md](design.md). Tracked in Linear as BEY-65.
 
 Each step is one pull request, merged when its CI is green, except that steps 2, 3 and 5 share one: the `search` module whole, which Đạt asked for on 6 October. Step 4 stays apart because it changes Việt's modules.
 
-The AI slice follows in its own increment once BEY-21 has chosen the model: the embedding columns on `search_document`, the batch embedding job, the vector branch of the ranking with HNSW, and the operators' Search and AI screen, drawn and approved first. Use cases join when their public listing exists.
+The AI slice followed: the embedding columns, the batch job and the vector branch with HNSW (BEY-69), use cases in the index (BEY-70), and the operators' screens in [BEY-72](../bey-72-ai-providers/plan.md).
 
 ## Verification
 
