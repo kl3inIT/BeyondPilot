@@ -73,7 +73,7 @@ public class UseCaseDirectory {
 			boolean hidden = useCase.isBudgetMembersOnly();
 			return new IndexedUseCase(useCase.getId(), useCase.getTitle(),
 					organization == null ? null : organization.name(), useCase.getIndustry(),
-					useCase.getTechnologies(), useCase.getProblemStatement(), useCase.getExpectedOutcomes(),
+					useCase.getTechnologies(), useCase.getExpectedOutcomes(),
 					hidden ? null : useCase.getBudgetMin(), hidden ? null : useCase.getBudgetMax(),
 					useCase.isBudgetToBeDetermined(), hidden, useCase.getClosesAt());
 		}).toList();

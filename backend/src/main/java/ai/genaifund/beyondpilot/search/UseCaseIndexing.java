@@ -17,7 +17,8 @@ import org.springframework.stereotype.Component;
 /**
  * Keeps the published use cases in the index; any other is taken out. A change is read again from the usecase module,
  * so a late or repeated delivery writes what the use case is now. One past its close date stays in the index and is
- * left out of results by that date; the organization's name is never indexed for a use case that hides it.
+ * left out of results by that date. Only what the public list of use cases shows is indexed, its goal and not its
+ * problem statement, and the organization's name never for a use case that hides it.
  */
 @Component
 class UseCaseIndexing {
@@ -58,10 +59,8 @@ class UseCaseIndexing {
 		String keywords = Cards.words(useCase.industry() == null ? List.of() : List.of(useCase.industry()),
 				useCase.technologies());
 		return new Document(SearchDocumentRepository.USE_CASE, useCase.id(), useCase.id().toString(),
-				useCase.title(), useCase.organizationName(), Objects.requireNonNullElse(useCase.problemStatement(), ""),
-				keywords,
-				Cards.lines(useCase.title(), useCase.organizationName(), keywords, useCase.problemStatement(),
-						useCase.expectedOutcomes()),
+				useCase.title(), useCase.organizationName(), Objects.requireNonNullElse(useCase.expectedOutcomes(), ""),
+				keywords, Cards.lines(useCase.title(), useCase.organizationName(), keywords, useCase.expectedOutcomes()),
 				facets, true, null, null);
 	}
 

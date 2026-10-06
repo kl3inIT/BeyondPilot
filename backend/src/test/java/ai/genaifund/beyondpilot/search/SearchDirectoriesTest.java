@@ -136,7 +136,7 @@ class SearchDirectoriesTest {
 	void aPublishedUseCaseIsFoundUntilItIsSentBackAndNeverByTheNameOfAnOrganizationThatHidesIt() {
 		String owner = TestSignIn.session(client, mail, "bank-" + word + "@directories.test");
 		UUID organization = organization(owner, "Bank " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", null);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
 		String created = body(client.post()
 			.uri("/api/usecase/admin/use-cases")
 			.header(TestSignIn.CSRF_HEADER, "1")
@@ -156,6 +156,9 @@ class SearchDirectoriesTest {
 		assertThat(JsonPath.<Integer>read(body, "$.counts.useCase")).isEqualTo(1);
 		// The organization asked to stay anonymous: its name finds nothing.
 		assertThat(total("bank " + word)).isZero();
+		// Only what the public list shows is searched: the goal, never the problem statement members read.
+		assertThat(total("first assessment " + word)).isEqualTo(1);
+		assertThat(total("wait days " + word)).isZero();
 
 		post(operator, "/api/usecase/admin/use-cases/" + id + "/send-back", Map.of("reason", "Say what the data is."));
 		await().atMost(WAIT).until(() -> total("claims triage " + word) == 0);

@@ -18,7 +18,7 @@ public record SearchItem(
 		@Schema(types = { "string", "null" },
 				description = "The partner of a program, the organization of a solution, the headline of a person, the organization of a use case unless it stays anonymous.") @Nullable String subtitle,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "A program's or a solution's summary, a person's bio, a use case's problem.") String summary,
+				description = "A program's or a solution's summary, a person's bio, a use case's goal.") String summary,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "The summary, or a person's headline, with each word the query matched between U+0002 and U+0003, to be shown in bold.") String snippet,
 		@Schema(types = { "string", "null" }, description = "A program's type.") @Nullable String type,
