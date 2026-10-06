@@ -219,7 +219,8 @@ class SearchDirectoriesTest {
 		request.put("deployment", List.of("cloud_saas"));
 		request.put("website", "https://example.test");
 		request.put("demoUrl", null);
-		request.put("deckUrl", null);
+		request.put("builtWith", List.of());
+		request.put("languages", List.of());
 		request.put("listed", true);
 		request.put("version", version);
 		return request;
