@@ -53,6 +53,13 @@ export type AccountSummary = {
 };
 
 /**
+ * An address to stop sending to.
+ */
+export type AddEmailSuppression = {
+    address: string;
+};
+
+/**
  * An organization an operator creates for a company that is not here yet. It is approved from the start and has no member until someone accepts the invitation to own it, or claims it.
  */
 export type AdminCreateOrganization = {
@@ -683,7 +690,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -946,6 +953,295 @@ export type DeclinedOrganizationRequest = {
     organizationId: string;
     organizationName: string;
     organizationType: 'company' | 'builder_team' | 'independent_builder' | 'other';
+};
+
+/**
+ * What became of the emails of the period, filtered by kind but not by state or search.
+ */
+export type EmailCounts = {
+    bounced: number;
+    complained: number;
+    delivered: number;
+    /**
+     * Failed or skipped.
+     */
+    notSent: number;
+    sent: number;
+    total: number;
+};
+
+/**
+ * Wording being edited, to preview or to send as a test.
+ */
+export type EmailDraft = {
+    /**
+     * Markdown.
+     */
+    body: string;
+    subject: string;
+};
+
+/**
+ * What the provider reported about the email.
+ */
+export type EmailEvent = {
+    detail?: string | null;
+    occurredAt: string;
+    type: 'delivered' | 'bounced' | 'soft_bounced' | 'complained';
+};
+
+/**
+ * One email as it was sent, with what happened to it.
+ */
+export type EmailMessage = {
+    attempts: number;
+    createdAt: string;
+    events: Array<EmailEvent>;
+    html: string;
+    id: string;
+    kind: string;
+    lastError?: string | null;
+    provider?: 'ses' | 'resend' | 'smtp';
+    providerMessageId?: string | null;
+    recipient: string;
+    /**
+     * Whether an operator may send it again.
+     */
+    resendable: boolean;
+    sentAt?: string | null;
+    status: 'queued' | 'sent' | 'delivered' | 'bounced' | 'complained' | 'failed' | 'skipped';
+    subject: string;
+    /**
+     * Why the address is not sent to; null when it is.
+     */
+    suppression?: EmailSuppression | null;
+    text: string;
+};
+
+/**
+ * One page of the email log, newest first, with the counts of the period.
+ */
+export type EmailMessageList = {
+    counts: EmailCounts;
+    items: Array<EmailMessageSummary>;
+    /**
+     * Pass as `after` for the page towards the present.
+     */
+    newer?: string | null;
+    /**
+     * Pass as `before` for the page towards the past.
+     */
+    older?: string | null;
+};
+
+/**
+ * One email in the log.
+ */
+export type EmailMessageSummary = {
+    attempts: number;
+    createdAt: string;
+    id: string;
+    kind: string;
+    /**
+     * The typed reason of the last failure.
+     */
+    lastError?: string | null;
+    recipient: string;
+    status: 'queued' | 'sent' | 'delivered' | 'bounced' | 'complained' | 'failed' | 'skipped';
+    subject: string;
+};
+
+/**
+ * A draft rendered with sample values, and what keeps it from being saved. With problems the rendering is the default's.
+ */
+export type EmailPreview = {
+    html: string;
+    problems: Array<EmailTemplateProblem>;
+    subject: string;
+    text: string;
+};
+
+export type EmailResendSettings = {
+    apiKeySet: boolean;
+    /**
+     * The endpoint to give Resend's webhook.
+     */
+    eventsUrl: string;
+    webhookSecretSet: boolean;
+};
+
+/**
+ * The new email, queued with the content of the one sent again.
+ */
+export type EmailResent = {
+    id: string;
+};
+
+export type EmailSesSettings = {
+    accessKeyId?: string | null;
+    configurationSet?: string | null;
+    /**
+     * The SNS topic whose reports are accepted.
+     */
+    eventsTopicArn?: string | null;
+    /**
+     * Where to subscribe the SNS topic over HTTPS.
+     */
+    eventsUrl: string;
+    region?: string | null;
+    secretAccessKeySet: boolean;
+};
+
+/**
+ * Who delivers BeyondPilot's email and as whom. Secrets are never returned: each says only whether it is set.
+ */
+export type EmailSettings = {
+    accentColor: string;
+    /**
+     * Whether the server holds the key that encrypts secrets; without it none can be saved.
+     */
+    encryptionReady: boolean;
+    footer: string;
+    fromAddress?: string | null;
+    fromName?: string | null;
+    /**
+     * The provider chosen; null until an operator chooses one, and email waits meanwhile.
+     */
+    provider?: 'ses' | 'resend' | 'smtp';
+    /**
+     * Whether email can leave now: a provider is chosen and everything it needs is set.
+     */
+    ready: boolean;
+    replyTo?: string | null;
+    resend: EmailResendSettings;
+    ses: EmailSesSettings;
+    smtp: EmailSmtpSettings;
+    updatedAt?: string | null;
+    /**
+     * Who saved the settings last, as they were named.
+     */
+    updatedBy?: string | null;
+    /**
+     * Send it back with a change; a change made meanwhile is refused.
+     */
+    version: number;
+};
+
+export type EmailSmtpSettings = {
+    host?: string | null;
+    passwordSet: boolean;
+    port?: number | null;
+    security: 'starttls' | 'tls' | 'none';
+    username?: string | null;
+};
+
+/**
+ * An address BeyondPilot does not send to, and why.
+ */
+export type EmailSuppression = {
+    address: string;
+    createdAt: string;
+    /**
+     * The operator who added it by hand.
+     */
+    createdBy?: string | null;
+    /**
+     * The email that caused it.
+     */
+    messageId?: string | null;
+    /**
+     * The kind of that email.
+     */
+    messageKind?: string | null;
+    reason: 'bounce' | 'complaint' | 'manual';
+};
+
+/**
+ * One page of suppressed addresses, the newest first.
+ */
+export type EmailSuppressionList = {
+    items: Array<EmailSuppression>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many addresses match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * The wording of one kind of email, with the default it replaces and what it may use.
+ */
+export type EmailTemplate = {
+    /**
+     * Markdown.
+     */
+    body: string;
+    defaultBody: string;
+    defaultSubject: string;
+    edited: boolean;
+    group: 'sign_in' | 'organizations' | 'applications' | 'introductions' | 'use_cases' | 'talent';
+    kind: string;
+    subject: string;
+    updatedAt?: string | null;
+    updatedBy?: string | null;
+    variables: Array<EmailTemplateVariable>;
+    /**
+     * The version of the operator's wording; null while the default is in use.
+     */
+    version?: number | null;
+};
+
+/**
+ * Every kind of email operators can word, in the order the screen groups them.
+ */
+export type EmailTemplateList = {
+    items: Array<EmailTemplateListItem>;
+};
+
+export type EmailTemplateListItem = {
+    /**
+     * Whether an operator's wording replaces the default.
+     */
+    edited: boolean;
+    group: 'sign_in' | 'organizations' | 'applications' | 'introductions' | 'use_cases' | 'talent';
+    kind: string;
+    /**
+     * The subject in use, with its variables as written.
+     */
+    subject: string;
+    updatedAt?: string | null;
+    updatedBy?: string | null;
+};
+
+export type EmailTemplateProblem = {
+    field: 'subject' | 'body';
+    type: 'syntax' | 'unknown_variable' | 'missing_variable' | 'subject_line';
+    variable?: string | null;
+};
+
+export type EmailTemplateVariable = {
+    name: string;
+    required: boolean;
+    /**
+     * What the preview puts in its place.
+     */
+    sample?: string | null;
+};
+
+/**
+ * How a test email went. It is sent to the operator who asked, and to nobody else.
+ */
+export type EmailTest = {
+    /**
+     * Why it was not sent; null when it was.
+     */
+    failure?: 'not_configured' | 'authentication' | 'throttled' | 'unavailable' | 'rejected' | 'invalid_recipient';
+    recipient: string;
+    sent: boolean;
 };
 
 /**
@@ -2422,6 +2718,89 @@ export type SaveCustomerDeployment = {
 };
 
 /**
+ * What every email's layout takes from the settings.
+ */
+export type SaveEmailAppearance = {
+    accentColor: string;
+    /**
+     * Plain text in the band at the bottom of every email.
+     */
+    footer: string;
+    /**
+     * The version the settings were read at.
+     */
+    version: number;
+};
+
+export type SaveEmailResendSettings = {
+    /**
+     * Empty to keep the stored one.
+     */
+    apiKey?: string | null;
+    /**
+     * The secret Resend signs its webhooks with; empty to keep the stored one.
+     */
+    webhookSecret?: string | null;
+};
+
+export type SaveEmailSesSettings = {
+    accessKeyId?: string | null;
+    configurationSet?: string | null;
+    /**
+     * The SNS topic the configuration set reports to.
+     */
+    eventsTopicArn?: string | null;
+    region?: string | null;
+    /**
+     * Empty to keep the stored one.
+     */
+    secretAccessKey?: string | null;
+};
+
+/**
+ * Who delivers email and as whom. An empty secret keeps the stored one while what it belongs to is unchanged.
+ */
+export type SaveEmailSettings = {
+    fromAddress: string;
+    fromName: string;
+    provider: 'ses' | 'resend' | 'smtp';
+    replyTo?: string | null;
+    resend: SaveEmailResendSettings;
+    ses: SaveEmailSesSettings;
+    smtp: SaveEmailSmtpSettings;
+    /**
+     * The version the settings were read at.
+     */
+    version: number;
+};
+
+export type SaveEmailSmtpSettings = {
+    host?: string | null;
+    /**
+     * Empty to keep the stored one.
+     */
+    password?: string | null;
+    port?: number | null;
+    security: 'starttls' | 'tls' | 'none';
+    username?: string | null;
+};
+
+/**
+ * An operator's wording of one kind of email.
+ */
+export type SaveEmailTemplate = {
+    /**
+     * Markdown.
+     */
+    body: string;
+    subject: string;
+    /**
+     * The version read; null when the default was in use.
+     */
+    version?: number | null;
+};
+
+/**
  * What the members have written of a use case so far; any part may be missing.
  */
 export type SaveMyUseCase = {
@@ -3276,7 +3655,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -3743,6 +4122,690 @@ export type ReplyToIntroductionResponses = {
 };
 
 export type ReplyToIntroductionResponse = ReplyToIntroductionResponses[keyof ReplyToIntroductionResponses];
+
+export type ListEmailMessagesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Only emails queued at or after this instant; the counts cover the same period.
+         */
+        from?: string | null;
+        /**
+         * Only emails of this kind.
+         */
+        kind?: string | null;
+        /**
+         * Only emails in this state.
+         */
+        status?: string | null;
+        /**
+         * Emails whose recipient or subject contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * The `older` cursor of a page: the emails before it.
+         */
+        before?: string | null;
+        /**
+         * The `newer` cursor of a page: the emails after it.
+         */
+        after?: string | null;
+    };
+    url: '/api/notification/admin/email/messages';
+};
+
+export type ListEmailMessagesErrors = {
+    /**
+     * A filter or a cursor is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListEmailMessagesError = ListEmailMessagesErrors[keyof ListEmailMessagesErrors];
+
+export type ListEmailMessagesResponses = {
+    /**
+     * One page, its cursors and the counts of the period.
+     */
+    200: EmailMessageList;
+};
+
+export type ListEmailMessagesResponse = ListEmailMessagesResponses[keyof ListEmailMessagesResponses];
+
+export type GetEmailMessageData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/messages/{id}';
+};
+
+export type GetEmailMessageErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such email.
+     */
+    404: Problem;
+};
+
+export type GetEmailMessageError = GetEmailMessageErrors[keyof GetEmailMessageErrors];
+
+export type GetEmailMessageResponses = {
+    /**
+     * The email.
+     */
+    200: EmailMessage;
+};
+
+export type GetEmailMessageResponse = GetEmailMessageResponses[keyof GetEmailMessageResponses];
+
+export type ResendEmailMessageData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/messages/{id}/resend';
+};
+
+export type ResendEmailMessageErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such email.
+     */
+    404: Problem;
+    /**
+     * It is a sign-in code, or its address is suppressed.
+     */
+    409: Problem;
+};
+
+export type ResendEmailMessageError = ResendEmailMessageErrors[keyof ResendEmailMessageErrors];
+
+export type ResendEmailMessageResponses = {
+    /**
+     * The new email, queued.
+     */
+    201: EmailResent;
+};
+
+export type ResendEmailMessageResponse = ResendEmailMessageResponses[keyof ResendEmailMessageResponses];
+
+export type GetEmailSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/notification/admin/email/settings';
+};
+
+export type GetEmailSettingsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetEmailSettingsError = GetEmailSettingsErrors[keyof GetEmailSettingsErrors];
+
+export type GetEmailSettingsResponses = {
+    /**
+     * The settings.
+     */
+    200: EmailSettings;
+};
+
+export type GetEmailSettingsResponse = GetEmailSettingsResponses[keyof GetEmailSettingsResponses];
+
+export type SaveEmailSettingsData = {
+    body: SaveEmailSettings;
+    path?: never;
+    query?: never;
+    url: '/api/notification/admin/email/settings';
+};
+
+export type SaveEmailSettingsErrors = {
+    /**
+     * A member is not valid, or the provider chosen lacks a field or its secret.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The settings changed since they were read.
+     */
+    409: Problem;
+    /**
+     * A secret was given but the server has no key to encrypt it.
+     */
+    503: Problem;
+};
+
+export type SaveEmailSettingsError = SaveEmailSettingsErrors[keyof SaveEmailSettingsErrors];
+
+export type SaveEmailSettingsResponses = {
+    /**
+     * The settings as saved, with their new version.
+     */
+    200: EmailSettings;
+};
+
+export type SaveEmailSettingsResponse = SaveEmailSettingsResponses[keyof SaveEmailSettingsResponses];
+
+export type SaveEmailAppearanceData = {
+    body: SaveEmailAppearance;
+    path?: never;
+    query?: never;
+    url: '/api/notification/admin/email/settings/appearance';
+};
+
+export type SaveEmailAppearanceErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The settings changed since they were read.
+     */
+    409: Problem;
+};
+
+export type SaveEmailAppearanceError = SaveEmailAppearanceErrors[keyof SaveEmailAppearanceErrors];
+
+export type SaveEmailAppearanceResponses = {
+    /**
+     * The settings as saved, with their new version.
+     */
+    200: EmailSettings;
+};
+
+export type SaveEmailAppearanceResponse = SaveEmailAppearanceResponses[keyof SaveEmailAppearanceResponses];
+
+export type TestEmailSettingsData = {
+    body: SaveEmailSettings;
+    path?: never;
+    query?: never;
+    url: '/api/notification/admin/email/settings/test';
+};
+
+export type TestEmailSettingsErrors = {
+    /**
+     * A member is not valid, or the provider chosen lacks a field or its secret.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * A secret was given but the server has no key to encrypt it.
+     */
+    503: Problem;
+};
+
+export type TestEmailSettingsError = TestEmailSettingsErrors[keyof TestEmailSettingsErrors];
+
+export type TestEmailSettingsResponses = {
+    /**
+     * Whether the provider took the test, and why not.
+     */
+    200: EmailTest;
+};
+
+export type TestEmailSettingsResponse = TestEmailSettingsResponses[keyof TestEmailSettingsResponses];
+
+export type ListEmailSuppressionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Only addresses suppressed for this reason.
+         */
+        reason?: string | null;
+        /**
+         * Addresses that contain this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * The page, counted from 1.
+         */
+        page?: number | null;
+    };
+    url: '/api/notification/admin/email/suppressions';
+};
+
+export type ListEmailSuppressionsErrors = {
+    /**
+     * A filter or the page is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListEmailSuppressionsError = ListEmailSuppressionsErrors[keyof ListEmailSuppressionsErrors];
+
+export type ListEmailSuppressionsResponses = {
+    /**
+     * One page of addresses.
+     */
+    200: EmailSuppressionList;
+};
+
+export type ListEmailSuppressionsResponse = ListEmailSuppressionsResponses[keyof ListEmailSuppressionsResponses];
+
+export type AddEmailSuppressionData = {
+    body: AddEmailSuppression;
+    path?: never;
+    query?: never;
+    url: '/api/notification/admin/email/suppressions';
+};
+
+export type AddEmailSuppressionErrors = {
+    /**
+     * The address is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The address is already suppressed.
+     */
+    409: Problem;
+};
+
+export type AddEmailSuppressionError = AddEmailSuppressionErrors[keyof AddEmailSuppressionErrors];
+
+export type AddEmailSuppressionResponses = {
+    /**
+     * The address, suppressed.
+     */
+    201: EmailSuppression;
+};
+
+export type AddEmailSuppressionResponse = AddEmailSuppressionResponses[keyof AddEmailSuppressionResponses];
+
+export type RemoveEmailSuppressionData = {
+    body?: never;
+    path: {
+        address: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/suppressions/{address}';
+};
+
+export type RemoveEmailSuppressionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The address is not suppressed.
+     */
+    404: Problem;
+};
+
+export type RemoveEmailSuppressionError = RemoveEmailSuppressionErrors[keyof RemoveEmailSuppressionErrors];
+
+export type RemoveEmailSuppressionResponses = {
+    /**
+     * Email reaches the address again.
+     */
+    204: void;
+};
+
+export type RemoveEmailSuppressionResponse = RemoveEmailSuppressionResponses[keyof RemoveEmailSuppressionResponses];
+
+export type ListEmailTemplatesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/notification/admin/email/templates';
+};
+
+export type ListEmailTemplatesErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListEmailTemplatesError = ListEmailTemplatesErrors[keyof ListEmailTemplatesErrors];
+
+export type ListEmailTemplatesResponses = {
+    /**
+     * The kinds, with the subject in use and who changed it.
+     */
+    200: EmailTemplateList;
+};
+
+export type ListEmailTemplatesResponse = ListEmailTemplatesResponses[keyof ListEmailTemplatesResponses];
+
+export type ResetEmailTemplateData = {
+    body?: never;
+    path: {
+        kind: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/templates/{kind}';
+};
+
+export type ResetEmailTemplateErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such kind of email.
+     */
+    404: Problem;
+    /**
+     * Operators do not word this kind.
+     */
+    409: Problem;
+};
+
+export type ResetEmailTemplateError = ResetEmailTemplateErrors[keyof ResetEmailTemplateErrors];
+
+export type ResetEmailTemplateResponses = {
+    /**
+     * The template, now the default.
+     */
+    200: EmailTemplate;
+};
+
+export type ResetEmailTemplateResponse = ResetEmailTemplateResponses[keyof ResetEmailTemplateResponses];
+
+export type GetEmailTemplateData = {
+    body?: never;
+    path: {
+        kind: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/templates/{kind}';
+};
+
+export type GetEmailTemplateErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such kind of email.
+     */
+    404: Problem;
+    /**
+     * Operators do not word this kind.
+     */
+    409: Problem;
+};
+
+export type GetEmailTemplateError = GetEmailTemplateErrors[keyof GetEmailTemplateErrors];
+
+export type GetEmailTemplateResponses = {
+    /**
+     * The template.
+     */
+    200: EmailTemplate;
+};
+
+export type GetEmailTemplateResponse = GetEmailTemplateResponses[keyof GetEmailTemplateResponses];
+
+export type SaveEmailTemplateData = {
+    body: SaveEmailTemplate;
+    path: {
+        kind: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/templates/{kind}';
+};
+
+export type SaveEmailTemplateErrors = {
+    /**
+     * A member is not valid, or the template does not pass the checks; preview it to see why.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such kind of email.
+     */
+    404: Problem;
+    /**
+     * Operators do not word this kind, or the wording changed since it was read.
+     */
+    409: Problem;
+};
+
+export type SaveEmailTemplateError = SaveEmailTemplateErrors[keyof SaveEmailTemplateErrors];
+
+export type SaveEmailTemplateResponses = {
+    /**
+     * The template as saved, with its new version.
+     */
+    200: EmailTemplate;
+};
+
+export type SaveEmailTemplateResponse = SaveEmailTemplateResponses[keyof SaveEmailTemplateResponses];
+
+export type PreviewEmailTemplateData = {
+    body: EmailDraft;
+    path: {
+        kind: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/templates/{kind}/preview';
+};
+
+export type PreviewEmailTemplateErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such kind of email.
+     */
+    404: Problem;
+    /**
+     * Operators do not word this kind.
+     */
+    409: Problem;
+};
+
+export type PreviewEmailTemplateError = PreviewEmailTemplateErrors[keyof PreviewEmailTemplateErrors];
+
+export type PreviewEmailTemplateResponses = {
+    /**
+     * The rendering and its problems.
+     */
+    200: EmailPreview;
+};
+
+export type PreviewEmailTemplateResponse = PreviewEmailTemplateResponses[keyof PreviewEmailTemplateResponses];
+
+export type TestEmailTemplateData = {
+    body: EmailDraft;
+    path: {
+        kind: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/templates/{kind}/test';
+};
+
+export type TestEmailTemplateErrors = {
+    /**
+     * A member is not valid, or the draft does not pass the checks.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such kind of email.
+     */
+    404: Problem;
+    /**
+     * Operators do not word this kind.
+     */
+    409: Problem;
+};
+
+export type TestEmailTemplateError = TestEmailTemplateErrors[keyof TestEmailTemplateErrors];
+
+export type TestEmailTemplateResponses = {
+    /**
+     * Whether the provider took the test, and why not.
+     */
+    200: EmailTest;
+};
+
+export type TestEmailTemplateResponse = TestEmailTemplateResponses[keyof TestEmailTemplateResponses];
+
+export type ReceiveResendEventData = {
+    body: string;
+    path?: never;
+    query?: never;
+    url: '/api/notification/email/events/resend';
+};
+
+export type ReceiveResendEventErrors = {
+    /**
+     * The report's signature does not check, or it is not from the configured provider.
+     */
+    403: Problem;
+};
+
+export type ReceiveResendEventError = ReceiveResendEventErrors[keyof ReceiveResendEventErrors];
+
+export type ReceiveResendEventResponses = {
+    /**
+     * The report was taken, or it concerns no email of BeyondPilot.
+     */
+    204: void;
+};
+
+export type ReceiveResendEventResponse = ReceiveResendEventResponses[keyof ReceiveResendEventResponses];
+
+export type ReceiveSesEventData = {
+    body: string;
+    path?: never;
+    query?: never;
+    url: '/api/notification/email/events/ses';
+};
+
+export type ReceiveSesEventErrors = {
+    /**
+     * The report's signature does not check, or it is not from the configured provider.
+     */
+    403: Problem;
+    /**
+     * The subscription could not be confirmed now; SNS asks again.
+     */
+    503: Problem;
+};
+
+export type ReceiveSesEventError = ReceiveSesEventErrors[keyof ReceiveSesEventErrors];
+
+export type ReceiveSesEventResponses = {
+    /**
+     * The message was taken.
+     */
+    204: void;
+};
+
+export type ReceiveSesEventResponse = ReceiveSesEventResponses[keyof ReceiveSesEventResponses];
 
 export type ApproveOrganizationClaimData = {
     body: ApproveOrganization;

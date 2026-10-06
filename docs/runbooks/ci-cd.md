@@ -40,15 +40,15 @@ The workflow:
 
 ## The host
 
-Both environments share `hn-fci-k8s-aioffice-application` (`167.254.65.226`, Ubuntu 24.04) with the production of MemoryOS, until GenAI Fund's own account takes production. Each environment of BeyondPilot has its own directory, Compose project, PostgreSQL container and volumes, network and Mailpit; they share the deployment user and the host's Nginx Proxy Manager, which they reach through the existing external network `proxy-network`. Never change a MemoryOS container, host or file from here.
+Both environments share `hn-fci-k8s-aioffice-application` (`167.254.65.226`, Ubuntu 24.04) with the production of MemoryOS, until GenAI Fund's own account takes production. Each environment of BeyondPilot has its own directory, Compose project, PostgreSQL container and volumes, and network; they share the deployment user and the host's Nginx Proxy Manager, which they reach through the existing external network `proxy-network`. Never change a MemoryOS container, host or file from here.
 
 |                             | Production                                                                                                | Staging                                                                                          |
 | --------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Root                        | `/apps/beyondpilot`                                                                                       | `/apps/beyondpilot-staging`                                                                      |
-| Compose project, containers | `beyondpilot`, `beyondpilot-{postgres,api,web,mailpit}`                                                   | `beyondpilot-staging`, `beyondpilot-staging-{postgres,api,web,mailpit}`                          |
+| Compose project, containers | `beyondpilot`, `beyondpilot-{postgres,api,web}`                                                           | `beyondpilot-staging`, `beyondpilot-staging-{postgres,api,web}`                                  |
 | Volumes                     | `beyondpilot_postgres-data`, `beyondpilot_storage`                                                        | `beyondpilot-staging_postgres-data`, `beyondpilot-staging_storage`                               |
 | Environment file            | `.env.production` from [`production.env.example`](../../infrastructure/deployment/production.env.example) | `.env.staging` from [`staging.env.example`](../../infrastructure/deployment/staging.env.example) |
-| Spring profiles             | `production,mailpit` (until production has an email provider)                                             | `production,staging,mailpit`                                                                     |
+| Spring profiles             | `production`                                                                                               | `production,staging`                                                                             |
 
 Under each root:
 
@@ -57,7 +57,7 @@ Under each root:
 | `incoming`           | `beyondpilot-ci`, `0700` | One directory per uploaded release; `deploy.sh` keeps the current and previous ones                                                                     |
 | `deployments`        | root, `0700`             | `lock`, `current.env`, `previous.env`                                                                                                                   |
 | `backups`            | root, `0700`             | Pre-deployment dumps (five newest), nightly dumps and nightly archives of the uploaded files (14 newest of each)                                        |
-| `secrets`            | root, `0700`             | `database-password`, `google-client-secret`, `mailpit-ui-auth`, `ai-api-key`, each owned by uid 1654 with mode `0400`; `mailpit-ui-password`, root only |
+| `secrets`            | root, `0700`             | `database-password`, `google-client-secret`, `notification-encryption-key`, `ai-api-key`, each owned by uid 1654 with mode `0400` |
 | `.env.<environment>` | root, `0600`             | The non-secret values of the environment's example                                                                                                      |
 
 ### Provision the host once
@@ -95,13 +95,13 @@ Secret files are generated or written on the host and never printed; the api rea
 cd <root>/secrets
 sudo sh -c 'umask 077; openssl rand -hex 32 > database-password'
 sudo sh -c 'umask 077; cat > google-client-secret'      # paste the client secret, then Ctrl-D
-sudo sh -c 'umask 077; htpasswd -nB team > mailpit-ui-auth'   # bcrypt; one line per reader
+sudo sh -c 'umask 077; openssl rand -base64 32 > notification-encryption-key'
 sudo sh -c 'umask 077; cat > ai-api-key'                # paste the embedding provider's key, then Ctrl-D
-sudo chown 1654:1654 database-password google-client-secret mailpit-ui-auth ai-api-key
-sudo chmod 0400 database-password google-client-secret mailpit-ui-auth ai-api-key
+sudo chown 1654:1654 database-password google-client-secret notification-encryption-key ai-api-key
+sudo chmod 0400 database-password google-client-secret notification-encryption-key ai-api-key
 ```
 
-`ai-api-key` is the key of the embedding provider search uses; each overlay names OpenRouter and the model, and moving to OpenAI changes those two settings and this file. `database-password` sets the password when PostgreSQL first creates its data directory; changing the file later does not change the database. Write the environment file from its example with `sudo install -m 0600 /dev/null <root>/.env.<environment>` and an editor under sudo. Both environments use the same Google OAuth client, whose redirect URIs name both addresses.
+`ai-api-key` is the key of the embedding provider search uses; each overlay names OpenRouter and the model, and moving to OpenAI changes those two settings and this file. `database-password` sets the password when PostgreSQL first creates its data directory; changing the file later does not change the database. `notification-encryption-key` encrypts the email providers' secrets that operators enter in Admin › Email; each environment has its own, and replacing it makes those secrets unreadable until an operator enters them again. Write the environment file from its example with `sudo install -m 0600 /dev/null <root>/.env.<environment>` and an editor under sudo. Both environments use the same Google OAuth client, whose redirect URIs name both addresses.
 
 Install the nightly backup, which saves both environments, production first:
 
@@ -140,17 +140,9 @@ location ~ ^/(api|login|logout|oauth2|ott)(/|$) {
 
 The [local composition](development-runtime.md#run-the-whole-stack-in-containers) routes the same paths with `infrastructure/deployment/local-proxy.conf`.
 
-### Read the mail of an environment
+### Email of an environment
 
-Mailpit is on no network the proxy reaches. Open a tunnel to the environment's container and sign in as `team`; the password is in `<root>/secrets/mailpit-ui-password`, readable by root. Staging:
-
-```sh
-ssh -L 8025:$(ssh aioffice-app "docker inspect --format '{{(index .NetworkSettings.Networks \"beyondpilot-staging_internal\").IPAddress}}' beyondpilot-staging-mailpit"):8025 aioffice-app
-```
-
-Production uses `beyondpilot_internal` and `beyondpilot-mailpit`. A network name with a hyphen is read with `index`, as above; a plain field path stops at the hyphen.
-
-Then open `http://localhost:8025`.
+Each environment sends real email through the provider an operator sets in Admin › Email › Settings; nothing is configured on the host apart from `notification-encryption-key`. On staging, test with your own address. Admin › Email › Activity shows every email and whether it was sent.
 
 ### GitHub configuration
 
