@@ -68,8 +68,20 @@ public enum AuditAction {
 
 	SOLUTION_APPROVE("solution.approve"),
 
-	/** {@code reason} is the code of the reason given. */
+	/** An operator sent a solution back to its owners with what to change. */
+	SOLUTION_SEND_BACK("solution.send_back"),
+
+	/**
+	 * An operator refused a solution for good. {@code reason} is the code of the reason given. Before BEY-76 it also
+	 * recorded taking an approved solution out of the directory.
+	 */
 	SOLUTION_REJECT("solution.reject", "reason"),
+
+	/** An operator took an approved solution down. {@code reason} is the code of the reason given. */
+	SOLUTION_TAKE_DOWN("solution.take_down", "reason"),
+
+	/** An operator put a solution that was taken down back. */
+	SOLUTION_RESTORE("solution.restore"),
 
 	/** An operator wrote what GenAI Fund says of a solution: who backs its company, its programme, its funding. */
 	SOLUTION_BACK("solution.back"),

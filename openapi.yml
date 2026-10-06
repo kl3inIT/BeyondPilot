@@ -110,7 +110,10 @@ paths:
           - organization.member_role
           - organization.member_remove
           - solution.approve
+          - solution.send_back
           - solution.reject
+          - solution.take_down
+          - solution.restore
           - solution.back
           - solution.deployment_approve
           - solution.deployment_reject
@@ -4981,17 +4984,20 @@ paths:
           - "null"
           maxLength: 100
           minLength: 0
-      - description: Only solutions of this status. Drafts are never listed.
+      - description: "Only solutions of this review status, or `suspended` for those\
+          \ taken down; `approved` leaves out those taken down. Drafts are never listed."
         in: query
         name: status
         required: false
         schema:
           type: string
           enum:
-          - submitted
+          - in_review
+          - needs_changes
           - approved
           - rejected
-          pattern: submitted|approved|rejected
+          - suspended
+          pattern: in_review|needs_changes|approved|rejected|suspended
       - description: Only solutions for this industry.
         in: query
         name: industry
@@ -5219,11 +5225,162 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The solution is neither waiting for review nor approved.
+          description: The solution is not waiting for review.
       security:
       - session: []
-      summary: "Reject a solution that waits for review, or take an approved one out\
-        \ of the directory"
+      summary: Refuse a solution that waits for review for good
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/restore:
+    post:
+      operationId: restoreSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The solution is back.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution is not taken down.
+      security:
+      - session: []
+      summary: "Put a solution that was taken down back, without a new review"
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/send-back:
+    post:
+      operationId: sendBackSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendBackSolution"
+        required: true
+      responses:
+        "204":
+          description: The solution needs changes; its owners are told.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The reason is blank or longer than 1000 characters.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution is not waiting for review.
+      security:
+      - session: []
+      summary: "Send a solution that waits for review back to its owners, with what\
+        \ to change"
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/take-down:
+    post:
+      operationId: takeDownSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TakeDownSolution"
+        required: true
+      responses:
+        "204":
+          description: The solution is taken down; its review stays approved.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The solution is not approved, or is already taken down."
+      security:
+      - session: []
+      summary: "Take an approved solution out of the directory and matching, with\
+        \ a reason"
       tags:
       - Solution administration
   /api/solution/deployments:
@@ -8037,7 +8194,8 @@ components:
         status:
           type: string
           enum:
-          - submitted
+          - in_review
+          - needs_changes
           - approved
           - rejected
         submittedAt:
@@ -8055,6 +8213,13 @@ components:
           type:
           - string
           - "null"
+        suspendedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: "When GenAI Fund took it down, while it is down; its status\
+            \ stays approved."
         updatedAt:
           type: string
           format: date-time
@@ -8858,7 +9023,10 @@ components:
           - organization.member_role
           - organization.member_remove
           - solution.approve
+          - solution.send_back
           - solution.reject
+          - solution.take_down
+          - solution.restore
           - solution.back
           - solution.deployment_approve
           - solution.deployment_reject
@@ -9382,7 +9550,7 @@ components:
         status:
           type: string
           enum:
-          - submitted
+          - in_review
           - approved
           - rejected
         title:
@@ -12315,7 +12483,7 @@ components:
       - reason
     RejectSolution:
       type: object
-      description: "Why a solution is not approved, and what its owners are told."
+      description: "Why a solution is refused for good, and what its owners are told."
       properties:
         message:
           type:
@@ -12327,12 +12495,11 @@ components:
         reason:
           type: string
           enum:
-          - incomplete
           - not_an_ai_solution
           - duplicate
           - unverifiable
           - other
-          pattern: incomplete|not_an_ai_solution|duplicate|unverifiable|other
+          pattern: not_an_ai_solution|duplicate|unverifiable|other
       required:
       - reason
     Release:
@@ -14340,6 +14507,18 @@ components:
           minLength: 0
       required:
       - reason
+    SendBackSolution:
+      type: object
+      description: Why GenAI Fund sends a solution back to its owners.
+      properties:
+        reason:
+          type: string
+          description: What the owners should change. They read it and receive it
+            by email.
+          maxLength: 1000
+          minLength: 0
+      required:
+      - reason
     SendBackUseCase:
       type: object
       description: Why GenAI Fund sends a use case back to its organization.
@@ -14433,14 +14612,14 @@ components:
           type:
           - string
           - "null"
-          description: What the operator wrote to the owners with the rejection.
+          description: "What the operator wrote to the owners with the last decision:\
+            \ what to change when it was sent back, or why it was refused."
         decisionReason:
           type:
           - string
           - "null"
-          description: Why it was last rejected.
+          description: Why it was refused for good; null for any other decision.
           enum:
-          - incomplete
           - not_an_ai_solution
           - duplicate
           - unverifiable
@@ -14516,7 +14695,8 @@ components:
           type: string
           enum:
           - draft
-          - submitted
+          - in_review
+          - needs_changes
           - approved
           - rejected
         submittedAt:
@@ -14535,6 +14715,29 @@ components:
           type:
           - string
           - "null"
+        suspendedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: "When GenAI Fund took it down, while it is down; its status\
+            \ stays approved."
+        suspensionMessage:
+          type:
+          - string
+          - "null"
+          description: What the operator wrote to the owners when taking it down.
+        suspensionReason:
+          type:
+          - string
+          - "null"
+          description: Why GenAI Fund last took it down.
+          enum:
+          - misleading_information
+          - not_an_ai_solution
+          - unverifiable
+          - breaks_the_rules
+          - other
         traction:
           type:
           - string
@@ -14676,14 +14879,13 @@ components:
           type:
           - string
           - "null"
-          description: What the operator wrote to the owners when sending it back.
+          description: What the operator wrote to the owners with the last decision.
         decisionReason:
           type:
           - string
           - "null"
-          description: Why it was last sent back.
+          description: Why it was refused for good; null for any other decision.
           enum:
-          - incomplete
           - not_an_ai_solution
           - duplicate
           - unverifiable
@@ -14724,7 +14926,8 @@ components:
           type: string
           enum:
           - draft
-          - submitted
+          - in_review
+          - needs_changes
           - approved
           - rejected
         submittedAt:
@@ -14736,6 +14939,29 @@ components:
           type:
           - string
           - "null"
+        suspendedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: "When GenAI Fund took it down, while it is down; its status\
+            \ stays approved."
+        suspensionMessage:
+          type:
+          - string
+          - "null"
+          description: What the operator wrote to the owners when taking it down.
+        suspensionReason:
+          type:
+          - string
+          - "null"
+          description: Why GenAI Fund last took it down.
+          enum:
+          - misleading_information
+          - not_an_ai_solution
+          - unverifiable
+          - breaks_the_rules
+          - other
         updatedAt:
           type: string
           format: date-time
@@ -14877,6 +15103,29 @@ components:
           - breaks_the_rules
           - other
           pattern: misleading_information|not_a_real_organization|breaks_the_rules|other
+      required:
+      - reason
+    TakeDownSolution:
+      type: object
+      description: "Why an approved solution is taken down, and what its owners are\
+        \ told."
+      properties:
+        message:
+          type:
+          - string
+          - "null"
+          description: Shown to the owners in their workspace.
+          maxLength: 1000
+          minLength: 0
+        reason:
+          type: string
+          enum:
+          - misleading_information
+          - not_an_ai_solution
+          - unverifiable
+          - breaks_the_rules
+          - other
+          pattern: misleading_information|not_an_ai_solution|unverifiable|breaks_the_rules|other
       required:
       - reason
     TalentDecision:

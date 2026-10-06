@@ -142,7 +142,7 @@ class SolutionTest {
 			.isEmpty();
 		String submitted = body(post(founder, MINE + "/" + id + "/submit", null).expectStatus().isOk());
 
-		assertThat(JsonPath.<String>read(submitted, "$.status")).isEqualTo("submitted");
+		assertThat(JsonPath.<String>read(submitted, "$.status")).isEqualTo("in_review");
 		assertThat(JsonPath.<String>read(submitted, "$.submittedAt")).isNotNull();
 		assertProblem(post(founder, MINE + "/" + id + "/submit", null), 409, "SOLUTION_NOT_SUBMITTABLE");
 		// What operators review keeps what a submission needs: its facts, and its logo and cover.
@@ -216,24 +216,32 @@ class SolutionTest {
 	}
 
 	@Test
-	void anOperatorRejectsWithAReasonAndApprovesWhatIsSentAgain() {
+	void anOperatorSendsBackWithWhatToChangeAndApprovesWhatIsSentAgain() {
 		String founder = approvedOwner("founder@reviewed.test", "Reviewed Co");
 		UUID draft = create(founder, "Unsent Desk");
 		UUID id = submitted(founder, "Reviewed Desk");
 
 		assertProblem(post(founder, ADMIN + "/" + id + "/approve", null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(founder, ADMIN + "/" + id + "/send-back", Map.of("reason", "Say who it is for.")), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
 		// Operators see what was sent to them, never a draft.
 		assertProblem(get(operator, ADMIN + "/" + draft), 404, "SOLUTION_NOT_FOUND");
-		assertProblem(post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "boring")), 400, "REQUEST_INVALID");
-		post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "incomplete", "message", "Say who it is for."))
+		assertProblem(post(operator, ADMIN + "/" + id + "/send-back", Map.of("reason", " ")), 400, "REQUEST_INVALID");
+		assertProblem(post(operator, ADMIN + "/" + id + "/send-back", Map.of("reason", "x".repeat(1001))), 400,
+				"REQUEST_INVALID");
+		post(operator, ADMIN + "/" + id + "/send-back", Map.of("reason", "Say who it is for."))
 			.expectStatus()
 			.isNoContent();
 
-		String rejected = body(get(founder, MINE + "/" + id).expectStatus().isOk());
-		assertThat(JsonPath.<String>read(rejected, "$.status")).isEqualTo("rejected");
-		assertThat(JsonPath.<String>read(rejected, "$.decisionReason")).isEqualTo("incomplete");
-		assertThat(JsonPath.<String>read(rejected, "$.decisionMessage")).isEqualTo("Say who it is for.");
+		String sentBack = body(get(founder, MINE + "/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(sentBack, "$.status")).isEqualTo("needs_changes");
+		assertThat(JsonPath.<String>read(sentBack, "$.decisionReason")).isNull();
+		assertThat(JsonPath.<String>read(sentBack, "$.decisionMessage")).isEqualTo("Say who it is for.");
+		assertThat(mail.latestSubjectTo("founder@reviewed.test")).isEqualTo("Changes needed: Reviewed Desk");
+		assertThat(mail.latestTextTo("founder@reviewed.test")).contains("Say who it is for.");
 		assertProblem(post(operator, ADMIN + "/" + id + "/approve", null), 409, "SOLUTION_NOT_AWAITING_REVIEW");
+		assertProblem(post(operator, ADMIN + "/" + id + "/send-back", Map.of("reason", "Again.")), 409,
+				"SOLUTION_NOT_AWAITING_REVIEW");
 
 		post(founder, MINE + "/" + id + "/submit", null).expectStatus().isOk();
 		post(operator, ADMIN + "/" + id + "/approve", null).expectStatus().isNoContent();
@@ -241,9 +249,39 @@ class SolutionTest {
 		String approved = body(get(operator, ADMIN + "/" + id).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(approved, "$.status")).isEqualTo("approved");
 		assertThat(JsonPath.<String>read(approved, "$.organizationName")).isEqualTo("Reviewed Co");
-		assertThat(events(id)).containsExactly("solution.reject", "solution.approve");
+		assertThat(mail.latestSubjectTo("founder@reviewed.test")).isEqualTo("Reviewed Desk is approved on BeyondPilot");
+		assertThat(events(id)).containsExactly("solution.send_back", "solution.approve");
 		// A decision is made once.
 		assertProblem(post(operator, ADMIN + "/" + id + "/approve", null), 409, "SOLUTION_NOT_AWAITING_REVIEW");
+	}
+
+	@Test
+	void aRejectionIsFinalAndOnlyForASolutionInReview() {
+		String founder = approvedOwner("founder@refused.test", "Refused Co");
+		UUID id = submitted(founder, "Refused Desk");
+
+		assertProblem(post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "boring")), 400, "REQUEST_INVALID");
+		// Missing information is a send back, not a reason to refuse.
+		assertProblem(post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "incomplete")), 400,
+				"REQUEST_INVALID");
+		post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "duplicate", "message", "Listed twice."))
+			.expectStatus()
+			.isNoContent();
+
+		String rejected = body(get(founder, MINE + "/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(rejected, "$.status")).isEqualTo("rejected");
+		assertThat(JsonPath.<String>read(rejected, "$.decisionReason")).isEqualTo("duplicate");
+		assertThat(JsonPath.<String>read(rejected, "$.decisionMessage")).isEqualTo("Listed twice.");
+		assertThat(mail.latestSubjectTo("founder@refused.test")).isEqualTo("Refused Desk on BeyondPilot");
+		// Its owners cannot send it again, and an operator decides it only once.
+		assertProblem(post(founder, MINE + "/" + id + "/submit", null), 409, "SOLUTION_NOT_SUBMITTABLE");
+		assertProblem(post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "duplicate")), 409,
+				"SOLUTION_NOT_AWAITING_REVIEW");
+
+		// An approved solution is taken down, never refused.
+		UUID approved = approved(founder, "Approved Desk");
+		assertProblem(post(operator, ADMIN + "/" + approved + "/reject", Map.of("reason", "duplicate")), 409,
+				"SOLUTION_NOT_AWAITING_REVIEW");
 	}
 
 	@Test
@@ -309,23 +347,56 @@ class SolutionTest {
 		assertThat(JsonPath.<String>read(body(get(operator, ADMIN + "/" + id).expectStatus().isOk()), "$.submittedBy"))
 			.isNull();
 		// The owners read it the same way, and sending it again records who did.
-		post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "incomplete")).expectStatus().isNoContent();
+		post(operator, ADMIN + "/" + id + "/send-back", Map.of("reason", "Add a cover.")).expectStatus().isNoContent();
 		String sentAgain = body(post(founder, MINE + "/" + id + "/submit", null).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(sentAgain, "$.submittedBy")).isEqualTo("founder@earlier.test");
 	}
 
 	@Test
-	void anOperatorTakesAnApprovedSolutionOutOfTheDirectory() {
+	void anOperatorTakesAnApprovedSolutionDownAndRestoresItWithoutANewReview() {
 		String founder = approvedOwner("founder@removed.test", "Removed Co");
 		UUID id = approved(founder, "Removed Desk");
+		UUID waiting = submitted(founder, "Waiting Desk");
 		client.get().uri(DIRECTORY + "/removed-desk").exchange().expectStatus().isOk();
 
-		post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "unverifiable")).expectStatus().isNoContent();
+		assertProblem(post(founder, ADMIN + "/" + id + "/take-down", Map.of("reason", "unverifiable")), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(operator, ADMIN + "/" + id + "/take-down", Map.of("reason", "incomplete")), 400,
+				"REQUEST_INVALID");
+		assertProblem(post(operator, ADMIN + "/" + waiting + "/take-down", Map.of("reason", "unverifiable")), 409,
+				"SOLUTION_NOT_APPROVED");
+		assertProblem(post(operator, ADMIN + "/" + id + "/restore", null), 409, "SOLUTION_NOT_TAKEN_DOWN");
+		post(operator, ADMIN + "/" + id + "/take-down",
+				Map.of("reason", "misleading_information", "message", "The customers named are not real."))
+			.expectStatus()
+			.isNoContent();
 
 		assertProblem(client.get().uri(DIRECTORY + "/removed-desk").exchange(), 404, "SOLUTION_NOT_FOUND");
-		assertThat(JsonPath.<String>read(body(get(founder, MINE + "/" + id).expectStatus().isOk()), "$.status"))
-			.isEqualTo("rejected");
-		assertThat(events(id)).containsExactly("solution.approve", "solution.reject");
+		assertThat(names(DIRECTORY + "?q=removed desk")).isEmpty();
+		String down = body(get(founder, MINE + "/" + id).expectStatus().isOk());
+		// Its review stays approved; the takedown says why.
+		assertThat(JsonPath.<String>read(down, "$.status")).isEqualTo("approved");
+		assertThat(JsonPath.<String>read(down, "$.suspendedAt")).isNotNull();
+		assertThat(JsonPath.<String>read(down, "$.suspensionReason")).isEqualTo("misleading_information");
+		assertThat(JsonPath.<String>read(down, "$.suspensionMessage")).isEqualTo("The customers named are not real.");
+		assertThat(mail.latestSubjectTo("founder@removed.test")).isEqualTo("Removed Desk on BeyondPilot");
+		assertProblem(post(operator, ADMIN + "/" + id + "/take-down", Map.of("reason", "unverifiable")), 409,
+				"SOLUTION_NOT_APPROVED");
+		// Its owners cannot send it for review while it is down; an operator restores it.
+		assertProblem(post(founder, MINE + "/" + id + "/submit", null), 409, "SOLUTION_NOT_SUBMITTABLE");
+
+		assertThat(names(operator, ADMIN + "?q=removed desk&status=suspended")).containsExactly("Removed Desk");
+		assertThat(names(operator, ADMIN + "?q=removed desk&status=approved")).isEmpty();
+		assertThat(JsonPath.<String>read(body(get(operator, ADMIN + "?q=removed desk").expectStatus().isOk()),
+				"$.items[0].suspendedAt")).isNotNull();
+
+		post(operator, ADMIN + "/" + id + "/restore", null).expectStatus().isNoContent();
+		client.get().uri(DIRECTORY + "/removed-desk").exchange().expectStatus().isOk();
+		assertThat(JsonPath.<String>read(body(get(founder, MINE + "/" + id).expectStatus().isOk()), "$.suspendedAt"))
+			.isNull();
+		assertThat(names(operator, ADMIN + "?q=removed desk&status=approved")).containsExactly("Removed Desk");
+		assertThat(mail.latestSubjectTo("founder@removed.test")).isEqualTo("Removed Desk is back on BeyondPilot");
+		assertThat(events(id)).containsExactly("solution.approve", "solution.take_down", "solution.restore");
 	}
 
 	@Test
@@ -390,7 +461,7 @@ class SolutionTest {
 		String forOperators = body(get(operator, ADMIN + "?q=quokka").expectStatus().isOk());
 		assertThat(JsonPath.<Integer>read(forOperators, "$.total")).isEqualTo(4);
 		assertThat(JsonPath.<String>read(forOperators, "$.items[0].name")).isEqualTo("Quokka Waiting");
-		assertThat(JsonPath.<List<String>>read(body(get(operator, ADMIN + "?q=quokka&status=submitted").expectStatus()
+		assertThat(JsonPath.<List<String>>read(body(get(operator, ADMIN + "?q=quokka&status=in_review").expectStatus()
 			.isOk()), "$.items[*].name")).containsExactly("Quokka Waiting");
 		assertProblem(get(founder, ADMIN), 403, "IDENTITY_OPERATOR_REQUIRED");
 
@@ -687,7 +758,7 @@ class SolutionTest {
 		assertThat(JsonPath.<Integer>read(page, "$.deck.sizeBytes")).isEqualTo(700);
 
 		// Taken down, it is the organization's and the operators' again.
-		post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "unverifiable")).expectStatus().isNoContent();
+		post(operator, ADMIN + "/" + id + "/take-down", Map.of("reason", "unverifiable")).expectStatus().isNoContent();
 		assertProblem(client.get().uri(deck).exchange(), 404, "SOLUTION_NOT_FOUND");
 		get(founder, deck).expectStatus().isOk();
 		get(operator, deck).expectStatus().isOk();
@@ -703,7 +774,7 @@ class SolutionTest {
 		assertProblem(post(founder, deployments, Map.of("title", "No customer")), 400, "REQUEST_INVALID");
 		String added = body(post(founder, deployments, deployment("Card enquiries", null)).expectStatus().isCreated());
 		UUID id = UUID.fromString(JsonPath.read(added, "$.id"));
-		assertThat(JsonPath.<String>read(added, "$.status")).isEqualTo("submitted");
+		assertThat(JsonPath.<String>read(added, "$.status")).isEqualTo("in_review");
 		// Its organization and the operators read it; the public does not yet.
 		assertThat(JsonPath.<List<String>>read(body(get(founder, MINE + "/" + solution).expectStatus().isOk()),
 				"$.customerDeployments[*].title"))

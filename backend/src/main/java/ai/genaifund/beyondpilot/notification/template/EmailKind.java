@@ -72,6 +72,22 @@ public enum EmailKind {
 	INTRODUCTION_DECLINED("introduction_declined", EmailGroup.INTRODUCTIONS, true, null,
 			Variable.required("providerName", "Plain Cover"), Variable.required("solutionName", "ClaimLens")),
 
+	SOLUTION_APPROVED("solution_approved", EmailGroup.SOLUTIONS, true, null,
+			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover")),
+
+	SOLUTION_SENT_BACK("solution_sent_back", EmailGroup.SOLUTIONS, true, "reason",
+			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover"),
+			Variable.quote("reason", "Name a customer who uses it.")),
+
+	SOLUTION_REJECTED("solution_rejected", EmailGroup.SOLUTIONS, true, null,
+			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover")),
+
+	SOLUTION_TAKEN_DOWN("solution_taken_down", EmailGroup.SOLUTIONS, true, null,
+			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover")),
+
+	SOLUTION_RESTORED("solution_restored", EmailGroup.SOLUTIONS, true, null,
+			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover")),
+
 	USE_CASE_APPROVED("use_case_approved", EmailGroup.USE_CASES, true, null,
 			Variable.required("useCaseTitle", "Claims triage for motor insurance"),
 			Variable.required("organizationName", "Plain Cover")),

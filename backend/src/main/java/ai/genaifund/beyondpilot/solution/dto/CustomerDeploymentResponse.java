@@ -19,7 +19,7 @@ public record CustomerDeploymentResponse(@Schema(requiredMode = Schema.RequiredM
 		@Schema(types = { "string", "null" }) @Nullable String period,
 		@Schema(types = { "string", "null" }) @Nullable String result,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				allowableValues = { "submitted", "approved", "rejected" }) String status,
+				allowableValues = { "in_review", "approved", "rejected" }) String status,
 		@Schema(types = { "string", "null" }, allowableValues = { "incomplete", "unverifiable", "other" },
 				description = "Why it was last rejected.") @Nullable String decisionReason,
 		@Schema(types = { "string", "null" },

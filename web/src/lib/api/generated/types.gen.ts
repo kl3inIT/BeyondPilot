@@ -370,13 +370,17 @@ export type AdminSolutionSummary = {
     name: string;
     organizationName: string;
     slug: string;
-    status: 'submitted' | 'approved' | 'rejected';
+    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
     submittedAt?: string | null;
     /**
      * Who sent it for review last: their name, or their address until they have one. Null when it was sent before the sender was recorded.
      */
     submittedBy?: string | null;
     summary?: string | null;
+    /**
+     * When GenAI Fund took it down, while it is down; its status stays approved.
+     */
+    suspendedAt?: string | null;
     updatedAt: string;
 };
 
@@ -767,7 +771,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -1004,7 +1008,7 @@ export type CustomerDeployment = {
     problem: string;
     result?: string | null;
     stage: 'pilot' | 'production';
-    status: 'submitted' | 'approved' | 'rejected';
+    status: 'in_review' | 'approved' | 'rejected';
     title: string;
     updatedAt: string;
     /**
@@ -2497,14 +2501,14 @@ export type RejectCustomerDeployment = {
 };
 
 /**
- * Why a solution is not approved, and what its owners are told.
+ * Why a solution is refused for good, and what its owners are told.
  */
 export type RejectSolution = {
     /**
      * Shown to the owners with the rejection.
      */
     message?: string | null;
-    reason: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    reason: 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
 };
 
 /**
@@ -3474,6 +3478,16 @@ export type SendBackOrganization = {
 };
 
 /**
+ * Why GenAI Fund sends a solution back to its owners.
+ */
+export type SendBackSolution = {
+    /**
+     * What the owners should change. They read it and receive it by email.
+     */
+    reason: string;
+};
+
+/**
  * Why GenAI Fund sends a use case back to its organization.
  */
 export type SendBackUseCase = {
@@ -3533,13 +3547,13 @@ export type Solution = {
      */
     customerDeployments: Array<CustomerDeployment>;
     /**
-     * What the operator wrote to the owners with the rejection.
+     * What the operator wrote to the owners with the last decision: what to change when it was sent back, or why it was refused.
      */
     decisionMessage?: string | null;
     /**
-     * Why it was last rejected.
+     * Why it was refused for good; null for any other decision.
      */
-    decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    decisionReason?: 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
     /**
      * Its deck, when it has one.
      */
@@ -3571,13 +3585,25 @@ export type Solution = {
     organizationName: string;
     problemsSolved?: string | null;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'rejected';
     submittedAt?: string | null;
     /**
      * Who sent it for review last: their name, or their address until they have one. Null when it was never sent, or was sent before the sender was recorded.
      */
     submittedBy?: string | null;
     summary?: string | null;
+    /**
+     * When GenAI Fund took it down, while it is down; its status stays approved.
+     */
+    suspendedAt?: string | null;
+    /**
+     * What the operator wrote to the owners when taking it down.
+     */
+    suspensionMessage?: string | null;
+    /**
+     * Why GenAI Fund last took it down.
+     */
+    suspensionReason?: 'misleading_information' | 'not_an_ai_solution' | 'unverifiable' | 'breaks_the_rules' | 'other';
     traction?: string | null;
     updatedAt: string;
     valueProposition?: string | null;
@@ -3655,13 +3681,13 @@ export type SolutionOption = {
  */
 export type SolutionSummary = {
     /**
-     * What the operator wrote to the owners when sending it back.
+     * What the operator wrote to the owners with the last decision.
      */
     decisionMessage?: string | null;
     /**
-     * Why it was last sent back.
+     * Why it was refused for good; null for any other decision.
      */
-    decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    decisionReason?: 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
     /**
      * How many of its customer deployments wait for review.
      */
@@ -3676,9 +3702,21 @@ export type SolutionSummary = {
     name: string;
     organizationName: string;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'rejected';
     submittedAt?: string | null;
     summary?: string | null;
+    /**
+     * When GenAI Fund took it down, while it is down; its status stays approved.
+     */
+    suspendedAt?: string | null;
+    /**
+     * What the operator wrote to the owners when taking it down.
+     */
+    suspensionMessage?: string | null;
+    /**
+     * Why GenAI Fund last took it down.
+     */
+    suspensionReason?: 'misleading_information' | 'not_an_ai_solution' | 'unverifiable' | 'breaks_the_rules' | 'other';
     updatedAt: string;
 };
 
@@ -3731,6 +3769,17 @@ export type TakeDownOrganization = {
      */
     message?: string | null;
     reason: 'misleading_information' | 'not_a_real_organization' | 'breaks_the_rules' | 'other';
+};
+
+/**
+ * Why an approved solution is taken down, and what its owners are told.
+ */
+export type TakeDownSolution = {
+    /**
+     * Shown to the owners in their workspace.
+     */
+    message?: string | null;
+    reason: 'misleading_information' | 'not_an_ai_solution' | 'unverifiable' | 'breaks_the_rules' | 'other';
 };
 
 /**
@@ -3994,7 +4043,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -8026,9 +8075,9 @@ export type ListAdminSolutionsData = {
          */
         q?: string | null;
         /**
-         * Only solutions of this status. Drafts are never listed.
+         * Only solutions of this review status, or `suspended` for those taken down; `approved` leaves out those taken down. Drafts are never listed.
          */
-        status?: 'submitted' | 'approved' | 'rejected';
+        status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended';
         /**
          * Only solutions for this industry.
          */
@@ -8207,7 +8256,7 @@ export type RejectSolutionErrors = {
      */
     404: Problem;
     /**
-     * The solution is neither waiting for review nor approved.
+     * The solution is not waiting for review.
      */
     409: Problem;
 };
@@ -8222,6 +8271,131 @@ export type RejectSolutionResponses = {
 };
 
 export type RejectSolutionResponse = RejectSolutionResponses[keyof RejectSolutionResponses];
+
+export type RestoreSolutionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/restore';
+};
+
+export type RestoreSolutionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+    /**
+     * The solution is not taken down.
+     */
+    409: Problem;
+};
+
+export type RestoreSolutionError = RestoreSolutionErrors[keyof RestoreSolutionErrors];
+
+export type RestoreSolutionResponses = {
+    /**
+     * The solution is back.
+     */
+    204: void;
+};
+
+export type RestoreSolutionResponse = RestoreSolutionResponses[keyof RestoreSolutionResponses];
+
+export type SendBackSolutionData = {
+    body: SendBackSolution;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/send-back';
+};
+
+export type SendBackSolutionErrors = {
+    /**
+     * The reason is blank or longer than 1000 characters.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+    /**
+     * The solution is not waiting for review.
+     */
+    409: Problem;
+};
+
+export type SendBackSolutionError = SendBackSolutionErrors[keyof SendBackSolutionErrors];
+
+export type SendBackSolutionResponses = {
+    /**
+     * The solution needs changes; its owners are told.
+     */
+    204: void;
+};
+
+export type SendBackSolutionResponse = SendBackSolutionResponses[keyof SendBackSolutionResponses];
+
+export type TakeDownSolutionData = {
+    body: TakeDownSolution;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/take-down';
+};
+
+export type TakeDownSolutionErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+    /**
+     * The solution is not approved, or is already taken down.
+     */
+    409: Problem;
+};
+
+export type TakeDownSolutionError = TakeDownSolutionErrors[keyof TakeDownSolutionErrors];
+
+export type TakeDownSolutionResponses = {
+    /**
+     * The solution is taken down; its review stays approved.
+     */
+    204: void;
+};
+
+export type TakeDownSolutionResponse = TakeDownSolutionResponses[keyof TakeDownSolutionResponses];
 
 export type ListCustomerDeploymentsData = {
     body?: never;

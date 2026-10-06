@@ -11,6 +11,8 @@ public enum EmailGroup {
 
 	INTRODUCTIONS("introductions"),
 
+	SOLUTIONS("solutions"),
+
 	USE_CASES("use_cases"),
 
 	TALENT("talent");

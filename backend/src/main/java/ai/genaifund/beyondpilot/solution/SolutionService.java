@@ -79,7 +79,7 @@ public class SolutionService {
 				solutions.findByOrganizationIdOrderByCreatedAtDesc(membership.organizationId())
 					.stream()
 					.map(solution -> SolutionViews.summary(solution, membership.organizationName(),
-							deployments.countBySolutionIdAndStatus(solution.getId(), CustomerDeployment.SUBMITTED)))
+							deployments.countBySolutionIdAndStatus(solution.getId(), CustomerDeployment.IN_REVIEW)))
 					.toList(),
 				true);
 	}
@@ -143,7 +143,7 @@ public class SolutionService {
 		UUID replacedDeck = nameDeck(actor, solution, request.deckFileId());
 		List<UUID> droppedPictures = namePictures(actor, solution, request);
 		solution.list(request.listed());
-		if (!solution.isDraft() && !solution.isRejected()
+		if (!solution.isDraft() && !solution.isNeedsChanges() && !solution.isRejected()
 				&& !lackedBefore.containsAll(solution.missing())) {
 			// What operators review, and what the directory shows, keeps what a submission needs.
 			throw incomplete(id);
@@ -240,15 +240,15 @@ public class SolutionService {
 	}
 
 	/**
-	 * Sends a draft, or a rejected solution that was corrected, to GenAI Fund for review.
+	 * Sends a draft, or a solution GenAI Fund sent back and its owners corrected, to GenAI Fund for review.
 	 * @throws SolutionException when the caller is not a member, the organization has no such
-	 * solution, it lacks what a submission needs, or it is already submitted or approved
+	 * solution, it lacks what a submission needs, or it is in review, approved or refused for good
 	 */
 	@Transactional
 	public SolutionResponse submit(Actor actor, UUID id) {
 		Membership membership = writer(actor);
 		Solution solution = own(membership, id);
-		if (!solution.isDraft() && !solution.isRejected()) {
+		if (!solution.isDraft() && !solution.isNeedsChanges()) {
 			throw new SolutionException(SolutionErrorCode.NOT_SUBMITTABLE,
 					"Submission of solution " + id + ", which is " + solution.getStatus());
 		}

@@ -247,17 +247,17 @@ function solution(id, name, status, more) {
 
 /** Every submitted solution, those waiting for a decision first and the longest wait on top. */
 const solutions = [
-  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e01", "Claims Copilot", "submitted", {
+  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e01", "Claims Copilot", "in_review", {
     submittedAt: ago(3),
   }),
-  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e02", "Underwriting Radar", "submitted", {
+  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e02", "Underwriting Radar", "in_review", {
     submittedAt: ago(1),
     maturity: "prototype",
   }),
   solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e03", "Policy Chat", "approved", {
     maturity: "production",
     customerDeployments: [
-      deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f01", "Claims line at Bảo An", "submitted"),
+      deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f01", "Claims line at Bảo An", "in_review"),
       deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f02", "Renewals at Mekong Life", "approved", {
         stage: "pilot",
         result: "Half of renewals answered without an agent.",
@@ -267,6 +267,12 @@ const solutions = [
   solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e04", "Quote Bot", "rejected", {
     decisionReason: "duplicate",
     decisionMessage: "It is Policy Chat under another name.",
+  }),
+  // Approved, then taken down: it stays approved with the day it went down.
+  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e05", "Risk Lens", "approved", {
+    suspendedAt: ago(48),
+    suspensionReason: "misleading_information",
+    suspensionMessage: "The customers named are not real.",
   }),
 ];
 
@@ -446,13 +452,15 @@ const lists = {
   "/api/solution/admin/solutions": {
     records: solutions,
     idOf: (record) => record.id,
-    statusOf: (record) => record.status,
+    // A solution taken down is approved with the date it went down, and filters as `suspended`.
+    statusOf: (record) => (record.suspendedAt ? "suspended" : record.status),
     textOf: (record) => `${record.name} ${record.organizationName}`,
     summaryOf: ({ id, name, slug, status, organizationName, summary, maturity, ...record }) => ({
       id,
       name,
       slug,
       status,
+      suspendedAt: record.suspendedAt ?? null,
       organizationName,
       summary,
       maturity,
@@ -462,7 +470,7 @@ const lists = {
       submittedBy: record.submittedBy,
       updatedAt: record.updatedAt,
       deploymentsAwaitingReview: record.customerDeployments.filter(
-        (item) => item.status === "submitted",
+        (item) => item.status === "in_review",
       ).length,
     }),
   },
@@ -521,7 +529,7 @@ export function answerReview(url, account) {
         : path === "/api/solution/admin/solutions"
           ? {
               ...found,
-              awaitingReview: records.filter((record) => record.status === "submitted").length,
+              awaitingReview: records.filter((record) => record.status === "in_review").length,
             }
           : found,
     ];

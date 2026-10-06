@@ -739,7 +739,10 @@
         },
         "solution": {
           "approve": "Approved a solution",
-          "reject": "Sent a solution back",
+          "send_back": "Sent a solution back",
+          "reject": "Rejected a solution",
+          "take_down": "Took a solution down",
+          "restore": "Restored a solution",
           "deployment_approve": "Approved a customer deployment",
           "deployment_reject": "Sent a customer deployment back",
           "back": "Wrote what GenAI Fund says of a solution"
@@ -828,7 +831,10 @@
         },
         "solution": {
           "approve": "Approved the solution <resource></resource>",
-          "reject": "Sent the solution <resource></resource> back",
+          "send_back": "Sent the solution <resource></resource> back",
+          "reject": "Rejected the solution <resource></resource>",
+          "take_down": "Took the solution <resource></resource> down",
+          "restore": "Restored the solution <resource></resource>",
           "deployment_approve": "Approved the customer deployment <resource></resource>",
           "deployment_reject": "Sent the customer deployment <resource></resource> back",
           "back": "Wrote what GenAI Fund says of the solution <resource></resource>"
@@ -1141,19 +1147,28 @@
       "review": {
         "open": "Review",
         "approve": "Approve",
-        "reject": "Send back…",
+        "sendBack": "Send back…",
+        "reject": "Reject…",
         "takeDown": "Take down…",
-        "rejectTitle": "Send {name} back?",
-        "rejectLead": "It goes back to its organization as a draft to correct. The owners read your reason.",
-        "takeDownLead": "It leaves the directory at once. The owners read your reason and can send it again.",
-        "reason": "Reason",
-        "message": "Note (optional)",
-        "messageHint": "They read this word for word. Say what to change.",
-        "cancel": "Cancel",
-        "rejectConfirm": "Send back",
-        "takeDownConfirm": "Take down",
-        "reasonPlaceholder": "Choose a reason",
+        "restore": "Restore",
+        "sendBackTitle": "Send {name} back?",
+        "sendBackLead": "It goes back to its organization to correct. The owners read what you write and send it again.",
+        "sendBackLabel": "What to change",
+        "sendBackConfirm": "Send back",
+        "rejectTitle": "Reject {name} for good?",
+        "rejectLead": "Its owners cannot send it again. If something is only missing, send it back instead.",
+        "rejectConfirm": "Reject",
         "takeDownTitle": "Take {name} down?",
+        "takeDownLead": "It leaves the directory and matching at once, but stays approved. The owners read your reason; you can restore it.",
+        "takeDownConfirm": "Take down",
+        "restoreTitle": "Put {name} back?",
+        "restoreLead": "It returns to the directory and matching without a new review, listed as its owners chose. They are emailed.",
+        "reason": "Reason",
+        "reasonPlaceholder": "Choose a reason",
+        "message": "Note (optional)",
+        "messageHint": "They read this word for word.",
+        "cancel": "Cancel",
+        "back": "Back",
         "keys": "Keys: A approve · S send back",
         "keysApproved": "Key: S take down"
       },
@@ -1161,7 +1176,7 @@
         "back": "All solutions",
         "submitted": "Submitted {day}",
         "unlisted": "Hidden by its organization",
-        "rejected": "Changes needed: {reason}.",
+        "rejected": "Rejected: {reason}.",
         "next": "Next in review: {name}",
         "position": "{place} of {total} waiting",
         "waitingSince": "Sent {time}",
@@ -1174,7 +1189,9 @@
         "sent": "Sent",
         "directory": "Directory",
         "listed": "Listed once approved",
-        "deploymentsWaiting": "{count, plural, one {# customer deployment waits for review} other {# customer deployments wait for review}}"
+        "deploymentsWaiting": "{count, plural, one {# customer deployment waits for review} other {# customer deployments wait for review}}",
+        "sentBack": "Sent back:",
+        "takenDown": "Taken down: {reason}."
       },
       "record": {
         "basics": "Basics",
@@ -1862,6 +1879,7 @@
         "organizations": "Organizations",
         "applications": "Programs and applications",
         "introductions": "Introductions",
+        "solutions": "Solutions",
         "use_cases": "Use cases",
         "talent": "Talent"
       },
@@ -1925,6 +1943,26 @@
         "introduction_declined": {
           "name": "Introduction declined",
           "description": "Tells the person who asked that the provider declined."
+        },
+        "solution_approved": {
+          "name": "Solution approved",
+          "description": "Tells an organization's members their solution is approved."
+        },
+        "solution_sent_back": {
+          "name": "Solution sent back",
+          "description": "Tells an organization's members what to change before their solution is approved."
+        },
+        "solution_rejected": {
+          "name": "Solution not approved",
+          "description": "Tells an organization's members their solution was refused for good."
+        },
+        "solution_taken_down": {
+          "name": "Solution taken down",
+          "description": "Tells an organization's members GenAI Fund took their solution down."
+        },
+        "solution_restored": {
+          "name": "Solution restored",
+          "description": "Tells an organization's members their solution is back."
         },
         "use_case_approved": {
           "name": "Use case published",
@@ -2480,9 +2518,11 @@
     },
     "reviewStatus": {
       "draft": "Draft",
-      "submitted": "In review",
+      "in_review": "In review",
+      "needs_changes": "Changes needed",
       "approved": "Approved",
-      "rejected": "Changes needed"
+      "rejected": "Rejected",
+      "suspended": "Taken down"
     },
     "focusArea": {
       "conversational_ai": "Conversational AI",
@@ -2534,10 +2574,16 @@
       "hybrid": "Hybrid"
     },
     "solutionRejection": {
-      "incomplete": "Information is missing",
       "not_an_ai_solution": "Not an AI solution",
       "duplicate": "Already listed",
       "unverifiable": "Claims could not be verified",
+      "other": "Other reason"
+    },
+    "solutionTakedown": {
+      "misleading_information": "Misleading information",
+      "not_an_ai_solution": "Not an AI solution",
+      "unverifiable": "Claims could not be verified",
+      "breaks_the_rules": "Breaks the rules",
       "other": "Other reason"
     },
     "talentRole": {
@@ -3256,7 +3302,7 @@
     "errors": {
       "SOLUTION_NOT_FOUND": "This solution no longer exists.",
       "SOLUTION_INCOMPLETE": "Fill in the marked fields before sending for review.",
-      "SOLUTION_NOT_SUBMITTABLE": "This solution is already in review or approved.",
+      "SOLUTION_NOT_SUBMITTABLE": "This solution is already in review, approved, or refused for good.",
       "SOLUTION_NOT_A_DRAFT": "Only a draft can be deleted.",
       "SOLUTION_NOT_AWAITING_REVIEW": "This solution has already been reviewed.",
       "SOLUTION_CHANGED_MEANWHILE": "Someone else changed this solution. Reload the page and try again.",
@@ -3269,21 +3315,26 @@
       "SOLUTION_DECK_NOT_USABLE": "This file cannot be the deck. Upload the PDF again.",
       "unknown": "That did not work. Try again.",
       "SOLUTION_IMAGE_NOT_USABLE": "This image cannot be used. Upload it again.",
-      "linkNotCopied": "The link was not copied. Try again."
+      "linkNotCopied": "The link was not copied. Try again.",
+      "SOLUTION_NOT_APPROVED": "Only an approved solution that is not taken down can be taken down.",
+      "SOLUTION_NOT_TAKEN_DOWN": "This solution is not taken down."
     },
     "done": {
       "saved": "Solution saved.",
       "submitted": "Sent to GenAI Fund for review.",
       "deleted": "{name} deleted.",
       "approved": "{name} is approved.",
-      "rejected": "{name} sent back with your reason.",
+      "rejected": "{name} is rejected.",
       "deploymentSaved": "{name} sent to GenAI Fund for review.",
       "deploymentRemoved": "{name} removed.",
       "deploymentApproved": "{name} approved.",
       "deploymentRejected": "{name} sent back.",
       "shown": "{name} is listed in the directory.",
       "hidden": "{name} is hidden from the directory.",
-      "linkCopied": "Link copied"
+      "linkCopied": "Link copied",
+      "sentBack": "{name} sent back with what to change.",
+      "takenDown": "{name} is taken down.",
+      "restored": "{name} is back."
     },
     "directory": {
       "metaTitle": "AI solutions · BeyondPilot",
@@ -3453,7 +3504,8 @@
           "lead": "People with the link can still open it. It leaves the directory and search at once.",
           "confirm": "Hide"
         },
-        "view": "Open"
+        "view": "Open",
+        "takenDown": "Taken down by GenAI Fund"
       },
       "create": {
         "title": "Add a solution",
@@ -3473,19 +3525,24 @@
         "listed": "Listed",
         "unlisted": "Unlisted · link only",
         "notYet": "Not public yet",
-        "notPublic": "Not public"
+        "notPublic": "Not public",
+        "takenDown": "Taken down by GenAI Fund"
       },
       "about": {
         "draft": "Draft · {filled} of {total} required fields filled",
         "sentBack": "Sent back: {reason}",
-        "sentBackPlain": "Sent back"
+        "sentBackPlain": "Sent back",
+        "rejected": "Rejected: {reason}",
+        "takenDown": "Taken down: {reason}"
       },
       "sent": "Sent {date}",
       "review": {
         "draft": "Draft",
-        "submitted": "In review",
+        "in_review": "In review",
+        "needs_changes": "Sent back",
         "approved": "Approved",
-        "rejected": "Sent back"
+        "rejected": "Rejected",
+        "suspended": "Taken down"
       }
     },
     "editor": {
@@ -3649,19 +3706,27 @@
         "leave": "Leave without saving",
         "stay": "Stay"
       },
-      "submitted": {
-        "title": "GenAI Fund is reviewing this solution",
-        "lead": "This usually takes one or two working days. You can still correct it."
-      },
       "approved": {
         "listed": "Approved and listed in the directory",
         "unlisted": "Approved, but not listed in the directory",
         "open": "Open the public page",
         "unlistedLead": "Anyone with its link can open it. Turn on the listing in the last step to show it in the directory."
       },
-      "rejected": {
-        "title": "Changes needed: {reason}",
+      "in_review": {
+        "title": "GenAI Fund is reviewing this solution",
+        "lead": "This usually takes one or two working days. You can still correct it."
+      },
+      "needsChanges": {
+        "title": "GenAI Fund sent this solution back",
         "lead": "Correct it and send it for review again."
+      },
+      "rejected": {
+        "title": "Not approved: {reason}",
+        "lead": "GenAI Fund will not list this solution. It cannot be sent for review again."
+      },
+      "suspended": {
+        "title": "Taken down: {reason}",
+        "lead": "It is out of the directory and matching while GenAI Fund keeps it down. Write to GenAI Fund if you think this is a mistake."
       },
       "imagesRequired": "A logo and a cover image are needed for review. Everything else on this step is optional.",
       "images": {

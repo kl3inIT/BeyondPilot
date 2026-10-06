@@ -194,6 +194,32 @@ public class EmailService {
 						!"project".equals(topic) && !"role".equals(topic), "message", message));
 	}
 
+	/** What GenAI Fund decided about a solution. */
+	public enum SolutionDecision {
+
+		APPROVED, SENT_BACK, REJECTED, TAKEN_DOWN, RESTORED
+
+	}
+
+	/**
+	 * Tells a member of an organization what GenAI Fund decided about one of its solutions. What to change, when GenAI
+	 * Fund sent it back, is quoted as written; any other reason is read after signing in.
+	 * @param reason what GenAI Fund asked to change, when it sent the solution back; null otherwise
+	 */
+	@Transactional
+	public void sendSolutionDecision(String recipient, String organizationName, String solutionName,
+			SolutionDecision decision, @Nullable String reason) {
+		EmailKind kind = switch (decision) {
+			case APPROVED -> EmailKind.SOLUTION_APPROVED;
+			case SENT_BACK -> EmailKind.SOLUTION_SENT_BACK;
+			case REJECTED -> EmailKind.SOLUTION_REJECTED;
+			case TAKEN_DOWN -> EmailKind.SOLUTION_TAKEN_DOWN;
+			case RESTORED -> EmailKind.SOLUTION_RESTORED;
+		};
+		queue(kind, recipient,
+				values("solutionName", solutionName, "organizationName", organizationName, "reason", reason));
+	}
+
 	/**
 	 * Tells a member of an organization what GenAI Fund decided about one of its use cases. The reason, when GenAI
 	 * Fund sent the use case back, is quoted as written.

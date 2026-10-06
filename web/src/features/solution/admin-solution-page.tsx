@@ -3,7 +3,7 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { QueueNext } from "@/components/composites/queue-next";
-import { ReviewStatus } from "@/components/composites/review-status";
+import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { Solution } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -26,16 +26,18 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
   const t = useTranslations("Admin.solutions.detail");
   const status = useVocabulary("reviewStatus");
   const reason = useVocabulary("solutionRejection");
+  const takedown = useVocabulary("solutionTakedown");
+  const state = reviewState(solution);
   const format = useFormatter();
   const locale = useLocale();
   const deploymentsWaiting = solution.customerDeployments.filter(
-    (item) => item.status === "submitted",
+    (item) => item.status === "in_review",
   ).length;
 
   const facts: { label: string; value: React.ReactNode }[] = [
     {
       label: t("status"),
-      value: <ReviewStatus state={solution.status}>{status(solution.status)}</ReviewStatus>,
+      value: <ReviewStatus state={state}>{status(state)}</ReviewStatus>,
     },
     {
       label: t("organization"),
@@ -52,7 +54,7 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
           {
             label: t("sent"),
             value:
-              solution.status === "submitted"
+              solution.status === "in_review"
                 ? t("waitingSince", { time: format.relativeTime(new Date(solution.submittedAt)) })
                 : t("submitted", {
                     day: format.dateTime(new Date(solution.submittedAt), { dateStyle: "medium" }),
@@ -63,7 +65,7 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
     {
       label: t("directory"),
       value:
-        solution.status === "approved" && solution.listed ? (
+        state === "approved" && solution.listed ? (
           <TextButton href={`${siteRoutes.solutions}/${solution.slug}`}>{t("public")}</TextButton>
         ) : (
           t(solution.listed ? "listed" : "unlisted")
@@ -116,6 +118,19 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
                 {solution.decisionMessage && <> {solution.decisionMessage}</>}
               </p>
             )}
+            {solution.status === "needs_changes" && solution.decisionMessage && (
+              <p className="rounded-lg border bg-muted p-3 text-sm">
+                <span className="font-medium">{t("sentBack")}</span> {solution.decisionMessage}
+              </p>
+            )}
+            {state === "suspended" && (
+              <p className="rounded-lg border bg-muted p-3 text-sm">
+                <span className="font-medium">
+                  {t("takenDown", { reason: takedown(solution.suspensionReason ?? "other") })}
+                </span>
+                {solution.suspensionMessage && <> {solution.suspensionMessage}</>}
+              </p>
+            )}
             {/* Approving the solution does not decide on what its owners claim about customers. */}
             {deploymentsWaiting > 0 && (
               <p className="text-sm">
@@ -124,11 +139,11 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
                 </TextButton>
               </p>
             )}
-            {(solution.status === "submitted" || solution.status === "approved") && (
+            {(state === "in_review" || state === "approved" || state === "suspended") && (
               <SolutionReview
                 key={solution.id}
                 solution={solution}
-                nextHref={next?.href ?? `${siteRoutes.adminSolutions}?status=submitted`}
+                nextHref={next?.href ?? `${siteRoutes.adminSolutions}?status=in_review`}
               />
             )}
           </aside>

@@ -66,7 +66,7 @@ class SearchDirectoriesTest {
 	}
 
 	@Test
-	void anApprovedSolutionIsFoundUnderItsOrganizationAndLeavesTheResultsWhenUnlistedOrRejected() {
+	void anApprovedSolutionIsFoundUnderItsOrganizationAndLeavesTheResultsWhenUnlistedOrTakenDown() {
 		String owner = TestSignIn.session(client, mail, "owner-" + word + "@directories.test");
 		UUID organization = organization(owner, "Revve " + word);
 		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
@@ -99,9 +99,12 @@ class SearchDirectoriesTest {
 		// Matching may still use it.
 		assertThat(listed(solution)).isFalse();
 
-		post(operator, "/api/solution/admin/solutions/" + solution + "/reject",
-				Map.of("reason", "other", "message", "Tell us where the model is."));
+		post(operator, "/api/solution/admin/solutions/" + solution + "/take-down",
+				Map.of("reason", "unverifiable", "message", "Tell us where the model is."));
+		// Out of matching too while it is down, and back once restored.
 		await().atMost(WAIT).until(() -> listed(solution) == null);
+		post(operator, "/api/solution/admin/solutions/" + solution + "/restore", null);
+		await().atMost(WAIT).until(() -> listed(solution) != null);
 	}
 
 	@Test

@@ -739,7 +739,10 @@
         },
         "solution": {
           "approve": "Duyệt giải pháp",
-          "reject": "Trả lại giải pháp",
+          "send_back": "Trả lại giải pháp",
+          "reject": "Từ chối giải pháp",
+          "take_down": "Gỡ giải pháp xuống",
+          "restore": "Khôi phục giải pháp",
           "deployment_approve": "Duyệt triển khai khách hàng",
           "deployment_reject": "Trả lại triển khai khách hàng",
           "back": "Ghi xác nhận của GenAI Fund về giải pháp"
@@ -828,7 +831,10 @@
         },
         "solution": {
           "approve": "Duyệt giải pháp <resource></resource>",
-          "reject": "Trả lại giải pháp <resource></resource>",
+          "send_back": "Trả lại giải pháp <resource></resource>",
+          "reject": "Từ chối giải pháp <resource></resource>",
+          "take_down": "Gỡ giải pháp <resource></resource> xuống",
+          "restore": "Khôi phục giải pháp <resource></resource>",
           "deployment_approve": "Duyệt triển khai khách hàng <resource></resource>",
           "deployment_reject": "Trả lại triển khai khách hàng <resource></resource>",
           "back": "Ghi xác nhận của GenAI Fund về giải pháp <resource></resource>"
@@ -1141,19 +1147,28 @@
       "review": {
         "open": "Duyệt",
         "approve": "Duyệt",
-        "reject": "Trả lại…",
+        "sendBack": "Trả lại…",
+        "reject": "Từ chối…",
         "takeDown": "Gỡ xuống…",
-        "rejectTitle": "Trả lại {name}?",
-        "rejectLead": "Giải pháp trở về tổ chức để chỉnh sửa. Chủ sở hữu đọc được lý do.",
-        "takeDownLead": "Giải pháp rời danh mục ngay. Chủ sở hữu đọc được lý do và có thể gửi lại.",
-        "reason": "Lý do",
-        "message": "Ghi chú (không bắt buộc)",
-        "messageHint": "Người nhận đọc nguyên văn. Hãy nêu cần sửa gì.",
-        "cancel": "Hủy",
-        "rejectConfirm": "Trả lại",
-        "takeDownConfirm": "Gỡ xuống",
-        "reasonPlaceholder": "Chọn lý do",
+        "restore": "Khôi phục",
+        "sendBackTitle": "Trả lại {name}?",
+        "sendBackLead": "Giải pháp trở về tổ chức để chỉnh sửa. Chủ sở hữu đọc nội dung bạn viết rồi gửi lại.",
+        "sendBackLabel": "Cần sửa gì",
+        "sendBackConfirm": "Trả lại",
+        "rejectTitle": "Từ chối hẳn {name}?",
+        "rejectLead": "Chủ sở hữu không gửi lại được. Nếu chỉ thiếu thông tin, hãy trả lại.",
+        "rejectConfirm": "Từ chối",
         "takeDownTitle": "Gỡ {name} xuống?",
+        "takeDownLead": "Giải pháp rời danh mục và matching ngay nhưng vẫn ở trạng thái đã duyệt. Chủ sở hữu đọc lý do; bạn có thể khôi phục.",
+        "takeDownConfirm": "Gỡ xuống",
+        "restoreTitle": "Đưa {name} trở lại?",
+        "restoreLead": "Giải pháp trở lại danh mục và matching, không cần duyệt lại, theo cách hiển thị chủ sở hữu đã chọn. Họ nhận email.",
+        "reason": "Lý do",
+        "reasonPlaceholder": "Chọn lý do",
+        "message": "Ghi chú (không bắt buộc)",
+        "messageHint": "Người nhận đọc nguyên văn.",
+        "cancel": "Hủy",
+        "back": "Quay lại",
         "keys": "Phím: A duyệt · S trả lại",
         "keysApproved": "Phím: S gỡ xuống"
       },
@@ -1161,7 +1176,7 @@
         "back": "Tất cả giải pháp",
         "submitted": "Gửi ngày {day}",
         "unlisted": "Tổ chức đang ẩn",
-        "rejected": "Cần chỉnh sửa: {reason}.",
+        "rejected": "Bị từ chối: {reason}.",
         "next": "Chờ duyệt tiếp theo: {name}",
         "position": "{place} trên {total} đang chờ",
         "waitingSince": "Gửi {time}",
@@ -1174,7 +1189,9 @@
         "sent": "Thời điểm gửi",
         "directory": "Danh mục",
         "listed": "Sẽ hiện khi được duyệt",
-        "deploymentsWaiting": "{count} triển khai khách hàng chờ duyệt"
+        "deploymentsWaiting": "{count} triển khai khách hàng chờ duyệt",
+        "sentBack": "Đã trả lại:",
+        "takenDown": "Đã gỡ xuống: {reason}."
       },
       "record": {
         "basics": "Thông tin cơ bản",
@@ -1862,6 +1879,7 @@
         "organizations": "Tổ chức",
         "applications": "Chương trình và đơn",
         "introductions": "Giới thiệu",
+        "solutions": "Giải pháp",
         "use_cases": "Use case",
         "talent": "Nhân lực"
       },
@@ -1925,6 +1943,26 @@
         "introduction_declined": {
           "name": "Từ chối giới thiệu",
           "description": "Báo người yêu cầu rằng bên cung cấp đã từ chối."
+        },
+        "solution_approved": {
+          "name": "Giải pháp được duyệt",
+          "description": "Báo các thành viên của tổ chức rằng giải pháp đã được duyệt."
+        },
+        "solution_sent_back": {
+          "name": "Giải pháp bị trả lại",
+          "description": "Báo các thành viên của tổ chức cần sửa gì trước khi giải pháp được duyệt."
+        },
+        "solution_rejected": {
+          "name": "Giải pháp không được duyệt",
+          "description": "Báo các thành viên của tổ chức rằng giải pháp bị từ chối hẳn."
+        },
+        "solution_taken_down": {
+          "name": "Giải pháp bị gỡ xuống",
+          "description": "Báo các thành viên của tổ chức rằng GenAI Fund đã gỡ giải pháp xuống."
+        },
+        "solution_restored": {
+          "name": "Giải pháp được khôi phục",
+          "description": "Báo các thành viên của tổ chức rằng giải pháp đã trở lại."
         },
         "use_case_approved": {
           "name": "Use case được đăng",
@@ -2480,9 +2518,11 @@
     },
     "reviewStatus": {
       "draft": "Bản nháp",
-      "submitted": "Đang duyệt",
+      "in_review": "Đang duyệt",
+      "needs_changes": "Cần chỉnh sửa",
       "approved": "Đã duyệt",
-      "rejected": "Cần chỉnh sửa"
+      "rejected": "Bị từ chối",
+      "suspended": "Đã gỡ xuống"
     },
     "focusArea": {
       "conversational_ai": "AI hội thoại",
@@ -2534,10 +2574,16 @@
       "hybrid": "Kết hợp"
     },
     "solutionRejection": {
-      "incomplete": "Thiếu thông tin",
       "not_an_ai_solution": "Không phải giải pháp AI",
       "duplicate": "Đã được đăng",
       "unverifiable": "Không xác minh được thông tin",
+      "other": "Lý do khác"
+    },
+    "solutionTakedown": {
+      "misleading_information": "Thông tin gây hiểu nhầm",
+      "not_an_ai_solution": "Không phải giải pháp AI",
+      "unverifiable": "Không xác minh được thông tin",
+      "breaks_the_rules": "Vi phạm quy định",
       "other": "Lý do khác"
     },
     "talentRole": {
@@ -3256,7 +3302,7 @@
     "errors": {
       "SOLUTION_NOT_FOUND": "Giải pháp này không còn tồn tại.",
       "SOLUTION_INCOMPLETE": "Hãy điền các trường được đánh dấu trước khi gửi duyệt.",
-      "SOLUTION_NOT_SUBMITTABLE": "Giải pháp này đang được duyệt hoặc đã duyệt.",
+      "SOLUTION_NOT_SUBMITTABLE": "Giải pháp này đang được duyệt, đã duyệt hoặc đã bị từ chối hẳn.",
       "SOLUTION_NOT_A_DRAFT": "Chỉ xóa được bản nháp.",
       "SOLUTION_NOT_AWAITING_REVIEW": "Giải pháp này đã được duyệt xong.",
       "SOLUTION_CHANGED_MEANWHILE": "Có người vừa sửa giải pháp này. Hãy tải lại trang rồi thử lại.",
@@ -3269,21 +3315,26 @@
       "SOLUTION_DECK_NOT_USABLE": "Tệp này không dùng làm tài liệu giới thiệu được. Hãy tải PDF lên lại.",
       "unknown": "Chưa thực hiện được. Hãy thử lại.",
       "SOLUTION_IMAGE_NOT_USABLE": "Ảnh này không dùng được. Hãy tải lên lại.",
-      "linkNotCopied": "Chưa sao chép được liên kết. Hãy thử lại."
+      "linkNotCopied": "Chưa sao chép được liên kết. Hãy thử lại.",
+      "SOLUTION_NOT_APPROVED": "Chỉ gỡ được giải pháp đã duyệt và chưa bị gỡ.",
+      "SOLUTION_NOT_TAKEN_DOWN": "Giải pháp này chưa bị gỡ xuống."
     },
     "done": {
       "saved": "Đã lưu giải pháp.",
       "submitted": "Đã gửi GenAI Fund duyệt.",
       "deleted": "Đã xóa {name}.",
       "approved": "Đã duyệt {name}.",
-      "rejected": "Đã trả lại {name} kèm lý do.",
+      "rejected": "Đã từ chối {name}.",
       "deploymentSaved": "Đã gửi {name} cho GenAI Fund duyệt.",
       "deploymentRemoved": "Đã gỡ {name}.",
       "deploymentApproved": "Đã duyệt {name}.",
       "deploymentRejected": "Đã trả lại {name}.",
       "shown": "{name} đã được đăng trong danh mục.",
       "hidden": "{name} đã ẩn khỏi danh mục.",
-      "linkCopied": "Đã sao chép liên kết"
+      "linkCopied": "Đã sao chép liên kết",
+      "sentBack": "Đã trả lại {name} kèm nội dung cần sửa.",
+      "takenDown": "Đã gỡ {name} xuống.",
+      "restored": "Đã khôi phục {name}."
     },
     "directory": {
       "metaTitle": "Giải pháp AI · BeyondPilot",
@@ -3453,7 +3504,8 @@
           "lead": "Ai có liên kết vẫn mở được. Giải pháp rời danh mục và kết quả tìm kiếm ngay.",
           "confirm": "Ẩn"
         },
-        "view": "Mở"
+        "view": "Mở",
+        "takenDown": "GenAI Fund đã gỡ xuống"
       },
       "create": {
         "title": "Thêm giải pháp",
@@ -3473,19 +3525,24 @@
         "listed": "Đang đăng",
         "unlisted": "Không đăng · chỉ mở bằng liên kết",
         "notYet": "Chưa công khai",
-        "notPublic": "Không công khai"
+        "notPublic": "Không công khai",
+        "takenDown": "GenAI Fund đã gỡ xuống"
       },
       "about": {
         "draft": "Bản nháp · đã điền {filled}/{total} mục bắt buộc",
         "sentBack": "Bị trả lại: {reason}",
-        "sentBackPlain": "Bị trả lại"
+        "sentBackPlain": "Bị trả lại",
+        "rejected": "Bị từ chối: {reason}",
+        "takenDown": "Đã gỡ xuống: {reason}"
       },
       "sent": "Gửi ngày {date}",
       "review": {
         "draft": "Bản nháp",
-        "submitted": "Đang duyệt",
+        "in_review": "Đang duyệt",
+        "needs_changes": "Bị trả lại",
         "approved": "Đã duyệt",
-        "rejected": "Bị trả lại"
+        "rejected": "Bị từ chối",
+        "suspended": "Đã gỡ xuống"
       }
     },
     "editor": {
@@ -3649,19 +3706,27 @@
         "leave": "Rời trang, không lưu",
         "stay": "Ở lại"
       },
-      "submitted": {
-        "title": "GenAI Fund đang duyệt giải pháp này",
-        "lead": "Thường mất một đến hai ngày làm việc. Bạn vẫn có thể chỉnh sửa."
-      },
       "approved": {
         "listed": "Đã duyệt và hiển thị trong danh mục",
         "unlisted": "Đã duyệt nhưng không niêm yết trong danh mục",
         "open": "Mở trang công khai",
         "unlistedLead": "Ai có liên kết đều mở được. Bật niêm yết ở bước cuối để hiển thị trong danh mục."
       },
-      "rejected": {
-        "title": "Cần chỉnh sửa: {reason}",
+      "in_review": {
+        "title": "GenAI Fund đang duyệt giải pháp này",
+        "lead": "Thường mất một đến hai ngày làm việc. Bạn vẫn có thể chỉnh sửa."
+      },
+      "needsChanges": {
+        "title": "GenAI Fund đã trả lại giải pháp này",
         "lead": "Hãy chỉnh sửa rồi gửi duyệt lại."
+      },
+      "rejected": {
+        "title": "Không được duyệt: {reason}",
+        "lead": "GenAI Fund sẽ không đăng giải pháp này. Không thể gửi duyệt lại."
+      },
+      "suspended": {
+        "title": "Đã gỡ xuống: {reason}",
+        "lead": "Giải pháp không có trong danh mục và matching khi GenAI Fund còn gỡ. Hãy liên hệ GenAI Fund nếu bạn cho rằng có nhầm lẫn."
       },
       "imagesRequired": "Cần có logo và ảnh bìa để gửi duyệt. Các mục còn lại ở bước này không bắt buộc.",
       "images": {

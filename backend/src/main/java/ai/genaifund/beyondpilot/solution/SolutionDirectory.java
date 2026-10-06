@@ -174,8 +174,8 @@ public class SolutionDirectory {
 	}
 
 	/**
-	 * An approved solution as search indexes it, listed or not; empty for any other, or when its organization is not
-	 * approved or is taken down.
+	 * An approved solution as search indexes it, listed or not; empty for any other, when it is taken down, or when its
+	 * organization is not approved or is taken down.
 	 */
 	@Transactional(readOnly = true)
 	public Optional<IndexedSolution> indexed(UUID solutionId) {
@@ -184,10 +184,10 @@ public class SolutionDirectory {
 			.findFirst());
 	}
 
-	/** Every approved solution as search indexes it, for a rebuild of the index. */
+	/** Every approved solution not taken down as search indexes it, for a rebuild of the index. */
 	@Transactional(readOnly = true)
 	public List<IndexedSolution> indexedAll() {
-		return indexed(solutions.findByStatus(Solution.APPROVED));
+		return indexed(solutions.findByStatus(Solution.APPROVED).stream().filter(Solution::isApproved).toList());
 	}
 
 	/**

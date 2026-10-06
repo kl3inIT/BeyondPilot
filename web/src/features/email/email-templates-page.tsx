@@ -15,6 +15,7 @@ const groups = [
   "organizations",
   "applications",
   "introductions",
+  "solutions",
   "use_cases",
   "talent",
 ] as const;

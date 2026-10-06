@@ -2,6 +2,7 @@ import { BoxesIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { reviewState } from "@/components/composites/review-status";
 import { Status } from "@/components/composites/status";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { OrganizationFrame } from "@/features/organization/organization-frame";
@@ -32,17 +33,22 @@ type OrganizationSolutionsPageProps = {
 /** The tone of each state of a review in the list, where the states are scanned as pills. */
 const reviewTones = {
   draft: "neutral",
-  submitted: "info",
+  in_review: "info",
+  needs_changes: "warning",
   approved: "success",
   rejected: "destructive",
+  suspended: "destructive",
 } as const;
 
 /** Whether anyone outside the organization reads a solution, and how they come to it. */
 function listingOf(solution: SolutionSummary) {
   if (solution.status === "approved") {
+    if (solution.suspendedAt) {
+      return "takenDown";
+    }
     return solution.listed ? "listed" : "unlisted";
   }
-  return solution.status === "submitted" ? "notYet" : "notPublic";
+  return solution.status === "in_review" ? "notYet" : "notPublic";
 }
 
 /**
@@ -58,6 +64,7 @@ function OrganizationSolutionsPage({
 }: OrganizationSolutionsPageProps) {
   const t = useTranslations("Solution.mine");
   const reason = useVocabulary("solutionRejection");
+  const takedown = useVocabulary("solutionTakedown");
   const format = useFormatter();
   const waiting =
     mine.role === "owner" &&
@@ -72,10 +79,20 @@ function OrganizationSolutionsPage({
         total: reviewFields.length,
       });
     }
+    if (solution.status === "needs_changes") {
+      return solution.decisionMessage
+        ? t("about.sentBack", { reason: solution.decisionMessage })
+        : t("about.sentBackPlain");
+    }
     if (solution.status === "rejected") {
-      const why =
-        solution.decisionMessage ?? (solution.decisionReason && reason(solution.decisionReason));
-      return why ? t("about.sentBack", { reason: why }) : t("about.sentBackPlain");
+      return t("about.rejected", {
+        reason: solution.decisionMessage ?? reason(solution.decisionReason ?? "other"),
+      });
+    }
+    if (solution.suspendedAt && solution.status === "approved") {
+      return t("about.takenDown", {
+        reason: solution.suspensionMessage ?? takedown(solution.suspensionReason ?? "other"),
+      });
     }
     return solution.summary;
   }
@@ -96,14 +113,14 @@ function OrganizationSolutionsPage({
         </div>
       ),
       status: (
-        <Status appearance="pill" tone={reviewTones[solution.status]}>
-          {t(`review.${solution.status}`)}
+        <Status appearance="pill" tone={reviewTones[reviewState(solution)]}>
+          {t(`review.${reviewState(solution)}`)}
         </Status>
       ),
       listing: <span>{t(`listing.${listingOf(solution)}`)}</span>,
       updated: (
         <span className="text-muted-foreground">
-          {solution.status === "submitted" && solution.submittedAt
+          {solution.status === "in_review" && solution.submittedAt
             ? t("sent", { date: day(solution.submittedAt) })
             : day(solution.updatedAt)}
         </span>

@@ -105,7 +105,7 @@ function ReviewStep({
   const deploymentCounts = (
     [
       ["deploymentsApproved", counted("approved")],
-      ["deploymentsWaiting", counted("submitted")],
+      ["deploymentsWaiting", counted("in_review")],
       ["deploymentsSentBack", counted("rejected")],
     ] as const
   )

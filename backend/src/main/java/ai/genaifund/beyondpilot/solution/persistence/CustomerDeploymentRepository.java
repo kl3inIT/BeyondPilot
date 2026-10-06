@@ -26,11 +26,11 @@ public interface CustomerDeploymentRepository extends JpaRepository<CustomerDepl
 
 	int countBySolutionIdAndStatus(UUID solutionId, String status);
 
-	/** The approved deployments of the approved, listed solutions of an organization, the newest decision first. */
+	/** The approved deployments of the approved, listed solutions not taken down of an organization, the newest decision first. */
 	@Query("""
 			select d from CustomerDeployment d, Solution s
 			where s.id = d.solutionId and s.organizationId = :organizationId and s.status = 'approved'
-			  and s.listed = true and d.status = 'approved'
+			  and s.listed = true and s.suspendedAt is null and d.status = 'approved'
 			order by d.decidedAt desc, d.id
 			""")
 	List<CustomerDeployment> findPublicByOrganization(UUID organizationId, Pageable page);
@@ -38,7 +38,7 @@ public interface CustomerDeploymentRepository extends JpaRepository<CustomerDepl
 	@Query("""
 			select count(d) from CustomerDeployment d, Solution s
 			where s.id = d.solutionId and s.organizationId = :organizationId and s.status = 'approved'
-			  and s.listed = true and d.status = 'approved'
+			  and s.listed = true and s.suspendedAt is null and d.status = 'approved'
 			""")
 	long countPublicByOrganization(UUID organizationId);
 

@@ -20,7 +20,7 @@ import { IconButton } from "@/components/actions/icon-button";
 import { TextButton } from "@/components/actions/text-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
-import { ReviewStatus } from "@/components/composites/review-status";
+import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { StepItem } from "@/components/composites/step-item";
 import { BrandLockup } from "@/components/layout/brand-lockup";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -85,6 +85,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
   const say = useTranslations();
   const reviewStatus = useVocabulary("reviewStatus");
   const rejection = useVocabulary("solutionRejection");
+  const takedown = useVocabulary("solutionTakedown");
   const format = useFormatter();
   const locale = useLocale();
   const notify = useNotify();
@@ -111,7 +112,9 @@ function SolutionEditor({ solution }: { solution: Solution }) {
   const firstStep = useRef(true);
 
   const list = getPathname({ href: siteRoutes.workspaceSolutions, locale });
-  const autosaves = server.status === "draft" || server.status === "rejected";
+  // A draft and a solution sent back are written step by step and sent for review at the end.
+  const autosaves = server.status === "draft" || server.status === "needs_changes";
+  const standing = reviewState(server);
   const content = contentOf(draft);
   const dirty = content !== contentOf(held(server));
   const missing = missingForReview(draft);
@@ -447,7 +450,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               </Badge>
             ) : (
               <span className="max-lg:hidden">
-                <ReviewStatus state={server.status}>{reviewStatus(server.status)}</ReviewStatus>
+                <ReviewStatus state={standing}>{reviewStatus(standing)}</ReviewStatus>
               </span>
             )}
             {autosaves ? (
@@ -507,7 +510,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
                 {t("visibility.draftShort", { organization: server.organizationName })}
               </p>
             ) : (
-              <ReviewStatus state={server.status}>{reviewStatus(server.status)}</ReviewStatus>
+              <ReviewStatus state={standing}>{reviewStatus(standing)}</ReviewStatus>
             )}
           </div>
           <Progress
@@ -557,14 +560,14 @@ function SolutionEditor({ solution }: { solution: Solution }) {
         </nav>
 
         <div className="flex w-full max-w-170 min-w-0 flex-col gap-4">
-          {server.status === "submitted" && (
+          {standing === "in_review" && (
             <Alert>
               <TimerIcon aria-hidden="true" />
-              <AlertTitle>{t("submitted.title")}</AlertTitle>
-              <AlertDescription>{t("submitted.lead")}</AlertDescription>
+              <AlertTitle>{t("in_review.title")}</AlertTitle>
+              <AlertDescription>{t("in_review.lead")}</AlertDescription>
             </Alert>
           )}
-          {server.status === "approved" && (
+          {standing === "approved" && (
             <Alert>
               <CircleCheckIcon aria-hidden="true" />
               <AlertTitle>{t(server.listed ? "approved.listed" : "approved.unlisted")}</AlertTitle>
@@ -576,7 +579,17 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               </AlertDescription>
             </Alert>
           )}
-          {server.status === "rejected" && (
+          {standing === "needs_changes" && (
+            <Alert variant="destructive">
+              <CircleAlertIcon aria-hidden="true" />
+              <AlertTitle>{t("needsChanges.title")}</AlertTitle>
+              <AlertDescription>
+                {server.decisionMessage && <p>{server.decisionMessage}</p>}
+                <p>{t("needsChanges.lead")}</p>
+              </AlertDescription>
+            </Alert>
+          )}
+          {standing === "rejected" && (
             <Alert variant="destructive">
               <CircleAlertIcon aria-hidden="true" />
               <AlertTitle>
@@ -585,6 +598,18 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               <AlertDescription>
                 {server.decisionMessage && <p>{server.decisionMessage}</p>}
                 <p>{t("rejected.lead")}</p>
+              </AlertDescription>
+            </Alert>
+          )}
+          {standing === "suspended" && (
+            <Alert variant="destructive">
+              <CircleAlertIcon aria-hidden="true" />
+              <AlertTitle>
+                {t("suspended.title", { reason: takedown(server.suspensionReason ?? "other") })}
+              </AlertTitle>
+              <AlertDescription>
+                {server.suspensionMessage && <p>{server.suspensionMessage}</p>}
+                <p>{t("suspended.lead")}</p>
               </AlertDescription>
             </Alert>
           )}
@@ -672,7 +697,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
                   disabled={missing.length > 0 || !saveable || pending !== null}
                   onClick={() => setConfirming("submit")}
                 >
-                  {t(server.status === "rejected" ? "review.resubmit" : "review.submit")}
+                  {t(server.status === "needs_changes" ? "review.resubmit" : "review.submit")}
                 </Button>
               )}
               {last && !autosaves && (

@@ -27,10 +27,14 @@ public class Solution {
 
 	public static final String DRAFT = "draft";
 
-	public static final String SUBMITTED = "submitted";
+	public static final String IN_REVIEW = "in_review";
+
+	/** GenAI Fund sent a solution that waited for review back to its owners, with what to change. */
+	public static final String NEEDS_CHANGES = "needs_changes";
 
 	public static final String APPROVED = "approved";
 
+	/** GenAI Fund refused the solution for good; its owners cannot send it again. */
 	public static final String REJECTED = "rejected";
 
 	@Id
@@ -119,6 +123,12 @@ public class Solution {
 	private @Nullable Instant submittedAt;
 
 	private @Nullable UUID submittedByAccountId;
+
+	private @Nullable String suspensionReason;
+
+	private @Nullable String suspensionMessage;
+
+	private @Nullable Instant suspendedAt;
 
 	@Column(nullable = false)
 	private boolean listed = true;
@@ -219,7 +229,7 @@ public class Solution {
 	}
 
 	public void submit(Instant at, UUID byAccountId) {
-		status = SUBMITTED;
+		status = IN_REVIEW;
 		submittedAt = at;
 		submittedByAccountId = byAccountId;
 	}
@@ -236,6 +246,29 @@ public class Solution {
 		decisionReason = reason;
 		decisionMessage = message;
 		decidedAt = at;
+	}
+
+	/** Sends a solution that waits for review back to its owners with what to change; there is no reason code. */
+	public void sendBack(String message, Instant at) {
+		status = NEEDS_CHANGES;
+		decisionReason = null;
+		decisionMessage = message;
+		decidedAt = at;
+	}
+
+	/**
+	 * Takes an approved solution out of the directory and matching. Its review stays approved, so restoring needs no
+	 * new review; while it is down {@link #isApproved()} is false.
+	 */
+	public void takeDown(String reason, @Nullable String message, Instant at) {
+		suspensionReason = reason;
+		suspensionMessage = message;
+		suspendedAt = at;
+	}
+
+	/** Puts a solution taken down back; the reason it was taken down stays readable on the record. */
+	public void restore() {
+		suspendedAt = null;
 	}
 
 	/**
@@ -274,12 +307,21 @@ public class Solution {
 		return DRAFT.equals(status);
 	}
 
-	public boolean isSubmitted() {
-		return SUBMITTED.equals(status);
+	public boolean isInReview() {
+		return IN_REVIEW.equals(status);
 	}
 
+	public boolean isNeedsChanges() {
+		return NEEDS_CHANGES.equals(status);
+	}
+
+	/** Approved by GenAI Fund and not taken down: what puts it in the directory once listed, and in matching. */
 	public boolean isApproved() {
-		return APPROVED.equals(status);
+		return APPROVED.equals(status) && suspendedAt == null;
+	}
+
+	public boolean isTakenDown() {
+		return suspendedAt != null;
 	}
 
 	public boolean isRejected() {
@@ -424,6 +466,18 @@ public class Solution {
 
 	public @Nullable String getDecisionMessage() {
 		return decisionMessage;
+	}
+
+	public @Nullable String getSuspensionReason() {
+		return suspensionReason;
+	}
+
+	public @Nullable String getSuspensionMessage() {
+		return suspensionMessage;
+	}
+
+	public @Nullable Instant getSuspendedAt() {
+		return suspendedAt;
 	}
 
 	public @Nullable Instant getSubmittedAt() {
