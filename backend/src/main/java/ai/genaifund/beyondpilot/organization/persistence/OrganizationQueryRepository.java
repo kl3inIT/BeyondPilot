@@ -66,6 +66,25 @@ public class OrganizationQueryRepository {
 				""").param("pattern", containing(text)).param("limit", limit).query(OrganizationQueryRepository::match).list();
 	}
 
+	/**
+	 * The approved organizations, the ones that can have use cases, by name; at most {@code limit}.
+	 * @param text only those whose name contains it, ignoring case; every one when null
+	 */
+	public List<Name> approvedOrganizations(@Nullable String text, int limit) {
+		return jdbc.sql("""
+				select id, slug, name, country from organization
+				where status = 'approved'
+				  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\')
+				order by lower(name), id
+				limit :limit
+				""")
+			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
+			.param("limit", limit)
+			.query((row, index) -> new Name(row.getObject("id", UUID.class), row.getString("slug"),
+					row.getString("name"), row.getString("country")))
+			.list();
+	}
+
 	/** The organizations whose name contains the text, whatever their review says. */
 	public List<UUID> idsNamed(String text) {
 		return jdbc.sql("select id from organization where lower(name) like :pattern escape '\\'")

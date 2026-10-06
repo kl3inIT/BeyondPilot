@@ -438,6 +438,98 @@ export type AdminTalentList = {
 };
 
 /**
+ * One use case as an operator reads it.
+ */
+export type AdminUseCase = {
+    attachments: Array<UseCaseAttachment>;
+    /**
+     * US dollars. Null while the budget is to be determined.
+     */
+    budgetMax?: number | null;
+    budgetMembersOnly: boolean;
+    /**
+     * US dollars. Null while the budget is to be determined.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    closesAt?: string | null;
+    createdAt: string;
+    createdBy: UseCasePerson;
+    currentProcess?: string | null;
+    currentSolutions?: string | null;
+    dataReadiness?: string | null;
+    expectedOutcomes?: string | null;
+    hideOrganizationName: boolean;
+    id: string;
+    industry?: string | null;
+    integrationRequirements?: string | null;
+    organization: UseCaseOrganization;
+    problemStatement?: string | null;
+    publishedAt?: string | null;
+    requirements: Array<UseCaseRequirement>;
+    /**
+     * What GenAI Fund asked to change, while the use case is sent back.
+     */
+    reviewNote?: string | null;
+    reviewedAt?: string | null;
+    /**
+     * Who approved it or sent it back; null while no one has.
+     */
+    reviewedBy?: UseCasePerson;
+    /**
+     * Closed once the close date has passed, whatever the use case was before.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    submittedAt?: string | null;
+    /**
+     * Who sent it for review; null if it was never sent.
+     */
+    submittedBy?: UseCasePerson;
+    targetUsers?: string | null;
+    technologies: Array<string>;
+    timelineMaxWeeks?: number | null;
+    timelineMinWeeks?: number | null;
+    title?: string | null;
+    updatedAt: string;
+    version: number;
+};
+
+/**
+ * One page of use cases, the newest first.
+ */
+export type AdminUseCaseList = {
+    /**
+     * How many use cases in the whole system wait for GenAI Fund, whatever the filter.
+     */
+    inReview: number;
+    items: Array<AdminUseCaseSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many use cases match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * One use case in the operators' list.
+ */
+export type AdminUseCaseSummary = {
+    closesAt?: string | null;
+    id: string;
+    organization: UseCaseOrganization;
+    /**
+     * Closed once the close date has passed, whatever the use case was before.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    title?: string | null;
+    updatedAt: string;
+};
+
+/**
  * Who applies, for someone in no organization: themselves on their own, or their team.
  */
 export type ApplicantOrganization = {
@@ -589,7 +681,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -721,6 +813,58 @@ export type CreateProgram = {
  */
 export type CreateSolution = {
     name: string;
+};
+
+/**
+ * A use case an operator writes for an organization. It is saved as a draft the organization's members can edit, or published at once when publishNow is true.
+ */
+export type CreateUseCase = {
+    /**
+     * Files the caller uploaded for a use case, in the order shown.
+     */
+    attachmentFileIds: Array<string>;
+    /**
+     * US dollars. Null while the budget is to be determined.
+     */
+    budgetMax?: number | null;
+    /**
+     * Only signed-in members see the amount.
+     */
+    budgetMembersOnly: boolean;
+    /**
+     * US dollars. Null while the budget is to be determined.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * When proposals stop. It must be in the future.
+     */
+    closesAt: string;
+    currentProcess: string;
+    currentSolutions?: string | null;
+    dataReadiness: string;
+    expectedOutcomes: string;
+    hideOrganizationName: boolean;
+    industry: string;
+    integrationRequirements: string;
+    /**
+     * An approved organization.
+     */
+    organizationId: string;
+    problemStatement: string;
+    /**
+     * True to publish at once, false to save a draft for the organization.
+     */
+    publishNow: boolean;
+    /**
+     * What the solution must do, in the order written.
+     */
+    requirements: Array<UseCaseRequirement>;
+    targetUsers: string;
+    technologies: Array<string>;
+    timelineMaxWeeks: number;
+    timelineMinWeeks: number;
+    title: string;
 };
 
 /**
@@ -1012,7 +1156,7 @@ export type EmailTemplate = {
     defaultBody: string;
     defaultSubject: string;
     edited: boolean;
-    group: 'sign_in' | 'organizations' | 'applications' | 'introductions' | 'talent';
+    group: 'sign_in' | 'organizations' | 'applications' | 'introductions' | 'use_cases' | 'talent';
     kind: string;
     subject: string;
     updatedAt?: string | null;
@@ -1036,7 +1180,7 @@ export type EmailTemplateListItem = {
      * Whether an operator's wording replaces the default.
      */
     edited: boolean;
-    group: 'sign_in' | 'organizations' | 'applications' | 'introductions' | 'talent';
+    group: 'sign_in' | 'organizations' | 'applications' | 'introductions' | 'use_cases' | 'talent';
     kind: string;
     /**
      * The subject in use, with its variables as written.
@@ -1281,6 +1425,89 @@ export type MyTalent = {
      * Null until the caller saves a profile.
      */
     profile?: TalentProfile | null;
+};
+
+/**
+ * One use case as a member of its organization reads and edits it.
+ */
+export type MyUseCase = {
+    attachments: Array<UseCaseAttachment>;
+    budgetMax?: number | null;
+    budgetMembersOnly: boolean;
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * Whether the members changed it since GenAI Fund sent it back; it cannot be sent again before.
+     */
+    changedSinceReview: boolean;
+    closesAt?: string | null;
+    /**
+     * Whether it holds everything a use case needs to be sent for review.
+     */
+    complete: boolean;
+    currentProcess?: string | null;
+    currentSolutions?: string | null;
+    dataReadiness?: string | null;
+    /**
+     * Whether the members can edit it now: a draft, one GenAI Fund sent back, or one that is published.
+     */
+    editable: boolean;
+    expectedOutcomes?: string | null;
+    hideOrganizationName: boolean;
+    id: string;
+    industry?: string | null;
+    integrationRequirements?: string | null;
+    lastEditedBy: UseCasePerson;
+    organizationName: string;
+    problemStatement?: string | null;
+    publishedAt?: string | null;
+    requirements: Array<UseCaseRequirement>;
+    /**
+     * What GenAI Fund asked to change, when it sent the use case back.
+     */
+    reviewNote?: string | null;
+    /**
+     * Closed once the close date has passed, whatever the use case was before.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    submittedAt?: string | null;
+    /**
+     * Who sent it for review; null if it was never sent.
+     */
+    submittedBy?: UseCasePerson;
+    targetUsers?: string | null;
+    technologies: Array<string>;
+    timelineMaxWeeks?: number | null;
+    timelineMinWeeks?: number | null;
+    title?: string | null;
+    updatedAt: string;
+    version: number;
+};
+
+/**
+ * One use case of the caller's organization in the tab's list.
+ */
+export type MyUseCaseSummary = {
+    closesAt?: string | null;
+    id: string;
+    lastEditedBy: UseCasePerson;
+    /**
+     * Closed once the close date has passed, whatever the use case was before.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    submittedAt?: string | null;
+    /**
+     * Null until someone has named the use case.
+     */
+    title?: string | null;
+    updatedAt: string;
+};
+
+/**
+ * The use cases of the caller's organization, the most recently touched first.
+ */
+export type MyUseCases = {
+    items: Array<MyUseCaseSummary>;
 };
 
 /**
@@ -1948,6 +2175,57 @@ export type PublicTalentSummary = {
 };
 
 /**
+ * One page of the public list of use cases.
+ */
+export type PublicUseCaseList = {
+    items: Array<PublicUseCaseSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many use cases match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * A published use case as the public list shows it.
+ */
+export type PublicUseCaseSummary = {
+    budgetMax?: number | null;
+    /**
+     * Whether the organization shows the budget to members only.
+     */
+    budgetMembersOnly: boolean;
+    /**
+     * In US dollars; null while the budget is to be determined or is for members only.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * Proposals close at this instant.
+     */
+    closesAt: string;
+    /**
+     * The outcomes the organization expects.
+     */
+    goal: string;
+    id: string;
+    industry: string;
+    /**
+     * The organization's name; null when it asked to stay anonymous.
+     */
+    organizationName?: string | null;
+    publishedAt: string;
+    technologies: Array<string>;
+    timelineMaxWeeks: number;
+    timelineMinWeeks: number;
+    title: string;
+};
+
+/**
  * The requests for an introduction to the caller's organization.
  */
 export type ReceivedIntroductions = {
@@ -2061,7 +2339,7 @@ export type ReserveUpload = {
     /**
      * Why the file is uploaded; it fixes the allowed media types and the largest size.
      */
-    purpose: 'program_image' | 'talent_photo' | 'organization_logo' | 'application_file' | 'solution_deck';
+    purpose: 'program_image' | 'talent_photo' | 'organization_logo' | 'application_file' | 'use_case_attachment' | 'solution_deck';
     /**
      * The exact length of the file in bytes.
      */
@@ -2459,6 +2737,54 @@ export type SaveEmailTemplate = {
 };
 
 /**
+ * What the members have written of a use case so far; any part may be missing.
+ */
+export type SaveMyUseCase = {
+    /**
+     * Files the caller uploaded for a use case, in the order shown.
+     */
+    attachmentFileIds: Array<string>;
+    /**
+     * US dollars. Null while the budget is to be determined.
+     */
+    budgetMax?: number | null;
+    /**
+     * Only signed-in members see the amount.
+     */
+    budgetMembersOnly: boolean;
+    /**
+     * US dollars. Null while the budget is to be determined.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * When proposals stop. It must be in the future.
+     */
+    closesAt?: string | null;
+    currentProcess?: string | null;
+    currentSolutions?: string | null;
+    dataReadiness?: string | null;
+    expectedOutcomes?: string | null;
+    hideOrganizationName: boolean;
+    industry?: string | null;
+    integrationRequirements?: string | null;
+    problemStatement?: string | null;
+    /**
+     * What the solution must do, in the order written.
+     */
+    requirements: Array<UseCaseRequirement>;
+    targetUsers?: string | null;
+    technologies: Array<string>;
+    timelineMaxWeeks?: number | null;
+    timelineMinWeeks?: number | null;
+    title?: string | null;
+    /**
+     * The version the caller read; a save over a newer one is refused.
+     */
+    version: number;
+};
+
+/**
  * The profile of an organization as its Profile screen holds it.
  */
 export type SaveOrganization = {
@@ -2756,6 +3082,16 @@ export type SearchResults = {
      * How many items of the kind shown match, every kind when none is chosen.
      */
     total: number;
+};
+
+/**
+ * Why GenAI Fund sends a use case back to its organization.
+ */
+export type SendBackUseCase = {
+    /**
+     * What the organization should change. Its members read it and receive it by email.
+     */
+    reason: string;
 };
 
 /**
@@ -3097,6 +3433,57 @@ export type UploadTicket = {
     url: string;
 };
 
+/**
+ * A file attached to a use case.
+ */
+export type UseCaseAttachment = {
+    fileName: string;
+    id: string;
+    mediaType: string;
+    sizeBytes: number;
+};
+
+/**
+ * The organization a use case is for.
+ */
+export type UseCaseOrganization = {
+    id: string;
+    name: string;
+};
+
+/**
+ * The approved organizations that can have use cases, by name; at most 50.
+ */
+export type UseCaseOrganizationList = {
+    items: Array<UseCaseOrganization>;
+};
+
+/**
+ * Who last changed a use case, as the reader may be shown them.
+ */
+export type UseCasePerson = {
+    /**
+     * Whether the person works for GenAI Fund rather than for the organization.
+     */
+    genaiFund: boolean;
+    /**
+     * Their name, or their address until they have a name.
+     */
+    name: string;
+    /**
+     * Whether it is the caller.
+     */
+    you: boolean;
+};
+
+/**
+ * One thing the solution must do.
+ */
+export type UseCaseRequirement = {
+    necessity: 'required' | 'optional';
+    statement: string;
+};
+
 export type ListAuditEventsData = {
     body?: never;
     path?: never;
@@ -3108,7 +3495,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -8061,3 +8448,501 @@ export type SendTalentEnquiryResponses = {
 };
 
 export type SendTalentEnquiryResponse = SendTalentEnquiryResponses[keyof SendTalentEnquiryResponses];
+
+export type ListUseCaseOrganizationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Organizations whose name contains this, ignoring case.
+         */
+        q?: string | null;
+    };
+    url: '/api/usecase/admin/organizations';
+};
+
+export type ListUseCaseOrganizationsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListUseCaseOrganizationsError = ListUseCaseOrganizationsErrors[keyof ListUseCaseOrganizationsErrors];
+
+export type ListUseCaseOrganizationsResponses = {
+    /**
+     * The approved organizations, by name.
+     */
+    200: UseCaseOrganizationList;
+};
+
+export type ListUseCaseOrganizationsResponse = ListUseCaseOrganizationsResponses[keyof ListUseCaseOrganizationsResponses];
+
+export type ListAdminUseCasesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Use cases whose title or organization name contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only use cases in this status, as a reader sees it now.
+         */
+        status?: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+        /**
+         * Only use cases of this organization.
+         */
+        organizationId?: string | null;
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/usecase/admin/use-cases';
+};
+
+export type ListAdminUseCasesErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminUseCasesError = ListAdminUseCasesErrors[keyof ListAdminUseCasesErrors];
+
+export type ListAdminUseCasesResponses = {
+    /**
+     * One page of the use cases the parameters select.
+     */
+    200: AdminUseCaseList;
+};
+
+export type ListAdminUseCasesResponse = ListAdminUseCasesResponses[keyof ListAdminUseCasesResponses];
+
+export type CreateAdminUseCaseData = {
+    body: CreateUseCase;
+    path?: never;
+    query?: never;
+    url: '/api/usecase/admin/use-cases';
+};
+
+export type CreateAdminUseCaseErrors = {
+    /**
+     * A member is not valid, the organization is not approved, the close date is not in the future, or the budget or the timeline is out of order.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type CreateAdminUseCaseError = CreateAdminUseCaseErrors[keyof CreateAdminUseCaseErrors];
+
+export type CreateAdminUseCaseResponses = {
+    /**
+     * The use case, a draft or published as asked.
+     */
+    201: AdminUseCase;
+};
+
+export type CreateAdminUseCaseResponse = CreateAdminUseCaseResponses[keyof CreateAdminUseCaseResponses];
+
+export type GetAdminUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}';
+};
+
+export type GetAdminUseCaseErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+};
+
+export type GetAdminUseCaseError = GetAdminUseCaseErrors[keyof GetAdminUseCaseErrors];
+
+export type GetAdminUseCaseResponses = {
+    /**
+     * The use case.
+     */
+    200: AdminUseCase;
+};
+
+export type GetAdminUseCaseResponse = GetAdminUseCaseResponses[keyof GetAdminUseCaseResponses];
+
+export type ApproveAdminUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}/approve';
+};
+
+export type ApproveAdminUseCaseErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is not in review.
+     */
+    409: Problem;
+};
+
+export type ApproveAdminUseCaseError = ApproveAdminUseCaseErrors[keyof ApproveAdminUseCaseErrors];
+
+export type ApproveAdminUseCaseResponses = {
+    /**
+     * The use case, now published.
+     */
+    200: AdminUseCase;
+};
+
+export type ApproveAdminUseCaseResponse = ApproveAdminUseCaseResponses[keyof ApproveAdminUseCaseResponses];
+
+export type SendBackAdminUseCaseData = {
+    body: SendBackUseCase;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}/send-back';
+};
+
+export type SendBackAdminUseCaseErrors = {
+    /**
+     * The reason is missing or too long.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is not in review.
+     */
+    409: Problem;
+};
+
+export type SendBackAdminUseCaseError = SendBackAdminUseCaseErrors[keyof SendBackAdminUseCaseErrors];
+
+export type SendBackAdminUseCaseResponses = {
+    /**
+     * The use case, now needing changes.
+     */
+    200: AdminUseCase;
+};
+
+export type SendBackAdminUseCaseResponse = SendBackAdminUseCaseResponses[keyof SendBackAdminUseCaseResponses];
+
+export type ListMyUseCasesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/usecase/mine';
+};
+
+export type ListMyUseCasesErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+};
+
+export type ListMyUseCasesError = ListMyUseCasesErrors[keyof ListMyUseCasesErrors];
+
+export type ListMyUseCasesResponses = {
+    /**
+     * Every use case of the organization, the most recently touched first.
+     */
+    200: MyUseCases;
+};
+
+export type ListMyUseCasesResponse = ListMyUseCasesResponses[keyof ListMyUseCasesResponses];
+
+export type CreateMyUseCaseData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/usecase/mine';
+};
+
+export type CreateMyUseCaseErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+};
+
+export type CreateMyUseCaseError = CreateMyUseCaseErrors[keyof CreateMyUseCaseErrors];
+
+export type CreateMyUseCaseResponses = {
+    /**
+     * The empty draft.
+     */
+    201: MyUseCase;
+};
+
+export type CreateMyUseCaseResponse = CreateMyUseCaseResponses[keyof CreateMyUseCaseResponses];
+
+export type GetMyUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}';
+};
+
+export type GetMyUseCaseErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The organization has no such use case.
+     */
+    404: Problem;
+};
+
+export type GetMyUseCaseError = GetMyUseCaseErrors[keyof GetMyUseCaseErrors];
+
+export type GetMyUseCaseResponses = {
+    /**
+     * The use case.
+     */
+    200: MyUseCase;
+};
+
+export type GetMyUseCaseResponse = GetMyUseCaseResponses[keyof GetMyUseCaseResponses];
+
+export type SaveMyUseCaseData = {
+    body: SaveMyUseCase;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}';
+};
+
+export type SaveMyUseCaseErrors = {
+    /**
+     * A part is not valid, or the budget or the timeline is out of order.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The organization has no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is in review or closed, or someone saved a newer version.
+     */
+    409: Problem;
+};
+
+export type SaveMyUseCaseError = SaveMyUseCaseErrors[keyof SaveMyUseCaseErrors];
+
+export type SaveMyUseCaseResponses = {
+    /**
+     * The use case as saved, with its new version.
+     */
+    200: MyUseCase;
+};
+
+export type SaveMyUseCaseResponse = SaveMyUseCaseResponses[keyof SaveMyUseCaseResponses];
+
+export type MoveMyUseCaseToDraftData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}/draft';
+};
+
+export type MoveMyUseCaseToDraftErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The organization has no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is neither in review nor published.
+     */
+    409: Problem;
+};
+
+export type MoveMyUseCaseToDraftError = MoveMyUseCaseToDraftErrors[keyof MoveMyUseCaseToDraftErrors];
+
+export type MoveMyUseCaseToDraftResponses = {
+    /**
+     * The use case, now a draft.
+     */
+    200: MyUseCase;
+};
+
+export type MoveMyUseCaseToDraftResponse = MoveMyUseCaseToDraftResponses[keyof MoveMyUseCaseToDraftResponses];
+
+export type SubmitMyUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}/submit';
+};
+
+export type SubmitMyUseCaseErrors = {
+    /**
+     * A part is missing, or the close date has passed.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The organization has no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is not a draft.
+     */
+    409: Problem;
+};
+
+export type SubmitMyUseCaseError = SubmitMyUseCaseErrors[keyof SubmitMyUseCaseErrors];
+
+export type SubmitMyUseCaseResponses = {
+    /**
+     * The use case, now in review.
+     */
+    200: MyUseCase;
+};
+
+export type SubmitMyUseCaseResponse = SubmitMyUseCaseResponses[keyof SubmitMyUseCaseResponses];
+
+export type ListUseCasesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Use cases whose title or goal contains this, or whose organization name does, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only use cases of this industry.
+         */
+        industry?: string | null;
+        /**
+         * The order: the most recently published first, the nearest deadline first, or the largest budget first.
+         */
+        sort?: 'newest' | 'deadline' | 'budget';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/usecase/use-cases';
+};
+
+export type ListUseCasesErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+};
+
+export type ListUseCasesError = ListUseCasesErrors[keyof ListUseCasesErrors];
+
+export type ListUseCasesResponses = {
+    /**
+     * One page of the use cases the parameters select.
+     */
+    200: PublicUseCaseList;
+};
+
+export type ListUseCasesResponse = ListUseCasesResponses[keyof ListUseCasesResponses];

@@ -16,9 +16,6 @@ tags:
   name: Accounts
 - description: "The programs GenAI Fund runs, as the public site shows them."
   name: Programs
-- description: "Reports of delivery, bounces and complaints, sent by the email provider\
-    \ and checked by signature."
-  name: Email delivery events
 - description: The public directory of approved AI solutions.
   name: Solutions
 - description: The public directory of approved talent profiles.
@@ -39,15 +36,18 @@ tags:
   name: Search
 - description: Who is signed in.
   name: Identity
+- description: The use cases the members of an organization write.
+  name: My organization's use cases
 - description: Uploading and reading files.
   name: Storage
 - description: The projects in which a customer put a solution to work.
   name: Customer deployments
+- description: The public list of published use cases.
+  name: Use cases
 - description: The caller's own talent profile.
   name: My talent profile
-- description: "Who delivers BeyondPilot's email, its wording, what was sent and the\
-    \ addresses it is not sent to."
-  name: Email administration
+- description: The use cases operators write and read.
+  name: Use case administration
 - description: The talent profiles operators review.
   name: Talent administration
 - description: The solutions operators review.
@@ -56,6 +56,12 @@ tags:
   name: Organizations
 - description: The solutions of the caller's organization.
   name: My solutions
+- description: "Reports of delivery, bounces and complaints, sent by the email provider\
+    \ and checked by signature."
+  name: Email delivery events
+- description: "Who delivers BeyondPilot's email, its wording, what was sent and the\
+    \ addresses it is not sent to."
+  name: Email administration
 paths:
   /api/audit/events:
     get:
@@ -103,6 +109,11 @@ paths:
           - solution.reject
           - solution.deployment_approve
           - solution.deployment_reject
+          - use_case.create
+          - use_case.submit
+          - use_case.draft
+          - use_case.approve
+          - use_case.send_back
           - introduction.reply
           - introduction.decline
           - talent.approve
@@ -6068,6 +6079,630 @@ paths:
       summary: Send a message to the person behind a talent profile
       tags:
       - Talent
+  /api/usecase/admin/organizations:
+    get:
+      operationId: listUseCaseOrganizations
+      parameters:
+      - description: "Organizations whose name contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseOrganizationList"
+          description: "The approved organizations, by name."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: The organizations a use case can be written for
+      tags:
+      - Use case administration
+  /api/usecase/admin/use-cases:
+    get:
+      operationId: listAdminUseCases
+      parameters:
+      - description: "Use cases whose title or organization name contains this, ignoring\
+          \ case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "Only use cases in this status, as a reader sees it now."
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - draft
+          - in_review
+          - needs_changes
+          - published
+          - closed
+          pattern: draft|in_review|needs_changes|published|closed
+      - description: Only use cases of this organization.
+        in: query
+        name: organizationId
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: uuid
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUseCaseList"
+          description: One page of the use cases the parameters select.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The use cases, the newest first"
+      tags:
+      - Use case administration
+    post:
+      operationId: createAdminUseCase
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUseCase"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUseCase"
+          description: "The use case, a draft or published as asked."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, the organization is not approved, the\
+            \ close date is not in the future, or the budget or the timeline is out\
+            \ of order."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "Create a use case for an organization, as a draft or published"
+      tags:
+      - Use case administration
+  /api/usecase/admin/use-cases/{id}:
+    get:
+      operationId: getAdminUseCase
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUseCase"
+          description: The use case.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+      security:
+      - session: []
+      summary: One use case as an operator reads it
+      tags:
+      - Use case administration
+  /api/usecase/admin/use-cases/{id}/approve:
+    post:
+      operationId: approveAdminUseCase
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUseCase"
+          description: "The use case, now published."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The use case is not in review.
+      security:
+      - session: []
+      summary: Approve a use case in review and publish it
+      tags:
+      - Use case administration
+  /api/usecase/admin/use-cases/{id}/send-back:
+    post:
+      operationId: sendBackAdminUseCase
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendBackUseCase"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUseCase"
+          description: "The use case, now needing changes."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The reason is missing or too long.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The use case is not in review.
+      security:
+      - session: []
+      summary: Send a use case in review back with what to change
+      tags:
+      - Use case administration
+  /api/usecase/mine:
+    get:
+      operationId: listMyUseCases
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyUseCases"
+          description: "Every use case of the organization, the most recently touched\
+            \ first."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not a member of an approved organization that
+            publishes use cases.
+      security:
+      - session: []
+      summary: The use cases of the caller's organization
+      tags:
+      - My organization's use cases
+    post:
+      operationId: createMyUseCase
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyUseCase"
+          description: The empty draft.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not a member of an approved organization that
+            publishes use cases.
+      security:
+      - session: []
+      summary: Start an empty draft for the caller's organization
+      tags:
+      - My organization's use cases
+  /api/usecase/mine/{id}:
+    get:
+      operationId: getMyUseCase
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyUseCase"
+          description: The use case.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not a member of an approved organization that
+            publishes use cases.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization has no such use case.
+      security:
+      - session: []
+      summary: One use case of the caller's organization
+      tags:
+      - My organization's use cases
+    put:
+      operationId: saveMyUseCase
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveMyUseCase"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyUseCase"
+          description: "The use case as saved, with its new version."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A part is not valid, or the budget or the timeline is out\
+            \ of order."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not a member of an approved organization that
+            publishes use cases.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization has no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The use case is in review or closed, or someone saved a newer\
+            \ version."
+      security:
+      - session: []
+      summary: Save what the members have written so far
+      tags:
+      - My organization's use cases
+  /api/usecase/mine/{id}/draft:
+    post:
+      operationId: moveMyUseCaseToDraft
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyUseCase"
+          description: "The use case, now a draft."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not a member of an approved organization that
+            publishes use cases.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization has no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The use case is neither in review nor published.
+      security:
+      - session: []
+      summary: "Take a use case out of review, or out of the directory, back to a\
+        \ draft"
+      tags:
+      - My organization's use cases
+  /api/usecase/mine/{id}/submit:
+    post:
+      operationId: submitMyUseCase
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyUseCase"
+          description: "The use case, now in review."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A part is missing, or the close date has passed."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not a member of an approved organization that
+            publishes use cases.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization has no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The use case is not a draft.
+      security:
+      - session: []
+      summary: Send a draft to GenAI Fund for review
+      tags:
+      - My organization's use cases
+  /api/usecase/use-cases:
+    get:
+      operationId: listUseCases
+      parameters:
+      - description: "Use cases whose title or goal contains this, or whose organization\
+          \ name does, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only use cases of this industry.
+        in: query
+        name: industry
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+      - description: "The order: the most recently published first, the nearest deadline\
+          \ first, or the largest budget first."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+          default: newest
+          enum:
+          - newest
+          - deadline
+          - budget
+          pattern: newest|deadline|budget
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicUseCaseList"
+          description: One page of the use cases the parameters select.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+      summary: The published use cases that still accept proposals
+      tags:
+      - Use cases
 components:
   schemas:
     AccountList:
@@ -6888,6 +7523,224 @@ components:
       - page
       - pageSize
       - total
+    AdminUseCase:
+      type: object
+      description: One use case as an operator reads it.
+      properties:
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/UseCaseAttachment"
+        budgetMax:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: US dollars. Null while the budget is to be determined.
+        budgetMembersOnly:
+          type: boolean
+        budgetMin:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: US dollars. Null while the budget is to be determined.
+        budgetToBeDetermined:
+          type: boolean
+        closesAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/UseCasePerson"
+        currentProcess:
+          type:
+          - string
+          - "null"
+        currentSolutions:
+          type:
+          - string
+          - "null"
+        dataReadiness:
+          type:
+          - string
+          - "null"
+        expectedOutcomes:
+          type:
+          - string
+          - "null"
+        hideOrganizationName:
+          type: boolean
+        id:
+          type: string
+          format: uuid
+        industry:
+          type:
+          - string
+          - "null"
+        integrationRequirements:
+          type:
+          - string
+          - "null"
+        organization:
+          $ref: "#/components/schemas/UseCaseOrganization"
+        problemStatement:
+          type:
+          - string
+          - "null"
+        publishedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        requirements:
+          type: array
+          items:
+            $ref: "#/components/schemas/UseCaseRequirement"
+        reviewNote:
+          type:
+          - string
+          - "null"
+          description: "What GenAI Fund asked to change, while the use case is sent\
+            \ back."
+        reviewedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        reviewedBy:
+          $ref: "#/components/schemas/UseCasePerson"
+          description: Who approved it or sent it back; null while no one has.
+        status:
+          type: string
+          description: "Closed once the close date has passed, whatever the use case\
+            \ was before."
+          enum:
+          - draft
+          - in_review
+          - needs_changes
+          - published
+          - closed
+        submittedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        submittedBy:
+          $ref: "#/components/schemas/UseCasePerson"
+          description: Who sent it for review; null if it was never sent.
+        targetUsers:
+          type:
+          - string
+          - "null"
+        technologies:
+          type: array
+          items:
+            type: string
+        timelineMaxWeeks:
+          type:
+          - integer
+          - "null"
+          format: int32
+        timelineMinWeeks:
+          type:
+          - integer
+          - "null"
+          format: int32
+        title:
+          type:
+          - string
+          - "null"
+        updatedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+      required:
+      - attachments
+      - budgetMembersOnly
+      - budgetToBeDetermined
+      - createdAt
+      - createdBy
+      - hideOrganizationName
+      - id
+      - organization
+      - requirements
+      - status
+      - technologies
+      - updatedAt
+      - version
+    AdminUseCaseList:
+      type: object
+      description: "One page of use cases, the newest first."
+      properties:
+        inReview:
+          type: integer
+          format: int64
+          description: "How many use cases in the whole system wait for GenAI Fund,\
+            \ whatever the filter."
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminUseCaseSummary"
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+          description: "How many use cases match, over all pages."
+      required:
+      - inReview
+      - items
+      - page
+      - pageSize
+      - total
+    AdminUseCaseSummary:
+      type: object
+      description: One use case in the operators' list.
+      properties:
+        closesAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        organization:
+          $ref: "#/components/schemas/UseCaseOrganization"
+        status:
+          type: string
+          description: "Closed once the close date has passed, whatever the use case\
+            \ was before."
+          enum:
+          - draft
+          - in_review
+          - needs_changes
+          - published
+          - closed
+        title:
+          type:
+          - string
+          - "null"
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - organization
+      - status
+      - updatedAt
     ApplicantOrganization:
       type: object
       description: "Who applies, for someone in no organization: themselves on their\
@@ -7217,6 +8070,11 @@ components:
           - solution.reject
           - solution.deployment_approve
           - solution.deployment_reject
+          - use_case.create
+          - use_case.submit
+          - use_case.draft
+          - use_case.approve
+          - use_case.send_back
           - introduction.reply
           - introduction.decline
           - talent.approve
@@ -7495,6 +8353,135 @@ components:
           minLength: 0
       required:
       - name
+    CreateUseCase:
+      type: object
+      description: "A use case an operator writes for an organization. It is saved\
+        \ as a draft the organization's members can edit, or published at once when\
+        \ publishNow is true."
+      properties:
+        attachmentFileIds:
+          type: array
+          description: "Files the caller uploaded for a use case, in the order shown."
+          items:
+            type: string
+            format: uuid
+          maxItems: 10
+          minItems: 0
+        budgetMax:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: US dollars. Null while the budget is to be determined.
+          maximum: 100000000
+          minimum: 0
+        budgetMembersOnly:
+          type: boolean
+          description: Only signed-in members see the amount.
+        budgetMin:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: US dollars. Null while the budget is to be determined.
+          maximum: 100000000
+          minimum: 0
+        budgetToBeDetermined:
+          type: boolean
+        closesAt:
+          type: string
+          format: date-time
+          description: When proposals stop. It must be in the future.
+        currentProcess:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        currentSolutions:
+          type:
+          - string
+          - "null"
+          maxLength: 2000
+          minLength: 0
+        dataReadiness:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        expectedOutcomes:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        hideOrganizationName:
+          type: boolean
+        industry:
+          type: string
+          pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+        integrationRequirements:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        organizationId:
+          type: string
+          format: uuid
+          description: An approved organization.
+        problemStatement:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        publishNow:
+          type: boolean
+          description: "True to publish at once, false to save a draft for the organization."
+        requirements:
+          type: array
+          description: "What the solution must do, in the order written."
+          items:
+            $ref: "#/components/schemas/UseCaseRequirement"
+          maxItems: 30
+          minItems: 1
+        targetUsers:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        technologies:
+          type: array
+          items:
+            type: string
+            pattern: generative_ai|conversational_ai|predictive_analytics|computer_vision|recommendation|document_intelligence|voice_ai|anomaly_detection|knowledge_retrieval|process_automation|other
+          maxItems: 11
+          minItems: 1
+        timelineMaxWeeks:
+          type: integer
+          format: int32
+          maximum: 260
+          minimum: 1
+        timelineMinWeeks:
+          type: integer
+          format: int32
+          maximum: 260
+          minimum: 1
+        title:
+          type: string
+          maxLength: 200
+          minLength: 0
+      required:
+      - attachmentFileIds
+      - budgetMembersOnly
+      - budgetToBeDetermined
+      - closesAt
+      - currentProcess
+      - dataReadiness
+      - expectedOutcomes
+      - hideOrganizationName
+      - industry
+      - integrationRequirements
+      - organizationId
+      - problemStatement
+      - publishNow
+      - requirements
+      - targetUsers
+      - technologies
+      - timelineMaxWeeks
+      - timelineMinWeeks
+      - title
     CustomerDeployment:
       type: object
       description: "A customer deployment of a solution as its organization, and operators,\
@@ -8095,6 +9082,7 @@ components:
           - organizations
           - applications
           - introductions
+          - use_cases
           - talent
         kind:
           type: string
@@ -8153,6 +9141,7 @@ components:
           - organizations
           - applications
           - introductions
+          - use_cases
           - talent
         kind:
           type: string
@@ -8584,6 +9573,212 @@ components:
           - $ref: "#/components/schemas/TalentProfile"
       required:
       - enquiries
+    MyUseCase:
+      type: object
+      description: One use case as a member of its organization reads and edits it.
+      properties:
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/UseCaseAttachment"
+        budgetMax:
+          type:
+          - integer
+          - "null"
+          format: int32
+        budgetMembersOnly:
+          type: boolean
+        budgetMin:
+          type:
+          - integer
+          - "null"
+          format: int32
+        budgetToBeDetermined:
+          type: boolean
+        changedSinceReview:
+          type: boolean
+          description: Whether the members changed it since GenAI Fund sent it back;
+            it cannot be sent again before.
+        closesAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        complete:
+          type: boolean
+          description: Whether it holds everything a use case needs to be sent for
+            review.
+        currentProcess:
+          type:
+          - string
+          - "null"
+        currentSolutions:
+          type:
+          - string
+          - "null"
+        dataReadiness:
+          type:
+          - string
+          - "null"
+        editable:
+          type: boolean
+          description: "Whether the members can edit it now: a draft, one GenAI Fund\
+            \ sent back, or one that is published."
+        expectedOutcomes:
+          type:
+          - string
+          - "null"
+        hideOrganizationName:
+          type: boolean
+        id:
+          type: string
+          format: uuid
+        industry:
+          type:
+          - string
+          - "null"
+        integrationRequirements:
+          type:
+          - string
+          - "null"
+        lastEditedBy:
+          $ref: "#/components/schemas/UseCasePerson"
+        organizationName:
+          type: string
+        problemStatement:
+          type:
+          - string
+          - "null"
+        publishedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        requirements:
+          type: array
+          items:
+            $ref: "#/components/schemas/UseCaseRequirement"
+        reviewNote:
+          type:
+          - string
+          - "null"
+          description: "What GenAI Fund asked to change, when it sent the use case\
+            \ back."
+        status:
+          type: string
+          description: "Closed once the close date has passed, whatever the use case\
+            \ was before."
+          enum:
+          - draft
+          - in_review
+          - needs_changes
+          - published
+          - closed
+        submittedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        submittedBy:
+          $ref: "#/components/schemas/UseCasePerson"
+          description: Who sent it for review; null if it was never sent.
+        targetUsers:
+          type:
+          - string
+          - "null"
+        technologies:
+          type: array
+          items:
+            type: string
+        timelineMaxWeeks:
+          type:
+          - integer
+          - "null"
+          format: int32
+        timelineMinWeeks:
+          type:
+          - integer
+          - "null"
+          format: int32
+        title:
+          type:
+          - string
+          - "null"
+        updatedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+      required:
+      - attachments
+      - budgetMembersOnly
+      - budgetToBeDetermined
+      - changedSinceReview
+      - complete
+      - editable
+      - hideOrganizationName
+      - id
+      - lastEditedBy
+      - organizationName
+      - requirements
+      - status
+      - technologies
+      - updatedAt
+      - version
+    MyUseCaseSummary:
+      type: object
+      description: One use case of the caller's organization in the tab's list.
+      properties:
+        closesAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        lastEditedBy:
+          $ref: "#/components/schemas/UseCasePerson"
+        status:
+          type: string
+          description: "Closed once the close date has passed, whatever the use case\
+            \ was before."
+          enum:
+          - draft
+          - in_review
+          - needs_changes
+          - published
+          - closed
+        submittedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        title:
+          type:
+          - string
+          - "null"
+          description: Null until someone has named the use case.
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - lastEditedBy
+      - status
+      - updatedAt
+    MyUseCases:
+      type: object
+      description: "The use cases of the caller's organization, the most recently\
+        \ touched first."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MyUseCaseSummary"
+      required:
+      - items
     Organization:
       type: object
       description: "An organization as the people who belong to it, and operators,\
@@ -9897,6 +11092,95 @@ components:
       - roles
       - skills
       - slug
+    PublicUseCaseList:
+      type: object
+      description: One page of the public list of use cases.
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicUseCaseSummary"
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+          description: "How many use cases match, over all pages."
+      required:
+      - items
+      - page
+      - pageSize
+      - total
+    PublicUseCaseSummary:
+      type: object
+      description: A published use case as the public list shows it.
+      properties:
+        budgetMax:
+          type:
+          - integer
+          - "null"
+          format: int32
+        budgetMembersOnly:
+          type: boolean
+          description: Whether the organization shows the budget to members only.
+        budgetMin:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: In US dollars; null while the budget is to be determined or
+            is for members only.
+        budgetToBeDetermined:
+          type: boolean
+        closesAt:
+          type: string
+          format: date-time
+          description: Proposals close at this instant.
+        goal:
+          type: string
+          description: The outcomes the organization expects.
+        id:
+          type: string
+          format: uuid
+        industry:
+          type: string
+        organizationName:
+          type:
+          - string
+          - "null"
+          description: The organization's name; null when it asked to stay anonymous.
+        publishedAt:
+          type: string
+          format: date-time
+        technologies:
+          type: array
+          items:
+            type: string
+        timelineMaxWeeks:
+          type: integer
+          format: int32
+        timelineMinWeeks:
+          type: integer
+          format: int32
+        title:
+          type: string
+      required:
+      - budgetMembersOnly
+      - budgetToBeDetermined
+      - closesAt
+      - goal
+      - id
+      - industry
+      - publishedAt
+      - technologies
+      - timelineMaxWeeks
+      - timelineMinWeeks
+      - title
     ReceivedIntroductions:
       type: object
       description: The requests for an introduction to the caller's organization.
@@ -10108,6 +11392,7 @@ components:
           - talent_photo
           - organization_logo
           - application_file
+          - use_case_attachment
           - solution_deck
         sizeBytes:
           type: integer
@@ -10873,6 +12158,141 @@ components:
       required:
       - body
       - subject
+    SaveMyUseCase:
+      type: object
+      description: What the members have written of a use case so far; any part may
+        be missing.
+      properties:
+        attachmentFileIds:
+          type: array
+          description: "Files the caller uploaded for a use case, in the order shown."
+          items:
+            type: string
+            format: uuid
+          maxItems: 10
+          minItems: 0
+        budgetMax:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: US dollars. Null while the budget is to be determined.
+          maximum: 100000000
+          minimum: 0
+        budgetMembersOnly:
+          type: boolean
+          description: Only signed-in members see the amount.
+        budgetMin:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: US dollars. Null while the budget is to be determined.
+          maximum: 100000000
+          minimum: 0
+        budgetToBeDetermined:
+          type: boolean
+        closesAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When proposals stop. It must be in the future.
+        currentProcess:
+          type:
+          - string
+          - "null"
+          maxLength: 2000
+          minLength: 0
+        currentSolutions:
+          type:
+          - string
+          - "null"
+          maxLength: 2000
+          minLength: 0
+        dataReadiness:
+          type:
+          - string
+          - "null"
+          maxLength: 2000
+          minLength: 0
+        expectedOutcomes:
+          type:
+          - string
+          - "null"
+          maxLength: 2000
+          minLength: 0
+        hideOrganizationName:
+          type: boolean
+        industry:
+          type:
+          - string
+          - "null"
+          pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+        integrationRequirements:
+          type:
+          - string
+          - "null"
+          maxLength: 2000
+          minLength: 0
+        problemStatement:
+          type:
+          - string
+          - "null"
+          maxLength: 2000
+          minLength: 0
+        requirements:
+          type: array
+          description: "What the solution must do, in the order written."
+          items:
+            $ref: "#/components/schemas/UseCaseRequirement"
+          maxItems: 30
+          minItems: 0
+        targetUsers:
+          type:
+          - string
+          - "null"
+          maxLength: 2000
+          minLength: 0
+        technologies:
+          type: array
+          items:
+            type: string
+            pattern: generative_ai|conversational_ai|predictive_analytics|computer_vision|recommendation|document_intelligence|voice_ai|anomaly_detection|knowledge_retrieval|process_automation|other
+          maxItems: 11
+          minItems: 0
+        timelineMaxWeeks:
+          type:
+          - integer
+          - "null"
+          format: int32
+          maximum: 260
+          minimum: 1
+        timelineMinWeeks:
+          type:
+          - integer
+          - "null"
+          format: int32
+          maximum: 260
+          minimum: 1
+        title:
+          type:
+          - string
+          - "null"
+          maxLength: 200
+          minLength: 0
+        version:
+          type: integer
+          format: int64
+          description: The version the caller read; a save over a newer one is refused.
+      required:
+      - attachmentFileIds
+      - budgetMembersOnly
+      - budgetToBeDetermined
+      - hideOrganizationName
+      - requirements
+      - technologies
+      - version
     SaveOrganization:
       type: object
       description: The profile of an organization as its Profile screen holds it.
@@ -11534,6 +12954,18 @@ components:
       - page
       - pageSize
       - total
+    SendBackUseCase:
+      type: object
+      description: Why GenAI Fund sends a use case back to its organization.
+      properties:
+        reason:
+          type: string
+          description: What the organization should change. Its members read it and
+            receive it by email.
+          maxLength: 1000
+          minLength: 0
+      required:
+      - reason
     SendTalentEnquiry:
       type: object
       description: A message to the person behind a talent profile.
@@ -12290,6 +13722,83 @@ components:
       - id
       - method
       - url
+    UseCaseAttachment:
+      type: object
+      description: A file attached to a use case.
+      properties:
+        fileName:
+          type: string
+        id:
+          type: string
+          format: uuid
+        mediaType:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+      required:
+      - fileName
+      - id
+      - mediaType
+      - sizeBytes
+    UseCaseOrganization:
+      type: object
+      description: The organization a use case is for.
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+      - id
+      - name
+    UseCaseOrganizationList:
+      type: object
+      description: "The approved organizations that can have use cases, by name; at\
+        \ most 50."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/UseCaseOrganization"
+      required:
+      - items
+    UseCasePerson:
+      type: object
+      description: "Who last changed a use case, as the reader may be shown them."
+      properties:
+        genaiFund:
+          type: boolean
+          description: Whether the person works for GenAI Fund rather than for the
+            organization.
+        name:
+          type: string
+          description: "Their name, or their address until they have a name."
+        you:
+          type: boolean
+          description: Whether it is the caller.
+      required:
+      - genaiFund
+      - name
+      - you
+    UseCaseRequirement:
+      type: object
+      description: One thing the solution must do.
+      properties:
+        necessity:
+          type: string
+          enum:
+          - required
+          - optional
+          pattern: required|optional
+        statement:
+          type: string
+          maxLength: 300
+          minLength: 0
+      required:
+      - necessity
+      - statement
   securitySchemes:
     session:
       description: "The session cookie set by signing in. Requests that change state\

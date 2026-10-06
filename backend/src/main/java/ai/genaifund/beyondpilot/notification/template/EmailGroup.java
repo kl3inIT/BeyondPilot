@@ -11,6 +11,8 @@ public enum EmailGroup {
 
 	INTRODUCTIONS("introductions"),
 
+	USE_CASES("use_cases"),
+
 	TALENT("talent");
 
 	private final String value;

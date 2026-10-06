@@ -8,7 +8,7 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(name = "EmailTemplate", description = "The wording of one kind of email, with the default it replaces and what it may use.")
 public record EmailTemplateResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String kind,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "sign_in", "organizations", "applications", "introductions", "talent" }) String group,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "sign_in", "organizations", "applications", "introductions", "use_cases", "talent" }) String group,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String subject, @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Markdown.") String body, @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String defaultSubject, @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String defaultBody,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<Variable> variables, @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean edited,
 		@Schema(types = { "string", "null" }) @Nullable String updatedBy,

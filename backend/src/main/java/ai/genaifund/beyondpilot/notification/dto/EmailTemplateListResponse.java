@@ -11,7 +11,7 @@ public record EmailTemplateListResponse(@Schema(requiredMode = Schema.RequiredMo
 
 	@Schema(name = "EmailTemplateListItem")
 	public record Item(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String kind,
-			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "sign_in", "organizations", "applications", "introductions", "talent" }) String group,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "sign_in", "organizations", "applications", "introductions", "use_cases", "talent" }) String group,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The subject in use, with its variables as written.") String subject,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Whether an operator's wording replaces the default.") boolean edited,
 			@Schema(types = { "string", "null" }) @Nullable String updatedBy,

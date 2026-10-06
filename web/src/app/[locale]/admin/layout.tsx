@@ -3,6 +3,7 @@ import {
   Building2Icon,
   CalendarRangeIcon,
   HouseIcon,
+  LightbulbIcon,
   ScrollTextIcon,
   UserCogIcon,
   HandshakeIcon,
@@ -52,6 +53,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
           href: siteRoutes.adminPrograms,
           label: t("nav.programs"),
           icon: <CalendarRangeIcon aria-hidden="true" />,
+        },
+        {
+          href: siteRoutes.adminUseCases,
+          label: t("nav.useCases"),
+          icon: <LightbulbIcon aria-hidden="true" />,
         },
         {
           href: siteRoutes.adminSolutions,
@@ -122,6 +128,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
           <AdminBreadcrumb
             area={{ href: siteRoutes.admin, label: t("title") }}
             items={destinations.map(({ href, label }) => ({ href, label }))}
+            subpages={[{ href: siteRoutes.adminUseCasesNew, label: t("nav.useCasesNew") }]}
           />
         </header>
         {children}

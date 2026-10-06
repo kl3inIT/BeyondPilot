@@ -10,7 +10,14 @@ import { adminEmailTemplateRoute, siteRoutes } from "@/lib/site";
 import { EmailHeader } from "./email-header";
 import { isEmailKind, KindIcon } from "./email-kinds";
 
-const groups = ["sign_in", "organizations", "applications", "introductions", "talent"] as const;
+const groups = [
+  "sign_in",
+  "organizations",
+  "applications",
+  "introductions",
+  "use_cases",
+  "talent",
+] as const;
 
 /**
  * Admin › Email › Templates: every kind of email operators word, by the part of BeyondPilot that
