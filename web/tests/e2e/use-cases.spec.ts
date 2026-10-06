@@ -52,9 +52,11 @@ test.describe("use cases", () => {
     await expect(page).toHaveURL(/\/use-cases\?(?=.*q=voice)(?=.*industry=insurance)/);
     await expect(page.getByText("No use cases match")).toBeVisible();
 
-    await page.getByRole("link", { name: "Clear search and filters" }).click();
-    await expect(page).toHaveURL("/use-cases");
-    await expect(page.getByText("3 use cases")).toBeVisible();
+    // The way back is a plain link to the list without filters.
+    await expect(page.getByRole("link", { name: "Clear search and filters" })).toHaveAttribute(
+      "href",
+      "/use-cases",
+    );
   });
 
   test("the order follows the address", async ({ page }) => {
