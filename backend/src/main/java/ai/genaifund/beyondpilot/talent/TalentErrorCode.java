@@ -19,7 +19,9 @@ public enum TalentErrorCode implements ErrorCode {
 	NOT_APPROVED("TALENT_NOT_APPROVED", ErrorCategory.CONFLICT,
 			"Only an approved talent profile that is not taken down can be taken down."),
 
-	NOT_TAKEN_DOWN("TALENT_NOT_TAKEN_DOWN", ErrorCategory.CONFLICT, "This talent profile is not taken down."),
+	NOT_TAKEN_DOWN("TALENT_NOT_TAKEN_DOWN", ErrorCategory.CONFLICT,
+			"Only an approved profile that is taken down can be restored; one sent again after a takedown waits for "
+					+ "review."),
 
 	PHOTO_NOT_USABLE("TALENT_PHOTO_NOT_USABLE", ErrorCategory.VALIDATION,
 			"Upload the photo again: this file cannot be used as the photo of your profile."),

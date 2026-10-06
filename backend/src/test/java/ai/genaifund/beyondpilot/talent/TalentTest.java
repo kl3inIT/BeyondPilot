@@ -201,7 +201,7 @@ class TalentTest {
 
 		client.get().uri(DIRECTORY + "/removed-person").exchange().expectStatus().isOk();
 		assertThat(JsonPath.<String>read(mine(person), "$.profile.suspendedAt")).isNull();
-		assertThat(mail.latestSubjectTo("removed@profile.test")).isEqualTo("Your BeyondPilot talent profile is back");
+		assertThat(mail.latestSubjectTo("removed@profile.test")).isEqualTo("Your BeyondPilot talent profile is restored");
 		assertThat(listed("approved")).contains(id.toString());
 		assertThat(events(id)).containsExactly("talent.approve", "talent.remove", "talent.restore");
 	}

@@ -3,10 +3,9 @@
 -- organization down is no longer a status: `suspended_at` says it is down while its review stays `approved`, and
 -- restoring clears it.
 
--- An organization restored before kept the date it was taken down; it is not down now.
-update organization
-set suspended_at = null, suspension_reason = null, suspension_message = null
-where status = 'approved';
+-- An organization restored before kept the date it was taken down; it is not down now. Why it was taken down stays
+-- readable, as a restore keeps it.
+update organization set suspended_at = null where status = 'approved';
 
 alter table organization drop constraint organization_status_check;
 alter table organization drop constraint organization_decision_reason_check;
