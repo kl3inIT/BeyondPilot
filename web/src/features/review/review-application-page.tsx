@@ -27,7 +27,6 @@ async function ReviewApplicationPage({ review, base }: ReviewApplicationPageProp
   const { head, submitted } = review;
   const released = Boolean(head.releasedAt);
   const nextHref = review.nextId ? `${base}/${review.nextId}` : null;
-  const criteria = new Map(head.criteria.map((criterion) => [criterion.id, criterion.name]));
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
@@ -124,8 +123,10 @@ async function ReviewApplicationPage({ review, base }: ReviewApplicationPageProp
                       </span>
                       {!other.conflict && (
                         <span className="text-muted-foreground">
-                          {Object.entries(other.scores)
-                            .map(([id, score]) => `${criteria.get(id) ?? "?"} ${score}`)
+                          {/* In the order the program lists its criteria. */}
+                          {head.criteria
+                            .filter((criterion) => other.scores[criterion.id] !== undefined)
+                            .map((criterion) => `${criterion.name} ${other.scores[criterion.id]}`)
                             .join(" · ")}
                         </span>
                       )}
