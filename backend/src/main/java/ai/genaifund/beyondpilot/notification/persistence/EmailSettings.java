@@ -69,6 +69,42 @@ public class EmailSettings {
 		this.updatedAt = Instant.EPOCH;
 	}
 
+	/**
+	 * Replaces who delivers email and as whom. Secrets are passed sealed: a null one is cleared.
+	 */
+	public void deliverWith(String provider, String fromName, String fromAddress, @Nullable String replyTo,
+			@Nullable String smtpHost, @Nullable Integer smtpPort, @Nullable String smtpUsername,
+			byte @Nullable [] smtpPassword, String smtpSecurity, @Nullable String sesRegion,
+			@Nullable String sesAccessKeyId, byte @Nullable [] sesSecretAccessKey, @Nullable String sesConfigurationSet,
+			byte @Nullable [] resendApiKey) {
+		this.provider = provider;
+		this.fromName = fromName;
+		this.fromAddress = fromAddress;
+		this.replyTo = replyTo;
+		this.smtpHost = smtpHost;
+		this.smtpPort = smtpPort;
+		this.smtpUsername = smtpUsername;
+		this.smtpPassword = smtpPassword;
+		this.smtpSecurity = smtpSecurity;
+		this.sesRegion = sesRegion;
+		this.sesAccessKeyId = sesAccessKeyId;
+		this.sesSecretAccessKey = sesSecretAccessKey;
+		this.sesConfigurationSet = sesConfigurationSet;
+		this.resendApiKey = resendApiKey;
+	}
+
+	public void appearWith(String accentColor, String footer) {
+		this.accentColor = accentColor;
+		this.footer = footer;
+	}
+
+	/** Records who changed the settings, as they were named, and when. */
+	public void changedBy(UUID accountId, String label, Instant at) {
+		this.updatedBy = accountId;
+		this.updatedByLabel = label;
+		this.updatedAt = at;
+	}
+
 	public @Nullable String getProvider() {
 		return provider;
 	}

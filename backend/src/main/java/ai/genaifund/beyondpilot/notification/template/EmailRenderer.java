@@ -42,12 +42,21 @@ public class EmailRenderer {
 	public RenderedEmail render(EmailKind kind, EmailTemplate template, Map<String, ?> values, Appearance appearance) {
 		Map<String, @Nullable Object> filled = new HashMap<>();
 		kind.variables().forEach(variable -> filled.put(variable.name(), values.get(variable.name())));
+		String quote = kind.quote() == null ? null : (String) filled.get(kind.quote());
+		return render(template, filled, quote, "note".equals(kind.quote()) ? "From GenAI Fund" : "Their message",
+				appearance);
+	}
+
+	/** BeyondPilot's own message, such as a connection test, in the same layout and without variables. */
+	public RenderedEmail render(EmailTemplate template, Appearance appearance) {
+		return render(template, Map.of(), null, "", appearance);
+	}
+
+	private RenderedEmail render(EmailTemplate template, Map<String, ?> filled, @Nullable String quote,
+			String quoteLabel, Appearance appearance) {
 		String subject = TemplateSyntax.subject(template, filled);
 		StringBuilder text = new StringBuilder(TemplateSyntax.text(template.body(), filled));
-
-		String quote = kind.quote() == null ? null : (String) filled.get(kind.quote());
 		boolean quoted = quote != null && !quote.isBlank();
-		String quoteLabel = "note".equals(kind.quote()) ? "From GenAI Fund" : "Their message";
 		if (quoted) {
 			text.append("\n\n").append(quoteLabel).append(":\n\n").append(quote.strip());
 		}

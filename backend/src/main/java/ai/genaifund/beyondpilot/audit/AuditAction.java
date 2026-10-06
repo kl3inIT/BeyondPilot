@@ -99,7 +99,28 @@ public enum AuditAction {
 	PROPOSAL_DECIDE("proposal.decide", "decision"),
 
 	/** An operator released a program's outcomes. The counts are how many applicants each group had. */
-	PROPOSAL_RELEASE("proposal.release", "shortlisted", "not_selected");
+	PROPOSAL_RELEASE("proposal.release", "shortlisted", "not_selected"),
+
+	/** An operator changed who delivers email or as whom. {@code provider} is the provider chosen. */
+	EMAIL_SETTINGS_UPDATE("email.settings_update", "provider"),
+
+	/** An operator changed the accent colour or the footer note of every email. */
+	EMAIL_APPEARANCE_UPDATE("email.appearance_update"),
+
+	/** An operator changed the wording of one kind of email; the resource is the kind. */
+	EMAIL_TEMPLATE_UPDATE("email.template_update"),
+
+	/** An operator put one kind of email back to its default wording. */
+	EMAIL_TEMPLATE_RESET("email.template_reset"),
+
+	/** An operator stopped email to an address. */
+	EMAIL_SUPPRESSION_ADD("email.suppression_add"),
+
+	/** An operator let email reach an address again. {@code reason} is why it had been suppressed. */
+	EMAIL_SUPPRESSION_REMOVE("email.suppression_remove", "reason"),
+
+	/** An operator sent an email again; the resource is the message sent again. */
+	EMAIL_RESEND("email.resend");
 
 	private final String value;
 

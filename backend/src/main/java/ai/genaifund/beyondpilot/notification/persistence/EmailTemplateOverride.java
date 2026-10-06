@@ -44,6 +44,24 @@ public class EmailTemplateOverride {
 		this.updatedAt = Instant.EPOCH;
 	}
 
+	public EmailTemplateOverride(String kind, String subject, String body, UUID updatedBy, String updatedByLabel,
+			Instant updatedAt) {
+		this.kind = kind;
+		reword(subject, body, updatedBy, updatedByLabel, updatedAt);
+	}
+
+	public void reword(String subject, String body, UUID updatedBy, String updatedByLabel, Instant updatedAt) {
+		this.subject = subject;
+		this.body = body;
+		this.updatedBy = updatedBy;
+		this.updatedByLabel = updatedByLabel;
+		this.updatedAt = updatedAt;
+	}
+
+	public long getVersion() {
+		return version;
+	}
+
 	public String getKind() {
 		return kind;
 	}

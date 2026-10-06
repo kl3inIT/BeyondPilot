@@ -39,6 +39,23 @@ public class TestMailbox {
 	TestMailbox(GreenMail server, JdbcClient jdbc) {
 		this.server = server;
 		this.jdbc = jdbc;
+		pointSettingsHere();
+	}
+
+	/** The port the test server takes SMTP on. */
+	public int smtpPort() {
+		return server.getSmtp().getPort();
+	}
+
+	/** Points the email settings back at this server, as a test that changed them may need. */
+	public void pointSettingsHere() {
+		jdbc.sql("""
+				update email_settings
+				set provider = 'smtp', from_name = 'BeyondPilot', from_address = 'no-reply@beyondpilot.test',
+				    reply_to = null, smtp_host = '127.0.0.1', smtp_port = :port, smtp_username = null,
+				    smtp_password = null, smtp_security = 'none'
+				where id = 1
+				""").param("port", smtpPort()).update();
 	}
 
 	/** The six-digit code in the newest email sent to the address. */
@@ -140,12 +157,6 @@ public class TestMailbox {
 		@Bean
 		@DependsOn("flywayInitializer")
 		TestMailbox testMailbox(GreenMail testSmtpServer, JdbcClient jdbc) {
-			jdbc.sql("""
-					update email_settings
-					set provider = 'smtp', from_name = 'BeyondPilot', from_address = 'no-reply@beyondpilot.test',
-					    smtp_host = '127.0.0.1', smtp_port = :port, smtp_security = 'none'
-					where id = 1
-					""").param("port", testSmtpServer.getSmtp().getPort()).update();
 			return new TestMailbox(testSmtpServer, jdbc);
 		}
 

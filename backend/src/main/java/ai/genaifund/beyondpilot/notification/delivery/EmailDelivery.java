@@ -95,6 +95,34 @@ public class EmailDelivery {
 			.orElse(Optional.of(DeliveryFailure.UNAVAILABLE));
 	}
 
+	/**
+	 * Sends a test straight through the delivery given, which may not be saved yet, and records nothing in the log:
+	 * the answer goes back to the operator who asked.
+	 * @return why it was not sent; empty when it was
+	 */
+	public Optional<DeliveryFailure> sendTest(DeliverySettings.Delivery delivery, String recipient,
+			RenderedEmail content) {
+		EmailRequest request = new EmailRequest(UUID.randomUUID(), delivery.fromName(), delivery.fromAddress(),
+				delivery.replyTo(), recipient, content.subject(), content.html(), content.text(), "test");
+		try {
+			adapters.adapter(delivery.provider()).send(request, delivery.connection());
+			LOG.atInfo()
+				.addKeyValue("event", "notification.email.test_sent")
+				.addKeyValue("provider", delivery.provider().value())
+				.log("Test email sent");
+			return Optional.empty();
+		}
+		catch (EmailDeliveryException exception) {
+			LOG.atWarn()
+				.addKeyValue("event", "notification.email.test_failed")
+				.addKeyValue("provider", delivery.provider().value())
+				.addKeyValue("error_type", exception.getClass().getName())
+				.addKeyValue("error_code", exception.failure().value())
+				.log("Test email not sent");
+			return Optional.of(exception.failure());
+		}
+	}
+
 	private Optional<DeliveryFailure> attempt(Claimed message, boolean retry) {
 		Optional<DeliverySettings.Delivery> delivery = settings.delivery();
 		if (delivery.isEmpty()) {

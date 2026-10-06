@@ -6,7 +6,7 @@
  * provider operators configured: Amazon SES, Resend or an SMTP server.
  */
 @ApplicationModule(displayName = "Notification", type = ApplicationModule.Type.CLOSED,
-		allowedDependencies = { "identity" })
+		allowedDependencies = { "audit", "identity" })
 @NullMarked
 package ai.genaifund.beyondpilot.notification;
 
