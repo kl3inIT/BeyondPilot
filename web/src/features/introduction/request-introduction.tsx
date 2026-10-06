@@ -91,7 +91,7 @@ function RequestIntroduction({
 
   return (
     <>
-      <Button size="lg" className="w-full max-md:hidden" {...opens}>
+      <Button size="xl" className="w-full max-md:hidden" {...opens}>
         {t("open")}
       </Button>
       {/* On a phone the action stays in reach in a bar at the foot of the screen. */}

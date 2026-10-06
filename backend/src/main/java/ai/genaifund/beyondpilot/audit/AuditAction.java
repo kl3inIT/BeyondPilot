@@ -68,6 +68,9 @@ public enum AuditAction {
 	/** {@code reason} is the code of the reason given. */
 	SOLUTION_REJECT("solution.reject", "reason"),
 
+	/** An operator wrote what GenAI Fund says of a solution: who backs its company, its programme, its funding. */
+	SOLUTION_BACK("solution.back"),
+
 	/** An operator approved what an organization tells about a customer of a solution. */
 	SOLUTION_DEPLOYMENT_APPROVE("solution.deployment_approve"),
 

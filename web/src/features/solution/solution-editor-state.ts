@@ -12,11 +12,13 @@ export const limits = {
   longAnswer: 4000,
   traction: 600,
   bestCustomerProfile: 400,
+  channels: 120,
   link: 300,
   choices: 5,
   languages: 10,
   builtWith: 10,
   builtWithName: 40,
+  images: 4,
 } as const;
 
 /** The deck the editor holds: the one the solution names, or one just uploaded and not saved yet. */
@@ -26,6 +28,13 @@ export type HeldDeck = {
   sizeBytes: number;
   /** When the solution took it; null for a file the solution does not name yet. */
   attachedAt: string | null;
+};
+
+/** An image the editor holds: one the solution names, or one just uploaded and not saved yet. */
+export type HeldImage = {
+  fileId: string;
+  fileName: string;
+  sizeBytes: number;
 };
 
 /** What the editor holds for a solution, as its controls hold it. */
@@ -41,10 +50,15 @@ export type SolutionDraft = {
   focusAreas: string[];
   languages: string[];
   deployment: string[];
+  channels: string;
   bestCustomerProfile: string;
   website: string;
   demoUrl: string;
   deck: HeldDeck | null;
+  logo: HeldImage | null;
+  cover: HeldImage | null;
+  /** The images under the cover, in the order they are shown. */
+  images: HeldImage[];
   listed: boolean;
 };
 
@@ -62,10 +76,14 @@ export function held(solution: Solution): SolutionDraft {
     focusAreas: solution.focusAreas,
     languages: solution.languages,
     deployment: solution.deployment,
+    channels: solution.channels ?? "",
     bestCustomerProfile: solution.bestCustomerProfile ?? "",
     website: solution.website ?? "",
     demoUrl: solution.demoUrl ?? "",
     deck: solution.deck ?? null,
+    logo: solution.logo ?? null,
+    cover: solution.cover ?? null,
+    images: solution.images,
     listed: solution.listed,
   };
 }
@@ -91,10 +109,14 @@ export function toRequest(draft: SolutionDraft, version: number): SaveSolution {
     focusAreas: once(draft.focusAreas),
     languages: once(draft.languages),
     deployment: once(draft.deployment),
+    channels: text(draft.channels),
     bestCustomerProfile: text(draft.bestCustomerProfile),
     website: text(draft.website),
     demoUrl: text(draft.demoUrl),
     deckFileId: draft.deck?.fileId ?? null,
+    logoFileId: draft.logo?.fileId ?? null,
+    coverFileId: draft.cover?.fileId ?? null,
+    imageFileIds: draft.images.map((image) => image.fileId),
     listed: draft.listed,
     version,
   };
@@ -112,6 +134,8 @@ export const reviewFields = [
   { field: "maturity", step: "basics" },
   { field: "industries", step: "fit" },
   { field: "focusAreas", step: "fit" },
+  { field: "logo", step: "evidence" },
+  { field: "cover", step: "evidence" },
 ] as const satisfies readonly { field: keyof SolutionDraft; step: EditorStep }[];
 
 export type ReviewField = (typeof reviewFields)[number]["field"];
@@ -122,7 +146,13 @@ export function missingForReview(draft: SolutionDraft): ReviewField[] {
     .map((entry) => entry.field)
     .filter((field) => {
       const value = draft[field];
-      return typeof value === "string" ? value.trim() === "" : value.length === 0;
+      if (value === null) {
+        return true;
+      }
+      if (typeof value === "string") {
+        return value.trim() === "";
+      }
+      return Array.isArray(value) && value.length === 0;
     });
 }
 
@@ -152,8 +182,12 @@ export const fieldSteps: Record<string, EditorStep> = {
   focusAreas: "fit",
   languages: "fit",
   deployment: "fit",
+  channels: "fit",
   bestCustomerProfile: "fit",
   deckFileId: "evidence",
+  logoFileId: "evidence",
+  coverFileId: "evidence",
+  imageFileIds: "evidence",
   demoUrl: "evidence",
   website: "evidence",
   listed: "review",

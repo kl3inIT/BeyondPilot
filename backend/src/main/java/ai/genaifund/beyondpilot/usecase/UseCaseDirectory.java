@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.usecase;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -11,7 +12,9 @@ import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseListResponse;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseSummaryResponse;
+import ai.genaifund.beyondpilot.usecase.persistence.UseCase;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseQueryRepository;
+import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,11 +31,52 @@ public class UseCaseDirectory {
 
 	private final UseCaseQueryRepository useCaseList;
 
+	private final UseCaseRepository useCases;
+
 	private final OrganizationDirectory organizations;
 
-	UseCaseDirectory(UseCaseQueryRepository useCaseList, OrganizationDirectory organizations) {
+	UseCaseDirectory(UseCaseQueryRepository useCaseList, UseCaseRepository useCases,
+			OrganizationDirectory organizations) {
 		this.useCaseList = useCaseList;
+		this.useCases = useCases;
 		this.organizations = organizations;
+	}
+
+	/**
+	 * A published use case as search indexes it; empty for any other. One past its close date is still returned, and
+	 * search leaves it out by that date.
+	 */
+	@Transactional(readOnly = true)
+	public Optional<IndexedUseCase> indexed(UUID useCaseId) {
+		return useCases.findById(useCaseId)
+			.filter(useCase -> UseCase.PUBLISHED.equals(useCase.getStatus()) && useCase.getTitle() != null)
+			.flatMap(useCase -> indexed(List.of(useCase)).stream().findFirst());
+	}
+
+	/** Every published use case as search indexes it, for a rebuild of the index. */
+	@Transactional(readOnly = true)
+	public List<IndexedUseCase> indexedAll() {
+		return indexed(useCases.findByStatus(UseCase.PUBLISHED)
+			.stream()
+			.filter(useCase -> useCase.getTitle() != null)
+			.toList());
+	}
+
+	private List<IndexedUseCase> indexed(List<UseCase> published) {
+		Map<UUID, OrganizationName> names = organizations.names(published.stream()
+			.filter(useCase -> !useCase.isHideOrganizationName())
+			.map(UseCase::getOrganizationId)
+			.collect(Collectors.toSet()));
+		return published.stream().map(useCase -> {
+			OrganizationName organization = useCase.isHideOrganizationName() ? null
+					: names.get(useCase.getOrganizationId());
+			boolean hidden = useCase.isBudgetMembersOnly();
+			return new IndexedUseCase(useCase.getId(), useCase.getTitle(),
+					organization == null ? null : organization.name(), useCase.getIndustry(),
+					useCase.getTechnologies(), useCase.getExpectedOutcomes(),
+					hidden ? null : useCase.getBudgetMin(), hidden ? null : useCase.getBudgetMax(),
+					useCase.isBudgetToBeDetermined(), hidden, useCase.getClosesAt());
+		}).toList();
 	}
 
 	/** One page of the use cases the parameters select. */

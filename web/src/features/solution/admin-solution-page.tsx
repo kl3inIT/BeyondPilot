@@ -9,6 +9,7 @@ import type { Solution } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { CustomerDeploymentsReview } from "./customer-deployments-review";
+import { SolutionBacking } from "./solution-backing";
 import { SolutionRecord } from "./solution-record";
 import { SolutionReview } from "./solution-review";
 
@@ -90,46 +91,49 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
 
       <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
         {/* The decision: first on a narrow screen, beside the record and in view while it scrolls on a wide one. */}
-        <aside
-          aria-labelledby="solution-decision"
-          className="flex flex-col gap-4 rounded-lg border bg-card p-5 lg:sticky lg:top-4 lg:order-2"
-        >
-          <h2 id="solution-decision" className="text-base font-semibold">
-            {t("decision")}
-          </h2>
-          <dl className="grid grid-cols-3 gap-x-4 gap-y-2 text-sm">
-            {facts.map((fact) => (
-              <div key={fact.label} className="contents">
-                <dt className="text-muted-foreground">{fact.label}</dt>
-                <dd className="col-span-2 min-w-0 break-words">{fact.value}</dd>
-              </div>
-            ))}
-          </dl>
+        <div className="flex flex-col gap-6 lg:sticky lg:top-4 lg:order-2">
+          <aside
+            aria-labelledby="solution-decision"
+            className="flex flex-col gap-4 rounded-lg border bg-card p-5"
+          >
+            <h2 id="solution-decision" className="text-base font-semibold">
+              {t("decision")}
+            </h2>
+            <dl className="grid grid-cols-3 gap-x-4 gap-y-2 text-sm">
+              {facts.map((fact) => (
+                <div key={fact.label} className="contents">
+                  <dt className="text-muted-foreground">{fact.label}</dt>
+                  <dd className="col-span-2 min-w-0 break-words">{fact.value}</dd>
+                </div>
+              ))}
+            </dl>
 
-          {solution.status === "rejected" && (
-            <p className="rounded-lg border bg-muted p-3 text-sm">
-              <span className="font-medium">
-                {t("rejected", { reason: reason(solution.decisionReason ?? "other") })}
-              </span>
-              {solution.decisionMessage && <> {solution.decisionMessage}</>}
-            </p>
-          )}
-          {/* Approving the solution does not decide on what its owners claim about customers. */}
-          {deploymentsWaiting > 0 && (
-            <p className="text-sm">
-              <TextButton href="#customer-deployments">
-                {t("deploymentsWaiting", { count: deploymentsWaiting })}
-              </TextButton>
-            </p>
-          )}
-          {(solution.status === "submitted" || solution.status === "approved") && (
-            <SolutionReview
-              key={solution.id}
-              solution={solution}
-              nextHref={next?.href ?? `${siteRoutes.adminSolutions}?status=submitted`}
-            />
-          )}
-        </aside>
+            {solution.status === "rejected" && (
+              <p className="rounded-lg border bg-muted p-3 text-sm">
+                <span className="font-medium">
+                  {t("rejected", { reason: reason(solution.decisionReason ?? "other") })}
+                </span>
+                {solution.decisionMessage && <> {solution.decisionMessage}</>}
+              </p>
+            )}
+            {/* Approving the solution does not decide on what its owners claim about customers. */}
+            {deploymentsWaiting > 0 && (
+              <p className="text-sm">
+                <TextButton href="#customer-deployments">
+                  {t("deploymentsWaiting", { count: deploymentsWaiting })}
+                </TextButton>
+              </p>
+            )}
+            {(solution.status === "submitted" || solution.status === "approved") && (
+              <SolutionReview
+                key={solution.id}
+                solution={solution}
+                nextHref={next?.href ?? `${siteRoutes.adminSolutions}?status=submitted`}
+              />
+            )}
+          </aside>
+          <SolutionBacking key={solution.id} solution={solution} />
+        </div>
 
         <div className="flex min-w-0 flex-col gap-6 lg:order-1 lg:col-span-2">
           <SolutionRecord solution={solution} />

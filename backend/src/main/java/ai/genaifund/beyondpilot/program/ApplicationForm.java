@@ -12,9 +12,11 @@ import org.jspecify.annotations.Nullable;
  * @param closesAt the instant after which no application is saved or submitted
  * @param allowUpdatesUntilClose whether a submitted application can still change until the close
  * @param questions the program's own questions, in the order the form asks them
+ * @param keyDates the program's key dates in order, which tell an applicant what comes after the outcome
  */
 public record ApplicationForm(UUID programId, String slug, String name, Instant opensAt, Instant closesAt,
-		@Nullable LocalDate outcomesDueOn, boolean allowUpdatesUntilClose, List<Question> questions) {
+		@Nullable LocalDate outcomesDueOn, boolean allowUpdatesUntilClose, List<Question> questions,
+		List<KeyDate> keyDates) {
 
 	/** Whether applications are taken at this instant: from the opening, up to the close. */
 	public boolean openAt(Instant now) {
@@ -29,5 +31,12 @@ public record ApplicationForm(UUID programId, String slug, String name, Instant 
 	 */
 	public record Question(UUID id, String kind, String label, @Nullable String help, boolean required,
 			List<String> options, @Nullable Integer maxLength) {
+	}
+
+	/**
+	 * One key date of the program.
+	 * @param allDay the date is a day, not a moment
+	 */
+	public record KeyDate(String title, Instant startsAt, boolean allDay) {
 	}
 }

@@ -1,6 +1,8 @@
 package ai.genaifund.beyondpilot.proposal;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,6 +38,8 @@ import ai.genaifund.beyondpilot.proposal.dto.SolutionOptionResponse;
 import ai.genaifund.beyondpilot.proposal.persistence.Proposal;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalReleaseRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalRepository;
+import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecision;
+import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecisionRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersion;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersionRepository;
 import ai.genaifund.beyondpilot.solution.OfferedSolution;
@@ -68,6 +72,11 @@ public class ProposalService {
 
 	private static final int LINK = 500;
 
+	/** The reason the history gives for a decision that a withdrawal undid. */
+	private static final String WITHDRAWN_REASON = "The applicant withdrew the application.";
+
+	private static final ZoneId VIETNAM = ZoneId.of("Asia/Ho_Chi_Minh");
+
 	private static final Pattern WEB_ADDRESS = Pattern.compile("^https://\\S+$");
 
 	private static final TypeReference<Map<String, String>> ANSWERS = new TypeReference<>() {
@@ -95,11 +104,14 @@ public class ProposalService {
 
 	private final ProposalReleaseRepository releases;
 
+	private final ProposalReviewDecisionRepository decisions;
+
 	ProposalService(ProposalRepository proposals, ProposalVersionRepository versions, ProgramService programs,
 			OrganizationDirectory organizations, OrganizationService organizationService, SolutionDirectory solutions,
 			StorageService storage, IdentityService identity, ApplicationEventPublisher events, JsonMapper json,
-			ProposalReleaseRepository releases) {
+			ProposalReleaseRepository releases, ProposalReviewDecisionRepository decisions) {
 		this.releases = releases;
+		this.decisions = decisions;
 		this.proposals = proposals;
 		this.versions = versions;
 		this.programs = programs;
@@ -158,7 +170,7 @@ public class ProposalService {
 					organizationId == null ? null
 							: organizations.profile(organizationId).map(OrganizationProfile::name).orElse(null),
 					solutionId == null ? null : solutions.offered(solutionId).map(OfferedSolution::name).orElse(null),
-					proposal.getSubmittedAt(), proposal.getUpdatedAt(), outcome(proposal)));
+					proposal.getSubmittedAt(), proposal.getUpdatedAt(), outcome(proposal), nextStep(form)));
 		}
 		return new MyApplicationsResponse(items);
 	}
@@ -316,8 +328,17 @@ public class ProposalService {
 		if (!proposal.isSubmitted()) {
 			throw refused(ProposalErrorCode.NOT_SUBMITTED, id);
 		}
-		proposal.withdraw(Instant.now());
+		Instant now = Instant.now();
+		proposal.withdraw(now);
 		proposals.flush();
+		// A decision was made on what the applicant has now taken back; whatever they submit next is decided afresh.
+		// The history keeps the decision that was undone.
+		String decided = proposal.getReviewStatus();
+		if (!Proposal.UNDER_REVIEW.equals(decided)) {
+			decisions.save(new ProposalReviewDecision(UUID.randomUUID(), id, actor.accountId(), decided,
+					Proposal.UNDER_REVIEW, WITHDRAWN_REASON, now));
+			proposals.decide(id, Proposal.UNDER_REVIEW);
+		}
 		LOG.atInfo()
 			.addKeyValue("event", "proposal.withdrawal.accepted")
 			.addKeyValue("proposal_id", id)
@@ -420,6 +441,21 @@ public class ProposalService {
 				json.readValue(proposal.getContact(), ContactDetails.class), proposal.getTeamBackground(),
 				proposal.getSolutionId(), deck(proposal), proposal.getBuiltWith(), proposal.getTraction(), answers, files, proposal.getSubmissions(), proposal.getSubmittedAt(),
 				proposal.getWithdrawnAt(), proposal.getVersion(), proposal.getUpdatedAt(), outcome(proposal));
+	}
+
+	/**
+	 * What comes after the outcome: the program's first key date after the day it is due, or after the close when no
+	 * day is set. Days are Vietnam's, as the program sets them.
+	 */
+	private static MyApplicationResponse.@Nullable NextStep nextStep(ApplicationForm form) {
+		LocalDate due = form.outcomesDueOn();
+		Instant after = due == null ? form.closesAt() : due.plusDays(1).atStartOfDay(VIETNAM).toInstant();
+		return form.keyDates()
+			.stream()
+			.filter(keyDate -> !keyDate.startsAt().isBefore(after))
+			.findFirst()
+			.map(keyDate -> new MyApplicationResponse.NextStep(keyDate.title(), keyDate.startsAt(), keyDate.allDay()))
+			.orElse(null);
 	}
 
 	/** GenAI Fund's decision on a submitted application, once its program's outcomes are released. */

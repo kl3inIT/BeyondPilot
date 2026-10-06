@@ -9,6 +9,7 @@ const pocketPolicy = {
   industries: ["insurance", "banking_finance"],
   description: "Assistants for insurers across Southeast Asia.",
   website: "https://www.pocketpolicy.example/",
+  logoFileId: "0b6f2f0e-5d0e-4c57-9a55-6f6f3c1d2a10",
 };
 const lumenHealth = {
   slug: "lumen-health",
@@ -18,6 +19,7 @@ const lumenHealth = {
   industries: [],
   description: null,
   website: null,
+  logoFileId: null,
 };
 const organizations = [pocketPolicy, lumenHealth];
 
@@ -38,6 +40,9 @@ function solution(organization, name, more) {
     website: "https://pocketpolicy.example",
     demoUrl: null,
     deck: null,
+    logoFileId: null,
+    coverFileId: null,
+    imageFileIds: [],
     listed: true,
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
@@ -53,6 +58,9 @@ const solutions = [
     maturity: "production",
     demoUrl: "https://pocketpolicy.example/demo",
     deck: { fileName: "policy-chat-deck.pdf", sizeBytes: 3250586 },
+    logoFileId: "1090a2b3-4c5d-4e6f-8a9b-0c1d2e3f4a01",
+    coverFileId: "c0fea2b3-4c5d-4e6f-8a9b-0c1d2e3f4a02",
+    imageFileIds: ["1a9ea2b3-4c5d-4e6f-8a9b-0c1d2e3f4a03", "1a9ea2b3-4c5d-4e6f-8a9b-0c1d2e3f4a04"],
     languages: ["vi", "en"],
     builtWith: ["Python", "PostgreSQL"],
     bestCustomerProfile: "Insurers with a call centre of fifty seats or more.",

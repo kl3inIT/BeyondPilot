@@ -145,12 +145,19 @@ function ReviewStep({
         },
         { label: t("fields.languages"), value: draft.languages.map(language).join(", ") },
         { label: t("fields.deployment"), value: draft.deployment.map(deployment).join(", ") },
+        { label: t("fields.channels"), value: draft.channels.trim() },
         { label: t("fields.bestCustomerProfile"), value: draft.bestCustomerProfile.trim() },
       ],
     },
     {
       step: "evidence",
       rows: [
+        { label: t("fields.logo"), value: draft.logo?.fileName ?? "", needed: "logo" },
+        { label: t("fields.cover"), value: draft.cover?.fileName ?? "", needed: "cover" },
+        {
+          label: t("fields.images"),
+          value: draft.images.length > 0 ? t("review.images", { count: draft.images.length }) : "",
+        },
         { label: t("fields.deck"), value: draft.deck?.fileName ?? "" },
         { label: t("fields.demoUrl"), value: draft.demoUrl.trim() },
         { label: t("fields.website"), value: draft.website.trim() },

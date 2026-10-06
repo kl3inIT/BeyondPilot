@@ -21,6 +21,8 @@ public interface UseCaseRepository extends JpaRepository<UseCase, UUID> {
 	/** The use cases of one organization, the most recently touched first. */
 	List<UseCase> findByOrganizationIdOrderByUpdatedAtDescIdAsc(UUID organizationId);
 
+	List<UseCase> findByStatus(String status);
+
 	/** Whether a file is already attached to a use case. */
 	@Query("select count(u) > 0 from UseCase u join u.attachmentFileIds f where f = :fileId")
 	boolean attachmentExists(@Param("fileId") UUID fileId);

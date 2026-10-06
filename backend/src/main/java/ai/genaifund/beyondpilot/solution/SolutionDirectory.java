@@ -85,7 +85,7 @@ public class SolutionDirectory {
 			OrganizationName organization = names.get(row.organizationId());
 			return new PublicSolutionSummaryResponse(row.slug(), row.name(), organization.name(), organization.slug(),
 					organization.country(), row.summary(), row.maturity(), row.focusAreas(), row.industries(),
-					row.deployments());
+					row.logoFileId(), row.coverFileId(), row.backing(), row.deployments());
 		}).toList(), page, PAGE_SIZE, solutionList.publicCount(text, request.industry(), request.focusArea(),
 				request.maturity(), organizationId));
 	}
@@ -110,8 +110,10 @@ public class SolutionDirectory {
 				organization.slug(), organization.country(), solution.getSummary(), solution.getProblemsSolved(),
 				solution.getValueProposition(), solution.getMaturity(), solution.getTraction(), solution.getBuiltWith(),
 				solution.getIndustries(), solution.getFocusAreas(), solution.getLanguages(), solution.getDeployment(),
-				solution.getBestCustomerProfile(), solution.getWebsite(), solution.getDemoUrl(),
-				SolutionViews.publicDeck(solution), solution.isListed(),
+				solution.getChannels(), solution.getBestCustomerProfile(), SolutionViews.backing(solution),
+				solution.getWebsite(), solution.getDemoUrl(),
+				SolutionViews.publicDeck(solution), solution.getLogoFileId(), solution.getCoverFileId(),
+				solution.getImageFileIds(), solution.isListed(),
 				deployments.findBySolutionIdAndStatusOrderByDecidedAtDesc(solution.getId(), CustomerDeployment.APPROVED)
 					.stream()
 					.map(deployment -> SolutionViews.publicDeployment(deployment, solution))
@@ -206,7 +208,7 @@ public class SolutionDirectory {
 					solution.getSummary(), solution.getProblemsSolved(), solution.getValueProposition(),
 					solution.getTraction(), solution.getBestCustomerProfile(), solution.getBuiltWith(),
 					solution.getFocusAreas(), solution.getIndustries(), solution.getMaturity(),
-					solution.getDeployment(),
+					solution.getDeployment(), solution.getLogoFileId(),
 					deployments.countBySolutionIdAndStatus(solution.getId(), CustomerDeployment.APPROVED),
 					solution.isListed());
 		}).toList();

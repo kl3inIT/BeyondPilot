@@ -33,6 +33,8 @@ public record SaveSolutionRequest(
 				max = 10) List<@NotNull @Pattern(regexp = SolutionCodes.LANGUAGE) String> languages,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Size(
 				max = 4) List<@NotNull @Pattern(regexp = SolutionCodes.DEPLOYMENT) String> deployment,
+		@Schema(types = { "string", "null" },
+				description = "The channels it works through, such as voice and chat.") @Size(max = 120) @Nullable String channels,
 		@Schema(types = { "string", "null" }, description = "Who gets the most from it, in a sentence.") @Size(
 				max = 400) @Nullable String bestCustomerProfile,
 		@Schema(types = { "string", "null" }) @Size(max = 300) @Pattern(
@@ -42,6 +44,14 @@ public record SaveSolutionRequest(
 		@Schema(types = { "string", "null" }, format = "uuid",
 				description = "The stored PDF that is its deck: the one it has, one the caller uploaded for it, or "
 						+ "null for none.") @Nullable UUID deckFileId,
+		@Schema(types = { "string", "null" }, format = "uuid",
+				description = "The stored image that is its logo: the one it has, one the caller uploaded for it, or "
+						+ "null for none.") @Nullable UUID logoFileId,
+		@Schema(types = { "string", "null" }, format = "uuid",
+				description = "The stored image that is its cover, named in the same way.") @Nullable UUID coverFileId,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The stored images shown under the cover, in their order: those it has and those "
+						+ "the caller uploaded for it.") @NotNull @Size(max = 4) List<@NotNull UUID> imageFileIds,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether it appears in the public directory once approved.") @NotNull Boolean listed,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

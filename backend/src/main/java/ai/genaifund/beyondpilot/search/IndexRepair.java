@@ -25,10 +25,14 @@ class IndexRepair {
 
 	private final TalentIndexing talent;
 
-	IndexRepair(ProgramIndexing programs, SolutionIndexing solutions, TalentIndexing talent) {
+	private final UseCaseIndexing useCases;
+
+	IndexRepair(ProgramIndexing programs, SolutionIndexing solutions, TalentIndexing talent,
+			UseCaseIndexing useCases) {
 		this.programs = programs;
 		this.solutions = solutions;
 		this.talent = talent;
+		this.useCases = useCases;
 	}
 
 	@EventListener(ApplicationReadyEvent.class)
@@ -38,12 +42,14 @@ class IndexRepair {
 		Rebuilt programs = this.programs.rebuild();
 		Rebuilt solutions = this.solutions.rebuild();
 		Rebuilt talent = this.talent.rebuild();
+		Rebuilt useCases = this.useCases.rebuild();
 		LOG.atInfo()
 			.addKeyValue("event", "search.index.repaired")
 			.addKeyValue("programs_saved", programs.saved())
 			.addKeyValue("solutions_saved", solutions.saved())
 			.addKeyValue("talent_saved", talent.saved())
-			.addKeyValue("rows_removed", programs.removed() + solutions.removed() + talent.removed())
+			.addKeyValue("use_cases_saved", useCases.saved())
+			.addKeyValue("rows_removed", programs.removed() + solutions.removed() + talent.removed() + useCases.removed())
 			.log("The search index was rebuilt from the published items");
 	}
 

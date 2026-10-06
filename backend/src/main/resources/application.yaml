@@ -28,12 +28,6 @@ spring:
       hibernate.cache.use_second_level_cache: false
       hibernate.cache.use_query_cache: false
 
-  http:
-    clients:
-      imperative:
-        # HttpClient 5 is on the classpath for the SNS signature check; Spring's clients keep the JDK's, which does not
-        # wait out a Retry-After on its own.
-        factory: jdk
   session:
     # Idle time after which a sign-in ends; each request restarts it.
     timeout: 30d
