@@ -10,5 +10,5 @@ public record MyTalentResponse(
 		@Schema(oneOf = TalentProfileResponse.class, types = { "object", "null" },
 				description = "Null until the caller saves a profile.") @Nullable TalentProfileResponse profile,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The newest first.") List<TalentEnquiryResponse> enquiries) {
+				description = "Those that wait for an answer first, then the newest.") List<TalentEnquiryResponse> enquiries) {
 }

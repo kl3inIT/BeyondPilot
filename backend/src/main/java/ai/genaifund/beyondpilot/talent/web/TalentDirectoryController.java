@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.jspecify.annotations.Nullable;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -59,24 +60,27 @@ class TalentDirectoryController {
 	@ApiResponse(responseCode = "200", description = "The profile.")
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	PublicTalentResponse get(@PathVariable String slug) {
-		return directory.get(slug);
+	PublicTalentResponse get(@PathVariable String slug, @CurrentActor @Nullable Actor actor) {
+		return directory.get(slug, actor);
 	}
 
 	@PostMapping(path = "/{slug}/enquiries", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(operationId = "sendTalentEnquiry", summary = "Send a message to the person behind a talent profile",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "204", description = "The message was sent to the person by email.", content = @Content)
+	@ApiResponse(responseCode = "204",
+			description = "The message waits for the person's answer; they were told by email, without the caller's address.",
+			content = @Content)
 	@ApiResponse(responseCode = "400", description = "The message is not valid.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "401", description = "Nobody is signed in.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "The profile is the caller's own.",
+	@ApiResponse(responseCode = "409",
+			description = "The profile is the caller's own, or the caller's earlier message to it still waits.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "429", description = "The caller already wrote through this profile within a day.",
+	@ApiResponse(responseCode = "429", description = "The caller started ten conversations within the last day.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void enquire(@CurrentActor Actor actor, @PathVariable String slug,
 			@Valid @RequestBody SendTalentEnquiryRequest request) {

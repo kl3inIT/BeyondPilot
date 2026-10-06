@@ -734,7 +734,13 @@
         },
         "talent": {
           "approve": "Approved a talent profile",
-          "reject": "Sent a talent profile back"
+          "reject": "Sent a talent profile back",
+          "enquiry_accept": "Accepted a message through a talent profile",
+          "enquiry_decline": "Declined a message through a talent profile",
+          "enquiry_report": "Reported a message through a talent profile",
+          "request_changes": "Asked for changes to a talent profile",
+          "remove": "Removed a talent profile",
+          "delete": "Deleted a talent profile"
         },
         "proposal": {
           "criteria_update": "Set the judging criteria",
@@ -780,7 +786,13 @@
         },
         "talent": {
           "approve": "Approved the talent profile of <resource></resource>",
-          "reject": "Sent the talent profile of <resource></resource> back"
+          "reject": "Sent the talent profile of <resource></resource> back",
+          "enquiry_accept": "Accepted a message to <resource></resource>",
+          "enquiry_decline": "Declined a message to <resource></resource>",
+          "enquiry_report": "Reported a message to <resource></resource>",
+          "request_changes": "Asked for changes to the talent profile of <resource></resource>",
+          "remove": "Removed the talent profile of <resource></resource>",
+          "delete": "Deleted the talent profile of <resource></resource>"
         },
         "proposal": {
           "criteria_update": "Set the judging criteria of <resource></resource>",
@@ -1059,38 +1071,60 @@
       "review": {
         "open": "Review",
         "approve": "Approve",
-        "reject": "Send back…",
-        "takeDown": "Take down…",
-        "rejectTitle": "Send {name} back?",
+        "reject": "Ask for changes…",
+        "takeDown": "Remove…",
+        "rejectTitle": "Ask for changes to {name}?",
         "rejectLead": "The profile goes back to its person to correct. They read your reason.",
-        "takeDownLead": "The profile leaves the directory at once. Its person reads your reason and can send it again.",
+        "takeDownLead": "The profile leaves the directory at once. Its person is emailed, reads your reason and can send it again.",
         "reason": "Reason",
         "message": "Note (optional)",
         "messageHint": "They read this word for word. Say what to change.",
         "cancel": "Cancel",
-        "rejectConfirm": "Send back",
-        "takeDownConfirm": "Take down",
+        "rejectConfirm": "Ask for changes",
+        "takeDownConfirm": "Remove",
         "reasonPlaceholder": "Choose a reason",
-        "takeDownTitle": "Take {name} down?",
-        "keys": "Keys: A approve · S send back",
-        "keysApproved": "Key: S take down"
+        "takeDownTitle": "Remove {name}?",
+        "keys": "Keys: A approve · S ask for changes",
+        "keysApproved": "Key: S remove"
       },
       "detail": {
         "back": "All talent",
         "submitted": "Submitted {day}",
         "unlisted": "Hidden by its person",
-        "rejected": "Changes needed: {reason}.",
+        "rejected": "Changes requested: {reason}.",
         "next": "Next in review: {name}",
         "position": "{place} of {total} waiting",
         "waitingSince": "Sent {time}",
-        "public": "Open the public page"
+        "public": "Open the public page",
+        "removed": "Removed: {reason}."
       },
       "queueEmpty": {
         "title": "Nothing waits for review",
         "description": "Every profile sent for review has a decision.",
         "home": "Back to Admin home"
       },
-      "waitingSince": "Sent {time}"
+      "waitingSince": "Sent {time}",
+      "reported": {
+        "link": "Reported messages",
+        "metaTitle": "Reported messages · BeyondPilot",
+        "title": "Reported messages",
+        "lead": "Messages people behind talent profiles reported as unwanted. The sender was told the message was declined.",
+        "back": "All talent",
+        "from": "From {sender}",
+        "to": "To {name}",
+        "topic": {
+          "project": "About a project",
+          "role": "About a role",
+          "other": "About something else"
+        },
+        "sent": "Sent {date}",
+        "reportedAt": "Reported {date}",
+        "empty": {
+          "title": "Nothing reported",
+          "description": "A message shows here when the person it was sent to reports it."
+        },
+        "count": "{count, plural, one {# message} other {# messages}}"
+      }
     },
     "home": {
       "lead": "{count, plural, =0 {Nothing waits for a decision.} one {# record waits for a decision.} other {# records wait for a decision.}}",
@@ -1257,11 +1291,6 @@
       "ai_designer": "AI designer",
       "other": "Other"
     },
-    "availability": {
-      "available": "Available now",
-      "open_to_offers": "Open to offers",
-      "not_available": "Not available"
-    },
     "engagement": {
       "full_time": "Full-time",
       "part_time": "Part-time",
@@ -1311,6 +1340,33 @@
       "incomplete": "Information is missing",
       "unverifiable": "Could not be verified",
       "other": "Another reason"
+    },
+    "talentStatus": {
+      "draft": "Draft",
+      "submitted": "In review",
+      "approved": "Approved",
+      "changes_requested": "Changes requested",
+      "removed": "Removed"
+    },
+    "language": {
+      "vi": "Vietnamese",
+      "en": "English",
+      "ja": "Japanese",
+      "ko": "Korean",
+      "zh": "Chinese",
+      "th": "Thai",
+      "id": "Indonesian",
+      "ms": "Malay",
+      "hi": "Hindi",
+      "fr": "French",
+      "de": "German",
+      "es": "Spanish"
+    },
+    "projectStage": {
+      "prototype": "Prototype",
+      "pilot": "Pilot",
+      "in_production": "In production",
+      "internal_tool": "Internal tool"
     }
   },
   "Organization": {
@@ -1989,7 +2045,11 @@
       "TALENT_NOT_AWAITING_REVIEW": "This profile has already been reviewed.",
       "TALENT_CHANGED_MEANWHILE": "This profile changed in another tab. Reload the page and try again.",
       "TALENT_OWN_PROFILE": "This is your own profile.",
-      "TALENT_ENQUIRY_TOO_SOON": "You already wrote to this person today. Try again tomorrow.",
+      "TALENT_ENQUIRY_PENDING": "Your message to this person waits for their answer.",
+      "TALENT_ENQUIRY_LIMIT": "You started ten conversations today. Write again tomorrow.",
+      "TALENT_ENQUIRY_NOT_FOUND": "This message no longer exists.",
+      "TALENT_ENQUIRY_NOT_PENDING": "This message was answered already, or it closed.",
+      "TALENT_NOT_APPROVED": "Only an approved profile can be removed.",
       "REQUEST_INVALID": "Check the marked fields and try again.",
       "unknown": "That did not work. Try again."
     },
@@ -1997,7 +2057,12 @@
       "saved": "Profile saved.",
       "submitted": "Sent to GenAI Fund for review.",
       "approved": "{name} is approved.",
-      "rejected": "{name} sent back with your reason."
+      "accepted": "Accepted. You both have each other's email address now.",
+      "declined": "Declined. The sender was told.",
+      "reported": "Reported to GenAI Fund. The sender was told it was declined.",
+      "changesRequested": "Changes asked of {name}.",
+      "removed": "{name} is removed.",
+      "deleted": "Your talent profile is deleted."
     },
     "directory": {
       "metaTitle": "AI talent · BeyondPilot",
@@ -2021,21 +2086,17 @@
         "description": "Nothing matches this search and these filters.",
         "clear": "Clear search and filters"
       },
-      "edit": "Edit your profile"
+      "edit": "Edit your profile",
+      "noProject": "No project published yet",
+      "projects": "{count, plural, one {# project} other {# projects}}",
+      "view": "View profile"
     },
     "filters": {
-      "search": "Search talent by name or skill",
-      "open": "Filters",
-      "done": "Show results",
-      "close": "Close",
+      "search": "Search by name, skill or project",
       "adminSearch": "Search by name or email",
       "role": {
         "label": "Role",
-        "all": "All roles"
-      },
-      "availability": {
-        "label": "Availability",
-        "all": "Any availability"
+        "all": "All talent"
       },
       "status": {
         "label": "Status",
@@ -2051,50 +2112,74 @@
       "projects": "Selected work",
       "openProject": "See the work",
       "website": "Portfolio or LinkedIn",
-      "nothingYet": "Nothing written yet."
+      "nothingYet": "Nothing written yet.",
+      "languages": "Languages",
+      "industries": "Industries"
     },
     "profile": {
       "trail": "You are here",
       "about": "About",
       "projects": {
         "title": "Deployed projects",
-        "lead": "Each project is shown as stated by the person.",
-        "stated": "Stated by the person",
+        "lead": "Each project shows how far it went, as the person states it.",
         "open": "View the project",
         "empty": "No deployed project published yet."
-      },
-      "fit": {
-        "title": "Skills and availability",
-        "skills": "Skills",
-        "availability": "Availability",
-        "engagement": "Open to",
-        "rate": "Rate"
       },
       "facts": {
         "country": "Based in",
         "role": "Role",
-        "website": "Portfolio or LinkedIn"
+        "website": "Portfolio or LinkedIn",
+        "city": "City",
+        "worksAt": "Works at",
+        "worksAtStated": "as stated by the person",
+        "languages": "Languages",
+        "industries": "Industries"
       },
-      "notListed": "Not listed yet",
-      "note": "Enquiries go through BeyondPilot. {name} gets your message with your name and email address; theirs is not shown until they reply."
+      "notListed": "Not stated",
+      "note": "Messages go through BeyondPilot. {name} reads your name and organization; neither email address is shared unless they accept.",
+      "photoAlt": "Photo of {name}",
+      "stats": {
+        "projects": "{count, plural, one {project on the profile} other {projects on the profile}}",
+        "inProduction": "in production",
+        "industries": "{count, plural, one {industry} other {industries}}",
+        "pilots": "{count, plural, one {pilot} other {pilots}}"
+      },
+      "openTo": "Open to {engagement}.",
+      "skills": {
+        "title": "Skills and industries",
+        "skills": "Skills",
+        "industries": "Industries"
+      }
     },
     "enquiry": {
       "title": "Work with {name}",
-      "project": "Discuss a project",
-      "role": "Ask about a role",
-      "projectLabel": "Tell {name} about your project",
-      "projectPlaceholder": "What you are building, and what you need from them.",
-      "roleLabel": "Ask {name} about a role",
-      "rolePlaceholder": "The role, the team, and what you would like to know.",
-      "hint": "They get your message with your name and email, and answer you directly.",
+      "open": "Contact {name}",
+      "openShort": "Contact",
+      "dialogTitle": "Contact {name}",
+      "dialogLead": "{name} reads your message, your name and your organization if GenAI Fund approved it. Neither email address is shared unless they accept.",
+      "topic": "What it is about",
+      "topics": {
+        "project": "A project",
+        "role": "A role",
+        "other": "Something else"
+      },
+      "message": "Your message",
+      "placeholder": "What you are building or hiring for, and what you need from them.",
+      "hint": "Up to 2,000 characters. They have 14 days to answer.",
       "required": "Write a message first.",
       "send": "Send message",
       "cancel": "Cancel",
-      "sentTitle": "Message sent to {name}",
-      "sentLead": "They will answer to your email address.",
+      "sentTitle": "Your message is on its way to {name}",
+      "sentLead": "You get an email when they answer. Until then, neither email address is shown.",
+      "done": "Done",
+      "waitingTitle": "Your message waits for {name}",
+      "waitingLead": "Sent {date}. You can write again once they answer or the message closes.",
       "signInLead": "Sign in to write to {name}.",
       "ownLead": "This is your profile, as others see it.",
-      "ownEdit": "Edit your profile"
+      "ownEdit": "Edit your profile",
+      "senderName": "Your name",
+      "senderNameHint": "{name} reads this name. Your email address stays hidden.",
+      "senderNameRequired": "Say who is writing."
     },
     "mine": {
       "metaTitle": "Talent profile · BeyondPilot",
@@ -2111,12 +2196,59 @@
         "open": "Open your public profile",
         "unlistedLead": "Turn on “Show in the directory” below to be listed."
       },
-      "rejected": {
-        "title": "Changes needed: {reason}",
+      "inbox": {
+        "title": "Messages",
+        "waiting": "{count, plural, one {# waits for your answer} other {# wait for your answer}}",
+        "lead": "Accept to share your email address with the sender. Decline or report shares nothing.",
+        "someone": "Someone",
+        "from": "{name} · {organization}",
+        "topic": {
+          "project": "About a project",
+          "role": "About a role",
+          "other": "About something else"
+        },
+        "status": {
+          "pending": "Waits for you",
+          "accepted": "Accepted",
+          "declined": "Declined",
+          "reported": "Reported",
+          "closed": "Closed unanswered"
+        },
+        "sent": "Sent {date}",
+        "closes": "Closes {date}",
+        "answered": "Answered {date}",
+        "write": "Write to {email}",
+        "accept": "Accept",
+        "decline": "Decline",
+        "report": "Report",
+        "confirmDecline": {
+          "title": "Decline this message?",
+          "lead": "The sender is told you will not take it further. No address is shared.",
+          "confirm": "Decline",
+          "cancel": "Keep it"
+        },
+        "confirmReport": {
+          "title": "Report this message?",
+          "lead": "GenAI Fund reads it. The sender is told it was declined, not that you reported it.",
+          "confirm": "Report",
+          "cancel": "Keep it"
+        }
+      },
+      "changesRequested": {
+        "title": "Changes requested: {reason}",
         "lead": "Correct it and send it for review again."
       },
-      "enquiries": "{count, plural, one {# message} other {# messages}}",
-      "reply": "Reply to {email}"
+      "removed": {
+        "title": "Removed from the directory: {reason}",
+        "lead": "Nobody else sees it now. Correct it and send it for review again."
+      },
+      "delete": {
+        "action": "Delete profile…",
+        "title": "Delete your talent profile?",
+        "lead": "Your profile, its projects and the messages sent through it are deleted for good. Nobody can find it in the directory.",
+        "confirm": "Delete profile",
+        "cancel": "Keep it"
+      }
     },
     "form": {
       "name": "Name",
@@ -2130,7 +2262,6 @@
       "skillsHint": "Separate with commas, up to {count}. For example: Python, LangGraph, RAG, MLOps.",
       "skillsInvalid": "Name at most {count} skills, each up to 40 characters.",
       "country": "Country",
-      "availability": "Availability",
       "rate": "Rate",
       "notStated": "Not stated",
       "engagement": "Open to",
@@ -2146,7 +2277,9 @@
         "summary": "What you did",
         "url": "Link",
         "remove": "Remove project {number}",
-        "add": "Add a project"
+        "add": "Add a project",
+        "stage": "Stage",
+        "stageNone": "Not stated"
       },
       "listed": "Show in the directory",
       "listedHint": "Takes effect once the profile is approved.",
@@ -2182,7 +2315,33 @@
         "cancel": "Keep editing"
       },
       "requiredMark": "· required",
-      "headlineHint": "One line on what you do. For example: ML engineer building document AI for banks."
+      "headlineHint": "One line on what you do. For example: ML engineer building document AI for banks.",
+      "photo": {
+        "label": "Photo",
+        "hint": "A clear photo of your face. PNG, JPEG or WebP, up to 2 MB.",
+        "choose": "Upload a photo",
+        "change": "Change photo",
+        "remove": "Remove photo",
+        "uploading": "Uploading…",
+        "alt": "Your photo",
+        "errors": {
+          "type": "Use a PNG, JPEG or WebP image.",
+          "size": "Use an image of 2 MB or less.",
+          "failed": "The photo did not upload. Try again."
+        }
+      },
+      "city": "City",
+      "worksAt": "Where you work",
+      "worksAtHint": "Shown as you state it. Leave empty if you work on your own.",
+      "languages": "Languages you work in",
+      "industries": "Industries you have worked in",
+      "sections": {
+        "about": "About you",
+        "work": "What you do",
+        "place": "Where you are",
+        "engagement": "Work you take on"
+      },
+      "rateHint": "Only you and GenAI Fund see the rate."
     }
   },
   "Form": {

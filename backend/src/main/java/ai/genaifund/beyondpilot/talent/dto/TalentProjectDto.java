@@ -15,5 +15,8 @@ public record TalentProjectDto(
 		@Schema(types = { "string", "null" }) @Size(max = 300) @Pattern(
 				regexp = TalentCodes.URL) @Nullable String url,
 		@Schema(types = { "integer", "null" }, format = "int32",
-				description = "The year the work was done.") @Min(1990) @Max(2100) @Nullable Integer year) {
+				description = "The year the work was done.") @Min(1990) @Max(2100) @Nullable Integer year,
+		@Schema(types = { "string", "null" }, description = "How far the work went; null when not stated.",
+				allowableValues = { "prototype", "pilot", "in_production", "internal_tool" }) @Pattern(
+						regexp = TalentCodes.PROJECT_STAGE) @Nullable String stage) {
 }

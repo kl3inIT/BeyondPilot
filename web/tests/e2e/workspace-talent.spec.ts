@@ -53,6 +53,11 @@ test.describe("workspace talent profile", () => {
     await page.getByLabel("About you").fill("Ten years in insurance operations.");
     await page.getByRole("group", { name: "Roles" }).getByText("AI engineer").click();
     await page.getByLabel("Skills").fill("Python, RAG ,  ");
+    await page.getByLabel("City").fill("Đà Nẵng");
+    await page
+      .getByRole("group", { name: "Languages you work in" })
+      .getByText("Vietnamese")
+      .click();
     await expect(page.getByRole("note").getByText("Ready to send for review")).toBeVisible();
 
     await page.getByRole("button", { name: "Send for review" }).click();
@@ -70,6 +75,11 @@ test.describe("workspace talent profile", () => {
           country: null,
           engagement: [],
           website: null,
+          photoFileId: null,
+          city: "Đà Nẵng",
+          languages: ["vi"],
+          industries: [],
+          worksAt: null,
           projects: [],
           listed: true,
           version: null,
@@ -88,7 +98,7 @@ test.describe("workspace talent profile", () => {
     const changes = await answerDecisions(page, changesPath, 200, {});
     await page.goto(mine);
 
-    await expect(page.getByText("Changes needed: Information is missing")).toBeVisible();
+    await expect(page.getByText("Changes requested: Information is missing")).toBeVisible();
     await expect(page.getByText("Add a project.", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Save draft" })).toBeDisabled();
 
@@ -133,13 +143,17 @@ test.describe("workspace talent profile", () => {
       "href",
       "/talent/dat-phan",
     );
-    const messages = page.getByRole("region", { name: "1 message" });
+    const messages = page.getByRole("region", { name: "Messages" });
     await expect(
       messages.getByText("We are scoping a claims assistant and would like your view."),
     ).toBeVisible();
+    await expect(messages.getByText("1 waits for your answer")).toBeVisible();
+    await expect(messages.getByText("Hà Lê · Mekong Insurance")).toBeVisible();
+    // A waiting message shows no address; an accepted one gives the way to write.
+    await expect(messages.getByText("ha.le@")).toHaveCount(0);
     await expect(
-      messages.getByRole("link", { name: "Reply to ha.le@example.com" }),
-    ).toHaveAttribute("href", "mailto:ha.le@example.com");
+      messages.getByRole("link", { name: "Write to minh.tran@example.com" }),
+    ).toHaveAttribute("href", "mailto:minh.tran@example.com");
     await expectNoSeriousA11yViolations(page);
 
     const save = page.getByRole("button", { name: "Save changes" });
@@ -154,5 +168,47 @@ test.describe("workspace talent profile", () => {
       page.getByText("This profile changed in another tab. Reload the page and try again."),
     ).toBeVisible();
     await expect(page.getByText("text of the backend that must not be shown")).toHaveCount(0);
+  });
+
+  test("the person accepts a waiting message, or reports one after confirming", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const answers = await answerDecisions(page, changesPath, 204);
+    await page.goto(mine);
+    const messages = page.getByRole("region", { name: "Messages" });
+
+    await messages.getByRole("button", { name: "Accept" }).click();
+    await expect(
+      page.getByText("Accepted. You both have each other's email address now."),
+    ).toBeVisible();
+
+    await messages.getByRole("button", { name: "Report" }).click();
+    const confirm = page.getByRole("alertdialog", { name: "Report this message?" });
+    await expect(confirm.getByText("not that you reported it")).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+    await confirm.getByRole("button", { name: "Report" }).click();
+
+    await expect(page.getByText("Reported to GenAI Fund.", { exact: false })).toBeVisible();
+    expect(answers.map((answer) => answer.call)).toEqual([
+      "POST /api/talent/mine/enquiries/d08dabc9-7a75-4bca-8bc2-7e0a3a3c4b01/accept",
+      "POST /api/talent/mine/enquiries/d08dabc9-7a75-4bca-8bc2-7e0a3a3c4b01/report",
+    ]);
+  });
+
+  test("the person deletes their profile after confirming", async ({ page, context, baseURL }) => {
+    await signInAs(context, "member", baseURL!);
+    const deleted = await answerDecisions(page, changesPath, 204);
+    await page.goto(mine);
+
+    await page.getByRole("button", { name: "Delete profile…" }).click();
+    const confirm = page.getByRole("alertdialog", { name: "Delete your talent profile?" });
+    await expect(confirm.getByText("deleted for good")).toBeVisible();
+    await confirm.getByRole("button", { name: "Delete profile" }).click();
+
+    await expect(page.getByText("Your talent profile is deleted.")).toBeVisible();
+    expect(deleted.map((change) => change.call)).toEqual(["DELETE /api/talent/mine"]);
   });
 });

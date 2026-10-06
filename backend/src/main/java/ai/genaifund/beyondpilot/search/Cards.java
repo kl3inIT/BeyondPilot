@@ -38,7 +38,11 @@ final class Cards {
 
 	static final String SKILLS = "skills";
 
-	static final String AVAILABILITY = "availability";
+	static final String CITY = "city";
+
+	static final String WORKS_AT = "worksAt";
+
+	static final String PHOTO = "photoFileId";
 
 	private Cards() {
 	}

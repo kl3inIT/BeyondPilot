@@ -11,9 +11,9 @@ function shownPeople(page: Page) {
   return page.getByRole("main").getByRole("heading", { level: 2 }).getByRole("link");
 }
 
-/** The first way to write to the person: in the card, or in the bar at the foot of a phone. */
-function discussProject(page: Page) {
-  return page.getByRole("button", { name: "Discuss a project" }).first();
+/** The way to write to the person, in the card beside the profile. */
+function contact(page: Page, name: string) {
+  return page.getByRole("button", { name: `Contact ${name}` });
 }
 
 test.describe("talent directory", () => {
@@ -37,19 +37,26 @@ test.describe("talent directory", () => {
   test("search and the facets are the address, and the server answers them", async ({ page }) => {
     await page.goto("/talent");
 
-    await page.getByRole("searchbox", { name: "Search talent by name or skill" }).fill("ocr");
+    await page.getByRole("searchbox", { name: "Search by name, skill or project" }).fill("ocr");
     await expect(page).toHaveURL(/[?&]q=ocr/);
     await expect(shownPeople(page)).toHaveText(["Arif Hidayat"]);
     await expect(page.getByText("Showing 1 of 1")).toBeVisible();
 
-    await page.goto("/talent?role=forward_deployed_engineer&availability=available&sort=name");
+    await page.goto("/talent?role=forward_deployed_engineer&sort=name");
     await expect(shownPeople(page)).toHaveText(["Linh Nguyễn"]);
 
     await page.goto("/talent?sort=name");
     await expect(shownPeople(page)).toHaveText(["Arif Hidayat", "Đạt Phan", "Linh Nguyễn"]);
 
+    await page.goto("/talent");
+    await page.getByRole("button", { name: "ML engineer" }).click();
+    await expect(page).toHaveURL(/[?&]role=ml_engineer/);
+    await expect(shownPeople(page)).toHaveText(["Arif Hidayat"]);
+    await page.getByRole("button", { name: "All talent" }).click();
+    await expect(shownPeople(page)).toHaveCount(3);
+
     await page.goto("/talent?q=nobody");
-    await expect(page.getByRole("heading", { name: "No profile matches" })).toBeVisible();
+    await expect(page.getByText("No profile matches")).toBeVisible();
     await page.getByRole("link", { name: "Clear search and filters" }).click();
     await expect(page).toHaveURL("/talent");
     await expect(shownPeople(page)).toHaveCount(3);
@@ -64,19 +71,22 @@ test.describe("talent directory", () => {
     await expect(page).toHaveURL("/talent/linh-nguyen");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Linh Nguyễn");
     await expect(page.getByText("Claims assistant for an insurer")).toBeVisible();
-    await expect(page.getByText("Stated by the person", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Each project shows how far it went, as the person states it."),
+    ).toBeVisible();
     await expect(page.getByText("Contract, Advisory")).toBeVisible();
-    await expect(page.getByText("$50–100 an hour")).toBeVisible();
+    await expect(page.getByText("In production", { exact: true })).toBeVisible();
+    await expect(page.getByText("project on the profile")).toBeVisible();
+    await expect(page.getByText("Vietnamese, English")).toBeVisible();
+    await expect(page.getByText("Revee AI")).toBeVisible();
+    // The rate is for the person and GenAI Fund, not the public.
+    await expect(page.getByText("an hour")).toHaveCount(0);
     await expect(page.getByRole("link", { name: "linkedin.com" })).toBeVisible();
     // The person's address is on no public page.
     await expect(page.getByRole("main").getByText("@")).toHaveCount(0);
 
     const signIn = "/sign-in?returnTo=%2Ftalent%2Flinh-nguyen";
-    await expect(page.getByRole("link", { name: "Discuss a project" }).first()).toHaveAttribute(
-      "href",
-      signIn,
-    );
-    await expect(page.getByRole("link", { name: "Ask about a role" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: "Contact Linh Nguyễn" })).toHaveAttribute(
       "href",
       signIn,
     );
@@ -90,12 +100,13 @@ test.describe("talent directory", () => {
     await page.goto("/talent/arif-hidayat");
 
     await expect(page.getByText("No deployed project published yet.")).toBeVisible();
-    await expect(page.getByText("Not listed yet")).toBeVisible();
+    // With no project there is nothing to count.
+    await expect(page.getByText("on the profile")).toHaveCount(0);
 
     expect((await page.goto("/talent/no-such-person"))?.status()).toBe(404);
   });
 
-  test("a signed-in person writes to a profile, and a message is needed", async ({
+  test("a signed-in person writes to a profile about a topic, and a message is needed", async ({
     page,
     context,
     baseURL,
@@ -104,49 +115,54 @@ test.describe("talent directory", () => {
     const sent = await answerDecisions(page, enquiriesPath, 204);
     await page.goto("/talent/arif-hidayat");
 
-    await discussProject(page).click();
-    const message = page.getByRole("textbox", { name: "Tell Arif Hidayat about your project" });
-    await expect(message).toBeFocused();
-
-    await page.getByRole("button", { name: "Send message" }).click();
-    await expect(page.getByText("Write a message first.")).toBeVisible();
+    await contact(page, "Arif Hidayat").click();
+    const dialog = page.getByRole("dialog", { name: "Contact Arif Hidayat" });
+    await expect(
+      dialog.getByText("Neither email address is shared unless they accept."),
+    ).toBeVisible();
+    await dialog.getByRole("button", { name: "Send message" }).click();
+    await expect(dialog.getByText("Write a message first.")).toBeVisible();
+    // An account without a name signs the message with one; an address is never shown in its place.
+    await expect(dialog.getByText("Say who is writing.")).toBeVisible();
     expect(sent).toEqual([]);
+    // The pointer rests on the button that was pressed; its hover colour is not what is checked.
+    await page.mouse.move(0, 0);
     await expectNoSeriousA11yViolations(page);
 
-    await message.fill("We need OCR for claim forms.");
-    await page.getByRole("button", { name: "Send message" }).click();
+    await dialog.getByLabel("Your name").fill("Lan Trần");
+    await dialog.getByLabel("What it is about").selectOption("role");
+    await dialog.getByRole("textbox", { name: "Your message" }).fill("Would you lead our pilot?");
+    await dialog.getByRole("button", { name: "Send message" }).click();
 
-    await expect(page.getByText("Message sent to Arif Hidayat")).toBeVisible();
-    await expect(page.getByText("They will answer to your email address.")).toBeVisible();
-    // One message is the conversation's start; the ways to write again are gone.
-    await expect(page.getByRole("button", { name: "Discuss a project" })).toHaveCount(0);
+    await expect(page.getByText("Your message is on its way to Arif Hidayat")).toBeVisible();
     expect(sent).toEqual([
       {
         call: "POST /api/talent/profiles/arif-hidayat/enquiries",
-        body: { message: "We need OCR for claim forms." },
+        body: { senderName: "Lan Trần", topic: "role", message: "Would you lead our pilot?" },
       },
     ]);
   });
 
-  test("a second message on the same day is refused in the words of its code", async ({
+  test("a second message while the first waits is refused in the words of its code", async ({
     page,
     context,
     baseURL,
   }) => {
     await signInAs(context, "unnamed", baseURL!);
-    await answerDecisions(page, enquiriesPath, 429, refusal("TALENT_ENQUIRY_TOO_SOON"));
+    await answerDecisions(page, enquiriesPath, 409, refusal("TALENT_ENQUIRY_PENDING"));
     await page.goto("/talent/arif-hidayat");
 
-    await page.getByRole("button", { name: "Ask about a role" }).click();
-    await page.getByRole("textbox", { name: "Ask Arif Hidayat about a role" }).fill("Again.");
+    await contact(page, "Arif Hidayat").click();
+    await page.getByLabel("Your name").fill("Lan Trần");
+    await page.getByRole("textbox", { name: "Your message" }).fill("Again.");
     await page.getByRole("button", { name: "Send message" }).click();
 
     await expect(
-      page.getByText("You already wrote to this person today. Try again tomorrow."),
+      page.getByText("Your message to this person waits for their answer."),
     ).toBeVisible();
     await expect(page.getByText("text of the backend that must not be shown")).toHaveCount(0);
     // The message is kept, so it can be sent another day.
-    await expect(page.getByRole("textbox")).toHaveValue("Again.");
+    await expect(page.getByRole("textbox", { name: "Your message" })).toHaveValue("Again.");
   });
 
   test("the person behind a profile edits it instead of writing to it", async ({
@@ -162,7 +178,7 @@ test.describe("talent directory", () => {
       "href",
       "/workspace/talent",
     );
-    await expect(page.getByRole("button", { name: "Discuss a project" })).toHaveCount(0);
+    await expect(contact(page, "Đạt Phan")).toHaveCount(0);
 
     await page.goto("/talent");
     await expect(page.getByRole("link", { name: "Edit your profile" }).first()).toBeVisible();

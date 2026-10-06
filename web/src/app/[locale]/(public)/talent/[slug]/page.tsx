@@ -34,5 +34,12 @@ export default async function TalentProfileRoute({ params }: PageProps<"/[locale
 
   const own = account ? (await readMyTalent()).profile?.slug === profile.slug : false;
 
-  return <TalentProfilePage profile={profile} signInHref={signInHref} own={own} />;
+  return (
+    <TalentProfilePage
+      profile={profile}
+      signInHref={signInHref}
+      own={own}
+      senderName={account?.displayName ?? ""}
+    />
+  );
 }
