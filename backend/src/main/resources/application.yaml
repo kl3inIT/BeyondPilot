@@ -34,6 +34,19 @@ spring:
     jdbc:
       # Flyway creates the session tables.
       initialize-schema: never
+  modulith:
+    events:
+      # Only module listeners are recorded; an in-module @TransactionalEventListener, such as a confirmation mail,
+      # stays a plain after-commit call and its event is never stored.
+      registry-trigger-annotation: org.springframework.modulith.events.ApplicationModuleListener
+      # A completed publication is deleted, so the table holds only what is still to be delivered.
+      completion-mode: delete
+      # One instance runs, so on startup every publication left incomplete is its own to deliver again.
+      republish-outstanding-events-on-restart: true
+      jdbc:
+        # Flyway creates the event publication table.
+        schema-initialization:
+          enabled: false
   mail:
     # Local development delivers to the Mailpit container of backend/compose.yaml; nothing leaves the machine.
     host: ${BEYONDPILOT_MAIL_HOST:localhost}
