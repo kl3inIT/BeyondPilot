@@ -34,6 +34,7 @@ import ai.genaifund.beyondpilot.proposal.dto.ProgramFormResponse;
 import ai.genaifund.beyondpilot.proposal.dto.SaveApplicationRequest;
 import ai.genaifund.beyondpilot.proposal.dto.SolutionOptionResponse;
 import ai.genaifund.beyondpilot.proposal.persistence.Proposal;
+import ai.genaifund.beyondpilot.proposal.persistence.ProposalReleaseRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersion;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersionRepository;
@@ -92,9 +93,13 @@ public class ProposalService {
 
 	private final JsonMapper json;
 
+	private final ProposalReleaseRepository releases;
+
 	ProposalService(ProposalRepository proposals, ProposalVersionRepository versions, ProgramService programs,
 			OrganizationDirectory organizations, OrganizationService organizationService, SolutionDirectory solutions,
-			StorageService storage, IdentityService identity, ApplicationEventPublisher events, JsonMapper json) {
+			StorageService storage, IdentityService identity, ApplicationEventPublisher events, JsonMapper json,
+			ProposalReleaseRepository releases) {
+		this.releases = releases;
 		this.proposals = proposals;
 		this.versions = versions;
 		this.programs = programs;
@@ -153,7 +158,7 @@ public class ProposalService {
 					organizationId == null ? null
 							: organizations.profile(organizationId).map(OrganizationProfile::name).orElse(null),
 					solutionId == null ? null : solutions.offered(solutionId).map(OfferedSolution::name).orElse(null),
-					proposal.getSubmittedAt(), proposal.getUpdatedAt()));
+					proposal.getSubmittedAt(), proposal.getUpdatedAt(), outcome(proposal)));
 		}
 		return new MyApplicationsResponse(items);
 	}
@@ -414,7 +419,12 @@ public class ProposalService {
 		return new ApplicationResponse(proposal.getId(), proposal.getStatus(),
 				json.readValue(proposal.getContact(), ContactDetails.class), proposal.getTeamBackground(),
 				proposal.getSolutionId(), deck(proposal), proposal.getBuiltWith(), proposal.getTraction(), answers, files, proposal.getSubmissions(), proposal.getSubmittedAt(),
-				proposal.getWithdrawnAt(), proposal.getVersion(), proposal.getUpdatedAt());
+				proposal.getWithdrawnAt(), proposal.getVersion(), proposal.getUpdatedAt(), outcome(proposal));
+	}
+
+	/** GenAI Fund's decision on a submitted application, once its program's outcomes are released. */
+	private @Nullable String outcome(Proposal proposal) {
+		return proposal.isSubmitted() && releases.existsById(proposal.getProgramId()) ? proposal.getReviewStatus() : null;
 	}
 
 	private SolutionOptionResponse option(OfferedSolution solution) {

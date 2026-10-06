@@ -38,9 +38,15 @@ async function ApplicationPage({ view }: { view: ApplicationView }) {
           <h1 className="text-3xl font-semibold tracking-title">
             {solution?.name ?? program.name}
           </h1>
-          <Badge variant={application.status === "submitted" ? "info" : "outline"}>
-            {t(`status.${application.status}`)}
-          </Badge>
+          {application.outcome ? (
+            <Badge variant={application.outcome === "shortlisted" ? "success" : "outline"}>
+              {t(`result.${application.outcome}`)}
+            </Badge>
+          ) : (
+            <Badge variant={application.status === "submitted" ? "info" : "outline"}>
+              {t(`status.${application.status}`)}
+            </Badge>
+          )}
         </div>
         <p className="text-muted-foreground">
           {[program.name, view.organization?.name].filter(Boolean).join(" · ")}
@@ -56,6 +62,11 @@ async function ApplicationPage({ view }: { view: ApplicationView }) {
           className="flex flex-col gap-4 rounded-2xl border bg-card p-5 lg:sticky lg:top-6 lg:w-80"
         >
           <h2 className="font-medium">{t("whereItStands")}</h2>
+          {application.outcome && (
+            <p className="rounded-lg border bg-muted p-3 text-sm">
+              {t(`resultLead.${application.outcome}`)}
+            </p>
+          )}
           <dl className="flex flex-col gap-2 text-sm">
             <div className="flex justify-between gap-3">
               <dt className="text-muted-foreground">{t("submitted")}</dt>

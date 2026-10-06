@@ -26,7 +26,8 @@
       "organization": "My organization",
       "talentProfile": "Talent profile",
       "admin": "Admin",
-      "applications": "My applications"
+      "applications": "My applications",
+      "reviews": "Reviews"
     },
     "menu": {
       "open": "Open menu",
@@ -533,7 +534,9 @@
       "tabs": {
         "label": "Program",
         "settings": "Settings",
-        "questions": "Questions"
+        "questions": "Questions",
+        "applications": "Applications",
+        "reviewers": "Reviewers"
       },
       "questions": {
         "metaTitle": "Questions",
@@ -732,6 +735,13 @@
         "talent": {
           "approve": "Approved a talent profile",
           "reject": "Sent a talent profile back"
+        },
+        "proposal": {
+          "criteria_update": "Set the judging criteria",
+          "reviewer_invite": "Invited a judge",
+          "reviewer_remove": "Removed a judge",
+          "decide": "Decided on an application",
+          "release": "Released the outcomes"
         }
       },
       "activity": {
@@ -771,6 +781,13 @@
         "talent": {
           "approve": "Approved the talent profile of <resource></resource>",
           "reject": "Sent the talent profile of <resource></resource> back"
+        },
+        "proposal": {
+          "criteria_update": "Set the judging criteria of <resource></resource>",
+          "reviewer_invite": "Invited a judge to <resource></resource>",
+          "reviewer_remove": "Removed a judge from <resource></resource>",
+          "decide": "Decided on an application to <resource></resource>",
+          "release": "Released the outcomes of <resource></resource>"
         }
       },
       "columns": {
@@ -2818,7 +2835,15 @@
     "closedOn": "Applications closed on {when}.",
     "continue": "Continue",
     "edit": "Edit application",
-    "view": "View application"
+    "view": "View application",
+    "result": {
+      "shortlisted": "Shortlisted",
+      "not_selected": "Not selected"
+    },
+    "resultLead": {
+      "shortlisted": "You're shortlisted. GenAI Fund's email has what comes next.",
+      "not_selected": "Not selected this time. GenAI Fund's email has the details."
+    }
   },
   "Application": {
     "metaTitle": "Application",
@@ -2863,6 +2888,319 @@
       "nextReview": "GenAI Fund reads every application and tells you the outcome by email.",
       "view": "View my application",
       "programs": "Back to programs"
+    },
+    "result": {
+      "shortlisted": "Shortlisted",
+      "not_selected": "Not selected"
+    },
+    "resultLead": {
+      "shortlisted": "You're shortlisted. GenAI Fund's email has what comes next.",
+      "not_selected": "Not selected this time. GenAI Fund's email has the details."
+    }
+  },
+  "Review": {
+    "nav": "Reviews",
+    "area": "Judging",
+    "errors": {
+      "unknown": "That did not go through. Try again in a moment.",
+      "released": "The outcomes of this program have been released, so the review no longer changes.",
+      "PROPOSAL_RELEASED": "The outcomes of this program have been released, so the review no longer changes.",
+      "PROPOSAL_NO_CRITERIA": "This program has no judging criteria yet. GenAI Fund sets them first.",
+      "PROPOSAL_ASSESSMENT_INVALID": "Score every criterion from 1 to 5, or declare a conflict.",
+      "PROPOSAL_OUTCOMES_NOT_READY": "Outcomes are released once applications have closed and every application has a decision.",
+      "PROPOSAL_REVIEWER_INVITED": "This address is already invited to judge this program.",
+      "PROPOSAL_REVIEWER_JOINED": "This judge has already signed in; there is no invitation to send again.",
+      "PROPOSAL_CRITERIA_FIXED": "Applications have been scored on these criteria, so they can no longer change.",
+      "PROPOSAL_CRITERIA_INVALID": "Give each criterion its own name."
+    },
+    "list": {
+      "metaTitle": "Applications",
+      "tabs": {
+        "label": "Show applications",
+        "all": "All",
+        "undecided": "To decide",
+        "shortlisted": "Shortlisted",
+        "not_selected": "Not selected",
+        "to_score": "To score",
+        "scored": "Scored"
+      },
+      "search": "Search applicants",
+      "clear": "Clear",
+      "allChoices": "{label}: all",
+      "kind": "Applying as",
+      "allKinds": "Applying as: all",
+      "selection": {
+        "label": "Selected applications",
+        "count": "{count, plural, one {# selected} other {# selected}}",
+        "shortlist": "Shortlist",
+        "notSelected": "Not selected",
+        "clear": "Clear selection",
+        "all": "Select every application shown",
+        "one": "Select {name}"
+      },
+      "decided": {
+        "shortlisted": "{count, plural, one {# application shortlisted.} other {# applications shortlisted.}}",
+        "not_selected": "{count, plural, one {# application marked not selected.} other {# applications marked not selected.}}"
+      },
+      "columns": {
+        "applicant": "Applicant",
+        "submitted": "Submitted",
+        "scores": "Scores",
+        "status": "Status",
+        "yourAverage": "Your average",
+        "open": "Open"
+      },
+      "openNamed": "Open {name}",
+      "decision": {
+        "under_review": "Under review",
+        "shortlisted": "Shortlisted",
+        "not_selected": "Not selected"
+      },
+      "mine": {
+        "conflict": "Conflict",
+        "none": "Not scored"
+      },
+      "average": "{value}",
+      "scored": "{count, plural, =0 {Not scored yet} one {# score} other {# scores}}",
+      "scoredAverage": "{count, plural, one {# score} other {# scores}} · average {value}",
+      "lead": {
+        "released": "Outcomes released on {day}.",
+        "open": "Applications close {closes}. Judges can score what has been submitted.",
+        "closed": "Applications have closed. Every applicant hears back on {day}.",
+        "closedNoDay": "Applications have closed."
+      },
+      "judgeLead": "You score each application on {count, plural, one {# criterion} other {# criteria}}. GenAI Fund decides and tells every applicant.",
+      "seeRelease": "See the release",
+      "release": "Release outcomes",
+      "noCriteria": {
+        "operator": "This program has no judging criteria yet. Set them under Reviewers before anyone scores.",
+        "judge": "GenAI Fund has not set the judging criteria yet. You can read the applications meanwhile."
+      },
+      "noMatch": {
+        "title": "No application matches",
+        "description": "Try other words, or clear the search and the filters.",
+        "clear": "Clear search and filters"
+      },
+      "empty": {
+        "title": "No applications yet",
+        "description": "Submitted applications appear here. Drafts are never listed."
+      },
+      "footer": "{shown, plural, one {# application} other {# applications}} · {drafts, plural, one {# draft was} other {# drafts were}} not submitted · {withdrawn} withdrawn"
+    },
+    "application": {
+      "metaTitle": "Application",
+      "back": "{program}",
+      "position": "{place} of {total}",
+      "next": "Next application",
+      "decision": {
+        "under_review": "Under review",
+        "shortlisted": "Shortlisted",
+        "not_selected": "Not selected"
+      },
+      "meta": "{organization} · submitted {submitted} · version {version}",
+      "scores": {
+        "title": "Judges' scores",
+        "average": "{value} average",
+        "none": "No other judge has scored it yet.",
+        "conflict": "Declared a conflict",
+        "role": {
+          "operator": "GenAI Fund",
+          "reviewer": "Judge"
+        },
+        "onVersion": "on version {version}"
+      },
+      "history": {
+        "title": "History",
+        "submitted": "{version, plural, =1 {Submitted} other {Submitted again (version #)}}",
+        "decided": {
+          "under_review": "Back under review",
+          "shortlisted": "Shortlisted",
+          "not_selected": "Not selected"
+        }
+      }
+    },
+    "assessment": {
+      "title": "Your assessment · version {version}",
+      "earlierVersion": "You scored version {version}. The applicant has submitted again since; check what changed and save again.",
+      "conflictDeclared": "You declared a conflict with this applicant, so your score is left out. Score it below to take that back.",
+      "noCriteria": "Scoring opens once GenAI Fund sets the judging criteria.",
+      "criteria": "Criteria, 1 to 5",
+      "notScored": "Not scored",
+      "average": "Average {value}",
+      "score": "{score} out of 5",
+      "note": "Private note",
+      "readByJudge": "Only you and GenAI Fund read this.",
+      "readByOperator": "Only GenAI Fund reads this.",
+      "skip": "Skip",
+      "saveAndNext": "Save and next",
+      "save": "Save assessment",
+      "conflict": "I have a conflict with this applicant",
+      "saved": "Assessment saved.",
+      "conflictSaved": "Conflict recorded. Your score is left out."
+    },
+    "decision": {
+      "title": "Decision",
+      "state": {
+        "shortlisted": "Shortlisted",
+        "not_selected": "Not selected"
+      },
+      "released": "The outcomes have been released, so the decision no longer changes.",
+      "reason": "Reason",
+      "changeReason": "Reason for the change",
+      "shortlistAndNext": "Shortlist and next",
+      "shortlist": "Shortlist",
+      "changeToShortlisted": "Change to shortlisted",
+      "notSelectedAndNext": "Not selected and next",
+      "notSelected": "Not selected",
+      "changeToNotSelected": "Change to not selected",
+      "private": "Decisions and reasons stay private. The applicant sees only the outcome you release.",
+      "done": {
+        "shortlisted": "Shortlisted.",
+        "not_selected": "Marked not selected."
+      }
+    },
+    "record": {
+      "notGiven": "Not given",
+      "deck": "Deck",
+      "blocks": {
+        "team": "You and your team",
+        "solution": "Your solution",
+        "questions": "For this program",
+        "files": "Files and links"
+      },
+      "applyingAs": "Applying as",
+      "contact": "Contact",
+      "country": "Country",
+      "teamSize": "Team size",
+      "linkedin": "LinkedIn",
+      "website": "Website",
+      "teamBackground": "Team background",
+      "solution": "Solution",
+      "summary": "What it does",
+      "problemsSolved": "Problem it solves",
+      "maturity": "Stage",
+      "builtWith": "Built with",
+      "traction": "Traction",
+      "confirmed": "Confirmed",
+      "openLink": "Open link",
+      "open": "Open"
+    },
+    "release": {
+      "metaTitle": "Release outcomes",
+      "back": "Applications",
+      "title": "Release outcomes",
+      "lead": "Every applicant to {program} sees their result on My applications and gets the email of their group. Scores, notes and reasons stay private.",
+      "released": "Outcomes released {at}",
+      "releasedNote": "Every applicant has their result. A release is final.",
+      "blocked": {
+        "open": "Opens after {closes}",
+        "undecided": "{count, plural, one {# application still has no decision} other {# applications still have no decision}}",
+        "why": "Outcomes are released once applications have closed and every application has a decision, so every applicant hears back on the same day."
+      },
+      "groups": {
+        "undecided": "Under review",
+        "shortlisted": "Shortlisted",
+        "notSelected": "Not selected"
+      },
+      "count": "{count, plural, one {# applicant} other {# applicants}}",
+      "emptyGroup": "Nobody yet.",
+      "notScored": "Not scored",
+      "average": "Average {value}",
+      "withdrawn": "{count, plural, one {# withdrawn application gets} other {# withdrawn applications get}} no email.",
+      "sentTitle": "Emails as they were sent",
+      "emailsTitle": "Email to each group",
+      "subject": "Subject",
+      "message": "Message",
+      "placeholders": "{organization} and {solution} are filled in for each applicant.",
+      "confirmLabel": "Release",
+      "checked": "I've checked both lists. An outcome can't be recalled once it's sent.",
+      "release": "{count, plural, one {Release to # applicant} other {Release to # applicants}}",
+      "notReady": "Not ready to release",
+      "done": "Outcomes released. Every applicant is being emailed."
+    },
+    "reviewers": {
+      "metaTitle": "Reviewers",
+      "title": "Reviewers",
+      "lead": "They score this program's applications and see nothing else in the admin area. GenAI Fund makes the decisions and releases the outcomes.",
+      "empty": {
+        "title": "No judges yet",
+        "description": "Invite the people who score this program's applications."
+      },
+      "columns": {
+        "reviewer": "Reviewer",
+        "role": "Role",
+        "status": "Status",
+        "assessed": "Scored",
+        "actions": "Actions"
+      },
+      "role": {
+        "operator": "GenAI Fund",
+        "reviewer": "Judge"
+      },
+      "status": {
+        "active": "Active",
+        "invited": "Invited",
+        "lapsed": "Lapsed"
+      },
+      "assessed": "{done} of {total}",
+      "note": "An invitation lasts 7 days. Removing a judge keeps the scores they gave. Judges never see each other's scores.",
+      "invite": {
+        "open": "Invite a judge",
+        "title": "Invite a judge to {program}",
+        "description": "They get an email from BeyondPilot. Once they sign in with this address, they see this program's applications only.",
+        "email": "Email address",
+        "invalid": "Enter an email address, such as name@company.com.",
+        "note": "The email holds no link that acts; they sign in as anyone does.",
+        "cancel": "Cancel",
+        "send": "Send invitation",
+        "sent": "Invitation sent to {email}."
+      },
+      "row": {
+        "actions": "Actions for {email}",
+        "resend": "Send the invitation again",
+        "remove": "Remove judge",
+        "resent": "Invitation sent again to {email}.",
+        "removed": "{email} no longer judges this program.",
+        "confirm": {
+          "title": "Remove this judge?",
+          "description": "{email} will no longer see this program's applications.",
+          "note": "The scores they gave stay. You can invite them again.",
+          "remove": "Remove",
+          "keep": "Keep"
+        }
+      }
+    },
+    "criteria": {
+      "title": "Judging criteria",
+      "fixed": "Applications have been scored on these, so they no longer change.",
+      "lead": "Each judge scores every criterion from 1 to 5; an application's score is the average. They are fixed once the first score is saved.",
+      "none": "No criteria yet. Judges can read the applications but not score them.",
+      "edit": "Edit criteria",
+      "add": "Add criteria",
+      "dialogTitle": "Judging criteria",
+      "dialogDescription": "In the order judges score them. Each is scored from 1 to 5.",
+      "name": "Criterion {number}",
+      "namePlaceholder": "Practical impact",
+      "description": "What criterion {number} looks for",
+      "descriptionPlaceholder": "What a judge looks for (optional)",
+      "remove": "Remove criterion {number}",
+      "addOne": "Add a criterion",
+      "cancel": "Cancel",
+      "save": "Save criteria",
+      "saved": "Criteria saved."
+    },
+    "programs": {
+      "metaTitle": "Reviews",
+      "title": "Reviews",
+      "lead": "The programs you were invited to judge. You score; GenAI Fund decides and tells every applicant.",
+      "empty": {
+        "title": "Nothing to review",
+        "description": "When GenAI Fund invites you to judge a program, it appears here."
+      },
+      "released": "Outcomes released",
+      "done": "All scored",
+      "progress": "{done} of {total} scored",
+      "closes": "Applications close {closes}"
     }
   }
 }
