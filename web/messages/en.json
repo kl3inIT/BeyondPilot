@@ -1074,7 +1074,7 @@
       "open": "Open",
       "review": {
         "open": "Review",
-        "approve": "Approve",
+        "approve": "Approve and list",
         "reject": "Ask for changes…",
         "takeDown": "Remove…",
         "rejectTitle": "Ask for changes to {name}?",
@@ -1088,8 +1088,8 @@
         "takeDownConfirm": "Remove",
         "reasonPlaceholder": "Choose a reason",
         "takeDownTitle": "Remove {name}?",
-        "keys": "Keys: A approve · S ask for changes",
-        "keysApproved": "Key: S remove"
+        "keyA": "Key: A",
+        "keyS": "Key: S"
       },
       "detail": {
         "back": "All talent",
@@ -1100,7 +1100,30 @@
         "position": "{place} of {total} waiting",
         "waitingSince": "Sent {time}",
         "public": "Open the public page",
-        "removed": "Removed: {reason}."
+        "removed": "Removed: {reason}.",
+        "decision": {
+          "draft": {
+            "title": "Not sent for review yet",
+            "lead": "The person is still writing the profile. Nobody sees it until it is approved."
+          },
+          "submitted": {
+            "title": "Asks to be listed in the directory",
+            "lead": "Check that the page is about professional work, names no customer without permission, and says what the person did in each project. Approving opens the page and lists it."
+          },
+          "approved": {
+            "title": "Approved",
+            "lead": "The page is public while its person keeps it listed. Removing takes it out of the directory at once and tells them why."
+          },
+          "changes_requested": {
+            "title": "Changes requested",
+            "lead": "The profile is back with its person. It returns here when they send it again."
+          },
+          "removed": {
+            "title": "Removed from the directory",
+            "lead": "The page is not public. It returns here if its person sends it again."
+          }
+        },
+        "audited": "The decision is recorded in the audit log."
       },
       "queueEmpty": {
         "title": "Nothing waits for review",
@@ -2211,12 +2234,18 @@
       "skills": "Skills",
       "engagement": "Open to",
       "rate": "Rate",
-      "projects": "Selected work",
-      "openProject": "See the work",
+      "projects": "Deployed projects",
+      "openProject": "View the project",
       "website": "Portfolio or LinkedIn",
       "nothingYet": "Nothing written yet.",
       "languages": "Languages",
-      "industries": "Industries"
+      "industries": "Industries",
+      "about": "About",
+      "projectsLead": "Each project shows how far it went, as the person states it.",
+      "noProject": "No deployed project yet.",
+      "facts": "Skills and industries",
+      "place": "Based in",
+      "worksAt": "Works at"
     },
     "profile": {
       "trail": "You are here",

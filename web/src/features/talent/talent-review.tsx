@@ -87,48 +87,56 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
   });
 
   return (
-    <div className="flex flex-col items-end gap-2">
-      <div className="flex flex-wrap gap-2">
-        {waiting && (
-          <Button pending={pending === "approve"} onClick={approve}>
-            {t("approve")}
-          </Button>
-        )}
-        <Button prominence="secondary" tone="danger" onClick={() => setRejecting(true)}>
-          {t(approved ? "takeDown" : "reject")}
+    <div className="flex flex-wrap gap-2">
+      <Button
+        prominence="secondary"
+        tone={approved ? "danger" : "default"}
+        aria-keyshortcuts="S"
+        title={t("keyS")}
+        onClick={() => setRejecting(true)}
+      >
+        {t(approved ? "takeDown" : "reject")}
+      </Button>
+      {waiting && (
+        <Button
+          pending={pending === "approve"}
+          aria-keyshortcuts="A"
+          title={t("keyA")}
+          onClick={approve}
+        >
+          {t("approve")}
         </Button>
-        {rejecting && (
-          <ReasonDialog
-            open
-            onOpenChange={setRejecting}
-            title={t(approved ? "takeDownTitle" : "rejectTitle", {
-              name: profile.name,
-            })}
-            description={t(approved ? "takeDownLead" : "rejectLead")}
-            reasonLabel={t("reason")}
-            reasonPlaceholder={t("reasonPlaceholder")}
-            reasons={talentRejections.map((value) => ({ value, label: reason(value) }))}
-            messageLabel={t("message")}
-            messageHint={t("messageHint")}
-            confirmLabel={t(approved ? "takeDownConfirm" : "rejectConfirm")}
-            cancelLabel={t("cancel")}
-            pending={pending === "reject"}
-            onConfirm={(chosen, message) =>
-              decide("reject", () => {
-                const decision = {
-                  path: { id: profile.id },
-                  body: {
-                    reason: chosen as TalentDecision["reason"],
-                    message: message.trim() || null,
-                  },
-                };
-                return approved ? removeTalent(decision) : requestTalentChanges(decision);
-              })
-            }
-          />
-        )}
-      </div>
-      <p className="text-xs text-muted-foreground">{t(waiting ? "keys" : "keysApproved")}</p>
+      )}
+      {rejecting && (
+        <ReasonDialog
+          open
+          onOpenChange={setRejecting}
+          title={t(approved ? "takeDownTitle" : "rejectTitle", {
+            name: profile.name,
+          })}
+          description={t(approved ? "takeDownLead" : "rejectLead")}
+          reasonLabel={t("reason")}
+          reasonPlaceholder={t("reasonPlaceholder")}
+          reasons={talentRejections.map((value) => ({ value, label: reason(value) }))}
+          messageLabel={t("message")}
+          messageHint={t("messageHint")}
+          confirmLabel={t(approved ? "takeDownConfirm" : "rejectConfirm")}
+          cancelLabel={t("cancel")}
+          pending={pending === "reject"}
+          onConfirm={(chosen, message) =>
+            decide("reject", () => {
+              const decision = {
+                path: { id: profile.id },
+                body: {
+                  reason: chosen as TalentDecision["reason"],
+                  message: message.trim() || null,
+                },
+              };
+              return approved ? removeTalent(decision) : requestTalentChanges(decision);
+            })
+          }
+        />
+      )}
     </div>
   );
 }
