@@ -17,7 +17,7 @@ import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 /**
- * One company, team or builder. Its codes (roles, type, team size, status) are the lowercase values of the API and of
+ * One company, team or builder. Its codes (type, team size, status) are the lowercase values of the API and of
  * the database; the request records and the constraints of the table keep them to the known ones.
  */
 @Entity
@@ -39,10 +39,6 @@ public class Organization {
 	@Column(nullable = false)
 	private String name;
 
-	@JdbcTypeCode(SqlTypes.ARRAY)
-	@Column(nullable = false, columnDefinition = "text[]")
-	private String[] roles;
-
 	@Column(nullable = false)
 	private String type;
 
@@ -58,10 +54,14 @@ public class Organization {
 
 	private @Nullable String description;
 
+	private @Nullable Integer foundedYear;
+
+	private @Nullable String logoUrl;
+
 	private @Nullable String emailDomain;
 
 	@Column(nullable = false)
-	private boolean autoJoin = true;
+	private boolean autoJoin;
 
 	@Column(nullable = false)
 	private String status;
@@ -94,33 +94,38 @@ public class Organization {
 	 * @param status {@link #PENDING} for one a person creates, {@link #APPROVED} for one an operator creates
 	 */
 	@SuppressWarnings("NullAway.Init")
-	public Organization(UUID id, String slug, String name, List<String> roles, String type, String status,
+	public Organization(UUID id, String slug, String name, String type, String status,
 			UUID createdByAccountId) {
 		this.id = id;
 		this.slug = slug;
 		this.name = name;
-		this.roles = roles.toArray(String[]::new);
 		this.type = type;
 		this.status = status;
 		this.createdByAccountId = createdByAccountId;
 	}
 
-	public void describe(String name, List<String> roles, String type, @Nullable String website,
+	public void describe(String name, String type, @Nullable String website,
 			@Nullable String country, @Nullable String teamSize, List<String> industries,
-			@Nullable String description) {
+			@Nullable String description, @Nullable Integer foundedYear, @Nullable String logoUrl) {
 		this.name = name;
-		this.roles = roles.toArray(String[]::new);
 		this.type = type;
 		this.website = website;
 		this.country = country;
 		this.teamSize = teamSize;
 		this.industries = industries.toArray(String[]::new);
 		this.description = description;
+		this.foundedYear = foundedYear;
+		this.logoUrl = logoUrl;
 	}
 
-	/** The domain whose addresses may join; null for an organization made from a public mail address. */
+	/**
+	 * The domain an operator verified as the organization's; null when none is. Without one no address joins at once.
+	 */
 	public void verifyDomain(@Nullable String emailDomain) {
 		this.emailDomain = emailDomain;
+		if (emailDomain == null) {
+			autoJoin = false;
+		}
 	}
 
 	public void letDomainJoin(boolean autoJoin) {
@@ -170,10 +175,6 @@ public class Organization {
 		return name;
 	}
 
-	public List<String> getRoles() {
-		return List.of(roles);
-	}
-
 	public String getType() {
 		return type;
 	}
@@ -196,6 +197,14 @@ public class Organization {
 
 	public @Nullable String getDescription() {
 		return description;
+	}
+
+	public @Nullable Integer getFoundedYear() {
+		return foundedYear;
+	}
+
+	public @Nullable String getLogoUrl() {
+		return logoUrl;
 	}
 
 	public @Nullable String getEmailDomain() {

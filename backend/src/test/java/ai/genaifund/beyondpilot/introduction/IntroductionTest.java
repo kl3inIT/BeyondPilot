@@ -63,9 +63,9 @@ class IntroductionTest {
 
 	@Test
 	void anApprovedOrganizationAsksAndTheOwnersLearnNoAddress() {
-		String provider = organizationOwner("owner@ask-provider.test", "Ask Provider", "provider");
+		String provider = organizationOwner("owner@ask-provider.test", "Ask Provider");
 		String slug = listedSolution(provider, "Ask Triage");
-		String buyer = organizationOwner("buyer@ask-buyer.test", "Ask Buyer", "enterprise");
+		String buyer = organizationOwner("buyer@ask-buyer.test", "Ask Buyer");
 
 		post(buyer, INTRODUCTION + "/introductions", Map.of("solutionSlug", slug, "message", "  We need claims triage.  "))
 			.expectStatus()
@@ -88,17 +88,17 @@ class IntroductionTest {
 
 	@Test
 	void aRequestIsRefusedWhenItCannotBeAnswered() {
-		String provider = organizationOwner("owner@refuse-provider.test", "Refuse Provider", "provider");
+		String provider = organizationOwner("owner@refuse-provider.test", "Refuse Provider");
 		String slug = listedSolution(provider, "Refuse Triage");
 		String message = "Please introduce us.";
 
 		assertProblem(post(signIn("loner@gmail.test"), INTRODUCTION + "/introductions",
 				Map.of("solutionSlug", slug, "message", message)), 403, "INTRODUCTION_NEEDS_ORGANIZATION");
 		String waiting = signIn("waiting@refuse-waiting.test");
-		organization(waiting, "Refuse Waiting", "enterprise");
+		organization(waiting, "Refuse Waiting");
 		assertProblem(post(waiting, INTRODUCTION + "/introductions", Map.of("solutionSlug", slug, "message", message)),
 				403, "INTRODUCTION_ORGANIZATION_NOT_APPROVED");
-		String buyer = organizationOwner("buyer@refuse-buyer.test", "Refuse Buyer", "enterprise");
+		String buyer = organizationOwner("buyer@refuse-buyer.test", "Refuse Buyer");
 		assertProblem(post(buyer, INTRODUCTION + "/introductions", Map.of("solutionSlug", "no-such", "message", message)),
 				404, "INTRODUCTION_SOLUTION_NOT_FOUND");
 		assertProblem(post(provider, INTRODUCTION + "/introductions", Map.of("solutionSlug", slug, "message", message)),
@@ -114,9 +114,9 @@ class IntroductionTest {
 
 	@Test
 	void aSolutionLeftUnlistedIsStillAskedByItsAddress() {
-		String provider = organizationOwner("owner@unlisted-provider.test", "Unlisted Provider", "provider");
+		String provider = organizationOwner("owner@unlisted-provider.test", "Unlisted Provider");
 		String slug = listedSolution(provider, "Unlisted Triage");
-		String buyer = organizationOwner("buyer@unlisted-buyer.test", "Unlisted Buyer", "enterprise");
+		String buyer = organizationOwner("buyer@unlisted-buyer.test", "Unlisted Buyer");
 		UUID id = UUID.fromString(JsonPath
 			.<List<String>>read(body(get(provider, SOLUTION + "/mine").expectStatus().isOk()),
 					"$.items[?(@.name=='Unlisted Triage')].id")
@@ -132,9 +132,9 @@ class IntroductionTest {
 
 	@Test
 	void aReplyIntroducesBothSidesAndAfterItAnotherRequestIsAsked() {
-		String provider = organizationOwner("owner@reply-provider.test", "Reply Provider", "provider");
+		String provider = organizationOwner("owner@reply-provider.test", "Reply Provider");
 		String slug = listedSolution(provider, "Reply Triage");
-		String buyer = organizationOwner("buyer@reply-buyer.test", "Reply Buyer", "enterprise");
+		String buyer = organizationOwner("buyer@reply-buyer.test", "Reply Buyer");
 		ask(buyer, slug, "We need claims triage.");
 		UUID id = firstReceived(provider);
 
@@ -159,9 +159,9 @@ class IntroductionTest {
 
 	@Test
 	void aDeclineTellsTheSenderWithoutAnAddress() {
-		String provider = organizationOwner("owner@decline-provider.test", "Decline Provider", "provider");
+		String provider = organizationOwner("owner@decline-provider.test", "Decline Provider");
 		String slug = listedSolution(provider, "Decline Triage");
-		String buyer = organizationOwner("buyer@decline-buyer.test", "Decline Buyer", "enterprise");
+		String buyer = organizationOwner("buyer@decline-buyer.test", "Decline Buyer");
 		ask(buyer, slug, "We need claims triage.");
 		UUID id = firstReceived(provider);
 
@@ -178,9 +178,9 @@ class IntroductionTest {
 
 	@Test
 	void onlyAnOwnerOfTheOrganizationAskedAnswers() {
-		String provider = organizationOwner("owner@only-provider.test", "Only Provider", "provider");
+		String provider = organizationOwner("owner@only-provider.test", "Only Provider");
 		String slug = listedSolution(provider, "Only Triage");
-		String buyer = organizationOwner("buyer@only-buyer.test", "Only Buyer", "enterprise");
+		String buyer = organizationOwner("buyer@only-buyer.test", "Only Buyer");
 		ask(buyer, slug, "We need claims triage.");
 		UUID id = firstReceived(provider);
 
@@ -197,9 +197,9 @@ class IntroductionTest {
 
 	@Test
 	void anOperatorReadsTheRequestsInFullWithoutAnAddressAndSeesWhichWaitTooLong() {
-		String provider = organizationOwner("owner@admin-provider.test", "Admin Provider", "provider");
+		String provider = organizationOwner("owner@admin-provider.test", "Admin Provider");
 		String slug = listedSolution(provider, "Admin Triage");
-		String buyer = organizationOwner("buyer@admin-buyer.test", "Admin Buyer", "enterprise");
+		String buyer = organizationOwner("buyer@admin-buyer.test", "Admin Buyer");
 		ask(buyer, slug, "We need claims triage, in full.");
 		UUID id = firstReceived(provider);
 
@@ -270,19 +270,20 @@ class IntroductionTest {
 		return request;
 	}
 
-	private UUID organization(String session, String name, String role) {
+	private UUID organization(String session, String name) {
 		return UUID.fromString(JsonPath.read(body(post(session, ORGANIZATION + "/organizations",
-				Map.of("name", name, "roles", List.of(role), "type", "company", "country", "VN", "teamSize", "2_9",
-						"industries", List.of("insurance"), "website", "https://example.test", "jobTitle", "Founder"))
+				Map.of("name", name, "type", "company", "country", "VN", "teamSize", "2_9",
+						"industries", List.of("insurance"), "website", "https://example.test", "description",
+						"Assistants for insurers.", "foundedYear", 2021, "jobTitle", "Founder"))
 			.expectStatus()
 			.isCreated()), "$.id"));
 	}
 
 	/** The session of the owner of an approved organization. */
-	private String organizationOwner(String email, String name, String role) {
+	private String organizationOwner(String email, String name) {
 		String session = signIn(email);
-		UUID organization = organization(session, name, role);
-		post(operator, ORGANIZATION + "/admin/organizations/" + organization + "/approve", null).expectStatus()
+		UUID organization = organization(session, name);
+		post(operator, ORGANIZATION + "/admin/organizations/" + organization + "/approve", Map.of()).expectStatus()
 			.isNoContent();
 		return session;
 	}
@@ -294,7 +295,7 @@ class IntroductionTest {
 		put(provider, SOLUTION + "/mine/" + id,
 				described(name, JsonPath.<Number>read(draft, "$.version").longValue())).expectStatus().isOk();
 		post(provider, SOLUTION + "/mine/" + id + "/submit", null).expectStatus().isOk();
-		post(operator, SOLUTION + "/admin/solutions/" + id + "/approve", null).expectStatus().isNoContent();
+		post(operator, SOLUTION + "/admin/solutions/" + id + "/approve", Map.of()).expectStatus().isNoContent();
 		return JsonPath.read(body(get(provider, SOLUTION + "/mine/" + id).expectStatus().isOk()), "$.slug");
 	}
 

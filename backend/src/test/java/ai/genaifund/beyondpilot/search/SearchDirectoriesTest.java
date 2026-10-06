@@ -68,7 +68,7 @@ class SearchDirectoriesTest {
 	void anApprovedSolutionIsFoundUnderItsOrganizationAndLeavesTheResultsWhenUnlistedOrRejected() {
 		String owner = TestSignIn.session(client, mail, "owner-" + word + "@directories.test");
 		UUID organization = organization(owner, "Revve " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", null);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
 		UUID solution = submittedSolution(owner, "Voice Agent " + word);
 		assertThat(total("voice agent " + word)).isZero();
 
@@ -179,8 +179,9 @@ class SearchDirectoriesTest {
 	}
 
 	private static Map<String, Object> organizationProfile(String name) {
-		return Map.of("name", name, "roles", List.of("provider"), "type", "company", "country", "VN", "teamSize",
-				"2_9", "industries", List.of("insurance"), "website", "https://example.test");
+		return Map.of("name", name, "type", "company", "country", "VN", "teamSize", "2_9", "industries",
+				List.of("insurance"), "website", "https://example.test", "description", "Assistants for insurers.",
+				"foundedYear", 2021, "jobTitle", "Founder");
 	}
 
 	private UUID submittedSolution(String owner, String name) {

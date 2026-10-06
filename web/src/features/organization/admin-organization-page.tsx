@@ -4,12 +4,12 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { TextButton } from "@/components/actions/text-button";
 import { Person } from "@/components/composites/person";
 import { ReviewStatus } from "@/components/composites/review-status";
-import { Badge } from "@/components/ui/badge";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { OrganizationAction } from "./organization-action";
+import { ClaimDecisionButton } from "./claim-decision";
+import { MemberRole } from "./member-role";
 import { OrganizationReviewButton } from "./organization-review";
 
 /**
@@ -19,19 +19,16 @@ import { OrganizationReviewButton } from "./organization-review";
 function AdminOrganizationPage({ detail }: { detail: AdminOrganization }) {
   const t = useTranslations("Admin.organizations.detail");
   const s = useTranslations("Organization.status");
-  const roleName = useVocabulary("organizationRole");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
   const industryName = useVocabulary("industry");
   const reasonName = useVocabulary("organizationRefusal");
-  const memberRole = useVocabulary("memberRole");
   const countryName = useCountryName();
   const format = useFormatter();
   const locale = useLocale();
   const { organization } = detail;
 
   const facts = [
-    { label: t("roles"), value: organization.roles.map(roleName).join(", ") },
     { label: t("type"), value: typeName(organization.type) },
     { label: t("country"), value: organization.country && countryName(organization.country) },
     { label: t("teamSize"), value: organization.teamSize && sizeName(organization.teamSize) },
@@ -100,18 +97,8 @@ function AdminOrganizationPage({ detail }: { detail: AdminOrganization }) {
                     {claim.message && (
                       <p className="text-sm text-muted-foreground">{claim.message}</p>
                     )}
-                    <div className="flex gap-2">
-                      <OrganizationAction action="approveClaim" id={claim.id} size="sm">
-                        {t("approveClaim")}
-                      </OrganizationAction>
-                      <OrganizationAction
-                        action="declineClaim"
-                        id={claim.id}
-                        prominence="secondary"
-                        size="sm"
-                      >
-                        {t("declineClaim")}
-                      </OrganizationAction>
+                    <div>
+                      <ClaimDecisionButton organization={organization} claimId={claim.id} />
                     </div>
                   </li>
                 ))}
@@ -133,9 +120,7 @@ function AdminOrganizationPage({ detail }: { detail: AdminOrganization }) {
                     className="flex items-center justify-between gap-3 border-b p-3 last:border-b-0"
                   >
                     <Person name={member.name ?? null} email={member.email} />
-                    {member.role === "owner" && (
-                      <Badge variant="outline">{memberRole("owner")}</Badge>
-                    )}
+                    <MemberRole role={member.role} />
                   </li>
                 ))}
               </ul>
@@ -154,7 +139,7 @@ function AdminOrganizationPage({ detail }: { detail: AdminOrganization }) {
                     className="flex items-center justify-between gap-3 border-b p-3 text-sm last:border-b-0"
                   >
                     <span className="truncate">{invitation.email}</span>
-                    <span className="text-muted-foreground">{memberRole(invitation.role)}</span>
+                    <MemberRole role={invitation.role} />
                   </li>
                 ))}
               </ul>

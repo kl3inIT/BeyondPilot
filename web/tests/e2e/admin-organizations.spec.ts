@@ -25,7 +25,9 @@ async function openReview(page: Page) {
     route.fulfill({
       json: {
         createdBy: "Linh Nguyễn",
+        suggestedDomain: "lumenhealth.example",
         organization: { website: "https://lumenhealth.example" },
+        claims: [],
       },
     }),
   );
@@ -33,6 +35,26 @@ async function openReview(page: Page) {
   await page.getByRole("button", { name: "Actions for Lumen Health" }).click();
   await page.getByRole("menuitem", { name: "Review…" }).click();
   return page.getByRole("dialog");
+}
+
+/** Answers the record the claim's dialog reads from the browser: who asks, and the domain to confirm. */
+async function answerClaimRecord(page: Page) {
+  await page.route(`**/api/organization/admin/organizations/${openKitchen}`, (route) =>
+    route.fulfill({
+      json: {
+        suggestedDomain: "openkitchen.example",
+        claims: [
+          {
+            id: claim,
+            name: "Arif Hidayat",
+            email: "arif@openkitchen.example",
+            message: "I founded the team.",
+            createdAt: "2026-10-01T03:00:00Z",
+          },
+        ],
+      },
+    }),
+  );
 }
 
 test.describe("admin organizations", () => {
@@ -71,6 +93,10 @@ test.describe("admin organizations", () => {
     await expect(page.getByText("Builder team · Vietnam · No owner").and(shown)).toHaveCount(1);
     await expect(page.getByText("New organization", { exact: true }).and(shown)).toHaveCount(1);
     await expect(page.getByText("Claim", { exact: true }).and(shown)).toHaveCount(1);
+    // Who asked is a column from 1024px.
+    if (!isMobile) {
+      await expect(page.getByRole("cell", { name: "Arif Hidayat" })).toBeVisible();
+    }
     // A table from 768px, stacked rows below it.
     await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
     await expectNoSeriousA11yViolations(page);
@@ -87,8 +113,9 @@ test.describe("admin organizations", () => {
     await page.getByRole("combobox", { name: "Status" }).click();
     await page.getByRole("option", { name: "Needs review" }).click();
     await expect(page).toHaveURL(/status=pending/);
-    await expect(shownOrganizations(page)).toHaveText(["Lumen Health"]);
-    await expect(page.getByText("1 needs review")).toBeVisible();
+    // A claim waits for a decision as a new organization does.
+    await expect(shownOrganizations(page)).toHaveText(["Lumen Health", "Open Kitchen"]);
+    await expect(page.getByText("2 need review")).toBeVisible();
 
     await page.getByRole("searchbox", { name: "Search by name or email domain" }).fill("pocket");
     await expect(page).toHaveURL(/[?&]q=pocket/);
@@ -117,6 +144,10 @@ test.describe("admin organizations", () => {
     // Who created it and its website are read when the dialog opens.
     await expect(dialog.getByText(/created by Linh Nguyễn on Oct 1, 2026/)).toBeVisible();
     await expect(dialog.getByText("Company · Vietnam · lumenhealth.example")).toBeVisible();
+    // The creator's work domain is proposed, for the operator to confirm.
+    await expect(dialog.getByLabel("Email domain to verify (optional)")).toHaveValue(
+      "lumenhealth.example",
+    );
     expect(decisions).toEqual([]);
     await expectNoSeriousA11yViolations(page);
 
@@ -125,7 +156,71 @@ test.describe("admin organizations", () => {
     await expect(page.getByText("Organization approved.")).toBeVisible();
     await expect(dialog).toHaveCount(0);
     expect(decisions).toEqual([
-      { call: `POST /api/organization/admin/organizations/${lumen}/approve`, body: null },
+      {
+        call: `POST /api/organization/admin/organizations/${lumen}/approve`,
+        body: { emailDomain: "lumenhealth.example" },
+      },
+    ]);
+  });
+
+  test("a domain that names none is not sent, and one another organization has is said at the field", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(
+      page,
+      decisionsPath,
+      409,
+      refusal("ORGANIZATION_DOMAIN_TAKEN"),
+    );
+    const dialog = await openReview(page);
+    const domain = dialog.getByLabel("Email domain to verify (optional)");
+
+    await domain.fill("not a domain");
+    await dialog.getByRole("button", { name: "Approve", exact: true }).click();
+    await expect(
+      dialog.getByText("Enter a domain such as example.com, or leave it empty."),
+    ).toBeVisible();
+    expect(decisions).toEqual([]);
+
+    await domain.fill("Taken.Example");
+    await dialog.getByRole("button", { name: "Approve", exact: true }).click();
+    await expect(
+      dialog.getByText("Another organization already has this domain.", { exact: false }),
+    ).toBeVisible();
+    await expect(dialog).toBeVisible();
+  });
+
+  test("a claim is decided from its row, with the domain the operator verified", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    await answerClaimRecord(page);
+    await page.goto("/admin/organizations");
+
+    await page.getByRole("button", { name: "Actions for Open Kitchen" }).click();
+    await page.getByRole("menuitem", { name: "Decide claim…" }).click();
+    const dialog = page.getByRole("dialog");
+
+    await expect(dialog.getByRole("heading")).toHaveText("Decide the claim for Open Kitchen");
+    await expect(dialog.getByText("I founded the team.")).toBeVisible();
+    await expect(dialog.getByLabel("Email domain to verify (optional)")).toHaveValue(
+      "openkitchen.example",
+    );
+    await expectNoSeriousA11yViolations(page);
+
+    await dialog.getByLabel("Email domain to verify (optional)").fill("");
+    await dialog.getByRole("button", { name: "Decline" }).click();
+
+    await expect(page.getByText("Claim declined.")).toBeVisible();
+    await expect(dialog).toHaveCount(0);
+    expect(decisions).toEqual([
+      { call: `POST /api/organization/admin/claims/${claim}/decline`, body: null },
     ]);
   });
 
@@ -186,12 +281,13 @@ test.describe("admin organizations", () => {
   }) => {
     await signInAs(context, "operator", baseURL!);
     const decisions = await answerDecisions(page, decisionsPath, 204);
+    await answerClaimRecord(page);
     await page.goto("/admin/organizations");
 
     await page.getByRole("button", { name: "Actions for Open Kitchen" }).click();
-    // An approved organization has no review, and its menu says a claim waits on the record.
+    // An approved organization has no review; its claim is decided from the menu or on the record.
     await expect(page.getByRole("menuitem", { name: "Review…" })).toHaveCount(0);
-    await page.getByRole("menuitem", { name: "Open record and claims" }).click();
+    await page.getByRole("menuitem", { name: "Open record" }).click();
 
     await expect(page).toHaveURL(`/admin/organizations/${openKitchen}`);
     await expect(page).toHaveTitle("Open Kitchen · BeyondPilot");
@@ -202,11 +298,19 @@ test.describe("admin organizations", () => {
     await expect(claims.getByText("I founded the team.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
 
-    await claims.getByRole("button", { name: "Make owner" }).click();
+    await claims.getByRole("button", { name: "Decide claim…" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByLabel("Email domain to verify (optional)")).toHaveValue(
+      "openkitchen.example",
+    );
+    await dialog.getByRole("button", { name: "Make owner" }).click();
 
     await expect(page.getByText("Claim approved. They now own the organization.")).toBeVisible();
     expect(decisions).toEqual([
-      { call: `POST /api/organization/admin/claims/${claim}/approve`, body: null },
+      {
+        call: `POST /api/organization/admin/claims/${claim}/approve`,
+        body: { emailDomain: "openkitchen.example" },
+      },
     ]);
   });
 
@@ -254,9 +358,7 @@ test.describe("admin organizations", () => {
         call: "POST /api/organization/admin/organizations",
         body: {
           name: "Sài Gòn Logistics",
-          roles: ["enterprise"],
           type: "company",
-          emailDomain: null,
           ownerEmail: "owner@saigonlogistics.example",
           website: null,
         },

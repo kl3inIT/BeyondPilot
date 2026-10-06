@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { AdminBreadcrumb } from "@/components/layout/admin-breadcrumb";
+import type { AdminNavGroup } from "@/components/layout/admin-nav";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -25,8 +26,16 @@ export default async function ReviewsLayout({ children }: LayoutProps<"/[locale]
     getTranslations("Site"),
     cookies(),
   ]);
-  const items = [
-    { href: siteRoutes.reviews, label: t("nav"), icon: <ClipboardCheckIcon aria-hidden="true" /> },
+  const groups: AdminNavGroup[] = [
+    {
+      items: [
+        {
+          href: siteRoutes.reviews,
+          label: t("nav"),
+          icon: <ClipboardCheckIcon aria-hidden="true" />,
+        },
+      ],
+    },
   ];
 
   return (
@@ -43,7 +52,7 @@ export default async function ReviewsLayout({ children }: LayoutProps<"/[locale]
           email: account.email,
           operator: account.role === "operator",
         }}
-        items={items}
+        groups={groups}
         home={siteRoutes.reviews}
         area={t("area")}
       />

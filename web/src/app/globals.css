@@ -59,6 +59,16 @@
   --color-use-case: var(--use-case);
   --color-solution: var(--solution);
   --color-talent: var(--talent);
+  --color-lemon: var(--lemon);
+  --color-lemon-foreground: var(--lemon-foreground);
+  --color-sky: var(--sky);
+  --color-sky-foreground: var(--sky-foreground);
+  --color-mint: var(--mint);
+  --color-mint-foreground: var(--mint-foreground);
+  --color-peach: var(--peach);
+  --color-peach-foreground: var(--peach-foreground);
+  --color-rose: var(--rose);
+  --color-rose-foreground: var(--rose-foreground);
   /* Elevations of the landing (DESIGN.md › Elevation & Depth), all in the --elevation colour. */
   --shadow-card: 0 4px 16px -4px color-mix(in oklch, var(--elevation) 5%, transparent);
   --shadow-tile:

@@ -17,5 +17,7 @@ public record MyOrganizationResponse(
 		@Schema(types = { "object", "null" },
 				description = "The request the caller waits on.") @Nullable JoinRequestResponse request,
 		@Schema(types = { "object", "null" },
+				description = "The answer to the caller's last request, while it is a refusal and they belong nowhere and wait on nothing.") @Nullable DeclinedRequestResponse declined,
+		@Schema(types = { "object", "null" },
 				description = "The organization of the caller's email domain, when they belong to none.") @Nullable OrganizationMatchResponse suggestion) {
 }

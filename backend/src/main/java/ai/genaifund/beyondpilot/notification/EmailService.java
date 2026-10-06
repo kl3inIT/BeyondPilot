@@ -91,6 +91,43 @@ public class EmailService {
 	}
 
 	/**
+	 * Tells a person the answer to their request to get into an organization, in both languages.
+	 * @param claim whether they asked to own an organization nobody owned, which GenAI Fund decides; otherwise they
+	 * asked its owners to join
+	 * @param approved whether they are in now
+	 */
+	public void sendOrganizationRequestDecision(String recipient, String organizationName, boolean claim,
+			boolean approved) {
+		String english;
+		String vietnamese;
+		if (claim) {
+			english = approved
+					? "GenAI Fund approved your claim: you now own " + organizationName
+							+ " on BeyondPilot. Sign in to manage it."
+					: "GenAI Fund declined your claim for " + organizationName
+							+ " on BeyondPilot. Sign in to read what you can do next.";
+			vietnamese = approved
+					? "GenAI Fund đã chấp thuận yêu cầu nhận quyền: bạn hiện là chủ sở hữu của " + organizationName
+							+ " trên BeyondPilot. Hãy đăng nhập để quản lý."
+					: "GenAI Fund đã từ chối yêu cầu nhận quyền " + organizationName
+							+ " trên BeyondPilot. Hãy đăng nhập để xem bạn có thể làm gì tiếp.";
+		}
+		else {
+			english = approved
+					? "An owner of " + organizationName + " let you in on BeyondPilot. Sign in to see your organization."
+					: "An owner of " + organizationName
+							+ " declined your request to join on BeyondPilot. Sign in to read what you can do next.";
+			vietnamese = approved
+					? "Một chủ sở hữu của " + organizationName
+							+ " đã cho bạn tham gia trên BeyondPilot. Hãy đăng nhập để xem tổ chức của bạn."
+					: "Một chủ sở hữu của " + organizationName
+							+ " đã từ chối yêu cầu tham gia của bạn trên BeyondPilot. Hãy đăng nhập để xem bạn có thể làm gì tiếp.";
+		}
+		send("organization_request_decision", recipient, "Your request for " + organizationName + " on BeyondPilot",
+				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+	}
+
+	/**
 	 * Tells a person what GenAI Fund decided about their talent profile, in both languages. The reason is read after
 	 * signing in; the operator's note, when there is one, is quoted as written.
 	 * @param profileName the profile, as it names its person

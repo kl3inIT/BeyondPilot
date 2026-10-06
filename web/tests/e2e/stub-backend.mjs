@@ -37,6 +37,13 @@ const accounts = {
     displayName: "Minh Trần",
     role: "user",
   },
+  // The owner of the same organization when it has twelve people (stub-workspace.mjs).
+  crowd: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a04",
+    email: "minh.tran@pocketpolicy.example",
+    displayName: "Minh Trần",
+    role: "user",
+  },
   member: {
     id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a12",
     email: "siti@pocketpolicy.example",
@@ -55,9 +62,15 @@ const accounts = {
     displayName: "Nam Đỗ",
     role: "user",
   },
+  declined: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a15",
+    email: "an.vo@example.com",
+    displayName: "An Võ",
+    role: "user",
+  },
   // The owner of an organization that GenAI Fund has not approved yet (stub-workspace.mjs).
   waiting: {
-    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a15",
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a16",
     email: "lan.pham@newco.example",
     displayName: "Lan Phạm",
     role: "user",

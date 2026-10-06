@@ -198,18 +198,21 @@ class ProposalTest extends ApplicationsHttpTest {
 		String founderEmail = "founder@company.test";
 		String founder = TestSignIn.session(client, mail, founderEmail);
 		String company = body(post(founder, "/api/organization/organizations",
-				Map.of("name", "Company Co", "roles", List.of("provider"), "type", "company", "country", "VN",
-						"teamSize", "10_49", "industries", List.of("insurance")))
+				Map.of("name", "Company Co", "type", "company", "country", "VN", "teamSize", "10_49",
+						"industries", List.of("insurance"), "website", "https://example.test", "description",
+						"Assistants for insurers.", "foundedYear", 2021, "jobTitle", "Founder"))
 			.expectStatus()
 			.isCreated());
 		String organizationId = JsonPath.read(company, "$.id");
-		post(operator, "/api/organization/admin/organizations/" + organizationId + "/approve", null).expectStatus()
+		post(operator, "/api/organization/admin/organizations/" + organizationId + "/approve", Map.of("emailDomain", "company.test")).expectStatus()
 			.isNoContent();
 		UUID solution = completeSolution(founder, founderEmail, "Company Desk");
 		submitted(founder, founderEmail, form, solution);
 
 		String colleagueEmail = "colleague@company.test";
 		String colleague = TestSignIn.session(client, mail, colleagueEmail);
+		// A work address joins at once only while the owners allow it.
+		put(founder, "/api/organization/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
 		post(colleague, "/api/organization/organizations/" + organizationId + "/join", Map.of()).expectStatus().isOk();
 		Map<String, Object> second = withDeck(application(contact(), solution, answers(form, colleagueEmail), null),
 				colleagueEmail);

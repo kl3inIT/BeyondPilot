@@ -42,7 +42,7 @@ public class OrganizationDirectory {
 		return memberships.memberOf(actor.accountId())
 			.flatMap(member -> organizations.findById(member.organizationId())
 				.map(organization -> new Membership(organization.getId(), organization.getName(), member.isOwner(),
-						organization.isApproved(), organization.getRoles())));
+						organization.isApproved())));
 	}
 
 	/** Who this organization is, read now; empty when it does not exist. */

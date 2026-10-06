@@ -30,8 +30,7 @@ export default async function OrganizationSolutionsRoute({
     readMembers(),
   ]);
   const { organization } = mine;
-  // Solutions belong to a provider; anyone else is shown their organization's first page.
-  if (!organization || !organization.roles.includes("provider")) {
+  if (!organization) {
     redirect(getPathname({ href: siteRoutes.workspaceOrganization, locale }));
   }
 
@@ -39,7 +38,7 @@ export default async function OrganizationSolutionsRoute({
     <OrganizationSolutionsPage
       mine={{ ...mine, organization }}
       solutions={solutions}
-      members={members?.members.length ?? 0}
+      members={members?.total ?? 0}
     />
   );
 }
