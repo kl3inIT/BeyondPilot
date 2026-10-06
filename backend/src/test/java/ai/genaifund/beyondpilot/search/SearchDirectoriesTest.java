@@ -14,6 +14,7 @@ import java.util.UUID;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.RecordingMailSender;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.storage.TestUploads;
 import com.jayway.jsonpath.JsonPath;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,11 +86,13 @@ class SearchDirectoriesTest {
 		assertThat(total("document processing " + word)).isEqualTo(1);
 		// And a tool it is built with, by its name.
 		assertThat(total("langgraph " + word)).isEqualTo(1);
+		// A solution is found with its logo.
+		assertThat(JsonPath.<String>read(search("langgraph%20" + word), "$.items[0].photoFileId")).isNotBlank();
 
 		renameOrganization(owner, "Renamed " + word);
 		await().atMost(WAIT).until(() -> total("renamed " + word) == 1);
 
-		Map<String, Object> unlisted = solution("Voice Agent " + word, versionOfSolution(owner, solution));
+		Map<String, Object> unlisted = asSaved(owner, solution, "Voice Agent " + word);
 		unlisted.put("listed", false);
 		put(owner, "/api/solution/mine/" + solution, unlisted);
 		await().atMost(WAIT).until(() -> total("voice agent " + word) == 0);
@@ -196,19 +199,27 @@ class SearchDirectoriesTest {
 			.expectStatus()
 			.isCreated());
 		UUID id = UUID.fromString(JsonPath.read(draft, "$.id"));
-		put(owner, "/api/solution/mine/" + id,
-				solution(name, JsonPath.<Number>read(draft, "$.version").longValue()));
+		Map<String, Object> request = solution(name, JsonPath.<Number>read(draft, "$.version").longValue());
+		// A review asks for a logo and a cover.
+		request.put("logoFileId", TestUploads.image(client, owner, "solution_logo", "logo.png"));
+		request.put("coverFileId", TestUploads.image(client, owner, "solution_image", "cover.png"));
+		put(owner, "/api/solution/mine/" + id, request);
 		post(owner, "/api/solution/mine/" + id + "/submit", null);
 		return id;
 	}
 
-	private long versionOfSolution(String owner, UUID id) {
-		return JsonPath.<Number>read(body(client.get()
+	/** The save that keeps the solution as it is: its version, and the images it names. */
+	private Map<String, Object> asSaved(String owner, UUID id, String name) {
+		String current = body(client.get()
 			.uri("/api/solution/mine/" + id)
 			.cookie(TestSignIn.SESSION_COOKIE, owner)
 			.exchange()
 			.expectStatus()
-			.isOk()), "$.version").longValue();
+			.isOk());
+		Map<String, Object> request = solution(name, JsonPath.<Number>read(current, "$.version").longValue());
+		request.put("logoFileId", JsonPath.<String>read(current, "$.logo.fileId"));
+		request.put("coverFileId", JsonPath.<String>read(current, "$.cover.fileId"));
+		return request;
 	}
 
 	private static Map<String, Object> solution(String name, long version) {
@@ -225,6 +236,7 @@ class SearchDirectoriesTest {
 		request.put("demoUrl", null);
 		request.put("builtWith", List.of("LangGraph"));
 		request.put("languages", List.of());
+		request.put("imageFileIds", List.of());
 		request.put("listed", true);
 		request.put("version", version);
 		return request;

@@ -2,15 +2,15 @@
 
 Design: [design.md](design.md). Tracked in Linear as BEY-34.
 
-| #   | Step                                                                                                                                                     | State |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| 1   | The states the frames lacked, in Figma: fields to add, no deck yet, deck uploading, deck refused, draft not saved, review with fields to add             | Done  |
-| 2   | `V24` and `V25`; the purpose `solution_deck`; the new fields on `Solution`, its request and its responses                                                | Done  |
-| 3   | `solution → storage`: attaching, replacing and removing a deck in `SolutionService`, `ReplacedDecks`, and the deck's address in `SolutionDirectory`      | Done  |
-| 4   | `SolutionTest` and the matrix in `docs/tests/solution.md`; `openapi.yml` and the generated web client                                                    | Done  |
-| 5   | Web: the editor in steps with its saves, the deck upload, the review step; the new fields on the public page and in the operators' review; both catalogs | Done  |
-| 6   | Unit tests of the editor's state; end-to-end tests of the steps, the saves, the deck and the review                                                      | Done  |
-| 7   | `ARCHITECTURE.md` and the known limits of the increments this one makes untrue                                                                           | Done  |
+| #   | Step                                                                                                                                                                                                              | State |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| 1   | The states the frames lacked, in Figma: fields to add, no deck yet, deck uploading, deck refused, draft not saved, review with fields to add                                                                      | Done  |
+| 2   | `V24` and `V25`; the purpose `solution_deck`; the new fields on `Solution`, its request and its responses                                                                                                         | Done  |
+| 3   | `solution → storage`: attaching, replacing and removing a deck in `SolutionService`, `DroppedFiles` (named `ReplacedDecks` until the images of BEY-34 used it too), and the deck's address in `SolutionDirectory` | Done  |
+| 4   | `SolutionTest` and the matrix in `docs/tests/solution.md`; `openapi.yml` and the generated web client                                                                                                             | Done  |
+| 5   | Web: the editor in steps with its saves, the deck upload, the review step; the new fields on the public page and in the operators' review; both catalogs                                                          | Done  |
+| 6   | Unit tests of the editor's state; end-to-end tests of the steps, the saves, the deck and the review                                                                                                               | Done  |
+| 7   | `ARCHITECTURE.md` and the known limits of the increments this one makes untrue                                                                                                                                    | Done  |
 
 ## Verification
 

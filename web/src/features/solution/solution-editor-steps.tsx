@@ -1,5 +1,13 @@
 "use client";
 
+import {
+  CirclePlayIcon,
+  FileTextIcon,
+  ImageIcon,
+  ImagesIcon,
+  LinkIcon,
+  PanelTopIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { ChoiceChips } from "@/components/composites/choice-chips";
@@ -13,8 +21,15 @@ import type { CustomerDeployment } from "@/lib/api/generated";
 import { CodeCombobox } from "./code-combobox";
 import { CustomerDeploymentsEditor } from "./customer-deployments-editor";
 import { DeckUpload } from "./deck-upload";
+import { GalleryUpload, ImageUpload } from "./image-upload";
 import { deployments, focusAreas, industries, languages, maturities } from "./solution-codes";
-import { fieldId, limits, type LinkField, type SolutionDraft } from "./solution-editor-state";
+import {
+  fieldId,
+  limits,
+  type HeldImage,
+  type LinkField,
+  type SolutionDraft,
+} from "./solution-editor-state";
 import { TagInput } from "./tag-input";
 
 type StepProps = {
@@ -27,6 +42,8 @@ type StepProps = {
 type EditorFieldProps = {
   field: keyof SolutionDraft;
   label: string;
+  /** What kind of thing the field holds, before its label; the label says the same in words. */
+  icon?: React.ReactNode;
   /** The word "Optional", for a field a review does not need. */
   optional?: string;
   hint?: string;
@@ -42,6 +59,7 @@ type EditorFieldProps = {
 function EditorField({
   field,
   label,
+  icon,
   optional,
   hint,
   counter,
@@ -57,6 +75,7 @@ function EditorField({
       aria-labelledby={labelled ? undefined : `${id}-label`}
     >
       <FieldLabel htmlFor={labelled ? id : undefined} id={`${id}-label`}>
+        {icon && <span className="shrink-0 [&_svg]:size-4">{icon}</span>}
         {label}
         {optional && <span className="text-xs font-normal text-muted-foreground">{optional}</span>}
       </FieldLabel>
@@ -279,6 +298,15 @@ function FitStep({ draft, change, errorOf }: StepProps) {
           onValueChange={(next) => change({ deployment: next })}
         />
       </EditorField>
+      <EditorField field="channels" label={t("fields.channels")} optional={t("optional")}>
+        <Input
+          id={fieldId("channels")}
+          maxLength={limits.channels}
+          placeholder={t("fields.channelsPlaceholder")}
+          value={draft.channels}
+          onChange={(event) => change({ channels: event.target.value })}
+        />
+      </EditorField>
       <EditorField
         field="bestCustomerProfile"
         label={t("fields.bestCustomerProfile")}
@@ -308,9 +336,14 @@ type EvidenceStepProps = StepProps & {
   customerDeployments: CustomerDeployment[];
   /** A link field was left: from then on, what is wrong with it is said under it. */
   onLinkLeft: (field: LinkField) => void;
+  /** An image under the cover finished uploading. */
+  onImageAdded: (image: HeldImage) => void;
 };
 
-/** Step 3: the deck, a demo, the product's page and the projects customers put it to work in. */
+/**
+ * Step 3: what the solution shows of itself, its logo, its cover and the images under it, then the
+ * deck, a demo, the product's page and the projects customers put it to work in.
+ */
 function EvidenceStep({
   draft,
   change,
@@ -319,12 +352,14 @@ function EvidenceStep({
   deckHref,
   customerDeployments,
   onLinkLeft,
+  onImageAdded,
 }: EvidenceStepProps) {
   const t = useTranslations("Solution.editor");
-  const link = (field: LinkField, hint: string) => (
+  const link = (field: LinkField, hint: string, icon: React.ReactNode) => (
     <EditorField
       field={field}
       label={t(`fields.${field}`)}
+      icon={icon}
       optional={t("optional")}
       hint={hint}
       error={errorOf(field)}
@@ -351,7 +386,62 @@ function EvidenceStep({
 
   return (
     <>
-      <EditorField field="deck" label={t("fields.deck")} optional={t("optional")} labelled={false}>
+      <EditorField
+        field="logo"
+        label={t("fields.logo")}
+        icon={<ImageIcon aria-hidden="true" />}
+        hint={t("images.logo.hint")}
+        error={errorOf("logo")}
+        labelled={false}
+      >
+        <ImageUpload
+          id={fieldId("logo")}
+          place="logo"
+          image={draft.logo}
+          invalid={errorOf("logo") !== undefined}
+          describedBy={about("logo", errorOf("logo"), true)}
+          onChange={(logo) => change({ logo })}
+        />
+      </EditorField>
+      <EditorField
+        field="cover"
+        label={t("fields.cover")}
+        icon={<PanelTopIcon aria-hidden="true" />}
+        hint={t("images.cover.hint")}
+        error={errorOf("cover")}
+        labelled={false}
+      >
+        <ImageUpload
+          id={fieldId("cover")}
+          place="cover"
+          image={draft.cover}
+          invalid={errorOf("cover") !== undefined}
+          describedBy={about("cover", errorOf("cover"), true)}
+          onChange={(cover) => change({ cover })}
+        />
+      </EditorField>
+      <EditorField
+        field="images"
+        label={t("fields.images")}
+        icon={<ImagesIcon aria-hidden="true" />}
+        optional={t("optional")}
+        hint={t("images.more.hint")}
+        labelled={false}
+      >
+        <GalleryUpload
+          id={fieldId("images")}
+          images={draft.images}
+          onAdd={onImageAdded}
+          onChange={(images) => change({ images })}
+        />
+      </EditorField>
+      <EditorField
+        field="deck"
+        label={t("fields.deck")}
+        icon={<FileTextIcon aria-hidden="true" />}
+        optional={t("optional")}
+        labelled={false}
+      >
         <DeckUpload
           id={fieldId("deck")}
           deck={draft.deck}
@@ -359,8 +449,8 @@ function EvidenceStep({
           onChange={(deck) => change({ deck })}
         />
       </EditorField>
-      {link("demoUrl", t("fields.demoUrlHint"))}
-      {link("website", t("fields.websiteHint"))}
+      {link("demoUrl", t("fields.demoUrlHint"), <CirclePlayIcon aria-hidden="true" />)}
+      {link("website", t("fields.websiteHint"), <LinkIcon aria-hidden="true" />)}
       <CustomerDeploymentsEditor solutionId={solutionId} deployments={customerDeployments} />
     </>
   );

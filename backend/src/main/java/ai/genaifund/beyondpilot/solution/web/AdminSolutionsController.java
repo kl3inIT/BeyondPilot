@@ -8,6 +8,7 @@ import ai.genaifund.beyondpilot.solution.SolutionAdministration;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListRequest;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListResponse;
 import ai.genaifund.beyondpilot.solution.dto.RejectSolutionRequest;
+import ai.genaifund.beyondpilot.solution.dto.SolutionBackingRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -80,6 +82,21 @@ class AdminSolutionsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void approve(@CurrentActor Actor actor, @PathVariable UUID id) {
 		solutions.approve(actor, id);
+	}
+
+	@PutMapping(path = "/{id}/backing", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "backSolution",
+			summary = "Write what GenAI Fund says of a solution: who backs its company, its programme and its funding",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "What GenAI Fund says of the solution is written.",
+			content = @Content)
+	@ApiResponse(responseCode = "400", description = "A member is not valid.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void back(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody SolutionBackingRequest request) {
+		solutions.back(actor, id, request);
 	}
 
 	@PostMapping(path = "/{id}/reject", consumes = MediaType.APPLICATION_JSON_VALUE)

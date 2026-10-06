@@ -237,7 +237,7 @@ Flat by default with hairlines. Shadows are ink at low opacity (`--elevation` in
 
 ### Buttons
 
-- **Shape:** full pill; heights 32, 36 and 40px for `sm`, `md`, `lg`.
+- **Shape:** full pill; heights 32, 36 and 40px for `sm`, `md`, `lg`. `Button` alone has `xl`, 48px, for the one action a page leads to.
 - **Primary:** Azure fill, white label, small shadow.
 - **Secondary:** Paper with a Field Line border and small shadow.
 - **Tertiary:** transparent with 6px corners, for a quiet action beside others.

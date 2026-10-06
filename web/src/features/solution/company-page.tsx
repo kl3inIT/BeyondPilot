@@ -47,7 +47,7 @@ function CompanySolution({ solution }: { solution: PublicSolutionSummary }) {
   return (
     <article className="group relative flex flex-col gap-2.5 rounded-2xl border bg-card p-5 transition-colors hover:border-ring has-[a:focus-visible]:border-ring has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring/50">
       <div className="flex items-center gap-3">
-        <SolutionLogo name={solution.name} size="card" />
+        <SolutionLogo name={solution.name} fileId={solution.logoFileId} size="card" />
         <div className="flex min-w-0 flex-col gap-0.5">
           <h3 className="text-lg font-semibold">
             <Link

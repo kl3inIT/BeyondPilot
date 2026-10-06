@@ -31,7 +31,11 @@ public enum FilePurpose {
 					"application/vnd.openxmlformats-officedocument.presentationml.presentation")),
 
 	/** The deck of a solution. The solution module decides who reads it. */
-	SOLUTION_DECK("solution_deck", false, false, Set.of("application/pdf"));
+	SOLUTION_DECK("solution_deck", false, false, Set.of("application/pdf")),
+	/** The logo of a solution, which a member of its organization uploads. */
+	SOLUTION_LOGO("solution_logo", true, false, Set.of("image/png", "image/jpeg", "image/webp")),
+	/** The cover of a solution, or one of the images shown under it. */
+	SOLUTION_IMAGE("solution_image", true, false, Set.of("image/png", "image/jpeg", "image/webp"));
 
 	private final String value;
 	private final boolean publicRead;
