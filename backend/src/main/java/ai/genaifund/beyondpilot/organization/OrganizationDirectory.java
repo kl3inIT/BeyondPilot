@@ -45,6 +45,15 @@ public class OrganizationDirectory {
 						organization.isApproved(), organization.getRoles())));
 	}
 
+	/** Who this organization is, read now; empty when it does not exist. */
+	@Transactional(readOnly = true)
+	public Optional<OrganizationProfile> profile(UUID organizationId) {
+		return organizations.findById(organizationId)
+			.map(organization -> new OrganizationProfile(organization.getId(), organization.getSlug(),
+					organization.getName(), organization.getType(), organization.getCountry(),
+					organization.getTeamSize(), organization.getWebsite(), organization.isApproved()));
+	}
+
 	/** Whether GenAI Fund has approved this organization, read now. */
 	@Transactional(readOnly = true)
 	public boolean isApproved(UUID organizationId) {

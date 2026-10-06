@@ -1,6 +1,13 @@
 package ai.genaifund.beyondpilot.program;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
@@ -43,6 +50,36 @@ public class ProgramService {
 			.stream()
 			.filter(program -> phase == null || phase.equals(program.phase()))
 			.toList());
+	}
+
+	/** The application form of a published program that takes applications; empty for any other address. */
+	@Transactional(readOnly = true)
+	public Optional<ApplicationForm> applicationForm(String slug) {
+		return programs.findBySlug(slug).flatMap(ProgramService::form);
+	}
+
+	/** The application forms of these programs by identifier; a draft or one that takes no applications is left out. */
+	@Transactional(readOnly = true)
+	public Map<UUID, ApplicationForm> applicationForms(Collection<UUID> programIds) {
+		return programs.findAllById(programIds)
+			.stream()
+			.flatMap(program -> form(program).stream())
+			.collect(Collectors.toMap(ApplicationForm::programId, Function.identity()));
+	}
+
+	private static Optional<ApplicationForm> form(Program program) {
+		Instant opensAt = program.getApplicationsOpenAt();
+		Instant closesAt = program.getApplicationsCloseAt();
+		if (program.getStatus() != ProgramStatus.PUBLISHED || opensAt == null || closesAt == null) {
+			return Optional.empty();
+		}
+		return Optional.of(new ApplicationForm(program.getId(), program.getSlug(), program.getName(), opensAt,
+				closesAt, program.getOutcomesDueOn(), program.isAllowUpdatesUntilClose(),
+				program.getQuestions()
+					.stream()
+					.map(question -> new ApplicationForm.Question(question.id(), question.kind(), question.label(),
+							question.help(), question.required(), List.of(question.options()), question.maxLength()))
+					.toList()));
 	}
 
 	/**

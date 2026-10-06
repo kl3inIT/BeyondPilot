@@ -1,6 +1,9 @@
 package ai.genaifund.beyondpilot.notification;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 import jakarta.mail.MessagingException;
@@ -24,6 +27,9 @@ import org.springframework.web.util.HtmlUtils;
 public class EmailService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(EmailService.class);
+
+	/** Deadlines are set in Vietnam time, whoever reads them. */
+	private static final ZoneId VIETNAM = ZoneId.of("Asia/Ho_Chi_Minh");
 
 	private final JavaMailSender mailSender;
 	private final NotificationProperties properties;
@@ -140,6 +146,29 @@ public class EmailService {
 		String vietnamese = providerName + " sẽ không tiếp tục yêu cầu giới thiệu của bạn về giải pháp "
 				+ solutionName + ". Bạn có thể tìm giải pháp khác trên BeyondPilot.";
 		send("introduction_declined", recipient, "Your request about " + solutionName,
+				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+	}
+
+	/**
+	 * Confirms to an applicant that their application reached the program, in both languages.
+	 * @param version which submission this is: 1 for the first, more when it was submitted again
+	 * @param editableUntil until when the application can still change; null when it cannot
+	 */
+	public void sendApplicationReceived(String recipient, String programName, int version,
+			@Nullable Instant editableUntil) {
+		String until = editableUntil == null ? null
+				: DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.ENGLISH)
+					.withZone(VIETNAM)
+					.format(editableUntil) + " ICT";
+		String english = (version == 1 ? "Your application to " + programName + " was submitted."
+				: "Your changed application to " + programName + " was submitted.")
+				+ (until == null ? "" : " You can change it on BeyondPilot until " + until + ".")
+				+ " Sign in and open My applications to see where it stands.";
+		String vietnamese = (version == 1 ? "Đơn của bạn gửi " + programName + " đã được nộp."
+				: "Đơn đã chỉnh sửa của bạn gửi " + programName + " đã được nộp.")
+				+ (until == null ? "" : " Bạn có thể sửa đơn trên BeyondPilot tới " + until + ".")
+				+ " Hãy đăng nhập và mở Đơn của tôi để xem tình trạng.";
+		send("application_received", recipient, "Application submitted: " + programName,
 				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
 	}
 

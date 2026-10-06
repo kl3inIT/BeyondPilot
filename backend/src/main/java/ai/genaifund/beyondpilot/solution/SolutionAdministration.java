@@ -12,7 +12,6 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
-import ai.genaifund.beyondpilot.storage.StorageService;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListRequest;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListResponse;
@@ -24,6 +23,7 @@ import ai.genaifund.beyondpilot.solution.persistence.CustomerDeploymentRepositor
 import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionQueryRepository;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
+import ai.genaifund.beyondpilot.storage.StorageService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -102,6 +102,27 @@ public class SolutionDirectory {
 					.toList());
 	}
 
+	/** The solutions of an organization, the newest first, for the module that applies with one. */
+	@Transactional(readOnly = true)
+	public List<OfferedSolution> offeredBy(UUID organizationId) {
+		return solutions.findByOrganizationIdOrderByCreatedAtDesc(organizationId)
+			.stream()
+			.map(SolutionDirectory::offered)
+			.toList();
+	}
+
+	/** One solution, for the module that applies with it; empty when it does not exist. */
+	@Transactional(readOnly = true)
+	public Optional<OfferedSolution> offered(UUID solutionId) {
+		return solutions.findById(solutionId).map(SolutionDirectory::offered);
+	}
+
+	private static OfferedSolution offered(Solution solution) {
+		return new OfferedSolution(solution.getId(), solution.getOrganizationId(), solution.getName(),
+				solution.getSummary(), solution.getProblemsSolved(), solution.getMaturity(), solution.getDeckFileId(),
+				solution.getDemoUrl(), solution.getBuiltWith(), solution.getTraction());
+	}
+
 	/** The approved, listed solution at this address, as another module needs it; empty when there is none. */
 	@Transactional(readOnly = true)
 	public Optional<ListedSolution> listedAt(String slug) {

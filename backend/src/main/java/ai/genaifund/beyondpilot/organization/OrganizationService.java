@@ -160,6 +160,25 @@ public class OrganizationService {
 	}
 
 	/**
+	 * Makes the organization a person applies through when they belong to none (BEY-37): a builder on their own or a
+	 * team, which provides AI solutions. Like any organization a person creates, it waits for GenAI Fund's review,
+	 * which decides whether it is listed, not whether it applies.
+	 * @return the new organization's identifier
+	 * @throws OrganizationException when the caller already belongs to an organization or waits on a request
+	 */
+	@Transactional
+	public UUID createForApplicant(Actor actor, ApplicantOrganization applicant) {
+		if (!"independent_builder".equals(applicant.type()) && !"builder_team".equals(applicant.type())) {
+			throw new IllegalArgumentException("An applicant makes a builder's or a team's organization, not "
+					+ applicant.type());
+		}
+		return create(actor,
+				new CreateOrganizationRequest(applicant.name(), List.of("provider"), applicant.type(),
+						applicant.website(), applicant.country(), applicant.teamSize(), List.of(), null, null))
+			.id();
+	}
+
+	/**
 	 * Asks to get into an approved organization. An address on its domain joins at once while its owners allow it,
 	 * and owns it when nobody does; anyone else asks its owners, or GenAI Fund when nobody owns it.
 	 * @throws OrganizationException when the organization does not exist or is not approved, or the caller already
