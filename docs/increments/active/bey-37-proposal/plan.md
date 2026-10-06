@@ -8,9 +8,9 @@ Design: [design.md](design.md). Tracked in Linear as BEY-37.
 | 2   | Backend and web: review decides listing only; members write solutions; a light organization for one person or a team                                                                         | Done  |
 | 3   | Backend and web: `V12`; a program's questions, fixed once applications open; the Questions tab of Settings                                                                                   | Done  |
 | 4   | Backend: `V13`; the `proposal` module: start, save, set up an individual or a team, submit with its version and email, withdraw, my applications; `openapi.yml` and the web client refreshed | Done  |
-| 5   | Web: Apply steps 1 to 4 with their states                                                                                                                                                    | Open  |
-| 6   | Web: the receipt, My applications and an application's page with Withdraw; Apply on a program page leads to the flow (the Tasco challenge keeps its interim form until 15 October)           | Open  |
-| 7   | Documents made true: `docs/tests/proposal.md`, the matrices of organization and solution, `ARCHITECTURE.md`                                                                                  | Open  |
+| 5   | Web: Apply steps 1 to 4 with their states                                                                                                                                                    | Done  |
+| 6   | Web: the receipt, My applications and an application's page with Withdraw; Apply on a program page leads to the flow (the Tasco challenge keeps its interim form until 15 October)           | Done  |
+| 7   | Documents made true: `docs/tests/proposal.md`, the matrices of organization and solution, `ARCHITECTURE.md`                                                                                  | Done  |
 
 Each step is one or more commits, pushed as it is finished, on one branch with one pull request.
 

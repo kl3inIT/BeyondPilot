@@ -37,6 +37,8 @@ const createHref = `${siteRoutes.workspaceOrganization}/new`;
 type OrganizationFinderProps = {
   /** The organization the caller's email domain belongs to, when one does. */
   suggestion: OrganizationMatch | null;
+  /** Shown inside another form, such as an application, without its own heading. */
+  embedded?: boolean;
 };
 
 /**
@@ -44,7 +46,7 @@ type OrganizationFinderProps = {
  * search by name. What happens on a click depends on the organization: joining at once, asking its
  * owners, or claiming one that nobody owns yet. Creating a new one is always offered beside it.
  */
-function OrganizationFinder({ suggestion }: OrganizationFinderProps) {
+function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinderProps) {
   const t = useTranslations("Organization.find");
   const typeName = useVocabulary("organizationType");
   const countryName = useCountryName();
@@ -121,8 +123,10 @@ function OrganizationFinder({ suggestion }: OrganizationFinderProps) {
   const only = results?.length === 1 ? results[0] : null;
 
   return (
-    <div className="flex w-full max-w-130 flex-col gap-6">
-      <h1 className="text-3xl font-semibold tracking-title">{t("title")}</h1>
+    <div
+      className={embedded ? "flex w-full flex-col gap-6" : "flex w-full max-w-130 flex-col gap-6"}
+    >
+      {!embedded && <h1 className="text-3xl font-semibold tracking-title">{t("title")}</h1>}
       <Field>
         <FieldLabel htmlFor="organization-search">{t("search")}</FieldLabel>
         <Input

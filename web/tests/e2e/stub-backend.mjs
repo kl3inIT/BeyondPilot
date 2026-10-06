@@ -4,6 +4,7 @@
 // sign-out) is answered by the test itself, with page.route.
 import { createServer } from "node:http";
 
+import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
 import { answerReview } from "./stub-reviews.mjs";
 import { answerWorkspace } from "./stub-workspace.mjs";
@@ -372,6 +373,7 @@ createServer((request, response) => {
     });
   }
   const record =
+    answerApplication(url, account ? session : undefined, account?.email) ??
     answerReview(url, account) ??
     answerWorkspace(url, account ? session : undefined) ??
     answerDirectory(url);
