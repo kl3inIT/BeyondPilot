@@ -918,12 +918,14 @@
       "lead": "Mọi giải pháp nhà cung cấp đã gửi duyệt. Giải pháp còn chờ xếp trước, chờ lâu nhất ở trên cùng.",
       "columns": {
         "solution": "Giải pháp",
-        "maturity": "Giai đoạn",
+        "organization": "Tổ chức",
         "status": "Trạng thái",
+        "sentBy": "Người gửi",
         "submitted": "Ngày gửi",
         "actions": "Thao tác"
       },
-      "notStated": "Chưa nêu",
+      "senderUnknown": "Chưa ghi nhận",
+      "awaiting": "{count} giải pháp chờ duyệt",
       "openNamed": "Mở {name}",
       "empty": {
         "title": "Chưa có gì cần duyệt",
@@ -963,7 +965,35 @@
         "next": "Chờ duyệt tiếp theo: {name}",
         "position": "{place} trên {total} đang chờ",
         "waitingSince": "Gửi {time}",
-        "public": "Mở trang công khai"
+        "public": "Mở trang công khai",
+        "decision": "Quyết định",
+        "status": "Trạng thái",
+        "organization": "Tổ chức",
+        "sentBy": "Người gửi",
+        "senderUnknown": "Chưa ghi nhận",
+        "sent": "Thời điểm gửi",
+        "directory": "Danh mục",
+        "listed": "Sẽ hiện khi được duyệt",
+        "deploymentsWaiting": "{count} triển khai khách hàng chờ duyệt"
+      },
+      "record": {
+        "basics": "Thông tin cơ bản",
+        "audience": "Dành cho ai",
+        "evidence": "Bằng chứng",
+        "name": "Tên giải pháp",
+        "summary": "Giải pháp làm gì",
+        "problemsSolved": "Bài toán giải quyết",
+        "valueProposition": "Giá trị mang lại",
+        "maturity": "Giai đoạn",
+        "industries": "Ngành",
+        "focusAreas": "Năng lực AI",
+        "deployment": "Nơi vận hành",
+        "website": "Website",
+        "demo": "Demo sản phẩm",
+        "deck": "Tài liệu giới thiệu",
+        "deployments": "Triển khai cho khách hàng",
+        "deploymentsSummary": "{total} triển khai{waiting, plural, =0 {} other {, # chờ duyệt}}",
+        "missing": "Chưa cung cấp"
       },
       "queueEmpty": {
         "title": "Không có gì đang chờ duyệt",

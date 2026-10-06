@@ -8,6 +8,6 @@ Design: [design.md](design.md). Tracked in Linear as BEY-66.
 | 2   | `OrganizationDirectory` answers the organizations whose name contains a text; the operators' list matches by it, narrows by industry and counts what waits        | Done  |
 | 3   | `AdminSolutionSummaryResponse` with the sender and industries; `SolutionResponse` names the sender                                                                | Done  |
 | 4   | `SolutionTest` and the matrix in `docs/tests/solution.md`; `openapi.yml` and the generated web client; `./gradlew :backend:check`                                 | Done  |
-| 5   | Web: the queue with tabs, the count, the new columns and the row link; both catalogs                                                                              | Todo  |
-| 6   | Web: the record as labelled rows with what is missing said, the decision panel that stays in view, the deployments that wait; `pnpm --dir web check`              | Todo  |
+| 5   | Web: the queue with the count of what waits, the industry filter, the new columns and a larger way into a row; both catalogs                                       | Done  |
+| 6   | Web: the record as labelled rows with what is missing said, the decision panel that stays in view, the deployments that wait                                      | Built; `typecheck`, the end-to-end tests and a walk in the browser are still to run |
 | 7   | Figma: the admin frames match the fields the backend has                                                                                                          | Todo  |

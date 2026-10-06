@@ -918,12 +918,14 @@
       "lead": "Every solution providers sent for review. Those still waiting come first, the longest wait on top.",
       "columns": {
         "solution": "Solution",
-        "maturity": "Maturity",
+        "organization": "Organization",
         "status": "Status",
+        "sentBy": "Sent by",
         "submitted": "Submitted",
         "actions": "Actions"
       },
-      "notStated": "Not stated",
+      "senderUnknown": "Not recorded",
+      "awaiting": "{count, plural, one {# needs review} other {# need review}}",
       "openNamed": "Open {name}",
       "empty": {
         "title": "Nothing to review",
@@ -963,7 +965,35 @@
         "next": "Next in review: {name}",
         "position": "{place} of {total} waiting",
         "waitingSince": "Sent {time}",
-        "public": "Open the public page"
+        "public": "Open the public page",
+        "decision": "Decision",
+        "status": "Status",
+        "organization": "Organization",
+        "sentBy": "Sent by",
+        "senderUnknown": "Not recorded",
+        "sent": "Sent",
+        "directory": "Directory",
+        "listed": "Listed once approved",
+        "deploymentsWaiting": "{count, plural, one {# customer deployment waits for review} other {# customer deployments wait for review}}"
+      },
+      "record": {
+        "basics": "Basics",
+        "audience": "Who it is for",
+        "evidence": "Evidence",
+        "name": "Solution name",
+        "summary": "What it does",
+        "problemsSolved": "Problem it solves",
+        "valueProposition": "Why it is worth it",
+        "maturity": "Stage",
+        "industries": "Industries",
+        "focusAreas": "AI capabilities",
+        "deployment": "Where it runs",
+        "website": "Website",
+        "demo": "Product demo",
+        "deck": "Solution deck",
+        "deployments": "Customer deployments",
+        "deploymentsSummary": "{total, plural, one {# deployment} other {# deployments}}{waiting, plural, =0 {} other {, # waiting for review}}",
+        "missing": "Not published yet"
       },
       "queueEmpty": {
         "title": "Nothing waits for review",
