@@ -22,7 +22,7 @@ public record OrganizationResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 				description = "The industries it works in or serves; empty until an owner names them.") List<String> industries,
 		@Schema(types = { "string", "null" }) @Nullable String description,
 		@Schema(types = { "integer", "null" }, description = "The year it started; null until an owner says.") @Nullable Integer foundedYear,
-		@Schema(types = { "string", "null" }, description = "The address of its logo.") @Nullable String logoUrl,
+		@Schema(types = { "string", "null" }, description = "Its logo, read at /api/storage/files/{id}; null for none.") @Nullable UUID logoFileId,
 		@Schema(types = { "string", "null" },
 				description = "The domain GenAI Fund verified as the organization's; null until it has.") @Nullable String emailDomain,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
