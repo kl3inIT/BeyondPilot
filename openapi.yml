@@ -12,50 +12,56 @@ tags:
   name: Review
 - description: "The record of sensitive changes, read by operators."
   name: Audit
-- description: The accounts operators manage.
-  name: Accounts
 - description: "The programs GenAI Fund runs, as the public site shows them."
   name: Programs
-- description: The public directory of approved AI solutions.
-  name: Solutions
 - description: The public directory of approved talent profiles.
   name: Talent
-- description: The requests for an introduction operators read.
-  name: Introduction administration
 - description: The organizations operators review.
   name: Organization administration
 - description: Requests for an introduction to the organization behind a solution.
   name: Introductions
-- description: The organization the caller belongs to.
-  name: My organization
 - description: The programs operators create and edit.
   name: Program administration
 - description: A person's applications to programs.
   name: Applications
 - description: "Search over the programs, solutions and talent the public site shows."
   name: Search
+- description: The projects in which a customer put a solution to work.
+  name: Customer deployments
+- description: The caller's own talent profile.
+  name: My talent profile
+- description: The use cases operators write and read.
+  name: Use case administration
+- description: The solutions operators review.
+  name: Solution administration
+- description: The solutions of the caller's organization.
+  name: My solutions
+- description: The accounts operators manage.
+  name: Accounts
+- description: "Reports of delivery, bounces and complaints, sent by the email provider\
+    \ and checked by signature."
+  name: Email delivery events
+- description: The public directory of approved AI solutions.
+  name: Solutions
+- description: The requests for an introduction operators read.
+  name: Introduction administration
+- description: The organization the caller belongs to.
+  name: My organization
 - description: Who is signed in.
   name: Identity
 - description: The use cases the members of an organization write.
   name: My organization's use cases
 - description: Uploading and reading files.
   name: Storage
-- description: The projects in which a customer put a solution to work.
-  name: Customer deployments
 - description: The public list of published use cases.
   name: Use cases
-- description: The caller's own talent profile.
-  name: My talent profile
-- description: The use cases operators write and read.
-  name: Use case administration
+- description: "Who delivers BeyondPilot's email, its wording, what was sent and the\
+    \ addresses it is not sent to."
+  name: Email administration
 - description: The talent profiles operators review.
   name: Talent administration
-- description: The solutions operators review.
-  name: Solution administration
 - description: "Finding, joining and creating an organization."
   name: Organizations
-- description: The solutions of the caller's organization.
-  name: My solutions
 paths:
   /api/audit/events:
     get:
@@ -124,6 +130,13 @@ paths:
           - proposal.reviewer_remove
           - proposal.decide
           - proposal.release
+          - email.settings_update
+          - email.appearance_update
+          - email.template_update
+          - email.template_reset
+          - email.suppression_add
+          - email.suppression_remove
+          - email.resend
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
         in: query
@@ -672,6 +685,837 @@ paths:
       summary: "Accept a request: both sides learn each other's address"
       tags:
       - Introductions
+  /api/notification/admin/email/messages:
+    get:
+      operationId: listEmailMessages
+      parameters:
+      - description: Only emails queued at or after this instant; the counts cover
+          the same period.
+        in: query
+        name: from
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: date-time
+      - description: Only emails of this kind.
+        in: query
+        name: kind
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: "[a-z_]{1,40}"
+      - description: Only emails in this state.
+        in: query
+        name: status
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: queued|sent|delivered|bounced|complained|failed|skipped
+      - description: "Emails whose recipient or subject contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "The `older` cursor of a page: the emails before it."
+        in: query
+        name: before
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: "\\d{1,18}_[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}"
+      - description: "The `newer` cursor of a page: the emails after it."
+        in: query
+        name: after
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: "\\d{1,18}_[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailMessageList"
+          description: "One page, its cursors and the counts of the period."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A filter or a cursor is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The email log, newest first, a page at a time"
+      tags:
+      - Email administration
+  /api/notification/admin/email/messages/{id}:
+    get:
+      operationId: getEmailMessage
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailMessage"
+          description: The email.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such email.
+      security:
+      - session: []
+      summary: "One email as it was sent, with what happened to it"
+      tags:
+      - Email administration
+  /api/notification/admin/email/messages/{id}/resend:
+    post:
+      operationId: resendEmailMessage
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailResent"
+          description: "The new email, queued."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such email.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "It is a sign-in code, or its address is suppressed."
+      security:
+      - session: []
+      summary: "Send an email again, as it was sent, to the same address"
+      tags:
+      - Email administration
+  /api/notification/admin/email/settings:
+    get:
+      operationId: getEmailSettings
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSettings"
+          description: The settings.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The email settings, without their secrets"
+      tags:
+      - Email administration
+    put:
+      operationId: saveEmailSettings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveEmailSettings"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSettings"
+          description: "The settings as saved, with their new version."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, or the provider chosen lacks a field\
+            \ or its secret."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The settings changed since they were read.
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A secret was given but the server has no key to encrypt it.
+      security:
+      - session: []
+      summary: Choose who delivers email and as whom
+      tags:
+      - Email administration
+  /api/notification/admin/email/settings/appearance:
+    put:
+      operationId: saveEmailAppearance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveEmailAppearance"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSettings"
+          description: "The settings as saved, with their new version."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The settings changed since they were read.
+      security:
+      - session: []
+      summary: Set the accent colour and footer note of every email
+      tags:
+      - Email administration
+  /api/notification/admin/email/settings/test:
+    post:
+      operationId: testEmailSettings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveEmailSettings"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTest"
+          description: "Whether the provider took the test, and why not."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, or the provider chosen lacks a field\
+            \ or its secret."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A secret was given but the server has no key to encrypt it.
+      security:
+      - session: []
+      summary: "Send a test through the settings as the form holds them, to the caller's\
+        \ own address"
+      tags:
+      - Email administration
+  /api/notification/admin/email/suppressions:
+    get:
+      operationId: listEmailSuppressions
+      parameters:
+      - description: Only addresses suppressed for this reason.
+        in: query
+        name: reason
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: bounce|complaint|manual
+      - description: "Addresses that contain this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type:
+          - integer
+          - "null"
+          format: int32
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSuppressionList"
+          description: One page of addresses.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A filter or the page is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The suppressed addresses, newest first"
+      tags:
+      - Email administration
+    post:
+      operationId: addEmailSuppression
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddEmailSuppression"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSuppression"
+          description: "The address, suppressed."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The address is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The address is already suppressed.
+      security:
+      - session: []
+      summary: Stop sending to an address
+      tags:
+      - Email administration
+  /api/notification/admin/email/suppressions/{address}:
+    delete:
+      operationId: removeEmailSuppression
+      parameters:
+      - in: path
+        name: address
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Email reaches the address again.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The address is not suppressed.
+      security:
+      - session: []
+      summary: Let email reach an address again
+      tags:
+      - Email administration
+  /api/notification/admin/email/templates:
+    get:
+      operationId: listEmailTemplates
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplateList"
+          description: "The kinds, with the subject in use and who changed it."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Every kind of email operators word
+      tags:
+      - Email administration
+  /api/notification/admin/email/templates/{kind}:
+    delete:
+      operationId: resetEmailTemplate
+      parameters:
+      - in: path
+        name: kind
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplate"
+          description: "The template, now the default."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such kind of email.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Operators do not word this kind.
+      security:
+      - session: []
+      summary: Put one kind back to its default wording
+      tags:
+      - Email administration
+    get:
+      operationId: getEmailTemplate
+      parameters:
+      - in: path
+        name: kind
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplate"
+          description: The template.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such kind of email.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Operators do not word this kind.
+      security:
+      - session: []
+      summary: "One kind's wording, its default and its variables"
+      tags:
+      - Email administration
+    put:
+      operationId: saveEmailTemplate
+      parameters:
+      - in: path
+        name: kind
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveEmailTemplate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplate"
+          description: "The template as saved, with its new version."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, or the template does not pass the checks;\
+            \ preview it to see why."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such kind of email.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "Operators do not word this kind, or the wording changed since\
+            \ it was read."
+      security:
+      - session: []
+      summary: Replace one kind's wording
+      tags:
+      - Email administration
+  /api/notification/admin/email/templates/{kind}/preview:
+    post:
+      operationId: previewEmailTemplate
+      parameters:
+      - in: path
+        name: kind
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailDraft"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailPreview"
+          description: The rendering and its problems.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such kind of email.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Operators do not word this kind.
+      security:
+      - session: []
+      summary: "Render a draft with sample values, and say what keeps it from being\
+        \ saved"
+      tags:
+      - Email administration
+  /api/notification/admin/email/templates/{kind}/test:
+    post:
+      operationId: testEmailTemplate
+      parameters:
+      - in: path
+        name: kind
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailDraft"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTest"
+          description: "Whether the provider took the test, and why not."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, or the draft does not pass the checks."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such kind of email.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Operators do not word this kind.
+      security:
+      - session: []
+      summary: Send a draft with sample values to the caller's own address
+      tags:
+      - Email administration
+  /api/notification/email/events/resend:
+    post:
+      operationId: receiveResendEvent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        "204":
+          description: "The report was taken, or it concerns no email of BeyondPilot."
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The report's signature does not check, or it is not from the\
+            \ configured provider."
+      summary: "A webhook of Resend, signed with the webhook secret"
+      tags:
+      - Email delivery events
+  /api/notification/email/events/ses:
+    post:
+      operationId: receiveSesEvent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+          text/plain:
+            schema:
+              type: string
+        required: true
+      responses:
+        "204":
+          description: The message was taken.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The report's signature does not check, or it is not from the\
+            \ configured provider."
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The subscription could not be confirmed now; SNS asks again.
+      summary: "A message of Amazon SNS with an event of SES, or a request to confirm\
+        \ the subscription"
+      tags:
+      - Email delivery events
   /api/organization/admin/claims/{id}/approve:
     post:
       operationId: approveOrganizationClaim
@@ -5984,6 +6828,17 @@ components:
       - id
       - role
       - status
+    AddEmailSuppression:
+      type: object
+      description: An address to stop sending to.
+      properties:
+        address:
+          type: string
+          format: email
+          maxLength: 254
+          minLength: 0
+      required:
+      - address
     AdminCreateOrganization:
       type: object
       description: "An organization an operator creates for a company that is not\
@@ -7302,6 +8157,13 @@ components:
           - proposal.reviewer_remove
           - proposal.decide
           - proposal.release
+          - email.settings_update
+          - email.appearance_update
+          - email.template_update
+          - email.template_reset
+          - email.suppression_add
+          - email.suppression_remove
+          - email.resend
         actor:
           type:
           - object
@@ -7854,6 +8716,606 @@ components:
       - organizationId
       - organizationName
       - organizationType
+    EmailCounts:
+      type: object
+      description: "What became of the emails of the period, filtered by kind but\
+        \ not by state or search."
+      properties:
+        bounced:
+          type: integer
+          format: int64
+        complained:
+          type: integer
+          format: int64
+        delivered:
+          type: integer
+          format: int64
+        notSent:
+          type: integer
+          format: int64
+          description: Failed or skipped.
+        sent:
+          type: integer
+          format: int64
+        total:
+          type: integer
+          format: int64
+      required:
+      - bounced
+      - complained
+      - delivered
+      - notSent
+      - sent
+      - total
+    EmailDraft:
+      type: object
+      description: "Wording being edited, to preview or to send as a test."
+      properties:
+        body:
+          type: string
+          description: Markdown.
+          maxLength: 20000
+          minLength: 0
+        subject:
+          type: string
+          maxLength: 200
+          minLength: 0
+      required:
+      - body
+      - subject
+    EmailEvent:
+      type: object
+      description: What the provider reported about the email.
+      properties:
+        detail:
+          type:
+          - string
+          - "null"
+        occurredAt:
+          type: string
+          format: date-time
+        type:
+          type: string
+          enum:
+          - delivered
+          - bounced
+          - soft_bounced
+          - complained
+      required:
+      - occurredAt
+      - type
+    EmailMessage:
+      type: object
+      description: "One email as it was sent, with what happened to it."
+      properties:
+        attempts:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailEvent"
+        html:
+          type: string
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+        lastError:
+          type:
+          - string
+          - "null"
+        provider:
+          type:
+          - string
+          - "null"
+          enum:
+          - ses
+          - resend
+          - smtp
+        providerMessageId:
+          type:
+          - string
+          - "null"
+        recipient:
+          type: string
+        resendable:
+          type: boolean
+          description: Whether an operator may send it again.
+        sentAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        status:
+          type: string
+          enum:
+          - queued
+          - sent
+          - delivered
+          - bounced
+          - complained
+          - failed
+          - skipped
+        subject:
+          type: string
+        suppression:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/EmailSuppression"
+          description: Why the address is not sent to; null when it is.
+        text:
+          type: string
+      required:
+      - attempts
+      - createdAt
+      - events
+      - html
+      - id
+      - kind
+      - recipient
+      - resendable
+      - status
+      - subject
+      - text
+    EmailMessageList:
+      type: object
+      description: "One page of the email log, newest first, with the counts of the\
+        \ period."
+      properties:
+        counts:
+          $ref: "#/components/schemas/EmailCounts"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailMessageSummary"
+        newer:
+          type:
+          - string
+          - "null"
+          description: Pass as `after` for the page towards the present.
+        older:
+          type:
+          - string
+          - "null"
+          description: Pass as `before` for the page towards the past.
+      required:
+      - counts
+      - items
+    EmailMessageSummary:
+      type: object
+      description: One email in the log.
+      properties:
+        attempts:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+        lastError:
+          type:
+          - string
+          - "null"
+          description: The typed reason of the last failure.
+        recipient:
+          type: string
+        status:
+          type: string
+          enum:
+          - queued
+          - sent
+          - delivered
+          - bounced
+          - complained
+          - failed
+          - skipped
+        subject:
+          type: string
+      required:
+      - attempts
+      - createdAt
+      - id
+      - kind
+      - recipient
+      - status
+      - subject
+    EmailPreview:
+      type: object
+      description: "A draft rendered with sample values, and what keeps it from being\
+        \ saved. With problems the rendering is the default's."
+      properties:
+        html:
+          type: string
+        problems:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailTemplateProblem"
+        subject:
+          type: string
+        text:
+          type: string
+      required:
+      - html
+      - problems
+      - subject
+      - text
+    EmailResendSettings:
+      type: object
+      properties:
+        apiKeySet:
+          type: boolean
+        eventsUrl:
+          type: string
+          description: The endpoint to give Resend's webhook.
+        webhookSecretSet:
+          type: boolean
+      required:
+      - apiKeySet
+      - eventsUrl
+      - webhookSecretSet
+    EmailResent:
+      type: object
+      description: "The new email, queued with the content of the one sent again."
+      properties:
+        id:
+          type: string
+          format: uuid
+      required:
+      - id
+    EmailSesSettings:
+      type: object
+      properties:
+        accessKeyId:
+          type:
+          - string
+          - "null"
+        configurationSet:
+          type:
+          - string
+          - "null"
+        eventsTopicArn:
+          type:
+          - string
+          - "null"
+          description: The SNS topic whose reports are accepted.
+        eventsUrl:
+          type: string
+          description: Where to subscribe the SNS topic over HTTPS.
+        region:
+          type:
+          - string
+          - "null"
+        secretAccessKeySet:
+          type: boolean
+      required:
+      - eventsUrl
+      - secretAccessKeySet
+    EmailSettings:
+      type: object
+      description: "Who delivers BeyondPilot's email and as whom. Secrets are never\
+        \ returned: each says only whether it is set."
+      properties:
+        accentColor:
+          type: string
+        encryptionReady:
+          type: boolean
+          description: Whether the server holds the key that encrypts secrets; without
+            it none can be saved.
+        footer:
+          type: string
+        fromAddress:
+          type:
+          - string
+          - "null"
+        fromName:
+          type:
+          - string
+          - "null"
+        provider:
+          type:
+          - string
+          - "null"
+          description: "The provider chosen; null until an operator chooses one, and\
+            \ email waits meanwhile."
+          enum:
+          - ses
+          - resend
+          - smtp
+        ready:
+          type: boolean
+          description: "Whether email can leave now: a provider is chosen and everything\
+            \ it needs is set."
+        replyTo:
+          type:
+          - string
+          - "null"
+        resend:
+          $ref: "#/components/schemas/EmailResendSettings"
+        ses:
+          $ref: "#/components/schemas/EmailSesSettings"
+        smtp:
+          $ref: "#/components/schemas/EmailSmtpSettings"
+        updatedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        updatedBy:
+          type:
+          - string
+          - "null"
+          description: "Who saved the settings last, as they were named."
+        version:
+          type: integer
+          format: int64
+          description: Send it back with a change; a change made meanwhile is refused.
+      required:
+      - accentColor
+      - encryptionReady
+      - footer
+      - ready
+      - resend
+      - ses
+      - smtp
+      - version
+    EmailSmtpSettings:
+      type: object
+      properties:
+        host:
+          type:
+          - string
+          - "null"
+        passwordSet:
+          type: boolean
+        port:
+          type:
+          - integer
+          - "null"
+          format: int32
+        security:
+          type: string
+          enum:
+          - starttls
+          - tls
+          - none
+        username:
+          type:
+          - string
+          - "null"
+      required:
+      - passwordSet
+      - security
+    EmailSuppression:
+      type: object
+      description: "An address BeyondPilot does not send to, and why."
+      properties:
+        address:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type:
+          - string
+          - "null"
+          description: The operator who added it by hand.
+        messageId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: The email that caused it.
+        messageKind:
+          type:
+          - string
+          - "null"
+          description: The kind of that email.
+        reason:
+          type: string
+          enum:
+          - bounce
+          - complaint
+          - manual
+      required:
+      - address
+      - createdAt
+      - reason
+    EmailSuppressionList:
+      type: object
+      description: "One page of suppressed addresses, the newest first."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailSuppression"
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+          description: "How many addresses match, over all pages."
+      required:
+      - items
+      - page
+      - pageSize
+      - total
+    EmailTemplate:
+      type: object
+      description: "The wording of one kind of email, with the default it replaces\
+        \ and what it may use."
+      properties:
+        body:
+          type: string
+          description: Markdown.
+        defaultBody:
+          type: string
+        defaultSubject:
+          type: string
+        edited:
+          type: boolean
+        group:
+          type: string
+          enum:
+          - sign_in
+          - organizations
+          - applications
+          - introductions
+          - use_cases
+          - talent
+        kind:
+          type: string
+        subject:
+          type: string
+        updatedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        updatedBy:
+          type:
+          - string
+          - "null"
+        variables:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailTemplateVariable"
+        version:
+          type:
+          - integer
+          - "null"
+          format: int64
+          description: The version of the operator's wording; null while the default
+            is in use.
+      required:
+      - body
+      - defaultBody
+      - defaultSubject
+      - edited
+      - group
+      - kind
+      - subject
+      - variables
+    EmailTemplateList:
+      type: object
+      description: "Every kind of email operators can word, in the order the screen\
+        \ groups them."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailTemplateListItem"
+      required:
+      - items
+    EmailTemplateListItem:
+      type: object
+      properties:
+        edited:
+          type: boolean
+          description: Whether an operator's wording replaces the default.
+        group:
+          type: string
+          enum:
+          - sign_in
+          - organizations
+          - applications
+          - introductions
+          - use_cases
+          - talent
+        kind:
+          type: string
+        subject:
+          type: string
+          description: "The subject in use, with its variables as written."
+        updatedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        updatedBy:
+          type:
+          - string
+          - "null"
+      required:
+      - edited
+      - group
+      - kind
+      - subject
+    EmailTemplateProblem:
+      type: object
+      properties:
+        field:
+          type: string
+          enum:
+          - subject
+          - body
+        type:
+          type: string
+          enum:
+          - syntax
+          - unknown_variable
+          - missing_variable
+          - subject_line
+        variable:
+          type:
+          - string
+          - "null"
+      required:
+      - field
+      - type
+    EmailTemplateVariable:
+      type: object
+      properties:
+        name:
+          type: string
+        required:
+          type: boolean
+        sample:
+          type:
+          - string
+          - "null"
+          description: What the preview puts in its place.
+      required:
+      - name
+      - required
+    EmailTest:
+      type: object
+      description: "How a test email went. It is sent to the operator who asked, and\
+        \ to nobody else."
+      properties:
+        failure:
+          type:
+          - string
+          - "null"
+          description: Why it was not sent; null when it was.
+          enum:
+          - not_configured
+          - authentication
+          - throttled
+          - unavailable
+          - rejected
+          - invalid_recipient
+        recipient:
+          type: string
+        sent:
+          type: boolean
+      required:
+      - recipient
+      - sent
     FormQuestion:
       type: object
       description: "One of the program's own questions, as the form asks it."
@@ -9357,6 +10819,12 @@ components:
           type: array
           items:
             type: string
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Its logo, read at /api/storage/files/{id}; null for none."
         name:
           type: string
         slug:
@@ -10667,6 +12135,185 @@ components:
       - problem
       - stage
       - title
+    SaveEmailAppearance:
+      type: object
+      description: What every email's layout takes from the settings.
+      properties:
+        accentColor:
+          type: string
+          example: "#0070C0"
+          pattern: "#[0-9A-Fa-f]{6}"
+        footer:
+          type: string
+          description: Plain text in the band at the bottom of every email.
+          maxLength: 500
+          minLength: 0
+        version:
+          type: integer
+          format: int64
+          description: The version the settings were read at.
+      required:
+      - accentColor
+      - footer
+      - version
+    SaveEmailResendSettings:
+      type: object
+      properties:
+        apiKey:
+          type:
+          - string
+          - "null"
+          description: Empty to keep the stored one.
+          maxLength: 256
+          minLength: 0
+        webhookSecret:
+          type:
+          - string
+          - "null"
+          description: The secret Resend signs its webhooks with; empty to keep the
+            stored one.
+          maxLength: 256
+          minLength: 0
+    SaveEmailSesSettings:
+      type: object
+      properties:
+        accessKeyId:
+          type:
+          - string
+          - "null"
+          maxLength: 128
+          minLength: 0
+        configurationSet:
+          type:
+          - string
+          - "null"
+          maxLength: 64
+          minLength: 0
+        eventsTopicArn:
+          type:
+          - string
+          - "null"
+          description: The SNS topic the configuration set reports to.
+          pattern: "arn:aws[a-z-]*:sns:[a-z0-9-]+:[0-9]{12}:[A-Za-z0-9_-]{1,256}"
+        region:
+          type:
+          - string
+          - "null"
+          example: ap-southeast-1
+          pattern: "[a-z]{2}(-[a-z]+)+-\\d"
+        secretAccessKey:
+          type:
+          - string
+          - "null"
+          description: Empty to keep the stored one.
+          maxLength: 256
+          minLength: 0
+    SaveEmailSettings:
+      type: object
+      description: Who delivers email and as whom. An empty secret keeps the stored
+        one while what it belongs to is unchanged.
+      properties:
+        fromAddress:
+          type: string
+          format: email
+          maxLength: 254
+          minLength: 0
+        fromName:
+          type: string
+          maxLength: 80
+          minLength: 0
+        provider:
+          type: string
+          enum:
+          - ses
+          - resend
+          - smtp
+          pattern: ses|resend|smtp
+        replyTo:
+          type:
+          - string
+          - "null"
+          format: email
+          maxLength: 254
+          minLength: 0
+        resend:
+          $ref: "#/components/schemas/SaveEmailResendSettings"
+        ses:
+          $ref: "#/components/schemas/SaveEmailSesSettings"
+        smtp:
+          $ref: "#/components/schemas/SaveEmailSmtpSettings"
+        version:
+          type: integer
+          format: int64
+          description: The version the settings were read at.
+      required:
+      - fromAddress
+      - fromName
+      - provider
+      - resend
+      - ses
+      - smtp
+      - version
+    SaveEmailSmtpSettings:
+      type: object
+      properties:
+        host:
+          type:
+          - string
+          - "null"
+          maxLength: 253
+          minLength: 0
+        password:
+          type:
+          - string
+          - "null"
+          description: Empty to keep the stored one.
+          maxLength: 500
+          minLength: 0
+        port:
+          type:
+          - integer
+          - "null"
+          format: int32
+          maximum: 65535
+          minimum: 1
+        security:
+          type: string
+          enum:
+          - starttls
+          - tls
+          - none
+          pattern: starttls|tls|none
+        username:
+          type:
+          - string
+          - "null"
+          maxLength: 254
+          minLength: 0
+      required:
+      - security
+    SaveEmailTemplate:
+      type: object
+      description: An operator's wording of one kind of email.
+      properties:
+        body:
+          type: string
+          description: Markdown.
+          maxLength: 20000
+          minLength: 0
+        subject:
+          type: string
+          maxLength: 200
+          minLength: 0
+        version:
+          type:
+          - integer
+          - "null"
+          format: int64
+          description: The version read; null when the default was in use.
+      required:
+      - body
+      - subject
     SaveMyUseCase:
       type: object
       description: What the members have written of a use case so far; any part may

@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -44,7 +44,7 @@ class IdentitySignInTest {
 	private int port;
 
 	@Autowired
-	private RecordingMailSender mail;
+	private TestMailbox mail;
 
 	@Autowired
 	private JdbcClient jdbc;
@@ -65,7 +65,8 @@ class IdentitySignInTest {
 			.isNoContent());
 
 		String code = mail.latestCodeTo("An.Tran@example.test");
-		assertThat(mail.latestSubjectTo("An.Tran@example.test")).isEqualTo(code + " là mã đăng nhập BeyondPilot của bạn");
+		// Email is written in English for now, whatever language the screen asked in.
+		assertThat(mail.latestSubjectTo("An.Tran@example.test")).isEqualTo(code + " is your BeyondPilot sign-in code");
 
 		String session = signIn(browser, code);
 
@@ -425,12 +426,14 @@ class IdentitySignInTest {
 		assertThat(result.getResponseHeaders().getFirst("X-Request-Id")).isNotBlank();
 	}
 
+	/**
+	 * The test mailbox, imported through a class of this test's own so that the test keeps a Spring context, and with
+	 * it a database, of its own.
+	 */
 	@TestConfiguration(proxyBeanMethods = false)
+	@Import(TestMailbox.Configuration.class)
 	static class Mail {
 
-		@Bean
-		RecordingMailSender recordingMailSender() {
-			return new RecordingMailSender();
-		}
 	}
+
 }

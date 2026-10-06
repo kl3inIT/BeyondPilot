@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
-import ai.genaifund.beyondpilot.identity.RecordingMailSender;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import ai.genaifund.beyondpilot.storage.TestUploads;
 import com.jayway.jsonpath.JsonPath;
@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -46,7 +45,7 @@ class SearchDirectoriesTest {
 	private int port;
 
 	@Autowired
-	private RecordingMailSender mail;
+	private TestMailbox mail;
 
 	@Autowired
 	private JdbcClient jdbc;
@@ -350,13 +349,13 @@ class SearchDirectoriesTest {
 		return new String(response.expectBody().returnResult().getResponseBody(), UTF_8);
 	}
 
+	/**
+	 * The test mailbox, imported through a class of this test's own so that the test keeps a Spring context, and with
+	 * it a database, of its own.
+	 */
 	@TestConfiguration(proxyBeanMethods = false)
+	@Import(TestMailbox.Configuration.class)
 	static class Mail {
-
-		@Bean
-		RecordingMailSender recordingMailSender() {
-			return new RecordingMailSender();
-		}
 
 	}
 

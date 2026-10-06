@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
-import ai.genaifund.beyondpilot.identity.RecordingMailSender;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -40,7 +39,7 @@ class OrganizationTest {
 	private int port;
 
 	@Autowired
-	private RecordingMailSender mail;
+	private TestMailbox mail;
 
 	@Autowired
 	private JdbcClient jdbc;
@@ -693,6 +692,10 @@ class OrganizationTest {
 			.isEqualTo("Routes parcels for small shops.");
 		assertThat(JsonPath.<Integer>read(created, "$.organization.foundedYear")).isEqualTo(2019);
 		assertThat(JsonPath.<String>read(created, "$.organization.logoFileId")).isEqualTo(logo.toString());
+		// Anyone reads the logo on the organization's public page.
+		String publicPage = body(get(signIn("reader@logo.test"), API + "/organizations/fully-described").expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(publicPage, "$.logoFileId")).isEqualTo(logo.toString());
 		assertProblem(post(operator, API + "/admin/organizations",
 				Map.of("name", "Too Many", "type", "company", "industries",
 						List.of("logistics", "insurance", "retail_ecommerce", "healthcare", "manufacturing",
@@ -959,13 +962,13 @@ class OrganizationTest {
 			.isNotEmpty();
 	}
 
+	/**
+	 * The test mailbox, imported through a class of this test's own so that the test keeps a Spring context, and with
+	 * it a database, of its own.
+	 */
 	@TestConfiguration(proxyBeanMethods = false)
+	@Import(TestMailbox.Configuration.class)
 	static class Mail {
-
-		@Bean
-		RecordingMailSender recordingMailSender() {
-			return new RecordingMailSender();
-		}
 
 	}
 
