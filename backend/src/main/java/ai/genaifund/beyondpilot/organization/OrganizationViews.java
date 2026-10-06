@@ -64,7 +64,7 @@ final class OrganizationViews {
 		Person inviter = people.get(invitation.invitedByAccountId());
 		return new InvitationResponse(invitation.id(), invitation.organizationId(), organizationName,
 				invitation.email(), invitation.role(), inviter == null ? "GenAI Fund" : inviter.label(),
-				invitation.createdAt());
+				invitation.createdAt(), invitation.expiresAt());
 	}
 
 	static JoinRequestResponse joinRequest(JoinRequest request, Organization organization, Person person) {

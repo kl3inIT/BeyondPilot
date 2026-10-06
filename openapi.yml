@@ -10809,6 +10809,10 @@ components:
         email:
           type: string
           description: The address that was asked.
+        expiresAt:
+          type: string
+          format: date-time
+          description: When the invitation lapses if nobody answers it.
         id:
           type: string
           format: uuid
@@ -10828,6 +10832,7 @@ components:
       required:
       - createdAt
       - email
+      - expiresAt
       - id
       - invitedBy
       - organizationId

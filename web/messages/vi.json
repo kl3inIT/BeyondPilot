@@ -1050,7 +1050,7 @@
           "invitations": "{count, plural, other {# lời mời đang mở}}"
         },
         "empty": "Chưa có ai thuộc tổ chức này. Hãy mời chủ tổ chức đầu tiên.",
-        "invited": "Mời ngày {day}",
+        "invited": "Mời ngày {day} · hết hạn {expires}",
         "invitePending": "Đã mời",
         "columns": {
           "member": "Thành viên",
@@ -2877,7 +2877,7 @@
       },
       "you": "Bạn",
       "none": "—",
-      "invited": "Mời ngày {day}",
+      "invited": "Mời ngày {day} · hết hạn {expires}",
       "invitePending": "Chờ chấp nhận",
       "requests": {
         "title": "Yêu cầu tham gia",
