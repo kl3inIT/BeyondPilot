@@ -1425,14 +1425,14 @@
         "draft": "Bản nháp",
         "in_review": "Đang duyệt",
         "needs_changes": "Cần chỉnh sửa",
-        "published": "Đã đăng",
+        "approved": "Đã đăng",
         "closed": "Đã đóng"
       },
       "note": {
         "draft": "Chỉ {organization} xem được",
         "in_review": "Đang chờ GenAI Fund",
         "needs_changes": "Đã gửi lại cho {organization}",
-        "published": "Hiển thị trong danh mục",
+        "approved": "Hiển thị trong danh mục",
         "closed": "Đã hết hạn · bị khóa, không ai sửa được"
       },
       "columns": {
@@ -1597,7 +1597,7 @@
           "in_review": "{organization} · đang chờ GenAI Fund",
           "needs_changes": "{organization} · đã gửi lại, đang chờ các thành viên",
           "draft": "{organization} · chỉ các thành viên của họ xem được",
-          "published": "{organization} · có trong danh mục",
+          "approved": "{organization} · có trong danh mục",
           "closed": "{organization} · đã đóng"
         },
         "history": {
@@ -3057,7 +3057,7 @@
       "genaiFund": "GenAI Fund",
       "cancel": "Hủy",
       "summary": {
-        "published": "{count} đã đăng",
+        "approved": "{count} đã đăng",
         "in_review": "{count} đang duyệt",
         "needs_changes": "{count} cần chỉnh sửa",
         "draft": "{count} bản nháp",
@@ -3067,12 +3067,12 @@
         "draft": "Bản nháp",
         "in_review": "Đang duyệt",
         "needs_changes": "Cần chỉnh sửa",
-        "published": "Đã đăng",
+        "approved": "Đã đăng",
         "closed": "Đã đóng"
       },
       "note": {
         "in_review": "Đã gửi {date} · GenAI Fund đang duyệt",
-        "published": "Có trong danh mục · đóng {date}",
+        "approved": "Có trong danh mục · đóng {date}",
         "needs_changes": "GenAI Fund yêu cầu chỉnh sửa · mở ra để xem chi tiết",
         "draft": "Chưa gửi · chỉ tổ chức của bạn xem được",
         "closed": "Đã đóng {date}"

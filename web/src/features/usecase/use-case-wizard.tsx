@@ -227,7 +227,7 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
           <AlertDescription>{t("sentBack.note", { note: useCase.reviewNote })}</AlertDescription>
         </Alert>
       )}
-      {status === "published" && (
+      {status === "approved" && (
         <Alert>
           <AlertTitle>{t("editingPublished.title")}</AlertTitle>
           <AlertDescription>{t("editingPublished.description")}</AlertDescription>

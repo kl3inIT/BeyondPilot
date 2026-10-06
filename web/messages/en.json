@@ -1425,14 +1425,14 @@
         "draft": "Draft",
         "in_review": "In review",
         "needs_changes": "Needs changes",
-        "published": "Published",
+        "approved": "Published",
         "closed": "Closed"
       },
       "note": {
         "draft": "Only {organization} can see it",
         "in_review": "Waiting for GenAI Fund",
         "needs_changes": "Sent back to {organization}",
-        "published": "Visible in the directory",
+        "approved": "Visible in the directory",
         "closed": "Deadline passed · locked, nobody can change it"
       },
       "columns": {
@@ -1597,7 +1597,7 @@
           "in_review": "{organization} · waiting for GenAI Fund",
           "needs_changes": "{organization} · sent back, waiting for its members",
           "draft": "{organization} · only its members can see it",
-          "published": "{organization} · in the directory",
+          "approved": "{organization} · in the directory",
           "closed": "{organization} · closed"
         },
         "history": {
@@ -3057,7 +3057,7 @@
       "genaiFund": "GenAI Fund",
       "cancel": "Cancel",
       "summary": {
-        "published": "{count} published",
+        "approved": "{count} published",
         "in_review": "{count} in review",
         "needs_changes": "{count} needs changes",
         "draft": "{count, plural, one {# draft} other {# drafts}}",
@@ -3067,12 +3067,12 @@
         "draft": "Draft",
         "in_review": "In review",
         "needs_changes": "Needs changes",
-        "published": "Published",
+        "approved": "Published",
         "closed": "Closed"
       },
       "note": {
         "in_review": "Sent {date} · GenAI Fund is reviewing it",
-        "published": "In the directory · closes {date}",
+        "approved": "In the directory · closes {date}",
         "needs_changes": "GenAI Fund asked for changes · open it to see what",
         "draft": "Not submitted · visible to your organisation only",
         "closed": "Closed {date}"

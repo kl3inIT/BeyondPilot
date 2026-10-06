@@ -64,7 +64,7 @@ public class UseCaseQueryRepository {
 	 * The published use cases a visitor can answer: the deadline is ahead. The text matches a title or the expected
 	 * outcomes, or an organization the caller found by name that did not ask to stay anonymous.
 	 */
-	private static final String PUBLIC_FILTER = "where status = 'published' and closes_at > :now\n"
+	private static final String PUBLIC_FILTER = "where status = 'approved' and closes_at > :now\n"
 			+ "  and (cast(:pattern as text) is null or lower(title) like :pattern escape '\\'\n"
 			+ "       or lower(expected_outcomes) like :pattern escape '\\'\n"
 			+ "       or (not hide_organization_name and organization_id::text = any(:matching)))\n"

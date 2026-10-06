@@ -490,7 +490,7 @@ export type AdminUseCase = {
     /**
      * Closed once the close date has passed, whatever the use case was before.
      */
-    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
     submittedAt?: string | null;
     /**
      * Who sent it for review; null if it was never sent.
@@ -535,7 +535,7 @@ export type AdminUseCaseSummary = {
     /**
      * Closed once the close date has passed, whatever the use case was before.
      */
-    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
     title?: string | null;
     updatedAt: string;
 };
@@ -1671,7 +1671,7 @@ export type MyUseCase = {
     /**
      * Closed once the close date has passed, whatever the use case was before.
      */
-    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
     submittedAt?: string | null;
     /**
      * Who sent it for review; null if it was never sent.
@@ -1696,7 +1696,7 @@ export type MyUseCaseSummary = {
     /**
      * Closed once the close date has passed, whatever the use case was before.
      */
-    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
     submittedAt?: string | null;
     /**
      * Null until someone has named the use case.
@@ -9697,7 +9697,7 @@ export type ListAdminUseCasesData = {
         /**
          * Only use cases in this status, as a reader sees it now.
          */
-        status?: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+        status?: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
         /**
          * Only use cases of this organization.
          */

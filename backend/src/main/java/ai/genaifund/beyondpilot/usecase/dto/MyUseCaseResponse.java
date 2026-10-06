@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 public record MyUseCaseResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String organizationName,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				allowableValues = { "draft", "in_review", "needs_changes", "published", "closed" },
+				allowableValues = { "draft", "in_review", "needs_changes", "approved", "closed" },
 				description = "Closed once the close date has passed, whatever the use case was before.") String status,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether the members can edit it now: a draft, one GenAI Fund sent back, or one that is published.") boolean editable,

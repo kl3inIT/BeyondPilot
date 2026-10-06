@@ -173,7 +173,7 @@ class UseCaseServiceTest {
 		UUID second = adminPublished(team.organization, "Published two");
 
 		String listed = body(get(team.founder, MINE).expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(listed, "$.items[*].status")).containsOnly("published");
+		assertThat(JsonPath.<List<String>>read(listed, "$.items[*].status")).containsOnly("approved");
 		assertThat(JsonPath.<Boolean>read(listed, "$.items[0].lastEditedBy.genaiFund")).isTrue();
 
 		String edited = body(put(team.founder, MINE + "/" + first, complete(0)).expectStatus().isOk());
@@ -229,11 +229,11 @@ class UseCaseServiceTest {
 		assertThat(JsonPath.<String>read(read, "$.submittedAt")).isNotNull();
 
 		String approved = body(post(operator, ADMIN + "/" + id + "/approve", null).expectStatus().isOk());
-		assertThat(JsonPath.<String>read(approved, "$.status")).isEqualTo("published");
+		assertThat(JsonPath.<String>read(approved, "$.status")).isEqualTo("approved");
 		assertThat(JsonPath.<String>read(approved, "$.publishedAt")).isNotNull();
 		assertThat(JsonPath.<Boolean>read(approved, "$.reviewedBy.genaiFund")).isTrue();
 		assertThat(JsonPath.<String>read(body(get(team.founder, MINE + "/" + id).expectStatus().isOk()), "$.status"))
-			.isEqualTo("published");
+			.isEqualTo("approved");
 		assertThat(events(id)).containsExactly("use_case.submit", "use_case.approve");
 		assertThat(mail.latestSubjectTo("founder@approve.test")).contains("is published");
 		assertThat(mail.latestSubjectTo("colleague@approve.test")).contains("is published");

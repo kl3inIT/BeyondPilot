@@ -136,7 +136,7 @@ public class UseCaseService {
 		}
 		files.requireUsable(actor, request.attachmentFileIds(), useCase.getAttachmentFileIds());
 
-		if (UseCase.PUBLISHED.equals(status)) {
+		if (UseCase.APPROVED.equals(status)) {
 			useCase.backToDraft();
 		}
 		useCase.describe(text(request.title()), text(request.problemStatement()), request.industry(),
@@ -203,7 +203,7 @@ public class UseCaseService {
 		Membership membership = writer(actor);
 		UseCase useCase = own(membership, id);
 		String status = useCase.statusAt(Instant.now());
-		if (!UseCase.IN_REVIEW.equals(status) && !UseCase.PUBLISHED.equals(status)) {
+		if (!UseCase.IN_REVIEW.equals(status) && !UseCase.APPROVED.equals(status)) {
 			throw new UseCaseException(UseCaseErrorCode.CANNOT_MOVE_TO_DRAFT, "Use case " + id + " is " + status);
 		}
 		useCase.backToDraft();
@@ -275,7 +275,7 @@ public class UseCaseService {
 		People people = people(actor, List.of(useCase));
 		UUID sender = useCase.getSubmittedByAccountId();
 		return new MyUseCaseResponse(useCase.getId(), membership.organizationName(), status,
-				UseCase.DRAFT.equals(status) || UseCase.NEEDS_CHANGES.equals(status) || UseCase.PUBLISHED.equals(status),
+				UseCase.DRAFT.equals(status) || UseCase.NEEDS_CHANGES.equals(status) || UseCase.APPROVED.equals(status),
 				useCase.isComplete(), useCase.getTitle(), useCase.getProblemStatement(), useCase.getIndustry(),
 				useCase.getTechnologies(), useCase.getExpectedOutcomes(), useCase.getCurrentProcess(),
 				useCase.getCurrentSolutions(), useCase.getTargetUsers(),

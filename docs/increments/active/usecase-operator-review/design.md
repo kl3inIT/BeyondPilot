@@ -4,6 +4,8 @@ Status: in progress, 7 October 2026. The Linear issue is not assigned yet; renam
 
 > **Update, 7 October 2026:** the organization no longer has a role (BEY-61, `V28__organization_drop_roles.sql`). Every approved organization has both solutions and use cases, so wherever this page says an approved enterprise or the enterprise role, it now means any approved organization; the migrations of this increment are numbered V32 to V36.
 
+> **Update, 7 October 2026:** the stored status `published` is now `approved`, the word every record GenAI Fund reviews uses ([BEY-76](../bey-76-review-lifecycle/design.md), `V47__usecase_review_lifecycle.sql`). Wherever this page names the status `published`, read `approved`; `published_at` keeps its name and still records when the use case went public.
+
 
 ## Domain story
 

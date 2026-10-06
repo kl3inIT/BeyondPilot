@@ -6949,9 +6949,9 @@ paths:
           - draft
           - in_review
           - needs_changes
-          - published
+          - approved
           - closed
-          pattern: draft|in_review|needs_changes|published|closed
+          pattern: draft|in_review|needs_changes|approved|closed
       - description: Only use cases of this organization.
         in: query
         name: organizationId
@@ -8439,7 +8439,7 @@ components:
           - draft
           - in_review
           - needs_changes
-          - published
+          - approved
           - closed
         submittedAt:
           type:
@@ -8543,7 +8543,7 @@ components:
           - draft
           - in_review
           - needs_changes
-          - published
+          - approved
           - closed
         title:
           type:
@@ -10853,7 +10853,7 @@ components:
           - draft
           - in_review
           - needs_changes
-          - published
+          - approved
           - closed
         submittedAt:
           type:
@@ -10929,7 +10929,7 @@ components:
           - draft
           - in_review
           - needs_changes
-          - published
+          - approved
           - closed
         submittedAt:
           type:

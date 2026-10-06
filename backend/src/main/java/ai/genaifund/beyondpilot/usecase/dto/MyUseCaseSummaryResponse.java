@@ -11,7 +11,7 @@ public record MyUseCaseSummaryResponse(@Schema(requiredMode = Schema.RequiredMod
 		@Schema(types = { "string", "null" },
 				description = "Null until someone has named the use case.") @Nullable String title,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				allowableValues = { "draft", "in_review", "needs_changes", "published", "closed" },
+				allowableValues = { "draft", "in_review", "needs_changes", "approved", "closed" },
 				description = "Closed once the close date has passed, whatever the use case was before.") String status,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant closesAt,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant submittedAt,

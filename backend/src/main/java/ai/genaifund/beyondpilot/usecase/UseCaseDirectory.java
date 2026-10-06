@@ -49,14 +49,14 @@ public class UseCaseDirectory {
 	@Transactional(readOnly = true)
 	public Optional<IndexedUseCase> indexed(UUID useCaseId) {
 		return useCases.findById(useCaseId)
-			.filter(useCase -> UseCase.PUBLISHED.equals(useCase.getStatus()) && useCase.getTitle() != null)
+			.filter(useCase -> UseCase.APPROVED.equals(useCase.getStatus()) && useCase.getTitle() != null)
 			.flatMap(useCase -> indexed(List.of(useCase)).stream().findFirst());
 	}
 
 	/** Every published use case as search indexes it, for a rebuild of the index. */
 	@Transactional(readOnly = true)
 	public List<IndexedUseCase> indexedAll() {
-		return indexed(useCases.findByStatus(UseCase.PUBLISHED)
+		return indexed(useCases.findByStatus(UseCase.APPROVED)
 			.stream()
 			.filter(useCase -> useCase.getTitle() != null)
 			.toList());
@@ -70,7 +70,7 @@ public class UseCaseDirectory {
 	public List<IndexedUseCase> indexedOf(UUID organizationId) {
 		return indexed(useCases.findByOrganizationIdOrderByUpdatedAtDescIdAsc(organizationId)
 			.stream()
-			.filter(useCase -> UseCase.PUBLISHED.equals(useCase.getStatus()) && useCase.getTitle() != null)
+			.filter(useCase -> UseCase.APPROVED.equals(useCase.getStatus()) && useCase.getTitle() != null)
 			.toList());
 	}
 

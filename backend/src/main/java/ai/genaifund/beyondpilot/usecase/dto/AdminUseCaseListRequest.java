@@ -14,7 +14,7 @@ public record AdminUseCaseListRequest(
 		@Parameter(description = "Use cases whose title or organization name contains this, ignoring case.") @Size(
 				max = 100) @Nullable String q,
 		@Parameter(description = "Only use cases in this status, as a reader sees it now.",
-				schema = @Schema(allowableValues = { "draft", "in_review", "needs_changes", "published",
+				schema = @Schema(allowableValues = { "draft", "in_review", "needs_changes", "approved",
 						"closed" })) @Pattern(regexp = UseCaseCodes.STATUS) @Nullable String status,
 		@Parameter(description = "Only use cases of this organization.") @Nullable UUID organizationId,
 		@Parameter(description = "The page, counted from 1.",

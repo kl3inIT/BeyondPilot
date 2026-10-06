@@ -141,11 +141,11 @@ class UseCaseAdministrationTest {
 			.isCreated()
 			.expectBody()
 			.jsonPath("$.status")
-			.isEqualTo("published")
+			.isEqualTo("approved")
 			.jsonPath("$.publishedAt")
 			.isNotEmpty());
 
-		assertThat(detailsOf(JsonPath.read(created, "$.id"))).contains("\"status\": \"published\"");
+		assertThat(detailsOf(JsonPath.read(created, "$.id"))).contains("\"status\": \"approved\"");
 	}
 
 	@Test
@@ -256,7 +256,7 @@ class UseCaseAdministrationTest {
 		String title = "Closing " + UUID.randomUUID();
 		String created = body(post(operator, USE_CASES, useCase(organization, title, true)).expectStatus().isCreated());
 		String id = JsonPath.read(created, "$.id");
-		get(operator, USE_CASES + "/" + id).expectBody().jsonPath("$.status").isEqualTo("published");
+		get(operator, USE_CASES + "/" + id).expectBody().jsonPath("$.status").isEqualTo("approved");
 
 		jdbc.sql("update use_case set closes_at = now() - interval '1 day' where id = ?").param(UUID.fromString(id)).update();
 
@@ -266,7 +266,7 @@ class UseCaseAdministrationTest {
 			.jsonPath("$.publishedAt")
 			.isNotEmpty();
 		assertThat(titles("?status=closed&q=" + title)).containsExactly(title);
-		assertThat(titles("?status=published&q=" + title)).isEmpty();
+		assertThat(titles("?status=approved&q=" + title)).isEmpty();
 	}
 
 	@Test
@@ -282,7 +282,7 @@ class UseCaseAdministrationTest {
 		assertThat(titles("?organizationId=" + organization)).containsExactly("Later " + tag, "Earlier " + tag);
 		assertThat(titles("?organizationId=" + UUID.randomUUID())).isEmpty();
 		assertThat(titles("?q=" + tag.toUpperCase() + "&status=draft")).containsExactly("Earlier " + tag);
-		assertThat(titles("?q=" + tag + "&status=published")).containsExactly("Later " + tag);
+		assertThat(titles("?q=" + tag + "&status=approved")).containsExactly("Later " + tag);
 		String page = body(get(operator, USE_CASES + "?q=" + tag).expectStatus()
 			.isOk()
 			.expectBody()

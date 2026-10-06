@@ -1,10 +1,11 @@
 import { Status } from "@/components/composites/status";
 
 /**
- * What GenAI Fund's review made of a record, from a draft to a decision, and `suspended` for an
- * approved record GenAI Fund took down.
+ * What GenAI Fund's review made of a record, from a draft to a decision, `suspended` for an
+ * approved record GenAI Fund took down, and `closed` for a use case whose deadline has passed.
  */
-type ReviewState = "draft" | "in_review" | "needs_changes" | "approved" | "rejected" | "suspended";
+type ReviewState =
+  "draft" | "in_review" | "needs_changes" | "approved" | "rejected" | "suspended" | "closed";
 
 const tones = {
   draft: "neutral",
@@ -13,6 +14,7 @@ const tones = {
   approved: "success",
   rejected: "destructive",
   suspended: "destructive",
+  closed: "neutral",
 } as const;
 
 /**
