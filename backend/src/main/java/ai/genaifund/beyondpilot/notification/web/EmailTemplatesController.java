@@ -10,6 +10,9 @@ import ai.genaifund.beyondpilot.notification.dto.SaveEmailTemplateRequest;
 import jakarta.validation.Valid;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
+import io.swagger.v3.oas.annotations.Parameter;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.jspecify.annotations.Nullable;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -106,7 +109,7 @@ class EmailTemplatesController {
 
 	@PostMapping(path = "/{kind}/test", consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "testEmailTemplate", summary = "Send a draft with sample values to the caller's own address", security = @SecurityRequirement(name = "session"))
+	@Operation(operationId = "testEmailTemplate", summary = "Send a draft with sample values as a test", security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "Whether the provider took the test, and why not.")
 	@ApiResponse(responseCode = "400", description = "A member is not valid, or the draft does not pass the checks.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
@@ -115,8 +118,10 @@ class EmailTemplatesController {
 	@ApiResponse(responseCode = "409", description = "Operators do not word this kind.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	EmailTestResponse test(@CurrentActor Actor actor, @PathVariable String kind,
-			@Valid @RequestBody EmailDraftRequest request) {
-		return templates.test(actor, kind, request);
+			@Valid @RequestBody EmailDraftRequest request,
+			@Parameter(description = "Where to send the test; the caller's own address when left out. A test to anyone else is recorded in the audit log.")
+			@RequestParam(required = false) @Nullable String to) {
+		return templates.test(actor, kind, request, to);
 	}
 
 }

@@ -25,7 +25,7 @@ export default async function EmailTemplateRoute({
 }: PageProps<"/[locale]/admin/email/templates/[kind]">) {
   const { locale, kind } = await params;
   setRequestLocale(locale);
-  await requireRole("operator", adminEmailTemplateRoute(kind));
+  const account = await requireRole("operator", adminEmailTemplateRoute(kind));
   if (!isEmailKind(kind)) {
     notFound();
   }
@@ -41,6 +41,7 @@ export default async function EmailTemplateRoute({
       template={template}
       name={t(`kinds.${kind}.name`)}
       description={t(`kinds.${kind}.description`)}
+      operatorEmail={account.email}
     />
   );
 }

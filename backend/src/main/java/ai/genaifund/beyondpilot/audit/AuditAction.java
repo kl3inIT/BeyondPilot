@@ -152,6 +152,12 @@ public enum AuditAction {
 	/** An operator sent an email again; the resource is the message sent again. */
 	EMAIL_RESEND("email.resend"),
 
+	/**
+	 * An operator sent a test email to an address not their own; the resource is that address. {@code subject} is
+	 * {@code settings} or the kind of email whose draft was sent.
+	 */
+	EMAIL_TEST_SEND("email.test_send", "subject"),
+
 	/** An operator connected an AI provider. {@code vendor} is {@code openai} or {@code openrouter}. */
 	AI_PROVIDER_CREATE("ai.provider_create", "vendor"),
 

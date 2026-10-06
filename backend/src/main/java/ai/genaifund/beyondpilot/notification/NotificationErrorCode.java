@@ -28,6 +28,9 @@ public enum NotificationErrorCode implements ErrorCode {
 	TEMPLATE_CHANGED("NOTIFICATION_TEMPLATE_CHANGED", ErrorCategory.CONFLICT,
 			"Someone changed this template since you opened it. Reload and try again."),
 
+	TEST_RECIPIENT_INVALID("NOTIFICATION_TEST_RECIPIENT_INVALID", ErrorCategory.VALIDATION,
+			"A test email goes to one email address."),
+
 	MESSAGE_NOT_FOUND("NOTIFICATION_MESSAGE_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such email."),
 
 	MESSAGE_NOT_RESENDABLE("NOTIFICATION_MESSAGE_NOT_RESENDABLE", ErrorCategory.CONFLICT,
