@@ -10,6 +10,9 @@ public enum OrganizationErrorCode implements ErrorCode {
 	INDUSTRIES_REQUIRED("ORGANIZATION_INDUSTRIES_REQUIRED", ErrorCategory.VALIDATION,
 			"Name at least one industry the company works in or serves."),
 
+	LOGO_NOT_USABLE("ORGANIZATION_LOGO_NOT_USABLE", ErrorCategory.VALIDATION,
+			"This logo cannot be used. Upload the image again."),
+
 	MEMBERSHIP_REQUIRED("ORGANIZATION_MEMBERSHIP_REQUIRED", ErrorCategory.NOT_PERMITTED,
 			"This needs an organization you belong to."),
 
@@ -44,6 +47,11 @@ public enum OrganizationErrorCode implements ErrorCode {
 
 	NOT_AWAITING_REVIEW("ORGANIZATION_NOT_AWAITING_REVIEW", ErrorCategory.CONFLICT,
 			"This organization is not waiting for review."),
+
+	CANNOT_TAKE_DOWN("ORGANIZATION_CANNOT_TAKE_DOWN", ErrorCategory.CONFLICT,
+			"Only an approved organization can be taken down."),
+
+	NOT_TAKEN_DOWN("ORGANIZATION_NOT_TAKEN_DOWN", ErrorCategory.CONFLICT, "This organization is not taken down."),
 
 	DOMAIN_TAKEN("ORGANIZATION_DOMAIN_TAKEN", ErrorCategory.CONFLICT,
 			"Another organization already has this email domain."),

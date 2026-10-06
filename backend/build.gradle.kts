@@ -21,6 +21,7 @@ repositories {
 dependencyManagement {
 	imports {
 		mavenBom(libs.spring.modulith.bom.get().toString())
+		mavenBom(libs.spring.ai.bom.get().toString())
 		mavenBom(libs.aws.sdk.bom.get().toString())
 	}
 }
@@ -37,6 +38,8 @@ dependencies {
 	implementation(libs.spring.boot.starter.webmvc)
 	implementation(libs.flyway.database.postgresql)
 	implementation(libs.spring.modulith.starter.jdbc)
+	// Embeddings for search over an OpenAI-compatible API; the other OpenAI models stay off (application.yaml).
+	implementation(libs.spring.ai.starter.model.openai)
 	implementation(libs.springdoc.webmvc.api)
 	// The SDK speaks HTTP through the JDK. Its default clients bring Apache HttpClient 5 and Netty onto the classpath,
 	// where Spring would pick HttpClient 5 for every RestClient and wait out a Retry-After before retrying a 429.

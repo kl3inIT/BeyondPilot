@@ -36,6 +36,20 @@ public enum AuditAction {
 
 	ORGANIZATION_APPROVE("organization.approve"),
 
+	/** An operator took an approved organization down. {@code reason} is the code of the reason given. */
+	ORGANIZATION_SUSPEND("organization.suspend", "reason"),
+
+	ORGANIZATION_RESTORE("organization.restore"),
+
+	/** An operator changed an organization's profile or its verified domain. */
+	ORGANIZATION_UPDATE("organization.update"),
+
+	/** An operator invited an address to an organization. {@code role} is the role offered. */
+	ORGANIZATION_INVITE("organization.invite", "role"),
+
+	/** An operator took back an open invitation of an organization. */
+	ORGANIZATION_INVITATION_REVOKE("organization.invitation_revoke"),
+
 	/** {@code reason} is the code of the reason given. */
 	ORGANIZATION_REFUSE("organization.refuse", "reason"),
 
@@ -63,6 +77,19 @@ public enum AuditAction {
 	/** {@code reason} is the code of the reason given. */
 	SOLUTION_DEPLOYMENT_REJECT("solution.deployment_reject", "reason"),
 
+	/**
+	 * An operator created a use case for an organization. {@code organization} is that organization's identifier,
+	 * {@code status} is {@code draft} or {@code published}.
+	 */
+	USE_CASE_CREATE("use_case.create", "organization", "status"),
+
+	USE_CASE_SUBMIT("use_case.submit", "organization"),
+
+	USE_CASE_DRAFT("use_case.draft", "organization", "from"),
+
+	USE_CASE_APPROVE("use_case.approve", "organization"),
+
+	USE_CASE_SEND_BACK("use_case.send_back", "organization"),
 	/** An owner answered a request for an introduction, and both sides were told each other's address. */
 	INTRODUCTION_REPLY("introduction.reply"),
 

@@ -186,11 +186,86 @@ function page(url, items) {
   return { items: sorted, page: 1, pageSize: 25, total: sorted.length };
 }
 
+/** The published use cases, the most recently published first; the third is anonymous and its budget is hidden. */
+const useCases = [
+  {
+    id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0001",
+    title: "Voice assistant for vehicle owners",
+    organizationName: "Pocket Policy",
+    industry: "automotive_mobility",
+    goal: "Cut hotline calls by 40%.",
+    technologies: ["voice_ai", "conversational_ai"],
+    budgetMin: 15000,
+    budgetMax: 40000,
+    budgetToBeDetermined: false,
+    budgetMembersOnly: false,
+    timelineMinWeeks: 8,
+    timelineMaxWeeks: 12,
+    closesAt: "2026-12-31T16:59:00Z",
+    publishedAt: "2026-10-02T02:00:00Z",
+  },
+  {
+    id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0002",
+    title: "Claims triage with document intelligence",
+    organizationName: "Lumen Health",
+    industry: "insurance",
+    goal: "Route claims to the right team on arrival.",
+    technologies: ["document_intelligence"],
+    budgetMin: null,
+    budgetMax: null,
+    budgetToBeDetermined: true,
+    budgetMembersOnly: false,
+    timelineMinWeeks: 6,
+    timelineMaxWeeks: 10,
+    closesAt: "2026-11-15T16:59:00Z",
+    publishedAt: "2026-10-01T02:00:00Z",
+  },
+  {
+    id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0003",
+    title: "Demand forecasting for a retail chain",
+    organizationName: null,
+    industry: "retail_ecommerce",
+    goal: "Forecast weekly demand per store.",
+    technologies: ["predictive_analytics", "anomaly_detection", "recommendation"],
+    budgetMin: null,
+    budgetMax: null,
+    budgetToBeDetermined: false,
+    budgetMembersOnly: true,
+    timelineMinWeeks: 12,
+    timelineMaxWeeks: 16,
+    closesAt: "2026-12-01T16:59:00Z",
+    publishedAt: "2026-09-30T02:00:00Z",
+  },
+];
+
+/** The public list of use cases: the search looks in the title, the goal and the organization's name. */
+function pageOfUseCases(url) {
+  const { searchParams: query } = url;
+  const sort = query.get("sort") ?? "newest";
+  const items = useCases
+    .filter(
+      (item) =>
+        has(query.get("q"), item.title, item.goal, item.organizationName) &&
+        (!query.get("industry") || item.industry === query.get("industry")),
+    )
+    .toSorted((one, other) =>
+      sort === "deadline"
+        ? one.closesAt.localeCompare(other.closesAt)
+        : sort === "budget"
+          ? (other.budgetMax ?? 0) - (one.budgetMax ?? 0)
+          : other.publishedAt.localeCompare(one.publishedAt),
+    );
+  return { items, page: 1, pageSize: 10, total: items.length };
+}
+
 const missing = [404, { status: 404, code: "NOT_FOUND" }];
 
 /** The answer to a read of the public directories, as `[status, body]`; nothing for another path. */
 export function answerDirectory(url) {
   const { pathname, searchParams: query } = url;
+  if (pathname === "/api/usecase/use-cases") {
+    return [200, pageOfUseCases(url)];
+  }
   const [, area, list, slug] = /^\/api\/(\w+)\/(\w+)(?:\/([^/]+))?$/.exec(pathname) ?? [];
 
   if (area === "solution" && list === "solutions") {

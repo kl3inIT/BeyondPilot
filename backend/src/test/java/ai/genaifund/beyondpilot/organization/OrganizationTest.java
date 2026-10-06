@@ -104,7 +104,7 @@ class OrganizationTest {
 		assertThat(JsonPath.<String>read(body, "$.code")).isEqualTo("REQUEST_INVALID");
 		assertThat(JsonPath.<List<String>>read(body, "$.errors[*].pointer")).containsExactlyInAnyOrder("#/name",
 				"#/type", "#/country", "#/teamSize", "#/industries/0", "#/website", "#/description",
-				"#/foundedYear", "#/jobTitle");
+				"#/foundedYear");
 	}
 
 	@Test
@@ -125,13 +125,12 @@ class OrganizationTest {
 	}
 
 	@Test
-	void aCreationNeedsItsWebsiteDescriptionAndYearAndKeepsTheLogo() {
+	void aCreationNeedsItsWebsiteDescriptionAndYearButNotTheCreatorsJobTitle() {
 		String session = signIn("facts@invalid.test");
 		String path = API + "/organizations";
-		// Each is refused on its own: a missing website, a description over 280 characters, a year out of range
-		// and a logo that is not a web address.
+		// Each is refused on its own: a missing website, a description over 280 characters and a year out of range.
 		for (Map.Entry<String, Object> broken : Map.<String, Object>of("website", " ", "description", "x".repeat(281),
-				"foundedYear", 1799, "logoUrl", "logo.png")
+				"foundedYear", 1799)
 			.entrySet()) {
 			Map<String, Object> request = new HashMap<>(creation("Facts Co"));
 			request.put(broken.getKey(), broken.getValue());
@@ -140,12 +139,45 @@ class OrganizationTest {
 		}
 
 		Map<String, Object> request = new HashMap<>(creation("Facts Co"));
-		request.put("logoUrl", "https://example.test/logo.png");
+		request.remove("jobTitle");
 		String created = body(post(session, path, request).expectStatus().isCreated());
 
 		assertThat(JsonPath.<Integer>read(created, "$.foundedYear")).isEqualTo(2021);
-		assertThat(JsonPath.<String>read(created, "$.logoUrl")).isEqualTo("https://example.test/logo.png");
 		assertThat(JsonPath.<String>read(created, "$.description")).isEqualTo("Assistants for insurers.");
+		assertThat(JsonPath.<String>read(mine(session), "$.jobTitle")).isNull();
+	}
+
+	@Test
+	void aLogoIsAnUploadedImageThatOnlyOneOrganizationNamesAndIsRemovedWhenReplaced() {
+		String founder = signIn("founder@logo.test");
+		UUID first = uploadedLogo(founder);
+		Map<String, Object> request = new HashMap<>(creation("Logo Co"));
+		request.put("logoFileId", first.toString());
+
+		String created = body(post(founder, API + "/organizations", request).expectStatus().isCreated());
+
+		assertThat(JsonPath.<String>read(created, "$.logoFileId")).isEqualTo(first.toString());
+		// Another organization cannot name the same file, nor a file that was never uploaded as a logo.
+		Map<String, Object> other = new HashMap<>(creation("Other Logo Co"));
+		other.put("logoFileId", first.toString());
+		assertProblem(post(signIn("other@logo.test"), API + "/organizations", other), 400,
+				"ORGANIZATION_LOGO_NOT_USABLE");
+		other.put("logoFileId", UUID.randomUUID().toString());
+		assertProblem(post(signIn("other@logo.test"), API + "/organizations", other), 400,
+				"ORGANIZATION_LOGO_NOT_USABLE");
+
+		// Saving another logo gives the first one up; saving none gives up the second.
+		UUID second = uploadedLogo(founder);
+		Map<String, Object> replaced = save(profile("Logo Co"), versionOf(mine(founder)));
+		replaced.put("logoFileId", second.toString());
+		put(founder, API + "/mine", replaced).expectStatus().isOk();
+		assertThat(stored(first)).isFalse();
+		assertThat(stored(second)).isTrue();
+		Map<String, Object> removed = save(profile("Logo Co"), versionOf(mine(founder)));
+		removed.put("logoFileId", null);
+		put(founder, API + "/mine", removed).expectStatus().isOk();
+		assertThat(stored(second)).isFalse();
+		assertThat(JsonPath.<Object>read(mine(founder), "$.organization.logoFileId")).isNull();
 	}
 
 	@Test
@@ -342,6 +374,118 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anOperatorEditsTheProfileAndTheDomainAndManagesThePeopleOfAnyOrganization() {
+		String founder = signIn("founder@managed.test");
+		UUID id = approved(founder, "Managed Co");
+		String colleague = signIn("colleague@managed.test");
+		String detail = API + "/admin/organizations/" + id;
+		post(operator, detail + "/invitations", Map.of("email", "colleague@managed.test", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		post(colleague, API + "/invitations/"
+				+ JsonPath.<String>read(body(get(operator, detail).expectStatus().isOk()), "$.invitations[0].id")
+				+ "/accept", Map.of())
+			.expectStatus()
+			.isNoContent();
+
+		// The profile and the domain, saved against the version the screen read.
+		int version = JsonPath.<Integer>read(body(get(operator, detail).expectStatus().isOk()), "$.organization.version");
+		Map<String, Object> edit = Map.of("profile", save(profile("Managed Company"), version), "emailDomain",
+				"managed.test");
+		assertProblem(put(founder, detail, edit), 403, "IDENTITY_OPERATOR_REQUIRED");
+		String saved = body(put(operator, detail, edit).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(saved, "$.organization.name")).isEqualTo("Managed Company");
+		assertThat(JsonPath.<String>read(saved, "$.organization.emailDomain")).isEqualTo("managed.test");
+		assertProblem(put(operator, detail, edit), 409, "ORGANIZATION_CHANGED_MEANWHILE");
+		UUID other = approved(signIn("other@other-managed.test"), "Other Managed Co");
+		assertProblem(put(operator, API + "/admin/organizations/" + other,
+				Map.of("profile", save(profile("Other Managed Co"),
+						JsonPath.<Integer>read(body(get(operator, API + "/admin/organizations/" + other)
+							.expectStatus()
+							.isOk()), "$.organization.version")),
+						"emailDomain", "managed.test")),
+				409, "ORGANIZATION_DOMAIN_TAKEN");
+		put(founder, API + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
+		Map<String, Object> withoutDomain = new HashMap<>();
+		withoutDomain.put("profile", save(profile("Managed Company"),
+				JsonPath.<Integer>read(body(get(operator, detail).expectStatus().isOk()), "$.organization.version")));
+		withoutDomain.put("emailDomain", null);
+		String cleared = body(put(operator, detail, withoutDomain).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(cleared, "$.organization.emailDomain")).isNull();
+		// With no domain nobody joins at once any more.
+		assertThat(JsonPath.<Boolean>read(cleared, "$.organization.autoJoin")).isFalse();
+
+		// The people: a role changes, and an operator may leave the organization without an owner.
+		String colleagueId = JsonPath.<List<String>>read(cleared, "$.members[?(@.email == 'colleague@managed.test')].accountId").get(0);
+		String founderId = JsonPath.<List<String>>read(cleared, "$.members[?(@.email == 'founder@managed.test')].accountId").get(0);
+		put(operator, detail + "/members/" + colleagueId + "/role", Map.of("role", "owner")).expectStatus().isNoContent();
+		post(operator, detail + "/members/" + founderId + "/remove", null).expectStatus().isNoContent();
+		post(operator, detail + "/members/" + colleagueId + "/remove", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<List<Object>>read(body(get(operator, detail).expectStatus().isOk()), "$.members")).isEmpty();
+		assertProblem(post(operator, detail + "/members/" + colleagueId + "/remove", null), 404,
+				"ORGANIZATION_MEMBER_NOT_FOUND");
+
+		// An invitation by an operator is not counted against the organization, and is taken back by one.
+		post(operator, detail + "/invitations", Map.of("email", "new@managed.test", "role", "owner"))
+			.expectStatus()
+			.isNoContent();
+		assertProblem(post(operator, detail + "/invitations", Map.of("email", "new@managed.test", "role", "owner")),
+				409, "ORGANIZATION_ALREADY_INVITED");
+		String invitation = JsonPath.<String>read(body(get(operator, detail).expectStatus().isOk()),
+				"$.invitations[0].id");
+		post(operator, detail + "/invitations/" + invitation + "/revoke", null).expectStatus().isNoContent();
+		assertProblem(post(operator, detail + "/invitations/" + invitation + "/revoke", null), 404,
+				"ORGANIZATION_INVITATION_NOT_FOUND");
+		assertThat(events(id)).contains("organization.update", "organization.member_role",
+				"organization.member_remove", "organization.invite", "organization.invitation_revoke");
+	}
+
+	@Test
+	void anOperatorTakesAnApprovedOrganizationDownWithAReasonAndRestoresItKeepingTheMembersWorkspace() {
+		String founder = signIn("founder@takedown.test");
+		UUID id = approved(founder, "Takedown Co");
+		String takeDown = API + "/admin/organizations/" + id + "/take-down";
+
+		assertProblem(post(founder, takeDown, Map.of("reason", "other")), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(operator, takeDown, Map.of("reason", "not-a-reason")), 400, "REQUEST_INVALID");
+		assertProblem(post(operator, API + "/admin/organizations/" + UUID.randomUUID() + "/take-down",
+				Map.of("reason", "other")), 404, "ORGANIZATION_NOT_FOUND");
+		assertProblem(post(operator, API + "/admin/organizations/" + id + "/restore", null), 409,
+				"ORGANIZATION_NOT_TAKEN_DOWN");
+
+		post(operator, takeDown, Map.of("reason", "misleading_information", "message", "Send us the contract."))
+			.expectStatus()
+			.isNoContent();
+		assertThat(mail.latestSubjectTo("founder@takedown.test")).isEqualTo("Takedown Co on BeyondPilot");
+		assertProblem(post(operator, takeDown, Map.of("reason", "other")), 409, "ORGANIZATION_CANNOT_TAKE_DOWN");
+
+		// Its members keep the workspace and read why; it is in no directory and invites nobody.
+		String mine = mine(founder);
+		assertThat(JsonPath.<String>read(mine, "$.organization.status")).isEqualTo("suspended");
+		assertThat(JsonPath.<String>read(mine, "$.organization.suspensionReason")).isEqualTo("misleading_information");
+		assertThat(JsonPath.<String>read(mine, "$.organization.suspensionMessage")).isEqualTo("Send us the contract.");
+		assertThat(JsonPath.<String>read(mine, "$.role")).isEqualTo("owner");
+		assertThat(JsonPath.<List<Object>>read(
+				body(get(signIn("visitor@takedown.test"), API + "/organizations?q=takedown").expectStatus().isOk()),
+				"$.items"))
+			.isEmpty();
+		assertProblem(get(signIn("visitor@takedown.test"), API + "/organizations/takedown-co"), 404,
+				"ORGANIZATION_NOT_FOUND");
+		assertProblem(post(founder, API + "/mine/invitations", Map.of("email", "new@takedown.test", "role", "member")),
+				409, "ORGANIZATION_NOT_APPROVED");
+		assertThat(JsonPath.<String>read(
+				body(get(operator, API + "/admin/organizations?status=suspended").expectStatus().isOk()),
+				"$.items[0].status"))
+			.isEqualTo("suspended");
+
+		post(operator, API + "/admin/organizations/" + id + "/restore", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("approved");
+		// What was said when it was taken down stays on the record.
+		assertThat(JsonPath.<String>read(mine(founder), "$.organization.suspensionReason"))
+			.isEqualTo("misleading_information");
+	}
+
+	@Test
 	void anOrganizationThatIsNotApprovedIsNeitherFoundNorJoined() {
 		UUID id = create(signIn("founder@waiting.test"), "Waiting Co");
 		String colleague = signIn("colleague@waiting.test");
@@ -532,6 +676,31 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anOperatorMayFillInTheWholeProfileWhenCreatingAnOrganization() {
+		UUID logo = uploadedLogo(operator);
+		String created = body(post(operator, API + "/admin/organizations",
+				Map.of("name", "Fully Described", "type", "builder_team", "website", "https://fully-described.test",
+						"country", "VN", "teamSize", "10_49", "industries", List.of("logistics", "insurance"),
+						"description", "Routes parcels for small shops.", "foundedYear", 2019, "logoFileId",
+						logo.toString()))
+			.expectStatus()
+			.isCreated());
+
+		assertThat(JsonPath.<String>read(created, "$.organization.teamSize")).isEqualTo("10_49");
+		assertThat(JsonPath.<List<String>>read(created, "$.organization.industries"))
+			.containsExactly("logistics", "insurance");
+		assertThat(JsonPath.<String>read(created, "$.organization.description"))
+			.isEqualTo("Routes parcels for small shops.");
+		assertThat(JsonPath.<Integer>read(created, "$.organization.foundedYear")).isEqualTo(2019);
+		assertThat(JsonPath.<String>read(created, "$.organization.logoFileId")).isEqualTo(logo.toString());
+		assertProblem(post(operator, API + "/admin/organizations",
+				Map.of("name", "Too Many", "type", "company", "industries",
+						List.of("logistics", "insurance", "retail_ecommerce", "healthcare", "manufacturing",
+								"banking_finance"))),
+				400, "REQUEST_INVALID");
+	}
+
+	@Test
 	void anOrganizationNobodyOwnsIsClaimedEvenFromItsDomainAndAnOperatorDecides() {
 		String unowned = JsonPath.read(body(post(operator, API + "/admin/organizations",
 				Map.of("name", "Unowned One", "type", "company", "emailDomain",
@@ -688,6 +857,38 @@ class OrganizationTest {
 
 	private String mine(String session) {
 		return body(get(session, API + "/mine").expectStatus().isOk());
+	}
+
+	private static int versionOf(String mine) {
+		return JsonPath.<Integer>read(mine, "$.organization.version");
+	}
+
+	/** Uploads a PNG as an organization logo, in the three requests of the storage module. */
+	private UUID uploadedLogo(String session) {
+		byte[] content = new byte[64];
+		byte[] signature = { (byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' };
+		System.arraycopy(signature, 0, content, 0, signature.length);
+		String ticket = body(post(session, "/api/storage/uploads", Map.of("purpose", "organization_logo", "fileName",
+				"logo.png", "mediaType", "image/png", "sizeBytes", content.length))
+			.expectStatus()
+			.isCreated());
+		UUID id = UUID.fromString(JsonPath.read(ticket, "$.id"));
+		client.put()
+			.uri(JsonPath.<String>read(ticket, "$.url"))
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.contentType(MediaType.APPLICATION_OCTET_STREAM)
+			.body(content)
+			.exchange()
+			.expectStatus()
+			.isNoContent();
+		post(session, "/api/storage/uploads/" + id + "/confirm", null).expectStatus().isOk();
+		return id;
+	}
+
+	/** Whether the storage module still has the file. */
+	private boolean stored(UUID file) {
+		return jdbc.sql("select count(*) from storage_file where id = ?").param(file).query(Long.class).single() == 1;
 	}
 
 	private String members(String session) {

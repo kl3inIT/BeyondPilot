@@ -1,7 +1,12 @@
 package ai.genaifund.beyondpilot.organization.dto;
 
+import java.util.List;
+import java.util.UUID;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -20,6 +25,17 @@ public record AdminCreateOrganizationRequest(
 				regexp = OrganizationCodes.WEBSITE) @Nullable String website,
 		@Schema(types = { "string", "null" }, description = "ISO 3166-1 alpha-2.") @Pattern(
 				regexp = OrganizationCodes.COUNTRY) @Nullable String country,
+		@Schema(types = { "string", "null" }) @Pattern(regexp = OrganizationCodes.TEAM_SIZE) @Nullable String teamSize,
+		@Schema(types = { "array", "null" },
+				description = "The industries it works in or serves, as the codes the solutions use.") @Size(
+						max = 5) @Nullable List<@NotNull @Pattern(regexp = OrganizationCodes.INDUSTRY) String> industries,
+		@Schema(types = { "string", "null" },
+				description = "What it does and for whom, in at most 280 characters.") @Size(
+						max = 280) @Nullable String description,
+		@Schema(types = { "integer", "null" }, description = "The year it started.") @Min(1800) @Max(
+				2100) @Nullable Integer foundedYear,
+		@Schema(types = { "string", "null" },
+				description = "A logo the caller uploaded for an organization; null for none.") @Nullable UUID logoFileId,
 		@Schema(types = { "string", "null" }, example = "tasco.com.vn",
 				description = "The domain of the company's work addresses, which the operator vouches for.") @Size(
 						max = 253) @Pattern(regexp = OrganizationCodes.DOMAIN) @Nullable String emailDomain,

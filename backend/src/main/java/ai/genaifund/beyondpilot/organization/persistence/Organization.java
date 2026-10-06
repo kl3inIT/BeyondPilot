@@ -30,6 +30,8 @@ public class Organization {
 
 	public static final String REJECTED = "rejected";
 
+	public static final String SUSPENDED = "suspended";
+
 	@Id
 	private UUID id;
 
@@ -56,7 +58,7 @@ public class Organization {
 
 	private @Nullable Integer foundedYear;
 
-	private @Nullable String logoUrl;
+	private @Nullable UUID logoFileId;
 
 	private @Nullable String emailDomain;
 
@@ -71,6 +73,12 @@ public class Organization {
 	private @Nullable String decisionMessage;
 
 	private @Nullable Instant decidedAt;
+
+	private @Nullable String suspensionReason;
+
+	private @Nullable String suspensionMessage;
+
+	private @Nullable Instant suspendedAt;
 
 	@Column(nullable = false, updatable = false)
 	private UUID createdByAccountId;
@@ -106,7 +114,7 @@ public class Organization {
 
 	public void describe(String name, String type, @Nullable String website,
 			@Nullable String country, @Nullable String teamSize, List<String> industries,
-			@Nullable String description, @Nullable Integer foundedYear, @Nullable String logoUrl) {
+			@Nullable String description, @Nullable Integer foundedYear, @Nullable UUID logoFileId) {
 		this.name = name;
 		this.type = type;
 		this.website = website;
@@ -115,7 +123,7 @@ public class Organization {
 		this.industries = industries.toArray(String[]::new);
 		this.description = description;
 		this.foundedYear = foundedYear;
-		this.logoUrl = logoUrl;
+		this.logoFileId = logoFileId;
 	}
 
 	/**
@@ -149,6 +157,23 @@ public class Organization {
 	/** A refused organization that its owner corrected waits for review again; the last decision stays readable. */
 	public void resubmit() {
 		status = PENDING;
+	}
+
+	/** Takes an approved organization down; what it was approved with stays, so restoring needs no new review. */
+	public void suspend(String reason, @Nullable String message, Instant at) {
+		status = SUSPENDED;
+		suspensionReason = reason;
+		suspensionMessage = message;
+		suspendedAt = at;
+	}
+
+	/** Returns a taken-down organization to approved; the reason it was taken down stays readable on the record. */
+	public void restore() {
+		status = APPROVED;
+	}
+
+	public boolean isSuspended() {
+		return SUSPENDED.equals(status);
 	}
 
 	public boolean isApproved() {
@@ -203,8 +228,8 @@ public class Organization {
 		return foundedYear;
 	}
 
-	public @Nullable String getLogoUrl() {
-		return logoUrl;
+	public @Nullable UUID getLogoFileId() {
+		return logoFileId;
 	}
 
 	public @Nullable String getEmailDomain() {
@@ -225,6 +250,18 @@ public class Organization {
 
 	public @Nullable String getDecisionMessage() {
 		return decisionMessage;
+	}
+
+	public @Nullable String getSuspensionReason() {
+		return suspensionReason;
+	}
+
+	public @Nullable String getSuspensionMessage() {
+		return suspensionMessage;
+	}
+
+	public @Nullable Instant getSuspendedAt() {
+		return suspendedAt;
 	}
 
 	public UUID getCreatedByAccountId() {

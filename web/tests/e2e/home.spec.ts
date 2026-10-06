@@ -47,7 +47,7 @@ test.describe("home page", () => {
   });
 
   test("a planned page renders the coming-soon screen", async ({ page }) => {
-    await page.goto("/use-cases");
+    await page.goto("/get-started");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Coming soon");
   });

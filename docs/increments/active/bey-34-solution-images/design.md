@@ -52,9 +52,9 @@ The bytes of an image are read at `GET /api/storage/files/{id}`, without a sessi
 
 ## Data
 
-- `V29__storage_allow_solution_images.sql`: the purposes `solution_logo` and `solution_image`.
-- `V30__solution_add_images.sql`: `logo_file_id`, `cover_file_id` and `image_file_ids` on `solution`. The rows that exist start without images and keep their status.
-- `V31__solution_add_channels_and_backing.sql`: `channels`, and `backed_by`, `program`, `funding` with `backing_updated_at`, on `solution`.
+- `V37__storage_allow_solution_images.sql`: the purposes `solution_logo` and `solution_image`.
+- `V38__solution_add_images.sql`: `logo_file_id`, `cover_file_id` and `image_file_ids` on `solution`. The rows that exist start without images and keep their status.
+- `V39__solution_add_channels_and_backing.sql`: `channels`, and `backed_by`, `program`, `funding` with `backing_updated_at`, on `solution`.
 
 ## Web
 

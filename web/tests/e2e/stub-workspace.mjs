@@ -18,7 +18,7 @@ const pocketPolicy = {
   emailDomain: "pocketpolicy.example",
   description: "Assistants for insurers across Southeast Asia.",
   foundedYear: 2021,
-  logoUrl: null,
+  logoFileId: null,
   autoJoin: false,
   version: 3,
   createdAt: day,
@@ -371,6 +371,7 @@ export function answerWorkspace(url, session) {
     "/api/organization/mine",
     "/api/organization/mine/members",
     "/api/solution/mine",
+    "/api/usecase/mine",
     "/api/talent/mine",
     "/api/introduction/mine/received",
   ];
@@ -434,6 +435,10 @@ export function answerWorkspace(url, session) {
         allowance: role === "owner" ? allowance : null,
       },
     ];
+  }
+  if (pathname === "/api/usecase/mine") {
+    // Anyone who belongs to an approved organization may read its use cases; the stub has none.
+    return role ? [200, { items: [] }] : refused(403, "USECASE_ENTERPRISE_REQUIRED");
   }
   if (pathname === "/api/solution/mine") {
     // A person without an organization has no solutions, and is not refused.

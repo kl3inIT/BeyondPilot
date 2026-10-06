@@ -93,6 +93,22 @@ public class EmailService {
 	}
 
 	/**
+	 * Tells an owner that GenAI Fund took their organization down or restored it, in both languages. A reason is read
+	 * after signing in.
+	 * @param takenDown whether the organization was taken down; otherwise it is back
+	 */
+	public void sendOrganizationSuspension(String recipient, String organizationName, boolean takenDown) {
+		String english = takenDown
+				? organizationName + " was taken down on BeyondPilot. Sign in to read why."
+				: organizationName + " is back on BeyondPilot. Sign in to manage it.";
+		String vietnamese = takenDown
+				? organizationName + " đã bị gỡ khỏi BeyondPilot. Hãy đăng nhập để xem lý do."
+				: organizationName + " đã được khôi phục trên BeyondPilot. Hãy đăng nhập để quản lý.";
+		sendParagraphs("organization_suspension", recipient, organizationName + " on BeyondPilot", english,
+				vietnamese);
+	}
+
+	/**
 	 * Tells a person the answer to their request to get into an organization, in both languages.
 	 * @param claim whether they asked to own an organization nobody owned, which GenAI Fund decides; otherwise they
 	 * asked its owners to join
@@ -187,6 +203,28 @@ public class EmailService {
 				+ " được chia sẻ khi bạn chấp nhận.";
 		sendParagraphs("talent_enquiry", recipient, "A message through your BeyondPilot talent profile", english,
 				vietnamese, message);
+	}
+
+	/**
+	 * Tells a member of an organization what GenAI Fund decided about one of its use cases, in both languages.
+	 * @param approved whether the use case was approved and published; otherwise it was sent back
+	 * @param reason what GenAI Fund asked to change, when it sent the use case back
+	 */
+	public void sendUseCaseDecision(String recipient, String organizationName, String useCaseTitle, boolean approved,
+			@Nullable String reason) {
+		String english = approved
+				? "\u201c" + useCaseTitle + "\u201d of " + organizationName
+						+ " was approved and is published on BeyondPilot. Providers can send proposals until its close date."
+				: "GenAI Fund asked for changes to \u201c" + useCaseTitle + "\u201d of " + organizationName + ": "
+						+ reason + " Sign in to edit it and send it again.";
+		String vietnamese = approved
+				? "\u201c" + useCaseTitle + "\u201d c\u1ee7a " + organizationName
+						+ " \u0111\u00e3 \u0111\u01b0\u1ee3c duy\u1ec7t v\u00e0 \u0111\u00e3 \u0111\u0103ng tr\u00ean BeyondPilot. Nh\u00e0 cung c\u1ea5p c\u00f3 th\u1ec3 g\u1eedi \u0111\u1ec1 xu\u1ea5t \u0111\u1ebfn h\u1ea1n \u0111\u00f3ng."
+				: "GenAI Fund y\u00eau c\u1ea7u ch\u1ec9nh s\u1eeda \u201c" + useCaseTitle + "\u201d c\u1ee7a " + organizationName + ": "
+						+ reason + " H\u00e3y \u0111\u0103ng nh\u1eadp \u0111\u1ec3 s\u1eeda v\u00e0 g\u1eedi l\u1ea1i.";
+		sendParagraphs("use_case_decision", recipient,
+				approved ? useCaseTitle + " is published on BeyondPilot" : "Changes needed: " + useCaseTitle, english,
+				vietnamese);
 	}
 
 	/**

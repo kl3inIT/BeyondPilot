@@ -128,6 +128,31 @@
   html {
     @apply font-sans;
   }
+  /* Tailwind resets buttons to the arrow; anything that can be clicked shows the hand. */
+  :where(
+    button,
+    [role="button"],
+    [role="combobox"],
+    [role="menuitem"],
+    [role="menuitemcheckbox"],
+    [role="menuitemradio"],
+    [role="option"],
+    [role="tab"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="radio"],
+    summary,
+    label[for],
+    select
+  ):not(:disabled, [aria-disabled="true"], [data-disabled]) {
+    cursor: pointer;
+  }
+}
+
+/* A thin scrollbar in the brand colour for the lists of a menu, so every list that scrolls looks alike. */
+@utility scrollbar-brand {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
 }
 
 /*

@@ -25,6 +25,8 @@ type OrganizationSolutionsPageProps = {
   solutions: MySolutions;
   /** How many members the organization has, for the tab beside this one. */
   members: number;
+  /** How many use cases it has, when it is an approved enterprise. */
+  useCases: number | null;
 };
 
 /** The tone of each state of a review in the list, where the states are scanned as pills. */
@@ -48,7 +50,12 @@ function listingOf(solution: SolutionSummary) {
  * whether the public reads it, and what a member can do with it next. Every member adds and
  * changes them.
  */
-function OrganizationSolutionsPage({ mine, solutions, members }: OrganizationSolutionsPageProps) {
+function OrganizationSolutionsPage({
+  mine,
+  solutions,
+  members,
+  useCases,
+}: OrganizationSolutionsPageProps) {
   const t = useTranslations("Solution.mine");
   const reason = useVocabulary("solutionRejection");
   const format = useFormatter();
@@ -107,7 +114,7 @@ function OrganizationSolutionsPage({ mine, solutions, members }: OrganizationSol
     <OrganizationFrame
       mine={mine}
       current="solutions"
-      counts={{ members, solutions: solutions.items.length }}
+      counts={{ members, solutions: solutions.items.length, useCases }}
     >
       <OrganizationSection
         id="solutions-list"

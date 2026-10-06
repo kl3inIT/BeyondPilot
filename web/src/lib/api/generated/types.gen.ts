@@ -61,14 +61,31 @@ export type AdminCreateOrganization = {
      */
     country?: string | null;
     /**
+     * What it does and for whom, in at most 280 characters.
+     */
+    description?: string | null;
+    /**
      * The domain of the company's work addresses, which the operator vouches for.
      */
     emailDomain?: string | null;
+    /**
+     * The year it started.
+     */
+    foundedYear?: number | null;
+    /**
+     * The industries it works in or serves, as the codes the solutions use.
+     */
+    industries?: Array<string> | null;
+    /**
+     * A logo the caller uploaded for an organization; null for none.
+     */
+    logoFileId?: string | null;
     name: string;
     /**
      * The address invited to own it.
      */
     ownerEmail?: string | null;
+    teamSize?: string | null;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     website?: string | null;
 };
@@ -195,7 +212,7 @@ export type AdminOrganizationSummary = {
      */
     requestedAt?: string | null;
     slug: string;
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'approved' | 'rejected' | 'suspended';
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
 };
 
@@ -291,6 +308,17 @@ export type AdminProgramSummary = {
     status: 'draft' | 'published';
     type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
     updatedAt: string;
+};
+
+/**
+ * The profile of an organization and its verified domain, as an operator saves them.
+ */
+export type AdminSaveOrganization = {
+    /**
+     * The domain GenAI Fund verifies for the organization; null clears it.
+     */
+    emailDomain?: string | null;
+    profile: SaveOrganization;
 };
 
 /**
@@ -400,6 +428,98 @@ export type AdminTalentList = {
      * How many profiles match, over all pages.
      */
     total: number;
+};
+
+/**
+ * One use case as an operator reads it.
+ */
+export type AdminUseCase = {
+    attachments: Array<UseCaseAttachment>;
+    /**
+     * US dollars. Null while the budget is to be determined.
+     */
+    budgetMax?: number | null;
+    budgetMembersOnly: boolean;
+    /**
+     * US dollars. Null while the budget is to be determined.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    closesAt?: string | null;
+    createdAt: string;
+    createdBy: UseCasePerson;
+    currentProcess?: string | null;
+    currentSolutions?: string | null;
+    dataReadiness?: string | null;
+    expectedOutcomes?: string | null;
+    hideOrganizationName: boolean;
+    id: string;
+    industry?: string | null;
+    integrationRequirements?: string | null;
+    organization: UseCaseOrganization;
+    problemStatement?: string | null;
+    publishedAt?: string | null;
+    requirements: Array<UseCaseRequirement>;
+    /**
+     * What GenAI Fund asked to change, while the use case is sent back.
+     */
+    reviewNote?: string | null;
+    reviewedAt?: string | null;
+    /**
+     * Who approved it or sent it back; null while no one has.
+     */
+    reviewedBy?: UseCasePerson;
+    /**
+     * Closed once the close date has passed, whatever the use case was before.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    submittedAt?: string | null;
+    /**
+     * Who sent it for review; null if it was never sent.
+     */
+    submittedBy?: UseCasePerson;
+    targetUsers?: string | null;
+    technologies: Array<string>;
+    timelineMaxWeeks?: number | null;
+    timelineMinWeeks?: number | null;
+    title?: string | null;
+    updatedAt: string;
+    version: number;
+};
+
+/**
+ * One page of use cases, the newest first.
+ */
+export type AdminUseCaseList = {
+    /**
+     * How many use cases in the whole system wait for GenAI Fund, whatever the filter.
+     */
+    inReview: number;
+    items: Array<AdminUseCaseSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many use cases match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * One use case in the operators' list.
+ */
+export type AdminUseCaseSummary = {
+    closesAt?: string | null;
+    id: string;
+    organization: UseCaseOrganization;
+    /**
+     * Closed once the close date has passed, whatever the use case was before.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    title?: string | null;
+    updatedAt: string;
 };
 
 /**
@@ -554,7 +674,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -614,24 +734,6 @@ export type AutoJoin = {
     autoJoin: boolean;
 };
 
-/**
- * What GenAI Fund says of a solution, as an operator writes it. A member left out or empty is taken away.
- */
-export type BackSolution = {
-    /**
-     * Who backs its company, such as GenAI Fund's portfolio.
-     */
-    backedBy?: string | null;
-    /**
-     * How its company is funded.
-     */
-    funding?: string | null;
-    /**
-     * The programme it was selected for, with its cohort.
-     */
-    program?: string | null;
-};
-
 export type ChangeMemberRole = {
     role: 'owner' | 'member';
 };
@@ -676,11 +778,11 @@ export type CreateOrganization = {
     /**
      * What the creator does in the organization.
      */
-    jobTitle: string;
+    jobTitle?: string | null;
     /**
-     * The address of its logo.
+     * A logo the caller uploaded for an organization; null for none.
      */
-    logoUrl?: string | null;
+    logoFileId?: string | null;
     name: string;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
@@ -704,6 +806,58 @@ export type CreateProgram = {
  */
 export type CreateSolution = {
     name: string;
+};
+
+/**
+ * A use case an operator writes for an organization. It is saved as a draft the organization's members can edit, or published at once when publishNow is true.
+ */
+export type CreateUseCase = {
+    /**
+     * Files the caller uploaded for a use case, in the order shown.
+     */
+    attachmentFileIds: Array<string>;
+    /**
+     * US dollars. Null while the budget is to be determined.
+     */
+    budgetMax?: number | null;
+    /**
+     * Only signed-in members see the amount.
+     */
+    budgetMembersOnly: boolean;
+    /**
+     * US dollars. Null while the budget is to be determined.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * When proposals stop. It must be in the future.
+     */
+    closesAt: string;
+    currentProcess: string;
+    currentSolutions?: string | null;
+    dataReadiness: string;
+    expectedOutcomes: string;
+    hideOrganizationName: boolean;
+    industry: string;
+    integrationRequirements: string;
+    /**
+     * An approved organization.
+     */
+    organizationId: string;
+    problemStatement: string;
+    /**
+     * True to publish at once, false to save a draft for the organization.
+     */
+    publishNow: boolean;
+    /**
+     * What the solution must do, in the order written.
+     */
+    requirements: Array<UseCaseRequirement>;
+    targetUsers: string;
+    technologies: Array<string>;
+    timelineMaxWeeks: number;
+    timelineMinWeeks: number;
+    title: string;
 };
 
 /**
@@ -978,6 +1132,89 @@ export type MyTalent = {
 };
 
 /**
+ * One use case as a member of its organization reads and edits it.
+ */
+export type MyUseCase = {
+    attachments: Array<UseCaseAttachment>;
+    budgetMax?: number | null;
+    budgetMembersOnly: boolean;
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * Whether the members changed it since GenAI Fund sent it back; it cannot be sent again before.
+     */
+    changedSinceReview: boolean;
+    closesAt?: string | null;
+    /**
+     * Whether it holds everything a use case needs to be sent for review.
+     */
+    complete: boolean;
+    currentProcess?: string | null;
+    currentSolutions?: string | null;
+    dataReadiness?: string | null;
+    /**
+     * Whether the members can edit it now: a draft, one GenAI Fund sent back, or one that is published.
+     */
+    editable: boolean;
+    expectedOutcomes?: string | null;
+    hideOrganizationName: boolean;
+    id: string;
+    industry?: string | null;
+    integrationRequirements?: string | null;
+    lastEditedBy: UseCasePerson;
+    organizationName: string;
+    problemStatement?: string | null;
+    publishedAt?: string | null;
+    requirements: Array<UseCaseRequirement>;
+    /**
+     * What GenAI Fund asked to change, when it sent the use case back.
+     */
+    reviewNote?: string | null;
+    /**
+     * Closed once the close date has passed, whatever the use case was before.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    submittedAt?: string | null;
+    /**
+     * Who sent it for review; null if it was never sent.
+     */
+    submittedBy?: UseCasePerson;
+    targetUsers?: string | null;
+    technologies: Array<string>;
+    timelineMaxWeeks?: number | null;
+    timelineMinWeeks?: number | null;
+    title?: string | null;
+    updatedAt: string;
+    version: number;
+};
+
+/**
+ * One use case of the caller's organization in the tab's list.
+ */
+export type MyUseCaseSummary = {
+    closesAt?: string | null;
+    id: string;
+    lastEditedBy: UseCasePerson;
+    /**
+     * Closed once the close date has passed, whatever the use case was before.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    submittedAt?: string | null;
+    /**
+     * Null until someone has named the use case.
+     */
+    title?: string | null;
+    updatedAt: string;
+};
+
+/**
+ * The use cases of the caller's organization, the most recently touched first.
+ */
+export type MyUseCases = {
+    items: Array<MyUseCaseSummary>;
+};
+
+/**
  * An organization as the people who belong to it, and operators, see it.
  */
 export type Organization = {
@@ -1013,15 +1250,27 @@ export type Organization = {
      */
     industries: Array<string>;
     /**
-     * The address of its logo.
+     * Its logo, read at /api/storage/files/{id}; null for none.
      */
-    logoUrl?: string | null;
+    logoFileId?: string | null;
     name: string;
     slug: string;
     /**
      * GenAI Fund's review of the organization.
      */
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'approved' | 'rejected' | 'suspended';
+    /**
+     * When it was last taken down.
+     */
+    suspendedAt?: string | null;
+    /**
+     * What the operator wrote to the owners when taking it down.
+     */
+    suspensionMessage?: string | null;
+    /**
+     * Why it was last taken down; kept after it is restored.
+     */
+    suspensionReason?: 'misleading_information' | 'not_a_real_organization' | 'breaks_the_rules' | 'other';
     /**
      * Null is unknown.
      */
@@ -1461,21 +1710,12 @@ export type PublicOrganization = {
  * An approved solution as anyone with its address reads it, listed or not.
  */
 export type PublicSolution = {
-    /**
-     * What GenAI Fund says of it; null when it has said nothing.
-     */
-    backing?: SolutionBacking | null;
     bestCustomerProfile?: string | null;
     builtWith: Array<string>;
-    channels?: string | null;
     /**
      * ISO 3166-1 alpha-2.
      */
     country?: string | null;
-    /**
-     * Its cover, read at /api/storage/files/{id}; null for none.
-     */
-    coverFileId?: string | null;
     /**
      * Its approved customer deployments, the most recently approved first.
      */
@@ -1487,20 +1727,12 @@ export type PublicSolution = {
     demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
-    /**
-     * The images shown under the cover, in their order, each read at /api/storage/files/{id}.
-     */
-    imageFileIds: Array<string>;
     industries: Array<string>;
     languages: Array<string>;
     /**
      * Whether the directory lists it. False is approved but shared by its address only.
      */
     listed: boolean;
-    /**
-     * Its logo, read at /api/storage/files/{id}; null for none.
-     */
-    logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
     organizationName: string;
@@ -1545,27 +1777,15 @@ export type PublicSolutionList = {
  */
 export type PublicSolutionSummary = {
     /**
-     * What GenAI Fund says of it in a line: the programme it was selected for, or else who backs its company. Null when it has said neither.
-     */
-    backing?: string | null;
-    /**
      * ISO 3166-1 alpha-2.
      */
     country?: string | null;
-    /**
-     * Its cover, read at /api/storage/files/{id}; null for none.
-     */
-    coverFileId?: string | null;
     /**
      * How many approved customer deployments it lists.
      */
     customerDeployments: number;
     focusAreas: Array<string>;
     industries: Array<string>;
-    /**
-     * Its logo, read at /api/storage/files/{id}; null for none.
-     */
-    logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
     organizationName: string;
@@ -1656,6 +1876,57 @@ export type PublicTalentSummary = {
     roles: Array<string>;
     skills: Array<string>;
     slug: string;
+};
+
+/**
+ * One page of the public list of use cases.
+ */
+export type PublicUseCaseList = {
+    items: Array<PublicUseCaseSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many use cases match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * A published use case as the public list shows it.
+ */
+export type PublicUseCaseSummary = {
+    budgetMax?: number | null;
+    /**
+     * Whether the organization shows the budget to members only.
+     */
+    budgetMembersOnly: boolean;
+    /**
+     * In US dollars; null while the budget is to be determined or is for members only.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * Proposals close at this instant.
+     */
+    closesAt: string;
+    /**
+     * The outcomes the organization expects.
+     */
+    goal: string;
+    id: string;
+    industry: string;
+    /**
+     * The organization's name; null when it asked to stay anonymous.
+     */
+    organizationName?: string | null;
+    publishedAt: string;
+    technologies: Array<string>;
+    timelineMaxWeeks: number;
+    timelineMinWeeks: number;
+    title: string;
 };
 
 /**
@@ -1772,7 +2043,7 @@ export type ReserveUpload = {
     /**
      * Why the file is uploaded; it fixes the allowed media types and the largest size.
      */
-    purpose: 'program_image' | 'talent_photo' | 'application_file' | 'solution_deck' | 'solution_logo' | 'solution_image';
+    purpose: 'program_image' | 'talent_photo' | 'organization_logo' | 'application_file' | 'use_case_attachment' | 'solution_deck';
     /**
      * The exact length of the file in bytes.
      */
@@ -2087,6 +2358,54 @@ export type SaveCustomerDeployment = {
 };
 
 /**
+ * What the members have written of a use case so far; any part may be missing.
+ */
+export type SaveMyUseCase = {
+    /**
+     * Files the caller uploaded for a use case, in the order shown.
+     */
+    attachmentFileIds: Array<string>;
+    /**
+     * US dollars. Null while the budget is to be determined.
+     */
+    budgetMax?: number | null;
+    /**
+     * Only signed-in members see the amount.
+     */
+    budgetMembersOnly: boolean;
+    /**
+     * US dollars. Null while the budget is to be determined.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * When proposals stop. It must be in the future.
+     */
+    closesAt?: string | null;
+    currentProcess?: string | null;
+    currentSolutions?: string | null;
+    dataReadiness?: string | null;
+    expectedOutcomes?: string | null;
+    hideOrganizationName: boolean;
+    industry?: string | null;
+    integrationRequirements?: string | null;
+    problemStatement?: string | null;
+    /**
+     * What the solution must do, in the order written.
+     */
+    requirements: Array<UseCaseRequirement>;
+    targetUsers?: string | null;
+    technologies: Array<string>;
+    timelineMaxWeeks?: number | null;
+    timelineMinWeeks?: number | null;
+    title?: string | null;
+    /**
+     * The version the caller read; a save over a newer one is refused.
+     */
+    version: number;
+};
+
+/**
  * The profile of an organization as its Profile screen holds it.
  */
 export type SaveOrganization = {
@@ -2107,9 +2426,9 @@ export type SaveOrganization = {
      */
     industries: Array<string>;
     /**
-     * The address of its logo.
+     * A logo the caller uploaded for an organization; null for none.
      */
-    logoUrl?: string | null;
+    logoFileId?: string | null;
     name: string;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
@@ -2195,14 +2514,6 @@ export type SaveSolution = {
      */
     builtWith: Array<string>;
     /**
-     * The channels it works through, such as voice and chat.
-     */
-    channels?: string | null;
-    /**
-     * The stored image that is its cover, named in the same way.
-     */
-    coverFileId?: string | null;
-    /**
      * The stored PDF that is its deck: the one it has, one the caller uploaded for it, or null for none.
      */
     deckFileId?: string | null;
@@ -2212,10 +2523,6 @@ export type SaveSolution = {
     demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
-    /**
-     * The stored images shown under the cover, in their order: those it has and those the caller uploaded for it.
-     */
-    imageFileIds: Array<string>;
     industries: Array<string>;
     /**
      * The languages it works in.
@@ -2225,10 +2532,6 @@ export type SaveSolution = {
      * Whether it appears in the public directory once approved.
      */
     listed: boolean;
-    /**
-     * The stored image that is its logo: the one it has, one the caller uploaded for it, or null for none.
-     */
-    logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
     problemsSolved?: string | null;
@@ -2349,7 +2652,7 @@ export type SearchItem = {
      */
     phase?: 'upcoming' | 'open' | 'running' | 'done';
     /**
-     * A person's photo or a solution's logo, read at the public address of stored files.
+     * A person's photo, read at the public address of stored files.
      */
     photoFileId?: string | null;
     /**
@@ -2403,6 +2706,16 @@ export type SearchResults = {
 };
 
 /**
+ * Why GenAI Fund sends a use case back to its organization.
+ */
+export type SendBackUseCase = {
+    /**
+     * What the organization should change. Its members read it and receive it by email.
+     */
+    reason: string;
+};
+
+/**
  * A message to the person behind a talent profile.
  */
 export type SendTalentEnquiry = {
@@ -2421,21 +2734,12 @@ export type SendTalentEnquiry = {
  * A solution as its organization, and operators, see it.
  */
 export type Solution = {
-    /**
-     * What GenAI Fund says of it; null until an operator writes it.
-     */
-    backing?: SolutionBacking | null;
     bestCustomerProfile?: string | null;
     builtWith: Array<string>;
-    channels?: string | null;
     /**
-     * Whether it has what a submission needs: a summary, a maturity, a focus area, an industry, a logo and a cover.
+     * Whether it has what a submission needs: a summary, a maturity, a focus area and an industry.
      */
     complete: boolean;
-    /**
-     * Its cover, when it has one.
-     */
-    cover?: SolutionImage | null;
     /**
      * Its customer deployments, the newest first, whatever their review says.
      */
@@ -2456,20 +2760,12 @@ export type Solution = {
     deployment: Array<string>;
     focusAreas: Array<string>;
     id: string;
-    /**
-     * The images shown under the cover, in their order.
-     */
-    images: Array<SolutionImage>;
     industries: Array<string>;
     languages: Array<string>;
     /**
      * Whether it appears in the public directory once approved.
      */
     listed: boolean;
-    /**
-     * Its logo, when it has one.
-     */
-    logo?: SolutionImage | null;
     /**
      * Null is unknown.
      */
@@ -2497,44 +2793,10 @@ export type Solution = {
 };
 
 /**
- * What GenAI Fund says of a solution beside its owners' words. Operators write it; at least one member is set.
- */
-export type SolutionBacking = {
-    /**
-     * Who backs its company, such as GenAI Fund's portfolio.
-     */
-    backedBy?: string | null;
-    /**
-     * How its company is funded.
-     */
-    funding?: string | null;
-    /**
-     * The programme it was selected for, with its cohort.
-     */
-    program?: string | null;
-    /**
-     * When an operator last wrote it.
-     */
-    updatedAt: string;
-};
-
-/**
  * The deck of a solution as its organization, and operators, see it.
  */
 export type SolutionDeck = {
     attachedAt: string;
-    /**
-     * The stored file, sent back with a save to keep it.
-     */
-    fileId: string;
-    fileName: string;
-    sizeBytes: number;
-};
-
-/**
- * A stored image of a solution as its organization, and operators, see it. Its bytes are read at /api/storage/files/{fileId}.
- */
-export type SolutionImage = {
     /**
      * The stored file, sent back with a save to keep it.
      */
@@ -2563,24 +2825,12 @@ export type SolutionOption = {
  */
 export type SolutionSummary = {
     /**
-     * What the operator wrote to the owners when sending it back.
-     */
-    decisionMessage?: string | null;
-    /**
-     * Why it was last sent back.
-     */
-    decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
-    /**
      * How many of its customer deployments wait for review.
      */
     deploymentsAwaitingReview: number;
     id: string;
     listed: boolean;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
-    /**
-     * What a review needs and it lacks, in the order of the editor: any of summary, maturity, industries, focusAreas, logo and cover. Empty when it can be sent for review.
-     */
-    missing: Array<string>;
     name: string;
     organizationName: string;
     slug: string;
@@ -2628,6 +2878,17 @@ export type SubmittedApplication = {
     teamSize?: string | null;
     traction?: string | null;
     website?: string | null;
+};
+
+/**
+ * Why an approved organization is taken down, and what its owners are told.
+ */
+export type TakeDownOrganization = {
+    /**
+     * Shown to the owners in the email and in their workspace.
+     */
+    message?: string | null;
+    reason: 'misleading_information' | 'not_a_real_organization' | 'breaks_the_rules' | 'other';
 };
 
 /**
@@ -2793,6 +3054,57 @@ export type UploadTicket = {
     url: string;
 };
 
+/**
+ * A file attached to a use case.
+ */
+export type UseCaseAttachment = {
+    fileName: string;
+    id: string;
+    mediaType: string;
+    sizeBytes: number;
+};
+
+/**
+ * The organization a use case is for.
+ */
+export type UseCaseOrganization = {
+    id: string;
+    name: string;
+};
+
+/**
+ * The approved organizations that can have use cases, by name; at most 50.
+ */
+export type UseCaseOrganizationList = {
+    items: Array<UseCaseOrganization>;
+};
+
+/**
+ * Who last changed a use case, as the reader may be shown them.
+ */
+export type UseCasePerson = {
+    /**
+     * Whether the person works for GenAI Fund rather than for the organization.
+     */
+    genaiFund: boolean;
+    /**
+     * Their name, or their address until they have a name.
+     */
+    name: string;
+    /**
+     * Whether it is the caller.
+     */
+    you: boolean;
+};
+
+/**
+ * One thing the solution must do.
+ */
+export type UseCaseRequirement = {
+    necessity: 'required' | 'optional';
+    statement: string;
+};
+
 export type ListAuditEventsData = {
     body?: never;
     path?: never;
@@ -2804,7 +3116,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -3361,7 +3673,7 @@ export type ListAdminOrganizationsData = {
         /**
          * Only organizations of this review status; `pending` also selects an approved one with an open claim.
          */
-        status?: 'pending' | 'approved' | 'rejected';
+        status?: 'pending' | 'approved' | 'rejected' | 'suspended';
         /**
          * The page, counted from 1.
          */
@@ -3468,6 +3780,49 @@ export type GetAdminOrganizationResponses = {
 
 export type GetAdminOrganizationResponse = GetAdminOrganizationResponses[keyof GetAdminOrganizationResponses];
 
+export type SaveAdminOrganizationData = {
+    body: AdminSaveOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}';
+};
+
+export type SaveAdminOrganizationErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization changed since it was read, or another organization has the domain.
+     */
+    409: Problem;
+};
+
+export type SaveAdminOrganizationError = SaveAdminOrganizationErrors[keyof SaveAdminOrganizationErrors];
+
+export type SaveAdminOrganizationResponses = {
+    /**
+     * The organization as saved.
+     */
+    200: AdminOrganization;
+};
+
+export type SaveAdminOrganizationResponse = SaveAdminOrganizationResponses[keyof SaveAdminOrganizationResponses];
+
 export type ApproveOrganizationData = {
     body: ApproveOrganization;
     path: {
@@ -3511,6 +3866,161 @@ export type ApproveOrganizationResponses = {
 
 export type ApproveOrganizationResponse = ApproveOrganizationResponses[keyof ApproveOrganizationResponses];
 
+export type InviteAdminOrganizationMemberData = {
+    body: InviteMember;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/invitations';
+};
+
+export type InviteAdminOrganizationMemberErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The address belongs to the organization or holds an open invitation.
+     */
+    409: Problem;
+};
+
+export type InviteAdminOrganizationMemberError = InviteAdminOrganizationMemberErrors[keyof InviteAdminOrganizationMemberErrors];
+
+export type InviteAdminOrganizationMemberResponses = {
+    /**
+     * The invitation is open and the address was told.
+     */
+    204: void;
+};
+
+export type InviteAdminOrganizationMemberResponse = InviteAdminOrganizationMemberResponses[keyof InviteAdminOrganizationMemberResponses];
+
+export type RevokeAdminOrganizationInvitationData = {
+    body?: never;
+    path: {
+        id: string;
+        invitationId: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/invitations/{invitationId}/revoke';
+};
+
+export type RevokeAdminOrganizationInvitationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The organization does not exist, or the invitation is not one of its open ones.
+     */
+    404: Problem;
+};
+
+export type RevokeAdminOrganizationInvitationError = RevokeAdminOrganizationInvitationErrors[keyof RevokeAdminOrganizationInvitationErrors];
+
+export type RevokeAdminOrganizationInvitationResponses = {
+    /**
+     * The invitation is closed.
+     */
+    204: void;
+};
+
+export type RevokeAdminOrganizationInvitationResponse = RevokeAdminOrganizationInvitationResponses[keyof RevokeAdminOrganizationInvitationResponses];
+
+export type RemoveAdminOrganizationMemberData = {
+    body?: never;
+    path: {
+        id: string;
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/members/{accountId}/remove';
+};
+
+export type RemoveAdminOrganizationMemberErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The organization does not exist, or the person does not belong to it.
+     */
+    404: Problem;
+};
+
+export type RemoveAdminOrganizationMemberError = RemoveAdminOrganizationMemberErrors[keyof RemoveAdminOrganizationMemberErrors];
+
+export type RemoveAdminOrganizationMemberResponses = {
+    /**
+     * The person is out.
+     */
+    204: void;
+};
+
+export type RemoveAdminOrganizationMemberResponse = RemoveAdminOrganizationMemberResponses[keyof RemoveAdminOrganizationMemberResponses];
+
+export type ChangeAdminOrganizationMemberRoleData = {
+    body: ChangeMemberRole;
+    path: {
+        id: string;
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/members/{accountId}/role';
+};
+
+export type ChangeAdminOrganizationMemberRoleErrors = {
+    /**
+     * The role is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The organization does not exist, or the person does not belong to it.
+     */
+    404: Problem;
+};
+
+export type ChangeAdminOrganizationMemberRoleError = ChangeAdminOrganizationMemberRoleErrors[keyof ChangeAdminOrganizationMemberRoleErrors];
+
+export type ChangeAdminOrganizationMemberRoleResponses = {
+    /**
+     * The role is changed.
+     */
+    204: void;
+};
+
+export type ChangeAdminOrganizationMemberRoleResponse = ChangeAdminOrganizationMemberRoleResponses[keyof ChangeAdminOrganizationMemberRoleResponses];
+
 export type RefuseOrganizationData = {
     body: RefuseOrganization;
     path: {
@@ -3553,6 +4063,88 @@ export type RefuseOrganizationResponses = {
 };
 
 export type RefuseOrganizationResponse = RefuseOrganizationResponses[keyof RefuseOrganizationResponses];
+
+export type RestoreOrganizationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/restore';
+};
+
+export type RestoreOrganizationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not taken down.
+     */
+    409: Problem;
+};
+
+export type RestoreOrganizationError = RestoreOrganizationErrors[keyof RestoreOrganizationErrors];
+
+export type RestoreOrganizationResponses = {
+    /**
+     * The organization is back.
+     */
+    204: void;
+};
+
+export type RestoreOrganizationResponse = RestoreOrganizationResponses[keyof RestoreOrganizationResponses];
+
+export type TakeDownOrganizationData = {
+    body: TakeDownOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/take-down';
+};
+
+export type TakeDownOrganizationErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not approved.
+     */
+    409: Problem;
+};
+
+export type TakeDownOrganizationError = TakeDownOrganizationErrors[keyof TakeDownOrganizationErrors];
+
+export type TakeDownOrganizationResponses = {
+    /**
+     * The organization is taken down.
+     */
+    204: void;
+};
+
+export type TakeDownOrganizationResponse = TakeDownOrganizationResponses[keyof TakeDownOrganizationResponses];
 
 export type AcceptOrganizationInvitationData = {
     body?: never;
@@ -5539,45 +6131,6 @@ export type ApproveSolutionResponses = {
 
 export type ApproveSolutionResponse = ApproveSolutionResponses[keyof ApproveSolutionResponses];
 
-export type BackSolutionData = {
-    body: BackSolution;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/solution/admin/solutions/{id}/backing';
-};
-
-export type BackSolutionErrors = {
-    /**
-     * A member is not valid.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-    /**
-     * There is no such submitted solution.
-     */
-    404: Problem;
-};
-
-export type BackSolutionError = BackSolutionErrors[keyof BackSolutionErrors];
-
-export type BackSolutionResponses = {
-    /**
-     * What GenAI Fund says of the solution is written.
-     */
-    204: void;
-};
-
-export type BackSolutionResponse = BackSolutionResponses[keyof BackSolutionResponses];
-
 export type RejectSolutionData = {
     body: RejectSolution;
     path: {
@@ -6832,3 +7385,501 @@ export type SendTalentEnquiryResponses = {
 };
 
 export type SendTalentEnquiryResponse = SendTalentEnquiryResponses[keyof SendTalentEnquiryResponses];
+
+export type ListUseCaseOrganizationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Organizations whose name contains this, ignoring case.
+         */
+        q?: string | null;
+    };
+    url: '/api/usecase/admin/organizations';
+};
+
+export type ListUseCaseOrganizationsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListUseCaseOrganizationsError = ListUseCaseOrganizationsErrors[keyof ListUseCaseOrganizationsErrors];
+
+export type ListUseCaseOrganizationsResponses = {
+    /**
+     * The approved organizations, by name.
+     */
+    200: UseCaseOrganizationList;
+};
+
+export type ListUseCaseOrganizationsResponse = ListUseCaseOrganizationsResponses[keyof ListUseCaseOrganizationsResponses];
+
+export type ListAdminUseCasesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Use cases whose title or organization name contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only use cases in this status, as a reader sees it now.
+         */
+        status?: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+        /**
+         * Only use cases of this organization.
+         */
+        organizationId?: string | null;
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/usecase/admin/use-cases';
+};
+
+export type ListAdminUseCasesErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminUseCasesError = ListAdminUseCasesErrors[keyof ListAdminUseCasesErrors];
+
+export type ListAdminUseCasesResponses = {
+    /**
+     * One page of the use cases the parameters select.
+     */
+    200: AdminUseCaseList;
+};
+
+export type ListAdminUseCasesResponse = ListAdminUseCasesResponses[keyof ListAdminUseCasesResponses];
+
+export type CreateAdminUseCaseData = {
+    body: CreateUseCase;
+    path?: never;
+    query?: never;
+    url: '/api/usecase/admin/use-cases';
+};
+
+export type CreateAdminUseCaseErrors = {
+    /**
+     * A member is not valid, the organization is not approved, the close date is not in the future, or the budget or the timeline is out of order.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type CreateAdminUseCaseError = CreateAdminUseCaseErrors[keyof CreateAdminUseCaseErrors];
+
+export type CreateAdminUseCaseResponses = {
+    /**
+     * The use case, a draft or published as asked.
+     */
+    201: AdminUseCase;
+};
+
+export type CreateAdminUseCaseResponse = CreateAdminUseCaseResponses[keyof CreateAdminUseCaseResponses];
+
+export type GetAdminUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}';
+};
+
+export type GetAdminUseCaseErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+};
+
+export type GetAdminUseCaseError = GetAdminUseCaseErrors[keyof GetAdminUseCaseErrors];
+
+export type GetAdminUseCaseResponses = {
+    /**
+     * The use case.
+     */
+    200: AdminUseCase;
+};
+
+export type GetAdminUseCaseResponse = GetAdminUseCaseResponses[keyof GetAdminUseCaseResponses];
+
+export type ApproveAdminUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}/approve';
+};
+
+export type ApproveAdminUseCaseErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is not in review.
+     */
+    409: Problem;
+};
+
+export type ApproveAdminUseCaseError = ApproveAdminUseCaseErrors[keyof ApproveAdminUseCaseErrors];
+
+export type ApproveAdminUseCaseResponses = {
+    /**
+     * The use case, now published.
+     */
+    200: AdminUseCase;
+};
+
+export type ApproveAdminUseCaseResponse = ApproveAdminUseCaseResponses[keyof ApproveAdminUseCaseResponses];
+
+export type SendBackAdminUseCaseData = {
+    body: SendBackUseCase;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}/send-back';
+};
+
+export type SendBackAdminUseCaseErrors = {
+    /**
+     * The reason is missing or too long.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is not in review.
+     */
+    409: Problem;
+};
+
+export type SendBackAdminUseCaseError = SendBackAdminUseCaseErrors[keyof SendBackAdminUseCaseErrors];
+
+export type SendBackAdminUseCaseResponses = {
+    /**
+     * The use case, now needing changes.
+     */
+    200: AdminUseCase;
+};
+
+export type SendBackAdminUseCaseResponse = SendBackAdminUseCaseResponses[keyof SendBackAdminUseCaseResponses];
+
+export type ListMyUseCasesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/usecase/mine';
+};
+
+export type ListMyUseCasesErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+};
+
+export type ListMyUseCasesError = ListMyUseCasesErrors[keyof ListMyUseCasesErrors];
+
+export type ListMyUseCasesResponses = {
+    /**
+     * Every use case of the organization, the most recently touched first.
+     */
+    200: MyUseCases;
+};
+
+export type ListMyUseCasesResponse = ListMyUseCasesResponses[keyof ListMyUseCasesResponses];
+
+export type CreateMyUseCaseData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/usecase/mine';
+};
+
+export type CreateMyUseCaseErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+};
+
+export type CreateMyUseCaseError = CreateMyUseCaseErrors[keyof CreateMyUseCaseErrors];
+
+export type CreateMyUseCaseResponses = {
+    /**
+     * The empty draft.
+     */
+    201: MyUseCase;
+};
+
+export type CreateMyUseCaseResponse = CreateMyUseCaseResponses[keyof CreateMyUseCaseResponses];
+
+export type GetMyUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}';
+};
+
+export type GetMyUseCaseErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The organization has no such use case.
+     */
+    404: Problem;
+};
+
+export type GetMyUseCaseError = GetMyUseCaseErrors[keyof GetMyUseCaseErrors];
+
+export type GetMyUseCaseResponses = {
+    /**
+     * The use case.
+     */
+    200: MyUseCase;
+};
+
+export type GetMyUseCaseResponse = GetMyUseCaseResponses[keyof GetMyUseCaseResponses];
+
+export type SaveMyUseCaseData = {
+    body: SaveMyUseCase;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}';
+};
+
+export type SaveMyUseCaseErrors = {
+    /**
+     * A part is not valid, or the budget or the timeline is out of order.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The organization has no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is in review or closed, or someone saved a newer version.
+     */
+    409: Problem;
+};
+
+export type SaveMyUseCaseError = SaveMyUseCaseErrors[keyof SaveMyUseCaseErrors];
+
+export type SaveMyUseCaseResponses = {
+    /**
+     * The use case as saved, with its new version.
+     */
+    200: MyUseCase;
+};
+
+export type SaveMyUseCaseResponse = SaveMyUseCaseResponses[keyof SaveMyUseCaseResponses];
+
+export type MoveMyUseCaseToDraftData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}/draft';
+};
+
+export type MoveMyUseCaseToDraftErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The organization has no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is neither in review nor published.
+     */
+    409: Problem;
+};
+
+export type MoveMyUseCaseToDraftError = MoveMyUseCaseToDraftErrors[keyof MoveMyUseCaseToDraftErrors];
+
+export type MoveMyUseCaseToDraftResponses = {
+    /**
+     * The use case, now a draft.
+     */
+    200: MyUseCase;
+};
+
+export type MoveMyUseCaseToDraftResponse = MoveMyUseCaseToDraftResponses[keyof MoveMyUseCaseToDraftResponses];
+
+export type SubmitMyUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}/submit';
+};
+
+export type SubmitMyUseCaseErrors = {
+    /**
+     * A part is missing, or the close date has passed.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The organization has no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is not a draft.
+     */
+    409: Problem;
+};
+
+export type SubmitMyUseCaseError = SubmitMyUseCaseErrors[keyof SubmitMyUseCaseErrors];
+
+export type SubmitMyUseCaseResponses = {
+    /**
+     * The use case, now in review.
+     */
+    200: MyUseCase;
+};
+
+export type SubmitMyUseCaseResponse = SubmitMyUseCaseResponses[keyof SubmitMyUseCaseResponses];
+
+export type ListUseCasesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Use cases whose title or goal contains this, or whose organization name does, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only use cases of this industry.
+         */
+        industry?: string | null;
+        /**
+         * The order: the most recently published first, the nearest deadline first, or the largest budget first.
+         */
+        sort?: 'newest' | 'deadline' | 'budget';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/usecase/use-cases';
+};
+
+export type ListUseCasesErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+};
+
+export type ListUseCasesError = ListUseCasesErrors[keyof ListUseCasesErrors];
+
+export type ListUseCasesResponses = {
+    /**
+     * One page of the use cases the parameters select.
+     */
+    200: PublicUseCaseList;
+};
+
+export type ListUseCasesResponse = ListUseCasesResponses[keyof ListUseCasesResponses];

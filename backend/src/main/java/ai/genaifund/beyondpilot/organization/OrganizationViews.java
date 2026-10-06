@@ -44,10 +44,12 @@ final class OrganizationViews {
 		return new OrganizationResponse(organization.getId(), organization.getSlug(), organization.getName(),
 				organization.getType(), organization.getWebsite(), organization.getCountry(),
 				organization.getTeamSize(), organization.getIndustries(), organization.getDescription(),
-				organization.getFoundedYear(), organization.getLogoUrl(),
+				organization.getFoundedYear(), organization.getLogoFileId(),
 				organization.getEmailDomain(),
 				organization.isAutoJoin(), organization.getStatus(), organization.getDecisionReason(),
-				organization.getDecisionMessage(), organization.getVersion(), organization.getCreatedAt());
+				organization.getDecisionMessage(), organization.getSuspensionReason(),
+				organization.getSuspensionMessage(), organization.getSuspendedAt(), organization.getVersion(),
+				organization.getCreatedAt());
 	}
 
 	static List<MemberResponse> members(List<Member> members, Map<UUID, Person> people, @Nullable UUID caller) {

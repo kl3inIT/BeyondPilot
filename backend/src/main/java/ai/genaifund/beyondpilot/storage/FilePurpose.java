@@ -17,8 +17,18 @@ public enum FilePurpose {
 	/** The photo of a person on their talent profile, which they upload themselves. */
 	TALENT_PHOTO("talent_photo", true, false, Set.of("image/png", "image/jpeg", "image/webp")),
 
+	/** The logo of an organization, which one of its owners uploads. */
+	ORGANIZATION_LOGO("organization_logo", true, false, Set.of("image/png", "image/jpeg", "image/webp")),
+
 	/** A deck or a proposal attached to an application. */
 	APPLICATION_FILE("application_file", false, false, Set.of("application/pdf")),
+
+	/** A document or an image that explains a use case: samples of the data, a process, a form. */
+	USE_CASE_ATTACHMENT("use_case_attachment", false, false,
+			Set.of("application/pdf", "image/png", "image/jpeg",
+					"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+					"application/vnd.openxmlformats-officedocument.presentationml.presentation")),
 
 	/** The deck of a solution. The solution module decides who reads it. */
 	SOLUTION_DECK("solution_deck", false, false, Set.of("application/pdf")),

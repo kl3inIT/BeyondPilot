@@ -99,6 +99,7 @@ test.describe("admin", () => {
     const navigation = page.getByRole("navigation", { name: "Admin navigation" });
     await expect(navigation.getByRole("list", { name: "Review" }).getByRole("link")).toHaveText([
       "Programs",
+      "Use cases",
       "AI solutions",
       "AI talent",
       "Organisations",

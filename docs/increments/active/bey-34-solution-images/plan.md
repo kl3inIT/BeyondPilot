@@ -5,11 +5,11 @@ Design: [design.md](design.md). Tracked in Linear as BEY-34.
 | #   | Step                                                                                                                                                                   | State       |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
 | 1   | The frames in Figma, in one section in the order of the product: the public pages, the provider's workspace with its row menus, the operators' review                  | Done        |
-| 2   | `V29` and `V30`; the purposes `solution_logo` and `solution_image`; the images on `Solution`, its request and its responses; `missing` on the list of an organization  | Done        |
+| 2   | `V37` and `V38`; the purposes `solution_logo` and `solution_image`; the images on `Solution`, its request and its responses; `missing` on the list of an organization  | Done        |
 | 3   | Naming, moving and dropping images in `SolutionService`; `DroppedFiles` for the deck and the images; a save that takes nothing away from a reviewed solution           | Done        |
 | 4   | `SolutionTest`, the tests of the modules that send a solution for review, and the matrix in `docs/tests/solution.md`; `openapi.yml` and the generated web client       | Done        |
 | 5   | Web: the image controls of the Evidence step, the review step, the card and the page of the directory, the row menu with its confirmations, the operators' record      | Done        |
-| 5b  | What GenAI Fund says of a solution (`V31`, the operators' form, the card, the facts and the proof of the page), the channels, the review as a pill, the logo in search | Done        |
+| 5b  | What GenAI Fund says of a solution (`V39`, the operators' form, the card, the facts and the proof of the page), the channels, the review as a pill, the logo in search | Done        |
 | 6   | Unit tests of the editor's state; end-to-end tests of the images, the row menus and the public page                                                                    | Written     |
 | 7   | Both gates, and the end-to-end suite, on the whole change                                                                                                              | Not run yet |
 

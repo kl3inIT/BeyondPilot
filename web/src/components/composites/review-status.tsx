@@ -1,7 +1,7 @@
 import { Status } from "@/components/composites/status";
 
 /** What GenAI Fund's review made of a record, from a draft to a decision. */
-type ReviewState = "draft" | "pending" | "submitted" | "approved" | "rejected";
+type ReviewState = "draft" | "pending" | "submitted" | "approved" | "rejected" | "suspended";
 
 const tones = {
   draft: "neutral",
@@ -9,6 +9,7 @@ const tones = {
   submitted: "warning",
   approved: "success",
   rejected: "destructive",
+  suspended: "destructive",
 } as const;
 
 /** The review state of a record as a dot and its word; the word is given already translated. */
