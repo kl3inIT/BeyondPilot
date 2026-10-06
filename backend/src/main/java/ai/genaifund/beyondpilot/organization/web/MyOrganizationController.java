@@ -94,7 +94,10 @@ class MyOrganizationController {
 	@ApiResponse(responseCode = "403", description = NOT_OWNER,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "409",
-			description = "The address already belongs to the organization, or already holds an open invitation.",
+			description = "The organization is not approved, or the address already belongs to it or already holds an open invitation.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "429",
+			description = "The organization sent the most invitations it can in a day, or keeps the most it can open.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void invite(@CurrentActor Actor actor, @Valid @RequestBody InviteMemberRequest request) {
 		organizations.invite(actor, request);
@@ -192,12 +195,15 @@ class MyOrganizationController {
 	@PutMapping(path = "/auto-join", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(operationId = "changeOrganizationAutoJoin",
-			summary = "Let addresses on the organization's domain join without asking, or stop that",
+			summary = "Let addresses on the organization's verified domain join without asking, or stop that",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "204", description = "The setting is saved.", content = @Content)
 	@ApiResponse(responseCode = "400", description = "The value is missing.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "403", description = NOT_OWNER,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409",
+			description = "Turned on for an organization that is not approved or has no verified domain.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void changeAutoJoin(@CurrentActor Actor actor, @Valid @RequestBody AutoJoinRequest request) {
 		organizations.letDomainJoin(actor, request.autoJoin());

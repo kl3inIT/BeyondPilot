@@ -32,7 +32,7 @@ public class MembershipRepository {
 			""";
 
 	private static final String REQUESTS = """
-			select id, organization_id, account_id, message, created_at from organization_join_request
+			select id, organization_id, account_id, message, claim, created_at from organization_join_request
 			""";
 
 	private final JdbcClient jdbc;
@@ -55,9 +55,20 @@ public class MembershipRepository {
 			Instant createdAt) {
 	}
 
-	/** One open request to join. */
-	public record JoinRequest(UUID id, UUID organizationId, UUID accountId, @Nullable String message,
+	/**
+	 * One open request to join.
+	 * @param claim whether nobody owns the organization, so GenAI Fund decides and approval makes the person its owner
+	 */
+	public record JoinRequest(UUID id, UUID organizationId, UUID accountId, @Nullable String message, boolean claim,
 			Instant createdAt) {
+	}
+
+	/** The request a person made last, once it was decided or withdrawn. */
+	public record ClosedRequest(UUID organizationId, String status, boolean claim, Instant decidedAt) {
+
+		public boolean isDeclined() {
+			return "declined".equals(status);
+		}
 	}
 
 	public Optional<Member> memberOf(UUID accountId) {
@@ -106,13 +117,34 @@ public class MembershipRepository {
 			.update();
 	}
 
-	/** Records the invitation unless the address already holds an open one of this organization; says whether it did. */
-	public boolean invite(UUID id, UUID organizationId, String email, String role, UUID invitedBy) {
+	/**
+	 * Records the invitation unless the address already holds an open one of this organization; says whether it did.
+	 * @param byOperator whether an operator sends it, which keeps it out of the organization's limits
+	 */
+	public boolean invite(UUID id, UUID organizationId, String email, String role, UUID invitedBy,
+			boolean byOperator) {
 		return jdbc.sql("""
-				insert into organization_invitation (id, organization_id, email, role, invited_by_account_id)
-				values (?, ?, ?, ?, ?)
+				insert into organization_invitation
+				    (id, organization_id, email, role, invited_by_account_id, sent_by_operator)
+				values (?, ?, ?, ?, ?, ?)
 				on conflict (organization_id, lower(email)) where status = 'pending' do nothing
-				""").params(id, organizationId, email, role, invitedBy).update() == 1;
+				""").params(id, organizationId, email, role, invitedBy, byOperator).update() == 1;
+	}
+
+	/** How many invitations the organization's owners sent in the last 24 hours, whatever became of them. */
+	public int invitationsSentInTheLastDay(UUID organizationId) {
+		return jdbc.sql("""
+				select count(*) from organization_invitation
+				where organization_id = ? and not sent_by_operator and created_at > now() - interval '24 hours'
+				""").param(organizationId).query(Integer.class).single();
+	}
+
+	/** How many invitations of the organization's owners nobody has answered yet. */
+	public int openInvitationsByOwners(UUID organizationId) {
+		return jdbc.sql("""
+				select count(*) from organization_invitation
+				where organization_id = ? and not sent_by_operator and status = 'pending'
+				""").param(organizationId).query(Integer.class).single();
 	}
 
 	public Optional<Invitation> openInvitation(UUID id) {
@@ -143,18 +175,48 @@ public class MembershipRepository {
 				""").params(status, id).update() == 1;
 	}
 
-	/** Records the request unless the person already waits on one; says whether it did. */
-	public boolean request(UUID id, UUID organizationId, UUID accountId, @Nullable String message) {
+	/**
+	 * Records the request unless the person already waits on one; says whether it did.
+	 * @param claim whether nobody owns the organization, so GenAI Fund decides it
+	 */
+	public boolean request(UUID id, UUID organizationId, UUID accountId, @Nullable String message, boolean claim) {
 		return jdbc.sql("""
-				insert into organization_join_request (id, organization_id, account_id, message)
-				values (:id, :organizationId, :accountId, :message)
+				insert into organization_join_request (id, organization_id, account_id, message, claim)
+				values (:id, :organizationId, :accountId, :message, :claim)
 				on conflict (account_id) where status = 'pending' do nothing
 				""")
 			.param("id", id)
 			.param("organizationId", organizationId)
 			.param("accountId", accountId)
 			.param("message", message, Types.VARCHAR)
+			.param("claim", claim)
 			.update() == 1;
+	}
+
+	/** The request the person made last, when it is no longer open; empty when they never asked or still wait. */
+	public Optional<ClosedRequest> latestClosedRequestOf(UUID accountId) {
+		return jdbc.sql("""
+				select organization_id, status, claim, decided_at
+				from (select organization_id, status, claim, decided_at from organization_join_request
+				      where account_id = ?
+				      order by created_at desc, id
+				      limit 1) latest
+				where status <> 'pending'
+				""")
+			.param(accountId)
+			.query((row, index) -> new ClosedRequest(row.getObject("organization_id", UUID.class),
+					row.getString("status"), row.getBoolean("claim"), row.getTimestamp("decided_at").toInstant()))
+			.optional();
+	}
+
+	/**
+	 * Hands the open claims on an organization to its owners, once it has one: from then on they decide who joins.
+	 */
+	public void claimsBecomeRequests(UUID organizationId) {
+		jdbc.sql("""
+				update organization_join_request set claim = false
+				where organization_id = ? and status = 'pending' and claim
+				""").param(organizationId).update();
 	}
 
 	public Optional<JoinRequest> openRequest(UUID id) {
@@ -204,7 +266,7 @@ public class MembershipRepository {
 
 	private static JoinRequest joinRequest(ResultSet row, int index) throws SQLException {
 		return new JoinRequest(row.getObject("id", UUID.class), row.getObject("organization_id", UUID.class),
-				row.getObject("account_id", UUID.class), row.getString("message"),
+				row.getObject("account_id", UUID.class), row.getString("message"), row.getBoolean("claim"),
 				row.getTimestamp("created_at").toInstant());
 	}
 }

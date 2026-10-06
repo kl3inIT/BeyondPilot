@@ -1,5 +1,7 @@
 package ai.genaifund.beyondpilot.organization;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.Normalizer;
 import java.util.List;
 import java.util.Locale;
@@ -9,10 +11,12 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import ai.genaifund.beyondpilot.identity.Person;
+import ai.genaifund.beyondpilot.organization.dto.DeclinedRequestResponse;
 import ai.genaifund.beyondpilot.organization.dto.InvitationResponse;
 import ai.genaifund.beyondpilot.organization.dto.JoinRequestResponse;
 import ai.genaifund.beyondpilot.organization.dto.MemberResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationResponse;
+import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.ClosedRequest;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.Invitation;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.JoinRequest;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.Member;
@@ -33,6 +37,8 @@ final class OrganizationViews {
 
 	private static final int MAX_SLUG_LENGTH = 60;
 
+	private static final String WWW = "www.";
+
 	private OrganizationViews() {
 	}
 
@@ -40,6 +46,7 @@ final class OrganizationViews {
 		return new OrganizationResponse(organization.getId(), organization.getSlug(), organization.getName(),
 				organization.getRoles(), organization.getType(), organization.getWebsite(), organization.getCountry(),
 				organization.getTeamSize(), organization.getIndustries(), organization.getDescription(),
+				organization.getFoundedYear(), organization.getLogoUrl(),
 				organization.getEmailDomain(),
 				organization.isAutoJoin(), organization.getStatus(), organization.getDecisionReason(),
 				organization.getDecisionMessage(), organization.getVersion(), organization.getCreatedAt());
@@ -60,10 +67,15 @@ final class OrganizationViews {
 				invitation.createdAt());
 	}
 
-	static JoinRequestResponse joinRequest(JoinRequest request, String organizationName, Person person,
-			boolean claim) {
-		return new JoinRequestResponse(request.id(), request.organizationId(), organizationName, person.displayName(),
-				person.email(), request.message(), claim, request.createdAt());
+	static JoinRequestResponse joinRequest(JoinRequest request, Organization organization, Person person) {
+		return new JoinRequestResponse(request.id(), request.organizationId(), organization.getName(),
+				organization.getType(), organization.getCountry(), organization.getEmailDomain(), person.displayName(),
+				person.email(), request.message(), request.claim(), request.createdAt());
+	}
+
+	static DeclinedRequestResponse declined(ClosedRequest request, Organization organization) {
+		return new DeclinedRequestResponse(organization.getId(), organization.getName(), organization.getType(),
+				organization.getCountry(), organization.getEmailDomain(), request.claim(), request.decidedAt());
 	}
 
 	/** The accounts a list of invitations and requests names, to look their people up at once. */
@@ -100,6 +112,24 @@ final class OrganizationViews {
 		}
 		String domain = email.substring(at + 1).toLowerCase(Locale.ROOT);
 		return PUBLIC_MAIL_DOMAINS.contains(domain) ? null : domain;
+	}
+
+	/** The domain a website is served from, in lowercase and without {@code www.}; null when it names none. */
+	static @Nullable String websiteDomain(@Nullable String website) {
+		if (website == null) {
+			return null;
+		}
+		try {
+			String host = new URI(website).getHost();
+			if (host == null) {
+				return null;
+			}
+			String domain = host.toLowerCase(Locale.ROOT);
+			return domain.startsWith(WWW) ? domain.substring(WWW.length()) : domain;
+		}
+		catch (URISyntaxException exception) {
+			return null;
+		}
 	}
 
 	/** An address for the name: its letters and digits in lowercase, joined by hyphens. */

@@ -1,7 +1,7 @@
 // What the stub backend holds of a signed-in person's own records: their organization and its
 // members, its solutions, and their talent profile. The account behind the request decides what it
 // reads: an owner and a member of the same approved provider, a person invited to it, a person who
-// asked to join it, and people who belong to no organization.
+// asked to join it, a person its owners declined, and people who belong to no organization.
 
 const day = "2026-10-01T03:00:00Z";
 
@@ -18,12 +18,22 @@ const pocketPolicy = {
   website: "https://pocketpolicy.example",
   emailDomain: "pocketpolicy.example",
   description: "Assistants for insurers across Southeast Asia.",
+  foundedYear: 2021,
+  logoUrl: null,
   autoJoin: false,
   version: 3,
   createdAt: day,
 };
 
 const ofPocketPolicy = { organizationId: pocketPolicy.id, organizationName: pocketPolicy.name };
+
+/** What a request to get into the organization says about it. */
+const aboutPocketPolicy = {
+  ...ofPocketPolicy,
+  organizationType: pocketPolicy.type,
+  organizationCountry: pocketPolicy.country,
+  organizationDomain: pocketPolicy.emailDomain,
+};
 
 const invitation = {
   id: "9c4f6d85-3c31-4d86-8d88-3a6c9c9e0d11",
@@ -41,8 +51,14 @@ const request = {
   email: "nam.do@pocketpolicy.example",
   message: "I joined the claims team.",
   createdAt: day,
-  ...ofPocketPolicy,
+  ...aboutPocketPolicy,
 };
+
+/** The answer to a request the owners declined. */
+const declined = { claim: false, decidedAt: day, ...aboutPocketPolicy };
+
+/** What the owners may still send: one invitation went out today and waits for its answer. */
+const allowance = { open: true, leftToday: 19, dailyLimit: 20, leftOpen: 49, openLimit: 50 };
 
 const members = [
   {
@@ -69,6 +85,7 @@ const standing = {
   member: { role: "member" },
   invited: { invitations: [invitation] },
   asked: { request },
+  declined: { declined },
 };
 
 function deployment(id, title, status, more) {
@@ -230,13 +247,25 @@ export function answerWorkspace(url, session) {
   if (!session) {
     return [401, {}];
   }
-  const { role, invitations = [], request: asked = null } = standing[session] ?? {};
+  const {
+    role,
+    invitations = [],
+    request: asked = null,
+    declined: refusedRequest = null,
+  } = standing[session] ?? {};
 
   if (pathname === "/api/organization/mine") {
     const jobTitle = members.find((person) => person.role === role)?.jobTitle ?? null;
     return [
       200,
-      { organization: role ? pocketPolicy : null, role, jobTitle, invitations, request: asked },
+      {
+        organization: role ? pocketPolicy : null,
+        role,
+        jobTitle,
+        invitations,
+        request: asked,
+        declined: refusedRequest,
+      },
     ];
   }
   if (pathname === "/api/talent/mine") {
@@ -252,6 +281,7 @@ export function answerWorkspace(url, session) {
         members: members.map((person) => ({ ...person, self: person.role === role })),
         invitations: [invitation],
         requests: [request],
+        allowance: role === "owner" ? allowance : null,
       },
     ];
   }

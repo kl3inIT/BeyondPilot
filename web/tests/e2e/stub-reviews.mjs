@@ -45,6 +45,7 @@ const organizations = [
     }),
     createdBy: "Linh Nguyễn",
     createdByEmail: "linh.nguyen@lumenhealth.example",
+    suggestedDomain: "lumenhealth.example",
     members: [
       person(
         "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a11",
@@ -63,6 +64,7 @@ const organizations = [
     }),
     createdBy: "Đạt Phan",
     createdByEmail: "dat.phan@example.com",
+    suggestedDomain: "openkitchen.example",
     members: [],
     invitations: [],
     claims: [
@@ -74,6 +76,9 @@ const organizations = [
         message: "I founded the team.",
         organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c02",
         organizationName: "Open Kitchen",
+        organizationType: "builder_team",
+        organizationCountry: "VN",
+        organizationDomain: null,
         createdAt: day,
       },
     ],
@@ -270,7 +275,8 @@ const lists = {
   "/api/organization/admin/organizations": {
     records: organizations,
     idOf: (record) => record.organization.id,
-    statusOf: (record) => record.organization.status,
+    // An open claim waits for a decision as a new organization does, whatever the review status.
+    statusOf: (record) => (record.claims.length > 0 ? "pending" : record.organization.status),
     textOf: (record) => record.organization.name,
     summaryOf: ({ organization: { id, name, slug, status, type, roles, country }, ...record }) => ({
       id,
@@ -283,7 +289,10 @@ const lists = {
       createdAt: day,
       members: record.members.length,
       owned: record.members.some((member) => member.role === "owner"),
-      openClaims: record.claims.length,
+      request: status === "pending" ? "new" : record.claims.length > 0 ? "claim" : null,
+      claimId: record.claims[0]?.id ?? null,
+      askedBy: status === "pending" ? record.createdBy : (record.claims[0]?.name ?? null),
+      requestedAt: status === "pending" || record.claims.length > 0 ? day : null,
     }),
   },
   "/api/solution/admin/solutions": {

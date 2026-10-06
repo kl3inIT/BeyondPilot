@@ -20,6 +20,9 @@ final class OrganizationCodes {
 
 	static final String WEBSITE = "https?://[^\\s]+";
 
+	/** A domain name in lowercase, as the part of a work address after the at sign. */
+	static final String DOMAIN = "[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+";
+
 	private OrganizationCodes() {
 	}
 }

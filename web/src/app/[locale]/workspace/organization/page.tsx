@@ -21,6 +21,7 @@ export async function generateMetadata({
 
 export default async function MyOrganizationRoute({
   params,
+  searchParams,
 }: PageProps<"/[locale]/workspace/organization">) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -32,7 +33,7 @@ export default async function MyOrganizationRoute({
   if (!organization) {
     return (
       <OrganizationEntryFrame>
-        <OrganizationEntry mine={mine} />
+        <OrganizationEntry mine={mine} finding={(await searchParams).find !== undefined} />
       </OrganizationEntryFrame>
     );
   }

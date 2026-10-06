@@ -58,10 +58,14 @@ public class Organization {
 
 	private @Nullable String description;
 
+	private @Nullable Integer foundedYear;
+
+	private @Nullable String logoUrl;
+
 	private @Nullable String emailDomain;
 
 	@Column(nullable = false)
-	private boolean autoJoin = true;
+	private boolean autoJoin;
 
 	@Column(nullable = false)
 	private String status;
@@ -107,7 +111,7 @@ public class Organization {
 
 	public void describe(String name, List<String> roles, String type, @Nullable String website,
 			@Nullable String country, @Nullable String teamSize, List<String> industries,
-			@Nullable String description) {
+			@Nullable String description, @Nullable Integer foundedYear, @Nullable String logoUrl) {
 		this.name = name;
 		this.roles = roles.toArray(String[]::new);
 		this.type = type;
@@ -116,11 +120,18 @@ public class Organization {
 		this.teamSize = teamSize;
 		this.industries = industries.toArray(String[]::new);
 		this.description = description;
+		this.foundedYear = foundedYear;
+		this.logoUrl = logoUrl;
 	}
 
-	/** The domain whose addresses may join; null for an organization made from a public mail address. */
+	/**
+	 * The domain an operator verified as the organization's; null when none is. Without one no address joins at once.
+	 */
 	public void verifyDomain(@Nullable String emailDomain) {
 		this.emailDomain = emailDomain;
+		if (emailDomain == null) {
+			autoJoin = false;
+		}
 	}
 
 	public void letDomainJoin(boolean autoJoin) {
@@ -196,6 +207,14 @@ public class Organization {
 
 	public @Nullable String getDescription() {
 		return description;
+	}
+
+	public @Nullable Integer getFoundedYear() {
+		return foundedYear;
+	}
+
+	public @Nullable String getLogoUrl() {
+		return logoUrl;
 	}
 
 	public @Nullable String getEmailDomain() {

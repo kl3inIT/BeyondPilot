@@ -72,7 +72,12 @@ class SolutionTest {
 		UUID solution = create(founder, "Writers Desk");
 
 		String colleague = signIn("colleague@writers.test");
-		post(colleague, ORGANIZATION + "/organizations/" + organization + "/join", Map.of()).expectStatus().isOk();
+		post(founder, ORGANIZATION + "/mine/invitations", Map.of("email", "colleague@writers.test", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		String invitation = JsonPath.read(body(get(colleague, ORGANIZATION + "/mine").expectStatus().isOk()),
+				"$.invitations[0].id");
+		post(colleague, ORGANIZATION + "/invitations/" + invitation + "/accept", null).expectStatus().isNoContent();
 		String forMember = body(get(colleague, MINE).expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(forMember, "$.items[*].name")).containsExactly("Writers Desk");
 		assertThat(JsonPath.<Boolean>read(forMember, "$.editable")).isFalse();
@@ -392,13 +397,14 @@ class SolutionTest {
 	private UUID organization(String session, String name, String role) {
 		return UUID.fromString(JsonPath.read(body(post(session, ORGANIZATION + "/organizations",
 				Map.of("name", name, "roles", List.of(role), "type", "company", "country", "VN", "teamSize", "2_9",
-						"industries", List.of("insurance"), "website", "https://example.test", "jobTitle", "Founder"))
+						"industries", List.of("insurance"), "website", "https://example.test", "description",
+						"Assistants for insurers.", "foundedYear", 2021, "jobTitle", "Founder"))
 			.expectStatus()
 			.isCreated()), "$.id"));
 	}
 
 	private void approve(UUID organization) {
-		post(operator, ORGANIZATION + "/admin/organizations/" + organization + "/approve", null).expectStatus()
+		post(operator, ORGANIZATION + "/admin/organizations/" + organization + "/approve", Map.of()).expectStatus()
 			.isNoContent();
 	}
 

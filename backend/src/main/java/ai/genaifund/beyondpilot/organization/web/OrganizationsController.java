@@ -96,7 +96,7 @@ class OrganizationsController {
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "joinOrganization", summary = "Ask to get into an organization",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "200", description = "What asking did: joined, owner, or a request that waits.")
+	@ApiResponse(responseCode = "200", description = "What asking did: joined, or a request that waits.")
 	@ApiResponse(responseCode = "400", description = "The message is too long.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "There is no such approved organization.",

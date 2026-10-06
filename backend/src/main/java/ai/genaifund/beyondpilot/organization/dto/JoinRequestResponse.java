@@ -10,11 +10,16 @@ import org.jspecify.annotations.Nullable;
 public record JoinRequestResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID organizationId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String organizationName,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				allowableValues = { "company", "builder_team", "independent_builder", "other" }) String organizationType,
+		@Schema(types = { "string", "null" }) @Nullable String organizationCountry,
+		@Schema(types = { "string", "null" },
+				description = "The organization's verified domain.") @Nullable String organizationDomain,
 		@Schema(types = { "string", "null" },
 				description = "The name of the person who asks; null until they have one.") @Nullable String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String email,
 		@Schema(types = { "string", "null" }) @Nullable String message,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Whether nobody owns the organization, so GenAI Fund decides and approval makes the person its owner.") boolean claim,
+				description = "Whether nobody owned the organization when the person asked, so GenAI Fund decides and approval makes the person its owner.") boolean claim,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt) {
 }

@@ -2,7 +2,7 @@ import { useTranslations } from "next-intl";
 
 import type { AccountMenuProps } from "@/components/layout/account-menu";
 import { AdminAccount } from "@/components/layout/admin-account";
-import { AdminNav, type AdminNavItem } from "@/components/layout/admin-nav";
+import { AdminNav, type AdminNavGroup } from "@/components/layout/admin-nav";
 import {
   Sidebar,
   SidebarContent,
@@ -18,9 +18,9 @@ import { siteRoutes } from "@/lib/site";
 
 /**
  * The admin area's sidebar, the stock shadcn one that collapses to icons: the brand, the
- * destinations it is given, and the signed-in person at the foot.
+ * destinations it is given, in their groups, and the signed-in person at the foot.
  */
-function AdminSidebar({ account, items }: { account: AccountMenuProps; items: AdminNavItem[] }) {
+function AdminSidebar({ account, groups }: { account: AccountMenuProps; groups: AdminNavGroup[] }) {
   const t = useTranslations("Admin");
   const s = useTranslations("Site");
 
@@ -45,7 +45,7 @@ function AdminSidebar({ account, items }: { account: AccountMenuProps; items: Ad
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <AdminNav label={t("nav.label")} items={items} />
+        <AdminNav label={t("nav.label")} groups={groups} />
       </SidebarContent>
       <SidebarFooter>
         <AdminAccount {...account} />

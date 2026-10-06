@@ -61,7 +61,7 @@ export type AdminCreateOrganization = {
      */
     country?: string | null;
     /**
-     * The domain of the company's work addresses. The first person who signs in on it may own the organization at once.
+     * The domain of the company's work addresses, which the operator vouches for.
      */
     emailDomain?: string | null;
     name: string;
@@ -90,6 +90,10 @@ export type AdminOrganization = {
     invitations: Array<OrganizationInvitation>;
     members: Array<OrganizationMember>;
     organization: Organization;
+    /**
+     * A domain the operator may verify with a decision: the one it has, else the creator's work domain while it waits for review, else its website's. Null when another organization holds it.
+     */
+    suggestedDomain?: string | null;
 };
 
 /**
@@ -112,19 +116,31 @@ export type AdminOrganizationList = {
  * One organization in the operators' list.
  */
 export type AdminOrganizationSummary = {
+    /**
+     * Who asked for what waits, as they are shown.
+     */
+    askedBy?: string | null;
+    /**
+     * The oldest open claim, which the list decides first; null without one.
+     */
+    claimId?: string | null;
     country?: string | null;
     createdAt: string;
     id: string;
     members: number;
     name: string;
     /**
-     * How many people ask to own it; always 0 for an owned organization.
-     */
-    openClaims: number;
-    /**
      * Whether a person owns it; an operator-created organization has no owner until someone accepts or claims it.
      */
     owned: boolean;
+    /**
+     * What waits for an operator: `new` for an organization to review, `claim` for a request to own one; null when nothing does.
+     */
+    request?: 'new' | 'claim';
+    /**
+     * When they asked.
+     */
+    requestedAt?: string | null;
     roles: Array<string>;
     slug: string;
     status: 'pending' | 'approved' | 'rejected';
@@ -269,6 +285,16 @@ export type AdminTalentList = {
 };
 
 /**
+ * What an operator vouches for with an approval, of a new organization or of a claim to own one: the domain of the organization's work addresses, or none.
+ */
+export type ApproveOrganization = {
+    /**
+     * The verified domain; null leaves the organization as it is.
+     */
+    emailDomain?: string | null;
+};
+
+/**
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
@@ -344,7 +370,14 @@ export type CreateOrganization = {
      * ISO 3166-1 alpha-2.
      */
     country: string;
-    description?: string | null;
+    /**
+     * What it does and for whom, in at most 280 characters.
+     */
+    description: string;
+    /**
+     * The year it started; for an independent builder, the year the practice did.
+     */
+    foundedYear: number;
     /**
      * The industries it works in or serves, as the codes the solutions use.
      */
@@ -353,6 +386,10 @@ export type CreateOrganization = {
      * What the creator does in the organization.
      */
     jobTitle: string;
+    /**
+     * The address of its logo.
+     */
+    logoUrl?: string | null;
     name: string;
     /**
      * One or both of `provider` and `enterprise`.
@@ -360,7 +397,7 @@ export type CreateOrganization = {
     roles: Array<string>;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
-    website?: string | null;
+    website: string;
 };
 
 /**
@@ -413,6 +450,51 @@ export type CustomerDeployment = {
 };
 
 /**
+ * The answer to the caller's last request to get into an organization, when it was declined.
+ */
+export type DeclinedOrganizationRequest = {
+    /**
+     * Whether it was a claim, which GenAI Fund declined; otherwise an owner did.
+     */
+    claim: boolean;
+    decidedAt: string;
+    organizationCountry?: string | null;
+    /**
+     * The organization's verified domain.
+     */
+    organizationDomain?: string | null;
+    organizationId: string;
+    organizationName: string;
+    organizationType: 'company' | 'builder_team' | 'independent_builder' | 'other';
+};
+
+/**
+ * How many more people an organization's owners may invite now.
+ */
+export type InvitationAllowance = {
+    /**
+     * The most invitations it sends in 24 hours.
+     */
+    dailyLimit: number;
+    /**
+     * How many more invitations may wait for an answer at once.
+     */
+    leftOpen: number;
+    /**
+     * How many invitations may still be sent in the current 24 hours.
+     */
+    leftToday: number;
+    /**
+     * Whether the organization may invite at all; one that is not approved may not.
+     */
+    open: boolean;
+    /**
+     * The most invitations that wait for an answer at once.
+     */
+    openLimit: number;
+};
+
+/**
  * An address asked to join the caller's organization.
  */
 export type InviteMember = {
@@ -439,9 +521,9 @@ export type JoinOrganization = {
  */
 export type JoinOutcome = {
     /**
-     * `joined`: the caller is a member. `owner`: nobody owned it and the caller's address is on its domain, so they own it. `requested`: its owners, or GenAI Fund when nobody owns it, decide.
+     * `joined`: the caller is a member. `requested`: its owners, or GenAI Fund when nobody owns it, decide.
      */
-    outcome: 'joined' | 'owner' | 'requested';
+    outcome: 'joined' | 'requested';
 };
 
 /**
@@ -464,6 +546,10 @@ export type Me = {
  * Where the caller stands: the organization they belong to, or their ways in.
  */
 export type MyOrganization = {
+    /**
+     * The answer to the caller's last request, while it is a refusal and they belong nowhere and wait on nothing.
+     */
+    declined?: DeclinedOrganizationRequest | null;
     /**
      * The open invitations to the caller's address.
      */
@@ -517,7 +603,7 @@ export type MyTalent = {
  */
 export type Organization = {
     /**
-     * Whether an address on the domain joins at once; otherwise it asks the owners.
+     * Whether an address on the verified domain joins at once; otherwise it asks the owners.
      */
     autoJoin: boolean;
     /**
@@ -535,14 +621,22 @@ export type Organization = {
     decisionReason?: 'duplicate' | 'not_a_real_organization' | 'incomplete' | 'out_of_scope' | 'other';
     description?: string | null;
     /**
-     * The domain whose addresses may join; null when it was made from a public mail address.
+     * The domain GenAI Fund verified as the organization's; null until it has.
      */
     emailDomain?: string | null;
+    /**
+     * The year it started; null until an owner says.
+     */
+    foundedYear?: number | null;
     id: string;
     /**
      * The industries it works in or serves; empty until an owner names them.
      */
     industries: Array<string>;
+    /**
+     * The address of its logo.
+     */
+    logoUrl?: string | null;
     name: string;
     /**
      * What it does here: `provider` lists AI solutions, `enterprise` posts use cases.
@@ -589,7 +683,7 @@ export type OrganizationInvitation = {
  */
 export type OrganizationJoinRequest = {
     /**
-     * Whether nobody owns the organization, so GenAI Fund decides and approval makes the person its owner.
+     * Whether nobody owned the organization when the person asked, so GenAI Fund decides and approval makes the person its owner.
      */
     claim: boolean;
     createdAt: string;
@@ -600,8 +694,14 @@ export type OrganizationJoinRequest = {
      * The name of the person who asks; null until they have one.
      */
     name?: string | null;
+    organizationCountry?: string | null;
+    /**
+     * The organization's verified domain.
+     */
+    organizationDomain?: string | null;
     organizationId: string;
     organizationName: string;
+    organizationType: 'company' | 'builder_team' | 'independent_builder' | 'other';
 };
 
 /**
@@ -614,7 +714,7 @@ export type OrganizationMatch = {
     name: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     /**
-     * What asking to get in does for this caller: `join` makes them a member at once (owner, when nobody owns it yet), `request` asks its owners, `claim` asks GenAI Fund to let them own it.
+     * What asking to get in does for this caller: `join` makes them a member at once, `request` asks its owners, `claim` asks GenAI Fund to let them own it, which is the only way into an organization nobody owns.
      */
     way: 'join' | 'request' | 'claim';
 };
@@ -636,9 +736,10 @@ export type OrganizationMember = {
 };
 
 /**
- * Who belongs to an organization, owners first. Invitations and requests are empty for a caller who is not an owner.
+ * Who belongs to an organization, owners first. Invitations and requests are empty, and the allowance null, for a caller who is not an owner.
  */
 export type OrganizationMembers = {
+    allowance?: InvitationAllowance | null;
     invitations: Array<OrganizationInvitation>;
     members: Array<OrganizationMember>;
     requests: Array<OrganizationJoinRequest>;
@@ -1129,11 +1230,22 @@ export type SaveOrganization = {
      * ISO 3166-1 alpha-2.
      */
     country: string;
-    description?: string | null;
+    /**
+     * What it does and for whom, in at most 280 characters.
+     */
+    description: string;
+    /**
+     * The year it started; for an independent builder, the year the practice did.
+     */
+    foundedYear: number;
     /**
      * The industries it works in or serves, as the codes the solutions use.
      */
     industries: Array<string>;
+    /**
+     * The address of its logo.
+     */
+    logoUrl?: string | null;
     name: string;
     /**
      * One or both of `provider` and `enterprise`.
@@ -1145,7 +1257,7 @@ export type SaveOrganization = {
      * The version the screen read.
      */
     version: number;
-    website?: string | null;
+    website: string;
 };
 
 /**
@@ -1733,7 +1845,7 @@ export type GetMeResponses = {
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
 
 export type ApproveOrganizationClaimData = {
-    body?: never;
+    body: ApproveOrganization;
     path: {
         id: string;
     };
@@ -1742,6 +1854,10 @@ export type ApproveOrganizationClaimData = {
 };
 
 export type ApproveOrganizationClaimErrors = {
+    /**
+     * The domain is not valid.
+     */
+    400: Problem;
     /**
      * Nobody is signed in.
      */
@@ -1755,7 +1871,7 @@ export type ApproveOrganizationClaimErrors = {
      */
     404: Problem;
     /**
-     * The person joined another organization in the meantime.
+     * The person joined another organization in the meantime, or another organization has the domain.
      */
     409: Problem;
 };
@@ -1815,7 +1931,7 @@ export type ListAdminOrganizationsData = {
          */
         q?: string | null;
         /**
-         * Only organizations of this review status.
+         * Only organizations of this review status; `pending` also selects an approved one with an open claim.
          */
         status?: 'pending' | 'approved' | 'rejected';
         /**
@@ -1925,7 +2041,7 @@ export type GetAdminOrganizationResponses = {
 export type GetAdminOrganizationResponse = GetAdminOrganizationResponses[keyof GetAdminOrganizationResponses];
 
 export type ApproveOrganizationData = {
-    body?: never;
+    body: ApproveOrganization;
     path: {
         id: string;
     };
@@ -1934,6 +2050,10 @@ export type ApproveOrganizationData = {
 };
 
 export type ApproveOrganizationErrors = {
+    /**
+     * The domain is not valid.
+     */
+    400: Problem;
     /**
      * Nobody is signed in.
      */
@@ -1947,7 +2067,7 @@ export type ApproveOrganizationErrors = {
      */
     404: Problem;
     /**
-     * The organization is not waiting for review.
+     * The organization is not waiting for review, or another organization has the domain.
      */
     409: Problem;
 };
@@ -2179,6 +2299,10 @@ export type ChangeOrganizationAutoJoinErrors = {
      * The caller belongs to no organization, or is not an owner of it.
      */
     403: Problem;
+    /**
+     * Turned on for an organization that is not approved or has no verified domain.
+     */
+    409: Problem;
 };
 
 export type ChangeOrganizationAutoJoinError = ChangeOrganizationAutoJoinErrors[keyof ChangeOrganizationAutoJoinErrors];
@@ -2213,9 +2337,13 @@ export type InviteOrganizationMemberErrors = {
      */
     403: Problem;
     /**
-     * The address already belongs to the organization, or already holds an open invitation.
+     * The organization is not approved, or the address already belongs to it or already holds an open invitation.
      */
     409: Problem;
+    /**
+     * The organization sent the most invitations it can in a day, or keeps the most it can open.
+     */
+    429: Problem;
 };
 
 export type InviteOrganizationMemberError = InviteOrganizationMemberErrors[keyof InviteOrganizationMemberErrors];
@@ -2581,7 +2709,7 @@ export type JoinOrganizationError = JoinOrganizationErrors[keyof JoinOrganizatio
 
 export type JoinOrganizationResponses = {
     /**
-     * What asking did: joined, owner, or a request that waits.
+     * What asking did: joined, or a request that waits.
      */
     200: JoinOutcome;
 };

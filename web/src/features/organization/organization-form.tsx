@@ -29,7 +29,10 @@ import { industries, organizationRoles, organizationTypes, teamSizes } from "./o
 import { organizationError } from "./organization-errors";
 
 /** The longest description the backend takes. */
-const MAX_DESCRIPTION = 2000;
+const MAX_DESCRIPTION = 280;
+/** The years the backend takes for when an organization started. */
+const FIRST_YEAR = 1800;
+const LAST_YEAR = 2100;
 /** The most industries the backend takes. */
 const MAX_INDUSTRIES = 5;
 
@@ -37,11 +40,21 @@ const MAX_INDUSTRIES = 5;
 const checkedFields = [
   { name: "jobTitle", id: "organization-job-title" },
   { name: "name", id: "organization-name" },
+  { name: "website", id: "organization-website" },
   { name: "teamSize", id: "organization-team-size" },
   { name: "roles", id: "organization-roles" },
   { name: "industries", id: "organization-industries" },
   { name: "country", id: "organization-country" },
+  { name: "foundedYear", id: "organization-founded-year" },
+  { name: "description", id: "organization-description" },
+  { name: "logoUrl", id: "organization-logo-url" },
 ] as const;
+
+/** The year written in the field when it is one the backend takes; otherwise null. */
+function yearOf(text: string) {
+  const year = Number(text);
+  return /^\d{4}$/.test(text.trim()) && year >= FIRST_YEAR && year <= LAST_YEAR ? year : null;
+}
 
 type OrganizationFormProps = {
   /** The organization to change; without one the form creates it. */
@@ -73,6 +86,8 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
   const [jobTitle, setJobTitle] = useState("");
   const [website, setWebsite] = useState(organization?.website ?? "");
   const [description, setDescription] = useState(organization?.description ?? "");
+  const [foundedYear, setFoundedYear] = useState(String(organization?.foundedYear ?? ""));
+  const [logoUrl, setLogoUrl] = useState(organization?.logoUrl ?? "");
   const [pending, setPending] = useState(false);
   const [invalid, setInvalid] = useState<Set<string>>(new Set());
   const [discarding, setDiscarding] = useState(false);
@@ -98,8 +113,18 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
     if (!organization && !jobTitle.trim()) {
       missing.add("jobTitle");
     }
+    if (!website.trim()) {
+      missing.add("website");
+    }
+    if (!description.trim()) {
+      missing.add("description");
+    }
+    const year = yearOf(foundedYear);
+    if (year === null) {
+      missing.add("foundedYear");
+    }
     setInvalid(missing);
-    if (missing.size > 0) {
+    if (missing.size > 0 || year === null) {
       focusField(checkedFields.find((field) => missing.has(field.name))?.id ?? checkedFields[0].id);
       return;
     }
@@ -110,8 +135,10 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
       country,
       teamSize: teamSize as SaveOrganization["teamSize"],
       industries: chosenIndustries,
-      website: website.trim() || null,
-      description: description.trim() || null,
+      website: website.trim(),
+      description: description.trim(),
+      foundedYear: year,
+      logoUrl: logoUrl.trim() || null,
     };
     setPending(true);
     try {
@@ -147,6 +174,8 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
     setChosenIndustries(organization.industries);
     setWebsite(organization.website ?? "");
     setDescription(organization.description ?? "");
+    setFoundedYear(String(organization.foundedYear ?? ""));
+    setLogoUrl(organization.logoUrl ?? "");
     setInvalid(new Set());
     setDiscarding(false);
   }
@@ -163,6 +192,8 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
       chosenIndustries,
       website,
       description,
+      foundedYear,
+      logoUrl,
     ]) !==
       JSON.stringify([
         organization.name,
@@ -173,6 +204,8 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
         organization.industries,
         organization.website ?? "",
         organization.description ?? "",
+        String(organization.foundedYear ?? ""),
+        organization.logoUrl ?? "",
       ]);
 
   // The form's title is the page's on the create page; on the profile it sits under the organization's name.
@@ -230,10 +263,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
           {bad("name") && <FieldError>{t("nameRequired")}</FieldError>}
         </Field>
         <Field data-invalid={bad("website")}>
-          <FieldLabel htmlFor="organization-website">
-            {t("website")}
-            {optional}
-          </FieldLabel>
+          <FieldLabel htmlFor="organization-website">{t("website")}</FieldLabel>
           <Input
             id="organization-website"
             name="website"
@@ -243,10 +273,14 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
             placeholder="https://"
             maxLength={300}
             value={website}
+            aria-describedby="organization-website-hint"
             onChange={(event) => setWebsite(event.target.value)}
             aria-invalid={bad("website")}
           />
           {bad("website") && <FieldError>{t("websiteInvalid")}</FieldError>}
+          <p id="organization-website-hint" className="text-xs text-muted-foreground">
+            {t("websiteHint")}
+          </p>
         </Field>
       </div>
       {organization?.emailDomain && (
@@ -351,12 +385,27 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
           </NativeSelect>
           {bad("country") && <FieldError>{t("countryRequired")}</FieldError>}
         </Field>
+        <Field data-invalid={bad("foundedYear")}>
+          <FieldLabel htmlFor="organization-founded-year">{t("foundedYear")}</FieldLabel>
+          <Input
+            id="organization-founded-year"
+            name="foundedYear"
+            inputMode="numeric"
+            maxLength={4}
+            placeholder="2021"
+            value={foundedYear}
+            aria-describedby="organization-founded-year-hint"
+            onChange={(event) => setFoundedYear(event.target.value)}
+            aria-invalid={bad("foundedYear")}
+          />
+          {bad("foundedYear") && <FieldError>{t("foundedYearInvalid")}</FieldError>}
+          <p id="organization-founded-year-hint" className="text-xs text-muted-foreground">
+            {t("foundedYearHint")}
+          </p>
+        </Field>
       </div>
-      <Field>
-        <FieldLabel htmlFor="organization-description">
-          {t("description")}
-          {optional}
-        </FieldLabel>
+      <Field data-invalid={bad("description")}>
+        <FieldLabel htmlFor="organization-description">{t("description")}</FieldLabel>
         <Textarea
           id="organization-description"
           rows={4}
@@ -364,13 +413,33 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
           value={description}
           aria-describedby="organization-description-hint"
           onChange={(event) => setDescription(event.target.value)}
+          aria-invalid={bad("description")}
         />
+        {bad("description") && <FieldError>{t("descriptionRequired")}</FieldError>}
         <div className="flex justify-between gap-3 text-xs text-muted-foreground">
           <p id="organization-description-hint">{t("descriptionHint")}</p>
           <span className="shrink-0 tabular-nums">
             {t("counter", { count: description.length, max: MAX_DESCRIPTION })}
           </span>
         </div>
+      </Field>
+      <Field data-invalid={bad("logoUrl")}>
+        <FieldLabel htmlFor="organization-logo-url">
+          {t("logoUrl")}
+          {optional}
+        </FieldLabel>
+        <Input
+          id="organization-logo-url"
+          name="logoUrl"
+          type="url"
+          inputMode="url"
+          placeholder="https://"
+          maxLength={300}
+          value={logoUrl}
+          onChange={(event) => setLogoUrl(event.target.value)}
+          aria-invalid={bad("logoUrl")}
+        />
+        {bad("logoUrl") && <FieldError>{t("websiteInvalid")}</FieldError>}
       </Field>
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { Person } from "@/components/composites/person";
@@ -19,9 +19,7 @@ import { useNotify } from "@/hooks/use-notify";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import {
   approveOrganization,
-  getAdminOrganization,
   refuseOrganization,
-  type AdminOrganization,
   type AdminOrganizationSummary,
   type RefuseOrganization,
 } from "@/lib/api/generated";
@@ -29,6 +27,7 @@ import {
 import { refusalReasons } from "./organization-codes";
 import { organizationError } from "./organization-errors";
 import { websiteHost } from "./organization-format";
+import { useAdminOrganization, useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
 
 type OrganizationReviewProps = {
   /** The organization that waits for a decision, as the list already holds it. */
@@ -38,9 +37,10 @@ type OrganizationReviewProps = {
 };
 
 /**
- * The decision on an organization that waits for review, in a dialog: approve it, or go on to refuse
- * it with a reason its owners read. Who created it and its website are read when the dialog opens;
- * the dialog does not wait for them.
+ * The decision on an organization that waits for review, in a dialog: approve it, with the email
+ * domain the operator verified, or go on to refuse it with a reason its owners read. Who created it,
+ * its website and the domain to confirm are read when the dialog opens; the dialog does not wait for
+ * them.
  */
 function OrganizationReview({ organization, onClose }: OrganizationReviewProps) {
   const t = useTranslations("Admin.organizations.review");
@@ -50,23 +50,13 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
   const format = useFormatter();
   const notify = useNotify();
   const router = useRouter();
-  const [detail, setDetail] = useState<AdminOrganization | null>(null);
+  const detail = useAdminOrganization(organization.id);
+  const domain = useVerifiedDomain(detail?.suggestedDomain);
   const [refusing, setRefusing] = useState(false);
   const [pending, setPending] = useState(false);
   // Set at the first press, before the pending state has rendered, so presses in one tick decide once.
   const deciding = useRef(false);
   const { id, name } = organization;
-
-  useEffect(() => {
-    let current = true;
-    getAdminOrganization({ path: { id } })
-      .then(({ data }) => current && setDetail(data))
-      // Without the record the dialog still says what the list knows.
-      .catch(() => undefined);
-    return () => {
-      current = false;
-    };
-  }, [id]);
 
   async function decide(run: () => Promise<unknown>, done: Parameters<typeof notify.success>[0]) {
     if (deciding.current) {
@@ -80,14 +70,25 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
       onClose();
       router.refresh();
     } catch (error) {
-      notify.error(organizationError(error));
+      // A domain another organization has is said at the field; anything else in a toast.
+      if (!domain.refused(error)) {
+        notify.error(organizationError(error));
+      }
       deciding.current = false;
       setPending(false);
     }
   }
 
-  const approve = () =>
-    decide(() => approveOrganization({ path: { id } }), "Organization.done.organizationApproved");
+  function approve() {
+    const emailDomain = domain.read();
+    if (emailDomain === undefined) {
+      return;
+    }
+    void decide(
+      () => approveOrganization({ path: { id }, body: { emailDomain } }),
+      "Organization.done.organizationApproved",
+    );
+  }
   const refuse = (reason: string, message: string) =>
     decide(
       () =>
@@ -138,6 +139,14 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
         <div className="rounded-lg border bg-muted p-3">
           <Person name={name} email={kind.join(" · ")} />
         </div>
+        <VerifiedDomainField
+          id="review-domain"
+          domain={domain}
+          label={t("domain")}
+          hint={t("domainHint")}
+          problems={{ invalid: t("domainInvalid"), taken: t("domainTaken") }}
+          disabled={pending}
+        />
         <p className="text-sm text-muted-foreground">{t("note")}</p>
         <DialogFooter>
           <Button prominence="secondary" disabled={pending} onClick={() => setRefusing(true)}>

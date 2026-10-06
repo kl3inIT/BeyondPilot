@@ -286,8 +286,10 @@
       "accounts": "Accounts",
       "auditLog": "Audit log",
       "organizations": "Organisations",
-      "solutions": "Solutions",
-      "talent": "Talent"
+      "solutions": "AI solutions",
+      "talent": "AI talent",
+      "review": "Review",
+      "system": "System"
     },
     "toggleSidebar": "Toggle sidebar",
     "programs": {
@@ -760,7 +762,8 @@
         "request": "Request",
         "status": "Status",
         "received": "Received",
-        "actions": "Actions"
+        "actions": "Actions",
+        "askedBy": "Asked by"
       },
       "request": {
         "new": "New organization",
@@ -773,7 +776,7 @@
         "open": "Actions for {name}",
         "review": "Review…",
         "record": "Open record",
-        "claims": "Open record and claims"
+        "claim": "Decide claim…"
       },
       "needReview": "{count, plural, one {# needs review} other {# need review}}",
       "empty": {
@@ -796,7 +799,7 @@
         "rolesRequired": "Choose at least one.",
         "type": "Type",
         "emailDomain": "Email domain (optional)",
-        "emailDomainHint": "People who sign in with this domain are offered the organization.",
+        "emailDomainHint": "You vouch for this domain. People on it can join once an owner lets them.",
         "emailDomainInvalid": "Enter a company domain such as example.com that no other organization uses.",
         "ownerEmail": "Owner's email (optional)",
         "ownerEmailHint": "They are invited to own it. Leave empty to let someone claim it.",
@@ -820,8 +823,6 @@
         "notStated": "Not stated",
         "refused": "Not approved: {reason}.",
         "claims": "Claims to own it",
-        "approveClaim": "Make owner",
-        "declineClaim": "Decline",
         "members": "{count, plural, =0 {Members} one {# member} other {# members}}",
         "noMembers": "Nobody belongs to this organization yet.",
         "invitations": "Open invitations",
@@ -841,13 +842,29 @@
         "message": "Message to the owners",
         "messageHint": "The decision is recorded in the audit log.",
         "back": "Back",
-        "reasonPlaceholder": "Choose a reason"
+        "reasonPlaceholder": "Choose a reason",
+        "domain": "Email domain to verify (optional)",
+        "domainHint": "Confirm it is the company's own domain. Its owners can then let colleagues on it join at once.",
+        "domainInvalid": "Enter a domain such as example.com, or leave it empty.",
+        "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate."
       },
       "clear": "Clear filters",
       "queueEmpty": {
         "title": "Nothing waits for review",
         "description": "Every new organization has a decision.",
         "home": "Back to Admin home"
+      },
+      "claim": {
+        "title": "Decide the claim for {name}",
+        "lead": "Nobody owns this organization yet. This person asked to own it on {day}.",
+        "leadUnknown": "Nobody owns this organization yet, and someone asked to own it.",
+        "domain": "Email domain to verify (optional)",
+        "domainHint": "Confirm it is the company's own domain. Its owner can then let colleagues on it join at once.",
+        "domainInvalid": "Enter a domain such as example.com, or leave it empty.",
+        "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate.",
+        "note": "Approving makes the person its owner; other claims then go to them. The person is told by email either way, and the decision is recorded in the audit log.",
+        "decline": "Decline",
+        "approve": "Make owner"
       }
     },
     "solutions": {
@@ -1211,7 +1228,11 @@
       "ORGANIZATION_NOT_AWAITING_REVIEW": "This organization has already been reviewed.",
       "ORGANIZATION_DOMAIN_TAKEN": "Another organization already uses this email domain.",
       "REQUEST_INVALID": "Check the marked fields and try again.",
-      "unknown": "That did not work. Try again."
+      "unknown": "That did not work. Try again.",
+      "ORGANIZATION_DOMAIN_NOT_VERIFIED": "People join at once only on a domain GenAI Fund verified for an approved organization.",
+      "ORGANIZATION_NOT_APPROVED": "You can invite people once GenAI Fund has approved the organization.",
+      "ORGANIZATION_INVITATION_DAILY_LIMIT": "The organization has sent the most invitations it can in a day. Invite more people tomorrow.",
+      "ORGANIZATION_INVITATION_OPEN_LIMIT": "The organization has the most invitations it can keep open. Revoke some, or wait for people to answer."
     },
     "done": {
       "invitationAccepted": "You joined the organization.",
@@ -1228,7 +1249,6 @@
       "created": "Organization created and sent for review.",
       "adminCreated": "{name} created.",
       "joined": "You joined {name}.",
-      "owner": "You now own {name}.",
       "requested": "Request sent to {name}.",
       "madeOwner": "{name} is now an owner.",
       "madeMember": "{name} is now a member.",
@@ -1236,8 +1256,9 @@
       "removed": "{name} was removed.",
       "invited": "{count, plural, one {Invitation sent.} other {# invitations sent.}}",
       "jobTitleSaved": "Job title saved.",
-      "autoJoinOn": "Colleagues on your email domain now join without asking.",
-      "autoJoinOff": "Colleagues on your email domain now ask to join."
+      "autoJoinOn": "Colleagues on your verified domain now join without asking.",
+      "autoJoinOff": "Colleagues on your verified domain now ask to join.",
+      "askedAgain": "Request sent."
     },
     "form": {
       "metaTitle": "Create an organization · BeyondPilot",
@@ -1262,10 +1283,10 @@
       "website": "Website",
       "websiteInvalid": "Enter a full address that starts with https://",
       "description": "Short description",
-      "descriptionHint": "What the organization does and for whom, in a few sentences.",
+      "descriptionHint": "What the organization does and for whom, in at most 280 characters.",
       "counter": "{count} / {max}",
       "save": "Save changes",
-      "create": "Create organization",
+      "create": "Submit for approval",
       "cancel": "Cancel",
       "emailDomain": "Verified email domain",
       "emailDomainHint": "The domain of the organization's work email. Who can join with it is set in Members.",
@@ -1288,7 +1309,13 @@
       "teamSizeRequired": "Select a team size.",
       "jobTitle": "Your role or job title",
       "jobTitleRequired": "Enter your role or job title.",
-      "jobTitleHint": "What you do in the organization. It shows beside your name among its members."
+      "jobTitleHint": "What you do in the organization. It shows beside your name among its members.",
+      "websiteHint": "Independent builders can use their portfolio website.",
+      "foundedYear": "Year founded",
+      "foundedYearHint": "For an independent builder, the year the practice started.",
+      "foundedYearInvalid": "Enter a four-digit year, such as 2021.",
+      "descriptionRequired": "Describe the organization in a few words.",
+      "logoUrl": "Logo address"
     },
     "find": {
       "title": "Find your organization",
@@ -1309,7 +1336,7 @@
       "create": "Create a new organization",
       "note": {
         "create": "Working alone? Create an organization for just you. You can add people later.",
-        "claim": "If your email is on the organization's email domain, you become its owner at once. Otherwise GenAI Fund reviews the claim.",
+        "claim": "GenAI Fund reviews every claim before it makes you the owner. We email you the result.",
         "request": "An owner of {name} decides.",
         "requestDomain": "Your email is not on {domain}, so an owner of {name} decides."
       },
@@ -1324,7 +1351,7 @@
         },
         "join": {
           "title": "Join {name}?",
-          "lead": "Your email domain matches, so you join at once."
+          "lead": "Your email is on its verified domain, so you join at once."
         },
         "message": "Message (optional)",
         "cancel": "Cancel"
@@ -1347,11 +1374,22 @@
       "request": {
         "claimTitle": "Your claim for {name} is with GenAI Fund",
         "joinTitle": "Your request to join {name} is with its owners",
-        "claimSent": "Claim sent on {day}",
-        "joinSent": "Request sent on {day}",
-        "withdraw": "Withdraw request",
-        "claimNote": "GenAI Fund checks the claim by hand. Until then the page stays without an owner. Withdraw the request to choose another organization.",
-        "joinNote": "An owner decides. Withdraw the request to choose another organization."
+        "claimSent": "claim sent on {day}",
+        "joinSent": "asked on {day}",
+        "withdraw": "Withdraw the request",
+        "claimNote": "GenAI Fund checks every claim by hand, whatever address you signed in with. We email you the result. Until then the page stays without an owner.",
+        "joinNote": "An owner decides. We email you the answer. You can withdraw the request and look for another organization.",
+        "joinNoteDomain": "Joining at once is off for {domain}, or your email is not on it, so an owner decides. We email you the answer. You can withdraw the request and look for another organization."
+      },
+      "declined": {
+        "claimTitle": "Your claim for {name} was declined",
+        "joinTitle": "Your request to join {name} was declined",
+        "on": "declined on {day}",
+        "claimAgain": "Claim again",
+        "joinAgain": "Ask again",
+        "findAnother": "Find another organization",
+        "claimNote": "GenAI Fund could not confirm that you act for {name}. Sign in with a company address and claim again, or ask an owner to invite you.",
+        "joinNote": "An owner of {name} declined the request. Ask them directly if this is a mistake, or create your own organization."
       }
     },
     "members": {
@@ -1359,7 +1397,9 @@
       "title": "Members",
       "summary": {
         "members": "{count, plural, one {# member} other {# members}}",
-        "invitations": "{count, plural, one {# invitation pending} other {# invitations pending}}"
+        "invitations": "{count, plural, one {# invitation pending} other {# invitations pending}}",
+        "left": "{left} of {limit} invitations left today",
+        "notApproved": "you can invite people once the organization is approved"
       },
       "columns": {
         "member": "Member",
@@ -1382,7 +1422,7 @@
       },
       "access": {
         "title": "Who can join",
-        "domain": "Verified domain: {domain}",
+        "domain": "Domain verified by GenAI Fund: {domain}",
         "on": {
           "title": "Anyone with an @{domain} email joins as a member",
           "lead": "They join when they sign in with a verified company email. Turn this off to approve each request yourself.",
@@ -1394,6 +1434,11 @@
           "lead": "You approve each request. Turn this on to let them join at once as members.",
           "badge": "Off",
           "action": "Turn on"
+        },
+        "none": {
+          "title": "People ask to join, or you invite them",
+          "lead": "GenAI Fund has not verified an email domain for this organization, so nobody joins by their address alone.",
+          "foot": "No verified domain. Write to GenAI Fund to have one verified."
         }
       },
       "actions": {
@@ -1431,14 +1476,25 @@
       "invite": {
         "open": "Invite people",
         "title": "Invite people to {name}",
-        "lead": "Each person gets an email with a link, and joins when they accept.",
+        "lead": "Each person gets an email and sees the invitation after signing in with that address. {leftToday} of {dailyLimit} invitations left today; {leftOpen} of {openLimit} can still be open at once.",
         "emails": "Email addresses",
         "emailsPlaceholder": "name@company.com, name@company.com",
         "emailsInvalid": "Enter full email addresses, separated by commas.",
         "role": "Role",
         "note": "Members are shown on the team and can edit their own job title. Only owners edit the profile and the solutions, invite people and remove members.",
         "cancel": "Cancel",
-        "send": "Send invitations"
+        "send": "Send invitations",
+        "limit": {
+          "daily": {
+            "lead": "{name} has sent {limit} invitations today, the most an organization can send in a day. You can invite more people tomorrow.",
+            "note": "Revoking an invitation nobody answered does not give today's count back. Write to GenAI Fund if you are bringing a larger team."
+          },
+          "open": {
+            "lead": "{name} has {limit} invitations that nobody has answered yet, the most an organization can keep open. Revoke the ones you no longer need, or wait for people to answer.",
+            "note": "An invitation is open until the person answers or you revoke it. Write to GenAI Fund if you are bringing a larger team."
+          },
+          "close": "Close"
+        }
       }
     }
   },

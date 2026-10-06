@@ -14,6 +14,8 @@ import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.organization.dto.CreateOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.DeclinedRequestResponse;
+import ai.genaifund.beyondpilot.organization.dto.InvitationAllowanceResponse;
 import ai.genaifund.beyondpilot.organization.dto.InvitationResponse;
 import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.JoinOutcomeResponse;
@@ -25,6 +27,7 @@ import ai.genaifund.beyondpilot.organization.dto.OrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationSearchResponse;
 import ai.genaifund.beyondpilot.organization.dto.SaveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository;
+import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.ClosedRequest;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.Invitation;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.JoinRequest;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.Member;
@@ -54,6 +57,12 @@ public class OrganizationService {
 
 	private static final int MIN_SEARCH_LENGTH = 2;
 
+	/** The most invitations an organization's owners send in 24 hours. */
+	private static final int DAILY_INVITATIONS = 20;
+
+	/** The most invitations of an organization's owners that wait for an answer at once. */
+	private static final int OPEN_INVITATIONS = 50;
+
 	private final OrganizationRepository organizations;
 
 	private final OrganizationQueryRepository organizationList;
@@ -77,8 +86,8 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Where the caller stands: their organization, or the invitations to their address, the request they wait on and
-	 * the organization of their email domain.
+	 * Where the caller stands: their organization, or the invitations to their address, the request they wait on or
+	 * the refusal of their last one, and the organization of their email domain.
 	 */
 	@Transactional(readOnly = true)
 	public MyOrganizationResponse mine(Actor actor) {
@@ -88,13 +97,18 @@ public class OrganizationService {
 		if (member != null) {
 			Organization organization = organizations.findById(member.organizationId()).orElseThrow();
 			return new MyOrganizationResponse(OrganizationViews.organization(organization), member.role(),
-					member.jobTitle(), invitations, null, null);
+					member.jobTitle(), invitations, null, null, null);
 		}
-		JoinRequestResponse request = memberships.openRequestOf(person.accountId()).map(open -> {
-			Organization organization = organizations.findById(open.organizationId()).orElseThrow();
-			return OrganizationViews.joinRequest(open, organization.getName(), person,
-					memberships.owners(organization.getId()) == 0);
-		}).orElse(null);
+		JoinRequestResponse request = memberships.openRequestOf(person.accountId())
+			.map(open -> OrganizationViews.joinRequest(open,
+					organizations.findById(open.organizationId()).orElseThrow(), person))
+			.orElse(null);
+		DeclinedRequestResponse declined = request != null ? null
+				: memberships.latestClosedRequestOf(person.accountId())
+					.filter(ClosedRequest::isDeclined)
+					.map(closed -> OrganizationViews.declined(closed,
+							organizations.findById(closed.organizationId()).orElseThrow()))
+					.orElse(null);
 		String domain = OrganizationViews.workDomain(person.email());
 		OrganizationMatchResponse suggestion = domain == null ? null
 				: organizations.findByEmailDomain(domain)
@@ -103,7 +117,7 @@ public class OrganizationService {
 							organization.getType(), organization.getCountry(), organization.getEmailDomain(),
 							organization.isAutoJoin(), memberships.owners(organization.getId()) > 0), domain))
 					.orElse(null);
-		return new MyOrganizationResponse(null, null, null, invitations, request, suggestion);
+		return new MyOrganizationResponse(null, null, null, invitations, request, declined, suggestion);
 	}
 
 	/** The approved organizations whose name contains the text, with what asking to get in does for the caller. */
@@ -120,7 +134,8 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Creates an organization the caller owns. It waits for GenAI Fund's review; until then it lists nothing.
+	 * Creates an organization the caller owns. It waits for GenAI Fund's review; until then it lists nothing. It has no
+	 * email domain: an operator verifies one with the review.
 	 * @throws OrganizationException when the caller already belongs to an organization or waits on a request
 	 */
 	@Transactional
@@ -132,12 +147,8 @@ public class OrganizationService {
 				person.accountId());
 		organization.describe(request.name().strip(), OrganizationViews.roles(request.roles()), request.type(),
 				OrganizationViews.text(request.website()), request.country(), request.teamSize(),
-				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()));
-		// A work address vouches for its domain, unless an organization already holds it.
-		String domain = OrganizationViews.workDomain(person.email());
-		if (domain != null && organizations.findByEmailDomain(domain).isEmpty()) {
-			organization.verifyDomain(domain);
-		}
+				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()),
+				request.foundedYear(), OrganizationViews.text(request.logoUrl()));
 		organizations.saveAndFlush(organization);
 		if (!memberships.add(organization.getId(), person.accountId(), MembershipRepository.OWNER)) {
 			throw alreadyMember(person);
@@ -152,8 +163,9 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Asks to get into an approved organization. An address on its domain joins at once while its owners allow it,
-	 * and owns it when nobody does; anyone else asks its owners, or GenAI Fund when nobody owns it.
+	 * Asks to get into an approved organization. An address on its verified domain joins at once while its owners
+	 * allow it; anyone else asks its owners. An organization nobody owns is claimed, and GenAI Fund decides the claim
+	 * whatever the address.
 	 * @throws OrganizationException when the organization does not exist or is not approved, or the caller already
 	 * belongs to one or waits on a request
 	 */
@@ -167,22 +179,21 @@ public class OrganizationService {
 		boolean owned = memberships.owners(organizationId) > 0;
 		String domain = OrganizationViews.workDomain(person.email());
 		boolean onDomain = domain != null && domain.equals(organization.getEmailDomain());
-		if (onDomain && (!owned || organization.isAutoJoin())) {
-			String role = owned ? MembershipRepository.MEMBER : MembershipRepository.OWNER;
-			if (!memberships.add(organizationId, person.accountId(), role)) {
+		if (owned && onDomain && organization.isAutoJoin()) {
+			if (!memberships.add(organizationId, person.accountId(), MembershipRepository.MEMBER)) {
 				throw alreadyMember(person);
 			}
 			LOG.atInfo()
 				.addKeyValue("event", "organization.member.joined")
 				.addKeyValue("organization_id", organizationId)
 				.addKeyValue("account_id", person.accountId())
-				.addKeyValue("role", role)
+				.addKeyValue("role", MembershipRepository.MEMBER)
 				.addKeyValue("way", "domain")
 				.log("Joined by email domain");
-			return new JoinOutcomeResponse(owned ? "joined" : "owner");
+			return new JoinOutcomeResponse("joined");
 		}
 		if (!memberships.request(UUID.randomUUID(), organizationId, person.accountId(),
-				OrganizationViews.text(message))) {
+				OrganizationViews.text(message), !owned)) {
 			throw requestPending(person);
 		}
 		return new JoinOutcomeResponse("requested");
@@ -206,7 +217,8 @@ public class OrganizationService {
 		Person person = identity.person(actor);
 		Invitation invitation = invitationTo(person, invitationId);
 		Organization organization = organizations.findForUpdate(invitation.organizationId()).orElseThrow();
-		boolean firstOwner = memberships.owners(organization.getId()) == 0;
+		boolean firstOwner = MembershipRepository.OWNER.equals(invitation.role())
+				&& memberships.owners(organization.getId()) == 0;
 		if (!memberships.add(organization.getId(), person.accountId(), invitation.role())) {
 			throw alreadyMember(person);
 		}
@@ -216,10 +228,8 @@ public class OrganizationService {
 		// A request made before the invitation arrived has its answer.
 		memberships.openRequestOf(person.accountId())
 			.ifPresent(request -> memberships.closeRequest(request.id(), "withdrawn", null));
-		String domain = OrganizationViews.workDomain(person.email());
-		if (firstOwner && organization.getEmailDomain() == null && domain != null
-				&& organizations.findByEmailDomain(domain).isEmpty()) {
-			organization.verifyDomain(domain);
+		if (firstOwner) {
+			memberships.claimsBecomeRequests(organization.getId());
 		}
 		LOG.atInfo()
 			.addKeyValue("event", "organization.member.joined")
@@ -256,7 +266,8 @@ public class OrganizationService {
 		}
 		organization.describe(request.name().strip(), OrganizationViews.roles(request.roles()), request.type(),
 				OrganizationViews.text(request.website()), request.country(), request.teamSize(),
-				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()));
+				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()),
+				request.foundedYear(), OrganizationViews.text(request.logoUrl()));
 		if (organization.isRejected()) {
 			organization.resubmit();
 		}
@@ -265,7 +276,8 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Who belongs to the caller's organization. An owner also reads the open invitations and requests.
+	 * Who belongs to the caller's organization. An owner also reads the open invitations and requests, and how many
+	 * more people they may invite.
 	 * @throws OrganizationException when the caller belongs to no organization
 	 */
 	@Transactional(readOnly = true)
@@ -286,21 +298,36 @@ public class OrganizationService {
 					.toList(),
 				requests.stream()
 					.filter(request -> people.containsKey(request.accountId()))
-					.map(request -> OrganizationViews.joinRequest(request, organization.getName(),
-							people.get(request.accountId()), false))
-					.toList());
+					.map(request -> OrganizationViews.joinRequest(request, organization,
+							people.get(request.accountId())))
+					.toList(),
+				caller.isOwner() ? allowance(organization) : null);
 	}
 
 	/**
-	 * Asks an address to join the caller's organization and tells it by email.
-	 * @throws OrganizationException when the caller is not an owner, the address already belongs to the organization,
-	 * or it already holds an open invitation
+	 * Asks an address to join the caller's organization and tells it by email. Only an approved organization invites,
+	 * and within its limits: so many in 24 hours, and so many open at once.
+	 * @throws OrganizationException when the caller is not an owner, the organization is not approved or reached a
+	 * limit, the address already belongs to the organization, or it already holds an open invitation
 	 */
 	@Transactional
 	public void invite(Actor actor, InviteMemberRequest request) {
 		Person inviter = identity.person(actor);
 		Member owner = owner(actor);
 		Organization organization = organizations.findForUpdate(owner.organizationId()).orElseThrow();
+		if (!organization.isApproved()) {
+			throw new OrganizationException(OrganizationErrorCode.NOT_APPROVED,
+					"Invitation by organization " + organization.getId() + ", which is " + organization.getStatus());
+		}
+		InvitationAllowanceResponse allowance = allowance(organization);
+		if (allowance.leftToday() == 0) {
+			throw new OrganizationException(OrganizationErrorCode.INVITATION_DAILY_LIMIT,
+					"Organization " + organization.getId() + " sent " + DAILY_INVITATIONS + " invitations in a day");
+		}
+		if (allowance.leftOpen() == 0) {
+			throw new OrganizationException(OrganizationErrorCode.INVITATION_OPEN_LIMIT,
+					"Organization " + organization.getId() + " keeps " + OPEN_INVITATIONS + " invitations open");
+		}
 		String address = request.email().strip();
 		List<UUID> accounts = memberships.members(organization.getId()).stream().map(Member::accountId).toList();
 		if (identity.people(accounts).values().stream().anyMatch(person -> person.email().equalsIgnoreCase(address))) {
@@ -308,7 +335,7 @@ public class OrganizationService {
 					"Invitation of a member of organization " + organization.getId());
 		}
 		if (!memberships.invite(UUID.randomUUID(), organization.getId(), address, request.role(),
-				inviter.accountId())) {
+				inviter.accountId(), false)) {
 			throw new OrganizationException(OrganizationErrorCode.ALREADY_INVITED,
 					"Second open invitation of one address to organization " + organization.getId());
 		}
@@ -330,7 +357,7 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Decides a request to join the caller's organization.
+	 * Decides a request to join the caller's organization, and tells the person.
 	 * @param approve true makes the person a member; false declines
 	 * @throws OrganizationException when the caller is not an owner, the request is not open, or the person joined
 	 * another organization in the meantime
@@ -338,7 +365,7 @@ public class OrganizationService {
 	@Transactional
 	public void decideRequest(Actor actor, UUID requestId, boolean approve) {
 		Member owner = owner(actor);
-		organizations.findForUpdate(owner.organizationId()).orElseThrow();
+		Organization organization = organizations.findForUpdate(owner.organizationId()).orElseThrow();
 		JoinRequest request = memberships.openRequest(requestId)
 			.filter(open -> open.organizationId().equals(owner.organizationId()))
 			.orElseThrow(() -> requestNotFound(requestId));
@@ -347,6 +374,10 @@ public class OrganizationService {
 					"Account " + request.accountId() + " joined another organization before request " + requestId);
 		}
 		memberships.closeRequest(requestId, approve ? "approved" : "declined", owner.accountId());
+		Person asker = identity.people(List.of(request.accountId())).get(request.accountId());
+		if (asker != null) {
+			email.sendOrganizationRequestDecision(asker.email(), organization.getName(), false, approve);
+		}
 	}
 
 	/**
@@ -404,13 +435,26 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Lets addresses on the organization's domain join without asking, or stops that.
-	 * @throws OrganizationException when the caller is not an owner
+	 * Lets addresses on the organization's verified domain join without asking, or stops that.
+	 * @throws OrganizationException when the caller is not an owner, or turns it on for an organization that is not
+	 * approved or has no verified domain
 	 */
 	@Transactional
 	public void letDomainJoin(Actor actor, boolean autoJoin) {
 		Member owner = owner(actor);
-		organizations.findForUpdate(owner.organizationId()).orElseThrow().letDomainJoin(autoJoin);
+		Organization organization = organizations.findForUpdate(owner.organizationId()).orElseThrow();
+		if (autoJoin && !(organization.isApproved() && organization.getEmailDomain() != null)) {
+			throw new OrganizationException(OrganizationErrorCode.DOMAIN_NOT_VERIFIED,
+					"Joining at once turned on for organization " + organization.getId() + " without a verified domain");
+		}
+		organization.letDomainJoin(autoJoin);
+	}
+
+	private InvitationAllowanceResponse allowance(Organization organization) {
+		int leftToday = Math.max(0, DAILY_INVITATIONS - memberships.invitationsSentInTheLastDay(organization.getId()));
+		int leftOpen = Math.max(0, OPEN_INVITATIONS - memberships.openInvitationsByOwners(organization.getId()));
+		return new InvitationAllowanceResponse(organization.isApproved(), leftToday, DAILY_INVITATIONS, leftOpen,
+				OPEN_INVITATIONS);
 	}
 
 	private List<InvitationResponse> invitationsTo(Person person) {
@@ -440,7 +484,7 @@ public class OrganizationService {
 		boolean onDomain = callerDomain != null && callerDomain.equals(found.emailDomain());
 		String way;
 		if (!found.owned()) {
-			way = onDomain ? "join" : "claim";
+			way = "claim";
 		}
 		else {
 			way = onDomain && found.autoJoin() ? "join" : "request";

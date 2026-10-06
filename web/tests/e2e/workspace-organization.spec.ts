@@ -117,13 +117,17 @@ test.describe("workspace organization", () => {
     const changes = await answerDecisions(page, changesPath, 201, {});
     await page.goto("/workspace/organization/new");
 
-    await page.getByRole("button", { name: "Create organization" }).click();
+    await page.getByRole("button", { name: "Submit for approval" }).click();
     await expect(page.getByText("Enter the organization's name.")).toBeVisible();
     await expect(page.getByText("Choose at least one.")).toBeVisible();
     await expect(page.getByText("Enter your role or job title.")).toBeVisible();
     await expect(page.getByText("Select a team size.")).toBeVisible();
     await expect(page.getByText("Choose at least one industry.")).toBeVisible();
     await expect(page.getByText("Select a country.")).toBeVisible();
+    // The website, the year and the description are asked as the mockup asks them.
+    await expect(page.getByText("Enter a full address that starts with https://")).toBeVisible();
+    await expect(page.getByText("Enter a four-digit year, such as 2021.")).toBeVisible();
+    await expect(page.getByText("Describe the organization in a few words.")).toBeVisible();
     // The first field that lacks something is where the person continues.
     await expect(page.getByLabel("Your role or job title")).toBeFocused();
     expect(changes).toEqual([]);
@@ -133,12 +137,14 @@ test.describe("workspace organization", () => {
 
     await page.getByLabel("Your role or job title").fill("  Head of operations ");
     await page.getByLabel("Organization name").fill("Sài Gòn Logistics");
+    await page.getByLabel("Website").fill("https://saigonlogistics.example");
     await page.getByLabel("Team size").selectOption({ label: "2–9 people" });
     await page.getByRole("button", { name: "AI provider" }).click();
     await page.getByRole("group", { name: "Industries" }).getByText("Logistics").click();
     await page.getByLabel("Country").selectOption({ label: "Vietnam" });
+    await page.getByLabel("Year founded").fill("2019");
     await page.getByLabel("Short description").fill("Route planning for fleets.");
-    await page.getByRole("button", { name: "Create organization" }).click();
+    await page.getByRole("button", { name: "Submit for approval" }).click();
 
     await expect(page.getByText("Organization created and sent for review.")).toBeVisible();
     await expect(page).toHaveURL("/workspace/organization");
@@ -152,8 +158,10 @@ test.describe("workspace organization", () => {
           country: "VN",
           teamSize: "2_9",
           industries: ["logistics"],
-          website: null,
+          website: "https://saigonlogistics.example",
           description: "Route planning for fleets.",
+          foundedYear: 2019,
+          logoUrl: null,
           jobTitle: "  Head of operations ",
         },
       },
@@ -196,15 +204,48 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Your request to join Pocket Policy is with its owners",
     );
-    await expect(page.getByText("Request sent on Oct 1, 2026")).toBeVisible();
+    await expect(page.getByText("Company · Singapore · asked on Oct 1, 2026")).toBeVisible();
     // Whoever asked to join one organization does not create another.
     await page.goto("/workspace/organization/new");
     await expect(page).toHaveURL("/workspace/organization");
 
-    await page.getByRole("button", { name: "Withdraw request" }).click();
+    await page.getByRole("button", { name: "Withdraw the request" }).click();
 
     await expect(page.getByText("Request withdrawn.")).toBeVisible();
     expect(changes).toEqual([{ call: "POST /api/organization/join-request/withdraw", body: null }]);
+  });
+
+  test("a person whose request was declined reads it, asks again or looks elsewhere", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "declined", baseURL!);
+    const changes = await answerDecisions(page, changesPath, 200, { outcome: "requested" });
+    await page.goto("/workspace/organization");
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Your request to join Pocket Policy was declined",
+    );
+    await expect(page.getByText("Company · Singapore · declined on Oct 1, 2026")).toBeVisible();
+    await expect(
+      page.getByText("An owner of Pocket Policy declined the request.", { exact: false }),
+    ).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+
+    await page.getByRole("button", { name: "Ask again" }).click();
+    await expect(page.getByText("Request sent.")).toBeVisible();
+    expect(changes).toEqual([
+      {
+        call: `POST /api/organization/organizations/${pocketPolicy}/join`,
+        body: { message: null },
+      },
+    ]);
+
+    // Looking elsewhere is the same page on its finder.
+    await page.getByRole("link", { name: "Find another organization" }).click();
+    await expect(page).toHaveURL("/workspace/organization?find=1");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Find your organization");
   });
 
   test("an owner saves the profile only after a change, and can take the change back", async ({
@@ -256,6 +297,8 @@ test.describe("workspace organization", () => {
           industries: ["insurance", "healthcare"],
           website: "https://pocketpolicy.example",
           description: "Assistants for insurers and brokers.",
+          foundedYear: 2021,
+          logoUrl: null,
           // The version the form loaded, so a save over someone else's change is refused.
           version: 3,
         },
@@ -321,7 +364,9 @@ test.describe("workspace organization", () => {
     await page.goto("/workspace/organization/members");
 
     await expect(shownPeople(page)).toHaveText(["Minh Trần", "Siti Rahma", "hoa.le@example.com"]);
-    await expect(page.getByText("2 members · 1 invitation pending")).toBeVisible();
+    await expect(
+      page.getByText("2 members · 1 invitation pending · 19 of 20 invitations left today"),
+    ).toBeVisible();
     // A table from 768px, stacked rows below it.
     await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
     await expect(
@@ -353,6 +398,11 @@ test.describe("workspace organization", () => {
     await page.getByRole("button", { name: "Invite people" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading")).toHaveText("Invite people to Pocket Policy");
+    await expect(
+      dialog.getByText("19 of 20 invitations left today; 49 of 50 can still be open at once.", {
+        exact: false,
+      }),
+    ).toBeVisible();
     await dialog.getByRole("button", { name: "Send invitations" }).click();
     await expect(
       dialog.getByText("Enter full email addresses, separated by commas."),
@@ -377,6 +427,37 @@ test.describe("workspace organization", () => {
         body: { email: "binh@example.com", role: "owner" },
       },
     ]);
+  });
+
+  test("an owner who reached the day's limit is told, and the rest of the addresses wait", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const changes = await answerDecisions(
+      page,
+      changesPath,
+      429,
+      refusal("ORGANIZATION_INVITATION_DAILY_LIMIT"),
+    );
+    await page.goto("/workspace/organization/members");
+
+    await page.getByRole("button", { name: "Invite people" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Email addresses").fill("an@example.com, binh@example.com");
+    await dialog.getByRole("button", { name: "Send invitations" }).click();
+
+    await expect(
+      page.getByText("The organization has sent the most invitations it can in a day.", {
+        exact: false,
+      }),
+    ).toBeVisible();
+    // The second address is not tried once the limit is said, and both stay to send tomorrow.
+    expect(changes).toHaveLength(1);
+    await expect(dialog.getByLabel("Email addresses")).toHaveValue(
+      "an@example.com, binh@example.com",
+    );
   });
 
   test("an owner changes a role, removes a member, withdraws an invitation and opens the domain", async ({
@@ -411,7 +492,7 @@ test.describe("workspace organization", () => {
     ).toBeVisible();
     await page.getByRole("button", { name: "Turn on" }).click();
     await expect(
-      page.getByText("Colleagues on your email domain now join without asking."),
+      page.getByText("Colleagues on your verified domain now join without asking."),
     ).toBeVisible();
 
     expect(changes).toEqual([

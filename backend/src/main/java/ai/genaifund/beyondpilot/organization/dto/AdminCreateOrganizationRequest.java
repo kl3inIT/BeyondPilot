@@ -25,9 +25,8 @@ public record AdminCreateOrganizationRequest(
 		@Schema(types = { "string", "null" }, description = "ISO 3166-1 alpha-2.") @Pattern(
 				regexp = OrganizationCodes.COUNTRY) @Nullable String country,
 		@Schema(types = { "string", "null" }, example = "tasco.com.vn",
-				description = "The domain of the company's work addresses. The first person who signs in on it may own the organization at once.") @Size(
-						max = 253) @Pattern(
-								regexp = "[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+") @Nullable String emailDomain,
+				description = "The domain of the company's work addresses, which the operator vouches for.") @Size(
+						max = 253) @Pattern(regexp = OrganizationCodes.DOMAIN) @Nullable String emailDomain,
 		@Schema(types = { "string", "null" },
 				description = "The address invited to own it.") @Email @Size(max = 254) @Nullable String ownerEmail) {
 }

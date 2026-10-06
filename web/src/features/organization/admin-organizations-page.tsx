@@ -9,7 +9,7 @@ import { Person } from "@/components/composites/person";
 import { Status } from "@/components/composites/status";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
-import type { AdminOrganizationList, AdminOrganizationSummary } from "@/lib/api/generated";
+import type { AdminOrganizationList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { AdminCreateOrganization } from "./admin-create-organization";
@@ -23,15 +23,10 @@ import { AdminOrganizationsToolbar } from "./admin-organizations-toolbar";
 const address = createSerializer(adminOrganizationsSearch);
 
 /** How each state of the review reads to the operator who decides it. */
-const tones = { pending: "neutral", approved: "success", rejected: "destructive" } as const;
+const tones = { pending: "warning", approved: "success", rejected: "destructive" } as const;
 
-/** What an organization asks of the operator: a first review, or a decision on a claim to own it. */
-function requestOf(organization: AdminOrganizationSummary) {
-  if (organization.status === "pending") {
-    return "new";
-  }
-  return organization.openClaims > 0 ? "claim" : "none";
-}
+/** The tone of what waits for the operator: a first review, or a claim to own an organization. */
+const requestTones = { new: "info", claim: "warning" } as const;
 
 type AdminOrganizationsPageProps = {
   organizations: AdminOrganizationList;
@@ -64,13 +59,28 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
           .join(" · ")}
       />
     ),
-    request: (
-      <span className="text-muted-foreground">{t(`request.${requestOf(organization)}`)}</span>
+    request: organization.request ? (
+      <Status appearance="pill" tone={requestTones[organization.request]}>
+        {t(`request.${organization.request}`)}
+      </Status>
+    ) : (
+      <span className="text-muted-foreground">{t("request.none")}</span>
     ),
-    status: <Status tone={tones[organization.status]}>{t(`status.${organization.status}`)}</Status>,
+    status: (
+      <Status appearance="pill" tone={tones[organization.status]}>
+        {t(`status.${organization.status}`)}
+      </Status>
+    ),
+    askedBy: (
+      <span className="block truncate text-muted-foreground">
+        {organization.askedBy ?? t("request.none")}
+      </span>
+    ),
     received: (
       <span className="text-muted-foreground">
-        {format.dateTime(new Date(organization.createdAt), { dateStyle: "medium" })}
+        {format.dateTime(new Date(organization.requestedAt ?? organization.createdAt), {
+          dateStyle: "medium",
+        })}
       </span>
     ),
     actions: <AdminOrganizationRowActions organization={organization} />,
@@ -118,13 +128,14 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
       </div>
       <AdminOrganizationsToolbar />
 
-      {/* From 768px: a table. The Received column gives way first. */}
+      {/* From 768px: a table. The Received column gives way first, then who asked. */}
       <DataTable className="hidden md:block">
         <TableHeader>
           <TableRow>
             <TableHead>{t("columns.organization")}</TableHead>
             <TableHead className="w-36">{t("columns.request")}</TableHead>
             <TableHead className="w-36">{t("columns.status")}</TableHead>
+            <TableHead className="hidden w-56 lg:table-cell">{t("columns.askedBy")}</TableHead>
             <TableHead className="hidden w-32 xl:table-cell">{t("columns.received")}</TableHead>
             <TableHead className="w-12">
               <span className="sr-only">{t("columns.actions")}</span>
@@ -137,6 +148,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
               <TableCell className="max-w-0">{row.organization}</TableCell>
               <TableCell>{row.request}</TableCell>
               <TableCell>{row.status}</TableCell>
+              <TableCell className="hidden max-w-0 lg:table-cell">{row.askedBy}</TableCell>
               <TableCell className="hidden xl:table-cell">{row.received}</TableCell>
               <TableCell>
                 <div className="flex justify-end">{row.actions}</div>
@@ -145,7 +157,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
           ))}
           {empty && (
             <TableRow>
-              <TableCell colSpan={5}>{empty}</TableCell>
+              <TableCell colSpan={6}>{empty}</TableCell>
             </TableRow>
           )}
         </TableBody>
