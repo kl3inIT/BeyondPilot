@@ -29,6 +29,8 @@ tags:
   name: Program administration
 - description: A person's applications to programs.
   name: Applications
+- description: "Search over the programs, solutions and talent the public site shows."
+  name: Search
 - description: Who is signed in.
   name: Identity
 - description: Uploading and reading files.
@@ -2322,6 +2324,57 @@ paths:
         team
       tags:
       - Applications
+  /api/search:
+    get:
+      description: "Matches words with or without Vietnamese marks, the start of the\
+        \ last word, and typos in titles."
+      operationId: search
+      parameters:
+      - description: "What to search for, as the person typed it."
+        in: query
+        name: q
+        required: true
+        schema:
+          type: string
+          maxLength: 100
+          minLength: 1
+      - description: Only items of this kind; every kind when absent.
+        in: query
+        name: kind
+        required: false
+        schema:
+          type: string
+          enum:
+          - program
+          - solution
+          - talent
+          pattern: program|solution|talent
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          maximum: 50
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResults"
+          description: A page of results and the counts of every kind.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The query is missing or too long, or a parameter is not valid."
+      summary: "What matches the query, best first"
+      tags:
+      - Search
   /api/solution/admin/deployments/{id}/approve:
     post:
       operationId: approveCustomerDeployment
@@ -7203,6 +7256,120 @@ components:
       - projects
       - roles
       - skills
+    SearchCounts:
+      type: object
+      description: "How many items of each kind match, whatever kind is shown."
+      properties:
+        all:
+          type: integer
+          format: int64
+        program:
+          type: integer
+          format: int64
+        solution:
+          type: integer
+          format: int64
+        talent:
+          type: integer
+          format: int64
+      required:
+      - all
+      - program
+      - solution
+      - talent
+    SearchItem:
+      type: object
+      description: "One result, as its card shows it."
+      properties:
+        coverFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The cover, read at the public address of stored files."
+        endsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        externalUrl:
+          type:
+          - string
+          - "null"
+          format: uri
+          description: Where a program's page is when it has none here.
+        kind:
+          type: string
+          enum:
+          - program
+          - solution
+          - talent
+        phase:
+          type:
+          - string
+          - "null"
+          description: Where a program stands now; null for other kinds.
+          enum:
+          - upcoming
+          - open
+          - running
+          - done
+        slug:
+          type: string
+          description: The address of its page under the path of its kind.
+        startsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        subtitle:
+          type:
+          - string
+          - "null"
+          description: "The partner of a program, the organization of a solution,\
+            \ the headline of a person."
+        summary:
+          type: string
+        title:
+          type: string
+        type:
+          type:
+          - string
+          - "null"
+          description: A program's type; null for other kinds.
+      required:
+      - kind
+      - slug
+      - summary
+      - title
+    SearchResults:
+      type: object
+      description: "One page of what matches, best first, with the counts of every\
+        \ kind."
+      properties:
+        counts:
+          $ref: "#/components/schemas/SearchCounts"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchItem"
+        page:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+          description: "How many items of the kind shown match, every kind when none\
+            \ is chosen."
+      required:
+      - counts
+      - items
+      - page
+      - pageSize
+      - total
     SendTalentEnquiry:
       type: object
       description: A message to the person behind a talent profile.

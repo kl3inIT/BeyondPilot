@@ -192,6 +192,7 @@ public class ProgramAdministration {
 			throw raced;
 		}
 		record(AuditAction.PROGRAM_UPDATE, operator, program);
+		events.publishEvent(new ProgramChanged(id));
 		if (replacedCover != null) {
 			// The program no longer names the file, so nothing does. It goes once the save has committed.
 			events.publishEvent(new ReplacedCovers.CoverReplaced(id, replacedCover));
@@ -267,6 +268,7 @@ public class ProgramAdministration {
 		}
 		if (program.publish(Instant.now())) {
 			record(AuditAction.PROGRAM_PUBLISH, operator, program);
+			events.publishEvent(new ProgramChanged(id));
 		}
 	}
 
@@ -282,6 +284,7 @@ public class ProgramAdministration {
 		Program program = programs.findForUpdate(id).orElseThrow(() -> notFound(id));
 		if (program.unpublish()) {
 			record(AuditAction.PROGRAM_UNPUBLISH, operator, program);
+			events.publishEvent(new ProgramChanged(id));
 		}
 	}
 
