@@ -1,20 +1,26 @@
 import { useFormatter, useTranslations } from "next-intl";
+import { createSerializer } from "nuqs/server";
 
 import { DataTable } from "@/components/composites/data-table";
+import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
 import { Badge } from "@/components/ui/badge";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useVocabulary } from "@/i18n/vocabulary";
 import type { MyOrganization, Organization, OrganizationMembers } from "@/lib/api/generated";
+import { siteRoutes } from "@/lib/site";
 
 import { InvitationActions } from "./invitation-actions";
 import { InvitePeople } from "./invite-people";
 import { JoinAccess } from "./join-access";
 import { MemberActions } from "./member-actions";
+import { MemberRole } from "./member-role";
 import { NoticeCard } from "./notice-card";
 import { OrganizationAction } from "./organization-action";
 import { OrganizationFrame } from "./organization-frame";
+import { organizationMembersSearch } from "./organization-members-search";
 import { OrganizationSection } from "./organization-section";
+
+const address = createSerializer(organizationMembersSearch);
 
 type OrganizationMembersPageProps = {
   mine: MyOrganization & { organization: Organization };
@@ -26,8 +32,8 @@ type OrganizationMembersPageProps = {
 };
 
 /**
- * My organization › Members: who asked to join, who belongs and who was invited, and for owners who
- * may join by email domain. Everything an owner decides here, the backend decides again on each
+ * My organization › Members: who asked to join, who belongs and who was invited, and for owners how
+ * many more people they may invite and who may join by email domain. Everything an owner decides here, the backend decides again on each
  * request.
  */
 function OrganizationMembersPage({
@@ -37,7 +43,6 @@ function OrganizationMembersPage({
   useCases,
 }: OrganizationMembersPageProps) {
   const t = useTranslations("Organization.members");
-  const roleName = useVocabulary("memberRole");
   const format = useFormatter();
   const { organization } = mine;
   const owner = mine.role === "owner";
@@ -53,32 +58,34 @@ function OrganizationMembersPage({
         badge={member.self && <Badge variant="outline">{t("you")}</Badge>}
       />
     ),
-    role:
-      member.role === "owner" ? (
-        <Badge variant="outline">{roleName("owner")}</Badge>
-      ) : (
-        <span className="text-muted-foreground">{roleName("member")}</span>
-      ),
+    role: <MemberRole role={member.role} />,
     jobTitle: member.jobTitle ?? t("none"),
     joined: <span className="text-muted-foreground">{day(member.joinedAt)}</span>,
     actions: <MemberActions member={member} owner={owner} />,
   }));
-  const invited = members.invitations.map((invitation) => ({
+  // The open invitations are not paged: they close the list, on its last page.
+  const lastPage = members.page * members.pageSize >= members.total;
+  const invited = (lastPage ? members.invitations : []).map((invitation) => ({
     key: invitation.id,
     person: (
       <Person name={invitation.email} email={t("invited", { day: day(invitation.createdAt) })} />
     ),
-    role: <span className="text-muted-foreground">{roleName(invitation.role)}</span>,
+    role: <MemberRole role={invitation.role} />,
     jobTitle: t("none"),
     joined: <Badge variant="outline">{t("invitePending")}</Badge>,
     actions: owner && <InvitationActions invitation={invitation} />,
   }));
   const rows = [...people, ...invited];
 
+  const allowance = owner ? (members.allowance ?? null) : null;
   const summary = [
-    t("summary.members", { count: members.members.length }),
+    t("summary.members", { count: members.total }),
     members.invitations.length > 0 &&
       t("summary.invitations", { count: members.invitations.length }),
+    allowance &&
+      (allowance.open
+        ? t("summary.left", { left: allowance.leftToday, limit: allowance.dailyLimit })
+        : t("summary.notApproved")),
   ]
     .filter(Boolean)
     .join(" · ");
@@ -87,7 +94,7 @@ function OrganizationMembersPage({
     <OrganizationFrame
       mine={mine}
       current="members"
-      counts={{ members: members.members.length, solutions, useCases }}
+      counts={{ members: members.total, solutions, useCases }}
     >
       {owner && members.requests.length > 0 && (
         <OrganizationSection
@@ -136,7 +143,11 @@ function OrganizationMembersPage({
         id="members-list"
         title={t("title")}
         summary={summary}
-        action={owner && <InvitePeople organizationName={organization.name} />}
+        action={
+          allowance?.open && (
+            <InvitePeople organizationName={organization.name} allowance={allowance} />
+          )
+        }
       >
         {/* From 768px: a table. */}
         <DataTable className="hidden bg-background md:block">
@@ -182,9 +193,17 @@ function OrganizationMembersPage({
             </li>
           ))}
         </ul>
+
+        <ListFooter
+          count={t("summary.members", { count: members.total })}
+          page={members.page}
+          pageSize={members.pageSize}
+          total={members.total}
+          href={(page) => address(siteRoutes.workspaceMembers, { page })}
+        />
       </OrganizationSection>
 
-      {owner && emailDomain && (
+      {owner && organization.status === "approved" && (
         <OrganizationSection id="members-access" title={t("access.title")}>
           <JoinAccess emailDomain={emailDomain} autoJoin={organization.autoJoin} />
         </OrganizationSection>

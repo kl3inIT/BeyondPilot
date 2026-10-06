@@ -62,7 +62,7 @@ class UseCaseAdministrationTest {
 	@Test
 	void nobodyButAnOperatorReadsOrWritesUseCases() {
 		String user = TestSignIn.session(client, mail, "plain@usecase.test");
-		UUID organization = organization("Guarded " + UUID.randomUUID(), "enterprise");
+		UUID organization = organization("Guarded " + UUID.randomUUID());
 		String guarded = body(post(operator, USE_CASES, useCase(organization, "Guarded", false)).expectStatus()
 			.isCreated());
 		String one = USE_CASES + "/" + JsonPath.<String>read(guarded, "$.id");
@@ -80,8 +80,8 @@ class UseCaseAdministrationTest {
 	}
 
 	@Test
-	void anOperatorSavesADraftForAnEnterpriseAndReadsItBack() {
-		UUID organization = organization("Draft Bank " + UUID.randomUUID(), "enterprise");
+	void anOperatorSavesADraftForAnOrganizationAndReadsItBack() {
+		UUID organization = organization("Draft Bank " + UUID.randomUUID());
 		Map<String, Object> draft = useCase(organization, "  Voice-enabled navigation  ", false);
 		draft.put("currentSolutions", "   ");
 		draft.put("technologies", List.of("voice_ai", "conversational_ai", "voice_ai"));
@@ -135,7 +135,7 @@ class UseCaseAdministrationTest {
 
 	@Test
 	void publishingAtOnceNeedsNoReview() {
-		UUID organization = organization("Published Bank " + UUID.randomUUID(), "enterprise");
+		UUID organization = organization("Published Bank " + UUID.randomUUID());
 
 		String created = body(post(operator, USE_CASES, useCase(organization, "Published at once", true)).expectStatus()
 			.isCreated()
@@ -150,7 +150,7 @@ class UseCaseAdministrationTest {
 
 	@Test
 	void aBudgetToBeDeterminedHasNoAmount() {
-		UUID organization = organization("Budget Bank " + UUID.randomUUID(), "enterprise");
+		UUID organization = organization("Budget Bank " + UUID.randomUUID());
 		Map<String, Object> undecided = useCase(organization, "Budget to decide", false);
 		undecided.put("budgetToBeDetermined", true);
 		undecided.put("budgetMin", null);
@@ -168,22 +168,19 @@ class UseCaseAdministrationTest {
 	}
 
 	@Test
-	void onlyAnApprovedEnterpriseCanHaveAUseCase() {
-		UUID provider = organization("Provider Only " + UUID.randomUUID(), "provider");
-		UUID pending = pendingEnterprise("pending-owner@usecase.test");
+	void onlyAnApprovedOrganizationCanHaveAUseCase() {
+		UUID pending = pendingOrganization("pending-owner@usecase.test");
 
-		assertProblem(post(operator, USE_CASES, useCase(provider, "For a provider", false)), 400,
-				"USECASE_ORGANIZATION_NOT_ELIGIBLE");
 		assertProblem(post(operator, USE_CASES, useCase(pending, "For a pending one", false)), 400,
 				"USECASE_ORGANIZATION_NOT_ELIGIBLE");
 		assertProblem(post(operator, USE_CASES, useCase(UUID.randomUUID(), "For nobody", false)), 400,
 				"USECASE_ORGANIZATION_NOT_ELIGIBLE");
-		assertThat(titles()).doesNotContain("For a provider", "For a pending one", "For nobody");
+		assertThat(titles()).doesNotContain("For a pending one", "For nobody");
 	}
 
 	@Test
 	void aBriefThatCannotStandIsRefused() {
-		UUID organization = organization("Refusing Bank " + UUID.randomUUID(), "enterprise");
+		UUID organization = organization("Refusing Bank " + UUID.randomUUID());
 
 		Map<String, Object> past = useCase(organization, "Closes yesterday", false);
 		past.put("closesAt", Instant.now().minus(1, ChronoUnit.DAYS).toString());
@@ -221,7 +218,7 @@ class UseCaseAdministrationTest {
 
 	@Test
 	void aUseCaseReadsAsClosedOnceItsDateHasPassed() {
-		UUID organization = organization("Closing Bank " + UUID.randomUUID(), "enterprise");
+		UUID organization = organization("Closing Bank " + UUID.randomUUID());
 		String title = "Closing " + UUID.randomUUID();
 		String created = body(post(operator, USE_CASES, useCase(organization, title, true)).expectStatus().isCreated());
 		String id = JsonPath.read(created, "$.id");
@@ -242,7 +239,7 @@ class UseCaseAdministrationTest {
 	void theListIsNewestFirstAndNarrowedByTitleAndStatus() {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
 		String bank = "Bank" + UUID.randomUUID().toString().substring(0, 8);
-		UUID organization = organization("Listed " + bank, "enterprise");
+		UUID organization = organization("Listed " + bank);
 		post(operator, USE_CASES, useCase(organization, "Earlier " + tag, false)).expectStatus().isCreated();
 		post(operator, USE_CASES, useCase(organization, "Later " + tag, true)).expectStatus().isCreated();
 
@@ -272,24 +269,21 @@ class UseCaseAdministrationTest {
 	}
 
 	@Test
-	void theFormOffersOnlyApprovedEnterprises() {
+	void theFormOffersOnlyApprovedOrganizations() {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
-		organization("Offered Enterprise " + tag, "enterprise");
-		organization("Offered Both " + tag, "provider", "enterprise");
-		organization("Offered Provider " + tag, "provider");
-		pendingEnterprise("pending-offer@usecase.test");
+		organization("Offered First " + tag);
+		organization("Offered Second " + tag);
+		pendingOrganization("pending-offer@usecase.test");
 
 		String offered = body(get(operator, ORGANIZATIONS + "?q=" + tag.toUpperCase()).expectStatus().isOk());
 
 		assertThat(JsonPath.<List<String>>read(offered, "$.items[*].name"))
-			.containsExactly("Offered Both " + tag, "Offered Enterprise " + tag);
-		assertThat(JsonPath.<List<String>>read(body(get(operator, ORGANIZATIONS).expectStatus().isOk()), "$.items[*].name"))
-			.doesNotContain("Offered Provider " + tag);
+			.containsExactly("Offered First " + tag, "Offered Second " + tag);
 	}
 
 	@Test
 	void anAttachmentIsAFileTheOperatorUploadedForAUseCaseAndBelongsToOne() {
-		UUID organization = organization("Files Bank " + UUID.randomUUID(), "enterprise");
+		UUID organization = organization("Files Bank " + UUID.randomUUID());
 		UUID mine = file("operator@usecase.test", "use_case_attachment", "stored");
 		Map<String, Object> withFile = useCase(organization, "With a file", false);
 		withFile.put("attachmentFileIds", List.of(mine));
@@ -335,20 +329,20 @@ class UseCaseAdministrationTest {
 		return id;
 	}
 
-	private UUID organization(String name, String... roles) {
+	private UUID organization(String name) {
 		return UUID.fromString(JsonPath.read(body(post(operator, "/api/organization/admin/organizations",
-				Map.of("name", name, "roles", List.of(roles), "type", "company"))
+				Map.of("name", name, "type", "company"))
 			.expectStatus()
 			.isCreated()), "$.organization.id"));
 	}
 
-	/** An enterprise a person created and nobody has approved yet. */
-	private UUID pendingEnterprise(String email) {
+	/** An organization a person created and nobody has approved yet. */
+	private UUID pendingOrganization(String email) {
 		String owner = TestSignIn.session(client, mail, email);
 		return UUID.fromString(JsonPath.read(body(post(owner, "/api/organization/organizations",
-				Map.of("name", "Pending " + UUID.randomUUID(), "roles", List.of("enterprise"), "type", "company",
-						"country", "VN", "teamSize", "2_9", "industries", List.of("insurance"), "website",
-						"https://example.test", "jobTitle", "Founder"))
+				Map.of("name", "Pending " + UUID.randomUUID(), "type", "company", "country", "VN", "teamSize", "2_9",
+						"industries", List.of("insurance"), "website", "https://example.test", "description",
+						"Assistants for insurers.", "foundedYear", 2021, "jobTitle", "Founder"))
 			.expectStatus()
 			.isCreated()), "$.id"));
 	}

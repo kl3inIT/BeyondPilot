@@ -2,6 +2,9 @@
 
 Status: in progress, 7 October 2026. The Linear issue is not assigned yet; rename this directory to `bey-<n>-usecase-organization-tab` when it is. The screens are drawn in Figma: `My organization — Use cases, with statuses`, the five steps `Post a use case — 1 … 5`, `… sent for approval`, and the section `Use cases` rows added on 7 October (`Needs changes, reason shown`, `In review, read-only`, `Edit a published use case (dialog)`, `row menu`). The first slice is [usecase-admin-create](../usecase-admin-create/design.md); the domain is [BEY-22](../bey-22-phase-1-domain-model/design.md).
 
+> **Update, 7 October 2026:** the organization no longer has a role (BEY-61, `V12__organization_drop_roles.sql`). Every approved organization has both solutions and use cases, so wherever this page says an approved enterprise or the enterprise role, it now means any approved organization; the migrations of this increment are numbered V13 to V16.
+
+
 This slice is the organization's side of a use case. The operators' review (approve, send back with a reason) is the next slice: until it ships nothing leaves `in_review`.
 
 ## Domain story

@@ -68,7 +68,7 @@ class AdminUseCasesController {
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "201", description = "The use case, a draft or published as asked.")
 	@ApiResponse(responseCode = "400", description = """
-			A member is not valid, the organization is not an approved enterprise, the close date is not in the \
+			A member is not valid, the organization is not approved, the close date is not in the \
 			future, or the budget or the timeline is out of order.""",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	AdminUseCaseResponse create(@CurrentActor Actor actor, @Valid @RequestBody CreateUseCaseRequest request) {
@@ -117,7 +117,7 @@ class AdminUseCasesController {
 	@Operation(operationId = "listUseCaseOrganizations",
 			summary = "The organizations a use case can be written for",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "200", description = "The approved organizations with the enterprise role, by name.")
+	@ApiResponse(responseCode = "200", description = "The approved organizations, by name.")
 	@ApiResponse(responseCode = "400", description = "A parameter is not valid.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	UseCaseOrganizationListResponse organizations(@CurrentActor Actor actor,

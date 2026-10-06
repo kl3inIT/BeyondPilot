@@ -96,7 +96,7 @@ public class UseCaseAdministration {
 		int page = request.page() == null ? 1 : request.page();
 		Instant now = Instant.now();
 		List<UUID> matching = text == null ? List.of()
-				: organizations.approvedEnterprises(text, ORGANIZATION_LIMIT).stream().map(OrganizationName::id).toList();
+				: organizations.approvedOrganizations(text, ORGANIZATION_LIMIT).stream().map(OrganizationName::id).toList();
 		List<UseCaseQueryRepository.Row> rows = useCaseList.page(text, matching, request.organizationId(),
 				request.status(), now, PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
 		Map<UUID, OrganizationName> names = organizations
@@ -131,7 +131,7 @@ public class UseCaseAdministration {
 	@Transactional(readOnly = true)
 	public UseCaseOrganizationListResponse organizations(Actor actor, UseCaseOrganizationListRequest request) {
 		identity.requireOperator(actor);
-		return new UseCaseOrganizationListResponse(organizations.approvedEnterprises(request.q(), ORGANIZATION_LIMIT)
+		return new UseCaseOrganizationListResponse(organizations.approvedOrganizations(request.q(), ORGANIZATION_LIMIT)
 			.stream()
 			.map(organization -> new UseCaseOrganizationResponse(organization.id(), organization.name()))
 			.toList());
@@ -141,16 +141,16 @@ public class UseCaseAdministration {
 	 * Creates a use case for an organization: a draft its members will edit, or a published one when the operator
 	 * asks. An operator's own work needs no review, so nothing is created in review.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws UseCaseException when the organization is not an approved enterprise, the close date is not in the
+	 * @throws UseCaseException when the organization is not approved, the close date is not in the
 	 * future, or the budget or the timeline is out of order
 	 */
 	@Transactional
 	public AdminUseCaseResponse create(Actor actor, CreateUseCaseRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		Instant now = Instant.now();
-		OrganizationName organization = organizations.approvedEnterprise(request.organizationId())
+		OrganizationName organization = organizations.approvedOrganization(request.organizationId())
 			.orElseThrow(() -> refused(UseCaseErrorCode.ORGANIZATION_NOT_ELIGIBLE,
-					"Organization " + request.organizationId() + " is not an approved enterprise"));
+					"Organization " + request.organizationId() + " is not an approved organization"));
 		if (!request.closesAt().isAfter(now)) {
 			throw refused(UseCaseErrorCode.CLOSES_IN_THE_PAST, "Close date " + request.closesAt() + " is not after " + now);
 		}

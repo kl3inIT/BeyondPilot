@@ -8,7 +8,7 @@ public enum UseCaseErrorCode implements ErrorCode {
 	NOT_FOUND("USECASE_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such use case."),
 
 	ORGANIZATION_NOT_ELIGIBLE("USECASE_ORGANIZATION_NOT_ELIGIBLE", ErrorCategory.VALIDATION,
-			"Only an approved organization that publishes use cases can have one. Choose another organization."),
+			"Only an approved organization can have a use case. Choose another organization."),
 
 	CLOSES_IN_THE_PAST("USECASE_CLOSES_IN_THE_PAST", ErrorCategory.VALIDATION,
 			"The date proposals stop must be in the future."),
@@ -20,7 +20,7 @@ public enum UseCaseErrorCode implements ErrorCode {
 			"The minimum budget is above the maximum."),
 
 	ENTERPRISE_REQUIRED("USECASE_ENTERPRISE_REQUIRED", ErrorCategory.NOT_PERMITTED,
-			"Only the members of an approved organization that publishes use cases can write them."),
+			"Only the members of an approved organization can write its use cases."),
 
 	CHANGED_MEANWHILE("USECASE_CHANGED_MEANWHILE", ErrorCategory.CONFLICT,
 			"Someone saved this use case in the meantime. Reload it and make your changes again."),

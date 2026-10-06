@@ -28,9 +28,9 @@ export async function readMyUseCase(id: string): Promise<MyUseCase | null> {
   }
 }
 
-/** Whether an organization has use cases at all: an approved enterprise does. */
+/** Whether an organization has use cases at all: an approved organization does. */
 export function hasUseCases(organization: Organization): boolean {
-  return organization.status === "approved" && organization.roles.includes("enterprise");
+  return organization.status === "approved";
 }
 
 /** How many use cases the organization has for its tab, or `null` when it has no such tab. Server only. */

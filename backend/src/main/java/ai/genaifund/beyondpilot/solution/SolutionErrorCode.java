@@ -7,8 +7,8 @@ public enum SolutionErrorCode implements ErrorCode {
 
 	SOLUTION_NOT_FOUND("SOLUTION_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such solution."),
 
-	PROVIDER_REQUIRED("SOLUTION_PROVIDER_REQUIRED", ErrorCategory.NOT_PERMITTED,
-			"Only an owner of an approved organization that provides AI solutions can do this."),
+	OWNER_REQUIRED("SOLUTION_OWNER_REQUIRED", ErrorCategory.NOT_PERMITTED,
+			"Only an owner of an approved organization can do this."),
 
 	INCOMPLETE("SOLUTION_INCOMPLETE", ErrorCategory.VALIDATION,
 			"A solution needs a summary, a maturity, a focus area and an industry before it is submitted."),

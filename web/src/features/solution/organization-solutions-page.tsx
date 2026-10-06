@@ -47,7 +47,7 @@ function stateOf(solution: SolutionSummary): (typeof states)[number] {
 
 /**
  * My organization › Solutions: what the organization offers, each with where its review stands.
- * Owners of an approved provider add and change them; members read.
+ * Owners of an approved organization add and change them; members read.
  */
 function OrganizationSolutionsPage({
   mine,

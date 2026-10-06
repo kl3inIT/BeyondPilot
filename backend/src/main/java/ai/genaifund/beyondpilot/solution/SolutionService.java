@@ -84,7 +84,7 @@ public class SolutionService {
 
 	/**
 	 * Creates a draft, which only the organization sees.
-	 * @throws SolutionException when the caller is not an owner of an approved provider
+	 * @throws SolutionException when the caller is not an owner of an approved organization
 	 */
 	@Transactional
 	public SolutionResponse create(Actor actor, CreateSolutionRequest request) {
@@ -102,7 +102,7 @@ public class SolutionService {
 	/**
 	 * Saves a solution as its edit screen holds it. A change to an approved solution shows at once; one to a rejected
 	 * solution waits for the owner to submit it again.
-	 * @throws SolutionException when the caller is not an owner of an approved provider, the organization has no such
+	 * @throws SolutionException when the caller is not an owner of an approved organization, the organization has no such
 	 * solution, or it changed since the screen read it
 	 */
 	@Transactional
@@ -128,7 +128,7 @@ public class SolutionService {
 
 	/**
 	 * Sends a draft, or a rejected solution that was corrected, to GenAI Fund for review.
-	 * @throws SolutionException when the caller is not an owner of an approved provider, the organization has no such
+	 * @throws SolutionException when the caller is not an owner of an approved organization, the organization has no such
 	 * solution, it lacks what a submission needs, or it is already submitted or approved
 	 */
 	@Transactional
@@ -155,7 +155,7 @@ public class SolutionService {
 
 	/**
 	 * Deletes a draft. Anything that was ever submitted stays.
-	 * @throws SolutionException when the caller is not an owner of an approved provider, the organization has no such
+	 * @throws SolutionException when the caller is not an owner of an approved organization, the organization has no such
 	 * solution, or it is not a draft
 	 */
 	@Transactional
@@ -171,7 +171,7 @@ public class SolutionService {
 	/**
 	 * Adds a project in which a customer put the solution to work. It waits for GenAI Fund's review before anyone else
 	 * reads it.
-	 * @throws SolutionException when the caller is not an owner of an approved provider, the organization has no such
+	 * @throws SolutionException when the caller is not an owner of an approved organization, the organization has no such
 	 * solution, or the solution already lists as many as it may
 	 */
 	@Transactional
@@ -189,7 +189,7 @@ public class SolutionService {
 	/**
 	 * Saves a customer deployment as its form holds it, which sends it to review again: what it says about a customer
 	 * is not shown until GenAI Fund has read it.
-	 * @throws SolutionException when the caller is not an owner of an approved provider, the solution has no such
+	 * @throws SolutionException when the caller is not an owner of an approved organization, the solution has no such
 	 * deployment, or it changed since the form read it
 	 */
 	@Transactional
@@ -207,7 +207,7 @@ public class SolutionService {
 
 	/**
 	 * Removes a customer deployment, whatever its review says.
-	 * @throws SolutionException when the caller is not an owner of an approved provider or the solution has no such
+	 * @throws SolutionException when the caller is not an owner of an approved organization or the solution has no such
 	 * deployment
 	 */
 	@Transactional
@@ -239,12 +239,12 @@ public class SolutionService {
 		identity.requireActive(actor);
 		return organizations.membershipOf(actor)
 			.filter(SolutionService::writes)
-			.orElseThrow(() -> new SolutionException(SolutionErrorCode.PROVIDER_REQUIRED,
+			.orElseThrow(() -> new SolutionException(SolutionErrorCode.OWNER_REQUIRED,
 					"Solution change by account " + actor.accountId()));
 	}
 
 	private static boolean writes(Membership membership) {
-		return membership.owner() && membership.approved() && membership.provides();
+		return membership.owner() && membership.approved();
 	}
 
 	private Solution own(Membership membership, UUID id) {

@@ -466,6 +466,8 @@ const sidebarMenuButtonVariants = cva(
       size: {
         default: "h-8 text-sm",
         sm: "h-7 text-xs",
+        // The roomier row of the admin sidebar in Figma: 40px, with space between icon and name.
+        md: "h-10 gap-3 text-sm",
         lg: "h-12 text-sm group-data-[collapsible=icon]:p-0!",
       },
     },

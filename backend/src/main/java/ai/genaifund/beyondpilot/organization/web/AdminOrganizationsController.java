@@ -9,6 +9,7 @@ import ai.genaifund.beyondpilot.organization.dto.AdminCreateOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationListRequest;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationListResponse;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationResponse;
+import ai.genaifund.beyondpilot.organization.dto.ApproveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -90,17 +91,22 @@ class AdminOrganizationsController {
 		return organizations.get(actor, id);
 	}
 
-	@PostMapping("/organizations/{id}/approve")
+	@PostMapping(path = "/organizations/{id}/approve", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "approveOrganization", summary = "Approve an organization that waits for review",
+	@Operation(operationId = "approveOrganization",
+			summary = "Approve an organization that waits for review, and verify its email domain",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "204", description = "The organization is approved.", content = @Content)
+	@ApiResponse(responseCode = "400", description = "The domain is not valid.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = NOT_AWAITING,
+	@ApiResponse(responseCode = "409",
+			description = "The organization is not waiting for review, or another organization has the domain.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	void approve(@CurrentActor Actor actor, @PathVariable UUID id) {
-		organizations.approve(actor, id);
+	void approve(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody ApproveOrganizationRequest request) {
+		organizations.approve(actor, id, request);
 	}
 
 	@PostMapping(path = "/organizations/{id}/refuse", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -120,18 +126,22 @@ class AdminOrganizationsController {
 		organizations.refuse(actor, id, request);
 	}
 
-	@PostMapping("/claims/{id}/approve")
+	@PostMapping(path = "/claims/{id}/approve", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(operationId = "approveOrganizationClaim",
-			summary = "Let a person own an organization nobody owns",
+			summary = "Let a person own an organization nobody owns, and verify its email domain",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "204", description = "The person owns the organization.", content = @Content)
+	@ApiResponse(responseCode = "400", description = "The domain is not valid.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "The claim is not open.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "The person joined another organization in the meantime.",
+	@ApiResponse(responseCode = "409",
+			description = "The person joined another organization in the meantime, or another organization has the domain.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	void approveClaim(@CurrentActor Actor actor, @PathVariable UUID id) {
-		organizations.decideClaim(actor, id, true);
+	void approveClaim(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody ApproveOrganizationRequest request) {
+		organizations.approveClaim(actor, id, request);
 	}
 
 	@PostMapping("/claims/{id}/decline")
@@ -142,6 +152,6 @@ class AdminOrganizationsController {
 	@ApiResponse(responseCode = "404", description = "The claim is not open.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void declineClaim(@CurrentActor Actor actor, @PathVariable UUID id) {
-		organizations.decideClaim(actor, id, false);
+		organizations.declineClaim(actor, id);
 	}
 }

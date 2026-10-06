@@ -62,15 +62,14 @@ class UseCaseServiceTest {
 	}
 
 	@Test
-	void onlyTheMembersOfAnApprovedEnterpriseWriteItsUseCases() {
-		Team team = team("gate.test", "enterprise", true);
+	void onlyTheMembersOfAnApprovedOrganizationWriteItsUseCases() {
+		Team team = team("gate.test", true);
 		UUID mine = create(team.founder);
 		String stranger = TestSignIn.session(client, mail, "stranger@elsewhere.test");
-		Team provider = team("provider.test", "provider", true);
-		Team pending = team("pending.test", "enterprise", false);
+		Team pending = team("pending.test", false);
 
 		client.get().uri(MINE).exchange().expectStatus().isUnauthorized();
-		for (String session : List.of(stranger, provider.founder, pending.founder)) {
+		for (String session : List.of(stranger, pending.founder)) {
 			assertProblem(get(session, MINE), 403, "USECASE_ENTERPRISE_REQUIRED");
 			assertProblem(post(session, MINE, null), 403, "USECASE_ENTERPRISE_REQUIRED");
 			assertProblem(get(session, MINE + "/" + mine), 403, "USECASE_ENTERPRISE_REQUIRED");
@@ -80,7 +79,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void aDraftIsWrittenInPartsAndSavedByAnyMember() {
-		Team team = team("parts.test", "enterprise", true);
+		Team team = team("parts.test", true);
 		UUID id = create(team.founder);
 		String empty = body(get(team.founder, MINE + "/" + id).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(empty, "$.status")).isEqualTo("draft");
@@ -113,7 +112,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void aPartThatCannotStandIsRefusedWhateverIsMissing() {
-		Team team = team("refuse.test", "enterprise", true);
+		Team team = team("refuse.test", true);
 		UUID id = create(team.founder);
 
 		Map<String, Object> upsideDown = save(0);
@@ -144,7 +143,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void aUseCaseIsSentForReviewWhenComplete_andThenItsMembersCannotEditIt() {
-		Team team = team("review.test", "enterprise", true);
+		Team team = team("review.test", true);
 		UUID id = create(team.founder);
 
 		assertProblem(post(team.founder, MINE + "/" + id + "/submit", null), 400, "USECASE_INCOMPLETE");
@@ -170,7 +169,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void aPublishedUseCaseBecomesADraftWhenItsMembersEditItOrTakeItBack() {
-		Team team = team("published.test", "enterprise", true);
+		Team team = team("published.test", true);
 		UUID first = adminPublished(team.organization, "Published one");
 		UUID second = adminPublished(team.organization, "Published two");
 
@@ -189,7 +188,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void aClosedUseCaseIsLockedForItsMembers() {
-		Team team = team("closed.test", "enterprise", true);
+		Team team = team("closed.test", true);
 		UUID id = adminPublished(team.organization, "Closing soon");
 		jdbc.sql("update use_case set closes_at = now() - interval '1 day' where id = ?").param(id).update();
 
@@ -204,8 +203,8 @@ class UseCaseServiceTest {
 
 	@Test
 	void aUseCaseOfAnotherOrganizationIsNotFound() {
-		Team ours = team("ours.test", "enterprise", true);
-		Team theirs = team("theirs.test", "enterprise", true);
+		Team ours = team("ours.test", true);
+		Team theirs = team("theirs.test", true);
 		UUID id = create(theirs.founder);
 
 		assertProblem(get(ours.founder, MINE + "/" + id), 404, "USECASE_NOT_FOUND");
@@ -218,7 +217,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void anOperatorApprovesAUseCaseInReviewAndItsMembersAreTold() {
-		Team team = team("approve.test", "enterprise", true);
+		Team team = team("approve.test", true);
 		UUID id = create(team.founder);
 		put(team.founder, MINE + "/" + id, complete(0)).expectStatus().isOk();
 		post(team.colleague, MINE + "/" + id + "/submit", null).expectStatus().isOk();
@@ -244,7 +243,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void anOperatorSendsAUseCaseBackWithAReasonThatItsMembersReadUntilTheySendItAgain() {
-		Team team = team("sendback.test", "enterprise", true);
+		Team team = team("sendback.test", true);
 		UUID id = create(team.founder);
 		put(team.founder, MINE + "/" + id, complete(0)).expectStatus().isOk();
 		post(team.founder, MINE + "/" + id + "/submit", null).expectStatus().isOk();
@@ -326,22 +325,25 @@ class UseCaseServiceTest {
 		return body;
 	}
 
-	/** An approved or pending organization with a founder, and a colleague who joins through the same domain. */
-	private Team team(String domain, String role, boolean approved) {
+	/** An approved or pending organization with a founder, and a colleague the founder invites. */
+	private Team team(String domain, boolean approved) {
 		String founder = TestSignIn.session(client, mail, "founder@" + domain);
 		UUID organization = UUID.fromString(JsonPath.read(body(post(founder, ORGANIZATION + "/organizations",
-				Map.of("name", "Team " + domain, "roles", List.of(role), "type", "company", "country", "VN",
-						"teamSize", "2_9", "industries", List.of("insurance"), "website", "https://example.test",
-						"jobTitle", "Founder"))
+				Map.of("name", "Team " + domain, "type", "company", "country", "VN", "teamSize", "2_9", "industries",
+						List.of("insurance"), "website", "https://example.test", "description",
+						"Assistants for insurers.", "foundedYear", 2021, "jobTitle", "Founder"))
 			.expectStatus()
 			.isCreated()), "$.id"));
-		if (approved) {
-			post(operator, ORGANIZATION + "/admin/organizations/" + organization + "/approve", null).expectStatus()
-				.isNoContent();
-		}
 		String colleague = TestSignIn.session(client, mail, "colleague@" + domain);
 		if (approved) {
-			post(colleague, ORGANIZATION + "/organizations/" + organization + "/join", Map.of()).expectStatus().isOk();
+			post(operator, ORGANIZATION + "/admin/organizations/" + organization + "/approve", Map.of()).expectStatus()
+				.isNoContent();
+			post(founder, ORGANIZATION + "/mine/invitations", Map.of("email", "colleague@" + domain, "role", "member"))
+				.expectStatus()
+				.isNoContent();
+			String invitation = JsonPath.read(body(get(colleague, ORGANIZATION + "/mine").expectStatus().isOk()),
+					"$.invitations[0].id");
+			post(colleague, ORGANIZATION + "/invitations/" + invitation + "/accept", null).expectStatus().isNoContent();
 		}
 		return new Team(organization, founder, colleague);
 	}

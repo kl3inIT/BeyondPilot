@@ -19,7 +19,7 @@ import org.jspecify.annotations.Nullable;
 		published at once when publishNow is true.""")
 public record CreateUseCaseRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "An approved organization with the enterprise role.") @NotNull UUID organizationId,
+				description = "An approved organization.") @NotNull UUID organizationId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 200) String title,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 2000) String problemStatement,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Pattern(

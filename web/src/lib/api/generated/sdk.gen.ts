@@ -110,7 +110,7 @@ export const getMe = <ThrowOnError extends boolean = true>(options?: Options<Get
 });
 
 /**
- * Let a person own an organization nobody owns
+ * Let a person own an organization nobody owns, and verify its email domain
  */
 export const approveOrganizationClaim = <ThrowOnError extends boolean = true>(options: Options<ApproveOrganizationClaimData, ThrowOnError>): RequestResult<ApproveOrganizationClaimResponses, ApproveOrganizationClaimErrors, ThrowOnError> => (options.client ?? client).post<ApproveOrganizationClaimResponses, ApproveOrganizationClaimErrors, ThrowOnError>({
     security: [{
@@ -119,7 +119,11 @@ export const approveOrganizationClaim = <ThrowOnError extends boolean = true>(op
             type: 'apiKey'
         }],
     url: '/api/organization/admin/claims/{id}/approve',
-    ...options
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -179,7 +183,7 @@ export const getAdminOrganization = <ThrowOnError extends boolean = true>(option
 });
 
 /**
- * Approve an organization that waits for review
+ * Approve an organization that waits for review, and verify its email domain
  */
 export const approveOrganization = <ThrowOnError extends boolean = true>(options: Options<ApproveOrganizationData, ThrowOnError>): RequestResult<ApproveOrganizationResponses, ApproveOrganizationErrors, ThrowOnError> => (options.client ?? client).post<ApproveOrganizationResponses, ApproveOrganizationErrors, ThrowOnError>({
     security: [{
@@ -188,7 +192,11 @@ export const approveOrganization = <ThrowOnError extends boolean = true>(options
             type: 'apiKey'
         }],
     url: '/api/organization/admin/organizations/{id}/approve',
-    ...options
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -278,7 +286,7 @@ export const saveMyOrganization = <ThrowOnError extends boolean = true>(options:
 });
 
 /**
- * Let addresses on the organization's domain join without asking, or stop that
+ * Let addresses on the organization's verified domain join without asking, or stop that
  */
 export const changeOrganizationAutoJoin = <ThrowOnError extends boolean = true>(options: Options<ChangeOrganizationAutoJoinData, ThrowOnError>): RequestResult<ChangeOrganizationAutoJoinResponses, ChangeOrganizationAutoJoinErrors, ThrowOnError> => (options.client ?? client).put<ChangeOrganizationAutoJoinResponses, ChangeOrganizationAutoJoinErrors, ThrowOnError>({
     security: [{

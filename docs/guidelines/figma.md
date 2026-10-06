@@ -10,10 +10,10 @@ For design work in the Figma file `BeyondPilot — Product UI` (folder `BeyondPi
 
 ## File structure
 
-| Page | Holds |
-| --- | --- |
-| `Foundations & Components` | Variable collections, text styles and one component set per code component |
-| `Screens` | One section per area (`Public`, `Apply flow`, `Workspace`, `Admin`); every screen at desktop and mobile width |
+| Page                       | Holds                                                                                                         |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `Foundations & Components` | Variable collections, text styles and one component set per code component                                    |
+| `Screens`                  | One section per area (`Public`, `Apply flow`, `Workspace`, `Admin`); every screen at desktop and mobile width |
 
 The third page stays free until a real need appears.
 

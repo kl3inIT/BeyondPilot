@@ -28,21 +28,18 @@ export default async function OrganizationUseCasesRoute({
   await requireAccount(siteRoutes.workspaceUseCases);
   const [mine, members] = await Promise.all([readMyOrganization(), readMembers()]);
   const { organization } = mine;
-  // Use cases belong to an approved enterprise; anyone else is shown their organization's first page.
+  // Use cases belong to an approved organization; anyone else is shown their organization's first page.
   if (!organization || !hasUseCases(organization)) {
     redirect(getPathname({ href: siteRoutes.workspaceOrganization, locale }));
   }
-  const [useCases, solutions] = await Promise.all([
-    readMyUseCases(),
-    organization.roles.includes("provider") ? readMySolutions() : null,
-  ]);
+  const [useCases, solutions] = await Promise.all([readMyUseCases(), readMySolutions()]);
 
   return (
     <WorkspaceFrame>
       <MyUseCasesPage
         mine={{ ...mine, organization }}
         useCases={useCases}
-        members={members?.members.length ?? 0}
+        members={members?.total ?? 0}
         solutions={solutions?.items.length ?? null}
       />
     </WorkspaceFrame>

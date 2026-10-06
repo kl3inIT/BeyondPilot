@@ -12,7 +12,7 @@ import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { AdminBreadcrumb } from "@/components/layout/admin-breadcrumb";
-import type { AdminNavItem } from "@/components/layout/admin-nav";
+import type { AdminNavGroup } from "@/components/layout/admin-nav";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -36,46 +36,61 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
     cookies(),
   ]);
 
-  // The destinations of the admin area, for the sidebar and the breadcrumb. One is listed here by
-  // the change that adds its screen.
-  const destinations: AdminNavItem[] = [
-    { href: siteRoutes.admin, label: t("nav.home"), icon: <HouseIcon aria-hidden="true" /> },
+  // The destinations of the admin area in the sidebar's groups: what GenAI Fund reviews, then the
+  // system's own records. One is listed here by the change that adds its screen.
+  const groups: AdminNavGroup[] = [
     {
-      href: siteRoutes.adminPrograms,
-      label: t("nav.programs"),
-      icon: <CalendarRangeIcon aria-hidden="true" />,
+      items: [
+        { href: siteRoutes.admin, label: t("nav.home"), icon: <HouseIcon aria-hidden="true" /> },
+      ],
     },
     {
-      href: siteRoutes.adminOrganizations,
-      label: t("nav.organizations"),
-      icon: <Building2Icon aria-hidden="true" />,
+      label: t("nav.review"),
+      items: [
+        {
+          href: siteRoutes.adminPrograms,
+          label: t("nav.programs"),
+          icon: <CalendarRangeIcon aria-hidden="true" />,
+        },
+        {
+          href: siteRoutes.adminUseCases,
+          label: t("nav.useCases"),
+          icon: <LightbulbIcon aria-hidden="true" />,
+        },
+        {
+          href: siteRoutes.adminSolutions,
+          label: t("nav.solutions"),
+          icon: <BoxesIcon aria-hidden="true" />,
+        },
+        {
+          href: siteRoutes.adminTalent,
+          label: t("nav.talent"),
+          icon: <UsersIcon aria-hidden="true" />,
+        },
+        {
+          href: siteRoutes.adminOrganizations,
+          label: t("nav.organizations"),
+          icon: <Building2Icon aria-hidden="true" />,
+        },
+      ],
     },
     {
-      href: siteRoutes.adminUseCases,
-      label: t("nav.useCases"),
-      icon: <LightbulbIcon aria-hidden="true" />,
-    },
-    {
-      href: siteRoutes.adminSolutions,
-      label: t("nav.solutions"),
-      icon: <BoxesIcon aria-hidden="true" />,
-    },
-    {
-      href: siteRoutes.adminTalent,
-      label: t("nav.talent"),
-      icon: <UsersIcon aria-hidden="true" />,
-    },
-    {
-      href: siteRoutes.adminAccounts,
-      label: t("nav.accounts"),
-      icon: <UserCogIcon aria-hidden="true" />,
-    },
-    {
-      href: siteRoutes.adminAuditLog,
-      label: t("nav.auditLog"),
-      icon: <ScrollTextIcon aria-hidden="true" />,
+      label: t("nav.system"),
+      items: [
+        {
+          href: siteRoutes.adminAccounts,
+          label: t("nav.accounts"),
+          icon: <UserCogIcon aria-hidden="true" />,
+        },
+        {
+          href: siteRoutes.adminAuditLog,
+          label: t("nav.auditLog"),
+          icon: <ScrollTextIcon aria-hidden="true" />,
+        },
+      ],
     },
   ];
+  const destinations = groups.flatMap((group) => group.items);
 
   return (
     // The sidebar records open or collapsed in this cookie; reading it here draws the right width
@@ -89,7 +104,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
       </a>
       <AdminSidebar
         account={{ name: account.displayName ?? null, email: account.email, operator: true }}
-        items={destinations}
+        groups={groups}
       />
       <SidebarInset id="content">
         <header className="flex h-12 shrink-0 items-center gap-2 px-4">

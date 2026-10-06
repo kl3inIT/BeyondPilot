@@ -2,6 +2,9 @@
 
 Status: in progress, 6 October 2026. The Linear issue is not assigned yet; rename this directory to `bey-<n>-usecase-admin-create` when it is. The screens are drawn in Figma, section `Admin — Use cases (draft for review)`. The domain behind it is [BEY-22](../bey-22-phase-1-domain-model/design.md) (`usecase`), the brief is [§7.4](../../../brief/BeyondPilot-Vendor-Product-Brief-and-Scope.md#74-enterprise-use-cases).
 
+> **Update, 7 October 2026:** the organization no longer has a role (BEY-61, `V12__organization_drop_roles.sql`). Every approved organization has both solutions and use cases, so wherever this page says an approved enterprise or the enterprise role, it now means any approved organization; the migrations of this increment are numbered V13 to V16.
+
+
 This is the first slice of the `usecase` module: what an operator does. An organization's own drafting and sending for review, the operators' review, the public directory and attachments follow in later increments ([plan](plan.md)).
 
 ## Domain story

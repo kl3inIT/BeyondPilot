@@ -130,7 +130,7 @@ function OpenSection({ title, description, open, onToggle, children }: OpenSecti
 }
 
 /**
- * Admin › Create a use case: an operator writes a use case on behalf of an approved enterprise.
+ * Admin › Create a use case: an operator writes a use case on behalf of an approved organization.
  * The right-hand panel decides what saving does: keep a draft the organization edits and sends for
  * review, or publish at once, the operator being the reviewer.
  */

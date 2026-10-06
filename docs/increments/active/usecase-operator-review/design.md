@@ -2,6 +2,9 @@
 
 Status: in progress, 7 October 2026. The Linear issue is not assigned yet; rename this directory to `bey-<n>-usecase-operator-review` when it is. The screens are drawn in Figma, section `Admin — Use cases (draft for review)`: `Review a use case, in review`, `step 1 The challenge, read-only`, `Send back (dialog)`, `Use cases, row menu`. It follows [usecase-organization-tab](../usecase-organization-tab/design.md), which sends use cases into review.
 
+> **Update, 7 October 2026:** the organization no longer has a role (BEY-61, `V12__organization_drop_roles.sql`). Every approved organization has both solutions and use cases, so wherever this page says an approved enterprise or the enterprise role, it now means any approved organization; the migrations of this increment are numbered V13 to V16.
+
+
 ## Domain story
 
 An operator opens Admin › Use cases and sees what waits for them. They open a use case in review and read it the way its members wrote it: a summary of the four sections, and from each section the step itself, read only, with Back and Continue. Operators decide; they do not edit it.

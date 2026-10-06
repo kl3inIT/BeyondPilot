@@ -24,8 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class OrganizationDirectory {
 
-	private static final String ENTERPRISE = "enterprise";
-
 	private final OrganizationRepository organizations;
 
 	private final MembershipRepository memberships;
@@ -45,7 +43,7 @@ public class OrganizationDirectory {
 		return memberships.memberOf(actor.accountId())
 			.flatMap(member -> organizations.findById(member.organizationId())
 				.map(organization -> new Membership(organization.getId(), organization.getName(), member.isOwner(),
-						organization.isApproved(), organization.getRoles())));
+						organization.isApproved())));
 	}
 
 	/** The accounts of everyone who belongs to the organization, owners and members alike. */
@@ -64,25 +62,24 @@ public class OrganizationDirectory {
 	}
 
 	/**
-	 * The approved organization with this identifier, when it has the enterprise role, the one that publishes use
-	 * cases; empty for one that is unknown, waits for review, was refused or only offers solutions.
+	 * The approved organization with this identifier, the kind that can have use cases; empty for one that is
+	 * unknown, waits for review or was refused.
 	 */
 	@Transactional(readOnly = true)
-	public Optional<OrganizationName> approvedEnterprise(UUID id) {
+	public Optional<OrganizationName> approvedOrganization(UUID id) {
 		return organizations.findById(id)
 			.filter(Organization::isApproved)
-			.filter(organization -> organization.getRoles().contains(ENTERPRISE))
 			.map(organization -> new OrganizationName(organization.getId(), organization.getSlug(),
 					organization.getName(), organization.getCountry()));
 	}
 
 	/**
-	 * The approved organizations with the enterprise role, by name, at most {@code limit}.
+	 * The approved organizations, by name, at most {@code limit}.
 	 * @param text only those whose name contains it, ignoring case; every one when blank or null
 	 */
 	@Transactional(readOnly = true)
-	public List<OrganizationName> approvedEnterprises(@Nullable String text, int limit) {
-		return organizationList.approvedEnterprises(OrganizationViews.text(text), limit)
+	public List<OrganizationName> approvedOrganizations(@Nullable String text, int limit) {
+		return organizationList.approvedOrganizations(OrganizationViews.text(text), limit)
 			.stream()
 			.map(name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country()))
 			.toList();

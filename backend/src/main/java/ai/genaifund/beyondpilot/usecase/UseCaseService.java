@@ -202,13 +202,13 @@ public class UseCaseService {
 		return response(actor, membership, useCase);
 	}
 
-	/** The caller's organization, which must be approved and publish use cases. */
+	/** The caller's organization, which must be approved. */
 	private Membership writer(Actor actor) {
 		identity.requireActive(actor);
 		return organizations.membershipOf(actor)
-			.filter(membership -> membership.approved() && membership.roles().contains("enterprise"))
+			.filter(Membership::approved)
 			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.ENTERPRISE_REQUIRED,
-					"Account " + actor.accountId() + " is not a member of an approved enterprise"));
+					"Account " + actor.accountId() + " is not a member of an approved organization"));
 	}
 
 	/** One use case of the caller's organization, locked for the change about to be made. */
