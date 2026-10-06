@@ -1,6 +1,6 @@
 # Proposals: reviewing applications and releasing outcomes
 
-Status: accepted 6 October 2026. Tracked in Linear as BEY-38. It follows [BEY-37](../bey-37-proposal/design.md), which lets a person apply; the domain is [BEY-22](../bey-22-phase-1-domain-model/design.md). The screens are O1–O3 of [BEY-27](../bey-27-main-flows-design/design.md), revised on 6 October 2026 after the [research on judging](../../../research/2026-10-06-review-and-judging.md).
+Status: done on 6 October 2026, accepted the same day. Tracked in Linear as BEY-38. It follows [BEY-37](../bey-37-proposal/design.md), which lets a person apply; the domain is [BEY-22](../../active/bey-22-phase-1-domain-model/design.md). The screens are O1–O3 of [BEY-27](../../active/bey-27-main-flows-design/design.md), revised on 6 October 2026 after the [research on judging](../../../research/2026-10-06-review-and-judging.md).
 
 GenAI Fund and the judges it invites score the applications of a program on its criteria; GenAI Fund decides who is shortlisted and tells every applicant on the same day.
 

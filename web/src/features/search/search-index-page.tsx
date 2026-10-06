@@ -14,6 +14,7 @@ import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { Button } from "@/components/actions/button";
 import { DataTable } from "@/components/composites/data-table";
 import { Status } from "@/components/composites/status";
+import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { SearchIndex, SearchIndexKind } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -131,7 +132,7 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <AdminPageTitle destination="searchIndex">{t("title")}</AdminPageTitle>
           <p className="text-sm text-muted-foreground">{t("lead")}</p>
         </div>
         <div className="hidden md:block">

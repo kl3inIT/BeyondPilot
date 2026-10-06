@@ -1,6 +1,6 @@
 # Proposals: applying to a program
 
-Status: accepted 6 October 2026. Tracked in Linear as BEY-37. The domain behind it is [BEY-22](../bey-22-phase-1-domain-model/design.md); the screens are the Apply flow of [BEY-27](../bey-27-main-flows-design/design.md), revised and approved on 6 October 2026.
+Status: done on 6 October 2026, accepted the same day. Tracked in Linear as BEY-37. The domain behind it is [BEY-22](../../active/bey-22-phase-1-domain-model/design.md); the screens are the Apply flow of [BEY-27](../../active/bey-27-main-flows-design/design.md), revised and approved on 6 October 2026.
 
 A person reads an open program, signs in, applies in four steps and follows the outcome. Reviewing the applications is the next increment (BEY-38).
 

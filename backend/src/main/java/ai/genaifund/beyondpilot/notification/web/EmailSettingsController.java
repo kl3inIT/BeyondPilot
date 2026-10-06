@@ -9,6 +9,9 @@ import ai.genaifund.beyondpilot.notification.dto.SaveEmailSettingsRequest;
 import jakarta.validation.Valid;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
+import io.swagger.v3.oas.annotations.Parameter;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.jspecify.annotations.Nullable;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -73,14 +76,16 @@ class EmailSettingsController {
 
 	@PostMapping(path = "/test", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "testEmailSettings",
-			summary = "Send a test through the settings as the form holds them, to the caller's own address", security = @SecurityRequirement(name = "session"))
+			summary = "Send a test through the settings as the form holds them", security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "Whether the provider took the test, and why not.")
 	@ApiResponse(responseCode = "400", description = "A member is not valid, or the provider chosen lacks a field or its secret.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "503", description = "A secret was given but the server has no key to encrypt it.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	EmailTestResponse test(@CurrentActor Actor actor, @Valid @RequestBody SaveEmailSettingsRequest request) {
-		return settings.test(actor, request);
+	EmailTestResponse test(@CurrentActor Actor actor, @Valid @RequestBody SaveEmailSettingsRequest request,
+			@Parameter(description = "Where to send the test; the caller's own address when left out. A test to anyone else is recorded in the audit log.")
+			@RequestParam(required = false) @Nullable String to) {
+		return settings.test(actor, request, to);
 	}
 
 	@PutMapping(path = "/appearance", consumes = MediaType.APPLICATION_JSON_VALUE,

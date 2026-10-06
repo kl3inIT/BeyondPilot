@@ -72,7 +72,7 @@ test.describe("admin email", () => {
     await page.keyboard.type(" {{organisation}}");
 
     await expect(page.getByText("{{organisation}} is not a variable of this email.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Send me a test" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Send test" })).toBeDisabled();
     await expect(page.getByRole("status")).toContainText("You have unsaved changes");
     expect(drafts.at(-1)?.body).toContain("{{organisation}}");
   });
@@ -202,5 +202,39 @@ test.describe("admin email", () => {
     await expect(records.filter({ hasText: "a1b2c3._domainkey" })).toHaveCount(1);
     await expect(setup.getByText("v=DMARC1; p=none;").filter({ visible: true })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
+  });
+
+  test("a test goes to the address written, the operator's own unless changed", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const sent: string[] = [];
+    await page.route("**/api/notification/admin/email/settings/test*", async (route) => {
+      const to = new URL(route.request().url()).searchParams.get("to") ?? "";
+      sent.push(to);
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ recipient: to, sent: true }),
+      });
+    });
+    await page.goto("/admin/email/settings");
+
+    const to = page.getByRole("textbox", { name: "Send a test to" });
+    await expect(to).toHaveValue("dat.phan@example.com");
+    // The settings need their key before anything is sent, so the form is filled first.
+    await page.getByRole("textbox", { name: "API key" }).fill("re_test");
+    await to.fill("kai@genaifund.example");
+    await page.getByRole("button", { name: "Send test" }).click();
+    await expect(page.getByText("Test email sent to kai@genaifund.example.")).toBeVisible();
+    expect(sent).toEqual(["kai@genaifund.example"]);
+
+    // Enter sends as the button does; the toast of the first test sits over the button meanwhile.
+    await to.fill("not an address");
+    await to.press("Enter");
+    await expect(to).toHaveAttribute("aria-invalid", "true");
+    expect(sent).toHaveLength(1);
   });
 });

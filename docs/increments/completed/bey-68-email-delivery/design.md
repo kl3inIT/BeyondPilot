@@ -1,6 +1,6 @@
 # BEY-68 — Email delivery that operators run
 
-Status: in design, 6 October 2026 ([plan](plan.md)). The screens were approved in Figma the same day (section `Admin — Email (draft for review, BEY-68)`). What was studied before this design is on the Linear issue BEY-68: Jmix, ThingsBoard, Keycloak, Apache Syncope, Liferay, Discourse, listmonk and Novu in code or documentation; Supabase, Shopify, Homerun, AutoSend, Resend, Linear, n8n and Klaviyo on Mobbin; and the template engines, Spring Modulith 2.1.1 and the provider SDKs.
+Status: done on 6 October 2026, live on staging ([plan](plan.md)): staging sends through Resend from `no-reply@beyondpilot.vadan.app`, a domain verified that day, and a sign-in code sent there was reported delivered by Resend's webhook three seconds later. Production keeps Mailpit until its next deployment and waits on GenAI Fund's DNS for `beyondpilot.ai` (BEY-41). The screens were approved in Figma the same day (section `Admin — Email (draft for review, BEY-68)`). What was studied before this design is on the Linear issue BEY-68: Jmix, ThingsBoard, Keycloak, Apache Syncope, Liferay, Discourse, listmonk and Novu in code or documentation; Supabase, Shopify, Homerun, AutoSend, Resend, Linear, n8n and Klaviyo on Mobbin; and the template engines, Spring Modulith 2.1.1 and the provider SDKs.
 
 ## Why
 
@@ -16,12 +16,12 @@ Status: in design, 6 October 2026 ([plan](plan.md)). The screens were approved i
 
 Operators get **Admin › Email** with four tabs:
 
-- **Templates.** Each kind of email, by group. An operator edits the subject and the body in Markdown with the kind's variables, sees a preview with sample data, sends a test to themselves, and resets to the default. The appearance (accent colour, footer note) is shared by every kind.
+- **Templates.** Each kind of email, by group. An operator edits the subject and the body in Markdown with the kind's variables, sees a preview with sample data, sends a test (to themselves unless they write another address), and resets to the default. The appearance (accent colour, footer note) is shared by every kind, and its preview follows the colour and footer being edited before they are saved.
 - **Activity.** Every email sent: when, to whom, which kind, its status. Counts for the period, with the bounce and complaint rates against the limits above. One email opens with its events and the content as it was sent; it can be sent again unless its address is suppressed.
 - **Suppressions.** The addresses BeyondPilot no longer sends to, with the reason and the email that caused it. An operator removes one after a warning, or adds one.
-- **Settings.** The setup checklist (provider connected, domain verified, production access, delivery events), the provider (Amazon SES, Resend or SMTP) with its credentials, a connection test that sends to the operator's own address, the sender, the domain's DNS records, and the address that receives delivery events.
+- **Settings.** The setup checklist, asked of the saved provider when the screen opens (credentials, domain added and verified, DKIM, MAIL FROM, SES's production access and sending, counted as "4 of 6 done"), with the domain's DNS records and what the provider found of each; the provider (Amazon SES, Resend or SMTP) with its credentials; a connection test of the form, saved or not; the sender; and the address that receives delivery events.
 
-Mailpit is removed from every composition. Staging sends through Resend once an operator has configured it there.
+Mailpit is removed from every composition. Staging sends through Resend, configured by an operator in Settings.
 
 ## Domain story
 
@@ -71,10 +71,10 @@ Accepted and recorded in [ADR 0005](../../../decisions/0005-operators-run-email-
 Operators choose and change the provider without a release (decided by Đạt, 6 October 2026). This departs from "configuration comes from environment variables" for this one subject, as Keycloak, ThingsBoard, Immich and WP Mail SMTP do.
 
 - **One row, `email_settings`**: provider, sender name and address, reply-to, the provider's connection fields, the appearance, and a version. Saving bumps the version and rebuilds the provider's client on the next send.
-- **Secrets are encrypted field by field** (Novu): an SMTP password, an AWS secret key, a Resend API key, a webhook signing secret. AES-256-GCM through Spring Security Crypto's `AesBytesEncryptor` with a random IV per value. The key is `BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY`, 32 bytes in Base64, a secret file on a deployed host. Without it nothing secret is saved or read (fail closed); the rest of the application runs.
+- **Secrets are encrypted field by field** (Novu): an SMTP password, an AWS secret key, a Resend API key, a webhook signing secret. AES-256-GCM through Spring Security Crypto's `AesGcmBytesEncryptor` (its `AesBytesEncryptor` is deprecated) with a random IV per value. The key is `BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY`, 32 bytes in Base64, a secret file on a deployed host. Without it nothing secret is saved or read (fail closed); the rest of the application runs.
 - **A secret is never read back.** The API returns whether each secret is set, never its value. A save that leaves a secret empty keeps the stored one (listmonk, ThingsBoard).
 - **The connection test reuses a stored secret only when the host, port, user, region or key identifier it belongs to is unchanged** (Keycloak's `reuseConfiguredAuthenticationForSmtp`). Otherwise an operator could point the test at their own server and receive the stored password.
-- **The test goes only to the signed-in operator's own address.**
+- **A test goes to the signed-in operator's own address unless they write another.** A test to any other address is recorded in the audit log (`email.test_send`, the address as resource and `settings` or the kind as subject), so the button cannot quietly send mail in BeyondPilot's name. Keycloak sends only to the admin; Discourse and WP Mail SMTP take any address, which checking delivery to another mailbox needs.
 - Nothing is configured from the environment, so a fresh database sends nothing until an operator sets it up. Operators can always sign in with Google, and with a code once the provider works.
 
 ## Providers
@@ -98,15 +98,16 @@ The [Strategy-behind-a-registry pattern](../../../conventions.md#interchangeable
 - **Language.** Email is written in English for now (decided by Đạt, 6 October 2026), the sign-in code included. A template is per kind only; Vietnamese, when it comes, adds a language to the template table in a migration of its own.
 - **The defaults** are today's wording, moved from Java into the catalog. The admin list shows "Edited" with who and when for an override.
 
-The catalog is the seventeen kinds `EmailService` sends today:
+The catalog is the twenty-four kinds `EmailService` sends, the seventeen of the start and those that organizations and use cases added while it was built:
 
-| Group         | Kinds                                                                                                                |
-| ------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Sign-in       | sign-in code                                                                                                         |
-| Organizations | invitation, decision                                                                                                 |
-| Applications  | application submitted, judge invitation, application outcome                                                         |
-| Introductions | introduction request, introduction made, introduction declined                                                       |
-| Talent        | decision on a profile, message through a profile, reminder to answer, introduction, message declined, message closed |
+| Group         | Kinds                                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Sign-in       | sign-in code                                                                                                                    |
+| Organizations | invitation, approved, refused, request approved, request declined, taken down, restored                                         |
+| Applications  | application submitted, judge invitation, application outcome                                                                    |
+| Introductions | introduction request, introduction made, introduction declined                                                                  |
+| Use cases     | published, sent back (its reason quoted as written)                                                                             |
+| Talent        | approved, changes asked, removed, message through a profile, reminder to answer, introduction, message declined, message closed |
 
 `application_outcome` carries a subject and a message an operator wrote for that release; its template frames them.
 
@@ -121,12 +122,12 @@ The catalog is the seventeen kinds `EmailService` sends today:
 5. **What is stored is what was sent**, rendered at queue time (Syncope), so a later template edit does not rewrite history. The sign-in code is stored with the code masked.
 6. **Retention.** A nightly job deletes messages older than 90 days with their events. The content holds names and addresses; 90 days covers every question an operator asks about delivery.
 
-`SubmissionMail` and `ReviewMail` keep calling after commit; their catch blocks remain for a failure to queue.
+`SubmissionMail` and `ReviewMail` queue inside the transaction of the change they report (`@EventListener`), so an email exists exactly when its change does; sending stays after commit.
 
 ## Delivery events and suppression
 
 - **Resend** posts signed webhooks; `POST /api/notification/email/events/resend` verifies the Svix signature with the signing secret from Settings before reading anything.
-- **Amazon SES** publishes the configuration set's events to an SNS topic subscribed over HTTPS to `POST /api/notification/email/events/ses`. The endpoint confirms the subscription, verifies every message's SNS signature and checks the topic against Settings.
+- **Amazon SES** publishes the configuration set's events to an SNS topic subscribed over HTTPS to `POST /api/notification/email/events/ses`. The endpoint confirms the subscription, verifies every message's SNS signature and checks the topic against Settings. The signature is checked with the JDK as AWS documents it (`SnsMessages`): the certificate only over HTTPS from `sns.<region>.amazonaws.com`, the signed fields in AWS's order. AWS's `sns-message-manager` was tried and removed: it needs Apache HttpClient 5 at runtime, which then became the client of every `RestClient` built outside Spring Boot, made the test clients follow redirects and wait out `Retry-After`, and hung CI.
 - **SMTP** reports nothing; its emails stay `sent`.
 - An event is matched by provider message identifier, stored as an `email_event`, and moves the message's status forward only.
 - A permanent bounce or a complaint adds a suppression (listmonk's rules: one hard bounce, one complaint). A soft bounce is recorded and suppresses nothing.
@@ -140,14 +141,15 @@ The operators' operations live under `/api/notification/admin/email`: the module
 | --------------------------------------- | ----------------------------------------------------------------- |
 | Settings, setup state, DNS records      | `GET /settings`                                                   |
 | Save settings                           | `PUT /settings`                                                   |
-| Test the connection (send to me)        | `POST /settings/test`                                             |
+| Test the form's connection              | `POST /settings/test?to=`                                         |
+| Ask the provider about the domain       | `GET /settings/checks`                                            |
 | Accent colour and footer note           | `PUT /settings/appearance`                                        |
 | Templates by group, with override state | `GET /templates`                                                  |
 | One template                            | `GET /templates/{kind}`                                           |
 | Save an override                        | `PUT /templates/{kind}`                                           |
 | Reset to default                        | `DELETE /templates/{kind}`                                        |
-| Preview with sample data                | `POST /templates/{kind}/preview`                                  |
-| Send a test of a template to me         | `POST /templates/{kind}/test`                                     |
+| Preview with sample data                | `POST /templates/{kind}/preview` (an unsaved appearance optional) |
+| Send a test of a draft                  | `POST /templates/{kind}/test?to=`                                 |
 | Activity, with counts                   | `GET /messages?from=&kind=&status=&q=&before=&after=`             |
 | One message, its events and content     | `GET /messages/{id}`                                              |
 | Send again                              | `POST /messages/{id}/resend`                                      |
@@ -157,11 +159,11 @@ The operators' operations live under `/api/notification/admin/email`: the module
 
 Activity is paged by cursor like the audit log (it only grows and is read from the newest end). Suppressions are a small set an operator searches, paged by number like Accounts.
 
-New audit actions: `email.settings_update`, `email.template_update`, `email.template_reset`, `email.suppression_add`, `email.suppression_remove`, `email.resend`.
+New audit actions: `email.settings_update`, `email.appearance_update`, `email.template_update`, `email.template_reset`, `email.suppression_add`, `email.suppression_remove`, `email.resend`, `email.test_send`.
 
 ## Persistence
 
-`V<n>__notification_create_email.sql`:
+`V41__notification_create_email.sql`:
 
 - `email_settings` (one row, `id = 1`), with `version`, the encrypted secrets as `bytea`, and the appearance's accent colour and footer note.
 - `email_template` (`kind` primary key, `subject`, `body`, `updated_by`, `updated_by_label`, `updated_at`).
@@ -181,7 +183,7 @@ Entities and Spring Data repositories for settings, templates and suppressions; 
 ## Infrastructure
 
 - Mailpit leaves `backend/compose.yaml` and the three compositions; `BEYONDPILOT_MAIL_*` and `spring.mail.*` go.
-- Staging gains the secret file for `BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY`; the runbook says how to make it, never its value.
+- Staging and production each have their own secret file for `BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY`; the runbook says how to make it, never its value.
 
 ## Not in this increment
 

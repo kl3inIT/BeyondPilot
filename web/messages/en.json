@@ -778,7 +778,8 @@
           "template_reset": "Reset an email's wording",
           "suppression_add": "Stopped email to an address",
           "suppression_remove": "Let email reach an address again",
-          "resend": "Sent an email again"
+          "resend": "Sent an email again",
+          "test_send": "Sent a test email"
         },
         "ai": {
           "provider_create": "Connected an AI provider",
@@ -864,7 +865,8 @@
           "template_reset": "Put the email <resource></resource> back to its default wording",
           "suppression_add": "Stopped email to <resource></resource>",
           "suppression_remove": "Let email reach <resource></resource> again",
-          "resend": "Sent the email <resource></resource> again"
+          "resend": "Sent the email <resource></resource> again",
+          "test_send": "Sent a test email to <resource></resource>"
         },
         "ai": {
           "provider_create": "Connected the AI provider <resource></resource>",
@@ -2015,7 +2017,6 @@
         "lastEdited": "Last edited by {name}, {when}.",
         "viewAudit": "Audit log",
         "reset": "Restore default",
-        "test": "Send me a test",
         "subject": "Subject",
         "body": "Body",
         "bodyHint": "Markdown: # heading, **bold**, [link](https://…). Type '{{' to add a variable.",
@@ -2307,7 +2308,6 @@
         "unsaved": "You have unsaved changes.",
         "lastSaved": "Last saved by {name}, {when}.",
         "neverSaved": "Not saved yet.",
-        "test": "Send a test to {email}",
         "save": "Save settings",
         "leave": {
           "title": "Leave without saving?",
@@ -2405,6 +2405,11 @@
             "unknown": "Not checked"
           }
         }
+      },
+      "testSend": {
+        "to": "Send a test to",
+        "send": "Send test",
+        "invalid": "Write one email address."
       }
     }
   },
