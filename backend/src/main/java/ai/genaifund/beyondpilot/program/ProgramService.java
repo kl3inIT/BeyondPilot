@@ -67,10 +67,26 @@ public class ProgramService {
 			.collect(Collectors.toMap(ApplicationForm::programId, Function.identity()));
 	}
 
+	/**
+	 * The application forms of these programs as their applications are reviewed: whatever the program's status, for
+	 * one taken off the site after its close is still judged. A program that takes no applications is left out.
+	 */
+	@Transactional(readOnly = true)
+	public Map<UUID, ApplicationForm> formsUnderReview(Collection<UUID> programIds) {
+		return programs.findAllById(programIds)
+			.stream()
+			.flatMap(program -> windowed(program).stream())
+			.collect(Collectors.toMap(ApplicationForm::programId, Function.identity()));
+	}
+
 	private static Optional<ApplicationForm> form(Program program) {
+		return program.getStatus() == ProgramStatus.PUBLISHED ? windowed(program) : Optional.empty();
+	}
+
+	private static Optional<ApplicationForm> windowed(Program program) {
 		Instant opensAt = program.getApplicationsOpenAt();
 		Instant closesAt = program.getApplicationsCloseAt();
-		if (program.getStatus() != ProgramStatus.PUBLISHED || opensAt == null || closesAt == null) {
+		if (opensAt == null || closesAt == null) {
 			return Optional.empty();
 		}
 		return Optional.of(new ApplicationForm(program.getId(), program.getSlug(), program.getName(), opensAt,
