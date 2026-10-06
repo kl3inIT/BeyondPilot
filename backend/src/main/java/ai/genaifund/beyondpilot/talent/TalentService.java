@@ -28,6 +28,7 @@ import ai.genaifund.beyondpilot.talent.dto.TalentProfileResponse;
 import ai.genaifund.beyondpilot.talent.persistence.TalentDetailRepository;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfile;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfileRepository;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -229,7 +230,7 @@ public class TalentService {
 			throw new TalentException(TalentErrorCode.ENQUIRY_LIMIT,
 					"Enquiry beyond " + ENQUIRIES_A_DAY + " in a day by account " + actor.accountId());
 		}
-		Person recipient = identity.people(List.of(profile.getAccountId())).get(profile.getAccountId());
+		Person recipient = active(profile.getAccountId());
 		if (recipient == null) {
 			// The account behind the profile no longer signs in, so nobody would read the message.
 			throw new TalentException(TalentErrorCode.PROFILE_NOT_FOUND, "No active account behind talent at " + slug);
@@ -259,7 +260,7 @@ public class TalentService {
 	public void accept(Actor actor, UUID id) {
 		TalentProfile profile = own(actor);
 		TalentDetailRepository.Enquiry enquiry = waiting(profile, id);
-		Person sender = identity.people(List.of(enquiry.senderAccountId())).get(enquiry.senderAccountId());
+		Person sender = active(enquiry.senderAccountId());
 		if (sender == null) {
 			// The account that wrote no longer signs in, so nobody would read the introduction.
 			throw enquiryNotFound(id);
@@ -298,11 +299,16 @@ public class TalentService {
 		TalentProfile profile = own(actor);
 		TalentDetailRepository.Enquiry enquiry = waiting(profile, id);
 		details.answer(id, status);
-		Person sender = identity.people(List.of(enquiry.senderAccountId())).get(enquiry.senderAccountId());
+		Person sender = active(enquiry.senderAccountId());
 		if (sender != null) {
 			email.sendTalentEnquiryDeclined(sender.email(), profile.getName());
 		}
 		record(action, identity.person(actor), actor, enquiry, profile);
+	}
+
+	/** The account's person; null when the account no longer signs in. */
+	private @Nullable Person active(UUID accountId) {
+		return identity.people(List.of(accountId)).get(accountId);
 	}
 
 	private TalentProfile own(Actor actor) {

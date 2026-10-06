@@ -37,7 +37,7 @@ public class TalentDirectory {
 		this.details = details;
 	}
 
-	/** One page of the directory the request selects, by name. */
+	/** One page of the directory the request selects, in the order it asks for. */
 	@Transactional(readOnly = true)
 	public PublicTalentListResponse list(PublicTalentListRequest request) {
 		String text = TalentViews.text(request.q());
