@@ -9,7 +9,10 @@ import ai.genaifund.beyondpilot.organization.dto.AdminCreateOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationListRequest;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationListResponse;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationResponse;
+import ai.genaifund.beyondpilot.organization.dto.AdminSaveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.ApproveOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.ChangeMemberRoleRequest;
+import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.TakeDownOrganizationRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -125,6 +129,80 @@ class AdminOrganizationsController {
 	void refuse(@CurrentActor Actor actor, @PathVariable UUID id,
 			@Valid @RequestBody RefuseOrganizationRequest request) {
 		organizations.refuse(actor, id, request);
+	}
+
+	@PutMapping(path = "/organizations/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "saveAdminOrganization",
+			summary = "Save the profile and the verified domain of an organization",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The organization as saved.")
+	@ApiResponse(responseCode = "400", description = "A member is not valid.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409",
+			description = "The organization changed since it was read, or another organization has the domain.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	AdminOrganizationResponse save(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody AdminSaveOrganizationRequest request) {
+		return organizations.save(actor, id, request);
+	}
+
+	@PutMapping(path = "/organizations/{id}/members/{accountId}/role", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "changeAdminOrganizationMemberRole",
+			summary = "Make a member of an organization an owner, or an owner a member",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The role is changed.", content = @Content)
+	@ApiResponse(responseCode = "400", description = "The role is not valid.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "The organization does not exist, or the person does not belong to it.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void changeMemberRole(@CurrentActor Actor actor, @PathVariable UUID id, @PathVariable UUID accountId,
+			@Valid @RequestBody ChangeMemberRoleRequest request) {
+		organizations.changeMemberRole(actor, id, accountId, request.role());
+	}
+
+	@PostMapping("/organizations/{id}/members/{accountId}/remove")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "removeAdminOrganizationMember",
+			summary = "Take a person out of an organization, the last owner included",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The person is out.", content = @Content)
+	@ApiResponse(responseCode = "404", description = "The organization does not exist, or the person does not belong to it.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void removeMember(@CurrentActor Actor actor, @PathVariable UUID id, @PathVariable UUID accountId) {
+		organizations.removeMember(actor, id, accountId);
+	}
+
+	@PostMapping(path = "/organizations/{id}/invitations", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "inviteAdminOrganizationMember",
+			summary = "Ask an address to own or join an organization",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The invitation is open and the address was told.",
+			content = @Content)
+	@ApiResponse(responseCode = "400", description = "A member is not valid.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The address belongs to the organization or holds an open invitation.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void invite(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody InviteMemberRequest request) {
+		organizations.invite(actor, id, request);
+	}
+
+	@PostMapping("/organizations/{id}/invitations/{invitationId}/revoke")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "revokeAdminOrganizationInvitation",
+			summary = "Take back an open invitation of an organization",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The invitation is closed.", content = @Content)
+	@ApiResponse(responseCode = "404", description = "The organization does not exist, or the invitation is not one of its open ones.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void revokeInvitation(@CurrentActor Actor actor, @PathVariable UUID id, @PathVariable UUID invitationId) {
+		organizations.revokeInvitation(actor, id, invitationId);
 	}
 
 	@PostMapping(path = "/organizations/{id}/take-down", consumes = MediaType.APPLICATION_JSON_VALUE)

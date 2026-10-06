@@ -21,8 +21,11 @@ import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationListRequest;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationListResponse;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationSummaryResponse;
+import ai.genaifund.beyondpilot.organization.dto.AdminSaveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.ApproveOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.SaveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.TakeDownOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.Invitation;
@@ -169,6 +172,116 @@ public class OrganizationAdministration {
 	}
 
 	/**
+	 * Saves the profile and the verified domain of an organization, whatever its status. An organization may be left
+	 * without a domain, which also turns off joining at once.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist or changed since it was read, or another
+	 * organization has the domain
+	 */
+	@Transactional
+	public AdminOrganizationResponse save(Actor actor, UUID id, AdminSaveOrganizationRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		SaveOrganizationRequest profile = request.profile();
+		if (organization.getVersion() != profile.version()) {
+			throw new OrganizationException(OrganizationErrorCode.CHANGED_MEANWHILE,
+					"Operator save of organization " + id + " at version " + profile.version() + ", which is at "
+							+ organization.getVersion());
+		}
+		organization.describe(profile.name().strip(), profile.type(), OrganizationViews.text(profile.website()),
+				profile.country(), profile.teamSize(), OrganizationViews.codes(profile.industries()),
+				OrganizationViews.text(profile.description()), profile.foundedYear(),
+				OrganizationViews.text(profile.logoUrl()));
+		String domain = request.emailDomain();
+		if (!Objects.equals(domain, organization.getEmailDomain())) {
+			if (domain != null && organizations.findByEmailDomain(domain).isPresent()) {
+				throw new OrganizationException(OrganizationErrorCode.DOMAIN_TAKEN,
+						"Domain of organization " + id + " set to one another organization has");
+			}
+			organization.verifyDomain(domain);
+		}
+		organizations.flush();
+		record(AuditAction.ORGANIZATION_UPDATE, operator, organization, Map.of());
+		return response(organization);
+	}
+
+	/**
+	 * Makes a member of any organization an owner, or an owner a member. An operator may leave an organization
+	 * without an owner: that is how a page is handed to someone else.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist or the person does not belong to it
+	 */
+	@Transactional
+	public void changeMemberRole(Actor actor, UUID id, UUID accountId, String role) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		Member target = member(organization, accountId);
+		if (target.role().equals(role)) {
+			return;
+		}
+		memberships.changeRole(id, accountId, role);
+		record(AuditAction.ORGANIZATION_MEMBER_ROLE, operator, organization,
+				Map.of("account", accountId.toString(), "role", role));
+	}
+
+	/**
+	 * Takes a person out of any organization, the last owner included.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist or the person does not belong to it
+	 */
+	@Transactional
+	public void removeMember(Actor actor, UUID id, UUID accountId) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		member(organization, accountId);
+		memberships.remove(id, accountId);
+		record(AuditAction.ORGANIZATION_MEMBER_REMOVE, operator, organization, Map.of("account", accountId.toString()));
+	}
+
+	/**
+	 * Asks an address to own or join an organization and tells it by email. An operator's invitations stay out of the
+	 * organization's daily and open limits.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist, the address already belongs to it, or it
+	 * already holds an open invitation
+	 */
+	@Transactional
+	public void invite(Actor actor, UUID id, InviteMemberRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		String address = request.email().strip();
+		List<UUID> accounts = memberships.members(id).stream().map(Member::accountId).toList();
+		if (identity.people(accounts).values().stream().anyMatch(person -> person.email().equalsIgnoreCase(address))) {
+			throw new OrganizationException(OrganizationErrorCode.INVITEE_IS_MEMBER,
+					"Operator invitation of a member of organization " + id);
+		}
+		if (!memberships.invite(UUID.randomUUID(), id, address, request.role(), operator.accountId(), true)) {
+			throw new OrganizationException(OrganizationErrorCode.ALREADY_INVITED,
+					"Second open invitation of one address to organization " + id);
+		}
+		email.sendOrganizationInvitation(address, organization.getName(), "GenAI Fund",
+				MembershipRepository.OWNER.equals(request.role()));
+		record(AuditAction.ORGANIZATION_INVITE, operator, organization, Map.of("role", request.role()));
+	}
+
+	/**
+	 * Takes back an open invitation of an organization.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist or the invitation is not one of its open ones
+	 */
+	@Transactional
+	public void revokeInvitation(Actor actor, UUID id, UUID invitationId) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findById(id).orElseThrow(() -> notFound(id));
+		memberships.openInvitation(invitationId)
+			.filter(invitation -> invitation.organizationId().equals(id))
+			.orElseThrow(() -> new OrganizationException(OrganizationErrorCode.INVITATION_NOT_FOUND,
+					"Invitation " + invitationId + " is not an open one of organization " + id));
+		memberships.closeInvitation(invitationId, "revoked");
+		record(AuditAction.ORGANIZATION_INVITATION_REVOKE, operator, organization, Map.of());
+	}
+
+	/**
 	 * Takes an approved organization down, with a reason its owners read, and tells them. Its members keep their
 	 * workspace; it leaves the directories until it is restored.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
@@ -267,6 +380,13 @@ public class OrganizationAdministration {
 					"Domain of organization " + organization.getId() + " set to one another organization has");
 		}
 		organization.verifyDomain(domain);
+	}
+
+	private Member member(Organization organization, UUID accountId) {
+		return memberships.memberOf(accountId)
+			.filter(found -> found.organizationId().equals(organization.getId()))
+			.orElseThrow(() -> new OrganizationException(OrganizationErrorCode.MEMBER_NOT_FOUND,
+					"Account " + accountId + " is not in organization " + organization.getId()));
 	}
 
 	private Organization awaitingReview(UUID id) {

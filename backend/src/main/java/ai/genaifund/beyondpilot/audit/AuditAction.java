@@ -41,6 +41,15 @@ public enum AuditAction {
 
 	ORGANIZATION_RESTORE("organization.restore"),
 
+	/** An operator changed an organization's profile or its verified domain. */
+	ORGANIZATION_UPDATE("organization.update"),
+
+	/** An operator invited an address to an organization. {@code role} is the role offered. */
+	ORGANIZATION_INVITE("organization.invite", "role"),
+
+	/** An operator took back an open invitation of an organization. */
+	ORGANIZATION_INVITATION_REVOKE("organization.invitation_revoke"),
+
 	/** {@code reason} is the code of the reason given. */
 	ORGANIZATION_REFUSE("organization.refuse", "reason"),
 

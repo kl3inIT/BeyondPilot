@@ -325,6 +325,73 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anOperatorEditsTheProfileAndTheDomainAndManagesThePeopleOfAnyOrganization() {
+		String founder = signIn("founder@managed.test");
+		UUID id = approved(founder, "Managed Co");
+		String colleague = signIn("colleague@managed.test");
+		String detail = API + "/admin/organizations/" + id;
+		post(operator, detail + "/invitations", Map.of("email", "colleague@managed.test", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		post(colleague, API + "/invitations/"
+				+ JsonPath.<String>read(body(get(operator, detail).expectStatus().isOk()), "$.invitations[0].id")
+				+ "/accept", Map.of())
+			.expectStatus()
+			.isNoContent();
+
+		// The profile and the domain, saved against the version the screen read.
+		int version = JsonPath.<Integer>read(body(get(operator, detail).expectStatus().isOk()), "$.organization.version");
+		Map<String, Object> edit = Map.of("profile", save(profile("Managed Company"), version), "emailDomain",
+				"managed.test");
+		assertProblem(put(founder, detail, edit), 403, "IDENTITY_OPERATOR_REQUIRED");
+		String saved = body(put(operator, detail, edit).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(saved, "$.organization.name")).isEqualTo("Managed Company");
+		assertThat(JsonPath.<String>read(saved, "$.organization.emailDomain")).isEqualTo("managed.test");
+		assertProblem(put(operator, detail, edit), 409, "ORGANIZATION_CHANGED_MEANWHILE");
+		UUID other = approved(signIn("other@other-managed.test"), "Other Managed Co");
+		assertProblem(put(operator, API + "/admin/organizations/" + other,
+				Map.of("profile", save(profile("Other Managed Co"),
+						JsonPath.<Integer>read(body(get(operator, API + "/admin/organizations/" + other)
+							.expectStatus()
+							.isOk()), "$.organization.version")),
+						"emailDomain", "managed.test")),
+				409, "ORGANIZATION_DOMAIN_TAKEN");
+		put(founder, API + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
+		Map<String, Object> withoutDomain = new HashMap<>();
+		withoutDomain.put("profile", save(profile("Managed Company"),
+				JsonPath.<Integer>read(body(get(operator, detail).expectStatus().isOk()), "$.organization.version")));
+		withoutDomain.put("emailDomain", null);
+		String cleared = body(put(operator, detail, withoutDomain).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(cleared, "$.organization.emailDomain")).isNull();
+		// With no domain nobody joins at once any more.
+		assertThat(JsonPath.<Boolean>read(cleared, "$.organization.autoJoin")).isFalse();
+
+		// The people: a role changes, and an operator may leave the organization without an owner.
+		String colleagueId = JsonPath.<List<String>>read(cleared, "$.members[?(@.email == 'colleague@managed.test')].accountId").get(0);
+		String founderId = JsonPath.<List<String>>read(cleared, "$.members[?(@.email == 'founder@managed.test')].accountId").get(0);
+		put(operator, detail + "/members/" + colleagueId + "/role", Map.of("role", "owner")).expectStatus().isNoContent();
+		post(operator, detail + "/members/" + founderId + "/remove", null).expectStatus().isNoContent();
+		post(operator, detail + "/members/" + colleagueId + "/remove", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<List<Object>>read(body(get(operator, detail).expectStatus().isOk()), "$.members")).isEmpty();
+		assertProblem(post(operator, detail + "/members/" + colleagueId + "/remove", null), 404,
+				"ORGANIZATION_MEMBER_NOT_FOUND");
+
+		// An invitation by an operator is not counted against the organization, and is taken back by one.
+		post(operator, detail + "/invitations", Map.of("email", "new@managed.test", "role", "owner"))
+			.expectStatus()
+			.isNoContent();
+		assertProblem(post(operator, detail + "/invitations", Map.of("email", "new@managed.test", "role", "owner")),
+				409, "ORGANIZATION_ALREADY_INVITED");
+		String invitation = JsonPath.<String>read(body(get(operator, detail).expectStatus().isOk()),
+				"$.invitations[0].id");
+		post(operator, detail + "/invitations/" + invitation + "/revoke", null).expectStatus().isNoContent();
+		assertProblem(post(operator, detail + "/invitations/" + invitation + "/revoke", null), 404,
+				"ORGANIZATION_INVITATION_NOT_FOUND");
+		assertThat(events(id)).contains("organization.update", "organization.member_role",
+				"organization.member_remove", "organization.invite", "organization.invitation_revoke");
+	}
+
+	@Test
 	void anOperatorTakesAnApprovedOrganizationDownWithAReasonAndRestoresItKeepingTheMembersWorkspace() {
 		String founder = signIn("founder@takedown.test");
 		UUID id = approved(founder, "Takedown Co");

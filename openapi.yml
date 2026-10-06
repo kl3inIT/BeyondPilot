@@ -74,6 +74,9 @@ paths:
           - organization.approve
           - organization.suspend
           - organization.restore
+          - organization.update
+          - organization.invite
+          - organization.invitation_revoke
           - organization.refuse
           - organization.claim_approve
           - organization.claim_decline
@@ -644,6 +647,64 @@ paths:
       summary: One organization as an operator reviews it
       tags:
       - Organization administration
+    put:
+      operationId: saveAdminOrganization
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSaveOrganization"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOrganization"
+          description: The organization as saved.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The organization changed since it was read, or another organization\
+            \ has the domain."
+      security:
+      - session: []
+      summary: Save the profile and the verified domain of an organization
+      tags:
+      - Organization administration
   /api/organization/admin/organizations/{id}/approve:
     post:
       operationId: approveOrganization
@@ -698,6 +759,201 @@ paths:
       - session: []
       summary: "Approve an organization that waits for review, and verify its email\
         \ domain"
+      tags:
+      - Organization administration
+  /api/organization/admin/organizations/{id}/invitations:
+    post:
+      operationId: inviteAdminOrganizationMember
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InviteMember"
+        required: true
+      responses:
+        "204":
+          description: The invitation is open and the address was told.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The address belongs to the organization or holds an open invitation.
+      security:
+      - session: []
+      summary: Ask an address to own or join an organization
+      tags:
+      - Organization administration
+  /api/organization/admin/organizations/{id}/invitations/{invitationId}/revoke:
+    post:
+      operationId: revokeAdminOrganizationInvitation
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: invitationId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The invitation is closed.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The organization does not exist, or the invitation is not\
+            \ one of its open ones."
+      security:
+      - session: []
+      summary: Take back an open invitation of an organization
+      tags:
+      - Organization administration
+  /api/organization/admin/organizations/{id}/members/{accountId}/remove:
+    post:
+      operationId: removeAdminOrganizationMember
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The person is out.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The organization does not exist, or the person does not belong\
+            \ to it."
+      security:
+      - session: []
+      summary: "Take a person out of an organization, the last owner included"
+      tags:
+      - Organization administration
+  /api/organization/admin/organizations/{id}/members/{accountId}/role:
+    put:
+      operationId: changeAdminOrganizationMemberRole
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeMemberRole"
+        required: true
+      responses:
+        "204":
+          description: The role is changed.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The role is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The organization does not exist, or the person does not belong\
+            \ to it."
+      security:
+      - session: []
+      summary: "Make a member of an organization an owner, or an owner a member"
       tags:
       - Organization administration
   /api/organization/admin/organizations/{id}/refuse:
@@ -3806,6 +4062,24 @@ components:
       - status
       - type
       - updatedAt
+    AdminSaveOrganization:
+      type: object
+      description: "The profile of an organization and its verified domain, as an\
+        \ operator saves them."
+      properties:
+        emailDomain:
+          type:
+          - string
+          - "null"
+          description: The domain GenAI Fund verifies for the organization; null clears
+            it.
+          maxLength: 253
+          minLength: 0
+          pattern: "[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+"
+        profile:
+          $ref: "#/components/schemas/SaveOrganization"
+      required:
+      - profile
     AdminSolutionList:
       type: object
       description: "One page of submitted solutions: those waiting for review first,\
@@ -3902,6 +4176,9 @@ components:
           - organization.approve
           - organization.suspend
           - organization.restore
+          - organization.update
+          - organization.invite
+          - organization.invitation_revoke
           - organization.refuse
           - organization.claim_approve
           - organization.claim_decline
