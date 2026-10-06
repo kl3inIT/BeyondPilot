@@ -25,7 +25,7 @@ Step 8 is in part: the admin home now counts a claim as an organization that wai
 
 | #   | Step                                                                                                                                   | State |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| 11  | `V29`: the `suspended` status with its reason; `OrganizationAdministration` takes down and restores; public reads hide a suspended one | Done  |
+| 11  | `V30`: the `suspended` status with its reason; `OrganizationAdministration` takes down and restores; public reads hide a suspended one | Done  |
 | 12  | Operator edits the profile and the verified domain, with the version check                                                             | Done  |
 | 13  | Operator changes a role, removes a member, invites and revokes; audit actions                                                          | Done  |
 | 14  | Web: the record page with Profile and Members tabs, the take-down and restore dialogs, the members table and its dialogs               | Done  |
