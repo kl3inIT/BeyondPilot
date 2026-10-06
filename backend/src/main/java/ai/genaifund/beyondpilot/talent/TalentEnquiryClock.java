@@ -100,7 +100,7 @@ class TalentEnquiryClock {
 						.between(now, enquiry.createdAt().plus(TalentService.ENQUIRY_LIFETIME))
 						.toDays());
 					email.sendTalentEnquiryReminder(recipient.email(),
-							enquiry.senderName() != null ? enquiry.senderName() : sender.displayName(), daysLeft);
+							TalentViews.senderName(enquiry.senderName(), sender), daysLeft);
 				}
 			})) {
 				reminded++;

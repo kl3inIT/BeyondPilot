@@ -106,22 +106,25 @@ public class TalentService {
 			.distinct()
 			.toList());
 		return new MyTalentResponse(TalentViews.profile(profile, details.projects(profile.getId())),
-				enquiries.stream().filter(enquiry -> senders.containsKey(enquiry.senderAccountId())).map(enquiry -> {
-					Person sender = senders.get(enquiry.senderAccountId());
-					UUID organizationId = enquiry.senderOrganizationId();
-					OrganizationName organization = organizationId == null ? null
-							: senderOrganizations.get(organizationId);
-					boolean waiting = TalentDetailRepository.PENDING.equals(enquiry.status());
-					boolean accepted = TalentDetailRepository.ACCEPTED.equals(enquiry.status());
-					// Before an acceptance the sender is named only by the name they gave, never by their address.
-					String name = enquiry.senderName() != null ? enquiry.senderName()
-							: accepted ? sender.label() : sender.displayName();
-					return new TalentEnquiryResponse(enquiry.id(), name,
-							organization == null ? null : organization.name(),
-							accepted ? sender.email() : null,
-							enquiry.topic(), enquiry.message(), enquiry.status(), enquiry.createdAt(),
-							enquiry.answeredAt(), waiting ? enquiry.createdAt().plus(ENQUIRY_LIFETIME) : null);
-				}).toList());
+				enquiries.stream()
+					.filter(enquiry -> senders.containsKey(enquiry.senderAccountId()))
+					.map(enquiry -> enquiry(enquiry, senders.get(enquiry.senderAccountId()), senderOrganizations))
+					.toList());
+	}
+
+	/** A message as its person reads it: before an acceptance the sender is never named by their address. */
+	private static TalentEnquiryResponse enquiry(TalentDetailRepository.Enquiry enquiry, Person sender,
+			Map<UUID, OrganizationName> organizations) {
+		UUID organizationId = enquiry.senderOrganizationId();
+		OrganizationName organization = organizationId == null ? null : organizations.get(organizationId);
+		boolean accepted = TalentDetailRepository.ACCEPTED.equals(enquiry.status());
+		boolean waiting = TalentDetailRepository.PENDING.equals(enquiry.status());
+		return new TalentEnquiryResponse(enquiry.id(),
+				accepted ? TalentViews.acceptedSenderName(enquiry.senderName(), sender)
+						: TalentViews.senderName(enquiry.senderName(), sender),
+				organization == null ? null : organization.name(), accepted ? sender.email() : null, enquiry.topic(),
+				enquiry.message(), enquiry.status(), enquiry.createdAt(), enquiry.answeredAt(),
+				waiting ? enquiry.createdAt().plus(ENQUIRY_LIFETIME) : null);
 	}
 
 	/**
@@ -185,8 +188,7 @@ public class TalentService {
 	public TalentProfileResponse submit(Actor actor) {
 		identity.requireActive(actor);
 		TalentProfile profile = profiles.findByAccountForUpdate(actor.accountId())
-			.orElseThrow(() -> new TalentException(TalentErrorCode.PROFILE_NOT_FOUND,
-					"No talent profile for account " + actor.accountId()));
+			.orElseThrow(() -> noProfile(actor));
 		if (!profile.isDraft() && !profile.isReturned()) {
 			throw new TalentException(TalentErrorCode.NOT_SUBMITTABLE,
 					"Submission of talent profile " + profile.getId() + ", which is " + profile.getStatus());
@@ -268,9 +270,8 @@ public class TalentService {
 				: organizations.names(List.of(organizationId)).get(organizationId);
 		details.answer(id, TalentDetailRepository.ACCEPTED);
 		email.sendTalentIntroduction(sender.email(), profile.getName(), person.email(), null);
-		email.sendTalentIntroduction(person.email(),
-				enquiry.senderName() != null ? enquiry.senderName() : sender.label(), sender.email(),
-				senderOrganization == null ? null : senderOrganization.name());
+		email.sendTalentIntroduction(person.email(), TalentViews.acceptedSenderName(enquiry.senderName(), sender),
+				sender.email(), senderOrganization == null ? null : senderOrganization.name());
 		record(AuditAction.TALENT_ENQUIRY_ACCEPT, person, actor, enquiry, profile);
 	}
 
@@ -307,8 +308,7 @@ public class TalentService {
 	private TalentProfile own(Actor actor) {
 		identity.requireActive(actor);
 		return profiles.findByAccountId(actor.accountId())
-			.orElseThrow(() -> new TalentException(TalentErrorCode.PROFILE_NOT_FOUND,
-					"No talent profile for account " + actor.accountId()));
+			.orElseThrow(() -> noProfile(actor));
 	}
 
 	/** The message to this profile that still waits; one to another profile answers the same as none. */
@@ -329,6 +329,10 @@ public class TalentService {
 				new AuditRecord.Resource(ENQUIRY, enquiry.id().toString(), profile.getName()), Map.of()));
 	}
 
+	private static TalentException noProfile(Actor actor) {
+		return new TalentException(TalentErrorCode.PROFILE_NOT_FOUND, "No talent profile for account " + actor.accountId());
+	}
+
 	private static TalentException pending(TalentProfile profile) {
 		return new TalentException(TalentErrorCode.ENQUIRY_PENDING,
 				"A second waiting enquiry to talent profile " + profile.getId());
@@ -347,8 +351,7 @@ public class TalentService {
 	public void delete(Actor actor) {
 		Person person = identity.person(actor);
 		TalentProfile profile = profiles.findByAccountForUpdate(actor.accountId())
-			.orElseThrow(() -> new TalentException(TalentErrorCode.PROFILE_NOT_FOUND,
-					"No talent profile for account " + actor.accountId()));
+			.orElseThrow(() -> noProfile(actor));
 		audit.record(new AuditRecord(AuditAction.TALENT_DELETE,
 				new AuditRecord.Actor(actor.accountId(), person.label(), person.email()),
 				new AuditRecord.Resource(TALENT, profile.getId().toString(), profile.getName()), Map.of()));

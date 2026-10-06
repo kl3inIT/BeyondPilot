@@ -58,8 +58,9 @@ public class TalentQueryRepository {
 	 * @param leadStage how far that project went; null when not stated
 	 */
 	public record Row(UUID id, UUID accountId, String slug, String name, @Nullable String headline, List<String> roles,
-			List<String> skills, @Nullable String country, @Nullable String city, String status, boolean listed, @Nullable Instant submittedAt, Instant updatedAt, @Nullable UUID photoFileId,
-			int projectCount, @Nullable String leadTitle, @Nullable String leadStage) {
+			List<String> skills, @Nullable String country, @Nullable String city, String status, boolean listed,
+			@Nullable Instant submittedAt, Instant updatedAt, @Nullable UUID photoFileId, int projectCount,
+			@Nullable String leadTitle, @Nullable String leadStage) {
 	}
 
 	/** What narrows the public directory; a null member narrows nothing. */
@@ -120,11 +121,10 @@ public class TalentQueryRepository {
 		String[] leadProject = lead == null ? new String[2] : (String[]) lead.getArray();
 		return new Row(row.getObject("id", UUID.class), row.getObject("account_id", UUID.class), row.getString("slug"),
 				row.getString("name"), row.getString("headline"), strings(row.getArray("roles")),
-				strings(row.getArray("skills")), row.getString("country"), row.getString("city"),
-row.getString("status"), row.getBoolean("listed"),
-				submittedAt == null ? null : submittedAt.toInstant(), row.getTimestamp("updated_at").toInstant(),
-				row.getObject("photo_file_id", UUID.class), row.getInt("project_count"), leadProject[0],
-				leadProject[1]);
+				strings(row.getArray("skills")), row.getString("country"), row.getString("city"), row.getString("status"),
+				row.getBoolean("listed"), submittedAt == null ? null : submittedAt.toInstant(),
+				row.getTimestamp("updated_at").toInstant(), row.getObject("photo_file_id", UUID.class),
+				row.getInt("project_count"), leadProject[0], leadProject[1]);
 	}
 
 	private static List<String> strings(Array array) throws SQLException {
