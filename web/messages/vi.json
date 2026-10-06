@@ -2358,21 +2358,24 @@
     "mine": {
       "metaTitle": "Hồ sơ nhân lực · BeyondPilot",
       "title": "Hồ sơ nhân lực của bạn",
-      "lead": "Cách các công ty nhìn thấy bạn trong danh mục nhân lực AI.",
       "leadNew": "Hãy cho các công ty biết bạn làm được gì. GenAI Fund duyệt hồ sơ trước khi đăng.",
       "submitted": {
         "title": "GenAI Fund đang duyệt hồ sơ của bạn",
-        "lead": "Thường mất một đến hai ngày làm việc. Bạn vẫn có thể chỉnh sửa."
+        "lead": "Thường mất một đến hai ngày làm việc. Bạn vẫn có thể chỉnh sửa.",
+        "foot": "Đã gửi ngày {date}. Chúng tôi sẽ email cho bạn khi có quyết định.",
+        "footUndated": "Chúng tôi sẽ email cho bạn khi có quyết định."
       },
       "approved": {
         "listed": "Đã duyệt và hiển thị trong danh mục",
         "unlisted": "Đã duyệt nhưng đang ẩn khỏi danh mục",
         "open": "Mở hồ sơ công khai",
-        "unlistedLead": "Bật “Hiển thị trong danh mục” bên dưới để được đăng."
+        "unlistedLead": "Chỉ bạn thấy. Chọn “Hiển thị trong danh mục” bên dưới để hiển thị lại; không cần duyệt lại.",
+        "listedLead": "Ai cũng có thể tìm thấy bạn trong AI talent và tìm kiếm.",
+        "foot": "Thay đổi bạn lưu hiển thị trên trang ngay, không cần duyệt lại."
       },
       "inbox": {
-        "title": "Lời nhắn",
-        "waiting": "{count} lời nhắn đang chờ bạn trả lời",
+        "title": "Đã nhận",
+        "waiting": "{count} mới",
         "lead": "Chấp nhận để chia sẻ email của bạn với người gửi. Từ chối hoặc báo cáo thì không chia sẻ gì.",
         "someone": "Một người",
         "from": "{name} · {organization}",
@@ -2401,15 +2404,16 @@
           "lead": "GenAI Fund sẽ xem lời nhắn. Người gửi chỉ được báo là bị từ chối, không biết bạn đã báo cáo.",
           "confirm": "Báo cáo",
           "cancel": "Giữ lại"
-        }
+        },
+        "none": "Chưa có lời nhắn nào. Khi có người viết cho bạn qua trang của bạn, lời nhắn sẽ hiện ở đây."
       },
       "changesRequested": {
         "title": "Cần sửa: {reason}",
-        "lead": "Hãy chỉnh sửa rồi gửi duyệt lại."
+        "lead": "Sửa bên dưới rồi gửi duyệt lại."
       },
       "removed": {
         "title": "Đã gỡ khỏi danh mục: {reason}",
-        "lead": "Hiện không ai khác thấy hồ sơ. Hãy chỉnh sửa rồi gửi duyệt lại."
+        "lead": "Hiện không ai khác thấy hồ sơ. Sửa bên dưới rồi gửi duyệt lại."
       },
       "delete": {
         "action": "Xoá hồ sơ…",
@@ -2417,19 +2421,34 @@
         "lead": "Hồ sơ, các dự án và lời nhắn gửi qua hồ sơ sẽ bị xoá vĩnh viễn. Không ai tìm thấy hồ sơ trong danh mục nữa.",
         "confirm": "Xoá hồ sơ",
         "cancel": "Giữ lại"
+      },
+      "saved": "đã lưu {when}",
+      "seen": {
+        "onlyYou": "chỉ bạn xem được cho đến khi GenAI Fund duyệt",
+        "inReview": "GenAI Fund đang duyệt",
+        "listed": "đang hiển thị trong AI talent",
+        "hidden": "đang ẩn khỏi AI talent"
+      },
+      "preview": {
+        "action": "Xem trước",
+        "note": "Hồ sơ của bạn theo lần lưu gần nhất. Thay đổi chưa lưu không hiển thị."
+      },
+      "tabs": {
+        "label": "Hồ sơ talent của bạn",
+        "profile": "Hồ sơ",
+        "enquiries": "Lời nhắn"
       }
     },
     "form": {
-      "name": "Họ tên",
+      "name": "Tên hiển thị",
       "nameRequired": "Hãy nhập họ tên.",
       "headline": "Giới thiệu ngắn",
       "bio": "Về bạn",
-      "bioHint": "Bạn đã xây dựng gì, cho ai, và muốn làm gì tiếp theo.",
+      "bioHint": "Bạn đã xây dựng gì, cho ai, và muốn làm gì tiếp theo. Hiển thị ở mục Giới thiệu trên trang của bạn.",
       "roles": "Vai trò",
       "upTo": "Chọn tối đa {count}. Đã chọn {chosen}.",
       "skills": "Kỹ năng",
-      "skillsHint": "Cách nhau bằng dấu phẩy, tối đa {count}. Ví dụ: Python, LangGraph, RAG, MLOps.",
-      "skillsInvalid": "Nêu tối đa {count} kỹ năng, mỗi kỹ năng không quá 40 ký tự.",
+      "skillsHint": "Gõ kỹ năng rồi nhấn Enter hoặc Thêm, hoặc chọn một gợi ý. Tối đa {count}, đã thêm {chosen}. Mọi người tìm và lọc danh mục theo kỹ năng.",
       "country": "Quốc gia",
       "rate": "Mức phí",
       "notStated": "Chưa nêu",
@@ -2438,7 +2457,7 @@
       "websiteHint": "Hiển thị trên hồ sơ. Địa chỉ email của bạn thì không bao giờ.",
       "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
       "projects": {
-        "title": "Dự án tiêu biểu",
+        "title": "Dự án",
         "lead": "Tối đa {count} dự án cho thấy năng lực của bạn.",
         "titleRequired": "Hãy đặt tên cho mỗi dự án, hoặc xóa đi.",
         "name": "Dự án {number}",
@@ -2450,13 +2469,10 @@
         "stage": "Giai đoạn",
         "stageNone": "Không ghi"
       },
-      "listed": "Hiển thị trong danh mục",
-      "listedHint": "Có hiệu lực khi hồ sơ được duyệt.",
       "submit": "Gửi duyệt",
       "resubmit": "Gửi duyệt lại",
       "saveDraft": "Lưu nháp",
       "save": "Lưu thay đổi",
-      "listedHintApproved": "Hồ sơ đã được duyệt, nên lựa chọn này và mọi thay đổi đã lưu hiển thị ngay trong danh mục.",
       "needed": {
         "headline": "Nói bạn làm gì trong một dòng.",
         "bio": "Viết vài câu về công việc của bạn.",
@@ -2471,7 +2487,6 @@
       },
       "discard": "Bỏ thay đổi",
       "unsaved": "Có thay đổi chưa lưu",
-      "neededMark": "· cần để duyệt",
       "leave": {
         "title": "Rời trang mà không lưu?",
         "lead": "Các thay đổi của bạn với hồ sơ của bạn chưa được lưu.",
@@ -2483,8 +2498,7 @@
         "lead": "Biểu mẫu trở về hồ sơ của bạn như lần lưu gần nhất.",
         "cancel": "Sửa tiếp"
       },
-      "requiredMark": "· bắt buộc",
-      "headlineHint": "Một dòng về việc bạn làm. Ví dụ: Kỹ sư ML xây AI xử lý tài liệu cho ngân hàng.",
+      "headlineHint": "Một dòng dưới tên bạn trong danh mục.",
       "photo": {
         "label": "Ảnh đại diện",
         "hint": "Ảnh rõ mặt. PNG, JPEG hoặc WebP, tối đa 2 MB.",
@@ -2501,16 +2515,39 @@
       },
       "city": "Thành phố",
       "worksAt": "Nơi bạn làm việc",
-      "worksAtHint": "Hiển thị đúng như bạn ghi. Để trống nếu bạn làm độc lập.",
       "languages": "Ngôn ngữ làm việc",
       "industries": "Ngành bạn đã làm",
+      "rateHint": "Chỉ bạn và GenAI Fund thấy mức giá.",
+      "title": "Hồ sơ",
+      "lead": "Những gì mọi người thấy trên trang của bạn. Email của bạn không bao giờ hiển thị; lời nhắn đến bạn qua BeyondPilot.",
+      "optionalNote": "Trường ghi Không bắt buộc có thể để trống. Các trường còn lại cần có trước khi GenAI Fund duyệt hồ sơ.",
+      "optional": "Không bắt buộc",
+      "headlinePlaceholder": "Ví dụ: Kỹ sư ML xây dựng AI xử lý tài liệu cho ngân hàng",
+      "skillsPlaceholder": "Thêm kỹ năng",
+      "remove": "Bỏ {label}",
+      "searchPlaceholder": "Gõ để tìm",
+      "noMatch": "Không có kết quả phù hợp.",
       "sections": {
-        "about": "Về bạn",
-        "work": "Bạn làm gì",
-        "place": "Nơi bạn ở và làm việc",
-        "engagement": "Hình thức nhận làm"
+        "basics": "Thông tin cơ bản",
+        "skills": "Kỹ năng và kinh nghiệm",
+        "links": "Liên kết",
+        "visibility": "Ai có thể xem"
       },
-      "rateHint": "Chỉ bạn và GenAI Fund thấy mức giá."
+      "visibility": {
+        "listed": {
+          "title": "Hiển thị trong danh mục",
+          "lead": "Ai cũng có thể tìm thấy bạn trong AI talent và tìm kiếm. Trang của bạn mở sau khi GenAI Fund duyệt.",
+          "leadApproved": "Ai cũng có thể tìm thấy bạn trong AI talent và tìm kiếm."
+        },
+        "hidden": {
+          "title": "Ẩn",
+          "lead": "Chỉ bạn thấy. Hiển thị lại bất cứ lúc nào; không cần duyệt lại."
+        }
+      },
+      "add": "Thêm",
+      "addOne": "Thêm {label}",
+      "skillsSuggested": "Gợi ý:",
+      "worksAtPlaceholder": "Công ty, hoặc để trống nếu làm độc lập"
     }
   },
   "Form": {
