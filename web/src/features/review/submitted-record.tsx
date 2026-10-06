@@ -10,6 +10,19 @@ function fileHref(applicationId: string, file: AttachedFile) {
   return `/api/proposal/review/applications/${applicationId}/files/${file.fileId}`;
 }
 
+/**
+ * A link an applicant gave, when it is a web address. The backend takes only https links, but an
+ * answer is shown as it was stored, so anything else is shown as text and never becomes a link.
+ */
+function webAddress(value: string): string | null {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
 function size(bytes: number) {
   return bytes >= 1_000_000
     ? `${(bytes / 1_000_000).toFixed(1)} MB`
@@ -41,7 +54,14 @@ async function SubmittedRecord({
   ) => (!code ? none : words.has(`${set}.${code}`) ? words(`${set}.${code}`) : code);
   const contact = submitted.contact;
 
-  const files: { label: string; meta: string; file?: AttachedFile; link?: string }[] = [];
+  const files: {
+    label: string;
+    meta: string;
+    file?: AttachedFile;
+    link?: string;
+    /** A link answer that is not a web address: shown, never opened. */
+    text?: boolean;
+  }[] = [];
   if (submitted.deck) {
     files.push({
       label: submitted.deck.fileName,
@@ -58,7 +78,12 @@ async function SubmittedRecord({
       });
     }
     if (answer.kind === "link") {
-      files.push({ label: answer.label, meta: answer.value, link: answer.value });
+      const link = webAddress(answer.value);
+      files.push(
+        link
+          ? { label: answer.label, meta: answer.value, link }
+          : { label: answer.label, meta: answer.value, text: true },
+      );
     }
   }
 
@@ -154,7 +179,7 @@ async function SubmittedRecord({
                 key={`${item.label}-${item.meta}`}
                 className="flex items-center gap-3 py-2.5 text-sm"
               >
-                {item.link ? (
+                {item.link || item.text ? (
                   <LinkIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
                 ) : (
                   <FileTextIcon
@@ -166,14 +191,16 @@ async function SubmittedRecord({
                   <span className="truncate font-medium">{item.label}</span>
                   <span className="truncate text-muted-foreground">{item.meta}</span>
                 </span>
-                <a
-                  href={item.link ?? fileHref(applicationId, item.file as AttachedFile)}
-                  target={item.link ? "_blank" : undefined}
-                  rel={item.link ? "noreferrer" : undefined}
-                  className="shrink-0 font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:underline"
-                >
-                  {item.link ? t("openLink") : t("open")}
-                </a>
+                {!item.text && (
+                  <a
+                    href={item.link ?? fileHref(applicationId, item.file as AttachedFile)}
+                    target={item.link ? "_blank" : undefined}
+                    rel={item.link ? "noreferrer" : undefined}
+                    className="shrink-0 font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:underline"
+                  >
+                    {item.link ? t("openLink") : t("open")}
+                  </a>
+                )}
               </li>
             ))}
           </ul>
