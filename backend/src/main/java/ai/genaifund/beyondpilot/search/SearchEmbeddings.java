@@ -2,7 +2,11 @@ package ai.genaifund.beyondpilot.search;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository;
@@ -36,6 +40,9 @@ class SearchEmbeddings {
 	private static final List<Duration> PAUSES = List.of(Duration.ofSeconds(30), Duration.ofMinutes(3),
 			Duration.ofMinutes(20), Duration.ofHours(1), Duration.ofHours(6));
 
+	/** How many query vectors are kept: about 6 MB at 1,536 dimensions. */
+	private static final int RECENT_QUERIES = 1000;
+
 	/** The longest card the model is sent; a card is far shorter, so this only guards against a runaway text. */
 	private static final int MAX_CHARACTERS = 8000;
 
@@ -46,6 +53,14 @@ class SearchEmbeddings {
 	private final EmbeddingSettings settings;
 
 	private final String model;
+
+	/** The vectors of the latest queries, the least recently asked dropped first. */
+	private final Map<String, float[]> recent = Collections.synchronizedMap(new LinkedHashMap<>(64, 0.75f, true) {
+		@Override
+		protected boolean removeEldestEntry(Map.Entry<String, float[]> eldest) {
+			return size() > RECENT_QUERIES;
+		}
+	});
 
 	// Read by searches and written by the job; a lost update only shortens or lengthens one pause.
 	private volatile Instant pausedUntil = Instant.MIN;
@@ -62,22 +77,37 @@ class SearchEmbeddings {
 
 	/**
 	 * The query's meaning to search by, or empty when there is no model, the provider is paused, or it failed now; the
-	 * search then goes by words alone.
+	 * search then goes by words alone. Anyone can search, so a query only pauses the provider when the provider failed:
+	 * a query it refuses for what it holds fails alone, and a visitor cannot switch search by meaning off for everyone.
+	 * A query asked again is answered from the recent ones without a call.
 	 */
 	Optional<Meaning> of(String query) {
 		EmbeddingModel embeddings = available();
 		if (embeddings == null) {
 			return Optional.empty();
 		}
-		try {
-			float[] vector = embeddings.embed(query);
-			succeeded();
-			return Optional.of(new Meaning(model, vector, settings.minSimilarity(), settings.pool()));
+		String key = query.strip().toLowerCase(Locale.ROOT);
+		float[] vector = recent.get(key);
+		if (vector == null) {
+			try {
+				vector = embeddings.embed(query);
+				recent.put(key, vector);
+				succeeded();
+			}
+			catch (RuntimeException failure) {
+				if (refused(failure)) {
+					LOG.atInfo()
+						.addKeyValue("event", "search.query_embedding.refused")
+						.addKeyValue("error_type", failure.getClass().getName())
+						.log("The embedding provider refused a query; it is searched by words");
+				}
+				else {
+					failed("search.query_embedding.failed", failure);
+				}
+				return Optional.empty();
+			}
 		}
-		catch (RuntimeException failure) {
-			failed("search.query_embedding.failed", failure);
-			return Optional.empty();
-		}
+		return Optional.of(new Meaning(model, vector, settings.minSimilarity(), settings.pool()));
 	}
 
 	/** Embeds the next batch of items whose vector is missing, stale or of another model. */

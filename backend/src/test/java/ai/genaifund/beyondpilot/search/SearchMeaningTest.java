@@ -15,6 +15,8 @@ import ai.genaifund.beyondpilot.search.dto.SearchItem;
 import ai.genaifund.beyondpilot.search.dto.SearchRequest;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Document;
+import com.openai.core.http.Headers;
+import com.openai.errors.BadRequestException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.embedding.Embedding;
@@ -102,6 +104,16 @@ class SearchMeaningTest {
 		assertThat(titles("chăm sóc khách hàng")).isEmpty();
 	}
 
+	@Test
+	void aQueryTheProviderRefusesFailsAloneAndPausesNothing() {
+		save("Hotline Assist", "Answers inbound customer calls.");
+		embeddings.embedPending();
+
+		assertThat(titles("refused customer calls")).containsExactly("Hotline Assist");
+		// The refused query paused nothing: the next one is still searched by meaning.
+		assertThat(titles("chăm sóc khách hàng")).containsExactly("Hotline Assist");
+	}
+
 	private List<String> titles(String query) {
 		return search.search(new SearchRequest(query, SOLUTION, 1)).items().stream().map(SearchItem::title).toList();
 	}
@@ -134,6 +146,9 @@ class SearchMeaningTest {
 				throw new IllegalStateException("The provider is down");
 			}
 			List<String> texts = request.getInstructions();
+			if (texts.stream().anyMatch(text -> text.startsWith("refused"))) {
+				throw BadRequestException.builder().headers(Headers.builder().build()).build();
+			}
 			return new EmbeddingResponse(
 					IntStream.range(0, texts.size())
 						.mapToObj(i -> new Embedding(vector(texts.get(i)), i))
