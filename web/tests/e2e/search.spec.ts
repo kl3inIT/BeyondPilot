@@ -65,7 +65,7 @@ test.describe("search", () => {
     const useCase = row("AI claims triage for motor insurance");
     await expect(useCase.getByText("Organization not named")).toBeVisible();
     await expect(
-      useCase.getByText("Insurance · USD 10,000–50,000 · Apply by 30 Nov 2026"),
+      useCase.getByText("Insurance · USD 10,000–50,000 · Apply by Nov 30, 2026"),
     ).toBeVisible();
     await expect(
       page.getByRole("link", { name: "AI claims triage for motor insurance" }),
