@@ -52,6 +52,7 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
   const [values, setValues] = useState<DraftValues>(() => draftValuesOf(useCase));
   const [step, setStep] = useState<Step>("challenge");
   const [status, setStatus] = useState(useCase.status);
+  const [changedSinceReview, setChangedSinceReview] = useState(useCase.changedSinceReview);
   const [savedAt, setSavedAt] = useState<Date>(() => new Date(useCase.updatedAt));
   const [state, setState] = useState<"idle" | "saving" | "failed">("idle");
   const [problem, setProblem] = useState<Problem>(null);
@@ -75,6 +76,7 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
       });
       version.current = data.version;
       setStatus(data.status);
+      setChangedSinceReview(data.changedSinceReview);
       setSavedAt(new Date());
       setState("idle");
       return true;
@@ -135,6 +137,7 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
 
   const stepIndex = steps.indexOf(step);
   const missing = incompleteSteps(values);
+  const unchanged = status === "needs_changes" && !changedSinceReview;
 
   async function go(target: Step) {
     if (await flush()) {
@@ -172,35 +175,29 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
     timeZone: "Asia/Ho_Chi_Minh",
   });
 
+  const saveStatus = (
+    <span
+      role="status"
+      className={cn(
+        "flex items-center gap-1.5 text-xs",
+        state === "failed" ? "text-destructive" : "text-muted-foreground",
+      )}
+    >
+      {state === "failed" ? (
+        <CloudAlertIcon className="size-4" aria-hidden="true" />
+      ) : (
+        <CloudCheckIcon className="size-4 text-success" aria-hidden="true" />
+      )}
+      {state === "saving" ? t("saving") : state === "failed" ? t("notSaved") : t("saved", { time })}
+    </span>
+  );
+
   return (
     <WizardShell
       title={title}
       organizationName={useCase.organizationName}
-      status={
-        <span
-          role="status"
-          className={cn(
-            "flex items-center gap-1.5 text-xs",
-            state === "failed" ? "text-destructive" : "text-muted-foreground",
-          )}
-        >
-          {state === "failed" ? (
-            <CloudAlertIcon className="size-4" aria-hidden="true" />
-          ) : (
-            <CloudCheckIcon className="size-4 text-success" aria-hidden="true" />
-          )}
-          {state === "saving"
-            ? t("saving")
-            : state === "failed"
-              ? t("notSaved")
-              : t("saved", { time })}
-        </span>
-      }
-      exit={<TextButton onClick={() => void leave()}>{t("saveAndExit")}</TextButton>}
       current={step}
-      done={(name) =>
-        name !== "review" && !missing.includes(name) && steps.indexOf(name) < stepIndex
-      }
+      done={(name) => name !== "review" && !missing.includes(name)}
       onStep={(name) => void go(name)}
       notes={[t("saveNote", { name: useCase.organizationName }), t("reviewNote")]}
     >
@@ -264,6 +261,11 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
               </AlertDescription>
             </Alert>
           )}
+          {unchanged && (
+            <Alert>
+              <AlertTitle>{t("unchanged")}</AlertTitle>
+            </Alert>
+          )}
           <Tick
             label={t("confirm")}
             checked={confirmed}
@@ -283,17 +285,23 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
             {t("back")}
           </Button>
         )}
-        {step === "review" ? (
-          <Button
-            pending={sending}
-            disabled={missing.length > 0 || !confirmed || problem !== null}
-            onClick={() => void submit()}
-          >
-            {t("submit")}
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          {saveStatus}
+          <Button prominence="secondary" disabled={sending} onClick={() => void leave()}>
+            {t("saveAndExit")}
           </Button>
-        ) : (
-          <Button onClick={() => void go(steps[stepIndex + 1])}>{t("continue")}</Button>
-        )}
+          {step === "review" ? (
+            <Button
+              pending={sending}
+              disabled={missing.length > 0 || !confirmed || problem !== null || unchanged}
+              onClick={() => void submit()}
+            >
+              {t("submit")}
+            </Button>
+          ) : (
+            <Button onClick={() => void go(steps[stepIndex + 1])}>{t("continue")}</Button>
+          )}
+        </div>
       </div>
     </WizardShell>
   );

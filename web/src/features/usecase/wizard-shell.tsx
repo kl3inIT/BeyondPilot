@@ -16,7 +16,7 @@ type WizardShellProps = {
   organizationName: string;
   /** Beside the title on the right: where the saving stands, and the way out. */
   status?: ReactNode;
-  exit: ReactNode;
+  exit?: ReactNode;
   current: Step;
   /** Whether a step is complete, shown as a check. */
   done: (step: Step) => boolean;
@@ -77,7 +77,11 @@ function WizardShell({
                     <span
                       className={cn(
                         "text-sm font-medium",
-                        isCurrent || finished ? "text-foreground" : "text-muted-foreground",
+                        isCurrent
+                          ? "font-semibold text-foreground"
+                          : finished
+                            ? "text-foreground"
+                            : "text-muted-foreground",
                       )}
                     >
                       {t(`steps.${name}.title`)}
@@ -92,10 +96,10 @@ function WizardShell({
                         aria-hidden="true"
                         className={cn(
                           "flex size-6 shrink-0 items-center justify-center rounded-full border-2 text-xs font-semibold",
-                          finished
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : isCurrent
-                              ? "border-primary text-primary"
+                          isCurrent
+                            ? "border-primary bg-background text-primary"
+                            : finished
+                              ? "border-primary bg-primary text-primary-foreground"
                               : "border-border text-muted-foreground",
                         )}
                       >
@@ -113,14 +117,20 @@ function WizardShell({
                         type="button"
                         aria-current={isCurrent ? "step" : undefined}
                         onClick={() => onStep(name)}
-                        className="mb-5 flex flex-col items-start rounded-sm text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                        className={cn(
+                          "-mx-2 -mt-1 mb-4 flex flex-col items-start rounded-md px-2 py-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                          isCurrent && "bg-primary/10",
+                        )}
                       >
                         {text}
                       </button>
                     ) : (
                       <div
                         aria-current={isCurrent ? "step" : undefined}
-                        className="mb-5 flex flex-col items-start text-left"
+                        className={cn(
+                          "-mx-2 -mt-1 mb-4 flex flex-col items-start rounded-md px-2 py-1 text-left",
+                          isCurrent && "bg-primary/10",
+                        )}
                       >
                         {text}
                       </div>
