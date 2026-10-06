@@ -51,6 +51,7 @@ const invitation = {
   role: "member",
   invitedBy: "Minh Trần",
   createdAt: day,
+  expiresAt: "2026-10-08T03:00:00Z",
   ...ofPocketPolicy,
 };
 

@@ -392,6 +392,10 @@ test.describe("workspace organization", () => {
     await expect(
       page.getByText("2 members · 1 invitation pending · 19 of 20 invitations left today"),
     ).toBeVisible();
+    // The row is drawn as a table row and as a stacked row; one of them shows.
+    await expect(
+      page.getByText("Invited Oct 1, 2026 · expires Oct 8, 2026").filter({ visible: true }),
+    ).toHaveCount(1);
     // A table from 768px, stacked rows below it.
     await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
     await expect(
