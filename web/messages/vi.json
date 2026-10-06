@@ -2481,18 +2481,6 @@
       "text": "Hạn nộp là 23:59 ICT ngày 15 tháng 10. Mọi người nhận kết quả vào ngày 16 tháng 10."
     }
   },
-  "PdfUpload": {
-    "empty": "Chọn file PDF",
-    "limits": "PDF, tối đa 25 MB.",
-    "uploading": "Đang tải lên…",
-    "replace": "Thay",
-    "remove": "Xoá",
-    "errors": {
-      "type": "Hãy chọn file PDF.",
-      "size": "File lớn hơn 25 MB.",
-      "failed": "Không tải file lên được. Thử lại."
-    }
-  },
   "EntryList": {
     "remove": "Xoá {entry} khỏi {label}"
   }
