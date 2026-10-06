@@ -294,7 +294,10 @@
       "review": "Xét duyệt",
       "system": "Hệ thống",
       "useCases": "Use case",
-      "useCasesNew": "Use case mới"
+      "useCasesNew": "Use case mới",
+      "ai": "AI",
+      "aiProviders": "Nhà cung cấp",
+      "searchIndex": "Chỉ mục tìm kiếm"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
     "programs": {
@@ -774,6 +777,18 @@
           "suppression_add": "Chặn gửi email tới một địa chỉ",
           "suppression_remove": "Bỏ chặn một địa chỉ email",
           "resend": "Gửi lại một email"
+        },
+        "ai": {
+          "provider_create": "Kết nối nhà cung cấp AI",
+          "provider_update": "Sửa nhà cung cấp AI",
+          "provider_delete": "Xoá nhà cung cấp AI"
+        },
+        "search": {
+          "model_change": "Đổi model embedding",
+          "semantic_enable": "Bật semantic search",
+          "semantic_disable": "Tắt semantic search",
+          "index_rebuild": "Dựng lại chỉ mục tìm kiếm",
+          "embedding_retry": "Cho embed lại các mục bị từ chối"
         }
       },
       "activity": {
@@ -848,6 +863,18 @@
           "suppression_add": "Chặn gửi email tới <resource></resource>",
           "suppression_remove": "Bỏ chặn <resource></resource>",
           "resend": "Gửi lại email <resource></resource>"
+        },
+        "ai": {
+          "provider_create": "Kết nối nhà cung cấp AI <resource></resource>",
+          "provider_update": "Sửa nhà cung cấp AI <resource></resource>",
+          "provider_delete": "Xoá nhà cung cấp AI <resource></resource>"
+        },
+        "search": {
+          "model_change": "Đổi model embedding trong <resource></resource>",
+          "semantic_enable": "Bật semantic search trong <resource></resource>",
+          "semantic_disable": "Tắt semantic search trong <resource></resource>",
+          "index_rebuild": "Dựng lại <resource></resource>",
+          "embedding_retry": "Cho embed lại các mục bị từ chối của <resource></resource>"
         }
       },
       "columns": {
@@ -1571,6 +1598,228 @@
         "readOnly": "Chỉ xem: đây là nội dung {organization} đã viết. Bạn không sửa được.",
         "viewDetails": "Xem chi tiết",
         "backToReview": "Về trang duyệt"
+      }
+    },
+    "ai": {
+      "providers": {
+        "metaTitle": "Nhà cung cấp AI",
+        "title": "Nhà cung cấp AI",
+        "lead": "Các dịch vụ AI mà BeyondPilot gọi tới, và model mỗi tính năng dùng.",
+        "tabs": "Mục đích",
+        "embedding": "Embedding",
+        "noEncryption": {
+          "title": "Chưa lưu được key",
+          "lead": "Máy chủ chưa có khoá mã hoá cho key của nhà cung cấp. Hãy báo đội kỹ thuật thêm BEYONDPILOT_AI_ENCRYPTION_KEY."
+        }
+      },
+      "model": {
+        "heading": "Model embedding",
+        "headingLead": "Biến văn bản thành vector để tìm kiếm semantic. Mọi mục và mọi câu tìm kiếm đều dùng nó.",
+        "active": "Đang dùng",
+        "through": "Qua {name}",
+        "dimensions": "Số chiều",
+        "embedded": "Đã embed",
+        "embeddedOf": "{embedded} / {total}",
+        "since": "Dùng từ",
+        "usedBy": "Dùng cho",
+        "search": "Tìm kiếm · {count} mục",
+        "openIndex": "Mở chỉ mục tìm kiếm",
+        "none": {
+          "title": "Chưa có nhà cung cấp embedding",
+          "lead": "Tìm kiếm đang chỉ theo từ khoá. Hãy kết nối một nhà cung cấp bên dưới để bật semantic search."
+        },
+        "notChosen": {
+          "title": "Chưa chọn model",
+          "lead": "Hãy chọn nhà cung cấp và model để bật semantic search."
+        },
+        "change": "Đổi model",
+        "choose": "Chọn model",
+        "title": "Đổi model embedding",
+        "lead": "Tìm kiếm vẫn chạy trong lúc các mục được embed lại.",
+        "provider": "Nhà cung cấp",
+        "model": "Model",
+        "dimensionsHint": "Các model có sẵn đều cho 1.536 chiều, đúng kích thước chỉ mục lưu.",
+        "test": "Thử kết nối",
+        "testHint": "Embed thử một câu bằng model ở trên.",
+        "testButton": "Thử",
+        "warning": "Toàn bộ {count} mục sẽ được embed lại, mất khoảng {minutes} phút với tốc độ 32 mục mỗi phút. Trong lúc đó, mục chưa embed lại chỉ tìm được theo từ khoá. Mỗi mục bị nhà cung cấp tính phí một lần.",
+        "cancel": "Huỷ",
+        "embedAgain": "Embed lại",
+        "use": "Dùng model này"
+      },
+      "connected": {
+        "heading": "Nhà cung cấp đã kết nối",
+        "lead": "Nơi giữ key. Key được mã hoá và không bao giờ hiện lại, kể cả một phần.",
+        "inUse": "Đang dùng",
+        "keySaved": "Đã lưu key",
+        "noKey": "Chưa có key",
+        "meta": "{address} · {name} lưu ngày {date}",
+        "inUseNote": "Tìm kiếm đang embed bằng nhà cung cấp này. Hãy đổi model sang nhà cung cấp khác rồi mới xoá."
+      },
+      "add": {
+        "heading": "Thêm nhà cung cấp",
+        "lead": "Cả hai đều dùng API của OpenAI; chỉ khác địa chỉ và nơi tính tiền.",
+        "openai": "Model embedding của OpenAI, OpenAI tính tiền.",
+        "openrouter": "Một key dùng được model của nhiều hãng, OpenRouter tính tiền."
+      },
+      "editor": {
+        "vendor": {
+          "openai": "OpenAI",
+          "openrouter": "OpenRouter"
+        },
+        "edit": "Sửa",
+        "connect": "Kết nối",
+        "connectLabel": "Kết nối {name}",
+        "connectTitle": "Kết nối {name}",
+        "connectLead": "Nhà cung cấp đã lưu có thể chọn trong phần Đổi model. Hãy thử key trước khi lưu.",
+        "editTitle": "Sửa {name}",
+        "editLead": "Thay đổi có hiệu lực với mọi lượt tìm kiếm ngay khi bạn lưu.",
+        "name": "Tên",
+        "address": "Base URL",
+        "addressHint": "Địa chỉ API của chính nhà cung cấp. Key chỉ được gửi tới đây.",
+        "apiKey": "API key",
+        "keyKeep": "Giữ key đã lưu",
+        "keyReplace": "Thay key",
+        "keyRemove": "Xoá key",
+        "newKey": "API key mới",
+        "keyHint": {
+          "openai": "Tạo key tại platform.openai.com/api-keys. Key được mã hoá và không bao giờ hiện lại.",
+          "openrouter": "Tạo key tại openrouter.ai/keys, nên đặt giới hạn hằng tháng. Key được mã hoá và không bao giờ hiện lại."
+        },
+        "test": "Thử kết nối",
+        "model": "Model để thử",
+        "testButton": "Thử",
+        "testHint": "Embed thử một câu bằng key và model này, đã lưu hay chưa. Không có gì được lưu lại.",
+        "cancel": "Huỷ",
+        "save": "Lưu nhà cung cấp"
+      },
+      "probe": {
+        "connected": "Đã kết nối · {model} · {dimensions, number} chiều · {ms} ms",
+        "failed": "Kết nối thất bại · {ms} ms",
+        "reason": {
+          "rejected": "Nhà cung cấp từ chối API key. Hãy kiểm tra key được chép đủ và chưa bị thu hồi.",
+          "model_refused": "Nhà cung cấp không cho key này dùng model này.",
+          "unreachable": "Nhà cung cấp không trả lời kịp. Hãy thử lại sau ít phút.",
+          "wrong_dimensions": "Model trả về vector có độ dài khác 1.536 chiều mà chỉ mục lưu."
+        }
+      },
+      "delete": {
+        "open": "Xoá",
+        "title": "Xoá {name}?",
+        "lead": "Nhà cung cấp và key đã lưu sẽ bị xoá. Muốn dùng lại thì phải kết nối lại.",
+        "confirm": "Xoá nhà cung cấp",
+        "cancel": "Huỷ"
+      },
+      "done": {
+        "connected": "Đã kết nối {name}",
+        "saved": "Đã lưu {name}",
+        "deleted": "Đã xoá {name}",
+        "modelChosen": "Từ giờ tìm kiếm embed bằng {model}"
+      },
+      "errors": {
+        "SEARCH_PROVIDER_NOT_FOUND": "Nhà cung cấp này không còn nữa. Hãy tải lại trang.",
+        "SEARCH_PROVIDER_INVALID": "Địa chỉ phải là địa chỉ API của chính nhà cung cấp.",
+        "SEARCH_PROVIDER_NAME_TAKEN": "Đã có nhà cung cấp khác mang tên này.",
+        "SEARCH_PROVIDER_CHANGED": "Có người vừa sửa nhà cung cấp này sau khi bạn mở. Hãy tải lại rồi thử lại.",
+        "SEARCH_PROVIDER_IN_USE": "Tìm kiếm đang embed bằng nhà cung cấp này. Hãy đổi model sang nhà cung cấp khác trước.",
+        "SEARCH_PROVIDER_KEY_MISSING": "Hãy nhập API key. Key đã lưu chỉ được dùng với đúng địa chỉ nó được lưu kèm.",
+        "SEARCH_MODEL_UNKNOWN": "Nhà cung cấp này không có model đó.",
+        "SEARCH_MODEL_REJECTED": "Nhà cung cấp không embed được câu thử với key và model này. Hãy thử kết nối để xem lý do.",
+        "SEARCH_SETTINGS_CHANGED": "Có người vừa sửa cấu hình tìm kiếm sau khi bạn mở. Hãy tải lại rồi thử lại.",
+        "SEARCH_ENCRYPTION_KEY_MISSING": "Chưa lưu được key: máy chủ chưa có khoá mã hoá. Hãy báo đội kỹ thuật thêm vào.",
+        "unknown": "Đã có lỗi. Hãy thử lại sau ít phút."
+      }
+    },
+    "searchIndex": {
+      "metaTitle": "Chỉ mục tìm kiếm",
+      "title": "Chỉ mục tìm kiếm",
+      "lead": "Những gì tìm kiếm tìm được theo từ khoá, và bao nhiêu trong đó đã được embed cho semantic search.",
+      "rebuild": "Dựng lại chỉ mục",
+      "semantic": {
+        "label": "Semantic search",
+        "switch": "Semantic search",
+        "openProviders": "Mở nhà cung cấp",
+        "on": {
+          "title": "Semantic search đang bật",
+          "lead": "Kết quả theo từ khoá và theo ngữ nghĩa được xếp hạng chung. {provider} · {model} · lần embed gần nhất {last}.",
+          "noBatch": "chưa có từ lần khởi động gần nhất"
+        },
+        "off": {
+          "title": "Semantic search đang tắt",
+          "lead": "Tìm kiếm chỉ theo từ khoá và không gửi gì tới nhà cung cấp. Khi bật lại, hệ thống sẽ embed bù những gì đã thay đổi trong lúc tắt."
+        },
+        "paused": {
+          "title": "Semantic search tạm dừng đến {until}",
+          "reason": {
+            "rejected": "Nhà cung cấp từ chối API key. Tìm kiếm chỉ theo từ khoá cho tới khi nhà cung cấp trả lời; hãy kiểm tra key trong mục Nhà cung cấp.",
+            "model_refused": "Nhà cung cấp từ chối model. Tìm kiếm chỉ theo từ khoá cho tới khi nhà cung cấp trả lời; hãy kiểm tra model trong mục Nhà cung cấp.",
+            "unreachable": "Nhà cung cấp không trả lời. Tìm kiếm chỉ theo từ khoá cho tới khi có trả lời; hệ thống sẽ tự thử lại."
+          }
+        },
+        "noProvider": {
+          "title": "Semantic search đang tắt",
+          "lead": "Chưa kết nối nhà cung cấp embedding nên tìm kiếm chỉ theo từ khoá. Hãy kết nối trong mục Nhà cung cấp để bật."
+        }
+      },
+      "stats": {
+        "indexed": "Trong chỉ mục",
+        "listed": "{count} mục công khai",
+        "embedded": "Đã embed",
+        "embeddedOf": "{embedded} / {total} · {model}",
+        "noModel": "Chưa có model embedding",
+        "waiting": "Đang chờ",
+        "waitingNote": "Sẽ embed ở lượt chạy tới",
+        "heldBack": "Lỗi",
+        "heldBackNote": "Bị nhà cung cấp từ chối"
+      },
+      "kinds": {
+        "heading": "Theo loại",
+        "kind": "Loại",
+        "total": "Trong chỉ mục",
+        "listed": "Công khai",
+        "embedded": "Đã embed",
+        "waiting": "Đang chờ",
+        "heldBack": "Lỗi",
+        "name": {
+          "program": "Chương trình",
+          "solution": "Giải pháp AI",
+          "talent": "Nhân lực AI",
+          "use_case": "Use case"
+        },
+        "embeddedShare": "{count} · {share}",
+        "embeddedOf": "{embedded} / {total} đã embed",
+        "mobileFacts": "{listed} công khai · {waiting} đang chờ",
+        "heldBackCount": "{count} lỗi",
+        "note": "Giải pháp và hồ sơ nhân lực đã ẩn vẫn nằm trong chỉ mục để operator ghép với use case, nhưng không bao giờ hiện trong kết quả công khai."
+      },
+      "heldBack": {
+        "heading": "Chưa embed được",
+        "lead": "Vẫn tìm được theo từ khoá cho tới khi embed xong. Hệ thống tự thử lại, mỗi lần chờ lâu hơn.",
+        "retryAll": "Thử lại tất cả",
+        "retry": "Thử lại",
+        "retryOne": "Thử lại {title}",
+        "item": "Mục",
+        "reason": "Lý do",
+        "attempts": "Số lần thử",
+        "next": "Thử lại lúc",
+        "actions": "Thao tác",
+        "soon": "ở lượt chạy tới",
+        "mobileNext": "{count} lần thử · lần tới {next}",
+        "reasons": {
+          "bad_request": "Nhà cung cấp từ chối văn bản (400 Bad request).",
+          "unprocessable": "Nhà cung cấp từ chối văn bản (422 Unprocessable).",
+          "refused": "Nhà cung cấp từ chối văn bản."
+        }
+      },
+      "repair": {
+        "last": "Chỉ mục được dựng lại từ nguồn mỗi lần khởi động và mỗi đêm lúc 03:30. Lần gần nhất {when}: đọc {saved} mục, xoá {removed}.",
+        "never": "Chỉ mục được dựng lại từ nguồn mỗi lần khởi động và mỗi đêm lúc 03:30."
+      },
+      "done": {
+        "on": "Đã bật semantic search",
+        "off": "Đã tắt semantic search",
+        "rebuilt": "Đã dựng lại chỉ mục: đọc {saved} mục, xoá {removed}",
+        "retried": "{count, plural, =0 {Không có mục nào cần thử lại} other {# mục sẽ được thử lại ở lượt chạy tới}}"
       }
     }
   },

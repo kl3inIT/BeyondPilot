@@ -4,6 +4,8 @@ import {
   CalendarRangeIcon,
   HouseIcon,
   LightbulbIcon,
+  PlugZapIcon,
+  ScanSearchIcon,
   ScrollTextIcon,
   UserCogIcon,
   HandshakeIcon,
@@ -37,8 +39,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
     cookies(),
   ]);
 
-  // The destinations of the admin area in the sidebar's groups: what GenAI Fund reviews, then the
-  // system's own records. One is listed here by the change that adds its screen.
+  // The destinations of the admin area in the sidebar's groups: what GenAI Fund reviews, the AI
+  // services BeyondPilot calls, then the system's own records. One is listed here by the change
+  // that adds its screen.
   const groups: AdminNavGroup[] = [
     {
       items: [
@@ -77,6 +80,21 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
           href: siteRoutes.adminIntroductions,
           label: t("nav.introductions"),
           icon: <HandshakeIcon aria-hidden="true" />,
+        },
+      ],
+    },
+    {
+      label: t("nav.ai"),
+      items: [
+        {
+          href: siteRoutes.adminAiProviders,
+          label: t("nav.aiProviders"),
+          icon: <PlugZapIcon aria-hidden="true" />,
+        },
+        {
+          href: siteRoutes.adminSearchIndex,
+          label: t("nav.searchIndex"),
+          icon: <ScanSearchIcon aria-hidden="true" />,
         },
       ],
     },

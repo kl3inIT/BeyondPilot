@@ -23,6 +23,8 @@ export const siteRoutes = {
   adminUseCasesNew: "/admin/use-cases/new",
   adminTalentReported: "/admin/talent/reported",
   adminIntroductions: "/admin/introductions",
+  adminAiProviders: "/admin/ai/providers",
+  adminSearchIndex: "/admin/ai/search-index",
   workspaceOrganization: "/workspace/organization",
   myApplications: "/applications",
   reviews: "/reviews",

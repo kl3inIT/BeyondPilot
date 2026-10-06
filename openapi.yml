@@ -60,6 +60,9 @@ tags:
   name: Email administration
 - description: The talent profiles operators review.
   name: Talent administration
+- description: "The AI providers operators connect, the model search embeds with,\
+    \ and the state of the search index."
+  name: AI and search administration
 - description: "Finding, joining and creating an organization."
   name: Organizations
 paths:
@@ -137,6 +140,14 @@ paths:
           - email.suppression_add
           - email.suppression_remove
           - email.resend
+          - ai.provider_create
+          - ai.provider_update
+          - ai.provider_delete
+          - search.model_change
+          - search.semantic_enable
+          - search.semantic_disable
+          - search.index_rebuild
+          - search.embedding_retry
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
         in: query
@@ -4322,6 +4333,433 @@ paths:
       summary: "What matches the query, best first"
       tags:
       - Search
+  /api/search/admin/embedding-model:
+    put:
+      operationId: chooseEmbeddingModel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChooseEmbeddingModel"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiProviders"
+          description: "The providers, with the model in use."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, the model is not offered, the provider\
+            \ has no key, or it did not embed the test."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such provider.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The search settings changed since they were read.
+      security:
+      - session: []
+      summary: "Embed with this provider and model from now on, after it embeds a\
+        \ test sentence"
+      tags:
+      - AI and search administration
+  /api/search/admin/index:
+    get:
+      operationId: getSearchIndex
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchIndex"
+          description: The state.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: The state of the search index and of semantic search
+      tags:
+      - AI and search administration
+  /api/search/admin/index/rebuild:
+    post:
+      operationId: rebuildSearchIndex
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchIndex"
+          description: "The state, with what the rebuild did."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Rebuild the index from what the modules publish now
+      tags:
+      - AI and search administration
+  /api/search/admin/index/retry:
+    post:
+      operationId: retrySearchEmbeddings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RetryEmbeddings"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetriedEmbeddings"
+          description: How many items the next run tries.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "Let held-back items be embedded at the next run: one, or all"
+      tags:
+      - AI and search administration
+  /api/search/admin/providers:
+    get:
+      operationId: listAiProviders
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiProviders"
+          description: The providers.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The embedding providers and the model in use, without keys"
+      tags:
+      - AI and search administration
+    post:
+      operationId: createAiProvider
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveAiProvider"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiProviders"
+          description: "The providers, with the new one."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, the address is not an https URL, or\
+            \ the key is missing."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Another provider has this name.
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The server has no key to encrypt provider keys.
+      security:
+      - session: []
+      summary: Connect an embedding provider
+      tags:
+      - AI and search administration
+  /api/search/admin/providers/test:
+    post:
+      operationId: testAiProvider
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestAiProvider"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiProviderTest"
+          description: "Whether the provider embedded it, and why not."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, the model is not offered, or no key\
+            \ can be used."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The provider named for its saved key does not exist.
+      security:
+      - session: []
+      summary: "Embed one test sentence with a connection as the editor holds it,\
+        \ saved or not"
+      tags:
+      - AI and search administration
+  /api/search/admin/providers/{id}:
+    delete:
+      operationId: deleteAiProvider
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiProviders"
+          description: The providers left.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such provider.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Search embeds with this provider.
+      security:
+      - session: []
+      summary: Delete an embedding provider and its key
+      tags:
+      - AI and search administration
+    put:
+      operationId: updateAiProvider
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveAiProvider"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiProviders"
+          description: "The providers, with the change."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, the address is not an https URL, or\
+            \ a key is needed."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such provider.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The provider changed since it was read, or another one has\
+            \ this name."
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The server has no key to encrypt provider keys.
+      security:
+      - session: []
+      summary: "Change an embedding provider: its name, address or key"
+      tags:
+      - AI and search administration
+  /api/search/admin/semantic:
+    put:
+      operationId: setSemanticSearch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetSemanticSearch"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchIndex"
+          description: "The state, with the change."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The search settings changed since they were read.
+      security:
+      - session: []
+      summary: Turn semantic search on or off
+      tags:
+      - AI and search administration
   /api/solution/admin/deployments/{id}/approve:
     post:
       operationId: approveCustomerDeployment
@@ -7792,6 +8230,130 @@ components:
       - organization
       - status
       - updatedAt
+    AiProvider:
+      type: object
+      properties:
+        baseUrl:
+          type: string
+        hasKey:
+          type: boolean
+        id:
+          type: string
+          format: uuid
+        inUse:
+          type: boolean
+          description: Whether search embeds with it; a provider in use cannot be
+            deleted.
+        name:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        updatedBy:
+          type: string
+          description: "Who saved it last, as they were named."
+        vendor:
+          type: string
+          enum:
+          - openai
+          - openrouter
+        version:
+          type: integer
+          format: int64
+          description: Send it back with a change; a change made meanwhile is refused.
+      required:
+      - baseUrl
+      - hasKey
+      - id
+      - inUse
+      - name
+      - updatedAt
+      - updatedBy
+      - vendor
+      - version
+    AiProviderTest:
+      type: object
+      description: How embedding one test sentence went. Nothing is stored.
+      properties:
+        dimensions:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: The length of the vector the provider gave.
+        latencyMs:
+          type: integer
+          format: int64
+          description: "How long the provider took, in milliseconds."
+        model:
+          type: string
+        ok:
+          type: boolean
+        reason:
+          type:
+          - string
+          - "null"
+          description: Why it failed; null when it worked.
+          enum:
+          - rejected
+          - model_refused
+          - unreachable
+          - wrong_dimensions
+      required:
+      - latencyMs
+      - model
+      - ok
+    AiProviders:
+      type: object
+      description: "The AI providers operators connected for embeddings, and the model\
+        \ search embeds with. A key is never returned: each provider says only whether\
+        \ it has one."
+      properties:
+        embedding:
+          $ref: "#/components/schemas/EmbeddingModelInUse"
+          description: The model in use; null until an operator chooses one.
+        keysCanBeStored:
+          type: boolean
+          description: Whether the server holds the key that encrypts provider keys;
+            without it none can be saved.
+        providers:
+          type: array
+          items:
+            $ref: "#/components/schemas/AiProvider"
+        settingsVersion:
+          type: integer
+          format: int64
+          description: The version of the search settings; send it back to change
+            the model.
+        vendors:
+          type: array
+          description: "The providers that can be connected, with their address and\
+            \ models."
+          items:
+            $ref: "#/components/schemas/AiVendor"
+      required:
+      - keysCanBeStored
+      - providers
+      - settingsVersion
+      - vendors
+    AiVendor:
+      type: object
+      properties:
+        baseUrl:
+          type: string
+        id:
+          type: string
+          enum:
+          - openai
+          - openrouter
+        models:
+          type: array
+          items:
+            type: string
+      required:
+      - baseUrl
+      - id
+      - models
     ApplicantOrganization:
       type: object
       description: "Who applies, for someone in no organization: themselves on their\
@@ -8164,6 +8726,14 @@ components:
           - email.suppression_add
           - email.suppression_remove
           - email.resend
+          - ai.provider_create
+          - ai.provider_update
+          - ai.provider_delete
+          - search.model_change
+          - search.semantic_enable
+          - search.semantic_disable
+          - search.index_rebuild
+          - search.embedding_retry
         actor:
           type:
           - object
@@ -8292,6 +8862,26 @@ components:
           pattern: owner|member
       required:
       - role
+    ChooseEmbeddingModel:
+      type: object
+      description: The provider and model search embeds with from now on. Every item
+        is embedded again when the model changes.
+      properties:
+        model:
+          type: string
+          maxLength: 100
+          minLength: 0
+        providerId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+          description: The version of the search settings it was read at.
+      required:
+      - model
+      - providerId
+      - version
     ContactDetails:
       type: object
       description: How judges and GenAI Fund reach an applicant. Each part may be
@@ -9316,6 +9906,40 @@ components:
       required:
       - recipient
       - sent
+    EmbeddingModelInUse:
+      type: object
+      properties:
+        dimensions:
+          type: integer
+          format: int32
+        embedded:
+          type: integer
+          format: int64
+          description: Items embedded with this model.
+        model:
+          type: string
+        providerId:
+          type: string
+          format: uuid
+        providerName:
+          type: string
+        since:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the model was chosen.
+        total:
+          type: integer
+          format: int64
+          description: Items in the index.
+      required:
+      - dimensions
+      - embedded
+      - model
+      - providerId
+      - providerName
+      - total
     FormQuestion:
       type: object
       description: "One of the program's own questions, as the form asks it."
@@ -11560,6 +12184,35 @@ components:
       - mediaType
       - purpose
       - sizeBytes
+    RetriedEmbeddings:
+      type: object
+      description: How many held-back items the next run of the job tries.
+      properties:
+        count:
+          type: integer
+          format: int32
+      required:
+      - count
+    RetryEmbeddings:
+      type: object
+      description: "The held-back item to try again at once, or every one when no\
+        \ item is named."
+      properties:
+        itemId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        kind:
+          type:
+          - string
+          - "null"
+          enum:
+          - program
+          - solution
+          - talent
+          - use_case
+          pattern: program|solution|talent|use_case
     ReviewApplication:
       type: object
       description: "One application as its applicant submitted it last, with the caller's\
@@ -11988,6 +12641,52 @@ components:
       required:
       - applications
       - items
+    SaveAiProvider:
+      type: object
+      description: A provider to connect or change. The address must be the vendor's
+        own; a saved key is kept only while it is unchanged.
+      properties:
+        apiKey:
+          type:
+          - string
+          - "null"
+          description: "The new key, with key = replace."
+          maxLength: 500
+          minLength: 0
+        baseUrl:
+          type: string
+          example: https://openrouter.ai/api/v1
+          maxLength: 200
+          minLength: 0
+        key:
+          type: string
+          description: "Keep the saved key, replace it with apiKey, or remove it.\
+            \ A new provider takes replace."
+          enum:
+          - keep
+          - replace
+          - remove
+          pattern: keep|replace|remove
+        name:
+          type: string
+          maxLength: 60
+          minLength: 0
+        vendor:
+          type: string
+          enum:
+          - openai
+          - openrouter
+          pattern: openai|openrouter
+        version:
+          type: integer
+          format: int64
+          description: The version the provider was read at; 0 for a new one.
+      required:
+      - baseUrl
+      - key
+      - name
+      - vendor
+      - version
     SaveApplication:
       type: object
       description: What the application form holds now. Nothing is checked for completeness
@@ -12983,6 +13682,122 @@ components:
       - solution
       - talent
       - useCase
+    SearchIndex:
+      type: object
+      description: "What search can find by keyword, and how much of it is embedded\
+        \ for semantic search."
+      properties:
+        heldBack:
+          type: array
+          description: "Items the provider refused, tried again on their own later."
+          items:
+            $ref: "#/components/schemas/SearchIndexHeldBack"
+        kinds:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchIndexKind"
+        lastRebuild:
+          $ref: "#/components/schemas/SearchIndexRebuild"
+          description: The last rebuild since the application started.
+        semantic:
+          $ref: "#/components/schemas/SemanticSearchState"
+        settingsVersion:
+          type: integer
+          format: int64
+          description: The version of the search settings; send it back to switch
+            semantic search.
+      required:
+      - heldBack
+      - kinds
+      - semantic
+      - settingsVersion
+    SearchIndexHeldBack:
+      type: object
+      properties:
+        attempts:
+          type: integer
+          format: int32
+        itemId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - program
+          - solution
+          - talent
+          - use_case
+        nextAttemptAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        reason:
+          type: string
+          enum:
+          - bad_request
+          - unprocessable
+          - refused
+        title:
+          type: string
+      required:
+      - attempts
+      - itemId
+      - kind
+      - reason
+      - title
+    SearchIndexKind:
+      type: object
+      properties:
+        embedded:
+          type: integer
+          format: int64
+        heldBack:
+          type: integer
+          format: int64
+        kind:
+          type: string
+          enum:
+          - program
+          - solution
+          - talent
+          - use_case
+        listed:
+          type: integer
+          format: int64
+          description: What visitors may find; unlisted items stay for operators matching
+            use cases.
+        total:
+          type: integer
+          format: int64
+        waiting:
+          type: integer
+          format: int64
+      required:
+      - embedded
+      - heldBack
+      - kind
+      - listed
+      - total
+      - waiting
+    SearchIndexRebuild:
+      type: object
+      properties:
+        at:
+          type: string
+          format: date-time
+        removed:
+          type: integer
+          format: int32
+          description: Rows taken out because their item is no longer published.
+        saved:
+          type: integer
+          format: int32
+          description: Items read from their modules.
+      required:
+      - at
+      - removed
+      - saved
     SearchItem:
       type: object
       description: "One result, as its card shows it. Members of another kind are\
@@ -13172,6 +13987,52 @@ components:
       - page
       - pageSize
       - total
+    SemanticSearchState:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: Whether an operator turned semantic search on.
+        failure:
+          type:
+          - string
+          - "null"
+          description: Why it is paused.
+          enum:
+          - rejected
+          - model_refused
+          - unreachable
+        lastBatchAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        model:
+          type:
+          - string
+          - "null"
+        pausedUntil:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the provider is tried again.
+        providerName:
+          type:
+          - string
+          - "null"
+        state:
+          type: string
+          description: "How it goes: on, turned off, paused after the provider failed,\
+            \ or on without a usable provider."
+          enum:
+          - "on"
+          - "off"
+          - paused
+          - no_provider
+      required:
+      - enabled
+      - state
     SendBackUseCase:
       type: object
       description: Why GenAI Fund sends a use case back to its organization.
@@ -13209,6 +14070,20 @@ components:
       - message
       - senderName
       - topic
+    SetSemanticSearch:
+      type: object
+      description: "Turns semantic search on or off. Off, search matches keywords\
+        \ only and nothing is sent to the provider."
+      properties:
+        enabled:
+          type: boolean
+        version:
+          type: integer
+          format: int64
+          description: The version of the search settings it was read at.
+      required:
+      - enabled
+      - version
     Solution:
       type: object
       description: "A solution as its organization, and operators, see it."
@@ -14005,6 +14880,41 @@ components:
       - slug
       - status
       - updatedAt
+    TestAiProvider:
+      type: object
+      description: "A connection to try, saved or not. Without an apiKey the saved\
+        \ key of providerId is used, while the address is the one it was saved with."
+      properties:
+        apiKey:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+        baseUrl:
+          type: string
+          maxLength: 200
+          minLength: 0
+        model:
+          type: string
+          maxLength: 100
+          minLength: 0
+        providerId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: The saved provider whose key to use when apiKey is empty.
+        vendor:
+          type: string
+          enum:
+          - openai
+          - openrouter
+          pattern: openai|openrouter
+      required:
+      - baseUrl
+      - model
+      - vendor
     UploadTicket:
       type: object
       description: "Permission to send the bytes of one file. Send them as the request\

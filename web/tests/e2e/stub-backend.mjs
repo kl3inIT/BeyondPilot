@@ -8,7 +8,7 @@ import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
 import { answerJudging } from "./stub-judging.mjs";
 import { answerReview } from "./stub-reviews.mjs";
-import { answerSearch } from "./stub-search.mjs";
+import { answerSearch, answerSearchAdmin } from "./stub-search.mjs";
 import { answerWorkspace } from "./stub-workspace.mjs";
 
 const accounts = {
@@ -402,6 +402,10 @@ createServer((request, response) => {
     answerDirectory(url);
   if (record) {
     return json(response, ...record);
+  }
+  const administered = answerSearchAdmin(url, account);
+  if (administered) {
+    return json(response, ...administered);
   }
   const searched = answerSearch(url);
   if (searched) {

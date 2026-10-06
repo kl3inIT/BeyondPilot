@@ -102,9 +102,10 @@ class SearchAdministrationTest {
 		assertThat(JsonPath.<Boolean>read(body, "$.keysCanBeStored")).isTrue();
 		byte[] stored = jdbc.sql("select api_key from ai_provider").query(byte[].class).single();
 		assertThat(new String(stored, UTF_8)).doesNotContain(SECRET);
+		// Other tests connect providers too; none of their records holds more than the vendor.
 		assertThat(jdbc.sql("select details::text from audit_event where action = 'ai.provider_create'")
 			.query(String.class)
-			.single()).isEqualTo("{\"vendor\": \"openrouter\"}");
+			.list()).containsOnly("{\"vendor\": \"openrouter\"}");
 		assertThat(body(get(operator, API + "/providers").expectStatus().isOk())).doesNotContain(SECRET);
 	}
 
