@@ -2,6 +2,8 @@
 
 Tracked in Linear as BEY-34. Source: the client brief, [section 7.5](../../../brief/BeyondPilot-Vendor-Product-Brief-and-Scope.md) and its acceptance table.
 
+The deck link of this increment lasted a day: [the editor in four steps](../bey-34-solution-editor-steps/design.md) makes the deck an uploaded file. The demo link and the unlisted solution stand as written here.
+
 ## What changes
 
 1. **Demo and deck.** The brief lists "demo/deck" among what a solution shows. A solution gains two optional links, `demoUrl` (a video or a live demo) and `deckUrl` (a presentation). Both are `http(s)` addresses, shown on the public page and written in the owner's editor. Neither is required to submit: early-stage providers must not be blocked ([brief 7.5](../../../brief/BeyondPilot-Vendor-Product-Brief-and-Scope.md)).

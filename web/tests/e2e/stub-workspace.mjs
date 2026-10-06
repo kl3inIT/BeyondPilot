@@ -112,7 +112,13 @@ function solution(id, name, status, more) {
     summary: `${name} for insurers.`,
     problemsSolved: "Policy holders wait days for an answer.",
     valueProposition: null,
+    traction: null,
+    builtWith: [],
+    languages: [],
+    bestCustomerProfile: null,
     website: "https://pocketpolicy.example",
+    demoUrl: null,
+    deck: null,
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
     deployment: ["cloud_saas"],
@@ -131,6 +137,14 @@ function solution(id, name, status, more) {
 const solutions = [
   solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e11", "Policy Chat", "approved", {
     maturity: "production",
+    builtWith: ["Python", "PostgreSQL"],
+    languages: ["vi", "en"],
+    deck: {
+      fileId: "d0c1a2b3-4c5d-4e6f-8a9b-0c1d2e3f4a51",
+      fileName: "policy-chat-deck.pdf",
+      sizeBytes: 3250586,
+      attachedAt: day,
+    },
     customerDeployments: [
       deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f11", "Renewals at Mekong Life", "approved"),
       deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f12", "Claims line at Bảo An", "rejected", {

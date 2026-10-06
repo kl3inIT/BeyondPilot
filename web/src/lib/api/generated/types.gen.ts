@@ -1343,6 +1343,8 @@ export type PublicOrganization = {
  * An approved solution as anyone with its address reads it, listed or not.
  */
 export type PublicSolution = {
+    bestCustomerProfile?: string | null;
+    builtWith: Array<string>;
     /**
      * ISO 3166-1 alpha-2.
      */
@@ -1351,11 +1353,15 @@ export type PublicSolution = {
      * Its approved customer deployments, the most recently approved first.
      */
     customerDeployments: Array<PublicCustomerDeployment>;
-    deckUrl?: string | null;
+    /**
+     * Its deck, when it has one.
+     */
+    deck?: PublicSolutionDeck | null;
     demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     industries: Array<string>;
+    languages: Array<string>;
     /**
      * Whether the directory lists it. False is approved but shared by its address only.
      */
@@ -1370,8 +1376,17 @@ export type PublicSolution = {
     problemsSolved?: string | null;
     slug: string;
     summary?: string | null;
+    traction?: string | null;
     valueProposition?: string | null;
     website?: string | null;
+};
+
+/**
+ * The deck of an approved solution. Its bytes are read at the address of the solution followed by /deck.
+ */
+export type PublicSolutionDeck = {
+    fileName: string;
+    sizeBytes: number;
 };
 
 /**
@@ -1610,7 +1625,7 @@ export type ReserveUpload = {
     /**
      * Why the file is uploaded; it fixes the allowed media types and the largest size.
      */
-    purpose: 'program_image' | 'talent_photo' | 'application_file';
+    purpose: 'program_image' | 'talent_photo' | 'application_file' | 'solution_deck';
     /**
      * The exact length of the file in bytes.
      */
@@ -2006,13 +2021,21 @@ export type SaveReviewCriterion = {
 };
 
 /**
- * A solution as its edit screen holds it.
+ * A solution as its editor holds it, in the order of its steps.
  */
 export type SaveSolution = {
     /**
-     * A presentation of the solution.
+     * Who gets the most from it, in a sentence.
      */
-    deckUrl?: string | null;
+    bestCustomerProfile?: string | null;
+    /**
+     * The models, tools and frameworks it is built with, as its owners name them.
+     */
+    builtWith: Array<string>;
+    /**
+     * The stored PDF that is its deck: the one it has, one the caller uploaded for it, or null for none.
+     */
+    deckFileId?: string | null;
     /**
      * A video or a live demo of the solution at work.
      */
@@ -2021,6 +2044,10 @@ export type SaveSolution = {
     focusAreas: Array<string>;
     industries: Array<string>;
     /**
+     * The languages it works in.
+     */
+    languages: Array<string>;
+    /**
      * Whether it appears in the public directory once approved.
      */
     listed: boolean;
@@ -2028,9 +2055,13 @@ export type SaveSolution = {
     name: string;
     problemsSolved?: string | null;
     /**
-     * One or two sentences shown in lists.
+     * Two or three sentences shown in lists.
      */
     summary?: string | null;
+    /**
+     * Customers, pilots, users or revenue so far.
+     */
+    traction?: string | null;
     valueProposition?: string | null;
     /**
      * The version the screen read.
@@ -2204,6 +2235,8 @@ export type SendTalentEnquiry = {
  * A solution as its organization, and operators, see it.
  */
 export type Solution = {
+    bestCustomerProfile?: string | null;
+    builtWith: Array<string>;
     /**
      * Whether it has what a submission needs: a summary, a maturity, a focus area and an industry.
      */
@@ -2220,12 +2253,16 @@ export type Solution = {
      * Why it was last rejected.
      */
     decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
-    deckUrl?: string | null;
+    /**
+     * Its deck, when it has one.
+     */
+    deck?: SolutionDeck | null;
     demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     id: string;
     industries: Array<string>;
+    languages: Array<string>;
     /**
      * Whether it appears in the public directory once approved.
      */
@@ -2246,6 +2283,7 @@ export type Solution = {
      */
     submittedBy?: string | null;
     summary?: string | null;
+    traction?: string | null;
     updatedAt: string;
     valueProposition?: string | null;
     /**
@@ -2253,6 +2291,19 @@ export type Solution = {
      */
     version: number;
     website?: string | null;
+};
+
+/**
+ * The deck of a solution as its organization, and operators, see it.
+ */
+export type SolutionDeck = {
+    attachedAt: string;
+    /**
+     * The stored file, sent back with a save to keep it.
+     */
+    fileId: string;
+    fileName: string;
+    sizeBytes: number;
 };
 
 /**
@@ -5712,6 +5763,33 @@ export type GetSolutionResponses = {
 };
 
 export type GetSolutionResponse = GetSolutionResponses[keyof GetSolutionResponses];
+
+export type GetSolutionDeckData = {
+    body?: never;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/solution/solutions/{slug}/deck';
+};
+
+export type GetSolutionDeckErrors = {
+    /**
+     * The solution has no deck, or the reader may not have it.
+     */
+    404: Problem;
+};
+
+export type GetSolutionDeckError = GetSolutionDeckErrors[keyof GetSolutionDeckErrors];
+
+export type GetSolutionDeckResponses = {
+    /**
+     * The bytes of the deck.
+     */
+    200: Blob | File;
+};
+
+export type GetSolutionDeckResponse = GetSolutionDeckResponses[keyof GetSolutionDeckResponses];
 
 export type GetPublicFileData = {
     body?: never;

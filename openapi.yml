@@ -3930,6 +3930,37 @@ paths:
       summary: "One approved solution by its address, listed or not"
       tags:
       - Solutions
+  /api/solution/solutions/{slug}/deck:
+    get:
+      description: "The PDF, saved under its name, or a redirect to where the object\
+        \ store serves it. No session is needed for an approved solution; before that\
+        \ the members of its organization and the operators read it."
+      operationId: getSolutionDeck
+      parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: The bytes of the deck.
+        "302":
+          description: "The address the object store serves the deck at, for a while."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The solution has no deck, or the reader may not have it."
+      summary: The deck of a solution
+      tags:
+      - Solutions
   /api/storage/files/{id}:
     get:
       description: "The bytes of a file anyone may read, such as an image of a program,\
@@ -7421,6 +7452,14 @@ components:
       description: "An approved solution as anyone with its address reads it, listed\
         \ or not."
       properties:
+        bestCustomerProfile:
+          type:
+          - string
+          - "null"
+        builtWith:
+          type: array
+          items:
+            type: string
         country:
           type:
           - string
@@ -7432,10 +7471,12 @@ components:
             \ first."
           items:
             $ref: "#/components/schemas/PublicCustomerDeployment"
-        deckUrl:
+        deck:
           type:
-          - string
+          - object
           - "null"
+          $ref: "#/components/schemas/PublicSolutionDeck"
+          description: "Its deck, when it has one."
         demoUrl:
           type:
           - string
@@ -7449,6 +7490,10 @@ components:
           items:
             type: string
         industries:
+          type: array
+          items:
+            type: string
+        languages:
           type: array
           items:
             type: string
@@ -7483,6 +7528,10 @@ components:
           type:
           - string
           - "null"
+        traction:
+          type:
+          - string
+          - "null"
         valueProposition:
           type:
           - string
@@ -7492,15 +7541,30 @@ components:
           - string
           - "null"
       required:
+      - builtWith
       - customerDeployments
       - deployment
       - focusAreas
       - industries
+      - languages
       - listed
       - name
       - organizationName
       - organizationSlug
       - slug
+    PublicSolutionDeck:
+      type: object
+      description: The deck of an approved solution. Its bytes are read at the address
+        of the solution followed by /deck.
+      properties:
+        fileName:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+      required:
+      - fileName
+      - sizeBytes
     PublicSolutionList:
       type: object
       description: "One page of the public directory of solutions, by name."
@@ -7946,6 +8010,7 @@ components:
           - program_image
           - talent_photo
           - application_file
+          - solution_deck
         sizeBytes:
           type: integer
           format: int64
@@ -8742,16 +8807,32 @@ components:
       - name
     SaveSolution:
       type: object
-      description: A solution as its edit screen holds it.
+      description: "A solution as its editor holds it, in the order of its steps."
       properties:
-        deckUrl:
+        bestCustomerProfile:
           type:
           - string
           - "null"
-          description: A presentation of the solution.
-          maxLength: 300
+          description: "Who gets the most from it, in a sentence."
+          maxLength: 400
           minLength: 0
-          pattern: "https?://[^\\s]+"
+        builtWith:
+          type: array
+          description: "The models, tools and frameworks it is built with, as its\
+            \ owners name them."
+          items:
+            type: string
+            maxLength: 40
+            minLength: 0
+          maxItems: 10
+          minItems: 0
+        deckFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The stored PDF that is its deck: the one it has, one the caller\
+            \ uploaded for it, or null for none."
         demoUrl:
           type:
           - string
@@ -8781,6 +8862,14 @@ components:
             pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
           maxItems: 5
           minItems: 0
+        languages:
+          type: array
+          description: The languages it works in.
+          items:
+            type: string
+            pattern: en|vi|id|ms|th|fil|zh|ja|ko|other
+          maxItems: 10
+          minItems: 0
         listed:
           type: boolean
           description: Whether it appears in the public directory once approved.
@@ -8809,8 +8898,15 @@ components:
           type:
           - string
           - "null"
-          description: One or two sentences shown in lists.
-          maxLength: 300
+          description: Two or three sentences shown in lists.
+          maxLength: 600
+          minLength: 0
+        traction:
+          type:
+          - string
+          - "null"
+          description: "Customers, pilots, users or revenue so far."
+          maxLength: 600
           minLength: 0
         valueProposition:
           type:
@@ -8830,9 +8926,11 @@ components:
           minLength: 0
           pattern: "https?://[^\\s]+"
       required:
+      - builtWith
       - deployment
       - focusAreas
       - industries
+      - languages
       - listed
       - name
       - version
@@ -9163,6 +9261,14 @@ components:
       type: object
       description: "A solution as its organization, and operators, see it."
       properties:
+        bestCustomerProfile:
+          type:
+          - string
+          - "null"
+        builtWith:
+          type: array
+          items:
+            type: string
         complete:
           type: boolean
           description: "Whether it has what a submission needs: a summary, a maturity,\
@@ -9189,10 +9295,12 @@ components:
           - duplicate
           - unverifiable
           - other
-        deckUrl:
+        deck:
           type:
-          - string
+          - object
           - "null"
+          $ref: "#/components/schemas/SolutionDeck"
+          description: "Its deck, when it has one."
         demoUrl:
           type:
           - string
@@ -9209,6 +9317,10 @@ components:
           type: string
           format: uuid
         industries:
+          type: array
+          items:
+            type: string
+        languages:
           type: array
           items:
             type: string
@@ -9262,6 +9374,10 @@ components:
           type:
           - string
           - "null"
+        traction:
+          type:
+          - string
+          - "null"
         updatedAt:
           type: string
           format: date-time
@@ -9279,12 +9395,14 @@ components:
           - string
           - "null"
       required:
+      - builtWith
       - complete
       - customerDeployments
       - deployment
       - focusAreas
       - id
       - industries
+      - languages
       - listed
       - name
       - organizationId
@@ -9293,6 +9411,28 @@ components:
       - status
       - updatedAt
       - version
+    SolutionDeck:
+      type: object
+      description: "The deck of a solution as its organization, and operators, see\
+        \ it."
+      properties:
+        attachedAt:
+          type: string
+          format: date-time
+        fileId:
+          type: string
+          format: uuid
+          description: "The stored file, sent back with a save to keep it."
+        fileName:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+      required:
+      - attachedAt
+      - fileId
+      - fileName
+      - sizeBytes
     SolutionOption:
       type: object
       description: "A solution of the applicant's organization, as step 2 shows it."

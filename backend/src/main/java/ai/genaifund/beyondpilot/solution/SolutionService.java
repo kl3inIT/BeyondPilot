@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.solution;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.Actor;
@@ -18,6 +19,11 @@ import ai.genaifund.beyondpilot.solution.persistence.CustomerDeployment;
 import ai.genaifund.beyondpilot.solution.persistence.CustomerDeploymentRepository;
 import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
+import ai.genaifund.beyondpilot.storage.FilePurpose;
+import ai.genaifund.beyondpilot.storage.StorageException;
+import ai.genaifund.beyondpilot.storage.StorageService;
+import ai.genaifund.beyondpilot.storage.StoredFile;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -45,14 +51,18 @@ public class SolutionService {
 
 	private final IdentityService identity;
 
+	private final StorageService storage;
+
 	private final ApplicationEventPublisher events;
 
 	SolutionService(SolutionRepository solutions, CustomerDeploymentRepository deployments,
-			OrganizationDirectory organizations, IdentityService identity, ApplicationEventPublisher events) {
+			OrganizationDirectory organizations, IdentityService identity, StorageService storage,
+			ApplicationEventPublisher events) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.organizations = organizations;
 		this.identity = identity;
+		this.storage = storage;
 		this.events = events;
 	}
 
@@ -105,10 +115,10 @@ public class SolutionService {
 	}
 
 	/**
-	 * Saves a solution as its edit screen holds it. A change to an approved solution shows at once; one to a rejected
-	 * solution waits for the owner to submit it again.
+	 * Saves a solution as its editor holds it. A change to an approved solution shows at once; one to a rejected
+	 * solution waits for the owner to submit it again. A deck the solution stops naming is removed from the store.
 	 * @throws SolutionException when the caller is not a member of a provider, the organization has no such
-	 * solution, or it changed since the screen read it
+	 * solution, it changed since the screen read it, or the deck it names is not a stored PDF of the caller
 	 */
 	@Transactional
 	public SolutionResponse save(Actor actor, UUID id, SaveSolutionRequest request) {
@@ -120,17 +130,55 @@ public class SolutionService {
 		}
 		solution.describe(request.name().strip(), SolutionViews.text(request.summary()),
 				SolutionViews.text(request.problemsSolved()), SolutionViews.text(request.valueProposition()),
-				SolutionViews.codes(request.focusAreas()), SolutionViews.codes(request.industries()),
-				request.maturity(), SolutionViews.codes(request.deployment()), SolutionViews.text(request.website()),
-				SolutionViews.text(request.demoUrl()), SolutionViews.text(request.deckUrl()));
+				request.maturity(), SolutionViews.text(request.traction()), SolutionViews.names(request.builtWith()));
+		solution.fit(SolutionViews.codes(request.industries()), SolutionViews.codes(request.focusAreas()),
+				SolutionViews.codes(request.languages()), SolutionViews.codes(request.deployment()),
+				SolutionViews.text(request.bestCustomerProfile()));
+		solution.link(SolutionViews.text(request.website()), SolutionViews.text(request.demoUrl()));
+		UUID replacedDeck = nameDeck(actor, solution, request.deckFileId());
 		solution.list(request.listed());
 		if (!solution.isDraft() && !solution.isRejected() && !solution.isComplete()) {
 			// What operators review, and what the directory shows, keeps what a submission needs.
 			throw incomplete(id);
 		}
 		solutions.flush();
+		if (replacedDeck != null) {
+			// The solution no longer names the file, so nothing does. It goes once the save has committed.
+			events.publishEvent(new ReplacedDecks.DeckReplaced(id, replacedDeck));
+		}
 		events.publishEvent(new SolutionChanged(id));
 		return view(solution, membership);
+	}
+
+	/**
+	 * Makes the solution name the deck the request names: the one it has, another stored PDF the caller uploaded for
+	 * a solution, or none.
+	 * @return the file the solution stopped naming, or null when it names the same as before
+	 * @throws SolutionException when the file is not a stored deck of the caller, or is the deck of another solution
+	 */
+	private @Nullable UUID nameDeck(Actor actor, Solution solution, @Nullable UUID wanted) {
+		UUID current = solution.getDeckFileId();
+		if (Objects.equals(current, wanted)) {
+			return null;
+		}
+		if (wanted == null) {
+			solution.removeDeck();
+			return current;
+		}
+		StoredFile file;
+		try {
+			file = storage.stored(wanted, FilePurpose.SOLUTION_DECK, actor);
+		}
+		catch (StorageException notUsable) {
+			throw new SolutionException(SolutionErrorCode.DECK_NOT_USABLE,
+					"File " + wanted + " as the deck of solution " + solution.getId(), notUsable);
+		}
+		if (solutions.existsByDeckFileId(wanted)) {
+			throw new SolutionException(SolutionErrorCode.DECK_NOT_USABLE,
+					"File " + wanted + " is the deck of another solution");
+		}
+		solution.attachDeck(file.id(), file.fileName(), file.sizeBytes(), Instant.now());
+		return current;
 	}
 
 	/**
@@ -161,7 +209,7 @@ public class SolutionService {
 	}
 
 	/**
-	 * Deletes a draft. Anything that was ever submitted stays.
+	 * Deletes a draft, and its deck with it. Anything that was ever submitted stays.
 	 * @throws SolutionException when the caller is not a member of a provider, the organization has no such
 	 * solution, or it is not a draft
 	 */
@@ -172,7 +220,11 @@ public class SolutionService {
 			throw new SolutionException(SolutionErrorCode.NOT_A_DRAFT,
 					"Deletion of solution " + id + ", which is " + solution.getStatus());
 		}
+		UUID deck = solution.getDeckFileId();
 		solutions.delete(solution);
+		if (deck != null) {
+			events.publishEvent(new ReplacedDecks.DeckReplaced(id, deck));
+		}
 	}
 
 	/**

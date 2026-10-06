@@ -1015,9 +1015,13 @@
         "problemsSolved": "Bài toán giải quyết",
         "valueProposition": "Giá trị mang lại",
         "maturity": "Giai đoạn",
+        "traction": "Cột mốc và kết quả",
+        "builtWith": "Xây dựng bằng",
         "industries": "Ngành",
         "focusAreas": "Năng lực AI",
+        "languages": "Ngôn ngữ",
         "deployment": "Nơi vận hành",
+        "bestCustomerProfile": "Khách hàng phù hợp nhất",
         "website": "Website",
         "demo": "Demo sản phẩm",
         "deck": "Tài liệu giới thiệu",
@@ -1355,7 +1359,9 @@
       "hi": "Tiếng Hindi",
       "fr": "Tiếng Pháp",
       "de": "Tiếng Đức",
-      "es": "Tiếng Tây Ban Nha"
+      "es": "Tiếng Tây Ban Nha",
+      "fil": "Tiếng Philippines",
+      "other": "Khác"
     },
     "projectStage": {
       "prototype": "Bản mẫu",
@@ -1656,6 +1662,7 @@
       "SOLUTION_TOO_MANY_DEPLOYMENTS": "Một giải pháp có tối đa 12 triển khai khách hàng. Hãy gỡ một cái trước khi thêm.",
       "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW": "Triển khai khách hàng này không chờ duyệt.",
       "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Có người vừa lưu triển khai khách hàng này. Hãy tải lại trang rồi sửa lại.",
+      "SOLUTION_DECK_NOT_USABLE": "Tệp này không dùng làm tài liệu giới thiệu được. Hãy tải PDF lên lại.",
       "unknown": "Chưa thực hiện được. Hãy thử lại."
     },
     "done": {
@@ -1721,13 +1728,17 @@
     "view": {
       "problemsSolved": "Bài toán giải quyết",
       "valueProposition": "Giá trị mang lại",
+      "traction": "Cột mốc và kết quả",
+      "bestCustomerProfile": "Khách hàng phù hợp nhất",
       "maturity": "Giai đoạn",
-      "focusAreas": "Lĩnh vực",
+      "focusAreas": "Năng lực AI",
       "industries": "Ngành",
-      "deployment": "Triển khai",
-      "website": "Mở website",
+      "languages": "Ngôn ngữ",
+      "deployment": "Chạy ở đâu",
+      "builtWith": "Xây dựng bằng",
+      "website": "Mở trang sản phẩm",
       "demo": "Xem demo",
-      "deck": "Xem bài thuyết trình",
+      "deck": "Tải tài liệu giới thiệu",
       "nothingYet": "Chưa có nội dung."
     },
     "detail": {
@@ -1749,7 +1760,10 @@
         "title": "Sản phẩm và kinh doanh",
         "capabilities": "Năng lực",
         "stage": "Giai đoạn",
-        "notPublished": "Chưa công bố: công nghệ lõi, phân khúc, hồ sơ khách hàng phù hợp nhất, vốn đầu tư, nền tảng xây dựng, bản demo và tài liệu, mô hình giá, khách hàng tiêu biểu, giải pháp thay thế."
+        "notPublished": "Chưa công bố: công nghệ lõi, phân khúc, vốn đầu tư, mô hình giá, khách hàng tiêu biểu, giải pháp thay thế.",
+        "traction": "Cột mốc và kết quả",
+        "builtWith": "Xây dựng bằng",
+        "bestCustomerProfile": "Khách hàng phù hợp nhất"
       },
       "offers": {
         "title": "Ưu đãi",
@@ -1775,7 +1789,7 @@
         "title": "Làm việc với {name}",
         "website": "Mở website",
         "demo": "Xem demo",
-        "deck": "Xem bài thuyết trình",
+        "deck": "Tải tài liệu giới thiệu",
         "basedIn": "Trụ sở tại"
       }
     },
@@ -1825,83 +1839,171 @@
     },
     "editor": {
       "back": "Tất cả giải pháp",
-      "submitted": {
-        "title": "GenAI Fund đang duyệt giải pháp này",
-        "lead": "Thường mất một đến hai ngày làm việc. Bạn vẫn có thể chỉnh sửa."
-      },
-      "approved": {
-        "listed": "Đã duyệt và hiển thị trong danh mục",
-        "unlisted": "Đã duyệt nhưng đang ẩn khỏi danh mục",
-        "open": "Mở trang công khai",
-        "unlistedLead": "Bật “Hiển thị trong danh mục” bên dưới để đăng."
-      },
-      "rejected": {
-        "title": "Cần chỉnh sửa: {reason}",
-        "lead": "Hãy chỉnh sửa rồi gửi duyệt lại."
-      }
-    },
-    "form": {
-      "name": "Tên",
-      "nameRequired": "Hãy nhập tên giải pháp.",
-      "summary": "Tóm tắt",
-      "summaryHint": "Một hoặc hai câu. Danh mục hiển thị phần này.",
-      "problemsSolved": "Bài toán giải quyết",
-      "problemsSolvedHint": "Tình huống khách hàng gặp trước khi dùng giải pháp.",
-      "valueProposition": "Giá trị mang lại",
-      "valuePropositionHint": "Kết quả khách hàng đạt được, kèm số liệu nếu có.",
-      "focusAreas": "Lĩnh vực",
-      "industries": "Ngành",
-      "upTo": "Chọn tối đa {count}. Đã chọn {chosen}.",
-      "maturity": "Giai đoạn",
-      "notStated": "Chưa nêu",
-      "website": "Trang sản phẩm",
-      "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
-      "demoUrl": "Liên kết demo",
-      "demoUrlHint": "Video hoặc bản demo trực tiếp giải pháp đang chạy.",
-      "deckUrl": "Liên kết bài thuyết trình",
-      "deckUrlHint": "Bản trình bày mà ai cũng mở được, không cần đăng nhập.",
-      "deployment": "Triển khai",
-      "listed": "Hiển thị trong danh mục",
-      "listedHint": "Có hiệu lực khi giải pháp được duyệt.",
-      "submit": "Gửi duyệt",
-      "resubmit": "Gửi duyệt lại",
-      "saveDraft": "Lưu nháp",
+      "heading": "{organization} · {name}",
+      "exit": "Lưu và thoát",
+      "close": "Đóng",
       "save": "Lưu thay đổi",
-      "delete": "Xóa bản nháp…",
-      "confirmDelete": {
-        "title": "Xóa {name}?",
-        "lead": "Bản nháp bị xóa với mọi người trong tổ chức. Không thể hoàn tác.",
-        "confirm": "Xóa bản nháp",
-        "cancel": "Hủy"
+      "state": {
+        "saving": "Đang lưu…",
+        "draftSaved": "Đã lưu nháp lúc {time}",
+        "draftSavedShort": "Đã lưu nháp",
+        "saved": "Đã lưu lúc {time}",
+        "savedShort": "Đã lưu",
+        "unsaved": "Có thay đổi chưa lưu",
+        "failed": "Chưa lưu được",
+        "retry": "Thử lại",
+        "reload": "Tải lại"
       },
-      "listedHintApproved": "Giải pháp đã được duyệt, nên lựa chọn này và mọi thay đổi đã lưu hiển thị ngay trong danh mục.",
+      "visibility": {
+        "draft": "Chỉ {organization} thấy bản nháp",
+        "draftShort": "Chỉ {organization} thấy"
+      },
+      "steps": {
+        "label": "Giải pháp của bạn",
+        "progress": "Bước {step}/{count} · {name}",
+        "toAdd": "{count, plural, other {Còn # mục cần bổ sung}}",
+        "toCheck": "{count, plural, other {# mục cần xem lại}}",
+        "complete": "Đã xong",
+        "basics": {
+          "title": "Thông tin cơ bản",
+          "meta": "Giải pháp là gì, đang ở giai đoạn nào và xây bằng gì",
+          "lead": "Giải pháp là gì. Đây là điều đầu tiên khách đọc trên trang công khai sau khi GenAI Fund duyệt."
+        },
+        "fit": {
+          "title": "Dành cho ai",
+          "meta": "Ngành, năng lực và nơi chạy",
+          "lead": "Ai nên tìm thấy giải pháp này và nó chạy được ở đâu. Khách lọc danh mục theo các câu trả lời này."
+        },
+        "evidence": {
+          "title": "Bằng chứng",
+          "meta": "Tài liệu giới thiệu, demo và trường hợp khách hàng",
+          "lead": "Bằng chứng cho thấy giải pháp hoạt động. Hãy nêu những gì bạn có; phần bỏ trống sẽ hiện là chưa công bố."
+        },
+        "review": {
+          "title": "Xem lại và gửi duyệt",
+          "titleLive": "Xem lại",
+          "meta": "Kiểm tra mọi thứ rồi gửi duyệt",
+          "metaLive": "Kiểm tra những gì khách đọc",
+          "lead": "Kiểm tra những gì khách sẽ đọc. GenAI Fund duyệt giải pháp trước khi nó xuất hiện trong danh mục.",
+          "leadLive": "Đây là những gì khách đọc. Thay đổi đã lưu của một giải pháp đã duyệt hiển thị ngay."
+        }
+      },
+      "note": "Thay đổi được lưu khi bạn nhập. Chỉ tổ chức của bạn thấy bản nháp.",
+      "noteLive": "Thay đổi được giữ lại khi bạn chọn Lưu thay đổi. Với giải pháp đã duyệt, chúng hiển thị ngay.",
+      "required": "Mọi mục đều bắt buộc, trừ mục ghi Không bắt buộc.",
+      "allOptional": "Mọi mục ở bước này đều không bắt buộc.",
+      "optional": "Không bắt buộc",
+      "counter": "{count} / {max}",
+      "previous": "Quay lại",
+      "continue": "Tiếp tục",
+      "fields": {
+        "name": "Tên giải pháp",
+        "summary": "Giải pháp làm gì",
+        "summaryHint": "Hai hoặc ba câu.",
+        "problemsSolved": "Bài toán giải quyết",
+        "problemsSolvedHint": "Bạn giúp ai, và hiện nay họ đang gặp khó ở đâu.",
+        "valueProposition": "Giá trị mang lại",
+        "valuePropositionHint": "Kết quả khách hàng đạt được, kèm số liệu nếu có.",
+        "maturity": "Giai đoạn",
+        "maturityPlaceholder": "Chọn giai đoạn",
+        "traction": "Cột mốc và kết quả",
+        "tractionPlaceholder": "Khách hàng, dự án thí điểm, người dùng hoặc doanh thu đến nay.",
+        "builtWith": "Xây dựng bằng",
+        "builtWithPlaceholder": "Thêm mô hình, công cụ hoặc framework",
+        "builtWithHint": "Nhấn Enter sau mỗi mục. Tối đa {max}.",
+        "removeTag": "Bỏ {name}",
+        "industries": "Ngành",
+        "industriesPlaceholder": "Thêm ngành",
+        "focusAreas": "Năng lực AI",
+        "focusAreasPlaceholder": "Thêm năng lực",
+        "languages": "Ngôn ngữ",
+        "languagesPlaceholder": "Thêm ngôn ngữ",
+        "upTo": "Tối đa {max}. Đã chọn {chosen}.",
+        "noMatch": "Không có mục nào khớp.",
+        "deployment": "Chạy ở đâu",
+        "bestCustomerProfile": "Khách hàng phù hợp nhất",
+        "bestCustomerProfilePlaceholder": "Ai hưởng lợi nhiều nhất, trong một câu.",
+        "deck": "Tài liệu giới thiệu giải pháp",
+        "demoUrl": "Demo sản phẩm",
+        "demoUrlHint": "Video, bản mẫu Figma hoặc demo trực tiếp. Hãy kiểm tra rằng nó mở được mà không cần đăng nhập.",
+        "website": "Trang sản phẩm",
+        "websiteHint": "Nơi khách đọc thêm về giải pháp.",
+        "linkInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://"
+      },
       "needed": {
-        "summary": "Viết một hoặc hai câu về việc giải pháp làm được.",
-        "focusAreas": "Chọn ít nhất một lĩnh vực.",
+        "name": "Hãy nhập tên giải pháp.",
+        "summary": "Viết hai hoặc ba câu về việc giải pháp làm được.",
+        "maturity": "Chọn giai đoạn.",
         "industries": "Chọn ít nhất một ngành.",
-        "maturity": "Chọn giai đoạn."
+        "focusAreas": "Chọn ít nhất một năng lực."
       },
-      "readiness": {
-        "missing": "Trước khi gửi duyệt, hãy bổ sung:",
-        "ready": "Đã sẵn sàng gửi duyệt",
-        "note": "GenAI Fund kiểm tra rằng giải pháp có thật, phần tóm tắt nói rõ giải pháp làm gì, và tổ chức của bạn cung cấp nó. Thường mất một đến hai ngày làm việc; kết quả hiển thị ngay trên trang này.",
-        "count": "{count, plural, other {Còn # mục cần bổ sung trước khi duyệt}}"
+      "deck": {
+        "empty": "Tải tài liệu giới thiệu lên",
+        "limits": "PDF, tối đa 25 MB",
+        "uploading": "Đang tải lên…",
+        "uploaded": "{size} · Tải lên {when}",
+        "waiting": "{size} · Chưa lưu",
+        "download": "Tải {name} về",
+        "replace": "Thay tệp",
+        "remove": "Bỏ tệp",
+        "errors": {
+          "type": "Ở đây chỉ tải lên được tệp PDF.",
+          "size": "Tệp này lớn hơn 25 MB.",
+          "failed": "Chưa tải tài liệu lên được. Hãy thử lại."
+        }
       },
-      "discard": "Bỏ thay đổi",
-      "unsaved": "Có thay đổi chưa lưu",
-      "neededMark": "· cần để duyệt",
+      "review": {
+        "edit": "Sửa",
+        "editStep": "Sửa phần {step}",
+        "missing": "Còn thiếu",
+        "notPublished": "Chưa công bố",
+        "toAdd": "Còn {count} mục",
+        "deploymentsApproved": "{count} đã công bố",
+        "deploymentsWaiting": "{count} đang chờ duyệt",
+        "deploymentsSentBack": "{count} bị trả lại",
+        "customerDeployments": "Triển khai cho khách hàng",
+        "listed": "Hiển thị giải pháp này trong danh mục công khai. Tắt đi nếu muốn giải pháp đã duyệt nhưng không niêm yết: ai có liên kết vẫn mở được.",
+        "readiness": {
+          "missing": "Trước khi gửi duyệt, hãy bổ sung:",
+          "ready": "Đã sẵn sàng gửi duyệt",
+          "note": "GenAI Fund kiểm tra rằng giải pháp có thật, phần mô tả nói rõ giải pháp làm gì, và tổ chức của bạn cung cấp nó. Thường mất một đến hai ngày làm việc; kết quả hiển thị ngay trên trang này."
+        },
+        "submit": "Gửi duyệt",
+        "resubmit": "Gửi duyệt lại",
+        "confirm": {
+          "title": "Gửi giải pháp này đi duyệt?",
+          "lead": "GenAI Fund đọc trước khi giải pháp xuất hiện trong danh mục. Bạn vẫn sửa được trong lúc chờ, và kết quả hiển thị trên trang này.",
+          "confirm": "Gửi duyệt",
+          "cancel": "Sửa tiếp"
+        },
+        "delete": "Xóa bản nháp…",
+        "confirmDelete": {
+          "title": "Xóa {name}?",
+          "lead": "Bản nháp bị xóa với mọi người trong tổ chức. Không thể hoàn tác.",
+          "confirm": "Xóa bản nháp",
+          "cancel": "Hủy"
+        }
+      },
       "leave": {
         "title": "Rời trang mà không lưu?",
         "lead": "Các thay đổi của bạn với giải pháp này chưa được lưu.",
         "leave": "Rời trang, không lưu",
         "stay": "Ở lại"
       },
-      "confirmDiscard": {
-        "title": "Bỏ các thay đổi?",
-        "lead": "Biểu mẫu trở về giải pháp này như lần lưu gần nhất.",
-        "cancel": "Sửa tiếp"
+      "submitted": {
+        "title": "GenAI Fund đang duyệt giải pháp này",
+        "lead": "Thường mất một đến hai ngày làm việc. Bạn vẫn có thể chỉnh sửa."
       },
-      "requiredMark": "· bắt buộc"
+      "approved": {
+        "listed": "Đã duyệt và hiển thị trong danh mục",
+        "unlisted": "Đã duyệt nhưng không niêm yết trong danh mục",
+        "open": "Mở trang công khai",
+        "unlistedLead": "Ai có liên kết đều mở được. Bật niêm yết ở bước cuối để hiển thị trong danh mục."
+      },
+      "rejected": {
+        "title": "Cần chỉnh sửa: {reason}",
+        "lead": "Hãy chỉnh sửa rồi gửi duyệt lại."
+      }
     },
     "deployment": {
       "open": "Mở triển khai để đọc bài toán, những gì đã triển khai và kết quả.",

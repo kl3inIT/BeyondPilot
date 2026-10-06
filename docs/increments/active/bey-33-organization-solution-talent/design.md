@@ -91,7 +91,7 @@ V4 is left to the program module, which is built on another branch.
 ## Known limits
 
 - An organization's public page shows no team or programmes, and there is no logo yet; a solution and a profile have no images. Initials stand in their place.
-- The frames draw more than the API holds. Left out until it does: on a solution, proof items other than customer deployments, the programme line, offers, channels, languages and the sort by proof; the request for an introduction is [BEY-34](../bey-34-solution-introductions/design.md); on a profile, the organization the person works at, the stage and confirmation of a project, industries, languages, the programme block, the country filter and the sort; on an organization, industries, the year founded, a second domain, who last edited a solution and when an invitation expires.
+- The frames draw more than the API holds. Left out until it does: on a solution, proof items other than customer deployments, the programme line, offers, channels and the sort by proof (its languages, what it is built with and its deck came with [BEY-34](../bey-34-solution-editor-steps/design.md)); the request for an introduction is [BEY-34](../bey-34-solution-introductions/design.md); on a profile, the organization the person works at, the stage and confirmation of a project, industries, languages, the programme block, the country filter and the sort; on an organization, industries, the year founded, a second domain, who last edited a solution and when an invitation expires.
 - An enterprise's Use cases tab waits for the use case module.
 - Search is `ILIKE` over a few columns; it has no ranking.
 - A member invited by email must sign in with that address; there is no invitation link.
