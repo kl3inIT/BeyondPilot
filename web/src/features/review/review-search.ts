@@ -40,7 +40,8 @@ function inTab(item: ReviewApplicationItem, tab: Tab) {
     case "not_selected":
       return item.reviewStatus === tab;
     case "to_score":
-      return item.mine === "none";
+      // A judge never scores an application of their own.
+      return item.mine === "none" && !item.own;
     case "scored":
       return item.mine !== "none";
     default:

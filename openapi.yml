@@ -8257,6 +8257,10 @@ components:
           description: "Every other assessment, for an operator; empty for a judge."
           items:
             $ref: "#/components/schemas/Assessment"
+        own:
+          type: boolean
+          description: "The caller's own application, or their organization's, which\
+            \ they never score or decide."
         position:
           type: integer
           format: int32
@@ -8293,6 +8297,7 @@ components:
       - history
       - id
       - others
+      - own
       - position
       - submitted
       - submittedAt
@@ -8333,6 +8338,10 @@ components:
           type: string
           description: "The organization's type, such as independent_builder, builder_team\
             \ or company."
+        own:
+          type: boolean
+          description: "The caller's own application, or their organization's, which\
+            \ they never score or decide."
         reviewStatus:
           type:
           - string
@@ -8362,6 +8371,7 @@ components:
       - mine
       - organizationName
       - organizationType
+      - own
       - solutionName
       - submittedAt
       - version
