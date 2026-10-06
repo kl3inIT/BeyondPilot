@@ -1,6 +1,6 @@
 import {
   BoxesIcon,
-  Building2Icon,
+  BuildingIcon,
   CalendarRangeIcon,
   HouseIcon,
   LightbulbIcon,
@@ -71,7 +71,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
         {
           href: siteRoutes.adminOrganizations,
           label: t("nav.organizations"),
-          icon: <Building2Icon aria-hidden="true" />,
+          icon: <BuildingIcon aria-hidden="true" />,
         },
         {
           href: siteRoutes.adminIntroductions,
