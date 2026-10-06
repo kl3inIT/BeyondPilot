@@ -1,0 +1,68 @@
+# Production on the shared host (docs/runbooks/ci-cd.md), the overlay of compose.base.yaml. deploy.sh names the
+# images by digest and reads the rest from /apps/beyondpilot/.env.production; secrets are files under /apps/beyondpilot/secrets.
+# Its email goes through the provider operators set in Admin › Email. The reverse proxy of the host, Nginx Proxy Manager on the external
+# proxy-network, reaches the web and the api by their container names; nothing publishes a host port.
+services:
+  postgres:
+    container_name: beyondpilot-postgres
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/database_password
+    secrets:
+      - database_password
+
+  api:
+    container_name: beyondpilot-api
+    image: ${BEYONDPILOT_API_IMAGE:?the api image is named by deploy.sh}
+    environment:
+      SPRING_PROFILES_ACTIVE: production
+      BEYONDPILOT_DATABASE_URL: jdbc:postgresql://postgres:5432/beyondpilot
+      BEYONDPILOT_DATABASE_USERNAME: beyondpilot
+      # Emails read the GenAI Fund logo from the site; who delivers them is set in Admin › Email.
+      BEYONDPILOT_SITE_URL: https://beyondpilot.ai
+      BEYONDPILOT_STORAGE_PROVIDER: local
+      BEYONDPILOT_IDENTITY_OPERATOR_EMAILS: ${BEYONDPILOT_IDENTITY_OPERATOR_EMAILS:?}
+      BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID: ${BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID:?}
+      # Search by meaning: embeddings through OpenRouter, an OpenAI-compatible API, until GenAI Fund's OpenAI key
+      # replaces it by these two settings and the key file alone.
+      BEYONDPILOT_AI_EMBEDDING: openai
+      BEYONDPILOT_AI_BASE_URL: https://openrouter.ai/api/v1
+      BEYONDPILOT_AI_EMBEDDING_MODEL: openai/text-embedding-3-large
+    # Each file is named after the variable it replaces; the production profile reads /run/secrets as a configtree.
+    secrets:
+      - source: database_password
+        target: BEYONDPILOT_DATABASE_PASSWORD
+      - source: google_client_secret
+        target: BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET
+      - source: notification_encryption_key
+        target: BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY
+      - source: ai_api_key
+        target: BEYONDPILOT_AI_API_KEY
+    networks:
+      - internal
+      - proxy
+
+  web:
+    container_name: beyondpilot-web
+    image: ${BEYONDPILOT_WEB_IMAGE:?the web image is named by deploy.sh}
+    networks:
+      - internal
+      - proxy
+
+# Each file is owned by uid 1654, the api's user, with mode 0400: Compose mounts it as it is on the host. Postgres reads
+# its own as root.
+secrets:
+  database_password:
+    file: /apps/beyondpilot/secrets/database-password
+  google_client_secret:
+    file: /apps/beyondpilot/secrets/google-client-secret
+  # 32 random bytes in Base64 that encrypt the email providers' secrets in the database.
+  notification_encryption_key:
+    file: /apps/beyondpilot/secrets/notification-encryption-key
+  # The key of the embedding provider.
+  ai_api_key:
+    file: /apps/beyondpilot/secrets/ai-api-key
+
+networks:
+  proxy:
+    external: true
+    name: proxy-network

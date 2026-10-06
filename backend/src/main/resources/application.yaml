@@ -53,6 +53,33 @@ spring:
         # Flyway creates the event publication table.
         schema-initialization:
           enabled: false
+  ai:
+    model:
+      # Search embeds its index and each query; nothing else of OpenAI's is used. Embeddings are on where a deployment
+      # names a provider and its key (BEYONDPILOT_AI_EMBEDDING=openai), so local runs and tests search by text alone.
+      embedding: ${BEYONDPILOT_AI_EMBEDDING:none}
+      chat: none
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
+    chat:
+      client:
+        enabled: false
+    openai:
+      # Any OpenAI-compatible API: OpenAI itself, or OpenRouter at https://openrouter.ai/api/v1. The key is a secret
+      # file of the deployment, BEYONDPILOT_AI_API_KEY.
+      base-url: ${BEYONDPILOT_AI_BASE_URL:https://api.openai.com/v1}
+      api-key: ${BEYONDPILOT_AI_API_KEY:}
+      # A query waits for its embedding; the search answers by text alone rather than wait longer.
+      timeout: 5s
+      max-retries: 1
+      embedding:
+        # OpenRouter names it openai/text-embedding-3-large. The dimensions are the vector(1536) column's.
+        model: ${BEYONDPILOT_AI_EMBEDDING_MODEL:text-embedding-3-large}
+        dimensions: 1536
+        metadata-mode: none
 
 server:
   # The web application and the reverse proxy forward the browser's host and scheme.
@@ -86,6 +113,16 @@ beyondpilot:
       bucket: ${BEYONDPILOT_STORAGE_S3_BUCKET:}
       region: ${BEYONDPILOT_STORAGE_S3_REGION:}
       endpoint: ${BEYONDPILOT_STORAGE_S3_ENDPOINT:}
+  search:
+    embedding:
+      # How many rows one request embeds, and how often the job looks for rows to embed.
+      batch-size: 32
+      interval: 1m
+      # The vector branch keeps what is at least this similar to the query (cosine). Measured on 6 October with
+      # text-embedding-3-large at 1,536 dimensions: relevant items 0.38 to 0.64, nonsense 0.18 to 0.22.
+      min-similarity: 0.35
+      # The nearest the vector branch takes before ranking; an approximate index returns only its nearest.
+      pool: 48
 
 springdoc:
   # OpenApiContractTest generates openapi.yml; no runtime profile serves the contract.

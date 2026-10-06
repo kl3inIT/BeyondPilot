@@ -127,6 +127,29 @@ public class EmailService {
 	}
 
 	/**
+	 * Tells an owner that GenAI Fund took their organization down or restored it. The reason is read after signing in.
+	 * @param takenDown whether the organization was taken down; otherwise it is back
+	 */
+	@Transactional
+	public void sendOrganizationSuspension(String recipient, String organizationName, boolean takenDown) {
+		queue(takenDown ? EmailKind.ORGANIZATION_TAKEN_DOWN : EmailKind.ORGANIZATION_RESTORED, recipient,
+				values("organizationName", organizationName));
+	}
+
+	/**
+	 * Tells a person the answer to their request to get into an organization.
+	 * @param claim whether they asked to own an organization nobody owned, which GenAI Fund decides; otherwise they
+	 * asked its owners to join
+	 * @param approved whether they are in now
+	 */
+	@Transactional
+	public void sendOrganizationRequestDecision(String recipient, String organizationName, boolean claim,
+			boolean approved) {
+		queue(approved ? EmailKind.ORGANIZATION_REQUEST_APPROVED : EmailKind.ORGANIZATION_REQUEST_DECLINED, recipient,
+				values("organizationName", organizationName, "claim", claim));
+	}
+
+	/**
 	 * Tells a person what GenAI Fund decided about their talent profile. The reason is read after signing in; the
 	 * operator's note, when there is one, is quoted as written.
 	 * @param profileName the profile, as it names its person
@@ -146,7 +169,7 @@ public class EmailService {
 	/**
 	 * Tells a person with a talent profile that someone wrote to them. The sender's address is not in it: the person
 	 * signs in and answers under their talent profile, and only an acceptance shares the two addresses.
-	 * @param senderName who wrote, by the name they gave; null when they gave none, never their address
+	 * @param senderName who wrote, by the name they gave, never their address
 	 * @param senderOrganization the organization the sender belongs to; null when none
 	 * @param topic what the message is about: {@code project}, {@code role} or {@code other}
 	 * @param message what the sender wrote

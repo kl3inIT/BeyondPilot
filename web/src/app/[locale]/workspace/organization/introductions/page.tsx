@@ -32,8 +32,8 @@ export default async function IntroductionsRoute({
     readMembers(),
   ]);
   const { organization } = mine;
-  // Introductions are asked of a provider; anyone else is shown their organization's first page.
-  if (!organization || !introductions || !organization.roles.includes("provider")) {
+  // Introductions are asked of an organization; anyone without one is shown the organization page.
+  if (!organization || !introductions) {
     redirect(getPathname({ href: siteRoutes.workspaceOrganization, locale }));
   }
 

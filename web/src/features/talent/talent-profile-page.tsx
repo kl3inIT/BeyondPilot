@@ -37,8 +37,8 @@ function hostOf(address: string) {
 /**
  * One profile of the public directory, as the Figma frame draws it: who the person is, the counts
  * that sum up their work, the projects as a timeline with how far each went, their skills and
- * industries, and beside it the one way to write to them with whether they take on work. On a
- * phone that card comes first, under the head.
+ * industries, and beside it the one way to write to them with the work they take on. On a phone
+ * that card comes first, under the head.
  */
 function TalentProfilePage({ profile, signInHref, own, senderName }: TalentProfilePageProps) {
   const t = useTranslations("Talent.profile");
@@ -48,34 +48,25 @@ function TalentProfilePage({ profile, signInHref, own, senderName }: TalentProfi
   const language = useVocabulary("language");
   const industry = useVocabulary("industry");
   const countryName = useCountryName();
-  const kind = [
-    profile.roles.length > 0 && role(profile.roles[0]),
-    [profile.city, profile.country && countryName(profile.country)].filter(Boolean).join(", "),
-  ]
+  const place = [profile.city, profile.country && countryName(profile.country)]
+    .filter(Boolean)
+    .join(", ");
+  const kind = [profile.roles.length > 0 && role(profile.roles[0]), place]
     .filter(Boolean)
     .join(" · ");
-  const inProduction = profile.projects.filter(
-    (project) => project.stage === "in_production",
-  ).length;
-  const pilots = profile.projects.filter((project) => project.stage === "pilot").length;
-  const stats = [
-    {
-      value: profile.projects.length,
-      label: t("stats.projects", { count: profile.projects.length }),
-    },
-    ...(inProduction > 0
-      ? [{ value: inProduction, label: t("stats.inProduction", { count: inProduction }) }]
-      : []),
-    ...(pilots > 0 ? [{ value: pilots, label: t("stats.pilots", { count: pilots }) }] : []),
-    ...(profile.industries.length > 0
-      ? [
-          {
-            value: profile.industries.length,
-            label: t("stats.industries", { count: profile.industries.length }),
-          },
-        ]
-      : []),
-  ];
+  const staged = (stage: TalentProject["stage"]) =>
+    profile.projects.filter((project) => project.stage === stage).length;
+  // A count of none is left out; the row shows only when there is a project to count.
+  const stats = (
+    [
+      ["projects", profile.projects.length],
+      ["inProduction", staged("in_production")],
+      ["pilots", staged("pilot")],
+      ["industries", profile.industries.length],
+    ] as const
+  )
+    .filter(([, count]) => count > 0)
+    .map(([key, count]) => ({ value: count, label: t(`stats.${key}`, { count }) }));
 
   return (
     <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-6 px-5 pt-4 pb-24 md:gap-8 md:px-8 md:pt-6 xl:px-16">
@@ -140,11 +131,7 @@ function TalentProfilePage({ profile, signInHref, own, senderName }: TalentProfi
             }
           >
             <dl className="flex flex-col gap-2.5">
-              <ContactFact name={t("facts.country")}>
-                {[profile.city, profile.country && countryName(profile.country)]
-                  .filter(Boolean)
-                  .join(", ") || t("notListed")}
-              </ContactFact>
+              <ContactFact name={t("facts.country")}>{place || t("notListed")}</ContactFact>
               {profile.languages.length > 0 && (
                 <ContactFact name={t("facts.languages")}>
                   {profile.languages.map(language).join(", ")}

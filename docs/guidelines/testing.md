@@ -28,14 +28,14 @@ The test policy and the boundary-selection table are in [engineering conventions
 
 `.github/workflows/ci.yml` runs on every branch push, so a branch is verified before `main` is fast-forwarded onto it. A newer push to the same branch cancels the older run.
 
-| Job | Runs |
-| --- | --- |
-| Workflows and secrets | actionlint on the workflows, shellcheck on the deployment scripts, and gitleaks over the full history |
-| Backend | `./gradlew :backend:check` on Temurin 25, with Testcontainers on the runner's Docker |
-| Web | `pnpm --dir web check`, then `pnpm --dir web audit --audit-level=high` |
-| Web end-to-end | `pnpm --dir web test:e2e` on Chromium, desktop and Pixel 7 |
-| Images | Builds both images, starts the local composition from them, checks the proxy's routes and the revision labels; on a main push, pushes the images to GHCR |
-| Publish release | On a main push, after every other job: the `release-<sha>` artifact that [Deploy staging](../runbooks/ci-cd.md) promotes |
+| Job                   | Runs                                                                                                                                                     |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Workflows and secrets | actionlint on the workflows, shellcheck on the deployment scripts, and gitleaks over the full history                                                    |
+| Backend               | `./gradlew :backend:check` on Temurin 25, with Testcontainers on the runner's Docker                                                                     |
+| Web                   | `pnpm --dir web check`, then `pnpm --dir web audit --audit-level=high`                                                                                   |
+| Web end-to-end        | `pnpm --dir web test:e2e` on Chromium, desktop and Pixel 7; CI splits it across four shards with `--shard=N/4`                                          |
+| Images                | Builds both images, starts the local composition from them, checks the proxy's routes and the revision labels; on a main push, pushes the images to GHCR |
+| Publish release       | On a main push, after every other job: the `release-<sha>` artifact that [Deploy staging](../runbooks/ci-cd.md) promotes                                 |
 
 - Actions are pinned to commit SHAs; Dependabot (`.github/dependabot.yml`) proposes Gradle, pnpm, Actions and base-image upgrades weekly, grouped by risk class and at least three days after publication.
 - A high advisory fails the web job. Fix it by upgrading; when the vulnerable version is pinned by a dependency, override it in `web/pnpm-workspace.yaml` with a comment naming the advisory and when to drop it.

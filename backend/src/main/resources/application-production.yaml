@@ -1,4 +1,4 @@
-# Every deployed environment runs this profile; staging adds `staging` on top.
+# Every deployed environment runs this profile; staging adds `staging`.
 # Database settings have no defaults so a missing value stops startup.
 spring:
   config:

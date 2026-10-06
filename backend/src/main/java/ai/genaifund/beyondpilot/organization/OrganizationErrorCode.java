@@ -10,6 +10,9 @@ public enum OrganizationErrorCode implements ErrorCode {
 	INDUSTRIES_REQUIRED("ORGANIZATION_INDUSTRIES_REQUIRED", ErrorCategory.VALIDATION,
 			"Name at least one industry the company works in or serves."),
 
+	LOGO_NOT_USABLE("ORGANIZATION_LOGO_NOT_USABLE", ErrorCategory.VALIDATION,
+			"This logo cannot be used. Upload the image again."),
+
 	MEMBERSHIP_REQUIRED("ORGANIZATION_MEMBERSHIP_REQUIRED", ErrorCategory.NOT_PERMITTED,
 			"This needs an organization you belong to."),
 
@@ -45,8 +48,25 @@ public enum OrganizationErrorCode implements ErrorCode {
 	NOT_AWAITING_REVIEW("ORGANIZATION_NOT_AWAITING_REVIEW", ErrorCategory.CONFLICT,
 			"This organization is not waiting for review."),
 
+	CANNOT_TAKE_DOWN("ORGANIZATION_CANNOT_TAKE_DOWN", ErrorCategory.CONFLICT,
+			"Only an approved organization can be taken down."),
+
+	NOT_TAKEN_DOWN("ORGANIZATION_NOT_TAKEN_DOWN", ErrorCategory.CONFLICT, "This organization is not taken down."),
+
 	DOMAIN_TAKEN("ORGANIZATION_DOMAIN_TAKEN", ErrorCategory.CONFLICT,
-			"Another organization already has this email domain.");
+			"Another organization already has this email domain."),
+
+	DOMAIN_NOT_VERIFIED("ORGANIZATION_DOMAIN_NOT_VERIFIED", ErrorCategory.CONFLICT,
+			"People join at once only on a domain GenAI Fund verified for an approved organization."),
+
+	NOT_APPROVED("ORGANIZATION_NOT_APPROVED", ErrorCategory.CONFLICT,
+			"An organization invites people once GenAI Fund has approved it."),
+
+	INVITATION_DAILY_LIMIT("ORGANIZATION_INVITATION_DAILY_LIMIT", ErrorCategory.LIMIT_EXCEEDED,
+			"The organization has sent the most invitations it can in a day. Invite more people tomorrow."),
+
+	INVITATION_OPEN_LIMIT("ORGANIZATION_INVITATION_OPEN_LIMIT", ErrorCategory.LIMIT_EXCEEDED,
+			"The organization has the most invitations it can keep open. Revoke some, or wait for people to answer.");
 
 	private final String code;
 	private final ErrorCategory category;

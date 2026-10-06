@@ -14,7 +14,7 @@ public record OrganizationMatchResponse(@Schema(requiredMode = Schema.RequiredMo
 		@Schema(types = { "string", "null" }) @Nullable String emailDomain,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "join", "request", "claim" },
 				description = """
-						What asking to get in does for this caller: `join` makes them a member at once (owner, \
-						when nobody owns it yet), `request` asks its owners, `claim` asks GenAI Fund to let them \
-						own it.""") String way) {
+						What asking to get in does for this caller: `join` makes them a member at once, \
+						`request` asks its owners, `claim` asks GenAI Fund to let them own it, which is the only \
+						way into an organization nobody owns.""") String way) {
 }

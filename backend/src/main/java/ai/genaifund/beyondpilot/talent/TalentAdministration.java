@@ -12,13 +12,13 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
-import ai.genaifund.beyondpilot.talent.dto.AdminTalentListRequest;
-import ai.genaifund.beyondpilot.talent.dto.AdminTalentListResponse;
-import ai.genaifund.beyondpilot.talent.dto.AdminTalentResponse;
 import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentEnquiryListRequest;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentEnquiryListResponse;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentEnquiryResponse;
+import ai.genaifund.beyondpilot.talent.dto.AdminTalentListRequest;
+import ai.genaifund.beyondpilot.talent.dto.AdminTalentListResponse;
+import ai.genaifund.beyondpilot.talent.dto.AdminTalentResponse;
 import ai.genaifund.beyondpilot.talent.dto.TalentDecisionRequest;
 import ai.genaifund.beyondpilot.talent.dto.TalentSummaryResponse;
 import ai.genaifund.beyondpilot.talent.persistence.TalentDetailRepository;
@@ -173,13 +173,11 @@ public class TalentAdministration {
 		List<TalentDetailRepository.ReportedEnquiry> rows = details.reported(PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
 		Map<UUID, Person> senders = identity
 			.people(rows.stream().map(TalentDetailRepository.ReportedEnquiry::senderAccountId).distinct().toList());
-		return new AdminTalentEnquiryListResponse(rows.stream().map(row -> {
-			Person sender = senders.get(row.senderAccountId());
-			return new AdminTalentEnquiryResponse(row.id(), row.profileId(), row.profileName(),
-					row.senderName() != null ? row.senderName() : sender == null ? null : sender.displayName(),
-					email(senders, row.senderAccountId()), row.topic(),
-					row.message(), row.createdAt(), row.answeredAt());
-		}).toList(), page, PAGE_SIZE, details.reportedCount());
+		return new AdminTalentEnquiryListResponse(rows.stream()
+			.map(row -> new AdminTalentEnquiryResponse(row.id(), row.profileId(), row.profileName(),
+					TalentViews.senderName(row.senderName(), senders.get(row.senderAccountId())),
+					email(senders, row.senderAccountId()), row.topic(), row.message(), row.createdAt(), row.answeredAt()))
+			.toList(), page, PAGE_SIZE, details.reportedCount());
 	}
 
 	/** Tells the person what GenAI Fund decided; an account that no longer signs in is told nothing. */

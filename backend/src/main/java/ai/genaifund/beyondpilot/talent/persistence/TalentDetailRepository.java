@@ -14,8 +14,8 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 /**
- * What hangs on a profile: the projects it shows and the messages sent through it, with their answers. The rows are small and change by
- * single statements, so they are written here and not through entities.
+ * What hangs on a profile: the projects it shows and the messages sent through it, with their answers. The rows are
+ * small and change by single statements, so they are written here and not through entities.
  */
 @Repository
 public class TalentDetailRepository {
@@ -145,7 +145,10 @@ public class TalentDetailRepository {
 
 	/** One message, locked until the transaction ends, so two answers to it cannot both pass. */
 	public Optional<Enquiry> findEnquiryForUpdate(UUID id) {
-		return jdbc.sql(SELECT_ENQUIRY + "where id = ? for update").param(id).query(TalentDetailRepository::enquiry).optional();
+		return jdbc.sql(SELECT_ENQUIRY + "where id = ? for update")
+			.param(id)
+			.query(TalentDetailRepository::enquiry)
+			.optional();
 	}
 
 	/** Records the end of a waiting message: the person's answer, or its close. */
@@ -178,14 +181,7 @@ public class TalentDetailRepository {
 				       e.answered_at
 				from talent_enquiry e join talent_profile p on p.id = e.profile_id
 				where e.status = 'reported' order by e.answered_at desc nulls last, e.id limit ? offset ?
-				""").params(limit, offset).query((row, index) -> {
-			Timestamp answeredAt = row.getTimestamp("answered_at");
-			return new ReportedEnquiry(row.getObject("id", UUID.class), row.getObject("profile_id", UUID.class),
-					row.getString("name"), row.getObject("sender_account_id", UUID.class), row.getString("sender_name"),
-					row.getString("topic"),
-					row.getString("message"), row.getTimestamp("created_at").toInstant(),
-					answeredAt == null ? null : answeredAt.toInstant());
-		}).list();
+				""").params(limit, offset).query(TalentDetailRepository::reportedEnquiry).list();
 	}
 
 	public long reportedCount() {
@@ -197,11 +193,21 @@ public class TalentDetailRepository {
 	}
 
 	private static Enquiry enquiry(ResultSet row, int index) throws SQLException {
-		Timestamp answeredAt = row.getTimestamp("answered_at");
 		return new Enquiry(row.getObject("id", UUID.class), row.getObject("profile_id", UUID.class),
 				row.getObject("sender_account_id", UUID.class), row.getString("sender_name"),
-				row.getObject("sender_organization_id", UUID.class),
-				row.getString("topic"), row.getString("message"), row.getString("status"),
-				row.getTimestamp("created_at").toInstant(), answeredAt == null ? null : answeredAt.toInstant());
+				row.getObject("sender_organization_id", UUID.class), row.getString("topic"), row.getString("message"),
+				row.getString("status"), row.getTimestamp("created_at").toInstant(), answeredAt(row));
+	}
+
+	private static ReportedEnquiry reportedEnquiry(ResultSet row, int index) throws SQLException {
+		return new ReportedEnquiry(row.getObject("id", UUID.class), row.getObject("profile_id", UUID.class),
+				row.getString("name"), row.getObject("sender_account_id", UUID.class), row.getString("sender_name"),
+				row.getString("topic"), row.getString("message"), row.getTimestamp("created_at").toInstant(),
+				answeredAt(row));
+	}
+
+	private static @Nullable Instant answeredAt(ResultSet row) throws SQLException {
+		Timestamp answeredAt = row.getTimestamp("answered_at");
+		return answeredAt == null ? null : answeredAt.toInstant();
 	}
 }

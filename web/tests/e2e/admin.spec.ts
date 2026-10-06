@@ -64,9 +64,10 @@ test.describe("admin", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin");
 
-    await expect(page.getByText("5 records wait for a decision.")).toBeVisible();
+    // An organization waits when it is new, and when someone claims one nobody owns.
+    await expect(page.getByText("6 records wait for a decision.")).toBeVisible();
     for (const [queue, count, href] of [
-      ["Organizations to review", 1, "/admin/organizations?status=pending"],
+      ["Organizations to review", 2, "/admin/organizations?status=pending"],
       ["Solutions to review", 2, "/admin/solutions?status=submitted"],
       ["Talent profiles to review", 2, "/admin/talent?status=submitted"],
     ] as const) {
@@ -94,6 +95,19 @@ test.describe("admin", () => {
       .getByRole("navigation", { name: "Admin navigation" })
       .getByRole("link", { name: "Home" });
     await expect(home).toHaveAttribute("aria-current", "page");
+    // Home leads; what GenAI Fund reviews and the system's own records each have their group.
+    const navigation = page.getByRole("navigation", { name: "Admin navigation" });
+    await expect(navigation.getByRole("list", { name: "Review" }).getByRole("link")).toHaveText([
+      "Programs",
+      "AI solutions",
+      "AI talent",
+      "Organisations",
+      "Introductions",
+    ]);
+    await expect(navigation.getByRole("list", { name: "System" }).getByRole("link")).toHaveText([
+      "Accounts",
+      "Audit log",
+    ]);
 
     const sidebar = page.locator('[data-slot="sidebar"]');
     await expect(sidebar).toHaveAttribute("data-state", "expanded");

@@ -17,7 +17,6 @@ type OrganizationProfilePageProps = {
  */
 function OrganizationProfilePage({ mine, counts }: OrganizationProfilePageProps) {
   const t = useTranslations("Organization.form");
-  const roleName = useVocabulary("organizationRole");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
   const industryName = useVocabulary("industry");
@@ -30,7 +29,6 @@ function OrganizationProfilePage({ mine, counts }: OrganizationProfilePageProps)
     { label: t("emailDomain"), value: organization.emailDomain },
     { label: t("type"), value: typeName(organization.type) },
     { label: t("teamSize"), value: organization.teamSize && sizeName(organization.teamSize) },
-    { label: t("roles"), value: organization.roles.map(roleName).join(", ") },
     { label: t("industries"), value: organization.industries.map(industryName).join(", ") },
     { label: t("country"), value: organization.country && countryName(organization.country) },
     { label: t("description"), value: organization.description },

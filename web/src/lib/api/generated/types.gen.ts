@@ -68,15 +68,31 @@ export type AdminCreateOrganization = {
      */
     country?: string | null;
     /**
-     * The domain of the company's work addresses. The first person who signs in on it may own the organization at once.
+     * What it does and for whom, in at most 280 characters.
+     */
+    description?: string | null;
+    /**
+     * The domain of the company's work addresses, which the operator vouches for.
      */
     emailDomain?: string | null;
+    /**
+     * The year it started.
+     */
+    foundedYear?: number | null;
+    /**
+     * The industries it works in or serves, as the codes the solutions use.
+     */
+    industries?: Array<string> | null;
+    /**
+     * A logo the caller uploaded for an organization; null for none.
+     */
+    logoFileId?: string | null;
     name: string;
     /**
      * The address invited to own it.
      */
     ownerEmail?: string | null;
-    roles: Array<string>;
+    teamSize?: string | null;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     website?: string | null;
 };
@@ -151,6 +167,10 @@ export type AdminOrganization = {
     invitations: Array<OrganizationInvitation>;
     members: Array<OrganizationMember>;
     organization: Organization;
+    /**
+     * A domain the operator may verify with a decision: the one it has, else the creator's work domain while it waits for review, else its website's. Null when another organization holds it.
+     */
+    suggestedDomain?: string | null;
 };
 
 /**
@@ -173,22 +193,33 @@ export type AdminOrganizationList = {
  * One organization in the operators' list.
  */
 export type AdminOrganizationSummary = {
+    /**
+     * Who asked for what waits, as they are shown.
+     */
+    askedBy?: string | null;
+    /**
+     * The oldest open claim, which the list decides first; null without one.
+     */
+    claimId?: string | null;
     country?: string | null;
     createdAt: string;
     id: string;
     members: number;
     name: string;
     /**
-     * How many people ask to own it; always 0 for an owned organization.
-     */
-    openClaims: number;
-    /**
      * Whether a person owns it; an operator-created organization has no owner until someone accepts or claims it.
      */
     owned: boolean;
-    roles: Array<string>;
+    /**
+     * What waits for an operator: `new` for an organization to review, `claim` for a request to own one; null when nothing does.
+     */
+    request?: 'new' | 'claim';
+    /**
+     * When they asked.
+     */
+    requestedAt?: string | null;
     slug: string;
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'approved' | 'rejected' | 'suspended';
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
 };
 
@@ -284,6 +315,17 @@ export type AdminProgramSummary = {
     status: 'draft' | 'published';
     type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
     updatedAt: string;
+};
+
+/**
+ * The profile of an organization and its verified domain, as an operator saves them.
+ */
+export type AdminSaveOrganization = {
+    /**
+     * The domain GenAI Fund verifies for the organization; null clears it.
+     */
+    emailDomain?: string | null;
+    profile: SaveOrganization;
 };
 
 /**
@@ -503,6 +545,16 @@ export type ApplyingOrganization = {
 };
 
 /**
+ * What an operator vouches for with an approval, of a new organization or of a claim to own one: the domain of the organization's work addresses, or none.
+ */
+export type ApproveOrganization = {
+    /**
+     * The verified domain; null leaves the organization as it is.
+     */
+    emailDomain?: string | null;
+};
+
+/**
  * One person's assessment of the application.
  */
 export type Assessment = {
@@ -537,7 +589,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -626,7 +678,14 @@ export type CreateOrganization = {
      * ISO 3166-1 alpha-2.
      */
     country: string;
-    description?: string | null;
+    /**
+     * What it does and for whom, in at most 280 characters.
+     */
+    description: string;
+    /**
+     * The year it started; for an independent builder, the year the practice did.
+     */
+    foundedYear: number;
     /**
      * The industries it works in or serves, as the codes the solutions use. A company names one to five; a team or a builder may name none.
      */
@@ -635,14 +694,14 @@ export type CreateOrganization = {
      * What the creator does in the organization.
      */
     jobTitle?: string | null;
-    name: string;
     /**
-     * One or both of `provider` and `enterprise`.
+     * A logo the caller uploaded for an organization; null for none.
      */
-    roles: Array<string>;
+    logoFileId?: string | null;
+    name: string;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
-    website?: string | null;
+    website: string;
 };
 
 /**
@@ -704,6 +763,25 @@ export type Decide = {
      * Private; the applicant never sees it.
      */
     reason?: string | null;
+};
+
+/**
+ * The answer to the caller's last request to get into an organization, when it was declined.
+ */
+export type DeclinedOrganizationRequest = {
+    /**
+     * Whether it was a claim, which GenAI Fund declined; otherwise an owner did.
+     */
+    claim: boolean;
+    decidedAt: string;
+    organizationCountry?: string | null;
+    /**
+     * The organization's verified domain.
+     */
+    organizationDomain?: string | null;
+    organizationId: string;
+    organizationName: string;
+    organizationType: 'company' | 'builder_team' | 'independent_builder' | 'other';
 };
 
 /**
@@ -1042,6 +1120,32 @@ export type Introduction = {
 };
 
 /**
+ * How many more people an organization's owners may invite now.
+ */
+export type InvitationAllowance = {
+    /**
+     * The most invitations it sends in 24 hours.
+     */
+    dailyLimit: number;
+    /**
+     * How many more invitations may wait for an answer at once.
+     */
+    leftOpen: number;
+    /**
+     * How many invitations may still be sent in the current 24 hours.
+     */
+    leftToday: number;
+    /**
+     * Whether the organization may invite at all; one that is not approved may not.
+     */
+    open: boolean;
+    /**
+     * The most invitations that wait for an answer at once.
+     */
+    openLimit: number;
+};
+
+/**
  * An address asked to join the caller's organization.
  */
 export type InviteMember = {
@@ -1075,9 +1179,9 @@ export type JoinOrganization = {
  */
 export type JoinOutcome = {
     /**
-     * `joined`: the caller is a member. `owner`: nobody owned it and the caller's address is on its domain, so they own it. `requested`: its owners, or GenAI Fund when nobody owns it, decide.
+     * `joined`: the caller is a member. `requested`: its owners, or GenAI Fund when nobody owns it, decide.
      */
-    outcome: 'joined' | 'owner' | 'requested';
+    outcome: 'joined' | 'requested';
 };
 
 /**
@@ -1128,6 +1232,10 @@ export type MyApplications = {
  */
 export type MyOrganization = {
     /**
+     * The answer to the caller's last request, while it is a refusal and they belong nowhere and wait on nothing.
+     */
+    declined?: DeclinedOrganizationRequest | null;
+    /**
      * The open invitations to the caller's address.
      */
     invitations: Array<OrganizationInvitation>;
@@ -1155,7 +1263,7 @@ export type MyOrganization = {
  */
 export type MySolutions = {
     /**
-     * Whether the caller may add and change solutions: an owner of an approved organization that is a provider.
+     * Whether the caller may add and change solutions: an owner of an approved organization.
      */
     editable: boolean;
     items: Array<SolutionSummary>;
@@ -1180,7 +1288,7 @@ export type MyTalent = {
  */
 export type Organization = {
     /**
-     * Whether an address on the domain joins at once; otherwise it asks the owners.
+     * Whether an address on the verified domain joins at once; otherwise it asks the owners.
      */
     autoJoin: boolean;
     /**
@@ -1198,24 +1306,40 @@ export type Organization = {
     decisionReason?: 'duplicate' | 'not_a_real_organization' | 'incomplete' | 'out_of_scope' | 'other';
     description?: string | null;
     /**
-     * The domain whose addresses may join; null when it was made from a public mail address.
+     * The domain GenAI Fund verified as the organization's; null until it has.
      */
     emailDomain?: string | null;
+    /**
+     * The year it started; null until an owner says.
+     */
+    foundedYear?: number | null;
     id: string;
     /**
      * The industries it works in or serves; empty until an owner names them.
      */
     industries: Array<string>;
-    name: string;
     /**
-     * What it does here: `provider` lists AI solutions, `enterprise` posts use cases.
+     * Its logo, read at /api/storage/files/{id}; null for none.
      */
-    roles: Array<string>;
+    logoFileId?: string | null;
+    name: string;
     slug: string;
     /**
      * GenAI Fund's review of the organization.
      */
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'approved' | 'rejected' | 'suspended';
+    /**
+     * When it was last taken down.
+     */
+    suspendedAt?: string | null;
+    /**
+     * What the operator wrote to the owners when taking it down.
+     */
+    suspensionMessage?: string | null;
+    /**
+     * Why it was last taken down; kept after it is restored.
+     */
+    suspensionReason?: 'misleading_information' | 'not_a_real_organization' | 'breaks_the_rules' | 'other';
     /**
      * Null is unknown.
      */
@@ -1252,7 +1376,7 @@ export type OrganizationInvitation = {
  */
 export type OrganizationJoinRequest = {
     /**
-     * Whether nobody owns the organization, so GenAI Fund decides and approval makes the person its owner.
+     * Whether nobody owned the organization when the person asked, so GenAI Fund decides and approval makes the person its owner.
      */
     claim: boolean;
     createdAt: string;
@@ -1263,8 +1387,14 @@ export type OrganizationJoinRequest = {
      * The name of the person who asks; null until they have one.
      */
     name?: string | null;
+    organizationCountry?: string | null;
+    /**
+     * The organization's verified domain.
+     */
+    organizationDomain?: string | null;
     organizationId: string;
     organizationName: string;
+    organizationType: 'company' | 'builder_team' | 'independent_builder' | 'other';
 };
 
 /**
@@ -1277,7 +1407,7 @@ export type OrganizationMatch = {
     name: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     /**
-     * What asking to get in does for this caller: `join` makes them a member at once (owner, when nobody owns it yet), `request` asks its owners, `claim` asks GenAI Fund to let them own it.
+     * What asking to get in does for this caller: `join` makes them a member at once, `request` asks its owners, `claim` asks GenAI Fund to let them own it, which is the only way into an organization nobody owns.
      */
     way: 'join' | 'request' | 'claim';
 };
@@ -1299,12 +1429,22 @@ export type OrganizationMember = {
 };
 
 /**
- * Who belongs to an organization, owners first. Invitations and requests are empty for a caller who is not an owner.
+ * One page of who belongs to an organization, owners first. Invitations and requests, all of them, are empty, and the allowance null, for a caller who is not an owner.
  */
 export type OrganizationMembers = {
+    allowance?: InvitationAllowance | null;
     invitations: Array<OrganizationInvitation>;
     members: Array<OrganizationMember>;
+    /**
+     * The page of members returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
     requests: Array<OrganizationJoinRequest>;
+    /**
+     * How many members the organization has, over all pages.
+     */
+    total: number;
 };
 
 /**
@@ -1921,7 +2061,7 @@ export type ReserveUpload = {
     /**
      * Why the file is uploaded; it fixes the allowed media types and the largest size.
      */
-    purpose: 'program_image' | 'talent_photo' | 'application_file' | 'solution_deck';
+    purpose: 'program_image' | 'talent_photo' | 'organization_logo' | 'application_file' | 'solution_deck';
     /**
      * The exact length of the file in bytes.
      */
@@ -1948,6 +2088,10 @@ export type ReviewApplication = {
      * Every other assessment, for an operator; empty for a judge.
      */
     others: Array<Assessment>;
+    /**
+     * The caller's own application, or their organization's, which they never score or decide.
+     */
+    own: boolean;
     /**
      * Its place among the program's submitted applications, from 1.
      */
@@ -1986,6 +2130,10 @@ export type ReviewApplicationItem = {
      * The organization's type, such as independent_builder, builder_team or company.
      */
     organizationType: string;
+    /**
+     * The caller's own application, or their organization's, which they never score or decide.
+     */
+    own: boolean;
     /**
      * GenAI Fund's decision; null for a judge.
      */
@@ -2318,23 +2466,30 @@ export type SaveOrganization = {
      * ISO 3166-1 alpha-2.
      */
     country: string;
-    description?: string | null;
+    /**
+     * What it does and for whom, in at most 280 characters.
+     */
+    description: string;
+    /**
+     * The year it started; for an independent builder, the year the practice did.
+     */
+    foundedYear: number;
     /**
      * The industries it works in or serves, as the codes the solutions use.
      */
     industries: Array<string>;
-    name: string;
     /**
-     * One or both of `provider` and `enterprise`.
+     * A logo the caller uploaded for an organization; null for none.
      */
-    roles: Array<string>;
+    logoFileId?: string | null;
+    name: string;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     /**
      * The version the screen read.
      */
     version: number;
-    website?: string | null;
+    website: string;
 };
 
 /**
@@ -2519,6 +2674,10 @@ export type SearchItem = {
      * A program's cover, read at the public address of stored files.
      */
     coverFileId?: string | null;
+    /**
+     * How many of a solution's customer deployments GenAI Fund approved.
+     */
+    customerDeployments?: number | null;
     endsOn?: string | null;
     /**
      * Where a program's page is when it has none here.
@@ -2561,6 +2720,10 @@ export type SearchItem = {
      * The address of its page under the path of its kind.
      */
     slug: string;
+    /**
+     * The summary, or a person's headline, with each word the query matched between U+0002 and U+0003, to be shown in bold.
+     */
+    snippet: string;
     startsOn?: string | null;
     /**
      * The partner of a program, the organization of a solution, the headline of a person.
@@ -2761,6 +2924,17 @@ export type SubmittedApplication = {
 };
 
 /**
+ * Why an approved organization is taken down, and what its owners are told.
+ */
+export type TakeDownOrganization = {
+    /**
+     * Shown to the owners in the email and in their workspace.
+     */
+    message?: string | null;
+    reason: 'misleading_information' | 'not_a_real_organization' | 'breaks_the_rules' | 'other';
+};
+
+/**
  * Why GenAI Fund asks for changes to a talent profile or removes it, and what its person is told.
  */
 export type TalentDecision = {
@@ -2934,7 +3108,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -4087,7 +4261,7 @@ export type ReceiveSesEventResponses = {
 export type ReceiveSesEventResponse = ReceiveSesEventResponses[keyof ReceiveSesEventResponses];
 
 export type ApproveOrganizationClaimData = {
-    body?: never;
+    body: ApproveOrganization;
     path: {
         id: string;
     };
@@ -4096,6 +4270,10 @@ export type ApproveOrganizationClaimData = {
 };
 
 export type ApproveOrganizationClaimErrors = {
+    /**
+     * The domain is not valid.
+     */
+    400: Problem;
     /**
      * Nobody is signed in.
      */
@@ -4109,7 +4287,7 @@ export type ApproveOrganizationClaimErrors = {
      */
     404: Problem;
     /**
-     * The person joined another organization in the meantime.
+     * The person joined another organization in the meantime, or another organization has the domain.
      */
     409: Problem;
 };
@@ -4169,9 +4347,9 @@ export type ListAdminOrganizationsData = {
          */
         q?: string | null;
         /**
-         * Only organizations of this review status.
+         * Only organizations of this review status; `pending` also selects an approved one with an open claim.
          */
-        status?: 'pending' | 'approved' | 'rejected';
+        status?: 'pending' | 'approved' | 'rejected' | 'suspended';
         /**
          * The page, counted from 1.
          */
@@ -4278,16 +4456,20 @@ export type GetAdminOrganizationResponses = {
 
 export type GetAdminOrganizationResponse = GetAdminOrganizationResponses[keyof GetAdminOrganizationResponses];
 
-export type ApproveOrganizationData = {
-    body?: never;
+export type SaveAdminOrganizationData = {
+    body: AdminSaveOrganization;
     path: {
         id: string;
     };
     query?: never;
-    url: '/api/organization/admin/organizations/{id}/approve';
+    url: '/api/organization/admin/organizations/{id}';
 };
 
-export type ApproveOrganizationErrors = {
+export type SaveAdminOrganizationErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
     /**
      * Nobody is signed in.
      */
@@ -4301,7 +4483,50 @@ export type ApproveOrganizationErrors = {
      */
     404: Problem;
     /**
-     * The organization is not waiting for review.
+     * The organization changed since it was read, or another organization has the domain.
+     */
+    409: Problem;
+};
+
+export type SaveAdminOrganizationError = SaveAdminOrganizationErrors[keyof SaveAdminOrganizationErrors];
+
+export type SaveAdminOrganizationResponses = {
+    /**
+     * The organization as saved.
+     */
+    200: AdminOrganization;
+};
+
+export type SaveAdminOrganizationResponse = SaveAdminOrganizationResponses[keyof SaveAdminOrganizationResponses];
+
+export type ApproveOrganizationData = {
+    body: ApproveOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/approve';
+};
+
+export type ApproveOrganizationErrors = {
+    /**
+     * The domain is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not waiting for review, or another organization has the domain.
      */
     409: Problem;
 };
@@ -4316,6 +4541,161 @@ export type ApproveOrganizationResponses = {
 };
 
 export type ApproveOrganizationResponse = ApproveOrganizationResponses[keyof ApproveOrganizationResponses];
+
+export type InviteAdminOrganizationMemberData = {
+    body: InviteMember;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/invitations';
+};
+
+export type InviteAdminOrganizationMemberErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The address belongs to the organization or holds an open invitation.
+     */
+    409: Problem;
+};
+
+export type InviteAdminOrganizationMemberError = InviteAdminOrganizationMemberErrors[keyof InviteAdminOrganizationMemberErrors];
+
+export type InviteAdminOrganizationMemberResponses = {
+    /**
+     * The invitation is open and the address was told.
+     */
+    204: void;
+};
+
+export type InviteAdminOrganizationMemberResponse = InviteAdminOrganizationMemberResponses[keyof InviteAdminOrganizationMemberResponses];
+
+export type RevokeAdminOrganizationInvitationData = {
+    body?: never;
+    path: {
+        id: string;
+        invitationId: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/invitations/{invitationId}/revoke';
+};
+
+export type RevokeAdminOrganizationInvitationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The organization does not exist, or the invitation is not one of its open ones.
+     */
+    404: Problem;
+};
+
+export type RevokeAdminOrganizationInvitationError = RevokeAdminOrganizationInvitationErrors[keyof RevokeAdminOrganizationInvitationErrors];
+
+export type RevokeAdminOrganizationInvitationResponses = {
+    /**
+     * The invitation is closed.
+     */
+    204: void;
+};
+
+export type RevokeAdminOrganizationInvitationResponse = RevokeAdminOrganizationInvitationResponses[keyof RevokeAdminOrganizationInvitationResponses];
+
+export type RemoveAdminOrganizationMemberData = {
+    body?: never;
+    path: {
+        id: string;
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/members/{accountId}/remove';
+};
+
+export type RemoveAdminOrganizationMemberErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The organization does not exist, or the person does not belong to it.
+     */
+    404: Problem;
+};
+
+export type RemoveAdminOrganizationMemberError = RemoveAdminOrganizationMemberErrors[keyof RemoveAdminOrganizationMemberErrors];
+
+export type RemoveAdminOrganizationMemberResponses = {
+    /**
+     * The person is out.
+     */
+    204: void;
+};
+
+export type RemoveAdminOrganizationMemberResponse = RemoveAdminOrganizationMemberResponses[keyof RemoveAdminOrganizationMemberResponses];
+
+export type ChangeAdminOrganizationMemberRoleData = {
+    body: ChangeMemberRole;
+    path: {
+        id: string;
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/members/{accountId}/role';
+};
+
+export type ChangeAdminOrganizationMemberRoleErrors = {
+    /**
+     * The role is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The organization does not exist, or the person does not belong to it.
+     */
+    404: Problem;
+};
+
+export type ChangeAdminOrganizationMemberRoleError = ChangeAdminOrganizationMemberRoleErrors[keyof ChangeAdminOrganizationMemberRoleErrors];
+
+export type ChangeAdminOrganizationMemberRoleResponses = {
+    /**
+     * The role is changed.
+     */
+    204: void;
+};
+
+export type ChangeAdminOrganizationMemberRoleResponse = ChangeAdminOrganizationMemberRoleResponses[keyof ChangeAdminOrganizationMemberRoleResponses];
 
 export type RefuseOrganizationData = {
     body: RefuseOrganization;
@@ -4359,6 +4739,88 @@ export type RefuseOrganizationResponses = {
 };
 
 export type RefuseOrganizationResponse = RefuseOrganizationResponses[keyof RefuseOrganizationResponses];
+
+export type RestoreOrganizationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/restore';
+};
+
+export type RestoreOrganizationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not taken down.
+     */
+    409: Problem;
+};
+
+export type RestoreOrganizationError = RestoreOrganizationErrors[keyof RestoreOrganizationErrors];
+
+export type RestoreOrganizationResponses = {
+    /**
+     * The organization is back.
+     */
+    204: void;
+};
+
+export type RestoreOrganizationResponse = RestoreOrganizationResponses[keyof RestoreOrganizationResponses];
+
+export type TakeDownOrganizationData = {
+    body: TakeDownOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/take-down';
+};
+
+export type TakeDownOrganizationErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not approved.
+     */
+    409: Problem;
+};
+
+export type TakeDownOrganizationError = TakeDownOrganizationErrors[keyof TakeDownOrganizationErrors];
+
+export type TakeDownOrganizationResponses = {
+    /**
+     * The organization is taken down.
+     */
+    204: void;
+};
+
+export type TakeDownOrganizationResponse = TakeDownOrganizationResponses[keyof TakeDownOrganizationResponses];
 
 export type AcceptOrganizationInvitationData = {
     body?: never;
@@ -4533,6 +4995,10 @@ export type ChangeOrganizationAutoJoinErrors = {
      * The caller belongs to no organization, or is not an owner of it.
      */
     403: Problem;
+    /**
+     * Turned on for an organization that is not approved or has no verified domain.
+     */
+    409: Problem;
 };
 
 export type ChangeOrganizationAutoJoinError = ChangeOrganizationAutoJoinErrors[keyof ChangeOrganizationAutoJoinErrors];
@@ -4567,9 +5033,13 @@ export type InviteOrganizationMemberErrors = {
      */
     403: Problem;
     /**
-     * The address already belongs to the organization, or already holds an open invitation.
+     * The organization is not approved, or the address already belongs to it or already holds an open invitation.
      */
     409: Problem;
+    /**
+     * The organization sent the most invitations it can in a day, or keeps the most it can open.
+     */
+    429: Problem;
 };
 
 export type InviteOrganizationMemberError = InviteOrganizationMemberErrors[keyof InviteOrganizationMemberErrors];
@@ -4654,7 +5124,12 @@ export type ChangeMyJobTitleResponse = ChangeMyJobTitleResponses[keyof ChangeMyJ
 export type ListMyOrganizationMembersData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
     url: '/api/organization/mine/members';
 };
 
@@ -4673,7 +5148,7 @@ export type ListMyOrganizationMembersError = ListMyOrganizationMembersErrors[key
 
 export type ListMyOrganizationMembersResponses = {
     /**
-     * The members, and for an owner the open invitations and requests.
+     * One page of the members, and for an owner all the open invitations and requests.
      */
     200: OrganizationMembers;
 };
@@ -4935,7 +5410,7 @@ export type JoinOrganizationError = JoinOrganizationErrors[keyof JoinOrganizatio
 
 export type JoinOrganizationResponses = {
     /**
-     * What asking did: joined, owner, or a request that waits.
+     * What asking did: joined, or a request that waits.
      */
     200: JoinOutcome;
 };
@@ -6451,7 +6926,7 @@ export type CreateSolutionErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
 };
@@ -6482,7 +6957,7 @@ export type DeleteSolutionDraftErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
     /**
@@ -6556,7 +7031,7 @@ export type SaveSolutionErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
     /**
@@ -6599,7 +7074,7 @@ export type SubmitSolutionErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
     /**
@@ -6642,7 +7117,7 @@ export type AddCustomerDeploymentErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
     /**
@@ -6682,7 +7157,7 @@ export type DeleteCustomerDeploymentErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
     /**
@@ -6722,7 +7197,7 @@ export type SaveCustomerDeploymentErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization that is a provider.
+     * The caller is not an owner of an approved organization.
      */
     403: Problem;
     /**

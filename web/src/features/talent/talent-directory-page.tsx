@@ -23,8 +23,8 @@ type TalentDirectoryPageProps = {
 
 /**
  * AI talent: the public directory of the people GenAI Fund approved, on the template the directories
- * of use cases and solutions share. The list arrives already read; search, the chips, the facets and
- * paging are the URL.
+ * of use cases and solutions share. The list arrives already read; search, the role chips, the sort
+ * and paging are the URL.
  */
 function TalentDirectoryPage({ talent, search, hasProfile }: TalentDirectoryPageProps) {
   const t = useTranslations("Talent.directory");

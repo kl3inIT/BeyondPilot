@@ -185,6 +185,46 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(auditOf(form.programId())).contains("proposal.decide", "proposal.release");
 	}
 
+	@Test
+	void nobodyScoresOrDecidesAnApplicationOfTheirOwn() {
+		Form form = program("own-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		List<String> criteria = criteriaOf(form, "Practical impact");
+		Applicant applicant = applicant(form, "builder@own.test", "Own Builder");
+		Applicant other = applicant(form, "other@own.test", "Other Builder");
+		// The same person is invited to judge the program they applied to.
+		post(operator, REVIEW + form.programId() + "/reviewers", Map.of("email", applicant.email())).expectStatus().isOk();
+
+		String list = body(get(applicant.session(), REVIEW + form.programId() + "/applications").expectStatus().isOk());
+		assertThat(JsonPath.<List<Boolean>>read(list, "$.items[*].own")).containsExactly(true, false);
+		String own = API + "/review/applications/" + applicant.id();
+		assertThat(JsonPath.<Boolean>read(body(get(applicant.session(), own).expectStatus().isOk()), "$.own")).isTrue();
+		assertProblem(put(applicant.session(), own + "/assessment", scores(Map.of(criteria.get(0), 5))), 403,
+				"PROPOSAL_OWN_APPLICATION");
+		assertProblem(put(applicant.session(), own + "/assessment", Map.of("scores", Map.of(), "conflict", true)), 403,
+				"PROPOSAL_OWN_APPLICATION");
+		put(applicant.session(), API + "/review/applications/" + other.id() + "/assessment",
+				scores(Map.of(criteria.get(0), 4)))
+			.expectStatus()
+			.isOk();
+
+		// An operator who applied through an organization does not decide on its application.
+		String operatorSession = operator;
+		post(operatorSession, form.path() + "/organization", Map.of("kind", "individual", "name", "Operator Builder",
+				"country", "VN"))
+			.expectStatus()
+			.isOk();
+		String operatorApplication = submittedBy(operatorSession, "operator@proposal.test", form);
+		assertProblem(post(operator, REVIEW + form.programId() + "/decisions",
+				decision(List.of(UUID.fromString(operatorApplication)), "shortlisted")), 403, "PROPOSAL_OWN_APPLICATION");
+	}
+
+	/** Submits an application of the caller, who already belongs to an organization, and answers its identifier. */
+	private String submittedBy(String session, String email, Form form) {
+		UUID solution = completeSolution(session, email, "Operator Desk");
+		submitted(session, email, form, solution);
+		return JsonPath.read(body(get(session, API + "/applications").expectStatus().isOk()), "$.items[0].id");
+	}
+
 	/** Sets a program's criteria and answers their identifiers in order. */
 	private List<String> criteriaOf(Form form, String... names) {
 		return JsonPath.read(body(put(operator, REVIEW + form.programId() + "/criteria", criteria(names))

@@ -7,9 +7,8 @@ import { Button, type ButtonProps } from "@/components/actions/button";
 import { useNotify, type MessageKey } from "@/hooks/use-notify";
 import {
   approveJoinRequest,
-  approveOrganizationClaim,
   declineJoinRequest,
-  declineOrganizationClaim,
+  joinOrganization,
   withdrawJoinRequest,
 } from "@/lib/api/generated";
 
@@ -29,19 +28,16 @@ const actions = {
     run: () => withdrawJoinRequest(),
     done: "Organization.done.requestWithdrawn",
   },
-  approveClaim: {
-    run: (id: string) => approveOrganizationClaim({ path: { id } }),
-    done: "Organization.done.claimApproved",
-  },
-  declineClaim: {
-    run: (id: string) => declineOrganizationClaim({ path: { id } }),
-    done: "Organization.done.claimDeclined",
+  // Asking again after a refusal: its owners, or GenAI Fund when nobody owns it, decide once more.
+  askAgain: {
+    run: (id: string) => joinOrganization({ path: { id }, body: { message: null } }),
+    done: "Organization.done.askedAgain",
   },
 } satisfies Record<string, { run: (id: string) => Promise<unknown>; done: MessageKey }>;
 
 type OrganizationActionProps = Pick<ButtonProps, "tone" | "prominence" | "size" | "className"> & {
   action: keyof typeof actions;
-  /** The request or claim the action is about. */
+  /** The request the action is about, or the organization that is asked again. */
   id?: string;
   children: React.ReactNode;
 };
