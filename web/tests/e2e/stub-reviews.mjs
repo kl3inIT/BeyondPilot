@@ -156,6 +156,7 @@ function solution(id, name, status, more) {
     status,
     organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
     organizationName: "Pocket Policy",
+    submittedBy: "Đạt Phan",
     summary: `${name} for insurers.`,
     problemsSolved: "Slow answers to policy holders.",
     valueProposition: "An answer in seconds, in Vietnamese and English.",
@@ -269,7 +270,54 @@ function page(url, records, statusOf, textOf, summaryOf) {
   return { items: items.map(summaryOf), page: 1, pageSize: 25, total: items.length };
 }
 
+/** The requests for an introduction, as the operators' list reads them: no address anywhere. */
+const introductions = [
+  {
+    id: "e19ebcda-8b86-4cd9-9cd3-8f1b4b4d5c31",
+    solutionName: "Policy Chat",
+    providerOrganization: "Pocket Policy",
+    senderOrganization: "Lumen Health",
+    senderName: "Hà Lê",
+    message: "We want a renewals assistant for our clinics. Can you run it in Vietnamese?",
+    status: "pending",
+    overdue: true,
+    createdAt: ago(100),
+    answeredAt: null,
+  },
+  {
+    id: "e19ebcda-8b86-4cd9-9cd3-8f1b4b4d5c32",
+    solutionName: "Claims Vision",
+    providerOrganization: "Pocket Policy",
+    senderOrganization: "Mekong Life",
+    senderName: null,
+    message: "Can it read our scanned claim forms?",
+    status: "pending",
+    overdue: false,
+    createdAt: ago(5),
+    answeredAt: null,
+  },
+  {
+    id: "e19ebcda-8b86-4cd9-9cd3-8f1b4b4d5c33",
+    solutionName: "Agent Coach",
+    providerOrganization: "Pocket Policy",
+    senderOrganization: "Bảo An",
+    senderName: "Quang Vũ",
+    message: "Do you coach agents in Vietnamese?",
+    status: "replied",
+    overdue: false,
+    createdAt: day,
+    answeredAt: day,
+  },
+];
+
 const lists = {
+  "/api/introduction/admin/introductions": {
+    records: introductions,
+    idOf: (record) => record.id,
+    statusOf: (record) => record.status,
+    textOf: (record) => record.solutionName,
+    summaryOf: (record) => record,
+  },
   "/api/organization/admin/organizations": {
     records: organizations,
     idOf: (record) => record.organization.id,
@@ -305,8 +353,10 @@ const lists = {
       organizationName,
       summary,
       maturity,
+      industries: record.industries,
       listed: record.listed,
       submittedAt: record.submittedAt,
+      submittedBy: record.submittedBy,
       updatedAt: record.updatedAt,
       deploymentsAwaitingReview: record.customerDeployments.filter(
         (item) => item.status === "submitted",
@@ -348,7 +398,18 @@ export function answerReview(url, account) {
   }
   const { records, idOf, statusOf, textOf, summaryOf } = lists[path];
   if (url.pathname === path) {
-    return [200, page(url, records, statusOf, textOf, summaryOf)];
+    const found = page(url, records, statusOf, textOf, summaryOf);
+    return [
+      200,
+      path === "/api/introduction/admin/introductions"
+        ? { ...found, overdue: records.filter((record) => record.overdue).length }
+        : path === "/api/solution/admin/solutions"
+          ? {
+              ...found,
+              awaitingReview: records.filter((record) => record.status === "submitted").length,
+            }
+          : found,
+    ];
   }
   const record = records.find(
     (candidate) => idOf(candidate) === url.pathname.slice(path.length + 1),

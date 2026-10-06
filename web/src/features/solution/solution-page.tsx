@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -73,6 +74,8 @@ type SolutionPageProps = {
   solution: PublicSolution;
   /** The editor of this solution, when the visitor may change it. */
   editHref?: string;
+  /** The way to ask for an introduction to its company, put in by the route that knows the visitor. */
+  introduction?: React.ReactNode;
 };
 
 /**
@@ -80,7 +83,7 @@ type SolutionPageProps = {
  * itself, its proof and where it fits, beside the way to reach its company. What a solution cannot
  * state yet is shown as unknown, never filled in.
  */
-function SolutionPage({ solution, editHref }: SolutionPageProps) {
+function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
   const t = useTranslations("Solution.detail");
   const directory = useTranslations("Solution.directory");
   const view = useTranslations("Solution.view");
@@ -113,6 +116,12 @@ function SolutionPage({ solution, editHref }: SolutionPageProps) {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
+      {!solution.listed && (
+        <Alert>
+          <AlertDescription>{t("unlisted")}</AlertDescription>
+        </Alert>
+      )}
 
       {editHref && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4">
@@ -241,18 +250,31 @@ function SolutionPage({ solution, editHref }: SolutionPageProps) {
           <h2 className="text-base font-medium">
             {t("contact.title", { name: solution.organizationName })}
           </h2>
-          {solution.website && (
+          {introduction}
+          {(solution.website || solution.demoUrl || solution.deckUrl) && (
             <>
-              <Button
-                prominence="secondary"
-                size="lg"
-                href={solution.website}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full"
-              >
-                {t("contact.website")}
-              </Button>
+              {(
+                [
+                  ["website", solution.website],
+                  ["demo", solution.demoUrl],
+                  ["deck", solution.deckUrl],
+                ] as const
+              ).map(
+                ([key, href]) =>
+                  href && (
+                    <Button
+                      key={key}
+                      prominence="secondary"
+                      size="lg"
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full"
+                    >
+                      {t(`contact.${key}`)}
+                    </Button>
+                  ),
+              )}
               <Separator />
             </>
           )}

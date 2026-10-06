@@ -60,10 +60,29 @@ public enum AuditAction {
 	/** {@code reason} is the code of the reason given. */
 	SOLUTION_DEPLOYMENT_REJECT("solution.deployment_reject", "reason"),
 
+	/** An owner answered a request for an introduction, and both sides were told each other's address. */
+	INTRODUCTION_REPLY("introduction.reply"),
+
+	INTRODUCTION_DECLINE("introduction.decline"),
+
 	TALENT_APPROVE("talent.approve"),
 
 	/** {@code reason} is the code of the reason given. */
-	TALENT_REJECT("talent.reject", "reason");
+	TALENT_REJECT("talent.reject", "reason"),
+
+	/** An operator replaced the criteria a program's applications are judged on. {@code count} is how many. */
+	PROPOSAL_CRITERIA_UPDATE("proposal.criteria_update", "count"),
+
+	/** An operator invited an address to judge a program, or sent the invitation again. */
+	PROPOSAL_REVIEWER_INVITE("proposal.reviewer_invite", "email"),
+
+	PROPOSAL_REVIEWER_REMOVE("proposal.reviewer_remove", "email"),
+
+	/** An operator decided on an application. {@code decision} is {@code shortlisted} or {@code not_selected}. */
+	PROPOSAL_DECIDE("proposal.decide", "decision"),
+
+	/** An operator released a program's outcomes. The counts are how many applicants each group had. */
+	PROPOSAL_RELEASE("proposal.release", "shortlisted", "not_selected");
 
 	private final String value;
 

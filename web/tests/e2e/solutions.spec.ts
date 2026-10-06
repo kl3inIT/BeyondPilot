@@ -113,11 +113,36 @@ test.describe("solutions directory", () => {
       "href",
       "https://pocketpolicy.example",
     );
+    await expect(page.getByRole("link", { name: "Watch the demo" })).toHaveAttribute(
+      "href",
+      "https://pocketpolicy.example/demo",
+    );
+    await expect(page.getByRole("link", { name: "View the presentation" })).toHaveAttribute(
+      "href",
+      "https://pocketpolicy.example/deck.pdf",
+    );
+    // A listed solution does not say it is hidden.
+    await expect(page.getByText("This solution is not in the directory")).toHaveCount(0);
     // Nobody is signed in, so nothing offers to edit it.
     await expect(page.getByRole("link", { name: "Edit this solution" })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
 
     expect((await page.goto("/solutions/no-such-solution"))?.status()).toBe(404);
+  });
+
+  test("an approved solution left unlisted opens by its address, says so and stays out of the directory and of search engines", async ({
+    page,
+  }) => {
+    await page.goto("/solutions");
+    await expect(page.getByRole("link", { name: "Private Pilot", exact: true })).toHaveCount(0);
+
+    await page.goto("/solutions/private-pilot");
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Private Pilot");
+    await expect(page.getByText("This solution is not in the directory")).toBeVisible();
+    await expect(page.locator("meta[name=robots]")).toHaveAttribute("content", /noindex/);
+    await expect(page.getByRole("link", { name: "Watch the demo" })).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
   });
 
   test("a customer deployment opens with its problem, what was deployed and its source", async ({
@@ -169,6 +194,9 @@ test.describe("solutions directory", () => {
       "Underwriting Radar",
       "Agent Coach",
     ]);
+    // Each card names the first industry of its solution and points to its page.
+    await expect(page.getByText("Insurance", { exact: true })).toHaveCount(4);
+    await expect(page.getByText("Explore solution")).toHaveCount(4);
     await expect(page.getByText("1 customer deployment, listed below")).toBeVisible();
     await expect(page.getByRole("button", { name: "Renewals at Mekong Life" })).toBeVisible();
     await expectNoSeriousA11yViolations(page);

@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ProgramSettings } from "@/features/program/program-settings";
 import { readAdminProgram } from "@/features/program/program-queries";
+import { ProgramTabs } from "@/features/program/program-tabs";
 import { requireRole } from "@/lib/auth/session";
 import { adminProgramRoute } from "@/lib/site";
 
@@ -24,5 +25,11 @@ export default async function ProgramSettingsRoute({
   const program = await readAdminProgram(id);
 
   // Settings starts from the program as it was read; a save reads it again.
-  return <ProgramSettings key={program.version} program={program} />;
+  return (
+    <ProgramSettings
+      key={program.version}
+      program={program}
+      tabs={<ProgramTabs id={id} current="settings" />}
+    />
+  );
 }

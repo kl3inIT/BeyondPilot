@@ -449,6 +449,66 @@ class ProgramAdministrationTest {
 	}
 
 	/** Creates a draft and returns the address it is read and saved at. */
+	@Test
+	void questionsAreKeptInOrderWithTheirIdentifiersUntilTheApplicationsOpen() {
+		String uri = created("Asks", "asks");
+		String questions = uri + "/questions";
+		String empty = body(get(operator, questions).expectStatus().isOk());
+		assertThat(JsonPath.<List<Object>>read(empty, "$.questions")).isEmpty();
+		assertThat(JsonPath.<Boolean>read(empty, "$.fixed")).isFalse();
+		assertProblem(get(TestSignIn.session(client, mail, "plain@asks.test"), questions), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
+
+		String saved = body(save(operator, questions,
+				Map.of("version", 0, "questions",
+						List.of(question("long_text", "How does your solution address the challenge?", List.of()),
+								question("single_choice", "Direction", List.of("Buying", " Claiming ", "Claiming")),
+								question("confirm", "I've read the one hard constraint.", List.of()))))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<List<String>>read(saved, "$.questions[*].kind")).containsExactly("long_text",
+				"single_choice", "confirm");
+		assertThat(JsonPath.<List<String>>read(saved, "$.questions[1].options")).containsExactly("Buying", "Claiming");
+		String direction = JsonPath.read(saved, "$.questions[1].id");
+		int version = JsonPath.read(saved, "$.version");
+
+		// An answer names its question, so a question moved or edited keeps its identifier.
+		Map<String, Object> moved = question("single_choice", "Which direction?", List.of("Buying", "Carrying"));
+		moved.put("id", direction);
+		String reordered = body(save(operator, questions, Map.of("version", version, "questions", List.of(moved)))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(reordered, "$.questions[0].id")).isEqualTo(direction);
+		assertProblem(save(operator, questions, Map.of("version", version, "questions", List.of())), 409,
+				"PROGRAM_CHANGED_MEANWHILE");
+		version = JsonPath.read(reordered, "$.version");
+		assertProblem(save(operator, questions,
+				Map.of("version", version, "questions", List.of(question("single_choice", "One way", List.of("Only"))))),
+				400, "PROGRAM_CHOICES_REQUIRED");
+
+		// Once the applications open, an answer may already name a question.
+		Map<String, Object> open = program(version, "Asks", "asks");
+		open.put("applications", applications("2026-01-01T00:00:00Z", "2099-01-01T00:00:00Z", "2099-01-10"));
+		String opened = body(save(operator, uri, open).expectStatus().isOk());
+		version = JsonPath.read(opened, "$.version");
+		assertThat(JsonPath.<Boolean>read(body(get(operator, questions).expectStatus().isOk()), "$.fixed")).isTrue();
+		assertProblem(save(operator, questions, Map.of("version", version, "questions", List.of())), 409,
+				"PROGRAM_QUESTIONS_FIXED");
+	}
+
+	private static Map<String, Object> question(String kind, String label, List<String> options) {
+		Map<String, Object> question = new LinkedHashMap<>();
+		question.put("kind", kind);
+		question.put("label", label);
+		question.put("required", true);
+		question.put("options", options);
+		return question;
+	}
+
+	private static String body(RestTestClient.ResponseSpec response) {
+		return response.expectBody(String.class).returnResult().getResponseBody();
+	}
+
 	private String created(String name, String slug) {
 		String body = create(operator, name, slug, "event").expectStatus()
 			.isCreated()

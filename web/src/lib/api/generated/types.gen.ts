@@ -74,6 +74,60 @@ export type AdminCreateOrganization = {
 };
 
 /**
+ * A request for an introduction as an operator reads it: the message in full, and no address.
+ */
+export type AdminIntroduction = {
+    /**
+     * When it was answered; absent while it waits.
+     */
+    answeredAt?: string;
+    createdAt: string;
+    id: string;
+    message: string;
+    /**
+     * Whether it has waited for an answer longer than three days.
+     */
+    overdue: boolean;
+    /**
+     * The organization that offers the solution and answers.
+     */
+    providerOrganization: string;
+    /**
+     * The sender's name; absent while they have not given one.
+     */
+    senderName?: string;
+    /**
+     * The organization the sender asked as.
+     */
+    senderOrganization: string;
+    /**
+     * The solution asked about, by the name it had then.
+     */
+    solutionName: string;
+    status: 'pending' | 'replied' | 'declined';
+};
+
+/**
+ * One page of requests for an introduction: those that wait first, the longest wait on top.
+ */
+export type AdminIntroductionList = {
+    items: Array<AdminIntroduction>;
+    /**
+     * How many requests, whatever the filter, have waited longer than three days.
+     */
+    overdue: number;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many requests match, over all pages.
+     */
+    total: number;
+};
+
+/**
  * One organization as an operator reviews it.
  */
 export type AdminOrganization = {
@@ -243,7 +297,11 @@ export type AdminProgramSummary = {
  * One page of submitted solutions: those waiting for review first, the longest wait on top.
  */
 export type AdminSolutionList = {
-    items: Array<SolutionSummary>;
+    /**
+     * How many solutions wait for review, whatever narrows this list.
+     */
+    awaitingReview: number;
+    items: Array<AdminSolutionSummary>;
     /**
      * The page returned, counted from 1.
      */
@@ -253,6 +311,31 @@ export type AdminSolutionList = {
      * How many solutions match, over all pages.
      */
     total: number;
+};
+
+/**
+ * One solution in the operators' list.
+ */
+export type AdminSolutionSummary = {
+    /**
+     * How many of its customer deployments wait for review.
+     */
+    deploymentsAwaitingReview: number;
+    id: string;
+    industries: Array<string>;
+    listed: boolean;
+    maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
+    name: string;
+    organizationName: string;
+    slug: string;
+    status: 'submitted' | 'approved' | 'rejected';
+    submittedAt?: string | null;
+    /**
+     * Who sent it for review last: their name, or their address until they have one. Null when it was sent before the sender was recorded.
+     */
+    submittedBy?: string | null;
+    summary?: string | null;
+    updatedAt: string;
 };
 
 /**
@@ -283,6 +366,113 @@ export type AdminTalentList = {
 };
 
 /**
+ * Who applies, for someone in no organization: themselves on their own, or their team.
+ */
+export type ApplicantOrganization = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country: string;
+    kind: 'individual' | 'team';
+    /**
+     * The person's name for an individual; the team's name for a team.
+     */
+    name: string;
+    /**
+     * A team's size; an individual is one person.
+     */
+    teamSize?: '2_9' | '10_49' | '50_99';
+    website?: string | null;
+};
+
+/**
+ * A person's application to a program, as its form holds it now.
+ */
+export type Application = {
+    answers: {
+        [key: string]: string;
+    };
+    builtWith: Array<string>;
+    contact: ContactDetails;
+    deck?: AttachedFile | null;
+    /**
+     * The files the answers name, by question identifier.
+     */
+    files: {
+        [key: string]: AttachedFile;
+    };
+    id: string;
+    /**
+     * GenAI Fund's decision, once the program's outcomes are released; null until then.
+     */
+    outcome?: 'shortlisted' | 'not_selected';
+    solutionId?: string | null;
+    status: 'draft' | 'submitted' | 'withdrawn';
+    /**
+     * How many times it was submitted.
+     */
+    submissions: number;
+    submittedAt?: string | null;
+    teamBackground?: string | null;
+    traction?: string | null;
+    updatedAt: string;
+    /**
+     * Sent back with a save, which is refused when the application changed since.
+     */
+    version: number;
+    withdrawnAt?: string | null;
+};
+
+/**
+ * What the person's latest other application held, for a new one to start from.
+ */
+export type ApplicationStart = {
+    builtWith: Array<string>;
+    contact: ContactDetails;
+    deck?: AttachedFile | null;
+    traction?: string | null;
+};
+
+/**
+ * Everything the application form of a program needs for the signed-in person.
+ */
+export type ApplicationView = {
+    /**
+     * The person's application; null until they first save.
+     */
+    application?: Application | null;
+    /**
+     * The address the person signs in with.
+     */
+    email: string;
+    /**
+     * The organization the person belongs to; null when they belong to none.
+     */
+    organization?: ApplyingOrganization | null;
+    /**
+     * What the person's latest other application held, for a new one to start from; null once this one exists.
+     */
+    previous?: ApplicationStart | null;
+    program: ProgramForm;
+    solutions: Array<SolutionOption>;
+};
+
+/**
+ * The organization a person applies for.
+ */
+export type ApplyingOrganization = {
+    /**
+     * Whether GenAI Fund has reviewed and approved it; it applies either way.
+     */
+    approved: boolean;
+    country?: string | null;
+    id: string;
+    name: string;
+    teamSize?: string | null;
+    type: 'company' | 'builder_team' | 'independent_builder' | 'other';
+};
+
+/**
  * What an operator vouches for with an approval, of a new organization or of a claim to own one: the domain of the organization's work addresses, or none.
  */
 export type ApproveOrganization = {
@@ -293,10 +483,41 @@ export type ApproveOrganization = {
 };
 
 /**
+ * One person's assessment of the application.
+ */
+export type Assessment = {
+    average?: number | null;
+    conflict: boolean;
+    note?: string | null;
+    reviewer: string;
+    role: 'operator' | 'reviewer';
+    savedAt: string;
+    /**
+     * The score of each criterion, by its identifier; empty for a conflict.
+     */
+    scores: {
+        [key: string]: number;
+    };
+    /**
+     * The version it was made on; earlier than the application's when it was submitted again since.
+     */
+    version: number;
+};
+
+/**
+ * A private PDF an application names, with its name and size.
+ */
+export type AttachedFile = {
+    fileId: string;
+    fileName: string;
+    sizeBytes: number;
+};
+
+/**
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'talent.approve' | 'talent.reject';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -361,6 +582,23 @@ export type ChangeMemberRole = {
 };
 
 /**
+ * How judges and GenAI Fund reach an applicant. Each part may be empty while the application is a draft.
+ */
+export type ContactDetails = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    linkedin?: string | null;
+    /**
+     * With its country code, such as +84 912 345 678.
+     */
+    phone?: string | null;
+};
+
+/**
  * A new organization. Its creator owns it, and it waits for GenAI Fund's review.
  */
 export type CreateOrganization = {
@@ -377,7 +615,7 @@ export type CreateOrganization = {
      */
     foundedYear: number;
     /**
-     * The industries it works in or serves, as the codes the solutions use.
+     * The industries it works in or serves, as the codes the solutions use. A company names one to five; a team or a builder may name none.
      */
     industries: Array<string>;
     /**
@@ -444,6 +682,18 @@ export type CustomerDeployment = {
 };
 
 /**
+ * GenAI Fund's decision on one application or several of a program.
+ */
+export type Decide = {
+    applicationIds: Array<string>;
+    decision: 'shortlisted' | 'not_selected';
+    /**
+     * Private; the applicant never sees it.
+     */
+    reason?: string | null;
+};
+
+/**
  * The answer to the caller's last request to get into an organization, when it was declined.
  */
 export type DeclinedOrganizationRequest = {
@@ -460,6 +710,52 @@ export type DeclinedOrganizationRequest = {
     organizationId: string;
     organizationName: string;
     organizationType: 'company' | 'builder_team' | 'independent_builder' | 'other';
+};
+
+/**
+ * One of the program's own questions, as the form asks it.
+ */
+export type FormQuestion = {
+    help?: string | null;
+    id: string;
+    kind: 'short_text' | 'long_text' | 'single_choice' | 'file' | 'link' | 'confirm';
+    label: string;
+    /**
+     * The longest answer the form takes.
+     */
+    maxLength: number;
+    options: Array<string>;
+    required: boolean;
+};
+
+/**
+ * A request for an introduction to the caller's organization.
+ */
+export type Introduction = {
+    /**
+     * When it was answered; absent while it waits.
+     */
+    answeredAt?: string;
+    createdAt: string;
+    id: string;
+    message: string;
+    /**
+     * The sender's address, shown only once the request was replied to.
+     */
+    senderEmail?: string;
+    /**
+     * The sender's name; absent while the sender has not given one.
+     */
+    senderName?: string;
+    /**
+     * The organization the sender asked as.
+     */
+    senderOrganization: string;
+    /**
+     * The solution the sender asked about, by the name it had then.
+     */
+    solutionName: string;
+    status: 'pending' | 'replied' | 'declined';
 };
 
 /**
@@ -494,6 +790,13 @@ export type InvitationAllowance = {
 export type InviteMember = {
     email: string;
     role: 'owner' | 'member';
+};
+
+/**
+ * The address of a judge to invite to a program.
+ */
+export type InviteReviewer = {
+    email: string;
 };
 
 /**
@@ -534,6 +837,33 @@ export type Me = {
      * `operator` is GenAI Fund staff.
      */
     role: 'user' | 'operator';
+};
+
+/**
+ * One of the person's applications, as My applications lists it.
+ */
+export type MyApplication = {
+    closesAt: string;
+    id: string;
+    organizationName?: string | null;
+    /**
+     * GenAI Fund's decision, once the program's outcomes are released; null until then.
+     */
+    outcome?: 'shortlisted' | 'not_selected';
+    outcomesDueOn?: string | null;
+    programName: string;
+    programSlug: string;
+    solutionName?: string | null;
+    status: 'draft' | 'submitted' | 'withdrawn';
+    submittedAt?: string | null;
+    updatedAt: string;
+};
+
+/**
+ * The person's applications, the most recently changed first.
+ */
+export type MyApplications = {
+    items: Array<MyApplication>;
 };
 
 /**
@@ -902,6 +1232,24 @@ export type ProgramEvent = {
 };
 
 /**
+ * The program an application answers, with its window and its questions.
+ */
+export type ProgramForm = {
+    allowUpdatesUntilClose: boolean;
+    closesAt: string;
+    id: string;
+    name: string;
+    /**
+     * Whether applications are taken now.
+     */
+    open: boolean;
+    opensAt: string;
+    outcomesDueOn?: string | null;
+    questions: Array<FormQuestion>;
+    slug: string;
+};
+
+/**
  * A dated step of a program that an applicant plans around.
  */
 export type ProgramKeyDate = {
@@ -923,6 +1271,50 @@ export type ProgramKeyDate = {
  */
 export type ProgramList = {
     items: Array<ProgramSummary>;
+};
+
+/**
+ * A question a program asks its applicants.
+ */
+export type ProgramQuestion = {
+    /**
+     * What helps an applicant answer, shown under the field.
+     */
+    help?: string | null;
+    /**
+     * Null for a new question; an answer names its question by it.
+     */
+    id?: string | null;
+    kind: 'short_text' | 'long_text' | 'single_choice' | 'file' | 'link' | 'confirm';
+    label: string;
+    /**
+     * The longest answer to a text question; null takes the form's default.
+     */
+    maxLength?: number | null;
+    /**
+     * The choices of a single_choice question, two to twenty; empty otherwise.
+     */
+    options: Array<string>;
+    required: boolean;
+};
+
+/**
+ * The questions of a program as an operator edits them.
+ */
+export type ProgramQuestions = {
+    /**
+     * Whether the applications have opened, which fixes the questions.
+     */
+    fixed: boolean;
+    /**
+     * When the applications open; null while the program takes none.
+     */
+    opensAt?: string | null;
+    questions: Array<ProgramQuestion>;
+    /**
+     * Sent back with a save, which is refused when the program changed since.
+     */
+    version: number;
 };
 
 /**
@@ -1011,7 +1403,7 @@ export type PublicOrganization = {
 };
 
 /**
- * An approved, listed solution as anyone reads it.
+ * An approved solution as anyone with its address reads it, listed or not.
  */
 export type PublicSolution = {
     /**
@@ -1022,9 +1414,15 @@ export type PublicSolution = {
      * Its approved customer deployments, the most recently approved first.
      */
     customerDeployments: Array<PublicCustomerDeployment>;
+    deckUrl?: string | null;
+    demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     industries: Array<string>;
+    /**
+     * Whether the directory lists it. False is approved but shared by its address only.
+     */
+    listed: boolean;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
     organizationName: string;
@@ -1137,6 +1535,20 @@ export type PublicTalentSummary = {
 };
 
 /**
+ * The requests for an introduction to the caller's organization.
+ */
+export type ReceivedIntroductions = {
+    /**
+     * Whether the caller answers them: an owner does, a member only reads.
+     */
+    editable: boolean;
+    /**
+     * Newest first.
+     */
+    items: Array<Introduction>;
+};
+
+/**
  * Why an organization is not approved, and what its owners are told.
  */
 export type RefuseOrganization = {
@@ -1181,6 +1593,61 @@ export type RejectTalent = {
 };
 
 /**
+ * What releasing a program's outcomes sends, to whom, and whether it can be done now.
+ */
+export type Release = {
+    /**
+     * The emails as they were sent, or a starting point until then.
+     */
+    emails: ReleaseEmails;
+    head: ReviewHead;
+    notSelected: Array<ReleaseItem>;
+    /**
+     * Applications have closed, every one has a decision, and nothing was released yet.
+     */
+    ready: boolean;
+    shortlisted: Array<ReleaseItem>;
+    /**
+     * Still waiting for a decision.
+     */
+    undecided: Array<ReleaseItem>;
+    withdrawn: number;
+};
+
+/**
+ * The email each group gets. {organization} and {solution} are filled in for each applicant.
+ */
+export type ReleaseEmails = {
+    notSelectedMessage: string;
+    notSelectedSubject: string;
+    shortlistedMessage: string;
+    shortlistedSubject: string;
+};
+
+export type ReleaseItem = {
+    average?: number | null;
+    country?: string | null;
+    id: string;
+    organizationName: string;
+    organizationType: string;
+    solutionName: string;
+};
+
+/**
+ * A request for an introduction to the organization behind a solution.
+ */
+export type RequestIntroduction = {
+    /**
+     * What the sender needs, as the provider reads it.
+     */
+    message: string;
+    /**
+     * The address of the solution in the public directory.
+     */
+    solutionSlug: string;
+};
+
+/**
  * The file a person is about to upload.
  */
 export type ReserveUpload = {
@@ -1197,6 +1664,283 @@ export type ReserveUpload = {
      * The exact length of the file in bytes.
      */
     sizeBytes: number;
+};
+
+/**
+ * One application as its applicant submitted it last, with the caller's assessment and, for an operator, every score and the decisions.
+ */
+export type ReviewApplication = {
+    /**
+     * The mean of every judge's score, for an operator; null for a judge.
+     */
+    average?: number | null;
+    head: ReviewHead;
+    /**
+     * Submissions and, for an operator, decisions, the oldest first.
+     */
+    history: Array<ReviewEvent>;
+    id: string;
+    mine?: Assessment | null;
+    nextId?: string | null;
+    /**
+     * Every other assessment, for an operator; empty for a judge.
+     */
+    others: Array<Assessment>;
+    /**
+     * Its place among the program's submitted applications, from 1.
+     */
+    position: number;
+    previousId?: string | null;
+    /**
+     * GenAI Fund's decision; null for a judge.
+     */
+    reviewStatus?: 'under_review' | 'shortlisted' | 'not_selected';
+    submitted: SubmittedApplication;
+    submittedAt: string;
+    total: number;
+    /**
+     * The number of the version shown.
+     */
+    version: number;
+};
+
+export type ReviewApplicationItem = {
+    /**
+     * For an operator the mean of every judge's score; for a judge their own.
+     */
+    average?: number | null;
+    /**
+     * The answer to the program's first one-choice question.
+     */
+    choice?: string | null;
+    country?: string | null;
+    id: string;
+    /**
+     * What the caller did with it.
+     */
+    mine: 'none' | 'scored' | 'conflict';
+    organizationName: string;
+    /**
+     * The organization's type, such as independent_builder, builder_team or company.
+     */
+    organizationType: string;
+    /**
+     * GenAI Fund's decision; null for a judge.
+     */
+    reviewStatus?: 'under_review' | 'shortlisted' | 'not_selected';
+    /**
+     * How many scored it; null for a judge.
+     */
+    scored?: number | null;
+    solutionName: string;
+    submittedAt: string;
+    /**
+     * The number of the version under review.
+     */
+    version: number;
+};
+
+/**
+ * A program's submitted applications as the caller reviews them, the earliest submitted first.
+ */
+export type ReviewApplications = {
+    /**
+     * Applications started and never submitted.
+     */
+    drafts: number;
+    head: ReviewHead;
+    items: Array<ReviewApplicationItem>;
+    /**
+     * Applications withdrawn by their applicant.
+     */
+    withdrawn: number;
+};
+
+export type ReviewChoiceQuestion = {
+    id: string;
+    label: string;
+    options: Array<string>;
+};
+
+/**
+ * What a program's applications are judged on, in order.
+ */
+export type ReviewCriteria = {
+    criteria: Array<ReviewCriterion>;
+    /**
+     * Whether an application has been scored on them, which fixes them.
+     */
+    fixed: boolean;
+};
+
+/**
+ * One thing a program's applications are judged on, scored 1 to 5.
+ */
+export type ReviewCriterion = {
+    /**
+     * What a judge looks for.
+     */
+    description?: string | null;
+    id: string;
+    name: string;
+};
+
+export type ReviewEvent = {
+    at: string;
+    /**
+     * Who decided.
+     */
+    by?: string | null;
+    decision?: 'under_review' | 'shortlisted' | 'not_selected';
+    kind: 'submitted' | 'decided';
+    reason?: string | null;
+    /**
+     * The version a submission made.
+     */
+    version?: number | null;
+};
+
+/**
+ * The program under review and what the caller may do in it.
+ */
+export type ReviewHead = {
+    /**
+     * The program's first one-choice question, whose answer the list shows and filters by.
+     */
+    choice?: ReviewChoiceQuestion | null;
+    /**
+     * Whether applications have closed.
+     */
+    closed: boolean;
+    closesAt: string;
+    criteria: Array<ReviewCriterion>;
+    name: string;
+    /**
+     * Whether the caller is GenAI Fund staff, who read every score and decide.
+     */
+    operator: boolean;
+    outcomesDueOn?: string | null;
+    programId: string;
+    /**
+     * When the outcomes were released; null until then.
+     */
+    releasedAt?: string | null;
+    slug: string;
+};
+
+/**
+ * A program whose applications the caller scores.
+ */
+export type ReviewProgram = {
+    /**
+     * How many submitted applications there are.
+     */
+    applications: number;
+    /**
+     * How many of them the caller scored or stepped back from.
+     */
+    assessed: number;
+    closesAt: string;
+    id: string;
+    name: string;
+    outcomesDueOn?: string | null;
+    released: boolean;
+    slug: string;
+};
+
+/**
+ * The programs whose applications the caller scores.
+ */
+export type ReviewPrograms = {
+    items: Array<ReviewProgram>;
+};
+
+/**
+ * Someone who scores a program's applications: a judge GenAI Fund invited, or an operator who scored one.
+ */
+export type Reviewer = {
+    /**
+     * How many submitted applications they scored or stepped back from.
+     */
+    assessed: number;
+    email: string;
+    expiresAt?: string | null;
+    /**
+     * The invitation; null for an operator, who needs none.
+     */
+    id?: string | null;
+    invitedAt?: string | null;
+    name?: string | null;
+    role: 'operator' | 'reviewer';
+    /**
+     * A judge is active once they signed in with the address; an invitation nobody used lapses.
+     */
+    status: 'active' | 'invited' | 'lapsed';
+};
+
+/**
+ * The people who score a program's applications, with their progress.
+ */
+export type Reviewers = {
+    /**
+     * How many submitted applications there are to score.
+     */
+    applications: number;
+    items: Array<Reviewer>;
+};
+
+/**
+ * What the application form holds now. Nothing is checked for completeness until it is submitted.
+ */
+export type SaveApplication = {
+    /**
+     * The answers to the program's questions by question identifier. A file is named by its identifier, a confirmation is "true".
+     */
+    answers: {
+        [key: string]: string;
+    };
+    /**
+     * The models, tools and frameworks the solution is built with.
+     */
+    builtWith: Array<string>;
+    contact: ContactDetails;
+    /**
+     * The solution's deck for this application: a PDF the applicant uploaded for `application_file`.
+     */
+    deckFileId?: string | null;
+    /**
+     * A solution of the applicant's organization.
+     */
+    solutionId?: string | null;
+    /**
+     * The experience that matters for the problem; asked of a team or a company.
+     */
+    teamBackground?: string | null;
+    /**
+     * Customers, pilots, users or revenue so far.
+     */
+    traction?: string | null;
+    /**
+     * The version the form read; null for the first save.
+     */
+    version?: number | null;
+};
+
+/**
+ * The caller's assessment: a score from 1 to 5 for every criterion and a private note, or a conflict of interest without scores.
+ */
+export type SaveAssessment = {
+    /**
+     * The caller knows the applicant, so their score is left out.
+     */
+    conflict: boolean;
+    note?: string | null;
+    /**
+     * By criterion identifier.
+     */
+    scores: {
+        [key: string]: number;
+    };
 };
 
 /**
@@ -1295,9 +2039,40 @@ export type SaveProgram = {
 };
 
 /**
+ * Every question of a program, in the order the form asks them.
+ */
+export type SaveProgramQuestions = {
+    questions: Array<ProgramQuestion>;
+    /**
+     * The version of the program the screen read.
+     */
+    version: number;
+};
+
+/**
+ * A program's judging criteria, replaced whole, in order.
+ */
+export type SaveReviewCriteria = {
+    criteria: Array<SaveReviewCriterion>;
+};
+
+export type SaveReviewCriterion = {
+    description?: string | null;
+    name: string;
+};
+
+/**
  * A solution as its edit screen holds it.
  */
 export type SaveSolution = {
+    /**
+     * A presentation of the solution.
+     */
+    deckUrl?: string | null;
+    /**
+     * A video or a live demo of the solution at work.
+     */
+    demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     industries: Array<string>;
@@ -1352,6 +2127,65 @@ export type SaveTalentProfile = {
 };
 
 /**
+ * How many items of each kind match, whatever kind is shown.
+ */
+export type SearchCounts = {
+    all: number;
+    program: number;
+    solution: number;
+    talent: number;
+};
+
+/**
+ * One result, as its card shows it.
+ */
+export type SearchItem = {
+    /**
+     * The cover, read at the public address of stored files.
+     */
+    coverFileId?: string | null;
+    endsOn?: string | null;
+    /**
+     * Where a program's page is when it has none here.
+     */
+    externalUrl?: string | null;
+    kind: 'program' | 'solution' | 'talent';
+    /**
+     * Where a program stands now; null for other kinds.
+     */
+    phase?: 'upcoming' | 'open' | 'running' | 'done';
+    /**
+     * The address of its page under the path of its kind.
+     */
+    slug: string;
+    startsOn?: string | null;
+    /**
+     * The partner of a program, the organization of a solution, the headline of a person.
+     */
+    subtitle?: string | null;
+    summary: string;
+    title: string;
+    /**
+     * A program's type; null for other kinds.
+     */
+    type?: string | null;
+};
+
+/**
+ * One page of what matches, best first, with the counts of every kind.
+ */
+export type SearchResults = {
+    counts: SearchCounts;
+    items: Array<SearchItem>;
+    page: number;
+    pageSize: number;
+    /**
+     * How many items of the kind shown match, every kind when none is chosen.
+     */
+    total: number;
+};
+
+/**
  * A message to the person behind a talent profile.
  */
 export type SendTalentEnquiry = {
@@ -1378,6 +2212,8 @@ export type Solution = {
      * Why it was last rejected.
      */
     decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    deckUrl?: string | null;
+    demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     id: string;
@@ -1397,6 +2233,10 @@ export type Solution = {
     slug: string;
     status: 'draft' | 'submitted' | 'approved' | 'rejected';
     submittedAt?: string | null;
+    /**
+     * Who sent it for review last: their name, or their address until they have one. Null when it was never sent, or was sent before the sender was recorded.
+     */
+    submittedBy?: string | null;
     summary?: string | null;
     updatedAt: string;
     valueProposition?: string | null;
@@ -1405,6 +2245,21 @@ export type Solution = {
      */
     version: number;
     website?: string | null;
+};
+
+/**
+ * A solution of the applicant's organization, as step 2 shows it.
+ */
+export type SolutionOption = {
+    /**
+     * Whether it has what an application needs: what it does, the problem it solves and its stage.
+     */
+    complete: boolean;
+    id: string;
+    maturity?: string | null;
+    name: string;
+    problemsSolved?: string | null;
+    summary?: string | null;
 };
 
 /**
@@ -1435,6 +2290,36 @@ export type StoredFile = {
     id: string;
     mediaType: string;
     sizeBytes: number;
+};
+
+export type SubmittedAnswer = {
+    file?: AttachedFile | null;
+    kind: string;
+    label: string;
+    questionId: string;
+    value: string;
+};
+
+/**
+ * What the applicant sent, as it was.
+ */
+export type SubmittedApplication = {
+    answers: Array<SubmittedAnswer>;
+    builtWith: Array<string>;
+    contact: ContactDetails;
+    country?: string | null;
+    deck?: AttachedFile | null;
+    email: string;
+    maturity?: string | null;
+    organizationName: string;
+    organizationType: string;
+    problemsSolved?: string | null;
+    solutionName: string;
+    summary?: string | null;
+    teamBackground?: string | null;
+    teamSize?: string | null;
+    traction?: string | null;
+    website?: string | null;
 };
 
 /**
@@ -1569,7 +2454,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'talent.approve' | 'talent.reject';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -1838,6 +2723,204 @@ export type GetMeResponses = {
 };
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type ListAdminIntroductionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Requests about a solution whose name contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only requests in this state.
+         */
+        status?: 'pending' | 'replied' | 'declined';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/introduction/admin/introductions';
+};
+
+export type ListAdminIntroductionsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminIntroductionsError = ListAdminIntroductionsErrors[keyof ListAdminIntroductionsErrors];
+
+export type ListAdminIntroductionsResponses = {
+    /**
+     * One page of the requests the parameters select.
+     */
+    200: AdminIntroductionList;
+};
+
+export type ListAdminIntroductionsResponse = ListAdminIntroductionsResponses[keyof ListAdminIntroductionsResponses];
+
+export type RequestIntroductionData = {
+    body: RequestIntroduction;
+    path?: never;
+    query?: never;
+    url: '/api/introduction/introductions';
+};
+
+export type RequestIntroductionErrors = {
+    /**
+     * The solution or the message is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no approved organization.
+     */
+    403: Problem;
+    /**
+     * No approved solution has the address.
+     */
+    404: Problem;
+    /**
+     * The solution is the caller's own, or an earlier request about it still waits.
+     */
+    409: Problem;
+    /**
+     * Nobody at the provider can be asked right now.
+     */
+    503: Problem;
+};
+
+export type RequestIntroductionError = RequestIntroductionErrors[keyof RequestIntroductionErrors];
+
+export type RequestIntroductionResponses = {
+    /**
+     * The request was recorded and the provider's owners were told.
+     */
+    204: void;
+};
+
+export type RequestIntroductionResponse = RequestIntroductionResponses[keyof RequestIntroductionResponses];
+
+export type GetReceivedIntroductionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/introduction/mine/received';
+};
+
+export type GetReceivedIntroductionsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization.
+     */
+    403: Problem;
+};
+
+export type GetReceivedIntroductionsError = GetReceivedIntroductionsErrors[keyof GetReceivedIntroductionsErrors];
+
+export type GetReceivedIntroductionsResponses = {
+    /**
+     * The requests, newest first.
+     */
+    200: ReceivedIntroductions;
+};
+
+export type GetReceivedIntroductionsResponse = GetReceivedIntroductionsResponses[keyof GetReceivedIntroductionsResponses];
+
+export type DeclineIntroductionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/introduction/mine/received/{id}/decline';
+};
+
+export type DeclineIntroductionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an owner of the organization asked.
+     */
+    403: Problem;
+    /**
+     * The organization asked has no such request.
+     */
+    404: Problem;
+    /**
+     * The request was answered already.
+     */
+    409: Problem;
+};
+
+export type DeclineIntroductionError = DeclineIntroductionErrors[keyof DeclineIntroductionErrors];
+
+export type DeclineIntroductionResponses = {
+    /**
+     * The request was declined and the sender was told.
+     */
+    204: void;
+};
+
+export type DeclineIntroductionResponse = DeclineIntroductionResponses[keyof DeclineIntroductionResponses];
+
+export type ReplyToIntroductionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/introduction/mine/received/{id}/reply';
+};
+
+export type ReplyToIntroductionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an owner of the organization asked.
+     */
+    403: Problem;
+    /**
+     * The organization asked has no such request.
+     */
+    404: Problem;
+    /**
+     * The request was answered already.
+     */
+    409: Problem;
+};
+
+export type ReplyToIntroductionError = ReplyToIntroductionErrors[keyof ReplyToIntroductionErrors];
+
+export type ReplyToIntroductionResponses = {
+    /**
+     * The request was replied to and both sides were told.
+     */
+    204: void;
+};
+
+export type ReplyToIntroductionResponse = ReplyToIntroductionResponses[keyof ReplyToIntroductionResponses];
 
 export type ApproveOrganizationClaimData = {
     body: ApproveOrganization;
@@ -2930,6 +4013,84 @@ export type PublishProgramResponses = {
 
 export type PublishProgramResponse = PublishProgramResponses[keyof PublishProgramResponses];
 
+export type GetProgramQuestionsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}/questions';
+};
+
+export type GetProgramQuestionsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+};
+
+export type GetProgramQuestionsError = GetProgramQuestionsErrors[keyof GetProgramQuestionsErrors];
+
+export type GetProgramQuestionsResponses = {
+    /**
+     * The questions, and whether they can still change.
+     */
+    200: ProgramQuestions;
+};
+
+export type GetProgramQuestionsResponse = GetProgramQuestionsResponses[keyof GetProgramQuestionsResponses];
+
+export type SaveProgramQuestionsData = {
+    body: SaveProgramQuestions;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}/questions';
+};
+
+export type SaveProgramQuestionsErrors = {
+    /**
+     * A member is not valid, or a question answered by a choice offers too few.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+    /**
+     * The program changed since it was read, or its applications have opened.
+     */
+    409: Problem;
+};
+
+export type SaveProgramQuestionsError = SaveProgramQuestionsErrors[keyof SaveProgramQuestionsErrors];
+
+export type SaveProgramQuestionsResponses = {
+    /**
+     * The questions as saved, with the program's new version.
+     */
+    200: ProgramQuestions;
+};
+
+export type SaveProgramQuestionsResponse = SaveProgramQuestionsResponses[keyof SaveProgramQuestionsResponses];
+
 export type UnpublishProgramData = {
     body?: never;
     path: {
@@ -3026,6 +4187,802 @@ export type GetProgramResponses = {
 
 export type GetProgramResponse = GetProgramResponses[keyof GetProgramResponses];
 
+export type ListMyApplicationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/proposal/applications';
+};
+
+export type ListMyApplicationsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type ListMyApplicationsError = ListMyApplicationsErrors[keyof ListMyApplicationsErrors];
+
+export type ListMyApplicationsResponses = {
+    /**
+     * The applications, the most recently changed first.
+     */
+    200: MyApplications;
+};
+
+export type ListMyApplicationsResponse = ListMyApplicationsResponses[keyof ListMyApplicationsResponses];
+
+export type GetMyApplicationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/applications/{id}';
+};
+
+export type GetMyApplicationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no such application.
+     */
+    404: Problem;
+};
+
+export type GetMyApplicationError = GetMyApplicationErrors[keyof GetMyApplicationErrors];
+
+export type GetMyApplicationResponses = {
+    /**
+     * The application and its program.
+     */
+    200: ApplicationView;
+};
+
+export type GetMyApplicationResponse = GetMyApplicationResponses[keyof GetMyApplicationResponses];
+
+export type SubmitApplicationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/applications/{id}/submit';
+};
+
+export type SubmitApplicationErrors = {
+    /**
+     * The application lacks what a submission needs; its code says what.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no such application.
+     */
+    404: Problem;
+    /**
+     * The applications have closed, it can no longer change, or someone in the organization already applied.
+     */
+    409: Problem;
+};
+
+export type SubmitApplicationError = SubmitApplicationErrors[keyof SubmitApplicationErrors];
+
+export type SubmitApplicationResponses = {
+    /**
+     * The application as submitted. A copy goes by email.
+     */
+    200: ApplicationView;
+};
+
+export type SubmitApplicationResponse = SubmitApplicationResponses[keyof SubmitApplicationResponses];
+
+export type WithdrawApplicationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/applications/{id}/withdraw';
+};
+
+export type WithdrawApplicationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no such application.
+     */
+    404: Problem;
+    /**
+     * It is not submitted, or the applications have closed.
+     */
+    409: Problem;
+};
+
+export type WithdrawApplicationError = WithdrawApplicationErrors[keyof WithdrawApplicationErrors];
+
+export type WithdrawApplicationResponses = {
+    /**
+     * The application, withdrawn.
+     */
+    200: ApplicationView;
+};
+
+export type WithdrawApplicationResponse = WithdrawApplicationResponses[keyof WithdrawApplicationResponses];
+
+export type GetApplicationFormData = {
+    body?: never;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/proposal/programs/{slug}/application';
+};
+
+export type GetApplicationFormErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The program takes no applications on BeyondPilot.
+     */
+    409: Problem;
+};
+
+export type GetApplicationFormError = GetApplicationFormErrors[keyof GetApplicationFormErrors];
+
+export type GetApplicationFormResponses = {
+    /**
+     * The program's questions, the caller's application if they saved one, their organization and its solutions.
+     */
+    200: ApplicationView;
+};
+
+export type GetApplicationFormResponse = GetApplicationFormResponses[keyof GetApplicationFormResponses];
+
+export type SaveApplicationData = {
+    body: SaveApplication;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/proposal/programs/{slug}/application';
+};
+
+export type SaveApplicationErrors = {
+    /**
+     * A member is not valid, an answer does not fit its question, or the solution is not the organization's.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The program takes no applications now, the application changed since it was read, or it can no longer change.
+     */
+    409: Problem;
+};
+
+export type SaveApplicationError = SaveApplicationErrors[keyof SaveApplicationErrors];
+
+export type SaveApplicationResponses = {
+    /**
+     * The form with the application as saved.
+     */
+    200: ApplicationView;
+};
+
+export type SaveApplicationResponse = SaveApplicationResponses[keyof SaveApplicationResponses];
+
+export type OrganizeApplicantData = {
+    body: ApplicantOrganization;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/proposal/programs/{slug}/application/organization';
+};
+
+export type OrganizeApplicantErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The program takes no applications now, or the caller already belongs to an organization.
+     */
+    409: Problem;
+};
+
+export type OrganizeApplicantError = OrganizeApplicantErrors[keyof OrganizeApplicantErrors];
+
+export type OrganizeApplicantResponses = {
+    /**
+     * The form, with the new organization.
+     */
+    200: ApplicationView;
+};
+
+export type OrganizeApplicantResponse = OrganizeApplicantResponses[keyof OrganizeApplicantResponses];
+
+export type GetReviewApplicationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/applications/{id}';
+};
+
+export type GetReviewApplicationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted application.
+     */
+    404: Problem;
+};
+
+export type GetReviewApplicationError = GetReviewApplicationErrors[keyof GetReviewApplicationErrors];
+
+export type GetReviewApplicationResponses = {
+    /**
+     * The application with the caller's assessment; an operator also reads every score and the decisions.
+     */
+    200: ReviewApplication;
+};
+
+export type GetReviewApplicationResponse = GetReviewApplicationResponses[keyof GetReviewApplicationResponses];
+
+export type SaveAssessmentData = {
+    body: SaveAssessment;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/applications/{id}/assessment';
+};
+
+export type SaveAssessmentErrors = {
+    /**
+     * A criterion is not scored from 1 to 5.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted application.
+     */
+    404: Problem;
+    /**
+     * The program has no criteria, or its outcomes were released.
+     */
+    409: Problem;
+};
+
+export type SaveAssessmentError = SaveAssessmentErrors[keyof SaveAssessmentErrors];
+
+export type SaveAssessmentResponses = {
+    /**
+     * The application with the assessment as saved.
+     */
+    200: ReviewApplication;
+};
+
+export type SaveAssessmentResponse = SaveAssessmentResponses[keyof SaveAssessmentResponses];
+
+export type GetReviewFileData = {
+    body?: never;
+    path: {
+        id: string;
+        fileId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/applications/{id}/files/{fileId}';
+};
+
+export type GetReviewFileErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * The submission holds no such file.
+     */
+    404: Problem;
+};
+
+export type GetReviewFileError = GetReviewFileErrors[keyof GetReviewFileErrors];
+
+export type GetReviewFileResponses = {
+    /**
+     * The bytes of the file, saved under its name.
+     */
+    200: Blob | File;
+};
+
+export type GetReviewFileResponse = GetReviewFileResponses[keyof GetReviewFileResponses];
+
+export type ListReviewProgramsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/proposal/review/programs';
+};
+
+export type ListReviewProgramsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type ListReviewProgramsError = ListReviewProgramsErrors[keyof ListReviewProgramsErrors];
+
+export type ListReviewProgramsResponses = {
+    /**
+     * For an operator, every program with a submitted application; for a judge, the programs they were invited to.
+     */
+    200: ReviewPrograms;
+};
+
+export type ListReviewProgramsResponse = ListReviewProgramsResponses[keyof ListReviewProgramsResponses];
+
+export type ListReviewApplicationsData = {
+    body?: never;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/applications';
+};
+
+export type ListReviewApplicationsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+};
+
+export type ListReviewApplicationsError = ListReviewApplicationsErrors[keyof ListReviewApplicationsErrors];
+
+export type ListReviewApplicationsResponses = {
+    /**
+     * The applications with the caller's scores; an operator also reads the decisions and every judge's average.
+     */
+    200: ReviewApplications;
+};
+
+export type ListReviewApplicationsResponse = ListReviewApplicationsResponses[keyof ListReviewApplicationsResponses];
+
+export type GetReviewCriteriaData = {
+    body?: never;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/criteria';
+};
+
+export type GetReviewCriteriaErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+};
+
+export type GetReviewCriteriaError = GetReviewCriteriaErrors[keyof GetReviewCriteriaErrors];
+
+export type GetReviewCriteriaResponses = {
+    /**
+     * The criteria in order, and whether they are fixed.
+     */
+    200: ReviewCriteria;
+};
+
+export type GetReviewCriteriaResponse = GetReviewCriteriaResponses[keyof GetReviewCriteriaResponses];
+
+export type SaveReviewCriteriaData = {
+    body: SaveReviewCriteria;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/criteria';
+};
+
+export type SaveReviewCriteriaErrors = {
+    /**
+     * A criterion is not valid, or two share a name.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+    /**
+     * An application has been scored on the criteria.
+     */
+    409: Problem;
+};
+
+export type SaveReviewCriteriaError = SaveReviewCriteriaErrors[keyof SaveReviewCriteriaErrors];
+
+export type SaveReviewCriteriaResponses = {
+    /**
+     * The criteria as saved.
+     */
+    200: ReviewCriteria;
+};
+
+export type SaveReviewCriteriaResponse = SaveReviewCriteriaResponses[keyof SaveReviewCriteriaResponses];
+
+export type DecideApplicationsData = {
+    body: Decide;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/decisions';
+};
+
+export type DecideApplicationsErrors = {
+    /**
+     * The decision is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * An application is not one of the program's submitted ones.
+     */
+    404: Problem;
+    /**
+     * The outcomes were released.
+     */
+    409: Problem;
+};
+
+export type DecideApplicationsError = DecideApplicationsErrors[keyof DecideApplicationsErrors];
+
+export type DecideApplicationsResponses = {
+    /**
+     * The program's applications with the decisions recorded.
+     */
+    200: ReviewApplications;
+};
+
+export type DecideApplicationsResponse = DecideApplicationsResponses[keyof DecideApplicationsResponses];
+
+export type GetReleaseData = {
+    body?: never;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/release';
+};
+
+export type GetReleaseErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+};
+
+export type GetReleaseError = GetReleaseErrors[keyof GetReleaseErrors];
+
+export type GetReleaseResponses = {
+    /**
+     * The groups, their emails and whether the release is ready.
+     */
+    200: Release;
+};
+
+export type GetReleaseResponse = GetReleaseResponses[keyof GetReleaseResponses];
+
+export type ReleaseOutcomesData = {
+    body: ReleaseEmails;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/release';
+};
+
+export type ReleaseOutcomesErrors = {
+    /**
+     * An email is missing its subject or message.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+    /**
+     * Applications have not closed, an application has no decision, or the outcomes were released.
+     */
+    409: Problem;
+};
+
+export type ReleaseOutcomesError = ReleaseOutcomesErrors[keyof ReleaseOutcomesErrors];
+
+export type ReleaseOutcomesResponses = {
+    /**
+     * The release as made. Each applicant gets their group's email.
+     */
+    200: Release;
+};
+
+export type ReleaseOutcomesResponse = ReleaseOutcomesResponses[keyof ReleaseOutcomesResponses];
+
+export type ListReviewersData = {
+    body?: never;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/reviewers';
+};
+
+export type ListReviewersErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+};
+
+export type ListReviewersError = ListReviewersErrors[keyof ListReviewersErrors];
+
+export type ListReviewersResponses = {
+    /**
+     * The judges and the operators who scored, with how many each scored.
+     */
+    200: Reviewers;
+};
+
+export type ListReviewersResponse = ListReviewersResponses[keyof ListReviewersResponses];
+
+export type InviteReviewerData = {
+    body: InviteReviewer;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/reviewers';
+};
+
+export type InviteReviewerErrors = {
+    /**
+     * The address is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+    /**
+     * The address is already invited to this program.
+     */
+    409: Problem;
+};
+
+export type InviteReviewerError = InviteReviewerErrors[keyof InviteReviewerErrors];
+
+export type InviteReviewerResponses = {
+    /**
+     * The judges, the new one invited. The invitation goes by email.
+     */
+    200: Reviewers;
+};
+
+export type InviteReviewerResponse = InviteReviewerResponses[keyof InviteReviewerResponses];
+
+export type RemoveReviewerData = {
+    body?: never;
+    path: {
+        programId: string;
+        reviewerId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/reviewers/{reviewerId}';
+};
+
+export type RemoveReviewerErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The program has no such judge.
+     */
+    404: Problem;
+};
+
+export type RemoveReviewerError = RemoveReviewerErrors[keyof RemoveReviewerErrors];
+
+export type RemoveReviewerResponses = {
+    /**
+     * The judges that remain. The scores the judge gave stay.
+     */
+    200: Reviewers;
+};
+
+export type RemoveReviewerResponse = RemoveReviewerResponses[keyof RemoveReviewerResponses];
+
+export type ResendReviewerInvitationData = {
+    body?: never;
+    path: {
+        programId: string;
+        reviewerId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/reviewers/{reviewerId}/resend';
+};
+
+export type ResendReviewerInvitationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The program has no such judge.
+     */
+    404: Problem;
+    /**
+     * The judge has already signed in.
+     */
+    409: Problem;
+};
+
+export type ResendReviewerInvitationError = ResendReviewerInvitationErrors[keyof ResendReviewerInvitationErrors];
+
+export type ResendReviewerInvitationResponses = {
+    /**
+     * The judges; the invitation is open for another seven days.
+     */
+    200: Reviewers;
+};
+
+export type ResendReviewerInvitationResponse = ResendReviewerInvitationResponses[keyof ResendReviewerInvitationResponses];
+
+export type SearchData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * What to search for, as the person typed it.
+         */
+        q: string;
+        /**
+         * Only items of this kind; every kind when absent.
+         */
+        kind?: 'program' | 'solution' | 'talent';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/search';
+};
+
+export type SearchErrors = {
+    /**
+     * The query is missing or too long, or a parameter is not valid.
+     */
+    400: Problem;
+};
+
+export type SearchError = SearchErrors[keyof SearchErrors];
+
+export type SearchResponses = {
+    /**
+     * A page of results and the counts of every kind.
+     */
+    200: SearchResults;
+};
+
+export type SearchResponse = SearchResponses[keyof SearchResponses];
+
 export type ApproveCustomerDeploymentData = {
     body?: never;
     path: {
@@ -3113,13 +5070,17 @@ export type ListAdminSolutionsData = {
     path?: never;
     query?: {
         /**
-         * Solutions whose name contains this, ignoring case.
+         * Solutions whose name, or whose organization's name, contains this, ignoring case.
          */
         q?: string | null;
         /**
          * Only solutions of this status. Drafts are never listed.
          */
         status?: 'submitted' | 'approved' | 'rejected';
+        /**
+         * Only solutions for this industry.
+         */
+        industry?: string | null;
         /**
          * The page, counted from 1.
          */
@@ -3707,7 +5668,7 @@ export type GetSolutionData = {
 
 export type GetSolutionErrors = {
     /**
-     * No approved, listed solution has this address.
+     * No approved solution has this address.
      */
     404: Problem;
 };

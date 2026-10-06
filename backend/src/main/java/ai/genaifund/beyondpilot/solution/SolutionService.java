@@ -24,8 +24,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * What an organization does with its solutions. Every member reads them; only an owner of an approved organization
- * that is a provider writes them. What the caller is in their organization is read now, on every operation.
+ * What an organization does with its solutions. Every member of an organization reads and
+ * writes them, whether or not GenAI Fund has reviewed the organization yet: review decides what is listed, not who
+ * takes part (BEY-37). What the caller is in their organization is read now, on every operation.
  */
 @Service
 public class SolutionService {
@@ -65,7 +66,7 @@ public class SolutionService {
 					.map(solution -> SolutionViews.summary(solution, membership.organizationName(),
 							deployments.countBySolutionIdAndStatus(solution.getId(), CustomerDeployment.SUBMITTED)))
 					.toList(),
-				writes(membership));
+				true);
 	}
 
 	/**
@@ -84,7 +85,7 @@ public class SolutionService {
 
 	/**
 	 * Creates a draft, which only the organization sees.
-	 * @throws SolutionException when the caller is not an owner of an approved organization
+	 * @throws SolutionException when the caller is not a member
 	 */
 	@Transactional
 	public SolutionResponse create(Actor actor, CreateSolutionRequest request) {
@@ -96,13 +97,13 @@ public class SolutionService {
 		}
 		Solution solution = solutions.saveAndFlush(new Solution(UUID.randomUUID(), membership.organizationId(), slug,
 				request.name().strip(), actor.accountId()));
-		return SolutionViews.solution(solution, membership.organizationName(), List.of());
+		return SolutionViews.solution(solution, membership.organizationName(), null, List.of());
 	}
 
 	/**
 	 * Saves a solution as its edit screen holds it. A change to an approved solution shows at once; one to a rejected
 	 * solution waits for the owner to submit it again.
-	 * @throws SolutionException when the caller is not an owner of an approved organization, the organization has no such
+	 * @throws SolutionException when the caller is not a member, the organization has no such
 	 * solution, or it changed since the screen read it
 	 */
 	@Transactional
@@ -116,7 +117,8 @@ public class SolutionService {
 		solution.describe(request.name().strip(), SolutionViews.text(request.summary()),
 				SolutionViews.text(request.problemsSolved()), SolutionViews.text(request.valueProposition()),
 				SolutionViews.codes(request.focusAreas()), SolutionViews.codes(request.industries()),
-				request.maturity(), SolutionViews.codes(request.deployment()), SolutionViews.text(request.website()));
+				request.maturity(), SolutionViews.codes(request.deployment()), SolutionViews.text(request.website()),
+				SolutionViews.text(request.demoUrl()), SolutionViews.text(request.deckUrl()));
 		solution.list(request.listed());
 		if (!solution.isDraft() && !solution.isRejected() && !solution.isComplete()) {
 			// What operators review, and what the directory shows, keeps what a submission needs.
@@ -128,7 +130,7 @@ public class SolutionService {
 
 	/**
 	 * Sends a draft, or a rejected solution that was corrected, to GenAI Fund for review.
-	 * @throws SolutionException when the caller is not an owner of an approved organization, the organization has no such
+	 * @throws SolutionException when the caller is not a member, the organization has no such
 	 * solution, it lacks what a submission needs, or it is already submitted or approved
 	 */
 	@Transactional
@@ -142,7 +144,7 @@ public class SolutionService {
 		if (!solution.isComplete()) {
 			throw incomplete(id);
 		}
-		solution.submit(Instant.now());
+		solution.submit(Instant.now(), actor.accountId());
 		// The response carries the version the next save must send.
 		solutions.flush();
 		LOG.atInfo()
@@ -155,7 +157,7 @@ public class SolutionService {
 
 	/**
 	 * Deletes a draft. Anything that was ever submitted stays.
-	 * @throws SolutionException when the caller is not an owner of an approved organization, the organization has no such
+	 * @throws SolutionException when the caller is not a member, the organization has no such
 	 * solution, or it is not a draft
 	 */
 	@Transactional
@@ -171,7 +173,7 @@ public class SolutionService {
 	/**
 	 * Adds a project in which a customer put the solution to work. It waits for GenAI Fund's review before anyone else
 	 * reads it.
-	 * @throws SolutionException when the caller is not an owner of an approved organization, the organization has no such
+	 * @throws SolutionException when the caller is not a member, the organization has no such
 	 * solution, or the solution already lists as many as it may
 	 */
 	@Transactional
@@ -189,7 +191,7 @@ public class SolutionService {
 	/**
 	 * Saves a customer deployment as its form holds it, which sends it to review again: what it says about a customer
 	 * is not shown until GenAI Fund has read it.
-	 * @throws SolutionException when the caller is not an owner of an approved organization, the solution has no such
+	 * @throws SolutionException when the caller is not a member, the solution has no such
 	 * deployment, or it changed since the form read it
 	 */
 	@Transactional
@@ -207,7 +209,7 @@ public class SolutionService {
 
 	/**
 	 * Removes a customer deployment, whatever its review says.
-	 * @throws SolutionException when the caller is not an owner of an approved organization or the solution has no such
+	 * @throws SolutionException when the caller is not a member or the solution has no such
 	 * deployment
 	 */
 	@Transactional
@@ -232,19 +234,15 @@ public class SolutionService {
 
 	private SolutionResponse view(Solution solution, Membership membership) {
 		return SolutionViews.solution(solution, membership.organizationName(),
+				SolutionViews.sender(solution, identity),
 				deployments.findBySolutionIdOrderByCreatedAtDesc(solution.getId()));
 	}
 
 	private Membership writer(Actor actor) {
 		identity.requireActive(actor);
 		return organizations.membershipOf(actor)
-			.filter(SolutionService::writes)
-			.orElseThrow(() -> new SolutionException(SolutionErrorCode.OWNER_REQUIRED,
+			.orElseThrow(() -> new SolutionException(SolutionErrorCode.MEMBER_REQUIRED,
 					"Solution change by account " + actor.accountId()));
-	}
-
-	private static boolean writes(Membership membership) {
-		return membership.owner() && membership.approved();
 	}
 
 	private Solution own(Membership membership, UUID id) {
