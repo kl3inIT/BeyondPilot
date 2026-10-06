@@ -36,12 +36,14 @@ The new edges are `talent → organization` and `talent → storage`. Neither mo
 5. **An answer is final.** An accepted, declined, reported or closed enquiry cannot change; the sender may write again.
 6. **The clock is a scheduled task in `talent`.** Each hour it closes the enquiries older than 14 days and sends the seventh-day reminders, each at most once. The application runs as one instance; a second instance would need a lock, recorded as a known limit.
 7. **An approved profile is shown in the directory or hidden.** There is no page reachable only by its link. Showing or hiding needs no review. A hidden profile takes no enquiry; the ones that wait keep their course.
-8. **A profile marked "not available" can still be contacted.** The dialog says the person is not looking now.
+8. **A profile no longer states an availability.** The product owner dropped the field on 6 October 2026 (`V15__talent_drop_availability.sql`); what kind of work the person is open to stays.
 9. **Three decisions by GenAI Fund.** Approve, ask for changes (`changes_requested`) to a profile that waits, remove (`removed`) an approved one. The last two need a reason from the closed list and allow a note. Each is emailed in both languages, as an organization decision is: the email says to sign in for the reason and quotes the operator's note. The audit catalog keeps `talent.reject` for the decisions recorded before.
 10. **The new facts are optional.** Photo, city, languages, industries (the list the organizations use), where the person works (as stated) and the stage of each project (`prototype`, `pilot`, `in_production`, `internal_tool`). A submission still needs a headline, a bio, a role and a skill.
 11. **The rate band is not public.** The person and operators read it; the public profile and directory do not.
-12. **Projects are stated by the person.** Confirmation by an enterprise is left for later.
+12. **Projects are stated by the person.** Nobody confirms them: the brief (§7.9) asks for relevant work, not its confirmation, and an enterprise outside BeyondPilot has no way to confirm. The profile says once, above the projects, that they are as the person states them.
 13. **The photo is the person's own upload.** It is a public file of the purpose `talent_photo`, at most 2 MB, named by one profile. A photo the profile no longer names, or the photo of a deleted profile, is removed from the store.
+14. **A message is signed with a name.** The sender gives the name the person reads (`V16__talent_enquiry_sender_name.sql`); an account without a name of its own would otherwise reach the person as "someone", and an acceptance would hand an address to a stranger.
+15. **Buyers find people by industry and by the words of a project.** The directory filters by industry, and its search reads project titles as well as names, headlines and skills.
 
 ## HTTP
 
@@ -62,7 +64,7 @@ The exact contract is `openapi.yml`.
 
 | Where               | What                                                                                                   |
 | ------------------- | ------------------------------------------------------------------------------------------------------ |
-| `/talent`           | Role chips, the filters for availability, what the person is open to and country, the new card         |
+| `/talent`           | Role chips, the filters for what the person is open to and country, the new card                       |
 | `/talent/[slug]`    | The redesigned page: counts, the projects as a timeline, one Contact, the dialog (a sheet on a phone)  |
 | `/workspace/talent` | Tabs Profile and Enquiries with its count; accept, decline, report; delete the profile; the new fields |
 | `/admin/talent`     | Ask for changes and Remove as two decisions; the reported enquiries                                    |
