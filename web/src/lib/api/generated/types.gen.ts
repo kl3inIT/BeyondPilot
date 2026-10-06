@@ -529,6 +529,76 @@ export type AdminUseCaseSummary = {
     updatedAt: string;
 };
 
+export type AiProvider = {
+    baseUrl: string;
+    hasKey: boolean;
+    id: string;
+    /**
+     * Whether search embeds with it; a provider in use cannot be deleted.
+     */
+    inUse: boolean;
+    name: string;
+    updatedAt: string;
+    /**
+     * Who saved it last, as they were named.
+     */
+    updatedBy: string;
+    vendor: 'openai' | 'openrouter';
+    /**
+     * Send it back with a change; a change made meanwhile is refused.
+     */
+    version: number;
+};
+
+/**
+ * How embedding one test sentence went. Nothing is stored.
+ */
+export type AiProviderTest = {
+    /**
+     * The length of the vector the provider gave.
+     */
+    dimensions?: number | null;
+    /**
+     * How long the provider took, in milliseconds.
+     */
+    latencyMs: number;
+    model: string;
+    ok: boolean;
+    /**
+     * Why it failed; null when it worked.
+     */
+    reason?: 'rejected' | 'model_refused' | 'unreachable' | 'wrong_dimensions';
+};
+
+/**
+ * The AI providers operators connected for embeddings, and the model search embeds with. A key is never returned: each provider says only whether it has one.
+ */
+export type AiProviders = {
+    /**
+     * The model in use; null until an operator chooses one.
+     */
+    embedding?: EmbeddingModelInUse;
+    /**
+     * Whether the server holds the key that encrypts provider keys; without it none can be saved.
+     */
+    keysCanBeStored: boolean;
+    providers: Array<AiProvider>;
+    /**
+     * The version of the search settings; send it back to change the model.
+     */
+    settingsVersion: number;
+    /**
+     * The providers that can be connected, with their address and models.
+     */
+    vendors: Array<AiVendor>;
+};
+
+export type AiVendor = {
+    baseUrl: string;
+    id: 'openai' | 'openrouter';
+    models: Array<string>;
+};
+
 /**
  * Who applies, for someone in no organization: themselves on their own, or their team.
  */
@@ -690,7 +760,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -770,6 +840,18 @@ export type BackSolution = {
 
 export type ChangeMemberRole = {
     role: 'owner' | 'member';
+};
+
+/**
+ * The provider and model search embeds with from now on. Every item is embedded again when the model changes.
+ */
+export type ChooseEmbeddingModel = {
+    model: string;
+    providerId: string;
+    /**
+     * The version of the search settings it was read at.
+     */
+    version: number;
 };
 
 /**
@@ -1301,6 +1383,25 @@ export type EmailTest = {
     failure?: 'not_configured' | 'authentication' | 'throttled' | 'unavailable' | 'rejected' | 'invalid_recipient';
     recipient: string;
     sent: boolean;
+};
+
+export type EmbeddingModelInUse = {
+    dimensions: number;
+    /**
+     * Items embedded with this model.
+     */
+    embedded: number;
+    model: string;
+    providerId: string;
+    providerName: string;
+    /**
+     * When the model was chosen.
+     */
+    since?: string | null;
+    /**
+     * Items in the index.
+     */
+    total: number;
 };
 
 /**
@@ -2470,6 +2571,21 @@ export type ReserveUpload = {
 };
 
 /**
+ * How many held-back items the next run of the job tries.
+ */
+export type RetriedEmbeddings = {
+    count: number;
+};
+
+/**
+ * The held-back item to try again at once, or every one when no item is named.
+ */
+export type RetryEmbeddings = {
+    itemId?: string | null;
+    kind?: 'program' | 'solution' | 'talent' | 'use_case';
+};
+
+/**
  * One application as its applicant submitted it last, with the caller's assessment and, for an operator, every score and the decisions.
  */
 export type ReviewApplication = {
@@ -2698,6 +2814,27 @@ export type Reviewers = {
      */
     applications: number;
     items: Array<Reviewer>;
+};
+
+/**
+ * A provider to connect or change. The address must be the vendor's own; a saved key is kept only while it is unchanged.
+ */
+export type SaveAiProvider = {
+    /**
+     * The new key, with key = replace.
+     */
+    apiKey?: string | null;
+    baseUrl: string;
+    /**
+     * Keep the saved key, replace it with apiKey, or remove it. A new provider takes replace.
+     */
+    key: 'keep' | 'replace' | 'remove';
+    name: string;
+    vendor: 'openai' | 'openrouter';
+    /**
+     * The version the provider was read at; 0 for a new one.
+     */
+    version: number;
 };
 
 /**
@@ -3125,6 +3262,59 @@ export type SearchCounts = {
 };
 
 /**
+ * What search can find by keyword, and how much of it is embedded for semantic search.
+ */
+export type SearchIndex = {
+    /**
+     * Items the provider refused, tried again on their own later.
+     */
+    heldBack: Array<SearchIndexHeldBack>;
+    kinds: Array<SearchIndexKind>;
+    /**
+     * The last rebuild since the application started.
+     */
+    lastRebuild?: SearchIndexRebuild;
+    semantic: SemanticSearchState;
+    /**
+     * The version of the search settings; send it back to switch semantic search.
+     */
+    settingsVersion: number;
+};
+
+export type SearchIndexHeldBack = {
+    attempts: number;
+    itemId: string;
+    kind: 'program' | 'solution' | 'talent' | 'use_case';
+    nextAttemptAt?: string | null;
+    reason: 'bad_request' | 'unprocessable' | 'refused';
+    title: string;
+};
+
+export type SearchIndexKind = {
+    embedded: number;
+    heldBack: number;
+    kind: 'program' | 'solution' | 'talent' | 'use_case';
+    /**
+     * What visitors may find; unlisted items stay for operators matching use cases.
+     */
+    listed: number;
+    total: number;
+    waiting: number;
+};
+
+export type SearchIndexRebuild = {
+    at: string;
+    /**
+     * Rows taken out because their item is no longer published.
+     */
+    removed: number;
+    /**
+     * Items read from their modules.
+     */
+    saved: number;
+};
+
+/**
  * One result, as its card shows it. Members of another kind are null or empty.
  */
 export type SearchItem = {
@@ -3240,6 +3430,28 @@ export type SearchResults = {
     total: number;
 };
 
+export type SemanticSearchState = {
+    /**
+     * Whether an operator turned semantic search on.
+     */
+    enabled: boolean;
+    /**
+     * Why it is paused.
+     */
+    failure?: 'rejected' | 'model_refused' | 'unreachable';
+    lastBatchAt?: string | null;
+    model?: string | null;
+    /**
+     * When the provider is tried again.
+     */
+    pausedUntil?: string | null;
+    providerName?: string | null;
+    /**
+     * How it goes: on, turned off, paused after the provider failed, or on without a usable provider.
+     */
+    state: 'on' | 'off' | 'paused' | 'no_provider';
+};
+
 /**
  * Why GenAI Fund sends a use case back to its organization.
  */
@@ -3263,6 +3475,17 @@ export type SendTalentEnquiry = {
      * What the message is about.
      */
     topic: 'project' | 'role' | 'other';
+};
+
+/**
+ * Turns semantic search on or off. Off, search matches keywords only and nothing is sent to the provider.
+ */
+export type SetSemanticSearch = {
+    enabled: boolean;
+    /**
+     * The version of the search settings it was read at.
+     */
+    version: number;
 };
 
 /**
@@ -3628,6 +3851,20 @@ export type TalentSummary = {
 };
 
 /**
+ * A connection to try, saved or not. Without an apiKey the saved key of providerId is used, while the address is the one it was saved with.
+ */
+export type TestAiProvider = {
+    apiKey?: string | null;
+    baseUrl: string;
+    model: string;
+    /**
+     * The saved provider whose key to use when apiKey is empty.
+     */
+    providerId?: string | null;
+    vendor: 'openai' | 'openrouter';
+};
+
+/**
  * Permission to send the bytes of one file. Send them as the request says, then confirm.
  */
 export type UploadTicket = {
@@ -3714,7 +3951,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -7239,6 +7476,368 @@ export type SearchResponses = {
 };
 
 export type SearchResponse = SearchResponses[keyof SearchResponses];
+
+export type ChooseEmbeddingModelData = {
+    body: ChooseEmbeddingModel;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/embedding-model';
+};
+
+export type ChooseEmbeddingModelErrors = {
+    /**
+     * A member is not valid, the model is not offered, the provider has no key, or it did not embed the test.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+    /**
+     * The search settings changed since they were read.
+     */
+    409: Problem;
+};
+
+export type ChooseEmbeddingModelError = ChooseEmbeddingModelErrors[keyof ChooseEmbeddingModelErrors];
+
+export type ChooseEmbeddingModelResponses = {
+    /**
+     * The providers, with the model in use.
+     */
+    200: AiProviders;
+};
+
+export type ChooseEmbeddingModelResponse = ChooseEmbeddingModelResponses[keyof ChooseEmbeddingModelResponses];
+
+export type GetSearchIndexData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/index';
+};
+
+export type GetSearchIndexErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetSearchIndexError = GetSearchIndexErrors[keyof GetSearchIndexErrors];
+
+export type GetSearchIndexResponses = {
+    /**
+     * The state.
+     */
+    200: SearchIndex;
+};
+
+export type GetSearchIndexResponse = GetSearchIndexResponses[keyof GetSearchIndexResponses];
+
+export type RebuildSearchIndexData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/index/rebuild';
+};
+
+export type RebuildSearchIndexErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type RebuildSearchIndexError = RebuildSearchIndexErrors[keyof RebuildSearchIndexErrors];
+
+export type RebuildSearchIndexResponses = {
+    /**
+     * The state, with what the rebuild did.
+     */
+    200: SearchIndex;
+};
+
+export type RebuildSearchIndexResponse = RebuildSearchIndexResponses[keyof RebuildSearchIndexResponses];
+
+export type RetrySearchEmbeddingsData = {
+    body: RetryEmbeddings;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/index/retry';
+};
+
+export type RetrySearchEmbeddingsErrors = {
+    /**
+     * A member is not valid, or an item is named without its kind.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type RetrySearchEmbeddingsError = RetrySearchEmbeddingsErrors[keyof RetrySearchEmbeddingsErrors];
+
+export type RetrySearchEmbeddingsResponses = {
+    /**
+     * How many items the next run tries.
+     */
+    200: RetriedEmbeddings;
+};
+
+export type RetrySearchEmbeddingsResponse = RetrySearchEmbeddingsResponses[keyof RetrySearchEmbeddingsResponses];
+
+export type ListAiProvidersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/providers';
+};
+
+export type ListAiProvidersErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAiProvidersError = ListAiProvidersErrors[keyof ListAiProvidersErrors];
+
+export type ListAiProvidersResponses = {
+    /**
+     * The providers.
+     */
+    200: AiProviders;
+};
+
+export type ListAiProvidersResponse = ListAiProvidersResponses[keyof ListAiProvidersResponses];
+
+export type CreateAiProviderData = {
+    body: SaveAiProvider;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/providers';
+};
+
+export type CreateAiProviderErrors = {
+    /**
+     * A member is not valid, the address is not an https URL, or the key is missing.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * Another provider has this name.
+     */
+    409: Problem;
+    /**
+     * The server has no key to encrypt provider keys.
+     */
+    503: Problem;
+};
+
+export type CreateAiProviderError = CreateAiProviderErrors[keyof CreateAiProviderErrors];
+
+export type CreateAiProviderResponses = {
+    /**
+     * The providers, with the new one.
+     */
+    200: AiProviders;
+};
+
+export type CreateAiProviderResponse = CreateAiProviderResponses[keyof CreateAiProviderResponses];
+
+export type TestAiProviderData = {
+    body: TestAiProvider;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/providers/test';
+};
+
+export type TestAiProviderErrors = {
+    /**
+     * A member is not valid, the model is not offered, or no key can be used.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The provider named for its saved key does not exist.
+     */
+    404: Problem;
+};
+
+export type TestAiProviderError = TestAiProviderErrors[keyof TestAiProviderErrors];
+
+export type TestAiProviderResponses = {
+    /**
+     * Whether the provider embedded it, and why not.
+     */
+    200: AiProviderTest;
+};
+
+export type TestAiProviderResponse = TestAiProviderResponses[keyof TestAiProviderResponses];
+
+export type DeleteAiProviderData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/search/admin/providers/{id}';
+};
+
+export type DeleteAiProviderErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+    /**
+     * Search embeds with this provider.
+     */
+    409: Problem;
+};
+
+export type DeleteAiProviderError = DeleteAiProviderErrors[keyof DeleteAiProviderErrors];
+
+export type DeleteAiProviderResponses = {
+    /**
+     * The providers left.
+     */
+    200: AiProviders;
+};
+
+export type DeleteAiProviderResponse = DeleteAiProviderResponses[keyof DeleteAiProviderResponses];
+
+export type UpdateAiProviderData = {
+    body: SaveAiProvider;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/search/admin/providers/{id}';
+};
+
+export type UpdateAiProviderErrors = {
+    /**
+     * A member is not valid, the address is not an https URL, or a key is needed.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+    /**
+     * The provider changed since it was read, or another one has this name.
+     */
+    409: Problem;
+    /**
+     * The server has no key to encrypt provider keys.
+     */
+    503: Problem;
+};
+
+export type UpdateAiProviderError = UpdateAiProviderErrors[keyof UpdateAiProviderErrors];
+
+export type UpdateAiProviderResponses = {
+    /**
+     * The providers, with the change.
+     */
+    200: AiProviders;
+};
+
+export type UpdateAiProviderResponse = UpdateAiProviderResponses[keyof UpdateAiProviderResponses];
+
+export type SetSemanticSearchData = {
+    body: SetSemanticSearch;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/semantic';
+};
+
+export type SetSemanticSearchErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The search settings changed since they were read.
+     */
+    409: Problem;
+};
+
+export type SetSemanticSearchError = SetSemanticSearchErrors[keyof SetSemanticSearchErrors];
+
+export type SetSemanticSearchResponses = {
+    /**
+     * The state, with the change.
+     */
+    200: SearchIndex;
+};
+
+export type SetSemanticSearchResponse = SetSemanticSearchResponses[keyof SetSemanticSearchResponses];
 
 export type ApproveCustomerDeploymentData = {
     body?: never;

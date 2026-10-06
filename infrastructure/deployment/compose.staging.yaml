@@ -22,11 +22,6 @@ services:
       BEYONDPILOT_STORAGE_PROVIDER: local
       BEYONDPILOT_IDENTITY_OPERATOR_EMAILS: ${BEYONDPILOT_IDENTITY_OPERATOR_EMAILS:?}
       BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID: ${BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID:?}
-      # Search by meaning: embeddings through OpenRouter, an OpenAI-compatible API, until GenAI Fund's OpenAI key
-      # replaces it by these two settings and the key file alone.
-      BEYONDPILOT_AI_EMBEDDING: openai
-      BEYONDPILOT_AI_BASE_URL: https://openrouter.ai/api/v1
-      BEYONDPILOT_AI_EMBEDDING_MODEL: openai/text-embedding-3-large
     # Each file is named after the variable it replaces; the production profile reads /run/secrets as a configtree.
     secrets:
       - source: database_password
@@ -35,8 +30,8 @@ services:
         target: BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET
       - source: notification_encryption_key
         target: BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY
-      - source: ai_api_key
-        target: BEYONDPILOT_AI_API_KEY
+      - source: ai_encryption_key
+        target: BEYONDPILOT_AI_ENCRYPTION_KEY
     networks:
       - internal
       - proxy
@@ -59,9 +54,9 @@ secrets:
   # 32 random bytes in Base64 that encrypt the email providers' secrets in the database.
   notification_encryption_key:
     file: /apps/beyondpilot-staging/secrets/notification-encryption-key
-  # The key of the embedding provider.
-  ai_api_key:
-    file: /apps/beyondpilot-staging/secrets/ai-api-key
+  # 32 random bytes in Base64 that encrypt the AI providers' keys operators enter in Admin › AI › Providers.
+  ai_encryption_key:
+    file: /apps/beyondpilot-staging/secrets/ai-encryption-key
 
 networks:
   proxy:
