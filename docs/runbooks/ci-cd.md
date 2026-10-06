@@ -29,14 +29,14 @@ The workflow:
 
 Staging shares `hn-fci-k8s-aioffice-application` (`167.254.65.226`, Ubuntu 24.04) with the production of MemoryOS. BeyondPilot has its own Compose project `beyondpilot`, its own PostgreSQL container and volumes, its own network `beyondpilot_internal`, its own directory and deployment user. It shares only the host's Nginx Proxy Manager, which it reaches through the existing external network `proxy-network`. Never change a MemoryOS container, host or file from here.
 
-| Path | Owner, mode | Holds |
-| --- | --- | --- |
-| `/apps/beyondpilot` | root, `0755` | Everything below |
-| `/apps/beyondpilot/incoming` | `beyondpilot-ci`, `0700` | One directory per uploaded release; `deploy.sh` keeps the current and previous ones |
-| `/apps/beyondpilot/deployments` | root, `0700` | `lock`, `current.env`, `previous.env` |
-| `/apps/beyondpilot/backups` | root, `0700` | Pre-deployment dumps (five newest) and nightly dumps (14 newest) |
-| `/apps/beyondpilot/secrets` | root, `0700` | Secret files, each owned by uid 1654 with mode `0400` |
-| `/apps/beyondpilot/.env.staging` | root, `0600` | The non-secret values of [`staging.env.example`](../../infrastructure/deployment/staging.env.example) |
+| Path                             | Owner, mode              | Holds                                                                                                 |
+| -------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `/apps/beyondpilot`              | root, `0755`             | Everything below                                                                                      |
+| `/apps/beyondpilot/incoming`     | `beyondpilot-ci`, `0700` | One directory per uploaded release; `deploy.sh` keeps the current and previous ones                   |
+| `/apps/beyondpilot/deployments`  | root, `0700`             | `lock`, `current.env`, `previous.env`                                                                 |
+| `/apps/beyondpilot/backups`      | root, `0700`             | Pre-deployment dumps (five newest) and nightly dumps (14 newest)                                      |
+| `/apps/beyondpilot/secrets`      | root, `0700`             | Secret files, each owned by uid 1654 with mode `0400`                                                 |
+| `/apps/beyondpilot/.env.staging` | root, `0600`             | The non-secret values of [`staging.env.example`](../../infrastructure/deployment/staging.env.example) |
 
 ### Provision the host once
 
@@ -70,11 +70,12 @@ cd /apps/beyondpilot/secrets
 sudo sh -c 'umask 077; openssl rand -hex 32 > database-password'
 sudo sh -c 'umask 077; cat > google-client-secret'      # paste the client secret, then Ctrl-D
 sudo sh -c 'umask 077; htpasswd -nB team > mailpit-ui-auth'   # bcrypt; one line per reader
-sudo chown 1654:1654 database-password google-client-secret mailpit-ui-auth
-sudo chmod 0400 database-password google-client-secret mailpit-ui-auth
+sudo sh -c 'umask 077; cat > ai-api-key'                # paste the embedding provider's key, then Ctrl-D
+sudo chown 1654:1654 database-password google-client-secret mailpit-ui-auth ai-api-key
+sudo chmod 0400 database-password google-client-secret mailpit-ui-auth ai-api-key
 ```
 
-`database-password` sets the password when PostgreSQL first creates its data directory; changing the file later does not change the database. Write `.env.staging` from the example with `sudo install -m 0600 /dev/null /apps/beyondpilot/.env.staging` and an editor under sudo.
+`ai-api-key` is the key of the embedding provider that search uses; staging names OpenRouter and the model in `compose.staging.yaml`, and moving to OpenAI changes those two settings and this file. `database-password` sets the password when PostgreSQL first creates its data directory; changing the file later does not change the database. Write `.env.staging` from the example with `sudo install -m 0600 /dev/null /apps/beyondpilot/.env.staging` and an editor under sudo.
 
 Install the nightly backup:
 
@@ -118,13 +119,13 @@ Then open `http://localhost:8025`.
 
 ### GitHub configuration
 
-| Where | Name | Value |
-| --- | --- | --- |
-| Environment `staging`, deployment branches limited to `main` | variable `STAGING_HOST` | `167.254.65.226` |
-| | variable `STAGING_USER` | `beyondpilot-ci` |
-| | variable `STAGING_KNOWN_HOSTS` | The host's `ssh-ed25519` key, read over an SSH connection already trusted |
-| | secret `STAGING_SSH_KEY` | The private half of the deployment key |
-| Repository | variable `STAGING_AUTO_DEPLOY` | `true` to deploy after every successful main CI run; unset for manual deployment only |
+| Where                                                        | Name                           | Value                                                                                 |
+| ------------------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------- |
+| Environment `staging`, deployment branches limited to `main` | variable `STAGING_HOST`        | `167.254.65.226`                                                                      |
+|                                                              | variable `STAGING_USER`        | `beyondpilot-ci`                                                                      |
+|                                                              | variable `STAGING_KNOWN_HOSTS` | The host's `ssh-ed25519` key, read over an SSH connection already trusted             |
+|                                                              | secret `STAGING_SSH_KEY`       | The private half of the deployment key                                                |
+| Repository                                                   | variable `STAGING_AUTO_DEPLOY` | `true` to deploy after every successful main CI run; unset for manual deployment only |
 
 ## Failure and recovery
 
