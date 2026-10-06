@@ -1,14 +1,5 @@
-# Staging runs with `production,staging`: the production settings, diagnosis logging for our own code, and mail kept on the host.
+# Staging runs with `production,staging,mailpit`: the production settings, diagnosis logging for our own code, and
+# mail kept on the host.
 logging:
   level:
     ai.genaifund.beyondpilot: DEBUG
-
-# Staging delivers every email to the Mailpit container of its composition, which the team reads for sign-in codes;
-# nothing leaves the host, so the SMTP login and STARTTLS that production requires do not apply.
-spring:
-  mail:
-    username: ${BEYONDPILOT_MAIL_USERNAME:}
-    password: ${BEYONDPILOT_MAIL_PASSWORD:}
-    properties:
-      mail.smtp.auth: false
-      mail.smtp.starttls.required: false

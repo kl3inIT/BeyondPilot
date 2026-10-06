@@ -21,6 +21,8 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
 
 	boolean existsBySlug(String slug);
 
+	boolean existsByLogoFileId(UUID logoFileId);
+
 	Optional<Organization> findBySlug(String slug);
 
 	Optional<Organization> findByEmailDomain(String emailDomain);

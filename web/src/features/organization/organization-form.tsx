@@ -28,6 +28,7 @@ import { siteRoutes } from "@/lib/site";
 
 import { industries, organizationTypes, teamSizes } from "./organization-codes";
 import { organizationError } from "./organization-errors";
+import { OrganizationLogoUpload } from "./organization-logo-upload";
 
 /** The longest description the backend takes. */
 const MAX_DESCRIPTION = 280;
@@ -39,7 +40,6 @@ const MAX_INDUSTRIES = 5;
 
 /** The fields the form checks before it asks the backend, in the order the page shows them. */
 const checkedFields = [
-  { name: "jobTitle", id: "organization-job-title" },
   { name: "name", id: "organization-name" },
   { name: "website", id: "organization-website" },
   { name: "teamSize", id: "organization-team-size" },
@@ -47,7 +47,6 @@ const checkedFields = [
   { name: "country", id: "organization-country" },
   { name: "foundedYear", id: "organization-founded-year" },
   { name: "description", id: "organization-description" },
-  { name: "logoUrl", id: "organization-logo-url" },
 ] as const;
 
 /** The year written in the field when it is one the backend takes; otherwise null. */
@@ -107,11 +106,10 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
   const [chosenIndustries, setChosenIndustries] = useState<string[]>(
     organization?.industries ?? [],
   );
-  const [jobTitle, setJobTitle] = useState("");
   const [website, setWebsite] = useState(organization?.website ?? "");
   const [description, setDescription] = useState(organization?.description ?? "");
   const [foundedYear, setFoundedYear] = useState(String(organization?.foundedYear ?? ""));
-  const [logoUrl, setLogoUrl] = useState(organization?.logoUrl ?? "");
+  const [logoFileId, setLogoFileId] = useState(organization?.logoFileId ?? "");
   const [pending, setPending] = useState(false);
   const [invalid, setInvalid] = useState<Set<string>>(new Set());
   const [discarding, setDiscarding] = useState(false);
@@ -131,9 +129,6 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
     // A company names its industries; a team or a builder on their own may not have settled on one.
     if (type === "company" && chosenIndustries.length === 0) {
       missing.add("industries");
-    }
-    if (!organization && !jobTitle.trim()) {
-      missing.add("jobTitle");
     }
     if (!website.trim()) {
       missing.add("website");
@@ -159,7 +154,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
       website: website.trim(),
       description: description.trim(),
       foundedYear: year,
-      logoUrl: logoUrl.trim() || null,
+      logoFileId: logoFileId || null,
     };
     setPending(true);
     try {
@@ -169,7 +164,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
         router.refresh();
         setPending(false);
       } else {
-        await createOrganization({ body: { ...body, jobTitle } });
+        await createOrganization({ body });
         notify.success("Organization.done.created");
         // The new organization opens on its own pages; the form stays pending until they arrive.
         router.push(getPathname({ href: siteRoutes.workspaceOrganization, locale }));
@@ -195,7 +190,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
     setWebsite(organization.website ?? "");
     setDescription(organization.description ?? "");
     setFoundedYear(String(organization.foundedYear ?? ""));
-    setLogoUrl(organization.logoUrl ?? "");
+    setLogoFileId(organization.logoFileId ?? "");
     setInvalid(new Set());
     setDiscarding(false);
   }
@@ -212,7 +207,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
       website,
       description,
       foundedYear,
-      logoUrl,
+      logoFileId,
     ]) !==
       JSON.stringify([
         organization.name,
@@ -223,7 +218,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
         organization.website ?? "",
         organization.description ?? "",
         String(organization.foundedYear ?? ""),
-        organization.logoUrl ?? "",
+        organization.logoFileId ?? "",
       ]);
 
   // The form's title is the page's on the create page; on the profile it sits under the organization's name.
@@ -247,28 +242,6 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
         </Title>
         <p className="text-muted-foreground">{t(organization ? "profileLead" : "createLead")}</p>
       </div>
-
-      {!organization && (
-        <Field data-invalid={bad("jobTitle")}>
-          <FieldLabel htmlFor="organization-job-title">
-            {t("jobTitle")} {required}
-          </FieldLabel>
-          <Input
-            id="organization-job-title"
-            name="jobTitle"
-            autoComplete="organization-title"
-            maxLength={120}
-            value={jobTitle}
-            aria-describedby="organization-job-title-hint"
-            onChange={(event) => setJobTitle(event.target.value)}
-            aria-invalid={bad("jobTitle")}
-          />
-          {bad("jobTitle") && <FieldError>{t("jobTitleRequired")}</FieldError>}
-          <p id="organization-job-title-hint" className="text-xs text-muted-foreground">
-            {t("jobTitleHint")}
-          </p>
-        </Field>
-      )}
 
       <FormSection icon={Building2Icon} title={t("basics")} lead={t("basicsLead")}>
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
@@ -413,42 +386,33 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
             </p>
           </Field>
         </div>
-        <Field data-invalid={bad("description")}>
-          <FieldLabel htmlFor="organization-description">
-            {t("description")} {required}
-          </FieldLabel>
-          <Textarea
-            id="organization-description"
-            rows={4}
-            maxLength={MAX_DESCRIPTION}
-            value={description}
-            aria-describedby="organization-description-hint"
-            onChange={(event) => setDescription(event.target.value)}
-            aria-invalid={bad("description")}
-          />
-          {bad("description") && <FieldError>{t("descriptionRequired")}</FieldError>}
-          <div className="flex justify-between gap-3 text-xs text-muted-foreground">
-            <p id="organization-description-hint">{t("descriptionHint")}</p>
-            <span className="shrink-0 tabular-nums">
-              {t("counter", { count: description.length, max: MAX_DESCRIPTION })}
-            </span>
-          </div>
-        </Field>
-        <Field data-invalid={bad("logoUrl")}>
-          <FieldLabel htmlFor="organization-logo-url">{t("logoUrl")}</FieldLabel>
-          <Input
-            id="organization-logo-url"
-            name="logoUrl"
-            type="url"
-            inputMode="url"
-            placeholder="https://"
-            maxLength={300}
-            value={logoUrl}
-            onChange={(event) => setLogoUrl(event.target.value)}
-            aria-invalid={bad("logoUrl")}
-          />
-          {bad("logoUrl") && <FieldError>{t("websiteInvalid")}</FieldError>}
-        </Field>
+        <div className="flex flex-col gap-x-3 gap-y-6 sm:flex-row">
+          <Field data-invalid={bad("description")} className="sm:flex-1">
+            <FieldLabel htmlFor="organization-description">
+              {t("description")} {required}
+            </FieldLabel>
+            <Textarea
+              id="organization-description"
+              className="field-sizing-fixed h-28 resize-none"
+              maxLength={MAX_DESCRIPTION}
+              value={description}
+              aria-describedby="organization-description-hint"
+              onChange={(event) => setDescription(event.target.value)}
+              aria-invalid={bad("description")}
+            />
+            {bad("description") && <FieldError>{t("descriptionRequired")}</FieldError>}
+            <div className="flex justify-between gap-3 text-xs text-muted-foreground">
+              <p id="organization-description-hint">{t("descriptionHint")}</p>
+              <span className="shrink-0 tabular-nums">
+                {t("counter", { count: description.length, max: MAX_DESCRIPTION })}
+              </span>
+            </div>
+          </Field>
+          <Field className="sm:w-52">
+            <FieldLabel htmlFor="organization-logo">{t("logo.label")}</FieldLabel>
+            <OrganizationLogoUpload value={logoFileId} onChange={setLogoFileId} />
+          </Field>
+        </div>
       </FormSection>
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
