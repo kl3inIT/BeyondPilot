@@ -52,13 +52,13 @@ Both environments share `hn-fci-k8s-aioffice-application` (`167.254.65.226`, Ubu
 
 Under each root:
 
-| Path                 | Owner, mode              | Holds                                                                                                                                     |
-| -------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `incoming`           | `beyondpilot-ci`, `0700` | One directory per uploaded release; `deploy.sh` keeps the current and previous ones                                                       |
-| `deployments`        | root, `0700`             | `lock`, `current.env`, `previous.env`                                                                                                     |
-| `backups`            | root, `0700`             | Pre-deployment dumps (five newest), nightly dumps and nightly archives of the uploaded files (14 newest of each)                          |
-| `secrets`            | root, `0700`             | `database-password`, `google-client-secret`, `mailpit-ui-auth`, each owned by uid 1654 with mode `0400`; `mailpit-ui-password`, root only |
-| `.env.<environment>` | root, `0600`             | The non-secret values of the environment's example                                                                                        |
+| Path                 | Owner, mode              | Holds                                                                                                                                                   |
+| -------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `incoming`           | `beyondpilot-ci`, `0700` | One directory per uploaded release; `deploy.sh` keeps the current and previous ones                                                                     |
+| `deployments`        | root, `0700`             | `lock`, `current.env`, `previous.env`                                                                                                                   |
+| `backups`            | root, `0700`             | Pre-deployment dumps (five newest), nightly dumps and nightly archives of the uploaded files (14 newest of each)                                        |
+| `secrets`            | root, `0700`             | `database-password`, `google-client-secret`, `mailpit-ui-auth`, `ai-api-key`, each owned by uid 1654 with mode `0400`; `mailpit-ui-password`, root only |
+| `.env.<environment>` | root, `0600`             | The non-secret values of the environment's example                                                                                                      |
 
 ### Provision the host once
 
@@ -96,11 +96,12 @@ cd <root>/secrets
 sudo sh -c 'umask 077; openssl rand -hex 32 > database-password'
 sudo sh -c 'umask 077; cat > google-client-secret'      # paste the client secret, then Ctrl-D
 sudo sh -c 'umask 077; htpasswd -nB team > mailpit-ui-auth'   # bcrypt; one line per reader
-sudo chown 1654:1654 database-password google-client-secret mailpit-ui-auth
-sudo chmod 0400 database-password google-client-secret mailpit-ui-auth
+sudo sh -c 'umask 077; cat > ai-api-key'                # paste the embedding provider's key, then Ctrl-D
+sudo chown 1654:1654 database-password google-client-secret mailpit-ui-auth ai-api-key
+sudo chmod 0400 database-password google-client-secret mailpit-ui-auth ai-api-key
 ```
 
-`database-password` sets the password when PostgreSQL first creates its data directory; changing the file later does not change the database. Write the environment file from its example with `sudo install -m 0600 /dev/null <root>/.env.<environment>` and an editor under sudo. Both environments use the same Google OAuth client, whose redirect URIs name both addresses.
+`ai-api-key` is the key of the embedding provider search uses; each overlay names OpenRouter and the model, and moving to OpenAI changes those two settings and this file. `database-password` sets the password when PostgreSQL first creates its data directory; changing the file later does not change the database. Write the environment file from its example with `sudo install -m 0600 /dev/null <root>/.env.<environment>` and an editor under sudo. Both environments use the same Google OAuth client, whose redirect URIs name both addresses.
 
 Install the nightly backup, which saves both environments, production first:
 
