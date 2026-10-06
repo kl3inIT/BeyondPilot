@@ -232,9 +232,9 @@ function ComboboxChip({
       {showRemove && (
         <ComboboxPrimitive.ChipRemove
           render={<Button variant="ghost" size="icon-xs" />}
+          aria-label={removeLabel}
           className="-ml-1 opacity-50 hover:opacity-100"
           data-slot="combobox-chip-remove"
-          aria-label={removeLabel}
         >
           <XIcon className="pointer-events-none" />
         </ComboboxPrimitive.ChipRemove>

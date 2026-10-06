@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { OrganizationMembersPage } from "@/features/organization/organization-members-page";
+import { loadOrganizationMembersSearch } from "@/features/organization/organization-members-search";
 import { readMembers, readMyOrganization } from "@/features/organization/organization-queries";
 import { readMySolutions } from "@/features/solution/solution-queries";
 import { getPathname } from "@/i18n/navigation";
@@ -20,18 +21,20 @@ export async function generateMetadata({
 
 export default async function OrganizationMembersRoute({
   params,
+  searchParams,
 }: PageProps<"/[locale]/workspace/organization/members">) {
   const { locale } = await params;
   setRequestLocale(locale);
   await requireAccount(siteRoutes.workspaceMembers);
-  const [mine, members] = await Promise.all([readMyOrganization(), readMembers()]);
+  const { page } = await loadOrganizationMembersSearch(searchParams);
+  const [mine, members] = await Promise.all([readMyOrganization(), readMembers(page)]);
   const { organization } = mine;
   // A person without an organization has no members to read; the first page offers the ways in.
   if (!organization || !members) {
     redirect(getPathname({ href: siteRoutes.workspaceOrganization, locale }));
   }
 
-  const solutions = organization.roles.includes("provider") ? await readMySolutions() : null;
+  const solutions = await readMySolutions();
 
   return (
     <OrganizationMembersPage

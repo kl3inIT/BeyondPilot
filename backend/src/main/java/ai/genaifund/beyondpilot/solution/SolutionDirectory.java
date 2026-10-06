@@ -204,8 +204,11 @@ public class SolutionDirectory {
 			return new IndexedSolution(solution.getId(), solution.getSlug(), solution.getName(),
 					solution.getOrganizationId(), organization.name(), organization.slug(), organization.country(),
 					solution.getSummary(), solution.getProblemsSolved(), solution.getValueProposition(),
+					solution.getTraction(), solution.getBestCustomerProfile(), solution.getBuiltWith(),
 					solution.getFocusAreas(), solution.getIndustries(), solution.getMaturity(),
-					solution.getDeployment(), solution.isListed());
+					solution.getDeployment(),
+					deployments.countBySolutionIdAndStatus(solution.getId(), CustomerDeployment.APPROVED),
+					solution.isListed());
 		}).toList();
 	}
 

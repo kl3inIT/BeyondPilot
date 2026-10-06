@@ -9,6 +9,7 @@ import ai.genaifund.beyondpilot.organization.dto.AutoJoinRequest;
 import ai.genaifund.beyondpilot.organization.dto.ChangeMemberRoleRequest;
 import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.JobTitleRequest;
+import ai.genaifund.beyondpilot.organization.dto.MemberListRequest;
 import ai.genaifund.beyondpilot.organization.dto.MembersResponse;
 import ai.genaifund.beyondpilot.organization.dto.MyOrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationResponse;
@@ -20,6 +21,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -76,11 +78,11 @@ class MyOrganizationController {
 	@GetMapping(path = "/members", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "listMyOrganizationMembers", summary = "Who belongs to the caller's organization",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "200", description = "The members, and for an owner the open invitations and requests.")
+	@ApiResponse(responseCode = "200", description = "One page of the members, and for an owner all the open invitations and requests.")
 	@ApiResponse(responseCode = "403", description = "The caller belongs to no organization.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	MembersResponse members(@CurrentActor Actor actor) {
-		return organizations.members(actor);
+	MembersResponse members(@CurrentActor Actor actor, @Valid @ParameterObject MemberListRequest request) {
+		return organizations.members(actor, request);
 	}
 
 	@PostMapping(path = "/invitations", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -94,7 +96,10 @@ class MyOrganizationController {
 	@ApiResponse(responseCode = "403", description = NOT_OWNER,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "409",
-			description = "The address already belongs to the organization, or already holds an open invitation.",
+			description = "The organization is not approved, or the address already belongs to it or already holds an open invitation.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "429",
+			description = "The organization sent the most invitations it can in a day, or keeps the most it can open.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void invite(@CurrentActor Actor actor, @Valid @RequestBody InviteMemberRequest request) {
 		organizations.invite(actor, request);
@@ -192,12 +197,15 @@ class MyOrganizationController {
 	@PutMapping(path = "/auto-join", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(operationId = "changeOrganizationAutoJoin",
-			summary = "Let addresses on the organization's domain join without asking, or stop that",
+			summary = "Let addresses on the organization's verified domain join without asking, or stop that",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "204", description = "The setting is saved.", content = @Content)
 	@ApiResponse(responseCode = "400", description = "The value is missing.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "403", description = NOT_OWNER,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409",
+			description = "Turned on for an organization that is not approved or has no verified domain.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void changeAutoJoin(@CurrentActor Actor actor, @Valid @RequestBody AutoJoinRequest request) {
 		organizations.letDomainJoin(actor, request.autoJoin());

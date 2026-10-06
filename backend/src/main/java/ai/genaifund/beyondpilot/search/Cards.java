@@ -44,6 +44,8 @@ final class Cards {
 
 	static final String PHOTO = "photoFileId";
 
+	static final String CUSTOMER_DEPLOYMENTS = "customerDeployments";
+
 	private Cards() {
 	}
 

@@ -25,6 +25,9 @@ public class SearchService {
 
 	static final int PAGE_SIZE = 12;
 
+	/** How many items of each kind the All tab shows; a kind's own tab shows the rest. */
+	static final int PER_KIND = 3;
+
 	private final SearchDocumentRepository index;
 
 	SearchService(SearchDocumentRepository index) {
@@ -39,8 +42,10 @@ public class SearchService {
 		Map<String, Long> counts = index.counts(query, true);
 		long all = counts.values().stream().mapToLong(Long::longValue).sum();
 		Instant now = Instant.now();
-		List<SearchItem> items = index.page(query, kind, true, PAGE_SIZE, (page - 1) * PAGE_SIZE)
-			.stream()
+		// Every kind at once is the best few of each, the kinds in the order of their best item; one kind is paged.
+		List<Hit> hits = kind == null ? index.bestOfEachKind(query, true, PER_KIND)
+				: index.page(query, kind, true, PAGE_SIZE, (page - 1) * PAGE_SIZE);
+		List<SearchItem> items = hits.stream()
 			.map(hit -> item(hit, now))
 			.toList();
 		return new SearchResponse(
@@ -56,10 +61,11 @@ public class SearchService {
 				? ProgramPhase.of(hit.startsOn(), hit.endsOn(), instant(facets, Cards.OPENS_AT),
 						instant(facets, Cards.CLOSES_AT), now).code()
 				: null;
-		return new SearchItem(hit.kind(), hit.slug(), hit.title(), hit.subtitle(), hit.summary(),
+		return new SearchItem(hit.kind(), hit.slug(), hit.title(), hit.subtitle(), hit.summary(), hit.snippet(),
 				text(facets, Cards.TYPE), phase, hit.startsOn(), hit.endsOn(),
 				uuid(facets, Cards.COVER), text(facets, Cards.EXTERNAL_URL),
 				text(facets, Cards.ORGANIZATION_SLUG), text(facets, Cards.COUNTRY), text(facets, Cards.MATURITY),
+				facets.get(Cards.CUSTOMER_DEPLOYMENTS) instanceof Number count ? count.intValue() : null,
 				texts(facets, Cards.INDUSTRIES), texts(facets, Cards.FOCUS_AREAS), texts(facets, Cards.ROLES),
 				texts(facets, Cards.SKILLS), text(facets, Cards.CITY), text(facets, Cards.WORKS_AT),
 				uuid(facets, Cards.PHOTO));

@@ -1,5 +1,4 @@
 /** The codes of the organization module, in the order a select offers them. */
-export const organizationRoles = ["provider", "enterprise"] as const;
 
 export const organizationTypes = [
   "company",

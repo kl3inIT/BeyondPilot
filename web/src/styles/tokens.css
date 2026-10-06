@@ -52,6 +52,17 @@
   --use-case: oklch(0.555 0.146 48.998);
   --solution: oklch(0.508 0.105 165.612);
   --talent: oklch(0.586 0.222 17.585);
+  /* Pastel tints: the ground of a status or role pill and of initials, each with the ink that reads on it. */
+  --lemon: #fbf1cf;
+  --lemon-foreground: #7a5a06;
+  --sky: #dff0fd;
+  --sky-foreground: #0b5e96;
+  --mint: #ddf5e8;
+  --mint-foreground: #0a6b45;
+  --peach: #fdeada;
+  --peach-foreground: #9a4b0c;
+  --rose: #fde3ea;
+  --rose-foreground: #a81e47;
   /* Colour of every shadow (the shadow-* elevations in app/globals.css): ink by day. */
   --elevation: oklch(0.219 0.043 253.881);
 }
@@ -100,5 +111,15 @@
   --use-case: oklch(0.769 0.165 70.08);
   --solution: oklch(0.773 0.153 163.223);
   --talent: oklch(0.719 0.169 13.428);
+  --lemon: #3b3110;
+  --lemon-foreground: #fbf1cf;
+  --sky: #10324b;
+  --sky-foreground: #dff0fd;
+  --mint: #0f3526;
+  --mint-foreground: #ddf5e8;
+  --peach: #43260e;
+  --peach-foreground: #fdeada;
+  --rose: #47162a;
+  --rose-foreground: #fde3ea;
   --elevation: oklch(0.12 0.02 256);
 }

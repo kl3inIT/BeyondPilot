@@ -22,10 +22,13 @@ export async function readMyOrganization(): Promise<MyOrganization> {
   return data;
 }
 
-/** Who belongs to the caller's organization, or `null` when they belong to none. Server only. */
-export async function readMembers(): Promise<OrganizationMembers | null> {
+/** One page of who belongs to the caller's organization, or `null` when they belong to none. Server only. */
+export async function readMembers(page = 1): Promise<OrganizationMembers | null> {
   try {
-    const { data } = await listMyOrganizationMembers(await sessionRequest());
+    const { data } = await listMyOrganizationMembers({
+      ...(await sessionRequest()),
+      query: { page: Math.max(1, page) },
+    });
     return data;
   } catch (error) {
     if (error instanceof ApiError && error.code === "ORGANIZATION_MEMBERSHIP_REQUIRED") {
