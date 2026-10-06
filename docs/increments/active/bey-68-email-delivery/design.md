@@ -125,8 +125,8 @@ The catalog is the seventeen kinds `EmailService` sends today:
 
 ## Delivery events and suppression
 
-- **Resend** posts signed webhooks; `POST /api/notification/events/resend` verifies the Svix signature with the signing secret from Settings before reading anything.
-- **Amazon SES** publishes the configuration set's events to an SNS topic subscribed over HTTPS to `POST /api/notification/events/ses`. The endpoint confirms the subscription, verifies every message's SNS signature and checks the topic against Settings.
+- **Resend** posts signed webhooks; `POST /api/notification/email/events/resend` verifies the Svix signature with the signing secret from Settings before reading anything.
+- **Amazon SES** publishes the configuration set's events to an SNS topic subscribed over HTTPS to `POST /api/notification/email/events/ses`. The endpoint confirms the subscription, verifies every message's SNS signature and checks the topic against Settings.
 - **SMTP** reports nothing; its emails stay `sent`.
 - An event is matched by provider message identifier, stored as an `email_event`, and moves the message's status forward only.
 - A permanent bounce or a complaint adds a suppression (listmonk's rules: one hard bounce, one complaint). A soft bounce is recorded and suppresses nothing.
