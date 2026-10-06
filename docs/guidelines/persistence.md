@@ -13,7 +13,7 @@ A temporary runtime profile, command or endpoint is not a substitute for a missi
 - Flyway owns the schema. Hibernate only validates it (`spring.jpa.hibernate.ddl-auto: validate`), `spring.jpa.open-in-view` is `false`, and the second-level and query caches are disabled.
 - Migrations live in `backend/src/main/resources/db/migration` and are named `V<n>__<module>_<description>.sql` in snake case, for example `V3__proposal_create_submissions.sql`.
 - Every table has exactly one owning module. Only the owner writes it and only the owner's `persistence` package reads it; other modules use the owner's published API.
-- A table a framework reads and writes is created by Flyway too, in the migration of the module that needs it, and only the framework touches it: `identity` creates Spring Session's `spring_session` tables, and `matching` creates Spring Modulith's `event_publication`, the registry of [events between modules](../conventions.md#events-between-modules).
+- A table a framework reads and writes is created by Flyway too, in the migration of the module that needs it, and only the framework touches it: `identity` creates Spring Session's `spring_session` tables, and `search` creates Spring Modulith's `event_publication` (in `V15__matching_create_event_publication.sql`, named before the module was), the registry of [events between modules](../conventions.md#events-between-modules).
 - Uniqueness, referential integrity and deletion behavior belong in database constraints when the database is the final concurrency authority.
 
 ## Implementation boundaries
