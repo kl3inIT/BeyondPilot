@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.organization.persistence;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +29,8 @@ public class MembershipRepository {
 			""";
 
 	private static final String INVITATIONS = """
-			select id, organization_id, email, role, invited_by_account_id, created_at from organization_invitation
+			select id, organization_id, email, role, invited_by_account_id, created_at, expires_at
+			from organization_invitation
 			""";
 
 	private static final String REQUESTS = """
@@ -50,9 +52,9 @@ public class MembershipRepository {
 		}
 	}
 
-	/** One open invitation. */
+	/** One open invitation: nobody answered it and it has not lapsed. */
 	public record Invitation(UUID id, UUID organizationId, String email, String role, UUID invitedByAccountId,
-			Instant createdAt) {
+			Instant createdAt, Instant expiresAt) {
 	}
 
 	/**
@@ -135,16 +137,22 @@ public class MembershipRepository {
 
 	/**
 	 * Records the invitation unless the address already holds an open one of this organization; says whether it did.
+	 * A lapsed invitation of the address is closed first, so it does not hold the place of the new one.
 	 * @param byOperator whether an operator sends it, which keeps it out of the organization's limits
+	 * @param lifetime how long the invitation stays open
 	 */
-	public boolean invite(UUID id, UUID organizationId, String email, String role, UUID invitedBy,
-			boolean byOperator) {
+	public boolean invite(UUID id, UUID organizationId, String email, String role, UUID invitedBy, boolean byOperator,
+			Duration lifetime) {
+		jdbc.sql("""
+				update organization_invitation set status = 'expired', decided_at = now()
+				where organization_id = ? and lower(email) = lower(?) and status = 'pending' and expires_at <= now()
+				""").params(organizationId, email).update();
 		return jdbc.sql("""
 				insert into organization_invitation
-				    (id, organization_id, email, role, invited_by_account_id, sent_by_operator)
-				values (?, ?, ?, ?, ?, ?)
+				    (id, organization_id, email, role, invited_by_account_id, sent_by_operator, expires_at)
+				values (?, ?, ?, ?, ?, ?, now() + make_interval(secs => ?))
 				on conflict (organization_id, lower(email)) where status = 'pending' do nothing
-				""").params(id, organizationId, email, role, invitedBy, byOperator).update() == 1;
+				""").params(id, organizationId, email, role, invitedBy, byOperator, lifetime.toSeconds()).update() == 1;
 	}
 
 	/** How many invitations the organization's owners sent in the last 24 hours, whatever became of them. */
@@ -155,30 +163,32 @@ public class MembershipRepository {
 				""").param(organizationId).query(Integer.class).single();
 	}
 
-	/** How many invitations of the organization's owners nobody has answered yet. */
+	/** How many invitations of the organization's owners are open. */
 	public int openInvitationsByOwners(UUID organizationId) {
 		return jdbc.sql("""
 				select count(*) from organization_invitation
-				where organization_id = ? and not sent_by_operator and status = 'pending'
+				where organization_id = ? and not sent_by_operator and status = 'pending' and expires_at > now()
 				""").param(organizationId).query(Integer.class).single();
 	}
 
 	public Optional<Invitation> openInvitation(UUID id) {
-		return jdbc.sql(INVITATIONS + "where id = ? and status = 'pending'")
+		return jdbc.sql(INVITATIONS + "where id = ? and status = 'pending' and expires_at > now()")
 			.param(id)
 			.query(MembershipRepository::invitation)
 			.optional();
 	}
 
 	public List<Invitation> openInvitationsOf(UUID organizationId) {
-		return jdbc.sql(INVITATIONS + "where organization_id = ? and status = 'pending' order by created_at, id")
+		return jdbc.sql(INVITATIONS
+				+ "where organization_id = ? and status = 'pending' and expires_at > now() order by created_at, id")
 			.param(organizationId)
 			.query(MembershipRepository::invitation)
 			.list();
 	}
 
 	public List<Invitation> openInvitationsTo(String email) {
-		return jdbc.sql(INVITATIONS + "where lower(email) = lower(?) and status = 'pending' order by created_at, id")
+		return jdbc.sql(INVITATIONS
+				+ "where lower(email) = lower(?) and status = 'pending' and expires_at > now() order by created_at, id")
 			.param(email)
 			.query(MembershipRepository::invitation)
 			.list();
@@ -187,7 +197,8 @@ public class MembershipRepository {
 	/** Closes an open invitation; says whether it was still open. */
 	public boolean closeInvitation(UUID id, String status) {
 		return jdbc.sql("""
-				update organization_invitation set status = ?, decided_at = now() where id = ? and status = 'pending'
+				update organization_invitation set status = ?, decided_at = now()
+				where id = ? and status = 'pending' and expires_at > now()
 				""").params(status, id).update() == 1;
 	}
 
@@ -277,7 +288,7 @@ public class MembershipRepository {
 	private static Invitation invitation(ResultSet row, int index) throws SQLException {
 		return new Invitation(row.getObject("id", UUID.class), row.getObject("organization_id", UUID.class),
 				row.getString("email"), row.getString("role"), row.getObject("invited_by_account_id", UUID.class),
-				row.getTimestamp("created_at").toInstant());
+				row.getTimestamp("created_at").toInstant(), row.getTimestamp("expires_at").toInstant());
 	}
 
 	private static JoinRequest joinRequest(ResultSet row, int index) throws SQLException {

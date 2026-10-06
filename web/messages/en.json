@@ -1061,7 +1061,7 @@
           "invitations": "{count, plural, one {# invitation open} other {# invitations open}}"
         },
         "empty": "Nobody belongs to this organization yet. Invite its first owner.",
-        "invited": "Invited {day}",
+        "invited": "Invited {day} · expires {expires}",
         "invitePending": "Invited",
         "columns": {
           "member": "Member",
@@ -2904,7 +2904,7 @@
       },
       "you": "You",
       "none": "—",
-      "invited": "Invited {day}",
+      "invited": "Invited {day} · expires {expires}",
       "invitePending": "Invite pending",
       "requests": {
         "title": "Requests to join",

@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.organization;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -66,6 +67,9 @@ public class OrganizationService {
 
 	/** The most invitations of an organization's owners that wait for an answer at once. */
 	private static final int OPEN_INVITATIONS = 50;
+
+	/** How long an invitation waits for its answer before it lapses. */
+	static final Duration INVITATION_LIFETIME = Duration.ofDays(7);
 
 	private final OrganizationRepository organizations;
 
@@ -396,7 +400,7 @@ public class OrganizationService {
 					"Invitation of a member of organization " + organization.getId());
 		}
 		if (!memberships.invite(UUID.randomUUID(), organization.getId(), address, request.role(),
-				inviter.accountId(), false)) {
+				inviter.accountId(), false, INVITATION_LIFETIME)) {
 			throw new OrganizationException(OrganizationErrorCode.ALREADY_INVITED,
 					"Second open invitation of one address to organization " + organization.getId());
 		}

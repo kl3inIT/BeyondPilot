@@ -226,7 +226,13 @@ function AdminMembers({
   const invited = (current === lastPage ? invitations : []).map((invitation) => ({
     key: invitation.id,
     person: (
-      <Person name={invitation.email} email={t("invited", { day: day(invitation.createdAt) })} />
+      <Person
+        name={invitation.email}
+        email={t("invited", {
+          day: day(invitation.createdAt),
+          expires: day(invitation.expiresAt),
+        })}
+      />
     ),
     role: <MemberRole role={invitation.role} />,
     joined: <Badge variant="outline">{t("invitePending")}</Badge>,

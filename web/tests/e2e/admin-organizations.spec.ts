@@ -459,6 +459,10 @@ test.describe("admin organizations", () => {
       "Teller 12",
       "newhire@harborbank.example",
     ]);
+    // The row is drawn as a table row and as a stacked row; one of them shows.
+    await expect(
+      page.getByText("Invited Oct 1, 2026 · expires Oct 8, 2026").filter({ visible: true }),
+    ).toHaveCount(1);
   });
 
   test("an operator changes a role, removes a person, invites and withdraws an invitation", async ({
