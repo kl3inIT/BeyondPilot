@@ -3,6 +3,8 @@ package ai.genaifund.beyondpilot.talent;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +50,9 @@ class TalentTest {
 
 	@Autowired
 	private JdbcClient jdbc;
+
+	@Autowired
+	private TalentEnquiryClock clock;
 
 	private RestTestClient client;
 
@@ -122,7 +127,7 @@ class TalentTest {
 	}
 
 	@Test
-	void anOperatorRejectsWithAReasonAndApprovesWhatIsSentAgain() {
+	void anOperatorAsksForChangesWithAReasonAndApprovesWhatIsSentAgain() {
 		String person = signIn("reviewed@profile.test");
 		UUID id = submitted(person, "Reviewed Person");
 		String drafter = signIn("drafter@profile.test");
@@ -135,37 +140,95 @@ class TalentTest {
 		String forOperator = body(get(operator, ADMIN + "/" + id).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(forOperator, "$.email")).isEqualTo("reviewed@profile.test");
 		assertThat(JsonPath.<String>read(forOperator, "$.profile.status")).isEqualTo("submitted");
-		assertProblem(post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "boring")), 400, "REQUEST_INVALID");
-		post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "incomplete", "message", "Say what you built."))
+		assertProblem(post(operator, ADMIN + "/" + id + "/request-changes", Map.of("reason", "boring")), 400,
+				"REQUEST_INVALID");
+		// Removal is for a profile that is public, not one that waits.
+		assertProblem(post(operator, ADMIN + "/" + id + "/remove", Map.of("reason", "other")), 409,
+				"TALENT_NOT_APPROVED");
+		post(operator, ADMIN + "/" + id + "/request-changes",
+				Map.of("reason", "incomplete", "message", "Say what you built."))
 			.expectStatus()
 			.isNoContent();
 
-		String rejected = mine(person);
-		assertThat(JsonPath.<String>read(rejected, "$.profile.status")).isEqualTo("rejected");
-		assertThat(JsonPath.<String>read(rejected, "$.profile.decisionReason")).isEqualTo("incomplete");
-		assertThat(JsonPath.<String>read(rejected, "$.profile.decisionMessage")).isEqualTo("Say what you built.");
+		String returned = mine(person);
+		assertThat(JsonPath.<String>read(returned, "$.profile.status")).isEqualTo("changes_requested");
+		assertThat(JsonPath.<String>read(returned, "$.profile.decisionReason")).isEqualTo("incomplete");
+		assertThat(JsonPath.<String>read(returned, "$.profile.decisionMessage")).isEqualTo("Say what you built.");
+		assertThat(mail.latestSubjectTo("reviewed@profile.test"))
+			.isEqualTo("Changes asked for your BeyondPilot talent profile");
+		assertThat(mail.latestTextTo("reviewed@profile.test")).contains("Say what you built.");
 		assertProblem(post(operator, ADMIN + "/" + id + "/approve", null), 409, "TALENT_NOT_AWAITING_REVIEW");
 
 		post(person, MINE + "/submit", null).expectStatus().isOk();
 		post(operator, ADMIN + "/" + id + "/approve", null).expectStatus().isNoContent();
 
 		assertThat(JsonPath.<String>read(mine(person), "$.profile.status")).isEqualTo("approved");
-		assertThat(events(id)).containsExactly("talent.reject", "talent.approve");
+		assertThat(mail.latestSubjectTo("reviewed@profile.test")).isEqualTo("Your BeyondPilot talent profile is approved");
+		assertThat(events(id)).containsExactly("talent.request_changes", "talent.approve");
 		// A decision is made once.
 		assertProblem(post(operator, ADMIN + "/" + id + "/approve", null), 409, "TALENT_NOT_AWAITING_REVIEW");
 	}
 
 	@Test
-	void anOperatorTakesAnApprovedProfileOutOfTheDirectory() {
+	void anOperatorRemovesAnApprovedProfileAndItsPersonCanSendItAgain() {
 		String person = signIn("removed@profile.test");
 		UUID id = approved(person, "Removed Person");
 		client.get().uri(DIRECTORY + "/removed-person").exchange().expectStatus().isOk();
+		assertProblem(post(operator, ADMIN + "/" + id + "/request-changes", Map.of("reason", "other")), 409,
+				"TALENT_NOT_AWAITING_REVIEW");
 
-		post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "inappropriate")).expectStatus().isNoContent();
+		post(operator, ADMIN + "/" + id + "/remove", Map.of("reason", "inappropriate")).expectStatus().isNoContent();
 
 		assertProblem(client.get().uri(DIRECTORY + "/removed-person").exchange(), 404, "TALENT_PROFILE_NOT_FOUND");
-		assertThat(JsonPath.<String>read(mine(person), "$.profile.status")).isEqualTo("rejected");
-		assertThat(events(id)).containsExactly("talent.approve", "talent.reject");
+		String removed = mine(person);
+		assertThat(JsonPath.<String>read(removed, "$.profile.status")).isEqualTo("removed");
+		assertThat(mail.latestSubjectTo("removed@profile.test")).isEqualTo("Your BeyondPilot talent profile was removed");
+		assertThat(events(id)).containsExactly("talent.approve", "talent.remove");
+		// A removed profile can be corrected and sent again.
+		post(person, MINE + "/submit", null).expectStatus().isOk();
+		assertThat(JsonPath.<String>read(mine(person), "$.profile.status")).isEqualTo("submitted");
+	}
+
+	@Test
+	void aPersonDeletesTheirProfileWithItsMessages() {
+		String person = signIn("possum@profile.test");
+		UUID id = approved(person, "Possum Person");
+		post(signIn("asker@possum.test"), DIRECTORY + "/possum-person/enquiries",
+				Map.of("senderName", "Lan Tran", "topic", "project", "message", "Hello")).expectStatus().isNoContent();
+
+		client.delete()
+			.uri(MINE)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, person)
+			.exchange()
+			.expectStatus()
+			.isNoContent();
+
+		assertThat(JsonPath.<Object>read(mine(person), "$.profile")).isNull();
+		assertProblem(client.get().uri(DIRECTORY + "/possum-person").exchange(), 404, "TALENT_PROFILE_NOT_FOUND");
+		assertThat(jdbc.sql("select count(*) from talent_enquiry where profile_id = ?").param(id).query(Long.class).single())
+			.isZero();
+		assertThat(events(id)).containsExactly("talent.approve", "talent.delete");
+	}
+
+	@Test
+	void operatorsReadTheReportedMessagesAndNobodyElse() {
+		approved(signIn("wallaby@profile.test"), "Wallaby Person");
+		String sender = signIn("spammer@wallaby.test");
+		post(sender, DIRECTORY + "/wallaby-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "other", "message", "Cheap followers"))
+			.expectStatus()
+			.isNoContent();
+		String person = signIn("wallaby@profile.test");
+		String id = JsonPath.read(mine(person), "$.enquiries[0].id");
+		post(person, MINE + "/enquiries/" + id + "/report", null).expectStatus().isNoContent();
+
+		String reported = body(get(operator, "/api/talent/admin/reported-enquiries").expectStatus().isOk());
+
+		assertThat(JsonPath.<List<String>>read(reported, "$.items[?(@.message == 'Cheap followers')].senderEmail"))
+			.containsExactly("spammer@wallaby.test");
+		assertThat(JsonPath.<List<String>>read(reported, "$.items[?(@.message == 'Cheap followers')].profileName"))
+			.containsExactly("Wallaby Person");
+		assertProblem(get(person, "/api/talent/admin/reported-enquiries"), 403, "IDENTITY_OPERATOR_REQUIRED");
 	}
 
 	@Test
@@ -173,7 +236,6 @@ class TalentTest {
 		approved(signIn("wombat.engineer@profile.test"), "Wombat Engineer");
 		Map<String, Object> scientist = described("Wombat Scientist", null);
 		scientist.put("roles", List.of("data_scientist"));
-		scientist.put("availability", "not_available");
 		approved(signIn("wombat.scientist@profile.test"), scientist);
 		Map<String, Object> hidden = described("Wombat Hidden", null);
 		hidden.put("listed", false);
@@ -188,7 +250,6 @@ class TalentTest {
 		assertThat(JsonPath.<Integer>read(all, "$.total")).isEqualTo(2);
 		assertThat(all).doesNotContain("@profile.test");
 		assertThat(names(DIRECTORY + "?q=wombat&role=data_scientist")).containsExactly("Wombat Scientist");
-		assertThat(names(DIRECTORY + "?q=wombat&availability=available")).containsExactly("Wombat Engineer");
 		// A skill is searched too.
 		assertThat(names(DIRECTORY + "?q=langgraph")).contains("Wombat Engineer", "Wombat Scientist");
 		// The most recently approved comes first when that order is asked for.
@@ -214,11 +275,11 @@ class TalentTest {
 	}
 
 	@Test
-	void aSignedInPersonWritesToAProfileOnceADayAndItsPersonReadsIt() {
+	void aMessageWaitsForThePersonAndSharesNoAddressUntilAccepted() {
 		String person = signIn("numbat@profile.test");
 		approved(person, "Numbat Person");
 		String path = DIRECTORY + "/numbat-person/enquiries";
-		Map<String, Object> message = Map.of("message", "  We need a claims model by March.  ");
+		Map<String, Object> message = Map.of("senderName", "Lan Tran", "topic", "project", "message", "  We need a claims model by March.  ");
 
 		client.post()
 			.uri(path)
@@ -229,21 +290,177 @@ class TalentTest {
 			.expectStatus()
 			.isUnauthorized();
 		assertProblem(post(person, path, message), 409, "TALENT_OWN_PROFILE");
-		String buyer = signIn("buyer@enterprise.test");
-		assertProblem(post(buyer, path, Map.of("message", " ")), 400, "REQUEST_INVALID");
+		String buyer = organizationOwner("buyer@numbat.test", "Numbat Insurance");
+		assertProblem(post(buyer, path, Map.of("senderName", "Lan Tran", "topic", "project", "message", " ")), 400, "REQUEST_INVALID");
+		assertProblem(post(buyer, path, Map.of("senderName", "Lan Tran", "topic", "gossip", "message", "Hello")), 400,
+				"REQUEST_INVALID");
+		// A message is always signed with a name.
+		assertProblem(post(buyer, path, Map.of("senderName", " ", "topic", "project", "message", "Hello")), 400,
+				"REQUEST_INVALID");
 		assertProblem(post(buyer, DIRECTORY + "/nobody-here/enquiries", message), 404, "TALENT_PROFILE_NOT_FOUND");
+		assertThat(JsonPath.<Object>read(body(get(buyer, DIRECTORY + "/numbat-person").expectStatus().isOk()),
+				"$.waitingEnquirySentAt")).isNull();
 
 		post(buyer, path, message).expectStatus().isNoContent();
 
-		assertProblem(post(buyer, path, message), 429, "TALENT_ENQUIRY_TOO_SOON");
+		// The person is told who wrote and from where, without the sender's address.
+		assertThat(mail.latestSubjectTo("numbat@profile.test"))
+			.isEqualTo("A message through your BeyondPilot talent profile");
+		assertThat(mail.latestTextTo("numbat@profile.test")).contains("Numbat Insurance")
+			.contains("about a project")
+			.doesNotContain("buyer@numbat.test");
+		assertProblem(post(buyer, path, message), 409, "TALENT_ENQUIRY_PENDING");
+		assertThat(JsonPath.<String>read(body(get(buyer, DIRECTORY + "/numbat-person").expectStatus().isOk()),
+				"$.waitingEnquirySentAt")).isNotNull();
 		String read = mine(person);
 		assertThat(JsonPath.<List<String>>read(read, "$.enquiries[*].message"))
 			.containsExactly("We need a claims model by March.");
-		assertThat(JsonPath.<String>read(read, "$.enquiries[0].senderEmail")).isEqualTo("buyer@enterprise.test");
-		assertThat(mail.latestSubjectTo("numbat@profile.test"))
-			.isEqualTo("A message through your BeyondPilot talent profile");
+		assertThat(JsonPath.<String>read(read, "$.enquiries[0].status")).isEqualTo("pending");
+		assertThat(JsonPath.<String>read(read, "$.enquiries[0].senderOrganization")).isEqualTo("Numbat Insurance");
+		assertThat(JsonPath.<Object>read(read, "$.enquiries[0].senderEmail")).isNull();
+		// The person reads the name the sender gave, never the sender's address.
+		assertThat(JsonPath.<String>read(read, "$.enquiries[0].senderName")).isEqualTo("Lan Tran");
+		assertThat(read).doesNotContain("buyer@numbat.test");
+		assertThat(JsonPath.<String>read(read, "$.enquiries[0].closesAt")).isNotNull();
+		String id = JsonPath.read(read, "$.enquiries[0].id");
+		// Another person cannot answer it.
+		approved(signIn("other@numbat.test"), "Numbat Other");
+		assertProblem(post(signIn("other@numbat.test"), MINE + "/enquiries/" + id + "/accept", null), 404,
+				"TALENT_ENQUIRY_NOT_FOUND");
+
+		post(person, MINE + "/enquiries/" + id + "/accept", null).expectStatus().isNoContent();
+
+		assertThat(mail.latestTextTo("buyer@numbat.test")).contains("numbat@profile.test");
+		assertThat(mail.latestTextTo("numbat@profile.test")).contains("buyer@numbat.test").contains("Numbat Insurance");
+		String accepted = mine(person);
+		assertThat(JsonPath.<String>read(accepted, "$.enquiries[0].status")).isEqualTo("accepted");
+		assertThat(JsonPath.<String>read(accepted, "$.enquiries[0].senderEmail")).isEqualTo("buyer@numbat.test");
+		assertThat(JsonPath.<Object>read(accepted, "$.enquiries[0].closesAt")).isNull();
+		assertProblem(post(person, MINE + "/enquiries/" + id + "/decline", null), 409, "TALENT_ENQUIRY_NOT_PENDING");
+		assertThat(events("talent_enquiry", UUID.fromString(id))).containsExactly("talent.enquiry_accept");
+		// An answer lets the sender write again.
+		post(buyer, path, Map.of("senderName", "Lan Tran", "topic", "role", "message", "And a role?")).expectStatus().isNoContent();
 		// The sender reads nothing of it on their own page.
 		assertThat(JsonPath.<List<Object>>read(mine(buyer), "$.enquiries")).isEmpty();
+	}
+
+	@Test
+	void aDeclineAndAReportReadTheSameToTheSenderAndShareNoAddress() {
+		String person = signIn("quokka@profile.test");
+		approved(person, "Quokka Person");
+		String path = DIRECTORY + "/quokka-person/enquiries";
+		String first = signIn("first@quokka.test");
+		String second = signIn("second@quokka.test");
+		post(first, path, Map.of("senderName", "Lan Tran", "topic", "other", "message", "Can we talk?")).expectStatus().isNoContent();
+		post(second, path, Map.of("senderName", "Lan Tran", "topic", "other", "message", "Buy followers now")).expectStatus().isNoContent();
+		String read = mine(person);
+		String fromSecond = JsonPath.<List<String>>read(read, "$.enquiries[?(@.message == 'Buy followers now')].id")
+			.get(0);
+		String fromFirst = JsonPath.<List<String>>read(read, "$.enquiries[?(@.message == 'Can we talk?')].id").get(0);
+
+		post(person, MINE + "/enquiries/" + fromFirst + "/decline", null).expectStatus().isNoContent();
+		post(person, MINE + "/enquiries/" + fromSecond + "/report", null).expectStatus().isNoContent();
+
+		String declined = mail.latestTextTo("first@quokka.test");
+		String reported = mail.latestTextTo("second@quokka.test");
+		assertThat(declined).isEqualTo(reported).contains("Quokka Person").doesNotContain("quokka@profile.test");
+		assertThat(mail.latestSubjectTo("second@quokka.test")).isEqualTo("Your message to Quokka Person");
+		String after = mine(person);
+		assertThat(JsonPath.<List<String>>read(after, "$.enquiries[*].status")).containsExactlyInAnyOrder("declined",
+				"reported");
+		assertThat(JsonPath.<List<Object>>read(after, "$.enquiries[*].senderEmail")).containsOnlyNulls();
+		assertThat(events("talent_enquiry", UUID.fromString(fromSecond))).containsExactly("talent.enquiry_report");
+	}
+
+	@Test
+	void aSenderStartsTenConversationsADay() {
+		UUID profile = approved(signIn("dingo@profile.test"), "Dingo Person");
+		String sender = signIn("busy@dingo.test");
+		UUID account = jdbc.sql("select id from identity_account where email = 'busy@dingo.test'")
+			.query(UUID.class)
+			.single();
+		for (int sent = 0; sent < TalentService.ENQUIRIES_A_DAY; sent++) {
+			jdbc.sql("""
+					insert into talent_enquiry (id, profile_id, sender_account_id, topic, message, status)
+					values (?, ?, ?, 'other', 'Earlier today', 'declined')
+					""").params(UUID.randomUUID(), profile, account).update();
+		}
+		approved(signIn("emu@profile.test"), "Emu Person");
+
+		assertProblem(post(sender, DIRECTORY + "/emu-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "role", "message", "Hi")), 429,
+				"TALENT_ENQUIRY_LIMIT");
+	}
+
+	@Test
+	void aMessageNobodyAnswersIsRemindedOnceAndClosesAfterFourteenDays() {
+		String person = signIn("koala@profile.test");
+		approved(person, "Koala Person");
+		String sender = signIn("patient@koala.test");
+		post(sender, DIRECTORY + "/koala-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "project", "message", "Still there?"))
+			.expectStatus()
+			.isNoContent();
+		Instant now = Instant.now();
+
+		assertThat(clock.remind(now.plus(Duration.ofDays(8)))).isPositive();
+		String reminder = mail.latestTextTo("koala@profile.test");
+		assertThat(mail.latestSubjectTo("koala@profile.test"))
+			.isEqualTo("A message waits for your answer on BeyondPilot");
+		clock.remind(now.plus(Duration.ofDays(9)));
+		// One reminder, not one a run.
+		assertThat(mail.latestTextTo("koala@profile.test")).isEqualTo(reminder);
+
+		assertThat(clock.close(now.plus(Duration.ofDays(15)))).isPositive();
+
+		assertThat(JsonPath.<String>read(mine(person), "$.enquiries[0].status")).isEqualTo("closed");
+		assertThat(mail.latestSubjectTo("patient@koala.test")).isEqualTo("Your message to Koala Person closed");
+		assertThat(mail.latestTextTo("patient@koala.test")).doesNotContain("koala@profile.test");
+		// The sender may write again.
+		post(sender, DIRECTORY + "/koala-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "project", "message", "Once more"))
+			.expectStatus()
+			.isNoContent();
+	}
+
+	@Test
+	void aProfileStatesItsFactsAndTheDirectoryNarrowsByCountryAndEngagement() {
+		Map<String, Object> facts = described("Echidna Engineer", null);
+		facts.put("country", "SG");
+		facts.put("engagement", List.of("advisory"));
+		facts.put("projects", List.of(Map.of("title", "Voice agent for a bank", "stage", "in_production"),
+				Map.of("title", "Evaluation set")));
+		approved(signIn("echidna@profile.test"), facts);
+		approved(signIn("echidna.other@profile.test"), described("Echidna Other", null));
+
+		String one = body(client.get().uri(DIRECTORY + "/echidna-engineer").exchange().expectStatus().isOk());
+
+		assertThat(JsonPath.<String>read(one, "$.city")).isEqualTo("Ho Chi Minh City");
+		assertThat(JsonPath.<List<String>>read(one, "$.languages")).containsExactly("vi", "en");
+		assertThat(JsonPath.<List<String>>read(one, "$.industries")).containsExactly("insurance");
+		assertThat(JsonPath.<String>read(one, "$.worksAt")).isEqualTo("Revee AI");
+		assertThat(JsonPath.<List<String>>read(one, "$.projects[*].stage")).containsExactly("in_production", null);
+		// The rate is the person's and GenAI Fund's, not the public's.
+		assertThat(one).doesNotContain("rateBand");
+
+		String bySingapore = body(client.get().uri(DIRECTORY + "?q=echidna&country=SG").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(bySingapore, "$.items[*].name")).containsExactly("Echidna Engineer");
+		assertThat(JsonPath.<Integer>read(bySingapore, "$.items[0].projectCount")).isEqualTo(2);
+		assertThat(JsonPath.<String>read(bySingapore, "$.items[0].leadProject.title")).isEqualTo("Voice agent for a bank");
+		assertThat(JsonPath.<String>read(bySingapore, "$.items[0].leadProject.stage")).isEqualTo("in_production");
+		assertThat(names(DIRECTORY + "?q=echidna&engagement=advisory")).containsExactly("Echidna Engineer");
+		// A buyer finds people by the industry they worked in, and by the words of a project.
+		assertThat(names(DIRECTORY + "?q=echidna&industry=insurance")).containsExactly("Echidna Engineer",
+				"Echidna Other");
+		assertThat(names(DIRECTORY + "?q=echidna&industry=healthcare")).isEmpty();
+		assertThat(names(DIRECTORY + "?q=bank")).containsExactly("Echidna Engineer");
+		assertThat(names(DIRECTORY + "?q=echidna&engagement=contract")).containsExactly("Echidna Other");
+		assertProblem(client.get().uri(DIRECTORY + "?country=sg").exchange(), 400, "REQUEST_INVALID");
+	}
+
+	@Test
+	void aPhotoMustBeAnUploadOfTheCallerForAProfile() {
+		Map<String, Object> request = described("Bilby Person", null);
+		request.put("photoFileId", UUID.randomUUID().toString());
+
+		assertProblem(put(signIn("bilby@profile.test"), MINE, request), 400, "TALENT_PHOTO_NOT_USABLE");
 	}
 
 	@Test
@@ -263,11 +480,15 @@ class TalentTest {
 		request.put("roles", List.of("ml_engineer"));
 		request.put("skills", List.of("Python", "LangGraph"));
 		request.put("country", "VN");
-		request.put("availability", "available");
 		request.put("engagement", List.of("contract"));
 		request.put("rateBand", "50_100");
 		request.put("website", "https://example.test");
-		request.put("projects", List.of(Map.of("title", "Claims triage", "year", 2025)));
+		request.put("photoFileId", null);
+		request.put("city", "Ho Chi Minh City");
+		request.put("languages", List.of("vi", "en"));
+		request.put("industries", List.of("insurance"));
+		request.put("worksAt", "Revee AI");
+		request.put("projects", List.of(Map.of("title", "Claims triage", "year", 2025, "stage", "pilot")));
 		request.put("listed", true);
 		request.put("version", version);
 		return request;
@@ -335,10 +556,28 @@ class TalentTest {
 	}
 
 	private List<String> events(UUID profile) {
+		return events("talent", profile);
+	}
+
+	private List<String> events(String type, UUID resource) {
 		return jdbc.sql("""
-				select action from audit_event where resource_type = 'talent' and resource_id = ?
+				select action from audit_event where resource_type = ? and resource_id = ?
 				order by occurred_at, id
-				""").param(profile.toString()).query(String.class).list();
+				""").params(type, resource.toString()).query(String.class).list();
+	}
+
+	/** The session of the owner of an approved organization. */
+	private String organizationOwner(String email, String name) {
+		String session = signIn(email);
+		UUID organization = UUID.fromString(JsonPath.read(body(post(session, "/api/organization/organizations",
+				Map.of("name", name, "roles", List.of("enterprise"), "type", "company", "country", "VN", "teamSize",
+						"2_9", "industries", List.of("insurance"), "website", "https://example.test", "jobTitle",
+						"Founder"))
+			.expectStatus()
+			.isCreated()), "$.id"));
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", null).expectStatus()
+			.isNoContent();
+		return session;
 	}
 
 	private static void assertProblem(RestTestClient.ResponseSpec response, int status, String code) {

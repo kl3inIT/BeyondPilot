@@ -14,8 +14,14 @@ public enum FilePurpose {
 	/** A cover or a person's photo on a program's page. */
 	PROGRAM_IMAGE("program_image", true, true, Set.of("image/png", "image/jpeg", "image/webp")),
 
+	/** The photo of a person on their talent profile, which they upload themselves. */
+	TALENT_PHOTO("talent_photo", true, false, Set.of("image/png", "image/jpeg", "image/webp")),
+
 	/** A deck or a proposal attached to an application. */
-	APPLICATION_FILE("application_file", false, false, Set.of("application/pdf"));
+	APPLICATION_FILE("application_file", false, false, Set.of("application/pdf")),
+
+	/** The deck of a solution. The solution module decides who reads it. */
+	SOLUTION_DECK("solution_deck", false, false, Set.of("application/pdf"));
 
 	private final String value;
 	private final boolean publicRead;

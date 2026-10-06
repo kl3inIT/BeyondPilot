@@ -112,7 +112,8 @@ class SearchDirectoriesTest {
 		assertThat(JsonPath.<String>read(body, "$.items[0].kind")).isEqualTo("talent");
 		assertThat(JsonPath.<String>read(body, "$.items[0].subtitle")).isEqualTo("Builds claims AI");
 		assertThat(JsonPath.<List<String>>read(body, "$.items[0].roles")).containsExactly("ml_engineer");
-		assertThat(JsonPath.<String>read(body, "$.items[0].availability")).isEqualTo("available");
+		assertThat(JsonPath.<String>read(body, "$.items[0].worksAt")).isEqualTo("Revve AI");
+		assertThat(JsonPath.<String>read(body, "$.items[0].city")).isEqualTo("Ho Chi Minh City");
 
 		String mine = body(client.get()
 			.uri("/api/talent/mine")
@@ -232,10 +233,14 @@ class SearchDirectoriesTest {
 		request.put("roles", List.of("ml_engineer"));
 		request.put("skills", List.of("Python", "LangGraph"));
 		request.put("country", "VN");
-		request.put("availability", "available");
 		request.put("engagement", List.of("contract"));
 		request.put("rateBand", "50_100");
 		request.put("website", "https://example.test");
+		request.put("photoFileId", null);
+		request.put("city", "Ho Chi Minh City");
+		request.put("languages", List.of("vi", "en"));
+		request.put("industries", List.of("insurance"));
+		request.put("worksAt", "Revve AI");
 		request.put("projects", List.of());
 		request.put("listed", true);
 		request.put("version", version);

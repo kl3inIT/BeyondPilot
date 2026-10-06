@@ -7,4 +7,8 @@ public final class SolutionException extends BusinessException {
 	SolutionException(SolutionErrorCode errorCode, String diagnosticMessage) {
 		super(errorCode, diagnosticMessage);
 	}
+
+	SolutionException(SolutionErrorCode errorCode, String diagnosticMessage, Throwable cause) {
+		super(errorCode, diagnosticMessage, cause);
+	}
 }

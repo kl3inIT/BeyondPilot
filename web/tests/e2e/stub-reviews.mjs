@@ -157,7 +157,13 @@ function solution(id, name, status, more) {
     summary: `${name} for insurers.`,
     problemsSolved: "Slow answers to policy holders.",
     valueProposition: "An answer in seconds, in Vietnamese and English.",
+    traction: null,
+    builtWith: [],
+    languages: [],
+    bestCustomerProfile: null,
     website: "https://pocketpolicy.example",
+    demoUrl: null,
+    deck: null,
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
     deployment: ["cloud_saas"],
@@ -209,7 +215,6 @@ function profile(id, name, status, more) {
     website: null,
     roles: ["forward_deployed_engineer"],
     skills: ["Python", "RAG"],
-    availability: "available",
     engagement: ["contract"],
     rateBand: "50_100",
     projects: [{ title: "Claims assistant", year: 2025, summary: null, url: null }],
@@ -218,6 +223,11 @@ function profile(id, name, status, more) {
     submittedAt: day,
     updatedAt: day,
     version: 1,
+    photoFileId: null,
+    city: null,
+    languages: [],
+    industries: [],
+    worksAt: null,
     ...more,
   };
 }
@@ -248,7 +258,7 @@ const talent = [
   },
   {
     email: "siti@pocketpolicy.example",
-    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a04", "Siti Rahma", "rejected", {
+    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a04", "Siti Rahma", "changes_requested", {
       decisionReason: "incomplete",
       decisionMessage: "Add a project.",
     }),
@@ -307,6 +317,21 @@ const introductions = [
   },
 ];
 
+/** The messages people reported through their talent profiles. */
+const reportedEnquiries = [
+  {
+    id: "7c1d7f0e-2b9a-4f3e-9d52-6a1f0b3c2e91",
+    profileId: "cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a04",
+    profileName: "Siti Rahma",
+    senderName: null,
+    senderEmail: "growth@spam.example",
+    topic: "other",
+    message: "Buy ten thousand followers for your profile.",
+    createdAt: "2026-10-03T03:00:00Z",
+    reportedAt: "2026-10-04T03:00:00Z",
+  },
+];
+
 const lists = {
   "/api/introduction/admin/introductions": {
     records: introductions,
@@ -356,6 +381,13 @@ const lists = {
         (item) => item.status === "submitted",
       ).length,
     }),
+  },
+  "/api/talent/admin/reported-enquiries": {
+    records: reportedEnquiries,
+    idOf: (record) => record.id,
+    statusOf: () => "reported",
+    textOf: (record) => record.message,
+    summaryOf: (record) => record,
   },
   "/api/talent/admin/profiles": {
     records: talent,

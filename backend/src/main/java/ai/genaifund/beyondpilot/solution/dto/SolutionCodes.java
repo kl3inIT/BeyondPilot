@@ -17,6 +17,8 @@ final class SolutionCodes {
 
 	static final String DEPLOYMENT = "cloud_saas|private_cloud|on_premise|hybrid";
 
+	static final String LANGUAGE = "en|vi|id|ms|th|fil|zh|ja|ko|other";
+
 	static final String WEBSITE = "https?://[^\\s]+";
 
 	static final String REJECTION = "incomplete|not_an_ai_solution|duplicate|unverifiable|other";

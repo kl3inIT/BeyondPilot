@@ -336,6 +336,43 @@ export type AdminTalent = {
 };
 
 /**
+ * A message the person behind a talent profile reported as unwanted.
+ */
+export type AdminTalentEnquiry = {
+    createdAt: string;
+    id: string;
+    message: string;
+    /**
+     * The profile it was sent through.
+     */
+    profileId: string;
+    profileName: string;
+    /**
+     * When it was reported.
+     */
+    reportedAt?: string | null;
+    /**
+     * The sender's address; empty when the account no longer signs in.
+     */
+    senderEmail: string;
+    /**
+     * The sender's name; null when they gave none.
+     */
+    senderName?: string | null;
+    topic: 'project' | 'role' | 'other';
+};
+
+/**
+ * One page of the reported messages, the newest first.
+ */
+export type AdminTalentEnquiryList = {
+    items: Array<AdminTalentEnquiry>;
+    page: number;
+    pageSize: number;
+    total: number;
+};
+
+/**
  * One page of submitted talent profiles: those waiting for review first, the longest wait on top.
  */
 export type AdminTalentList = {
@@ -493,7 +530,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -833,7 +870,7 @@ export type MySolutions = {
  */
 export type MyTalent = {
     /**
-     * The newest first.
+     * Those that wait for an answer first, then the newest.
      */
     enquiries: Array<TalentEnquiry>;
     /**
@@ -1306,6 +1343,8 @@ export type PublicOrganization = {
  * An approved solution as anyone with its address reads it, listed or not.
  */
 export type PublicSolution = {
+    bestCustomerProfile?: string | null;
+    builtWith: Array<string>;
     /**
      * ISO 3166-1 alpha-2.
      */
@@ -1314,11 +1353,15 @@ export type PublicSolution = {
      * Its approved customer deployments, the most recently approved first.
      */
     customerDeployments: Array<PublicCustomerDeployment>;
-    deckUrl?: string | null;
+    /**
+     * Its deck, when it has one.
+     */
+    deck?: PublicSolutionDeck | null;
     demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     industries: Array<string>;
+    languages: Array<string>;
     /**
      * Whether the directory lists it. False is approved but shared by its address only.
      */
@@ -1333,8 +1376,17 @@ export type PublicSolution = {
     problemsSolved?: string | null;
     slug: string;
     summary?: string | null;
+    traction?: string | null;
     valueProposition?: string | null;
     website?: string | null;
+};
+
+/**
+ * The deck of an approved solution. Its bytes are read at the address of the solution followed by /deck.
+ */
+export type PublicSolutionDeck = {
+    fileName: string;
+    sizeBytes: number;
 };
 
 /**
@@ -1379,27 +1431,40 @@ export type PublicSolutionSummary = {
 };
 
 /**
- * An approved, listed talent profile as anyone reads it. It carries no address of the person.
+ * An approved, listed talent profile as anyone reads it. It carries no address of the person, and no rate.
  */
 export type PublicTalent = {
-    availability?: 'available' | 'open_to_offers' | 'not_available';
     bio?: string | null;
+    city?: string | null;
     /**
      * ISO 3166-1 alpha-2.
      */
     country?: string | null;
     engagement: Array<string>;
     headline?: string | null;
-    name: string;
-    projects: Array<TalentProject>;
+    industries: Array<string>;
     /**
-     * US dollars an hour. Null is not stated.
+     * ISO 639-1 codes.
      */
-    rateBand?: 'under_25' | '25_50' | '50_100' | '100_150' | '150_plus';
+    languages: Array<string>;
+    name: string;
+    /**
+     * Read at /api/storage/files/{id}; null for none.
+     */
+    photoFileId?: string | null;
+    projects: Array<TalentProject>;
     roles: Array<string>;
     skills: Array<string>;
     slug: string;
+    /**
+     * When the caller's message to this person was sent, while it waits for an answer; null for a visitor and when none waits.
+     */
+    waitingEnquirySentAt?: string | null;
     website?: string | null;
+    /**
+     * Where the person works, as they state it.
+     */
+    worksAt?: string | null;
 };
 
 /**
@@ -1422,13 +1487,25 @@ export type PublicTalentList = {
  * One profile in the public directory of talent.
  */
 export type PublicTalentSummary = {
-    availability?: 'available' | 'open_to_offers' | 'not_available';
+    city?: string | null;
     /**
      * ISO 3166-1 alpha-2.
      */
     country?: string | null;
     headline?: string | null;
+    /**
+     * The first project the profile shows; null when it shows none.
+     */
+    leadProject?: TalentProject | null;
     name: string;
+    /**
+     * Read at /api/storage/files/{id}; null for none.
+     */
+    photoFileId?: string | null;
+    /**
+     * How many projects the profile shows.
+     */
+    projectCount: number;
     roles: Array<string>;
     skills: Array<string>;
     slug: string;
@@ -1479,17 +1556,6 @@ export type RejectSolution = {
      */
     message?: string | null;
     reason: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
-};
-
-/**
- * Why a talent profile is not approved, and what its person is told.
- */
-export type RejectTalent = {
-    /**
-     * Shown to the person with the rejection.
-     */
-    message?: string | null;
-    reason: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
 };
 
 /**
@@ -1559,7 +1625,7 @@ export type ReserveUpload = {
     /**
      * Why the file is uploaded; it fixes the allowed media types and the largest size.
      */
-    purpose: 'program_image' | 'application_file';
+    purpose: 'program_image' | 'talent_photo' | 'application_file' | 'solution_deck';
     /**
      * The exact length of the file in bytes.
      */
@@ -1955,13 +2021,21 @@ export type SaveReviewCriterion = {
 };
 
 /**
- * A solution as its edit screen holds it.
+ * A solution as its editor holds it, in the order of its steps.
  */
 export type SaveSolution = {
     /**
-     * A presentation of the solution.
+     * Who gets the most from it, in a sentence.
      */
-    deckUrl?: string | null;
+    bestCustomerProfile?: string | null;
+    /**
+     * The models, tools and frameworks it is built with, as its owners name them.
+     */
+    builtWith: Array<string>;
+    /**
+     * The stored PDF that is its deck: the one it has, one the caller uploaded for it, or null for none.
+     */
+    deckFileId?: string | null;
     /**
      * A video or a live demo of the solution at work.
      */
@@ -1970,6 +2044,10 @@ export type SaveSolution = {
     focusAreas: Array<string>;
     industries: Array<string>;
     /**
+     * The languages it works in.
+     */
+    languages: Array<string>;
+    /**
      * Whether it appears in the public directory once approved.
      */
     listed: boolean;
@@ -1977,9 +2055,13 @@ export type SaveSolution = {
     name: string;
     problemsSolved?: string | null;
     /**
-     * One or two sentences shown in lists.
+     * Two or three sentences shown in lists.
      */
     summary?: string | null;
+    /**
+     * Customers, pilots, users or revenue so far.
+     */
+    traction?: string | null;
     valueProposition?: string | null;
     /**
      * The version the screen read.
@@ -1992,8 +2074,8 @@ export type SaveSolution = {
  * A talent profile as its edit screen holds it.
  */
 export type SaveTalentProfile = {
-    availability?: 'available' | 'open_to_offers' | 'not_available';
     bio?: string | null;
+    city?: string | null;
     /**
      * ISO 3166-1 alpha-2.
      */
@@ -2003,11 +2085,20 @@ export type SaveTalentProfile = {
      * One line shown in lists.
      */
     headline?: string | null;
+    industries: Array<string>;
+    /**
+     * ISO 639-1 codes.
+     */
+    languages: Array<string>;
     /**
      * Whether it appears in the public directory once approved.
      */
     listed: boolean;
     name: string;
+    /**
+     * A photo the caller uploaded for a talent profile; null for none.
+     */
+    photoFileId?: string | null;
     projects: Array<TalentProject>;
     rateBand?: 'under_25' | '25_50' | '50_100' | '100_150' | '150_plus';
     roles: Array<string>;
@@ -2017,6 +2108,10 @@ export type SaveTalentProfile = {
      */
     version?: number | null;
     website?: string | null;
+    /**
+     * Where the person works, as they state it.
+     */
+    worksAt?: string | null;
 };
 
 /**
@@ -2034,9 +2129,9 @@ export type SearchCounts = {
  */
 export type SearchItem = {
     /**
-     * A person's availability.
+     * A person's city.
      */
-    availability?: string | null;
+    city?: string | null;
     /**
      * The country of a solution's organization, or of a person.
      */
@@ -2055,7 +2150,7 @@ export type SearchItem = {
      */
     focusAreas: Array<string>;
     /**
-     * A solution's industries.
+     * The industries of a solution or a person.
      */
     industries: Array<string>;
     kind: 'program' | 'solution' | 'talent';
@@ -2071,6 +2166,10 @@ export type SearchItem = {
      * Where a program stands now.
      */
     phase?: 'upcoming' | 'open' | 'running' | 'done';
+    /**
+     * A person's photo, read at the public address of stored files.
+     */
+    photoFileId?: string | null;
     /**
      * A person's roles.
      */
@@ -2097,6 +2196,10 @@ export type SearchItem = {
      * A program's type.
      */
     type?: string | null;
+    /**
+     * Where a person works.
+     */
+    worksAt?: string | null;
 };
 
 /**
@@ -2118,12 +2221,22 @@ export type SearchResults = {
  */
 export type SendTalentEnquiry = {
     message: string;
+    /**
+     * The name the person written to reads; never an address.
+     */
+    senderName: string;
+    /**
+     * What the message is about.
+     */
+    topic: 'project' | 'role' | 'other';
 };
 
 /**
  * A solution as its organization, and operators, see it.
  */
 export type Solution = {
+    bestCustomerProfile?: string | null;
+    builtWith: Array<string>;
     /**
      * Whether it has what a submission needs: a summary, a maturity, a focus area and an industry.
      */
@@ -2140,12 +2253,16 @@ export type Solution = {
      * Why it was last rejected.
      */
     decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
-    deckUrl?: string | null;
+    /**
+     * Its deck, when it has one.
+     */
+    deck?: SolutionDeck | null;
     demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     id: string;
     industries: Array<string>;
+    languages: Array<string>;
     /**
      * Whether it appears in the public directory once approved.
      */
@@ -2166,6 +2283,7 @@ export type Solution = {
      */
     submittedBy?: string | null;
     summary?: string | null;
+    traction?: string | null;
     updatedAt: string;
     valueProposition?: string | null;
     /**
@@ -2173,6 +2291,19 @@ export type Solution = {
      */
     version: number;
     website?: string | null;
+};
+
+/**
+ * The deck of a solution as its organization, and operators, see it.
+ */
+export type SolutionDeck = {
+    attachedAt: string;
+    /**
+     * The stored file, sent back with a save to keep it.
+     */
+    fileId: string;
+    fileName: string;
+    sizeBytes: number;
 };
 
 /**
@@ -2251,28 +2382,53 @@ export type SubmittedApplication = {
 };
 
 /**
+ * Why GenAI Fund asks for changes to a talent profile or removes it, and what its person is told.
+ */
+export type TalentDecision = {
+    /**
+     * Shown to the person with the decision, and sent to them by email.
+     */
+    message?: string | null;
+    reason: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
+};
+
+/**
  * A message someone sent through the caller's talent profile.
  */
 export type TalentEnquiry = {
+    /**
+     * When the caller answered it or it closed; null while it waits.
+     */
+    answeredAt?: string | null;
+    /**
+     * When a waiting message closes unanswered; null once it is answered.
+     */
+    closesAt?: string | null;
     createdAt: string;
     id: string;
     message: string;
     /**
-     * Where the caller answers them.
+     * Where the caller writes to the sender; only once the caller accepted.
      */
-    senderEmail: string;
+    senderEmail?: string | null;
     /**
-     * Who wrote it, as they are shown.
+     * Who wrote it, by the name they gave; null when they gave none and the caller has not accepted.
      */
-    senderName: string;
+    senderName?: string | null;
+    /**
+     * The organization the sender belonged to when they wrote; null when none.
+     */
+    senderOrganization?: string | null;
+    status: 'pending' | 'accepted' | 'declined' | 'reported' | 'closed';
+    topic: 'project' | 'role' | 'other';
 };
 
 /**
  * A talent profile as its person, and operators, see it.
  */
 export type TalentProfile = {
-    availability?: 'available' | 'open_to_offers' | 'not_available';
     bio?: string | null;
+    city?: string | null;
     /**
      * Whether it has what a submission needs: a headline, a bio, a role and a skill.
      */
@@ -2286,17 +2442,26 @@ export type TalentProfile = {
      */
     decisionMessage?: string | null;
     /**
-     * Why it was last rejected.
+     * Why GenAI Fund last asked for changes or removed it.
      */
     decisionReason?: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
     engagement: Array<string>;
     headline?: string | null;
     id: string;
+    industries: Array<string>;
+    /**
+     * ISO 639-1 codes.
+     */
+    languages: Array<string>;
     /**
      * Whether it appears in the public directory once approved.
      */
     listed: boolean;
     name: string;
+    /**
+     * Read at /api/storage/files/{id}; null for none.
+     */
+    photoFileId?: string | null;
     projects: Array<TalentProject>;
     /**
      * US dollars an hour. Null is not stated.
@@ -2305,7 +2470,7 @@ export type TalentProfile = {
     roles: Array<string>;
     skills: Array<string>;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    status: 'draft' | 'submitted' | 'approved' | 'changes_requested' | 'removed';
     submittedAt?: string | null;
     updatedAt: string;
     /**
@@ -2313,12 +2478,20 @@ export type TalentProfile = {
      */
     version: number;
     website?: string | null;
+    /**
+     * Where the person works, as they state it.
+     */
+    worksAt?: string | null;
 };
 
 /**
  * One piece of work a talent profile shows.
  */
 export type TalentProject = {
+    /**
+     * How far the work went; null when not stated.
+     */
+    stage?: 'prototype' | 'pilot' | 'in_production' | 'internal_tool';
     summary?: string | null;
     title: string;
     url?: string | null;
@@ -2341,7 +2514,7 @@ export type TalentSummary = {
     listed: boolean;
     name: string;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    status: 'draft' | 'submitted' | 'approved' | 'changes_requested' | 'removed';
     submittedAt?: string | null;
     updatedAt: string;
 };
@@ -2382,7 +2555,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -5591,6 +5764,33 @@ export type GetSolutionResponses = {
 
 export type GetSolutionResponse = GetSolutionResponses[keyof GetSolutionResponses];
 
+export type GetSolutionDeckData = {
+    body?: never;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/solution/solutions/{slug}/deck';
+};
+
+export type GetSolutionDeckErrors = {
+    /**
+     * The solution has no deck, or the reader may not have it.
+     */
+    404: Problem;
+};
+
+export type GetSolutionDeckError = GetSolutionDeckErrors[keyof GetSolutionDeckErrors];
+
+export type GetSolutionDeckResponses = {
+    /**
+     * The bytes of the deck.
+     */
+    200: Blob | File;
+};
+
+export type GetSolutionDeckResponse = GetSolutionDeckResponses[keyof GetSolutionDeckResponses];
+
 export type GetPublicFileData = {
     body?: never;
     path: {
@@ -5738,7 +5938,7 @@ export type ListAdminTalentData = {
         /**
          * Only profiles of this status. Drafts are never listed.
          */
-        status?: 'submitted' | 'approved' | 'rejected';
+        status?: 'submitted' | 'approved' | 'changes_requested' | 'removed';
         /**
          * The page, counted from 1.
          */
@@ -5847,16 +6047,16 @@ export type ApproveTalentResponses = {
 
 export type ApproveTalentResponse = ApproveTalentResponses[keyof ApproveTalentResponses];
 
-export type RejectTalentData = {
-    body: RejectTalent;
+export type RemoveTalentData = {
+    body: TalentDecision;
     path: {
         id: string;
     };
     query?: never;
-    url: '/api/talent/admin/profiles/{id}/reject';
+    url: '/api/talent/admin/profiles/{id}/remove';
 };
 
-export type RejectTalentErrors = {
+export type RemoveTalentErrors = {
     /**
      * A member is not valid.
      */
@@ -5874,21 +6074,131 @@ export type RejectTalentErrors = {
      */
     404: Problem;
     /**
-     * The profile is neither waiting for review nor approved.
+     * The profile is not approved.
      */
     409: Problem;
 };
 
-export type RejectTalentError = RejectTalentErrors[keyof RejectTalentErrors];
+export type RemoveTalentError = RemoveTalentErrors[keyof RemoveTalentErrors];
 
-export type RejectTalentResponses = {
+export type RemoveTalentResponses = {
     /**
-     * The profile is rejected, with the reason.
+     * The profile is removed; the person was emailed.
      */
     204: void;
 };
 
-export type RejectTalentResponse = RejectTalentResponses[keyof RejectTalentResponses];
+export type RemoveTalentResponse = RemoveTalentResponses[keyof RemoveTalentResponses];
+
+export type RequestTalentChangesData = {
+    body: TalentDecision;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/admin/profiles/{id}/request-changes';
+};
+
+export type RequestTalentChangesErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted talent profile.
+     */
+    404: Problem;
+    /**
+     * The profile is not waiting for review.
+     */
+    409: Problem;
+};
+
+export type RequestTalentChangesError = RequestTalentChangesErrors[keyof RequestTalentChangesErrors];
+
+export type RequestTalentChangesResponses = {
+    /**
+     * Changes are asked for; the person was emailed.
+     */
+    204: void;
+};
+
+export type RequestTalentChangesResponse = RequestTalentChangesResponses[keyof RequestTalentChangesResponses];
+
+export type ListReportedTalentEnquiriesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/talent/admin/reported-enquiries';
+};
+
+export type ListReportedTalentEnquiriesErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListReportedTalentEnquiriesError = ListReportedTalentEnquiriesErrors[keyof ListReportedTalentEnquiriesErrors];
+
+export type ListReportedTalentEnquiriesResponses = {
+    /**
+     * One page of the reported messages.
+     */
+    200: AdminTalentEnquiryList;
+};
+
+export type ListReportedTalentEnquiriesResponse = ListReportedTalentEnquiriesResponses[keyof ListReportedTalentEnquiriesResponses];
+
+export type DeleteMyTalentProfileData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/talent/mine';
+};
+
+export type DeleteMyTalentProfileErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no profile.
+     */
+    404: Problem;
+};
+
+export type DeleteMyTalentProfileError = DeleteMyTalentProfileErrors[keyof DeleteMyTalentProfileErrors];
+
+export type DeleteMyTalentProfileResponses = {
+    /**
+     * The profile is deleted.
+     */
+    204: void;
+};
+
+export type DeleteMyTalentProfileResponse = DeleteMyTalentProfileResponses[keyof DeleteMyTalentProfileResponses];
 
 export type GetMyTalentProfileData = {
     body?: never;
@@ -5948,6 +6258,111 @@ export type SaveMyTalentProfileResponses = {
 
 export type SaveMyTalentProfileResponse = SaveMyTalentProfileResponses[keyof SaveMyTalentProfileResponses];
 
+export type AcceptTalentEnquiryData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/mine/enquiries/{id}/accept';
+};
+
+export type AcceptTalentEnquiryErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no profile, or no message to it has this identifier.
+     */
+    404: Problem;
+    /**
+     * The message was answered already, or it closed.
+     */
+    409: Problem;
+};
+
+export type AcceptTalentEnquiryError = AcceptTalentEnquiryErrors[keyof AcceptTalentEnquiryErrors];
+
+export type AcceptTalentEnquiryResponses = {
+    /**
+     * Accepted; both sides were emailed.
+     */
+    204: void;
+};
+
+export type AcceptTalentEnquiryResponse = AcceptTalentEnquiryResponses[keyof AcceptTalentEnquiryResponses];
+
+export type DeclineTalentEnquiryData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/mine/enquiries/{id}/decline';
+};
+
+export type DeclineTalentEnquiryErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no profile, or no message to it has this identifier.
+     */
+    404: Problem;
+    /**
+     * The message was answered already, or it closed.
+     */
+    409: Problem;
+};
+
+export type DeclineTalentEnquiryError = DeclineTalentEnquiryErrors[keyof DeclineTalentEnquiryErrors];
+
+export type DeclineTalentEnquiryResponses = {
+    /**
+     * Declined; the sender was told.
+     */
+    204: void;
+};
+
+export type DeclineTalentEnquiryResponse = DeclineTalentEnquiryResponses[keyof DeclineTalentEnquiryResponses];
+
+export type ReportTalentEnquiryData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/mine/enquiries/{id}/report';
+};
+
+export type ReportTalentEnquiryErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no profile, or no message to it has this identifier.
+     */
+    404: Problem;
+    /**
+     * The message was answered already, or it closed.
+     */
+    409: Problem;
+};
+
+export type ReportTalentEnquiryError = ReportTalentEnquiryErrors[keyof ReportTalentEnquiryErrors];
+
+export type ReportTalentEnquiryResponses = {
+    /**
+     * Reported; the sender was told it was declined.
+     */
+    204: void;
+};
+
+export type ReportTalentEnquiryResponse = ReportTalentEnquiryResponses[keyof ReportTalentEnquiryResponses];
+
 export type SubmitMyTalentProfileData = {
     body?: never;
     path?: never;
@@ -5990,7 +6405,7 @@ export type ListTalentData = {
     path?: never;
     query?: {
         /**
-         * Profiles whose name, headline or a skill contains this, ignoring case.
+         * Profiles whose name, headline, a skill or a project title contains this, ignoring case.
          */
         q?: string | null;
         /**
@@ -5998,9 +6413,17 @@ export type ListTalentData = {
          */
         role?: string | null;
         /**
-         * Only profiles of this availability.
+         * Only profiles in this country, ISO 3166-1 alpha-2.
          */
-        availability?: string | null;
+        country?: string | null;
+        /**
+         * Only profiles that worked in this industry.
+         */
+        industry?: string | null;
+        /**
+         * Only profiles open to this kind of engagement.
+         */
+        engagement?: string | null;
         /**
          * The order: by name, or the most recently approved first.
          */
@@ -6081,11 +6504,11 @@ export type SendTalentEnquiryErrors = {
      */
     404: Problem;
     /**
-     * The profile is the caller's own.
+     * The profile is the caller's own, or the caller's earlier message to it still waits.
      */
     409: Problem;
     /**
-     * The caller already wrote through this profile within a day.
+     * The caller started ten conversations within the last day.
      */
     429: Problem;
 };
@@ -6094,7 +6517,7 @@ export type SendTalentEnquiryError = SendTalentEnquiryErrors[keyof SendTalentEnq
 
 export type SendTalentEnquiryResponses = {
     /**
-     * The message was sent to the person by email.
+     * The message waits for the person's answer; they were told by email, without the caller's address.
      */
     204: void;
 };

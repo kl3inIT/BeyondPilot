@@ -39,7 +39,7 @@ The dependency edges are new: `organization → audit, identity, notification`; 
 7. **Slugs are generated once** from the name, made unique with a numeric suffix, and do not change when the name does, so a public address keeps working.
 8. **Codes, not free text, for every facet** (industry, focus area, maturity, deployment, talent role, availability, engagement, rate band). The backend validates them; the web names them from `Vocabulary` in the message catalog, in both languages.
 9. **A talent project carries a year, not a date.** People remember the year, and nothing sorts within one.
-10. **The enquiry is stored and emailed.** The stored copy is the person's inbox on their profile page; the email is how they learn of it.
+10. **The enquiry is stored and emailed.** The stored copy is the person's inbox on their profile page; the email is how they learn of it. Replaced by [BEY-36](../bey-36-talent-enquiries-and-review/design.md): the email carries no address, and the person accepts, declines or reports the enquiry.
 11. **Forms hold their state in React.** The convention names TanStack Form with Zod; neither is installed, and the existing sign-in form holds state the same way. Validation that matters is the backend's; the forms repeat the required-field checks so a person hears of them before a round trip.
 12. **Country names are in the message catalog.** `Intl.DisplayNames` answers differently in Node and in the browser for some regions, which breaks hydration.
 
@@ -91,11 +91,11 @@ V4 is left to the program module, which is built on another branch.
 ## Known limits
 
 - An organization's public page shows no team or programmes, and there is no logo yet; a solution and a profile have no images. Initials stand in their place.
-- The frames draw more than the API holds. Left out until it does: on a solution, proof items other than customer deployments, the programme line, offers, channels, languages and the sort by proof; the request for an introduction is [BEY-34](../bey-34-solution-introductions/design.md); on a profile, the organization the person works at, the stage and confirmation of a project, industries, languages, the programme block, the country filter and the sort; on an organization, industries, the year founded, a second domain, who last edited a solution and when an invitation expires.
+- The frames draw more than the API holds. Left out until it does: on a solution, proof items other than customer deployments, the programme line, offers, channels and the sort by proof (its languages, what it is built with and its deck came with [BEY-34](../bey-34-solution-editor-steps/design.md)); the request for an introduction is [BEY-34](../bey-34-solution-introductions/design.md); on a profile, the organization the person works at, the stage and confirmation of a project, industries, languages, the programme block, the country filter and the sort; on an organization, industries, the year founded, a second domain, who last edited a solution and when an invitation expires.
 - An enterprise's Use cases tab waits for the use case module.
 - Search is `ILIKE` over a few columns; it has no ranking.
 - A member invited by email must sign in with that address; there is no invitation link.
-- The enquiry limit is per sender and profile, not per sender overall.
+- The enquiry limit is per sender and profile, not per sender overall. [BEY-36](../bey-36-talent-enquiries-and-review/design.md) replaced it with one waiting enquiry per sender and profile, and ten a day per sender.
 - A public solution page has no evidence section and no enquiry; a solution's only action is its website.
 - An operator decides one record at a time: there is no decision from a list row and none for several records at once, and an approval is undone only by taking the record down.
 - The browser's Back button leaves a changed form without asking.

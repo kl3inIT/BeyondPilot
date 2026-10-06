@@ -96,6 +96,12 @@ paths:
           - introduction.decline
           - talent.approve
           - talent.reject
+          - talent.enquiry_accept
+          - talent.enquiry_decline
+          - talent.enquiry_report
+          - talent.request_changes
+          - talent.remove
+          - talent.delete
           - proposal.criteria_update
           - proposal.reviewer_invite
           - proposal.reviewer_remove
@@ -3924,6 +3930,37 @@ paths:
       summary: "One approved solution by its address, listed or not"
       tags:
       - Solutions
+  /api/solution/solutions/{slug}/deck:
+    get:
+      description: "The PDF, saved under its name, or a redirect to where the object\
+        \ store serves it. No session is needed for an approved solution; before that\
+        \ the members of its organization and the operators read it."
+      operationId: getSolutionDeck
+      parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: The bytes of the deck.
+        "302":
+          description: "The address the object store serves the deck at, for a while."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The solution has no deck, or the reader may not have it."
+      summary: The deck of a solution
+      tags:
+      - Solutions
   /api/storage/files/{id}:
     get:
       description: "The bytes of a file anyone may read, such as an image of a program,\
@@ -4110,8 +4147,9 @@ paths:
           enum:
           - submitted
           - approved
-          - rejected
-          pattern: submitted|approved|rejected
+          - changes_requested
+          - removed
+          pattern: submitted|approved|changes_requested|removed
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -4233,9 +4271,9 @@ paths:
       summary: Approve a talent profile that waits for review
       tags:
       - Talent administration
-  /api/talent/admin/profiles/{id}/reject:
+  /api/talent/admin/profiles/{id}/remove:
     post:
-      operationId: rejectTalent
+      operationId: removeTalent
       parameters:
       - in: path
         name: id
@@ -4247,11 +4285,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RejectTalent"
+              $ref: "#/components/schemas/TalentDecision"
         required: true
       responses:
         "204":
-          description: "The profile is rejected, with the reason."
+          description: The profile is removed; the person was emailed.
         "400":
           content:
             application/problem+json:
@@ -4281,14 +4319,134 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The profile is neither waiting for review nor approved.
+          description: The profile is not approved.
       security:
       - session: []
-      summary: "Reject a talent profile that waits for review, or take an approved\
-        \ one out of the directory"
+      summary: "Remove an approved talent profile from the public, with a reason"
+      tags:
+      - Talent administration
+  /api/talent/admin/profiles/{id}/request-changes:
+    post:
+      operationId: requestTalentChanges
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TalentDecision"
+        required: true
+      responses:
+        "204":
+          description: Changes are asked for; the person was emailed.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted talent profile.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The profile is not waiting for review.
+      security:
+      - session: []
+      summary: "Ask the person to change a talent profile that waits for review, with\
+        \ a reason"
+      tags:
+      - Talent administration
+  /api/talent/admin/reported-enquiries:
+    get:
+      operationId: listReportedTalentEnquiries
+      parameters:
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTalentEnquiryList"
+          description: One page of the reported messages.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The messages reported through talent profiles, the most recently reported\
+        \ first"
       tags:
       - Talent administration
   /api/talent/mine:
+    delete:
+      operationId: deleteMyTalentProfile
+      responses:
+        "204":
+          description: The profile is deleted.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller has no profile.
+      security:
+      - session: []
+      summary: Delete the caller's talent profile with its projects and messages
+      tags:
+      - My talent profile
     get:
       operationId: getMyTalentProfile
       responses:
@@ -4348,6 +4506,116 @@ paths:
       summary: Save the caller's talent profile; the first save creates it
       tags:
       - My talent profile
+  /api/talent/mine/enquiries/{id}/accept:
+    post:
+      operationId: acceptTalentEnquiry
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Accepted; both sides were emailed.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller has no profile, or no message to it has this identifier."
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The message was answered already, or it closed."
+      security:
+      - session: []
+      summary: Accept a message to the caller's profile; both sides are told each
+        other's address
+      tags:
+      - My talent profile
+  /api/talent/mine/enquiries/{id}/decline:
+    post:
+      operationId: declineTalentEnquiry
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Declined; the sender was told.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller has no profile, or no message to it has this identifier."
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The message was answered already, or it closed."
+      security:
+      - session: []
+      summary: Decline a message to the caller's profile; no address is shared
+      tags:
+      - My talent profile
+  /api/talent/mine/enquiries/{id}/report:
+    post:
+      operationId: reportTalentEnquiry
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Reported; the sender was told it was declined.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller has no profile, or no message to it has this identifier."
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The message was answered already, or it closed."
+      security:
+      - session: []
+      summary: Report a message to the caller's profile as unwanted; the sender reads
+        it as declined
+      tags:
+      - My talent profile
   /api/talent/mine/submit:
     post:
       operationId: submitMyTalentProfile
@@ -4391,8 +4659,8 @@ paths:
     get:
       operationId: listTalent
       parameters:
-      - description: "Profiles whose name, headline or a skill contains this, ignoring\
-          \ case."
+      - description: "Profiles whose name, headline, a skill or a project title contains\
+          \ this, ignoring case."
         in: query
         name: q
         required: false
@@ -4411,15 +4679,33 @@ paths:
           - string
           - "null"
           pattern: ai_engineer|ml_engineer|forward_deployed_engineer|automation_specialist|data_scientist|data_engineer|ai_product_manager|ai_consultant|ai_designer|other
-      - description: Only profiles of this availability.
+      - description: "Only profiles in this country, ISO 3166-1 alpha-2."
         in: query
-        name: availability
+        name: country
         required: false
         schema:
           type:
           - string
           - "null"
-          pattern: available|open_to_offers|not_available
+          pattern: "[A-Z]{2}"
+      - description: Only profiles that worked in this industry.
+        in: query
+        name: industry
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+      - description: Only profiles open to this kind of engagement.
+        in: query
+        name: engagement
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: full_time|part_time|contract|advisory
       - description: "The order: by name, or the most recently approved first."
         in: query
         name: sort
@@ -4498,7 +4784,8 @@ paths:
         required: true
       responses:
         "204":
-          description: The message was sent to the person by email.
+          description: "The message waits for the person's answer; they were told\
+            \ by email, without the caller's address."
         "400":
           content:
             application/problem+json:
@@ -4522,13 +4809,14 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The profile is the caller's own.
+          description: "The profile is the caller's own, or the caller's earlier message\
+            \ to it still waits."
         "429":
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The caller already wrote through this profile within a day.
+          description: The caller started ten conversations within the last day.
       security:
       - session: []
       summary: Send a message to the person behind a talent profile
@@ -5177,6 +5465,75 @@ components:
       required:
       - email
       - profile
+    AdminTalentEnquiry:
+      type: object
+      description: A message the person behind a talent profile reported as unwanted.
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        message:
+          type: string
+        profileId:
+          type: string
+          format: uuid
+          description: The profile it was sent through.
+        profileName:
+          type: string
+        reportedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When it was reported.
+        senderEmail:
+          type: string
+          description: The sender's address; empty when the account no longer signs
+            in.
+        senderName:
+          type:
+          - string
+          - "null"
+          description: The sender's name; null when they gave none.
+        topic:
+          type: string
+          enum:
+          - project
+          - role
+          - other
+      required:
+      - createdAt
+      - id
+      - message
+      - profileId
+      - profileName
+      - senderEmail
+      - topic
+    AdminTalentEnquiryList:
+      type: object
+      description: "One page of the reported messages, the newest first."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminTalentEnquiry"
+        page:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+      required:
+      - items
+      - page
+      - pageSize
+      - total
     AdminTalentList:
       type: object
       description: "One page of submitted talent profiles: those waiting for review\
@@ -5515,6 +5872,12 @@ components:
           - introduction.decline
           - talent.approve
           - talent.reject
+          - talent.enquiry_accept
+          - talent.enquiry_decline
+          - talent.enquiry_report
+          - talent.request_changes
+          - talent.remove
+          - talent.delete
           - proposal.criteria_update
           - proposal.reviewer_invite
           - proposal.reviewer_remove
@@ -6176,7 +6539,7 @@ components:
       properties:
         enquiries:
           type: array
-          description: The newest first.
+          description: "Those that wait for an answer first, then the newest."
           items:
             $ref: "#/components/schemas/TalentEnquiry"
         profile:
@@ -7089,6 +7452,14 @@ components:
       description: "An approved solution as anyone with its address reads it, listed\
         \ or not."
       properties:
+        bestCustomerProfile:
+          type:
+          - string
+          - "null"
+        builtWith:
+          type: array
+          items:
+            type: string
         country:
           type:
           - string
@@ -7100,10 +7471,12 @@ components:
             \ first."
           items:
             $ref: "#/components/schemas/PublicCustomerDeployment"
-        deckUrl:
+        deck:
           type:
-          - string
+          - object
           - "null"
+          $ref: "#/components/schemas/PublicSolutionDeck"
+          description: "Its deck, when it has one."
         demoUrl:
           type:
           - string
@@ -7117,6 +7490,10 @@ components:
           items:
             type: string
         industries:
+          type: array
+          items:
+            type: string
+        languages:
           type: array
           items:
             type: string
@@ -7151,6 +7528,10 @@ components:
           type:
           - string
           - "null"
+        traction:
+          type:
+          - string
+          - "null"
         valueProposition:
           type:
           - string
@@ -7160,15 +7541,30 @@ components:
           - string
           - "null"
       required:
+      - builtWith
       - customerDeployments
       - deployment
       - focusAreas
       - industries
+      - languages
       - listed
       - name
       - organizationName
       - organizationSlug
       - slug
+    PublicSolutionDeck:
+      type: object
+      description: The deck of an approved solution. Its bytes are read at the address
+        of the solution followed by /deck.
+      properties:
+        fileName:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+      required:
+      - fileName
+      - sizeBytes
     PublicSolutionList:
       type: object
       description: "One page of the public directory of solutions, by name."
@@ -7248,17 +7644,13 @@ components:
     PublicTalent:
       type: object
       description: "An approved, listed talent profile as anyone reads it. It carries\
-        \ no address of the person."
+        \ no address of the person, and no rate."
       properties:
-        availability:
+        bio:
           type:
           - string
           - "null"
-          enum:
-          - available
-          - open_to_offers
-          - not_available
-        bio:
+        city:
           type:
           - string
           - "null"
@@ -7275,23 +7667,27 @@ components:
           type:
           - string
           - "null"
+        industries:
+          type: array
+          items:
+            type: string
+        languages:
+          type: array
+          description: ISO 639-1 codes.
+          items:
+            type: string
         name:
           type: string
+        photoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Read at /api/storage/files/{id}; null for none."
         projects:
           type: array
           items:
             $ref: "#/components/schemas/TalentProject"
-        rateBand:
-          type:
-          - string
-          - "null"
-          description: US dollars an hour. Null is not stated.
-          enum:
-          - under_25
-          - 25_50
-          - 50_100
-          - 100_150
-          - 150_plus
         roles:
           type: array
           items:
@@ -7302,12 +7698,26 @@ components:
             type: string
         slug:
           type: string
+        waitingEnquirySentAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: "When the caller's message to this person was sent, while it\
+            \ waits for an answer; null for a visitor and when none waits."
         website:
           type:
           - string
           - "null"
+        worksAt:
+          type:
+          - string
+          - "null"
+          description: "Where the person works, as they state it."
       required:
       - engagement
+      - industries
+      - languages
       - name
       - projects
       - roles
@@ -7341,14 +7751,10 @@ components:
       type: object
       description: One profile in the public directory of talent.
       properties:
-        availability:
+        city:
           type:
           - string
           - "null"
-          enum:
-          - available
-          - open_to_offers
-          - not_available
         country:
           type:
           - string
@@ -7358,8 +7764,26 @@ components:
           type:
           - string
           - "null"
+        leadProject:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/TalentProject"
+          description: The first project the profile shows; null when it shows none.
+          oneOf:
+          - $ref: "#/components/schemas/TalentProject"
         name:
           type: string
+        photoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Read at /api/storage/files/{id}; null for none."
+        projectCount:
+          type: integer
+          format: int32
+          description: How many projects the profile shows.
         roles:
           type: array
           items:
@@ -7372,6 +7796,7 @@ components:
           type: string
       required:
       - name
+      - projectCount
       - roles
       - skills
       - slug
@@ -7454,27 +7879,6 @@ components:
           - unverifiable
           - other
           pattern: incomplete|not_an_ai_solution|duplicate|unverifiable|other
-      required:
-      - reason
-    RejectTalent:
-      type: object
-      description: "Why a talent profile is not approved, and what its person is told."
-      properties:
-        message:
-          type:
-          - string
-          - "null"
-          description: Shown to the person with the rejection.
-          maxLength: 1000
-          minLength: 0
-        reason:
-          type: string
-          enum:
-          - incomplete
-          - unverifiable
-          - inappropriate
-          - other
-          pattern: incomplete|unverifiable|inappropriate|other
       required:
       - reason
     Release:
@@ -7604,7 +8008,9 @@ components:
             and the largest size.
           enum:
           - program_image
+          - talent_photo
           - application_file
+          - solution_deck
         sizeBytes:
           type: integer
           format: int64
@@ -8401,16 +8807,32 @@ components:
       - name
     SaveSolution:
       type: object
-      description: A solution as its edit screen holds it.
+      description: "A solution as its editor holds it, in the order of its steps."
       properties:
-        deckUrl:
+        bestCustomerProfile:
           type:
           - string
           - "null"
-          description: A presentation of the solution.
-          maxLength: 300
+          description: "Who gets the most from it, in a sentence."
+          maxLength: 400
           minLength: 0
-          pattern: "https?://[^\\s]+"
+        builtWith:
+          type: array
+          description: "The models, tools and frameworks it is built with, as its\
+            \ owners name them."
+          items:
+            type: string
+            maxLength: 40
+            minLength: 0
+          maxItems: 10
+          minItems: 0
+        deckFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The stored PDF that is its deck: the one it has, one the caller\
+            \ uploaded for it, or null for none."
         demoUrl:
           type:
           - string
@@ -8440,6 +8862,14 @@ components:
             pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
           maxItems: 5
           minItems: 0
+        languages:
+          type: array
+          description: The languages it works in.
+          items:
+            type: string
+            pattern: en|vi|id|ms|th|fil|zh|ja|ko|other
+          maxItems: 10
+          minItems: 0
         listed:
           type: boolean
           description: Whether it appears in the public directory once approved.
@@ -8468,8 +8898,15 @@ components:
           type:
           - string
           - "null"
-          description: One or two sentences shown in lists.
-          maxLength: 300
+          description: Two or three sentences shown in lists.
+          maxLength: 600
+          minLength: 0
+        traction:
+          type:
+          - string
+          - "null"
+          description: "Customers, pilots, users or revenue so far."
+          maxLength: 600
           minLength: 0
         valueProposition:
           type:
@@ -8489,9 +8926,11 @@ components:
           minLength: 0
           pattern: "https?://[^\\s]+"
       required:
+      - builtWith
       - deployment
       - focusAreas
       - industries
+      - languages
       - listed
       - name
       - version
@@ -8499,20 +8938,17 @@ components:
       type: object
       description: A talent profile as its edit screen holds it.
       properties:
-        availability:
-          type:
-          - string
-          - "null"
-          enum:
-          - available
-          - open_to_offers
-          - not_available
-          pattern: available|open_to_offers|not_available
         bio:
           type:
           - string
           - "null"
           maxLength: 4000
+          minLength: 0
+        city:
+          type:
+          - string
+          - "null"
+          maxLength: 80
           minLength: 0
         country:
           type:
@@ -8534,6 +8970,21 @@ components:
           description: One line shown in lists.
           maxLength: 160
           minLength: 0
+        industries:
+          type: array
+          items:
+            type: string
+            pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+          maxItems: 5
+          minItems: 0
+        languages:
+          type: array
+          description: ISO 639-1 codes.
+          items:
+            type: string
+            pattern: "[a-z]{2}"
+          maxItems: 6
+          minItems: 0
         listed:
           type: boolean
           description: Whether it appears in the public directory once approved.
@@ -8541,6 +8992,13 @@ components:
           type: string
           maxLength: 120
           minLength: 0
+        photoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: A photo the caller uploaded for a talent profile; null for
+            none.
         projects:
           type: array
           items:
@@ -8587,8 +9045,17 @@ components:
           maxLength: 300
           minLength: 0
           pattern: "https?://[^\\s]+"
+        worksAt:
+          type:
+          - string
+          - "null"
+          description: "Where the person works, as they state it."
+          maxLength: 120
+          minLength: 0
       required:
       - engagement
+      - industries
+      - languages
       - listed
       - name
       - projects
@@ -8620,11 +9087,11 @@ components:
       description: "One result, as its card shows it. Members of another kind are\
         \ null or empty."
       properties:
-        availability:
+        city:
           type:
           - string
           - "null"
-          description: A person's availability.
+          description: A person's city.
         country:
           type:
           - string
@@ -8654,7 +9121,7 @@ components:
             type: string
         industries:
           type: array
-          description: A solution's industries.
+          description: The industries of a solution or a person.
           items:
             type: string
         kind:
@@ -8683,6 +9150,12 @@ components:
           - open
           - running
           - done
+        photoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "A person's photo, read at the public address of stored files."
         roles:
           type: array
           description: A person's roles.
@@ -8717,6 +9190,11 @@ components:
           - string
           - "null"
           description: A program's type.
+        worksAt:
+          type:
+          - string
+          - "null"
+          description: Where a person works.
       required:
       - focusAreas
       - industries
@@ -8762,12 +9240,35 @@ components:
           type: string
           maxLength: 2000
           minLength: 0
+        senderName:
+          type: string
+          description: The name the person written to reads; never an address.
+          maxLength: 120
+          minLength: 0
+        topic:
+          type: string
+          description: What the message is about.
+          enum:
+          - project
+          - role
+          - other
+          pattern: project|role|other
       required:
       - message
+      - senderName
+      - topic
     Solution:
       type: object
       description: "A solution as its organization, and operators, see it."
       properties:
+        bestCustomerProfile:
+          type:
+          - string
+          - "null"
+        builtWith:
+          type: array
+          items:
+            type: string
         complete:
           type: boolean
           description: "Whether it has what a submission needs: a summary, a maturity,\
@@ -8794,10 +9295,12 @@ components:
           - duplicate
           - unverifiable
           - other
-        deckUrl:
+        deck:
           type:
-          - string
+          - object
           - "null"
+          $ref: "#/components/schemas/SolutionDeck"
+          description: "Its deck, when it has one."
         demoUrl:
           type:
           - string
@@ -8814,6 +9317,10 @@ components:
           type: string
           format: uuid
         industries:
+          type: array
+          items:
+            type: string
+        languages:
           type: array
           items:
             type: string
@@ -8867,6 +9374,10 @@ components:
           type:
           - string
           - "null"
+        traction:
+          type:
+          - string
+          - "null"
         updatedAt:
           type: string
           format: date-time
@@ -8884,12 +9395,14 @@ components:
           - string
           - "null"
       required:
+      - builtWith
       - complete
       - customerDeployments
       - deployment
       - focusAreas
       - id
       - industries
+      - languages
       - listed
       - name
       - organizationId
@@ -8898,6 +9411,28 @@ components:
       - status
       - updatedAt
       - version
+    SolutionDeck:
+      type: object
+      description: "The deck of a solution as its organization, and operators, see\
+        \ it."
+      properties:
+        attachedAt:
+          type: string
+          format: date-time
+        fileId:
+          type: string
+          format: uuid
+          description: "The stored file, sent back with a save to keep it."
+        fileName:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+      required:
+      - attachedAt
+      - fileId
+      - fileName
+      - sizeBytes
     SolutionOption:
       type: object
       description: "A solution of the applicant's organization, as step 2 shows it."
@@ -9092,10 +9627,45 @@ components:
       - organizationName
       - organizationType
       - solutionName
+    TalentDecision:
+      type: object
+      description: "Why GenAI Fund asks for changes to a talent profile or removes\
+        \ it, and what its person is told."
+      properties:
+        message:
+          type:
+          - string
+          - "null"
+          description: "Shown to the person with the decision, and sent to them by\
+            \ email."
+          maxLength: 1000
+          minLength: 0
+        reason:
+          type: string
+          enum:
+          - incomplete
+          - unverifiable
+          - inappropriate
+          - other
+          pattern: incomplete|unverifiable|inappropriate|other
+      required:
+      - reason
     TalentEnquiry:
       type: object
       description: A message someone sent through the caller's talent profile.
       properties:
+        answeredAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the caller answered it or it closed; null while it waits.
+        closesAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When a waiting message closes unanswered; null once it is answered.
         createdAt:
           type: string
           format: date-time
@@ -9105,30 +9675,52 @@ components:
         message:
           type: string
         senderEmail:
-          type: string
-          description: Where the caller answers them.
+          type:
+          - string
+          - "null"
+          description: Where the caller writes to the sender; only once the caller
+            accepted.
         senderName:
+          type:
+          - string
+          - "null"
+          description: "Who wrote it, by the name they gave; null when they gave none\
+            \ and the caller has not accepted."
+        senderOrganization:
+          type:
+          - string
+          - "null"
+          description: The organization the sender belonged to when they wrote; null
+            when none.
+        status:
           type: string
-          description: "Who wrote it, as they are shown."
+          enum:
+          - pending
+          - accepted
+          - declined
+          - reported
+          - closed
+        topic:
+          type: string
+          enum:
+          - project
+          - role
+          - other
       required:
       - createdAt
       - id
       - message
-      - senderEmail
-      - senderName
+      - status
+      - topic
     TalentProfile:
       type: object
       description: "A talent profile as its person, and operators, see it."
       properties:
-        availability:
+        bio:
           type:
           - string
           - "null"
-          enum:
-          - available
-          - open_to_offers
-          - not_available
-        bio:
+        city:
           type:
           - string
           - "null"
@@ -9150,7 +9742,7 @@ components:
           type:
           - string
           - "null"
-          description: Why it was last rejected.
+          description: Why GenAI Fund last asked for changes or removed it.
           enum:
           - incomplete
           - unverifiable
@@ -9167,11 +9759,26 @@ components:
         id:
           type: string
           format: uuid
+        industries:
+          type: array
+          items:
+            type: string
+        languages:
+          type: array
+          description: ISO 639-1 codes.
+          items:
+            type: string
         listed:
           type: boolean
           description: Whether it appears in the public directory once approved.
         name:
           type: string
+        photoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Read at /api/storage/files/{id}; null for none."
         projects:
           type: array
           items:
@@ -9203,7 +9810,8 @@ components:
           - draft
           - submitted
           - approved
-          - rejected
+          - changes_requested
+          - removed
         submittedAt:
           type:
           - string
@@ -9221,10 +9829,17 @@ components:
           type:
           - string
           - "null"
+        worksAt:
+          type:
+          - string
+          - "null"
+          description: "Where the person works, as they state it."
       required:
       - complete
       - engagement
       - id
+      - industries
+      - languages
       - listed
       - name
       - projects
@@ -9238,6 +9853,17 @@ components:
       type: object
       description: One piece of work a talent profile shows.
       properties:
+        stage:
+          type:
+          - string
+          - "null"
+          description: How far the work went; null when not stated.
+          enum:
+          - prototype
+          - pilot
+          - in_production
+          - internal_tool
+          pattern: prototype|pilot|in_production|internal_tool
         summary:
           type:
           - string
@@ -9291,7 +9917,8 @@ components:
           - draft
           - submitted
           - approved
-          - rejected
+          - changes_requested
+          - removed
         submittedAt:
           type:
           - string
