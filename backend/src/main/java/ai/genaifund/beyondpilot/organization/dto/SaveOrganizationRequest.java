@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.organization.dto;
 
 import java.util.List;
+import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
@@ -32,8 +33,8 @@ public record SaveOrganizationRequest(
 						max = 280) String description,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "The year it started; for an independent builder, the year the practice did.") @NotNull @Min(1800) @Max(2100) Integer foundedYear,
-		@Schema(types = { "string", "null" }, description = "The address of its logo.") @Size(max = 300) @Pattern(
-				regexp = OrganizationCodes.WEBSITE) @Nullable String logoUrl,
+		@Schema(types = { "string", "null" },
+				description = "A logo the caller uploaded for an organization; null for none.") @Nullable UUID logoFileId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "The version the screen read.") @NotNull Long version) {
 }

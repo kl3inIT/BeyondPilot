@@ -104,7 +104,7 @@ class OrganizationTest {
 		assertThat(JsonPath.<String>read(body, "$.code")).isEqualTo("REQUEST_INVALID");
 		assertThat(JsonPath.<List<String>>read(body, "$.errors[*].pointer")).containsExactlyInAnyOrder("#/name",
 				"#/type", "#/country", "#/teamSize", "#/industries/0", "#/website", "#/description",
-				"#/foundedYear", "#/jobTitle");
+				"#/foundedYear");
 	}
 
 	@Test
@@ -125,13 +125,12 @@ class OrganizationTest {
 	}
 
 	@Test
-	void aCreationNeedsItsWebsiteDescriptionAndYearAndKeepsTheLogo() {
+	void aCreationNeedsItsWebsiteDescriptionAndYearButNotTheCreatorsJobTitle() {
 		String session = signIn("facts@invalid.test");
 		String path = API + "/organizations";
-		// Each is refused on its own: a missing website, a description over 280 characters, a year out of range
-		// and a logo that is not a web address.
+		// Each is refused on its own: a missing website, a description over 280 characters and a year out of range.
 		for (Map.Entry<String, Object> broken : Map.<String, Object>of("website", " ", "description", "x".repeat(281),
-				"foundedYear", 1799, "logoUrl", "logo.png")
+				"foundedYear", 1799)
 			.entrySet()) {
 			Map<String, Object> request = new HashMap<>(creation("Facts Co"));
 			request.put(broken.getKey(), broken.getValue());
@@ -140,12 +139,45 @@ class OrganizationTest {
 		}
 
 		Map<String, Object> request = new HashMap<>(creation("Facts Co"));
-		request.put("logoUrl", "https://example.test/logo.png");
+		request.remove("jobTitle");
 		String created = body(post(session, path, request).expectStatus().isCreated());
 
 		assertThat(JsonPath.<Integer>read(created, "$.foundedYear")).isEqualTo(2021);
-		assertThat(JsonPath.<String>read(created, "$.logoUrl")).isEqualTo("https://example.test/logo.png");
 		assertThat(JsonPath.<String>read(created, "$.description")).isEqualTo("Assistants for insurers.");
+		assertThat(JsonPath.<String>read(mine(session), "$.jobTitle")).isNull();
+	}
+
+	@Test
+	void aLogoIsAnUploadedImageThatOnlyOneOrganizationNamesAndIsRemovedWhenReplaced() {
+		String founder = signIn("founder@logo.test");
+		UUID first = uploadedLogo(founder);
+		Map<String, Object> request = new HashMap<>(creation("Logo Co"));
+		request.put("logoFileId", first.toString());
+
+		String created = body(post(founder, API + "/organizations", request).expectStatus().isCreated());
+
+		assertThat(JsonPath.<String>read(created, "$.logoFileId")).isEqualTo(first.toString());
+		// Another organization cannot name the same file, nor a file that was never uploaded as a logo.
+		Map<String, Object> other = new HashMap<>(creation("Other Logo Co"));
+		other.put("logoFileId", first.toString());
+		assertProblem(post(signIn("other@logo.test"), API + "/organizations", other), 400,
+				"ORGANIZATION_LOGO_NOT_USABLE");
+		other.put("logoFileId", UUID.randomUUID().toString());
+		assertProblem(post(signIn("other@logo.test"), API + "/organizations", other), 400,
+				"ORGANIZATION_LOGO_NOT_USABLE");
+
+		// Saving another logo gives the first one up; saving none gives up the second.
+		UUID second = uploadedLogo(founder);
+		Map<String, Object> replaced = save(profile("Logo Co"), versionOf(mine(founder)));
+		replaced.put("logoFileId", second.toString());
+		put(founder, API + "/mine", replaced).expectStatus().isOk();
+		assertThat(stored(first)).isFalse();
+		assertThat(stored(second)).isTrue();
+		Map<String, Object> removed = save(profile("Logo Co"), versionOf(mine(founder)));
+		removed.put("logoFileId", null);
+		put(founder, API + "/mine", removed).expectStatus().isOk();
+		assertThat(stored(second)).isFalse();
+		assertThat(JsonPath.<Object>read(mine(founder), "$.organization.logoFileId")).isNull();
 	}
 
 	@Test
@@ -688,6 +720,38 @@ class OrganizationTest {
 
 	private String mine(String session) {
 		return body(get(session, API + "/mine").expectStatus().isOk());
+	}
+
+	private static int versionOf(String mine) {
+		return JsonPath.<Integer>read(mine, "$.organization.version");
+	}
+
+	/** Uploads a PNG as an organization logo, in the three requests of the storage module. */
+	private UUID uploadedLogo(String session) {
+		byte[] content = new byte[64];
+		byte[] signature = { (byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' };
+		System.arraycopy(signature, 0, content, 0, signature.length);
+		String ticket = body(post(session, "/api/storage/uploads", Map.of("purpose", "organization_logo", "fileName",
+				"logo.png", "mediaType", "image/png", "sizeBytes", content.length))
+			.expectStatus()
+			.isCreated());
+		UUID id = UUID.fromString(JsonPath.read(ticket, "$.id"));
+		client.put()
+			.uri(JsonPath.<String>read(ticket, "$.url"))
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.contentType(MediaType.APPLICATION_OCTET_STREAM)
+			.body(content)
+			.exchange()
+			.expectStatus()
+			.isNoContent();
+		post(session, "/api/storage/uploads/" + id + "/confirm", null).expectStatus().isOk();
+		return id;
+	}
+
+	/** Whether the storage module still has the file. */
+	private boolean stored(UUID file) {
+		return jdbc.sql("select count(*) from storage_file where id = ?").param(file).query(Long.class).single() == 1;
 	}
 
 	private String members(String session) {

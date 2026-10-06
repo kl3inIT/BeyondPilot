@@ -18,7 +18,7 @@ const pocketPolicy = {
   emailDomain: "pocketpolicy.example",
   description: "Assistants for insurers across Southeast Asia.",
   foundedYear: 2021,
-  logoUrl: null,
+  logoFileId: null,
   autoJoin: false,
   version: 3,
   createdAt: day,
