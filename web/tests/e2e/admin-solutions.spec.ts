@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { expectNoSeriousA11yViolations } from "./axe";
 import { answerDecisions, giveReason, refusal } from "./reviews";
 import { signInAs } from "./session";
+import { serveStoredImages } from "./stored-files";
 
 const claimsCopilot = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e01";
 const underwritingRadar = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e02";
@@ -24,6 +25,8 @@ function deploymentCard(page: Page, title: string) {
 }
 
 test.describe("admin solutions", () => {
+  test.beforeEach(({ page }) => serveStoredImages(page));
+
   test.use({ locale: "en-US" });
 
   test("nobody but an operator gets the list or a record", async ({ page, context, baseURL }) => {
@@ -80,9 +83,6 @@ test.describe("admin solutions", () => {
       "No solution matches",
     );
 
-    // The way back is checked on a page read from its address: a click within moments of typing
-    // races the toolbar's delayed write of the address, which puts the search back.
-    await page.reload();
     await page.getByRole("link", { name: "Clear search and filter" }).click();
     await expect(page).toHaveURL("/admin/solutions");
     await expect(shownSolutions(page)).toHaveCount(4);

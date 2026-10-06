@@ -11,6 +11,7 @@ import java.util.UUID;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.storage.TestUploads;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -123,6 +124,9 @@ class IntroductionTest {
 		String solution = body(get(provider, SOLUTION + "/mine/" + id).expectStatus().isOk());
 		Map<String, Object> hidden = described("Unlisted Triage", JsonPath.<Number>read(solution, "$.version").longValue());
 		hidden.put("listed", false);
+		// A save keeps the images a reviewed solution has.
+		hidden.put("logoFileId", JsonPath.<String>read(solution, "$.logo.fileId"));
+		hidden.put("coverFileId", JsonPath.<String>read(solution, "$.cover.fileId"));
 		put(provider, SOLUTION + "/mine/" + id, hidden).expectStatus().isOk();
 
 		post(buyer, INTRODUCTION + "/introductions", Map.of("solutionSlug", slug, "message", "Hello.")).expectStatus()
@@ -264,6 +268,7 @@ class IntroductionTest {
 		request.put("languages", List.of());
 		request.put("deployment", List.of("cloud_saas"));
 		request.put("website", "https://example.test");
+		request.put("imageFileIds", List.of());
 		request.put("listed", true);
 		request.put("version", version);
 		return request;
@@ -291,8 +296,11 @@ class IntroductionTest {
 	private String listedSolution(String provider, String name) {
 		String draft = body(post(provider, SOLUTION + "/mine", Map.of("name", name)).expectStatus().isCreated());
 		UUID id = UUID.fromString(JsonPath.read(draft, "$.id"));
-		put(provider, SOLUTION + "/mine/" + id,
-				described(name, JsonPath.<Number>read(draft, "$.version").longValue())).expectStatus().isOk();
+		Map<String, Object> request = described(name, JsonPath.<Number>read(draft, "$.version").longValue());
+		// A review asks for a logo and a cover.
+		request.put("logoFileId", TestUploads.image(client, provider, "solution_logo", "logo.png"));
+		request.put("coverFileId", TestUploads.image(client, provider, "solution_image", "cover.png"));
+		put(provider, SOLUTION + "/mine/" + id, request).expectStatus().isOk();
 		post(provider, SOLUTION + "/mine/" + id + "/submit", null).expectStatus().isOk();
 		post(operator, SOLUTION + "/admin/solutions/" + id + "/approve", Map.of()).expectStatus().isNoContent();
 		return JsonPath.read(body(get(provider, SOLUTION + "/mine/" + id).expectStatus().isOk()), "$.slug");

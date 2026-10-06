@@ -19,12 +19,14 @@ import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListRequest;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListResponse;
 import ai.genaifund.beyondpilot.solution.dto.RejectCustomerDeploymentRequest;
 import ai.genaifund.beyondpilot.solution.dto.RejectSolutionRequest;
+import ai.genaifund.beyondpilot.solution.dto.SolutionBackingRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionResponse;
 import ai.genaifund.beyondpilot.solution.persistence.CustomerDeployment;
 import ai.genaifund.beyondpilot.solution.persistence.CustomerDeploymentRepository;
 import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionQueryRepository;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
+import ai.genaifund.beyondpilot.storage.StorageService;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -59,9 +61,11 @@ public class SolutionAdministration {
 
 	private final ApplicationEventPublisher events;
 
+	private final StorageService storage;
+
 	SolutionAdministration(SolutionRepository solutions, CustomerDeploymentRepository deployments,
 			SolutionQueryRepository solutionList, OrganizationDirectory organizations, IdentityService identity,
-			AuditTrail audit, ApplicationEventPublisher events) {
+			AuditTrail audit, ApplicationEventPublisher events, StorageService storage) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.solutionList = solutionList;
@@ -69,6 +73,7 @@ public class SolutionAdministration {
 		this.identity = identity;
 		this.audit = audit;
 		this.events = events;
+		this.storage = storage;
 	}
 
 	/**
@@ -109,7 +114,8 @@ public class SolutionAdministration {
 		Solution solution = solutions.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
 		return SolutionViews.solution(solution,
 				name(organizations.names(List.of(solution.getOrganizationId())), solution.getOrganizationId()),
-				SolutionViews.sender(solution, identity), deployments.findBySolutionIdOrderByCreatedAtDesc(id));
+				SolutionViews.sender(solution, identity), deployments.findBySolutionIdOrderByCreatedAtDesc(id),
+				storage);
 	}
 
 	/**
@@ -132,6 +138,23 @@ public class SolutionAdministration {
 		}
 		solution.approve(Instant.now());
 		record(AuditAction.SOLUTION_APPROVE, operator, solution, Map.of());
+		events.publishEvent(new SolutionChanged(id));
+	}
+
+	/**
+	 * Writes what GenAI Fund says of a solution beside its owners' words: who backs its company, the programme it was
+	 * selected for and its funding. Its page shows them marked as GenAI Fund's, so only an operator writes them, on
+	 * a solution that was sent for review.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when no submitted solution has this identifier
+	 */
+	@Transactional
+	public void back(Actor actor, UUID id, SolutionBackingRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		Solution solution = reviewable(id);
+		solution.back(SolutionViews.text(request.backedBy()), SolutionViews.text(request.program()),
+				SolutionViews.text(request.funding()), Instant.now());
+		record(AuditAction.SOLUTION_BACK, operator, solution, Map.of());
 		events.publishEvent(new SolutionChanged(id));
 	}
 

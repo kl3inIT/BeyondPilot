@@ -77,7 +77,7 @@ function DeckUpload({ id, deck, href, onChange }: DeckUploadProps) {
   const choose = () => input.current?.click();
 
   return (
-    <div className="flex flex-col gap-2">
+    <div data-slot="deck-upload" className="flex flex-col gap-2">
       <input
         ref={input}
         type="file"

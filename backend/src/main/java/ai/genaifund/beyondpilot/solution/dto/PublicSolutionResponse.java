@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.solution.dto;
 
 import java.util.List;
+import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.jspecify.annotations.Nullable;
@@ -23,10 +24,20 @@ public record PublicSolutionResponse(@Schema(requiredMode = Schema.RequiredMode.
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> focusAreas,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> languages,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> deployment,
+		@Schema(types = { "string", "null" }) @Nullable String channels,
 		@Schema(types = { "string", "null" }) @Nullable String bestCustomerProfile,
+		@Schema(types = { "object", "null" },
+				description = "What GenAI Fund says of it; null when it has said nothing.") @Nullable SolutionBackingResponse backing,
 		@Schema(types = { "string", "null" }) @Nullable String website,
 		@Schema(types = { "string", "null" }) @Nullable String demoUrl,
 		@Schema(types = { "object", "null" }, description = "Its deck, when it has one.") @Nullable PublicSolutionDeckResponse deck,
+		@Schema(types = { "string", "null" }, format = "uuid",
+				description = "Its logo, read at /api/storage/files/{id}; null for none.") @Nullable UUID logoFileId,
+		@Schema(types = { "string", "null" }, format = "uuid",
+				description = "Its cover, read at /api/storage/files/{id}; null for none.") @Nullable UUID coverFileId,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The images shown under the cover, in their order, each read at "
+						+ "/api/storage/files/{id}.") List<UUID> imageFileIds,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether the directory lists it. False is approved but shared by its address only.") boolean listed,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

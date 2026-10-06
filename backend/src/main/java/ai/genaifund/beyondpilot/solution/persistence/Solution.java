@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.solution.persistence;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,6 +55,16 @@ public class Solution {
 
 	private @Nullable String bestCustomerProfile;
 
+	private @Nullable String channels;
+
+	private @Nullable String backedBy;
+
+	private @Nullable String program;
+
+	private @Nullable String funding;
+
+	private @Nullable Instant backingUpdatedAt;
+
 	@JdbcTypeCode(SqlTypes.ARRAY)
 	@Column(nullable = false, columnDefinition = "text[]")
 	private String[] builtWith = {};
@@ -87,6 +98,14 @@ public class Solution {
 	private @Nullable Long deckSizeBytes;
 
 	private @Nullable Instant deckAttachedAt;
+
+	private @Nullable UUID logoFileId;
+
+	private @Nullable UUID coverFileId;
+
+	@JdbcTypeCode(SqlTypes.ARRAY)
+	@Column(nullable = false, columnDefinition = "uuid[]")
+	private UUID[] imageFileIds = {};
 
 	@Column(nullable = false)
 	private String status = DRAFT;
@@ -147,7 +166,8 @@ public class Solution {
 
 	/** Who should find the solution and where it can run. */
 	public void fit(List<String> industries, List<String> focusAreas, List<String> languages, List<String> deployment,
-			@Nullable String bestCustomerProfile) {
+			@Nullable String channels, @Nullable String bestCustomerProfile) {
+		this.channels = channels;
 		this.industries = industries.toArray(String[]::new);
 		this.focusAreas = focusAreas.toArray(String[]::new);
 		this.languages = languages.toArray(String[]::new);
@@ -176,6 +196,24 @@ public class Solution {
 		deckAttachedAt = null;
 	}
 
+	/** The stored images it shows: its logo, its cover and those under the cover, in the order they are shown. */
+	public void picture(@Nullable UUID logoFileId, @Nullable UUID coverFileId, List<UUID> imageFileIds) {
+		this.logoFileId = logoFileId;
+		this.coverFileId = coverFileId;
+		this.imageFileIds = imageFileIds.toArray(UUID[]::new);
+	}
+
+	/**
+	 * What GenAI Fund says of the solution beside its owners' words: who backs its company, the programme it was
+	 * selected for and its funding. Only operators write it.
+	 */
+	public void back(@Nullable String backedBy, @Nullable String program, @Nullable String funding, Instant at) {
+		this.backedBy = backedBy;
+		this.program = program;
+		this.funding = funding;
+		this.backingUpdatedAt = at;
+	}
+
 	public void list(boolean listed) {
 		this.listed = listed;
 	}
@@ -200,9 +238,36 @@ public class Solution {
 		decidedAt = at;
 	}
 
-	/** What a solution needs before GenAI Fund reviews it: a summary, a maturity, a focus area and an industry. */
+	/**
+	 * What a solution needs before GenAI Fund reviews it: a summary, a maturity, a focus area, an industry, a logo
+	 * and a cover.
+	 */
 	public boolean isComplete() {
-		return summary != null && maturity != null && focusAreas.length > 0 && industries.length > 0;
+		return missing().isEmpty();
+	}
+
+	/** What a review needs and the solution lacks, by the name of each in the API, in the order of the editor. */
+	public List<String> missing() {
+		List<String> missing = new ArrayList<>();
+		if (summary == null) {
+			missing.add("summary");
+		}
+		if (maturity == null) {
+			missing.add("maturity");
+		}
+		if (industries.length == 0) {
+			missing.add("industries");
+		}
+		if (focusAreas.length == 0) {
+			missing.add("focusAreas");
+		}
+		if (logoFileId == null) {
+			missing.add("logo");
+		}
+		if (coverFileId == null) {
+			missing.add("cover");
+		}
+		return List.copyOf(missing);
 	}
 
 	public boolean isDraft() {
@@ -281,6 +346,26 @@ public class Solution {
 		return bestCustomerProfile;
 	}
 
+	public @Nullable String getChannels() {
+		return channels;
+	}
+
+	public @Nullable String getBackedBy() {
+		return backedBy;
+	}
+
+	public @Nullable String getProgram() {
+		return program;
+	}
+
+	public @Nullable String getFunding() {
+		return funding;
+	}
+
+	public @Nullable Instant getBackingUpdatedAt() {
+		return backingUpdatedAt;
+	}
+
 	public List<String> getBuiltWith() {
 		return List.of(builtWith);
 	}
@@ -303,6 +388,30 @@ public class Solution {
 
 	public @Nullable Instant getDeckAttachedAt() {
 		return deckAttachedAt;
+	}
+
+	public @Nullable UUID getLogoFileId() {
+		return logoFileId;
+	}
+
+	public @Nullable UUID getCoverFileId() {
+		return coverFileId;
+	}
+
+	public List<UUID> getImageFileIds() {
+		return List.of(imageFileIds);
+	}
+
+	/** Every stored image it names: the logo, the cover and those under the cover. */
+	public List<UUID> pictures() {
+		List<UUID> pictures = new ArrayList<>(List.of(imageFileIds));
+		if (coverFileId != null) {
+			pictures.addFirst(coverFileId);
+		}
+		if (logoFileId != null) {
+			pictures.addFirst(logoFileId);
+		}
+		return List.copyOf(pictures);
 	}
 
 	public String getStatus() {

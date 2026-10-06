@@ -681,7 +681,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -739,6 +739,24 @@ export type AuditEventResource = {
  */
 export type AutoJoin = {
     autoJoin: boolean;
+};
+
+/**
+ * What GenAI Fund says of a solution, as an operator writes it. A member left out or empty is taken away.
+ */
+export type BackSolution = {
+    /**
+     * Who backs its company, such as GenAI Fund's portfolio.
+     */
+    backedBy?: string | null;
+    /**
+     * How its company is funded.
+     */
+    funding?: string | null;
+    /**
+     * The programme it was selected for, with its cohort.
+     */
+    program?: string | null;
 };
 
 export type ChangeMemberRole = {
@@ -2006,12 +2024,21 @@ export type PublicOrganization = {
  * An approved solution as anyone with its address reads it, listed or not.
  */
 export type PublicSolution = {
+    /**
+     * What GenAI Fund says of it; null when it has said nothing.
+     */
+    backing?: SolutionBacking | null;
     bestCustomerProfile?: string | null;
     builtWith: Array<string>;
+    channels?: string | null;
     /**
      * ISO 3166-1 alpha-2.
      */
     country?: string | null;
+    /**
+     * Its cover, read at /api/storage/files/{id}; null for none.
+     */
+    coverFileId?: string | null;
     /**
      * Its approved customer deployments, the most recently approved first.
      */
@@ -2023,12 +2050,20 @@ export type PublicSolution = {
     demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
+    /**
+     * The images shown under the cover, in their order, each read at /api/storage/files/{id}.
+     */
+    imageFileIds: Array<string>;
     industries: Array<string>;
     languages: Array<string>;
     /**
      * Whether the directory lists it. False is approved but shared by its address only.
      */
     listed: boolean;
+    /**
+     * Its logo, read at /api/storage/files/{id}; null for none.
+     */
+    logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
     organizationName: string;
@@ -2073,15 +2108,27 @@ export type PublicSolutionList = {
  */
 export type PublicSolutionSummary = {
     /**
+     * What GenAI Fund says of it in a line: the programme it was selected for, or else who backs its company. Null when it has said neither.
+     */
+    backing?: string | null;
+    /**
      * ISO 3166-1 alpha-2.
      */
     country?: string | null;
+    /**
+     * Its cover, read at /api/storage/files/{id}; null for none.
+     */
+    coverFileId?: string | null;
     /**
      * How many approved customer deployments it lists.
      */
     customerDeployments: number;
     focusAreas: Array<string>;
     industries: Array<string>;
+    /**
+     * Its logo, read at /api/storage/files/{id}; null for none.
+     */
+    logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
     organizationName: string;
@@ -2339,7 +2386,7 @@ export type ReserveUpload = {
     /**
      * Why the file is uploaded; it fixes the allowed media types and the largest size.
      */
-    purpose: 'program_image' | 'talent_photo' | 'organization_logo' | 'application_file' | 'use_case_attachment' | 'solution_deck';
+    purpose: 'program_image' | 'talent_photo' | 'organization_logo' | 'application_file' | 'use_case_attachment' | 'solution_deck' | 'solution_logo' | 'solution_image';
     /**
      * The exact length of the file in bytes.
      */
@@ -2893,6 +2940,14 @@ export type SaveSolution = {
      */
     builtWith: Array<string>;
     /**
+     * The channels it works through, such as voice and chat.
+     */
+    channels?: string | null;
+    /**
+     * The stored image that is its cover, named in the same way.
+     */
+    coverFileId?: string | null;
+    /**
      * The stored PDF that is its deck: the one it has, one the caller uploaded for it, or null for none.
      */
     deckFileId?: string | null;
@@ -2902,6 +2957,10 @@ export type SaveSolution = {
     demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
+    /**
+     * The stored images shown under the cover, in their order: those it has and those the caller uploaded for it.
+     */
+    imageFileIds: Array<string>;
     industries: Array<string>;
     /**
      * The languages it works in.
@@ -2911,6 +2970,10 @@ export type SaveSolution = {
      * Whether it appears in the public directory once approved.
      */
     listed: boolean;
+    /**
+     * The stored image that is its logo: the one it has, one the caller uploaded for it, or null for none.
+     */
+    logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
     problemsSolved?: string | null;
@@ -3031,7 +3094,7 @@ export type SearchItem = {
      */
     phase?: 'upcoming' | 'open' | 'running' | 'done';
     /**
-     * A person's photo, read at the public address of stored files.
+     * A person's photo or a solution's logo, read at the public address of stored files.
      */
     photoFileId?: string | null;
     /**
@@ -3113,12 +3176,21 @@ export type SendTalentEnquiry = {
  * A solution as its organization, and operators, see it.
  */
 export type Solution = {
+    /**
+     * What GenAI Fund says of it; null until an operator writes it.
+     */
+    backing?: SolutionBacking | null;
     bestCustomerProfile?: string | null;
     builtWith: Array<string>;
+    channels?: string | null;
     /**
-     * Whether it has what a submission needs: a summary, a maturity, a focus area and an industry.
+     * Whether it has what a submission needs: a summary, a maturity, a focus area, an industry, a logo and a cover.
      */
     complete: boolean;
+    /**
+     * Its cover, when it has one.
+     */
+    cover?: SolutionImage | null;
     /**
      * Its customer deployments, the newest first, whatever their review says.
      */
@@ -3139,12 +3211,20 @@ export type Solution = {
     deployment: Array<string>;
     focusAreas: Array<string>;
     id: string;
+    /**
+     * The images shown under the cover, in their order.
+     */
+    images: Array<SolutionImage>;
     industries: Array<string>;
     languages: Array<string>;
     /**
      * Whether it appears in the public directory once approved.
      */
     listed: boolean;
+    /**
+     * Its logo, when it has one.
+     */
+    logo?: SolutionImage | null;
     /**
      * Null is unknown.
      */
@@ -3172,10 +3252,44 @@ export type Solution = {
 };
 
 /**
+ * What GenAI Fund says of a solution beside its owners' words. Operators write it; at least one member is set.
+ */
+export type SolutionBacking = {
+    /**
+     * Who backs its company, such as GenAI Fund's portfolio.
+     */
+    backedBy?: string | null;
+    /**
+     * How its company is funded.
+     */
+    funding?: string | null;
+    /**
+     * The programme it was selected for, with its cohort.
+     */
+    program?: string | null;
+    /**
+     * When an operator last wrote it.
+     */
+    updatedAt: string;
+};
+
+/**
  * The deck of a solution as its organization, and operators, see it.
  */
 export type SolutionDeck = {
     attachedAt: string;
+    /**
+     * The stored file, sent back with a save to keep it.
+     */
+    fileId: string;
+    fileName: string;
+    sizeBytes: number;
+};
+
+/**
+ * A stored image of a solution as its organization, and operators, see it. Its bytes are read at /api/storage/files/{fileId}.
+ */
+export type SolutionImage = {
     /**
      * The stored file, sent back with a save to keep it.
      */
@@ -3204,12 +3318,24 @@ export type SolutionOption = {
  */
 export type SolutionSummary = {
     /**
+     * What the operator wrote to the owners when sending it back.
+     */
+    decisionMessage?: string | null;
+    /**
+     * Why it was last sent back.
+     */
+    decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    /**
      * How many of its customer deployments wait for review.
      */
     deploymentsAwaitingReview: number;
     id: string;
     listed: boolean;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
+    /**
+     * What a review needs and it lacks, in the order of the editor: any of summary, maturity, industries, focusAreas, logo and cover. Empty when it can be sent for review.
+     */
+    missing: Array<string>;
     name: string;
     organizationName: string;
     slug: string;
@@ -3495,7 +3621,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -7193,6 +7319,45 @@ export type ApproveSolutionResponses = {
 };
 
 export type ApproveSolutionResponse = ApproveSolutionResponses[keyof ApproveSolutionResponses];
+
+export type BackSolutionData = {
+    body: BackSolution;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/backing';
+};
+
+export type BackSolutionErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+};
+
+export type BackSolutionError = BackSolutionErrors[keyof BackSolutionErrors];
+
+export type BackSolutionResponses = {
+    /**
+     * What GenAI Fund says of the solution is written.
+     */
+    204: void;
+};
+
+export type BackSolutionResponse = BackSolutionResponses[keyof BackSolutionResponses];
 
 export type RejectSolutionData = {
     body: RejectSolution;

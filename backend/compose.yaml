@@ -3,6 +3,9 @@ services:
   postgres:
     # The official postgres:18.6 with pgvector, as staging runs it.
     image: 'pgvector/pgvector:0.8.7-pg18-trixie'
+    labels:
+      # Spring Boot finds the database by the image's name, and this image is not called postgres.
+      org.springframework.boot.service-connection: postgres
     environment:
       - 'POSTGRES_DB=beyondpilot'
       - 'POSTGRES_USER=beyondpilot'
