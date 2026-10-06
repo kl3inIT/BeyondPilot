@@ -90,6 +90,7 @@ paths:
           - organization.member_remove
           - solution.approve
           - solution.reject
+          - solution.back
           - solution.deployment_approve
           - solution.deployment_reject
           - introduction.reply
@@ -3363,6 +3364,55 @@ paths:
       summary: Approve a solution that waits for review
       tags:
       - Solution administration
+  /api/solution/admin/solutions/{id}/backing:
+    put:
+      operationId: backSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BackSolution"
+        required: true
+      responses:
+        "204":
+          description: What GenAI Fund says of the solution is written.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+      security:
+      - session: []
+      summary: "Write what GenAI Fund says of a solution: who backs its company, its\
+        \ programme and its funding"
+      tags:
+      - Solution administration
   /api/solution/admin/solutions/{id}/reject:
     post:
       operationId: rejectSolution
@@ -5944,6 +5994,7 @@ components:
           - organization.member_remove
           - solution.approve
           - solution.reject
+          - solution.back
           - solution.deployment_approve
           - solution.deployment_reject
           - introduction.reply
@@ -6052,6 +6103,32 @@ components:
           type: boolean
       required:
       - autoJoin
+    BackSolution:
+      type: object
+      description: "What GenAI Fund says of a solution, as an operator writes it.\
+        \ A member left out or empty is taken away."
+      properties:
+        backedBy:
+          type:
+          - string
+          - "null"
+          description: "Who backs its company, such as GenAI Fund's portfolio."
+          maxLength: 120
+          minLength: 0
+        funding:
+          type:
+          - string
+          - "null"
+          description: How its company is funded.
+          maxLength: 120
+          minLength: 0
+        program:
+          type:
+          - string
+          - "null"
+          description: "The programme it was selected for, with its cohort."
+          maxLength: 120
+          minLength: 0
     ChangeMemberRole:
       type: object
       properties:
@@ -7651,6 +7728,12 @@ components:
       description: "An approved solution as anyone with its address reads it, listed\
         \ or not."
       properties:
+        backing:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/SolutionBacking"
+          description: What GenAI Fund says of it; null when it has said nothing.
         bestCustomerProfile:
           type:
           - string
@@ -7659,11 +7742,21 @@ components:
           type: array
           items:
             type: string
+        channels:
+          type:
+          - string
+          - "null"
         country:
           type:
           - string
           - "null"
           description: ISO 3166-1 alpha-2.
+        coverFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Its cover, read at /api/storage/files/{id}; null for none."
         customerDeployments:
           type: array
           description: "Its approved customer deployments, the most recently approved\
@@ -7688,6 +7781,13 @@ components:
           type: array
           items:
             type: string
+        imageFileIds:
+          type: array
+          description: "The images shown under the cover, in their order, each read\
+            \ at /api/storage/files/{id}."
+          items:
+            type: string
+            format: uuid
         industries:
           type: array
           items:
@@ -7700,6 +7800,12 @@ components:
           type: boolean
           description: Whether the directory lists it. False is approved but shared
             by its address only.
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Its logo, read at /api/storage/files/{id}; null for none."
         maturity:
           type:
           - string
@@ -7744,6 +7850,7 @@ components:
       - customerDeployments
       - deployment
       - focusAreas
+      - imageFileIds
       - industries
       - languages
       - listed
@@ -7792,11 +7899,23 @@ components:
       type: object
       description: One solution in the public directory.
       properties:
+        backing:
+          type:
+          - string
+          - "null"
+          description: "What GenAI Fund says of it in a line: the programme it was\
+            \ selected for, or else who backs its company. Null when it has said neither."
         country:
           type:
           - string
           - "null"
           description: ISO 3166-1 alpha-2.
+        coverFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Its cover, read at /api/storage/files/{id}; null for none."
         customerDeployments:
           type: integer
           format: int32
@@ -7809,6 +7928,12 @@ components:
           type: array
           items:
             type: string
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Its logo, read at /api/storage/files/{id}; null for none."
         maturity:
           type:
           - string
@@ -8210,6 +8335,8 @@ components:
           - talent_photo
           - application_file
           - solution_deck
+          - solution_logo
+          - solution_image
         sizeBytes:
           type: integer
           format: int64
@@ -9041,6 +9168,19 @@ components:
             minLength: 0
           maxItems: 10
           minItems: 0
+        channels:
+          type:
+          - string
+          - "null"
+          description: "The channels it works through, such as voice and chat."
+          maxLength: 120
+          minLength: 0
+        coverFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The stored image that is its cover, named in the same way."
         deckFileId:
           type:
           - string
@@ -9070,6 +9210,15 @@ components:
             pattern: conversational_ai|document_processing|computer_vision|speech_voice|predictive_analytics|recommendation|process_automation|ai_agents|generative_content|search_knowledge|data_platform|ai_security|other
           maxItems: 5
           minItems: 0
+        imageFileIds:
+          type: array
+          description: "The stored images shown under the cover, in their order: those\
+            \ it has and those the caller uploaded for it."
+          items:
+            type: string
+            format: uuid
+          maxItems: 4
+          minItems: 0
         industries:
           type: array
           items:
@@ -9088,6 +9237,13 @@ components:
         listed:
           type: boolean
           description: Whether it appears in the public directory once approved.
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The stored image that is its logo: the one it has, one the\
+            \ caller uploaded for it, or null for none."
         maturity:
           type:
           - string
@@ -9144,6 +9300,7 @@ components:
       - builtWith
       - deployment
       - focusAreas
+      - imageFileIds
       - industries
       - languages
       - listed
@@ -9376,7 +9533,8 @@ components:
           - string
           - "null"
           format: uuid
-          description: "A person's photo, read at the public address of stored files."
+          description: "A person's photo or a solution's logo, read at the public\
+            \ address of stored files."
         roles:
           type: array
           description: A person's roles.
@@ -9487,6 +9645,12 @@ components:
       type: object
       description: "A solution as its organization, and operators, see it."
       properties:
+        backing:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/SolutionBacking"
+          description: What GenAI Fund says of it; null until an operator writes it.
         bestCustomerProfile:
           type:
           - string
@@ -9495,10 +9659,20 @@ components:
           type: array
           items:
             type: string
+        channels:
+          type:
+          - string
+          - "null"
         complete:
           type: boolean
           description: "Whether it has what a submission needs: a summary, a maturity,\
-            \ a focus area and an industry."
+            \ a focus area, an industry, a logo and a cover."
+        cover:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/SolutionImage"
+          description: "Its cover, when it has one."
         customerDeployments:
           type: array
           description: "Its customer deployments, the newest first, whatever their\
@@ -9542,6 +9716,11 @@ components:
         id:
           type: string
           format: uuid
+        images:
+          type: array
+          description: "The images shown under the cover, in their order."
+          items:
+            $ref: "#/components/schemas/SolutionImage"
         industries:
           type: array
           items:
@@ -9553,6 +9732,12 @@ components:
         listed:
           type: boolean
           description: Whether it appears in the public directory once approved.
+        logo:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/SolutionImage"
+          description: "Its logo, when it has one."
         maturity:
           type:
           - string
@@ -9627,6 +9812,7 @@ components:
       - deployment
       - focusAreas
       - id
+      - images
       - industries
       - languages
       - listed
@@ -9637,6 +9823,32 @@ components:
       - status
       - updatedAt
       - version
+    SolutionBacking:
+      type: object
+      description: What GenAI Fund says of a solution beside its owners' words. Operators
+        write it; at least one member is set.
+      properties:
+        backedBy:
+          type:
+          - string
+          - "null"
+          description: "Who backs its company, such as GenAI Fund's portfolio."
+        funding:
+          type:
+          - string
+          - "null"
+          description: How its company is funded.
+        program:
+          type:
+          - string
+          - "null"
+          description: "The programme it was selected for, with its cohort."
+        updatedAt:
+          type: string
+          format: date-time
+          description: When an operator last wrote it.
+      required:
+      - updatedAt
     SolutionDeck:
       type: object
       description: "The deck of a solution as its organization, and operators, see\
@@ -9656,6 +9868,24 @@ components:
           format: int64
       required:
       - attachedAt
+      - fileId
+      - fileName
+      - sizeBytes
+    SolutionImage:
+      type: object
+      description: "A stored image of a solution as its organization, and operators,\
+        \ see it. Its bytes are read at /api/storage/files/{fileId}."
+      properties:
+        fileId:
+          type: string
+          format: uuid
+          description: "The stored file, sent back with a save to keep it."
+        fileName:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+      required:
       - fileId
       - fileName
       - sizeBytes
@@ -9692,6 +9922,22 @@ components:
       type: object
       description: One solution in a list of its organization or of the operators.
       properties:
+        decisionMessage:
+          type:
+          - string
+          - "null"
+          description: What the operator wrote to the owners when sending it back.
+        decisionReason:
+          type:
+          - string
+          - "null"
+          description: Why it was last sent back.
+          enum:
+          - incomplete
+          - not_an_ai_solution
+          - duplicate
+          - unverifiable
+          - other
         deploymentsAwaitingReview:
           type: integer
           format: int32
@@ -9711,6 +9957,13 @@ components:
           - pilot
           - production
           - scaled
+        missing:
+          type: array
+          description: "What a review needs and it lacks, in the order of the editor:\
+            \ any of summary, maturity, industries, focusAreas, logo and cover. Empty\
+            \ when it can be sent for review."
+          items:
+            type: string
         name:
           type: string
         organizationName:
@@ -9740,6 +9993,7 @@ components:
       - deploymentsAwaitingReview
       - id
       - listed
+      - missing
       - name
       - organizationName
       - slug

@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.IdentityService;
@@ -13,12 +14,15 @@ import ai.genaifund.beyondpilot.solution.dto.AdminSolutionSummaryResponse;
 import ai.genaifund.beyondpilot.solution.dto.CustomerDeploymentResponse;
 import ai.genaifund.beyondpilot.solution.dto.PublicCustomerDeploymentResponse;
 import ai.genaifund.beyondpilot.solution.dto.PublicSolutionDeckResponse;
+import ai.genaifund.beyondpilot.solution.dto.SolutionBackingResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionDeckResponse;
+import ai.genaifund.beyondpilot.solution.dto.SolutionImageResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionSummaryResponse;
 import ai.genaifund.beyondpilot.solution.persistence.CustomerDeployment;
 import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionQueryRepository;
+import ai.genaifund.beyondpilot.storage.StorageService;
 import org.jspecify.annotations.Nullable;
 
 /** What the application services of the module derive the same way: the response records and a slug. */
@@ -30,12 +34,18 @@ final class SolutionViews {
 	}
 
 	static SolutionResponse solution(Solution solution, String organizationName, @Nullable String submittedBy,
-			List<CustomerDeployment> deployments) {
+			List<CustomerDeployment> deployments, StorageService storage) {
+		UUID logo = solution.getLogoFileId();
+		UUID cover = solution.getCoverFileId();
 		return new SolutionResponse(solution.getId(), solution.getOrganizationId(), organizationName,
 				solution.getSlug(), solution.getName(), solution.getSummary(), solution.getProblemsSolved(),
 				solution.getValueProposition(), solution.getMaturity(), solution.getTraction(), solution.getBuiltWith(),
 				solution.getIndustries(), solution.getFocusAreas(), solution.getLanguages(), solution.getDeployment(),
-				solution.getBestCustomerProfile(), solution.getWebsite(), solution.getDemoUrl(), deck(solution),
+				solution.getChannels(), solution.getBestCustomerProfile(), backing(solution), solution.getWebsite(),
+				solution.getDemoUrl(), deck(solution),
+				logo == null ? null : image(logo, storage).orElse(null),
+				cover == null ? null : image(cover, storage).orElse(null),
+				solution.getImageFileIds().stream().flatMap(fileId -> image(fileId, storage).stream()).toList(),
 				solution.getStatus(),
 				solution.getDecisionReason(), solution.getDecisionMessage(), solution.isListed(), solution.isComplete(),
 				solution.getSubmittedAt(), submittedBy, solution.getVersion(), solution.getUpdatedAt(),
@@ -52,6 +62,23 @@ final class SolutionViews {
 			return null;
 		}
 		return new SolutionDeckResponse(fileId, fileName, sizeBytes, attachedAt);
+	}
+
+	/** A stored image as the organization and the operators see it; empty when its file is gone from the store. */
+	private static Optional<SolutionImageResponse> image(UUID fileId, StorageService storage) {
+		return storage.describe(fileId)
+			.map(file -> new SolutionImageResponse(file.id(), file.fileName(), file.sizeBytes()));
+	}
+
+	/** What GenAI Fund says of the solution, or null when no operator has written anything. */
+	static @Nullable SolutionBackingResponse backing(Solution solution) {
+		Instant updatedAt = solution.getBackingUpdatedAt();
+		if (updatedAt == null || (solution.getBackedBy() == null && solution.getProgram() == null
+				&& solution.getFunding() == null)) {
+			return null;
+		}
+		return new SolutionBackingResponse(solution.getBackedBy(), solution.getProgram(), solution.getFunding(),
+				updatedAt);
 	}
 
 	/** The deck as the public reads of it: what it is called and how large it is. */
@@ -79,8 +106,9 @@ final class SolutionViews {
 
 	static SolutionSummaryResponse summary(Solution solution, String organizationName, int deploymentsAwaiting) {
 		return new SolutionSummaryResponse(solution.getId(), organizationName, solution.getSlug(), solution.getName(),
-				solution.getSummary(), solution.getMaturity(), solution.getStatus(), solution.isListed(),
-				solution.getSubmittedAt(), solution.getUpdatedAt(), deploymentsAwaiting);
+				solution.getSummary(), solution.getMaturity(), solution.getStatus(), solution.getDecisionReason(),
+				solution.getDecisionMessage(), solution.isListed(), solution.missing(), solution.getSubmittedAt(),
+				solution.getUpdatedAt(), deploymentsAwaiting);
 	}
 
 	static AdminSolutionSummaryResponse adminSummary(SolutionQueryRepository.Row row, String organizationName,
