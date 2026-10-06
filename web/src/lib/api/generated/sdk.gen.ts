@@ -988,7 +988,7 @@ export const saveCustomerDeployment = <ThrowOnError extends boolean = true>(opti
 export const listSolutions = <ThrowOnError extends boolean = true>(options?: Options<ListSolutionsData, ThrowOnError>): RequestResult<ListSolutionsResponses, ListSolutionsErrors, ThrowOnError> => (options?.client ?? client).get<ListSolutionsResponses, ListSolutionsErrors, ThrowOnError>({ url: '/api/solution/solutions', ...options });
 
 /**
- * One solution of the directory by its address
+ * One approved solution by its address, listed or not
  */
 export const getSolution = <ThrowOnError extends boolean = true>(options: Options<GetSolutionData, ThrowOnError>): RequestResult<GetSolutionResponses, GetSolutionErrors, ThrowOnError> => (options.client ?? client).get<GetSolutionResponses, GetSolutionErrors, ThrowOnError>({ url: '/api/solution/solutions/{slug}', ...options });
 

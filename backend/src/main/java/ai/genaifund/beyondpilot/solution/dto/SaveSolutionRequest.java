@@ -27,6 +27,10 @@ public record SaveSolutionRequest(
 				max = 4) List<@NotNull @Pattern(regexp = SolutionCodes.DEPLOYMENT) String> deployment,
 		@Schema(types = { "string", "null" }) @Size(max = 300) @Pattern(
 				regexp = SolutionCodes.WEBSITE) @Nullable String website,
+		@Schema(types = { "string", "null" }, description = "A video or a live demo of the solution at work.") @Size(
+				max = 300) @Pattern(regexp = SolutionCodes.WEBSITE) @Nullable String demoUrl,
+		@Schema(types = { "string", "null" }, description = "A presentation of the solution.") @Size(
+				max = 300) @Pattern(regexp = SolutionCodes.WEBSITE) @Nullable String deckUrl,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether it appears in the public directory once approved.") @NotNull Boolean listed,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

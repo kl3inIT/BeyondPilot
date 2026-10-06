@@ -18,7 +18,7 @@ import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
-import ai.genaifund.beyondpilot.solution.ListedSolution;
+import ai.genaifund.beyondpilot.solution.ApprovedSolution;
 import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,9 +63,9 @@ public class IntroductionService {
 	}
 
 	/**
-	 * Asks for an introduction to the organization behind a listed solution. Its owners get an email with the sender's
+	 * Asks for an introduction to the organization behind an approved solution. Its owners get an email with the sender's
 	 * name, organization and message, and no address.
-	 * @throws IntroductionException when no listed solution has the address, the caller belongs to no approved
+	 * @throws IntroductionException when no approved solution has the address, the caller belongs to no approved
 	 * organization or to the one that offers the solution, they already wait for an answer about it, or no owner of the
 	 * provider can be reached
 	 */
@@ -78,9 +78,9 @@ public class IntroductionService {
 			throw new IntroductionException(IntroductionErrorCode.ORGANIZATION_NOT_APPROVED,
 					"An introduction asked by the unapproved organization " + sender.organizationId());
 		}
-		ListedSolution solution = solutions.listedAt(request.solutionSlug())
+		ApprovedSolution solution = solutions.approvedAt(request.solutionSlug())
 			.orElseThrow(() -> new IntroductionException(IntroductionErrorCode.SOLUTION_NOT_FOUND,
-					"No listed solution at " + request.solutionSlug()));
+					"No approved solution at " + request.solutionSlug()));
 		if (solution.organizationId().equals(sender.organizationId())) {
 			throw new IntroductionException(IntroductionErrorCode.OWN_SOLUTION,
 					"An introduction to the sender's own organization");

@@ -1622,6 +1622,8 @@
       "industries": "Industries",
       "deployment": "Deployment",
       "website": "Visit website",
+      "demo": "Watch the demo",
+      "deck": "View the presentation",
       "nothingYet": "Nothing written yet."
     },
     "detail": {
@@ -1663,9 +1665,12 @@
         "website": "Website",
         "industries": "Industries"
       },
+      "unlisted": "This solution is not in the directory. You are reading it through its address.",
       "contact": {
         "title": "Work with {name}",
         "website": "Visit website",
+        "demo": "Watch the demo",
+        "deck": "View the presentation",
         "basedIn": "Based in"
       }
     },
@@ -1746,6 +1751,10 @@
       "notStated": "Not stated",
       "website": "Product page",
       "websiteInvalid": "Enter a full address that starts with https://",
+      "demoUrl": "Demo link",
+      "demoUrlHint": "A video or a live demo of the solution at work.",
+      "deckUrl": "Presentation link",
+      "deckUrlHint": "A deck that people can open without signing in.",
       "deployment": "Deployment",
       "listed": "Show in the directory",
       "listedHint": "Takes effect once the solution is approved.",

@@ -407,6 +407,8 @@ test.describe("admin programs", () => {
     await choices.press("Enter");
     await choices.fill("Claiming");
     await choices.press("Enter");
+    // The pointer rests where the choice was picked; its hover colour is not what is checked here.
+    await page.mouse.move(0, 0);
     await expectNoSeriousA11yViolations(page);
     await dialog.getByRole("button", { name: "Add question" }).click();
 

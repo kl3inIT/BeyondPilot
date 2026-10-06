@@ -17,6 +17,8 @@ type SolutionContent = Pick<
   | "maturity"
   | "deployment"
   | "website"
+  | "demoUrl"
+  | "deckUrl"
 >;
 
 /**
@@ -62,16 +64,26 @@ function SolutionView({ solution }: { solution: SolutionContent }) {
             <CodeList labels={fact.labels} />
           </div>
         ))}
-        {solution.website && (
-          <TextButton
-            href={solution.website}
-            target="_blank"
-            rel="noreferrer"
-            className="self-start"
-          >
-            {t("website")}
-            <ExternalLinkIcon aria-hidden="true" />
-          </TextButton>
+        {(
+          [
+            ["website", solution.website],
+            ["demo", solution.demoUrl],
+            ["deck", solution.deckUrl],
+          ] as const
+        ).map(
+          ([key, href]) =>
+            href && (
+              <TextButton
+                key={key}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className="self-start"
+              >
+                {t(key)}
+                <ExternalLinkIcon aria-hidden="true" />
+              </TextButton>
+            ),
         )}
       </aside>
     </div>

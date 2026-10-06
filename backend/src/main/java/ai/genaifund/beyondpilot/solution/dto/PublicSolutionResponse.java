@@ -5,7 +5,7 @@ import java.util.List;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.jspecify.annotations.Nullable;
 
-@Schema(name = "PublicSolution", description = "An approved, listed solution as anyone reads it.")
+@Schema(name = "PublicSolution", description = "An approved solution as anyone with its address reads it, listed or not.")
 public record PublicSolutionResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String slug,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String organizationName,
@@ -21,6 +21,10 @@ public record PublicSolutionResponse(@Schema(requiredMode = Schema.RequiredMode.
 				allowableValues = { "idea", "prototype", "pilot", "production", "scaled" }) @Nullable String maturity,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> deployment,
 		@Schema(types = { "string", "null" }) @Nullable String website,
+		@Schema(types = { "string", "null" }) @Nullable String demoUrl,
+		@Schema(types = { "string", "null" }) @Nullable String deckUrl,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "Whether the directory lists it. False is approved but shared by its address only.") boolean listed,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Its approved customer deployments, the most recently approved first.") List<PublicCustomerDeploymentResponse> customerDeployments) {
 }

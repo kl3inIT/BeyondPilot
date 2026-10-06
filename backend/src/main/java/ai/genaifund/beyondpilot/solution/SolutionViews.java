@@ -26,7 +26,8 @@ final class SolutionViews {
 		return new SolutionResponse(solution.getId(), solution.getOrganizationId(), organizationName,
 				solution.getSlug(), solution.getName(), solution.getSummary(), solution.getProblemsSolved(),
 				solution.getValueProposition(), solution.getFocusAreas(), solution.getIndustries(),
-				solution.getMaturity(), solution.getDeployment(), solution.getWebsite(), solution.getStatus(),
+				solution.getMaturity(), solution.getDeployment(), solution.getWebsite(), solution.getDemoUrl(),
+				solution.getDeckUrl(), solution.getStatus(),
 				solution.getDecisionReason(), solution.getDecisionMessage(), solution.isListed(), solution.isComplete(),
 				solution.getSubmittedAt(), solution.getVersion(), solution.getUpdatedAt(),
 				deployments.stream().map(SolutionViews::deployment).toList());
