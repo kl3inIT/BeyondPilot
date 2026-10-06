@@ -60,6 +60,11 @@ public enum AuditAction {
 	/** {@code reason} is the code of the reason given. */
 	SOLUTION_DEPLOYMENT_REJECT("solution.deployment_reject", "reason"),
 
+	/** An owner answered a request for an introduction, and both sides were told each other's address. */
+	INTRODUCTION_REPLY("introduction.reply"),
+
+	INTRODUCTION_DECLINE("introduction.decline"),
+
 	TALENT_APPROVE("talent.approve"),
 
 	/** {@code reason} is the code of the reason given. */

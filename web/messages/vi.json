@@ -287,7 +287,8 @@
       "auditLog": "Nhật ký thao tác",
       "organizations": "Tổ chức",
       "solutions": "Giải pháp",
-      "talent": "Nhân lực"
+      "talent": "Nhân lực",
+      "introductions": "Giới thiệu"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
     "programs": {
@@ -670,6 +671,10 @@
           "deployment_approve": "Duyệt triển khai khách hàng",
           "deployment_reject": "Trả lại triển khai khách hàng"
         },
+        "introduction": {
+          "reply": "Trả lời yêu cầu giới thiệu",
+          "decline": "Từ chối yêu cầu giới thiệu"
+        },
         "talent": {
           "approve": "Duyệt hồ sơ nhân lực",
           "reject": "Trả lại hồ sơ nhân lực"
@@ -704,6 +709,10 @@
           "reject": "Trả lại giải pháp <resource></resource>",
           "deployment_approve": "Duyệt triển khai khách hàng <resource></resource>",
           "deployment_reject": "Trả lại triển khai khách hàng <resource></resource>"
+        },
+        "introduction": {
+          "reply": "Trả lời yêu cầu giới thiệu về <resource></resource>",
+          "decline": "Từ chối yêu cầu giới thiệu về <resource></resource>"
         },
         "talent": {
           "approve": "Duyệt hồ sơ nhân lực của <resource></resource>",
@@ -989,6 +998,40 @@
       "talent": "Hồ sơ nhân lực chờ duyệt",
       "review": "Mở hàng chờ, chờ lâu nhất ở trên",
       "none": "Không có gì đang chờ"
+    },
+    "introductions": {
+      "metaTitle": "Giới thiệu · BeyondPilot",
+      "title": "Giới thiệu",
+      "lead": "Các yêu cầu nhờ giới thiệu tới tổ chức đứng sau một giải pháp. Chủ sở hữu của tổ chức đó trả lời; bạn đọc và thấy yêu cầu nào chờ quá lâu.",
+      "overdueNotice": "{count} yêu cầu đã chờ câu trả lời quá 3 ngày.",
+      "overdue": "Chờ quá 3 ngày",
+      "search": "Tìm theo giải pháp",
+      "searchButton": "Tìm",
+      "filter": {
+        "label": "Lọc theo trạng thái",
+        "all": "Tất cả"
+      },
+      "status": {
+        "pending": "Đang chờ",
+        "replied": "Đã trả lời",
+        "declined": "Đã từ chối"
+      },
+      "route": "{sender} → {provider}",
+      "about": "Về {solution}",
+      "sender": "{name} · {organization}",
+      "senderUnnamed": "Một người ở {organization}",
+      "waitingSince": "Chờ từ {time}",
+      "answered": "Đã trả lời {date}",
+      "count": "{count} yêu cầu",
+      "empty": {
+        "title": "Chưa có yêu cầu",
+        "description": "Khi có người nhờ giới thiệu tới một giải pháp, yêu cầu sẽ hiện ở đây."
+      },
+      "noMatch": {
+        "title": "Không có yêu cầu nào khớp",
+        "description": "Hãy thử tên giải pháp khác, hoặc trạng thái khác.",
+        "clear": "Xóa tìm kiếm và bộ lọc"
+      }
     }
   },
   "Lists": {
@@ -1175,7 +1218,8 @@
       "label": "Các phần của tổ chức",
       "profile": "Hồ sơ",
       "members": "Thành viên",
-      "solutions": "Giải pháp"
+      "solutions": "Giải pháp",
+      "introductions": "Giới thiệu"
     },
     "status": {
       "pending": "Đang duyệt",
@@ -1745,6 +1789,85 @@
         "resultHint": "Một con số mà khách hàng xác nhận.",
         "cancel": "Hủy",
         "save": "Gửi duyệt"
+      }
+    }
+  },
+  "Introduction": {
+    "errors": {
+      "INTRODUCTION_SOLUTION_NOT_FOUND": "Giải pháp này không còn được niêm yết.",
+      "INTRODUCTION_NEEDS_ORGANIZATION": "Hãy tạo hoặc tham gia một tổ chức trước khi nhờ giới thiệu.",
+      "INTRODUCTION_ORGANIZATION_NOT_APPROVED": "Tổ chức của bạn chưa được duyệt nên chưa thể nhờ giới thiệu.",
+      "INTRODUCTION_OWN_SOLUTION": "Giải pháp này thuộc tổ chức của chính bạn.",
+      "INTRODUCTION_ALREADY_PENDING": "Bạn đã nhờ giới thiệu tới giải pháp này. Hãy chờ câu trả lời.",
+      "INTRODUCTION_UNREACHABLE": "Hiện chưa liên lạc được ai ở tổ chức này. Hãy thử lại sau.",
+      "INTRODUCTION_REQUEST_NOT_FOUND": "Yêu cầu này không còn tồn tại.",
+      "INTRODUCTION_OWNERS_ONLY": "Chỉ chủ sở hữu của tổ chức mới trả lời được yêu cầu giới thiệu.",
+      "INTRODUCTION_NOT_PENDING": "Yêu cầu này đã được trả lời.",
+      "REQUEST_INVALID": "Hãy kiểm tra lời nhắn và thử lại.",
+      "unknown": "Chưa thực hiện được. Hãy thử lại."
+    },
+    "request": {
+      "open": "Nhờ giới thiệu",
+      "by": "Bởi {provider}",
+      "title": "Nhờ giới thiệu tới {provider}",
+      "lead": "Việc giới thiệu đi qua GenAI Fund. Địa chỉ email của hai bên được giấu cho đến khi {provider} trả lời.",
+      "organization": "Tổ chức của bạn",
+      "message": "Bạn cần gì?",
+      "placeholder": "Bạn đang làm gì và muốn nhận được gì từ họ.",
+      "hint": "{provider} đọc tên bạn, tổ chức của bạn và lời nhắn này trước khi trả lời.",
+      "required": "Hãy viết lời nhắn trước.",
+      "send": "Gửi yêu cầu",
+      "cancel": "Hủy",
+      "sent": {
+        "title": "Yêu cầu của bạn đã tới {provider}",
+        "lead": "Chúng tôi đã báo cho họ. Khi họ trả lời, cả hai bên sẽ nhận email có tên và địa chỉ của nhau.",
+        "done": "Xong"
+      },
+      "blocked": {
+        "organization": {
+          "title": "Hãy tham gia một tổ chức trước",
+          "lead": "Việc nhờ giới thiệu được thực hiện nhân danh một tổ chức, để bên cung cấp biết ai đang hỏi.",
+          "action": "Thiết lập tổ chức của bạn"
+        },
+        "approval": {
+          "title": "Tổ chức của bạn chưa được duyệt",
+          "lead": "Bạn có thể nhờ giới thiệu ngay khi GenAI Fund duyệt tổ chức của bạn."
+        }
+      }
+    },
+    "received": {
+      "metaTitle": "Giới thiệu · BeyondPilot",
+      "title": "Giới thiệu",
+      "waiting": "{count} đang chờ",
+      "sender": "{name} · {organization}",
+      "senderUnnamed": "Một người ở {organization}",
+      "about": "Về {solution}",
+      "sent": "Gửi {date}",
+      "answered": "Đã trả lời {date}",
+      "introduced": "Đã giới thiệu. Hãy viết cho họ qua {email}.",
+      "ownersAnswer": "Chỉ chủ sở hữu của tổ chức mới trả lời được yêu cầu.",
+      "status": {
+        "pending": "Đang chờ",
+        "replied": "Đã trả lời",
+        "declined": "Đã từ chối"
+      },
+      "empty": {
+        "title": "Chưa có yêu cầu giới thiệu",
+        "description": "Khi có người nhờ giới thiệu tới một giải pháp của bạn, yêu cầu sẽ hiện ở đây."
+      },
+      "actions": {
+        "reply": "Trả lời",
+        "decline": "Từ chối",
+        "confirmDecline": {
+          "title": "Từ chối yêu cầu về {name}?",
+          "lead": "Người gửi sẽ được báo rằng bạn không tiếp tục. Không có địa chỉ nào được chia sẻ.",
+          "confirm": "Từ chối",
+          "cancel": "Giữ lại"
+        }
+      },
+      "done": {
+        "reply": "Đã giới thiệu. Cả hai bên đã nhận email có địa chỉ của nhau.",
+        "decline": "Đã từ chối yêu cầu."
       }
     }
   },

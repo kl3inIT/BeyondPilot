@@ -6,6 +6,7 @@ import java.util.Locale;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -90,6 +91,56 @@ public class EmailService {
 				+ " trên BeyondPilot. Hãy trả lời họ qua địa chỉ đó.";
 		send("talent_enquiry", recipient, "A message through your BeyondPilot talent profile",
 				english + "\n\n" + vietnamese + "\n\n" + message + "\n", paragraphs(english, vietnamese, message));
+	}
+
+	/**
+	 * Tells an owner of a provider that someone asked for an introduction. The sender's address is not in it: the owner
+	 * signs in and answers, and only then do both sides learn each other's address.
+	 * @param senderName who asks; null until they gave a name
+	 * @param senderOrganization the organization they ask as
+	 * @param solutionName what they asked about
+	 * @param message what the sender needs
+	 */
+	public void sendIntroductionRequest(String recipient, @Nullable String senderName, String senderOrganization,
+			String solutionName, String message) {
+		String english = (senderName != null ? senderName : "Someone") + " at " + senderOrganization
+				+ " asked GenAI Fund for an introduction to your solution " + solutionName
+				+ " on BeyondPilot. Sign in and open My organization > Introductions to answer.";
+		String vietnamese = (senderName != null ? senderName : "Một người") + " tại " + senderOrganization
+				+ " đã nhờ GenAI Fund giới thiệu tới giải pháp " + solutionName
+				+ " của bạn trên BeyondPilot. Hãy đăng nhập và mở Tổ chức của tôi > Giới thiệu để trả lời.";
+		send("introduction_request", recipient, "A request for an introduction to " + solutionName,
+				english + "\n\n" + vietnamese + "\n\n" + message + "\n", paragraphs(english, vietnamese, message));
+	}
+
+	/**
+	 * Introduces two people once the provider answered: each is told who the other is and where to write.
+	 * @param otherName who the recipient is introduced to; null until they gave a name
+	 * @param otherEmail where the recipient writes to them
+	 * @param otherOrganization the organization the other person acts for
+	 * @param solutionName the solution the introduction is about
+	 */
+	public void sendIntroduction(String recipient, @Nullable String otherName, String otherEmail,
+			String otherOrganization, String solutionName) {
+		String who = otherName != null ? otherName + " (" + otherEmail + ")" : otherEmail;
+		String english = "GenAI Fund introduces you to " + who + " at " + otherOrganization + ", about the solution "
+				+ solutionName + " on BeyondPilot. You can write to each other at these addresses.";
+		String vietnamese = "GenAI Fund giới thiệu bạn với " + who + " tại " + otherOrganization + ", về giải pháp "
+				+ solutionName + " trên BeyondPilot. Hai bên có thể viết cho nhau qua các địa chỉ này.";
+		send("introduction", recipient, "Your introduction about " + solutionName,
+				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+	}
+
+	/**
+	 * Tells the sender that the provider will not take their request further. It carries no address and no reason.
+	 */
+	public void sendIntroductionDeclined(String recipient, String providerName, String solutionName) {
+		String english = providerName + " will not take your request for an introduction about " + solutionName
+				+ " further. You can look for another solution on BeyondPilot.";
+		String vietnamese = providerName + " sẽ không tiếp tục yêu cầu giới thiệu của bạn về giải pháp "
+				+ solutionName + ". Bạn có thể tìm giải pháp khác trên BeyondPilot.";
+		send("introduction_declined", recipient, "Your request about " + solutionName,
+				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
 	}
 
 	private static String paragraphs(String... texts) {

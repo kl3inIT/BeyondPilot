@@ -46,6 +46,13 @@ const accounts = {
     displayName: "Nam Đỗ",
     role: "user",
   },
+  // The owner of an organization that GenAI Fund has not approved yet (stub-workspace.mjs).
+  waiting: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a15",
+    email: "lan.pham@newco.example",
+    displayName: "Lan Phạm",
+    role: "user",
+  },
 };
 
 /** What the operators' list holds, latest sign-in first. */

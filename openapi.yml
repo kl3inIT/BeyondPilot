@@ -17,8 +17,12 @@ tags:
   name: Solutions
 - description: The public directory of approved talent profiles.
   name: Talent
+- description: The requests for an introduction operators read.
+  name: Introduction administration
 - description: The organizations operators review.
   name: Organization administration
+- description: Requests for an introduction to the organization behind a solution.
+  name: Introductions
 - description: The organization the caller belongs to.
   name: My organization
 - description: The programs operators create and edit.
@@ -81,6 +85,8 @@ paths:
           - solution.reject
           - solution.deployment_approve
           - solution.deployment_reject
+          - introduction.reply
+          - introduction.decline
           - talent.approve
           - talent.reject
       - description: "Events whose actor's name or address, or whose resource's name,\
@@ -400,6 +406,237 @@ paths:
       summary: The signed-in account
       tags:
       - Identity
+  /api/introduction/admin/introductions:
+    get:
+      operationId: listAdminIntroductions
+      parameters:
+      - description: "Requests about a solution whose name contains this, ignoring\
+          \ case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only requests in this state.
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - pending
+          - replied
+          - declined
+          pattern: pending|replied|declined
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminIntroductionList"
+          description: One page of the requests the parameters select.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The requests for an introduction, those that wait first and the longest\
+        \ wait on top"
+      tags:
+      - Introduction administration
+  /api/introduction/introductions:
+    post:
+      operationId: requestIntroduction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestIntroduction"
+        required: true
+      responses:
+        "204":
+          description: The request was recorded and the provider's owners were told.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution or the message is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller belongs to no approved organization.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No listed solution has the address.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The solution is the caller's own, or an earlier request about\
+            \ it still waits."
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody at the provider can be asked right now.
+      security:
+      - session: []
+      summary: Ask for an introduction to the organization behind a solution
+      tags:
+      - Introductions
+  /api/introduction/mine/received:
+    get:
+      operationId: getReceivedIntroductions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReceivedIntroductions"
+          description: "The requests, newest first."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller belongs to no organization.
+      security:
+      - session: []
+      summary: The requests for an introduction to the caller's organization
+      tags:
+      - Introductions
+  /api/introduction/mine/received/{id}/decline:
+    post:
+      operationId: declineIntroduction
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The request was declined and the sender was told.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of the organization asked.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization asked has no such request.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The request was answered already.
+      security:
+      - session: []
+      summary: Decline a request; the sender learns no address
+      tags:
+      - Introductions
+  /api/introduction/mine/received/{id}/reply:
+    post:
+      operationId: replyToIntroduction
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The request was replied to and both sides were told.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of the organization asked.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization asked has no such request.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The request was answered already.
+      security:
+      - session: []
+      summary: "Accept a request: both sides learn each other's address"
+      tags:
+      - Introductions
   /api/organization/admin/claims/{id}/approve:
     post:
       operationId: approveOrganizationClaim
@@ -3322,6 +3559,84 @@ components:
       - name
       - roles
       - type
+    AdminIntroduction:
+      type: object
+      description: "A request for an introduction as an operator reads it: the message\
+        \ in full, and no address."
+      properties:
+        answeredAt:
+          type: string
+          format: date-time
+          description: When it was answered; absent while it waits.
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        message:
+          type: string
+        overdue:
+          type: boolean
+          description: Whether it has waited for an answer longer than three days.
+        providerOrganization:
+          type: string
+          description: The organization that offers the solution and answers.
+        senderName:
+          type: string
+          description: The sender's name; absent while they have not given one.
+        senderOrganization:
+          type: string
+          description: The organization the sender asked as.
+        solutionName:
+          type: string
+          description: "The solution asked about, by the name it had then."
+        status:
+          type: string
+          enum:
+          - pending
+          - replied
+          - declined
+      required:
+      - createdAt
+      - id
+      - message
+      - overdue
+      - providerOrganization
+      - senderOrganization
+      - solutionName
+      - status
+    AdminIntroductionList:
+      type: object
+      description: "One page of requests for an introduction: those that wait first,\
+        \ the longest wait on top."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminIntroduction"
+        overdue:
+          type: integer
+          format: int64
+          description: "How many requests, whatever the filter, have waited longer\
+            \ than three days."
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+          description: "How many requests match, over all pages."
+      required:
+      - items
+      - overdue
+      - page
+      - pageSize
+      - total
     AdminOrganization:
       type: object
       description: One organization as an operator reviews it.
@@ -3731,6 +4046,8 @@ components:
           - solution.reject
           - solution.deployment_approve
           - solution.deployment_reject
+          - introduction.reply
+          - introduction.decline
           - talent.approve
           - talent.reject
         actor:
@@ -4021,6 +4338,48 @@ components:
       - title
       - updatedAt
       - version
+    Introduction:
+      type: object
+      description: A request for an introduction to the caller's organization.
+      properties:
+        answeredAt:
+          type: string
+          format: date-time
+          description: When it was answered; absent while it waits.
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        message:
+          type: string
+        senderEmail:
+          type: string
+          description: "The sender's address, shown only once the request was replied\
+            \ to."
+        senderName:
+          type: string
+          description: The sender's name; absent while the sender has not given one.
+        senderOrganization:
+          type: string
+          description: The organization the sender asked as.
+        solutionName:
+          type: string
+          description: "The solution the sender asked about, by the name it had then."
+        status:
+          type: string
+          enum:
+          - pending
+          - replied
+          - declined
+      required:
+      - createdAt
+      - id
+      - message
+      - senderOrganization
+      - solutionName
+      - status
     InviteMember:
       type: object
       description: An address asked to join the caller's organization.
@@ -5226,6 +5585,22 @@ components:
       - roles
       - skills
       - slug
+    ReceivedIntroductions:
+      type: object
+      description: The requests for an introduction to the caller's organization.
+      properties:
+        editable:
+          type: boolean
+          description: "Whether the caller answers them: an owner does, a member only\
+            \ reads."
+        items:
+          type: array
+          description: Newest first.
+          items:
+            $ref: "#/components/schemas/Introduction"
+      required:
+      - editable
+      - items
     RefuseOrganization:
       type: object
       description: "Why an organization is not approved, and what its owners are told."
@@ -5312,6 +5687,23 @@ components:
           pattern: incomplete|unverifiable|inappropriate|other
       required:
       - reason
+    RequestIntroduction:
+      type: object
+      description: A request for an introduction to the organization behind a solution.
+      properties:
+        message:
+          type: string
+          description: "What the sender needs, as the provider reads it."
+          maxLength: 2000
+          minLength: 0
+        solutionSlug:
+          type: string
+          description: The address of the solution in the public directory.
+          maxLength: 200
+          minLength: 0
+      required:
+      - message
+      - solutionSlug
     ReserveUpload:
       type: object
       description: The file a person is about to upload.

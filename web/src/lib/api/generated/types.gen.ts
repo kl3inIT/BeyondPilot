@@ -75,6 +75,60 @@ export type AdminCreateOrganization = {
 };
 
 /**
+ * A request for an introduction as an operator reads it: the message in full, and no address.
+ */
+export type AdminIntroduction = {
+    /**
+     * When it was answered; absent while it waits.
+     */
+    answeredAt?: string;
+    createdAt: string;
+    id: string;
+    message: string;
+    /**
+     * Whether it has waited for an answer longer than three days.
+     */
+    overdue: boolean;
+    /**
+     * The organization that offers the solution and answers.
+     */
+    providerOrganization: string;
+    /**
+     * The sender's name; absent while they have not given one.
+     */
+    senderName?: string;
+    /**
+     * The organization the sender asked as.
+     */
+    senderOrganization: string;
+    /**
+     * The solution asked about, by the name it had then.
+     */
+    solutionName: string;
+    status: 'pending' | 'replied' | 'declined';
+};
+
+/**
+ * One page of requests for an introduction: those that wait first, the longest wait on top.
+ */
+export type AdminIntroductionList = {
+    items: Array<AdminIntroduction>;
+    /**
+     * How many requests, whatever the filter, have waited longer than three days.
+     */
+    overdue: number;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many requests match, over all pages.
+     */
+    total: number;
+};
+
+/**
  * One organization as an operator reviews it.
  */
 export type AdminOrganization = {
@@ -272,7 +326,7 @@ export type AdminTalentList = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'talent.approve' | 'talent.reject';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -410,6 +464,36 @@ export type CustomerDeployment = {
      * Sent back with a save, which is refused when the deployment changed since.
      */
     version: number;
+};
+
+/**
+ * A request for an introduction to the caller's organization.
+ */
+export type Introduction = {
+    /**
+     * When it was answered; absent while it waits.
+     */
+    answeredAt?: string;
+    createdAt: string;
+    id: string;
+    message: string;
+    /**
+     * The sender's address, shown only once the request was replied to.
+     */
+    senderEmail?: string;
+    /**
+     * The sender's name; absent while the sender has not given one.
+     */
+    senderName?: string;
+    /**
+     * The organization the sender asked as.
+     */
+    senderOrganization: string;
+    /**
+     * The solution the sender asked about, by the name it had then.
+     */
+    solutionName: string;
+    status: 'pending' | 'replied' | 'declined';
 };
 
 /**
@@ -1037,6 +1121,20 @@ export type PublicTalentSummary = {
 };
 
 /**
+ * The requests for an introduction to the caller's organization.
+ */
+export type ReceivedIntroductions = {
+    /**
+     * Whether the caller answers them: an owner does, a member only reads.
+     */
+    editable: boolean;
+    /**
+     * Newest first.
+     */
+    items: Array<Introduction>;
+};
+
+/**
  * Why an organization is not approved, and what its owners are told.
  */
 export type RefuseOrganization = {
@@ -1078,6 +1176,20 @@ export type RejectTalent = {
      */
     message?: string | null;
     reason: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
+};
+
+/**
+ * A request for an introduction to the organization behind a solution.
+ */
+export type RequestIntroduction = {
+    /**
+     * What the sender needs, as the provider reads it.
+     */
+    message: string;
+    /**
+     * The address of the solution in the public directory.
+     */
+    solutionSlug: string;
 };
 
 /**
@@ -1462,7 +1574,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'talent.approve' | 'talent.reject';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -1731,6 +1843,204 @@ export type GetMeResponses = {
 };
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type ListAdminIntroductionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Requests about a solution whose name contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only requests in this state.
+         */
+        status?: 'pending' | 'replied' | 'declined';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/introduction/admin/introductions';
+};
+
+export type ListAdminIntroductionsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminIntroductionsError = ListAdminIntroductionsErrors[keyof ListAdminIntroductionsErrors];
+
+export type ListAdminIntroductionsResponses = {
+    /**
+     * One page of the requests the parameters select.
+     */
+    200: AdminIntroductionList;
+};
+
+export type ListAdminIntroductionsResponse = ListAdminIntroductionsResponses[keyof ListAdminIntroductionsResponses];
+
+export type RequestIntroductionData = {
+    body: RequestIntroduction;
+    path?: never;
+    query?: never;
+    url: '/api/introduction/introductions';
+};
+
+export type RequestIntroductionErrors = {
+    /**
+     * The solution or the message is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no approved organization.
+     */
+    403: Problem;
+    /**
+     * No listed solution has the address.
+     */
+    404: Problem;
+    /**
+     * The solution is the caller's own, or an earlier request about it still waits.
+     */
+    409: Problem;
+    /**
+     * Nobody at the provider can be asked right now.
+     */
+    503: Problem;
+};
+
+export type RequestIntroductionError = RequestIntroductionErrors[keyof RequestIntroductionErrors];
+
+export type RequestIntroductionResponses = {
+    /**
+     * The request was recorded and the provider's owners were told.
+     */
+    204: void;
+};
+
+export type RequestIntroductionResponse = RequestIntroductionResponses[keyof RequestIntroductionResponses];
+
+export type GetReceivedIntroductionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/introduction/mine/received';
+};
+
+export type GetReceivedIntroductionsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization.
+     */
+    403: Problem;
+};
+
+export type GetReceivedIntroductionsError = GetReceivedIntroductionsErrors[keyof GetReceivedIntroductionsErrors];
+
+export type GetReceivedIntroductionsResponses = {
+    /**
+     * The requests, newest first.
+     */
+    200: ReceivedIntroductions;
+};
+
+export type GetReceivedIntroductionsResponse = GetReceivedIntroductionsResponses[keyof GetReceivedIntroductionsResponses];
+
+export type DeclineIntroductionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/introduction/mine/received/{id}/decline';
+};
+
+export type DeclineIntroductionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an owner of the organization asked.
+     */
+    403: Problem;
+    /**
+     * The organization asked has no such request.
+     */
+    404: Problem;
+    /**
+     * The request was answered already.
+     */
+    409: Problem;
+};
+
+export type DeclineIntroductionError = DeclineIntroductionErrors[keyof DeclineIntroductionErrors];
+
+export type DeclineIntroductionResponses = {
+    /**
+     * The request was declined and the sender was told.
+     */
+    204: void;
+};
+
+export type DeclineIntroductionResponse = DeclineIntroductionResponses[keyof DeclineIntroductionResponses];
+
+export type ReplyToIntroductionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/introduction/mine/received/{id}/reply';
+};
+
+export type ReplyToIntroductionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an owner of the organization asked.
+     */
+    403: Problem;
+    /**
+     * The organization asked has no such request.
+     */
+    404: Problem;
+    /**
+     * The request was answered already.
+     */
+    409: Problem;
+};
+
+export type ReplyToIntroductionError = ReplyToIntroductionErrors[keyof ReplyToIntroductionErrors];
+
+export type ReplyToIntroductionResponses = {
+    /**
+     * The request was replied to and both sides were told.
+     */
+    204: void;
+};
+
+export type ReplyToIntroductionResponse = ReplyToIntroductionResponses[keyof ReplyToIntroductionResponses];
 
 export type ApproveOrganizationClaimData = {
     body?: never;

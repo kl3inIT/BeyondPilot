@@ -287,7 +287,8 @@
       "auditLog": "Audit log",
       "organizations": "Organisations",
       "solutions": "Solutions",
-      "talent": "Talent"
+      "talent": "Talent",
+      "introductions": "Introductions"
     },
     "toggleSidebar": "Toggle sidebar",
     "programs": {
@@ -670,6 +671,10 @@
           "deployment_approve": "Approved a customer deployment",
           "deployment_reject": "Sent a customer deployment back"
         },
+        "introduction": {
+          "reply": "Replied to a request for an introduction",
+          "decline": "Declined a request for an introduction"
+        },
         "talent": {
           "approve": "Approved a talent profile",
           "reject": "Sent a talent profile back"
@@ -704,6 +709,10 @@
           "reject": "Sent the solution <resource></resource> back",
           "deployment_approve": "Approved the customer deployment <resource></resource>",
           "deployment_reject": "Sent the customer deployment <resource></resource> back"
+        },
+        "introduction": {
+          "reply": "Replied to the request for an introduction about <resource></resource>",
+          "decline": "Declined the request for an introduction about <resource></resource>"
         },
         "talent": {
           "approve": "Approved the talent profile of <resource></resource>",
@@ -989,6 +998,40 @@
       "talent": "Talent profiles to review",
       "review": "Open the queue, longest wait first",
       "none": "Nothing waiting"
+    },
+    "introductions": {
+      "metaTitle": "Introductions · BeyondPilot",
+      "title": "Introductions",
+      "lead": "Requests for an introduction to the organization behind a solution. The owners of that organization answer; you read, and see which ones wait too long.",
+      "overdueNotice": "{count, plural, one {# request has} other {# requests have}} waited more than 3 days for an answer.",
+      "overdue": "Waiting over 3 days",
+      "search": "Search by solution",
+      "searchButton": "Search",
+      "filter": {
+        "label": "Filter by state",
+        "all": "All"
+      },
+      "status": {
+        "pending": "Waiting",
+        "replied": "Replied",
+        "declined": "Declined"
+      },
+      "route": "{sender} → {provider}",
+      "about": "About {solution}",
+      "sender": "{name} · {organization}",
+      "senderUnnamed": "Someone at {organization}",
+      "waitingSince": "Waiting since {time}",
+      "answered": "Answered {date}",
+      "count": "{count, plural, one {# request} other {# requests}}",
+      "empty": {
+        "title": "No requests yet",
+        "description": "When someone asks for an introduction to a solution, it appears here."
+      },
+      "noMatch": {
+        "title": "No request matches",
+        "description": "Try another solution name, or another state.",
+        "clear": "Clear search and filters"
+      }
     }
   },
   "Lists": {
@@ -1175,7 +1218,8 @@
       "label": "Sections of your organization",
       "profile": "Profile",
       "members": "Members",
-      "solutions": "Solutions"
+      "solutions": "Solutions",
+      "introductions": "Introductions"
     },
     "status": {
       "pending": "In review",
@@ -1745,6 +1789,85 @@
         "resultHint": "A number the customer stands behind.",
         "cancel": "Cancel",
         "save": "Send for review"
+      }
+    }
+  },
+  "Introduction": {
+    "errors": {
+      "INTRODUCTION_SOLUTION_NOT_FOUND": "This solution is no longer listed.",
+      "INTRODUCTION_NEEDS_ORGANIZATION": "Create or join an organization before you ask for an introduction.",
+      "INTRODUCTION_ORGANIZATION_NOT_APPROVED": "Your organization has not been approved yet, so it cannot ask for an introduction.",
+      "INTRODUCTION_OWN_SOLUTION": "This solution belongs to your own organization.",
+      "INTRODUCTION_ALREADY_PENDING": "You already asked for an introduction to this solution. Wait for the answer.",
+      "INTRODUCTION_UNREACHABLE": "Nobody at this organization can be asked right now. Try again later.",
+      "INTRODUCTION_REQUEST_NOT_FOUND": "This request no longer exists.",
+      "INTRODUCTION_OWNERS_ONLY": "Only an owner of your organization answers a request for an introduction.",
+      "INTRODUCTION_NOT_PENDING": "This request was already answered.",
+      "REQUEST_INVALID": "Check the message and try again.",
+      "unknown": "That did not work. Try again."
+    },
+    "request": {
+      "open": "Request an introduction",
+      "by": "By {provider}",
+      "title": "Request an introduction to {provider}",
+      "lead": "Introductions go through GenAI Fund. Neither email address is shown until {provider} replies.",
+      "organization": "Your organization",
+      "message": "What do you need?",
+      "placeholder": "What you are working on, and what you would like from them.",
+      "hint": "{provider} reads your name, your organization and this message before it answers.",
+      "required": "Write a message first.",
+      "send": "Send request",
+      "cancel": "Cancel",
+      "sent": {
+        "title": "Your request is with {provider}",
+        "lead": "We told them. When they reply, you both get an email with the other's name and address.",
+        "done": "Done"
+      },
+      "blocked": {
+        "organization": {
+          "title": "Join an organization first",
+          "lead": "An introduction is asked on behalf of an organization, so that the provider knows who is asking.",
+          "action": "Set up your organization"
+        },
+        "approval": {
+          "title": "Your organization is not approved yet",
+          "lead": "You can ask for an introduction as soon as GenAI Fund approves your organization."
+        }
+      }
+    },
+    "received": {
+      "metaTitle": "Introductions · BeyondPilot",
+      "title": "Introductions",
+      "waiting": "{count} waiting",
+      "sender": "{name} · {organization}",
+      "senderUnnamed": "Someone at {organization}",
+      "about": "About {solution}",
+      "sent": "Sent {date}",
+      "answered": "Answered {date}",
+      "introduced": "Introduced. Write to them at {email}.",
+      "ownersAnswer": "Only an owner of the organization answers a request.",
+      "status": {
+        "pending": "Waiting",
+        "replied": "Replied",
+        "declined": "Declined"
+      },
+      "empty": {
+        "title": "No introductions yet",
+        "description": "When someone asks for an introduction to one of your solutions, it appears here."
+      },
+      "actions": {
+        "reply": "Reply",
+        "decline": "Decline",
+        "confirmDecline": {
+          "title": "Decline the request about {name}?",
+          "lead": "The sender is told you will not take it further. No address is shared.",
+          "confirm": "Decline",
+          "cancel": "Keep it"
+        }
+      },
+      "done": {
+        "reply": "Introduced. Both of you got an email with the other's address.",
+        "decline": "Request declined."
       }
     }
   },
