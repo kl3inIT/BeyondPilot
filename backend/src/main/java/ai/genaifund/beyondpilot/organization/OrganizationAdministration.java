@@ -148,7 +148,7 @@ public class OrganizationAdministration {
 		String ownerEmail = OrganizationViews.text(request.ownerEmail());
 		if (ownerEmail != null) {
 			memberships.invite(UUID.randomUUID(), organization.getId(), ownerEmail, MembershipRepository.OWNER,
-					operator.accountId(), true);
+					operator.accountId(), true, OrganizationService.INVITATION_LIFETIME);
 			email.sendOrganizationInvitation(ownerEmail, organization.getName(), "GenAI Fund", true);
 		}
 		return response(organization);
@@ -275,7 +275,8 @@ public class OrganizationAdministration {
 			throw new OrganizationException(OrganizationErrorCode.INVITEE_IS_MEMBER,
 					"Operator invitation of a member of organization " + id);
 		}
-		if (!memberships.invite(UUID.randomUUID(), id, address, request.role(), operator.accountId(), true)) {
+		if (!memberships.invite(UUID.randomUUID(), id, address, request.role(), operator.accountId(), true,
+				OrganizationService.INVITATION_LIFETIME)) {
 			throw new OrganizationException(OrganizationErrorCode.ALREADY_INVITED,
 					"Second open invitation of one address to organization " + id);
 		}

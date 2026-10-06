@@ -1323,6 +1323,10 @@ export type OrganizationInvitation = {
      * The address that was asked.
      */
     email: string;
+    /**
+     * When the invitation lapses if nobody answers it.
+     */
+    expiresAt: string;
     id: string;
     /**
      * Who asked, as they are shown.

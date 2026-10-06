@@ -3,6 +3,8 @@ package ai.genaifund.beyondpilot.organization;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -499,6 +501,36 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anInvitationLapsesAfterSevenDaysAndTheAddressMayBeInvitedAgain() {
+		String founder = signIn("founder@lapsing.test");
+		UUID organization = approved(founder, "Lapsing Co");
+		post(founder, API + "/mine/invitations", Map.of("email", "late@gmail.com", "role", "member")).expectStatus()
+			.isNoContent();
+		String open = members(founder);
+		Instant sent = Instant.parse(JsonPath.<String>read(open, "$.invitations[0].createdAt"));
+		assertThat(Instant.parse(JsonPath.<String>read(open, "$.invitations[0].expiresAt")))
+			.isEqualTo(sent.plus(Duration.ofDays(7)));
+		String late = signIn("late@gmail.com");
+		String invitation = JsonPath.read(mine(late), "$.invitations[0].id");
+
+		jdbc.sql("update organization_invitation set expires_at = now() - interval '1 minute' where organization_id = ?")
+			.param(organization)
+			.update();
+
+		// A lapsed invitation is no longer open: nobody reads it, nobody answers it, and it frees its place.
+		assertThat(JsonPath.<List<String>>read(mine(late), "$.invitations")).isEmpty();
+		assertProblem(post(late, API + "/invitations/" + invitation + "/accept", Map.of()), 404,
+				"ORGANIZATION_INVITATION_NOT_FOUND");
+		String lapsed = members(founder);
+		assertThat(JsonPath.<List<String>>read(lapsed, "$.invitations")).isEmpty();
+		assertThat(JsonPath.<Integer>read(lapsed, "$.allowance.leftOpen")).isEqualTo(50);
+		post(founder, API + "/mine/invitations", Map.of("email", "late@gmail.com", "role", "member")).expectStatus()
+			.isNoContent();
+		assertThat(JsonPath.<List<String>>read(mine(late), "$.invitations[*].organizationName"))
+			.containsExactly("Lapsing Co");
+	}
+
+	@Test
 	void anOwnerInvitesAnAddressWhichAcceptsAfterSigningIn() {
 		String founder = signIn("founder@inviting.test");
 		approved(founder, "Inviting Co");
@@ -593,8 +625,8 @@ class OrganizationTest {
 		UUID founderId = idOf("founder@open-limit.test");
 		for (int open = 1; open <= 50; open++) {
 			jdbc.sql("""
-					insert into organization_invitation (id, organization_id, email, role, invited_by_account_id, created_at)
-					values (?, ?, ?, 'member', ?, now() - interval '2 days')
+					insert into organization_invitation (id, organization_id, email, role, invited_by_account_id, created_at, expires_at)
+					values (?, ?, ?, 'member', ?, now() - interval '2 days', now() + interval '5 days')
 					""").params(UUID.randomUUID(), id, "waiting" + open + "@gmail.com", founderId).update();
 		}
 

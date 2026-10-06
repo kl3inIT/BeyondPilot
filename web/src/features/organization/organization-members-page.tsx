@@ -68,7 +68,13 @@ function OrganizationMembersPage({
   const invited = (lastPage ? members.invitations : []).map((invitation) => ({
     key: invitation.id,
     person: (
-      <Person name={invitation.email} email={t("invited", { day: day(invitation.createdAt) })} />
+      <Person
+        name={invitation.email}
+        email={t("invited", {
+          day: day(invitation.createdAt),
+          expires: day(invitation.expiresAt),
+        })}
+      />
     ),
     role: <MemberRole role={invitation.role} />,
     jobTitle: t("none"),
