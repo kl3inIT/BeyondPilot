@@ -164,6 +164,34 @@ class EmailAdministrationTest {
 	}
 
 	@Test
+	void anAppearanceBeingEditedIsPreviewedWithoutBeingSaved() {
+		Map<String, Object> draft = Map.of("subject", "{{code}} opens BeyondPilot", "body",
+				"**{{code}}** for {{minutes}} minutes. [Open BeyondPilot](https://beyondpilot.test)");
+		Map<String, Object> withAppearance = new HashMap<>(draft);
+		withAppearance.put("appearance", Map.of("accentColor", "#B42318", "footer", "A footer being edited"));
+
+		String edited = body(post(operator, API + "/templates/sign_in_code/preview", withAppearance).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(edited, "$.html")).contains("#B42318").contains("A footer being edited");
+
+		String saved = body(post(operator, API + "/templates/sign_in_code/preview", draft).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(saved, "$.html")).doesNotContain("#B42318").doesNotContain("A footer being edited");
+		assertThat(JsonPath.<String>read(body(get(operator, API + "/settings").expectStatus().isOk()), "$.accentColor"))
+			.isNotEqualTo("#B42318");
+		assertProblem(post(operator, API + "/templates/sign_in_code/preview",
+				Map.of("subject", "x", "body", "y", "appearance", Map.of("accentColor", "red", "footer", ""))), 400,
+				"REQUEST_INVALID");
+	}
+
+	@Test
+	void anSmtpServerHasNothingToAskSoTheChecksNameOnlyTheDomain() {
+		String checks = body(get(operator, API + "/settings/checks").expectStatus().isOk());
+		assertThat(JsonPath.<String>read(checks, "$.provider")).isEqualTo("smtp");
+		assertThat(JsonPath.<String>read(checks, "$.domain")).isEqualTo("beyondpilot.test");
+		assertThat(JsonPath.<List<Object>>read(checks, "$.checks")).isEmpty();
+		assertThat(JsonPath.<List<Object>>read(checks, "$.records")).isEmpty();
+	}
+
+	@Test
 	void theLogShowsWhatWasSentKeepsCodesMaskedAndSendsAgain() {
 		TestSignIn.session(client, mail, "logged@email.test");
 		String code = mail.latestCodeTo("logged@email.test");

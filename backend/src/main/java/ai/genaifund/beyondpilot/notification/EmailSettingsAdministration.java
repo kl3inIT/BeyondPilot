@@ -1,6 +1,8 @@
 package ai.genaifund.beyondpilot.notification;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -12,10 +14,14 @@ import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
+import ai.genaifund.beyondpilot.notification.adapter.EmailAdapterRegistry;
 import ai.genaifund.beyondpilot.notification.adapter.EmailConnection;
 import ai.genaifund.beyondpilot.notification.adapter.EmailDeliveryException.DeliveryFailure;
+import ai.genaifund.beyondpilot.notification.adapter.EmailProvider;
+import ai.genaifund.beyondpilot.notification.adapter.EmailSetup;
 import ai.genaifund.beyondpilot.notification.delivery.EmailDelivery;
 import ai.genaifund.beyondpilot.notification.dto.EmailSettingsResponse;
+import ai.genaifund.beyondpilot.notification.dto.EmailSetupResponse;
 import ai.genaifund.beyondpilot.notification.dto.EmailTestResponse;
 import ai.genaifund.beyondpilot.notification.dto.SaveEmailAppearanceRequest;
 import ai.genaifund.beyondpilot.notification.dto.SaveEmailSettingsRequest;
@@ -63,8 +69,12 @@ public class EmailSettingsAdministration {
 
 	private final AuditTrail audit;
 
+	private final EmailAdapterRegistry adapters;
+
 	EmailSettingsAdministration(IdentityService identity, EmailSettingsRepository settings, SecretBox secrets,
-			DeliverySettings delivery, EmailRenderer renderer, EmailDelivery sender, AuditTrail audit) {
+			DeliverySettings delivery, EmailRenderer renderer, EmailDelivery sender, AuditTrail audit,
+			EmailAdapterRegistry adapters) {
+		this.adapters = adapters;
 		this.identity = identity;
 		this.settings = settings;
 		this.secrets = secrets;
@@ -148,6 +158,38 @@ public class EmailSettingsAdministration {
 		Optional<DeliveryFailure> failure = sender.sendTest(draft, operator.email(),
 				renderer.render(TEST, delivery.appearance()));
 		return new EmailTestResponse(operator.email(), failure.isEmpty(), failure.map(DeliveryFailure::value).orElse(null));
+	}
+
+	/**
+	 * Asks the saved provider whether email from the sender's domain can leave. DMARC is added as a record to publish
+	 * whatever the provider says: Gmail and Yahoo expect it of anyone who sends in bulk.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws NotificationException when no provider and sender are saved
+	 */
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public EmailSetupResponse checks(Actor actor) {
+		identity.requireOperator(actor);
+		DeliverySettings.Delivery saved = delivery.delivery()
+			.orElseThrow(() -> new NotificationException(NotificationErrorCode.SETTINGS_INCOMPLETE,
+					"No provider and sender are saved"));
+		String domain = saved.fromAddress().substring(saved.fromAddress().lastIndexOf('@') + 1).toLowerCase(Locale.ROOT);
+		EmailSetup setup = adapters.adapter(saved.provider()).inspect(saved.connection(), domain);
+		List<EmailSetupResponse.DnsRecord> records = new ArrayList<>(setup.records()
+			.stream()
+			.map(record -> new EmailSetupResponse.DnsRecord(record.purpose(), record.type(), record.host(),
+					record.value(), record.priority(), record.state().value()))
+			.toList());
+		if (saved.provider() != EmailProvider.SMTP && records.stream().noneMatch(record -> "dmarc".equals(record.purpose()))) {
+			records.add(new EmailSetupResponse.DnsRecord("dmarc", "TXT", "_dmarc", "v=DMARC1; p=none;", null,
+					EmailSetup.State.UNKNOWN.value()));
+		}
+		return new EmailSetupResponse(saved.provider().value(), domain, Instant.now(),
+				setup.limit() == null ? null : setup.limit().value(),
+				setup.checks()
+					.stream()
+					.map(check -> new EmailSetupResponse.Check(check.step().value(), check.state().value()))
+					.toList(),
+				records);
 	}
 
 	/** The sealed secrets to store: a new one sealed, an empty one kept while what it belongs to is unchanged. */

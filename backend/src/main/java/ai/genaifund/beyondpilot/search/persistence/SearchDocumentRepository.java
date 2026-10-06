@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.search.persistence;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -241,6 +242,76 @@ public class SearchDocumentRepository {
 			.query(Integer.class)
 			.optional()
 			.orElse(0);
+	}
+
+	/**
+	 * What one kind holds: everything in the index, what visitors may find, what is embedded with the model, what waits
+	 * for it, and what the provider refused and is held back.
+	 */
+	public record KindStatus(String kind, long total, long listed, long embedded, long waiting, long heldBack) {
+	}
+
+	/** An item the provider refused, with the kind of failure and when it is tried again. */
+	public record HeldBack(String kind, UUID itemId, String title, String error, int attempts,
+			@Nullable Instant nextAttemptAt) {
+	}
+
+	/**
+	 * The state of each kind against the model search embeds with.
+	 * @param model the model in use, or null when none is: then nothing counts as embedded
+	 */
+	public List<KindStatus> status(@Nullable String model) {
+		return jdbc.sql("""
+				select kind, total, listed, embedded, held_back, total - embedded - held_back as waiting
+				from (
+				    select kind, count(*) as total, count(*) filter (where listed) as listed,
+				           count(*) filter (where embedding_model = :model and embedded_hash = content_hash) as embedded,
+				           count(*) filter (where embedding_error is not null and (embedding_model is distinct from :model
+				                            or embedded_hash is distinct from content_hash)) as held_back
+				    from search_document
+				    group by kind
+				) counted
+				""")
+			.param("model", model, Types.VARCHAR)
+			.query((row, number) -> new KindStatus(row.getString("kind"), row.getLong("total"), row.getLong("listed"),
+					row.getLong("embedded"), row.getLong("waiting"), row.getLong("held_back")))
+			.list();
+	}
+
+	/** The items held back, the soonest to be tried again first. */
+	public List<HeldBack> heldBack(int limit) {
+		return jdbc.sql("""
+				select kind, item_id, title, embedding_error, embedding_attempts, embedding_next_attempt_at
+				from search_document
+				where embedding_error is not null
+				order by embedding_next_attempt_at nulls first, title
+				limit :limit
+				""")
+			.param("limit", limit)
+			.query((row, number) -> new HeldBack(row.getString("kind"), row.getObject("item_id", UUID.class),
+					row.getString("title"), row.getString("embedding_error"), row.getInt("embedding_attempts"),
+					instant(row.getTimestamp("embedding_next_attempt_at"))))
+			.list();
+	}
+
+	/**
+	 * Lets the next run try held-back items at once: one, or all when no item is named.
+	 * @return how many were let go
+	 */
+	public int retryEmbeddings(@Nullable String kind, @Nullable UUID itemId) {
+		return jdbc.sql("""
+				update search_document
+				set embedding_attempts = 0, embedding_next_attempt_at = null, embedding_error = null
+				where embedding_error is not null
+				  and (cast(:itemId as uuid) is null or (kind = :kind and item_id = cast(:itemId as uuid)))
+				""")
+			.param("kind", kind, Types.VARCHAR)
+			.param("itemId", itemId == null ? null : itemId.toString(), Types.VARCHAR)
+			.update();
+	}
+
+	private static @Nullable Instant instant(java.sql.@Nullable Timestamp timestamp) {
+		return timestamp == null ? null : timestamp.toInstant();
 	}
 
 	/** pgvector's text form of a vector: "[0.1,0.2]". */

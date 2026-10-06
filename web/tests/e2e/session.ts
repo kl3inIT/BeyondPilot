@@ -6,6 +6,7 @@ export async function signInAs(
   context: BrowserContext,
   account:
     | "operator"
+    | "emailer"
     | "judge"
     | "unnamed"
     | "owner"

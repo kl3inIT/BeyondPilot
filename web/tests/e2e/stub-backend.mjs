@@ -6,9 +6,10 @@ import { createServer } from "node:http";
 
 import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
+import { answerEmail } from "./stub-email.mjs";
 import { answerJudging } from "./stub-judging.mjs";
 import { answerReview } from "./stub-reviews.mjs";
-import { answerSearch } from "./stub-search.mjs";
+import { answerSearch, answerSearchAdmin } from "./stub-search.mjs";
 import { answerWorkspace } from "./stub-workspace.mjs";
 
 const accounts = {
@@ -23,6 +24,13 @@ const accounts = {
     id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a01",
     email: "dat.phan@example.com",
     displayName: "Đạt Phan",
+    role: "operator",
+  },
+  // An operator of a deployment whose email is set up with Amazon SES (stub-email.mjs).
+  emailer: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a30",
+    email: "ops@beyondpilot.ai",
+    displayName: "Hà Lê",
     role: "operator",
   },
   unnamed: {
@@ -399,9 +407,14 @@ createServer((request, response) => {
     answerApplication(url, account ? session : undefined, account?.email) ??
     answerReview(url, account) ??
     answerWorkspace(url, account ? session : undefined) ??
+    answerEmail(url, account) ??
     answerDirectory(url);
   if (record) {
     return json(response, ...record);
+  }
+  const administered = answerSearchAdmin(url, account);
+  if (administered) {
+    return json(response, ...administered);
   }
   const searched = answerSearch(url);
   if (searched) {

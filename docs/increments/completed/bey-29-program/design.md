@@ -1,6 +1,6 @@
 # Program: programs, their dates and their pages
 
-Status: accepted on 5 October 2026 and being implemented ([plan](plan.md)). It is the fourth slice of the [Phase 1 domain model](../bey-22-phase-1-domain-model/design.md) and narrows that model's `program` module to what the live site of 9 October needs. The screens are those approved in Figma on 4 and 5 October ([main flows](../bey-27-main-flows-design/design.md)): the programs list, the program page, and in the admin area the Programs list and a program's Settings.
+Status: accepted on 5 October 2026 and being implemented ([plan](plan.md)). It is the fourth slice of the [Phase 1 domain model](../../active/bey-22-phase-1-domain-model/design.md) and narrows that model's `program` module to what the live site of 9 October needs. The screens are those approved in Figma on 4 and 5 October ([main flows](../../active/bey-27-main-flows-design/design.md)): the programs list, the program page, and in the admin area the Programs list and a program's Settings.
 
 ## What a person can do
 
@@ -17,7 +17,7 @@ Status: accepted on 5 October 2026 and being implemented ([plan](plan.md)). It i
 - _The window is inconsistent_ (it closes before it opens, or outcomes are due before it closes): saving is refused with a failure that names the rule.
 - _A published program is found to be wrong:_ the operator unpublishes it; it leaves the public list and its address answers "not found" until it is published again.
 
-**Glossary.** The terms of the [domain model's glossary](../bey-22-phase-1-domain-model/design.md#glossary) hold. This slice adds:
+**Glossary.** The terms of the [domain model's glossary](../../active/bey-22-phase-1-domain-model/design.md#glossary) hold. This slice adds:
 
 | Term | Meaning |
 | --- | --- |

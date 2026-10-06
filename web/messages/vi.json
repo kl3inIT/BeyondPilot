@@ -294,7 +294,11 @@
       "review": "Xét duyệt",
       "system": "Hệ thống",
       "useCases": "Use case",
-      "useCasesNew": "Use case mới"
+      "useCasesNew": "Use case mới",
+      "ai": "AI",
+      "aiProviders": "Nhà cung cấp",
+      "searchIndex": "Chỉ mục tìm kiếm",
+      "email": "Email"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
     "programs": {
@@ -640,7 +644,8 @@
         "makeOperator": "Cấp quyền operator…",
         "withdrawOperator": "Thu quyền operator…",
         "disable": "Khóa tài khoản…",
-        "enable": "Mở khóa tài khoản"
+        "enable": "Mở khóa tài khoản",
+        "emails": "Email đã gửi cho người này"
       },
       "confirm": {
         "cancel": "Hủy",
@@ -774,6 +779,18 @@
           "suppression_add": "Chặn gửi email tới một địa chỉ",
           "suppression_remove": "Bỏ chặn một địa chỉ email",
           "resend": "Gửi lại một email"
+        },
+        "ai": {
+          "provider_create": "Kết nối nhà cung cấp AI",
+          "provider_update": "Sửa nhà cung cấp AI",
+          "provider_delete": "Xoá nhà cung cấp AI"
+        },
+        "search": {
+          "model_change": "Đổi model embedding",
+          "semantic_enable": "Bật semantic search",
+          "semantic_disable": "Tắt semantic search",
+          "index_rebuild": "Dựng lại chỉ mục tìm kiếm",
+          "embedding_retry": "Cho embed lại các mục bị từ chối"
         }
       },
       "activity": {
@@ -848,6 +865,18 @@
           "suppression_add": "Chặn gửi email tới <resource></resource>",
           "suppression_remove": "Bỏ chặn <resource></resource>",
           "resend": "Gửi lại email <resource></resource>"
+        },
+        "ai": {
+          "provider_create": "Kết nối nhà cung cấp AI <resource></resource>",
+          "provider_update": "Sửa nhà cung cấp AI <resource></resource>",
+          "provider_delete": "Xoá nhà cung cấp AI <resource></resource>"
+        },
+        "search": {
+          "model_change": "Đổi model embedding trong <resource></resource>",
+          "semantic_enable": "Bật semantic search trong <resource></resource>",
+          "semantic_disable": "Tắt semantic search trong <resource></resource>",
+          "index_rebuild": "Dựng lại <resource></resource>",
+          "embedding_retry": "Cho embed lại các mục bị từ chối của <resource></resource>"
         }
       },
       "columns": {
@@ -1571,6 +1600,811 @@
         "readOnly": "Chỉ xem: đây là nội dung {organization} đã viết. Bạn không sửa được.",
         "viewDetails": "Xem chi tiết",
         "backToReview": "Về trang duyệt"
+      }
+    },
+    "ai": {
+      "providers": {
+        "metaTitle": "Nhà cung cấp AI",
+        "title": "Nhà cung cấp AI",
+        "lead": "Các dịch vụ AI mà BeyondPilot gọi tới, và model mỗi tính năng dùng.",
+        "tabs": "Mục đích",
+        "embedding": "Embedding",
+        "noEncryption": {
+          "title": "Chưa lưu được key",
+          "lead": "Máy chủ chưa có khoá mã hoá cho key của nhà cung cấp. Hãy báo đội kỹ thuật thêm BEYONDPILOT_AI_ENCRYPTION_KEY."
+        }
+      },
+      "model": {
+        "heading": "Model embedding",
+        "headingLead": "Biến văn bản thành vector để tìm kiếm semantic. Mọi mục và mọi câu tìm kiếm đều dùng nó.",
+        "active": "Đang dùng",
+        "through": "Qua {name}",
+        "dimensions": "Số chiều",
+        "embedded": "Đã embed",
+        "embeddedOf": "{embedded} / {total}",
+        "since": "Dùng từ",
+        "usedBy": "Dùng cho",
+        "search": "Tìm kiếm · {count} mục",
+        "openIndex": "Mở chỉ mục tìm kiếm",
+        "none": {
+          "title": "Chưa có nhà cung cấp embedding",
+          "lead": "Tìm kiếm đang chỉ theo từ khoá. Hãy kết nối một nhà cung cấp bên dưới để bật semantic search."
+        },
+        "notChosen": {
+          "title": "Chưa chọn model",
+          "lead": "Hãy chọn nhà cung cấp và model để bật semantic search."
+        },
+        "change": "Đổi model",
+        "choose": "Chọn model",
+        "title": "Đổi model embedding",
+        "lead": "Tìm kiếm vẫn chạy trong lúc các mục được embed lại.",
+        "provider": "Nhà cung cấp",
+        "model": "Model",
+        "dimensionsHint": "Các model có sẵn đều cho 1.536 chiều, đúng kích thước chỉ mục lưu.",
+        "test": "Thử kết nối",
+        "testHint": "Embed thử một câu bằng model ở trên.",
+        "testButton": "Thử",
+        "warning": "Toàn bộ {count} mục sẽ được embed lại, mất khoảng {minutes} phút với tốc độ 32 mục mỗi phút. Trong lúc đó, mục chưa embed lại chỉ tìm được theo từ khoá. Mỗi mục bị nhà cung cấp tính phí một lần.",
+        "cancel": "Huỷ",
+        "embedAgain": "Embed lại",
+        "use": "Dùng model này"
+      },
+      "connected": {
+        "heading": "Nhà cung cấp đã kết nối",
+        "lead": "Nơi giữ key. Key được mã hoá và không bao giờ hiện lại, kể cả một phần.",
+        "inUse": "Đang dùng",
+        "keySaved": "Đã lưu key",
+        "noKey": "Chưa có key",
+        "meta": "{address} · {name} lưu ngày {date}",
+        "inUseNote": "Tìm kiếm đang embed bằng nhà cung cấp này. Hãy đổi model sang nhà cung cấp khác rồi mới xoá."
+      },
+      "add": {
+        "heading": "Thêm nhà cung cấp",
+        "lead": "Cả hai đều dùng API của OpenAI; chỉ khác địa chỉ và nơi tính tiền.",
+        "openai": "Model embedding của OpenAI, OpenAI tính tiền.",
+        "openrouter": "Một key dùng được model của nhiều hãng, OpenRouter tính tiền."
+      },
+      "editor": {
+        "vendor": {
+          "openai": "OpenAI",
+          "openrouter": "OpenRouter"
+        },
+        "edit": "Sửa",
+        "connect": "Kết nối",
+        "connectLabel": "Kết nối {name}",
+        "connectTitle": "Kết nối {name}",
+        "connectLead": "Nhà cung cấp đã lưu có thể chọn trong phần Đổi model. Hãy thử key trước khi lưu.",
+        "editTitle": "Sửa {name}",
+        "editLead": "Thay đổi có hiệu lực với mọi lượt tìm kiếm ngay khi bạn lưu.",
+        "name": "Tên",
+        "address": "Base URL",
+        "addressHint": "Địa chỉ API của chính nhà cung cấp. Key chỉ được gửi tới đây.",
+        "apiKey": "API key",
+        "keyKeep": "Giữ key đã lưu",
+        "keyReplace": "Thay key",
+        "keyRemove": "Xoá key",
+        "newKey": "API key mới",
+        "keyHint": {
+          "openai": "Tạo key tại platform.openai.com/api-keys. Key được mã hoá và không bao giờ hiện lại.",
+          "openrouter": "Tạo key tại openrouter.ai/keys, nên đặt giới hạn hằng tháng. Key được mã hoá và không bao giờ hiện lại."
+        },
+        "test": "Thử kết nối",
+        "model": "Model để thử",
+        "testButton": "Thử",
+        "testHint": "Embed thử một câu bằng key và model này, đã lưu hay chưa. Không có gì được lưu lại.",
+        "cancel": "Huỷ",
+        "save": "Lưu nhà cung cấp"
+      },
+      "probe": {
+        "connected": "Đã kết nối · {model} · {dimensions, number} chiều · {ms} ms",
+        "failed": "Kết nối thất bại · {ms} ms",
+        "reason": {
+          "rejected": "Nhà cung cấp từ chối API key. Hãy kiểm tra key được chép đủ và chưa bị thu hồi.",
+          "model_refused": "Nhà cung cấp không cho key này dùng model này.",
+          "unreachable": "Nhà cung cấp không trả lời kịp. Hãy thử lại sau ít phút.",
+          "wrong_dimensions": "Model trả về vector có độ dài khác 1.536 chiều mà chỉ mục lưu."
+        }
+      },
+      "delete": {
+        "open": "Xoá",
+        "title": "Xoá {name}?",
+        "lead": "Nhà cung cấp và key đã lưu sẽ bị xoá. Muốn dùng lại thì phải kết nối lại.",
+        "confirm": "Xoá nhà cung cấp",
+        "cancel": "Huỷ"
+      },
+      "done": {
+        "connected": "Đã kết nối {name}",
+        "saved": "Đã lưu {name}",
+        "deleted": "Đã xoá {name}",
+        "modelChosen": "Từ giờ tìm kiếm embed bằng {model}"
+      },
+      "errors": {
+        "SEARCH_PROVIDER_NOT_FOUND": "Nhà cung cấp này không còn nữa. Hãy tải lại trang.",
+        "SEARCH_PROVIDER_INVALID": "Địa chỉ phải là địa chỉ API của chính nhà cung cấp.",
+        "SEARCH_PROVIDER_NAME_TAKEN": "Đã có nhà cung cấp khác mang tên này.",
+        "SEARCH_PROVIDER_CHANGED": "Có người vừa sửa nhà cung cấp này sau khi bạn mở. Hãy tải lại rồi thử lại.",
+        "SEARCH_PROVIDER_IN_USE": "Tìm kiếm đang embed bằng nhà cung cấp này. Hãy đổi model sang nhà cung cấp khác trước.",
+        "SEARCH_PROVIDER_KEY_MISSING": "Hãy nhập API key. Key đã lưu chỉ được dùng với đúng địa chỉ nó được lưu kèm.",
+        "SEARCH_MODEL_UNKNOWN": "Nhà cung cấp này không có model đó.",
+        "SEARCH_MODEL_REJECTED": "Nhà cung cấp không embed được câu thử với key và model này. Hãy thử kết nối để xem lý do.",
+        "SEARCH_RETRY_ITEM_INCOMPLETE": "Hãy nêu loại của mục cần thử lại.",
+        "SEARCH_SETTINGS_CHANGED": "Có người vừa sửa cấu hình tìm kiếm sau khi bạn mở. Hãy tải lại rồi thử lại.",
+        "SEARCH_ENCRYPTION_KEY_MISSING": "Chưa lưu được key: máy chủ chưa có khoá mã hoá. Hãy báo đội kỹ thuật thêm vào.",
+        "unknown": "Đã có lỗi. Hãy thử lại sau ít phút."
+      }
+    },
+    "searchIndex": {
+      "metaTitle": "Chỉ mục tìm kiếm",
+      "title": "Chỉ mục tìm kiếm",
+      "lead": "Những gì tìm kiếm tìm được theo từ khoá, và bao nhiêu trong đó đã được embed cho semantic search.",
+      "rebuild": "Dựng lại chỉ mục",
+      "semantic": {
+        "label": "Semantic search",
+        "switch": "Semantic search",
+        "openProviders": "Mở nhà cung cấp",
+        "on": {
+          "title": "Semantic search đang bật",
+          "lead": "Kết quả theo từ khoá và theo ngữ nghĩa được xếp hạng chung. {provider} · {model} · lần embed gần nhất {last}.",
+          "noBatch": "chưa có từ lần khởi động gần nhất"
+        },
+        "off": {
+          "title": "Semantic search đang tắt",
+          "lead": "Tìm kiếm chỉ theo từ khoá và không gửi gì tới nhà cung cấp. Khi bật lại, hệ thống sẽ embed bù những gì đã thay đổi trong lúc tắt."
+        },
+        "paused": {
+          "title": "Semantic search tạm dừng đến {until}",
+          "reason": {
+            "rejected": "Nhà cung cấp từ chối API key. Tìm kiếm chỉ theo từ khoá cho tới khi nhà cung cấp trả lời; hãy kiểm tra key trong mục Nhà cung cấp.",
+            "model_refused": "Nhà cung cấp từ chối model. Tìm kiếm chỉ theo từ khoá cho tới khi nhà cung cấp trả lời; hãy kiểm tra model trong mục Nhà cung cấp.",
+            "unreachable": "Nhà cung cấp không trả lời. Tìm kiếm chỉ theo từ khoá cho tới khi có trả lời; hệ thống sẽ tự thử lại."
+          }
+        },
+        "noProvider": {
+          "title": "Semantic search đang tắt",
+          "lead": "Chưa kết nối nhà cung cấp embedding nên tìm kiếm chỉ theo từ khoá. Hãy kết nối trong mục Nhà cung cấp để bật."
+        }
+      },
+      "stats": {
+        "indexed": "Trong chỉ mục",
+        "listed": "{count} mục công khai",
+        "embedded": "Đã embed",
+        "embeddedOf": "{embedded} / {total} · {model}",
+        "noModel": "Chưa có model embedding",
+        "waiting": "Đang chờ",
+        "waitingNote": "Sẽ embed ở lượt chạy tới",
+        "heldBack": "Lỗi",
+        "heldBackNote": "Bị nhà cung cấp từ chối"
+      },
+      "kinds": {
+        "heading": "Theo loại",
+        "kind": "Loại",
+        "total": "Trong chỉ mục",
+        "listed": "Công khai",
+        "embedded": "Đã embed",
+        "waiting": "Đang chờ",
+        "heldBack": "Lỗi",
+        "name": {
+          "program": "Chương trình",
+          "solution": "Giải pháp AI",
+          "talent": "Nhân lực AI",
+          "use_case": "Use case"
+        },
+        "embeddedShare": "{count} · {share}",
+        "embeddedOf": "{embedded} / {total} đã embed",
+        "mobileFacts": "{listed} công khai · {waiting} đang chờ",
+        "heldBackCount": "{count} lỗi",
+        "note": "Giải pháp và hồ sơ nhân lực đã ẩn vẫn nằm trong chỉ mục để operator ghép với use case, nhưng không bao giờ hiện trong kết quả công khai."
+      },
+      "heldBack": {
+        "heading": "Chưa embed được",
+        "lead": "Vẫn tìm được theo từ khoá cho tới khi embed xong. Hệ thống tự thử lại, mỗi lần chờ lâu hơn.",
+        "retryAll": "Thử lại tất cả",
+        "retry": "Thử lại",
+        "retryOne": "Thử lại {title}",
+        "item": "Mục",
+        "reason": "Lý do",
+        "attempts": "Số lần thử",
+        "next": "Thử lại lúc",
+        "actions": "Thao tác",
+        "soon": "ở lượt chạy tới",
+        "mobileNext": "{count} lần thử · lần tới {next}",
+        "reasons": {
+          "bad_request": "Nhà cung cấp từ chối văn bản (400 Bad request).",
+          "unprocessable": "Nhà cung cấp từ chối văn bản (422 Unprocessable).",
+          "refused": "Nhà cung cấp từ chối văn bản."
+        }
+      },
+      "repair": {
+        "last": "Chỉ mục được dựng lại từ nguồn mỗi lần khởi động và mỗi đêm lúc 03:30. Lần gần nhất {when}: đọc {saved} mục, xoá {removed}.",
+        "never": "Chỉ mục được dựng lại từ nguồn mỗi lần khởi động và mỗi đêm lúc 03:30."
+      },
+      "done": {
+        "on": "Đã bật semantic search",
+        "off": "Đã tắt semantic search",
+        "rebuilt": "Đã dựng lại chỉ mục: đọc {saved} mục, xoá {removed}",
+        "retried": "{count, plural, =0 {Không có mục nào cần thử lại} other {# mục sẽ được thử lại ở lượt chạy tới}}"
+      }
+    },
+    "email": {
+      "metaTitle": "Email",
+      "title": "Email",
+      "lead": "BeyondPilot gửi gì, nội dung ra sao, và mail đã tới chưa.",
+      "notReady": {
+        "title": "Chưa gửi được email nào",
+        "description": "Chọn nhà cung cấp và người gửi trong Cài đặt. Trước đó, email chờ trong Hoạt động và hết hạn sau một ngày.",
+        "action": "Mở Cài đặt"
+      },
+      "tabs": {
+        "label": "Email",
+        "templates": "Mẫu",
+        "activity": "Hoạt động",
+        "suppressions": "Địa chỉ bị chặn",
+        "settings": "Cài đặt"
+      },
+      "groups": {
+        "sign_in": "Đăng nhập",
+        "organizations": "Tổ chức",
+        "applications": "Chương trình và đơn",
+        "introductions": "Giới thiệu",
+        "use_cases": "Use case",
+        "talent": "Nhân lực"
+      },
+      "kinds": {
+        "sign_in_code": {
+          "name": "Mã đăng nhập",
+          "description": "Mã sáu chữ số người dùng nhập để đăng nhập."
+        },
+        "organization_invitation": {
+          "name": "Lời mời vào tổ chức",
+          "description": "Mời một người tham gia hoặc làm chủ sở hữu tổ chức."
+        },
+        "organization_approved": {
+          "name": "Tổ chức được duyệt",
+          "description": "Báo chủ sở hữu rằng tổ chức đã được hiển thị."
+        },
+        "organization_refused": {
+          "name": "Tổ chức chưa được duyệt",
+          "description": "Báo chủ sở hữu cần sửa gì trước khi được hiển thị."
+        },
+        "organization_request_approved": {
+          "name": "Yêu cầu tham gia được chấp nhận",
+          "description": "Báo một người rằng yêu cầu nhận quyền hoặc tham gia đã được chấp nhận."
+        },
+        "organization_request_declined": {
+          "name": "Yêu cầu tham gia bị từ chối",
+          "description": "Báo một người rằng yêu cầu nhận quyền hoặc tham gia bị từ chối."
+        },
+        "organization_taken_down": {
+          "name": "Tổ chức bị gỡ",
+          "description": "Báo chủ sở hữu rằng GenAI Fund đã gỡ tổ chức."
+        },
+        "organization_restored": {
+          "name": "Tổ chức được khôi phục",
+          "description": "Báo chủ sở hữu rằng tổ chức đã hiển thị lại."
+        },
+        "application_received": {
+          "name": "Đã nhận đơn",
+          "description": "Xác nhận đơn vào một chương trình đã được nộp."
+        },
+        "reviewer_invitation": {
+          "name": "Lời mời chấm đơn",
+          "description": "Mời một người chấm các đơn của một chương trình."
+        },
+        "application_outcome": {
+          "name": "Kết quả đơn",
+          "description": "Kết quả của đơn, do operator viết cho mỗi lần công bố."
+        },
+        "introduction_request": {
+          "name": "Yêu cầu giới thiệu",
+          "description": "Báo bên cung cấp giải pháp rằng có người muốn gặp."
+        },
+        "introduction_made": {
+          "name": "Đã giới thiệu",
+          "description": "Giới thiệu hai bên với nhau qua email."
+        },
+        "introduction_declined": {
+          "name": "Từ chối giới thiệu",
+          "description": "Báo người yêu cầu rằng bên cung cấp đã từ chối."
+        },
+        "use_case_approved": {
+          "name": "Use case được đăng",
+          "description": "Báo các thành viên của tổ chức rằng use case đã được duyệt và đăng."
+        },
+        "use_case_sent_back": {
+          "name": "Use case bị trả lại",
+          "description": "Báo các thành viên của tổ chức cần sửa gì trước khi use case được đăng."
+        },
+        "talent_approved": {
+          "name": "Hồ sơ nhân lực được duyệt",
+          "description": "Báo một người rằng hồ sơ đã vào danh mục."
+        },
+        "talent_changes_requested": {
+          "name": "Đề nghị sửa hồ sơ nhân lực",
+          "description": "Báo một người cần sửa gì trước khi hồ sơ được hiển thị."
+        },
+        "talent_removed": {
+          "name": "Hồ sơ nhân lực bị gỡ",
+          "description": "Báo một người rằng hồ sơ đã rời danh mục."
+        },
+        "talent_enquiry": {
+          "name": "Lời nhắn tới nhân lực",
+          "description": "Báo một người rằng có ai đó viết cho họ qua hồ sơ."
+        },
+        "talent_enquiry_reminder": {
+          "name": "Nhắc lời nhắn",
+          "description": "Nhắc một người rằng có lời nhắn đang chờ trả lời."
+        },
+        "talent_introduction": {
+          "name": "Giới thiệu nhân lực",
+          "description": "Chia sẻ địa chỉ hai bên khi lời nhắn được chấp nhận."
+        },
+        "talent_enquiry_declined": {
+          "name": "Lời nhắn bị từ chối",
+          "description": "Báo người gửi rằng người nhận không tiếp tục."
+        },
+        "talent_enquiry_closed": {
+          "name": "Lời nhắn đã đóng",
+          "description": "Báo người gửi rằng lời nhắn đã đóng vì không có trả lời."
+        }
+      },
+      "status": {
+        "queued": "Đang chờ",
+        "sent": "Đã gửi",
+        "delivered": "Đã tới",
+        "bounced": "Bị trả lại",
+        "complained": "Bị báo spam",
+        "failed": "Thất bại",
+        "skipped": "Không gửi"
+      },
+      "providers": {
+        "ses": {
+          "name": "Amazon SES"
+        },
+        "resend": {
+          "name": "Resend"
+        },
+        "smtp": {
+          "name": "SMTP"
+        }
+      },
+      "preview": {
+        "title": "Xem trước",
+        "width": "Khổ",
+        "desktop": "Máy tính",
+        "phone": "Điện thoại",
+        "subject": "Tiêu đề:"
+      },
+      "test": {
+        "notConfigured": "Cài đặt chưa đủ nên email thử chưa được gửi.",
+        "authentication": "Nhà cung cấp từ chối thông tin đăng nhập. Kiểm tra key hoặc tài khoản.",
+        "throttled": "Nhà cung cấp đang giới hạn gửi. Thử lại sau một phút.",
+        "unavailable": "Không kết nối được nhà cung cấp. Thử lại sau một phút.",
+        "rejected": "Nhà cung cấp từ chối email. Kiểm tra domain người gửi đã được xác thực chưa.",
+        "invalidRecipient": "Nhà cung cấp không nhận địa chỉ của bạn làm người nhận."
+      },
+      "templates": {
+        "metaTitle": "Mẫu email",
+        "appearance": {
+          "title": "Giao diện",
+          "description": "Màu của liên kết, nút bấm và dòng ghi chú cuối mỗi email.",
+          "action": "Sửa giao diện"
+        },
+        "edited": "Đã sửa",
+        "editedBy": "{name} · {when}"
+      },
+      "editor": {
+        "required": "Bắt buộc",
+        "saved": "Đã lưu nội dung. Email mới dùng nội dung này từ giờ.",
+        "resetDone": "Đã khôi phục nội dung mặc định.",
+        "testSent": "Đã gửi email thử tới {email}.",
+        "errors": {
+          "changed": "Có người đã lưu email này trong lúc bạn sửa. Tải lại trang để xem nội dung của họ.",
+          "invalid": "Nội dung còn lỗi. Sửa các chỗ được đánh dấu dưới mỗi ô.",
+          "unknown": "Chưa lưu được nội dung. Thử lại."
+        },
+        "problems": {
+          "unknownVariable": "{variable} không phải biến của email này.",
+          "missingVariable": "Phải có {variable}: email tồn tại vì nó.",
+          "subjectLine": "Tiêu đề phải nằm trên một dòng và không được trống.",
+          "syntax": "Có thẻ chưa đóng hoặc không được phép. Dùng '{{tên}}', '{{#tên}}…{{/tên}}' hoặc '{{^tên}}…{{/tên}}'."
+        },
+        "unsaved": "Có thay đổi chưa lưu",
+        "discard": "Bỏ thay đổi",
+        "save": "Lưu",
+        "edited": "Đã sửa",
+        "lastEdited": "{name} sửa lần cuối, {when}.",
+        "viewAudit": "Nhật ký",
+        "reset": "Khôi phục mặc định",
+        "test": "Gửi thử cho tôi",
+        "subject": "Tiêu đề",
+        "body": "Nội dung",
+        "bodyHint": "Markdown: # tiêu đề, **đậm**, [liên kết](https://…). Gõ '{{' để chèn biến.",
+        "variables": "Biến",
+        "variablesHint": "Bấm vào một biến để chèn vào chỗ con trỏ. Biến có dấu * phải xuất hiện.",
+        "previewTitle": "Xem trước {name}",
+        "leave": {
+          "title": "Rời trang mà không lưu?",
+          "lead": "Những thay đổi trên trang này chưa được lưu và sẽ mất.",
+          "leave": "Rời trang",
+          "stay": "Ở lại"
+        },
+        "resetConfirm": {
+          "title": "Khôi phục nội dung mặc định?",
+          "lead": "{name} quay về nội dung có sẵn của BeyondPilot.",
+          "note": "Nội dung của bạn sẽ bị xóa. Email mới dùng nội dung mặc định từ giờ; email đã gửi giữ nguyên.",
+          "confirm": "Khôi phục mặc định",
+          "cancel": "Hủy"
+        },
+        "back": "Mẫu"
+      },
+      "appearance": {
+        "metaTitle": "Giao diện email",
+        "back": "Mẫu",
+        "title": "Giao diện",
+        "lead": "Những gì mọi email dùng chung. Phần xem trước là một email mẫu theo màu và chân email bạn đang sửa.",
+        "color": "Màu nhấn",
+        "colorPicker": "Chọn màu",
+        "colorHint": "Liên kết và nút bấm. Chọn màu đậm: chữ trắng nằm trên nó.",
+        "colorInvalid": "Viết màu theo dạng # và sáu chữ số hệ 16.",
+        "footer": "Ghi chú cuối email",
+        "footerHint": "Nằm dưới dải GenAI Fund của mọi email.",
+        "save": "Lưu giao diện",
+        "saved": "Đã lưu giao diện. Phần xem trước đã cập nhật.",
+        "changed": "Có người vừa đổi cài đặt email. Tải lại trang rồi lưu lại.",
+        "unknown": "Chưa lưu được giao diện. Thử lại.",
+        "previewTitle": "Xem trước một email mẫu",
+        "leave": {
+          "title": "Rời trang mà không lưu?",
+          "lead": "Những thay đổi trên trang này chưa được lưu và sẽ mất.",
+          "leave": "Rời trang",
+          "stay": "Ở lại"
+        }
+      },
+      "activity": {
+        "metaTitle": "Hoạt động email",
+        "period": {
+          "day": "24 giờ qua",
+          "week": "7 ngày qua",
+          "month": "30 ngày qua",
+          "all": "Toàn bộ"
+        },
+        "filters": {
+          "period": {
+            "label": "Khoảng thời gian"
+          },
+          "kind": {
+            "label": "Loại email",
+            "all": "Mọi email"
+          },
+          "status": {
+            "label": "Trạng thái",
+            "all": "Mọi trạng thái"
+          }
+        },
+        "search": "Tìm theo địa chỉ hoặc tiêu đề",
+        "counts": {
+          "total": "{period, select, day {Email, 24 giờ} week {Email, 7 ngày} month {Email, 30 ngày} other {Email}}",
+          "delivered": "Đã tới",
+          "sent": "Đã gửi",
+          "bounced": "Bị trả lại",
+          "complained": "Bị báo spam",
+          "notSent": "Không gửi được"
+        },
+        "columns": {
+          "time": "Thời gian",
+          "recipient": "Người nhận",
+          "email": "Email",
+          "status": "Trạng thái"
+        },
+        "noMatch": {
+          "title": "Không có email phù hợp",
+          "description": "Đổi từ khóa hoặc bộ lọc.",
+          "clear": "Xóa bộ lọc"
+        },
+        "empty": {
+          "title": "Không có email trong khoảng này",
+          "description": "Email hiện ở đây khi BeyondPilot gửi đi."
+        },
+        "pagination": {
+          "label": "Các trang email",
+          "previous": "Mới hơn",
+          "next": "Cũ hơn",
+          "goToPrevious": "Xem email mới hơn",
+          "goToNext": "Xem email cũ hơn"
+        }
+      },
+      "message": {
+        "metaTitle": "Email",
+        "back": "Hoạt động",
+        "lead": "{kind} gửi tới {recipient}",
+        "suppressed": {
+          "title": "Địa chỉ này không nhận email",
+          "bounce": "Mail tới địa chỉ này bị trả lại nên BeyondPilot đã ngừng gửi.",
+          "complaint": "Người nhận đã báo spam một email nên BeyondPilot đã ngừng gửi.",
+          "manual": "Một operator đã chặn gửi tới địa chỉ này.",
+          "manage": "Quản lý địa chỉ bị chặn"
+        },
+        "lastError": "Vì sao chưa gửi được",
+        "failures": {
+          "not_configured": "Email chưa được cài đặt khi tới lượt gửi.",
+          "authentication": "Nhà cung cấp từ chối thông tin đăng nhập.",
+          "throttled": "Nhà cung cấp đang giới hạn gửi; email được thử lại sau.",
+          "unavailable": "Không kết nối được nhà cung cấp.",
+          "rejected": "Nhà cung cấp từ chối email.",
+          "invalid_recipient": "Nhà cung cấp không nhận địa chỉ này.",
+          "suppressed": "Địa chỉ này không nhận email.",
+          "expired": "Không gửi được trong một ngày nên đã bỏ."
+        },
+        "facts": "Chi tiết",
+        "fields": {
+          "recipient": "Người nhận",
+          "kind": "Loại",
+          "created": "Tạo lúc",
+          "sent": "Gửi lúc",
+          "provider": "Nhà cung cấp",
+          "providerId": "Mã email ở nhà cung cấp",
+          "attempts": "Số lần thử"
+        },
+        "events": {
+          "title": "Diễn biến",
+          "none": "Nhà cung cấp chưa báo gì.",
+          "smtp": "SMTP không báo lại gì sau khi gửi.",
+          "types": {
+            "delivered": "Đã tới",
+            "bounced": "Bị trả lại",
+            "soft_bounced": "Tạm bị trả lại",
+            "complained": "Bị báo spam"
+          }
+        },
+        "previewTitle": "Email {subject}",
+        "resend": {
+          "action": "Gửi lại",
+          "title": "Gửi lại email này?",
+          "lead": "Cùng nội dung sẽ được gửi tới {email} như một email mới.",
+          "note": "Email mới hiện riêng trong Hoạt động.",
+          "confirm": "Gửi lại",
+          "cancel": "Hủy",
+          "done": "Đã gửi lại tới {email}.",
+          "errors": {
+            "notResendable": "Không gửi lại được email này.",
+            "suppressed": "Địa chỉ này không nhận email. Bỏ chặn trong Địa chỉ bị chặn trước.",
+            "notReady": "Email chưa được cài đặt. Hoàn tất Cài đặt trước.",
+            "unknown": "Chưa gửi lại được email. Thử lại."
+          }
+        }
+      },
+      "suppressions": {
+        "metaTitle": "Địa chỉ email bị chặn",
+        "search": "Tìm theo địa chỉ",
+        "clear": "Xóa",
+        "filters": {
+          "reason": {
+            "label": "Lý do",
+            "all": "Mọi lý do"
+          }
+        },
+        "reasons": {
+          "bounce": "Bị trả lại",
+          "complaint": "Bị báo spam",
+          "manual": "Operator thêm"
+        },
+        "columns": {
+          "address": "Địa chỉ",
+          "reason": "Lý do",
+          "origin": "Từ",
+          "since": "Từ ngày",
+          "actions": "Thao tác"
+        },
+        "theEmail": "Email",
+        "addedBy": "{name} thêm",
+        "count": "{count} địa chỉ",
+        "noMatch": {
+          "title": "Không có địa chỉ phù hợp",
+          "description": "Đổi từ khóa hoặc lý do.",
+          "clear": "Xóa bộ lọc"
+        },
+        "empty": {
+          "title": "Mọi địa chỉ đều nhận email",
+          "description": "Một địa chỉ hiện ở đây khi mail tới nó bị trả lại, bị báo spam, hoặc bạn chặn nó."
+        },
+        "add": {
+          "open": "Thêm địa chỉ",
+          "title": "Chặn gửi email tới một địa chỉ",
+          "lead": "BeyondPilot không gửi gì thêm tới địa chỉ này, kể cả mã đăng nhập, cho tới khi bạn bỏ chặn.",
+          "address": "Địa chỉ email",
+          "hint": "Ví dụ khi người nhận xin không nhận email nữa.",
+          "invalid": "Nhập một địa chỉ email.",
+          "exists": "Địa chỉ này đã bị chặn.",
+          "cancel": "Hủy",
+          "confirm": "Chặn",
+          "done": "{email} sẽ không nhận email nữa."
+        },
+        "remove": {
+          "open": "Bỏ chặn {email}",
+          "title": "Bỏ chặn địa chỉ này?",
+          "lead": "BeyondPilot sẽ gửi lại tới {email} từ giờ.",
+          "noteManual": "Các email đã bỏ sẽ không được gửi lại.",
+          "noteProvider": "Mail tới địa chỉ này từng bị trả lại hoặc bị báo spam. Nếu lặp lại, nhà cung cấp sẽ tính điểm xấu cho việc gửi của bạn.",
+          "confirm": "Bỏ chặn",
+          "cancel": "Hủy",
+          "done": "{email} đã nhận email trở lại."
+        },
+        "errors": {
+          "unknown": "Chưa thay đổi được. Thử lại."
+        }
+      },
+      "settings": {
+        "metaTitle": "Cài đặt email",
+        "copy": "Sao chép",
+        "secretKept": "Đã lưu. Để trống để giữ nguyên.",
+        "saved": "Đã lưu cài đặt.",
+        "testSent": "Đã gửi email thử tới {email}. Kiểm tra xem mail đã tới chưa.",
+        "errors": {
+          "address": "Nhập một địa chỉ email.",
+          "port": "Nhập số cổng.",
+          "changed": "Có người đã lưu cài đặt trong lúc bạn sửa. Tải lại trang rồi lưu lại.",
+          "incomplete": "Nhà cung cấp cần thêm thông tin: điền các ô bắt buộc.",
+          "encryption": "Máy chủ chưa có khóa mã hóa nên không lưu được thông tin bí mật. Báo người vận hành máy chủ.",
+          "unknown": "Chưa lưu được cài đặt. Thử lại."
+        },
+        "encryption": {
+          "title": "Máy chủ chưa lưu được thông tin bí mật",
+          "description": "Thiếu khóa mã hóa nên không lưu được key hay mật khẩu nào. Người vận hành máy chủ cần đặt BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY."
+        },
+        "notReady": {
+          "title": "Chưa gửi được email nào",
+          "description": "Điền người gửi và một nhà cung cấp, rồi gửi thử cho bạn trước khi lưu."
+        },
+        "sender": {
+          "title": "Người gửi",
+          "what": "Mọi email được gửi từ ai. Địa chỉ phải thuộc domain mà nhà cung cấp đã xác thực.",
+          "fromName": "Tên",
+          "fromAddress": "Địa chỉ",
+          "replyTo": "Trả lời tới",
+          "replyToHint": "Nơi nhận thư trả lời. Để trống thì trả lời về địa chỉ người gửi."
+        },
+        "provider": {
+          "title": "Nhà cung cấp",
+          "what": "Dịch vụ chuyển email đi. Mỗi lúc chỉ dùng một."
+        },
+        "ses": {
+          "region": "Region",
+          "accessKeyId": "Access key ID",
+          "secretAccessKey": "Secret access key",
+          "secretHint": "Của một IAM user có quyền ses:SendEmail. Đổi region hoặc key ID thì phải nhập lại."
+        },
+        "resend": {
+          "apiKey": "API key",
+          "apiKeyHint": "Một key có quyền gửi, lấy ở resend.com › API Keys."
+        },
+        "smtp": {
+          "host": "Máy chủ",
+          "port": "Cổng",
+          "security": "Bảo mật",
+          "securities": {
+            "starttls": "STARTTLS (cổng 587)",
+            "tls": "TLS (cổng 465)",
+            "none": "Không"
+          },
+          "username": "Tên đăng nhập",
+          "password": "Mật khẩu",
+          "passwordHint": "Đổi máy chủ, cổng hoặc tên đăng nhập thì phải nhập lại."
+        },
+        "reports": {
+          "title": "Báo cáo giao nhận",
+          "what": "Nhà cung cấp báo cho BeyondPilot từng email ra sao: đã tới, bị trả lại hay bị báo spam. Bị trả lại hoặc bị báo spam thì địa chỉ đó bị chặn.",
+          "smtp": "SMTP không báo gì sau khi gửi, nên Hoạt động chỉ hiện email là đã gửi, không bao giờ là đã tới.",
+          "endpoint": "Địa chỉ cho nhà cung cấp",
+          "resendEndpointHint": "Trong Resend › Webhooks, thêm địa chỉ này với các sự kiện email.delivered, email.bounced và email.complained.",
+          "resendSecret": "Signing secret",
+          "resendSecretHint": "Secret của webhook, bắt đầu bằng whsec_. Thiếu nó thì báo cáo bị từ chối.",
+          "configurationSet": "Configuration set",
+          "configurationSetHint": "Configuration set của SES gửi sự kiện tới SNS topic bên dưới.",
+          "sesEndpointHint": "Đăng ký địa chỉ này vào SNS topic qua HTTPS; BeyondPilot tự xác nhận đăng ký.",
+          "topicArn": "SNS topic ARN",
+          "topicArnHint": "Chỉ nhận báo cáo từ topic này."
+        },
+        "unsaved": "Có thay đổi chưa lưu.",
+        "lastSaved": "{name} lưu lần cuối, {when}.",
+        "neverSaved": "Chưa lưu lần nào.",
+        "test": "Gửi thử tới {email}",
+        "save": "Lưu cài đặt",
+        "leave": {
+          "title": "Rời trang mà không lưu?",
+          "lead": "Những thay đổi trên trang này chưa được lưu và sẽ mất.",
+          "leave": "Rời trang",
+          "stay": "Ở lại"
+        }
+      },
+      "checks": {
+        "title": "Thiết lập",
+        "done": "Xong {done}/{total}",
+        "lead": "Nhà cung cấp nói gì về việc gửi từ {domain}, kiểm lúc {when}.",
+        "leadChecking": "Đang hỏi nhà cung cấp email có gửi được không.",
+        "again": "Kiểm tra lại",
+        "checking": "Đang hỏi nhà cung cấp…",
+        "failed": "Không hỏi được nhà cung cấp. Thử lại sau một phút.",
+        "smtp": "Máy chủ SMTP không có API để hỏi. Hãy gửi thử cho bạn từ form bên dưới: mail tới là gửi được.",
+        "limits": {
+          "permission_missing": {
+            "ses": "IAM user này được gửi nhưng không được đọc tài khoản hay domain. Thêm ses:GetAccount và ses:GetEmailIdentity vào policy để xem phần kiểm tra.",
+            "resend": "API key này chỉ được gửi nên không đọc được domain. Email vẫn gửi được; kiểm domain ở resend.com › Domains."
+          },
+          "credentials_refused": {
+            "ses": "AWS từ chối access key. Kiểm ID, secret và user còn hoạt động không.",
+            "resend": "Resend từ chối API key. Tạo key mới ở resend.com › API Keys."
+          },
+          "unreachable": {
+            "ses": "Amazon SES không trả lời. Kiểm tra lại sau một phút.",
+            "resend": "Resend không trả lời. Kiểm tra lại sau một phút."
+          }
+        },
+        "steps": {
+          "credentials": {
+            "ok": "Nhà cung cấp nhận thông tin đăng nhập",
+            "pending": "Đang kiểm thông tin đăng nhập",
+            "failed": "Nhà cung cấp từ chối thông tin đăng nhập",
+            "unknown": "Không kiểm được thông tin đăng nhập",
+            "next": "Kiểm key hoặc tài khoản trong form bên dưới."
+          },
+          "domain_added": {
+            "ok": "Domain đã được thêm vào nhà cung cấp",
+            "pending": "Đang thêm domain",
+            "failed": "Domain chưa được thêm vào nhà cung cấp",
+            "unknown": "Không đọc được domain",
+            "next": "Thêm domain của người gửi trong trang quản trị của nhà cung cấp, rồi tạo các bản ghi bên dưới."
+          },
+          "domain_verified": {
+            "ok": "Domain đã được xác thực",
+            "pending": "Đang chờ DNS xác thực domain",
+            "failed": "Không xác thực được domain",
+            "unknown": "Chưa rõ trạng thái domain",
+            "next": "Tạo các bản ghi bên dưới; DNS có thể mất tới 72 giờ."
+          },
+          "dkim": {
+            "ok": "Email được ký DKIM",
+            "pending": "Đang chờ các bản ghi DKIM",
+            "failed": "Không thấy các bản ghi DKIM",
+            "unknown": "Không kiểm được DKIM",
+            "next": "Tạo các bản ghi DKIM bên dưới đúng như hiển thị."
+          },
+          "mail_from": {
+            "ok": "Thư trả lại về subdomain của bạn",
+            "pending": "Đang chờ các bản ghi MAIL FROM",
+            "failed": "Không thấy các bản ghi MAIL FROM",
+            "unknown": "Không kiểm được MAIL FROM",
+            "next": "Tạo bản ghi MX và TXT của subdomain MAIL FROM bên dưới."
+          },
+          "production_access": {
+            "ok": "Production access: gửi được tới mọi người",
+            "pending": "Sandbox: chỉ địa chỉ đã xác thực nhận được email",
+            "failed": "AWS từ chối production access",
+            "unknown": "Không kiểm được production access",
+            "next": "Xin production access trong SES console › Account dashboard."
+          },
+          "sending_enabled": {
+            "ok": "Tài khoản được phép gửi",
+            "pending": "Đang bật gửi",
+            "failed": "AWS đã tạm dừng gửi của tài khoản",
+            "unknown": "Không kiểm được trạng thái gửi",
+            "next": "Xem lý do trong SES console › Account dashboard; tỉ lệ trả lại hoặc báo spam quá cao."
+          }
+        },
+        "records": {
+          "title": "Bản ghi DNS cho {domain}",
+          "status": "Trạng thái",
+          "type": "Loại",
+          "host": "Host",
+          "value": "Giá trị",
+          "copy": "Sao chép {what}",
+          "dmarc": "Nên có. Gmail và Yahoo yêu cầu DMARC với ai gửi số lượng lớn; nhà cung cấp không kiểm bản ghi này.",
+          "states": {
+            "ok": "Đã thấy",
+            "pending": "Đang chờ",
+            "failed": "Không thấy",
+            "unknown": "Không kiểm"
+          }
+        }
       }
     }
   },

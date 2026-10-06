@@ -149,6 +149,28 @@
   }
 }
 
+/*
+ * Icons beside a label in a menu or the sidebar sit back: a lighter stroke in the muted colour, so the label reads
+ * first. The sidebar's current destination keeps its icon in the text colour. A colour set on an icon itself, such as
+ * a destructive item's, wins over this.
+ */
+@layer base {
+  :where(
+      [data-slot="dropdown-menu-item"],
+      [data-slot="dropdown-menu-sub-trigger"],
+      [data-slot="dropdown-menu-checkbox-item"],
+      [data-slot="dropdown-menu-radio-item"],
+      [data-slot="sidebar-menu-button"]
+    )
+    > svg.lucide {
+    stroke-width: 1.75;
+    color: var(--muted-foreground);
+  }
+  :where([data-slot="sidebar-menu-button"][data-active]) > svg.lucide {
+    color: inherit;
+  }
+}
+
 /* A thin scrollbar in the brand colour for the lists of a menu, so every list that scrolls looks alike. */
 @utility scrollbar-brand {
   scrollbar-width: thin;
