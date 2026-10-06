@@ -11,6 +11,7 @@ import org.jspecify.annotations.Nullable;
  */
 public record IndexedSolution(UUID id, String slug, String name, UUID organizationId, String organizationName,
 		String organizationSlug, @Nullable String country, @Nullable String summary, @Nullable String problemsSolved,
-		@Nullable String valueProposition, List<String> focusAreas, List<String> industries,
-		@Nullable String maturity, List<String> deployment, boolean listed) {
+		@Nullable String valueProposition, @Nullable String traction, @Nullable String bestCustomerProfile,
+		List<String> builtWith, List<String> focusAreas, List<String> industries, @Nullable String maturity,
+		List<String> deployment, boolean listed) {
 }
