@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.search.persistence;
 
 import java.sql.Types;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,6 +118,20 @@ public class SearchDocumentRepository {
 	/** Takes the item out of the index; nothing happens when it is not there. */
 	public void remove(String kind, UUID itemId) {
 		jdbc.sql("delete from search_document where kind = ? and item_id = ?").params(kind, itemId).update();
+	}
+
+	/**
+	 * Takes out every item of the kind but these, which the owning module still publishes.
+	 * @return how many were taken out
+	 */
+	public int removeAllExcept(String kind, Collection<UUID> kept) {
+		if (kept.isEmpty()) {
+			return jdbc.sql("delete from search_document where kind = ?").param(kind).update();
+		}
+		return jdbc.sql("delete from search_document where kind = :kind and item_id not in (:kept)")
+			.param("kind", kind)
+			.param("kept", kept)
+			.update();
 	}
 
 	/**

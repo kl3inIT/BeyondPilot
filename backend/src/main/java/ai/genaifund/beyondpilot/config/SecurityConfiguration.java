@@ -66,6 +66,9 @@ class SecurityConfiguration {
 						"/api/solution/deployments",
 						"/api/talent/profiles", "/api/talent/profiles/*", "/api/organization/organizations/*")
 				.permitAll()
+				// Search returns only what the public site shows.
+				.requestMatchers(HttpMethod.GET, "/api/search")
+				.permitAll()
 				// The audit module cannot ask who is an operator (ADR 0004), so the chain asks for it.
 				.requestMatchers("/api/audit/**")
 				.access(operators)
