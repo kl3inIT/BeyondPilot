@@ -95,6 +95,15 @@ public class OrganizationDirectory {
 				organization.getDescription());
 	}
 
+	/**
+	 * The organizations whose name contains the text, ignoring case and whatever their review says, for a module that
+	 * searches its own records by who they belong to.
+	 */
+	@Transactional(readOnly = true)
+	public List<UUID> named(String text) {
+		return organizationList.idsNamed(text);
+	}
+
 	/** The names of these organizations by identifier; an unknown one is left out. */
 	@Transactional(readOnly = true)
 	public Map<UUID, OrganizationName> names(Collection<UUID> organizationIds) {

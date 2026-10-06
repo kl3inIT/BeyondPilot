@@ -97,7 +97,7 @@ public class SolutionService {
 		}
 		Solution solution = solutions.saveAndFlush(new Solution(UUID.randomUUID(), membership.organizationId(), slug,
 				request.name().strip(), actor.accountId()));
-		return SolutionViews.solution(solution, membership.organizationName(), List.of());
+		return SolutionViews.solution(solution, membership.organizationName(), null, List.of());
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class SolutionService {
 		if (!solution.isComplete()) {
 			throw incomplete(id);
 		}
-		solution.submit(Instant.now());
+		solution.submit(Instant.now(), actor.accountId());
 		// The response carries the version the next save must send.
 		solutions.flush();
 		LOG.atInfo()
@@ -234,6 +234,7 @@ public class SolutionService {
 
 	private SolutionResponse view(Solution solution, Membership membership) {
 		return SolutionViews.solution(solution, membership.organizationName(),
+				SolutionViews.sender(solution, identity),
 				deployments.findBySolutionIdOrderByCreatedAtDesc(solution.getId()));
 	}
 
