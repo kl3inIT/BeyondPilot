@@ -1,35 +1,34 @@
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { PublicTalentSummary } from "@/lib/api/generated";
-import { initials } from "@/lib/initials";
 import { siteRoutes } from "@/lib/site";
 
+import { TalentPhoto } from "./talent-photo";
 import { TalentSkills } from "./talent-skills";
 
 /**
  * One person in the directory. The whole card leads to the profile through the name's link; the
- * count of further skills sits above it and opens the full list. The profile has no photo, so the
- * photo's place holds the person's initials.
+ * count of further skills sits above it and opens the full list. A person without a photo is shown
+ * by their initials.
  */
 function TalentCard({ person }: { person: PublicTalentSummary }) {
   const role = useVocabulary("talentRole");
   const countryName = useCountryName();
   const kind = [
     person.roles.length > 0 && role(person.roles[0]),
-    person.country && countryName(person.country),
+    person.city ?? (person.country && countryName(person.country)),
   ]
     .filter(Boolean)
     .join(" · ");
 
   return (
     <article className="relative flex flex-1 gap-4 rounded-2xl border bg-card p-5 transition-colors hover:border-ring has-[a:focus-visible]:border-ring has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring/50">
-      {/* No photo is held yet, so the mark is the person's initials, sized as a mark and not as the photo the frame draws. */}
-      <div
-        aria-hidden="true"
-        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-primary md:size-14 md:text-base"
-      >
-        {initials(person.name, person.name)}
-      </div>
+      <TalentPhoto
+        name={person.name}
+        photoFileId={person.photoFileId}
+        size={56}
+        className="size-11 text-sm md:size-14 md:text-base"
+      />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex flex-col gap-0.5">
           <h2 className="truncate font-medium">

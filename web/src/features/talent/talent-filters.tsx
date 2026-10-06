@@ -24,9 +24,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useVocabulary } from "@/i18n/vocabulary";
+import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
 
-import { availabilities, talentRoles } from "./talent-codes";
+import { availabilities, engagements, talentRoles } from "./talent-codes";
 import { talentSearch } from "./talent-search";
 
 type Facet = {
@@ -47,6 +47,8 @@ function useFacets(): Facet[] {
   const t = useTranslations("Talent.filters");
   const role = useVocabulary("talentRole");
   const availability = useVocabulary("availability");
+  const engagement = useVocabulary("engagement");
+  const countryName = useCountryName();
   const [search, setSearch] = useQueryStates(talentSearch, { shallow: false });
 
   return [
@@ -70,6 +72,27 @@ function useFacets(): Facet[] {
           availability: availabilities.find((code) => code === value) ?? null,
           page: null,
         }),
+    },
+    {
+      key: "engagement",
+      label: t("engagement.label"),
+      all: t("engagement.all"),
+      value: search.engagement,
+      options: engagements.map((value) => ({ value, label: engagement(value) })),
+      choose: (value) =>
+        setSearch({
+          engagement: engagements.find((code) => code === value) ?? null,
+          page: null,
+        }),
+    },
+    {
+      key: "country",
+      label: t("country.label"),
+      all: t("country.all"),
+      value: search.country,
+      options: countryCodes.map((value) => ({ value, label: countryName(value) })),
+      choose: (value) =>
+        setSearch({ country: countryCodes.find((code) => code === value) ?? null, page: null }),
     },
   ];
 }

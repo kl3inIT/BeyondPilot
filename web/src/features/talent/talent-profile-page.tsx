@@ -14,10 +14,10 @@ import {
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { PublicTalent, TalentProject } from "@/lib/api/generated";
-import { initials } from "@/lib/initials";
 import { siteRoutes } from "@/lib/site";
 
 import { TalentContact } from "./talent-contact";
+import { TalentPhoto } from "./talent-photo";
 
 type TalentProfilePageProps = {
   profile: PublicTalent;
@@ -39,7 +39,8 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
   const role = useVocabulary("talentRole");
   const availability = useVocabulary("availability");
   const engagement = useVocabulary("engagement");
-  const rateBand = useVocabulary("rateBand");
+  const language = useVocabulary("language");
+  const industry = useVocabulary("industry");
   const countryName = useCountryName();
   const roles = profile.roles.map(role).join(", ");
 
@@ -58,12 +59,13 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
       </Breadcrumb>
 
       <div className="flex items-start gap-3.5 md:items-center md:gap-5">
-        <div
-          aria-hidden="true"
-          className="flex size-14 shrink-0 items-center justify-center rounded-full border bg-muted text-lg md:size-18 md:text-2xl"
-        >
-          {initials(profile.name, profile.name)}
-        </div>
+        <TalentPhoto
+          name={profile.name}
+          photoFileId={profile.photoFileId}
+          size={96}
+          alt={t("photoAlt", { name: profile.name })}
+          className="size-14 text-lg md:size-24 md:text-2xl"
+        />
         <div className="flex min-w-0 flex-col gap-1.5">
           <h1 className="text-3xl font-semibold tracking-title text-balance md:text-4xl md:tracking-normal xl:text-5xl xl:leading-none xl:tracking-title">
             {profile.name}
@@ -120,7 +122,8 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
                   key: t("fit.engagement"),
                   value: profile.engagement.map(engagement).join(", "),
                 },
-                { key: t("fit.rate"), value: profile.rateBand && rateBand(profile.rateBand) },
+                { key: t("fit.languages"), value: profile.languages.map(language).join(", ") },
+                { key: t("fit.industries"), value: profile.industries.map(industry).join(", ") },
               ].map((fact) => (
                 <div key={fact.key} className="flex flex-col gap-0.5 rounded-xl bg-muted p-4">
                   <dt className="text-xs text-muted-foreground">{fact.key}</dt>
@@ -147,8 +150,18 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
           >
             <dl className="flex flex-col gap-2.5">
               <ContactFact name={t("facts.country")}>
-                {profile.country ? countryName(profile.country) : t("notListed")}
+                {[profile.city, profile.country && countryName(profile.country)]
+                  .filter(Boolean)
+                  .join(", ") || t("notListed")}
               </ContactFact>
+              {profile.worksAt && (
+                <ContactFact name={t("facts.worksAt")}>
+                  {profile.worksAt}{" "}
+                  <span className="font-normal text-muted-foreground">
+                    ({t("facts.worksAtStated")})
+                  </span>
+                </ContactFact>
+              )}
               <ContactFact name={t("facts.role")}>{roles || t("notListed")}</ContactFact>
               {profile.website && (
                 <ContactFact name={t("facts.website")}>
@@ -173,15 +186,19 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
 }
 
 /**
- * One project as the person stated it. Nobody else has confirmed it, and the badge says so; the
- * frame's stage and confirmation lines have no data behind them.
+ * One project as the person stated it, with how far it went. Nobody else has confirmed it, and the
+ * badge says so.
  */
 function ProjectItem({ project }: { project: TalentProject }) {
   const t = useTranslations("Talent.profile.projects");
+  const stage = useVocabulary("projectStage");
 
   return (
     <li className="flex flex-col items-start gap-2 rounded-xl border bg-background p-4">
-      <Badge variant="outline">{t("stated")}</Badge>
+      <div className="flex flex-wrap gap-2">
+        {project.stage && <Badge variant="outline">{stage(project.stage)}</Badge>}
+        <Badge variant="outline">{t("stated")}</Badge>
+      </div>
       <h3 className="text-sm">{project.title}</h3>
       {project.summary && (
         <p className="text-sm whitespace-pre-line text-muted-foreground">{project.summary}</p>

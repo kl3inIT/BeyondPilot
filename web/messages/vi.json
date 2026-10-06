@@ -1251,6 +1251,26 @@
       "approved": "Đã duyệt",
       "changes_requested": "Cần sửa",
       "removed": "Đã gỡ"
+    },
+    "language": {
+      "vi": "Tiếng Việt",
+      "en": "Tiếng Anh",
+      "ja": "Tiếng Nhật",
+      "ko": "Tiếng Hàn",
+      "zh": "Tiếng Trung",
+      "th": "Tiếng Thái",
+      "id": "Tiếng Indonesia",
+      "ms": "Tiếng Mã Lai",
+      "hi": "Tiếng Hindi",
+      "fr": "Tiếng Pháp",
+      "de": "Tiếng Đức",
+      "es": "Tiếng Tây Ban Nha"
+    },
+    "projectStage": {
+      "prototype": "Bản mẫu",
+      "pilot": "Thí điểm",
+      "in_production": "Đang vận hành",
+      "internal_tool": "Công cụ nội bộ"
     }
   },
   "Organization": {
@@ -1990,7 +2010,15 @@
         "label": "Trạng thái",
         "all": "Mọi trạng thái"
       },
-      "clear": "Xóa bộ lọc"
+      "clear": "Xóa bộ lọc",
+      "country": {
+        "label": "Quốc gia",
+        "all": "Mọi quốc gia"
+      },
+      "engagement": {
+        "label": "Nhận làm",
+        "all": "Mọi hình thức"
+      }
     },
     "view": {
       "roles": "Vai trò",
@@ -2000,7 +2028,9 @@
       "projects": "Dự án tiêu biểu",
       "openProject": "Xem dự án",
       "website": "Portfolio hoặc LinkedIn",
-      "nothingYet": "Chưa có nội dung."
+      "nothingYet": "Chưa có nội dung.",
+      "languages": "Ngôn ngữ",
+      "industries": "Ngành"
     },
     "profile": {
       "trail": "Bạn đang ở đây",
@@ -2017,15 +2047,22 @@
         "skills": "Kỹ năng",
         "availability": "Tình trạng",
         "engagement": "Hình thức làm việc",
-        "rate": "Mức phí"
+        "languages": "Ngôn ngữ",
+        "industries": "Ngành"
       },
       "facts": {
         "country": "Nơi làm việc",
         "role": "Vai trò",
-        "website": "Portfolio hoặc LinkedIn"
+        "website": "Portfolio hoặc LinkedIn",
+        "city": "Thành phố",
+        "worksAt": "Nơi làm việc",
+        "worksAtStated": "do người đó tự ghi",
+        "languages": "Ngôn ngữ",
+        "industries": "Ngành"
       },
       "notListed": "Chưa nêu",
-      "note": "Lời nhắn đi qua BeyondPilot. {name} thấy tên và tổ chức của bạn; hai bên chỉ thấy email của nhau nếu họ chấp nhận."
+      "note": "Lời nhắn đi qua BeyondPilot. {name} thấy tên và tổ chức của bạn; hai bên chỉ thấy email của nhau nếu họ chấp nhận.",
+      "photoAlt": "Ảnh của {name}"
     },
     "enquiry": {
       "title": "Làm việc với {name}",
@@ -2152,7 +2189,9 @@
         "summary": "Bạn đã làm gì",
         "url": "Liên kết",
         "remove": "Xóa dự án {number}",
-        "add": "Thêm dự án"
+        "add": "Thêm dự án",
+        "stage": "Giai đoạn",
+        "stageNone": "Không ghi"
       },
       "listed": "Hiển thị trong danh mục",
       "listedHint": "Có hiệu lực khi hồ sơ được duyệt.",
@@ -2188,7 +2227,26 @@
         "cancel": "Sửa tiếp"
       },
       "requiredMark": "· bắt buộc",
-      "headlineHint": "Một dòng về việc bạn làm. Ví dụ: Kỹ sư ML xây AI xử lý tài liệu cho ngân hàng."
+      "headlineHint": "Một dòng về việc bạn làm. Ví dụ: Kỹ sư ML xây AI xử lý tài liệu cho ngân hàng.",
+      "photo": {
+        "label": "Ảnh đại diện",
+        "hint": "Ảnh rõ mặt. PNG, JPEG hoặc WebP, tối đa 2 MB.",
+        "choose": "Tải ảnh lên",
+        "change": "Đổi ảnh",
+        "remove": "Bỏ ảnh",
+        "uploading": "Đang tải lên…",
+        "alt": "Ảnh của bạn",
+        "errors": {
+          "type": "Hãy dùng ảnh PNG, JPEG hoặc WebP.",
+          "size": "Hãy dùng ảnh không quá 2 MB.",
+          "failed": "Chưa tải được ảnh lên. Hãy thử lại."
+        }
+      },
+      "city": "Thành phố",
+      "worksAt": "Nơi bạn làm việc",
+      "worksAtHint": "Hiển thị đúng như bạn ghi. Để trống nếu bạn làm độc lập.",
+      "languages": "Ngôn ngữ làm việc",
+      "industries": "Ngành bạn đã làm"
     }
   },
   "Form": {

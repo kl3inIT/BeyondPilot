@@ -1251,6 +1251,26 @@
       "approved": "Approved",
       "changes_requested": "Changes requested",
       "removed": "Removed"
+    },
+    "language": {
+      "vi": "Vietnamese",
+      "en": "English",
+      "ja": "Japanese",
+      "ko": "Korean",
+      "zh": "Chinese",
+      "th": "Thai",
+      "id": "Indonesian",
+      "ms": "Malay",
+      "hi": "Hindi",
+      "fr": "French",
+      "de": "German",
+      "es": "Spanish"
+    },
+    "projectStage": {
+      "prototype": "Prototype",
+      "pilot": "Pilot",
+      "in_production": "In production",
+      "internal_tool": "Internal tool"
     }
   },
   "Organization": {
@@ -1990,7 +2010,15 @@
         "label": "Status",
         "all": "All statuses"
       },
-      "clear": "Clear filters"
+      "clear": "Clear filters",
+      "country": {
+        "label": "Country",
+        "all": "All countries"
+      },
+      "engagement": {
+        "label": "Open to",
+        "all": "Open to anything"
+      }
     },
     "view": {
       "roles": "Roles",
@@ -2000,7 +2028,9 @@
       "projects": "Selected work",
       "openProject": "See the work",
       "website": "Portfolio or LinkedIn",
-      "nothingYet": "Nothing written yet."
+      "nothingYet": "Nothing written yet.",
+      "languages": "Languages",
+      "industries": "Industries"
     },
     "profile": {
       "trail": "You are here",
@@ -2017,15 +2047,22 @@
         "skills": "Skills",
         "availability": "Availability",
         "engagement": "Open to",
-        "rate": "Rate"
+        "languages": "Languages",
+        "industries": "Industries"
       },
       "facts": {
         "country": "Based in",
         "role": "Role",
-        "website": "Portfolio or LinkedIn"
+        "website": "Portfolio or LinkedIn",
+        "city": "City",
+        "worksAt": "Works at",
+        "worksAtStated": "as stated by the person",
+        "languages": "Languages",
+        "industries": "Industries"
       },
       "notListed": "Not listed yet",
-      "note": "Messages go through BeyondPilot. {name} reads your name and organization; neither email address is shared unless they accept."
+      "note": "Messages go through BeyondPilot. {name} reads your name and organization; neither email address is shared unless they accept.",
+      "photoAlt": "Photo of {name}"
     },
     "enquiry": {
       "title": "Work with {name}",
@@ -2152,7 +2189,9 @@
         "summary": "What you did",
         "url": "Link",
         "remove": "Remove project {number}",
-        "add": "Add a project"
+        "add": "Add a project",
+        "stage": "Stage",
+        "stageNone": "Not stated"
       },
       "listed": "Show in the directory",
       "listedHint": "Takes effect once the profile is approved.",
@@ -2188,7 +2227,26 @@
         "cancel": "Keep editing"
       },
       "requiredMark": "· required",
-      "headlineHint": "One line on what you do. For example: ML engineer building document AI for banks."
+      "headlineHint": "One line on what you do. For example: ML engineer building document AI for banks.",
+      "photo": {
+        "label": "Photo",
+        "hint": "A clear photo of your face. PNG, JPEG or WebP, up to 2 MB.",
+        "choose": "Upload a photo",
+        "change": "Change photo",
+        "remove": "Remove photo",
+        "uploading": "Uploading…",
+        "alt": "Your photo",
+        "errors": {
+          "type": "Use a PNG, JPEG or WebP image.",
+          "size": "Use an image of 2 MB or less.",
+          "failed": "The photo did not upload. Try again."
+        }
+      },
+      "city": "City",
+      "worksAt": "Where you work",
+      "worksAtHint": "Shown as you state it. Leave empty if you work on your own.",
+      "languages": "Languages you work in",
+      "industries": "Industries you have worked in"
     }
   },
   "Form": {

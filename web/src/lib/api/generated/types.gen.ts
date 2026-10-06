@@ -1108,23 +1108,29 @@ export type PublicSolutionSummary = {
 };
 
 /**
- * An approved, listed talent profile as anyone reads it. It carries no address of the person.
+ * An approved, listed talent profile as anyone reads it. It carries no address of the person, and no rate.
  */
 export type PublicTalent = {
     availability?: 'available' | 'open_to_offers' | 'not_available';
     bio?: string | null;
+    city?: string | null;
     /**
      * ISO 3166-1 alpha-2.
      */
     country?: string | null;
     engagement: Array<string>;
     headline?: string | null;
-    name: string;
-    projects: Array<TalentProject>;
+    industries: Array<string>;
     /**
-     * US dollars an hour. Null is not stated.
+     * ISO 639-1 codes.
      */
-    rateBand?: 'under_25' | '25_50' | '50_100' | '100_150' | '150_plus';
+    languages: Array<string>;
+    name: string;
+    /**
+     * Read at /api/storage/files/{id}; null for none.
+     */
+    photoFileId?: string | null;
+    projects: Array<TalentProject>;
     roles: Array<string>;
     skills: Array<string>;
     slug: string;
@@ -1133,6 +1139,10 @@ export type PublicTalent = {
      */
     waitingEnquirySentAt?: string | null;
     website?: string | null;
+    /**
+     * Where the person works, as they state it.
+     */
+    worksAt?: string | null;
 };
 
 /**
@@ -1156,12 +1166,25 @@ export type PublicTalentList = {
  */
 export type PublicTalentSummary = {
     availability?: 'available' | 'open_to_offers' | 'not_available';
+    city?: string | null;
     /**
      * ISO 3166-1 alpha-2.
      */
     country?: string | null;
     headline?: string | null;
+    /**
+     * The first project the profile shows; null when it shows none.
+     */
+    leadProject?: TalentProject | null;
     name: string;
+    /**
+     * Read at /api/storage/files/{id}; null for none.
+     */
+    photoFileId?: string | null;
+    /**
+     * How many projects the profile shows.
+     */
+    projectCount: number;
     roles: Array<string>;
     skills: Array<string>;
     slug: string;
@@ -1240,7 +1263,7 @@ export type ReserveUpload = {
     /**
      * Why the file is uploaded; it fixes the allowed media types and the largest size.
      */
-    purpose: 'program_image' | 'application_file';
+    purpose: 'program_image' | 'talent_photo' | 'application_file';
     /**
      * The exact length of the file in bytes.
      */
@@ -1375,6 +1398,7 @@ export type SaveSolution = {
 export type SaveTalentProfile = {
     availability?: 'available' | 'open_to_offers' | 'not_available';
     bio?: string | null;
+    city?: string | null;
     /**
      * ISO 3166-1 alpha-2.
      */
@@ -1384,11 +1408,20 @@ export type SaveTalentProfile = {
      * One line shown in lists.
      */
     headline?: string | null;
+    industries: Array<string>;
+    /**
+     * ISO 639-1 codes.
+     */
+    languages: Array<string>;
     /**
      * Whether it appears in the public directory once approved.
      */
     listed: boolean;
     name: string;
+    /**
+     * A photo the caller uploaded for a talent profile; null for none.
+     */
+    photoFileId?: string | null;
     projects: Array<TalentProject>;
     rateBand?: 'under_25' | '25_50' | '50_100' | '100_150' | '150_plus';
     roles: Array<string>;
@@ -1398,6 +1431,10 @@ export type SaveTalentProfile = {
      */
     version?: number | null;
     website?: string | null;
+    /**
+     * Where the person works, as they state it.
+     */
+    worksAt?: string | null;
 };
 
 /**
@@ -1540,6 +1577,7 @@ export type TalentEnquiry = {
 export type TalentProfile = {
     availability?: 'available' | 'open_to_offers' | 'not_available';
     bio?: string | null;
+    city?: string | null;
     /**
      * Whether it has what a submission needs: a headline, a bio, a role and a skill.
      */
@@ -1559,11 +1597,20 @@ export type TalentProfile = {
     engagement: Array<string>;
     headline?: string | null;
     id: string;
+    industries: Array<string>;
+    /**
+     * ISO 639-1 codes.
+     */
+    languages: Array<string>;
     /**
      * Whether it appears in the public directory once approved.
      */
     listed: boolean;
     name: string;
+    /**
+     * Read at /api/storage/files/{id}; null for none.
+     */
+    photoFileId?: string | null;
     projects: Array<TalentProject>;
     /**
      * US dollars an hour. Null is not stated.
@@ -1580,12 +1627,20 @@ export type TalentProfile = {
      */
     version: number;
     website?: string | null;
+    /**
+     * Where the person works, as they state it.
+     */
+    worksAt?: string | null;
 };
 
 /**
  * One piece of work a talent profile shows.
  */
 export type TalentProject = {
+    /**
+     * How far the work went; null when not stated.
+     */
+    stage?: 'prototype' | 'pilot' | 'in_production' | 'internal_tool';
     summary?: string | null;
     title: string;
     url?: string | null;
@@ -4605,6 +4660,14 @@ export type ListTalentData = {
          * Only profiles of this availability.
          */
         availability?: string | null;
+        /**
+         * Only profiles in this country, ISO 3166-1 alpha-2.
+         */
+        country?: string | null;
+        /**
+         * Only profiles open to this kind of engagement.
+         */
+        engagement?: string | null;
         /**
          * The order: by name, or the most recently approved first.
          */

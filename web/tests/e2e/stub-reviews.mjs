@@ -217,6 +217,11 @@ function profile(id, name, status, more) {
     submittedAt: day,
     updatedAt: day,
     version: 1,
+    photoFileId: null,
+    city: null,
+    languages: [],
+    industries: [],
+    worksAt: null,
     ...more,
   };
 }

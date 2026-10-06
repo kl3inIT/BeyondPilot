@@ -33,16 +33,29 @@ import {
   submitMyTalentProfile,
   type SaveTalentProfile,
   type TalentProfile,
+  type TalentProject,
 } from "@/lib/api/generated";
 import { rejectedFields } from "@/lib/api/rejected-fields";
 import { focusField } from "@/lib/focus-field";
 
-import { availabilities, engagements, rateBands, talentRoles } from "./talent-codes";
+import { industries } from "@/features/organization/organization-codes";
+
+import {
+  availabilities,
+  engagements,
+  languageCodes,
+  projectStages,
+  rateBands,
+  talentRoles,
+} from "./talent-codes";
 import { talentError } from "./talent-errors";
+import { TalentPhotoUpload } from "./talent-photo-upload";
 
 const MAX_ROLES = 4;
 const MAX_SKILLS = 15;
 const MAX_PROJECTS = 6;
+const MAX_LANGUAGES = 6;
+const MAX_INDUSTRIES = 5;
 
 /** The fields the form checks, in its order, each with the id of its control. */
 const reviewFields = [
@@ -57,7 +70,14 @@ const checkedFields = [
   { field: "projects", id: "talent-projects" },
 ];
 
-type ProjectDraft = { key: number; title: string; year: string; url: string; summary: string };
+type ProjectDraft = {
+  key: number;
+  title: string;
+  year: string;
+  url: string;
+  summary: string;
+  stage: string;
+};
 
 type TalentFormProps = {
   /** The caller's profile; without one the first save creates it. */
@@ -87,8 +107,16 @@ function saved(profile: TalentProfile | null, suggestedName: string) {
       bio: profile?.bio ?? "",
       skills: profile?.skills.join(", ") ?? "",
       website: profile?.website ?? "",
+      city: profile?.city ?? "",
+      worksAt: profile?.worksAt ?? "",
     },
-    chosen: { roles: profile?.roles ?? [], engagement: profile?.engagement ?? [] },
+    chosen: {
+      roles: profile?.roles ?? [],
+      engagement: profile?.engagement ?? [],
+      languages: profile?.languages ?? [],
+      industries: profile?.industries ?? [],
+    },
+    photo: profile?.photoFileId ?? "",
     picked: {
       country: profile?.country ?? "",
       availability: (profile?.availability ?? "") as string,
@@ -100,6 +128,7 @@ function saved(profile: TalentProfile | null, suggestedName: string) {
       year: project.year ? String(project.year) : "",
       url: project.url ?? "",
       summary: project.summary ?? "",
+      stage: project.stage ?? "",
     })),
     listed: profile?.listed ?? true,
   };
@@ -118,11 +147,15 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
   const engagement = useVocabulary("engagement");
   const rateBand = useVocabulary("rateBand");
   const countryName = useCountryName();
+  const language = useVocabulary("language");
+  const industry = useVocabulary("industry");
+  const stage = useVocabulary("projectStage");
   const notify = useNotify();
   const router = useRouter();
   const initial = saved(profile, suggestedName);
   const [text, setText] = useState(initial.text);
   const [chosen, setChosen] = useState(initial.chosen);
+  const [photo, setPhoto] = useState(initial.photo);
   const [picked, setPicked] = useState(initial.picked);
   const [projects, setProjects] = useState(initial.projects);
   const [nextKey, setNextKey] = useState(projects.length);
@@ -135,7 +168,7 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
   const submittable = !profile || profile.status === "draft" || returned;
   const dirty =
     pending === null &&
-    JSON.stringify({ text, chosen, picked, projects, listed }) !== JSON.stringify(initial);
+    JSON.stringify({ text, chosen, photo, picked, projects, listed }) !== JSON.stringify(initial);
 
   /** A field that changes is no longer marked: its message was about what it held before. */
   const settle = (field: string) =>
@@ -170,6 +203,7 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
   function discard() {
     setText(initial.text);
     setChosen(initial.chosen);
+    setPhoto(initial.photo);
     setPicked(initial.picked);
     setProjects(initial.projects);
     setListed(initial.listed);
@@ -198,7 +232,7 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
   function addProject() {
     setProjects((current) => [
       ...current,
-      { key: nextKey, title: "", year: "", url: "", summary: "" },
+      { key: nextKey, title: "", year: "", url: "", summary: "", stage: "" },
     ]);
     setNextKey(nextKey + 1);
   }
@@ -240,11 +274,17 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
           engagement: chosen.engagement,
           rateBand: (picked.rateBand || undefined) as SaveTalentProfile["rateBand"],
           website: text.website.trim() || null,
+          photoFileId: photo || null,
+          city: text.city.trim() || null,
+          languages: chosen.languages as SaveTalentProfile["languages"],
+          industries: chosen.industries as SaveTalentProfile["industries"],
+          worksAt: text.worksAt.trim() || null,
           projects: projects.map((project) => ({
             title: project.title,
             year: project.year ? Number(project.year) : null,
             url: project.url.trim() || null,
             summary: project.summary.trim() || null,
+            stage: (project.stage || null) as TalentProject["stage"],
           })),
           listed,
           version: profile?.version ?? null,
@@ -292,6 +332,10 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
       }}
     >
       <FieldGroup>
+        <Field>
+          <FieldLabel htmlFor="talent-photo">{t("photo.label")}</FieldLabel>
+          <TalentPhotoUpload name={text.name} value={photo} onChange={setPhoto} />
+        </Field>
         <Field data-invalid={bad("name")}>
           <FieldLabel htmlFor="talent-name">
             {t("name")}{" "}
@@ -447,6 +491,53 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
             </NativeSelect>
           </Field>
         </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field>
+            <FieldLabel htmlFor="talent-city">{t("city")}</FieldLabel>
+            <Input
+              id="talent-city"
+              autoComplete="address-level2"
+              maxLength={80}
+              value={text.city}
+              onChange={write("city")}
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="talent-works-at">{t("worksAt")}</FieldLabel>
+            <Input
+              id="talent-works-at"
+              autoComplete="organization"
+              aria-describedby="talent-works-at-hint"
+              maxLength={120}
+              value={text.worksAt}
+              onChange={write("worksAt")}
+            />
+            <FieldDescription id="talent-works-at-hint">{t("worksAtHint")}</FieldDescription>
+          </Field>
+        </div>
+        <Field>
+          <FieldLabel>{t("languages")}</FieldLabel>
+          <ChoiceChips
+            label={t("languages")}
+            options={languageCodes.map((value) => ({ value, label: language(value) }))}
+            value={chosen.languages}
+            onValueChange={choose("languages")}
+            max={MAX_LANGUAGES}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>{t("industries")}</FieldLabel>
+          <ChoiceChips
+            label={t("industries")}
+            options={industries.map((value) => ({ value, label: industry(value) }))}
+            value={chosen.industries}
+            onValueChange={choose("industries")}
+            max={MAX_INDUSTRIES}
+          />
+          <FieldDescription>
+            {t("upTo", { count: MAX_INDUSTRIES, chosen: chosen.industries.length })}
+          </FieldDescription>
+        </Field>
         <Field>
           <FieldLabel>{t("engagement")}</FieldLabel>
           <ChoiceChips
@@ -523,6 +614,24 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
                   <Trash2Icon aria-hidden="true" />
                 </IconButton>
               </div>
+              <Field>
+                <FieldLabel htmlFor={`project-stage-${project.key}`}>
+                  {t("projects.stage")}
+                </FieldLabel>
+                <NativeSelect
+                  id={`project-stage-${project.key}`}
+                  className="w-full sm:w-56"
+                  value={project.stage}
+                  onChange={(event) => changeProject(project.key, "stage", event.target.value)}
+                >
+                  <NativeSelectOption value="">{t("projects.stageNone")}</NativeSelectOption>
+                  {projectStages.map((value) => (
+                    <NativeSelectOption key={value} value={value}>
+                      {stage(value)}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+              </Field>
               <Field>
                 <FieldLabel htmlFor={`project-summary-${project.key}`}>
                   {t("projects.summary")}

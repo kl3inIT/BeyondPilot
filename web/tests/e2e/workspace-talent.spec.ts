@@ -53,6 +53,11 @@ test.describe("workspace talent profile", () => {
     await page.getByLabel("About you").fill("Ten years in insurance operations.");
     await page.getByRole("group", { name: "Roles" }).getByText("AI engineer").click();
     await page.getByLabel("Skills").fill("Python, RAG ,  ");
+    await page.getByLabel("City").fill("Đà Nẵng");
+    await page
+      .getByRole("group", { name: "Languages you work in" })
+      .getByText("Vietnamese")
+      .click();
     await expect(page.getByRole("note").getByText("Ready to send for review")).toBeVisible();
 
     await page.getByRole("button", { name: "Send for review" }).click();
@@ -70,6 +75,11 @@ test.describe("workspace talent profile", () => {
           country: null,
           engagement: [],
           website: null,
+          photoFileId: null,
+          city: "Đà Nẵng",
+          languages: ["vi"],
+          industries: [],
+          worksAt: null,
           projects: [],
           listed: true,
           version: null,

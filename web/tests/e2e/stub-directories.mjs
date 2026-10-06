@@ -120,8 +120,20 @@ function person(name, more) {
     skills: ["Python", "RAG"],
     availability: "available",
     engagement: ["contract", "advisory"],
-    rateBand: "50_100",
-    projects: [{ title: "Claims assistant for an insurer", year: 2025, summary: null, url: null }],
+    photoFileId: null,
+    city: "Ho Chi Minh City",
+    languages: ["vi", "en"],
+    industries: ["insurance"],
+    worksAt: "Revee AI",
+    projects: [
+      {
+        title: "Claims assistant for an insurer",
+        year: 2025,
+        summary: null,
+        url: null,
+        stage: "in_production",
+      },
+    ],
     ...more,
   };
 }
@@ -136,15 +148,21 @@ const talent = [
     skills: ["PyTorch", "OCR"],
     availability: "open_to_offers",
     projects: [],
-    rateBand: undefined,
+    languages: [],
+    city: null,
+    worksAt: null,
     website: null,
   }),
   // The operator of these tests has a profile of their own.
   person("Đạt Phan", { slug: "dat-phan", roles: ["ai_consultant"], skills: ["Strategy"] }),
 ];
 
-const personSummaryOf = (item) =>
-  only(item, "slug", "name", "headline", "country", "roles", "skills", "availability");
+const personSummaryOf = (item) => ({
+  ...only(item, "slug", "name", "headline", "country", "city", "roles", "skills", "availability"),
+  photoFileId: item.photoFileId,
+  projectCount: item.projects.length,
+  leadProject: item.projects[0] ?? null,
+});
 
 const has = (text, ...fields) =>
   !text || fields.some((field) => (field ?? "").toLowerCase().includes(text.toLowerCase()));
@@ -204,7 +222,9 @@ export function answerDirectory(url) {
       (item) =>
         has(query.get("q"), item.name, item.headline, ...item.skills) &&
         (!query.get("role") || item.roles.includes(query.get("role"))) &&
-        (!query.get("availability") || item.availability === query.get("availability")),
+        (!query.get("availability") || item.availability === query.get("availability")) &&
+        (!query.get("country") || item.country === query.get("country")) &&
+        (!query.get("engagement") || item.engagement.includes(query.get("engagement"))),
     );
     return [200, page(url, items.map(personSummaryOf))];
   }

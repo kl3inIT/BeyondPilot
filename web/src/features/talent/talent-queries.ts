@@ -38,6 +38,8 @@ export async function readTalent(search: TalentSearch): Promise<PublicTalentList
       q: text(search.q),
       role: search.role ?? undefined,
       availability: search.availability ?? undefined,
+      country: search.country ?? undefined,
+      engagement: search.engagement ?? undefined,
       sort: search.sort,
       page: Math.max(1, search.page),
     },

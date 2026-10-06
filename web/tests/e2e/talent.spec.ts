@@ -55,6 +55,17 @@ test.describe("talent directory", () => {
     await expect(shownPeople(page)).toHaveCount(3);
   });
 
+  test("the directory narrows by country and by what a person is open to, in the URL", async ({
+    page,
+  }) => {
+    await page.goto("/talent?country=ID");
+    await expect(shownPeople(page)).toHaveText(["Arif Hidayat"]);
+
+    await page.goto("/talent?engagement=contract");
+    await expect(shownPeople(page)).toHaveCount(3);
+    await expect(page.getByText("Ho Chi Minh City").first()).toBeVisible();
+  });
+
   test("a profile says who the person is, and a visitor signs in before writing to them", async ({
     page,
   }) => {
@@ -66,7 +77,11 @@ test.describe("talent directory", () => {
     await expect(page.getByText("Claims assistant for an insurer")).toBeVisible();
     await expect(page.getByText("Stated by the person", { exact: true })).toBeVisible();
     await expect(page.getByText("Contract, Advisory")).toBeVisible();
-    await expect(page.getByText("$50–100 an hour")).toBeVisible();
+    await expect(page.getByText("In production")).toBeVisible();
+    await expect(page.getByText("Vietnamese, English")).toBeVisible();
+    await expect(page.getByText("Revee AI")).toBeVisible();
+    // The rate is for the person and GenAI Fund, not the public.
+    await expect(page.getByText("an hour")).toHaveCount(0);
     await expect(page.getByRole("link", { name: "linkedin.com" })).toBeVisible();
     // The person's address is on no public page.
     await expect(page.getByRole("main").getByText("@")).toHaveCount(0);
