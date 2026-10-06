@@ -218,6 +218,34 @@ class ReviewTest extends ApplicationsHttpTest {
 				decision(List.of(UUID.fromString(operatorApplication)), "shortlisted")), 403, "PROPOSAL_OWN_APPLICATION");
 	}
 
+	@Test
+	void aWithdrawalUndoesTheDecisionSoTheNextSubmissionIsDecidedAfresh() {
+		Form form = program("withdrawn-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		criteriaOf(form, "Practical impact");
+		Applicant applicant = applicant(form, "back@withdrawn.test", "Back Builder");
+		String one = API + "/review/applications/" + applicant.id();
+		post(operator, REVIEW + form.programId() + "/decisions", decision(List.of(applicant.id()), "shortlisted"))
+			.expectStatus()
+			.isOk();
+
+		post(applicant.session(), API + "/applications/" + applicant.id() + "/withdraw", null).expectStatus().isOk();
+		resubmit(form, applicant);
+		String again = body(get(operator, one).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(again, "$.reviewStatus")).isEqualTo("under_review");
+		assertThat(JsonPath.<List<String>>read(again, "$.history[*].decision")).containsSubsequence("shortlisted",
+				"under_review");
+		assertThat(JsonPath.<List<String>>read(again, "$.history[*].reason"))
+			.contains("The applicant withdrew the application.");
+
+		// Submitting changes without withdrawing keeps the decision: the scores say which version they were made on.
+		post(operator, REVIEW + form.programId() + "/decisions", decision(List.of(applicant.id()), "not_selected"))
+			.expectStatus()
+			.isOk();
+		resubmit(form, applicant);
+		assertThat(JsonPath.<String>read(body(get(operator, one).expectStatus().isOk()), "$.reviewStatus"))
+			.isEqualTo("not_selected");
+	}
+
 	/** Submits an application of the caller, who already belongs to an organization, and answers its identifier. */
 	private String submittedBy(String session, String email, Form form) {
 		UUID solution = completeSolution(session, email, "Operator Desk");
