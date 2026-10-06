@@ -128,9 +128,9 @@ function saved(profile: TalentProfile | null, suggestedName: string) {
 
 /**
  * The editor of a person's own talent profile. Saving keeps it as it is; sending it for review saves
- * first, then asks for the review, and is offered for a draft or a profile GenAI Fund sent back. A change to an
- * approved profile shows in the directory at once. What a review needs is listed above the buttons
- * from the start, and a refused attempt moves to the first field it lacks.
+ * first, then asks for the review, and is offered for a draft or a profile GenAI Fund sent back. A
+ * change to an approved profile shows in the directory at once. What a review needs is listed above
+ * the buttons from the start, and a refused attempt moves to the first field it lacks.
  */
 function TalentForm({ profile, suggestedName }: TalentFormProps) {
   const t = useTranslations("Talent.form");

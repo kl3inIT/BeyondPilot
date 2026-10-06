@@ -42,6 +42,8 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
   const [pending, setPending] = useState<"approve" | "reject" | null>(null);
   // Set at the first press, before the pending state has rendered, so presses in one tick decide once.
   const deciding = useRef(false);
+  const waiting = profile.status === "submitted";
+  const approved = profile.status === "approved";
 
   async function decide(kind: "approve" | "reject", run: () => Promise<unknown>) {
     if (deciding.current) {
@@ -54,7 +56,7 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
       notify.success(
         kind === "approve"
           ? "Talent.done.approved"
-          : profile.status === "approved"
+          : approved
             ? "Talent.done.removed"
             : "Talent.done.changesRequested",
         { name: profile.name },
@@ -62,7 +64,7 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
       setRejecting(false);
       // A decision on a record of the queue moves on to the next one that waits.
       // It stays pending until that page arrives, so a second press cannot decide twice.
-      if (profile.status === "submitted" && nextHref) {
+      if (waiting && nextHref) {
         router.push(getPathname({ href: nextHref, locale }));
       } else {
         router.refresh();
@@ -76,7 +78,6 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
     }
   }
 
-  const waiting = profile.status === "submitted";
   const approve = () => decide("approve", () => approveTalent({ path: { id: profile.id } }));
   // A key does nothing while a decision is on its way, so one press is one decision.
   const idle = pending === null;
@@ -88,28 +89,28 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
   return (
     <div className="flex flex-col items-end gap-2">
       <div className="flex flex-wrap gap-2">
-        {profile.status === "submitted" && (
+        {waiting && (
           <Button pending={pending === "approve"} onClick={approve}>
             {t("approve")}
           </Button>
         )}
         <Button prominence="secondary" tone="danger" onClick={() => setRejecting(true)}>
-          {t(profile.status === "approved" ? "takeDown" : "reject")}
+          {t(approved ? "takeDown" : "reject")}
         </Button>
         {rejecting && (
           <ReasonDialog
             open
             onOpenChange={setRejecting}
-            title={t(profile.status === "approved" ? "takeDownTitle" : "rejectTitle", {
+            title={t(approved ? "takeDownTitle" : "rejectTitle", {
               name: profile.name,
             })}
-            description={t(profile.status === "approved" ? "takeDownLead" : "rejectLead")}
+            description={t(approved ? "takeDownLead" : "rejectLead")}
             reasonLabel={t("reason")}
             reasonPlaceholder={t("reasonPlaceholder")}
             reasons={talentRejections.map((value) => ({ value, label: reason(value) }))}
             messageLabel={t("message")}
             messageHint={t("messageHint")}
-            confirmLabel={t(profile.status === "approved" ? "takeDownConfirm" : "rejectConfirm")}
+            confirmLabel={t(approved ? "takeDownConfirm" : "rejectConfirm")}
             cancelLabel={t("cancel")}
             pending={pending === "reject"}
             onConfirm={(chosen, message) =>
@@ -121,9 +122,7 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
                     message: message.trim() || null,
                   },
                 };
-                return profile.status === "approved"
-                  ? removeTalent(decision)
-                  : requestTalentChanges(decision);
+                return approved ? removeTalent(decision) : requestTalentChanges(decision);
               })
             }
           />

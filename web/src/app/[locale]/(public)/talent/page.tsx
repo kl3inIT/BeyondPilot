@@ -3,8 +3,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { TalentDirectoryPage } from "@/features/talent/talent-directory-page";
 import { readMyTalent, readTalent } from "@/features/talent/talent-queries";
-import { getCurrentAccount } from "@/lib/auth/session";
 import { loadTalentSearch } from "@/features/talent/talent-search";
+import { getCurrentAccount } from "@/lib/auth/session";
 
 export async function generateMetadata({
   params,
