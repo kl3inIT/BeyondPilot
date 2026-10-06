@@ -19,7 +19,11 @@ type SolutionRecordProps = {
     | "deployment"
     | "website"
     | "demoUrl"
-    | "deckUrl"
+    | "deck"
+    | "traction"
+    | "builtWith"
+    | "languages"
+    | "bestCustomerProfile"
     | "customerDeployments"
   >;
 };
@@ -35,6 +39,7 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
   const industry = useVocabulary("industry");
   const maturity = useVocabulary("maturity");
   const deployment = useVocabulary("deployment");
+  const language = useVocabulary("language");
 
   const words = (labels: string[]) => (labels.length > 0 ? labels.join(", ") : null);
   const link = (href: string | null | undefined) =>
@@ -55,6 +60,8 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
         { label: t("problemsSolved"), value: solution.problemsSolved },
         { label: t("valueProposition"), value: solution.valueProposition },
         { label: t("maturity"), value: solution.maturity ? maturity(solution.maturity) : null },
+        { label: t("traction"), value: solution.traction },
+        { label: t("builtWith"), value: words(solution.builtWith) },
       ],
     },
     {
@@ -62,7 +69,9 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
       rows: [
         { label: t("industries"), value: words(solution.industries.map(industry)) },
         { label: t("focusAreas"), value: words(solution.focusAreas.map(focusArea)) },
+        { label: t("languages"), value: words(solution.languages.map(language)) },
         { label: t("deployment"), value: words(solution.deployment.map(deployment)) },
+        { label: t("bestCustomerProfile"), value: solution.bestCustomerProfile },
       ],
     },
     {
@@ -70,7 +79,8 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
       rows: [
         { label: t("website"), value: link(solution.website) },
         { label: t("demo"), value: link(solution.demoUrl) },
-        { label: t("deck"), value: link(solution.deckUrl) },
+        // The file is named, not linked: the address of a deck answers only once its solution is approved.
+        { label: t("deck"), value: solution.deck?.fileName ?? null },
         {
           label: t("deployments"),
           value:

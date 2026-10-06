@@ -123,6 +123,8 @@ abstract class ApplicationsHttpTest {
 		solution.put("problemsSolved", "Drivers wait on a hotline.");
 		solution.put("focusAreas", List.of());
 		solution.put("industries", List.of());
+		solution.put("builtWith", List.of());
+		solution.put("languages", List.of());
 		solution.put("deployment", List.of());
 		solution.put("maturity", "pilot");
 		solution.put("listed", true);
