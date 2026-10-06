@@ -524,7 +524,6 @@ test.describe("admin organizations", () => {
     await dialog.getByLabel("Organization name").fill("Sài Gòn Logistics");
     await dialog.getByRole("combobox", { name: "Organization type" }).click();
     await page.getByRole("option", { name: "Builder team" }).click();
-    await dialog.getByLabel("Owner's email").fill("owner@saigonlogistics.example");
     await dialog.getByRole("button", { name: "Add organization" }).click();
 
     await expect(page.getByText("Sài Gòn Logistics created.")).toBeVisible();
@@ -535,8 +534,66 @@ test.describe("admin organizations", () => {
         body: {
           name: "Sài Gòn Logistics",
           type: "builder_team",
-          ownerEmail: "owner@saigonlogistics.example",
           website: null,
+          country: null,
+          teamSize: null,
+          industries: null,
+          description: null,
+          foundedYear: null,
+          logoUrl: null,
+          emailDomain: null,
+          ownerEmail: null,
+        },
+      },
+    ]);
+  });
+
+  test("an operator may describe the whole organization while adding it", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    await page.goto("/admin/organizations");
+
+    await page.getByRole("button", { name: "Add organization" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Organization name").fill("Sài Gòn Logistics");
+    await dialog.getByRole("combobox", { name: "Organization type" }).click();
+    await page.getByRole("option", { name: "Company" }).click();
+    await dialog.getByLabel("Website").fill("https://saigonlogistics.example");
+    await dialog.getByLabel("Owner's email").fill("owner@saigonlogistics.example");
+    await dialog.getByLabel("Email domain").fill("@SaigonLogistics.example");
+    await dialog.getByRole("combobox", { name: "Country" }).click();
+    await page.getByRole("option", { name: "Vietnam" }).click();
+    await dialog.getByRole("combobox", { name: "Team size" }).click();
+    await page.getByRole("option", { name: "10–49 people" }).click();
+    await dialog.getByLabel("Year founded").fill("20x9");
+    await dialog.getByRole("button", { name: "Add organization" }).click();
+    await expect(dialog.getByText("Enter a four-digit year, such as 2021.")).toBeVisible();
+    expect(decisions).toEqual([]);
+
+    await dialog.getByLabel("Year founded").fill("2019");
+    await dialog.getByLabel("Short description").fill("Routes parcels for small shops.");
+    await dialog.getByRole("button", { name: "Add organization" }).click();
+
+    await expect(page.getByText("Sài Gòn Logistics created.")).toBeVisible();
+    expect(decisions).toEqual([
+      {
+        call: "POST /api/organization/admin/organizations",
+        body: {
+          name: "Sài Gòn Logistics",
+          type: "company",
+          website: "https://saigonlogistics.example",
+          country: "VN",
+          teamSize: "10_49",
+          industries: null,
+          description: "Routes parcels for small shops.",
+          foundedYear: 2019,
+          logoUrl: null,
+          emailDomain: "saigonlogistics.example",
+          ownerEmail: "owner@saigonlogistics.example",
         },
       },
     ]);

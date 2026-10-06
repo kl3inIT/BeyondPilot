@@ -61,14 +61,31 @@ export type AdminCreateOrganization = {
      */
     country?: string | null;
     /**
+     * What it does and for whom, in at most 280 characters.
+     */
+    description?: string | null;
+    /**
      * The domain of the company's work addresses, which the operator vouches for.
      */
     emailDomain?: string | null;
+    /**
+     * The year it started.
+     */
+    foundedYear?: number | null;
+    /**
+     * The industries it works in or serves, as the codes the solutions use.
+     */
+    industries?: Array<string> | null;
+    /**
+     * The address of its logo.
+     */
+    logoUrl?: string | null;
     name: string;
     /**
      * The address invited to own it.
      */
     ownerEmail?: string | null;
+    teamSize?: string | null;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     website?: string | null;
 };

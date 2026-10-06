@@ -3676,6 +3676,13 @@ components:
           - "null"
           description: ISO 3166-1 alpha-2.
           pattern: "[A-Z]{2}"
+        description:
+          type:
+          - string
+          - "null"
+          description: "What it does and for whom, in at most 280 characters."
+          maxLength: 280
+          minLength: 0
         emailDomain:
           type:
           - string
@@ -3686,6 +3693,33 @@ components:
           maxLength: 253
           minLength: 0
           pattern: "[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+"
+        foundedYear:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: The year it started.
+          maximum: 2100
+          minimum: 1800
+        industries:
+          type:
+          - array
+          - "null"
+          description: "The industries it works in or serves, as the codes the solutions\
+            \ use."
+          items:
+            type: string
+            pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+          maxItems: 5
+          minItems: 0
+        logoUrl:
+          type:
+          - string
+          - "null"
+          description: The address of its logo.
+          maxLength: 300
+          minLength: 0
+          pattern: "https?://[^\\s]+"
         name:
           type: string
           maxLength: 120
@@ -3698,6 +3732,11 @@ components:
           description: The address invited to own it.
           maxLength: 254
           minLength: 0
+        teamSize:
+          type:
+          - string
+          - "null"
+          pattern: just_me|2_9|10_49|50_99|100_499|500_999|1000_4999|5000_plus
         type:
           type: string
           enum:

@@ -29,15 +29,8 @@ import { siteRoutes } from "@/lib/site";
 
 import { industries, organizationTypes, teamSizes } from "./organization-codes";
 import { organizationError } from "./organization-errors";
+import { MAX_DESCRIPTION, MAX_INDUSTRIES, yearOf } from "./organization-format";
 import { useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
-
-/** The longest description the backend takes. */
-const MAX_DESCRIPTION = 280;
-/** The years the backend takes for when an organization started. */
-const FIRST_YEAR = 1800;
-const LAST_YEAR = 2100;
-/** The most industries the backend takes. */
-const MAX_INDUSTRIES = 5;
 
 /** The fields the form checks before it asks the backend, in the order the page shows them. */
 const checkedFields = [
@@ -51,12 +44,6 @@ const checkedFields = [
   { name: "description", id: "organization-description" },
   { name: "logoUrl", id: "organization-logo-url" },
 ] as const;
-
-/** The year written in the field when it is one the backend takes; otherwise null. */
-function yearOf(text: string) {
-  const year = Number(text);
-  return /^\d{4}$/.test(text.trim()) && year >= FIRST_YEAR && year <= LAST_YEAR ? year : null;
-}
 
 /** A group of related fields on a tinted panel, with what the group is about under its title. */
 function FormSection({

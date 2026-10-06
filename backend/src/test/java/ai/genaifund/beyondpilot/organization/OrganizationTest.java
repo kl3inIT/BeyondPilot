@@ -627,6 +627,31 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anOperatorMayFillInTheWholeProfileWhenCreatingAnOrganization() {
+		String created = body(post(operator, API + "/admin/organizations",
+				Map.of("name", "Fully Described", "type", "builder_team", "website", "https://fully-described.test",
+						"country", "VN", "teamSize", "10_49", "industries", List.of("logistics", "insurance"),
+						"description", "Routes parcels for small shops.", "foundedYear", 2019, "logoUrl",
+						"https://fully-described.test/logo.png"))
+			.expectStatus()
+			.isCreated());
+
+		assertThat(JsonPath.<String>read(created, "$.organization.teamSize")).isEqualTo("10_49");
+		assertThat(JsonPath.<List<String>>read(created, "$.organization.industries"))
+			.containsExactly("logistics", "insurance");
+		assertThat(JsonPath.<String>read(created, "$.organization.description"))
+			.isEqualTo("Routes parcels for small shops.");
+		assertThat(JsonPath.<Integer>read(created, "$.organization.foundedYear")).isEqualTo(2019);
+		assertThat(JsonPath.<String>read(created, "$.organization.logoUrl"))
+			.isEqualTo("https://fully-described.test/logo.png");
+		assertProblem(post(operator, API + "/admin/organizations",
+				Map.of("name", "Too Many", "type", "company", "industries",
+						List.of("logistics", "insurance", "retail_ecommerce", "healthcare", "manufacturing",
+								"banking_finance"))),
+				400, "REQUEST_INVALID");
+	}
+
+	@Test
 	void anOrganizationNobodyOwnsIsClaimedEvenFromItsDomainAndAnOperatorDecides() {
 		String unowned = JsonPath.read(body(post(operator, API + "/admin/organizations",
 				Map.of("name", "Unowned One", "type", "company", "emailDomain",

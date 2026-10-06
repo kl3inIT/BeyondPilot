@@ -808,6 +808,7 @@
         "typePlaceholder": "Choose a type",
         "typeRequired": "Choose the type of organization.",
         "ownerEmail": "Owner's email",
+        "emailDomain": "Email domain",
         "ownerEmailInvalid": "Enter a full email address.",
         "website": "Website",
         "websiteInvalid": "Enter a full address that starts with https://",

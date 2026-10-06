@@ -808,6 +808,7 @@
         "typePlaceholder": "Chọn loại",
         "typeRequired": "Chọn loại tổ chức.",
         "ownerEmail": "Email chủ sở hữu",
+        "emailDomain": "Tên miền email",
         "ownerEmailInvalid": "Hãy nhập địa chỉ email đầy đủ.",
         "website": "Website",
         "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",

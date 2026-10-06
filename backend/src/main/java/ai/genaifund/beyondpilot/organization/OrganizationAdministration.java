@@ -125,8 +125,10 @@ public class OrganizationAdministration {
 		}
 		Organization organization = new Organization(UUID.randomUUID(), slug, request.name().strip(),
 				request.type(), Organization.APPROVED, operator.accountId());
-		organization.describe(request.name().strip(), request.type(),
-				OrganizationViews.text(request.website()), request.country(), null, List.of(), null, null, null);
+		List<String> industries = request.industries() == null ? List.of() : request.industries();
+		organization.describe(request.name().strip(), request.type(), OrganizationViews.text(request.website()),
+				request.country(), request.teamSize(), industries, OrganizationViews.text(request.description()),
+				request.foundedYear(), OrganizationViews.text(request.logoUrl()));
 		organization.verifyDomain(domain);
 		organization.approve(Instant.now());
 		organizations.saveAndFlush(organization);
