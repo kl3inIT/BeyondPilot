@@ -301,9 +301,7 @@ export function answerDirectory(url) {
     const items = talent.filter(
       (item) =>
         has(query.get("q"), item.name, item.headline, ...item.skills) &&
-        (!query.get("role") || item.roles.includes(query.get("role"))) &&
-        (!query.get("country") || item.country === query.get("country")) &&
-        (!query.get("engagement") || item.engagement.includes(query.get("engagement"))),
+        (!query.get("role") || item.roles.includes(query.get("role"))),
     );
     return [200, page(url, items.map(personSummaryOf))];
   }

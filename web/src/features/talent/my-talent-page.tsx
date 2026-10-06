@@ -120,6 +120,7 @@ const tones = {
  */
 function EnquiryItem({ enquiry }: { enquiry: TalentEnquiry }) {
   const t = useTranslations("Talent.mine.inbox");
+  const topic = useVocabulary("enquiryTopic");
   const format = useFormatter();
   const date = (value: string) => format.dateTime(new Date(value), { dateStyle: "medium" });
   const name = enquiry.senderName ?? t("someone");
@@ -133,7 +134,7 @@ function EnquiryItem({ enquiry }: { enquiry: TalentEnquiry }) {
               ? t("from", { name, organization: enquiry.senderOrganization })
               : name}
           </span>
-          <span className="text-muted-foreground">{t(`topic.${enquiry.topic}`)}</span>
+          <span className="text-muted-foreground">{topic(enquiry.topic)}</span>
         </div>
         <Status tone={tones[enquiry.status]}>{t(`status.${enquiry.status}`)}</Status>
       </div>

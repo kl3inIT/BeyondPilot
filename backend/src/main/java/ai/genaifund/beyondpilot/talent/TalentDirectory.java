@@ -37,7 +37,7 @@ public class TalentDirectory {
 		this.details = details;
 	}
 
-	/** One page of the directory the request selects, by name. */
+	/** One page of the directory the request selects, in the order it asks for. */
 	@Transactional(readOnly = true)
 	public PublicTalentListResponse list(PublicTalentListRequest request) {
 		String text = TalentViews.text(request.q());
@@ -87,8 +87,8 @@ public class TalentDirectory {
 			.filter(found -> found.isApproved() && found.isListed())
 			.orElseThrow(() -> new TalentException(TalentErrorCode.PROFILE_NOT_FOUND, "No listed talent at " + slug));
 		return new PublicTalentResponse(profile.getSlug(), profile.getName(), profile.getHeadline(), profile.getBio(),
-				profile.getRoles(), profile.getSkills(), profile.getCountry(), profile.getEngagement(), profile.getWebsite(), profile.getPhotoFileId(), profile.getCity(),
-				profile.getLanguages(), profile.getIndustries(), profile.getWorksAt(),
+				profile.getRoles(), profile.getSkills(), profile.getCountry(), profile.getEngagement(), profile.getWebsite(),
+				profile.getPhotoFileId(), profile.getCity(), profile.getLanguages(), profile.getIndustries(), profile.getWorksAt(),
 				TalentViews.projects(details.projects(profile.getId())),
 				actor == null ? null : details.waitingSince(profile.getId(), actor.accountId()).orElse(null));
 	}
