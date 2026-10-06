@@ -25,7 +25,8 @@
       "signOutFailed": "We could not sign you out. Try again.",
       "organization": "My organization",
       "talentProfile": "Talent profile",
-      "admin": "Admin"
+      "admin": "Admin",
+      "applications": "My applications"
     },
     "menu": {
       "open": "Open menu",
@@ -2649,6 +2650,76 @@
       "type": "Choose a PDF file.",
       "size": "The file is larger than 25 MB.",
       "failed": "The file could not be uploaded. Try again."
+    }
+  },
+  "MyApplications": {
+    "title": "My applications",
+    "none": "No applications yet",
+    "noneLead": "Programs that take applications on BeyondPilot show Apply on their page.",
+    "browse": "Browse programs",
+    "groups": {
+      "inProgress": "In progress",
+      "submitted": "Submitted",
+      "past": "Past"
+    },
+    "status": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "withdrawn": "Withdrawn"
+    },
+    "nothingYet": "Who applies and with what is not filled in yet",
+    "draftUntil": "Not submitted yet. Submit before {when}.",
+    "withdrawnUntil": "Withdrawn. You can submit it again until {when}.",
+    "hearBack": "You hear back on {day}, by email.",
+    "editUntil": "You can change it until {when}.",
+    "closedOn": "Applications closed on {when}.",
+    "continue": "Continue",
+    "edit": "Edit application",
+    "view": "View application"
+  },
+  "Application": {
+    "metaTitle": "Application",
+    "back": "My applications",
+    "status": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "withdrawn": "Withdrawn"
+    },
+    "whereItStands": "Where it stands",
+    "submitted": "Submitted",
+    "notYet": "Not yet",
+    "versions": "Times submitted",
+    "closes": "Applications close",
+    "outcome": "You hear back",
+    "continue": "Continue application",
+    "edit": "Edit application",
+    "editHint": "You can change it until {when}. Reviewers read the latest version you submit.",
+    "locked": "This program takes no changes after submission.",
+    "closed": "Applications have closed, so this application can no longer change.",
+    "withdraw": {
+      "button": "Withdraw application",
+      "title": "Withdraw your application to {program}?",
+      "lead": "Reviewers will no longer read it. You can submit it again while the program takes applications.",
+      "confirm": "Withdraw",
+      "cancel": "Keep it",
+      "done": "Your application was withdrawn.",
+      "closed": "Applications have closed, so it can no longer be withdrawn.",
+      "failed": "It could not be withdrawn. Try again."
+    },
+    "receipt": {
+      "title": "Application submitted",
+      "titleAgain": "Changes submitted",
+      "emailed": "We've emailed a copy to {email}.",
+      "program": "Program",
+      "solution": "Solution",
+      "organization": "Applying for",
+      "submitted": "Submitted",
+      "editUntil": "You can edit until",
+      "next": "What happens next",
+      "nextOutcome": "GenAI Fund reads every application. You hear back on {day}, by email, whatever the outcome.",
+      "nextReview": "GenAI Fund reads every application and tells you the outcome by email.",
+      "view": "View my application",
+      "programs": "Back to programs"
     }
   }
 }

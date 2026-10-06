@@ -25,7 +25,8 @@
       "signOutFailed": "Chưa đăng xuất được. Bạn thử lại.",
       "organization": "Tổ chức của tôi",
       "talentProfile": "Hồ sơ nhân lực",
-      "admin": "Quản trị"
+      "admin": "Quản trị",
+      "applications": "Đơn của tôi"
     },
     "menu": {
       "open": "Mở menu",
@@ -2649,6 +2650,76 @@
       "type": "Hãy chọn file PDF.",
       "size": "File lớn hơn 25 MB.",
       "failed": "Không tải file lên được. Thử lại."
+    }
+  },
+  "MyApplications": {
+    "title": "Đơn của tôi",
+    "none": "Chưa có đơn nào",
+    "noneLead": "Chương trình nhận đơn trên BeyondPilot có nút Nộp đơn trên trang của nó.",
+    "browse": "Xem các chương trình",
+    "groups": {
+      "inProgress": "Đang điền",
+      "submitted": "Đã nộp",
+      "past": "Đã qua"
+    },
+    "status": {
+      "draft": "Bản nháp",
+      "submitted": "Đã nộp",
+      "withdrawn": "Đã rút"
+    },
+    "nothingYet": "Chưa điền ai nộp và nộp giải pháp nào",
+    "draftUntil": "Chưa nộp. Hãy nộp trước {when}.",
+    "withdrawnUntil": "Đã rút. Bạn có thể nộp lại tới {when}.",
+    "hearBack": "Bạn nhận kết quả ngày {day}, qua email.",
+    "editUntil": "Bạn sửa được tới {when}.",
+    "closedOn": "Đợt nhận đơn đã đóng lúc {when}.",
+    "continue": "Tiếp tục",
+    "edit": "Sửa đơn",
+    "view": "Xem đơn"
+  },
+  "Application": {
+    "metaTitle": "Đơn nộp",
+    "back": "Đơn của tôi",
+    "status": {
+      "draft": "Bản nháp",
+      "submitted": "Đã nộp",
+      "withdrawn": "Đã rút"
+    },
+    "whereItStands": "Tình trạng",
+    "submitted": "Đã nộp",
+    "notYet": "Chưa",
+    "versions": "Số lần nộp",
+    "closes": "Hạn nộp",
+    "outcome": "Nhận kết quả",
+    "continue": "Tiếp tục điền đơn",
+    "edit": "Sửa đơn",
+    "editHint": "Bạn sửa được tới {when}. Người chấm đọc phiên bản bạn nộp gần nhất.",
+    "locked": "Chương trình này không nhận thay đổi sau khi nộp.",
+    "closed": "Đợt nhận đơn đã đóng, nên đơn này không sửa được nữa.",
+    "withdraw": {
+      "button": "Rút đơn",
+      "title": "Rút đơn gửi {program}?",
+      "lead": "Người chấm sẽ không đọc đơn này nữa. Bạn có thể nộp lại khi chương trình còn nhận đơn.",
+      "confirm": "Rút đơn",
+      "cancel": "Giữ lại",
+      "done": "Đã rút đơn của bạn.",
+      "closed": "Đợt nhận đơn đã đóng, nên không rút đơn được nữa.",
+      "failed": "Chưa rút được đơn. Thử lại."
+    },
+    "receipt": {
+      "title": "Đã nộp đơn",
+      "titleAgain": "Đã nộp thay đổi",
+      "emailed": "Chúng tôi đã gửi một bản tới {email}.",
+      "program": "Chương trình",
+      "solution": "Giải pháp",
+      "organization": "Nộp cho",
+      "submitted": "Thời điểm nộp",
+      "editUntil": "Sửa được tới",
+      "next": "Tiếp theo",
+      "nextOutcome": "GenAI Fund đọc mọi đơn. Bạn nhận kết quả ngày {day}, qua email, dù kết quả thế nào.",
+      "nextReview": "GenAI Fund đọc mọi đơn và báo kết quả cho bạn qua email.",
+      "view": "Xem đơn của tôi",
+      "programs": "Về danh sách chương trình"
     }
   }
 }

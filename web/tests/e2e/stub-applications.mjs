@@ -70,6 +70,88 @@ export function emptyView(email) {
   };
 }
 
+/** An application to the Tasco challenge, submitted three days ago with everything it needs. */
+export const submittedId = "3e2d1c0b-0000-4000-8000-000000000030";
+
+export function submittedView(email, organization) {
+  return {
+    program: {
+      ...tascoForm(),
+      outcomesDueOn: new Date(Date.now() + 11 * day).toISOString().slice(0, 10),
+    },
+    application: {
+      id: submittedId,
+      status: "submitted",
+      contact: {
+        firstName: "An",
+        lastName: "Tran",
+        phone: "+84 912 345 678",
+        country: "VN",
+        linkedin: "https://www.linkedin.com/in/antran",
+      },
+      teamBackground:
+        organization.type === "independent_builder" ? null : "Two engineers from an insurer.",
+      solutionId: "5a0b7c1d-0000-4000-8000-000000000010",
+      deck: {
+        fileId: "9d8c7b6a-0000-4000-8000-000000000041",
+        fileName: "claim-copilot-deck.pdf",
+        sizeBytes: 2400000,
+      },
+      builtWith: ["OpenAI GPT", "Whisper"],
+      traction: "Two pilots with insurers.",
+      answers: {
+        [tascoQuestions[0].id]: "Claiming",
+        [tascoQuestions[1].id]: "Claims reach a decision without a hotline call.",
+        [tascoQuestions[2].id]: "9d8c7b6a-0000-4000-8000-000000000042",
+        [tascoQuestions[3].id]: "true",
+      },
+      files: {
+        [tascoQuestions[2].id]: {
+          fileId: "9d8c7b6a-0000-4000-8000-000000000042",
+          fileName: "pocket-policy-proposal.pdf",
+          sizeBytes: 600000,
+        },
+      },
+      submissions: 1,
+      submittedAt: new Date(Date.now() - 3 * day).toISOString(),
+      withdrawnAt: null,
+      version: 3,
+      updatedAt: new Date(Date.now() - 3 * day).toISOString(),
+    },
+    email,
+    previous: null,
+    organization,
+    solutions: [
+      {
+        id: "5a0b7c1d-0000-4000-8000-000000000010",
+        name: "Claim Copilot",
+        summary: "A chat assistant that tells a driver what is covered.",
+        problemsSolved: "Drivers wait on a hotline after a minor accident.",
+        maturity: "pilot",
+        complete: true,
+      },
+    ],
+  };
+}
+
+const pocketPolicy = {
+  id: "5a0b7c1d-0000-4000-8000-000000000020",
+  name: "Pocket Policy",
+  type: "builder_team",
+  country: "VN",
+  teamSize: "2_9",
+  approved: true,
+};
+
+const anTran = {
+  id: "5a0b7c1d-0000-4000-8000-000000000021",
+  name: "An Tran",
+  type: "independent_builder",
+  country: "VN",
+  teamSize: "just_me",
+  approved: false,
+};
+
 export function answerApplication(url, session, email) {
   const { pathname } = url;
   if (!pathname.startsWith("/api/proposal/")) {
@@ -78,11 +160,31 @@ export function answerApplication(url, session, email) {
   if (!session) {
     return [401, {}];
   }
+  // The owner of Pocket Policy has submitted; anyone else has not applied yet.
+  const applied = session === "owner";
   if (pathname === "/api/proposal/programs/insurance-ai-tasco/application") {
-    return [200, emptyView(email)];
+    return [200, applied ? submittedView(email, pocketPolicy) : emptyView(email)];
   }
   if (pathname === "/api/proposal/applications") {
-    return [200, { items: [] }];
+    const view = submittedView(email, pocketPolicy);
+    const items = [
+      {
+        id: submittedId,
+        programSlug: view.program.slug,
+        programName: view.program.name,
+        closesAt: view.program.closesAt,
+        outcomesDueOn: view.program.outcomesDueOn,
+        status: "submitted",
+        organizationName: "Pocket Policy",
+        solutionName: "Claim Copilot",
+        submittedAt: view.application.submittedAt,
+        updatedAt: view.application.updatedAt,
+      },
+    ];
+    return [200, { items: applied ? items : [] }];
+  }
+  if (pathname === `/api/proposal/applications/${submittedId}`) {
+    return [200, submittedView(email, applied ? pocketPolicy : anTran)];
   }
   return [409, { status: 409, code: "PROPOSAL_NOT_OPEN" }];
 }

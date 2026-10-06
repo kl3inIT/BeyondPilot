@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
-import { emptyView, tascoQuestions } from "./stub-applications.mjs";
+import { emptyView, submittedId, tascoQuestions } from "./stub-applications.mjs";
 
 const applyPath = "/programs/insurance-ai-tasco/apply";
 const email = "an.tran@example.com";
@@ -280,6 +280,76 @@ test.describe("apply", () => {
     });
     expect(calls.map((call) => call.call)).toContain(
       "POST /api/proposal/applications/3e2d1c0b-0000-4000-8000-000000000030/submit",
+    );
+  });
+
+  test("the receipt, My applications and an application, which can be withdrawn", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    const label = isMobile ? "mobile" : "desktop";
+    await signInAs(context, "owner", baseURL!);
+    await page.goto(`/applications/${submittedId}/submitted`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Application submitted");
+    await expect(page.getByText("emailed a copy to", { exact: false })).toBeVisible();
+    await expect(page.getByText("You hear back on", { exact: false })).toBeVisible();
+    await settled(page);
+    await shot(page, `apply-5-receipt-${label}`);
+
+    await page.getByRole("link", { name: "View my application" }).click();
+    await expect(page).toHaveURL(`/applications/${submittedId}`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Claim Copilot");
+    await expect(page.getByText("pocket-policy-proposal.pdf")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Edit application" })).toHaveAttribute(
+      "href",
+      "https://beyondpilot.genaifund.ai/insurance-ai-tasco/apply",
+    );
+    await settled(page);
+    await shot(page, `apply-6-application-${label}`);
+
+    const withdrawn: string[] = [];
+    await page.route(`**/api/proposal/applications/${submittedId}/withdraw`, async (route) => {
+      withdrawn.push(route.request().method());
+      await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+    });
+    await page.getByRole("button", { name: "Withdraw application" }).click();
+    const dialog = page.getByRole("alertdialog");
+    await expect(dialog).toContainText(
+      "Withdraw your application to AI for Insurance Challenge × Tasco?",
+    );
+    await dialog.getByRole("button", { name: "Keep it" }).click();
+    expect(withdrawn).toEqual([]);
+    await page.getByRole("button", { name: "Withdraw application" }).click();
+    await page
+      .getByRole("alertdialog")
+      .getByRole("button", { name: "Withdraw", exact: true })
+      .click();
+    await expect(page.getByText("Your application was withdrawn.")).toBeVisible();
+    expect(withdrawn).toEqual(["POST"]);
+
+    await page.goto("/applications");
+    const submitted = page.getByRole("region", { name: "Submitted" });
+    await expect(
+      submitted.getByRole("link", { name: "AI for Insurance Challenge × Tasco" }),
+    ).toBeVisible();
+    await expect(submitted.getByText("Claim Copilot · Pocket Policy")).toBeVisible();
+    await settled(page);
+    await shot(page, `apply-7-mine-${label}`);
+  });
+
+  test("My applications starts empty and leads to the programs", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "unnamed", baseURL!);
+    await page.goto("/applications");
+    await expect(page.getByText("No applications yet")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Browse programs" })).toHaveAttribute(
+      "href",
+      "/programs",
     );
   });
 });
