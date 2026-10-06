@@ -37,6 +37,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 class UseCaseAdministrationTest {
 
 	private static final String USE_CASES = "/api/usecase/admin/use-cases";
+	private static final String DIRECTORY = "/api/usecase/use-cases";
 
 	private static final String ORGANIZATIONS = "/api/usecase/admin/organizations";
 
@@ -146,6 +147,40 @@ class UseCaseAdministrationTest {
 			.isNotEmpty());
 
 		assertThat(detailsOf(JsonPath.read(created, "$.id"))).contains("\"status\": \"published\"");
+	}
+
+	@Test
+	void theDirectoryListsPublishedUseCasesToVisitorsAndKeepsAnonymousOrganizationsAnonymous() {
+		String tag = UUID.randomUUID().toString().substring(0, 8);
+		UUID open = organization("Open Bank " + tag);
+		UUID quiet = organization("Quiet Bank " + tag);
+		post(operator, USE_CASES, useCase(open, "Open case " + tag, true)).expectStatus().isCreated();
+		post(operator, USE_CASES, useCase(open, "Draft case " + tag, false)).expectStatus().isCreated();
+		Map<String, Object> hidden = useCase(quiet, "Quiet case " + tag, true);
+		hidden.put("hideOrganizationName", true);
+		hidden.put("budgetMembersOnly", true);
+		hidden.put("industry", "insurance");
+		post(operator, USE_CASES, hidden).expectStatus().isCreated();
+
+		String all = body(client.get().uri(DIRECTORY + "?q=" + tag).exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(all, "$.items[*].title")).containsExactlyInAnyOrder("Open case " + tag,
+				"Quiet case " + tag);
+		assertThat(JsonPath.<Number>read(all, "$.total").intValue()).isEqualTo(2);
+		assertThat(JsonPath.<List<Object>>read(all, "$.items[?(@.title == 'Quiet case " + tag + "')].organizationName"))
+			.containsExactly((Object) null);
+		assertThat(JsonPath.<List<Object>>read(all, "$.items[?(@.title == 'Quiet case " + tag + "')].budgetMax"))
+			.containsExactly((Object) null);
+		assertThat(JsonPath.<List<Integer>>read(all, "$.items[?(@.title == 'Open case " + tag + "')].budgetMax"))
+			.containsExactly(40000);
+
+		String byOrganization = body(client.get().uri(DIRECTORY + "?q={q}", "quiet bank " + tag).exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(byOrganization, "$.items")).isEmpty();
+		String byOpen = body(client.get().uri(DIRECTORY + "?q={q}", "open bank " + tag).exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(byOpen, "$.items[*].title")).containsExactly("Open case " + tag);
+		String insurance = body(client.get().uri(DIRECTORY + "?q=" + tag + "&industry=insurance").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(insurance, "$.items[*].title")).containsExactly("Quiet case " + tag);
+		client.get().uri(DIRECTORY + "?sort=price").exchange().expectStatus().isBadRequest();
+		client.get().uri(DIRECTORY + "?sort=deadline&page=1").exchange().expectStatus().isOk();
 	}
 
 	@Test

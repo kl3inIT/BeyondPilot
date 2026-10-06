@@ -1364,6 +1364,57 @@ export type PublicTalentSummary = {
 };
 
 /**
+ * One page of the public list of use cases.
+ */
+export type PublicUseCaseList = {
+    items: Array<PublicUseCaseSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many use cases match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * A published use case as the public list shows it.
+ */
+export type PublicUseCaseSummary = {
+    budgetMax?: number | null;
+    /**
+     * Whether the organization shows the budget to members only.
+     */
+    budgetMembersOnly: boolean;
+    /**
+     * In US dollars; null while the budget is to be determined or is for members only.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * Proposals close at this instant.
+     */
+    closesAt: string;
+    /**
+     * The outcomes the organization expects.
+     */
+    goal: string;
+    id: string;
+    industry: string;
+    /**
+     * The organization's name; null when it asked to stay anonymous.
+     */
+    organizationName?: string | null;
+    publishedAt: string;
+    technologies: Array<string>;
+    timelineMaxWeeks: number;
+    timelineMinWeeks: number;
+    title: string;
+};
+
+/**
  * Why an organization is not approved, and what its owners are told.
  */
 export type RefuseOrganization = {
@@ -5024,3 +5075,45 @@ export type SubmitMyUseCaseResponses = {
 };
 
 export type SubmitMyUseCaseResponse = SubmitMyUseCaseResponses[keyof SubmitMyUseCaseResponses];
+
+export type ListUseCasesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Use cases whose title or goal contains this, or whose organization name does, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only use cases of this industry.
+         */
+        industry?: string | null;
+        /**
+         * The order: the most recently published first, the nearest deadline first, or the largest budget first.
+         */
+        sort?: 'newest' | 'deadline' | 'budget';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/usecase/use-cases';
+};
+
+export type ListUseCasesErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+};
+
+export type ListUseCasesError = ListUseCasesErrors[keyof ListUseCasesErrors];
+
+export type ListUseCasesResponses = {
+    /**
+     * One page of the use cases the parameters select.
+     */
+    200: PublicUseCaseList;
+};
+
+export type ListUseCasesResponse = ListUseCasesResponses[keyof ListUseCasesResponses];

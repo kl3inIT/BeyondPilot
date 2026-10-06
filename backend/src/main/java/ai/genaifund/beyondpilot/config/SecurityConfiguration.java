@@ -63,7 +63,7 @@ class SecurityConfiguration {
 				// The directories of approved solutions and talent, and the page of an approved organization, are read
 				// without a session.
 				.requestMatchers(HttpMethod.GET, "/api/solution/solutions", "/api/solution/solutions/*",
-						"/api/solution/deployments",
+						"/api/solution/deployments", "/api/usecase/use-cases",
 						"/api/talent/profiles", "/api/talent/profiles/*", "/api/organization/organizations/*")
 				.permitAll()
 				// The audit module cannot ask who is an operator (ADR 0004), so the chain asks for it.
