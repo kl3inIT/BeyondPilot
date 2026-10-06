@@ -113,7 +113,7 @@ function DialogTitle({
       data-slot="dialog-title"
       data-size={size}
       className={cn(
-        "font-heading leading-none data-[size=default]:text-base data-[size=default]:font-medium data-[size=lg]:text-xl data-[size=lg]:font-semibold",
+        "font-heading leading-none data-[size=default]:text-base data-[size=default]:font-medium data-[size=lg]:text-xl data-[size=lg]:leading-tight data-[size=lg]:font-semibold",
         className,
       )}
       {...props}

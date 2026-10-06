@@ -1019,13 +1019,12 @@
       },
       "claim": {
         "title": "Decide the claim for {name}",
-        "lead": "Nobody owns this organization yet. This person asked to own it on {day}.",
-        "leadUnknown": "Nobody owns this organization yet, and someone asked to own it.",
+        "lead": "Nobody owns it yet. Asked on {day}.",
+        "leadUnknown": "Nobody owns it yet.",
         "domain": "Email domain to verify (optional)",
-        "domainHint": "Confirm it is the company's own domain. Its owner can then let colleagues on it join at once.",
+        "domainHint": "Only the company's own domain. Colleagues on it can then join at once.",
         "domainInvalid": "Enter a domain such as example.com, or leave it empty.",
         "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate.",
-        "note": "Approving makes the person its owner; other claims then go to them. The person is told by email either way, and the decision is recorded in the audit log.",
         "decline": "Decline",
         "approve": "Make owner"
       },

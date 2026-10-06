@@ -1019,13 +1019,12 @@
       },
       "claim": {
         "title": "Quyết định yêu cầu nhận {name}",
-        "lead": "Tổ chức này chưa có chủ sở hữu. Người này đã xin làm chủ sở hữu ngày {day}.",
-        "leadUnknown": "Tổ chức này chưa có chủ sở hữu và có người xin làm chủ sở hữu.",
+        "lead": "Chưa ai sở hữu. Yêu cầu gửi ngày {day}.",
+        "leadUnknown": "Chưa ai sở hữu.",
         "domain": "Tên miền email cần xác minh (không bắt buộc)",
-        "domainHint": "Hãy xác nhận đây là tên miền của chính công ty. Sau đó chủ sở hữu có thể cho đồng nghiệp trên tên miền tham gia ngay.",
+        "domainHint": "Chỉ nhập tên miền của chính công ty. Đồng nghiệp dùng tên miền này sẽ tham gia được ngay.",
         "domainInvalid": "Nhập một tên miền như example.com, hoặc để trống.",
         "domainTaken": "Một tổ chức khác đã có tên miền này. Hãy để trống, hoặc xác định tổ chức nào là bản trùng.",
-        "note": "Khi chấp thuận, người này trở thành chủ sở hữu; các yêu cầu nhận khác sẽ do họ quyết định. Dù quyết định thế nào, người này đều nhận email và quyết định được ghi vào nhật ký kiểm toán.",
         "decline": "Từ chối",
         "approve": "Cho làm chủ sở hữu"
       },

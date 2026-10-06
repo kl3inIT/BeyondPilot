@@ -122,7 +122,6 @@ function ClaimDecision({ organization, claimId, onClose }: ClaimDecisionProps) {
           problems={{ invalid: t("domainInvalid"), taken: t("domainTaken") }}
           disabled={pending !== null}
         />
-        <p className="text-sm text-muted-foreground">{t("note")}</p>
         <DialogFooter>
           <Button
             prominence="secondary"

@@ -75,7 +75,7 @@ function OrganizationLogoUpload({ value, onChange }: OrganizationLogoUploadProps
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="relative">
+      <div className="relative w-fit">
         <button
           type="button"
           disabled={uploading}
