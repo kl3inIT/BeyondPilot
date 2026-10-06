@@ -6132,18 +6132,18 @@ components:
           maxItems: 5
           minItems: 0
         jobTitle:
-          type: string
-          description: What the creator does in the organization.
-          maxLength: 120
-          minLength: 0
-        logoUrl:
           type:
           - string
           - "null"
-          description: The address of its logo.
-          maxLength: 300
+          description: What the creator does in the organization.
+          maxLength: 120
           minLength: 0
-          pattern: "https?://[^\\s]+"
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: A logo the caller uploaded for an organization; null for none.
         name:
           type: string
           maxLength: 120
@@ -6169,7 +6169,6 @@ components:
       - description
       - foundedYear
       - industries
-      - jobTitle
       - name
       - teamSize
       - type
@@ -6767,11 +6766,12 @@ components:
             names them.
           items:
             type: string
-        logoUrl:
+        logoFileId:
           type:
           - string
           - "null"
-          description: The address of its logo.
+          format: uuid
+          description: "Its logo, read at /api/storage/files/{id}; null for none."
         name:
           type: string
         slug:
@@ -8208,6 +8208,7 @@ components:
           enum:
           - program_image
           - talent_photo
+          - organization_logo
           - application_file
           - solution_deck
         sizeBytes:
@@ -8814,14 +8815,12 @@ components:
             pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
           maxItems: 5
           minItems: 1
-        logoUrl:
+        logoFileId:
           type:
           - string
           - "null"
-          description: The address of its logo.
-          maxLength: 300
-          minLength: 0
-          pattern: "https?://[^\\s]+"
+          format: uuid
+          description: A logo the caller uploaded for an organization; null for none.
         name:
           type: string
           maxLength: 120
