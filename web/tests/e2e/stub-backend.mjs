@@ -26,6 +26,13 @@ const accounts = {
     displayName: "Đạt Phan",
     role: "operator",
   },
+  // An operator of a deployment whose email is set up with Amazon SES (stub-email.mjs).
+  emailer: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a30",
+    email: "ops@beyondpilot.ai",
+    displayName: "Hà Lê",
+    role: "operator",
+  },
   unnamed: {
     id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a02",
     email: "an.tran@example.com",

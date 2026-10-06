@@ -1560,7 +1560,7 @@
         "metaTitle": "Email appearance",
         "back": "Templates",
         "title": "Appearance",
-        "lead": "What every email shares. The preview shows a sample email as it is sent now.",
+        "lead": "What every email shares. The preview shows a sample email in the colour and footer you are editing.",
         "color": "Accent colour",
         "colorPicker": "Pick a colour",
         "colorHint": "Links and buttons. Choose a dark colour: white text sits on it.",
@@ -1833,6 +1833,96 @@
           "lead": "Your changes on this page are not saved and will be lost.",
           "leave": "Leave",
           "stay": "Stay"
+        }
+      },
+      "checks": {
+        "title": "Setup",
+        "done": "{done} of {total} done",
+        "lead": "What the provider says about sending from {domain}, checked at {when}.",
+        "leadChecking": "Asking the provider whether email can leave.",
+        "again": "Check again",
+        "checking": "Asking the provider…",
+        "failed": "The provider could not be asked. Try again in a minute.",
+        "smtp": "An SMTP server has no API to ask. Send yourself a test from the form below: if it arrives, email leaves.",
+        "limits": {
+          "permission_missing": {
+            "ses": "This IAM user may send but not read the account or the domain. Add ses:GetAccount and ses:GetEmailIdentity to its policy to see the checks.",
+            "resend": "This API key may only send, so it cannot read the domain. Your email still leaves; check the domain at resend.com › Domains."
+          },
+          "credentials_refused": {
+            "ses": "AWS refused the access key. Check its ID and secret, and that the user is active.",
+            "resend": "Resend refused the API key. Create a new one at resend.com › API Keys."
+          },
+          "unreachable": {
+            "ses": "Amazon SES did not answer. Check again in a minute.",
+            "resend": "Resend did not answer. Check again in a minute."
+          }
+        },
+        "steps": {
+          "credentials": {
+            "ok": "The provider takes the credentials",
+            "pending": "Checking the credentials",
+            "failed": "The provider refuses the credentials",
+            "unknown": "The credentials could not be checked",
+            "next": "Check the key or the login in the form below."
+          },
+          "domain_added": {
+            "ok": "The domain is added to the provider",
+            "pending": "The domain is being added",
+            "failed": "The domain is not added to the provider",
+            "unknown": "The domain could not be read",
+            "next": "Add the sender's domain in the provider's console, then publish the records below."
+          },
+          "domain_verified": {
+            "ok": "The domain is verified",
+            "pending": "Waiting for DNS to verify the domain",
+            "failed": "The domain could not be verified",
+            "unknown": "The domain's state is not known",
+            "next": "Publish the records below; DNS can take up to 72 hours."
+          },
+          "dkim": {
+            "ok": "Email is signed with DKIM",
+            "pending": "Waiting for the DKIM records",
+            "failed": "The DKIM records are not found",
+            "unknown": "DKIM could not be checked",
+            "next": "Publish the DKIM records below exactly as shown."
+          },
+          "mail_from": {
+            "ok": "Bounces return to your own subdomain",
+            "pending": "Waiting for the MAIL FROM records",
+            "failed": "The MAIL FROM records are not found",
+            "unknown": "MAIL FROM could not be checked",
+            "next": "Publish the MX and TXT records of the MAIL FROM subdomain below."
+          },
+          "production_access": {
+            "ok": "Production access: email reaches anyone",
+            "pending": "Sandbox: only verified addresses receive email",
+            "failed": "Production access was refused",
+            "unknown": "Production access could not be checked",
+            "next": "Ask AWS for production access in the SES console › Account dashboard."
+          },
+          "sending_enabled": {
+            "ok": "The account may send",
+            "pending": "Sending is being enabled",
+            "failed": "AWS paused sending for this account",
+            "unknown": "Sending could not be checked",
+            "next": "Read why in the SES console › Account dashboard; bounces or complaints ran high."
+          }
+        },
+        "records": {
+          "title": "DNS records for {domain}",
+          "status": "Status",
+          "type": "Type",
+          "host": "Host",
+          "value": "Value",
+          "copy": "Copy {what}",
+          "dmarc": "Recommended. Gmail and Yahoo expect DMARC from anyone who sends in bulk; the provider does not check it.",
+          "states": {
+            "ok": "Found",
+            "pending": "Waiting",
+            "failed": "Not found",
+            "unknown": "Not checked"
+          }
         }
       }
     },

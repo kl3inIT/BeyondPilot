@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { EmailHeader } from "@/features/email/email-header";
 import { readEmailSettings } from "@/features/email/email-queries";
 import { EmailSettingsForm } from "@/features/email/email-settings-form";
+import { EmailSetupChecklist } from "@/features/email/email-setup-checklist";
 import { requireRole } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
 
@@ -28,6 +29,8 @@ export default async function EmailSettingsRoute({
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 md:px-6 lg:px-8">
       <EmailHeader current="settings" ready={settings.ready} />
+      {/* What the provider says can only be asked once a provider and a sender are saved. */}
+      {settings.ready && <EmailSetupChecklist key={settings.version} />}
       <EmailSettingsForm key={settings.version} settings={settings} operatorEmail={account.email} />
     </div>
   );
