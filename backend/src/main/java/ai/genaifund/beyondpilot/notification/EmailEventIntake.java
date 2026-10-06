@@ -1,13 +1,13 @@
 package ai.genaifund.beyondpilot.notification;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import ai.genaifund.beyondpilot.notification.adapter.EmailProvider;
 import ai.genaifund.beyondpilot.notification.delivery.DeliveryReport;
@@ -16,18 +16,11 @@ import ai.genaifund.beyondpilot.notification.settings.DeliverySettings;
 import com.resend.core.exception.ResendException;
 import com.resend.services.webhooks.Webhooks;
 import com.resend.services.webhooks.model.VerifyWebhookOptions;
-import jakarta.annotation.PreDestroy;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-import software.amazon.awssdk.messagemanager.sns.SnsMessageManager;
-import software.amazon.awssdk.messagemanager.sns.model.SnsMessage;
-import software.amazon.awssdk.messagemanager.sns.model.SnsNotification;
-import software.amazon.awssdk.messagemanager.sns.model.SnsSubscriptionConfirmation;
-import software.amazon.awssdk.regions.Region;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -49,13 +42,13 @@ public class EmailEventIntake {
 
 	private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
 
-	/** One checker per region: it caches the certificates SNS signs with. */
-	private final Map<String, SnsMessageManager> snsCheckers = new ConcurrentHashMap<>();
+	private final SnsMessages sns;
 
 	EmailEventIntake(DeliverySettings settings, DeliveryReports reports, JsonMapper json) {
 		this.settings = settings;
 		this.reports = reports;
 		this.json = json;
+		this.sns = new SnsMessages(json, http);
 	}
 
 	/**
@@ -101,21 +94,21 @@ public class EmailEventIntake {
 		if (reporting.sesRegion() == null || reporting.sesEventsTopicArn() == null) {
 			throw refused("No SES region or events topic is set");
 		}
-		SnsMessage message;
+		SnsMessages.Message message;
 		try {
-			message = snsChecker(reporting.sesRegion()).parseMessage(payload);
+			message = sns.read(payload, reporting.sesRegion());
 		}
-		catch (SdkClientException | IllegalArgumentException invalid) {
+		catch (IllegalArgumentException | JacksonException invalid) {
 			throw refused("An SNS message did not verify");
 		}
 		if (!reporting.sesEventsTopicArn().equals(message.topicArn())) {
 			throw refused("An SNS message came from another topic");
 		}
-		if (message instanceof SnsSubscriptionConfirmation confirmation) {
-			confirm(confirmation);
+		if ("SubscriptionConfirmation".equals(message.type()) && message.subscribeUrl() != null) {
+			confirm(message.subscribeUrl());
 			return;
 		}
-		if (!(message instanceof SnsNotification)) {
+		if (!"Notification".equals(message.type())) {
 			return;
 		}
 		JsonNode event = json.readTree(message.message());
@@ -140,10 +133,10 @@ public class EmailEventIntake {
 				detail(event.path("bounce").path("bounceSubType")), message.messageId()));
 	}
 
-	/** Answers SNS's request to confirm the subscription; the message's signature has been checked. */
-	private void confirm(SnsSubscriptionConfirmation confirmation) {
+	/** Answers SNS's request to confirm the subscription; the message's signature and address have been checked. */
+	private void confirm(URI subscribeUrl) {
 		try {
-			HttpResponse<Void> answer = http.send(HttpRequest.newBuilder(confirmation.subscribeUrl())
+			HttpResponse<Void> answer = http.send(HttpRequest.newBuilder(subscribeUrl)
 				.timeout(Duration.ofSeconds(20))
 				.GET()
 				.build(), HttpResponse.BodyHandlers.discarding());
@@ -163,13 +156,6 @@ public class EmailEventIntake {
 		}
 	}
 
-	private SnsMessageManager snsChecker(String region) {
-		return snsCheckers.computeIfAbsent(region, name -> SnsMessageManager.builder()
-			.region(Region.of(name))
-			.httpClient(UrlConnectionHttpClient.create())
-			.build());
-	}
-
 	private static Instant instant(JsonNode value) {
 		try {
 			return Instant.parse(value.asString(""));
@@ -187,11 +173,6 @@ public class EmailEventIntake {
 
 	private static NotificationException refused(String diagnostic) {
 		return new NotificationException(NotificationErrorCode.EVENT_REFUSED, diagnostic);
-	}
-
-	@PreDestroy
-	void close() {
-		snsCheckers.values().forEach(SnsMessageManager::close);
 	}
 
 }
