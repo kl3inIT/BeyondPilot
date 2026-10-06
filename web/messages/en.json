@@ -293,9 +293,12 @@
       "introductions": "Introductions",
       "review": "Review",
       "system": "System",
-      "email": "Email",
       "useCases": "Use cases",
-      "useCasesNew": "New use case"
+      "useCasesNew": "New use case",
+      "ai": "AI",
+      "aiProviders": "Providers",
+      "searchIndex": "Search index",
+      "email": "Email"
     },
     "toggleSidebar": "Toggle sidebar",
     "programs": {
@@ -761,6 +764,13 @@
           "decide": "Decided on an application",
           "release": "Released the outcomes"
         },
+        "use_case": {
+          "create": "Created a use case",
+          "submit": "Sent a use case for review",
+          "draft": "Moved a use case back to Draft",
+          "approve": "Approved a use case",
+          "send_back": "Sent a use case back"
+        },
         "email": {
           "settings_update": "Changed the email settings",
           "appearance_update": "Changed the email appearance",
@@ -771,12 +781,17 @@
           "resend": "Sent an email again",
           "test_send": "Sent a test email"
         },
-        "use_case": {
-          "create": "Created a use case",
-          "submit": "Sent a use case for review",
-          "draft": "Moved a use case back to Draft",
-          "approve": "Approved a use case",
-          "send_back": "Sent a use case back"
+        "ai": {
+          "provider_create": "Connected an AI provider",
+          "provider_update": "Changed an AI provider",
+          "provider_delete": "Deleted an AI provider"
+        },
+        "search": {
+          "model_change": "Changed the embedding model",
+          "semantic_enable": "Turned semantic search on",
+          "semantic_disable": "Turned semantic search off",
+          "index_rebuild": "Rebuilt the search index",
+          "embedding_retry": "Let refused items be embedded again"
         }
       },
       "activity": {
@@ -836,6 +851,13 @@
           "decide": "Decided on an application to <resource></resource>",
           "release": "Released the outcomes of <resource></resource>"
         },
+        "use_case": {
+          "create": "Created the use case <resource></resource>",
+          "submit": "Sent the use case <resource></resource> for review",
+          "draft": "Moved the use case <resource></resource> back to Draft",
+          "approve": "Approved the use case <resource></resource>",
+          "send_back": "Sent the use case <resource></resource> back"
+        },
         "email": {
           "settings_update": "Changed <resource></resource>",
           "appearance_update": "Changed the appearance in <resource></resource>",
@@ -846,12 +868,17 @@
           "resend": "Sent the email <resource></resource> again",
           "test_send": "Sent a test email to <resource></resource>"
         },
-        "use_case": {
-          "create": "Created the use case <resource></resource>",
-          "submit": "Sent the use case <resource></resource> for review",
-          "draft": "Moved the use case <resource></resource> back to Draft",
-          "approve": "Approved the use case <resource></resource>",
-          "send_back": "Sent the use case <resource></resource> back"
+        "ai": {
+          "provider_create": "Connected the AI provider <resource></resource>",
+          "provider_update": "Changed the AI provider <resource></resource>",
+          "provider_delete": "Deleted the AI provider <resource></resource>"
+        },
+        "search": {
+          "model_change": "Changed the embedding model in <resource></resource>",
+          "semantic_enable": "Turned semantic search on in <resource></resource>",
+          "semantic_disable": "Turned semantic search off in <resource></resource>",
+          "index_rebuild": "Rebuilt <resource></resource>",
+          "embedding_retry": "Let refused items of <resource></resource> be embedded again"
         }
       },
       "columns": {
@@ -1344,6 +1371,460 @@
         "title": "No request matches",
         "description": "Try another solution name, or another state.",
         "clear": "Clear search and filters"
+      }
+    },
+    "useCases": {
+      "metaTitle": "Use cases · BeyondPilot",
+      "title": "Use cases",
+      "lead": "Use cases of every organisation. Review the ones sent to you, or create one for an organisation.",
+      "create": "Create use case",
+      "search": "Search by title or organisation",
+      "clear": "Clear search",
+      "filters": {
+        "status": {
+          "label": "Status",
+          "all": "All statuses"
+        },
+        "organization": {
+          "label": "Organisation",
+          "all": "Organisation"
+        }
+      },
+      "status": {
+        "draft": "Draft",
+        "in_review": "In review",
+        "needs_changes": "Needs changes",
+        "published": "Published",
+        "closed": "Closed"
+      },
+      "note": {
+        "draft": "Only {organization} can see it",
+        "in_review": "Waiting for GenAI Fund",
+        "needs_changes": "Sent back to {organization}",
+        "published": "Visible in the directory",
+        "closed": "Deadline passed · locked, nobody can change it"
+      },
+      "columns": {
+        "useCase": "Use case",
+        "organization": "Organisation",
+        "status": "Status",
+        "closes": "Proposals close",
+        "updated": "Updated",
+        "actions": "Actions"
+      },
+      "count": "{count, plural, one {# use case} other {# use cases}}",
+      "inReview": "{count} in review",
+      "empty": {
+        "title": "No use cases yet",
+        "description": "Use cases appear here when organisations write them, or when you create one for an organisation."
+      },
+      "noMatch": {
+        "title": "No use case matches",
+        "description": "Nothing matches this search and these filters.",
+        "clear": "Clear search and filters"
+      },
+      "form": {
+        "metaTitle": "Create a use case · BeyondPilot",
+        "title": "Create a use case",
+        "lead": "Write it for an organisation. The audit log records it as created by GenAI Fund.",
+        "sections": {
+          "organization": "Organisation",
+          "challenge": "The challenge",
+          "outcomes": {
+            "title": "Outcomes and users",
+            "description": "Expected outcomes, current process, current solutions, target users"
+          },
+          "requirements": {
+            "title": "Requirements and data",
+            "description": "Requirements (required or optional), data readiness, integration, attachments"
+          },
+          "budget": {
+            "title": "Budget and timeline",
+            "description": "Budget range, preferred timeline, show or hide the company name"
+          }
+        },
+        "open": "Open",
+        "close": "Close",
+        "organization": "Create this use case for",
+        "organizationPlaceholder": "Choose an organisation",
+        "organizationHint": "Only approved organisations are listed.",
+        "choose": "Choose",
+        "useCaseTitle": "Use case title",
+        "useCaseTitleHint": "Name the outcome you want, not a technology.",
+        "problemStatement": "Problem statement",
+        "problemStatementHint": "What happens today, who it affects and what it costs.",
+        "industry": "Industry",
+        "technologies": "Relevant AI technologies",
+        "expectedOutcomes": "Expected outcomes and success metrics",
+        "expectedOutcomesHint": "Use numbers where you can.",
+        "currentProcess": "Current process",
+        "currentProcessHint": "How the work is done today.",
+        "currentSolutions": "Current solutions",
+        "currentSolutionsHint": "Optional. Tools or vendors you use or have tried.",
+        "targetUsers": "Target users and impacted teams",
+        "targetUsersHint": "Who uses the solution, and who is affected by it.",
+        "requirement": "Requirement {number}",
+        "addRequirement": "Add a requirement",
+        "necessity": {
+          "label": "Type",
+          "required": "Required",
+          "optional": "Optional"
+        },
+        "dataReadiness": "Data availability and readiness",
+        "dataReadinessHint": "What data exists, in what format, and how providers can access it.",
+        "integrationRequirements": "Integration, deployment and infrastructure",
+        "integrationRequirementsHint": "Systems to connect to, where it runs, security and data residency.",
+        "budgetMin": "Minimum budget (USD)",
+        "budgetMax": "Maximum budget (USD)",
+        "budgetToBeDetermined": "Budget to be determined",
+        "budgetMembersOnly": "Show the budget to signed-in members only",
+        "timeline": {
+          "label": "Preferred timeline",
+          "under_4": "Under 4 weeks",
+          "4_8": "4–8 weeks",
+          "8_12": "8–12 weeks",
+          "12_24": "12–24 weeks",
+          "over_24": "24 weeks or more"
+        },
+        "hideOrganizationName": "Hide the company name on the public use case",
+        "publish": {
+          "title": "Publish",
+          "when": "When you save",
+          "thisOrganization": "the organisation",
+          "publish": {
+            "title": "Publish now",
+            "description": "Visible in the directory at once. Providers can send proposals until the date below."
+          },
+          "draft": {
+            "title": "Save as a draft",
+            "description": "Only {organization}’s members can see it. They edit it, then send it to GenAI Fund for review."
+          }
+        },
+        "closes": "Proposals close",
+        "closesTime": "Time, Vietnam time",
+        "closesHint": "Providers cannot send proposals after this time (Vietnam time, ICT).",
+        "draftSubmit": "Save draft",
+        "publishSubmit": "Publish use case",
+        "cancel": "Cancel",
+        "saved": "Saved “{title}” as a draft.",
+        "published": "Published “{title}”.",
+        "errors": {
+          "budgetOutOfOrder": "The maximum is below the minimum.",
+          "USECASE_ORGANIZATION_NOT_ELIGIBLE": "This organisation is not an approved enterprise.",
+          "USECASE_CLOSES_IN_THE_PAST": "Choose a day after today.",
+          "USECASE_BUDGET_INCOMPLETE": "Give both amounts, or mark the budget to be determined.",
+          "USECASE_BUDGET_OUT_OF_ORDER": "The maximum is below the minimum.",
+          "unknown": "The use case was not saved. Try again.",
+          "USECASE_ATTACHMENT_NOT_USABLE": "Upload the file again: it cannot be attached."
+        },
+        "attachments": {
+          "label": "Attachments",
+          "add": "Add an attachment",
+          "replace": "Replace",
+          "uploaded": "Uploaded {time}",
+          "uploading": "Uploading…",
+          "errors": {
+            "type": "Attach a PDF, Word, Excel or PowerPoint file, or a PNG or JPEG image.",
+            "size": "Keep each file to 25 MB.",
+            "failed": "The file was not uploaded. Try again."
+          }
+        }
+      },
+      "untitled": "Untitled use case",
+      "actions": {
+        "open": "Actions for {name}",
+        "review": "Review use case",
+        "view": "Open use case",
+        "organisation": "View organisation"
+      },
+      "errors": {
+        "USECASE_NOT_AWAITING_REVIEW": "This use case is no longer in review. Its status was read again.",
+        "USECASE_NOT_FOUND": "This use case does not exist any more.",
+        "unknown": "The decision was not saved. Try again."
+      },
+      "decision": {
+        "title": "Decision",
+        "lead": "Approving publishes it at once and emails {organization}’s members. Sending it back needs a reason they can read.",
+        "approve": "Approve and publish",
+        "sendBack": "Send back…",
+        "approved": "“{name}” is published.",
+        "sentBack": "“{name}” was sent back to {organization}.",
+        "dialog": {
+          "title": "Send back to {organization}",
+          "description": "{organization}’s members get your reason by email and see it when they open the use case. They edit it and send it again.",
+          "label": "What should {organization} change?",
+          "hint": "Your reason is kept with the use case. {organization}’s members see it until they send the use case again.",
+          "cancel": "Cancel",
+          "confirm": "Send back"
+        },
+        "leadPublished": "It is public now. Sending it back takes it out of the directory and gives {organization}’s members a reason they can read; they edit it and send it again."
+      },
+      "detail": {
+        "metaTitle": "Use case · BeyondPilot",
+        "untitled": "Untitled use case",
+        "subtitle": {
+          "in_review": "{organization} · waiting for GenAI Fund",
+          "needs_changes": "{organization} · sent back, waiting for its members",
+          "draft": "{organization} · only its members can see it",
+          "published": "{organization} · in the directory",
+          "closed": "{organization} · closed"
+        },
+        "history": {
+          "title": "Status history",
+          "created": "Created by {name}",
+          "createdMeta": "{date}, for {organization}",
+          "sent": "Sent for review",
+          "sentBack": "Sent back",
+          "published": "Published",
+          "by": "{date}, by {name}",
+          "closed": "Closed",
+          "closedMeta": "{date}. Automatic: the deadline passed.",
+          "now": {
+            "in_review": {
+              "title": "In review",
+              "meta": "Waiting for GenAI Fund to approve it or send it back."
+            },
+            "needs_changes": {
+              "title": "Needs changes",
+              "meta": "Waiting for {organization} to edit it and send it again."
+            },
+            "draft": {
+              "title": "Draft",
+              "meta": "Waiting for {organization} to send it for review."
+            }
+          },
+          "sentBackMeta": "{date}, by {name} · “{note}”"
+        },
+        "review": {
+          "title": "Review the use case",
+          "lead": "Check each section as {organization} wrote it. You cannot edit it: approve it, or send it back with what to change."
+        },
+        "readOnly": "Read only: this is what {organization} wrote. You cannot edit it.",
+        "viewDetails": "View details",
+        "backToReview": "Back to review"
+      }
+    },
+    "ai": {
+      "providers": {
+        "metaTitle": "AI providers",
+        "title": "AI providers",
+        "lead": "The AI services BeyondPilot calls, and the model each feature uses.",
+        "tabs": "Purposes",
+        "embedding": "Embedding",
+        "noEncryption": {
+          "title": "Keys cannot be saved yet",
+          "lead": "The server has no encryption key for provider keys. Ask the team to add BEYONDPILOT_AI_ENCRYPTION_KEY."
+        }
+      },
+      "model": {
+        "heading": "Embedding model",
+        "headingLead": "Turns text into vectors for semantic search. Every item and every query uses it.",
+        "active": "Active",
+        "through": "Through {name}",
+        "dimensions": "Dimensions",
+        "embedded": "Embedded",
+        "embeddedOf": "{embedded} of {total}",
+        "since": "Active since",
+        "usedBy": "Used by",
+        "search": "Search · {count, plural, one {# item} other {# items}}",
+        "openIndex": "Open search index",
+        "none": {
+          "title": "No embedding provider yet",
+          "lead": "Search matches keywords only. Connect a provider below to turn on semantic search."
+        },
+        "notChosen": {
+          "title": "No model chosen yet",
+          "lead": "Choose the provider and model search embeds with to turn on semantic search."
+        },
+        "change": "Change model",
+        "choose": "Choose model",
+        "title": "Change the embedding model",
+        "lead": "Search keeps working while the items are embedded again.",
+        "provider": "Provider",
+        "model": "Model",
+        "dimensionsHint": "Known models give 1,536 dimensions, the size the index stores.",
+        "test": "Test connection",
+        "testHint": "Embeds one sentence with the model above.",
+        "testButton": "Test",
+        "warning": "All {count, plural, one {# item is} other {# items are}} embedded again, about {minutes, plural, one {# minute} other {# minutes}} at 32 a minute. Until then an item is found by keyword search only. Each item is billed once by the provider.",
+        "cancel": "Cancel",
+        "embedAgain": "Embed again",
+        "use": "Use this model"
+      },
+      "connected": {
+        "heading": "Connected providers",
+        "lead": "Where the key is kept. A key is stored encrypted and never shown again, not even in part.",
+        "inUse": "In use",
+        "keySaved": "Key saved",
+        "noKey": "No key",
+        "meta": "{address} · saved by {name} on {date}",
+        "inUseNote": "Search embeds with it. Change the model to another provider before deleting it."
+      },
+      "add": {
+        "heading": "Add provider",
+        "lead": "Both speak the OpenAI API; only the address and the bill differ.",
+        "openai": "Embedding models from OpenAI, billed by OpenAI.",
+        "openrouter": "One key for models from many vendors, billed by OpenRouter."
+      },
+      "editor": {
+        "vendor": {
+          "openai": "OpenAI",
+          "openrouter": "OpenRouter"
+        },
+        "edit": "Edit",
+        "connect": "Connect",
+        "connectLabel": "Connect {name}",
+        "connectTitle": "Connect {name}",
+        "connectLead": "Saved providers can be picked under Change model. Test the key before you save it.",
+        "editTitle": "Edit {name}",
+        "editLead": "Changes take effect for every search once you save.",
+        "name": "Name",
+        "address": "Base URL",
+        "addressHint": "The provider's own API address. The key is only ever sent there.",
+        "apiKey": "API key",
+        "keyKeep": "Keep the saved key",
+        "keyReplace": "Replace the key",
+        "keyRemove": "Remove the key",
+        "newKey": "New API key",
+        "keyHint": {
+          "openai": "Create one at platform.openai.com/api-keys. It is stored encrypted and never shown again.",
+          "openrouter": "Create one at openrouter.ai/keys with a monthly limit. It is stored encrypted and never shown again."
+        },
+        "test": "Test connection",
+        "model": "Model to test",
+        "testButton": "Test",
+        "testHint": "Embeds one sentence with this key and model, saved or not. Nothing is stored.",
+        "cancel": "Cancel",
+        "save": "Save provider"
+      },
+      "probe": {
+        "connected": "Connected · {model} · {dimensions, number} dimensions · {ms} ms",
+        "failed": "Connection failed · {ms} ms",
+        "reason": {
+          "rejected": "The provider rejected the API key. Check that it is copied whole and not revoked.",
+          "model_refused": "The provider does not offer this model to this key.",
+          "unreachable": "The provider did not answer in time. Try again in a moment.",
+          "wrong_dimensions": "The model gave vectors of another length than the 1,536 the index stores."
+        }
+      },
+      "delete": {
+        "open": "Delete",
+        "title": "Delete {name}?",
+        "lead": "The provider and its saved key are deleted. Connect it again to use it.",
+        "confirm": "Delete provider",
+        "cancel": "Cancel"
+      },
+      "done": {
+        "connected": "{name} connected",
+        "saved": "{name} saved",
+        "deleted": "{name} deleted",
+        "modelChosen": "Search embeds with {model} from now on"
+      },
+      "errors": {
+        "SEARCH_PROVIDER_NOT_FOUND": "This provider no longer exists. Reload the page.",
+        "SEARCH_PROVIDER_INVALID": "The address must be the provider's own API address.",
+        "SEARCH_PROVIDER_NAME_TAKEN": "Another provider already has this name.",
+        "SEARCH_PROVIDER_CHANGED": "Someone changed this provider since you opened it. Reload and try again.",
+        "SEARCH_PROVIDER_IN_USE": "Search embeds with this provider. Change the model to another provider first.",
+        "SEARCH_PROVIDER_KEY_MISSING": "Enter the API key. A saved key is only used with the address it was saved for.",
+        "SEARCH_MODEL_UNKNOWN": "This provider does not offer that model.",
+        "SEARCH_MODEL_REJECTED": "The provider did not embed a test sentence with this key and model. Test the connection to see why.",
+        "SEARCH_RETRY_ITEM_INCOMPLETE": "Name the kind of the item to try again.",
+        "SEARCH_SETTINGS_CHANGED": "Someone changed the search settings since you opened them. Reload and try again.",
+        "SEARCH_ENCRYPTION_KEY_MISSING": "Keys cannot be saved: the server has no encryption key for them. Ask the team to add it.",
+        "unknown": "Something went wrong. Try again in a moment."
+      }
+    },
+    "searchIndex": {
+      "metaTitle": "Search index",
+      "title": "Search index",
+      "lead": "What search can find by keyword, and how much of it is embedded for semantic search.",
+      "rebuild": "Rebuild index",
+      "semantic": {
+        "label": "Semantic search",
+        "switch": "Semantic search",
+        "openProviders": "Open providers",
+        "on": {
+          "title": "Semantic search is on",
+          "lead": "Keyword and semantic results are ranked together. {provider} · {model} · last batch {last}.",
+          "noBatch": "none since the last start"
+        },
+        "off": {
+          "title": "Semantic search is off",
+          "lead": "Search matches keywords only and nothing is sent to the provider. Turned on again, it first embeds what changed meanwhile."
+        },
+        "paused": {
+          "title": "Semantic search paused until {until}",
+          "reason": {
+            "rejected": "The provider rejected the API key. Search matches keywords only until it answers; check the key under Providers.",
+            "model_refused": "The provider refused the model. Search matches keywords only until it answers; check the model under Providers.",
+            "unreachable": "The provider did not answer. Search matches keywords only until it does; it is tried again on its own."
+          }
+        },
+        "noProvider": {
+          "title": "Semantic search is off",
+          "lead": "No embedding provider is connected, so search matches keywords only. Connect one under Providers to turn it on."
+        }
+      },
+      "stats": {
+        "indexed": "In the index",
+        "listed": "{count} in public results",
+        "embedded": "Embedded",
+        "embeddedOf": "{embedded} of {total} · {model}",
+        "noModel": "No embedding model",
+        "waiting": "Waiting",
+        "waitingNote": "Embedded at the next run",
+        "heldBack": "Failed",
+        "heldBackNote": "Refused by the provider"
+      },
+      "kinds": {
+        "heading": "By kind",
+        "kind": "Kind",
+        "total": "In the index",
+        "listed": "In public results",
+        "embedded": "Embedded",
+        "waiting": "Waiting",
+        "heldBack": "Failed",
+        "name": {
+          "program": "Programs",
+          "solution": "AI solutions",
+          "talent": "AI talent",
+          "use_case": "Use cases"
+        },
+        "embeddedShare": "{count} · {share}",
+        "embeddedOf": "{embedded} of {total} embedded",
+        "mobileFacts": "{listed} in public results · {waiting} waiting",
+        "heldBackCount": "{count} failed",
+        "note": "Unlisted solutions and talent stay in the index for operators matching use cases, never in public results."
+      },
+      "heldBack": {
+        "heading": "Not embedded",
+        "lead": "Found by keyword search until they are embedded. The job tries again on its own, waiting longer each time.",
+        "retryAll": "Try all again",
+        "retry": "Try again",
+        "retryOne": "Try {title} again",
+        "item": "Item",
+        "reason": "Reason",
+        "attempts": "Attempts",
+        "next": "Next try",
+        "actions": "Actions",
+        "soon": "at the next run",
+        "mobileNext": "{count, plural, one {# attempt} other {# attempts}} · next {next}",
+        "reasons": {
+          "bad_request": "The provider refused the text (400 Bad request).",
+          "unprocessable": "The provider refused the text (422 Unprocessable).",
+          "refused": "The provider refused the text."
+        }
+      },
+      "repair": {
+        "last": "Rebuilt from the sources at every start and every night at 03:30. Last rebuilt {when}: {saved} items read, {removed} removed.",
+        "never": "Rebuilt from the sources at every start and every night at 03:30."
+      },
+      "done": {
+        "on": "Semantic search is on",
+        "off": "Semantic search is off",
+        "rebuilt": "Index rebuilt: {saved} items read, {removed} removed",
+        "retried": "{count, plural, =0 {Nothing to try again} one {# item is tried again at the next run} other {# items are tried again at the next run}}"
       }
     },
     "email": {
@@ -1929,237 +2410,6 @@
         "to": "Send a test to",
         "send": "Send test",
         "invalid": "Write one email address."
-      }
-    },
-    "useCases": {
-      "metaTitle": "Use cases · BeyondPilot",
-      "title": "Use cases",
-      "lead": "Use cases of every organisation. Review the ones sent to you, or create one for an organisation.",
-      "create": "Create use case",
-      "search": "Search by title or organisation",
-      "clear": "Clear search",
-      "filters": {
-        "status": {
-          "label": "Status",
-          "all": "All statuses"
-        },
-        "organization": {
-          "label": "Organisation",
-          "all": "Organisation"
-        }
-      },
-      "status": {
-        "draft": "Draft",
-        "in_review": "In review",
-        "needs_changes": "Needs changes",
-        "published": "Published",
-        "closed": "Closed"
-      },
-      "note": {
-        "draft": "Only {organization} can see it",
-        "in_review": "Waiting for GenAI Fund",
-        "needs_changes": "Sent back to {organization}",
-        "published": "Visible in the directory",
-        "closed": "Deadline passed · locked, nobody can change it"
-      },
-      "columns": {
-        "useCase": "Use case",
-        "organization": "Organisation",
-        "status": "Status",
-        "closes": "Proposals close",
-        "updated": "Updated",
-        "actions": "Actions"
-      },
-      "count": "{count, plural, one {# use case} other {# use cases}}",
-      "inReview": "{count} in review",
-      "empty": {
-        "title": "No use cases yet",
-        "description": "Use cases appear here when organisations write them, or when you create one for an organisation."
-      },
-      "noMatch": {
-        "title": "No use case matches",
-        "description": "Nothing matches this search and these filters.",
-        "clear": "Clear search and filters"
-      },
-      "form": {
-        "metaTitle": "Create a use case · BeyondPilot",
-        "title": "Create a use case",
-        "lead": "Write it for an organisation. The audit log records it as created by GenAI Fund.",
-        "sections": {
-          "organization": "Organisation",
-          "challenge": "The challenge",
-          "outcomes": {
-            "title": "Outcomes and users",
-            "description": "Expected outcomes, current process, current solutions, target users"
-          },
-          "requirements": {
-            "title": "Requirements and data",
-            "description": "Requirements (required or optional), data readiness, integration, attachments"
-          },
-          "budget": {
-            "title": "Budget and timeline",
-            "description": "Budget range, preferred timeline, show or hide the company name"
-          }
-        },
-        "open": "Open",
-        "close": "Close",
-        "organization": "Create this use case for",
-        "organizationPlaceholder": "Choose an organisation",
-        "organizationHint": "Only approved organisations are listed.",
-        "choose": "Choose",
-        "useCaseTitle": "Use case title",
-        "useCaseTitleHint": "Name the outcome you want, not a technology.",
-        "problemStatement": "Problem statement",
-        "problemStatementHint": "What happens today, who it affects and what it costs.",
-        "industry": "Industry",
-        "technologies": "Relevant AI technologies",
-        "expectedOutcomes": "Expected outcomes and success metrics",
-        "expectedOutcomesHint": "Use numbers where you can.",
-        "currentProcess": "Current process",
-        "currentProcessHint": "How the work is done today.",
-        "currentSolutions": "Current solutions",
-        "currentSolutionsHint": "Optional. Tools or vendors you use or have tried.",
-        "targetUsers": "Target users and impacted teams",
-        "targetUsersHint": "Who uses the solution, and who is affected by it.",
-        "requirement": "Requirement {number}",
-        "addRequirement": "Add a requirement",
-        "necessity": {
-          "label": "Type",
-          "required": "Required",
-          "optional": "Optional"
-        },
-        "dataReadiness": "Data availability and readiness",
-        "dataReadinessHint": "What data exists, in what format, and how providers can access it.",
-        "integrationRequirements": "Integration, deployment and infrastructure",
-        "integrationRequirementsHint": "Systems to connect to, where it runs, security and data residency.",
-        "budgetMin": "Minimum budget (USD)",
-        "budgetMax": "Maximum budget (USD)",
-        "budgetToBeDetermined": "Budget to be determined",
-        "budgetMembersOnly": "Show the budget to signed-in members only",
-        "timeline": {
-          "label": "Preferred timeline",
-          "under_4": "Under 4 weeks",
-          "4_8": "4–8 weeks",
-          "8_12": "8–12 weeks",
-          "12_24": "12–24 weeks",
-          "over_24": "24 weeks or more"
-        },
-        "hideOrganizationName": "Hide the company name on the public use case",
-        "publish": {
-          "title": "Publish",
-          "when": "When you save",
-          "thisOrganization": "the organisation",
-          "publish": {
-            "title": "Publish now",
-            "description": "Visible in the directory at once. Providers can send proposals until the date below."
-          },
-          "draft": {
-            "title": "Save as a draft",
-            "description": "Only {organization}’s members can see it. They edit it, then send it to GenAI Fund for review."
-          }
-        },
-        "closes": "Proposals close",
-        "closesTime": "Time, Vietnam time",
-        "closesHint": "Providers cannot send proposals after this time (Vietnam time, ICT).",
-        "draftSubmit": "Save draft",
-        "publishSubmit": "Publish use case",
-        "cancel": "Cancel",
-        "saved": "Saved “{title}” as a draft.",
-        "published": "Published “{title}”.",
-        "errors": {
-          "budgetOutOfOrder": "The maximum is below the minimum.",
-          "USECASE_ORGANIZATION_NOT_ELIGIBLE": "This organisation is not an approved enterprise.",
-          "USECASE_CLOSES_IN_THE_PAST": "Choose a day after today.",
-          "USECASE_BUDGET_INCOMPLETE": "Give both amounts, or mark the budget to be determined.",
-          "USECASE_BUDGET_OUT_OF_ORDER": "The maximum is below the minimum.",
-          "unknown": "The use case was not saved. Try again.",
-          "USECASE_ATTACHMENT_NOT_USABLE": "Upload the file again: it cannot be attached."
-        },
-        "attachments": {
-          "label": "Attachments",
-          "add": "Add an attachment",
-          "replace": "Replace",
-          "uploaded": "Uploaded {time}",
-          "uploading": "Uploading…",
-          "errors": {
-            "type": "Attach a PDF, Word, Excel or PowerPoint file, or a PNG or JPEG image.",
-            "size": "Keep each file to 25 MB.",
-            "failed": "The file was not uploaded. Try again."
-          }
-        }
-      },
-      "untitled": "Untitled use case",
-      "actions": {
-        "open": "Actions for {name}",
-        "review": "Review use case",
-        "view": "Open use case",
-        "organisation": "View organisation"
-      },
-      "errors": {
-        "USECASE_NOT_AWAITING_REVIEW": "This use case is no longer in review. Its status was read again.",
-        "USECASE_NOT_FOUND": "This use case does not exist any more.",
-        "unknown": "The decision was not saved. Try again."
-      },
-      "decision": {
-        "title": "Decision",
-        "lead": "Approving publishes it at once and emails {organization}’s members. Sending it back needs a reason they can read.",
-        "approve": "Approve and publish",
-        "sendBack": "Send back…",
-        "approved": "“{name}” is published.",
-        "sentBack": "“{name}” was sent back to {organization}.",
-        "dialog": {
-          "title": "Send back to {organization}",
-          "description": "{organization}’s members get your reason by email and see it when they open the use case. They edit it and send it again.",
-          "label": "What should {organization} change?",
-          "hint": "Your reason is kept with the use case. {organization}’s members see it until they send the use case again.",
-          "cancel": "Cancel",
-          "confirm": "Send back"
-        },
-        "leadPublished": "It is public now. Sending it back takes it out of the directory and gives {organization}’s members a reason they can read; they edit it and send it again."
-      },
-      "detail": {
-        "metaTitle": "Use case · BeyondPilot",
-        "untitled": "Untitled use case",
-        "subtitle": {
-          "in_review": "{organization} · waiting for GenAI Fund",
-          "needs_changes": "{organization} · sent back, waiting for its members",
-          "draft": "{organization} · only its members can see it",
-          "published": "{organization} · in the directory",
-          "closed": "{organization} · closed"
-        },
-        "history": {
-          "title": "Status history",
-          "created": "Created by {name}",
-          "createdMeta": "{date}, for {organization}",
-          "sent": "Sent for review",
-          "sentBack": "Sent back",
-          "published": "Published",
-          "by": "{date}, by {name}",
-          "closed": "Closed",
-          "closedMeta": "{date}. Automatic: the deadline passed.",
-          "now": {
-            "in_review": {
-              "title": "In review",
-              "meta": "Waiting for GenAI Fund to approve it or send it back."
-            },
-            "needs_changes": {
-              "title": "Needs changes",
-              "meta": "Waiting for {organization} to edit it and send it again."
-            },
-            "draft": {
-              "title": "Draft",
-              "meta": "Waiting for {organization} to send it for review."
-            }
-          },
-          "sentBackMeta": "{date}, by {name} · “{note}”"
-        },
-        "review": {
-          "title": "Review the use case",
-          "lead": "Check each section as {organization} wrote it. You cannot edit it: approve it, or send it back with what to change."
-        },
-        "readOnly": "Read only: this is what {organization} wrote. You cannot edit it.",
-        "viewDetails": "View details",
-        "backToReview": "Back to review"
       }
     }
   },

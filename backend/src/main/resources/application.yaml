@@ -49,9 +49,9 @@ spring:
           enabled: false
   ai:
     model:
-      # Search embeds its index and each query; nothing else of OpenAI's is used. Embeddings are on where a deployment
-      # names a provider and its key (BEYONDPILOT_AI_EMBEDDING=openai), so local runs and tests search by text alone.
-      embedding: ${BEYONDPILOT_AI_EMBEDDING:none}
+      # Search builds its embedding client from the provider operators connect in Admin › AI › Providers; Spring AI
+      # configures no model of its own.
+      embedding: none
       chat: none
       image: none
       moderation: none
@@ -61,19 +61,6 @@ spring:
     chat:
       client:
         enabled: false
-    openai:
-      # Any OpenAI-compatible API: OpenAI itself, or OpenRouter at https://openrouter.ai/api/v1. The key is a secret
-      # file of the deployment, BEYONDPILOT_AI_API_KEY.
-      base-url: ${BEYONDPILOT_AI_BASE_URL:https://api.openai.com/v1}
-      api-key: ${BEYONDPILOT_AI_API_KEY:}
-      # A query waits for its embedding; the search answers by text alone rather than wait longer.
-      timeout: 5s
-      max-retries: 1
-      embedding:
-        # OpenRouter names it openai/text-embedding-3-large. The dimensions are the vector(1536) column's.
-        model: ${BEYONDPILOT_AI_EMBEDDING_MODEL:text-embedding-3-large}
-        dimensions: 1536
-        metadata-mode: none
 
 server:
   # The web application and the reverse proxy forward the browser's host and scheme.
@@ -109,6 +96,9 @@ beyondpilot:
       endpoint: ${BEYONDPILOT_STORAGE_S3_ENDPOINT:}
   search:
     embedding:
+      # 32 bytes in Base64 that encrypt the AI providers' keys in the database. Without it no key can be saved, and
+      # search goes by keywords alone.
+      encryption-key: ${BEYONDPILOT_AI_ENCRYPTION_KEY:}
       # How many rows one request embeds, and how often the job looks for rows to embed.
       batch-size: 32
       interval: 1m
