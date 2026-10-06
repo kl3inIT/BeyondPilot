@@ -83,6 +83,7 @@ public class OutcomeService {
 	public ReviewApplicationsResponse decide(Actor actor, UUID programId, DecideRequest request) {
 		Operator operator = access.operator(actor);
 		ApplicationForm form = setup.form(programId);
+		Reviewing reviewing = access.of(actor, programId);
 		review.requireNotReleased(form);
 		Instant now = Instant.now();
 		String reason = request.reason() == null || request.reason().isBlank() ? null : request.reason().strip();
@@ -92,6 +93,7 @@ public class OutcomeService {
 				throw new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
 						"Application " + id + " is not of program " + programId);
 			}
+			review.requireNotOwn(reviewing, proposal);
 			if (proposal.getReviewStatus().equals(request.decision())) {
 				continue;
 			}

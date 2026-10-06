@@ -78,10 +78,13 @@ class SearchDirectoriesTest {
 		assertThat(JsonPath.<String>read(body, "$.items[0].kind")).isEqualTo("solution");
 		assertThat(JsonPath.<String>read(body, "$.items[0].subtitle")).isEqualTo("Revve " + word);
 		assertThat(JsonPath.<String>read(body, "$.items[0].maturity")).isEqualTo("pilot");
+		assertThat(JsonPath.<Integer>read(body, "$.items[0].customerDeployments")).isZero();
 		assertThat(JsonPath.<List<String>>read(body, "$.items[0].industries")).containsExactly("insurance");
 		assertThat(JsonPath.<String>read(body, "$.items[0].organizationSlug")).isNotBlank();
 		// A code is found as the words it stands for.
 		assertThat(total("document processing " + word)).isEqualTo(1);
+		// And a tool it is built with, by its name.
+		assertThat(total("langgraph " + word)).isEqualTo(1);
 
 		renameOrganization(owner, "Renamed " + word);
 		await().atMost(WAIT).until(() -> total("renamed " + word) == 1);
@@ -220,7 +223,7 @@ class SearchDirectoriesTest {
 		request.put("deployment", List.of("cloud_saas"));
 		request.put("website", "https://example.test");
 		request.put("demoUrl", null);
-		request.put("builtWith", List.of());
+		request.put("builtWith", List.of("LangGraph"));
 		request.put("languages", List.of());
 		request.put("listed", true);
 		request.put("version", version);

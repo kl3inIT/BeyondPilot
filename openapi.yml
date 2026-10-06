@@ -8258,6 +8258,10 @@ components:
           description: "Every other assessment, for an operator; empty for a judge."
           items:
             $ref: "#/components/schemas/Assessment"
+        own:
+          type: boolean
+          description: "The caller's own application, or their organization's, which\
+            \ they never score or decide."
         position:
           type: integer
           format: int32
@@ -8294,6 +8298,7 @@ components:
       - history
       - id
       - others
+      - own
       - position
       - submitted
       - submittedAt
@@ -8334,6 +8339,10 @@ components:
           type: string
           description: "The organization's type, such as independent_builder, builder_team\
             \ or company."
+        own:
+          type: boolean
+          description: "The caller's own application, or their organization's, which\
+            \ they never score or decide."
         reviewStatus:
           type:
           - string
@@ -8363,6 +8372,7 @@ components:
       - mine
       - organizationName
       - organizationType
+      - own
       - solutionName
       - submittedAt
       - version
@@ -9307,6 +9317,12 @@ components:
           - "null"
           format: uuid
           description: "A program's cover, read at the public address of stored files."
+        customerDeployments:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: How many of a solution's customer deployments GenAI Fund approved.
         endsOn:
           type:
           - string
@@ -9373,6 +9389,10 @@ components:
         slug:
           type: string
           description: The address of its page under the path of its kind.
+        snippet:
+          type: string
+          description: "The summary, or a person's headline, with each word the query\
+            \ matched between U+0002 and U+0003, to be shown in bold."
         startsOn:
           type:
           - string
@@ -9406,6 +9426,7 @@ components:
       - roles
       - skills
       - slug
+      - snippet
       - summary
       - title
     SearchResults:

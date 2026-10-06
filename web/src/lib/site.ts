@@ -81,13 +81,7 @@ export function reviewProgramRoute(programId: string) {
 }
 
 /** Planned pages without a screen yet; they share the coming-soon page. */
-export const comingSoonPaths = [
-  "use-cases",
-  "use-cases/new",
-  "get-started",
-  "founders",
-  "search",
-] as const;
+export const comingSoonPaths = ["use-cases", "use-cases/new", "get-started", "founders"] as const;
 
 /** The product's name, as the end of a page title that is a record's own name. */
 export const titleSuffix = " · BeyondPilot";

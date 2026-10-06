@@ -40,6 +40,9 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
   const { shown, counts } = narrowApplications(data.items, search);
 
   function status(item: ReviewApplicationItem): ReviewRow["status"] {
+    if (item.own && !head.operator) {
+      return { label: t("own"), variant: "outline" };
+    }
     if (head.operator) {
       const decision = item.reviewStatus ?? "under_review";
       return {
@@ -79,6 +82,7 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
         : t("scoredAverage", { count: item.scored ?? 0, value: item.average.toFixed(1) })
       : null,
     status: status(item),
+    own: item.own,
   }));
 
   const narrowed =

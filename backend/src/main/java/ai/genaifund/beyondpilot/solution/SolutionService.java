@@ -242,7 +242,9 @@ public class SolutionService {
 		}
 		CustomerDeployment deployment = new CustomerDeployment(UUID.randomUUID(), solution.getId());
 		describe(deployment, request);
-		return SolutionViews.deployment(deployments.saveAndFlush(deployment));
+		CustomerDeploymentResponse added = SolutionViews.deployment(deployments.saveAndFlush(deployment));
+		events.publishEvent(new SolutionChanged(solutionId));
+		return added;
 	}
 
 	/**
@@ -261,6 +263,8 @@ public class SolutionService {
 		}
 		describe(deployment, request);
 		deployments.flush();
+		// A deployment sent back to review no longer counts on the solution's card.
+		events.publishEvent(new SolutionChanged(solutionId));
 		return SolutionViews.deployment(deployment);
 	}
 
@@ -272,6 +276,7 @@ public class SolutionService {
 	@Transactional
 	public void deleteDeployment(Actor actor, UUID solutionId, UUID id) {
 		deployments.delete(ownDeployment(actor, solutionId, id));
+		events.publishEvent(new SolutionChanged(solutionId));
 	}
 
 	private CustomerDeployment ownDeployment(Actor actor, UUID solutionId, UUID id) {

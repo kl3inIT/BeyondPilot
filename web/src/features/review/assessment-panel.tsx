@@ -131,7 +131,7 @@ function AssessmentPanel({
                 {criterion.name}
               </span>
               <ToggleGroup
-                variant="outline"
+                variant="rating"
                 size="sm"
                 spacing={1}
                 aria-label={criterion.name}

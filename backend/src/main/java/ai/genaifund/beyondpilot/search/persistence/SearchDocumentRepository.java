@@ -1,5 +1,7 @@
 package ai.genaifund.beyondpilot.search.persistence;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -82,10 +84,32 @@ public class SearchDocumentRepository {
 			@Nullable LocalDate startsOn, @Nullable LocalDate endsOn) {
 	}
 
-	/** One result, in the order of the ranking. */
+	/**
+	 * One result, in the order of the ranking.
+	 * @param snippet the summary, or a person's headline, with each word the query matched between {@link #MARK_START}
+	 * and {@link #MARK_END}
+	 */
 	public record Hit(String kind, UUID itemId, String slug, String title, @Nullable String subtitle, String summary,
-			Map<String, Object> facets, @Nullable LocalDate startsOn, @Nullable LocalDate endsOn) {
+			String snippet, Map<String, Object> facets, @Nullable LocalDate startsOn, @Nullable LocalDate endsOn) {
 	}
+
+	/** Opens a matched word in a snippet; a control character no text a person writes carries. */
+	public static final char MARK_START = '';
+
+	/** Closes a matched word in a snippet. */
+	public static final char MARK_END = '';
+
+	/**
+	 * The columns of a result, and the snippet: {@code ts_headline} marks the matched words in the unaccented text, so
+	 * "doi moi" marks "Đổi mới", and {@link #snippet} carries the marks over to the text as written.
+	 */
+	private static final String RESULT = """
+			select d.kind, d.item_id, d.slug, d.title, d.subtitle, d.summary, d.facets, d.starts_on, d.ends_on,
+			       case when d.kind = 'talent' then coalesce(d.subtitle, d.summary) else d.summary end as source,
+			       ts_headline('simple',
+			           search_unaccent(case when d.kind = 'talent' then coalesce(d.subtitle, d.summary) else d.summary end),
+			           input.query, :headline) as marked
+			""";
 
 	/**
 	 * Adds the item, or replaces what the index kept of it. A row that already says the same is left alone, so its
@@ -162,9 +186,8 @@ public class SearchDocumentRepository {
 	 * @param kind the kind to keep, or null for every kind
 	 */
 	public List<Hit> page(String query, @Nullable String kind, boolean listedOnly, int limit, int offset) {
-		String sql = MATCHES.formatted(terms(query)) + """
-				select d.kind, d.item_id, d.slug, d.title, d.subtitle, d.summary, d.facets, d.starts_on, d.ends_on
-				from matched m join search_document d on d.kind = m.kind and d.item_id = m.item_id
+		String sql = MATCHES.formatted(terms(query)) + RESULT + """
+				from matched m join search_document d on d.kind = m.kind and d.item_id = m.item_id cross join input
 				where cast(:kind as text) is null or d.kind = :kind
 				order by m.score desc, d.title, d.item_id
 				limit :limit offset :offset
@@ -172,11 +195,59 @@ public class SearchDocumentRepository {
 		return matching(sql, query, listedOnly).param("kind", kind, Types.VARCHAR)
 			.param("limit", limit)
 			.param("offset", offset)
-			.query((row, number) -> new Hit(row.getString("kind"), row.getObject("item_id", UUID.class),
-					row.getString("slug"), row.getString("title"), row.getString("subtitle"), row.getString("summary"),
-					facets(row.getString("facets")), row.getObject("starts_on", LocalDate.class),
-					row.getObject("ends_on", LocalDate.class)))
+			.query((row, number) -> hit(row))
 			.list();
+	}
+
+	/**
+	 * The best items of each kind, at most {@code perKind} of each: the kinds in the order of their best item, each
+	 * kind's items best first.
+	 */
+	public List<Hit> bestOfEachKind(String query, boolean listedOnly, int perKind) {
+		String sql = MATCHES.formatted(terms(query)) + RESULT + """
+				from (select kind, item_id, score,
+				             row_number() over (partition by kind order by score desc, item_id) as place,
+				             max(score) over (partition by kind) as kind_best
+				      from matched) m
+				join search_document d on d.kind = m.kind and d.item_id = m.item_id cross join input
+				where m.place <= :perKind
+				order by m.kind_best desc, m.kind, m.score desc, d.title, d.item_id
+				""";
+		return matching(sql, query, listedOnly).param("perKind", perKind).query((row, number) -> hit(row)).list();
+	}
+
+	private Hit hit(ResultSet row) throws SQLException {
+		String source = row.getString("source");
+		return new Hit(row.getString("kind"), row.getObject("item_id", UUID.class), row.getString("slug"),
+				row.getString("title"), row.getString("subtitle"), row.getString("summary"),
+				snippet(source == null ? "" : source, row.getString("marked")), facets(row.getString("facets")),
+				row.getObject("starts_on", LocalDate.class), row.getObject("ends_on", LocalDate.class));
+	}
+
+	/**
+	 * The text as written with the marks {@code ts_headline} set in its unaccented form. Unaccenting keeps one letter
+	 * for one letter in Vietnamese, so a mark falls at the same place in both; a text where it does not, such as one
+	 * with a ligature, comes back unmarked rather than marked in the wrong place.
+	 */
+	static String snippet(String source, @Nullable String marked) {
+		if (marked == null) {
+			return source;
+		}
+		StringBuilder out = new StringBuilder(source.length() + 8);
+		int at = 0;
+		for (int i = 0; i < marked.length(); i++) {
+			char c = marked.charAt(i);
+			if (c == MARK_START || c == MARK_END) {
+				out.append(c);
+			}
+			else if (at < source.length()) {
+				out.append(source.charAt(at++));
+			}
+			else {
+				return source;
+			}
+		}
+		return at == source.length() ? out.toString() : source;
 	}
 
 	private JdbcClient.StatementSpec matching(String sql, String query, boolean listedOnly) {
@@ -184,6 +255,7 @@ public class SearchDocumentRepository {
 			.param("text", query)
 			.param("listedOnly", listedOnly)
 			.param("similarity", TITLE_SIMILARITY)
+			.param("headline", "StartSel=\"" + MARK_START + "\", StopSel=\"" + MARK_END + "\", HighlightAll=true")
 			.param("fusionK", FUSION_K);
 		LastWord last = LastWord.of(query);
 		return last == null ? statement : statement.param("head", last.head()).param("prefix", last.prefix());
