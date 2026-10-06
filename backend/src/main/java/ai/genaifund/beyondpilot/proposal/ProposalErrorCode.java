@@ -59,6 +59,9 @@ public enum ProposalErrorCode implements ErrorCode {
 	REVIEW_PROGRAM_NOT_FOUND("PROPOSAL_REVIEW_PROGRAM_NOT_FOUND", ErrorCategory.NOT_FOUND,
 			"There is no such program taking applications."),
 
+	OWN_APPLICATION("PROPOSAL_OWN_APPLICATION", ErrorCategory.NOT_PERMITTED,
+			"You don't score or decide an application of your own or of your organization."),
+
 	REVIEW_NOT_ALLOWED("PROPOSAL_REVIEW_NOT_ALLOWED", ErrorCategory.NOT_PERMITTED,
 			"You do not review this program's applications."),
 

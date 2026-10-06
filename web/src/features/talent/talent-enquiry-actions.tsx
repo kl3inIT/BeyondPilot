@@ -25,6 +25,8 @@ const send = {
 
 const done = { accept: "accepted", decline: "declined", report: "reported" } as const;
 
+const confirm = { decline: "confirmDecline", report: "confirmReport" } as const;
+
 /**
  * Answers a message to the caller's profile: an acceptance shares both addresses, a decline and a
  * report share none and read the same to the sender. The last two ask first.
@@ -81,14 +83,10 @@ function TalentEnquiryActions({ id }: { id: string }) {
         <ConfirmDialog
           open
           onOpenChange={(open) => !open && setConfirming(null)}
-          title={t(confirming === "decline" ? "confirmDecline.title" : "confirmReport.title")}
-          description={t(confirming === "decline" ? "confirmDecline.lead" : "confirmReport.lead")}
-          confirmLabel={t(
-            confirming === "decline" ? "confirmDecline.confirm" : "confirmReport.confirm",
-          )}
-          cancelLabel={t(
-            confirming === "decline" ? "confirmDecline.cancel" : "confirmReport.cancel",
-          )}
+          title={t(`${confirm[confirming]}.title`)}
+          description={t(`${confirm[confirming]}.lead`)}
+          confirmLabel={t(`${confirm[confirming]}.confirm`)}
+          cancelLabel={t(`${confirm[confirming]}.cancel`)}
           tone="danger"
           pending={pending === confirming}
           onConfirm={() => answer(confirming)}

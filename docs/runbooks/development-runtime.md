@@ -23,7 +23,7 @@ From the repository root:
   docker compose -f backend/compose.yaml down
   ```
 
-- The database is `postgres:18.6` with development-only credentials in `backend/compose.yaml`. Its data lives in the named volume `backend_postgres-data` and survives `down`; `down -v` deletes it.
+- The database is PostgreSQL 18.6 with the pgvector extension (`pgvector/pgvector:0.8.7-pg18-trixie`, the official image with the extension added, as staging runs it) with development-only credentials in `backend/compose.yaml`. Its data lives in the named volume `backend_postgres-data` and survives `down`; `down -v` deletes it.
 - On Windows, call the JDK through `JAVA_HOME` when running the jar by hand; a `java` found first on the Git Bash `PATH` may not be JDK 25.
 
 ## Profiles and environment variables

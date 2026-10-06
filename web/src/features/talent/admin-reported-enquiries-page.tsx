@@ -4,6 +4,7 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { TextButton } from "@/components/actions/text-button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
+import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalentEnquiryList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -14,6 +15,7 @@ import { siteRoutes } from "@/lib/site";
  */
 function AdminReportedEnquiriesPage({ enquiries }: { enquiries: AdminTalentEnquiryList }) {
   const t = useTranslations("Admin.talent.reported");
+  const topic = useVocabulary("enquiryTopic");
   const format = useFormatter();
   const locale = useLocale();
   const date = (value: string) => format.dateTime(new Date(value), { dateStyle: "medium" });
@@ -49,7 +51,7 @@ function AdminReportedEnquiriesPage({ enquiries }: { enquiries: AdminTalentEnqui
                   })}
                 </span>
                 <span className="text-muted-foreground">
-                  {t("to", { name: enquiry.profileName })} · {t(`topic.${enquiry.topic}`)}
+                  {t("to", { name: enquiry.profileName })} · {topic(enquiry.topic)}
                 </span>
               </div>
               <p className="text-sm whitespace-pre-line">{enquiry.message}</p>

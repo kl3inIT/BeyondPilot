@@ -1753,6 +1753,10 @@ export type ReviewApplication = {
      */
     others: Array<Assessment>;
     /**
+     * The caller's own application, or their organization's, which they never score or decide.
+     */
+    own: boolean;
+    /**
      * Its place among the program's submitted applications, from 1.
      */
     position: number;
@@ -1790,6 +1794,10 @@ export type ReviewApplicationItem = {
      * The organization's type, such as independent_builder, builder_team or company.
      */
     organizationType: string;
+    /**
+     * The caller's own application, or their organization's, which they never score or decide.
+     */
+    own: boolean;
     /**
      * GenAI Fund's decision; null for a judge.
      */

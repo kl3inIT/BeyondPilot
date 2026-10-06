@@ -33,6 +33,8 @@ public record ReviewApplicationsResponse(@Schema(requiredMode = Schema.RequiredM
 			@Schema(types = { "integer", "null" },
 					description = "How many scored it; null for a judge.") @Nullable Integer scored,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "none", "scored", "conflict" },
-					description = "What the caller did with it.") String mine) {
+					description = "What the caller did with it.") String mine,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+					description = "The caller's own application, or their organization's, which they never score or decide.") boolean own) {
 	}
 }

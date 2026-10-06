@@ -39,9 +39,9 @@ type TalentFiltersProps = {
 };
 
 /**
- * The search with the count and the sort beside it, then the role chips, above the directory of talent. They are the URL: a change
- * writes it and the server reads the list again, from page 1 (docs/conventions.md › Lists). On a
- * phone the chips scroll sideways.
+ * The search with the count and the sort beside it, then the role chips, above the directory of
+ * talent. They are the URL: a change writes it and the server reads the list again, from page 1
+ * (docs/conventions.md › Lists). On a phone the chips scroll sideways.
  */
 function TalentFilters({ count }: TalentFiltersProps) {
   const t = useTranslations("Talent.filters");
