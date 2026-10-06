@@ -67,6 +67,8 @@ test.describe("search", () => {
     await page.getByRole("link", { name: "See all 4" }).click();
 
     await expect(page).toHaveURL("/search?q=AI&kind=solution");
+    // The title follows the navigation; the accessibility check reads it.
+    await expect(page).toHaveTitle(/AI/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("4 AI solutions for “AI”");
     await expect(shownResults(page)).toHaveText([
       "AI Voice Agent",
@@ -96,10 +98,9 @@ test.describe("search", () => {
       "href",
       "/search?q=Agentic+AI",
     );
-    await expect(page.getByRole("link", { name: "AI solutions" })).toHaveAttribute(
-      "href",
-      "/solutions",
-    );
+    await expect(
+      page.getByRole("main").getByRole("link", { name: "AI solutions" }),
+    ).toHaveAttribute("href", "/solutions");
     await expectNoSeriousA11yViolations(page);
   });
 
