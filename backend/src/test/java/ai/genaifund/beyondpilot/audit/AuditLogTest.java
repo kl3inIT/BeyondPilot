@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
@@ -32,7 +33,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = "beyondpilot.identity.operator-emails=reader@audit.test")
-@Import({ TestcontainersConfiguration.class, TestMailbox.Configuration.class })
+@Import({ TestcontainersConfiguration.class, AuditLogTest.Mail.class })
 class AuditLogTest {
 
 	private static final String SESSION_COOKIE = "BEYONDPILOT_SESSION";
@@ -252,6 +253,16 @@ class AuditLogTest {
 			.findFirst()
 			.orElseThrow(() -> new AssertionError("No session cookie"));
 		return cookie.substring(SESSION_COOKIE.length() + 1, cookie.indexOf(';'));
+	}
+
+	/**
+	 * The test mailbox, imported through a class of this test's own so that the test keeps a Spring context, and with
+	 * it a database, of its own.
+	 */
+	@TestConfiguration(proxyBeanMethods = false)
+	@Import(TestMailbox.Configuration.class)
+	static class Mail {
+
 	}
 
 }

@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -34,7 +35,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = "beyondpilot.identity.operator-emails=operator@directories.test")
-@Import({ TestcontainersConfiguration.class, TestMailbox.Configuration.class })
+@Import({ TestcontainersConfiguration.class, SearchDirectoriesTest.Mail.class })
 class SearchDirectoriesTest {
 
 	private static final Duration WAIT = Duration.ofSeconds(10);
@@ -270,6 +271,16 @@ class SearchDirectoriesTest {
 
 	private static String body(RestTestClient.ResponseSpec response) {
 		return new String(response.expectBody().returnResult().getResponseBody(), UTF_8);
+	}
+
+	/**
+	 * The test mailbox, imported through a class of this test's own so that the test keeps a Spring context, and with
+	 * it a database, of its own.
+	 */
+	@TestConfiguration(proxyBeanMethods = false)
+	@Import(TestMailbox.Configuration.class)
+	static class Mail {
+
 	}
 
 }

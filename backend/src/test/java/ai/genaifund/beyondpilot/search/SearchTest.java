@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -34,7 +35,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = "beyondpilot.identity.operator-emails=operator@search.test")
-@Import({ TestcontainersConfiguration.class, TestMailbox.Configuration.class })
+@Import({ TestcontainersConfiguration.class, SearchTest.Mail.class })
 class SearchTest {
 
 	private static final String PROGRAMS = "/api/program/admin/programs";
@@ -214,6 +215,16 @@ class SearchTest {
 				from identity_account where email = ?
 				""").params(id, "test/" + id, uploader).update();
 		return id;
+	}
+
+	/**
+	 * The test mailbox, imported through a class of this test's own so that the test keeps a Spring context, and with
+	 * it a database, of its own.
+	 */
+	@TestConfiguration(proxyBeanMethods = false)
+	@Import(TestMailbox.Configuration.class)
+	static class Mail {
+
 	}
 
 }
