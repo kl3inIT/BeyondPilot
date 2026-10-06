@@ -1570,6 +1570,8 @@
       "industries": "Ngành",
       "deployment": "Triển khai",
       "website": "Mở website",
+      "demo": "Xem demo",
+      "deck": "Xem bài thuyết trình",
       "nothingYet": "Chưa có nội dung."
     },
     "detail": {
@@ -1611,9 +1613,12 @@
         "website": "Website",
         "industries": "Ngành"
       },
+      "unlisted": "Giải pháp này không có trong danh mục. Bạn đang xem nó qua địa chỉ của riêng nó.",
       "contact": {
         "title": "Làm việc với {name}",
         "website": "Mở website",
+        "demo": "Xem demo",
+        "deck": "Xem bài thuyết trình",
         "basedIn": "Trụ sở tại"
       }
     },
@@ -1694,6 +1699,10 @@
       "notStated": "Chưa nêu",
       "website": "Trang sản phẩm",
       "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
+      "demoUrl": "Liên kết demo",
+      "demoUrlHint": "Video hoặc bản demo trực tiếp giải pháp đang chạy.",
+      "deckUrl": "Liên kết bài thuyết trình",
+      "deckUrlHint": "Bản trình bày mà ai cũng mở được, không cần đăng nhập.",
       "deployment": "Triển khai",
       "listed": "Hiển thị trong danh mục",
       "listedHint": "Có hiệu lực khi giải pháp được duyệt.",
