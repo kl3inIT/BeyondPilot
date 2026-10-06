@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 public record TalentDecisionRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "incomplete", "unverifiable", "inappropriate",
-						"other" }) @NotNull @Pattern(regexp = TalentCodes.REJECTION) String reason,
+						"other" }) @NotNull @Pattern(regexp = TalentCodes.DECISION_REASON) String reason,
 		@Schema(types = { "string", "null" },
 				description = "Shown to the person with the decision, and sent to them by email.") @Size(max = 1000) @Nullable String message) {
 }

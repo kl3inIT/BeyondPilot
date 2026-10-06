@@ -9,6 +9,7 @@ import { siteRoutes } from "@/lib/site";
 
 import { NoticeCard } from "./notice-card";
 import { websiteHost } from "./organization-format";
+import { OrganizationMark } from "./organization-mark";
 
 type OrganizationTab = "profile" | "members" | "solutions" | "introductions";
 
@@ -70,7 +71,8 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
   return (
     <div className="flex flex-1 justify-center bg-muted px-5 pt-10 pb-16 md:px-8 md:pt-14 md:pb-24 lg:px-16">
       <div className="flex w-full max-w-220 flex-col gap-6">
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-4">
+          <OrganizationMark name={organization.name} logoFileId={organization.logoFileId} />
           <h1 className="text-3xl leading-none font-semibold tracking-title break-words md:text-5xl md:leading-none">
             {organization.name}
           </h1>

@@ -273,11 +273,8 @@ function profile(id, name, status, more) {
     submittedAt: day,
     updatedAt: day,
     version: 1,
-    photoFileId: null,
-    city: null,
     languages: [],
     industries: [],
-    worksAt: null,
     ...more,
   };
 }
@@ -371,7 +368,6 @@ const introductions = [
 const reportedEnquiries = [
   {
     id: "7c1d7f0e-2b9a-4f3e-9d52-6a1f0b3c2e91",
-    profileId: "cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a04",
     profileName: "Siti Rahma",
     senderName: null,
     senderEmail: "growth@spam.example",

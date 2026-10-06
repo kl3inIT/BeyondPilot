@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.organization.dto;
 
 import java.util.List;
+import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -33,8 +34,8 @@ public record AdminCreateOrganizationRequest(
 						max = 280) @Nullable String description,
 		@Schema(types = { "integer", "null" }, description = "The year it started.") @Min(1800) @Max(
 				2100) @Nullable Integer foundedYear,
-		@Schema(types = { "string", "null" }, description = "The address of its logo.") @Size(max = 300) @Pattern(
-				regexp = OrganizationCodes.WEBSITE) @Nullable String logoUrl,
+		@Schema(types = { "string", "null" },
+				description = "A logo the caller uploaded for an organization; null for none.") @Nullable UUID logoFileId,
 		@Schema(types = { "string", "null" }, example = "tasco.com.vn",
 				description = "The domain of the company's work addresses, which the operator vouches for.") @Size(
 						max = 253) @Pattern(regexp = OrganizationCodes.DOMAIN) @Nullable String emailDomain,

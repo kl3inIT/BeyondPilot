@@ -108,7 +108,7 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Create your organization");
   });
 
-  test("a new organization needs its facts and its creator's job title, and goes to review", async ({
+  test("a new organization needs its facts, and goes to review", async ({
     page,
     context,
     baseURL,
@@ -119,7 +119,6 @@ test.describe("workspace organization", () => {
 
     await page.getByRole("button", { name: "Submit for approval" }).click();
     await expect(page.getByText("Enter the organization's name.")).toBeVisible();
-    await expect(page.getByText("Enter your role or job title.")).toBeVisible();
     await expect(page.getByText("Select a team size.")).toBeVisible();
     await expect(page.getByText("Choose at least one industry.")).toBeVisible();
     await expect(page.getByText("Select a country.")).toBeVisible();
@@ -128,13 +127,12 @@ test.describe("workspace organization", () => {
     await expect(page.getByText("Enter a four-digit year, such as 2021.")).toBeVisible();
     await expect(page.getByText("Describe the organization in a few words.")).toBeVisible();
     // The first field that lacks something is where the person continues.
-    await expect(page.getByLabel("Your role or job title")).toBeFocused();
+    await expect(page.getByLabel("Organization name")).toBeFocused();
     expect(changes).toEqual([]);
     // The pointer still rests on the button; its hover colour is not what is checked here.
     await page.mouse.move(0, 0);
     await expectNoSeriousA11yViolations(page);
 
-    await page.getByLabel("Your role or job title").fill("  Head of operations ");
     await page.getByLabel("Organization name").fill("Sài Gòn Logistics");
     await page.getByLabel("Website").fill("https://saigonlogistics.example");
     await page.getByRole("combobox", { name: "Team size" }).click();
@@ -161,8 +159,7 @@ test.describe("workspace organization", () => {
           website: "https://saigonlogistics.example",
           description: "Route planning for fleets.",
           foundedYear: 2019,
-          logoUrl: null,
-          jobTitle: "  Head of operations ",
+          logoFileId: null,
         },
       },
     ]);
@@ -302,7 +299,7 @@ test.describe("workspace organization", () => {
           website: "https://pocketpolicy.example",
           description: "Assistants for insurers and brokers.",
           foundedYear: 2021,
-          logoUrl: null,
+          logoFileId: null,
           // The version the form loaded, so a save over someone else's change is refused.
           version: 3,
         },

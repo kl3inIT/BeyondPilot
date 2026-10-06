@@ -4,6 +4,7 @@ import { ApiError } from "@/lib/api/client";
 /** The refusals the organization screens can meet, each with its own words in the catalog. */
 const known = [
   "ORGANIZATION_NOT_FOUND",
+  "ORGANIZATION_LOGO_NOT_USABLE",
   "ORGANIZATION_MEMBERSHIP_REQUIRED",
   "ORGANIZATION_OWNER_REQUIRED",
   "ORGANIZATION_ALREADY_MEMBER",

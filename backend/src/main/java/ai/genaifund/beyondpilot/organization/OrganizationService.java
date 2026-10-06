@@ -79,17 +79,20 @@ public class OrganizationService {
 
 	private final AuditTrail audit;
 
+	private final OrganizationLogos logos;
+
 	private final ApplicationEventPublisher events;
 
 	OrganizationService(OrganizationRepository organizations, OrganizationQueryRepository organizationList,
 			MembershipRepository memberships, IdentityService identity, EmailService email, AuditTrail audit,
-			ApplicationEventPublisher events) {
+			OrganizationLogos logos, ApplicationEventPublisher events) {
 		this.organizations = organizations;
 		this.organizationList = organizationList;
 		this.memberships = memberships;
 		this.identity = identity;
 		this.email = email;
 		this.audit = audit;
+		this.logos = logos;
 		this.events = events;
 	}
 
@@ -150,7 +153,7 @@ public class OrganizationService {
 	public OrganizationResponse create(Actor actor, CreateOrganizationRequest request) {
 		return createOwned(actor, new Profile(request.name(), request.type(), request.website(), request.country(),
 				request.teamSize(), request.industries(), request.description(), request.foundedYear(),
-				request.logoUrl()), request.jobTitle());
+				request.logoFileId()), request.jobTitle());
 	}
 
 	/**
@@ -174,7 +177,7 @@ public class OrganizationService {
 	/** What an organization's creator tells about it; a team or a builder applying may leave the rest for later. */
 	private record Profile(String name, String type, @Nullable String website, String country, String teamSize,
 			List<String> industries, @Nullable String description, @Nullable Integer foundedYear,
-			@Nullable String logoUrl) {
+			@Nullable UUID logoFileId) {
 	}
 
 	private OrganizationResponse createOwned(Actor actor, Profile profile, @Nullable String creatorJobTitle) {
@@ -185,12 +188,14 @@ public class OrganizationService {
 			throw new OrganizationException(OrganizationErrorCode.INDUSTRIES_REQUIRED,
 					"Company created by account " + person.accountId() + " without an industry");
 		}
+		if (profile.logoFileId() != null) {
+			logos.requireUsable(actor, profile.logoFileId());
+		}
 		Organization organization = new Organization(UUID.randomUUID(), freeSlug(profile.name()),
 				profile.name().strip(), profile.type(), Organization.PENDING, person.accountId());
 		organization.describe(profile.name().strip(), profile.type(), OrganizationViews.text(profile.website()),
 				profile.country(), profile.teamSize(), OrganizationViews.codes(profile.industries()),
-				OrganizationViews.text(profile.description()), profile.foundedYear(),
-				OrganizationViews.text(profile.logoUrl()));
+				OrganizationViews.text(profile.description()), profile.foundedYear(), profile.logoFileId());
 		organizations.saveAndFlush(organization);
 		if (!memberships.add(organization.getId(), person.accountId(), MembershipRepository.OWNER)) {
 			throw alreadyMember(person);
@@ -309,15 +314,21 @@ public class OrganizationService {
 					"Save of organization " + organization.getId() + " at version " + request.version()
 							+ ", which is at " + organization.getVersion());
 		}
+		UUID formerLogo = organization.getLogoFileId();
+		UUID logo = request.logoFileId();
+		if (logo != null && !logo.equals(formerLogo)) {
+			logos.requireUsable(actor, logo);
+		}
 		organization.describe(request.name().strip(), request.type(),
 				OrganizationViews.text(request.website()), request.country(), request.teamSize(),
 				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()),
-				request.foundedYear(), OrganizationViews.text(request.logoUrl()));
+				request.foundedYear(), logo);
 		if (organization.isRejected()) {
 			organization.resubmit();
 		}
 		organizations.flush();
 		events.publishEvent(new OrganizationChanged(organization.getId()));
+		logos.discardReplaced(formerLogo, logo);
 		return OrganizationViews.organization(organization);
 	}
 

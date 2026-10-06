@@ -58,7 +58,7 @@ public class Organization {
 
 	private @Nullable Integer foundedYear;
 
-	private @Nullable String logoUrl;
+	private @Nullable UUID logoFileId;
 
 	private @Nullable String emailDomain;
 
@@ -114,7 +114,7 @@ public class Organization {
 
 	public void describe(String name, String type, @Nullable String website,
 			@Nullable String country, @Nullable String teamSize, List<String> industries,
-			@Nullable String description, @Nullable Integer foundedYear, @Nullable String logoUrl) {
+			@Nullable String description, @Nullable Integer foundedYear, @Nullable UUID logoFileId) {
 		this.name = name;
 		this.type = type;
 		this.website = website;
@@ -123,7 +123,7 @@ public class Organization {
 		this.industries = industries.toArray(String[]::new);
 		this.description = description;
 		this.foundedYear = foundedYear;
-		this.logoUrl = logoUrl;
+		this.logoFileId = logoFileId;
 	}
 
 	/**
@@ -228,8 +228,8 @@ public class Organization {
 		return foundedYear;
 	}
 
-	public @Nullable String getLogoUrl() {
-		return logoUrl;
+	public @Nullable UUID getLogoFileId() {
+		return logoFileId;
 	}
 
 	public @Nullable String getEmailDomain() {

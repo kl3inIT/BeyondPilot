@@ -36,6 +36,7 @@ import ai.genaifund.beyondpilot.organization.persistence.OrganizationQueryReposi
 import ai.genaifund.beyondpilot.organization.persistence.OrganizationQueryRepository.AdminRow;
 import ai.genaifund.beyondpilot.organization.persistence.OrganizationRepository;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,14 +64,21 @@ public class OrganizationAdministration {
 
 	private final AuditTrail audit;
 
+	private final OrganizationLogos logos;
+
+	private final ApplicationEventPublisher events;
+
 	OrganizationAdministration(OrganizationRepository organizations, OrganizationQueryRepository organizationList,
-			MembershipRepository memberships, IdentityService identity, EmailService email, AuditTrail audit) {
+			MembershipRepository memberships, IdentityService identity, EmailService email, AuditTrail audit,
+			OrganizationLogos logos, ApplicationEventPublisher events) {
 		this.organizations = organizations;
 		this.organizationList = organizationList;
 		this.memberships = memberships;
 		this.identity = identity;
 		this.email = email;
 		this.audit = audit;
+		this.logos = logos;
+		this.events = events;
 	}
 
 	/**
@@ -118,6 +126,10 @@ public class OrganizationAdministration {
 			throw new OrganizationException(OrganizationErrorCode.DOMAIN_TAKEN,
 					"Second organization for one email domain");
 		}
+		UUID logo = request.logoFileId();
+		if (logo != null) {
+			logos.requireUsable(actor, logo);
+		}
 		String base = OrganizationViews.slug(request.name());
 		String slug = base;
 		for (int suffix = 2; organizations.existsBySlug(slug); suffix++) {
@@ -128,7 +140,7 @@ public class OrganizationAdministration {
 		List<String> industries = request.industries() == null ? List.of() : request.industries();
 		organization.describe(request.name().strip(), request.type(), OrganizationViews.text(request.website()),
 				request.country(), request.teamSize(), industries, OrganizationViews.text(request.description()),
-				request.foundedYear(), OrganizationViews.text(request.logoUrl()));
+				request.foundedYear(), logo);
 		organization.verifyDomain(domain);
 		organization.approve(Instant.now());
 		organizations.saveAndFlush(organization);
@@ -190,10 +202,14 @@ public class OrganizationAdministration {
 					"Operator save of organization " + id + " at version " + profile.version() + ", which is at "
 							+ organization.getVersion());
 		}
+		UUID formerLogo = organization.getLogoFileId();
+		UUID logo = profile.logoFileId();
+		if (logo != null && !logo.equals(formerLogo)) {
+			logos.requireUsable(actor, logo);
+		}
 		organization.describe(profile.name().strip(), profile.type(), OrganizationViews.text(profile.website()),
 				profile.country(), profile.teamSize(), OrganizationViews.codes(profile.industries()),
-				OrganizationViews.text(profile.description()), profile.foundedYear(),
-				OrganizationViews.text(profile.logoUrl()));
+				OrganizationViews.text(profile.description()), profile.foundedYear(), logo);
 		String domain = request.emailDomain();
 		if (!Objects.equals(domain, organization.getEmailDomain())) {
 			if (domain != null && organizations.findByEmailDomain(domain).isPresent()) {
@@ -203,6 +219,8 @@ public class OrganizationAdministration {
 			organization.verifyDomain(domain);
 		}
 		organizations.flush();
+		events.publishEvent(new OrganizationChanged(organization.getId()));
+		logos.discardReplaced(formerLogo, logo);
 		record(AuditAction.ORGANIZATION_UPDATE, operator, organization, Map.of());
 		return response(organization);
 	}

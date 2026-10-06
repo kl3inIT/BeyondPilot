@@ -1166,7 +1166,7 @@
       "open": "Mở",
       "review": {
         "open": "Duyệt",
-        "approve": "Duyệt",
+        "approve": "Duyệt và hiển thị",
         "reject": "Yêu cầu sửa…",
         "takeDown": "Gỡ…",
         "rejectTitle": "Yêu cầu {name} sửa hồ sơ?",
@@ -1180,8 +1180,8 @@
         "takeDownConfirm": "Gỡ",
         "reasonPlaceholder": "Chọn lý do",
         "takeDownTitle": "Gỡ hồ sơ {name}?",
-        "keys": "Phím: A duyệt · S yêu cầu sửa",
-        "keysApproved": "Phím: S gỡ"
+        "keyA": "Phím: A",
+        "keyS": "Phím: S"
       },
       "detail": {
         "back": "Tất cả nhân lực",
@@ -1192,7 +1192,30 @@
         "position": "{place} trên {total} đang chờ",
         "waitingSince": "Gửi {time}",
         "public": "Mở trang công khai",
-        "removed": "Đã gỡ: {reason}."
+        "removed": "Đã gỡ: {reason}.",
+        "decision": {
+          "draft": {
+            "title": "Chưa gửi duyệt",
+            "lead": "Người này vẫn đang viết hồ sơ. Chưa ai thấy hồ sơ cho tới khi được duyệt."
+          },
+          "submitted": {
+            "title": "Đề nghị được hiển thị trong danh mục",
+            "lead": "Kiểm tra rằng trang nói về công việc chuyên môn, không nêu tên khách hàng khi chưa được phép, và ghi rõ người này làm gì trong từng dự án. Duyệt sẽ mở trang và đưa vào danh mục."
+          },
+          "approved": {
+            "title": "Đã duyệt",
+            "lead": "Trang công khai khi người này để hiển thị. Gỡ sẽ đưa trang khỏi danh mục ngay và báo lý do cho họ."
+          },
+          "changes_requested": {
+            "title": "Đã yêu cầu sửa",
+            "lead": "Hồ sơ đã trả về cho người này. Hồ sơ quay lại đây khi họ gửi lại."
+          },
+          "removed": {
+            "title": "Đã gỡ khỏi danh mục",
+            "lead": "Trang không còn công khai. Hồ sơ quay lại đây nếu người này gửi lại."
+          }
+        },
+        "audited": "Quyết định được ghi vào nhật ký kiểm tra."
       },
       "queueEmpty": {
         "title": "Không có gì đang chờ duyệt",
@@ -1208,11 +1231,6 @@
         "back": "Tất cả nhân lực",
         "from": "Từ {sender}",
         "to": "Gửi {name}",
-        "topic": {
-          "project": "Về một dự án",
-          "role": "Về một vị trí công việc",
-          "other": "Về việc khác"
-        },
         "sent": "Gửi {date}",
         "reportedAt": "Báo cáo {date}",
         "empty": {
@@ -1467,6 +1485,11 @@
       "pilot": "Thí điểm",
       "in_production": "Đang vận hành",
       "internal_tool": "Công cụ nội bộ"
+    },
+    "enquiryTopic": {
+      "project": "Về một dự án",
+      "role": "Về một vị trí công việc",
+      "other": "Về việc khác"
     }
   },
   "Organization": {
@@ -1508,6 +1531,7 @@
       "ORGANIZATION_MEMBER_NOT_FOUND": "Người này không còn là thành viên.",
       "ORGANIZATION_ALREADY_INVITED": "Địa chỉ này đã được mời.",
       "ORGANIZATION_INVITEE_IS_MEMBER": "Người này đã thuộc một tổ chức.",
+      "ORGANIZATION_LOGO_NOT_USABLE": "Không dùng được logo này. Hãy tải ảnh lên lại.",
       "ORGANIZATION_LAST_OWNER": "Tổ chức cần có chủ sở hữu. Hãy trao quyền chủ sở hữu cho người khác trước.",
       "ORGANIZATION_CHANGED_MEANWHILE": "Có người vừa sửa hồ sơ này. Hãy tải lại trang rồi thử lại.",
       "ORGANIZATION_NOT_AWAITING_REVIEW": "Tổ chức này đã được duyệt xong.",
@@ -1590,15 +1614,23 @@
       "industriesHint": "Những ngành tổ chức hoạt động hoặc phục vụ. Chọn tối đa {count}. Đã chọn {chosen}.",
       "countryRequired": "Chọn một quốc gia.",
       "teamSizeRequired": "Chọn quy mô đội ngũ.",
-      "jobTitle": "Vai trò hoặc chức danh của bạn",
-      "jobTitleRequired": "Nhập vai trò hoặc chức danh của bạn.",
-      "jobTitleHint": "Việc bạn làm trong tổ chức. Hiển thị cạnh tên bạn trong danh sách thành viên.",
       "websiteHint": "Người làm độc lập có thể dùng website portfolio.",
       "foundedYear": "Năm thành lập",
       "foundedYearHint": "Với người làm độc lập, là năm bắt đầu hoạt động.",
       "foundedYearInvalid": "Nhập năm gồm bốn chữ số, ví dụ 2021.",
       "descriptionRequired": "Hãy mô tả tổ chức bằng vài câu ngắn.",
-      "logoUrl": "Địa chỉ logo",
+      "logo": {
+        "label": "Logo",
+        "upload": "Tải logo lên",
+        "change": "Đổi logo",
+        "remove": "Gỡ logo",
+        "alt": "Logo của tổ chức",
+        "errors": {
+          "type": "Dùng ảnh PNG, JPEG hoặc WebP.",
+          "size": "Dùng ảnh từ 5 MB trở xuống.",
+          "failed": "Chưa tải được logo lên. Hãy thử lại."
+        }
+      },
       "basicsLead": "Bạn là ai và liên hệ bạn ở đâu.",
       "aboutLead": "Bạn làm gì, phục vụ ai và đã làm được bao lâu.",
       "industriesPlaceholder": "Gõ để tìm ngành",
@@ -2362,12 +2394,18 @@
       "skills": "Kỹ năng",
       "engagement": "Hình thức làm việc",
       "rate": "Mức phí",
-      "projects": "Dự án tiêu biểu",
+      "projects": "Dự án đã triển khai",
       "openProject": "Xem dự án",
       "website": "Portfolio hoặc LinkedIn",
       "nothingYet": "Chưa có nội dung.",
       "languages": "Ngôn ngữ",
-      "industries": "Ngành"
+      "industries": "Ngành",
+      "about": "Giới thiệu",
+      "projectsLead": "Mỗi dự án ghi giai đoạn đã đạt được, theo lời người này.",
+      "noProject": "Chưa có dự án đã triển khai.",
+      "facts": "Kỹ năng và ngành",
+      "place": "Sống tại",
+      "worksAt": "Đang làm tại"
     },
     "profile": {
       "trail": "Bạn đang ở đây",
@@ -2380,13 +2418,10 @@
       },
       "facts": {
         "country": "Sống tại",
-        "role": "Vai trò",
         "website": "Portfolio hoặc LinkedIn",
-        "city": "Thành phố",
         "worksAt": "Đang làm tại",
         "worksAtStated": "do người này tự nêu",
-        "languages": "Ngôn ngữ",
-        "industries": "Ngành"
+        "languages": "Ngôn ngữ"
       },
       "notListed": "Chưa ghi",
       "note": "Lời nhắn đi qua BeyondPilot. {name} thấy tên và tổ chức của bạn; hai bên chỉ thấy email của nhau nếu họ chấp nhận.",
@@ -2455,11 +2490,6 @@
         "lead": "Chấp nhận để chia sẻ email của bạn với người gửi. Từ chối hoặc báo cáo thì không chia sẻ gì.",
         "someone": "Một người",
         "from": "{name} · {organization}",
-        "topic": {
-          "project": "Về một dự án",
-          "role": "Về một vị trí công việc",
-          "other": "Về việc khác"
-        },
         "status": {
           "pending": "Chờ bạn trả lời",
           "accepted": "Đã chấp nhận",

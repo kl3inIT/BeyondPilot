@@ -26,6 +26,7 @@ import { rejectedFields } from "@/lib/api/rejected-fields";
 import { industries, organizationTypes, teamSizes } from "./organization-codes";
 import { organizationError } from "./organization-errors";
 import { MAX_DESCRIPTION, MAX_INDUSTRIES, yearOf } from "./organization-format";
+import { OrganizationLogoUpload } from "./organization-logo-upload";
 import { useVerifiedDomain } from "./verified-domain";
 
 const blank = {
@@ -37,7 +38,7 @@ const blank = {
   teamSize: "",
   foundedYear: "",
   description: "",
-  logoUrl: "",
+  logoFileId: "",
 };
 
 /** The red star after the label of a field that must be filled; screen readers hear the error instead. */
@@ -107,7 +108,7 @@ function AdminCreateOrganization() {
           industries: chosenIndustries.length > 0 ? chosenIndustries : null,
           description: text.description.trim() || null,
           foundedYear: year,
-          logoUrl: text.logoUrl.trim() || null,
+          logoFileId: text.logoFileId || null,
           emailDomain,
           ownerEmail: text.ownerEmail.trim() || null,
         },
@@ -280,19 +281,9 @@ function AdminCreateOrganization() {
                   aria-invalid={bad("description")}
                 />
               </Field>
-              <Field data-invalid={bad("logoUrl")}>
-                <FieldLabel htmlFor="admin-organization-logo">{f("logoUrl")}</FieldLabel>
-                <Input
-                  id="admin-organization-logo"
-                  type="url"
-                  inputMode="url"
-                  placeholder="https://"
-                  maxLength={300}
-                  value={text.logoUrl}
-                  onChange={write("logoUrl")}
-                  aria-invalid={bad("logoUrl")}
-                />
-                {bad("logoUrl") && <FieldError>{t("websiteInvalid")}</FieldError>}
+              <Field>
+                <FieldLabel htmlFor="organization-logo">{f("logo.label")}</FieldLabel>
+                <OrganizationLogoUpload value={text.logoFileId} onChange={set("logoFileId")} />
               </Field>
             </FieldGroup>
             <DialogFooter>

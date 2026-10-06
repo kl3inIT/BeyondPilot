@@ -1166,7 +1166,7 @@
       "open": "Open",
       "review": {
         "open": "Review",
-        "approve": "Approve",
+        "approve": "Approve and list",
         "reject": "Ask for changes…",
         "takeDown": "Remove…",
         "rejectTitle": "Ask for changes to {name}?",
@@ -1180,8 +1180,8 @@
         "takeDownConfirm": "Remove",
         "reasonPlaceholder": "Choose a reason",
         "takeDownTitle": "Remove {name}?",
-        "keys": "Keys: A approve · S ask for changes",
-        "keysApproved": "Key: S remove"
+        "keyA": "Key: A",
+        "keyS": "Key: S"
       },
       "detail": {
         "back": "All talent",
@@ -1192,7 +1192,30 @@
         "position": "{place} of {total} waiting",
         "waitingSince": "Sent {time}",
         "public": "Open the public page",
-        "removed": "Removed: {reason}."
+        "removed": "Removed: {reason}.",
+        "decision": {
+          "draft": {
+            "title": "Not sent for review yet",
+            "lead": "The person is still writing the profile. Nobody sees it until it is approved."
+          },
+          "submitted": {
+            "title": "Asks to be listed in the directory",
+            "lead": "Check that the page is about professional work, names no customer without permission, and says what the person did in each project. Approving opens the page and lists it."
+          },
+          "approved": {
+            "title": "Approved",
+            "lead": "The page is public while its person keeps it listed. Removing takes it out of the directory at once and tells them why."
+          },
+          "changes_requested": {
+            "title": "Changes requested",
+            "lead": "The profile is back with its person. It returns here when they send it again."
+          },
+          "removed": {
+            "title": "Removed from the directory",
+            "lead": "The page is not public. It returns here if its person sends it again."
+          }
+        },
+        "audited": "The decision is recorded in the audit log."
       },
       "queueEmpty": {
         "title": "Nothing waits for review",
@@ -1208,11 +1231,6 @@
         "back": "All talent",
         "from": "From {sender}",
         "to": "To {name}",
-        "topic": {
-          "project": "About a project",
-          "role": "About a role",
-          "other": "About something else"
-        },
         "sent": "Sent {date}",
         "reportedAt": "Reported {date}",
         "empty": {
@@ -1467,6 +1485,11 @@
       "pilot": "Pilot",
       "in_production": "In production",
       "internal_tool": "Internal tool"
+    },
+    "enquiryTopic": {
+      "project": "About a project",
+      "role": "About a role",
+      "other": "About something else"
     }
   },
   "Organization": {
@@ -1501,6 +1524,7 @@
       "ORGANIZATION_NOT_FOUND": "This organization no longer exists.",
       "ORGANIZATION_MEMBERSHIP_REQUIRED": "You are no longer a member of this organization.",
       "ORGANIZATION_OWNER_REQUIRED": "Only an owner can do this.",
+      "ORGANIZATION_LOGO_NOT_USABLE": "This logo cannot be used. Upload the image again.",
       "ORGANIZATION_ALREADY_MEMBER": "You already belong to an organization. Leave it first.",
       "ORGANIZATION_REQUEST_PENDING": "You already have a request waiting. Withdraw it first.",
       "ORGANIZATION_INVITATION_NOT_FOUND": "This invitation is no longer open.",
@@ -1590,15 +1614,23 @@
       "industriesHint": "The industries it works in or serves. Choose up to {count}. {chosen} chosen.",
       "countryRequired": "Select a country.",
       "teamSizeRequired": "Select a team size.",
-      "jobTitle": "Your role or job title",
-      "jobTitleRequired": "Enter your role or job title.",
-      "jobTitleHint": "What you do in the organization. It shows beside your name among its members.",
       "websiteHint": "Independent builders can use their portfolio website.",
       "foundedYear": "Year founded",
       "foundedYearHint": "For an independent builder, the year the practice started.",
       "foundedYearInvalid": "Enter a four-digit year, such as 2021.",
       "descriptionRequired": "Describe the organization in a few words.",
-      "logoUrl": "Logo address",
+      "logo": {
+        "label": "Logo",
+        "upload": "Upload logo",
+        "change": "Change logo",
+        "remove": "Remove logo",
+        "alt": "The organization's logo",
+        "errors": {
+          "type": "Use a PNG, JPEG or WebP image.",
+          "size": "Use an image of 5 MB or less.",
+          "failed": "The logo did not upload. Try again."
+        }
+      },
       "basicsLead": "Who you are and where to find you.",
       "aboutLead": "What you do, who you serve and how long you have been doing it.",
       "industriesPlaceholder": "Type to find an industry",
@@ -2362,12 +2394,18 @@
       "skills": "Skills",
       "engagement": "Open to",
       "rate": "Rate",
-      "projects": "Selected work",
-      "openProject": "See the work",
+      "projects": "Deployed projects",
+      "openProject": "View the project",
       "website": "Portfolio or LinkedIn",
       "nothingYet": "Nothing written yet.",
       "languages": "Languages",
-      "industries": "Industries"
+      "industries": "Industries",
+      "about": "About",
+      "projectsLead": "Each project shows how far it went, as the person states it.",
+      "noProject": "No deployed project yet.",
+      "facts": "Skills and industries",
+      "place": "Based in",
+      "worksAt": "Works at"
     },
     "profile": {
       "trail": "You are here",
@@ -2380,13 +2418,10 @@
       },
       "facts": {
         "country": "Based in",
-        "role": "Role",
         "website": "Portfolio or LinkedIn",
-        "city": "City",
         "worksAt": "Works at",
         "worksAtStated": "as stated by the person",
-        "languages": "Languages",
-        "industries": "Industries"
+        "languages": "Languages"
       },
       "notListed": "Not stated",
       "note": "Messages go through BeyondPilot. {name} reads your name and organization; neither email address is shared unless they accept.",
@@ -2455,11 +2490,6 @@
         "lead": "Accept to share your email address with the sender. Decline or report shares nothing.",
         "someone": "Someone",
         "from": "{name} · {organization}",
-        "topic": {
-          "project": "About a project",
-          "role": "About a role",
-          "other": "About something else"
-        },
         "status": {
           "pending": "Waits for you",
           "accepted": "Accepted",
