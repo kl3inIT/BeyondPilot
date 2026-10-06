@@ -125,8 +125,8 @@ public class EmailService {
 					: "Một chủ sở hữu của " + organizationName
 							+ " đã từ chối yêu cầu tham gia của bạn trên BeyondPilot. Hãy đăng nhập để xem bạn có thể làm gì tiếp.";
 		}
-		send("organization_request_decision", recipient, "Your request for " + organizationName + " on BeyondPilot",
-				english + "\n\n" + vietnamese + "\n", paragraphs(english, vietnamese));
+		sendParagraphs("organization_request_decision", recipient,
+				"Your request for " + organizationName + " on BeyondPilot", english, vietnamese);
 	}
 
 	/**
