@@ -269,8 +269,11 @@ const talent = [
 function page(url, records, statusOf, textOf, summaryOf) {
   const text = (url.searchParams.get("q") ?? "").toLowerCase();
   const status = url.searchParams.get("status");
+  // Only the operators' list of solutions is narrowed to one organization.
+  const organization = url.searchParams.get("organization");
   const items = records.filter(
     (record) =>
+      (!organization || record.organizationId === organization) &&
       (!status || statusOf(record) === status) &&
       (!text || textOf(record).toLowerCase().includes(text)),
   );
@@ -369,6 +372,7 @@ const lists = {
       name,
       slug,
       status,
+      organizationId: record.organizationId,
       organizationName,
       summary,
       maturity,

@@ -9,6 +9,7 @@ import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { AdminOrganizationTabs } from "./admin-organization-tabs";
 import { OrganizationAction } from "./organization-action";
 import { OrganizationReviewButton } from "./organization-review";
 
@@ -16,7 +17,13 @@ import { OrganizationReviewButton } from "./organization-review";
  * Admin › Organisations › one organization: what its people wrote, who belongs, and what an operator
  * decides: the review of a new organization, and a claim on one nobody owns.
  */
-function AdminOrganizationPage({ detail }: { detail: AdminOrganization }) {
+type AdminOrganizationPageProps = {
+  detail: AdminOrganization;
+  /** How many solutions it has sent for review; `null` for an organization that provides none. */
+  solutions: number | null;
+};
+
+function AdminOrganizationPage({ detail, solutions }: AdminOrganizationPageProps) {
   const t = useTranslations("Admin.organizations.detail");
   const s = useTranslations("Organization.status");
   const roleName = useVocabulary("organizationRole");
@@ -65,6 +72,8 @@ function AdminOrganizationPage({ detail }: { detail: AdminOrganization }) {
           <OrganizationReviewButton organization={organization} />
         )}
       </div>
+
+      <AdminOrganizationTabs id={organization.id} current="profile" solutions={solutions} />
 
       {organization.status === "rejected" && (
         <p className="rounded-lg border bg-muted p-3 text-sm">

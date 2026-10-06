@@ -917,7 +917,12 @@
         "members": "{count, plural, =0 {Thành viên} other {# thành viên}}",
         "noMembers": "Chưa có ai thuộc tổ chức này.",
         "invitations": "Lời mời đang chờ",
-        "industries": "Ngành"
+        "industries": "Ngành",
+        "tabs": {
+          "label": "Hồ sơ tổ chức",
+          "profile": "Hồ sơ",
+          "solutions": "Giải pháp"
+        }
       },
       "review": {
         "title": "Xem xét {name}",
@@ -1047,7 +1052,18 @@
         "rejectLead": "Nó không hiện trên trang giải pháp. Chủ sở hữu đọc lý do của bạn và có thể sửa.",
         "takeDownLead": "Nó rời khỏi trang giải pháp ngay. Chủ sở hữu đọc lý do của bạn và có thể gửi lại."
       },
-      "deploymentsWaiting": "{count} triển khai chờ duyệt"
+      "deploymentsWaiting": "{count} triển khai chờ duyệt",
+      "ofOrganization": {
+        "waiting": "{count} giải pháp đang chờ duyệt",
+        "deploymentsWaiting": "{count} triển khai khách hàng đang chờ",
+        "nothingWaits": "Tổ chức này không có gì đang chờ quyết định.",
+        "list": "Giải pháp của tổ chức này",
+        "fullRecord": "Mở hồ sơ đầy đủ",
+        "none": {
+          "title": "Chưa gửi giải pháp nào",
+          "description": "Giải pháp xuất hiện ở đây khi tổ chức này gửi duyệt."
+        }
+      }
     },
     "talent": {
       "metaTitle": "Nhân lực · BeyondPilot",

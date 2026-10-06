@@ -312,6 +312,7 @@ export type AdminSolutionSummary = {
     listed: boolean;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
+    organizationId: string;
     organizationName: string;
     slug: string;
     status: 'submitted' | 'approved' | 'rejected';
@@ -5161,6 +5162,10 @@ export type ListAdminSolutionsData = {
          * Only solutions for this industry.
          */
         industry?: string | null;
+        /**
+         * Only solutions of this organization.
+         */
+        organization?: string | null;
         /**
          * The page, counted from 1.
          */

@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { AdminOrganizationPage } from "@/features/organization/admin-organization-page";
 import { readAdminOrganization } from "@/features/organization/organization-queries";
+import { readAdminSolutions } from "@/features/solution/solution-queries";
 import { requireRole } from "@/lib/auth/session";
 import { siteRoutes, titleSuffix } from "@/lib/site";
 
@@ -33,5 +34,10 @@ export default async function AdminOrganizationRoute({
     notFound();
   }
 
-  return <AdminOrganizationPage detail={detail} />;
+  // Only a provider has solutions; its Solutions tab says how many it has sent for review.
+  const solutions = detail.organization.roles.includes("provider")
+    ? (await readAdminSolutions({ q: "", status: null, industry: null, page: 1 }, id)).total
+    : null;
+
+  return <AdminOrganizationPage detail={detail} solutions={solutions} />;
 }

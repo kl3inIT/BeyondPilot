@@ -235,6 +235,14 @@ class SolutionTest {
 		assertThat(names(operator, ADMIN + "?q=quay&industry=insurance")).isEmpty();
 		assertProblem(get(operator, ADMIN + "?industry=astrology"), 400, "REQUEST_INVALID");
 
+		// The solutions of one organization, each row naming it by its identifier as well.
+		UUID harbour = organizationOf(founder);
+		String ofHarbour = body(get(operator, ADMIN + "?organization=" + harbour).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(ofHarbour, "$.items[*].name")).containsExactly("Quay Desk");
+		assertThat(JsonPath.<String>read(ofHarbour, "$.items[0].organizationId")).isEqualTo(harbour.toString());
+		assertThat(JsonPath.<Number>read(ofHarbour, "$.total").longValue()).isEqualTo(1);
+		assertThat(names(operator, ADMIN + "?organization=" + UUID.randomUUID())).isEmpty();
+
 		String record = body(get(operator, ADMIN + "/" + id).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(record, "$.submittedBy")).isEqualTo("founder@harbour.test");
 		// A decision takes it out of what waits, whatever the list is narrowed to.

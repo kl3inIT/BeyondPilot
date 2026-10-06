@@ -10,7 +10,7 @@ import { ReviewStatus } from "@/components/composites/review-status";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminSolutionList } from "@/lib/api/generated";
-import { siteRoutes } from "@/lib/site";
+import { adminOrganizationSolutionsRoute, siteRoutes } from "@/lib/site";
 
 import { adminSolutionsSearch, type AdminSolutionsSearch } from "./solutions-search";
 import { SolutionsToolbar } from "./solutions-toolbar";
@@ -38,6 +38,8 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
     name: solution.name,
     summary: solution.summary,
     organization: solution.organizationName,
+    // Its organization's record, open on its solutions at this one.
+    organizationHref: adminOrganizationSolutionsRoute(solution.organizationId, solution.id),
     // A solution sent before the sender was recorded says so, rather than showing nothing.
     sender: solution.submittedBy ?? t("senderUnknown"),
     status: (
@@ -154,7 +156,9 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
                   )}
                 </div>
               </TableCell>
-              <TableCell className="hidden lg:table-cell">{row.organization}</TableCell>
+              <TableCell className="hidden lg:table-cell">
+                <TextButton href={row.organizationHref}>{row.organization}</TextButton>
+              </TableCell>
               <TableCell>{row.status}</TableCell>
               <TableCell className="hidden xl:table-cell">{row.sender}</TableCell>
               <TableCell>

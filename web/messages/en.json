@@ -917,7 +917,12 @@
         "members": "{count, plural, =0 {Members} one {# member} other {# members}}",
         "noMembers": "Nobody belongs to this organization yet.",
         "invitations": "Open invitations",
-        "industries": "Industries"
+        "industries": "Industries",
+        "tabs": {
+          "label": "Organization record",
+          "profile": "Profile",
+          "solutions": "Solutions"
+        }
       },
       "review": {
         "title": "Review {name}",
@@ -1047,7 +1052,18 @@
         "rejectLead": "It stays off the solution's page. The owners read your reason and can correct it.",
         "takeDownLead": "It leaves the solution's page at once. The owners read your reason and can send it again."
       },
-      "deploymentsWaiting": "{count, plural, one {# deployment waits} other {# deployments wait}}"
+      "deploymentsWaiting": "{count, plural, one {# deployment waits} other {# deployments wait}}",
+      "ofOrganization": {
+        "waiting": "{count, plural, one {# solution waits for review} other {# solutions wait for review}}",
+        "deploymentsWaiting": "{count, plural, one {# customer deployment waits} other {# customer deployments wait}}",
+        "nothingWaits": "Nothing from this organization waits for a decision.",
+        "list": "Solutions of this organization",
+        "fullRecord": "Open the full record",
+        "none": {
+          "title": "No solution sent yet",
+          "description": "A solution appears here once this organization sends it for review."
+        }
+      }
     },
     "talent": {
       "metaTitle": "Talent · BeyondPilot",

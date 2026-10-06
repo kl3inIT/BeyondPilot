@@ -122,14 +122,21 @@ export async function readMySolution(id: string): Promise<Solution | null> {
   }
 }
 
-/** One page of submitted solutions for the operator behind this request. Server only. */
-export async function readAdminSolutions(search: AdminSolutionsSearch): Promise<AdminSolutionList> {
+/**
+ * One page of submitted solutions for the operator behind this request, of one organization when
+ * its identifier is given. Server only.
+ */
+export async function readAdminSolutions(
+  search: AdminSolutionsSearch,
+  organization?: string,
+): Promise<AdminSolutionList> {
   const { data } = await listAdminSolutions({
     ...(await sessionRequest()),
     query: {
       q: text(search.q),
       status: search.status ?? undefined,
       industry: search.industry ?? undefined,
+      organization,
       page: Math.max(1, search.page),
     },
   });

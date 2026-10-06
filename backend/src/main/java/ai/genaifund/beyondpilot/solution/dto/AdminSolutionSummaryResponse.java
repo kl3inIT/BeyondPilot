@@ -9,6 +9,7 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(name = "AdminSolutionSummary", description = "One solution in the operators' list.")
 public record AdminSolutionSummaryResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID organizationId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String organizationName,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String slug,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,

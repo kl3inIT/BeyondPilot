@@ -3188,6 +3188,15 @@ paths:
           - string
           - "null"
           pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other
+      - description: Only solutions of this organization.
+        in: query
+        name: organization
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: uuid
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -5415,6 +5424,9 @@ components:
           - scaled
         name:
           type: string
+        organizationId:
+          type: string
+          format: uuid
         organizationName:
           type: string
         slug:
@@ -5449,6 +5461,7 @@ components:
       - industries
       - listed
       - name
+      - organizationId
       - organizationName
       - slug
       - status

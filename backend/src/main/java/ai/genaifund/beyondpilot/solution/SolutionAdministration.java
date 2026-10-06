@@ -83,7 +83,7 @@ public class SolutionAdministration {
 		int page = request.page() == null ? 1 : request.page();
 		List<UUID> named = text == null ? List.of() : organizations.named(text);
 		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(text, named, request.status(),
-				request.industry(), PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
+				request.industry(), request.organization(), PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
 		Map<UUID, Person> senders = identity.people(rows.stream()
@@ -91,11 +91,11 @@ public class SolutionAdministration {
 			.filter(Objects::nonNull)
 			.distinct()
 			.toList());
+		long total = solutionList.adminCount(text, named, request.status(), request.industry(), request.organization());
 		return new AdminSolutionListResponse(rows.stream()
 			.map(row -> SolutionViews.adminSummary(row, name(names, row.organizationId()),
 					sender(senders, row.submittedByAccountId())))
-			.toList(), page, PAGE_SIZE, solutionList.adminCount(text, named, request.status(), request.industry()),
-				solutionList.awaitingReview());
+			.toList(), page, PAGE_SIZE, total, solutionList.awaitingReview());
 	}
 
 	/**

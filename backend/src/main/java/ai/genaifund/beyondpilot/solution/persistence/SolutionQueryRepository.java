@@ -35,6 +35,7 @@ public class SolutionQueryRepository {
 			       or organization_id = any(cast(:organizationIds as uuid[])))
 			  and (cast(:status as text) is null or status = :status)
 			  and (cast(:industry as text) is null or industries @> array[cast(:industry as text)])
+			  and (cast(:organizationId as uuid) is null or organization_id = :organizationId)
 			""";
 
 	private static final String ROW = """
@@ -82,25 +83,27 @@ public class SolutionQueryRepository {
 	/**
 	 * One page for operators, drafts left out: those with something waiting for review first, the solution itself or
 	 * one of its customer deployments, the longest wait on top. The text matches the solution's name, or the
-	 * solution belongs to one of {@code organizationIds}, the organizations the caller found by that text.
+	 * solution belongs to one of {@code organizationIds}, the organizations the caller found by that text. With
+	 * {@code organizationId}, only the solutions of that organization.
 	 */
 	public List<Row> adminPage(@Nullable String text, List<UUID> organizationIds, @Nullable String status,
-			@Nullable String industry, int limit, long offset) {
+			@Nullable String industry, @Nullable UUID organizationId, int limit, long offset) {
 		return adminFiltered(ROW + ADMIN_FILTER + """
 				order by case when status = 'submitted' or exists (
 				             select 1 from solution_customer_deployment d
 				             where d.solution_id = solution.id and d.status = 'submitted') then 0 else 1 end,
 				         submitted_at, id
 				limit :limit offset :offset
-				""", text, organizationIds, status, industry).param("limit", limit)
+				""", text, organizationIds, status, industry, organizationId).param("limit", limit)
 			.param("offset", offset)
 			.query(SolutionQueryRepository::row)
 			.list();
 	}
 
 	public long adminCount(@Nullable String text, List<UUID> organizationIds, @Nullable String status,
-			@Nullable String industry) {
-		return adminFiltered("select count(*) from solution\n" + ADMIN_FILTER, text, organizationIds, status, industry)
+			@Nullable String industry, @Nullable UUID organizationId) {
+		return adminFiltered("select count(*) from solution\n" + ADMIN_FILTER, text, organizationIds, status, industry,
+				organizationId)
 			.query(Long.class)
 			.single();
 	}
@@ -126,7 +129,7 @@ public class SolutionQueryRepository {
 	}
 
 	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, List<UUID> organizationIds,
-			@Nullable String status, @Nullable String industry) {
+			@Nullable String status, @Nullable String industry, @Nullable UUID organizationId) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
 			// A PostgreSQL array literal: an identifier holds no character that needs quoting.
@@ -134,7 +137,8 @@ public class SolutionQueryRepository {
 					organizationIds.stream().map(UUID::toString).collect(Collectors.joining(",", "{", "}")),
 					Types.VARCHAR)
 			.param("status", status, Types.VARCHAR)
-			.param("industry", industry, Types.VARCHAR);
+			.param("industry", industry, Types.VARCHAR)
+			.param("organizationId", organizationId, Types.OTHER);
 	}
 
 	private static Row row(ResultSet row, int index) throws SQLException {

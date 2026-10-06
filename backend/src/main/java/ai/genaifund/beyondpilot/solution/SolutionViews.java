@@ -85,9 +85,9 @@ final class SolutionViews {
 
 	static AdminSolutionSummaryResponse adminSummary(SolutionQueryRepository.Row row, String organizationName,
 			@Nullable String submittedBy) {
-		return new AdminSolutionSummaryResponse(row.id(), organizationName, row.slug(), row.name(), row.summary(),
-				row.industries(), row.maturity(), row.status(), row.listed(), row.submittedAt(), submittedBy,
-				row.updatedAt(), row.deploymentsAwaiting());
+		return new AdminSolutionSummaryResponse(row.id(), row.organizationId(), organizationName, row.slug(),
+				row.name(), row.summary(), row.industries(), row.maturity(), row.status(), row.listed(),
+				row.submittedAt(), submittedBy, row.updatedAt(), row.deploymentsAwaiting());
 	}
 
 	/** The name the sender of a solution is shown by; null when nobody is recorded or the account is gone. */

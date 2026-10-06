@@ -6,7 +6,7 @@ import { QueueNext } from "@/components/composites/queue-next";
 import { ReviewStatus } from "@/components/composites/review-status";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { Solution } from "@/lib/api/generated";
-import { siteRoutes } from "@/lib/site";
+import { adminOrganizationSolutionsRoute, siteRoutes } from "@/lib/site";
 
 import { CustomerDeploymentsReview } from "./customer-deployments-review";
 import { SolutionRecord } from "./solution-record";
@@ -39,7 +39,8 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
     {
       label: t("organization"),
       value: (
-        <TextButton href={`${siteRoutes.adminOrganizations}/${solution.organizationId}`}>
+        // Its organization's record, open on everything it has sent for review, at this solution.
+        <TextButton href={adminOrganizationSolutionsRoute(solution.organizationId, solution.id)}>
           {solution.organizationName}
         </TextButton>
       ),

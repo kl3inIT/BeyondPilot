@@ -56,6 +56,12 @@ export function adminProgramQuestionsRoute(id: string) {
   return `${siteRoutes.adminPrograms}/${id}/questions`;
 }
 
+/** The Solutions tab of an organization's record in the admin area, at one of its solutions when one is named. */
+export function adminOrganizationSolutionsRoute(id: string, solution?: string) {
+  const tab = `${siteRoutes.adminOrganizations}/${id}/solutions`;
+  return solution ? `${tab}?solution=${solution}` : tab;
+}
+
 export function adminProgramRoute(id: string) {
   return `${siteRoutes.adminPrograms}/${id}/settings`;
 }

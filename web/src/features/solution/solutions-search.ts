@@ -34,3 +34,6 @@ export const adminSolutionsSearch = {
 export const loadAdminSolutionsSearch = createLoader(adminSolutionsSearch);
 
 export type AdminSolutionsSearch = Awaited<ReturnType<typeof loadAdminSolutionsSearch>>;
+
+/** Which solution is open in the Solutions tab of an organization's admin record: `?solution=`. */
+export const loadAdminOrganizationSolutionsSearch = createLoader({ solution: parseAsString });
