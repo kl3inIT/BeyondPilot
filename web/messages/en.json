@@ -748,6 +748,15 @@
           "reviewer_remove": "Removed a judge",
           "decide": "Decided on an application",
           "release": "Released the outcomes"
+        },
+        "email": {
+          "settings_update": "Changed the email settings",
+          "appearance_update": "Changed the email appearance",
+          "template_update": "Reworded an email",
+          "template_reset": "Reset an email's wording",
+          "suppression_add": "Stopped email to an address",
+          "suppression_remove": "Let email reach an address again",
+          "resend": "Sent an email again"
         }
       },
       "activity": {
@@ -800,6 +809,15 @@
           "reviewer_remove": "Removed a judge from <resource></resource>",
           "decide": "Decided on an application to <resource></resource>",
           "release": "Released the outcomes of <resource></resource>"
+        },
+        "email": {
+          "settings_update": "Changed <resource></resource>",
+          "appearance_update": "Changed the appearance in <resource></resource>",
+          "template_update": "Reworded the email <resource></resource>",
+          "template_reset": "Put the email <resource></resource> back to its default wording",
+          "suppression_add": "Stopped email to <resource></resource>",
+          "suppression_remove": "Let email reach <resource></resource> again",
+          "resend": "Sent the email <resource></resource> again"
         }
       },
       "columns": {

@@ -748,6 +748,15 @@
           "reviewer_remove": "Gỡ giám khảo",
           "decide": "Quyết định một đơn",
           "release": "Công bố kết quả"
+        },
+        "email": {
+          "settings_update": "Đổi cấu hình email",
+          "appearance_update": "Đổi giao diện email",
+          "template_update": "Sửa nội dung một email",
+          "template_reset": "Khôi phục nội dung mặc định của một email",
+          "suppression_add": "Chặn gửi email tới một địa chỉ",
+          "suppression_remove": "Bỏ chặn một địa chỉ email",
+          "resend": "Gửi lại một email"
         }
       },
       "activity": {
@@ -800,6 +809,15 @@
           "reviewer_remove": "Gỡ một giám khảo khỏi <resource></resource>",
           "decide": "Quyết định một đơn nộp vào <resource></resource>",
           "release": "Công bố kết quả của <resource></resource>"
+        },
+        "email": {
+          "settings_update": "Đổi <resource></resource>",
+          "appearance_update": "Đổi giao diện trong <resource></resource>",
+          "template_update": "Sửa nội dung email <resource></resource>",
+          "template_reset": "Khôi phục nội dung mặc định của email <resource></resource>",
+          "suppression_add": "Chặn gửi email tới <resource></resource>",
+          "suppression_remove": "Bỏ chặn <resource></resource>",
+          "resend": "Gửi lại email <resource></resource>"
         }
       },
       "columns": {

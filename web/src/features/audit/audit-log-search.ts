@@ -39,6 +39,13 @@ export const auditActions = [
   "proposal.reviewer_remove",
   "proposal.decide",
   "proposal.release",
+  "email.settings_update",
+  "email.appearance_update",
+  "email.template_update",
+  "email.template_reset",
+  "email.suppression_add",
+  "email.suppression_remove",
+  "email.resend",
 ] as const;
 
 /**
