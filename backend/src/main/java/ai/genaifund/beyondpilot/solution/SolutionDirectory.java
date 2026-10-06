@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The public directory: the approved, listed solutions and their approved customer deployments, read by anyone
- * without a session.
+ * without a session. An approved solution left unlisted is read by its address alone.
  */
 @Service
 public class SolutionDirectory {
@@ -79,13 +79,14 @@ public class SolutionDirectory {
 
 	/**
 	 * One solution of the directory by its address.
-	 * @throws SolutionException when no approved, listed solution has the address; a draft or an unlisted one answers
-	 * the same, so the address does not reveal that one exists
+	 * @throws SolutionException when no approved solution has the address; a draft, a submitted or a rejected one
+	 * answers the same, so the address does not reveal that one exists. An approved solution the owners left unlisted
+	 * is read by anyone who has its address, and says so
 	 */
 	@Transactional(readOnly = true)
 	public PublicSolutionResponse get(String slug) {
 		Solution solution = solutions.findBySlug(slug)
-			.filter(found -> found.isApproved() && found.isListed())
+			.filter(Solution::isApproved)
 			.orElseThrow(() -> notFound(slug));
 		OrganizationName organization = organizations.names(List.of(solution.getOrganizationId()))
 			.get(solution.getOrganizationId());
@@ -95,19 +96,22 @@ public class SolutionDirectory {
 		return new PublicSolutionResponse(solution.getSlug(), solution.getName(), organization.name(),
 				organization.slug(), organization.country(), solution.getSummary(), solution.getProblemsSolved(),
 				solution.getValueProposition(), solution.getFocusAreas(), solution.getIndustries(),
-				solution.getMaturity(), solution.getDeployment(), solution.getWebsite(),
+				solution.getMaturity(), solution.getDeployment(), solution.getWebsite(), solution.getDemoUrl(),
+				solution.getDeckUrl(), solution.isListed(),
 				deployments.findBySolutionIdAndStatusOrderByDecidedAtDesc(solution.getId(), CustomerDeployment.APPROVED)
 					.stream()
 					.map(deployment -> SolutionViews.publicDeployment(deployment, solution))
 					.toList());
 	}
 
-	/** The approved, listed solution at this address, as another module needs it; empty when there is none. */
+	/**
+	 * The approved solution at this address, listed or not, as another module needs it; empty when there is none.
+	 */
 	@Transactional(readOnly = true)
-	public Optional<ListedSolution> listedAt(String slug) {
+	public Optional<ApprovedSolution> approvedAt(String slug) {
 		return solutions.findBySlug(slug)
-			.filter(found -> found.isApproved() && found.isListed())
-			.map(found -> new ListedSolution(found.getId(), found.getName(), found.getOrganizationId()));
+			.filter(Solution::isApproved)
+			.map(found -> new ApprovedSolution(found.getId(), found.getName(), found.getOrganizationId()));
 	}
 
 	/**
@@ -136,6 +140,6 @@ public class SolutionDirectory {
 	}
 
 	private static SolutionException notFound(String slug) {
-		return new SolutionException(SolutionErrorCode.SOLUTION_NOT_FOUND, "No listed solution at " + slug);
+		return new SolutionException(SolutionErrorCode.SOLUTION_NOT_FOUND, "No approved solution at " + slug);
 	}
 }

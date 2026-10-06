@@ -995,7 +995,7 @@ export type PublicOrganization = {
 };
 
 /**
- * An approved, listed solution as anyone reads it.
+ * An approved solution as anyone with its address reads it, listed or not.
  */
 export type PublicSolution = {
     /**
@@ -1006,9 +1006,15 @@ export type PublicSolution = {
      * Its approved customer deployments, the most recently approved first.
      */
     customerDeployments: Array<PublicCustomerDeployment>;
+    deckUrl?: string | null;
+    demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     industries: Array<string>;
+    /**
+     * Whether the directory lists it. False is approved but shared by its address only.
+     */
+    listed: boolean;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
     organizationName: string;
@@ -1303,6 +1309,14 @@ export type SaveProgram = {
  * A solution as its edit screen holds it.
  */
 export type SaveSolution = {
+    /**
+     * A presentation of the solution.
+     */
+    deckUrl?: string | null;
+    /**
+     * A video or a live demo of the solution at work.
+     */
+    demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     industries: Array<string>;
@@ -1383,6 +1397,8 @@ export type Solution = {
      * Why it was last rejected.
      */
     decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    deckUrl?: string | null;
+    demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     id: string;
@@ -1911,7 +1927,7 @@ export type RequestIntroductionErrors = {
      */
     403: Problem;
     /**
-     * No listed solution has the address.
+     * No approved solution has the address.
      */
     404: Problem;
     /**
@@ -3889,7 +3905,7 @@ export type GetSolutionData = {
 
 export type GetSolutionErrors = {
     /**
-     * No approved, listed solution has this address.
+     * No approved solution has this address.
      */
     404: Problem;
 };

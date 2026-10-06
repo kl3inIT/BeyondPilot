@@ -125,13 +125,14 @@ class SolutionTest {
 		request.put("industries", List.of("gardening"));
 		request.put("maturity", "finished");
 		request.put("website", "example.test");
+		request.put("deckUrl", "javascript:alert(1)");
 
 		String body = body(put(founder, MINE + "/" + JsonPath.<String>read(draft, "$.id"), request).expectStatus()
 			.isBadRequest());
 
 		assertThat(JsonPath.<String>read(body, "$.code")).isEqualTo("REQUEST_INVALID");
 		assertThat(JsonPath.<List<String>>read(body, "$.errors[*].pointer")).containsExactlyInAnyOrder("#/industries/0",
-				"#/maturity", "#/website");
+				"#/maturity", "#/website", "#/deckUrl");
 	}
 
 	@Test
@@ -207,7 +208,7 @@ class SolutionTest {
 	}
 
 	@Test
-	void theDirectoryShowsOnlyApprovedListedSolutionsAndNarrowsThem() {
+	void theDirectoryListsOnlyApprovedListedSolutionsAndAnApprovedUnlistedOneOpensByItsAddress() {
 		String founder = provider("founder@listed.test", "Listed Co");
 		UUID claims = approved(founder, "Quokka Claims");
 		Map<String, Object> banking = described("Quokka Banking", 0);
@@ -251,8 +252,16 @@ class SolutionTest {
 		String one = body(client.get().uri(DIRECTORY + "/quokka-claims").exchange().expectStatus().isOk());
 		assertThat(JsonPath.<String>read(one, "$.summary")).isEqualTo("Reads claim files.");
 		assertThat(JsonPath.<String>read(one, "$.country")).isEqualTo("VN");
-		// An address does not reveal a solution that is not shown.
-		for (String slug : List.of("quokka-hidden", "quokka-waiting", "quokka-draft")) {
+		// Demo and deck are links the owners gave, and a listed solution says it is listed.
+		assertThat(JsonPath.<String>read(one, "$.demoUrl")).isEqualTo("https://example.test/demo");
+		assertThat(JsonPath.<String>read(one, "$.deckUrl")).isNull();
+		assertThat(JsonPath.<Boolean>read(one, "$.listed")).isTrue();
+		// An approved solution left unlisted is out of the directory but opens by its address, and says so.
+		assertThat(JsonPath.<Boolean>read(
+				body(client.get().uri(DIRECTORY + "/quokka-hidden").exchange().expectStatus().isOk()), "$.listed"))
+			.isFalse();
+		// An address does not reveal a solution that is not approved.
+		for (String slug : List.of("quokka-waiting", "quokka-draft")) {
 			assertProblem(client.get().uri(DIRECTORY + "/" + slug).exchange(), 404, "SOLUTION_NOT_FOUND");
 		}
 
@@ -369,6 +378,8 @@ class SolutionTest {
 		request.put("maturity", "pilot");
 		request.put("deployment", List.of("cloud_saas"));
 		request.put("website", "https://example.test");
+		request.put("demoUrl", "https://example.test/demo");
+		request.put("deckUrl", null);
 		request.put("listed", true);
 		request.put("version", version);
 		return request;
