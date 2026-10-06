@@ -33,10 +33,12 @@ import ai.genaifund.beyondpilot.notification.template.EmailRenderer;
 import ai.genaifund.beyondpilot.notification.template.EmailTemplate;
 import ai.genaifund.beyondpilot.notification.template.RenderedEmail;
 import ai.genaifund.beyondpilot.notification.template.TemplateProblem;
+import org.jspecify.annotations.Nullable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionOperations;
 
 /**
  * What operators do with the wording of email: read it by kind, change it, put it back to the default, preview a draft
@@ -62,9 +64,13 @@ public class EmailTemplateAdministration {
 
 	private final AuditTrail audit;
 
+	private final TransactionOperations transactions;
+
 	EmailTemplateAdministration(IdentityService identity, DefaultTemplates defaults,
 			EmailTemplateOverrideRepository overrides, EmailRenderer renderer, DeliverySettings delivery,
-			EmailDelivery sender, AuditTrail audit) {
+			EmailDelivery sender, AuditTrail audit,
+			TransactionOperations transactions) {
+		this.transactions = transactions;
 		this.identity = identity;
 		this.defaults = defaults;
 		this.overrides = overrides;
@@ -183,8 +189,9 @@ public class EmailTemplateAdministration {
 	 * pass the checks
 	 */
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public EmailTestResponse test(Actor actor, String kindValue, EmailDraftRequest request) {
+	public EmailTestResponse test(Actor actor, String kindValue, EmailDraftRequest request, @Nullable String to) {
 		Operator operator = identity.requireOperator(actor);
+		String recipient = TestRecipients.recipient(operator, to);
 		EmailKind kind = editableKind(kindValue);
 		EmailTemplate draft = new EmailTemplate(request.subject(), request.body());
 		if (!renderer.problems(kind, draft).isEmpty()) {
@@ -193,10 +200,11 @@ public class EmailTemplateAdministration {
 		}
 		RenderedEmail email = sample(kind, draft, appearance(request));
 		Optional<DeliveryFailure> failure = delivery.delivery()
-			.map(saved -> sender.sendTest(saved, operator.email(),
+			.map(saved -> sender.sendTest(saved, recipient,
 					new RenderedEmail("[Test] " + email.subject(), email.html(), email.text())))
 			.orElse(Optional.of(DeliveryFailure.NOT_CONFIGURED));
-		return new EmailTestResponse(operator.email(), failure.isEmpty(), failure.map(DeliveryFailure::value).orElse(null));
+		TestRecipients.record(audit, transactions, operator, recipient, kind.value());
+		return new EmailTestResponse(recipient, failure.isEmpty(), failure.map(DeliveryFailure::value).orElse(null));
 	}
 
 	private RenderedEmail sample(EmailKind kind, EmailTemplate template, Appearance appearance) {

@@ -780,7 +780,8 @@
           "template_reset": "Khôi phục nội dung mặc định của một email",
           "suppression_add": "Chặn gửi email tới một địa chỉ",
           "suppression_remove": "Bỏ chặn một địa chỉ email",
-          "resend": "Gửi lại một email"
+          "resend": "Gửi lại một email",
+          "test_send": "Gửi email thử"
         },
         "ai": {
           "provider_create": "Kết nối nhà cung cấp AI",
@@ -868,7 +869,8 @@
           "template_reset": "Khôi phục nội dung mặc định của email <resource></resource>",
           "suppression_add": "Chặn gửi email tới <resource></resource>",
           "suppression_remove": "Bỏ chặn <resource></resource>",
-          "resend": "Gửi lại email <resource></resource>"
+          "resend": "Gửi lại email <resource></resource>",
+          "test_send": "Gửi email thử tới <resource></resource>"
         },
         "ai": {
           "provider_create": "Kết nối nhà cung cấp AI <resource></resource>",
@@ -2037,7 +2039,6 @@
         "lastEdited": "{name} sửa lần cuối, {when}.",
         "viewAudit": "Nhật ký",
         "reset": "Khôi phục mặc định",
-        "test": "Gửi thử cho tôi",
         "subject": "Tiêu đề",
         "body": "Nội dung",
         "bodyHint": "Markdown: # tiêu đề, **đậm**, [liên kết](https://…). Gõ '{{' để chèn biến.",
@@ -2329,7 +2330,6 @@
         "unsaved": "Có thay đổi chưa lưu.",
         "lastSaved": "{name} lưu lần cuối, {when}.",
         "neverSaved": "Chưa lưu lần nào.",
-        "test": "Gửi thử tới {email}",
         "save": "Lưu cài đặt",
         "leave": {
           "title": "Rời trang mà không lưu?",
@@ -2427,6 +2427,11 @@
             "unknown": "Không kiểm"
           }
         }
+      },
+      "testSend": {
+        "to": "Gửi thử tới",
+        "send": "Gửi thử",
+        "invalid": "Nhập một địa chỉ email."
       }
     }
   },

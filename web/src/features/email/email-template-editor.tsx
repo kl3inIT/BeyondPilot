@@ -28,6 +28,7 @@ import { siteRoutes } from "@/lib/site";
 
 import { EmailPreview } from "./email-preview";
 import { testFailures } from "./email-test-failures";
+import { TestSend } from "./test-send";
 import { TemplateCodeEditor, type TemplateCodeEditorHandle } from "./template-code-editor";
 
 /** How long typing pauses before the preview is rendered again. */
@@ -65,10 +66,13 @@ function EmailTemplateEditor({
   template,
   name,
   description,
+  operatorEmail,
 }: {
   template: EmailTemplate;
   name: string;
   description: string;
+  /** Where a test goes unless another address is written. */
+  operatorEmail: string;
 }) {
   const t = useTranslations("Admin.email.editor");
   const format = useFormatter();
@@ -148,10 +152,14 @@ function EmailTemplateEditor({
     }
   }
 
-  async function test() {
+  async function test(to: string) {
     setTesting(true);
     try {
-      const { data } = await testEmailTemplate({ path: { kind: template.kind }, body: draft });
+      const { data } = await testEmailTemplate({
+        path: { kind: template.kind },
+        body: draft,
+        query: { to },
+      });
       if (data.sent) {
         notify.success("Admin.email.editor.testSent", { email: data.recipient });
       } else {
@@ -251,15 +259,12 @@ function EmailTemplateEditor({
               {t("reset")}
             </Button>
           )}
-          <Button
-            prominence="secondary"
-            size="sm"
+          <TestSend
+            defaultTo={operatorEmail}
             pending={testing}
             disabled={problems.length > 0}
-            onClick={() => void test()}
-          >
-            {t("test")}
-          </Button>
+            onSend={(to) => void test(to)}
+          />
         </div>
       </div>
 
