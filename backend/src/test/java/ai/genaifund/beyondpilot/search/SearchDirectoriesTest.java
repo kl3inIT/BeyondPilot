@@ -154,11 +154,12 @@ class SearchDirectoriesTest {
 		assertThat(JsonPath.<String>read(body, "$.items[0].slug")).isEqualTo(id);
 		assertThat(JsonPath.<Object>read(body, "$.items[0].subtitle")).isNull();
 		assertThat(JsonPath.<Integer>read(body, "$.counts.useCase")).isEqualTo(1);
-		// The organization asked to stay anonymous: its name finds nothing.
-		assertThat(total("bank " + word)).isZero();
-		// Only what the public list shows is searched: the goal, never the problem statement members read.
+		// Search reads only what the index holds: the goal the public list shows, never the problem statement members
+		// read, and no name of an organization that stays anonymous.
 		assertThat(total("first assessment " + word)).isEqualTo(1);
-		assertThat(total("wait days " + word)).isZero();
+		String indexed = jdbc.sql("select concat_ws(' ', title, subtitle, summary, keywords, card) from search_document"
+				+ " where item_id = cast(? as uuid)").param(id).query(String.class).single();
+		assertThat(indexed).contains("first assessment").doesNotContain("wait days").doesNotContain("Bank");
 
 		post(operator, "/api/usecase/admin/use-cases/" + id + "/send-back", Map.of("reason", "Say what the data is."));
 		await().atMost(WAIT).until(() -> total("claims triage " + word) == 0);
