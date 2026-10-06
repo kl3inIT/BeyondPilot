@@ -112,6 +112,8 @@ public class UseCase {
 
 	private @Nullable String reviewNote;
 
+	private boolean changedSinceReview;
+
 	@ElementCollection
 	@CollectionTable(name = "use_case_requirement", joinColumns = @JoinColumn(name = "use_case_id"))
 	@OrderColumn(name = "position")
@@ -202,6 +204,11 @@ public class UseCase {
 		this.hideOrganizationName = hide;
 	}
 
+	/** Notes that the members changed a use case that GenAI Fund sent back, so that it can be sent again. */
+	public void changedAfterReview() {
+		this.changedSinceReview = true;
+	}
+
 	/** Records who changed the use case last. */
 	public void editedBy(UUID accountId) {
 		this.lastEditedByAccountId = accountId;
@@ -232,9 +239,11 @@ public class UseCase {
 	/** GenAI Fund sends the use case back with what to change; its organization edits it and sends it again. */
 	public void sendBack(UUID accountId, Instant now, String reason) {
 		this.status = NEEDS_CHANGES;
+		this.publishedAt = null;
 		this.reviewedAt = now;
 		this.reviewedByAccountId = accountId;
 		this.reviewNote = reason;
+		this.changedSinceReview = false;
 	}
 
 	/**
@@ -378,6 +387,10 @@ public class UseCase {
 
 	public @Nullable UUID getReviewedByAccountId() {
 		return reviewedByAccountId;
+	}
+
+	public boolean isChangedSinceReview() {
+		return changedSinceReview;
 	}
 
 	public @Nullable String getReviewNote() {

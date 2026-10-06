@@ -34,11 +34,14 @@ public enum UseCaseErrorCode implements ErrorCode {
 	NOT_SUBMITTABLE("USECASE_NOT_SUBMITTABLE", ErrorCategory.CONFLICT,
 			"Only a draft, or a use case GenAI Fund sent back, can be sent for review."),
 
+	NOT_CHANGED("USECASE_NOT_CHANGED", ErrorCategory.CONFLICT,
+			"GenAI Fund asked for changes. Change the use case before sending it again."),
+
 	CANNOT_MOVE_TO_DRAFT("USECASE_CANNOT_MOVE_TO_DRAFT", ErrorCategory.CONFLICT,
 			"Only a use case in review or published can be moved back to a draft."),
 
 	NOT_AWAITING_REVIEW("USECASE_NOT_AWAITING_REVIEW", ErrorCategory.CONFLICT,
-			"Only a use case in review can be approved or sent back."),
+			"Only a use case in review can be approved, and only one in review or published can be sent back."),
 
 	ATTACHMENT_NOT_USABLE("USECASE_ATTACHMENT_NOT_USABLE", ErrorCategory.VALIDATION,
 			"An attachment is not a file you uploaded for a use case, or it is attached to another use case."),

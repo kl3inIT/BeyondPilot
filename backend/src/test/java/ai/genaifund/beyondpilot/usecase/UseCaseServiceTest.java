@@ -242,6 +242,25 @@ class UseCaseServiceTest {
 	}
 
 	@Test
+	void anOperatorTakesAPublishedUseCaseOutOfTheDirectoryBySendingItBackWithAReason() {
+		Team team = team("unpublish.test", true);
+		UUID id = create(team.founder);
+		put(team.founder, MINE + "/" + id, complete(0)).expectStatus().isOk();
+		post(team.founder, MINE + "/" + id + "/submit", null).expectStatus().isOk();
+		post(operator, ADMIN + "/" + id + "/approve", null).expectStatus().isOk();
+
+		post(operator, ADMIN + "/" + id + "/send-back", Map.of("reason", "  ")).expectStatus().isBadRequest();
+		String sent = body(post(operator, ADMIN + "/" + id + "/send-back", Map.of("reason", "A figure is wrong."))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(sent, "$.status")).isEqualTo("needs_changes");
+		assertThat(JsonPath.<String>read(sent, "$.reviewNote")).isEqualTo("A figure is wrong.");
+		assertThat(JsonPath.<Object>read(sent, "$.publishedAt")).isNull();
+		assertThat(mail.latestSubjectTo("founder@unpublish.test")).contains("Changes needed");
+		assertThat(events(id)).containsExactly("use_case.submit", "use_case.approve", "use_case.send_back");
+	}
+
+	@Test
 	void anOperatorSendsAUseCaseBackWithAReasonThatItsMembersReadUntilTheySendItAgain() {
 		Team team = team("sendback.test", true);
 		UUID id = create(team.founder);
@@ -266,6 +285,8 @@ class UseCaseServiceTest {
 		assertThat(JsonPath.<String>read(read, "$.status")).isEqualTo("needs_changes");
 		assertThat(JsonPath.<String>read(read, "$.reviewNote")).isEqualTo("The problem statement is too vague.");
 		assertThat(JsonPath.<Boolean>read(read, "$.editable")).isTrue();
+		assertThat(JsonPath.<Boolean>read(read, "$.changedSinceReview")).isFalse();
+		assertProblem(post(team.colleague, MINE + "/" + id + "/submit", null), 409, "USECASE_NOT_CHANGED");
 
 		long version = JsonPath.<Number>read(read, "$.version").longValue();
 		Map<String, Object> better = complete(version);

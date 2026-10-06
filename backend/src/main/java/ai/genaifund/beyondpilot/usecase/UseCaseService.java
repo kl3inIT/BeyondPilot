@@ -144,6 +144,9 @@ public class UseCaseService {
 			.map(requirement -> new UseCaseRequirement(requirement.statement().strip(), requirement.necessity()))
 			.toList(), text(request.dataReadiness()), text(request.integrationRequirements()));
 		useCase.attach(request.attachmentFileIds());
+		if (UseCase.NEEDS_CHANGES.equals(status)) {
+			useCase.changedAfterReview();
+		}
 		if (request.budgetToBeDetermined()) {
 			useCase.budget(null, null, true, request.budgetMembersOnly());
 		}
@@ -174,6 +177,9 @@ public class UseCaseService {
 		}
 		if (!useCase.isComplete()) {
 			throw new UseCaseException(UseCaseErrorCode.INCOMPLETE, "Use case " + id + " lacks a part");
+		}
+		if (UseCase.NEEDS_CHANGES.equals(status) && !useCase.isChangedSinceReview()) {
+			throw new UseCaseException(UseCaseErrorCode.NOT_CHANGED, "Use case " + id + " was not changed since it was sent back");
 		}
 		useCase.submit(actor.accountId(), now);
 		useCase.editedBy(actor.accountId());
@@ -275,7 +281,7 @@ public class UseCaseService {
 				useCase.isBudgetMembersOnly(), useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(),
 				useCase.isHideOrganizationName(), useCase.getClosesAt(), useCase.getPublishedAt(),
 				useCase.getSubmittedAt(), sender == null ? null : people.of(sender), useCase.getReviewNote(),
-				people.of(useCase.getLastEditedByAccountId()), useCase.getVersion(), useCase.getUpdatedAt());
+				useCase.isChangedSinceReview(), people.of(useCase.getLastEditedByAccountId()), useCase.getVersion(), useCase.getUpdatedAt());
 	}
 
 	/** The people who last changed or sent the given use cases, named for the caller. */

@@ -745,6 +745,10 @@ export type MyUseCase = {
     budgetMembersOnly: boolean;
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
+    /**
+     * Whether the members changed it since GenAI Fund sent it back; it cannot be sent again before.
+     */
+    changedSinceReview: boolean;
     closesAt?: string | null;
     /**
      * Whether it holds everything a use case needs to be sent for review.

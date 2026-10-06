@@ -205,13 +205,13 @@ public class UseCaseAdministration {
 	/**
 	 * Sends a use case in review back to its organization with what to change; its members are told.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws UseCaseException when there is no such use case, or it is not in review
+	 * @throws UseCaseException when there is no such use case, or it is neither in review nor published
 	 */
 	@Transactional
 	public AdminUseCaseResponse sendBack(Actor actor, UUID id, SendBackUseCaseRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		Instant now = Instant.now();
-		UseCase useCase = awaitingReview(id, now);
+		UseCase useCase = decidable(id, now, UseCase.IN_REVIEW, UseCase.PUBLISHED);
 		String reason = request.reason().strip();
 		useCase.sendBack(operator.accountId(), now, reason);
 		useCases.saveAndFlush(useCase);
@@ -219,9 +219,13 @@ public class UseCaseAdministration {
 	}
 
 	private UseCase awaitingReview(UUID id, Instant now) {
+		return decidable(id, now, UseCase.IN_REVIEW);
+	}
+
+	private UseCase decidable(UUID id, Instant now, String... statuses) {
 		UseCase useCase = useCases.findForUpdate(id)
 			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No use case " + id));
-		if (!UseCase.IN_REVIEW.equals(useCase.statusAt(now))) {
+		if (!List.of(statuses).contains(useCase.statusAt(now))) {
 			throw new UseCaseException(UseCaseErrorCode.NOT_AWAITING_REVIEW,
 					"Decision on use case " + id + ", which is " + useCase.statusAt(now));
 		}

@@ -5280,6 +5280,10 @@ components:
           format: int32
         budgetToBeDetermined:
           type: boolean
+        changedSinceReview:
+          type: boolean
+          description: Whether the members changed it since GenAI Fund sent it back;
+            it cannot be sent again before.
         closesAt:
           type:
           - string
@@ -5395,6 +5399,7 @@ components:
       - attachments
       - budgetMembersOnly
       - budgetToBeDetermined
+      - changedSinceReview
       - complete
       - editable
       - hideOrganizationName
