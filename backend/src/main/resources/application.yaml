@@ -47,10 +47,6 @@ spring:
         # Flyway creates the event publication table.
         schema-initialization:
           enabled: false
-  mail:
-    # Local development delivers to the Mailpit container of backend/compose.yaml; nothing leaves the machine.
-    host: ${BEYONDPILOT_MAIL_HOST:localhost}
-    port: ${BEYONDPILOT_MAIL_PORT:1025}
 
 server:
   # The web application and the reverse proxy forward the browser's host and scheme.
@@ -65,6 +61,12 @@ server:
         max-age: 365d
 
 beyondpilot:
+  notification:
+    # Who delivers email is chosen by operators in Admin › Email and stored in the database; the provider's secrets
+    # are encrypted with this key (32 bytes in Base64). Without it no secret can be saved, and email waits.
+    encryption-key: ${BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY:}
+    # The public address of the site: emails read the GenAI Fund logo from it.
+    site-url: ${BEYONDPILOT_SITE_URL:http://localhost:3000}
   identity:
     sign-in-code-lifetime: 15m
     # BEYONDPILOT_IDENTITY_OPERATOR_EMAILS lists the addresses that are operators from their first sign-in.
@@ -78,8 +80,6 @@ beyondpilot:
       bucket: ${BEYONDPILOT_STORAGE_S3_BUCKET:}
       region: ${BEYONDPILOT_STORAGE_S3_REGION:}
       endpoint: ${BEYONDPILOT_STORAGE_S3_ENDPOINT:}
-  notification:
-    from: ${BEYONDPILOT_MAIL_FROM:BeyondPilot <no-reply@beyondpilot.localhost>}
 
 springdoc:
   # OpenApiContractTest generates openapi.yml; no runtime profile serves the contract.

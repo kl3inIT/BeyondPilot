@@ -3,15 +3,16 @@ package ai.genaifund.beyondpilot.identity.signin;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Locale;
 import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import ai.genaifund.beyondpilot.BusinessException;
+import ai.genaifund.beyondpilot.ErrorCategory;
 import ai.genaifund.beyondpilot.identity.IdentityProperties;
-import ai.genaifund.beyondpilot.notification.EmailService;
-import ai.genaifund.beyondpilot.notification.NotificationException;
+import ai.genaifund.beyondpilot.identity.SignInCodeRequested;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ott.OneTimeToken;
@@ -32,11 +33,11 @@ class SignInCodeSender implements OneTimeTokenGenerationSuccessHandler {
 
 	private static final String MAIL_RETRY_SECONDS = "30";
 
-	private final EmailService emails;
+	private final ApplicationEventPublisher events;
 	private final IdentityProperties properties;
 
-	SignInCodeSender(EmailService emails, IdentityProperties properties) {
-		this.emails = emails;
+	SignInCodeSender(ApplicationEventPublisher events, IdentityProperties properties) {
+		this.events = events;
 		this.properties = properties;
 	}
 
@@ -56,11 +57,14 @@ class SignInCodeSender implements OneTimeTokenGenerationSuccessHandler {
 			response.sendError(HttpStatus.TOO_MANY_REQUESTS.value());
 			return;
 		}
-		Locale locale = "vi".equals(request.getParameter("locale")) ? Locale.forLanguageTag("vi") : Locale.ENGLISH;
 		try {
-			emails.sendSignInCode(email, code.getTokenValue(), properties.signInCodeLifetime(), locale);
+			// The module that sends email listens synchronously, so a failure to send comes back here.
+			events.publishEvent(new SignInCodeRequested(email, code.getTokenValue(), properties.signInCodeLifetime()));
 		}
-		catch (NotificationException exception) {
+		catch (BusinessException exception) {
+			if (exception.category() != ErrorCategory.SERVICE_UNAVAILABLE) {
+				throw exception;
+			}
 			response.setHeader(HttpHeaders.RETRY_AFTER, MAIL_RETRY_SECONDS);
 			response.sendError(HttpStatus.SERVICE_UNAVAILABLE.value());
 			return;

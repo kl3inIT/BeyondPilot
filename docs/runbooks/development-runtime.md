@@ -14,8 +14,8 @@ From the repository root:
 ./gradlew :backend:bootRun
 ```
 
-- Spring Boot Docker Compose support (`spring-boot-docker-compose`, a development-only dependency) starts PostgreSQL and Mailpit from `backend/compose.yaml` and connects the application to the database. No datasource settings are needed.
-- Every email the application sends lands in Mailpit: open `http://localhost:8025` to read a sign-in code. Nothing is delivered outside the machine.
+- Spring Boot Docker Compose support (`spring-boot-docker-compose`, a development-only dependency) starts PostgreSQL from `backend/compose.yaml` and connects the application to the database. No datasource settings are needed.
+- No email leaves until an operator chooses a provider in Admin › Email; until then emails wait in the queue and asking for a sign-in code answers "try again". Sign in with Google first (below), or set up a provider whose test address is yours.
 - The application listens on port 8080. `http://localhost:8080/actuator/health` returns `"status":"UP"`.
 - If the process is killed instead of stopped, the PostgreSQL container keeps running. Remove it with:
 
@@ -30,36 +30,35 @@ From the repository root:
 
 Local runs use no profile. Deployed environments run `production`; staging runs `production,staging`.
 
-| Variable                                                                             | Profile      | Purpose                                                                                                                                                                                                        |
-| ------------------------------------------------------------------------------------ | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BEYONDPILOT_DATABASE_URL`                                                           | `production` | JDBC URL of the PostgreSQL database. No default                                                                                                                                                                |
-| `BEYONDPILOT_DATABASE_USERNAME`                                                      | `production` | Database login. No default                                                                                                                                                                                     |
-| `BEYONDPILOT_DATABASE_PASSWORD`                                                      | `production` | Database password; a managed secret, never committed. No default                                                                                                                                               |
-| `BEYONDPILOT_DATABASE_POOL_SIZE`                                                     | all          | Fixed connection pool size. Default `10`                                                                                                                                                                       |
-| `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS`                                               | all          | Comma-separated addresses that become operators when they sign in. Default: none                                                                                                                               |
-| `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID`, `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET` | all          | Google OAuth client. Locally Google sign-in is off without them; `production` does not start without them. The secret is a managed secret, never committed                                                     |
-| `BEYONDPILOT_MAIL_HOST`, `BEYONDPILOT_MAIL_PORT`                                     | all          | SMTP server. Default `localhost:1025`, the Mailpit container; no default under `production`                                                                                                                    |
-| `BEYONDPILOT_MAIL_USERNAME`, `BEYONDPILOT_MAIL_PASSWORD`                             | `production` | SMTP login; the password is a managed secret, never committed. No default                                                                                                                                      |
-| `BEYONDPILOT_MAIL_FROM`                                                              | all          | Sender of every email. Default a `beyondpilot.localhost` address; no default under `production`                                                                                                                |
-| `BEYONDPILOT_STORAGE_PROVIDER`                                                       | all          | Where uploaded files are kept: `local` (a directory) or `s3` (a bucket the browser uploads to directly). Default `local`; no default under `production`                                                        |
-| `BEYONDPILOT_STORAGE_LOCAL_DIRECTORY`                                                | all          | The directory of the local store. Default `build/storage` under `backend/`, which Git ignores. A deployed environment that uses the local store puts it on a volume                                            |
-| `BEYONDPILOT_STORAGE_S3_BUCKET`, `BEYONDPILOT_STORAGE_S3_REGION`                     | all          | The bucket of the S3 store and its region. Required when the provider is `s3`. Credentials come from the AWS SDK's default chain (the role of the instance or task), never from a variable of this application |
-| `BEYONDPILOT_STORAGE_S3_ENDPOINT`                                                    | all          | Another S3-compatible endpoint, addressed by path; only for running against MinIO. Default: none                                                                                                               |
+| Variable                                                                             | Profile      | Purpose                                                                                                                                                                                                                              |
+| ------------------------------------------------------------------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `BEYONDPILOT_DATABASE_URL`                                                           | `production` | JDBC URL of the PostgreSQL database. No default                                                                                                                                                                                      |
+| `BEYONDPILOT_DATABASE_USERNAME`                                                      | `production` | Database login. No default                                                                                                                                                                                                           |
+| `BEYONDPILOT_DATABASE_PASSWORD`                                                      | `production` | Database password; a managed secret, never committed. No default                                                                                                                                                                     |
+| `BEYONDPILOT_DATABASE_POOL_SIZE`                                                     | all          | Fixed connection pool size. Default `10`                                                                                                                                                                                             |
+| `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS`                                               | all          | Comma-separated addresses that become operators when they sign in. Default: none                                                                                                                                                     |
+| `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID`, `BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET` | all          | Google OAuth client. Locally Google sign-in is off without them; `production` does not start without them. The secret is a managed secret, never committed                                                                           |
+| `BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY`                                            | all          | 32 random bytes in Base64 that encrypt the email providers' secrets in the database; a managed secret, never committed. Without it the application runs but no provider secret can be saved. Make one with `openssl rand -base64 32` |
+| `BEYONDPILOT_SITE_URL`                                                               | all          | The public address of the site, which emails read the GenAI Fund logo from. Default `http://localhost:3000`; no default under `production`                                                                                           |
+| `BEYONDPILOT_STORAGE_PROVIDER`                                                       | all          | Where uploaded files are kept: `local` (a directory) or `s3` (a bucket the browser uploads to directly). Default `local`; no default under `production`                                                                              |
+| `BEYONDPILOT_STORAGE_LOCAL_DIRECTORY`                                                | all          | The directory of the local store. Default `build/storage` under `backend/`, which Git ignores. A deployed environment that uses the local store puts it on a volume                                                                  |
+| `BEYONDPILOT_STORAGE_S3_BUCKET`, `BEYONDPILOT_STORAGE_S3_REGION`                     | all          | The bucket of the S3 store and its region. Required when the provider is `s3`. Credentials come from the AWS SDK's default chain (the role of the instance or task), never from a variable of this application                       |
+| `BEYONDPILOT_STORAGE_S3_ENDPOINT`                                                    | all          | Another S3-compatible endpoint, addressed by path; only for running against MinIO. Default: none                                                                                                                                     |
 
-- `production` writes Logstash-format JSON logs to standard output; `staging` adds DEBUG logging for `ai.genaifund.beyondpilot` and sends mail to the Mailpit container of its composition without an SMTP login or STARTTLS.
+- `production` writes Logstash-format JSON logs to standard output; `staging` adds DEBUG logging for `ai.genaifund.beyondpilot`. Who delivers email, and with which credentials, is not configured from the environment: operators set it in Admin › Email.
 - Under `production`, a secret may also be a file named after its variable in `/run/secrets` (a Spring configtree), which is how the deployed compositions pass them.
 - A missing database variable stops startup. Spring reports it as `'url' must start with "jdbc"` rather than naming the variable: check `BEYONDPILOT_DATABASE_URL` first.
 
 ## Run the whole stack in containers
 
-To try the images rather than the development servers, build and start PostgreSQL, the api, the web application, Mailpit and a local reverse proxy in one command from the repository root. Docker is the only prerequisite.
+To try the images rather than the development servers, build and start PostgreSQL, the api, the web application and a local reverse proxy in one command from the repository root. Docker is the only prerequisite.
 
 ```text
 docker compose -f infrastructure/deployment/compose.base.yaml -f infrastructure/deployment/compose.local.yaml up --build --wait
 ```
 
 - Open `http://localhost:8000`. The proxy (`infrastructure/deployment/local-proxy.conf`) sends `/api`, `/login`, `/logout`, `/oauth2` and `/ott` to the api and every other path to the web application, as the deployed reverse proxy does.
-- Sign-in codes land in this composition's Mailpit at `http://localhost:8026`, beside the one of `bootRun` on 8025. Set `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS` in the shell to sign in as an operator. Google sign-in is off.
+- Set `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS` in the shell to sign in as an operator. Google sign-in is off and no email provider is set up, so this composition is for looking at the pages, not for signing in.
 - The composition runs without a Spring profile and with development-only credentials. Its database and uploaded files live in the volumes `beyondpilot_postgres-data` and `beyondpilot_storage`, separate from those of `bootRun`.
 - Stop it with `down`; `down -v` also deletes its data:
 
@@ -71,7 +70,7 @@ docker compose -f infrastructure/deployment/compose.base.yaml -f infrastructure/
 
 1. Start the backend and the web application.
 2. Ask for a code at `http://localhost:3000/sign-in`.
-3. Open `http://localhost:8025` (Mailpit), read the six digits in the newest email and type them into the waiting screen.
+3. Read the six digits in the email that arrives and type them into the waiting screen. The email leaves only once an operator has set up a provider in Admin › Email; Admin › Email › Activity shows each email and whether it was sent.
 
 To sign in as an operator, put your address in `BEYONDPILOT_IDENTITY_OPERATOR_EMAILS` in the local `.env` file described below.
 

@@ -12,15 +12,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -34,7 +33,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = "beyondpilot.identity.operator-emails=Operator@genaifund.test")
-@Import({ TestcontainersConfiguration.class, IdentitySignInTest.Mail.class })
+@Import({ TestcontainersConfiguration.class, TestMailbox.Configuration.class })
 class IdentitySignInTest {
 
 	private static final String SESSION_COOKIE = "BEYONDPILOT_SESSION";
@@ -44,7 +43,7 @@ class IdentitySignInTest {
 	private int port;
 
 	@Autowired
-	private RecordingMailSender mail;
+	private TestMailbox mail;
 
 	@Autowired
 	private JdbcClient jdbc;
@@ -65,7 +64,8 @@ class IdentitySignInTest {
 			.isNoContent());
 
 		String code = mail.latestCodeTo("An.Tran@example.test");
-		assertThat(mail.latestSubjectTo("An.Tran@example.test")).isEqualTo(code + " là mã đăng nhập BeyondPilot của bạn");
+		// Email is written in English for now, whatever language the screen asked in.
+		assertThat(mail.latestSubjectTo("An.Tran@example.test")).isEqualTo(code + " is your BeyondPilot sign-in code");
 
 		String session = signIn(browser, code);
 
@@ -423,14 +423,5 @@ class IdentitySignInTest {
 			.isNotEmpty()
 			.returnResult();
 		assertThat(result.getResponseHeaders().getFirst("X-Request-Id")).isNotBlank();
-	}
-
-	@TestConfiguration(proxyBeanMethods = false)
-	static class Mail {
-
-		@Bean
-		RecordingMailSender recordingMailSender() {
-			return new RecordingMailSender();
-		}
 	}
 }

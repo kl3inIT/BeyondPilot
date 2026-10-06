@@ -13,17 +13,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
-import ai.genaifund.beyondpilot.identity.RecordingMailSender;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -36,7 +34,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = "beyondpilot.identity.operator-emails=operator@search.test")
-@Import({ TestcontainersConfiguration.class, SearchTest.Mail.class })
+@Import({ TestcontainersConfiguration.class, TestMailbox.Configuration.class })
 class SearchTest {
 
 	private static final String PROGRAMS = "/api/program/admin/programs";
@@ -45,7 +43,7 @@ class SearchTest {
 	private int port;
 
 	@Autowired
-	private RecordingMailSender mail;
+	private TestMailbox mail;
 
 	@Autowired
 	private JdbcClient jdbc;
@@ -216,16 +214,6 @@ class SearchTest {
 				from identity_account where email = ?
 				""").params(id, "test/" + id, uploader).update();
 		return id;
-	}
-
-	@TestConfiguration(proxyBeanMethods = false)
-	static class Mail {
-
-		@Bean
-		RecordingMailSender recordingMailSender() {
-			return new RecordingMailSender();
-		}
-
 	}
 
 }

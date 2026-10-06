@@ -16,7 +16,7 @@ Status: in design, 6 October 2026 ([plan](plan.md)). The screens were approved i
 
 Operators get **Admin › Email** with four tabs:
 
-- **Templates.** Each kind of email, by group, with its English and Vietnamese text. An operator edits the subject and the body in Markdown with the kind's variables, sees a preview with sample data, sends a test to themselves, and resets to the default. The appearance (logo, accent colour, footer) is shared by every kind.
+- **Templates.** Each kind of email, by group. An operator edits the subject and the body in Markdown with the kind's variables, sees a preview with sample data, sends a test to themselves, and resets to the default. The appearance (accent colour, footer note) is shared by every kind.
 - **Activity.** Every email sent: when, to whom, which kind, its status. Counts for the period, with the bounce and complaint rates against the limits above. One email opens with its events and the content as it was sent; it can be sent again unless its address is suppressed.
 - **Suppressions.** The addresses BeyondPilot no longer sends to, with the reason and the email that caused it. An operator removes one after a warning, or adds one.
 - **Settings.** The setup checklist (provider connected, domain verified, production access, delivery events), the provider (Amazon SES, Resend or SMTP) with its credentials, a connection test that sends to the operator's own address, the sender, the domain's DNS records, and the address that receives delivery events.
@@ -35,26 +35,26 @@ _Failures:_ no provider configured (emails wait as queued, sign-in by code answe
 
 ## Glossary
 
-| Term               | Meaning                                                                                                                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Email kind**     | What an email is for, from a closed catalog: `sign_in_code`, `organization_invitation`, … Each kind declares its variables, which of them are required, and its default English and Vietnamese text |
-| **Template**       | The subject and the Markdown body of one kind in one language. The default lives in code; an operator's edit is stored as an **override**, and resetting deletes the override (Discourse)           |
-| **Appearance**     | The logo, accent colour and footer of the fixed HTML layout every email is wrapped in                                                                                                               |
-| **Email message**  | One email to one recipient, as rendered when it was queued, with its status and events                                                                                                              |
-| **Status**         | `queued`, `sent`, `delivered`, `bounced`, `complained`, `failed`, `skipped`                                                                                                                         |
-| **Suppression**    | An address BeyondPilot does not send to, with its reason: `bounce`, `complaint` or `manual`                                                                                                         |
-| **Provider**       | Who delivers: `ses`, `resend` or `smtp`                                                                                                                                                             |
-| **Delivery event** | A provider's report about one message: delivered, bounced, complained                                                                                                                               |
+| Term               | Meaning                                                                                                                                                                      |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Email kind**     | What an email is for, from a closed catalog: `sign_in_code`, `organization_invitation`, … Each kind declares its variables, which of them are required, and its default text |
+| **Template**       | The subject and the Markdown body of one kind. The default lives in code; an operator's edit is stored as an **override**, and resetting deletes the override (Discourse)    |
+| **Appearance**     | The accent colour and footer note of the fixed HTML layout every email is wrapped in                                                                                         |
+| **Email message**  | One email to one recipient, as rendered when it was queued, with its status and events                                                                                       |
+| **Status**         | `queued`, `sent`, `delivered`, `bounced`, `complained`, `failed`, `skipped`                                                                                                  |
+| **Suppression**    | An address BeyondPilot does not send to, with its reason: `bounce`, `complaint` or `manual`                                                                                  |
+| **Provider**       | Who delivers: `ses`, `resend` or `smtp`                                                                                                                                      |
+| **Delivery event** | A provider's report about one message: delivered, bounced, complained                                                                                                        |
 
 Notification is the owner of all of it.
 
 ## Module position
 
-`notification` today depends on nothing and `identity` depends on it to send the sign-in code. The operator screens need the caller (`Actor`), the operator check and the operator's name and address (for the audit log, "Edited by" and "send a test to me"), all of which are `identity`'s, and a logo stored in `storage`.
+`notification` today depends on nothing and `identity` depends on it to send the sign-in code. The operator screens need the caller (`Actor`), the operator check and the operator's name and address (for the audit log, "Edited by" and "send a test to me"), all of which are `identity`'s.
 
-**Proposed: invert the edge.** `notification` depends on `identity`, `audit` and `storage`; `identity` no longer depends on `notification`.
+**Proposed: invert the edge.** `notification` depends on `identity` and `audit`; `identity` no longer depends on `notification`.
 
-- `identity` publishes `SignInCodeRequested(email, code, validFor, locale)` in its root package. `notification` handles it in a synchronous `@EventListener`, which sends the code before the request is answered. A failure surfaces as a `BusinessException` of category `SERVICE_UNAVAILABLE`, which `SignInCodeSender` turns into `503` with `Retry-After`, as today, without naming a notification type.
+- `identity` publishes `SignInCodeRequested(email, code, validFor)` in its root package. `notification` handles it in a synchronous `@EventListener`, which sends the code before the request is answered. A failure surfaces as a `BusinessException` of category `SERVICE_UNAVAILABLE`, which `SignInCodeSender` turns into `503` with `Retry-After`, as today, without naming a notification type.
 - This event departs from [events between modules](../../../conventions.md#events-between-modules) in two ways, both on purpose. It carries the code, because the code exists in clear only at that moment (identity stores a hash). It is handled synchronously and not by `@ApplicationModuleListener`, so it is never written to the event publication registry: the code never reaches a table, and the person on the screen learns at once whether it was sent.
 - Every other caller keeps calling `EmailService` as it does now; their modules already depend on `identity` and `notification`.
 
@@ -94,8 +94,8 @@ The [Strategy-behind-a-registry pattern](../../../conventions.md#interchangeable
 - **Engine: JMustache**, managed by Spring Boot. Logic-less: no method call, no `new`, no import, so a template can reach only the values it is given. FreeMarker (ThingsBoard CVE-2023-45303, OpenMetadata), Thymeleaf (three sandbox escapes in 2026) and Pebble (a blocklist that was bypassed) were ruled out for templates that operators edit.
 - **Validated on save** by visiting the compiled template: only the kind's variables, no dotted names, sections, partials or triple braces, and every required variable present. A sign-in code without `{{code}}` cannot be saved.
 - **Markdown first, then values.** The body is converted from Markdown to HTML with commonmark-java (raw HTML escaped, URLs sanitized), and only then are the values filled in, HTML-escaped and with line breaks kept. A value written by a visitor, such as the message of an enquiry, therefore cannot turn into a link or markup. The plain-text part fills the values into the Markdown source.
-- **The layout is fixed**: table-based HTML with inline styles, written once from MJML and committed as a resource. Only the appearance's values go into it.
-- **Language.** A kind is written in English and Vietnamese. When the recipient's language is known (the sign-in code), the email is in that language; otherwise the email carries both, English first, as today.
+- **The layout is fixed** (approved in Figma, frames `email-layout-*`, on 6 October 2026 after two rounds): a white header with the GenAI Fund logo and "BeyondPilot", the body with a heading, the sign-off, and a dark band with the white logo, the site's address and the footer note. Table-based HTML with inline styles and an Outlook wrapper, in `notification/layout.html`. The logos are the site's own files under `/brand`, read from `BEYONDPILOT_SITE_URL`, the public address of the site, which production sets.
+- **Language.** Email is written in English for now (decided by Đạt, 6 October 2026), the sign-in code included. A template is per kind only; Vietnamese, when it comes, adds a language to the template table in a migration of its own.
 - **The defaults** are today's wording, moved from Java into the catalog. The admin list shows "Edited" with who and when for an override.
 
 The catalog is the seventeen kinds `EmailService` sends today:
@@ -141,13 +141,12 @@ All under `/api/notification`, operators only, checked in the application servic
 | Settings, setup state, DNS records      | `GET /settings`                                        |
 | Save settings                           | `PUT /settings`                                        |
 | Test the connection (send to me)        | `POST /settings/test`                                  |
-| Upload a logo                           | through storage, then `PUT /settings` with its file    |
 | Templates by group, with override state | `GET /templates`                                       |
-| One template, both languages            | `GET /templates/{kind}`                                |
-| Save an override                        | `PUT /templates/{kind}/{locale}`                       |
-| Reset to default                        | `DELETE /templates/{kind}/{locale}`                    |
-| Preview with sample data                | `POST /templates/{kind}/{locale}/preview`              |
-| Send a test of a template to me         | `POST /templates/{kind}/{locale}/test`                 |
+| One template                            | `GET /templates/{kind}`                                |
+| Save an override                        | `PUT /templates/{kind}`                                |
+| Reset to default                        | `DELETE /templates/{kind}`                             |
+| Preview with sample data                | `POST /templates/{kind}/preview`                       |
+| Send a test of a template to me         | `POST /templates/{kind}/test`                          |
 | Activity, with counts                   | `GET /messages?from=&kind=&status=&q=&before=&after=`  |
 | One message, its events and content     | `GET /messages/{id}`                                   |
 | Send again                              | `POST /messages/{id}/resend`                           |
@@ -163,9 +162,9 @@ New audit actions: `email.settings_update`, `email.template_update`, `email.temp
 
 `V<n>__notification_create_email.sql`:
 
-- `email_settings` (one row, `id = 1`), with `version`, the encrypted secrets as `bytea`, and the appearance's logo as a storage file identifier.
-- `email_template` (`kind`, `locale`, `subject`, `body`, `updated_by`, `updated_by_label`, `updated_at`), primary key `(kind, locale)`.
-- `email_message` (`id`, `kind`, `locale`, `recipient`, `subject`, `html`, `text`, `status`, `attempts`, `next_attempt_at`, `provider`, `provider_message_id` unique, `last_error_code`, `created_at`, `sent_at`), indexed `(created_at desc, id desc)` and `(status, next_attempt_at)`.
+- `email_settings` (one row, `id = 1`), with `version`, the encrypted secrets as `bytea`, and the appearance's accent colour and footer note.
+- `email_template` (`kind` primary key, `subject`, `body`, `updated_by`, `updated_by_label`, `updated_at`).
+- `email_message` (`id`, `kind`, `recipient`, `subject`, `html`, `text`, `status`, `attempts`, `next_attempt_at`, `provider`, `provider_message_id` unique, `last_error_code`, `created_at`, `sent_at`), indexed `(created_at desc, id desc)` and `(status, next_attempt_at)`.
 - `email_event` (`message_id`, `type`, `occurred_at`, `detail`).
 - `email_suppression` (`address` primary key, lowercased; `reason`, `message_id`, `created_by`, `created_at`).
 

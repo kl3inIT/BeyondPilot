@@ -16,17 +16,15 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
-import ai.genaifund.beyondpilot.identity.RecordingMailSender;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -45,7 +43,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = { "beyondpilot.identity.operator-emails=operator@storage.test", "beyondpilot.storage.provider=s3",
 				"beyondpilot.storage.s3.bucket=beyondpilot-test", "beyondpilot.storage.s3.region=us-east-1" })
-@Import({ TestcontainersConfiguration.class, S3StorageTest.Mail.class })
+@Import({ TestcontainersConfiguration.class, TestMailbox.Configuration.class })
 class S3StorageTest {
 
 	private static final String BUCKET = "beyondpilot-test";
@@ -65,7 +63,7 @@ class S3StorageTest {
 	private int port;
 
 	@Autowired
-	private RecordingMailSender mail;
+	private TestMailbox mail;
 
 	@Autowired
 	private StorageService storage;
@@ -185,14 +183,5 @@ class S3StorageTest {
 			.returnResult()
 			.getResponseBody();
 		assertThat(problem).containsEntry("code", code);
-	}
-
-	@TestConfiguration(proxyBeanMethods = false)
-	static class Mail {
-
-		@Bean
-		RecordingMailSender recordingMailSender() {
-			return new RecordingMailSender();
-		}
 	}
 }

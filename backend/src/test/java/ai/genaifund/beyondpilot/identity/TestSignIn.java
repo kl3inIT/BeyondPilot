@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.identity;
 
+import ai.genaifund.beyondpilot.TestMailbox;
 import java.util.List;
 
 import org.springframework.http.HttpHeaders;
@@ -17,7 +18,7 @@ public final class TestSignIn {
 	}
 
 	/** The session of the address after it asked for a code and typed it. */
-	public static String session(RestTestClient client, RecordingMailSender mail, String email) {
+	public static String session(RestTestClient client, TestMailbox mail, String email) {
 		String browser = sessionOf(client.post()
 			.uri("/ott/generate")
 			.header(CSRF_HEADER, "1")

@@ -16,9 +16,8 @@ services:
       SPRING_PROFILES_ACTIVE: production,staging
       BEYONDPILOT_DATABASE_URL: jdbc:postgresql://postgres:5432/beyondpilot
       BEYONDPILOT_DATABASE_USERNAME: beyondpilot
-      BEYONDPILOT_MAIL_HOST: mailpit
-      BEYONDPILOT_MAIL_PORT: "1025"
-      BEYONDPILOT_MAIL_FROM: ${BEYONDPILOT_MAIL_FROM:?}
+      # Emails read the GenAI Fund logo from the site; who delivers them is set in Admin › Email.
+      BEYONDPILOT_SITE_URL: https://beyondpilot.vadan.app
       BEYONDPILOT_STORAGE_PROVIDER: local
       BEYONDPILOT_IDENTITY_OPERATOR_EMAILS: ${BEYONDPILOT_IDENTITY_OPERATOR_EMAILS:?}
       BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID: ${BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID:?}
@@ -28,6 +27,8 @@ services:
         target: BEYONDPILOT_DATABASE_PASSWORD
       - source: google_client_secret
         target: BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET
+      - source: notification_encryption_key
+        target: BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY
     networks:
       - internal
       - proxy
@@ -39,25 +40,17 @@ services:
       - internal
       - proxy
 
-  # Its mail holds sign-in codes, so it stays off proxy-network, which other tenants of the host share; the team
-  # reaches it through an SSH tunnel (docs/runbooks/ci-cd.md), and its web interface still asks for a login.
-  mailpit:
-    container_name: beyondpilot-mailpit
-    environment:
-      MP_UI_AUTH_FILE: /run/secrets/mailpit_ui_auth
-    secrets:
-      - mailpit_ui_auth
 
-# Each file is owned by uid 1654, the api's user, with mode 0400: Compose mounts it as it is on the host. Postgres and
-# Mailpit read theirs as root.
+# Each file is owned by uid 1654, the api's user, with mode 0400: Compose mounts it as it is on the host. Postgres reads
+# its own as root.
 secrets:
   database_password:
     file: /apps/beyondpilot/secrets/database-password
   google_client_secret:
     file: /apps/beyondpilot/secrets/google-client-secret
-  # htpasswd lines (bcrypt) of the people who read staging mail.
-  mailpit_ui_auth:
-    file: /apps/beyondpilot/secrets/mailpit-ui-auth
+  # 32 random bytes in Base64 that encrypt the email providers' secrets in the database.
+  notification_encryption_key:
+    file: /apps/beyondpilot/secrets/notification-encryption-key
 
 networks:
   proxy:
