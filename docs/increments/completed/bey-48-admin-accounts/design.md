@@ -1,6 +1,6 @@
 # BEY-48 — Admin: accounts, the operator role, and switching an account off
 
-Status: delivered on 4 October 2026 ([plan](plan.md)); the screens were approved in Figma the same day (section `Admin — Accounts`). It is step 3 of the [identity increment](../../active/bey-30-identity/design.md), widened from "grant and withdraw the operator role" to the whole account list, and the first screen inside the admin frame of BEY-44. The research behind the screen is in [docs/research](../../../research/2026-10-04-admin-accounts.md).
+Status: delivered on 4 October 2026 ([plan](plan.md)); the screens were approved in Figma the same day (section `Admin — Accounts`). It is step 3 of the [identity increment](../bey-30-identity/design.md), widened from "grant and withdraw the operator role" to the whole account list, and the first screen inside the admin frame of BEY-44. The research behind the screen is in [docs/research](../../../research/2026-10-04-admin-accounts.md).
 
 ## Domain story
 

@@ -1,6 +1,6 @@
 # Identity: sign-in, sessions and the operator role
 
-Status: backend implemented on 3 October 2026; the web screens follow ([plan](plan.md)). It is the first slice of the [Phase 1 domain model](../bey-22-phase-1-domain-model/design.md), whose boundary discovery it relies on.
+Status: done on 4 October 2026 ([plan](plan.md)): the backend on 3 October, the sign-in pages and the signed-in header (BEY-42) on 4 October; Google sign-in and emailed codes work on staging. It is the first slice of the [Phase 1 domain model](../../active/bey-22-phase-1-domain-model/design.md), whose boundary discovery it relies on.
 
 ## What a person can do
 
@@ -16,7 +16,7 @@ GenAI Fund staff are operators. The first operators are the addresses listed in 
 | Decision | Choice | Why |
 | --- | --- | --- |
 | Where sign-in is implemented | Spring Security in this application: OAuth 2.0 login for Google, one-time-token login for the emailed code, Spring Session JDBC for the session | No second system to run; both methods are framework features |
-| A code, not a link | The email carries six digits that the person types into the screen that is waiting for them | A link signs in whoever opens it: sent on by someone else, it signs the reader into the sender's account without their noticing. A code is what most comparable products use (the research is in the [main-flows increment](../bey-27-main-flows-design/research.md)); it also works when the email is read on another device, and a mail scanner has nothing to open |
+| A code, not a link | The email carries six digits that the person types into the screen that is waiting for them | A link signs in whoever opens it: sent on by someone else, it signs the reader into the sender's account without their noticing. A code is what most comparable products use (the research is in the [main-flows increment](../../active/bey-27-main-flows-design/research.md)); it also works when the email is read on another device, and a mail scanner has nothing to open |
 | The code is tied to the browser that asked | The challenge identifier stays in that browser's session; the email carries only the code. Neither works alone | A code handed to another person does nothing in their browser, and nobody can guess at, or use up, a code from elsewhere |
 | Guessing | A code takes five guesses, each charged in the database before it is looked at, works once and for 15 minutes, and is stored as a salted hash. An address holds at most three working codes. Fifteen wrong codes in a day, over all codes of an address, stop new codes for that address until the day has passed | Six digits are guessable given enough tries; the limits make the tries too few. The daily stop trades a risk of take-over for a risk of someone blocking an address from code sign-in for a day; Google sign-in still works for it |
 | Accounts and providers | `identity_account` and `identity_external_identity`, the shape most products use (a user table and a table of external logins) | Another provider later is a new value of `provider`, not a new structure |
