@@ -524,7 +524,7 @@ test.describe("admin organizations", () => {
     await dialog.getByLabel("Organization name").fill("Sài Gòn Logistics");
     await dialog.getByRole("combobox", { name: "Organization type" }).click();
     await page.getByRole("option", { name: "Builder team" }).click();
-    await dialog.getByLabel("Owner's email (optional)").fill("owner@saigonlogistics.example");
+    await dialog.getByLabel("Owner's email").fill("owner@saigonlogistics.example");
     await dialog.getByRole("button", { name: "Add organization" }).click();
 
     await expect(page.getByText("Sài Gòn Logistics created.")).toBeVisible();

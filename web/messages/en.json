@@ -807,10 +807,9 @@
         "type": "Organization type",
         "typePlaceholder": "Choose a type",
         "typeRequired": "Choose the type of organization.",
-        "ownerEmail": "Owner's email (optional)",
-        "ownerEmailHint": "They are invited to own it. Leave empty to let someone claim it.",
+        "ownerEmail": "Owner's email",
         "ownerEmailInvalid": "Enter a full email address.",
-        "website": "Website (optional)",
+        "website": "Website",
         "websiteInvalid": "Enter a full address that starts with https://",
         "cancel": "Cancel",
         "confirm": "Add organization"

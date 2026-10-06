@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useNotify } from "@/hooks/use-notify";
 import { useVocabulary } from "@/i18n/vocabulary";
@@ -25,6 +25,15 @@ import { organizationTypes } from "./organization-codes";
 import { organizationError } from "./organization-errors";
 
 const blank = { name: "", type: "", ownerEmail: "", website: "" };
+
+/** The red star after the label of a field that must be filled; screen readers hear the error instead. */
+function RequiredMark() {
+  return (
+    <span aria-hidden="true" className="text-destructive">
+      *
+    </span>
+  );
+}
 
 /**
  * Creates an organization on behalf of its people, already approved: GenAI Fund lists a company
@@ -94,7 +103,10 @@ function AdminCreateOrganization() {
             </DialogHeader>
             <FieldGroup>
               <Field data-invalid={bad("name")}>
-                <FieldLabel htmlFor="admin-organization-name">{t("name")}</FieldLabel>
+                <FieldLabel htmlFor="admin-organization-name">
+                  {t("name")}
+                  <RequiredMark />
+                </FieldLabel>
                 <Input
                   id="admin-organization-name"
                   maxLength={120}
@@ -105,7 +117,10 @@ function AdminCreateOrganization() {
                 {bad("name") && <FieldError>{t("nameRequired")}</FieldError>}
               </Field>
               <Field data-invalid={bad("type")}>
-                <FieldLabel htmlFor="admin-organization-type">{t("type")}</FieldLabel>
+                <FieldLabel htmlFor="admin-organization-type">
+                  {t("type")}
+                  <RequiredMark />
+                </FieldLabel>
                 <ChoiceSelect
                   id="admin-organization-type"
                   placeholder={t("typePlaceholder")}
@@ -115,25 +130,6 @@ function AdminCreateOrganization() {
                   aria-invalid={bad("type")}
                 />
                 {bad("type") && <FieldError>{t("typeRequired")}</FieldError>}
-              </Field>
-              <Field data-invalid={bad("ownerEmail")}>
-                <FieldLabel htmlFor="admin-organization-owner">{t("ownerEmail")}</FieldLabel>
-                <Input
-                  id="admin-organization-owner"
-                  type="email"
-                  inputMode="email"
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  maxLength={254}
-                  value={text.ownerEmail}
-                  onChange={write("ownerEmail")}
-                  aria-invalid={bad("ownerEmail")}
-                />
-                {bad("ownerEmail") ? (
-                  <FieldError>{t("ownerEmailInvalid")}</FieldError>
-                ) : (
-                  <FieldDescription>{t("ownerEmailHint")}</FieldDescription>
-                )}
               </Field>
               <Field data-invalid={bad("website")}>
                 <FieldLabel htmlFor="admin-organization-website">{t("website")}</FieldLabel>
@@ -148,6 +144,21 @@ function AdminCreateOrganization() {
                   aria-invalid={bad("website")}
                 />
                 {bad("website") && <FieldError>{t("websiteInvalid")}</FieldError>}
+              </Field>
+              <Field data-invalid={bad("ownerEmail")}>
+                <FieldLabel htmlFor="admin-organization-owner">{t("ownerEmail")}</FieldLabel>
+                <Input
+                  id="admin-organization-owner"
+                  type="email"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  maxLength={254}
+                  value={text.ownerEmail}
+                  onChange={write("ownerEmail")}
+                  aria-invalid={bad("ownerEmail")}
+                />
+                {bad("ownerEmail") && <FieldError>{t("ownerEmailInvalid")}</FieldError>}
               </Field>
             </FieldGroup>
             <DialogFooter>

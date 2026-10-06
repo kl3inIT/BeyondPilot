@@ -807,10 +807,9 @@
         "type": "Loại tổ chức",
         "typePlaceholder": "Chọn loại",
         "typeRequired": "Chọn loại tổ chức.",
-        "ownerEmail": "Email chủ sở hữu (không bắt buộc)",
-        "ownerEmailHint": "Người này được mời làm chủ sở hữu. Để trống để người khác tự nhận.",
+        "ownerEmail": "Email chủ sở hữu",
         "ownerEmailInvalid": "Hãy nhập địa chỉ email đầy đủ.",
-        "website": "Website (không bắt buộc)",
+        "website": "Website",
         "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
         "cancel": "Hủy",
         "confirm": "Thêm tổ chức"
