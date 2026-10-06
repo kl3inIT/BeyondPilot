@@ -400,13 +400,13 @@ export type CreateOrganization = {
     country: string;
     description?: string | null;
     /**
-     * The industries it works in or serves, as the codes the solutions use.
+     * The industries it works in or serves, as the codes the solutions use. A company names one to five; a team or a builder may name none.
      */
     industries: Array<string>;
     /**
      * What the creator does in the organization.
      */
-    jobTitle: string;
+    jobTitle?: string | null;
     name: string;
     /**
      * One or both of `provider` and `enterprise`.
@@ -1303,6 +1303,18 @@ export type SaveProgram = {
  * A solution as its edit screen holds it.
  */
 export type SaveSolution = {
+    /**
+     * The models, tools and frameworks it is built with; null names none.
+     */
+    builtWith?: Array<string> | null;
+    /**
+     * The deck: a PDF the caller uploaded for `application_file`. Private.
+     */
+    deckFileId?: string | null;
+    /**
+     * A video, a prototype or a live demo.
+     */
+    demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     industries: Array<string>;
@@ -1317,6 +1329,10 @@ export type SaveSolution = {
      * One or two sentences shown in lists.
      */
     summary?: string | null;
+    /**
+     * Customers, pilots, users or revenue so far.
+     */
+    traction?: string | null;
     valueProposition?: string | null;
     /**
      * The version the screen read.
@@ -1367,6 +1383,7 @@ export type SendTalentEnquiry = {
  * A solution as its organization, and operators, see it.
  */
 export type Solution = {
+    builtWith: Array<string>;
     /**
      * Whether it has what a submission needs: a summary, a maturity, a focus area and an industry.
      */
@@ -1383,6 +1400,8 @@ export type Solution = {
      * Why it was last rejected.
      */
     decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    deck?: SolutionDeck | null;
+    demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
     id: string;
@@ -1403,6 +1422,7 @@ export type Solution = {
     status: 'draft' | 'submitted' | 'approved' | 'rejected';
     submittedAt?: string | null;
     summary?: string | null;
+    traction?: string | null;
     updatedAt: string;
     valueProposition?: string | null;
     /**
@@ -1410,6 +1430,15 @@ export type Solution = {
      */
     version: number;
     website?: string | null;
+};
+
+/**
+ * A solution's deck as its organization sees it. The file is private.
+ */
+export type SolutionDeck = {
+    fileId: string;
+    fileName: string;
+    sizeBytes: number;
 };
 
 /**

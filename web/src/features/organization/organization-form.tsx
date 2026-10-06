@@ -35,7 +35,6 @@ const MAX_INDUSTRIES = 5;
 
 /** The fields the form checks before it asks the backend, in the order the page shows them. */
 const checkedFields = [
-  { name: "jobTitle", id: "organization-job-title" },
   { name: "name", id: "organization-name" },
   { name: "teamSize", id: "organization-team-size" },
   { name: "roles", id: "organization-roles" },
@@ -92,11 +91,9 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
     if (!teamSize) {
       missing.add("teamSize");
     }
-    if (chosenIndustries.length === 0) {
+    // A company names its industries; a team or a builder on their own may not have settled on one.
+    if (type === "company" && chosenIndustries.length === 0) {
       missing.add("industries");
-    }
-    if (!organization && !jobTitle.trim()) {
-      missing.add("jobTitle");
     }
     setInvalid(missing);
     if (missing.size > 0) {
@@ -121,7 +118,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
         router.refresh();
         setPending(false);
       } else {
-        await createOrganization({ body: { ...body, jobTitle } });
+        await createOrganization({ body: { ...body, jobTitle: jobTitle.trim() || null } });
         notify.success("Organization.done.created");
         // The new organization opens on its own pages; the form stays pending until they arrive.
         router.push(getPathname({ href: siteRoutes.workspaceOrganization, locale }));
@@ -195,8 +192,11 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
       </div>
 
       {!organization && (
-        <Field data-invalid={bad("jobTitle")}>
-          <FieldLabel htmlFor="organization-job-title">{t("jobTitle")}</FieldLabel>
+        <Field>
+          <FieldLabel htmlFor="organization-job-title">
+            {t("jobTitle")}
+            {optional}
+          </FieldLabel>
           <Input
             id="organization-job-title"
             name="jobTitle"
@@ -205,9 +205,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
             value={jobTitle}
             aria-describedby="organization-job-title-hint"
             onChange={(event) => setJobTitle(event.target.value)}
-            aria-invalid={bad("jobTitle")}
           />
-          {bad("jobTitle") && <FieldError>{t("jobTitleRequired")}</FieldError>}
           <p id="organization-job-title-hint" className="text-xs text-muted-foreground">
             {t("jobTitleHint")}
           </p>
@@ -317,7 +315,10 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
         </p>
       </Field>
       <Field data-invalid={bad("industries")}>
-        <FieldLabel>{t("industries")}</FieldLabel>
+        <FieldLabel>
+          {t("industries")}
+          {type !== "company" && optional}
+        </FieldLabel>
         <ChoiceChips
           id="organization-industries"
           label={t("industries")}

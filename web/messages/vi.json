@@ -1331,7 +1331,6 @@
       "countryRequired": "Chọn một quốc gia.",
       "teamSizeRequired": "Chọn quy mô đội ngũ.",
       "jobTitle": "Vai trò hoặc chức danh của bạn",
-      "jobTitleRequired": "Nhập vai trò hoặc chức danh của bạn.",
       "jobTitleHint": "Việc bạn làm trong tổ chức. Hiển thị cạnh tên bạn trong danh sách thành viên."
     },
     "find": {
@@ -1735,7 +1734,21 @@
         "lead": "Biểu mẫu trở về giải pháp này như lần lưu gần nhất.",
         "cancel": "Sửa tiếp"
       },
-      "requiredMark": "· bắt buộc"
+      "requiredMark": "· bắt buộc",
+      "materials": {
+        "title": "Dùng khi nộp đơn",
+        "lead": "Nhập một lần ở đây, các mục này đi cùng giải pháp tới mọi chương trình bạn nộp. Chỉ tổ chức của bạn và các chương trình bạn nộp thấy được.",
+        "deck": "Deck giải pháp",
+        "deckHint": "Giải pháp làm gì, cho ai, và đã đi được tới đâu.",
+        "demoUrl": "Link demo",
+        "demoUrlHint": "Video, bản thử hoặc demo chạy thật. Kiểm tra là mở được mà không cần đăng nhập.",
+        "builtWith": "Xây bằng",
+        "builtWithPlaceholder": "Thêm model, công cụ hoặc framework",
+        "builtWithHint": "Nhấn Enter sau mỗi mục. Tối đa {count}.",
+        "traction": "Cột mốc và kết quả",
+        "tractionHint": "Khách hàng, dự án thử, người dùng hoặc doanh thu tới nay."
+      },
+      "optional": "Không bắt buộc"
     },
     "deployment": {
       "open": "Mở triển khai để đọc bài toán, những gì đã triển khai và kết quả.",
@@ -2419,5 +2432,20 @@
       "title": "Mười đội trình bày trực tiếp ngày 22 tháng 10.",
       "text": "Hạn nộp là 23:59 ICT ngày 15 tháng 10. Mọi người nhận kết quả vào ngày 16 tháng 10."
     }
+  },
+  "PdfUpload": {
+    "empty": "Chọn file PDF",
+    "limits": "PDF, tối đa 25 MB.",
+    "uploading": "Đang tải lên…",
+    "replace": "Thay",
+    "remove": "Xoá",
+    "errors": {
+      "type": "Hãy chọn file PDF.",
+      "size": "File lớn hơn 25 MB.",
+      "failed": "Không tải file lên được. Thử lại."
+    }
+  },
+  "EntryList": {
+    "remove": "Xoá {entry} khỏi {label}"
   }
 }

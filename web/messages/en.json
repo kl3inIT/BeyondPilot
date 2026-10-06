@@ -1331,7 +1331,6 @@
       "countryRequired": "Select a country.",
       "teamSizeRequired": "Select a team size.",
       "jobTitle": "Your role or job title",
-      "jobTitleRequired": "Enter your role or job title.",
       "jobTitleHint": "What you do in the organization. It shows beside your name among its members."
     },
     "find": {
@@ -1735,7 +1734,21 @@
         "lead": "The form goes back to this solution as it was last saved.",
         "cancel": "Keep editing"
       },
-      "requiredMark": "· required"
+      "requiredMark": "· required",
+      "materials": {
+        "title": "For applications",
+        "lead": "Entered once here, these go with the solution to every program it applies to. Only your organization and the programs you apply to see them.",
+        "deck": "Solution deck",
+        "deckHint": "What the solution does, for whom, and how far it has come.",
+        "demoUrl": "Demo link",
+        "demoUrlHint": "A video, a prototype or a live demo. Check it opens without signing in.",
+        "builtWith": "Built with",
+        "builtWithPlaceholder": "Add a model, tool or framework",
+        "builtWithHint": "Press Enter after each one. Up to {count}.",
+        "traction": "Milestones and traction",
+        "tractionHint": "Customers, pilots, users or revenue so far."
+      },
+      "optional": "Optional"
     },
     "deployment": {
       "open": "Open the deployment to read the problem, what was deployed and the result.",
@@ -2419,5 +2432,20 @@
       "title": "Ten teams present live on 22 October.",
       "text": "Submissions close 15 October at 23:59 ICT. Everyone hears back on 16 October."
     }
+  },
+  "PdfUpload": {
+    "empty": "Choose a PDF",
+    "limits": "PDF, up to 25 MB.",
+    "uploading": "Uploading…",
+    "replace": "Replace",
+    "remove": "Remove",
+    "errors": {
+      "type": "Choose a PDF file.",
+      "size": "The file is larger than 25 MB.",
+      "failed": "The file could not be uploaded. Try again."
+    }
+  },
+  "EntryList": {
+    "remove": "Remove {entry} from {label}"
   }
 }
