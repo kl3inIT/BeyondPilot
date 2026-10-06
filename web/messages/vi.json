@@ -1689,6 +1689,7 @@
         "solutions": "Giải pháp",
         "noSolutions": "Chưa có giải pháp nào được đăng.",
         "listedBelow": "{count} triển khai khách hàng, liệt kê bên dưới",
+        "explore": "Xem giải pháp",
         "deployments": "Triển khai khách hàng",
         "noDeployments": "Chưa công bố triển khai khách hàng nào.",
         "type": "Loại hình",

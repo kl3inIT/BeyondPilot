@@ -194,6 +194,9 @@ test.describe("solutions directory", () => {
       "Underwriting Radar",
       "Agent Coach",
     ]);
+    // Each card names the first industry of its solution and points to its page.
+    await expect(page.getByText("Insurance", { exact: true })).toHaveCount(4);
+    await expect(page.getByText("Explore solution")).toHaveCount(4);
     await expect(page.getByText("1 customer deployment, listed below")).toBeVisible();
     await expect(page.getByRole("button", { name: "Renewals at Mekong Life" })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
