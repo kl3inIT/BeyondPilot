@@ -108,6 +108,7 @@ test.describe("admin", () => {
     await expect(navigation.getByRole("list", { name: "System" }).getByRole("link")).toHaveText([
       "Accounts",
       "Audit log",
+      "Email",
     ]);
 
     const sidebar = page.locator('[data-slot="sidebar"]');
