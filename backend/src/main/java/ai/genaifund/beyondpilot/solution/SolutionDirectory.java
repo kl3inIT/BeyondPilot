@@ -67,7 +67,7 @@ public class SolutionDirectory {
 				request.focusArea(), request.maturity(), organizationId, request.sort(), PAGE_SIZE,
 				(long) (page - 1) * PAGE_SIZE);
 		Map<UUID, OrganizationName> names = organizations
-			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
+			.approvedNames(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
 		return new PublicSolutionListResponse(rows.stream().filter(row -> names.containsKey(row.organizationId())).map(row -> {
 			OrganizationName organization = names.get(row.organizationId());
 			return new PublicSolutionSummaryResponse(row.slug(), row.name(), organization.name(), organization.slug(),
@@ -87,7 +87,7 @@ public class SolutionDirectory {
 		Solution solution = solutions.findBySlug(slug)
 			.filter(found -> found.isApproved() && found.isListed())
 			.orElseThrow(() -> notFound(slug));
-		OrganizationName organization = organizations.names(List.of(solution.getOrganizationId()))
+		OrganizationName organization = organizations.approvedNames(List.of(solution.getOrganizationId()))
 			.get(solution.getOrganizationId());
 		if (organization == null) {
 			throw notFound(slug);

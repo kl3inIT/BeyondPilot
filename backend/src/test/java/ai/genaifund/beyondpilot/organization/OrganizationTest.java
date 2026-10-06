@@ -325,6 +325,51 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anOperatorTakesAnApprovedOrganizationDownWithAReasonAndRestoresItKeepingTheMembersWorkspace() {
+		String founder = signIn("founder@takedown.test");
+		UUID id = approved(founder, "Takedown Co");
+		String takeDown = API + "/admin/organizations/" + id + "/take-down";
+
+		assertProblem(post(founder, takeDown, Map.of("reason", "other")), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(operator, takeDown, Map.of("reason", "not-a-reason")), 400, "REQUEST_INVALID");
+		assertProblem(post(operator, API + "/admin/organizations/" + UUID.randomUUID() + "/take-down",
+				Map.of("reason", "other")), 404, "ORGANIZATION_NOT_FOUND");
+		assertProblem(post(operator, API + "/admin/organizations/" + id + "/restore", null), 409,
+				"ORGANIZATION_NOT_TAKEN_DOWN");
+
+		post(operator, takeDown, Map.of("reason", "misleading_information", "message", "Send us the contract."))
+			.expectStatus()
+			.isNoContent();
+		assertThat(mail.latestSubjectTo("founder@takedown.test")).isEqualTo("Takedown Co on BeyondPilot");
+		assertProblem(post(operator, takeDown, Map.of("reason", "other")), 409, "ORGANIZATION_CANNOT_TAKE_DOWN");
+
+		// Its members keep the workspace and read why; it is in no directory and invites nobody.
+		String mine = mine(founder);
+		assertThat(JsonPath.<String>read(mine, "$.organization.status")).isEqualTo("suspended");
+		assertThat(JsonPath.<String>read(mine, "$.organization.suspensionReason")).isEqualTo("misleading_information");
+		assertThat(JsonPath.<String>read(mine, "$.organization.suspensionMessage")).isEqualTo("Send us the contract.");
+		assertThat(JsonPath.<String>read(mine, "$.role")).isEqualTo("owner");
+		assertThat(JsonPath.<List<Object>>read(
+				body(get(signIn("visitor@takedown.test"), API + "/organizations?q=takedown").expectStatus().isOk()),
+				"$.items"))
+			.isEmpty();
+		assertProblem(get(signIn("visitor@takedown.test"), API + "/organizations/takedown-co"), 404,
+				"ORGANIZATION_NOT_FOUND");
+		assertProblem(post(founder, API + "/mine/invitations", Map.of("email", "new@takedown.test", "role", "member")),
+				409, "ORGANIZATION_NOT_APPROVED");
+		assertThat(JsonPath.<String>read(
+				body(get(operator, API + "/admin/organizations?status=suspended").expectStatus().isOk()),
+				"$.items[0].status"))
+			.isEqualTo("suspended");
+
+		post(operator, API + "/admin/organizations/" + id + "/restore", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("approved");
+		// What was said when it was taken down stays on the record.
+		assertThat(JsonPath.<String>read(mine(founder), "$.organization.suspensionReason"))
+			.isEqualTo("misleading_information");
+	}
+
+	@Test
 	void anOrganizationThatIsNotApprovedIsNeitherFoundNorJoined() {
 		UUID id = create(signIn("founder@waiting.test"), "Waiting Co");
 		String colleague = signIn("colleague@waiting.test");

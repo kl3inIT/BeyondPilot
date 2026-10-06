@@ -11,6 +11,7 @@ import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationListResponse;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.ApproveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.TakeDownOrganizationRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -124,6 +125,35 @@ class AdminOrganizationsController {
 	void refuse(@CurrentActor Actor actor, @PathVariable UUID id,
 			@Valid @RequestBody RefuseOrganizationRequest request) {
 		organizations.refuse(actor, id, request);
+	}
+
+	@PostMapping(path = "/organizations/{id}/take-down", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "takeDownOrganization", summary = "Take an approved organization down, with a reason",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The organization is taken down.", content = @Content)
+	@ApiResponse(responseCode = "400", description = "A member is not valid.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The organization is not approved.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void takeDown(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody TakeDownOrganizationRequest request) {
+		organizations.takeDown(actor, id, request);
+	}
+
+	@PostMapping("/organizations/{id}/restore")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "restoreOrganization", summary = "Return a taken-down organization to the directories",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The organization is back.", content = @Content)
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The organization is not taken down.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void restore(@CurrentActor Actor actor, @PathVariable UUID id) {
+		organizations.restore(actor, id);
 	}
 
 	@PostMapping(path = "/claims/{id}/approve", consumes = MediaType.APPLICATION_JSON_VALUE)

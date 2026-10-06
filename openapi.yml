@@ -72,6 +72,8 @@ paths:
           - program.unpublish
           - organization.create
           - organization.approve
+          - organization.suspend
+          - organization.restore
           - organization.refuse
           - organization.claim_approve
           - organization.claim_decline
@@ -517,7 +519,8 @@ paths:
           - pending
           - approved
           - rejected
-          pattern: pending|approved|rejected
+          - suspended
+          pattern: pending|approved|rejected|suspended
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -749,6 +752,102 @@ paths:
       security:
       - session: []
       summary: Refuse an organization that waits for review
+      tags:
+      - Organization administration
+  /api/organization/admin/organizations/{id}/restore:
+    post:
+      operationId: restoreOrganization
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The organization is back.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization is not taken down.
+      security:
+      - session: []
+      summary: Return a taken-down organization to the directories
+      tags:
+      - Organization administration
+  /api/organization/admin/organizations/{id}/take-down:
+    post:
+      operationId: takeDownOrganization
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TakeDownOrganization"
+        required: true
+      responses:
+        "204":
+          description: The organization is taken down.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization is not approved.
+      security:
+      - session: []
+      summary: "Take an approved organization down, with a reason"
       tags:
       - Organization administration
   /api/organization/invitations/{id}/accept:
@@ -3482,6 +3581,7 @@ components:
           - pending
           - approved
           - rejected
+          - suspended
         type:
           type: string
           enum:
@@ -3800,6 +3900,8 @@ components:
           - program.unpublish
           - organization.create
           - organization.approve
+          - organization.suspend
+          - organization.restore
           - organization.refuse
           - organization.claim_approve
           - organization.claim_decline
@@ -4409,6 +4511,28 @@ components:
           - pending
           - approved
           - rejected
+          - suspended
+        suspendedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When it was last taken down.
+        suspensionMessage:
+          type:
+          - string
+          - "null"
+          description: What the operator wrote to the owners when taking it down.
+        suspensionReason:
+          type:
+          - string
+          - "null"
+          description: Why it was last taken down; kept after it is restored.
+          enum:
+          - misleading_information
+          - not_a_real_organization
+          - breaks_the_rules
+          - other
         teamSize:
           type:
           - string
@@ -6172,6 +6296,28 @@ components:
       - id
       - mediaType
       - sizeBytes
+    TakeDownOrganization:
+      type: object
+      description: "Why an approved organization is taken down, and what its owners\
+        \ are told."
+      properties:
+        message:
+          type:
+          - string
+          - "null"
+          description: Shown to the owners in the email and in their workspace.
+          maxLength: 1000
+          minLength: 0
+        reason:
+          type: string
+          enum:
+          - misleading_information
+          - not_a_real_organization
+          - breaks_the_rules
+          - other
+          pattern: misleading_information|not_a_real_organization|breaks_the_rules|other
+      required:
+      - reason
     TalentEnquiry:
       type: object
       description: A message someone sent through the caller's talent profile.

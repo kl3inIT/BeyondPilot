@@ -30,6 +30,8 @@ public class Organization {
 
 	public static final String REJECTED = "rejected";
 
+	public static final String SUSPENDED = "suspended";
+
 	@Id
 	private UUID id;
 
@@ -71,6 +73,12 @@ public class Organization {
 	private @Nullable String decisionMessage;
 
 	private @Nullable Instant decidedAt;
+
+	private @Nullable String suspensionReason;
+
+	private @Nullable String suspensionMessage;
+
+	private @Nullable Instant suspendedAt;
 
 	@Column(nullable = false, updatable = false)
 	private UUID createdByAccountId;
@@ -151,6 +159,23 @@ public class Organization {
 		status = PENDING;
 	}
 
+	/** Takes an approved organization down; what it was approved with stays, so restoring needs no new review. */
+	public void suspend(String reason, @Nullable String message, Instant at) {
+		status = SUSPENDED;
+		suspensionReason = reason;
+		suspensionMessage = message;
+		suspendedAt = at;
+	}
+
+	/** Returns a taken-down organization to approved; the reason it was taken down stays readable on the record. */
+	public void restore() {
+		status = APPROVED;
+	}
+
+	public boolean isSuspended() {
+		return SUSPENDED.equals(status);
+	}
+
 	public boolean isApproved() {
 		return APPROVED.equals(status);
 	}
@@ -225,6 +250,18 @@ public class Organization {
 
 	public @Nullable String getDecisionMessage() {
 		return decisionMessage;
+	}
+
+	public @Nullable String getSuspensionReason() {
+		return suspensionReason;
+	}
+
+	public @Nullable String getSuspensionMessage() {
+		return suspensionMessage;
+	}
+
+	public @Nullable Instant getSuspendedAt() {
+		return suspendedAt;
 	}
 
 	public UUID getCreatedByAccountId() {

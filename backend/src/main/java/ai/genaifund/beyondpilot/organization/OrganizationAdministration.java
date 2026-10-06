@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.organization;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,6 +23,7 @@ import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationSummaryResponse;
 import ai.genaifund.beyondpilot.organization.dto.ApproveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.TakeDownOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.Invitation;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.JoinRequest;
@@ -167,6 +169,43 @@ public class OrganizationAdministration {
 	}
 
 	/**
+	 * Takes an approved organization down, with a reason its owners read, and tells them. Its members keep their
+	 * workspace; it leaves the directories until it is restored.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist or is not approved
+	 */
+	@Transactional
+	public void takeDown(Actor actor, UUID id, TakeDownOrganizationRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		if (!organization.isApproved()) {
+			throw new OrganizationException(OrganizationErrorCode.CANNOT_TAKE_DOWN,
+					"Take-down of organization " + id + ", which is " + organization.getStatus());
+		}
+		organization.suspend(request.reason(), OrganizationViews.text(request.message()), Instant.now());
+		record(AuditAction.ORGANIZATION_SUSPEND, operator, organization, Map.of("reason", request.reason()));
+		tellOwnersOfSuspension(organization, true);
+	}
+
+	/**
+	 * Returns a taken-down organization to the directories, and tells its owners.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist or is not taken down
+	 */
+	@Transactional
+	public void restore(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		if (!organization.isSuspended()) {
+			throw new OrganizationException(OrganizationErrorCode.NOT_TAKEN_DOWN,
+					"Restore of organization " + id + ", which is " + organization.getStatus());
+		}
+		organization.restore();
+		record(AuditAction.ORGANIZATION_RESTORE, operator, organization, Map.of());
+		tellOwnersOfSuspension(organization, false);
+	}
+
+	/**
 	 * Lets a person own an organization nobody owns, with the email domain the operator verified for it when they
 	 * did, and tells the person. The other claims on it become requests its new owner decides.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
@@ -240,14 +279,22 @@ public class OrganizationAdministration {
 	}
 
 	private void tellOwners(Organization organization, boolean approved) {
+		owners(organization)
+			.forEach(owner -> email.sendOrganizationDecision(owner.email(), organization.getName(), approved));
+	}
+
+	private void tellOwnersOfSuspension(Organization organization, boolean takenDown) {
+		owners(organization)
+			.forEach(owner -> email.sendOrganizationSuspension(owner.email(), organization.getName(), takenDown));
+	}
+
+	private Collection<Person> owners(Organization organization) {
 		List<UUID> owners = memberships.members(organization.getId())
 			.stream()
 			.filter(Member::isOwner)
 			.map(Member::accountId)
 			.toList();
-		identity.people(owners)
-			.values()
-			.forEach(owner -> email.sendOrganizationDecision(owner.email(), organization.getName(), approved));
+		return identity.people(owners).values();
 	}
 
 	private AdminOrganizationResponse response(Organization organization) {
