@@ -6,7 +6,14 @@ import { signInAs } from "./session";
 
 const lumen = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c01";
 const openKitchen = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c02";
+const pocketPolicy = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03";
 const firstcall = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04";
+const quietMill = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c06";
+const harborBank = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c07";
+const firstTeller = "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a30";
+const secondTeller = "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a31";
+const thirdTeller = "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a32";
+const invitation = "7d5a7e96-4d42-4e97-9e99-4b7dad0f1e01";
 const claim = "9c4f6d85-3c31-4d86-8d88-3a6c9c9e0d01";
 
 const decisionsPath = "**/api/organization/admin/**";
@@ -85,8 +92,10 @@ test.describe("admin organizations", () => {
       "Open Kitchen",
       "Pocket Policy",
       "Firstcall",
+      "Quiet Mill",
+      "Harbor Bank",
     ]);
-    await expect(page.getByText("4 organisations")).toBeVisible();
+    await expect(page.getByText("6 organisations")).toBeVisible();
     // Each row is in the page twice, as a table row and as a stacked one; the viewport shows one.
     const shown = page.locator(":visible");
     await expect(page.getByText("Company · Singapore · 2 members").and(shown)).toHaveCount(1);
@@ -128,7 +137,7 @@ test.describe("admin organizations", () => {
     await page.reload();
     await page.getByRole("link", { name: "Clear search and filter" }).click();
     await expect(page).toHaveURL("/admin/organizations");
-    await expect(shownOrganizations(page)).toHaveCount(4);
+    await expect(shownOrganizations(page)).toHaveCount(6);
   });
 
   test("an organization that waits is approved from its row", async ({
@@ -293,7 +302,6 @@ test.describe("admin organizations", () => {
     await expect(page).toHaveTitle("Open Kitchen · BeyondPilot");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Open Kitchen");
     await expect(page.getByText("Đạt Phan on Oct 1, 2026")).toBeVisible();
-    await expect(page.getByText("Nobody belongs to this organization yet.")).toBeVisible();
     const claims = page.getByRole("region", { name: "Claims to own it" });
     await expect(claims.getByText("I founded the team.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
@@ -311,6 +319,171 @@ test.describe("admin organizations", () => {
         call: `POST /api/organization/admin/claims/${claim}/approve`,
         body: { emailDomain: "openkitchen.example" },
       },
+    ]);
+  });
+
+  test("a taken-down organization's record says why and restores it after asking", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    await page.goto(`/admin/organizations/${quietMill}`);
+
+    await expect(page.getByText("Taken down on Oct 6, 2026")).toBeVisible();
+    await expect(page.getByText("Reason: Misleading or false information.")).toBeVisible();
+    await expect(page.getByText("Send us the contract or remove the customer.")).toBeVisible();
+    // Taking down is for an approved organization; this one is back only by a restore.
+    await expect(page.getByRole("button", { name: "Actions for Quiet Mill" })).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+
+    await page.getByRole("button", { name: "Restore" }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Restore" }).click();
+
+    await expect(page.getByText("Quiet Mill is back. Its owners were told.")).toBeVisible();
+    expect(decisions).toEqual([
+      { call: `POST /api/organization/admin/organizations/${quietMill}/restore`, body: null },
+    ]);
+  });
+
+  test("an approved organization is taken down with a reason its owners read", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    await page.goto(`/admin/organizations/${pocketPolicy}`);
+
+    await page.getByRole("button", { name: "Actions for Pocket Policy" }).click();
+    await page.getByRole("menuitem", { name: "Take down…" }).click();
+    const dialog = await giveReason(
+      page,
+      "Misleading or false information",
+      "  The customer says it has not worked with you.  ",
+    );
+    await expectNoSeriousA11yViolations(page);
+    await dialog.getByRole("button", { name: "Take down" }).click();
+
+    await expect(
+      page.getByText("Pocket Policy was taken down. Its owners were told."),
+    ).toBeVisible();
+    expect(decisions).toEqual([
+      {
+        call: `POST /api/organization/admin/organizations/${pocketPolicy}/take-down`,
+        body: {
+          reason: "misleading_information",
+          message: "The customer says it has not worked with you.",
+        },
+      },
+    ]);
+  });
+
+  test("an operator saves the profile with the verified domain", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 200, {});
+    await page.goto(`/admin/organizations/${pocketPolicy}`);
+
+    await page.getByLabel("Short description").fill("Claim assistants for insurers.");
+    await page.getByLabel("Year founded").fill("2021");
+    await page.getByLabel("Verified domain").fill("pocketpolicy.example");
+    await page.getByRole("button", { name: "Save changes" }).click();
+
+    await expect.poll(() => decisions.length).toBe(1);
+    expect(decisions[0].call).toBe(`PUT /api/organization/admin/organizations/${pocketPolicy}`);
+    expect(decisions[0].body).toMatchObject({
+      profile: {
+        name: "Pocket Policy",
+        description: "Claim assistants for insurers.",
+        foundedYear: 2021,
+        version: 0,
+      },
+      emailDomain: "pocketpolicy.example",
+    });
+  });
+
+  test("the members are paged ten at a time, with the open invitations on the last page", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto(`/admin/organizations/${harborBank}?tab=members`);
+
+    await expect(shownOrganizations(page)).toHaveCount(10);
+    await expect(page.getByText("12 members · 1 invitation open")).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+
+    await page.getByRole("link", { name: "Go to the next page" }).first().click();
+    await expect(page).toHaveURL(/page=2/);
+    await expect(shownOrganizations(page)).toHaveText([
+      "Teller 11",
+      "Teller 12",
+      "newhire@harborbank.example",
+    ]);
+  });
+
+  test("an operator changes a role, removes a person, invites and withdraws an invitation", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    const record = `/api/organization/admin/organizations/${harborBank}`;
+    await page.goto(`/admin/organizations/${harborBank}?tab=members`);
+    // Each person is in the page twice, as a table row and as a stacked one; the viewport shows one.
+    const actions = (name: string) =>
+      page.getByRole("button", { name: `Actions for ${name}` }).and(page.locator(":visible"));
+
+    await actions("Teller 02").click();
+    await page.getByRole("menuitem", { name: "Make owner" }).click();
+    await expect(page.getByText("Teller 02 is now an owner.")).toBeVisible();
+
+    // The only owner is made a member only after being told the organization will have none.
+    await actions("Teller 01").click();
+    await page.getByRole("menuitem", { name: "Make member" }).click();
+    const demote = page.getByRole("alertdialog", { name: "Make the only owner a member?" });
+    await expect(demote.getByText("The organization will have no owner.")).toBeVisible();
+    await demote.getByRole("button", { name: "Make member" }).click();
+    await expect(page.getByText("Teller 01 is now a member.")).toBeVisible();
+
+    await actions("Teller 03").click();
+    await page.getByRole("menuitem", { name: "Remove from organization" }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Remove member" }).click();
+    await expect(page.getByText("Teller 03 was removed.")).toBeVisible();
+
+    await page.getByRole("button", { name: "Invite a person" }).click();
+    const invite = page.getByRole("dialog");
+    await invite.getByLabel("Email address").fill("  cto@harborbank.example ");
+    await invite.getByRole("button", { name: "Send invitation" }).click();
+    await expect(page.getByText("Invitation sent.")).toBeVisible();
+
+    await page.goto(`/admin/organizations/${harborBank}?tab=members&page=2`);
+    await page
+      .getByRole("button", { name: "Withdraw the invitation to newhire@harborbank.example" })
+      .and(page.locator(":visible"))
+      .click();
+    await page
+      .getByRole("alertdialog")
+      .getByRole("button", { name: "Withdraw invitation" })
+      .click();
+    await expect(page.getByText("Invitation withdrawn.")).toBeVisible();
+
+    expect(decisions).toEqual([
+      { call: `PUT ${record}/members/${secondTeller}/role`, body: { role: "owner" } },
+      { call: `PUT ${record}/members/${firstTeller}/role`, body: { role: "member" } },
+      { call: `POST ${record}/members/${thirdTeller}/remove`, body: null },
+      {
+        call: `POST ${record}/invitations`,
+        body: { email: "cto@harborbank.example", role: "owner" },
+      },
+      { call: `POST ${record}/invitations/${invitation}/revoke`, body: null },
     ]);
   });
 

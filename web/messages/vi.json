@@ -664,7 +664,12 @@
           "claim_approve": "Chấp nhận yêu cầu nhận tổ chức",
           "claim_decline": "Từ chối yêu cầu nhận tổ chức",
           "member_role": "Đổi vai trò thành viên",
-          "member_remove": "Xóa thành viên"
+          "member_remove": "Xóa thành viên",
+          "suspend": "Gỡ một tổ chức xuống",
+          "restore": "Khôi phục một tổ chức",
+          "update": "Lưu hồ sơ tổ chức",
+          "invite": "Mời người vào một tổ chức",
+          "invitation_revoke": "Thu hồi một lời mời"
         },
         "solution": {
           "approve": "Duyệt giải pháp",
@@ -699,7 +704,12 @@
           "claim_approve": "Chấp nhận yêu cầu nhận <resource></resource>",
           "claim_decline": "Từ chối yêu cầu nhận <resource></resource>",
           "member_role": "Đổi vai trò một thành viên của <resource></resource>",
-          "member_remove": "Xóa một thành viên khỏi <resource></resource>"
+          "member_remove": "Xóa một thành viên khỏi <resource></resource>",
+          "suspend": "Gỡ tổ chức <resource></resource> xuống",
+          "restore": "Khôi phục tổ chức <resource></resource>",
+          "update": "Lưu hồ sơ của <resource></resource>",
+          "invite": "Mời người vào <resource></resource>",
+          "invitation_revoke": "Thu hồi một lời mời vào <resource></resource>"
         },
         "solution": {
           "approve": "Duyệt giải pháp <resource></resource>",
@@ -755,7 +765,8 @@
       "status": {
         "pending": "Cần duyệt",
         "approved": "Đã duyệt",
-        "rejected": "Không được duyệt"
+        "rejected": "Không được duyệt",
+        "suspended": "Đã gỡ xuống"
       },
       "columns": {
         "organization": "Tổ chức",
@@ -770,7 +781,6 @@
         "claim": "Yêu cầu nhận",
         "none": "—"
       },
-      "members": "{count} thành viên",
       "unowned": "Chưa có chủ",
       "actions": {
         "open": "Thao tác với {name}",
@@ -804,21 +814,20 @@
       },
       "detail": {
         "back": "Tất cả tổ chức",
-        "type": "Loại hình",
-        "country": "Quốc gia",
-        "teamSize": "Quy mô",
-        "website": "Website",
-        "emailDomain": "Tên miền email",
-        "createdBy": "Tạo bởi",
         "createdByOn": "{name}, ngày {day}",
-        "description": "Giới thiệu",
-        "notStated": "Chưa nêu",
         "refused": "Không được duyệt: {reason}.",
         "claims": "Yêu cầu nhận tổ chức",
-        "members": "{count, plural, =0 {Thành viên} other {# thành viên}}",
-        "noMembers": "Chưa có ai thuộc tổ chức này.",
-        "invitations": "Lời mời đang chờ",
-        "industries": "Ngành"
+        "tabs": {
+          "label": "Các phần của tổ chức này",
+          "profile": "Hồ sơ",
+          "members": "Thành viên"
+        },
+        "viewPage": "Xem trang",
+        "takenDown": {
+          "title": "Đã gỡ xuống ngày {day}",
+          "reason": "Lý do: {reason}.",
+          "foot": "Trang công khai và các giải pháp của tổ chức đang bị ẩn. {members} thành viên vẫn giữ workspace và đọc lý do này ở đó."
+        }
       },
       "review": {
         "title": "Xem xét {name}",
@@ -857,7 +866,78 @@
         "note": "Khi chấp thuận, người này trở thành chủ sở hữu; các yêu cầu nhận khác sẽ do họ quyết định. Dù quyết định thế nào, người này đều nhận email và quyết định được ghi vào nhật ký kiểm toán.",
         "decline": "Từ chối",
         "approve": "Cho làm chủ sở hữu"
-      }
+      },
+      "takeDown": {
+        "open": "Thao tác cho {name}",
+        "menu": "Gỡ xuống…",
+        "title": "Gỡ {name} xuống",
+        "lead": "Trang công khai và các giải pháp của tổ chức rời khỏi danh bạ ngay. {members} thành viên vẫn giữ workspace và đọc lý do ở đó.",
+        "reason": "Lý do",
+        "reasonPlaceholder": "Chọn lý do",
+        "message": "Lời nhắn cho chủ tổ chức",
+        "messageHint": "Chủ tổ chức được báo qua email. Bạn có thể khôi phục bất cứ lúc nào; cả hai đều được ghi vào nhật ký kiểm toán.",
+        "confirm": "Gỡ xuống",
+        "cancel": "Hủy",
+        "restore": "Khôi phục",
+        "restoreTitle": "Khôi phục {name}?",
+        "restoreLead": "Trang công khai, các giải pháp và các triển khai đã duyệt được hiện lại, và chủ tổ chức có thể mời người và đăng bài.",
+        "restoreNote": "Chủ tổ chức được báo qua email. Việc gỡ và lý do vẫn nằm trong nhật ký kiểm toán."
+      },
+      "people": {
+        "title": "Thành viên",
+        "summary": {
+          "members": "{count, plural, =0 {Chưa có thành viên} other {# thành viên}}",
+          "invitations": "{count, plural, other {# lời mời đang mở}}"
+        },
+        "empty": "Chưa có ai thuộc tổ chức này. Hãy mời chủ tổ chức đầu tiên.",
+        "invited": "Mời ngày {day}",
+        "invitePending": "Đã mời",
+        "columns": {
+          "member": "Thành viên",
+          "role": "Vai trò",
+          "joined": "Tham gia",
+          "actions": "Thao tác"
+        },
+        "actions": {
+          "open": "Thao tác cho {name}",
+          "makeOwner": "Đặt làm chủ tổ chức",
+          "makeMember": "Đặt làm thành viên",
+          "remove": "Xóa khỏi tổ chức"
+        },
+        "demote": {
+          "title": "Đặt chủ tổ chức duy nhất thành thành viên?",
+          "lead": "Tổ chức sẽ không còn chủ. Không ai mời được người hay sửa hồ sơ cho đến khi bạn mời một người.",
+          "confirm": "Đặt làm thành viên"
+        },
+        "remove": {
+          "title": "Xóa thành viên này?",
+          "lead": "Họ mất quyền truy cập hồ sơ, thành viên và giải pháp của tổ chức.",
+          "lastOwnerLead": "Họ là chủ tổ chức duy nhất. Tổ chức sẽ không còn chủ cho đến khi bạn mời một người.",
+          "confirm": "Xóa thành viên"
+        },
+        "confirm": {
+          "note": "Những gì tổ chức đã đăng vẫn được giữ. Có thể mời họ lại bất cứ lúc nào.",
+          "cancel": "Hủy"
+        },
+        "revoke": {
+          "open": "Thu hồi lời mời gửi tới {email}",
+          "title": "Thu hồi lời mời này?",
+          "lead": "Liên kết trong email sẽ không còn dùng được. Bạn có thể mời lại.",
+          "confirm": "Thu hồi lời mời"
+        },
+        "invite": {
+          "open": "Mời một người",
+          "title": "Mời người vào {name}",
+          "lead": "Họ nhận được email và tham gia sau khi đăng nhập. Lời mời của bạn không tính vào giới hạn của tổ chức.",
+          "email": "Địa chỉ email",
+          "emailInvalid": "Nhập một địa chỉ email.",
+          "role": "Vai trò",
+          "note": "Lời mời được ghi vào nhật ký kiểm toán.",
+          "cancel": "Hủy",
+          "send": "Gửi lời mời"
+        }
+      },
+      "members": "{count} thành viên"
     },
     "solutions": {
       "metaTitle": "Giải pháp · BeyondPilot",
@@ -1172,6 +1252,12 @@
       "incomplete": "Thiếu thông tin",
       "unverifiable": "Không xác minh được",
       "other": "Lý do khác"
+    },
+    "organizationTakeDown": {
+      "misleading_information": "Thông tin gây hiểu lầm hoặc sai sự thật",
+      "not_a_real_organization": "Không phải tổ chức có thật",
+      "breaks_the_rules": "Vi phạm quy tắc",
+      "other": "Lý do khác"
     }
   },
   "Organization": {
@@ -1185,7 +1271,8 @@
     "status": {
       "pending": "Đang duyệt",
       "approved": "Đã duyệt",
-      "rejected": "Không được duyệt"
+      "rejected": "Không được duyệt",
+      "suspended": "Đã gỡ xuống"
     },
     "pending": {
       "title": "GenAI Fund đang duyệt tổ chức của bạn",
@@ -1246,7 +1333,9 @@
       "jobTitleSaved": "Đã lưu chức danh.",
       "autoJoinOn": "Đồng nghiệp trên tên miền đã xác minh giờ tham gia mà không cần xin.",
       "autoJoinOff": "Đồng nghiệp trên tên miền đã xác minh giờ phải xin tham gia.",
-      "askedAgain": "Đã gửi yêu cầu."
+      "askedAgain": "Đã gửi yêu cầu.",
+      "takenDown": "Đã gỡ {name} xuống. Chủ tổ chức đã được báo.",
+      "restored": "{name} đã được khôi phục. Chủ tổ chức đã được báo."
     },
     "form": {
       "metaTitle": "Tạo tổ chức · BeyondPilot",
@@ -1304,7 +1393,15 @@
       "aboutLead": "Bạn làm gì, phục vụ ai và đã làm được bao lâu.",
       "industriesPlaceholder": "Gõ để tìm ngành",
       "industriesEmpty": "Không có ngành nào khớp.",
-      "industriesRemove": "Bỏ {industry}"
+      "industriesRemove": "Bỏ {industry}",
+      "domain": {
+        "title": "Tên miền email",
+        "lead": "Do GenAI Fund xác minh. Người đăng nhập bằng địa chỉ thuộc tên miền này sẽ được dẫn tới tổ chức.",
+        "label": "Tên miền đã xác minh",
+        "hint": "Để trống nếu tổ chức không có tên miền riêng, ví dụ nhóm dùng Gmail. Tính năng vào ngay không cần hỏi đang tắt; chủ tổ chức bật ở trang Thành viên.",
+        "invalid": "Nhập tên miền như example.com, hoặc để trống.",
+        "taken": "Một tổ chức khác đã dùng tên miền này."
+      }
     },
     "find": {
       "title": "Tìm tổ chức của bạn",
@@ -1485,6 +1582,11 @@
           "close": "Đóng"
         }
       }
+    },
+    "suspended": {
+      "title": "GenAI Fund đã gỡ {name} xuống",
+      "reason": "Lý do: {reason}.",
+      "foot": "Trang công khai và các giải pháp đang bị ẩn. Bạn vẫn giữ workspace; hãy liên hệ GenAI Fund để được khôi phục."
     }
   },
   "Solution": {

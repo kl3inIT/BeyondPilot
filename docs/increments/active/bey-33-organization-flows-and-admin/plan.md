@@ -25,12 +25,12 @@ Step 8 is in part: the admin home now counts a claim as an organization that wai
 
 | #   | Step                                                                                                                                   | State |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| 11  | `V13`: the `suspended` status with its reason; `OrganizationAdministration` takes down and restores; public reads hide a suspended one | Open  |
-| 12  | Operator edits the profile and the verified domain, with the version check                                                             | Open  |
-| 13  | Operator changes a role, removes a member, invites and revokes; audit actions                                                          | Open  |
-| 14  | Web: the record page with Profile and Members tabs, the take-down and restore dialogs, the members table and its dialogs               | Open  |
-| 15  | Web: the workspace of a taken-down organization, the leave dialog, the last owner; the public address of a taken-down organization     | Open  |
-| 16  | Tests, gates, catalogs, the verification matrix                                                                                        | Open  |
+| 11  | `V13`: the `suspended` status with its reason; `OrganizationAdministration` takes down and restores; public reads hide a suspended one | Done  |
+| 12  | Operator edits the profile and the verified domain, with the version check                                                             | Done  |
+| 13  | Operator changes a role, removes a member, invites and revokes; audit actions                                                          | Done  |
+| 14  | Web: the record page with Profile and Members tabs, the take-down and restore dialogs, the members table and its dialogs               | Done  |
+| 15  | Web: the workspace of a taken-down organization, the leave dialog, the last owner; the public address of a taken-down organization     | Done  |
+| 16  | Tests, gates, catalogs, the verification matrix                                                                                        | Done  |
 
 ## Slice 3: merge (BEY-63)
 

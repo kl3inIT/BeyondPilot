@@ -127,6 +127,53 @@ const organizations = [
     invitations: [],
     claims: [],
   },
+  {
+    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c06", "Quiet Mill", "suspended", {
+      suspensionReason: "misleading_information",
+      suspensionMessage: "Send us the contract or remove the customer.",
+      suspendedAt: "2026-10-06T03:00:00Z",
+    }),
+    createdBy: "Hana Lê",
+    createdByEmail: "hana.le@quietmill.example",
+    members: [
+      person(
+        "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a21",
+        "Hana Lê",
+        "hana.le@quietmill.example",
+        "owner",
+      ),
+    ],
+    invitations: [],
+    claims: [],
+  },
+  {
+    // Twelve people and an open invitation: the Members tab pages ten at a time.
+    organization: organization(
+      "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c07",
+      "Harbor Bank",
+      "approved",
+      {},
+    ),
+    createdBy: "Bao Tran",
+    createdByEmail: "bao.tran@harborbank.example",
+    members: Array.from({ length: 12 }, (_, index) =>
+      person(
+        `6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a${String(30 + index)}`,
+        `Teller ${String(index + 1).padStart(2, "0")}`,
+        `teller${index + 1}@harborbank.example`,
+        index === 0 ? "owner" : "member",
+      ),
+    ),
+    invitations: [
+      {
+        id: "7d5a7e96-4d42-4e97-9e99-4b7dad0f1e01",
+        email: "newhire@harborbank.example",
+        role: "member",
+        createdAt: day,
+      },
+    ],
+    claims: [],
+  },
 ];
 
 function deployment(id, title, status, more) {

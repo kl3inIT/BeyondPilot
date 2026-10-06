@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcceptOrganizationInvitationData, AcceptOrganizationInvitationErrors, AcceptOrganizationInvitationResponses, AddCustomerDeploymentData, AddCustomerDeploymentErrors, AddCustomerDeploymentResponses, ApproveCustomerDeploymentData, ApproveCustomerDeploymentErrors, ApproveCustomerDeploymentResponses, ApproveJoinRequestData, ApproveJoinRequestErrors, ApproveJoinRequestResponses, ApproveOrganizationClaimData, ApproveOrganizationClaimErrors, ApproveOrganizationClaimResponses, ApproveOrganizationData, ApproveOrganizationErrors, ApproveOrganizationResponses, ApproveSolutionData, ApproveSolutionErrors, ApproveSolutionResponses, ApproveTalentData, ApproveTalentErrors, ApproveTalentResponses, ChangeMyJobTitleData, ChangeMyJobTitleErrors, ChangeMyJobTitleResponses, ChangeOrganizationAutoJoinData, ChangeOrganizationAutoJoinErrors, ChangeOrganizationAutoJoinResponses, ChangeOrganizationMemberRoleData, ChangeOrganizationMemberRoleErrors, ChangeOrganizationMemberRoleResponses, ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateAdminOrganizationData, CreateAdminOrganizationErrors, CreateAdminOrganizationResponses, CreateOrganizationData, CreateOrganizationErrors, CreateOrganizationResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, CreateSolutionData, CreateSolutionErrors, CreateSolutionResponses, DeclineJoinRequestData, DeclineJoinRequestErrors, DeclineJoinRequestResponses, DeclineOrganizationClaimData, DeclineOrganizationClaimErrors, DeclineOrganizationClaimResponses, DeclineOrganizationInvitationData, DeclineOrganizationInvitationErrors, DeclineOrganizationInvitationResponses, DeleteCustomerDeploymentData, DeleteCustomerDeploymentErrors, DeleteCustomerDeploymentResponses, DeleteSolutionDraftData, DeleteSolutionDraftErrors, DeleteSolutionDraftResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminOrganizationData, GetAdminOrganizationErrors, GetAdminOrganizationResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetAdminSolutionData, GetAdminSolutionErrors, GetAdminSolutionResponses, GetAdminTalentData, GetAdminTalentErrors, GetAdminTalentResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyOrganizationData, GetMyOrganizationErrors, GetMyOrganizationResponses, GetMySolutionData, GetMySolutionErrors, GetMySolutionResponses, GetMyTalentProfileData, GetMyTalentProfileErrors, GetMyTalentProfileResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetProgramData, GetProgramErrors, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GetSolutionData, GetSolutionErrors, GetSolutionResponses, GetTalentData, GetTalentErrors, GetTalentResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, InviteOrganizationMemberData, InviteOrganizationMemberErrors, InviteOrganizationMemberResponses, JoinOrganizationData, JoinOrganizationErrors, JoinOrganizationResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminOrganizationsData, ListAdminOrganizationsErrors, ListAdminOrganizationsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAdminSolutionsData, ListAdminSolutionsErrors, ListAdminSolutionsResponses, ListAdminTalentData, ListAdminTalentErrors, ListAdminTalentResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListCustomerDeploymentsData, ListCustomerDeploymentsErrors, ListCustomerDeploymentsResponses, ListMyOrganizationMembersData, ListMyOrganizationMembersErrors, ListMyOrganizationMembersResponses, ListMySolutionsData, ListMySolutionsErrors, ListMySolutionsResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, ListSolutionsData, ListSolutionsErrors, ListSolutionsResponses, ListTalentData, ListTalentErrors, ListTalentResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, RefuseOrganizationData, RefuseOrganizationErrors, RefuseOrganizationResponses, RejectCustomerDeploymentData, RejectCustomerDeploymentErrors, RejectCustomerDeploymentResponses, RejectSolutionData, RejectSolutionErrors, RejectSolutionResponses, RejectTalentData, RejectTalentErrors, RejectTalentResponses, RemoveOrganizationMemberData, RemoveOrganizationMemberErrors, RemoveOrganizationMemberResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, RevokeOrganizationInvitationData, RevokeOrganizationInvitationErrors, RevokeOrganizationInvitationResponses, SaveCustomerDeploymentData, SaveCustomerDeploymentErrors, SaveCustomerDeploymentResponses, SaveMyOrganizationData, SaveMyOrganizationErrors, SaveMyOrganizationResponses, SaveMyTalentProfileData, SaveMyTalentProfileErrors, SaveMyTalentProfileResponses, SaveProgramData, SaveProgramErrors, SaveProgramResponses, SaveSolutionData, SaveSolutionErrors, SaveSolutionResponses, SearchOrganizationsData, SearchOrganizationsErrors, SearchOrganizationsResponses, SendTalentEnquiryData, SendTalentEnquiryErrors, SendTalentEnquiryResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, SubmitMyTalentProfileData, SubmitMyTalentProfileErrors, SubmitMyTalentProfileResponses, SubmitSolutionData, SubmitSolutionErrors, SubmitSolutionResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, WithdrawJoinRequestData, WithdrawJoinRequestErrors, WithdrawJoinRequestResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
+import type { AcceptOrganizationInvitationData, AcceptOrganizationInvitationErrors, AcceptOrganizationInvitationResponses, AddCustomerDeploymentData, AddCustomerDeploymentErrors, AddCustomerDeploymentResponses, ApproveCustomerDeploymentData, ApproveCustomerDeploymentErrors, ApproveCustomerDeploymentResponses, ApproveJoinRequestData, ApproveJoinRequestErrors, ApproveJoinRequestResponses, ApproveOrganizationClaimData, ApproveOrganizationClaimErrors, ApproveOrganizationClaimResponses, ApproveOrganizationData, ApproveOrganizationErrors, ApproveOrganizationResponses, ApproveSolutionData, ApproveSolutionErrors, ApproveSolutionResponses, ApproveTalentData, ApproveTalentErrors, ApproveTalentResponses, ChangeAdminOrganizationMemberRoleData, ChangeAdminOrganizationMemberRoleErrors, ChangeAdminOrganizationMemberRoleResponses, ChangeMyJobTitleData, ChangeMyJobTitleErrors, ChangeMyJobTitleResponses, ChangeOrganizationAutoJoinData, ChangeOrganizationAutoJoinErrors, ChangeOrganizationAutoJoinResponses, ChangeOrganizationMemberRoleData, ChangeOrganizationMemberRoleErrors, ChangeOrganizationMemberRoleResponses, ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateAdminOrganizationData, CreateAdminOrganizationErrors, CreateAdminOrganizationResponses, CreateOrganizationData, CreateOrganizationErrors, CreateOrganizationResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, CreateSolutionData, CreateSolutionErrors, CreateSolutionResponses, DeclineJoinRequestData, DeclineJoinRequestErrors, DeclineJoinRequestResponses, DeclineOrganizationClaimData, DeclineOrganizationClaimErrors, DeclineOrganizationClaimResponses, DeclineOrganizationInvitationData, DeclineOrganizationInvitationErrors, DeclineOrganizationInvitationResponses, DeleteCustomerDeploymentData, DeleteCustomerDeploymentErrors, DeleteCustomerDeploymentResponses, DeleteSolutionDraftData, DeleteSolutionDraftErrors, DeleteSolutionDraftResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminOrganizationData, GetAdminOrganizationErrors, GetAdminOrganizationResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetAdminSolutionData, GetAdminSolutionErrors, GetAdminSolutionResponses, GetAdminTalentData, GetAdminTalentErrors, GetAdminTalentResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyOrganizationData, GetMyOrganizationErrors, GetMyOrganizationResponses, GetMySolutionData, GetMySolutionErrors, GetMySolutionResponses, GetMyTalentProfileData, GetMyTalentProfileErrors, GetMyTalentProfileResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetProgramData, GetProgramErrors, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GetSolutionData, GetSolutionErrors, GetSolutionResponses, GetTalentData, GetTalentErrors, GetTalentResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, InviteAdminOrganizationMemberData, InviteAdminOrganizationMemberErrors, InviteAdminOrganizationMemberResponses, InviteOrganizationMemberData, InviteOrganizationMemberErrors, InviteOrganizationMemberResponses, JoinOrganizationData, JoinOrganizationErrors, JoinOrganizationResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminOrganizationsData, ListAdminOrganizationsErrors, ListAdminOrganizationsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAdminSolutionsData, ListAdminSolutionsErrors, ListAdminSolutionsResponses, ListAdminTalentData, ListAdminTalentErrors, ListAdminTalentResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListCustomerDeploymentsData, ListCustomerDeploymentsErrors, ListCustomerDeploymentsResponses, ListMyOrganizationMembersData, ListMyOrganizationMembersErrors, ListMyOrganizationMembersResponses, ListMySolutionsData, ListMySolutionsErrors, ListMySolutionsResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, ListSolutionsData, ListSolutionsErrors, ListSolutionsResponses, ListTalentData, ListTalentErrors, ListTalentResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, RefuseOrganizationData, RefuseOrganizationErrors, RefuseOrganizationResponses, RejectCustomerDeploymentData, RejectCustomerDeploymentErrors, RejectCustomerDeploymentResponses, RejectSolutionData, RejectSolutionErrors, RejectSolutionResponses, RejectTalentData, RejectTalentErrors, RejectTalentResponses, RemoveAdminOrganizationMemberData, RemoveAdminOrganizationMemberErrors, RemoveAdminOrganizationMemberResponses, RemoveOrganizationMemberData, RemoveOrganizationMemberErrors, RemoveOrganizationMemberResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, RestoreOrganizationData, RestoreOrganizationErrors, RestoreOrganizationResponses, RevokeAdminOrganizationInvitationData, RevokeAdminOrganizationInvitationErrors, RevokeAdminOrganizationInvitationResponses, RevokeOrganizationInvitationData, RevokeOrganizationInvitationErrors, RevokeOrganizationInvitationResponses, SaveAdminOrganizationData, SaveAdminOrganizationErrors, SaveAdminOrganizationResponses, SaveCustomerDeploymentData, SaveCustomerDeploymentErrors, SaveCustomerDeploymentResponses, SaveMyOrganizationData, SaveMyOrganizationErrors, SaveMyOrganizationResponses, SaveMyTalentProfileData, SaveMyTalentProfileErrors, SaveMyTalentProfileResponses, SaveProgramData, SaveProgramErrors, SaveProgramResponses, SaveSolutionData, SaveSolutionErrors, SaveSolutionResponses, SearchOrganizationsData, SearchOrganizationsErrors, SearchOrganizationsResponses, SendTalentEnquiryData, SendTalentEnquiryErrors, SendTalentEnquiryResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, SubmitMyTalentProfileData, SubmitMyTalentProfileErrors, SubmitMyTalentProfileResponses, SubmitSolutionData, SubmitSolutionErrors, SubmitSolutionResponses, TakeDownOrganizationData, TakeDownOrganizationErrors, TakeDownOrganizationResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, WithdrawJoinRequestData, WithdrawJoinRequestErrors, WithdrawJoinRequestResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -183,6 +183,23 @@ export const getAdminOrganization = <ThrowOnError extends boolean = true>(option
 });
 
 /**
+ * Save the profile and the verified domain of an organization
+ */
+export const saveAdminOrganization = <ThrowOnError extends boolean = true>(options: Options<SaveAdminOrganizationData, ThrowOnError>): RequestResult<SaveAdminOrganizationResponses, SaveAdminOrganizationErrors, ThrowOnError> => (options.client ?? client).put<SaveAdminOrganizationResponses, SaveAdminOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Approve an organization that waits for review, and verify its email domain
  */
 export const approveOrganization = <ThrowOnError extends boolean = true>(options: Options<ApproveOrganizationData, ThrowOnError>): RequestResult<ApproveOrganizationResponses, ApproveOrganizationErrors, ThrowOnError> => (options.client ?? client).post<ApproveOrganizationResponses, ApproveOrganizationErrors, ThrowOnError>({
@@ -200,6 +217,66 @@ export const approveOrganization = <ThrowOnError extends boolean = true>(options
 });
 
 /**
+ * Ask an address to own or join an organization
+ */
+export const inviteAdminOrganizationMember = <ThrowOnError extends boolean = true>(options: Options<InviteAdminOrganizationMemberData, ThrowOnError>): RequestResult<InviteAdminOrganizationMemberResponses, InviteAdminOrganizationMemberErrors, ThrowOnError> => (options.client ?? client).post<InviteAdminOrganizationMemberResponses, InviteAdminOrganizationMemberErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/invitations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Take back an open invitation of an organization
+ */
+export const revokeAdminOrganizationInvitation = <ThrowOnError extends boolean = true>(options: Options<RevokeAdminOrganizationInvitationData, ThrowOnError>): RequestResult<RevokeAdminOrganizationInvitationResponses, RevokeAdminOrganizationInvitationErrors, ThrowOnError> => (options.client ?? client).post<RevokeAdminOrganizationInvitationResponses, RevokeAdminOrganizationInvitationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/invitations/{invitationId}/revoke',
+    ...options
+});
+
+/**
+ * Take a person out of an organization, the last owner included
+ */
+export const removeAdminOrganizationMember = <ThrowOnError extends boolean = true>(options: Options<RemoveAdminOrganizationMemberData, ThrowOnError>): RequestResult<RemoveAdminOrganizationMemberResponses, RemoveAdminOrganizationMemberErrors, ThrowOnError> => (options.client ?? client).post<RemoveAdminOrganizationMemberResponses, RemoveAdminOrganizationMemberErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/members/{accountId}/remove',
+    ...options
+});
+
+/**
+ * Make a member of an organization an owner, or an owner a member
+ */
+export const changeAdminOrganizationMemberRole = <ThrowOnError extends boolean = true>(options: Options<ChangeAdminOrganizationMemberRoleData, ThrowOnError>): RequestResult<ChangeAdminOrganizationMemberRoleResponses, ChangeAdminOrganizationMemberRoleErrors, ThrowOnError> => (options.client ?? client).put<ChangeAdminOrganizationMemberRoleResponses, ChangeAdminOrganizationMemberRoleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/members/{accountId}/role',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Refuse an organization that waits for review
  */
 export const refuseOrganization = <ThrowOnError extends boolean = true>(options: Options<RefuseOrganizationData, ThrowOnError>): RequestResult<RefuseOrganizationResponses, RefuseOrganizationErrors, ThrowOnError> => (options.client ?? client).post<RefuseOrganizationResponses, RefuseOrganizationErrors, ThrowOnError>({
@@ -209,6 +286,36 @@ export const refuseOrganization = <ThrowOnError extends boolean = true>(options:
             type: 'apiKey'
         }],
     url: '/api/organization/admin/organizations/{id}/refuse',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Return a taken-down organization to the directories
+ */
+export const restoreOrganization = <ThrowOnError extends boolean = true>(options: Options<RestoreOrganizationData, ThrowOnError>): RequestResult<RestoreOrganizationResponses, RestoreOrganizationErrors, ThrowOnError> => (options.client ?? client).post<RestoreOrganizationResponses, RestoreOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/restore',
+    ...options
+});
+
+/**
+ * Take an approved organization down, with a reason
+ */
+export const takeDownOrganization = <ThrowOnError extends boolean = true>(options: Options<TakeDownOrganizationData, ThrowOnError>): RequestResult<TakeDownOrganizationResponses, TakeDownOrganizationErrors, ThrowOnError> => (options.client ?? client).post<TakeDownOrganizationResponses, TakeDownOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/take-down',
     ...options,
     headers: {
         'Content-Type': 'application/json',

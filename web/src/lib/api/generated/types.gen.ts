@@ -141,7 +141,7 @@ export type AdminOrganizationSummary = {
      */
     requestedAt?: string | null;
     slug: string;
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'approved' | 'rejected' | 'suspended';
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
 };
 
@@ -240,6 +240,17 @@ export type AdminProgramSummary = {
 };
 
 /**
+ * The profile of an organization and its verified domain, as an operator saves them.
+ */
+export type AdminSaveOrganization = {
+    /**
+     * The domain GenAI Fund verifies for the organization; null clears it.
+     */
+    emailDomain?: string | null;
+    profile: SaveOrganization;
+};
+
+/**
  * One page of submitted solutions: those waiting for review first, the longest wait on top.
  */
 export type AdminSolutionList = {
@@ -296,7 +307,7 @@ export type ApproveOrganization = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'talent.approve' | 'talent.reject';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'talent.approve' | 'talent.reject';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -636,7 +647,19 @@ export type Organization = {
     /**
      * GenAI Fund's review of the organization.
      */
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'approved' | 'rejected' | 'suspended';
+    /**
+     * When it was last taken down.
+     */
+    suspendedAt?: string | null;
+    /**
+     * What the operator wrote to the owners when taking it down.
+     */
+    suspensionMessage?: string | null;
+    /**
+     * Why it was last taken down; kept after it is restored.
+     */
+    suspensionReason?: 'misleading_information' | 'not_a_real_organization' | 'breaks_the_rules' | 'other';
     /**
      * Null is unknown.
      */
@@ -1438,6 +1461,17 @@ export type StoredFile = {
 };
 
 /**
+ * Why an approved organization is taken down, and what its owners are told.
+ */
+export type TakeDownOrganization = {
+    /**
+     * Shown to the owners in the email and in their workspace.
+     */
+    message?: string | null;
+    reason: 'misleading_information' | 'not_a_real_organization' | 'breaks_the_rules' | 'other';
+};
+
+/**
  * A message someone sent through the caller's talent profile.
  */
 export type TalentEnquiry = {
@@ -1569,7 +1603,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'talent.approve' | 'talent.reject';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'talent.approve' | 'talent.reject';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -1928,7 +1962,7 @@ export type ListAdminOrganizationsData = {
         /**
          * Only organizations of this review status; `pending` also selects an approved one with an open claim.
          */
-        status?: 'pending' | 'approved' | 'rejected';
+        status?: 'pending' | 'approved' | 'rejected' | 'suspended';
         /**
          * The page, counted from 1.
          */
@@ -2035,6 +2069,49 @@ export type GetAdminOrganizationResponses = {
 
 export type GetAdminOrganizationResponse = GetAdminOrganizationResponses[keyof GetAdminOrganizationResponses];
 
+export type SaveAdminOrganizationData = {
+    body: AdminSaveOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}';
+};
+
+export type SaveAdminOrganizationErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization changed since it was read, or another organization has the domain.
+     */
+    409: Problem;
+};
+
+export type SaveAdminOrganizationError = SaveAdminOrganizationErrors[keyof SaveAdminOrganizationErrors];
+
+export type SaveAdminOrganizationResponses = {
+    /**
+     * The organization as saved.
+     */
+    200: AdminOrganization;
+};
+
+export type SaveAdminOrganizationResponse = SaveAdminOrganizationResponses[keyof SaveAdminOrganizationResponses];
+
 export type ApproveOrganizationData = {
     body: ApproveOrganization;
     path: {
@@ -2078,6 +2155,161 @@ export type ApproveOrganizationResponses = {
 
 export type ApproveOrganizationResponse = ApproveOrganizationResponses[keyof ApproveOrganizationResponses];
 
+export type InviteAdminOrganizationMemberData = {
+    body: InviteMember;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/invitations';
+};
+
+export type InviteAdminOrganizationMemberErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The address belongs to the organization or holds an open invitation.
+     */
+    409: Problem;
+};
+
+export type InviteAdminOrganizationMemberError = InviteAdminOrganizationMemberErrors[keyof InviteAdminOrganizationMemberErrors];
+
+export type InviteAdminOrganizationMemberResponses = {
+    /**
+     * The invitation is open and the address was told.
+     */
+    204: void;
+};
+
+export type InviteAdminOrganizationMemberResponse = InviteAdminOrganizationMemberResponses[keyof InviteAdminOrganizationMemberResponses];
+
+export type RevokeAdminOrganizationInvitationData = {
+    body?: never;
+    path: {
+        id: string;
+        invitationId: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/invitations/{invitationId}/revoke';
+};
+
+export type RevokeAdminOrganizationInvitationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The organization does not exist, or the invitation is not one of its open ones.
+     */
+    404: Problem;
+};
+
+export type RevokeAdminOrganizationInvitationError = RevokeAdminOrganizationInvitationErrors[keyof RevokeAdminOrganizationInvitationErrors];
+
+export type RevokeAdminOrganizationInvitationResponses = {
+    /**
+     * The invitation is closed.
+     */
+    204: void;
+};
+
+export type RevokeAdminOrganizationInvitationResponse = RevokeAdminOrganizationInvitationResponses[keyof RevokeAdminOrganizationInvitationResponses];
+
+export type RemoveAdminOrganizationMemberData = {
+    body?: never;
+    path: {
+        id: string;
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/members/{accountId}/remove';
+};
+
+export type RemoveAdminOrganizationMemberErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The organization does not exist, or the person does not belong to it.
+     */
+    404: Problem;
+};
+
+export type RemoveAdminOrganizationMemberError = RemoveAdminOrganizationMemberErrors[keyof RemoveAdminOrganizationMemberErrors];
+
+export type RemoveAdminOrganizationMemberResponses = {
+    /**
+     * The person is out.
+     */
+    204: void;
+};
+
+export type RemoveAdminOrganizationMemberResponse = RemoveAdminOrganizationMemberResponses[keyof RemoveAdminOrganizationMemberResponses];
+
+export type ChangeAdminOrganizationMemberRoleData = {
+    body: ChangeMemberRole;
+    path: {
+        id: string;
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/members/{accountId}/role';
+};
+
+export type ChangeAdminOrganizationMemberRoleErrors = {
+    /**
+     * The role is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The organization does not exist, or the person does not belong to it.
+     */
+    404: Problem;
+};
+
+export type ChangeAdminOrganizationMemberRoleError = ChangeAdminOrganizationMemberRoleErrors[keyof ChangeAdminOrganizationMemberRoleErrors];
+
+export type ChangeAdminOrganizationMemberRoleResponses = {
+    /**
+     * The role is changed.
+     */
+    204: void;
+};
+
+export type ChangeAdminOrganizationMemberRoleResponse = ChangeAdminOrganizationMemberRoleResponses[keyof ChangeAdminOrganizationMemberRoleResponses];
+
 export type RefuseOrganizationData = {
     body: RefuseOrganization;
     path: {
@@ -2120,6 +2352,88 @@ export type RefuseOrganizationResponses = {
 };
 
 export type RefuseOrganizationResponse = RefuseOrganizationResponses[keyof RefuseOrganizationResponses];
+
+export type RestoreOrganizationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/restore';
+};
+
+export type RestoreOrganizationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not taken down.
+     */
+    409: Problem;
+};
+
+export type RestoreOrganizationError = RestoreOrganizationErrors[keyof RestoreOrganizationErrors];
+
+export type RestoreOrganizationResponses = {
+    /**
+     * The organization is back.
+     */
+    204: void;
+};
+
+export type RestoreOrganizationResponse = RestoreOrganizationResponses[keyof RestoreOrganizationResponses];
+
+export type TakeDownOrganizationData = {
+    body: TakeDownOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/take-down';
+};
+
+export type TakeDownOrganizationErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not approved.
+     */
+    409: Problem;
+};
+
+export type TakeDownOrganizationError = TakeDownOrganizationErrors[keyof TakeDownOrganizationErrors];
+
+export type TakeDownOrganizationResponses = {
+    /**
+     * The organization is taken down.
+     */
+    204: void;
+};
+
+export type TakeDownOrganizationResponse = TakeDownOrganizationResponses[keyof TakeDownOrganizationResponses];
 
 export type AcceptOrganizationInvitationData = {
     body?: never;
