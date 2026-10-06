@@ -4,7 +4,7 @@ Written on 5 October 2026, before drawing how an operator creates a program, see
 
 ## What the flow has to do
 
-An operator creates a program, fills it in over several sittings, looks at its page, publishes it, and corrects it later. Publishing for the first time fixes its address, because links to it are then shared ([program design](../increments/active/bey-29-program/design.md)). A program that turns out wrong is taken off the public site and put back. Later, a program will hold applications, and taking it down must not lose them.
+An operator creates a program, fills it in over several sittings, looks at its page, publishes it, and corrects it later. Publishing for the first time fixes its address, because links to it are then shared ([program design](../increments/completed/bey-29-program/design.md)). A program that turns out wrong is taken off the public site and put back. Later, a program will hold applications, and taking it down must not lose them.
 
 ## Products on Mobbin
 
