@@ -26,6 +26,13 @@ public interface SolutionRepository extends JpaRepository<Solution, UUID> {
 
 	boolean existsByDeckFileId(UUID deckFileId);
 
+	/** Whether a solution names the file as its logo, its cover or one of the images under the cover. */
+	@Query(value = """
+			select exists (select 1 from solution
+			               where logo_file_id = :fileId or cover_file_id = :fileId or :fileId = any (image_file_ids))
+			""", nativeQuery = true)
+	boolean existsByPicture(UUID fileId);
+
 	Optional<Solution> findBySlug(String slug);
 
 	List<Solution> findByOrganizationIdOrderByCreatedAtDesc(UUID organizationId);

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
+import { serveStoredImages } from "./stored-files";
 
 /** The solutions shown, by the name each card leads with. */
 function shownSolutions(page: Page) {
@@ -9,6 +10,7 @@ function shownSolutions(page: Page) {
 
 test.describe("solutions directory", () => {
   test.use({ locale: "en-US" });
+  test.beforeEach(({ page }) => serveStoredImages(page));
 
   test("a visitor reads the approved solutions, each with who offers it and its proof", async ({
     page,
@@ -106,14 +108,20 @@ test.describe("solutions directory", () => {
     const fact = (name: string) => page.locator('[data-slot="fact"]').filter({ hasText: name });
     await expect(fact("Industries")).toContainText("Insurance");
     await expect(fact("Deployment")).toContainText("Cloud (SaaS)");
-    await expect(fact("Stage")).toContainText("In production");
-    // What the solution's organization has not said is shown as unknown, never left out.
-    await expect(fact("Channels")).toContainText("Not listed yet");
+    await expect(page.getByText("In production").first()).toBeVisible();
     // What its owners added in the editor's steps is read here too.
     await expect(fact("Languages")).toContainText("Vietnamese, English");
-    await expect(fact("Built with")).toContainText("Python, PostgreSQL");
+    await expect(fact("Core technology")).toContainText("Python, PostgreSQL");
     await expect(fact("Best customer profile")).toContainText("Insurers with a call centre");
-    await expect(fact("Milestones and traction")).toContainText("Not listed yet");
+    // Its cover and the two images under it; any of them opens large, with the others a step away.
+    await expect(page.getByRole("img", { name: "The cover image of Policy Chat" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Open image \d of 3$/ })).toHaveCount(3);
+    await page.getByRole("button", { name: "Open image 2 of 3" }).click();
+    const gallery = page.getByRole("dialog", { name: "Images of Policy Chat" });
+    await expect(gallery.getByText("Image 2 of 3")).toBeVisible();
+    await gallery.getByRole("button", { name: "Next image" }).click();
+    await expect(gallery.getByText("Image 3 of 3")).toBeVisible();
+    await page.keyboard.press("Escape");
     await expect(page.getByRole("link", { name: "Visit website" })).toHaveAttribute(
       "href",
       "https://pocketpolicy.example",
@@ -133,6 +141,13 @@ test.describe("solutions directory", () => {
     // Nobody is signed in, so nothing offers to edit it.
     await expect(page.getByRole("link", { name: "Edit this solution" })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
+
+    // What a solution's organization has not said is shown as unknown, never left out; a solution
+    // without images shows no place for one.
+    await page.goto("/solutions/clinic-triage");
+    await expect(fact("Core technology")).toContainText("Not listed yet");
+    await expect(fact("Backed by")).toContainText("Not listed yet");
+    await expect(page.locator('[data-slot="solution-gallery"]')).toHaveCount(0);
 
     expect((await page.goto("/solutions/no-such-solution"))?.status()).toBe(404);
   });

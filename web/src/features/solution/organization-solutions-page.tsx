@@ -1,15 +1,8 @@
-import { BoxesIcon, EllipsisIcon, ExternalLinkIcon, PencilIcon } from "lucide-react";
+import { BoxesIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
-import { ReviewStatus } from "@/components/composites/review-status";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Status } from "@/components/composites/status";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { OrganizationFrame } from "@/features/organization/organization-frame";
 import { OrganizationSection } from "@/features/organization/organization-section";
@@ -24,6 +17,8 @@ import type {
 import { siteRoutes } from "@/lib/site";
 
 import { CreateSolution } from "./create-solution";
+import { reviewFields } from "./solution-editor-state";
+import { SolutionRowActions } from "./solution-row-actions";
 
 type OrganizationSolutionsPageProps = {
   mine: MyOrganization & { organization: Organization };
@@ -34,20 +29,26 @@ type OrganizationSolutionsPageProps = {
   useCases: number | null;
 };
 
-/** The states a solution is counted under, in the order the summary says them. */
-const states = ["listed", "draft", "submitted", "rejected", "hidden"] as const;
+/** The tone of each state of a review in the list, where the states are scanned as pills. */
+const reviewTones = {
+  draft: "neutral",
+  submitted: "info",
+  approved: "success",
+  rejected: "destructive",
+} as const;
 
-/** Where a solution stands for the people of its organization: listed, hidden, or not public yet. */
-function stateOf(solution: SolutionSummary): (typeof states)[number] {
-  if (solution.status !== "approved") {
-    return solution.status;
+/** Whether anyone outside the organization reads a solution, and how they come to it. */
+function listingOf(solution: SolutionSummary) {
+  if (solution.status === "approved") {
+    return solution.listed ? "listed" : "unlisted";
   }
-  return solution.listed ? "listed" : "hidden";
+  return solution.status === "submitted" ? "notYet" : "notPublic";
 }
 
 /**
- * My organization › Solutions: what the organization offers, each with where its review stands.
- * Owners of an approved organization add and change them; members read.
+ * My organization › Solutions: what the organization offers, each with where its review stands,
+ * whether the public reads it, and what a member can do with it next. Every member adds and
+ * changes them.
  */
 function OrganizationSolutionsPage({
   mine,
@@ -56,13 +57,29 @@ function OrganizationSolutionsPage({
   useCases,
 }: OrganizationSolutionsPageProps) {
   const t = useTranslations("Solution.mine");
-  const status = useVocabulary("reviewStatus");
+  const reason = useVocabulary("solutionRejection");
   const format = useFormatter();
   const waiting = mine.role === "owner" && mine.organization.status !== "approved";
+  const day = (instant: string) => format.dateTime(new Date(instant), { dateStyle: "medium" });
+
+  /** The line under a solution's name: what it does, or what its owners do next. */
+  function about(solution: SolutionSummary) {
+    if (solution.status === "draft") {
+      return t("about.draft", {
+        filled: reviewFields.length - solution.missing.length,
+        total: reviewFields.length,
+      });
+    }
+    if (solution.status === "rejected") {
+      const why =
+        solution.decisionMessage ?? (solution.decisionReason && reason(solution.decisionReason));
+      return why ? t("about.sentBack", { reason: why }) : t("about.sentBackPlain");
+    }
+    return solution.summary;
+  }
 
   const rows = solutions.items.map((solution) => {
     const editor = `${siteRoutes.workspaceSolutions}/${solution.id}`;
-    const state = stateOf(solution);
     return {
       id: solution.id,
       name: (
@@ -73,56 +90,25 @@ function OrganizationSolutionsPage({
           >
             {solution.name}
           </Link>
-          <span className="truncate text-muted-foreground">{t(`state.${state}`)}</span>
+          <span className="truncate text-muted-foreground">{about(solution)}</span>
         </div>
       ),
-      status: <ReviewStatus state={solution.status}>{status(solution.status)}</ReviewStatus>,
+      status: (
+        <Status appearance="pill" tone={reviewTones[solution.status]}>
+          {t(`review.${solution.status}`)}
+        </Status>
+      ),
+      listing: <span>{t(`listing.${listingOf(solution)}`)}</span>,
       updated: (
         <span className="text-muted-foreground">
-          {format.dateTime(new Date(solution.updatedAt), { dateStyle: "medium" })}
+          {solution.status === "submitted" && solution.submittedAt
+            ? t("sent", { date: day(solution.submittedAt) })
+            : day(solution.updatedAt)}
         </span>
       ),
-      actions: (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                aria-label={t("actions.open", { name: solution.name })}
-                className="hit-area flex size-8 shrink-0 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted"
-              />
-            }
-          >
-            <EllipsisIcon className="size-4" aria-hidden="true" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuGroup>
-              <DropdownMenuItem render={<Link href={editor} />}>
-                <PencilIcon aria-hidden="true" />
-                {t(solutions.editable ? "actions.edit" : "actions.view")}
-              </DropdownMenuItem>
-              {state === "listed" && (
-                <DropdownMenuItem
-                  render={<Link href={`${siteRoutes.solutions}/${solution.slug}`} />}
-                >
-                  <ExternalLinkIcon aria-hidden="true" />
-                  {t("actions.viewPublic")}
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+      actions: <SolutionRowActions solution={solution} editable={solutions.editable} />,
     };
   });
-
-  const count = (state: (typeof states)[number]) =>
-    solutions.items.filter((solution) => stateOf(solution) === state).length;
-  const summary = states
-    // What is listed is always said; the other states only when a solution is in them.
-    .filter((state) => state === "listed" || count(state) > 0)
-    .map((state) => t(`summary.${state}`, { count: count(state) }))
-    .join(" · ");
 
   return (
     <OrganizationFrame
@@ -133,7 +119,7 @@ function OrganizationSolutionsPage({
       <OrganizationSection
         id="solutions-list"
         title={t("title")}
-        summary={rows.length > 0 ? summary : undefined}
+        summary={rows.length > 0 ? String(rows.length) : undefined}
         action={solutions.editable && <CreateSolution />}
       >
         {rows.length === 0 ? (
@@ -141,10 +127,14 @@ function OrganizationSolutionsPage({
             <DataTableEmpty
               icon={<BoxesIcon aria-hidden="true" />}
               title={t("empty.title")}
-              description={t(
-                solutions.editable ? "empty.owner" : waiting ? "afterApproval" : "empty.member",
-              )}
-            />
+              description={
+                solutions.editable
+                  ? t("empty.owner", { name: mine.organization.name })
+                  : t(waiting ? "afterApproval" : "empty.member")
+              }
+            >
+              {solutions.editable && <CreateSolution />}
+            </DataTableEmpty>
           </div>
         ) : (
           <>
@@ -154,7 +144,8 @@ function OrganizationSolutionsPage({
                 <TableRow>
                   <TableHead>{t("columns.solution")}</TableHead>
                   <TableHead className="w-36">{t("columns.status")}</TableHead>
-                  <TableHead className="w-32">{t("columns.updated")}</TableHead>
+                  <TableHead className="w-44">{t("columns.listing")}</TableHead>
+                  <TableHead className="w-36">{t("columns.updated")}</TableHead>
                   <TableHead className="w-12">
                     <span className="sr-only">{t("columns.actions")}</span>
                   </TableHead>
@@ -165,6 +156,7 @@ function OrganizationSolutionsPage({
                   <TableRow key={row.id}>
                     <TableCell className="max-w-0">{row.name}</TableCell>
                     <TableCell>{row.status}</TableCell>
+                    <TableCell>{row.listing}</TableCell>
                     <TableCell>{row.updated}</TableCell>
                     <TableCell>
                       <div className="flex justify-end">{row.actions}</div>
@@ -184,6 +176,7 @@ function OrganizationSolutionsPage({
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                     {row.status}
+                    {row.listing}
                     {row.updated}
                   </div>
                 </li>

@@ -38,6 +38,7 @@ import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRequirement;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,9 +73,12 @@ public class UseCaseAdministration {
 
 	private final EmailService email;
 
+	private final ApplicationEventPublisher events;
+
 	UseCaseAdministration(UseCaseRepository useCases, UseCaseQueryRepository useCaseList,
 			OrganizationDirectory organizations, IdentityService identity, AuditTrail audit, UseCaseAttachments files,
-			UseCasePeople people, EmailService email) {
+			UseCasePeople people, EmailService email, ApplicationEventPublisher events) {
+		this.events = events;
 		this.useCases = useCases;
 		this.useCaseList = useCaseList;
 		this.organizations = organizations;
@@ -180,6 +184,7 @@ public class UseCaseAdministration {
 			useCase.publish(now);
 		}
 		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(useCase.getId()));
 		audit.record(new AuditRecord(AuditAction.USE_CASE_CREATE,
 				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
 				new AuditRecord.Resource(USE_CASE, useCase.getId().toString(), useCase.getTitle()),
@@ -199,6 +204,7 @@ public class UseCaseAdministration {
 		UseCase useCase = awaitingReview(id, now);
 		useCase.approve(operator.accountId(), now);
 		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(useCase.getId()));
 		return decided(actor, operator, AuditAction.USE_CASE_APPROVE, useCase, true, null, now);
 	}
 
@@ -215,6 +221,7 @@ public class UseCaseAdministration {
 		String reason = request.reason().strip();
 		useCase.sendBack(operator.accountId(), now, reason);
 		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(useCase.getId()));
 		return decided(actor, operator, AuditAction.USE_CASE_SEND_BACK, useCase, false, reason, now);
 	}
 

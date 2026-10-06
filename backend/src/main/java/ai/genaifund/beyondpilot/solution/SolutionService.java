@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.solution;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -111,14 +112,17 @@ public class SolutionService {
 		}
 		Solution solution = solutions.saveAndFlush(new Solution(UUID.randomUUID(), membership.organizationId(), slug,
 				request.name().strip(), actor.accountId()));
-		return SolutionViews.solution(solution, membership.organizationName(), null, List.of());
+		return SolutionViews.solution(solution, membership.organizationName(), null, List.of(), storage);
 	}
 
 	/**
 	 * Saves a solution as its editor holds it. A change to an approved solution shows at once; one to a rejected
-	 * solution waits for the owner to submit it again. A deck the solution stops naming is removed from the store.
+	 * solution waits for the owner to submit it again. A deck or an image the solution stops naming is removed from
+	 * the store. A solution that was sent for review does not lose anything a review needs; one approved before a
+	 * logo and a cover were asked for may stay without them.
 	 * @throws SolutionException when the caller is not a member, the organization has no such
-	 * solution, it changed since the screen read it, or the deck it names is not a stored PDF of the caller
+	 * solution, it changed since the screen read it, or a deck or an image it names is not a stored file the caller
+	 * may give it
 	 */
 	@Transactional
 	public SolutionResponse save(Actor actor, UUID id, SaveSolutionRequest request) {
@@ -128,24 +132,28 @@ public class SolutionService {
 			throw new SolutionException(SolutionErrorCode.CHANGED_MEANWHILE, "Save of solution " + id + " at version "
 					+ request.version() + ", which is at " + solution.getVersion());
 		}
+		List<String> lackedBefore = solution.missing();
 		solution.describe(request.name().strip(), SolutionViews.text(request.summary()),
 				SolutionViews.text(request.problemsSolved()), SolutionViews.text(request.valueProposition()),
 				request.maturity(), SolutionViews.text(request.traction()), SolutionViews.names(request.builtWith()));
 		solution.fit(SolutionViews.codes(request.industries()), SolutionViews.codes(request.focusAreas()),
 				SolutionViews.codes(request.languages()), SolutionViews.codes(request.deployment()),
-				SolutionViews.text(request.bestCustomerProfile()));
+				SolutionViews.text(request.channels()), SolutionViews.text(request.bestCustomerProfile()));
 		solution.link(SolutionViews.text(request.website()), SolutionViews.text(request.demoUrl()));
 		UUID replacedDeck = nameDeck(actor, solution, request.deckFileId());
+		List<UUID> droppedPictures = namePictures(actor, solution, request);
 		solution.list(request.listed());
-		if (!solution.isDraft() && !solution.isRejected() && !solution.isComplete()) {
+		if (!solution.isDraft() && !solution.isRejected()
+				&& !lackedBefore.containsAll(solution.missing())) {
 			// What operators review, and what the directory shows, keeps what a submission needs.
 			throw incomplete(id);
 		}
 		solutions.flush();
+		// The solution no longer names these files, so nothing does. They go once the save has committed.
 		if (replacedDeck != null) {
-			// The solution no longer names the file, so nothing does. It goes once the save has committed.
-			events.publishEvent(new ReplacedDecks.DeckReplaced(id, replacedDeck));
+			events.publishEvent(new DroppedFiles.FileDropped(id, replacedDeck));
 		}
+		droppedPictures.forEach(fileId -> events.publishEvent(new DroppedFiles.FileDropped(id, fileId)));
 		events.publishEvent(new SolutionChanged(id));
 		return view(solution, membership);
 	}
@@ -182,6 +190,56 @@ public class SolutionService {
 	}
 
 	/**
+	 * Makes the solution name the images the request names: its logo, its cover and those under the cover. An image
+	 * it already has stays, whoever of its organization uploaded it, and may move between the cover and the others;
+	 * a new one is a stored image the caller uploaded for that place.
+	 * @return the files the solution stopped naming
+	 * @throws SolutionException when a file is not such an image, is named twice, or is the image of another solution
+	 */
+	private List<UUID> namePictures(Actor actor, Solution solution, SaveSolutionRequest request) {
+		List<UUID> held = solution.pictures();
+		UUID logo = request.logoFileId();
+		UUID cover = request.coverFileId();
+		List<UUID> images = request.imageFileIds();
+		if (images.stream().distinct().count() != images.size() || (cover != null && images.contains(cover))) {
+			throw new SolutionException(SolutionErrorCode.IMAGE_NOT_USABLE,
+					"Solution " + solution.getId() + " names an image twice");
+		}
+		if (logo != null) {
+			requirePicture(actor, solution, logo, FilePurpose.SOLUTION_LOGO, held);
+		}
+		if (cover != null) {
+			requirePicture(actor, solution, cover, FilePurpose.SOLUTION_IMAGE, held);
+		}
+		images.forEach(image -> requirePicture(actor, solution, image, FilePurpose.SOLUTION_IMAGE, held));
+		solution.picture(logo, cover, images);
+		List<UUID> kept = solution.pictures();
+		return held.stream().filter(fileId -> !kept.contains(fileId)).toList();
+	}
+
+	private void requirePicture(Actor actor, Solution solution, UUID fileId, FilePurpose purpose, List<UUID> held) {
+		if (held.contains(fileId)) {
+			// Already this solution's: it keeps the kind it was uploaded as, a logo or an image.
+			if (storage.describe(fileId).filter(file -> file.purpose() == purpose).isEmpty()) {
+				throw new SolutionException(SolutionErrorCode.IMAGE_NOT_USABLE, "File " + fileId + " of solution "
+						+ solution.getId() + " is not a stored " + purpose.value());
+			}
+			return;
+		}
+		try {
+			storage.stored(fileId, purpose, actor);
+		}
+		catch (StorageException notUsable) {
+			throw new SolutionException(SolutionErrorCode.IMAGE_NOT_USABLE,
+					"File " + fileId + " as a " + purpose.value() + " of solution " + solution.getId(), notUsable);
+		}
+		if (solutions.existsByPicture(fileId)) {
+			throw new SolutionException(SolutionErrorCode.IMAGE_NOT_USABLE,
+					"File " + fileId + " is an image of another solution");
+		}
+	}
+
+	/**
 	 * Sends a draft, or a rejected solution that was corrected, to GenAI Fund for review.
 	 * @throws SolutionException when the caller is not a member, the organization has no such
 	 * solution, it lacks what a submission needs, or it is already submitted or approved
@@ -209,7 +267,7 @@ public class SolutionService {
 	}
 
 	/**
-	 * Deletes a draft, and its deck with it. Anything that was ever submitted stays.
+	 * Deletes a draft, and its deck and its images with it. Anything that was ever submitted stays.
 	 * @throws SolutionException when the caller is not a member, the organization has no such
 	 * solution, or it is not a draft
 	 */
@@ -220,11 +278,13 @@ public class SolutionService {
 			throw new SolutionException(SolutionErrorCode.NOT_A_DRAFT,
 					"Deletion of solution " + id + ", which is " + solution.getStatus());
 		}
+		List<UUID> files = new ArrayList<>(solution.pictures());
 		UUID deck = solution.getDeckFileId();
-		solutions.delete(solution);
 		if (deck != null) {
-			events.publishEvent(new ReplacedDecks.DeckReplaced(id, deck));
+			files.add(deck);
 		}
+		solutions.delete(solution);
+		files.forEach(fileId -> events.publishEvent(new DroppedFiles.FileDropped(id, fileId)));
 	}
 
 	/**
@@ -297,7 +357,7 @@ public class SolutionService {
 	private SolutionResponse view(Solution solution, Membership membership) {
 		return SolutionViews.solution(solution, membership.organizationName(),
 				SolutionViews.sender(solution, identity),
-				deployments.findBySolutionIdOrderByCreatedAtDesc(solution.getId()));
+				deployments.findBySolutionIdOrderByCreatedAtDesc(solution.getId()), storage);
 	}
 
 	private Membership writer(Actor actor) {

@@ -14,6 +14,7 @@ import java.util.UUID;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.RecordingMailSender;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.storage.TestUploads;
 import com.jayway.jsonpath.JsonPath;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,11 +86,13 @@ class SearchDirectoriesTest {
 		assertThat(total("document processing " + word)).isEqualTo(1);
 		// And a tool it is built with, by its name.
 		assertThat(total("langgraph " + word)).isEqualTo(1);
+		// A solution is found with its logo.
+		assertThat(JsonPath.<String>read(search("langgraph%20" + word), "$.items[0].photoFileId")).isNotBlank();
 
 		renameOrganization(owner, "Renamed " + word);
 		await().atMost(WAIT).until(() -> total("renamed " + word) == 1);
 
-		Map<String, Object> unlisted = solution("Voice Agent " + word, versionOfSolution(owner, solution));
+		Map<String, Object> unlisted = asSaved(owner, solution, "Voice Agent " + word);
 		unlisted.put("listed", false);
 		put(owner, "/api/solution/mine/" + solution, unlisted);
 		await().atMost(WAIT).until(() -> total("voice agent " + word) == 0);
@@ -130,6 +133,66 @@ class SearchDirectoriesTest {
 		put(person, "/api/talent/mine", unlisted);
 		await().atMost(WAIT).until(() -> total("lan " + word) == 0);
 		assertThat(listed(profile)).isNull();
+	}
+
+	@Test
+	void aPublishedUseCaseIsFoundUntilItIsSentBackAndNeverByTheNameOfAnOrganizationThatHidesIt() {
+		String owner = TestSignIn.session(client, mail, "bank-" + word + "@directories.test");
+		UUID organization = organization(owner, "Bank " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		String created = body(client.post()
+			.uri("/api/usecase/admin/use-cases")
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(useCase("Claims triage " + word, organization))
+			.exchange()
+			.expectStatus()
+			.is2xxSuccessful());
+		String id = JsonPath.read(created, "$.id");
+
+		await().atMost(WAIT).until(() -> total("claims triage " + word) == 1);
+		String body = search("claims%20triage%20" + word);
+		assertThat(JsonPath.<String>read(body, "$.items[0].kind")).isEqualTo("use_case");
+		assertThat(JsonPath.<String>read(body, "$.items[0].slug")).isEqualTo(id);
+		assertThat(JsonPath.<Object>read(body, "$.items[0].subtitle")).isNull();
+		assertThat(JsonPath.<Integer>read(body, "$.counts.useCase")).isEqualTo(1);
+		// Search reads only what the index holds: the goal the public list shows, never the problem statement members
+		// read, and no name of an organization that stays anonymous.
+		assertThat(total("first assessment " + word)).isEqualTo(1);
+		String indexed = jdbc.sql("select concat_ws(' ', title, subtitle, summary, keywords, card) from search_document"
+				+ " where item_id = cast(? as uuid)").param(id).query(String.class).single();
+		assertThat(indexed).contains("first assessment").doesNotContain("wait days").doesNotContain("Bank");
+
+		post(operator, "/api/usecase/admin/use-cases/" + id + "/send-back", Map.of("reason", "Say what the data is."));
+		await().atMost(WAIT).until(() -> total("claims triage " + word) == 0);
+	}
+
+	private static Map<String, Object> useCase(String title, UUID organization) {
+		Map<String, Object> request = new HashMap<>();
+		request.put("organizationId", organization);
+		request.put("title", title);
+		request.put("problemStatement", "Claims wait days for a first look.");
+		request.put("industry", "insurance");
+		request.put("technologies", List.of("generative_ai"));
+		request.put("expectedOutcomes", "A first assessment within an hour.");
+		request.put("currentProcess", "Adjusters read every file.");
+		request.put("currentSolutions", null);
+		request.put("targetUsers", "Claims adjusters");
+		request.put("requirements", List.of(Map.of("statement", "Reads Vietnamese forms", "necessity", "required")));
+		request.put("dataReadiness", "Five years of claim files.");
+		request.put("integrationRequirements", "Our claims system's API.");
+		request.put("attachmentFileIds", List.of());
+		request.put("budgetMin", 10000);
+		request.put("budgetMax", 50000);
+		request.put("budgetToBeDetermined", false);
+		request.put("budgetMembersOnly", false);
+		request.put("timelineMinWeeks", 4);
+		request.put("timelineMaxWeeks", 12);
+		request.put("closesAt", java.time.Instant.now().plus(Duration.ofDays(30)).toString());
+		request.put("hideOrganizationName", true);
+		request.put("publishNow", true);
+		return request;
 	}
 
 	/** Whether the item's row is listed, or null when the index has no row for it. */
@@ -196,19 +259,27 @@ class SearchDirectoriesTest {
 			.expectStatus()
 			.isCreated());
 		UUID id = UUID.fromString(JsonPath.read(draft, "$.id"));
-		put(owner, "/api/solution/mine/" + id,
-				solution(name, JsonPath.<Number>read(draft, "$.version").longValue()));
+		Map<String, Object> request = solution(name, JsonPath.<Number>read(draft, "$.version").longValue());
+		// A review asks for a logo and a cover.
+		request.put("logoFileId", TestUploads.image(client, owner, "solution_logo", "logo.png"));
+		request.put("coverFileId", TestUploads.image(client, owner, "solution_image", "cover.png"));
+		put(owner, "/api/solution/mine/" + id, request);
 		post(owner, "/api/solution/mine/" + id + "/submit", null);
 		return id;
 	}
 
-	private long versionOfSolution(String owner, UUID id) {
-		return JsonPath.<Number>read(body(client.get()
+	/** The save that keeps the solution as it is: its version, and the images it names. */
+	private Map<String, Object> asSaved(String owner, UUID id, String name) {
+		String current = body(client.get()
 			.uri("/api/solution/mine/" + id)
 			.cookie(TestSignIn.SESSION_COOKIE, owner)
 			.exchange()
 			.expectStatus()
-			.isOk()), "$.version").longValue();
+			.isOk());
+		Map<String, Object> request = solution(name, JsonPath.<Number>read(current, "$.version").longValue());
+		request.put("logoFileId", JsonPath.<String>read(current, "$.logo.fileId"));
+		request.put("coverFileId", JsonPath.<String>read(current, "$.cover.fileId"));
+		return request;
 	}
 
 	private static Map<String, Object> solution(String name, long version) {
@@ -225,6 +296,7 @@ class SearchDirectoriesTest {
 		request.put("demoUrl", null);
 		request.put("builtWith", List.of("LangGraph"));
 		request.put("languages", List.of());
+		request.put("imageFileIds", List.of());
 		request.put("listed", true);
 		request.put("version", version);
 		return request;
