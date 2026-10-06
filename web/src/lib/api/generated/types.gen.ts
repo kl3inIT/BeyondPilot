@@ -307,6 +307,43 @@ export type AdminTalent = {
 };
 
 /**
+ * A message the person behind a talent profile reported as unwanted.
+ */
+export type AdminTalentEnquiry = {
+    createdAt: string;
+    id: string;
+    message: string;
+    /**
+     * The profile it was sent through.
+     */
+    profileId: string;
+    profileName: string;
+    /**
+     * When it was reported.
+     */
+    reportedAt?: string | null;
+    /**
+     * The sender's address; empty when the account no longer signs in.
+     */
+    senderEmail: string;
+    /**
+     * The sender's name; null when they gave none.
+     */
+    senderName?: string | null;
+    topic: 'project' | 'role' | 'other';
+};
+
+/**
+ * One page of the reported messages, the newest first.
+ */
+export type AdminTalentEnquiryList = {
+    items: Array<AdminTalentEnquiry>;
+    page: number;
+    pageSize: number;
+    total: number;
+};
+
+/**
  * One page of submitted talent profiles: those waiting for review first, the longest wait on top.
  */
 export type AdminTalentList = {
@@ -326,7 +363,7 @@ export type AdminTalentList = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -587,7 +624,7 @@ export type MySolutions = {
  */
 export type MyTalent = {
     /**
-     * The newest first.
+     * Those that wait for an answer first, then the newest.
      */
     enquiries: Array<TalentEnquiry>;
     /**
@@ -1091,6 +1128,10 @@ export type PublicTalent = {
     roles: Array<string>;
     skills: Array<string>;
     slug: string;
+    /**
+     * When the caller's message to this person was sent, while it waits for an answer; null for a visitor and when none waits.
+     */
+    waitingEnquirySentAt?: string | null;
     website?: string | null;
 };
 
@@ -1171,17 +1212,6 @@ export type RejectSolution = {
      */
     message?: string | null;
     reason: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
-};
-
-/**
- * Why a talent profile is not approved, and what its person is told.
- */
-export type RejectTalent = {
-    /**
-     * Shown to the person with the rejection.
-     */
-    message?: string | null;
-    reason: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
 };
 
 /**
@@ -1375,6 +1405,10 @@ export type SaveTalentProfile = {
  */
 export type SendTalentEnquiry = {
     message: string;
+    /**
+     * What the message is about.
+     */
+    topic: 'project' | 'role' | 'other';
 };
 
 /**
@@ -1459,20 +1493,45 @@ export type StoredFile = {
 };
 
 /**
+ * Why GenAI Fund asks for changes to a talent profile or removes it, and what its person is told.
+ */
+export type TalentDecision = {
+    /**
+     * Shown to the person with the decision, and sent to them by email.
+     */
+    message?: string | null;
+    reason: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
+};
+
+/**
  * A message someone sent through the caller's talent profile.
  */
 export type TalentEnquiry = {
+    /**
+     * When the caller answered it or it closed; null while it waits.
+     */
+    answeredAt?: string | null;
+    /**
+     * When a waiting message closes unanswered; null once it is answered.
+     */
+    closesAt?: string | null;
     createdAt: string;
     id: string;
     message: string;
     /**
-     * Where the caller answers them.
+     * Where the caller writes to the sender; only once the caller accepted.
      */
-    senderEmail: string;
+    senderEmail?: string | null;
     /**
-     * Who wrote it, as they are shown.
+     * Who wrote it, by the name they gave; null when they gave none and the caller has not accepted.
      */
-    senderName: string;
+    senderName?: string | null;
+    /**
+     * The organization the sender belonged to when they wrote; null when none.
+     */
+    senderOrganization?: string | null;
+    status: 'pending' | 'accepted' | 'declined' | 'reported' | 'closed';
+    topic: 'project' | 'role' | 'other';
 };
 
 /**
@@ -1494,7 +1553,7 @@ export type TalentProfile = {
      */
     decisionMessage?: string | null;
     /**
-     * Why it was last rejected.
+     * Why GenAI Fund last asked for changes or removed it.
      */
     decisionReason?: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
     engagement: Array<string>;
@@ -1513,7 +1572,7 @@ export type TalentProfile = {
     roles: Array<string>;
     skills: Array<string>;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    status: 'draft' | 'submitted' | 'approved' | 'changes_requested' | 'removed';
     submittedAt?: string | null;
     updatedAt: string;
     /**
@@ -1549,7 +1608,7 @@ export type TalentSummary = {
     listed: boolean;
     name: string;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    status: 'draft' | 'submitted' | 'approved' | 'changes_requested' | 'removed';
     submittedAt?: string | null;
     updatedAt: string;
 };
@@ -1590,7 +1649,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -4068,7 +4127,7 @@ export type ListAdminTalentData = {
         /**
          * Only profiles of this status. Drafts are never listed.
          */
-        status?: 'submitted' | 'approved' | 'rejected';
+        status?: 'submitted' | 'approved' | 'changes_requested' | 'removed';
         /**
          * The page, counted from 1.
          */
@@ -4177,16 +4236,16 @@ export type ApproveTalentResponses = {
 
 export type ApproveTalentResponse = ApproveTalentResponses[keyof ApproveTalentResponses];
 
-export type RejectTalentData = {
-    body: RejectTalent;
+export type RemoveTalentData = {
+    body: TalentDecision;
     path: {
         id: string;
     };
     query?: never;
-    url: '/api/talent/admin/profiles/{id}/reject';
+    url: '/api/talent/admin/profiles/{id}/remove';
 };
 
-export type RejectTalentErrors = {
+export type RemoveTalentErrors = {
     /**
      * A member is not valid.
      */
@@ -4204,21 +4263,131 @@ export type RejectTalentErrors = {
      */
     404: Problem;
     /**
-     * The profile is neither waiting for review nor approved.
+     * The profile is not approved.
      */
     409: Problem;
 };
 
-export type RejectTalentError = RejectTalentErrors[keyof RejectTalentErrors];
+export type RemoveTalentError = RemoveTalentErrors[keyof RemoveTalentErrors];
 
-export type RejectTalentResponses = {
+export type RemoveTalentResponses = {
     /**
-     * The profile is rejected, with the reason.
+     * The profile is removed; the person was emailed.
      */
     204: void;
 };
 
-export type RejectTalentResponse = RejectTalentResponses[keyof RejectTalentResponses];
+export type RemoveTalentResponse = RemoveTalentResponses[keyof RemoveTalentResponses];
+
+export type RequestTalentChangesData = {
+    body: TalentDecision;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/admin/profiles/{id}/request-changes';
+};
+
+export type RequestTalentChangesErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted talent profile.
+     */
+    404: Problem;
+    /**
+     * The profile is not waiting for review.
+     */
+    409: Problem;
+};
+
+export type RequestTalentChangesError = RequestTalentChangesErrors[keyof RequestTalentChangesErrors];
+
+export type RequestTalentChangesResponses = {
+    /**
+     * Changes are asked for; the person was emailed.
+     */
+    204: void;
+};
+
+export type RequestTalentChangesResponse = RequestTalentChangesResponses[keyof RequestTalentChangesResponses];
+
+export type ListReportedTalentEnquiriesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/talent/admin/reported-enquiries';
+};
+
+export type ListReportedTalentEnquiriesErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListReportedTalentEnquiriesError = ListReportedTalentEnquiriesErrors[keyof ListReportedTalentEnquiriesErrors];
+
+export type ListReportedTalentEnquiriesResponses = {
+    /**
+     * One page of the reported messages.
+     */
+    200: AdminTalentEnquiryList;
+};
+
+export type ListReportedTalentEnquiriesResponse = ListReportedTalentEnquiriesResponses[keyof ListReportedTalentEnquiriesResponses];
+
+export type DeleteMyTalentProfileData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/talent/mine';
+};
+
+export type DeleteMyTalentProfileErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no profile.
+     */
+    404: Problem;
+};
+
+export type DeleteMyTalentProfileError = DeleteMyTalentProfileErrors[keyof DeleteMyTalentProfileErrors];
+
+export type DeleteMyTalentProfileResponses = {
+    /**
+     * The profile is deleted.
+     */
+    204: void;
+};
+
+export type DeleteMyTalentProfileResponse = DeleteMyTalentProfileResponses[keyof DeleteMyTalentProfileResponses];
 
 export type GetMyTalentProfileData = {
     body?: never;
@@ -4277,6 +4446,111 @@ export type SaveMyTalentProfileResponses = {
 };
 
 export type SaveMyTalentProfileResponse = SaveMyTalentProfileResponses[keyof SaveMyTalentProfileResponses];
+
+export type AcceptTalentEnquiryData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/mine/enquiries/{id}/accept';
+};
+
+export type AcceptTalentEnquiryErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no profile, or no message to it has this identifier.
+     */
+    404: Problem;
+    /**
+     * The message was answered already, or it closed.
+     */
+    409: Problem;
+};
+
+export type AcceptTalentEnquiryError = AcceptTalentEnquiryErrors[keyof AcceptTalentEnquiryErrors];
+
+export type AcceptTalentEnquiryResponses = {
+    /**
+     * Accepted; both sides were emailed.
+     */
+    204: void;
+};
+
+export type AcceptTalentEnquiryResponse = AcceptTalentEnquiryResponses[keyof AcceptTalentEnquiryResponses];
+
+export type DeclineTalentEnquiryData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/mine/enquiries/{id}/decline';
+};
+
+export type DeclineTalentEnquiryErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no profile, or no message to it has this identifier.
+     */
+    404: Problem;
+    /**
+     * The message was answered already, or it closed.
+     */
+    409: Problem;
+};
+
+export type DeclineTalentEnquiryError = DeclineTalentEnquiryErrors[keyof DeclineTalentEnquiryErrors];
+
+export type DeclineTalentEnquiryResponses = {
+    /**
+     * Declined; the sender was told.
+     */
+    204: void;
+};
+
+export type DeclineTalentEnquiryResponse = DeclineTalentEnquiryResponses[keyof DeclineTalentEnquiryResponses];
+
+export type ReportTalentEnquiryData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/mine/enquiries/{id}/report';
+};
+
+export type ReportTalentEnquiryErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no profile, or no message to it has this identifier.
+     */
+    404: Problem;
+    /**
+     * The message was answered already, or it closed.
+     */
+    409: Problem;
+};
+
+export type ReportTalentEnquiryError = ReportTalentEnquiryErrors[keyof ReportTalentEnquiryErrors];
+
+export type ReportTalentEnquiryResponses = {
+    /**
+     * Reported; the sender was told it was declined.
+     */
+    204: void;
+};
+
+export type ReportTalentEnquiryResponse = ReportTalentEnquiryResponses[keyof ReportTalentEnquiryResponses];
 
 export type SubmitMyTalentProfileData = {
     body?: never;
@@ -4411,11 +4685,11 @@ export type SendTalentEnquiryErrors = {
      */
     404: Problem;
     /**
-     * The profile is the caller's own.
+     * The profile is the caller's own, or the caller's earlier message to it still waits.
      */
     409: Problem;
     /**
-     * The caller already wrote through this profile within a day.
+     * The caller started ten conversations within the last day.
      */
     429: Problem;
 };
@@ -4424,7 +4698,7 @@ export type SendTalentEnquiryError = SendTalentEnquiryErrors[keyof SendTalentEnq
 
 export type SendTalentEnquiryResponses = {
     /**
-     * The message was sent to the person by email.
+     * The message waits for the person's answer; they were told by email, without the caller's address.
      */
     204: void;
 };

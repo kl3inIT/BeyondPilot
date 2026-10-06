@@ -21,4 +21,4 @@ export const rateBands = ["under_25", "25_50", "50_100", "100_150", "150_plus"] 
 export const talentRejections = ["incomplete", "unverifiable", "inappropriate", "other"] as const;
 
 /** The statuses operators see; a draft is its person's alone. */
-export const reviewedStatuses = ["submitted", "approved", "rejected"] as const;
+export const reviewedStatuses = ["submitted", "approved", "changes_requested", "removed"] as const;

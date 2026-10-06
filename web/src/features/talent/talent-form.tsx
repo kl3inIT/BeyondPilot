@@ -107,7 +107,7 @@ function saved(profile: TalentProfile | null, suggestedName: string) {
 
 /**
  * The editor of a person's own talent profile. Saving keeps it as it is; sending it for review saves
- * first, then asks for the review, and is offered for a draft or a rejected profile. A change to an
+ * first, then asks for the review, and is offered for a draft or a profile GenAI Fund sent back. A change to an
  * approved profile shows in the directory at once. What a review needs is listed above the buttons
  * from the start, and a refused attempt moves to the first field it lacks.
  */
@@ -131,7 +131,8 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
   const [invalid, setInvalid] = useState<Set<string>>(new Set());
   const [discarding, setDiscarding] = useState(false);
 
-  const submittable = !profile || profile.status === "draft" || profile.status === "rejected";
+  const returned = profile?.status === "changes_requested" || profile?.status === "removed";
+  const submittable = !profile || profile.status === "draft" || returned;
   const dirty =
     pending === null &&
     JSON.stringify({ text, chosen, picked, projects, listed }) !== JSON.stringify(initial);
@@ -584,7 +585,7 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
             disabled={pending !== null}
             onClick={() => save(true)}
           >
-            {t(profile?.status === "rejected" ? "resubmit" : "submit")}
+            {t(returned ? "resubmit" : "submit")}
           </Button>
         )}
         <Button

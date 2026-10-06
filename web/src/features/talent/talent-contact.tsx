@@ -1,7 +1,7 @@
 "use client";
 
-import { CircleCheckIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { TimerIcon } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
@@ -9,7 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { siteRoutes } from "@/lib/site";
 
-import { TalentEnquiry, type EnquiryTopic } from "./talent-enquiry";
+import { TalentEnquiry } from "./talent-enquiry";
 
 type TalentContactProps = {
   slug: string;
@@ -17,6 +17,10 @@ type TalentContactProps = {
   name: string;
   /** Whether the person takes on work, already worded; the bar on a phone shows it under the name. */
   availability?: string;
+  /** True when the person says they are not looking for work; they can still be written to. */
+  notAvailable: boolean;
+  /** When the caller's message to the person was sent, while it waits for their answer. */
+  waitingSince?: string | null;
   /** Where a visitor signs in to write to the person; absent for someone signed in, who writes here. */
   signInHref?: string;
   /** True when the profile is the caller's own: they edit it instead of writing to it. */
@@ -26,25 +30,27 @@ type TalentContactProps = {
 };
 
 /**
- * "Work with …": the two ways to open a conversation with the person, both of which end in a
- * message. A visitor is sent to sign in first; the owner of the profile gets the way to edit it. On
- * a phone the first action stays in reach in a bar at the foot of the screen.
+ * "Work with …": the one way to open a conversation with the person. A visitor is sent to sign in
+ * first; a sender whose message waits is told so instead; the owner of the profile gets the way to
+ * edit it. On a phone the action stays in reach in a bar at the foot of the screen.
  */
 function TalentContact({
   slug,
   name,
   availability,
+  notAvailable,
+  waitingSince,
   signInHref,
   own,
   children,
 }: TalentContactProps) {
   const t = useTranslations("Talent.enquiry");
-  const [topic, setTopic] = useState<EnquiryTopic | null>(null);
-  const [sent, setSent] = useState(false);
-  const idle = !own && !sent && topic === null;
+  const format = useFormatter();
+  const [open, setOpen] = useState(false);
+  const waiting = !own && Boolean(waitingSince);
+  const idle = !own && !waiting;
   // A visitor's button is the link to sign in; a signed-in person's opens the message.
-  const opens = (chosen: EnquiryTopic) =>
-    signInHref ? { href: signInHref } : { onClick: () => setTopic(chosen) };
+  const opens = signInHref ? { href: signInHref } : { onClick: () => setOpen(true) };
 
   return (
     <>
@@ -68,29 +74,21 @@ function TalentContact({
             </Button>
           </div>
         )}
-        {sent && (
+        {waiting && waitingSince && (
           <Alert>
-            <CircleCheckIcon aria-hidden="true" />
-            <AlertTitle>{t("sentTitle", { name })}</AlertTitle>
-            <AlertDescription>{t("sentLead")}</AlertDescription>
+            <TimerIcon aria-hidden="true" />
+            <AlertTitle>{t("waitingTitle", { name })}</AlertTitle>
+            <AlertDescription>
+              {t("waitingLead", {
+                date: format.dateTime(new Date(waitingSince), { dateStyle: "medium" }),
+              })}
+            </AlertDescription>
           </Alert>
-        )}
-        {!sent && topic !== null && (
-          <TalentEnquiry
-            slug={slug}
-            name={name}
-            topic={topic}
-            onSent={() => setSent(true)}
-            onCancel={() => setTopic(null)}
-          />
         )}
         {idle && (
           <div className="flex flex-col gap-2">
-            <Button size="lg" className="w-full max-md:hidden" {...opens("project")}>
-              {t("project")}
-            </Button>
-            <Button prominence="secondary" size="lg" className="w-full" {...opens("role")}>
-              {t("role")}
+            <Button size="lg" className="w-full" {...opens}>
+              {t("open", { name })}
             </Button>
             {signInHref && (
               <p className="text-xs text-muted-foreground">{t("signInLead", { name })}</p>
@@ -106,10 +104,19 @@ function TalentContact({
             <span className="truncate text-sm font-semibold">{name}</span>
             {availability && <span className="text-xs text-muted-foreground">{availability}</span>}
           </div>
-          <Button size="lg" {...opens("project")}>
-            {t("project")}
+          <Button size="lg" {...opens}>
+            {t("openShort")}
           </Button>
         </div>
+      )}
+      {!signInHref && idle && (
+        <TalentEnquiry
+          slug={slug}
+          name={name}
+          notAvailable={notAvailable}
+          open={open}
+          onOpenChange={setOpen}
+        />
       )}
     </>
   );

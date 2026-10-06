@@ -140,6 +140,8 @@ function TalentProfilePage({ profile, signInHref, own }: TalentProfilePageProps)
             slug={profile.slug}
             name={profile.name}
             availability={profile.availability && availability(profile.availability)}
+            notAvailable={profile.availability === "not_available"}
+            waitingSince={profile.waitingEnquirySentAt}
             signInHref={signInHref}
             own={own}
           >

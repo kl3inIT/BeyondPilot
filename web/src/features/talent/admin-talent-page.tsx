@@ -3,12 +3,12 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { QueueNext } from "@/components/composites/queue-next";
-import { ReviewStatus } from "@/components/composites/review-status";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalent } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { TalentReview } from "./talent-review";
+import { TalentStatus } from "./talent-status";
 import { TalentView } from "./talent-view";
 
 /** Admin › Talent › one profile: what the person wrote, whose account it is, and the decision. */
@@ -22,7 +22,6 @@ type AdminTalentPageProps = {
 
 function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
   const t = useTranslations("Admin.talent.detail");
-  const status = useVocabulary("reviewStatus");
   const reason = useVocabulary("talentRejection");
   const availability = useVocabulary("availability");
   const countryName = useCountryName();
@@ -51,7 +50,7 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
           <h1 className="text-2xl font-semibold tracking-tight">{profile.name}</h1>
           {profile.headline && <p className="text-muted-foreground">{profile.headline}</p>}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            <ReviewStatus state={profile.status}>{status(profile.status)}</ReviewStatus>
+            <TalentStatus status={profile.status} />
             <span>{detail.email}</span>
             {profile.country && <span>{countryName(profile.country)}</span>}
             {profile.availability && <span>{availability(profile.availability)}</span>}
@@ -79,10 +78,12 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
         )}
       </div>
 
-      {profile.status === "rejected" && (
+      {(profile.status === "changes_requested" || profile.status === "removed") && (
         <p className="rounded-lg border bg-muted p-3 text-sm">
           <span className="font-medium">
-            {t("rejected", { reason: reason(profile.decisionReason ?? "other") })}
+            {t(profile.status === "removed" ? "removed" : "rejected", {
+              reason: reason(profile.decisionReason ?? "other"),
+            })}
           </span>
           {profile.decisionMessage && <> {profile.decisionMessage}</>}
         </p>

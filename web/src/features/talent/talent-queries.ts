@@ -4,8 +4,10 @@ import {
   getMyTalentProfile,
   getTalent,
   listAdminTalent,
+  listReportedTalentEnquiries,
   listTalent,
   type AdminTalent,
+  type AdminTalentEnquiryList,
   type AdminTalentList,
   type MyTalent,
   type PublicTalent,
@@ -68,6 +70,15 @@ export async function readAdminTalentList(search: AdminTalentSearch): Promise<Ad
       status: search.status ?? undefined,
       page: Math.max(1, search.page),
     },
+  });
+  return data;
+}
+
+/** One page of the messages people reported, for the operator behind this request. Server only. */
+export async function readReportedTalentEnquiries(page: number): Promise<AdminTalentEnquiryList> {
+  const { data } = await listReportedTalentEnquiries({
+    ...(await sessionRequest()),
+    query: { page: Math.max(1, page) },
   });
   return data;
 }
