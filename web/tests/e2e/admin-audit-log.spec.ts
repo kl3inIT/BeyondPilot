@@ -58,11 +58,15 @@ test.describe("admin audit log", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/audit-log");
 
-    await page.getByRole("table").locator("time").first().hover();
-
-    await expect(page.locator('[data-slot="tooltip-content"]')).toHaveText(
-      /^\w+, \w+ \d{1,2}, \d{4} at \d{2}:\d{2}:\d{2}$/,
-    );
+    const time = page.getByRole("table").locator("time").first();
+    const tooltip = page.locator('[data-slot="tooltip-content"]');
+    // A hover before the page has hydrated finds no handler, so it is repeated until the tooltip shows.
+    await expect(async () => {
+      await page.mouse.move(0, 0);
+      await time.hover();
+      await expect(tooltip).toBeVisible({ timeout: 1000 });
+    }).toPass();
+    await expect(tooltip).toHaveText(/^\w+, \w+ \d{1,2}, \d{4} at \d{2}:\d{2}:\d{2}$/);
   });
 
   test("period, action and search are the address, and the server answers them", async ({
