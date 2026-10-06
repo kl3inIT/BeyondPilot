@@ -146,6 +146,7 @@ public class SolutionService {
 			// The solution no longer names the file, so nothing does. It goes once the save has committed.
 			events.publishEvent(new ReplacedDecks.DeckReplaced(id, replacedDeck));
 		}
+		events.publishEvent(new SolutionChanged(id));
 		return view(solution, membership);
 	}
 

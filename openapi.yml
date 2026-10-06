@@ -8715,14 +8715,25 @@ components:
       - talent
     SearchItem:
       type: object
-      description: "One result, as its card shows it."
+      description: "One result, as its card shows it. Members of another kind are\
+        \ null or empty."
       properties:
+        availability:
+          type:
+          - string
+          - "null"
+          description: A person's availability.
+        country:
+          type:
+          - string
+          - "null"
+          description: "The country of a solution's organization, or of a person."
         coverFileId:
           type:
           - string
           - "null"
           format: uuid
-          description: "The cover, read at the public address of stored files."
+          description: "A program's cover, read at the public address of stored files."
         endsOn:
           type:
           - string
@@ -8734,22 +8745,52 @@ components:
           - "null"
           format: uri
           description: Where a program's page is when it has none here.
+        focusAreas:
+          type: array
+          description: A solution's focus areas.
+          items:
+            type: string
+        industries:
+          type: array
+          description: A solution's industries.
+          items:
+            type: string
         kind:
           type: string
           enum:
           - program
           - solution
           - talent
+        maturity:
+          type:
+          - string
+          - "null"
+          description: A solution's maturity.
+        organizationSlug:
+          type:
+          - string
+          - "null"
+          description: The address of the page of a solution's organization.
         phase:
           type:
           - string
           - "null"
-          description: Where a program stands now; null for other kinds.
+          description: Where a program stands now.
           enum:
           - upcoming
           - open
           - running
           - done
+        roles:
+          type: array
+          description: A person's roles.
+          items:
+            type: string
+        skills:
+          type: array
+          description: A person's skills.
+          items:
+            type: string
         slug:
           type: string
           description: The address of its page under the path of its kind.
@@ -8766,15 +8807,20 @@ components:
             \ the headline of a person."
         summary:
           type: string
+          description: "A program's or a solution's summary, a person's bio."
         title:
           type: string
         type:
           type:
           - string
           - "null"
-          description: A program's type; null for other kinds.
+          description: A program's type.
       required:
+      - focusAreas
+      - industries
       - kind
+      - roles
+      - skills
       - slug
       - summary
       - title
