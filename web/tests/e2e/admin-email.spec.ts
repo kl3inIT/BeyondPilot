@@ -143,4 +143,63 @@ test.describe("admin email", () => {
     await expect(page.getByRole("textbox", { name: "Server" })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
   });
+
+  test("once email is set up, Settings shows what the provider says and the records to publish", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "emailer", baseURL!);
+    // What SES says of beyondpilot.ai: verified, DKIM still waiting, the account still in its sandbox.
+    await page.route("**/api/notification/admin/email/settings/checks", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          provider: "ses",
+          domain: "beyondpilot.ai",
+          checkedAt: new Date().toISOString(),
+          limit: null,
+          checks: [
+            { step: "credentials", state: "ok" },
+            { step: "sending_enabled", state: "ok" },
+            { step: "production_access", state: "pending" },
+            { step: "domain_added", state: "ok" },
+            { step: "domain_verified", state: "ok" },
+            { step: "dkim", state: "pending" },
+          ],
+          records: [
+            ...["a1b2c3", "d4e5f6", "g7h8i9"].map((token) => ({
+              purpose: "dkim",
+              type: "CNAME",
+              host: `${token}._domainkey`,
+              value: `${token}.dkim.amazonses.com`,
+              priority: null,
+              state: "pending",
+            })),
+            {
+              purpose: "dmarc",
+              type: "TXT",
+              host: "_dmarc",
+              value: "v=DMARC1; p=none;",
+              priority: null,
+              state: "unknown",
+            },
+          ],
+        }),
+      }),
+    );
+    await page.goto("/admin/email/settings");
+
+    const setup = page.getByRole("region", { name: "Setup" });
+    await expect(setup).toContainText("What the provider says about sending from beyondpilot.ai");
+    await expect(setup).toContainText("Sandbox: only verified addresses receive email");
+    await expect(setup).toContainText("Waiting for the DKIM records");
+    await expect(setup).toContainText("The domain is verified");
+    const records = isMobile ? setup.locator("ul li") : setup.getByRole("row");
+    await expect(records.filter({ hasText: "a1b2c3._domainkey" })).toHaveCount(1);
+    await expect(setup.getByText("v=DMARC1; p=none;").filter({ visible: true })).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+  });
 });

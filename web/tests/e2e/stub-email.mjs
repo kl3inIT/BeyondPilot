@@ -126,6 +126,22 @@ const suppressions = [
   },
 ];
 
+/** The settings of a deployment that sends through Amazon SES, saved. */
+const sesSettings = {
+  ...settings,
+  provider: "ses",
+  ready: true,
+  ses: {
+    ...settings.ses,
+    region: "ap-southeast-1",
+    accessKeyId: "AKIAEXAMPLE",
+    secretAccessKeySet: true,
+  },
+  updatedBy: "Hà Lê",
+  updatedAt: ago(2),
+  version: 3,
+};
+
 /** The answer to an email administration read, or undefined when the address is not one. */
 export function answerEmail(url, account) {
   if (!url.pathname.startsWith("/api/notification/admin/email")) {
@@ -136,7 +152,7 @@ export function answerEmail(url, account) {
   }
   const path = url.pathname.slice("/api/notification/admin/email".length);
   if (path === "/settings") {
-    return [200, settings];
+    return [200, account.email === "ops@beyondpilot.ai" ? sesSettings : settings];
   }
   if (path === "/templates") {
     return [200, { items: templates }];

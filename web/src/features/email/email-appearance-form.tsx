@@ -4,7 +4,7 @@ import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { ArrowLeftIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 
 import { LeaveGuard } from "@/components/composites/leave-guard";
@@ -26,12 +26,15 @@ import { EmailPreview } from "./email-preview";
 
 const HEX = /^#[0-9A-Fa-f]{6}$/;
 
+/** How long typing pauses before the preview is rendered again. */
+const PREVIEW_DELAY = 300;
+
 /** The email the preview shows: one every organization owner receives. */
 const SAMPLE = "organization_approved";
 
 /**
  * What every email shares: the colour of its links and buttons, and the note at its foot. The
- * preview shows a sample email as it is sent now, and again after each save.
+ * preview shows a sample email in the colour and footer being edited, before they are saved.
  */
 function EmailAppearanceForm({
   settings,
@@ -48,13 +51,6 @@ function EmailAppearanceForm({
   const [version, setVersion] = useState(settings.version);
   const [preview, setPreview] = useState<Preview | null>(null);
 
-  const show = useCallback(() => {
-    previewEmailTemplate({ path: { kind: SAMPLE }, body: sample })
-      .then(({ data }) => setPreview(data))
-      .catch(() => setPreview(null));
-  }, [sample]);
-  useEffect(show, [show]);
-
   const form = useAppForm({
     defaultValues: { accentColor: settings.accentColor, footer: settings.footer },
     validationLogic: revalidateLogic(),
@@ -70,7 +66,6 @@ function EmailAppearanceForm({
         setVersion(data.version);
         formApi.reset({ accentColor: data.accentColor, footer: data.footer });
         notify.success("Admin.email.appearance.saved");
-        show();
         router.refresh();
       } catch (error) {
         const code = error instanceof ApiError ? error.code : undefined;
@@ -82,6 +77,32 @@ function EmailAppearanceForm({
     },
   });
   const dirty = useStore(form.store, (state) => state.isDirty);
+  const draft = useStore(form.store, (state) => state.values);
+
+  // The preview follows the colour and footer being edited once typing pauses, saved or not. A colour that is not
+  // yet six hex digits keeps the last preview; an answer for an older draft is dropped.
+  useEffect(() => {
+    if (!HEX.test(draft.accentColor)) {
+      return;
+    }
+    let stale = false;
+    const timer = window.setTimeout(() => {
+      previewEmailTemplate({
+        path: { kind: SAMPLE },
+        body: { ...sample, appearance: { accentColor: draft.accentColor, footer: draft.footer } },
+      })
+        .then(({ data }) => {
+          if (!stale) {
+            setPreview(data);
+          }
+        })
+        .catch(() => undefined);
+    }, PREVIEW_DELAY);
+    return () => {
+      stale = true;
+      window.clearTimeout(timer);
+    };
+  }, [draft.accentColor, draft.footer, sample]);
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8">

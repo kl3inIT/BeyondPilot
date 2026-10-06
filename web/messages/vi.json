@@ -1560,7 +1560,7 @@
         "metaTitle": "Giao diện email",
         "back": "Mẫu",
         "title": "Giao diện",
-        "lead": "Những gì mọi email dùng chung. Phần xem trước là một email mẫu như đang được gửi.",
+        "lead": "Những gì mọi email dùng chung. Phần xem trước là một email mẫu theo màu và chân email bạn đang sửa.",
         "color": "Màu nhấn",
         "colorPicker": "Chọn màu",
         "colorHint": "Liên kết và nút bấm. Chọn màu đậm: chữ trắng nằm trên nó.",
@@ -1833,6 +1833,95 @@
           "lead": "Những thay đổi trên trang này chưa được lưu và sẽ mất.",
           "leave": "Rời trang",
           "stay": "Ở lại"
+        }
+      },
+      "checks": {
+        "title": "Thiết lập",
+        "lead": "Nhà cung cấp nói gì về việc gửi từ {domain}, kiểm lúc {when}.",
+        "leadChecking": "Đang hỏi nhà cung cấp email có gửi được không.",
+        "again": "Kiểm tra lại",
+        "checking": "Đang hỏi nhà cung cấp…",
+        "failed": "Không hỏi được nhà cung cấp. Thử lại sau một phút.",
+        "smtp": "Máy chủ SMTP không có API để hỏi. Hãy gửi thử cho bạn từ form bên dưới: mail tới là gửi được.",
+        "limits": {
+          "permission_missing": {
+            "ses": "IAM user này được gửi nhưng không được đọc tài khoản hay domain. Thêm ses:GetAccount và ses:GetEmailIdentity vào policy để xem phần kiểm tra.",
+            "resend": "API key này chỉ được gửi nên không đọc được domain. Email vẫn gửi được; kiểm domain ở resend.com › Domains."
+          },
+          "credentials_refused": {
+            "ses": "AWS từ chối access key. Kiểm ID, secret và user còn hoạt động không.",
+            "resend": "Resend từ chối API key. Tạo key mới ở resend.com › API Keys."
+          },
+          "unreachable": {
+            "ses": "Amazon SES không trả lời. Kiểm tra lại sau một phút.",
+            "resend": "Resend không trả lời. Kiểm tra lại sau một phút."
+          }
+        },
+        "steps": {
+          "credentials": {
+            "ok": "Nhà cung cấp nhận thông tin đăng nhập",
+            "pending": "Đang kiểm thông tin đăng nhập",
+            "failed": "Nhà cung cấp từ chối thông tin đăng nhập",
+            "unknown": "Không kiểm được thông tin đăng nhập",
+            "next": "Kiểm key hoặc tài khoản trong form bên dưới."
+          },
+          "domain_added": {
+            "ok": "Domain đã được thêm vào nhà cung cấp",
+            "pending": "Đang thêm domain",
+            "failed": "Domain chưa được thêm vào nhà cung cấp",
+            "unknown": "Không đọc được domain",
+            "next": "Thêm domain của người gửi trong trang quản trị của nhà cung cấp, rồi tạo các bản ghi bên dưới."
+          },
+          "domain_verified": {
+            "ok": "Domain đã được xác thực",
+            "pending": "Đang chờ DNS xác thực domain",
+            "failed": "Không xác thực được domain",
+            "unknown": "Chưa rõ trạng thái domain",
+            "next": "Tạo các bản ghi bên dưới; DNS có thể mất tới 72 giờ."
+          },
+          "dkim": {
+            "ok": "Email được ký DKIM",
+            "pending": "Đang chờ các bản ghi DKIM",
+            "failed": "Không thấy các bản ghi DKIM",
+            "unknown": "Không kiểm được DKIM",
+            "next": "Tạo các bản ghi DKIM bên dưới đúng như hiển thị."
+          },
+          "mail_from": {
+            "ok": "Thư trả lại về subdomain của bạn",
+            "pending": "Đang chờ các bản ghi MAIL FROM",
+            "failed": "Không thấy các bản ghi MAIL FROM",
+            "unknown": "Không kiểm được MAIL FROM",
+            "next": "Tạo bản ghi MX và TXT của subdomain MAIL FROM bên dưới."
+          },
+          "production_access": {
+            "ok": "Production access: gửi được tới mọi người",
+            "pending": "Sandbox: chỉ địa chỉ đã xác thực nhận được email",
+            "failed": "AWS từ chối production access",
+            "unknown": "Không kiểm được production access",
+            "next": "Xin production access trong SES console › Account dashboard."
+          },
+          "sending_enabled": {
+            "ok": "Tài khoản được phép gửi",
+            "pending": "Đang bật gửi",
+            "failed": "AWS đã tạm dừng gửi của tài khoản",
+            "unknown": "Không kiểm được trạng thái gửi",
+            "next": "Xem lý do trong SES console › Account dashboard; tỉ lệ trả lại hoặc báo spam quá cao."
+          }
+        },
+        "records": {
+          "title": "Bản ghi DNS cho {domain}",
+          "status": "Trạng thái",
+          "type": "Loại",
+          "host": "Host",
+          "value": "Giá trị",
+          "copy": "Sao chép {what}",
+          "dmarc": "Nên có. Gmail và Yahoo yêu cầu DMARC với ai gửi số lượng lớn; nhà cung cấp không kiểm bản ghi này.",
+          "states": {
+            "ok": "Đã thấy",
+            "pending": "Đang chờ",
+            "failed": "Không thấy",
+            "unknown": "Không kiểm"
+          }
         }
       }
     },
