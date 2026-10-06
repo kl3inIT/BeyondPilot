@@ -57,6 +57,7 @@ export const auditActions = [
   "email.suppression_add",
   "email.suppression_remove",
   "email.resend",
+  "email.test_send",
 ] as const;
 
 /**

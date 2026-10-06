@@ -150,7 +150,13 @@ public enum AuditAction {
 	EMAIL_SUPPRESSION_REMOVE("email.suppression_remove", "reason"),
 
 	/** An operator sent an email again; the resource is the message sent again. */
-	EMAIL_RESEND("email.resend");
+	EMAIL_RESEND("email.resend"),
+
+	/**
+	 * An operator sent a test email to an address not their own; the resource is that address. {@code subject} is
+	 * {@code settings} or the kind of email whose draft was sent.
+	 */
+	EMAIL_TEST_SEND("email.test_send", "subject");
 
 	private final String value;
 

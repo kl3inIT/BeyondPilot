@@ -278,7 +278,7 @@ export const checkEmailSetup = <ThrowOnError extends boolean = true>(options?: O
 });
 
 /**
- * Send a test through the settings as the form holds them, to the caller's own address
+ * Send a test through the settings as the form holds them
  */
 export const testEmailSettings = <ThrowOnError extends boolean = true>(options: Options<TestEmailSettingsData, ThrowOnError>): RequestResult<TestEmailSettingsResponses, TestEmailSettingsErrors, ThrowOnError> => (options.client ?? client).post<TestEmailSettingsResponses, TestEmailSettingsErrors, ThrowOnError>({
     security: [{
@@ -411,7 +411,7 @@ export const previewEmailTemplate = <ThrowOnError extends boolean = true>(option
 });
 
 /**
- * Send a draft with sample values to the caller's own address
+ * Send a draft with sample values as a test
  */
 export const testEmailTemplate = <ThrowOnError extends boolean = true>(options: Options<TestEmailTemplateData, ThrowOnError>): RequestResult<TestEmailTemplateResponses, TestEmailTemplateErrors, ThrowOnError> => (options.client ?? client).post<TestEmailTemplateResponses, TestEmailTemplateErrors, ThrowOnError>({
     security: [{

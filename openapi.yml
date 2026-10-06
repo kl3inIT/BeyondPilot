@@ -137,6 +137,7 @@ paths:
           - email.suppression_add
           - email.suppression_remove
           - email.resend
+          - email.test_send
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
         in: query
@@ -1022,6 +1023,14 @@ paths:
   /api/notification/admin/email/settings/test:
     post:
       operationId: testEmailSettings
+      parameters:
+      - description: Where to send the test; the caller's own address when left out.
+          A test to anyone else is recorded in the audit log.
+        in: query
+        name: to
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1062,8 +1071,7 @@ paths:
           description: A secret was given but the server has no key to encrypt it.
       security:
       - session: []
-      summary: "Send a test through the settings as the form holds them, to the caller's\
-        \ own address"
+      summary: Send a test through the settings as the form holds them
       tags:
       - Email administration
   /api/notification/admin/email/suppressions:
@@ -1449,6 +1457,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: Where to send the test; the caller's own address when left out.
+          A test to anyone else is recorded in the audit log.
+        in: query
+        name: to
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1494,7 +1509,7 @@ paths:
           description: Operators do not word this kind.
       security:
       - session: []
-      summary: Send a draft with sample values to the caller's own address
+      summary: Send a draft with sample values as a test
       tags:
       - Email administration
   /api/notification/email/events/resend:
@@ -8199,6 +8214,7 @@ components:
           - email.suppression_add
           - email.suppression_remove
           - email.resend
+          - email.test_send
         actor:
           type:
           - object

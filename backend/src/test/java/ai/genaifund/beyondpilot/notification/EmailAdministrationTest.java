@@ -133,6 +133,29 @@ class EmailAdministrationTest {
 	}
 
 	@Test
+	void aTestGoesToAnotherAddressWhenAskedAndThatIsRecorded() {
+		String read = body(get(operator, API + "/settings").expectStatus().isOk());
+		Map<String, Object> form = settings("smtp", version(read), smtp(mail.smtpPort()), ses(null, null, null), null);
+
+		String tested = body(post(operator, API + "/settings/test?to=colleague@email.test", form).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(tested, "$.recipient")).isEqualTo("colleague@email.test");
+		assertThat(mail.latestSubjectTo("colleague@email.test")).isEqualTo("BeyondPilot email works");
+
+		String draft = body(post(operator, API + "/templates/sign_in_code/test?to=colleague@email.test",
+				Map.of("subject", "{{code}} opens BeyondPilot", "body", "**{{code}}** for {{minutes}} minutes."))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<Boolean>read(draft, "$.sent")).isTrue();
+		assertThat(mail.latestSubjectTo("colleague@email.test")).startsWith("[Test] ");
+
+		// A test to oneself is not recorded; one to anyone else is, with what was sent.
+		post(operator, API + "/settings/test", form).expectStatus().isOk();
+		assertThat(events("email_address")).filteredOn("email.test_send"::equals).hasSize(2);
+		assertProblem(post(operator, API + "/settings/test?to=not-an-address", form), 400,
+				"NOTIFICATION_TEST_RECIPIENT_INVALID");
+	}
+
+	@Test
 	void anOperatorRewordsAKindChecksItAndPutsItBack() {
 		String list = body(get(operator, API + "/templates").expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(list, "$.items[*].kind")).contains("sign_in_code", "talent_enquiry")

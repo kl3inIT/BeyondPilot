@@ -15,7 +15,6 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { z } from "zod";
 
-import { Button } from "@/components/actions/button";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import {
@@ -42,6 +41,7 @@ import {
 } from "@/lib/api/generated";
 
 import { testFailures } from "./email-test-failures";
+import { TestSend } from "./test-send";
 
 const providers = ["ses", "resend", "smtp"] as const;
 const securities = ["starttls", "tls", "none"] as const;
@@ -302,7 +302,7 @@ function EmailSettingsForm({
   const values = useStore(form.store, (state) => state.values);
   const dirty = useStore(form.store, (state) => state.isDirty);
 
-  async function test() {
+  async function test(to: string) {
     const errors = await form.validateAllFields("submit");
     if (errors.length > 0 || !form.state.isValid) {
       return;
@@ -311,6 +311,7 @@ function EmailSettingsForm({
     try {
       const { data } = await testEmailSettings({
         body: bodyOf(form.state.values, current.version),
+        query: { to },
       });
       if (data.sent) {
         notify.success("Admin.email.settings.testSent", { email: data.recipient });
@@ -643,9 +644,7 @@ function EmailSettingsForm({
               : t("neverSaved")}
         </p>
         <div className="flex flex-col-reverse gap-2 sm:flex-row">
-          <Button prominence="secondary" pending={testing} onClick={() => void test()}>
-            {t("test", { email: operatorEmail })}
-          </Button>
+          <TestSend defaultTo={operatorEmail} pending={testing} onSend={(to) => void test(to)} />
           <form.AppForm>
             <form.SubmitButton>{t("save")}</form.SubmitButton>
           </form.AppForm>
