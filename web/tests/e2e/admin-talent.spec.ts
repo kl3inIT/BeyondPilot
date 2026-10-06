@@ -113,7 +113,7 @@ test.describe("admin talent", () => {
     ]);
   });
 
-  test("a profile is not sent back without a reason, and carries the note to its person", async ({
+  test("changes are not asked for without a reason, and the note goes to the person", async ({
     page,
     context,
     baseURL,
@@ -122,26 +122,26 @@ test.describe("admin talent", () => {
     const decisions = await answerDecisions(page, decisionsPath, 204);
     await page.goto(`/admin/talent/${mai}`);
 
-    await page.getByRole("button", { name: "Send back…" }).click();
+    await page.getByRole("button", { name: "Ask for changes…" }).click();
     const dialog = page.getByRole("dialog");
-    await expect(dialog.getByRole("heading")).toHaveText("Send Mai Phạm back?");
-    await expect(dialog.getByRole("button", { name: "Send back" })).toBeDisabled();
+    await expect(dialog.getByRole("heading")).toHaveText("Ask for changes to Mai Phạm?");
+    await expect(dialog.getByRole("button", { name: "Ask for changes" })).toBeDisabled();
     await expectNoSeriousA11yViolations(page);
 
     await giveReason(page, "Experience could not be verified", "Link one shipped project.");
-    await dialog.getByRole("button", { name: "Send back" }).click();
+    await dialog.getByRole("button", { name: "Ask for changes" }).click();
 
-    await expect(page.getByText("Mai Phạm sent back with your reason.")).toBeVisible();
+    await expect(page.getByText("Changes asked of Mai Phạm.")).toBeVisible();
     await expect(page).toHaveURL(`/admin/talent/${bao}`);
     expect(decisions).toEqual([
       {
-        call: `POST /api/talent/admin/profiles/${mai}/reject`,
+        call: `POST /api/talent/admin/profiles/${mai}/request-changes`,
         body: { reason: "unverifiable", message: "Link one shipped project." },
       },
     ]);
   });
 
-  test("an approved profile can only be taken down, and stays on its record", async ({
+  test("an approved profile can only be removed, and stays on its record", async ({
     page,
     context,
     baseURL,
@@ -155,18 +155,18 @@ test.describe("admin talent", () => {
       "href",
       "/talent/arif-hidayat",
     );
-    await page.getByRole("button", { name: "Take down…" }).click();
+    await page.getByRole("button", { name: "Remove…" }).click();
     const dialog = page.getByRole("dialog");
-    await expect(dialog.getByRole("heading")).toHaveText("Take Arif Hidayat down?");
+    await expect(dialog.getByRole("heading")).toHaveText("Remove Arif Hidayat?");
 
     await giveReason(page, "Content does not belong here", "");
-    await dialog.getByRole("button", { name: "Take down" }).click();
+    await dialog.getByRole("button", { name: "Remove", exact: true }).click();
 
-    await expect(page.getByText("Arif Hidayat sent back with your reason.")).toBeVisible();
+    await expect(page.getByText("Arif Hidayat is removed.")).toBeVisible();
     await expect(page).toHaveURL(`/admin/talent/${arif}`);
     expect(decisions).toEqual([
       {
-        call: `POST /api/talent/admin/profiles/${arif}/reject`,
+        call: `POST /api/talent/admin/profiles/${arif}/remove`,
         body: { reason: "inappropriate", message: null },
       },
     ]);
@@ -189,7 +189,7 @@ test.describe("admin talent", () => {
     await expect(page.getByRole("button", { name: "Approve" })).toBeEnabled();
   });
 
-  test("a rejected profile's record says why and offers no decision", async ({
+  test("a profile sent back for changes says why and offers no decision", async ({
     page,
     context,
     baseURL,
@@ -197,11 +197,27 @@ test.describe("admin talent", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto(`/admin/talent/${siti}`);
 
-    await expect(page.getByText("Changes needed: Information is missing.")).toBeVisible();
+    await expect(page.getByText("Changes requested: Information is missing.")).toBeVisible();
     await expect(page.getByText("Add a project.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Approve" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Send back…" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Ask for changes…" })).toHaveCount(0);
 
     expect((await page.goto("/admin/talent/no-such-record"))?.status()).toBe(404);
+  });
+
+  test("operators read the reported messages with who sent them", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/talent");
+    await page.getByRole("link", { name: "Reported messages" }).click();
+
+    await expect(page).toHaveURL("/admin/talent/reported");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Reported messages");
+    await expect(page.getByText("From growth@spam.example")).toBeVisible();
+    await expect(page.getByText("To Siti Rahma · About something else")).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
   });
 });

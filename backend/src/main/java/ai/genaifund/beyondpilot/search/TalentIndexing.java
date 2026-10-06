@@ -50,13 +50,18 @@ class TalentIndexing {
 	static Document document(IndexedTalent profile) {
 		Map<String, Object> facets = new LinkedHashMap<>();
 		Cards.put(facets, Cards.COUNTRY, profile.country());
-		Cards.put(facets, Cards.AVAILABILITY, profile.availability());
+		Cards.put(facets, Cards.CITY, profile.city());
+		Cards.put(facets, Cards.WORKS_AT, profile.worksAt());
+		Cards.put(facets, Cards.PHOTO, profile.photoFileId());
 		Cards.put(facets, Cards.ROLES, profile.roles());
 		Cards.put(facets, Cards.SKILLS, profile.skills());
-		String keywords = Cards.words(profile.roles(), profile.skills());
+		Cards.put(facets, Cards.INDUSTRIES, profile.industries());
+		String keywords = Cards.words(profile.roles(), profile.skills(), profile.industries());
 		return new Document(SearchDocumentRepository.TALENT, profile.id(), profile.slug(), profile.name(),
 				profile.headline(), Objects.requireNonNullElse(profile.bio(), ""), keywords,
-				Cards.lines(profile.name(), profile.headline(), keywords, profile.bio()), facets, true, null, null);
+				Cards.lines(profile.name(), profile.headline(), profile.worksAt(), profile.city(), keywords,
+						profile.bio()),
+				facets, true, null, null);
 	}
 
 }

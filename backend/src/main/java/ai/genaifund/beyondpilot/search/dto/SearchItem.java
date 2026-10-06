@@ -33,10 +33,13 @@ public record SearchItem(
 				description = "The country of a solution's organization, or of a person.") @Nullable String country,
 		@Schema(types = { "string", "null" }, description = "A solution's maturity.") @Nullable String maturity,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "A solution's industries.") List<String> industries,
+				description = "The industries of a solution or a person.") List<String> industries,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "A solution's focus areas.") List<String> focusAreas,
-		@Schema(types = { "string", "null" }, description = "A person's availability.") @Nullable String availability,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "A person's roles.") List<String> roles,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "A person's skills.") List<String> skills) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "A person's skills.") List<String> skills,
+		@Schema(types = { "string", "null" }, description = "A person's city.") @Nullable String city,
+		@Schema(types = { "string", "null" }, description = "Where a person works.") @Nullable String worksAt,
+		@Schema(types = { "string", "null" }, format = "uuid",
+				description = "A person's photo, read at the public address of stored files.") @Nullable UUID photoFileId) {
 }

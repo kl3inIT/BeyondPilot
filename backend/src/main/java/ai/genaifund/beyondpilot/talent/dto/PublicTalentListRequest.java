@@ -9,12 +9,16 @@ import org.jspecify.annotations.Nullable;
 
 /** What narrows the public directory of talent. Every member is optional. */
 public record PublicTalentListRequest(
-		@Parameter(description = "Profiles whose name, headline or a skill contains this, ignoring case.") @Size(
+		@Parameter(description = "Profiles whose name, headline, a skill or a project title contains this, ignoring case.") @Size(
 				max = 100) @Nullable String q,
 		@Parameter(description = "Only profiles with this role.") @Pattern(
 				regexp = TalentCodes.ROLE) @Nullable String role,
-		@Parameter(description = "Only profiles of this availability.") @Pattern(
-				regexp = TalentCodes.AVAILABILITY) @Nullable String availability,
+		@Parameter(description = "Only profiles in this country, ISO 3166-1 alpha-2.") @Pattern(
+				regexp = TalentCodes.COUNTRY) @Nullable String country,
+		@Parameter(description = "Only profiles that worked in this industry.") @Pattern(
+				regexp = TalentCodes.INDUSTRY) @Nullable String industry,
+		@Parameter(description = "Only profiles open to this kind of engagement.") @Pattern(
+				regexp = TalentCodes.ENGAGEMENT) @Nullable String engagement,
 		@Parameter(description = "The order: by name, or the most recently approved first.",
 				schema = @Schema(type = "string", allowableValues = { "name", "newest" },
 						defaultValue = "name")) @Pattern(regexp = TalentCodes.SORT) @Nullable String sort,

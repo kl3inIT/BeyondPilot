@@ -67,8 +67,25 @@ public enum AuditAction {
 
 	TALENT_APPROVE("talent.approve"),
 
-	/** {@code reason} is the code of the reason given. */
+	/** Recorded before asking for changes and removing were two decisions. {@code reason} is the code given. */
 	TALENT_REJECT("talent.reject", "reason"),
+
+	/** The person behind a profile accepted a message, and both sides were told each other's address. */
+	TALENT_ENQUIRY_ACCEPT("talent.enquiry_accept"),
+
+	TALENT_ENQUIRY_DECLINE("talent.enquiry_decline"),
+
+	/** The person reported a message as unwanted; the sender was told it was declined. */
+	TALENT_ENQUIRY_REPORT("talent.enquiry_report"),
+
+	/** {@code reason} is the code of the reason given. */
+	TALENT_REQUEST_CHANGES("talent.request_changes", "reason"),
+
+	/** An operator took an approved profile away from the public. {@code reason} is the code of the reason given. */
+	TALENT_REMOVE("talent.remove", "reason"),
+
+	/** The person deleted their own profile. */
+	TALENT_DELETE("talent.delete"),
 
 	/** An operator replaced the criteria a program's applications are judged on. {@code count} is how many. */
 	PROPOSAL_CRITERIA_UPDATE("proposal.criteria_update", "count"),

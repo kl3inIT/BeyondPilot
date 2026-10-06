@@ -30,7 +30,11 @@ public class TalentProfile {
 
 	public static final String APPROVED = "approved";
 
-	public static final String REJECTED = "rejected";
+	/** GenAI Fund asked the person to change a profile that waited for review. */
+	public static final String CHANGES_REQUESTED = "changes_requested";
+
+	/** GenAI Fund took the profile away from the public. */
+	public static final String REMOVED = "removed";
 
 	@Id
 	private UUID id;
@@ -58,8 +62,6 @@ public class TalentProfile {
 
 	private @Nullable String country;
 
-	private @Nullable String availability;
-
 	@JdbcTypeCode(SqlTypes.ARRAY)
 	@Column(nullable = false, columnDefinition = "text[]")
 	private String[] engagement = {};
@@ -67,6 +69,20 @@ public class TalentProfile {
 	private @Nullable String rateBand;
 
 	private @Nullable String website;
+
+	private @Nullable UUID photoFileId;
+
+	private @Nullable String city;
+
+	@JdbcTypeCode(SqlTypes.ARRAY)
+	@Column(nullable = false, columnDefinition = "text[]")
+	private String[] languages = {};
+
+	@JdbcTypeCode(SqlTypes.ARRAY)
+	@Column(nullable = false, columnDefinition = "text[]")
+	private String[] industries = {};
+
+	private @Nullable String worksAt;
 
 	@Column(nullable = false)
 	private String status = DRAFT;
@@ -107,18 +123,30 @@ public class TalentProfile {
 	}
 
 	public void describe(String name, @Nullable String headline, @Nullable String bio, List<String> roles,
-			List<String> skills, @Nullable String country, @Nullable String availability, List<String> engagement,
-			@Nullable String rateBand, @Nullable String website) {
+			List<String> skills, @Nullable String country, List<String> engagement, @Nullable String rateBand,
+			@Nullable String website) {
 		this.name = name;
 		this.headline = headline;
 		this.bio = bio;
 		this.roles = roles.toArray(String[]::new);
 		this.skills = skills.toArray(String[]::new);
 		this.country = country;
-		this.availability = availability;
 		this.engagement = engagement.toArray(String[]::new);
 		this.rateBand = rateBand;
 		this.website = website;
+	}
+
+	/** The facts a profile states besides its description; each may be left out. */
+	public void state(@Nullable String city, List<String> languages, List<String> industries,
+			@Nullable String worksAt) {
+		this.city = city;
+		this.languages = languages.toArray(String[]::new);
+		this.industries = industries.toArray(String[]::new);
+		this.worksAt = worksAt;
+	}
+
+	public void picture(@Nullable UUID photoFileId) {
+		this.photoFileId = photoFileId;
 	}
 
 	public void list(boolean listed) {
@@ -137,8 +165,16 @@ public class TalentProfile {
 		decidedAt = at;
 	}
 
-	public void reject(String reason, @Nullable String message, Instant at) {
-		status = REJECTED;
+	public void requestChanges(String reason, @Nullable String message, Instant at) {
+		decide(CHANGES_REQUESTED, reason, message, at);
+	}
+
+	public void remove(String reason, @Nullable String message, Instant at) {
+		decide(REMOVED, reason, message, at);
+	}
+
+	private void decide(String status, String reason, @Nullable String message, Instant at) {
+		this.status = status;
 		decisionReason = reason;
 		decisionMessage = message;
 		decidedAt = at;
@@ -161,8 +197,9 @@ public class TalentProfile {
 		return APPROVED.equals(status);
 	}
 
-	public boolean isRejected() {
-		return REJECTED.equals(status);
+	/** Whether GenAI Fund sent the profile back to its person, who corrects it and sends it again. */
+	public boolean isReturned() {
+		return CHANGES_REQUESTED.equals(status) || REMOVED.equals(status);
 	}
 
 	public UUID getId() {
@@ -201,10 +238,6 @@ public class TalentProfile {
 		return country;
 	}
 
-	public @Nullable String getAvailability() {
-		return availability;
-	}
-
 	public List<String> getEngagement() {
 		return List.of(engagement);
 	}
@@ -215,6 +248,26 @@ public class TalentProfile {
 
 	public @Nullable String getWebsite() {
 		return website;
+	}
+
+	public @Nullable UUID getPhotoFileId() {
+		return photoFileId;
+	}
+
+	public @Nullable String getCity() {
+		return city;
+	}
+
+	public List<String> getLanguages() {
+		return List.of(languages);
+	}
+
+	public List<String> getIndustries() {
+		return List.of(industries);
+	}
+
+	public @Nullable String getWorksAt() {
+		return worksAt;
 	}
 
 	public String getStatus() {

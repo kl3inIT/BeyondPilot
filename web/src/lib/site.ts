@@ -19,6 +19,7 @@ export const siteRoutes = {
   adminOrganizations: "/admin/organizations",
   adminSolutions: "/admin/solutions",
   adminTalent: "/admin/talent",
+  adminTalentReported: "/admin/talent/reported",
   adminIntroductions: "/admin/introductions",
   workspaceOrganization: "/workspace/organization",
   myApplications: "/applications",

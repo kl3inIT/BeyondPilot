@@ -12,8 +12,8 @@ public record AdminTalentListRequest(
 		@Parameter(description = "Profiles whose name contains this, ignoring case.") @Size(
 				max = 100) @Nullable String q,
 		@Parameter(description = "Only profiles of this status. Drafts are never listed.",
-				schema = @Schema(allowableValues = { "submitted", "approved", "rejected" })) @Pattern(
-						regexp = "submitted|approved|rejected") @Nullable String status,
+				schema = @Schema(allowableValues = { "submitted", "approved", "changes_requested", "removed" })) @Pattern(
+						regexp = "submitted|approved|changes_requested|removed") @Nullable String status,
 		@Parameter(description = "The page, counted from 1.",
 				schema = @Schema(type = "integer", format = "int32", defaultValue = "1", minimum = "1")) @Min(1) @Nullable Integer page) {
 }

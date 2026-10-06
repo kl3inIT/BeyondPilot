@@ -11,7 +11,7 @@ import { adminTalentSearch } from "./talent-search";
 /** Search and the status filter of the operators' list of talent profiles. */
 function TalentToolbar() {
   const t = useTranslations("Talent.filters");
-  const status = useVocabulary("reviewStatus");
+  const status = useVocabulary("talentStatus");
 
   return (
     <FilterToolbar
