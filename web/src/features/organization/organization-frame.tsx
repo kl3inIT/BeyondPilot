@@ -34,6 +34,7 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
   const t = useTranslations("Organization");
   const typeName = useVocabulary("organizationType");
   const reasonName = useVocabulary("organizationRefusal");
+  const takeDownReasonName = useVocabulary("organizationTakeDown");
   const countryName = useCountryName();
   const { organization } = mine;
   const owner = mine.role === "owner";
@@ -132,6 +133,27 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
                 </Button>
               )
             }
+          />
+        )}
+
+        {organization.status === "suspended" && organization.suspensionReason && (
+          <NoticeCard
+            titleAs="h2"
+            title={t("suspended.title", { name: organization.name })}
+            description={
+              <>
+                <p>
+                  {t("suspended.reason", {
+                    reason: takeDownReasonName(organization.suspensionReason),
+                  })}
+                </p>
+                {organization.suspensionMessage && (
+                  <p className="whitespace-pre-line">{organization.suspensionMessage}</p>
+                )}
+              </>
+            }
+            badge={<Badge variant="info">{t("status.suspended")}</Badge>}
+            foot={t("suspended.foot")}
           />
         )}
 

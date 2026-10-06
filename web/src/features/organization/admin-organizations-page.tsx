@@ -23,7 +23,12 @@ import { AdminOrganizationsToolbar } from "./admin-organizations-toolbar";
 const address = createSerializer(adminOrganizationsSearch);
 
 /** How each state of the review reads to the operator who decides it. */
-const tones = { pending: "warning", approved: "success", rejected: "destructive" } as const;
+const tones = {
+  pending: "warning",
+  approved: "success",
+  rejected: "destructive",
+  suspended: "destructive",
+} as const;
 
 /** The tone of what waits for the operator: a first review, or a claim to own an organization. */
 const requestTones = { new: "info", claim: "warning" } as const;

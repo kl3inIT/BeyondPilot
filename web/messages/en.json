@@ -724,7 +724,12 @@
           "claim_approve": "Approved a claim",
           "claim_decline": "Declined a claim",
           "member_role": "Changed a member's role",
-          "member_remove": "Removed a member"
+          "member_remove": "Removed a member",
+          "suspend": "Took an organization down",
+          "restore": "Restored an organization",
+          "update": "Saved an organization's profile",
+          "invite": "Invited someone to an organization",
+          "invitation_revoke": "Withdrew an invitation"
         },
         "solution": {
           "approve": "Approved a solution",
@@ -783,7 +788,12 @@
           "claim_approve": "Approved a claim to own <resource></resource>",
           "claim_decline": "Declined a claim to own <resource></resource>",
           "member_role": "Changed a member's role in <resource></resource>",
-          "member_remove": "Removed a member from <resource></resource>"
+          "member_remove": "Removed a member from <resource></resource>",
+          "suspend": "Took down the organization <resource></resource>",
+          "restore": "Restored the organization <resource></resource>",
+          "update": "Saved the profile of <resource></resource>",
+          "invite": "Invited someone to <resource></resource>",
+          "invitation_revoke": "Withdrew an invitation to <resource></resource>"
         },
         "solution": {
           "approve": "Approved the solution <resource></resource>",
@@ -863,7 +873,8 @@
       "status": {
         "pending": "Needs review",
         "approved": "Approved",
-        "rejected": "Not approved"
+        "rejected": "Not approved",
+        "suspended": "Taken down"
       },
       "columns": {
         "organization": "Organisation",
@@ -878,7 +889,6 @@
         "claim": "Claim",
         "none": "—"
       },
-      "members": "{count, plural, one {# member} other {# members}}",
       "unowned": "No owner",
       "actions": {
         "open": "Actions for {name}",
@@ -902,31 +912,33 @@
         "title": "Add an organization",
         "name": "Organization name",
         "nameRequired": "Enter the organization's name.",
-        "ownerEmail": "Owner's email (optional)",
-        "ownerEmailHint": "They are invited to own it. Leave empty to let someone claim it.",
+        "type": "Organization type",
+        "typePlaceholder": "Choose a type",
+        "typeRequired": "Choose the type of organization.",
+        "ownerEmail": "Owner's email",
+        "emailDomain": "Email domain",
         "ownerEmailInvalid": "Enter a full email address.",
-        "website": "Website (optional)",
+        "website": "Website",
         "websiteInvalid": "Enter a full address that starts with https://",
         "cancel": "Cancel",
         "confirm": "Add organization"
       },
       "detail": {
         "back": "All organizations",
-        "type": "Type",
-        "country": "Country",
-        "teamSize": "Team size",
-        "website": "Website",
-        "emailDomain": "Email domain",
-        "createdBy": "Created",
         "createdByOn": "{name} on {day}",
-        "description": "About",
-        "notStated": "Not stated",
         "refused": "Not approved: {reason}.",
         "claims": "Claims to own it",
-        "members": "{count, plural, =0 {Members} one {# member} other {# members}}",
-        "noMembers": "Nobody belongs to this organization yet.",
-        "invitations": "Open invitations",
-        "industries": "Industries"
+        "tabs": {
+          "label": "Sections of this organization",
+          "profile": "Profile",
+          "members": "Members"
+        },
+        "viewPage": "View page",
+        "takenDown": {
+          "title": "Taken down on {day}",
+          "reason": "Reason: {reason}.",
+          "foot": "Its public page and its solutions are hidden. Its {members, plural, one {# member keeps} other {# members keep}} their workspace and read this reason there."
+        }
       },
       "review": {
         "title": "Review {name}",
@@ -965,7 +977,78 @@
         "note": "Approving makes the person its owner; other claims then go to them. The person is told by email either way, and the decision is recorded in the audit log.",
         "decline": "Decline",
         "approve": "Make owner"
-      }
+      },
+      "takeDown": {
+        "open": "Actions for {name}",
+        "menu": "Take down…",
+        "title": "Take down {name}",
+        "lead": "Its public page and its solutions leave the directories at once. Its {members, plural, one {# member keeps} other {# members keep}} their workspace and read the reason there.",
+        "reason": "Reason",
+        "reasonPlaceholder": "Choose a reason",
+        "message": "Message to the owners",
+        "messageHint": "The owners are told by email. You can restore the organization at any time; both are recorded in the audit log.",
+        "confirm": "Take down",
+        "cancel": "Cancel",
+        "restore": "Restore",
+        "restoreTitle": "Restore {name}?",
+        "restoreLead": "Its public page, its solutions and its approved deployments are shown again, and its owners can invite people and publish.",
+        "restoreNote": "The owners are told by email. The take-down and its reason stay in the audit log."
+      },
+      "people": {
+        "title": "Members",
+        "summary": {
+          "members": "{count, plural, =0 {No members} one {# member} other {# members}}",
+          "invitations": "{count, plural, one {# invitation open} other {# invitations open}}"
+        },
+        "empty": "Nobody belongs to this organization yet. Invite its first owner.",
+        "invited": "Invited {day}",
+        "invitePending": "Invited",
+        "columns": {
+          "member": "Member",
+          "role": "Role",
+          "joined": "Joined",
+          "actions": "Actions"
+        },
+        "actions": {
+          "open": "Actions for {name}",
+          "makeOwner": "Make owner",
+          "makeMember": "Make member",
+          "remove": "Remove from organization"
+        },
+        "demote": {
+          "title": "Make the only owner a member?",
+          "lead": "The organization will have no owner. Nobody can invite people or change its profile until you invite one.",
+          "confirm": "Make member"
+        },
+        "remove": {
+          "title": "Remove this member?",
+          "lead": "They lose access to the organization's profile, members and solutions.",
+          "lastOwnerLead": "They are the only owner. The organization will have none until you invite one.",
+          "confirm": "Remove member"
+        },
+        "confirm": {
+          "note": "What the organization published stays. They can be invited again at any time.",
+          "cancel": "Cancel"
+        },
+        "revoke": {
+          "open": "Withdraw the invitation to {email}",
+          "title": "Withdraw this invitation?",
+          "lead": "The link in the email stops working. You can invite them again.",
+          "confirm": "Withdraw invitation"
+        },
+        "invite": {
+          "open": "Invite a person",
+          "title": "Invite someone to {name}",
+          "lead": "They get an email, and join after signing in. Your invitations do not count against the organization's limits.",
+          "email": "Email address",
+          "emailInvalid": "Enter one email address.",
+          "role": "Role",
+          "note": "The invitation is recorded in the audit log.",
+          "cancel": "Cancel",
+          "send": "Send invitation"
+        }
+      },
+      "members": "{count, plural, one {# member} other {# members}}"
     },
     "solutions": {
       "metaTitle": "Solutions · BeyondPilot",
@@ -1615,6 +1698,12 @@
       "unverifiable": "Could not be verified",
       "other": "Another reason"
     },
+    "organizationTakeDown": {
+      "misleading_information": "Misleading or false information",
+      "not_a_real_organization": "Not a real organization",
+      "breaks_the_rules": "Breaks the rules",
+      "other": "Other reason"
+    },
     "talentStatus": {
       "draft": "Draft",
       "submitted": "In review",
@@ -1676,7 +1765,8 @@
     "status": {
       "pending": "In review",
       "approved": "Approved",
-      "rejected": "Not approved"
+      "rejected": "Not approved",
+      "suspended": "Taken down"
     },
     "pending": {
       "title": "GenAI Fund is reviewing your organization",
@@ -1738,7 +1828,9 @@
       "jobTitleSaved": "Job title saved.",
       "autoJoinOn": "Colleagues on your verified domain now join without asking.",
       "autoJoinOff": "Colleagues on your verified domain now ask to join.",
-      "askedAgain": "Request sent."
+      "askedAgain": "Request sent.",
+      "takenDown": "{name} was taken down. Its owners were told.",
+      "restored": "{name} is back. Its owners were told."
     },
     "form": {
       "metaTitle": "Create an organization · BeyondPilot",
@@ -1804,7 +1896,15 @@
       "aboutLead": "What you do, who you serve and how long you have been doing it.",
       "industriesPlaceholder": "Type to find an industry",
       "industriesEmpty": "No industry matches.",
-      "industriesRemove": "Remove {industry}"
+      "industriesRemove": "Remove {industry}",
+      "domain": {
+        "title": "Email domain",
+        "lead": "Verified by GenAI Fund. A person who signs in with an address on it is pointed to this organization.",
+        "label": "Verified domain",
+        "hint": "Leave it empty when the organization has no domain of its own, such as a team on Gmail. Joining without asking is off; the owners turn it on from their Members page.",
+        "invalid": "Enter a domain such as example.com, or leave it empty.",
+        "taken": "Another organization already has this domain."
+      }
     },
     "find": {
       "title": "Find your organization",
@@ -1985,6 +2085,11 @@
           "close": "Close"
         }
       }
+    },
+    "suspended": {
+      "title": "GenAI Fund took {name} down",
+      "reason": "Reason: {reason}.",
+      "foot": "Its public page and solutions are hidden. You keep your workspace; write to GenAI Fund to have it restored."
     },
     "useCases": {
       "metaTitle": "Use cases · BeyondPilot",

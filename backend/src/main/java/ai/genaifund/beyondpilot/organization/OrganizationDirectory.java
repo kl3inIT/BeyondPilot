@@ -126,6 +126,15 @@ public class OrganizationDirectory {
 				organization.getDescription());
 	}
 
+	/** The names of the approved ones of these organizations by identifier; one taken down or in review is left out. */
+	@Transactional(readOnly = true)
+	public Map<UUID, OrganizationName> approvedNames(Collection<UUID> organizationIds) {
+		return organizationList.approvedNames(organizationIds)
+			.stream()
+			.collect(Collectors.toMap(OrganizationQueryRepository.Name::id,
+					name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country())));
+	}
+
 	/**
 	 * The organizations whose name contains the text, ignoring case and whatever their review says, for a module that
 	 * searches its own records by who they belong to.

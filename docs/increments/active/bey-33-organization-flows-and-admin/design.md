@@ -55,7 +55,7 @@ An operator may leave an organization without an owner: that is how a page is ha
 
 `V28__organization_drop_roles.sql` (slice 1): drops `organization.roles` and its check constraint.
 
-Slice 2 adds `suspended` to the status check with `suspension_reason`, `suspension_message` and `suspended_at` in `V13`. Slice 3 adds `merged` and `merged_into_id` in `V14`.
+Slice 2 adds `suspended` to the status check with `suspension_reason`, `suspension_message` and `suspended_at` in `V30`. Slice 3 adds `merged` and `merged_into_id` in `V14`.
 
 ## HTTP
 
