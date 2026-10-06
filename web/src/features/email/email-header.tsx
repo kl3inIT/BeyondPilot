@@ -2,6 +2,7 @@ import { TriangleAlertIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
+import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
@@ -33,7 +34,7 @@ async function EmailHeader({
     <div className="flex flex-col gap-5">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <AdminPageTitle destination="email">{t("title")}</AdminPageTitle>
           <p className="text-sm text-muted-foreground">{t("lead")}</p>
         </div>
         {action}

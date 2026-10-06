@@ -7,6 +7,7 @@ import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
 import { Status } from "@/components/composites/status";
+import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganizationList } from "@/lib/api/generated";
@@ -126,7 +127,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <AdminPageTitle destination="organizations">{t("title")}</AdminPageTitle>
           <p className="text-sm text-muted-foreground">{t("lead")}</p>
         </div>
         <AdminCreateOrganization />
