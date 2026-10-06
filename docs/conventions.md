@@ -216,6 +216,16 @@ A module tells others that something happened with a Spring application event, f
 - **Delivery.** The JDBC event publication registry records a publication for each `@ApplicationModuleListener` in the publisher's transaction and deletes it when the listener completes (`completion-mode: delete`). Incomplete publications are delivered again on startup, which is correct while one instance runs; more than one instance needs a resubmission that only one of them runs. Only `@ApplicationModuleListener` is recorded (`registry-trigger-annotation`), so an in-module `@TransactionalEventListener` stays a plain after-commit call whose event is never stored.
 - **Within a module**, an after-commit side effect such as a mail may use `@TransactionalEventListener` with a nested record; it is not part of the module's API.
 
+## Review lifecycle
+
+Whatever GenAI Fund reviews before the public sees it follows one lifecycle ([BEY-76](increments/active/bey-76-review-lifecycle/design.md), [research](research/2026-10-06-review-lifecycle.md)).
+
+- **Three axes, never one status.** The review is `status`; the owner's choice to show it in the directory is `listed`; GenAI Fund's takedown after approval is `suspended_at` with `suspension_reason` and `suspension_message`. Whether a record is public or eligible for matching is derived from them and never stored.
+- **One vocabulary.** `draft` (the owner writes), `in_review` (sent, waits for an operator), `needs_changes` (sent back with a reason; the owner changes it and sends it again), `approved`, `rejected` (refused for good with a reason; only an operator reopens it). A kind uses only the statuses it needs, and a refusal for missing information is a send back, not a rejection.
+- **A takedown is reversible** and keeps the review status `approved`; restoring needs no new review.
+- **The service guards every transition** and refuses a command from the wrong status with the module's typed `NOT_AWAITING_REVIEW`-style code, so two operators cannot decide twice. Every decision is audited and the owner is told.
+- **One badge** renders every status in the web: `components/composites/review-status.tsx`.
+
 ## Logging
 
 - Log through the SLF4J fluent API (`LOG.atWarn().addKeyValue(...).log(...)`); positional `{}` placeholders are not used.
