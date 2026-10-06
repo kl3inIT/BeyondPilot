@@ -1,6 +1,6 @@
 # AI providers and the search index in Admin
 
-Status: accepted on 6 October 2026, with the drawing approved the same day (Figma section "Admin — AI: Providers and Search index"). Tracked in Linear as BEY-72. It is the operators' screen the [search design](../bey-65-search/design.md) left for the AI slice.
+Status: done on 6 October 2026, live on staging; accepted the same day, with the drawing approved the same day (Figma section "Admin — AI: Providers and Search index"). Tracked in Linear as BEY-72. It is the operators' screen the [search design](../bey-65-search/design.md) left for the AI slice.
 
 ## What changes
 

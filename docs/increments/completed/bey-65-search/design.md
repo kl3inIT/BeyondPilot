@@ -1,6 +1,6 @@
 # Search: one index over programs, solutions and talent
 
-Status: proposed on 6 October 2026 for review ([plan](plan.md)). Tracked in Linear as BEY-65. It builds the search index that the [Phase 1 domain model](../bey-22-phase-1-domain-model/design.md) gave to `matching`, now the module `search`, and the `/search` page drawn in Figma on 6 October (section "Search — results (draft for review)"). The research behind it: [search over several kinds of item](../../../research/2026-10-06-search-references.md) and [Spring AI references](../../../research/2026-10-05-spring-ai-references.md).
+Status: done on 6 October 2026 ([plan](plan.md)): live on staging with semantic search, use cases (BEY-70) and the operators' screens ([BEY-72](../bey-72-ai-providers/design.md)). Tracked in Linear as BEY-65. It builds the search index that the [Phase 1 domain model](../../active/bey-22-phase-1-domain-model/design.md) gave to `matching`, now the module `search`, and the `/search` page drawn in Figma on 6 October (section "Search — results (draft for review)"). The research behind it: [search over several kinds of item](../../../research/2026-10-06-search-references.md) and [Spring AI references](../../../research/2026-10-05-spring-ai-references.md).
 
 ## What a person can do
 
