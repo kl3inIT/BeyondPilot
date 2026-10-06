@@ -5,7 +5,10 @@ name: beyondpilot
 
 services:
   postgres:
-    image: postgres:18.6@sha256:5a5a84b19854a9ffaa54082c166ff4ec27473a361e496e5ea167f298f2da9722
+    # PostgreSQL 18.6 on Debian trixie with the pgvector extension, for the embeddings of search. It is the official
+    # postgres:18.6 image (same PG_VERSION, PGDATA and locale) with the extension added, so a database the official image
+    # wrote opens unchanged; nothing uses the extension until a migration creates it.
+    image: pgvector/pgvector:0.8.7-pg18-trixie@sha256:9d9c930220cb9bf2f956d10a8f909cf9973d9672ca0278aef2c1e6facccad2e0
     restart: unless-stopped
     environment:
       POSTGRES_DB: beyondpilot
