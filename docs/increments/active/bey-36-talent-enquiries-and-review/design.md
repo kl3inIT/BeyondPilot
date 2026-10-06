@@ -41,6 +41,7 @@ The new edges are `talent → organization` and `talent → storage`. Neither mo
 10. **The new facts are optional.** Photo, city, languages, industries (the list the organizations use), where the person works (as stated) and the stage of each project (`prototype`, `pilot`, `in_production`, `internal_tool`). A submission still needs a headline, a bio, a role and a skill.
 11. **The rate band is not public.** The person and operators read it; the public profile and directory do not.
 12. **Projects are stated by the person.** Confirmation by an enterprise is left for later.
+13. **The photo is the person's own upload.** It is a public file of the purpose `talent_photo`, at most 2 MB, named by one profile. A photo the profile no longer names, or the photo of a deleted profile, is removed from the store.
 
 ## HTTP
 
@@ -70,7 +71,7 @@ The exact contract is `openapi.yml`.
 
 - `V12__talent_enquiry_answers.sql`: `talent_enquiry` gains `topic`, `status` (`pending`, `accepted`, `declined`, `reported`, `closed`), `answered_at`, `reminded_at`, and a unique index on `(sender_account_id, profile_id)` where `status = 'pending'`. The rows that exist were emailed with the sender's address, so they become `accepted`.
 - `V13__talent_profile_decisions.sql`: `talent_profile.status` gains `changes_requested` and `removed` in place of `rejected`. A rejected row may have waited for changes or been taken down, and nothing tells them apart, so each becomes `changes_requested`.
-- The next migration: `talent_profile` adds `photo_file_id`, `city`, `languages`, `industries`, `works_at`; `talent_project` gains `stage`.
+- `V14__talent_profile_facts.sql`: `talent_profile` adds `photo_file_id`, `city`, `languages`, `industries`, `works_at`; `talent_project` gains `stage`.
 
 ## Known limits
 
