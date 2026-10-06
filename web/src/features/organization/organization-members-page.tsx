@@ -27,6 +27,8 @@ type OrganizationMembersPageProps = {
   members: OrganizationMembers;
   /** How many solutions the organization has, when it is a provider. */
   solutions: number | null;
+  /** How many use cases it has, when it is an approved enterprise. */
+  useCases: number | null;
 };
 
 /**
@@ -34,7 +36,12 @@ type OrganizationMembersPageProps = {
  * many more people they may invite and who may join by email domain. Everything an owner decides here, the backend decides again on each
  * request.
  */
-function OrganizationMembersPage({ mine, members, solutions }: OrganizationMembersPageProps) {
+function OrganizationMembersPage({
+  mine,
+  members,
+  solutions,
+  useCases,
+}: OrganizationMembersPageProps) {
   const t = useTranslations("Organization.members");
   const format = useFormatter();
   const { organization } = mine;
@@ -84,7 +91,11 @@ function OrganizationMembersPage({ mine, members, solutions }: OrganizationMembe
     .join(" · ");
 
   return (
-    <OrganizationFrame mine={mine} current="members" counts={{ members: members.total, solutions }}>
+    <OrganizationFrame
+      mine={mine}
+      current="members"
+      counts={{ members: members.total, solutions, useCases }}
+    >
       {owner && members.requests.length > 0 && (
         <OrganizationSection
           id="members-requests"

@@ -292,7 +292,9 @@
       "talent": "Nhân lực AI",
       "introductions": "Giới thiệu",
       "review": "Xét duyệt",
-      "system": "Hệ thống"
+      "system": "Hệ thống",
+      "useCases": "Use case",
+      "useCasesNew": "Use case mới"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
     "programs": {
@@ -756,6 +758,13 @@
           "decide": "Quyết định một đơn",
           "release": "Công bố kết quả"
         },
+        "use_case": {
+          "create": "Tạo một use case",
+          "submit": "Gửi một use case đi duyệt",
+          "draft": "Chuyển một use case về bản nháp",
+          "approve": "Duyệt một use case",
+          "send_back": "Gửi lại một use case"
+        },
         "email": {
           "settings_update": "Đổi cấu hình email",
           "appearance_update": "Đổi giao diện email",
@@ -821,6 +830,13 @@
           "reviewer_remove": "Gỡ một giám khảo khỏi <resource></resource>",
           "decide": "Quyết định một đơn nộp vào <resource></resource>",
           "release": "Công bố kết quả của <resource></resource>"
+        },
+        "use_case": {
+          "create": "Đã tạo use case <resource></resource>",
+          "submit": "Đã gửi use case <resource></resource> đi duyệt",
+          "draft": "Đã chuyển use case <resource></resource> về bản nháp",
+          "approve": "Đã duyệt use case <resource></resource>",
+          "send_back": "Đã gửi lại use case <resource></resource>"
         },
         "email": {
           "settings_update": "Đổi <resource></resource>",
@@ -1299,6 +1315,237 @@
         "description": "Hãy thử tên giải pháp khác, hoặc trạng thái khác.",
         "clear": "Xóa tìm kiếm và bộ lọc"
       }
+    },
+    "useCases": {
+      "metaTitle": "Use case · BeyondPilot",
+      "title": "Use case",
+      "lead": "Use case của mọi tổ chức. Duyệt những use case được gửi đến bạn, hoặc tạo một use case cho tổ chức.",
+      "create": "Tạo use case",
+      "search": "Tìm theo tiêu đề hoặc tổ chức",
+      "clear": "Xóa tìm kiếm",
+      "filters": {
+        "status": {
+          "label": "Trạng thái",
+          "all": "Mọi trạng thái"
+        },
+        "organization": {
+          "label": "Tổ chức",
+          "all": "Tổ chức"
+        }
+      },
+      "status": {
+        "draft": "Bản nháp",
+        "in_review": "Đang duyệt",
+        "needs_changes": "Cần chỉnh sửa",
+        "published": "Đã đăng",
+        "closed": "Đã đóng"
+      },
+      "note": {
+        "draft": "Chỉ {organization} xem được",
+        "in_review": "Đang chờ GenAI Fund",
+        "needs_changes": "Đã gửi lại cho {organization}",
+        "published": "Hiển thị trong danh mục",
+        "closed": "Đã hết hạn · bị khóa, không ai sửa được"
+      },
+      "columns": {
+        "useCase": "Use case",
+        "organization": "Tổ chức",
+        "status": "Trạng thái",
+        "closes": "Hạn đề xuất",
+        "updated": "Cập nhật",
+        "actions": "Hành động"
+      },
+      "count": "{count, plural, other {# use case}}",
+      "inReview": "{count} đang duyệt",
+      "empty": {
+        "title": "Chưa có use case nào",
+        "description": "Use case xuất hiện ở đây khi tổ chức soạn, hoặc khi bạn tạo thay cho một tổ chức."
+      },
+      "noMatch": {
+        "title": "Không có use case phù hợp",
+        "description": "Không có gì khớp với tìm kiếm và bộ lọc này.",
+        "clear": "Xóa tìm kiếm và bộ lọc"
+      },
+      "form": {
+        "metaTitle": "Tạo use case · BeyondPilot",
+        "title": "Tạo use case",
+        "lead": "Soạn thay cho một tổ chức. Nhật ký thao tác ghi nhận use case do GenAI Fund tạo.",
+        "sections": {
+          "organization": "Tổ chức",
+          "challenge": "Bài toán",
+          "outcomes": {
+            "title": "Kết quả và người dùng",
+            "description": "Kết quả mong đợi, quy trình hiện tại, giải pháp hiện có, người dùng đích"
+          },
+          "requirements": {
+            "title": "Yêu cầu và dữ liệu",
+            "description": "Yêu cầu (bắt buộc hoặc tùy chọn), mức sẵn sàng của dữ liệu, tích hợp, tệp đính kèm"
+          },
+          "budget": {
+            "title": "Ngân sách và thời gian",
+            "description": "Khoảng ngân sách, thời gian mong muốn, hiện hoặc ẩn tên công ty"
+          }
+        },
+        "open": "Mở",
+        "close": "Đóng",
+        "organization": "Tạo use case này cho",
+        "organizationPlaceholder": "Chọn một tổ chức",
+        "organizationHint": "Chỉ liệt kê các tổ chức đã được duyệt.",
+        "choose": "Chọn",
+        "useCaseTitle": "Tiêu đề use case",
+        "useCaseTitleHint": "Đặt tên theo kết quả mong muốn, không theo công nghệ.",
+        "problemStatement": "Mô tả vấn đề",
+        "problemStatementHint": "Hiện đang xảy ra điều gì, ảnh hưởng đến ai và tốn bao nhiêu.",
+        "industry": "Ngành",
+        "technologies": "Công nghệ AI liên quan",
+        "expectedOutcomes": "Kết quả mong đợi và chỉ số thành công",
+        "expectedOutcomesHint": "Dùng con số khi có thể.",
+        "currentProcess": "Quy trình hiện tại",
+        "currentProcessHint": "Công việc hiện được làm như thế nào.",
+        "currentSolutions": "Giải pháp hiện có",
+        "currentSolutionsHint": "Tùy chọn. Công cụ hoặc nhà cung cấp đang dùng hoặc đã thử.",
+        "targetUsers": "Người dùng đích và các nhóm bị ảnh hưởng",
+        "targetUsersHint": "Ai dùng giải pháp, và ai chịu ảnh hưởng bởi nó.",
+        "requirement": "Yêu cầu {number}",
+        "addRequirement": "Thêm yêu cầu",
+        "necessity": {
+          "label": "Loại",
+          "required": "Bắt buộc",
+          "optional": "Tùy chọn"
+        },
+        "dataReadiness": "Dữ liệu sẵn có và mức sẵn sàng",
+        "dataReadinessHint": "Có dữ liệu gì, ở định dạng nào, và nhà cung cấp truy cập bằng cách nào.",
+        "integrationRequirements": "Tích hợp, triển khai và hạ tầng",
+        "integrationRequirementsHint": "Hệ thống cần kết nối, nơi chạy, bảo mật và nơi lưu trữ dữ liệu.",
+        "budgetMin": "Ngân sách tối thiểu (USD)",
+        "budgetMax": "Ngân sách tối đa (USD)",
+        "budgetToBeDetermined": "Ngân sách sẽ xác định sau",
+        "budgetMembersOnly": "Chỉ hiện ngân sách cho thành viên đã đăng nhập",
+        "timeline": {
+          "label": "Thời gian mong muốn",
+          "under_4": "Dưới 4 tuần",
+          "4_8": "4–8 tuần",
+          "8_12": "8–12 tuần",
+          "12_24": "12–24 tuần",
+          "over_24": "Từ 24 tuần trở lên"
+        },
+        "hideOrganizationName": "Ẩn tên công ty trên use case công khai",
+        "publish": {
+          "title": "Đăng",
+          "when": "Khi lưu",
+          "thisOrganization": "tổ chức",
+          "publish": {
+            "title": "Đăng ngay",
+            "description": "Hiển thị ngay trong danh mục. Nhà cung cấp gửi đề xuất được đến hết ngày dưới đây."
+          },
+          "draft": {
+            "title": "Lưu thành bản nháp",
+            "description": "Chỉ thành viên của {organization} xem được. Họ chỉnh sửa rồi gửi cho GenAI Fund duyệt."
+          }
+        },
+        "closes": "Hạn nhận đề xuất",
+        "closesTime": "Giờ, theo giờ Việt Nam",
+        "closesHint": "Nhà cung cấp không gửi được đề xuất sau thời điểm này (giờ Việt Nam, ICT).",
+        "draftSubmit": "Lưu bản nháp",
+        "publishSubmit": "Đăng use case",
+        "cancel": "Hủy",
+        "saved": "Đã lưu “{title}” thành bản nháp.",
+        "published": "Đã đăng “{title}”.",
+        "errors": {
+          "budgetOutOfOrder": "Mức tối đa thấp hơn mức tối thiểu.",
+          "USECASE_ORGANIZATION_NOT_ELIGIBLE": "Tổ chức này không phải doanh nghiệp đã được duyệt.",
+          "USECASE_CLOSES_IN_THE_PAST": "Chọn một ngày sau hôm nay.",
+          "USECASE_BUDGET_INCOMPLETE": "Nhập cả hai mức, hoặc đánh dấu ngân sách sẽ xác định sau.",
+          "USECASE_BUDGET_OUT_OF_ORDER": "Mức tối đa thấp hơn mức tối thiểu.",
+          "unknown": "Chưa lưu được use case. Hãy thử lại.",
+          "USECASE_ATTACHMENT_NOT_USABLE": "Hãy tải tệp lên lại: không thể đính kèm tệp này."
+        },
+        "attachments": {
+          "label": "Tệp đính kèm",
+          "add": "Thêm tệp đính kèm",
+          "replace": "Thay thế",
+          "uploaded": "Tải lên {time}",
+          "uploading": "Đang tải lên…",
+          "errors": {
+            "type": "Đính kèm tệp PDF, Word, Excel hoặc PowerPoint, hoặc ảnh PNG, JPEG.",
+            "size": "Mỗi tệp tối đa 25 MB.",
+            "failed": "Chưa tải được tệp. Hãy thử lại."
+          }
+        }
+      },
+      "untitled": "Use case chưa đặt tên",
+      "actions": {
+        "open": "Hành động cho {name}",
+        "review": "Duyệt use case",
+        "view": "Mở use case",
+        "organisation": "Xem tổ chức"
+      },
+      "errors": {
+        "USECASE_NOT_AWAITING_REVIEW": "Use case này không còn ở trạng thái đang duyệt. Trạng thái đã được đọc lại.",
+        "USECASE_NOT_FOUND": "Use case này không còn tồn tại.",
+        "unknown": "Chưa lưu được quyết định. Hãy thử lại."
+      },
+      "decision": {
+        "title": "Quyết định",
+        "lead": "Duyệt là đăng ngay và gửi email cho các thành viên của {organization}. Gửi lại cần kèm lý do để họ đọc được.",
+        "approve": "Duyệt và đăng",
+        "sendBack": "Gửi lại…",
+        "approved": "“{name}” đã được đăng.",
+        "sentBack": "“{name}” đã được gửi lại cho {organization}.",
+        "dialog": {
+          "title": "Gửi lại cho {organization}",
+          "description": "Các thành viên của {organization} nhận lý do của bạn qua email và thấy nó khi mở use case. Họ chỉnh sửa rồi gửi lại.",
+          "label": "{organization} cần thay đổi gì?",
+          "hint": "Lý do được lưu cùng use case. Các thành viên của {organization} thấy nó cho đến khi họ gửi lại use case.",
+          "cancel": "Hủy",
+          "confirm": "Gửi lại"
+        },
+        "leadPublished": "Use case đang công khai. Trả lại sẽ gỡ nó khỏi danh sách và gửi lý do cho thành viên {organization}; họ chỉnh sửa rồi gửi lại."
+      },
+      "detail": {
+        "metaTitle": "Use case · BeyondPilot",
+        "untitled": "Use case chưa đặt tên",
+        "subtitle": {
+          "in_review": "{organization} · đang chờ GenAI Fund",
+          "needs_changes": "{organization} · đã gửi lại, đang chờ các thành viên",
+          "draft": "{organization} · chỉ các thành viên của họ xem được",
+          "published": "{organization} · có trong danh mục",
+          "closed": "{organization} · đã đóng"
+        },
+        "history": {
+          "title": "Lịch sử trạng thái",
+          "created": "{name} tạo",
+          "createdMeta": "{date}, cho {organization}",
+          "sent": "Đã gửi duyệt",
+          "sentBack": "Đã gửi lại",
+          "published": "Đã đăng",
+          "by": "{date}, bởi {name}",
+          "closed": "Đã đóng",
+          "closedMeta": "{date}. Tự động: đã hết hạn.",
+          "now": {
+            "in_review": {
+              "title": "Đang duyệt",
+              "meta": "Đang chờ GenAI Fund duyệt hoặc gửi lại."
+            },
+            "needs_changes": {
+              "title": "Cần chỉnh sửa",
+              "meta": "Đang chờ {organization} chỉnh sửa rồi gửi lại."
+            },
+            "draft": {
+              "title": "Bản nháp",
+              "meta": "Đang chờ {organization} gửi duyệt."
+            }
+          },
+          "sentBackMeta": "{date}, bởi {name} · “{note}”"
+        },
+        "review": {
+          "title": "Duyệt use case",
+          "lead": "Xem từng phần như {organization} đã viết. Bạn không sửa được: hãy duyệt, hoặc gửi lại kèm điều cần sửa."
+        },
+        "readOnly": "Chỉ xem: đây là nội dung {organization} đã viết. Bạn không sửa được.",
+        "viewDetails": "Xem chi tiết",
+        "backToReview": "Về trang duyệt"
+      }
     }
   },
   "Lists": {
@@ -1508,6 +1755,19 @@
       "project": "Về một dự án",
       "role": "Về một vị trí công việc",
       "other": "Về việc khác"
+    },
+    "technology": {
+      "recommendation": "Hệ thống gợi ý / Cá nhân hóa",
+      "predictive_analytics": "Phân tích dự đoán / Dự báo",
+      "generative_ai": "AI tạo sinh",
+      "conversational_ai": "AI hội thoại / Chatbot",
+      "computer_vision": "Thị giác máy tính",
+      "document_intelligence": "Xử lý tài liệu thông minh",
+      "voice_ai": "AI giọng nói",
+      "anomaly_detection": "Phát hiện bất thường / gian lận",
+      "knowledge_retrieval": "Tìm kiếm và truy xuất tri thức",
+      "process_automation": "Tự động hóa quy trình (RPA)",
+      "other": "Khác"
     }
   },
   "Organization": {
@@ -1517,7 +1777,8 @@
       "profile": "Hồ sơ",
       "members": "Thành viên",
       "solutions": "Giải pháp",
-      "introductions": "Giới thiệu"
+      "introductions": "Giới thiệu",
+      "useCases": "Use case"
     },
     "status": {
       "pending": "Đang duyệt",
@@ -1847,6 +2108,256 @@
       "title": "GenAI Fund đã gỡ {name} xuống",
       "reason": "Lý do: {reason}.",
       "foot": "Trang công khai và các giải pháp đang bị ẩn. Bạn vẫn giữ workspace; hãy liên hệ GenAI Fund để được khôi phục."
+    },
+    "useCases": {
+      "metaTitle": "Use case · BeyondPilot",
+      "title": "Use case",
+      "post": "Đăng use case",
+      "postAnother": "Đăng thêm một use case",
+      "untitled": "Use case chưa đặt tên",
+      "you": "Bạn",
+      "genaiFund": "GenAI Fund",
+      "cancel": "Hủy",
+      "summary": {
+        "published": "{count} đã đăng",
+        "in_review": "{count} đang duyệt",
+        "needs_changes": "{count} cần chỉnh sửa",
+        "draft": "{count} bản nháp",
+        "closed": "{count} đã đóng"
+      },
+      "status": {
+        "draft": "Bản nháp",
+        "in_review": "Đang duyệt",
+        "needs_changes": "Cần chỉnh sửa",
+        "published": "Đã đăng",
+        "closed": "Đã đóng"
+      },
+      "note": {
+        "in_review": "Đã gửi {date} · GenAI Fund đang duyệt",
+        "published": "Có trong danh mục · đóng {date}",
+        "needs_changes": "GenAI Fund yêu cầu chỉnh sửa · mở ra để xem chi tiết",
+        "draft": "Chưa gửi · chỉ tổ chức của bạn xem được",
+        "closed": "Đã đóng {date}"
+      },
+      "columns": {
+        "useCase": "Use case",
+        "status": "Trạng thái",
+        "editedBy": "Người sửa gần nhất",
+        "updated": "Cập nhật",
+        "actions": "Hành động"
+      },
+      "empty": {
+        "title": "Chưa có use case nào",
+        "description": "Mô tả một bài toán bạn muốn giải bằng AI. Nhà cung cấp đọc và gửi đề xuất sau khi GenAI Fund đăng use case."
+      },
+      "actions": {
+        "open": "Hành động cho {name}",
+        "edit": "Sửa use case",
+        "view": "Mở use case",
+        "pullBack": "Rút về bản nháp",
+        "moveToDraft": "Chuyển về bản nháp"
+      },
+      "editPublished": {
+        "title": "Sửa use case đã đăng?",
+        "description": "Khi bạn lưu thay đổi, GenAI Fund sẽ duyệt lại. Use case rời danh mục cho đến khi họ duyệt.",
+        "note": "Chưa muốn gửi lại? Hãy chuyển về bản nháp: use case rời danh mục và không ai duyệt cho đến khi bạn gửi.",
+        "confirm": "Sửa use case"
+      },
+      "moveToDraft": {
+        "title": "Chuyển “{name}” về bản nháp?",
+        "description": "Use case rời danh mục và không ai duyệt cho đến khi bạn gửi lại. Trong lúc đó các thành viên có thể sửa.",
+        "confirm": "Chuyển về bản nháp"
+      },
+      "done": {
+        "draft": "“{name}” đã trở lại bản nháp."
+      },
+      "errors": {
+        "USECASE_NOT_FOUND": "Tổ chức này không có use case đó.",
+        "USECASE_ENTERPRISE_REQUIRED": "Chỉ thành viên của tổ chức đã được duyệt mới soạn được use case của tổ chức.",
+        "USECASE_CHANGED_MEANWHILE": "Có người đã lưu use case này trong lúc bạn sửa. Hãy tải lại để xem thay đổi của họ.",
+        "USECASE_NOT_EDITABLE": "Hiện không sửa được use case này: đang chờ GenAI Fund, hoặc đã hết hạn.",
+        "USECASE_INCOMPLETE": "Hãy điền đủ mọi mục trước khi gửi use case.",
+        "USECASE_NOT_SUBMITTABLE": "Chỉ bản nháp, hoặc use case GenAI Fund gửi lại, mới gửi duyệt được.",
+        "USECASE_CANNOT_MOVE_TO_DRAFT": "Chỉ use case đang duyệt hoặc đã đăng mới chuyển về bản nháp được.",
+        "USECASE_CLOSES_IN_THE_PAST": "Chọn ngày đóng sau hôm nay.",
+        "USECASE_BUDGET_INCOMPLETE": "Nhập cả hai mức, hoặc đánh dấu ngân sách sẽ xác định sau.",
+        "USECASE_BUDGET_OUT_OF_ORDER": "Ngân sách tối đa thấp hơn tối thiểu.",
+        "USECASE_TIMELINE_OUT_OF_ORDER": "Thời gian dài nhất ngắn hơn thời gian ngắn nhất.",
+        "USECASE_ATTACHMENT_NOT_USABLE": "Hãy tải tệp lên lại: không thể đính kèm tệp này.",
+        "REQUEST_INVALID": "Có chỗ bạn nhập chưa hợp lệ. Kiểm tra các trường rồi thử lại.",
+        "unknown": "Chưa lưu được use case. Hãy thử lại.",
+        "USECASE_NOT_CHANGED": "Hãy chỉnh sửa use case trước khi gửi lại."
+      },
+      "wizard": {
+        "brand": "BeyondPilot",
+        "untitled": "Use case mới",
+        "saving": "Đang lưu…",
+        "notSaved": "Chưa lưu",
+        "saved": "Đã lưu {time}",
+        "saveAndExit": "Lưu nháp",
+        "stepsLabel": "Các bước của use case",
+        "yourUseCase": "Use case của bạn",
+        "steps": {
+          "challenge": {
+            "title": "Bài toán",
+            "meta": "Vấn đề, ngành và công nghệ",
+            "lead": "Mô tả bài toán kinh doanh bạn muốn giải. Nhà cung cấp đọc phần này đầu tiên để quyết định có gửi đề xuất hay không."
+          },
+          "outcomes": {
+            "title": "Kết quả và người dùng",
+            "meta": "Mục tiêu, giải pháp hiện có, ai hưởng lợi",
+            "lead": "Nói rõ thành công trông như thế nào và giải pháp dành cho ai."
+          },
+          "requirements": {
+            "title": "Yêu cầu và dữ liệu",
+            "meta": "Cần làm gì, dữ liệu và tích hợp",
+            "lead": "Liệt kê giải pháp phải làm gì và đánh dấu từng mục bắt buộc hay tùy chọn. Sau đó mô tả dữ liệu và hệ thống của bạn."
+          },
+          "budget": {
+            "title": "Ngân sách và thời gian",
+            "meta": "Ngân sách, thời lượng và hạn chót",
+            "lead": "Đặt ngân sách, thời gian thực hiện và hạn nhận đề xuất."
+          },
+          "review": {
+            "title": "Xem lại và gửi",
+            "meta": "Kiểm tra lại, rồi gửi duyệt",
+            "lead": "Kiểm tra từng mục. Sau khi bạn gửi, GenAI Fund duyệt use case trước khi đăng."
+          }
+        },
+        "saveNote": "Bản nháp tự lưu khi bạn nhập. Chỉ người của {name} xem được.",
+        "reviewNote": "GenAI Fund duyệt mọi use case trước khi đăng. Bài toán rõ ràng, đo lường được sẽ được duyệt nhanh hơn.",
+        "reload": "Tải lại",
+        "backToList": "Về danh sách use case",
+        "back": "Quay lại",
+        "continue": "Tiếp tục",
+        "submit": "Gửi duyệt",
+        "sentBack": {
+          "title": "GenAI Fund yêu cầu chỉnh sửa",
+          "note": "“{note}” Hãy chỉnh sửa rồi gửi use case lại."
+        },
+        "editingPublished": {
+          "title": "Bạn đang sửa một use case đã đăng",
+          "description": "Thay đổi đầu tiên đưa nó ra khỏi danh mục. Nó quay lại khi bạn gửi lại và GenAI Fund duyệt."
+        },
+        "allRequired": "Mọi trường đều bắt buộc, trừ trường ghi Tùy chọn.",
+        "title": "Tiêu đề use case",
+        "titleHint": "Đặt tên theo kết quả mong muốn, không theo công nghệ.",
+        "problemStatement": "Mô tả vấn đề",
+        "problemStatementHint": "Hiện đang xảy ra điều gì, ảnh hưởng đến ai và tốn bao nhiêu.",
+        "industry": "Ngành",
+        "choose": "Chọn",
+        "technologies": "Công nghệ AI liên quan",
+        "expectedOutcomes": "Kết quả mong đợi và chỉ số thành công",
+        "expectedOutcomesHint": "Dùng con số khi có thể.",
+        "currentProcess": "Quy trình hiện tại",
+        "currentProcessHint": "Công việc hiện được làm như thế nào.",
+        "currentSolutions": "Giải pháp hiện có",
+        "currentSolutionsHint": "Tùy chọn. Công cụ hoặc nhà cung cấp đang dùng hoặc đã thử.",
+        "targetUsers": "Người dùng đích và các nhóm bị ảnh hưởng",
+        "targetUsersHint": "Ai dùng giải pháp, và ai chịu ảnh hưởng bởi nó.",
+        "requirement": "Yêu cầu {number}",
+        "necessity": {
+          "label": "Loại",
+          "required": "Bắt buộc",
+          "optional": "Tùy chọn"
+        },
+        "addRequirement": "Thêm yêu cầu",
+        "dataReadiness": "Dữ liệu sẵn có và mức sẵn sàng",
+        "dataReadinessHint": "Có dữ liệu gì, ở định dạng nào, và nhà cung cấp truy cập bằng cách nào.",
+        "integrationRequirements": "Tích hợp, triển khai và hạ tầng",
+        "integrationRequirementsHint": "Hệ thống cần kết nối, nơi chạy, bảo mật và nơi lưu trữ dữ liệu.",
+        "budgetMin": "Ngân sách tối thiểu (USD)",
+        "budgetMax": "Ngân sách tối đa (USD)",
+        "budgetToBeDetermined": "Ngân sách sẽ xác định sau",
+        "budgetMembersOnly": "Chỉ hiện ngân sách cho thành viên đã đăng nhập",
+        "timeline": {
+          "label": "Thời gian mong muốn",
+          "under_4": "Dưới 4 tuần",
+          "4_8": "4–8 tuần",
+          "8_12": "8–12 tuần",
+          "12_24": "12–24 tuần",
+          "over_24": "Từ 24 tuần trở lên"
+        },
+        "closes": "Hạn nhận đề xuất",
+        "closesTime": "Giờ, theo giờ Việt Nam",
+        "closesHint": "Nhà cung cấp không gửi được đề xuất sau thời điểm này (giờ Việt Nam, ICT).",
+        "hideOrganizationName": "Ẩn tên công ty của chúng tôi trên use case công khai",
+        "missing": {
+          "title": "Hãy bổ sung những mục này trước khi gửi"
+        },
+        "confirm": "Tôi xác nhận thông tin này chính xác và có thể hiển thị công khai.",
+        "confirmRequired": "Hãy xác nhận thông tin trước khi gửi.",
+        "unchanged": "Hãy chỉnh sửa use case trước khi gửi lại: GenAI Fund đã yêu cầu thay đổi."
+      },
+      "review": {
+        "edit": "Sửa",
+        "missing": "Chưa điền",
+        "requirementsCount": "{total} yêu cầu: {required} bắt buộc, {optional} tùy chọn",
+        "budgetTbd": "Sẽ xác định sau",
+        "budgetRange": "{min}–{max} USD",
+        "closesAt": "{date}, {time} ICT",
+        "companyShown": "Hiện trên use case",
+        "companyHidden": "Ẩn trên use case",
+        "field": {
+          "title": "Tiêu đề",
+          "problemStatement": "Mô tả vấn đề",
+          "industry": "Ngành",
+          "technologies": "Công nghệ AI",
+          "expectedOutcomes": "Kết quả mong đợi",
+          "currentProcess": "Quy trình hiện tại",
+          "currentSolutions": "Giải pháp hiện có",
+          "targetUsers": "Người dùng đích",
+          "requirements": "Yêu cầu",
+          "dataReadiness": "Mức sẵn sàng của dữ liệu",
+          "integration": "Tích hợp",
+          "attachments": "Tệp đính kèm",
+          "budget": "Ngân sách",
+          "timeline": "Thời gian",
+          "closes": "Hạn nhận đề xuất",
+          "companyName": "Tên công ty"
+        }
+      },
+      "view": {
+        "inReview": {
+          "title": "Đang chờ GenAI Fund",
+          "lead": "Bạn đã gửi lúc {date} ICT. Chúng tôi sẽ email khi GenAI Fund quyết định. Muốn sửa trước, hãy rút về bản nháp.",
+          "note": "Chỉ xem được trong lúc GenAI Fund duyệt. Rút về bản nháp để sửa lại."
+        },
+        "closed": {
+          "title": "Đã đóng",
+          "lead": "Hạn chót đã qua vào {date}. Hiện không ai thay đổi được use case này.",
+          "note": "Use case đã đóng vẫn nằm trong danh mục như một bản ghi."
+        },
+        "pullBack": "Rút về bản nháp"
+      },
+      "sent": {
+        "metaTitle": "Đã gửi duyệt · BeyondPilot",
+        "title": "Đã gửi duyệt",
+        "lead": "GenAI Fund duyệt mọi use case trước khi đăng. Chúng tôi sẽ email kết quả cho bạn.",
+        "rows": {
+          "useCase": "Use case",
+          "organization": "Tổ chức",
+          "status": "Trạng thái",
+          "sent": "Đã gửi",
+          "closes": "Hạn nhận đề xuất"
+        },
+        "next": {
+          "title": "Tiếp theo là gì",
+          "review": {
+            "title": "GenAI Fund duyệt",
+            "meta": "Một operator kiểm tra bản mô tả đã rõ ràng và đầy đủ."
+          },
+          "hearBack": {
+            "title": "Bạn nhận phản hồi",
+            "meta": "Qua email: đã duyệt, hoặc cần sửa gì."
+          },
+          "published": {
+            "title": "Đã đăng",
+            "meta": "Use case xuất hiện trong danh mục và nhà cung cấp có thể gửi đề xuất."
+          }
+        },
+        "viewMine": "Xem use case của tôi"
+      }
     }
   },
   "Solution": {
@@ -3593,5 +4104,61 @@
     },
     "try": "Thử",
     "browse": "Hoặc xem"
+  },
+  "UseCases": {
+    "metaTitle": "Bài toán · BeyondPilot",
+    "title": "Bài toán",
+    "lead": "Những bài toán kinh doanh mà doanh nghiệp muốn giải bằng AI. Đọc đề bài rồi gửi đề xuất.",
+    "search": "Tìm bài toán",
+    "sort": {
+      "label": "Sắp xếp",
+      "newest": "Mới nhất",
+      "deadline": "Sắp hết hạn",
+      "budget": "Ngân sách cao nhất"
+    },
+    "industry": {
+      "label": "Ngành",
+      "all": "Tất cả bài toán"
+    },
+    "technology": {
+      "label": "Công nghệ AI liên quan",
+      "more": "+{count, number}"
+    },
+    "goal": "Mục tiêu: {goal}",
+    "budget": {
+      "label": "Ngân sách",
+      "range": "{min, number}–{max, number} USD",
+      "toBeDetermined": "Chưa xác định",
+      "membersOnly": "Chỉ thành viên xem được"
+    },
+    "timeline": {
+      "label": "Thời gian",
+      "range": "{min, number}–{max, number} tuần"
+    },
+    "deadline": {
+      "date": "Hạn nộp {date}",
+      "time": "{time} ICT"
+    },
+    "posted": "Đăng {when}",
+    "count": "{count, plural, =0 {Không có bài toán nào} other {# bài toán}}",
+    "empty": {
+      "title": "Không có bài toán nào khớp",
+      "description": "Không có bài toán nào khớp với từ khóa và ngành này.",
+      "clear": "Xóa từ khóa và bộ lọc"
+    },
+    "pagination": {
+      "label": "Các trang bài toán",
+      "previous": "Trước",
+      "next": "Sau",
+      "goToPrevious": "Về trang trước",
+      "goToNext": "Sang trang sau",
+      "page": "Trang {page}"
+    },
+    "publish": {
+      "title": "Doanh nghiệp bạn có bài toán AI có thể giải?",
+      "description": "Đăng bài toán, xem các đề xuất ở một nơi và chọn nhà cung cấp cho giai đoạn thí điểm.",
+      "action": "Đăng bài toán"
+    },
+    "anonymous": "Tổ chức ẩn danh"
   }
 }

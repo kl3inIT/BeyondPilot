@@ -184,6 +184,19 @@ public class EmailService {
 	}
 
 	/**
+	 * Tells a member of an organization what GenAI Fund decided about one of its use cases. The reason, when GenAI
+	 * Fund sent the use case back, is quoted as written.
+	 * @param approved whether the use case was approved and published; otherwise it was sent back
+	 * @param reason what GenAI Fund asked to change, when it sent the use case back
+	 */
+	@Transactional
+	public void sendUseCaseDecision(String recipient, String organizationName, String useCaseTitle, boolean approved,
+			@Nullable String reason) {
+		queue(approved ? EmailKind.USE_CASE_APPROVED : EmailKind.USE_CASE_SENT_BACK, recipient,
+				values("useCaseTitle", useCaseTitle, "organizationName", organizationName, "reason", reason));
+	}
+
+	/**
 	 * Reminds a person that a message waits for their answer and when it closes.
 	 * @param senderName who wrote, by the name they gave; null when they gave none, never their address
 	 * @param daysLeft the whole days before the message closes unanswered

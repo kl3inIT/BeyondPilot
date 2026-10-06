@@ -17,6 +17,9 @@ import java.util.HexFormat;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.Actor;
@@ -200,6 +203,17 @@ public class StorageService {
 			.orElseThrow(() -> notFound(id));
 		return new StoredFile(file.getId(), file.getPurpose(), file.getFileName(), file.getMediaType(),
 				file.getSizeBytes(), file.getUploadedByAccountId());
+	}
+
+	/** What is known of the stored files with these identifiers, for a module that reads the records naming them. */
+	@Transactional(readOnly = true)
+	public Map<UUID, StoredFile> describe(Collection<UUID> ids) {
+		return files.findAllById(ids)
+			.stream()
+			.filter(StorageFile::isStored)
+			.collect(Collectors.toMap(StorageFile::getId,
+					file -> new StoredFile(file.getId(), file.getPurpose(), file.getFileName(), file.getMediaType(),
+							file.getSizeBytes(), file.getUploadedByAccountId())));
 	}
 
 	/**

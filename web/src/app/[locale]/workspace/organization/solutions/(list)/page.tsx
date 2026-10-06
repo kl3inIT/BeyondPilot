@@ -6,6 +6,7 @@ import { readMembers, readMyOrganization } from "@/features/organization/organiz
 import { OrganizationSolutionsPage } from "@/features/solution/organization-solutions-page";
 import { readMySolutions } from "@/features/solution/solution-queries";
 import { getPathname } from "@/i18n/navigation";
+import { readUseCaseCount } from "@/features/usecase/my-use-case-queries";
 import { requireAccount } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
 
@@ -34,11 +35,14 @@ export default async function OrganizationSolutionsRoute({
     redirect(getPathname({ href: siteRoutes.workspaceOrganization, locale }));
   }
 
+  const useCases = await readUseCaseCount({ ...mine, organization });
+
   return (
     <OrganizationSolutionsPage
       mine={{ ...mine, organization }}
       solutions={solutions}
       members={members?.total ?? 0}
+      useCases={useCases}
     />
   );
 }

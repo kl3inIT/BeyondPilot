@@ -68,6 +68,15 @@ public enum EmailKind {
 	INTRODUCTION_DECLINED("introduction_declined", EmailGroup.INTRODUCTIONS, true, null,
 			Variable.required("providerName", "Plain Cover"), Variable.required("solutionName", "ClaimLens")),
 
+	USE_CASE_APPROVED("use_case_approved", EmailGroup.USE_CASES, true, null,
+			Variable.required("useCaseTitle", "Claims triage for motor insurance"),
+			Variable.required("organizationName", "Plain Cover")),
+
+	USE_CASE_SENT_BACK("use_case_sent_back", EmailGroup.USE_CASES, true, "reason",
+			Variable.required("useCaseTitle", "Claims triage for motor insurance"),
+			Variable.required("organizationName", "Plain Cover"),
+			Variable.quote("reason", "Say which lines of business it covers.")),
+
 	TALENT_APPROVED("talent_approved", EmailGroup.TALENT, true, "note",
 			Variable.required("profileName", "Mei Tan"), Variable.quote("note", null)),
 
