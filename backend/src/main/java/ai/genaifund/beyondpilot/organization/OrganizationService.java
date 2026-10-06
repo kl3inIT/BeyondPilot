@@ -35,6 +35,7 @@ import ai.genaifund.beyondpilot.organization.persistence.OrganizationRepository;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,14 +67,18 @@ public class OrganizationService {
 
 	private final AuditTrail audit;
 
+	private final ApplicationEventPublisher events;
+
 	OrganizationService(OrganizationRepository organizations, OrganizationQueryRepository organizationList,
-			MembershipRepository memberships, IdentityService identity, EmailService email, AuditTrail audit) {
+			MembershipRepository memberships, IdentityService identity, EmailService email, AuditTrail audit,
+			ApplicationEventPublisher events) {
 		this.organizations = organizations;
 		this.organizationList = organizationList;
 		this.memberships = memberships;
 		this.identity = identity;
 		this.email = email;
 		this.audit = audit;
+		this.events = events;
 	}
 
 	/**
@@ -288,6 +293,7 @@ public class OrganizationService {
 			organization.resubmit();
 		}
 		organizations.flush();
+		events.publishEvent(new OrganizationChanged(organization.getId()));
 		return OrganizationViews.organization(organization);
 	}
 

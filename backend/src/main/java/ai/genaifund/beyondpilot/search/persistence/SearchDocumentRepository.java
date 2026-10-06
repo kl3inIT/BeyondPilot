@@ -87,7 +87,10 @@ public class SearchDocumentRepository {
 			Map<String, Object> facets, @Nullable LocalDate startsOn, @Nullable LocalDate endsOn) {
 	}
 
-	/** Adds the item, or replaces what the index kept of it. */
+	/**
+	 * Adds the item, or replaces what the index kept of it. A row that already says the same is left alone, so its
+	 * {@code indexed_at} is when its content last changed.
+	 */
 	public void save(Document document) {
 		jdbc.sql("""
 				insert into search_document (kind, item_id, slug, title, subtitle, summary, keywords, card, facets, listed,
@@ -99,6 +102,12 @@ public class SearchDocumentRepository {
 				    summary = excluded.summary, keywords = excluded.keywords, card = excluded.card,
 				    facets = excluded.facets, listed = excluded.listed, starts_on = excluded.starts_on,
 				    ends_on = excluded.ends_on, indexed_at = now()
+				where (search_document.slug, search_document.title, search_document.subtitle, search_document.summary,
+				       search_document.keywords, search_document.card, search_document.facets, search_document.listed,
+				       search_document.starts_on, search_document.ends_on)
+				      is distinct from (excluded.slug, excluded.title, excluded.subtitle, excluded.summary,
+				       excluded.keywords, excluded.card, excluded.facets, excluded.listed, excluded.starts_on,
+				       excluded.ends_on)
 				""")
 			.param("kind", document.kind())
 			.param("itemId", document.itemId())

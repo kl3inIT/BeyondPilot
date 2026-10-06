@@ -20,6 +20,7 @@ import ai.genaifund.beyondpilot.talent.persistence.TalentProfile;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,12 +46,15 @@ public class TalentService {
 
 	private final EmailService email;
 
+	private final ApplicationEventPublisher events;
+
 	TalentService(TalentProfileRepository profiles, TalentDetailRepository details, IdentityService identity,
-			EmailService email) {
+			EmailService email, ApplicationEventPublisher events) {
 		this.profiles = profiles;
 		this.details = details;
 		this.identity = identity;
 		this.email = email;
+		this.events = events;
 	}
 
 	/** The caller's profile, when they have one, with the messages sent through it. */
@@ -106,6 +110,7 @@ public class TalentService {
 			.toList();
 		profiles.flush();
 		details.replaceProjects(profile.getId(), projects);
+		events.publishEvent(new TalentProfileChanged(profile.getId()));
 		return TalentViews.profile(profile, projects);
 	}
 

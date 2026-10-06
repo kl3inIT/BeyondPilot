@@ -1,5 +1,9 @@
 package ai.genaifund.beyondpilot.talent;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import ai.genaifund.beyondpilot.talent.dto.PublicTalentListRequest;
 import ai.genaifund.beyondpilot.talent.dto.PublicTalentListResponse;
 import ai.genaifund.beyondpilot.talent.dto.PublicTalentResponse;
@@ -42,6 +46,26 @@ public class TalentDirectory {
 			.map(row -> new PublicTalentSummaryResponse(row.slug(), row.name(), row.headline(), row.country(),
 					row.availability(), row.roles(), row.skills()))
 			.toList(), page, PAGE_SIZE, profileList.publicCount(text, request.role(), request.availability()));
+	}
+
+	/** An approved, listed profile as search indexes it; empty for any other. */
+	@Transactional(readOnly = true)
+	public Optional<IndexedTalent> indexed(UUID profileId) {
+		return profiles.findById(profileId)
+			.filter(profile -> profile.isApproved() && profile.isListed())
+			.map(TalentDirectory::indexed);
+	}
+
+	/** Every approved, listed profile as search indexes it, for a rebuild of the index. */
+	@Transactional(readOnly = true)
+	public List<IndexedTalent> indexedAll() {
+		return profiles.findByStatusAndListedTrue(TalentProfile.APPROVED).stream().map(TalentDirectory::indexed).toList();
+	}
+
+	private static IndexedTalent indexed(TalentProfile profile) {
+		return new IndexedTalent(profile.getId(), profile.getSlug(), profile.getName(), profile.getHeadline(),
+				profile.getBio(), profile.getRoles(), profile.getSkills(), profile.getCountry(),
+				profile.getAvailability());
 	}
 
 	/**
