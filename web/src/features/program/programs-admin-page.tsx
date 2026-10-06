@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { Badge } from "@/components/ui/badge";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
@@ -113,7 +114,7 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <AdminPageTitle destination="programs">{t("title")}</AdminPageTitle>
           <p className="hidden text-sm text-muted-foreground md:block">{t("lead")}</p>
         </div>
         <NewProgramDialog locale={locale} />

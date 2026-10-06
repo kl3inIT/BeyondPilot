@@ -6,6 +6,7 @@ import { Button } from "@/components/actions/button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Status } from "@/components/composites/status";
+import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import type { AdminIntroduction, AdminIntroductionList } from "@/lib/api/generated";
@@ -84,7 +85,7 @@ function AdminIntroductionsPage({ introductions, search }: AdminIntroductionsPag
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <AdminPageTitle destination="introductions">{t("title")}</AdminPageTitle>
         <p className="text-sm text-muted-foreground">{t("lead")}</p>
       </div>
 
