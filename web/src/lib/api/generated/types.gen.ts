@@ -2666,6 +2666,7 @@ export type SearchCounts = {
     program: number;
     solution: number;
     talent: number;
+    useCase: number;
 };
 
 /**
@@ -2673,9 +2674,25 @@ export type SearchCounts = {
  */
 export type SearchItem = {
     /**
+     * A use case's budget, when its organization shows it.
+     */
+    budgetMax?: number | null;
+    /**
+     * A use case's budget, when its organization shows it.
+     */
+    budgetMin?: number | null;
+    /**
+     * Whether a use case's budget is still to be determined.
+     */
+    budgetToBeDetermined?: boolean | null;
+    /**
      * A person's city.
      */
     city?: string | null;
+    /**
+     * When a use case stops taking proposals.
+     */
+    closesAt?: string | null;
     /**
      * The country of a solution's organization, or of a person.
      */
@@ -2698,10 +2715,10 @@ export type SearchItem = {
      */
     focusAreas: Array<string>;
     /**
-     * The industries of a solution or a person.
+     * The industries of a solution, a person or a use case.
      */
     industries: Array<string>;
-    kind: 'program' | 'solution' | 'talent';
+    kind: 'program' | 'solution' | 'talent' | 'use_case';
     /**
      * A solution's maturity.
      */
@@ -2727,7 +2744,7 @@ export type SearchItem = {
      */
     skills: Array<string>;
     /**
-     * The address of its page under the path of its kind.
+     * The address of its page under the path of its kind; a use case's identifier.
      */
     slug: string;
     /**
@@ -2736,11 +2753,11 @@ export type SearchItem = {
     snippet: string;
     startsOn?: string | null;
     /**
-     * The partner of a program, the organization of a solution, the headline of a person.
+     * The partner of a program, the organization of a solution, the headline of a person, the organization of a use case unless it stays anonymous.
      */
     subtitle?: string | null;
     /**
-     * A program's or a solution's summary, a person's bio.
+     * A program's or a solution's summary, a person's bio, a use case's goal.
      */
     summary: string;
     title: string;
@@ -6024,7 +6041,7 @@ export type SearchData = {
         /**
          * Only items of this kind; every kind when absent.
          */
-        kind?: 'program' | 'solution' | 'talent';
+        kind?: 'program' | 'solution' | 'talent' | 'use_case';
         /**
          * The page, counted from 1.
          */
