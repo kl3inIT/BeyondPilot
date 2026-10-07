@@ -868,7 +868,7 @@
           "draft": "Đã chuyển use case <resource></resource> về bản nháp",
           "approve": "Đã duyệt use case <resource></resource>",
           "send_back": "Đã gửi lại use case <resource></resource>",
-          "set_programs": "Đặt chương trình cho use case <resource></resource>"
+          "set_programs": "Đã đặt chương trình cho use case <resource></resource>"
         },
         "email": {
           "settings_update": "Đổi <resource></resource>",

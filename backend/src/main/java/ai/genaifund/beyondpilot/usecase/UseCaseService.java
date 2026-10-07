@@ -151,13 +151,14 @@ public class UseCaseService {
 		if (UseCase.NEEDS_CHANGES.equals(status)) {
 			useCase.changedAfterReview();
 		}
+		// A save that names no currency keeps the one stored, so the amounts never change meaning.
+		String currency = request.currency() == null ? useCase.getCurrency()
+				: UseCaseAdministration.currencyOf(request.currency());
 		if (request.budgetToBeDetermined()) {
-			useCase.budget(UseCaseAdministration.currencyOf(request.currency()), null, null, true,
-					request.budgetMembersOnly());
+			useCase.budget(currency, null, null, true, request.budgetMembersOnly());
 		}
 		else {
-			useCase.budget(UseCaseAdministration.currencyOf(request.currency()), request.budgetMin(),
-					request.budgetMax(), false, request.budgetMembersOnly());
+			useCase.budget(currency, request.budgetMin(), request.budgetMax(), false, request.budgetMembersOnly());
 		}
 		useCase.takeWeeks(request.timelineMinWeeks(), request.timelineMaxWeeks());
 		useCase.closeAt(closesAt);

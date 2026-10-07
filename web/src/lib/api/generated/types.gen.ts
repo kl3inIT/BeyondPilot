@@ -3061,7 +3061,7 @@ export type SaveMyUseCase = {
      */
     closesAt?: string | null;
     /**
-     * The currency of the budget; USD when absent.
+     * The currency of the budget; the stored one when absent, USD for a new use case.
      */
     currency?: 'USD' | 'VND';
     currentProcess?: string | null;

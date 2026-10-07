@@ -13629,7 +13629,8 @@ components:
           type:
           - string
           - "null"
-          description: The currency of the budget; USD when absent.
+          description: "The currency of the budget; the stored one when absent, USD\
+            \ for a new use case."
           enum:
           - USD
           - VND

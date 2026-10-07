@@ -37,7 +37,7 @@ public record SaveMyUseCaseRequest(@Schema(types = { "string", "null" }) @Size(m
 				description = "Files the caller uploaded for a use case, in the order shown.") @NotNull @Size(
 						max = 10) List<@NotNull UUID> attachmentFileIds,
 		@Schema(types = { "string", "null" }, allowableValues = { "USD", "VND" },
-				description = "The currency of the budget; USD when absent.") @Pattern(
+				description = "The currency of the budget; the stored one when absent, USD for a new use case.") @Pattern(
 						regexp = UseCaseCodes.CURRENCY) @Nullable String currency,
 		@Schema(types = { "integer", "null" }, format = "int64",
 				description = "Whole units of currency. Null while the budget is to be determined.") @Min(0) @Max(
