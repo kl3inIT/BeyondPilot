@@ -2562,6 +2562,10 @@ export type PublicUseCaseSummary = {
     id: string;
     industry: string;
     /**
+     * The organization's logo, read at /api/storage/files/{id}; null when it has none or asked to stay anonymous.
+     */
+    organizationLogoFileId?: string | null;
+    /**
      * The organization's name; null when it asked to stay anonymous.
      */
     organizationName?: string | null;
