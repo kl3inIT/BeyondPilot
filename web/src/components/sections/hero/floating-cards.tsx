@@ -2,8 +2,21 @@ import { cn } from "cn";
 import { useFormatter, useTranslations } from "next-intl";
 import Image from "next/image";
 
-/** The next GenAI Builders Meetup, Tuesday 13 October 2026, 4 pm in Ho Chi Minh City. */
-const nextMeetup = new Date("2026-10-13T16:00:00+07:00");
+/** A program a floating card shows: one open or to come, or the latest that ended. */
+type HeroProgram = {
+  name: string;
+  type: string;
+  partnerName: string | null;
+  coverUrl: string | null;
+};
+
+/** The live content of the floating cards; a card whose content could not be read is left out. */
+export type HeroCardsData = {
+  featured: HeroProgram | null;
+  past: HeroProgram | null;
+  /** The next session of an event series; `recurring` is the GenAI Builders Meetup, whose hours are known. */
+  nextEvent: { name: string; startsAt: string; recurring: boolean } | null;
+};
 
 /**
  * Real things float around the search (DESIGN.md › Cards › Floating card): the demo-day photo, the
@@ -12,18 +25,33 @@ const nextMeetup = new Date("2026-10-13T16:00:00+07:00");
  * from their side, then rise and settle once, as the Figma Motion timeline plays them. Figma tilts
  * a card counter-clockwise about its top-left corner, hence the negated angles and that origin.
  */
-function FloatingCards() {
+function FloatingCards({ cards }: { cards: HeroCardsData }) {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden lg:block">
-      <div className="absolute top-154.5 left-27.5 w-50 animate-in delay-450 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-left-14 motion-reduce:animate-none desktop:top-17.5 desktop:left-23 desktop:w-64">
-        <DemoDayCard className="origin-top-left -rotate-6 animate-bob delay-2200 motion-reduce:animate-none" />
-      </div>
-      <div className="absolute top-62.5 right-18.5 hidden w-64 animate-in delay-570 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-right-14 motion-reduce:animate-none desktop:block">
-        <WashCard className="origin-top-left rotate-5 animate-bob delay-2700 motion-reduce:animate-none" />
-      </div>
-      <div className="absolute top-16 right-6.75 animate-in delay-510 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-right-14 motion-reduce:animate-none desktop:top-23 desktop:right-21.75">
-        <MeetupCard className="origin-top-left rotate-3 animate-bob-deep delay-2450 motion-reduce:animate-none" />
-      </div>
+      {cards.past && (
+        <div className="absolute top-154.5 left-27.5 w-50 animate-in delay-450 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-left-14 motion-reduce:animate-none desktop:top-17.5 desktop:left-23 desktop:w-64">
+          <ProgramCard
+            program={cards.past}
+            className="origin-top-left -rotate-6 animate-bob delay-2200 motion-reduce:animate-none"
+          />
+        </div>
+      )}
+      {cards.featured && (
+        <div className="absolute top-62.5 right-18.5 hidden w-64 animate-in delay-570 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-right-14 motion-reduce:animate-none desktop:block">
+          <ProgramCard
+            program={cards.featured}
+            className="origin-top-left rotate-5 animate-bob delay-2700 motion-reduce:animate-none"
+          />
+        </div>
+      )}
+      {cards.nextEvent && (
+        <div className="absolute top-16 right-6.75 animate-in delay-510 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-right-14 motion-reduce:animate-none desktop:top-23 desktop:right-21.75">
+          <MeetupCard
+            event={cards.nextEvent}
+            className="origin-top-left rotate-3 animate-bob-deep delay-2450 motion-reduce:animate-none"
+          />
+        </div>
+      )}
       <div className="absolute top-15 left-15 animate-in delay-930 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-left-14 motion-reduce:animate-none desktop:top-152.5 desktop:left-37.5">
         <PersonCard
           photo="/founders/tuan.jpg"
@@ -69,21 +97,33 @@ function FloatingCards() {
 }
 
 /** The phone arrangement: the meetup on top, two photos side by side, a founder below. */
-function FloatingCardsStack() {
+function FloatingCardsStack({ cards }: { cards: HeroCardsData }) {
   return (
     <div aria-hidden="true" className="relative mx-auto h-85 w-full max-w-87.5 lg:hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 animate-in delay-510 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-right-14 motion-reduce:animate-none">
-        <MeetupCard className="origin-top-left rotate-3 animate-bob-deep delay-2450 motion-reduce:animate-none" />
-      </div>
-      <div className="absolute top-21.5 left-1.5 w-12/25 max-w-42 animate-in delay-450 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-left-14 motion-reduce:animate-none">
-        <DemoDayCard
-          compact
-          className="origin-top-left -rotate-6 animate-bob delay-2200 motion-reduce:animate-none"
-        />
-      </div>
-      <div className="absolute top-25 right-1.5 w-12/25 max-w-42 animate-in delay-570 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-right-14 motion-reduce:animate-none">
-        <WashCard className="origin-top-left rotate-5 animate-bob delay-2700 motion-reduce:animate-none" />
-      </div>
+      {cards.nextEvent && (
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 animate-in delay-510 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-right-14 motion-reduce:animate-none">
+          <MeetupCard
+            event={cards.nextEvent}
+            className="origin-top-left rotate-3 animate-bob-deep delay-2450 motion-reduce:animate-none"
+          />
+        </div>
+      )}
+      {cards.past && (
+        <div className="absolute top-21.5 left-1.5 w-12/25 max-w-42 animate-in delay-450 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-left-14 motion-reduce:animate-none">
+          <ProgramCard
+            program={cards.past}
+            className="origin-top-left -rotate-6 animate-bob delay-2200 motion-reduce:animate-none"
+          />
+        </div>
+      )}
+      {cards.featured && (
+        <div className="absolute top-25 right-1.5 w-12/25 max-w-42 animate-in delay-570 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-right-14 motion-reduce:animate-none">
+          <ProgramCard
+            program={cards.featured}
+            className="origin-top-left rotate-5 animate-bob delay-2700 motion-reduce:animate-none"
+          />
+        </div>
+      )}
       <div className="absolute top-67 left-1/2 -translate-x-1/2 animate-in delay-990 ease-entrance animation-duration-1100 fill-mode-both fade-in slide-in-from-right-14 motion-reduce:animate-none">
         <PersonCard
           photo="/founders/anh.jpg"
@@ -98,13 +138,11 @@ function FloatingCardsStack() {
 
 function PhotoCard({
   photo,
-  alt,
   meta,
   title,
   className,
 }: {
-  photo: string;
-  alt: string;
+  photo: string | null;
   meta: string;
   title: string;
   className?: string;
@@ -116,53 +154,50 @@ function PhotoCard({
         className,
       )}
     >
-      <Image
-        src={photo}
-        alt={alt}
-        width={900}
-        height={506}
-        sizes="16rem"
-        className="aspect-video w-full rounded-lg object-cover"
-      />
+      {photo ? (
+        <Image
+          src={photo}
+          alt=""
+          width={900}
+          height={506}
+          unoptimized
+          className="aspect-video w-full rounded-lg object-cover"
+        />
+      ) : (
+        <div className="aspect-video w-full rounded-lg bg-linear-155 from-primary to-brand" />
+      )}
       <div className="flex flex-col gap-0.5 px-0.5">
         <p className="truncate text-xs font-medium text-muted-foreground">{meta}</p>
-        <p className="text-sm font-semibold">{title}</p>
+        <p className="line-clamp-2 text-sm font-semibold">{title}</p>
       </div>
     </div>
   );
 }
 
-function DemoDayCard({ compact = false, className }: { compact?: boolean; className?: string }) {
-  const t = useTranslations("Home.hero");
+function ProgramCard({ program, className }: { program: HeroProgram; className?: string }) {
+  const kinds = useTranslations("Program.type") as unknown as (code: string) => string;
+  const kind = kinds(program.type);
 
   return (
     <PhotoCard
-      photo="/programs/demo-day.jpg"
-      alt={t("demoDayAlt")}
-      meta={compact ? t("demoDayMetaShort") : t("demoDayMeta")}
-      title={compact ? t("demoDayTitleShort") : t("demoDayTitle")}
+      photo={program.coverUrl}
+      meta={program.partnerName ? `${kind} · ${program.partnerName}` : kind}
+      title={program.name}
       className={className}
     />
   );
 }
 
-function WashCard({ className }: { className?: string }) {
-  const t = useTranslations("Home.hero");
-
-  return (
-    <PhotoCard
-      photo="/programs/wash3000.jpg"
-      alt={t("washAlt")}
-      meta={t("washMeta")}
-      title={t("washTitle")}
-      className={className}
-    />
-  );
-}
-
-function MeetupCard({ className }: { className?: string }) {
+function MeetupCard({
+  event,
+  className,
+}: {
+  event: NonNullable<HeroCardsData["nextEvent"]>;
+  className?: string;
+}) {
   const t = useTranslations("Home");
   const format = useFormatter();
+  const startsAt = new Date(event.startsAt);
 
   return (
     <div
@@ -173,15 +208,19 @@ function MeetupCard({ className }: { className?: string }) {
     >
       <div className="flex w-10 flex-col items-center rounded-lg border bg-muted">
         <span className="text-xs font-semibold text-primary uppercase">
-          {t("events.tileMonth", { date: nextMeetup })}
+          {t("events.tileMonth", { date: startsAt })}
         </span>
         <span className="text-lg font-semibold">
-          {format.dateTime(nextMeetup, { day: "numeric" })}
+          {format.dateTime(startsAt, { day: "numeric" })}
         </span>
       </div>
       <div className="flex flex-col gap-0.5 whitespace-nowrap">
-        <p className="text-sm font-semibold">{t("events.meetup")}</p>
-        <p className="text-xs font-medium text-muted-foreground">{t("hero.meetupTime")}</p>
+        <p className="text-sm font-semibold">{event.name}</p>
+        <p className="text-xs font-medium text-muted-foreground">
+          {event.recurring
+            ? t("hero.meetupTime")
+            : format.dateTime(startsAt, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}
+        </p>
       </div>
     </div>
   );
