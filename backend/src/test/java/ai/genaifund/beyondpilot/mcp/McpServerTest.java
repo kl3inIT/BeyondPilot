@@ -147,7 +147,8 @@ class McpServerTest {
 		assertThat(JsonPath.<String>read(all, "$.items[0].personEmail")).isEqualTo(email);
 		assertThat(JsonPath.<String>read(all, "$.items[0].clientId")).isEqualTo(TestAppConnection.CLIENT);
 		assertThat(JsonPath.<List<String>>read(all, "$.apps[*].clientId")).contains(TestAppConnection.CLIENT);
-		assertThat(JsonPath.<List<String>>read(all, "$.tools")).containsExactly("search", "fetch");
+		assertThat(JsonPath.<List<String>>read(all, "$.tools")).containsExactly("search", "fetch", "list_applications",
+				"list_pending_reviews");
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&outcome=refused"),
 				"$.total")).isEqualTo(1);
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&tool=search"),
