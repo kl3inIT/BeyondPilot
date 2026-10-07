@@ -51,11 +51,14 @@ final class McpTokens implements OAuth2TokenCustomizer<JwtEncodingContext> {
 		if (authorization != null && refresh) {
 			OAuth2Authorization.Token<OAuth2AuthorizationCode> code = authorization.getToken(OAuth2AuthorizationCode.class);
 			Instant consented = code == null ? null : code.getToken().getIssuedAt();
-			if (consented == null || consented.plus(settings.connectionLifetime()).isBefore(Instant.now())
-					|| !isActive(authorization.getPrincipalName())) {
+			if (consented == null || consented.plus(settings.connectionLifetime()).isBefore(Instant.now())) {
 				throw new OAuth2AuthenticationException(new OAuth2Error(OAuth2ErrorCodes.INVALID_GRANT,
 						"The connection has ended; connect the app again.", null));
 			}
+		}
+		if (!isActive(context.getPrincipal().getName())) {
+			throw new OAuth2AuthenticationException(new OAuth2Error(OAuth2ErrorCodes.INVALID_GRANT,
+					"The account is disabled.", null));
 		}
 		Set<String> scopes = context.getAuthorizedScopes();
 		String audience = audience(authorization, scopes);
