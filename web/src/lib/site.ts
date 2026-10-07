@@ -26,6 +26,8 @@ export const siteRoutes = {
   adminIntroductions: "/admin/introductions",
   adminAiProviders: "/admin/ai/providers",
   adminSearchIndex: "/admin/ai/search-index",
+  adminMcp: "/admin/ai/mcp",
+  adminMcpTools: "/admin/ai/mcp/tools",
   adminEmail: "/admin/email",
   adminEmailTemplates: "/admin/email/templates",
   adminEmailAppearance: "/admin/email/appearance",

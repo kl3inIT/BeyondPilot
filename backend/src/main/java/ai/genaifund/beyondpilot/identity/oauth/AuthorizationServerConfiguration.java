@@ -14,6 +14,7 @@ import java.util.Base64;
 import java.util.List;
 
 import ai.genaifund.beyondpilot.identity.IdentityService;
+import ai.genaifund.beyondpilot.identity.persistence.AppHostRepository;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -127,14 +128,14 @@ class AuthorizationServerConfiguration {
 	@Bean
 	@Order(1)
 	SecurityFilterChain authorizationServerFilterChain(HttpSecurity http, McpClients clients, McpTokens tokens,
-			IdentityService identity, OAuthSettings settings, ClientMetadataDocuments documents) {
+			IdentityService identity, OAuthSettings settings, AppHostRepository hosts) {
 		McpConsent consent = new McpConsent(tokens, identity);
 		OAuth2AuthorizationServerConfigurer server = new OAuth2AuthorizationServerConfigurer();
 		http.securityMatcher(server.getEndpointsMatcher())
 			.with(server, as -> as.registeredClientRepository(clients)
 				.authorizationEndpoint(endpoint -> endpoint.consentPage(AuthorizationServerHttp.CONSENT_PAGE)
 					.authorizationResponseHandler(AuthorizationServerHttp.codeWithIssuer(settings))
-					.errorResponseHandler(AuthorizationServerHttp.errorAnswer(settings, documents))
+					.errorResponseHandler(AuthorizationServerHttp.errorAnswer(settings, hosts))
 					.authenticationProviders(providers -> providers.replaceAll(provider -> switch (provider) {
 						case OAuth2AuthorizationCodeRequestAuthenticationProvider request -> {
 							request.setAuthenticationValidator(consent.requestValidator());

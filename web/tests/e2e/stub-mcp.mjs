@@ -26,9 +26,37 @@ const connected = {
   ],
 };
 
+// What Admin › AI › MCP reads: both servers with their tools, and the reviewed app hosts.
+const settings = {
+  operatorServerAddress: "https://beyondpilot.test/mcp/operator",
+  userServerAddress: "https://beyondpilot.test/mcp",
+  userServerEnabled: true,
+  tools: [
+    { server: "operator", name: "search", title: "Search", description: null, enabled: true },
+    { server: "operator", name: "fetch", title: "Fetch", description: null, enabled: true },
+    { server: "user", name: "search", title: "Search", description: null, enabled: true },
+    { server: "user", name: "fetch", title: "Fetch", description: null, enabled: false },
+  ],
+};
+
+const hosts = {
+  allowOtherHosts: true,
+  hosts: [
+    { host: "chatgpt.com", apps: ["ChatGPT"] },
+    { host: "claude.ai", apps: ["Claude"] },
+    { host: "zed.dev", apps: [] },
+  ],
+};
+
 export function answerMcp(url, session) {
   if (url.pathname === "/api/identity/apps") {
     return session ? [200, connected[session] ?? []] : [401, {}];
+  }
+  if (url.pathname === "/api/mcp/admin/settings") {
+    return session === "operator" ? [200, settings] : [403, {}];
+  }
+  if (url.pathname === "/api/identity/admin/app-hosts") {
+    return session === "operator" ? [200, hosts] : [403, {}];
   }
   return null;
 }

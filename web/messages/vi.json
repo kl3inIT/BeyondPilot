@@ -311,6 +311,12 @@
           "name": "Codex",
           "step1": "Chạy codex mcp add beyondpilot --url {address}",
           "step2": "Chạy codex mcp login beyondpilot, đăng nhập và chọn Allow"
+        },
+        "other": {
+          "name": "Ứng dụng khác",
+          "step1": "Thêm server {address} dạng streamable HTTP với OAuth",
+          "step2": "Ứng dụng không có client riêng sẽ đăng nhập dưới tên mcp-local",
+          "step3": "Đăng nhập BeyondPilot và chọn Allow"
         }
       },
       "askTitle": "Hoặc nhờ AI của bạn tự cài",
@@ -359,6 +365,7 @@
       "ai": "AI",
       "aiProviders": "Nhà cung cấp",
       "searchIndex": "Chỉ mục tìm kiếm",
+      "mcp": "MCP",
       "email": "Email"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
@@ -864,7 +871,15 @@
           "embedding_retry": "Cho embed lại các mục bị từ chối"
         },
         "mcp": {
-          "app_revoke": "Thu hồi một ứng dụng AI"
+          "app_revoke": "Thu hồi một ứng dụng AI",
+          "host_add": "Tin cậy một host ứng dụng",
+          "host_remove": "Gỡ một host ứng dụng tin cậy",
+          "other_hosts_allow": "Cho phép ứng dụng từ host khác",
+          "other_hosts_refuse": "Chặn ứng dụng từ host khác",
+          "user_server_enable": "Bật server MCP cho người dùng",
+          "user_server_disable": "Tắt server MCP cho người dùng",
+          "tool_enable": "Bật một công cụ MCP",
+          "tool_disable": "Tắt một công cụ MCP"
         }
       },
       "activity": {
@@ -961,7 +976,15 @@
           "embedding_retry": "Cho embed lại các mục bị từ chối của <resource></resource>"
         },
         "mcp": {
-          "app_revoke": "Thu hồi ứng dụng AI <resource></resource>"
+          "app_revoke": "Thu hồi ứng dụng AI <resource></resource>",
+          "host_add": "Tin cậy host ứng dụng <resource></resource>",
+          "host_remove": "Gỡ host ứng dụng tin cậy <resource></resource>",
+          "other_hosts_allow": "Cho phép <resource></resource>",
+          "other_hosts_refuse": "Chặn <resource></resource>",
+          "user_server_enable": "Bật <resource></resource>",
+          "user_server_disable": "Tắt <resource></resource>",
+          "tool_enable": "Bật công cụ MCP <resource></resource>",
+          "tool_disable": "Tắt công cụ MCP <resource></resource>"
         }
       },
       "columns": {
@@ -1934,6 +1957,56 @@
         "off": "Đã tắt semantic search",
         "rebuilt": "Đã dựng lại chỉ mục: đọc {saved} mục, xoá {removed}",
         "retried": "{count, plural, =0 {Không có mục nào cần thử lại} other {# mục sẽ được thử lại ở lượt chạy tới}}"
+      }
+    },
+    "mcp": {
+      "metaSetup": "MCP · Quản trị · BeyondPilot",
+      "metaTools": "Công cụ MCP · Quản trị · BeyondPilot",
+      "title": "MCP",
+      "lead": "Các server để ứng dụng AI kết nối với BeyondPilot, và những gì chúng được làm.",
+      "tabs": {
+        "label": "MCP",
+        "setup": "Thiết lập",
+        "tools": "Công cụ"
+      },
+      "saved": "Đã lưu",
+      "failed": "Chưa lưu được. Hãy thử lại.",
+      "setup": {
+        "address": "Địa chỉ server",
+        "operator": {
+          "title": "Server cho operator",
+          "lead": "Đọc mọi khu vực, kể cả mục chưa niêm yết. Chỉ operator kết nối được, và vai trò được kiểm lại ở mỗi lần gọi."
+        },
+        "user": {
+          "title": "Server cho người dùng",
+          "lead": "Mọi người đã đăng nhập đều kết nối được từ trang MCP của mình. Server này đọc những gì khách xem được.",
+          "on": "Bật: mọi người kết nối được ứng dụng",
+          "off": "Tắt: server trả 404 và các ứng dụng đã kết nối ngừng hoạt động"
+        },
+        "hosts": {
+          "title": "Host ứng dụng tin cậy",
+          "lead": "Ứng dụng từ các host này kết nối mà không mang nhãn Chưa xem xét.",
+          "others": "Cho phép ứng dụng từ host khác",
+          "othersHint": "Chúng kết nối được, mang nhãn Chưa xem xét ở màn hình đồng ý.",
+          "add": "Thêm host",
+          "remove": "Gỡ {host}"
+        }
+      },
+      "tools": {
+        "reads": "Chỉ đọc",
+        "switch": "Bật hoặc tắt {tool}",
+        "operator": {
+          "title": "Server cho operator",
+          "lead": "Khi tắt, công cụ biến khỏi danh sách ứng dụng thấy và lời gọi tới nó bị từ chối.",
+          "search": "Tìm giải pháp đã hoặc chưa niêm yết, chương trình, talent, use case và công ty.",
+          "fetch": "Đọc đầy đủ một mục theo id mà search trả về."
+        },
+        "user": {
+          "title": "Server cho người dùng",
+          "lead": "Những gì ứng dụng của bất kỳ người đã đăng nhập nào được gọi.",
+          "search": "Tìm giải pháp đã niêm yết và chương trình đã công bố.",
+          "fetch": "Đọc đầy đủ một mục theo id mà search trả về."
+        }
       }
     },
     "email": {

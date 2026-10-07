@@ -62,6 +62,14 @@ public class TalentDirectory {
 			.map(TalentDirectory::indexed);
 	}
 
+	/** An approved, listed profile by its address; empty for any other. For the operators' MCP server's {@code fetch}. */
+	@Transactional(readOnly = true)
+	public Optional<IndexedTalent> listed(String slug) {
+		return profiles.findBySlug(slug)
+			.filter(profile -> profile.isApproved() && profile.isListed())
+			.map(TalentDirectory::indexed);
+	}
+
 	/** Every approved, listed profile as search indexes it, for a rebuild of the index. */
 	@Transactional(readOnly = true)
 	public List<IndexedTalent> indexedAll() {

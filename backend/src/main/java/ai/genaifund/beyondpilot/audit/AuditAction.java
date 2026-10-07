@@ -210,7 +210,30 @@ public enum AuditAction {
 	SEARCH_EMBEDDING_RETRY("search.embedding_retry", "count"),
 
 	/** A person, or an operator for them, ended an AI app's connection to the MCP servers. */
-	MCP_APP_REVOKE("mcp.app_revoke");
+	MCP_APP_REVOKE("mcp.app_revoke"),
+
+	/** An operator marked a host's apps as reviewed: they connect without a Not reviewed label. */
+	MCP_HOST_ADD("mcp.host_add"),
+
+	MCP_HOST_REMOVE("mcp.host_remove"),
+
+	/** An operator let apps of hosts not reviewed connect, labelled Not reviewed. */
+	MCP_OTHER_HOSTS_ALLOW("mcp.other_hosts_allow"),
+
+	/** An operator stopped apps of hosts not reviewed from connecting. */
+	MCP_OTHER_HOSTS_REFUSE("mcp.other_hosts_refuse"),
+
+	/** An operator turned the user MCP server on. */
+	MCP_USER_SERVER_ENABLE("mcp.user_server_enable"),
+
+	/** An operator turned the user MCP server off: it answers 404. */
+	MCP_USER_SERVER_DISABLE("mcp.user_server_disable"),
+
+	/** An operator turned a tool of an MCP server on; the resource is {@code server.tool}. */
+	MCP_TOOL_ENABLE("mcp.tool_enable"),
+
+	/** An operator turned a tool of an MCP server off; the resource is {@code server.tool}. */
+	MCP_TOOL_DISABLE("mcp.tool_disable");
 
 	private final String value;
 

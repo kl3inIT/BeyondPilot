@@ -626,6 +626,42 @@ export type AiVendor = {
     models: Array<string>;
 };
 
+export type AllowOtherHostsRequest = {
+    /**
+     * Whether apps of hosts not reviewed may connect.
+     */
+    allowed: boolean;
+};
+
+export type AppHost = {
+    /**
+     * The names of the apps of this host that have signed in.
+     */
+    apps: Array<string>;
+    host: string;
+};
+
+/**
+ * A host whose apps BeyondPilot has reviewed.
+ */
+export type AppHostRequest = {
+    host: string;
+};
+
+/**
+ * Which AI apps may connect to the MCP servers.
+ */
+export type AppHosts = {
+    /**
+     * Whether apps of hosts not in the list may connect, labelled Not reviewed.
+     */
+    allowOtherHosts: boolean;
+    /**
+     * The hosts whose apps BeyondPilot has reviewed, in order of host.
+     */
+    hosts: Array<AppHost>;
+};
+
 /**
  * Who applies, for someone in no organization: themselves on their own, or their team.
  */
@@ -787,7 +823,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -1620,6 +1656,43 @@ export type JoinOutcome = {
      * `joined`: the caller is a member. `requested`: its owners, or GenAI Fund when nobody owns it, decide.
      */
     outcome: 'joined' | 'requested';
+};
+
+/**
+ * The MCP servers, their switches and their tools.
+ */
+export type McpSettings = {
+    /**
+     * The address of the operators' server.
+     */
+    operatorServerAddress: string;
+    /**
+     * Every tool of both servers, the operators' first.
+     */
+    tools: Array<McpToolSwitch>;
+    /**
+     * The address of the server every signed-in person may use.
+     */
+    userServerAddress: string;
+    /**
+     * Whether the user server answers; off, it answers 404.
+     */
+    userServerEnabled: boolean;
+};
+
+export type McpSwitchRequest = {
+    enabled: boolean;
+};
+
+export type McpToolSwitch = {
+    description?: string | null;
+    /**
+     * Whether the server lists it and takes calls to it.
+     */
+    enabled: boolean;
+    name: string;
+    server: 'user' | 'operator';
+    title?: string | null;
 };
 
 /**
@@ -4195,7 +4268,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -4435,6 +4508,97 @@ export type WithdrawOperatorResponses = {
 };
 
 export type WithdrawOperatorResponse = WithdrawOperatorResponses[keyof WithdrawOperatorResponses];
+
+export type GetAppHostsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/identity/admin/app-hosts';
+};
+
+export type GetAppHostsErrors = {
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetAppHostsError = GetAppHostsErrors[keyof GetAppHostsErrors];
+
+export type GetAppHostsResponses = {
+    /**
+     * The reviewed hosts and whether others may connect.
+     */
+    200: AppHosts;
+};
+
+export type GetAppHostsResponse = GetAppHostsResponses[keyof GetAppHostsResponses];
+
+export type AddAppHostData = {
+    body: AppHostRequest;
+    path?: never;
+    query?: never;
+    url: '/api/identity/admin/app-hosts/add';
+};
+
+export type AddAppHostErrors = {
+    /**
+     * It is not a host name.
+     */
+    400: Problem;
+};
+
+export type AddAppHostError = AddAppHostErrors[keyof AddAppHostErrors];
+
+export type AddAppHostResponses = {
+    /**
+     * The host is in the list.
+     */
+    204: void;
+};
+
+export type AddAppHostResponse = AddAppHostResponses[keyof AddAppHostResponses];
+
+export type AllowOtherAppHostsData = {
+    body: AllowOtherHostsRequest;
+    path?: never;
+    query?: never;
+    url: '/api/identity/admin/app-hosts/other-hosts';
+};
+
+export type AllowOtherAppHostsResponses = {
+    /**
+     * Saved.
+     */
+    204: void;
+};
+
+export type AllowOtherAppHostsResponse = AllowOtherAppHostsResponses[keyof AllowOtherAppHostsResponses];
+
+export type RemoveAppHostData = {
+    body: AppHostRequest;
+    path?: never;
+    query?: never;
+    url: '/api/identity/admin/app-hosts/remove';
+};
+
+export type RemoveAppHostErrors = {
+    /**
+     * The host is not in the list.
+     */
+    404: Problem;
+};
+
+export type RemoveAppHostError = RemoveAppHostErrors[keyof RemoveAppHostErrors];
+
+export type RemoveAppHostResponses = {
+    /**
+     * The host is no longer reviewed.
+     */
+    204: void;
+};
+
+export type RemoveAppHostResponse = RemoveAppHostResponses[keyof RemoveAppHostResponses];
 
 export type ListConnectedAppsData = {
     body?: never;
@@ -4733,6 +4897,75 @@ export type ReplyToIntroductionResponses = {
 };
 
 export type ReplyToIntroductionResponse = ReplyToIntroductionResponses[keyof ReplyToIntroductionResponses];
+
+export type GetMcpSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/mcp/admin/settings';
+};
+
+export type GetMcpSettingsErrors = {
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetMcpSettingsError = GetMcpSettingsErrors[keyof GetMcpSettingsErrors];
+
+export type GetMcpSettingsResponses = {
+    /**
+     * The settings.
+     */
+    200: McpSettings;
+};
+
+export type GetMcpSettingsResponse = GetMcpSettingsResponses[keyof GetMcpSettingsResponses];
+
+export type SwitchMcpToolData = {
+    body: McpSwitchRequest;
+    path: {
+        server: string;
+        tool: string;
+    };
+    query?: never;
+    url: '/api/mcp/admin/tools/{server}/{tool}';
+};
+
+export type SwitchMcpToolErrors = {
+    /**
+     * That server has no such tool.
+     */
+    404: Problem;
+};
+
+export type SwitchMcpToolError = SwitchMcpToolErrors[keyof SwitchMcpToolErrors];
+
+export type SwitchMcpToolResponses = {
+    /**
+     * Saved.
+     */
+    204: void;
+};
+
+export type SwitchMcpToolResponse = SwitchMcpToolResponses[keyof SwitchMcpToolResponses];
+
+export type SwitchMcpUserServerData = {
+    body: McpSwitchRequest;
+    path?: never;
+    query?: never;
+    url: '/api/mcp/admin/user-server';
+};
+
+export type SwitchMcpUserServerResponses = {
+    /**
+     * Saved.
+     */
+    204: void;
+};
+
+export type SwitchMcpUserServerResponse = SwitchMcpUserServerResponses[keyof SwitchMcpUserServerResponses];
 
 export type ListEmailMessagesData = {
     body?: never;

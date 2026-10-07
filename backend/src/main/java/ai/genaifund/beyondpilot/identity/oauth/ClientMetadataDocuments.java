@@ -38,9 +38,8 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * Reads the client ID metadata document of an AI app (draft-ietf-oauth-client-id-metadata-document, preferred by MCP
  * 2026-07-28): the app's client ID is the HTTPS address of a JSON document naming it and its redirect addresses. Any
- * host may publish one, as the specification intends for an open server; the person sees the host on the consent page,
- * labelled when BeyondPilot has not reviewed it, and the setting {@code allowOtherHosts} can narrow it to reviewed
- * hosts. The fetch goes through {@link OutsideHttp}: public addresses only, no redirect, five seconds, five kilobytes.
+ * host may publish one, as the specification intends for an open server; which hosts may connect, and which are
+ * reviewed, is the caller's to say (operators set it in Admin › AI › MCP). The fetch goes through {@link OutsideHttp}: public addresses only, no redirect, five seconds, five kilobytes.
  * <p>
  * Anyone can send any address, so the server never calls out without end: an address that could not be read is not
  * fetched again for a few minutes; fetches are limited per minute for each requester (an IPv6 requester by its /64,
@@ -140,7 +139,7 @@ class ClientMetadataDocuments {
 	/**
 	 * Whether this client ID is the address of a document BeyondPilot may fetch: HTTPS on the default port, a host
 	 * name rather than an address, a path, and nothing a parser could read two ways (credentials, a query, a fragment,
-	 * dot segments). With {@code allowOtherHosts} off, the host must be a reviewed one.
+	 * dot segments).
 	 */
 	boolean isDocumentAddress(String clientId) {
 		String lower = clientId.toLowerCase(Locale.ROOT);
@@ -155,24 +154,23 @@ class ClientMetadataDocuments {
 		}
 		String host = uri.getHost();
 		String path = uri.getRawPath();
-		return host != null && isName(host) && path != null && path.length() > 1
-				&& (settings.allowOtherHosts() || isReviewed(host));
+		return host != null && isName(host) && path != null && path.length() > 1;
 	}
 
-	/** Whether BeyondPilot has reviewed the apps of this host, so the consent page shows no label. */
-	boolean isReviewed(String host) {
-		String lower = host.toLowerCase(Locale.ROOT);
-		return settings.reviewedHosts().stream().anyMatch(reviewed -> lower.equals(reviewed.toLowerCase(Locale.ROOT)));
+	/** The host of a document address, in lower case. */
+	static String hostOf(String clientId) {
+		return URI.create(clientId).getHost().toLowerCase(Locale.ROOT);
 	}
 
 	/**
 	 * The app the document at this address describes, and how long to keep it.
 	 * @param stored whether this app was read before, so this is a read again that spends no host's or common share
+	 * @param reviewed whether its host is reviewed, whose share an outsider cannot spend
 	 * @return empty when the address may not be fetched, the document cannot be read or does not describe a usable
 	 * client; also, without asking the host, when the address could not be read in the last few minutes or a share of
 	 * the minute's fetches is spent
 	 */
-	Optional<Fetched> fetch(String clientId, boolean stored) {
+	Optional<Fetched> fetch(String clientId, boolean stored, boolean reviewed) {
 		if (!isDocumentAddress(clientId) || unreadable.getIfPresent(clientId) != null) {
 			return Optional.empty();
 		}
@@ -182,7 +180,7 @@ class ClientMetadataDocuments {
 			return running.join();
 		}
 		try {
-			Optional<Fetched> fetched = limitedRead(clientId, stored);
+			Optional<Fetched> fetched = limitedRead(clientId, stored, reviewed);
 			mine.complete(fetched);
 			return fetched;
 		}
@@ -195,12 +193,12 @@ class ClientMetadataDocuments {
 		}
 	}
 
-	private Optional<Fetched> limitedRead(String clientId, boolean stored) {
+	private Optional<Fetched> limitedRead(String clientId, boolean stored, boolean reviewed) {
 		String host = URI.create(clientId).getHost().toLowerCase(Locale.ROOT);
 		Bucket requester = requesters.get(requester(), key -> perMinute(settings.documentFetchesPerRequesterPerMinute()));
 		boolean allowed = requester.tryConsume(1);
 		if (allowed && !stored) {
-			allowed = (isReviewed(host)
+			allowed = (reviewed
 					|| hosts.get(host, key -> perMinute(settings.documentFetchesPerHostPerMinute())).tryConsume(1))
 					&& fetches.tryConsume(1);
 		}
