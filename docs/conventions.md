@@ -307,7 +307,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 - `src/app/global-error.tsx` and an `error.tsx` per area show safe copy, Next's `digest` as a reference, and a retry action. Each area has a `not-found.tsx`; unknown paths under a locale render the localized not-found page through `[...rest]`.
 - API failures are read as RFC 9457 problems ([API errors](#api-errors)): branch on `status` or `code`, map `errors[].pointer` onto form fields, and show the `requestId` whenever a person is asked to report a problem.
 - Each segment that loads data has a `loading.tsx` with skeletons. Every data view designs its loading, empty and failure states.
-- Toasts use sonner; the one `Toaster` is mounted in `src/components/layout/providers.tsx`. They are raised through a helper that accepts message keys only, which is written with its first caller.
+- Toasts use sonner; the one `Toaster` is mounted in `src/components/layout/providers.tsx`. They are raised through a helper that accepts message keys only, which is written with its first caller. They appear at the top right on the pastel ground of their kind, and every toast closes by itself after four seconds. Every decision or change a reader makes ends in a toast that says its outcome, unless the screen itself shows a confirmation.
 - Server rendering errors are logged as structured JSON through `onRequestError` in `src/instrumentation.ts`, without a third-party service: `event` `web.render.failed`, the error's type, its `digest` (the reference the error screen shows) and the route pattern, never the error's text, the query string or headers.
 
 ### Design tokens and styling
