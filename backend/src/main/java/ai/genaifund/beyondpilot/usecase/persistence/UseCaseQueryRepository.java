@@ -32,6 +32,16 @@ public class UseCaseQueryRepository {
 		this.jdbc = jdbc;
 	}
 
+	/**
+	 * Gives the use cases of a merged organization to the one kept. Each version moves on, so a save read before the
+	 * merge is refused instead of writing the former organization back.
+	 */
+	public void moveToOrganization(UUID from, UUID into) {
+		jdbc.sql("update use_case set organization_id = ?, version = version + 1 where organization_id = ?")
+			.params(into, from)
+			.update();
+	}
+
 	/** What the operators' list shows of one use case; the organization is named by its own module. */
 	public record Row(UUID id, UUID organizationId, @Nullable String title, String status, @Nullable Instant closesAt,
 			Instant updatedAt) {

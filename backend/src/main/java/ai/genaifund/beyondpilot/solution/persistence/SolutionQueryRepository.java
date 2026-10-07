@@ -57,6 +57,16 @@ public class SolutionQueryRepository {
 		this.jdbc = jdbc;
 	}
 
+	/**
+	 * Gives the solutions of a merged organization to the one kept. Each version moves on, so a save read before the
+	 * merge is refused instead of writing the former organization back.
+	 */
+	public void moveToOrganization(UUID from, UUID into) {
+		jdbc.sql("update solution set organization_id = ?, version = version + 1 where organization_id = ?")
+			.params(into, from)
+			.update();
+	}
+
 	/** One solution in a list, with how many of its customer deployments are approved and how many wait for review. */
 	public record Row(UUID id, UUID organizationId, String slug, String name, @Nullable String summary,
 			List<String> focusAreas, List<String> industries, @Nullable String maturity, String status,

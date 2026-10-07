@@ -19,5 +19,7 @@ public record MyOrganizationResponse(
 		@Schema(types = { "object", "null" },
 				description = "The answer to the caller's last request, while it is a refusal and they belong nowhere and wait on nothing.") @Nullable DeclinedRequestResponse declined,
 		@Schema(types = { "object", "null" },
-				description = "The organization of the caller's email domain, when they belong to none.") @Nullable OrganizationMatchResponse suggestion) {
+				description = "The organization of the caller's email domain, when they belong to none.") @Nullable OrganizationMatchResponse suggestion,
+		@Schema(types = { "object", "null" },
+				description = "The organization GenAI Fund merged into the caller's, until they dismiss the notice.") @Nullable MergeNoticeResponse mergedFrom) {
 }

@@ -16,7 +16,7 @@ public record AdminOrganizationSummaryResponse(@Schema(requiredMode = Schema.Req
 				allowableValues = { "company", "builder_team", "independent_builder", "other" }) String type,
 		@Schema(types = { "string", "null" }) @Nullable String country,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				allowableValues = { "in_review", "needs_changes", "approved", "rejected" },
+				allowableValues = { "in_review", "needs_changes", "approved", "rejected", "merged" },
 				description = "GenAI Fund's review of the organization.") String status,
 		@Schema(types = { "string", "null" }, format = "date-time",
 				description = "When it was taken down; null while it is not.") @Nullable Instant suspendedAt,
@@ -30,5 +30,7 @@ public record AdminOrganizationSummaryResponse(@Schema(requiredMode = Schema.Req
 		@Schema(types = { "string", "null" },
 				description = "Who asked for what waits, as they are shown.") @Nullable String askedBy,
 		@Schema(types = { "string", "null" }, description = "When they asked.") @Nullable Instant requestedAt,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt,
+		@Schema(types = { "string", "null" },
+				description = "The name of the organization it was merged into; null unless it was.") @Nullable String mergedInto) {
 }

@@ -66,6 +66,11 @@ public enum AuditAction {
 
 	ORGANIZATION_MEMBER_REMOVE("organization.member_remove", "account"),
 
+	/**
+	 * An operator merged a duplicate organization into another. {@code into} is the identifier of the one kept.
+	 */
+	ORGANIZATION_MERGE("organization.merge", "into"),
+
 	SOLUTION_APPROVE("solution.approve"),
 
 	/** An operator sent a solution back to its owners with what to change. */

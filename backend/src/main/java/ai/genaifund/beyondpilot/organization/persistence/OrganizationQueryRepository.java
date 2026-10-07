@@ -19,9 +19,13 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class OrganizationQueryRepository {
 
-	/** The organizations the operators' list selects, each with the oldest open claim on it. */
+	/**
+	 * The organizations the operators' list selects, each with the oldest open claim on it and the organization it was
+	 * merged into. A merged one is listed only when merged ones are asked for.
+	 */
 	private static final String ADMIN_SOURCE = """
 			from organization o
+			left join organization k on k.id = o.merged_into_id
 			left join lateral (select r.id, r.account_id, r.created_at
 			                   from organization_join_request r
 			                   where r.organization_id = o.id and r.status = 'pending' and r.claim
@@ -29,8 +33,8 @@ public class OrganizationQueryRepository {
 			                   limit 1) c on true
 			where (cast(:pattern as text) is null or lower(o.name) like :pattern escape '\\'
 			       or lower(o.email_domain) like :pattern escape '\\')
-			  and (cast(:status as text) is null
-			       or (:status = 'suspended' and o.suspended_at is not null)
+			  and ((cast(:status as text) is null and o.status <> 'merged')
+			       or (:status = 'suspended' and o.suspended_at is not null and o.status <> 'merged')
 			       or (:status = 'approved' and o.status = 'approved' and o.suspended_at is null)
 			       or (:status not in ('suspended', 'approved') and o.status = :status)
 			       or (:status = 'in_review' and c.id is not null))
@@ -54,7 +58,7 @@ public class OrganizationQueryRepository {
 	public record AdminRow(UUID id, String slug, String name, @Nullable UUID logoFileId, String type,
 			@Nullable String country, String status, @Nullable Instant suspendedAt, int members, boolean owned, UUID createdByAccountId,
 			Instant createdAt, @Nullable UUID claimId, @Nullable UUID claimantAccountId,
-			@Nullable Instant claimedAt) {
+			@Nullable Instant claimedAt, @Nullable String mergedIntoName) {
 	}
 
 	/** What another module shows of an organization. */
@@ -120,7 +124,7 @@ public class OrganizationQueryRepository {
 	/**
 	 * One page for operators: those a decision waits on first, a new organization or a claim, then the newest.
 	 * @param status a review status, or {@code suspended} for those taken down; {@code in_review} also selects an
-	 * organization with an open claim
+	 * organization with an open claim; none selects every one but the merged
 	 */
 	public List<AdminRow> adminPage(@Nullable String text, @Nullable String status, int limit, long offset) {
 		return adminFiltered("""
@@ -129,7 +133,8 @@ public class OrganizationQueryRepository {
 				       (select count(*) from organization_member m where m.organization_id = o.id) as members,
 				       exists (select 1 from organization_member m
 				               where m.organization_id = o.id and m.role = 'owner') as owned,
-				       c.id as claim_id, c.account_id as claimant_account_id, c.created_at as claimed_at
+				       c.id as claim_id, c.account_id as claimant_account_id, c.created_at as claimed_at,
+				       k.name as merged_into_name
 				""" + ADMIN_SOURCE + """
 				order by case when o.status = 'in_review' or c.id is not null then 0 else 1 end,
 				         coalesce(c.created_at, o.created_at) desc, o.id
@@ -142,7 +147,7 @@ public class OrganizationQueryRepository {
 					row.getString("status"), suspendedAt == null ? null : suspendedAt.toInstant(), row.getInt("members"), row.getBoolean("owned"),
 					row.getObject("created_by_account_id", UUID.class), row.getTimestamp("created_at").toInstant(),
 					row.getObject("claim_id", UUID.class), row.getObject("claimant_account_id", UUID.class),
-					claimedAt == null ? null : claimedAt.toInstant());
+					claimedAt == null ? null : claimedAt.toInstant(), row.getString("merged_into_name"));
 		}).list();
 	}
 

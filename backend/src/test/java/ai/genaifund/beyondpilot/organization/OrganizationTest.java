@@ -528,6 +528,84 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anOperatorMergesADuplicateIntoTheOrganizationKeptWithItsPeopleAndRecords() {
+		String duplicateOwner = signIn("founder@merge-duplicate.test");
+		UUID duplicate = approved(duplicateOwner, "Merge Duplicate", "merge-duplicate.test");
+		String keptOwner = signIn("founder@merge-kept.test");
+		UUID kept = approved(keptOwner, "Merge Kept");
+		String merge = API + "/admin/organizations/" + duplicate + "/merge";
+		post(duplicateOwner, API + "/mine/invitations", Map.of("email", "both@merge.test", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		post(duplicateOwner, API + "/mine/invitations", Map.of("email", "moved@merge.test", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		post(keptOwner, API + "/mine/invitations", Map.of("email", "both@merge.test", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		UUID solution = UUID.randomUUID();
+		jdbc.sql("""
+				insert into solution (id, organization_id, slug, name, created_by_account_id)
+				values (?, ?, 'merge-duplicate-solution', 'Merge Duplicate Solution', ?)
+				""").params(solution, duplicate, idOf("founder@merge-duplicate.test")).update();
+
+		assertProblem(post(duplicateOwner, merge, Map.of("intoId", kept)), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(operator, merge, Map.of()), 400, "REQUEST_INVALID");
+		assertProblem(post(operator, merge, Map.of("intoId", duplicate)), 409, "ORGANIZATION_CANNOT_MERGE");
+		assertProblem(post(operator, merge, Map.of("intoId", UUID.randomUUID())), 404, "ORGANIZATION_NOT_FOUND");
+
+		post(operator, merge, Map.of("intoId", kept)).expectStatus().isNoContent();
+
+		// The duplicate's owner is a member of the kept organization, told once in the workspace and by email.
+		String mine = mine(duplicateOwner);
+		assertThat(JsonPath.<String>read(mine, "$.organization.id")).isEqualTo(kept.toString());
+		assertThat(JsonPath.<String>read(mine, "$.role")).isEqualTo("member");
+		assertThat(JsonPath.<String>read(mine, "$.mergedFrom.name")).isEqualTo("Merge Duplicate");
+		assertThat(JsonPath.<String>read(mine, "$.mergedFrom.slug")).isEqualTo("merge-duplicate");
+		assertThat(mail.latestSubjectTo("founder@merge-duplicate.test"))
+			.isEqualTo("Merge Duplicate is now part of Merge Kept on BeyondPilot");
+		post(duplicateOwner, API + "/mine/merge-notice/dismiss", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<Object>read(mine(duplicateOwner), "$.mergedFrom")).isNull();
+		assertThat(JsonPath.<Object>read(mine(keptOwner), "$.mergedFrom")).isNull();
+		// The kept organization has the duplicate's domain and its open invitations, one per address.
+		String record = body(get(operator, API + "/admin/organizations/" + kept).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(record, "$.organization.emailDomain")).isEqualTo("merge-duplicate.test");
+		assertThat(JsonPath.<List<String>>read(record, "$.invitations[*].email"))
+			.containsExactlyInAnyOrder("both@merge.test", "moved@merge.test");
+		assertThat(JsonPath.<Object>read(record, "$.merged")).isNull();
+		// Its records moved, each to a new version, so a save read before the merge is refused.
+		assertThat(jdbc.sql("select organization_id from solution where id = ?").param(solution).query(UUID.class)
+			.single()).isEqualTo(kept);
+		assertThat(jdbc.sql("select version from solution where id = ?").param(solution).query(Long.class).single())
+			.isEqualTo(1L);
+
+		// The duplicate only says where it went, is listed only under merged, and can no longer be changed.
+		String merged = body(get(operator, API + "/admin/organizations/" + duplicate).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(merged, "$.organization.status")).isEqualTo("merged");
+		assertThat(JsonPath.<Object>read(merged, "$.organization.emailDomain")).isNull();
+		assertThat(JsonPath.<String>read(merged, "$.merged.intoId")).isEqualTo(kept.toString());
+		assertThat(JsonPath.<String>read(merged, "$.merged.intoName")).isEqualTo("Merge Kept");
+		assertThat(JsonPath.<List<Object>>read(merged, "$.members")).isEmpty();
+		assertThat(JsonPath.<List<String>>read(
+				body(get(operator, API + "/admin/organizations?q=merge").expectStatus().isOk()), "$.items[*].id"))
+			.containsExactly(kept.toString());
+		String mergedList = body(get(operator, API + "/admin/organizations?q=merge&status=merged").expectStatus()
+			.isOk());
+		assertThat(JsonPath.<List<String>>read(mergedList, "$.items[*].id")).containsExactly(duplicate.toString());
+		assertThat(JsonPath.<String>read(mergedList, "$.items[0].mergedInto")).isEqualTo("Merge Kept");
+		assertProblem(post(operator, merge, Map.of("intoId", kept)), 409, "ORGANIZATION_CANNOT_MERGE");
+		assertProblem(post(operator, API + "/admin/organizations/" + kept + "/merge", Map.of("intoId", duplicate)),
+				409, "ORGANIZATION_CANNOT_MERGE");
+		assertProblem(post(operator, API + "/admin/organizations/" + duplicate + "/invitations",
+				Map.of("email", "late@merge.test", "role", "member")), 409, "ORGANIZATION_MERGED");
+		assertThat(events(duplicate)).contains("organization.merge");
+		// Its public address answers with the organization kept.
+		String page = body(get(signIn("visitor@merge.test"), API + "/organizations/merge-duplicate").expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(page, "$.slug")).isEqualTo("merge-kept");
+	}
+
+	@Test
 	void anOrganizationThatIsNotApprovedIsNeitherFoundNorJoined() {
 		UUID id = create(signIn("founder@waiting.test"), "Waiting Co");
 		String colleague = signIn("colleague@waiting.test");

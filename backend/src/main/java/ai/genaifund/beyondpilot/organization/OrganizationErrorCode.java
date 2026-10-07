@@ -53,6 +53,12 @@ public enum OrganizationErrorCode implements ErrorCode {
 
 	NOT_TAKEN_DOWN("ORGANIZATION_NOT_TAKEN_DOWN", ErrorCategory.CONFLICT, "This organization is not taken down."),
 
+	MERGED("ORGANIZATION_MERGED", ErrorCategory.CONFLICT,
+			"This organization was merged into another and can no longer be changed."),
+
+	CANNOT_MERGE("ORGANIZATION_CANNOT_MERGE", ErrorCategory.CONFLICT,
+			"An organization merges only into another one that was not merged itself."),
+
 	DOMAIN_TAKEN("ORGANIZATION_DOMAIN_TAKEN", ErrorCategory.CONFLICT,
 			"Another organization already has this email domain."),
 

@@ -13,6 +13,7 @@ import ai.genaifund.beyondpilot.organization.dto.AdminSaveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.ApproveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.ChangeMemberRoleRequest;
 import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
+import ai.genaifund.beyondpilot.organization.dto.MergeOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.SendBackOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.TakeDownOrganizationRequest;
@@ -161,7 +162,7 @@ class AdminOrganizationsController {
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "409",
-			description = "The organization changed since it was read, or another organization has the domain.",
+			description = "The organization was merged or changed since it was read, or another organization has the domain.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	AdminOrganizationResponse save(@CurrentActor Actor actor, @PathVariable UUID id,
 			@Valid @RequestBody AdminSaveOrganizationRequest request) {
@@ -206,7 +207,7 @@ class AdminOrganizationsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "The address belongs to the organization or holds an open invitation.",
+	@ApiResponse(responseCode = "409", description = "The organization was merged, or the address belongs to it or holds an open invitation.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void invite(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody InviteMemberRequest request) {
 		organizations.invite(actor, id, request);
@@ -247,10 +248,27 @@ class AdminOrganizationsController {
 	@ApiResponse(responseCode = "204", description = "The organization is back.", content = @Content)
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "The organization is not taken down.",
+	@ApiResponse(responseCode = "409", description = "The organization is not taken down, or was merged.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void restore(@CurrentActor Actor actor, @PathVariable UUID id) {
 		organizations.restore(actor, id);
+	}
+
+	@PostMapping(path = "/organizations/{id}/merge", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "mergeOrganization",
+			summary = "Merge a duplicate organization into the one to keep, with its people and records",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The duplicate is merged and only says where it went.",
+			content = @Content)
+	@ApiResponse(responseCode = "400", description = "A member is not valid.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "One of the two organizations does not exist.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The organizations are the same, or one of them was merged.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void merge(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody MergeOrganizationRequest request) {
+		organizations.merge(actor, id, request);
 	}
 
 	@PostMapping(path = "/claims/{id}/approve", consumes = MediaType.APPLICATION_JSON_VALUE)

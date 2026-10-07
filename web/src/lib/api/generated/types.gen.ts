@@ -166,6 +166,10 @@ export type AdminOrganization = {
     createdByEmail: string;
     invitations: Array<OrganizationInvitation>;
     members: Array<OrganizationMember>;
+    /**
+     * Where it went when it was merged into another; null unless it was.
+     */
+    merged?: MergedOrganization | null;
     organization: Organization;
     /**
      * A domain the operator may verify with a decision: the one it has, else the creator's work domain while it waits for review, else its website's. Null when another organization holds it.
@@ -209,6 +213,10 @@ export type AdminOrganizationSummary = {
      */
     logoFileId?: string | null;
     members: number;
+    /**
+     * The name of the organization it was merged into; null unless it was.
+     */
+    mergedInto?: string | null;
     name: string;
     /**
      * Whether a person owns it; an operator-created organization has no owner until someone accepts or claims it.
@@ -226,7 +234,7 @@ export type AdminOrganizationSummary = {
     /**
      * GenAI Fund's review of the organization.
      */
-    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
+    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'merged';
     /**
      * When it was taken down; null while it is not.
      */
@@ -787,7 +795,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -1567,6 +1575,42 @@ export type Me = {
 };
 
 /**
+ * The organization GenAI Fund merged into the caller's, which they see until they dismiss it.
+ */
+export type MergeNotice = {
+    mergedAt: string;
+    name: string;
+    /**
+     * Its former address, which now leads to the caller's organization.
+     */
+    slug: string;
+};
+
+/**
+ * The organization a duplicate is merged into.
+ */
+export type MergeOrganization = {
+    /**
+     * The organization kept; it receives the duplicate's people and records.
+     */
+    intoId: string;
+};
+
+/**
+ * The organization a duplicate was merged into, when and by whom.
+ */
+export type MergedOrganization = {
+    intoId: string;
+    intoName: string;
+    intoSlug: string;
+    mergedAt: string;
+    /**
+     * The operator who merged it, as they are shown.
+     */
+    mergedBy: string;
+};
+
+/**
  * One of the person's applications, as My applications lists it.
  */
 export type MyApplication = {
@@ -1610,6 +1654,10 @@ export type MyOrganization = {
      */
     invitations: Array<OrganizationInvitation>;
     jobTitle?: string | null;
+    /**
+     * The organization GenAI Fund merged into the caller's, until they dismiss the notice.
+     */
+    mergedFrom?: MergeNotice | null;
     /**
      * The organization the caller belongs to.
      */
@@ -1782,9 +1830,9 @@ export type Organization = {
     name: string;
     slug: string;
     /**
-     * GenAI Fund's review of the organization. One taken down stays `approved`; `suspendedAt` says it is down.
+     * GenAI Fund's review of the organization. One taken down stays `approved`; `suspendedAt` says it is down. `merged` is a duplicate merged into another, which nobody changes.
      */
-    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
+    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'merged';
     /**
      * When it was taken down; null while it is not.
      */
@@ -4109,7 +4157,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -5391,9 +5439,9 @@ export type ListAdminOrganizationsData = {
          */
         q?: string | null;
         /**
-         * Only organizations of this review status; `in_review` also selects an approved one with an open claim, `approved` leaves out those taken down, and `suspended` selects those taken down.
+         * Only organizations of this review status; `in_review` also selects an approved one with an open claim, `approved` leaves out those taken down, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.
          */
-        status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended';
+        status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended' | 'merged';
         /**
          * The page, counted from 1.
          */
@@ -5527,7 +5575,7 @@ export type SaveAdminOrganizationErrors = {
      */
     404: Problem;
     /**
-     * The organization changed since it was read, or another organization has the domain.
+     * The organization was merged or changed since it was read, or another organization has the domain.
      */
     409: Problem;
 };
@@ -5613,7 +5661,7 @@ export type InviteAdminOrganizationMemberErrors = {
      */
     404: Problem;
     /**
-     * The address belongs to the organization or holds an open invitation.
+     * The organization was merged, or the address belongs to it or holds an open invitation.
      */
     409: Problem;
 };
@@ -5741,6 +5789,49 @@ export type ChangeAdminOrganizationMemberRoleResponses = {
 
 export type ChangeAdminOrganizationMemberRoleResponse = ChangeAdminOrganizationMemberRoleResponses[keyof ChangeAdminOrganizationMemberRoleResponses];
 
+export type MergeOrganizationData = {
+    body: MergeOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/merge';
+};
+
+export type MergeOrganizationErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * One of the two organizations does not exist.
+     */
+    404: Problem;
+    /**
+     * The organizations are the same, or one of them was merged.
+     */
+    409: Problem;
+};
+
+export type MergeOrganizationError = MergeOrganizationErrors[keyof MergeOrganizationErrors];
+
+export type MergeOrganizationResponses = {
+    /**
+     * The duplicate is merged and only says where it went.
+     */
+    204: void;
+};
+
+export type MergeOrganizationResponse = MergeOrganizationResponses[keyof MergeOrganizationResponses];
+
 export type RefuseOrganizationData = {
     body: RefuseOrganization;
     path: {
@@ -5807,7 +5898,7 @@ export type RestoreOrganizationErrors = {
      */
     404: Problem;
     /**
-     * The organization is not taken down.
+     * The organization is not taken down, or was merged.
      */
     409: Problem;
 };
@@ -6323,6 +6414,35 @@ export type ChangeOrganizationMemberRoleResponses = {
 };
 
 export type ChangeOrganizationMemberRoleResponse = ChangeOrganizationMemberRoleResponses[keyof ChangeOrganizationMemberRoleResponses];
+
+export type DismissMyOrganizationMergeNoticeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/organization/mine/merge-notice/dismiss';
+};
+
+export type DismissMyOrganizationMergeNoticeErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization.
+     */
+    403: Problem;
+};
+
+export type DismissMyOrganizationMergeNoticeError = DismissMyOrganizationMergeNoticeErrors[keyof DismissMyOrganizationMergeNoticeErrors];
+
+export type DismissMyOrganizationMergeNoticeResponses = {
+    /**
+     * The notice is gone.
+     */
+    204: void;
+};
+
+export type DismissMyOrganizationMergeNoticeResponse = DismissMyOrganizationMergeNoticeResponses[keyof DismissMyOrganizationMergeNoticeResponses];
 
 export type ApproveJoinRequestData = {
     body?: never;

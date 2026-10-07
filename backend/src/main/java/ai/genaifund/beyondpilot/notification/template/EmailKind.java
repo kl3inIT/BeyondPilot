@@ -46,6 +46,9 @@ public enum EmailKind {
 	ORGANIZATION_RESTORED("organization_restored", EmailGroup.ORGANIZATIONS, true, null,
 			Variable.required("organizationName", "Plain Cover")),
 
+	ORGANIZATION_MERGED("organization_merged", EmailGroup.ORGANIZATIONS, true, null,
+			Variable.required("organizationName", "Plain Cover Ltd"), Variable.required("keptName", "Plain Cover")),
+
 	APPLICATION_RECEIVED("application_received", EmailGroup.APPLICATIONS, true, null,
 			Variable.required("programName", "AI for Insurance Challenge × Tasco"),
 			Variable.optional("resubmitted", Boolean.FALSE),
