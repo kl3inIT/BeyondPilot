@@ -267,7 +267,7 @@
       "resend": "Gửi mã mới",
       "resent": "Đã gửi mã mới. Vẫn chưa thấy?",
       "resendFailed": "Chưa gửi được. Thử lại lần nữa?",
-      "limited": "Bạn đã yêu cầu ba mã. Bạn có thể yêu cầu thêm sau {minutes} phút; mã mới nhất vẫn dùng được.",
+      "limited": "Bạn có thể yêu cầu mã mới sau {minutes, plural, =0 {{seconds} giây} other {# phút}}. Mã mới nhất vẫn dùng được.",
       "differentEmail": "Dùng email khác",
       "problem": {
         "wrong": "Mã chưa đúng. Bạn xem email mới nhất rồi thử lại.",

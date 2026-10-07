@@ -4,15 +4,17 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface SignInChallengeRepository extends JpaRepository<SignInChallenge, UUID> {
 
-	/** How many codes sent to this address still work at the given moment. */
-	@Query("select count(c) from SignInChallenge c where lower(c.email) = lower(:email) and c.expiresAt > :at")
-	int countUnexpired(String email, Instant at);
+	/** When each code sent to this address since the given moment was sent, oldest first; a used code is gone. */
+	@Query("select c.createdAt from SignInChallenge c where lower(c.email) = lower(:email) and c.createdAt > :since "
+			+ "order by c.createdAt")
+	List<Instant> createdSince(String email, Instant since);
 
 	/**
 	 * Makes requests for one address take turns until the surrounding transaction ends, so that counting its codes
@@ -37,6 +39,11 @@ public interface SignInChallengeRepository extends JpaRepository<SignInChallenge
 	@Query("select coalesce(sum(c.failedAttempts), 0) from SignInChallenge c "
 			+ "where lower(c.email) = lower(:email) and c.createdAt > :since")
 	long wrongCodesSince(String email, Instant since);
+
+	/** When the first code sent since the given moment that took a wrong guess was sent. */
+	@Query("select min(c.createdAt) from SignInChallenge c "
+			+ "where lower(c.email) = lower(:email) and c.createdAt > :since and c.failedAttempts > 0")
+	@Nullable Instant firstWrongSince(String email, Instant since);
 
 	/**
 	 * Uses the challenge up.
