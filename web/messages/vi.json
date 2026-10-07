@@ -278,6 +278,33 @@
       }
     }
   },
+  "AppConsent": {
+    "metaTitle": "Kết nối ứng dụng · BeyondPilot",
+    "title": "{app} muốn truy cập BeyondPilot",
+    "as": "Với tài khoản {person}",
+    "ableTo": "{app} sẽ có thể",
+    "user": {
+      "searchSolutions": "Tìm các giải pháp đã đăng",
+      "readSolution": "Đọc một giải pháp đã đăng",
+      "searchPrograms": "Tìm chương trình",
+      "limit": "Không thể thay đổi gì. Thu hồi bất cứ lúc nào."
+    },
+    "operator": {
+      "searchSolutions": "Tìm giải pháp, kể cả chưa đăng",
+      "readUseCases": "Đọc use case",
+      "findCompanies": "Tìm công ty",
+      "limit": "Không thể đăng hay sửa nội dung. Thu hồi bất cứ lúc nào."
+    },
+    "deny": "Từ chối",
+    "allow": "Cho phép",
+    "switchAccount": "Không phải bạn? Đổi tài khoản",
+    "refusedTitle": "{app} không thể kết nối với BeyondPilot",
+    "refusedLead": "Chỉ operator của GenAI Fund mới kết nối được.",
+    "signedInAs": "Đang đăng nhập với {person}",
+    "useUserServer": "Hãy dùng server cho người dùng: server này tìm các giải pháp đã đăng.",
+    "back": "Quay lại {app}",
+    "anotherAccount": "Không phải bạn? Đăng nhập bằng tài khoản khác"
+  },
   "Admin": {
     "metaTitle": "Quản trị · BeyondPilot",
     "title": "Quản trị",

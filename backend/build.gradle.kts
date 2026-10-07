@@ -33,6 +33,7 @@ dependencies {
 	implementation(libs.spring.boot.starter.mail)
 	implementation(libs.spring.boot.starter.security)
 	implementation(libs.spring.boot.starter.security.oauth2.client)
+	implementation(libs.spring.boot.starter.security.oauth2.authorization.server)
 	implementation(libs.spring.boot.starter.session.jdbc)
 	implementation(libs.spring.boot.starter.validation)
 	implementation(libs.spring.boot.starter.webmvc)

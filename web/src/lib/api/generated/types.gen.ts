@@ -874,6 +874,18 @@ export type ChooseEmbeddingModel = {
 };
 
 /**
+ * An AI app asking the signed-in person to connect it to BeyondPilot.
+ */
+export type ConnectingApp = {
+    clientId: string;
+    /**
+     * The host the app's client ID belongs to, or `beyondpilot` for a client BeyondPilot registered.
+     */
+    host: string;
+    name: string;
+};
+
+/**
  * How judges and GenAI Fund reach an applicant. Each part may be empty while the application is a draft.
  */
 export type ContactDetails = {
@@ -4341,6 +4353,33 @@ export type WithdrawOperatorResponses = {
 };
 
 export type WithdrawOperatorResponse = WithdrawOperatorResponses[keyof WithdrawOperatorResponses];
+
+export type GetConnectingAppData = {
+    body?: never;
+    path?: never;
+    query: {
+        clientId: string;
+    };
+    url: '/api/identity/apps/connecting';
+};
+
+export type GetConnectingAppErrors = {
+    /**
+     * No such app may sign in.
+     */
+    404: Problem;
+};
+
+export type GetConnectingAppError = GetConnectingAppErrors[keyof GetConnectingAppErrors];
+
+export type GetConnectingAppResponses = {
+    /**
+     * The app the consent page names.
+     */
+    200: ConnectingApp;
+};
+
+export type GetConnectingAppResponse = GetConnectingAppResponses[keyof GetConnectingAppResponses];
 
 export type GetMeData = {
     body?: never;

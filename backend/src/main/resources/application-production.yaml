@@ -22,6 +22,10 @@ beyondpilot:
     google:
       client-id: ${BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID}
       client-secret: ${BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET}
+    oauth:
+      issuer: ${BEYONDPILOT_SITE_URL}
+      # The key AI apps' access tokens are signed with must survive a restart, so a deployment provides it.
+      signing-key: ${BEYONDPILOT_IDENTITY_OAUTH_SIGNING_KEY}
   storage:
     # No default: a deployment says where its files are kept.
     provider: ${BEYONDPILOT_STORAGE_PROVIDER}

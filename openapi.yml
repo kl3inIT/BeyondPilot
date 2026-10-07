@@ -445,6 +445,33 @@ paths:
       summary: Take the operator role from an account
       tags:
       - Accounts
+  /api/identity/apps/connecting:
+    get:
+      operationId: getConnectingApp
+      parameters:
+      - in: query
+        name: clientId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectingApp"
+          description: The app the consent page names.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No such app may sign in.
+      security:
+      - session: []
+      summary: The AI app asking to connect
+      tags:
+      - Identity
   /api/identity/me:
     get:
       operationId: getMe
@@ -9292,6 +9319,22 @@ components:
       - model
       - providerId
       - version
+    ConnectingApp:
+      type: object
+      description: An AI app asking the signed-in person to connect it to BeyondPilot.
+      properties:
+        clientId:
+          type: string
+        host:
+          type: string
+          description: "The host the app's client ID belongs to, or `beyondpilot`\
+            \ for a client BeyondPilot registered."
+        name:
+          type: string
+      required:
+      - clientId
+      - host
+      - name
     ContactDetails:
       type: object
       description: How judges and GenAI Fund reach an applicant. Each part may be

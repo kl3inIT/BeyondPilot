@@ -32,6 +32,8 @@ services:
         target: BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY
       - source: ai_encryption_key
         target: BEYONDPILOT_AI_ENCRYPTION_KEY
+      - source: mcp_signing_key
+        target: BEYONDPILOT_IDENTITY_OAUTH_SIGNING_KEY
     networks:
       - internal
       - proxy
@@ -57,6 +59,9 @@ secrets:
   # 32 random bytes in Base64 that encrypt the AI providers' keys operators enter in Admin › AI › Providers.
   ai_encryption_key:
     file: /apps/beyondpilot-staging/secrets/ai-encryption-key
+  # The RSA private key, PKCS#8 PEM, that signs the access tokens of AI apps connected to the MCP servers.
+  mcp_signing_key:
+    file: /apps/beyondpilot-staging/secrets/mcp-signing-key
 
 networks:
   proxy:
