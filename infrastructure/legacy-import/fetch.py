@@ -20,13 +20,14 @@ ALLOWED = ("https://papi.genaifund.ai/attachments/", "https://papi.genaifund.ai/
 # The hosts a Google download may redirect to; Docs exports are served from its content hosts.
 REDIRECT_HOSTS = ("drive.google.com", "drive.usercontent.google.com", "docs.google.com")
 REDIRECT_SUFFIX = ".googleusercontent.com"
+NOT_ALLOWED = "redirect to an address not allowed"
 
 
 class Redirects(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         host = urllib.parse.urlsplit(newurl).hostname or ""
         if not newurl.startswith("https://") or not (host in REDIRECT_HOSTS or host.endswith(REDIRECT_SUFFIX)):
-            raise urllib.error.HTTPError(newurl, code, "redirect to an address not allowed", headers, fp)
+            raise urllib.error.HTTPError(newurl, code, NOT_ALLOWED, headers, fp)
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
@@ -97,6 +98,9 @@ def get(url: str, cache: Path) -> Path:
                 partial.replace(target)
                 return target
         except urllib.error.HTTPError as error:
+            if error.msg == NOT_ALLOWED:
+                # Google sends a file that is not public to its sign-in page.
+                raise RuntimeError("redirected off Google's download hosts, not public") from None
             if 400 <= error.code < 500:
                 # Not there, or not public: asking again changes nothing.
                 raise RuntimeError(f"HTTP {error.code}") from None
