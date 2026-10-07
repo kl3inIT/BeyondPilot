@@ -1368,6 +1368,7 @@
       "organizations": "Organizations to review",
       "solutions": "Solutions to review",
       "talent": "Talent profiles to review",
+      "deployments": "Customer deployments to review",
       "review": "Open the queue, longest wait first",
       "none": "Nothing waiting"
     },

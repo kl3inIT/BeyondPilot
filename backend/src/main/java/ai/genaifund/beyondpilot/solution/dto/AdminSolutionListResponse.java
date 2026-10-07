@@ -13,5 +13,7 @@ public record AdminSolutionListResponse(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "How many solutions match, over all pages.") long total,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "How many solutions wait for review, whatever narrows this list.") long awaitingReview) {
+				description = "How many solutions wait for review, whatever narrows this list.") long awaitingReview,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "How many customer deployments wait for review, whatever narrows this list.") long deploymentsAwaitingReview) {
 }

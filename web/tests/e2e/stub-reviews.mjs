@@ -530,6 +530,9 @@ export function answerReview(url, account) {
           ? {
               ...found,
               awaitingReview: records.filter((record) => record.status === "in_review").length,
+              deploymentsAwaitingReview: records
+                .flatMap((record) => record.customerDeployments)
+                .filter((item) => item.status === "in_review").length,
             }
           : found,
     ];

@@ -1368,6 +1368,7 @@
       "organizations": "Tổ chức chờ duyệt",
       "solutions": "Giải pháp chờ duyệt",
       "talent": "Hồ sơ nhân lực chờ duyệt",
+      "deployments": "Triển khai khách hàng chờ duyệt",
       "review": "Mở hàng chờ, chờ lâu nhất ở trên",
       "none": "Không có gì đang chờ"
     },

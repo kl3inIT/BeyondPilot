@@ -116,6 +116,15 @@ public class SolutionQueryRepository {
 		return jdbc.sql("select count(*) from solution where status = 'in_review'").query(Long.class).single();
 	}
 
+	/** How many customer deployments wait for review, on solutions an operator's list shows. */
+	public long deploymentsAwaitingReview() {
+		return jdbc.sql("""
+				select count(*) from solution_customer_deployment d
+				join solution on solution.id = d.solution_id
+				where d.status = 'in_review' and solution.status <> 'draft'
+				""").query(Long.class).single();
+	}
+
 	/** The orders of the public directory. The value is never the caller's text: it is chosen here by its name. */
 	private static String publicOrder(@Nullable String sort) {
 		return "newest".equals(sort) ? "order by decided_at desc nulls last, id" : "order by lower(name), id";
