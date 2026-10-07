@@ -3709,7 +3709,7 @@
       },
       "deck": {
         "empty": "Upload the deck",
-        "limits": "PDF, up to 25 MB",
+        "limits": "PDF, up to 100 MB",
         "uploading": "Uploading…",
         "uploaded": "{size} · Uploaded {when}",
         "waiting": "{size} · Not saved yet",
@@ -3718,7 +3718,7 @@
         "remove": "Remove",
         "errors": {
           "type": "Only a PDF can be uploaded here.",
-          "size": "This file is larger than 25 MB.",
+          "size": "This file is larger than 100 MB.",
           "failed": "The deck was not uploaded. Try again."
         }
       },
@@ -5258,6 +5258,8 @@
       "time": "{time} ICT"
     },
     "posted": "Posted {when}",
+    "view": "View use case",
+    "viewUnavailable": "Use case details are not available yet.",
     "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
     "empty": {
       "title": "No use cases match",
