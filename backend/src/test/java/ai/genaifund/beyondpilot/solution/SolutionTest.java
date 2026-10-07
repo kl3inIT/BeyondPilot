@@ -415,6 +415,32 @@ class SolutionTest {
 	}
 
 	@Test
+	void aSolutionWithoutItsOwnLogoShowsItsOrganizationsToThePublic() {
+		String founder = approvedOwner("founder@logo.test", "Logo Co");
+		approved(founder, "Wombat Own Logo");
+		UUID bare = approved(founder, "Wombat Bare Logo");
+		// A solution imported from the old platform carries its logo on its organization only.
+		jdbc.sql("update solution set logo_file_id = null where id = ?").param(bare).update();
+		UUID organizationLogo = uploaded(founder, "organization_logo", "C:\\brand\\logo-co.png", png(400));
+		jdbc.sql("update organization set logo_file_id = ? where id = (select organization_id from solution where id = ?)")
+			.param(organizationLogo)
+			.param(bare)
+			.update();
+
+		String list = body(client.get().uri(DIRECTORY + "?q=wombat").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(list, "$.items[?(@.name == 'Wombat Bare Logo')].logoFileId"))
+			.containsExactly(organizationLogo.toString());
+		// A logo of its own wins.
+		assertThat(JsonPath.<List<String>>read(list, "$.items[?(@.name == 'Wombat Own Logo')].logoFileId"))
+			.doesNotContain(organizationLogo.toString())
+			.doesNotContainNull();
+		String page = body(client.get().uri(DIRECTORY + "/wombat-bare-logo").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<String>read(page, "$.logoFileId")).isEqualTo(organizationLogo.toString());
+		// Its owners still see that the solution has no logo of its own, so they can give it one.
+		assertThat(JsonPath.<Object>read(body(get(founder, MINE + "/" + bare).expectStatus().isOk()), "$.logo")).isNull();
+	}
+
+	@Test
 	void theDirectoryListsOnlyApprovedListedSolutionsAndAnApprovedUnlistedOneOpensByItsAddress() {
 		String founder = approvedOwner("founder@listed.test", "Listed Co");
 		UUID claims = approved(founder, "Quokka Claims");

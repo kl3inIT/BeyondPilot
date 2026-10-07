@@ -127,6 +127,34 @@ class SearchDirectoriesTest {
 	}
 
 	@Test
+	void aSolutionWithoutItsOwnLogoIsFoundWithItsOrganizationsOnceTheOrganizationHasOne() {
+		String owner = TestSignIn.session(client, mail, "logo-" + word + "@directories.test");
+		UUID organization = organization(owner, "Logo " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		UUID solution = submittedSolution(owner, "Lead Scorer " + word);
+		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
+		await().atMost(WAIT).until(() -> total("lead scorer " + word) == 1);
+		// A solution imported from the old platform carries its logo on its organization only.
+		jdbc.sql("update solution set logo_file_id = null where id = ?").param(solution).update();
+
+		UUID logo = TestUploads.image(client, owner, "organization_logo", "logo.png");
+		String mine = body(client.get()
+			.uri("/api/organization/mine")
+			.cookie(TestSignIn.SESSION_COOKIE, owner)
+			.exchange()
+			.expectStatus()
+			.isOk());
+		Map<String, Object> request = new HashMap<>(organizationProfile("Logo " + word));
+		request.put("version", JsonPath.<Number>read(mine, "$.organization.version").longValue());
+		request.put("logoFileId", logo);
+		put(owner, "/api/organization/mine", request);
+
+		await().atMost(WAIT)
+			.until(() -> logo.toString()
+				.equals(JsonPath.read(search("lead%20scorer%20" + word), "$.items[0].photoFileId")));
+	}
+
+	@Test
 	void anApprovedListedProfileIsFoundAndLeavesTheResultsWhenTakenDownOrUnlisted() {
 		String person = TestSignIn.session(client, mail, "person-" + word + "@directories.test");
 		String saved = body(put(person, "/api/talent/mine", profile("Lan " + word, null)));

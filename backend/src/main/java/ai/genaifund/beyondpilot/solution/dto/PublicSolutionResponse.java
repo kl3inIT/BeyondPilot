@@ -32,7 +32,7 @@ public record PublicSolutionResponse(@Schema(requiredMode = Schema.RequiredMode.
 		@Schema(types = { "string", "null" }) @Nullable String demoUrl,
 		@Schema(types = { "object", "null" }, description = "Its deck, when it has one.") @Nullable PublicSolutionDeckResponse deck,
 		@Schema(types = { "string", "null" }, format = "uuid",
-				description = "Its logo, read at /api/storage/files/{id}; null for none.") @Nullable UUID logoFileId,
+				description = "Its logo, or its organization's when it has none, read at /api/storage/files/{id}; null when neither has one.") @Nullable UUID logoFileId,
 		@Schema(types = { "string", "null" }, format = "uuid",
 				description = "Its cover, read at /api/storage/files/{id}; null for none.") @Nullable UUID coverFileId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

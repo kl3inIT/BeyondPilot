@@ -2281,7 +2281,7 @@ export type PublicSolution = {
      */
     listed: boolean;
     /**
-     * Its logo, read at /api/storage/files/{id}; null for none.
+     * Its logo, or its organization's when it has none, read at /api/storage/files/{id}; null when neither has one.
      */
     logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
@@ -2346,7 +2346,7 @@ export type PublicSolutionSummary = {
     focusAreas: Array<string>;
     industries: Array<string>;
     /**
-     * Its logo, read at /api/storage/files/{id}; null for none.
+     * Its logo, or its organization's when it has none, read at /api/storage/files/{id}; null when neither has one.
      */
     logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
