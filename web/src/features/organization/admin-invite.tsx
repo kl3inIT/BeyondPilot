@@ -70,7 +70,7 @@ function AdminInvite({ organization }: { organization: { id: string; name: strin
         <DialogContent showCloseButton={false} className="sm:max-w-120">
           <form noValidate onSubmit={submit} className="flex flex-col gap-4">
             <DialogHeader>
-              <DialogTitle>{t("title", { name: organization.name })}</DialogTitle>
+              <DialogTitle size="lg">{t("title", { name: organization.name })}</DialogTitle>
               <DialogDescription>{t("lead")}</DialogDescription>
             </DialogHeader>
             <FieldGroup>

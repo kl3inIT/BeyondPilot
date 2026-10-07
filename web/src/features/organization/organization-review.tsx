@@ -5,7 +5,6 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useId, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import { Person } from "@/components/composites/person";
 import { ReasonDialog } from "@/components/composites/reason-dialog";
 import {
   Dialog,
@@ -183,14 +182,14 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
     <Dialog open onOpenChange={(open) => !open && !pending && onClose()}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>{t("title", { name })}</DialogTitle>
+          <DialogTitle size="lg">{t("title", { name })}</DialogTitle>
           <DialogDescription>
-            {detail ? t("lead", { creator: detail.createdBy, day }) : t("leadUnknown", { day })}
+            <span className="block">{kind.join(" · ")}</span>
+            <span className="block">
+              {detail ? t("lead", { creator: detail.createdBy, day }) : t("leadUnknown", { day })}
+            </span>
           </DialogDescription>
         </DialogHeader>
-        <div className="rounded-lg border bg-muted p-3">
-          <Person name={name} email={kind.join(" · ")} />
-        </div>
         <VerifiedDomainField
           id="review-domain"
           domain={domain}
@@ -199,7 +198,6 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
           problems={{ invalid: t("domainInvalid"), taken: t("domainTaken") }}
           disabled={pending}
         />
-        <p className="text-sm text-muted-foreground">{t("note")}</p>
         <DialogFooter>
           <Button prominence="secondary" disabled={pending} onClick={() => setRefusing(true)}>
             {t("refuse")}
@@ -218,7 +216,7 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
 
 /** Opens the review of an organization that waits for a decision, from its record. */
 function OrganizationReviewButton({ organization }: Pick<OrganizationReviewProps, "organization">) {
-  const t = useTranslations("Admin.organizations.actions");
+  const t = useTranslations("Admin.organizations.detail");
   const [reviewing, setReviewing] = useState(false);
 
   return (

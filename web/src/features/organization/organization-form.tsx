@@ -8,7 +8,6 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
 import { ChoiceSelect } from "@/components/composites/choice-select";
-import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -104,7 +103,6 @@ function OrganizationForm({ organization, admin }: OrganizationFormProps) {
   const domain = useVerifiedDomain(organization?.emailDomain);
   const [pending, setPending] = useState(false);
   const [invalid, setInvalid] = useState<Set<string>>(new Set());
-  const [discarding, setDiscarding] = useState(false);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -182,23 +180,6 @@ function OrganizationForm({ organization, admin }: OrganizationFormProps) {
 
   const bad = (field: string) => invalid.has(field) || undefined;
 
-  function discard() {
-    if (!organization) {
-      return;
-    }
-    setName(organization.name);
-    setType(organization.type);
-    setCountry(organization.country ?? "");
-    setTeamSize(organization.teamSize ?? "");
-    setChosenIndustries(organization.industries);
-    setWebsite(organization.website ?? "");
-    setDescription(organization.description ?? "");
-    setFoundedYear(String(organization.foundedYear ?? ""));
-    setLogoFileId(organization.logoFileId ?? "");
-    domain.change(organization.emailDomain ?? "");
-    setInvalid(new Set());
-    setDiscarding(false);
-  }
   // Only a saved profile can differ from what was saved; a new one has nothing to lose yet.
   const dirty =
     organization !== undefined &&
@@ -393,7 +374,7 @@ function OrganizationForm({ organization, admin }: OrganizationFormProps) {
             </p>
           </Field>
         </div>
-        <div className="flex flex-col gap-x-3 gap-y-6 sm:flex-row">
+        <div className="flex flex-col gap-x-6 gap-y-6 sm:flex-row">
           <Field data-invalid={bad("description")} className="sm:flex-1">
             <FieldLabel htmlFor="organization-description">
               {t("description")} {required}
@@ -415,7 +396,7 @@ function OrganizationForm({ organization, admin }: OrganizationFormProps) {
               </span>
             </div>
           </Field>
-          <Field className="sm:w-52">
+          <Field className="sm:w-28 sm:shrink-0">
             <FieldLabel htmlFor="organization-logo">{t("logo.label")}</FieldLabel>
             <OrganizationLogoUpload value={logoFileId} onChange={setLogoFileId} />
           </Field>
@@ -436,16 +417,8 @@ function OrganizationForm({ organization, admin }: OrganizationFormProps) {
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
-        {organization ? (
-          <Button
-            prominence="tertiary"
-            size="lg"
-            disabled={!dirty}
-            onClick={() => setDiscarding(true)}
-          >
-            {t("discard")}
-          </Button>
-        ) : (
+        {/* Unsaved changes to a saved profile are kept or dropped on leaving, where LeaveGuard asks. */}
+        {!organization && (
           <Button prominence="tertiary" size="lg" href={siteRoutes.workspaceOrganization}>
             {t("cancel")}
           </Button>
@@ -455,23 +428,11 @@ function OrganizationForm({ organization, admin }: OrganizationFormProps) {
           size="lg"
           pending={pending}
           disabled={organization !== undefined && !dirty}
+          className="ml-auto"
         >
           {t(organization ? "save" : "create")}
         </Button>
       </div>
-      {discarding && (
-        <ConfirmDialog
-          open
-          onOpenChange={setDiscarding}
-          title={t("confirmDiscard.title")}
-          description={t("confirmDiscard.lead")}
-          confirmLabel={t("discard")}
-          cancelLabel={t("confirmDiscard.cancel")}
-          tone="danger"
-          pending={false}
-          onConfirm={discard}
-        />
-      )}
       <LeaveGuard
         active={dirty}
         title={t("leave.title")}

@@ -205,7 +205,9 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
         <Dialog open onOpenChange={(open) => !open && !pending && setAsking(null)}>
           <DialogContent showCloseButton={false} className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>{t(`ask.${asking.way}.title`, { name: asking.name })}</DialogTitle>
+              <DialogTitle size="lg">
+                {t(`ask.${asking.way}.title`, { name: asking.name })}
+              </DialogTitle>
               <DialogDescription>{t(`ask.${asking.way}.lead`)}</DialogDescription>
             </DialogHeader>
             <Field>

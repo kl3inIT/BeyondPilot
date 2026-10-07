@@ -190,7 +190,7 @@ function MemberActions({ member, owner }: MemberActionsProps) {
           <DialogContent showCloseButton={false}>
             <form noValidate onSubmit={saveJobTitle} className="flex flex-col gap-4">
               <DialogHeader>
-                <DialogTitle>{t("jobTitle.title")}</DialogTitle>
+                <DialogTitle size="lg">{t("jobTitle.title")}</DialogTitle>
                 <DialogDescription>{t("jobTitle.lead")}</DialogDescription>
               </DialogHeader>
               <Field>

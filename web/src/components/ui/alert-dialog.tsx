@@ -95,13 +95,17 @@ function AlertDialogMedia({ className, ...props }: React.ComponentProps<"div">) 
 
 function AlertDialogTitle({
   className,
+  size = "default",
   ...props
-}: React.ComponentProps<typeof AlertDialogPrimitive.Title>) {
+}: React.ComponentProps<typeof AlertDialogPrimitive.Title> & {
+  size?: "default" | "lg";
+}) {
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
+      data-size={size}
       className={cn(
-        "font-heading text-base font-medium sm:group-data-[size=default]/alert-dialog-content:group-has-data-[slot=alert-dialog-media]/alert-dialog-content:col-start-2",
+        "font-heading data-[size=default]:text-base data-[size=default]:font-medium data-[size=lg]:text-xl data-[size=lg]:font-semibold sm:group-data-[size=default]/alert-dialog-content:group-has-data-[slot=alert-dialog-media]/alert-dialog-content:col-start-2",
         className,
       )}
       {...props}
