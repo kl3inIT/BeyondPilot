@@ -322,7 +322,6 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
           {t("title")}
         </h2>
         <p className="text-muted-foreground">{t("lead")}</p>
-        <p className="text-xs text-muted-foreground">{t("optionalNote")}</p>
       </div>
 
       <Field>
@@ -374,7 +373,7 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
         </FieldLabel>
         <Input
           id="talent-headline"
-          aria-describedby={about("talent-headline")}
+          aria-describedby="talent-headline-error"
           maxLength={160}
           placeholder={t("headlinePlaceholder")}
           value={text.headline}
@@ -383,7 +382,6 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
           aria-invalid={bad("headline")}
         />
         {needed("headline")}
-        <FieldDescription id="talent-headline-hint">{t("headlineHint")}</FieldDescription>
       </Field>
       <div className="grid gap-x-3 gap-y-7 sm:grid-cols-2">
         <Field>
@@ -508,7 +506,7 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
         </FieldLabel>
         <Textarea
           id="talent-bio"
-          aria-describedby={about("talent-bio")}
+          aria-describedby="talent-bio-error"
           rows={5}
           maxLength={MAX_BIO}
           value={text.bio}
@@ -517,12 +515,9 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
           aria-invalid={bad("bio")}
         />
         {needed("bio")}
-        <div className="flex items-start justify-between gap-4">
-          <FieldDescription id="talent-bio-hint">{t("bioHint")}</FieldDescription>
-          <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-            {text.bio.length} / {MAX_BIO}
-          </span>
-        </div>
+        <span className="text-right text-xs text-muted-foreground tabular-nums">
+          {text.bio.length} / {MAX_BIO}
+        </span>
       </Field>
       <div className="grid gap-x-3 gap-y-7 sm:grid-cols-2">
         <Field>
@@ -702,13 +697,9 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
           value={text.website}
           onChange={write("website")}
           aria-invalid={bad("website")}
-          aria-describedby={about("talent-website")}
+          aria-describedby="talent-website-error"
         />
-        {bad("website") ? (
-          <FieldError id="talent-website-error">{t("websiteInvalid")}</FieldError>
-        ) : (
-          <FieldDescription id="talent-website-hint">{t("websiteHint")}</FieldDescription>
-        )}
+        {bad("website") && <FieldError id="talent-website-error">{t("websiteInvalid")}</FieldError>}
       </Field>
 
       <h3 id="talent-visibility" className={group}>
