@@ -401,10 +401,43 @@ def normalised_name(name) -> str:
 
 FETCHABLE = "https://papi.genaifund.ai/attachments/"
 
+DRIVE_FILE = re.compile(r"^https://drive\.google\.com/(?:file/d/([\w-]{10,})|open\?(?:.*&)?id=([\w-]{10,}))")
+DOCS_FILE = re.compile(r"^https://docs\.google\.com/(presentation|document)/d/([\w-]{10,})")
+
+
+def source_url(url) -> str | None:
+    """Where the load fetches a file v1 names: v1's API as it is, a Google Drive file by its public download address,
+    a Google Slides or Docs file by its PDF export. Anything else is not fetched."""
+    text = clean(url)
+    if text is None:
+        return None
+    if text.startswith(FETCHABLE):
+        return text
+    drive = DRIVE_FILE.match(text)
+    if drive:
+        return "https://drive.google.com/uc?export=download&id=" + (drive.group(1) or drive.group(2))
+    docs = DOCS_FILE.match(text)
+    if docs:
+        kind, ident = docs.groups()
+        if kind == "presentation":
+            return f"https://docs.google.com/presentation/d/{ident}/export/pdf"
+        return f"https://docs.google.com/document/d/{ident}/export?format=pdf"
+    return None
+
 
 def fetchable(url) -> bool:
-    text = clean(url)
-    return text is not None and text.startswith(FETCHABLE)
+    return source_url(url) is not None
+
+
+# A use case's attachments are named by a path on v1's API, which serves them without a session.
+ATTACHMENT_HOST = "https://papi.genaifund.ai"
+
+
+def attachment_url(path) -> str | None:
+    text = clean(path)
+    if text is None or not re.fullmatch(r"/use-cases/attachments/[\w.\-]+", text):
+        return None
+    return ATTACHMENT_HOST + text
 
 
 def check_codes() -> None:

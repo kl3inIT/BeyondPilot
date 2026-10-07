@@ -30,19 +30,28 @@ def sheet(workbook, name):
 
 
 def is_test_startup(row) -> str | None:
+    """A test name leaves a startup out, and so does a test.com website on a startup that is inactive or says nothing
+    about itself. An active startup with a description keeps its record; only its website is cleared (`website`)."""
     name = mapping.clean(row.get("Company Name")) or ""
     if TEST_NAME.match(name.strip()):
         return "test name"
     if TEST_WEBSITE.search(mapping.clean(row.get("Website")) or ""):
-        return "test.com website"
+        if row.get("Is Active") is not True or mapping.clean(row.get("Brief Description")) is None:
+            return "test.com website, inactive or without a description"
     return None
+
+
+def website(row) -> str | None:
+    """The startup's website, or nothing where v1 holds a test.com placeholder."""
+    text = mapping.clean(row.get("Website"))
+    return None if text is None or TEST_WEBSITE.search(text) else text
 
 
 def startups(rows):
     out = {
         "read": len(rows), "test": [], "imported": 0, "active": 0, "inactive": 0,
         "by_domain": collections.defaultdict(list), "by_name": collections.defaultdict(list),
-        "no_website": 0, "no_own_domain": 0, "fill": collections.Counter(), "unmapped": collections.defaultdict(collections.Counter),
+        "no_website": 0, "no_own_domain": 0, "website_cleared": 0, "fill": collections.Counter(), "unmapped": collections.defaultdict(collections.Counter),
         "files": collections.Counter(), "files_elsewhere": collections.Counter(), "text": collections.Counter(),
         "source": collections.Counter(), "company_type": collections.Counter(), "focus": collections.Counter(),
         "industry": collections.Counter(), "maturity": collections.Counter(),
@@ -58,9 +67,11 @@ def startups(rows):
         out["source"][mapping.clean(row.get("Source")) or "(none)"] += 1
         out["company_type"][mapping.clean(row.get("Company Type")) or "(none)"] += 1
 
-        website = mapping.clean(row.get("Website"))
-        domain = mapping.registrable_domain(website)
-        if website is None:
+        website_text = website(row)
+        if website_text is None and mapping.clean(row.get("Website")):
+            out["website_cleared"] += 1
+        domain = mapping.registrable_domain(website_text)
+        if website_text is None:
             out["no_website"] += 1
         elif domain is None:
             out["no_own_domain"] += 1
@@ -107,9 +118,9 @@ def startups(rows):
                              ("Pitch Deck", "pitch deck")):
             url = mapping.clean(row.get(column))
             if url and mapping.fetchable(url):
-                out["files"][kind] += 1
-            elif url and "drive.google.com" in url:
-                out["files_elsewhere"][kind + " on Google Drive"] += 1
+                out["files"][kind + ("" if url.startswith(mapping.FETCHABLE) else ", on Google if public")] += 1
+            elif url and "google.com" in url:
+                out["files_elsewhere"][kind + ", a Google folder or page, not a file"] += 1
             elif url:
                 out["files_elsewhere"][kind + ", broken (a browser blob: address or text)"] += 1
         # A demo is kept as a link, never fetched.
@@ -214,9 +225,9 @@ def summary(s, u):
         f"- Possible duplicates: {len(s['duplicate_domains'])} domains shared by {dup_domain_records} startups; "
         f"{len(s['duplicate_names'])} names shared by {dup_name_records} startups. Reported, not merged.",
         f"- No website: {s['no_website']}. Website on a social or hosting domain, so no domain of its own: "
-        f"{s['no_own_domain']}.",
+        f"{s['no_own_domain']}. A test.com placeholder cleared, the startup kept: {s['website_cleared']}.",
         "", "Fields filled after mapping:", "", table(s["fill"]),
-        "", "Files on v1 that can be fetched:", "", table(s["files"]),
+        "", "Files that can be fetched:", "", table(s["files"]),
         "", "Files not fetched:", "", table(s["files_elsewhere"]),
         "", f"Extracted text available: {dict(s['text'])}.",
         "", "Focus areas:", "", table(s["focus"]), "", "Industries:", "", table(s["industry"]),
