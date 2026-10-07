@@ -2951,8 +2951,9 @@
       "invitePending": "Invite pending",
       "requests": {
         "title": "Requests to join",
-        "asked": "Asked to join on {day}.",
-        "onDomain": "The email is on your verified domain {domain}.",
+        "asked": "Asked on {day}",
+        "onDomain": "On {domain}",
+        "message": "Their message",
         "foot": "Approving adds them as a member.",
         "approve": "Approve",
         "decline": "Decline"

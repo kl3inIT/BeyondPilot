@@ -2951,8 +2951,9 @@
       "invitePending": "Chờ chấp nhận",
       "requests": {
         "title": "Yêu cầu tham gia",
-        "asked": "Xin tham gia ngày {day}.",
-        "onDomain": "Email thuộc tên miền đã xác minh {domain} của tổ chức.",
+        "asked": "Gửi ngày {day}",
+        "onDomain": "Thuộc {domain}",
+        "message": "Lời nhắn",
         "foot": "Khi được chấp nhận, người này trở thành thành viên.",
         "approve": "Chấp nhận",
         "decline": "Từ chối"

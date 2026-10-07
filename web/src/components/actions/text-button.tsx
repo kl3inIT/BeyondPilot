@@ -12,6 +12,7 @@ const textButtonVariants = cva(
       tone: {
         default: "text-primary",
         danger: "text-destructive",
+        success: "text-success",
       },
       size: {
         sm: "text-xs font-medium [&_svg:not([class*='size-'])]:size-3",
