@@ -12134,7 +12134,8 @@ components:
           - string
           - "null"
           format: uuid
-          description: "Its logo, read at /api/storage/files/{id}; null for none."
+          description: "Its logo, or its organization's when it has none, read at\
+            \ /api/storage/files/{id}; null when neither has one."
         maturity:
           type:
           - string
@@ -12262,7 +12263,8 @@ components:
           - string
           - "null"
           format: uuid
-          description: "Its logo, read at /api/storage/files/{id}; null for none."
+          description: "Its logo, or its organization's when it has none, read at\
+            \ /api/storage/files/{id}; null when neither has one."
         maturity:
           type:
           - string
