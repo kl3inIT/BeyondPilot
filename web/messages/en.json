@@ -2005,7 +2005,9 @@
           "title": "Operators' server",
           "lead": "Off, a tool leaves the list apps see and a call to it is refused.",
           "search": "Finds solutions listed or not, programs, talent, use cases and companies.",
-          "fetch": "Reads one of them in full by the id search returned."
+          "fetch": "Reads one of them in full by the id search returned.",
+          "list_applications": "Lists a program's applications with GenAI Fund's decision and the judges' mean score.",
+          "list_pending_reviews": "Lists what waits for review: organizations, solutions, talent, use cases and customer deployments."
         },
         "user": {
           "title": "User server",

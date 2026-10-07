@@ -340,4 +340,23 @@ public class SolutionAdministration {
 		return new SolutionException(SolutionErrorCode.NOT_AWAITING_REVIEW,
 				"Decision on solution " + solution.getId() + ", which is " + solution.getStatus());
 	}
+
+	/**
+	 * The solutions waiting for an operator's review, at most this many, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public SolutionsAwaitingReview awaitingReview(Actor actor, int limit) {
+		identity.requireOperator(actor);
+		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(null, List.of(), "in_review", null, limit, 0);
+		Map<UUID, OrganizationName> names = organizations
+			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
+		return new SolutionsAwaitingReview(solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview(),
+				rows.stream()
+					.map(row -> new SolutionsAwaitingReview.Item(row.id(), row.name(),
+							names.containsKey(row.organizationId()) ? names.get(row.organizationId()).name() : null,
+							row.summary(), row.submittedAt()))
+					.toList());
+	}
+
 }
