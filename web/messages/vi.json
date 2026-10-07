@@ -5323,7 +5323,8 @@
     },
     "deadline": {
       "date": "Hạn nộp {date}",
-      "time": "{time} ICT"
+      "time": "{time} ICT",
+      "none": "Đang mở, không có hạn"
     },
     "posted": "Đăng {when}",
     "view": "Xem bài toán",

@@ -1015,13 +1015,13 @@ export type CreateSolution = {
 };
 
 /**
- * A use case an operator writes for an organization. It is saved as a draft the organization's members can edit, or published at once when publishNow is true.
+ * A use case an operator writes for an organization. It is saved as a draft the organization's members can edit, or published at once when publishNow is true. Its title, problem, industry, expected outcomes and budget are required; the rest may be left out when the brief does not say.
  */
 export type CreateUseCase = {
     /**
-     * Files the caller uploaded for a use case, in the order shown.
+     * Files the caller uploaded for a use case, in the order shown; none when absent.
      */
-    attachmentFileIds: Array<string>;
+    attachmentFileIds?: Array<string> | null;
     /**
      * Whole units of currency. Null while the budget is to be determined.
      */
@@ -1036,20 +1036,20 @@ export type CreateUseCase = {
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
     /**
-     * When proposals stop. It must be in the future.
+     * When proposals stop, in the future; null for no deadline.
      */
-    closesAt: string;
+    closesAt?: string | null;
     /**
      * The currency of the budget; USD when absent.
      */
     currency?: 'USD' | 'VND';
-    currentProcess: string;
+    currentProcess?: string | null;
     currentSolutions?: string | null;
-    dataReadiness: string;
+    dataReadiness?: string | null;
     expectedOutcomes: string;
     hideOrganizationName: boolean;
     industry: string;
-    integrationRequirements: string;
+    integrationRequirements?: string | null;
     /**
      * An approved organization.
      */
@@ -1064,13 +1064,22 @@ export type CreateUseCase = {
      */
     publishNow: boolean;
     /**
-     * What the solution must do, in the order written.
+     * What the solution must do, in the order written; none when the brief lists none.
      */
-    requirements: Array<UseCaseRequirement>;
-    targetUsers: string;
-    technologies: Array<string>;
-    timelineMaxWeeks: number;
-    timelineMinWeeks: number;
+    requirements?: Array<UseCaseRequirement> | null;
+    targetUsers?: string | null;
+    /**
+     * None when the brief names none.
+     */
+    technologies?: Array<string> | null;
+    /**
+     * Null with timelineMinWeeks when not known.
+     */
+    timelineMaxWeeks?: number | null;
+    /**
+     * Null with timelineMaxWeeks when not known.
+     */
+    timelineMinWeeks?: number | null;
     title: string;
 };
 
@@ -2539,9 +2548,9 @@ export type PublicUseCaseSummary = {
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
     /**
-     * Proposals close at this instant.
+     * Proposals close at this instant; null for no deadline.
      */
-    closesAt: string;
+    closesAt?: string | null;
     /**
      * The currency of the amounts.
      */
@@ -2558,8 +2567,14 @@ export type PublicUseCaseSummary = {
     organizationName?: string | null;
     publishedAt: string;
     technologies: Array<string>;
-    timelineMaxWeeks: number;
-    timelineMinWeeks: number;
+    /**
+     * Null when the brief does not say.
+     */
+    timelineMaxWeeks?: number | null;
+    /**
+     * Null when the brief does not say.
+     */
+    timelineMinWeeks?: number | null;
     title: string;
 };
 

@@ -9624,11 +9624,15 @@ components:
       type: object
       description: "A use case an operator writes for an organization. It is saved\
         \ as a draft the organization's members can edit, or published at once when\
-        \ publishNow is true."
+        \ publishNow is true. Its title, problem, industry, expected outcomes and\
+        \ budget are required; the rest may be left out when the brief does not say."
       properties:
         attachmentFileIds:
-          type: array
-          description: "Files the caller uploaded for a use case, in the order shown."
+          type:
+          - array
+          - "null"
+          description: "Files the caller uploaded for a use case, in the order shown;\
+            \ none when absent."
           items:
             type: string
             format: uuid
@@ -9656,9 +9660,11 @@ components:
         budgetToBeDetermined:
           type: boolean
         closesAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
-          description: When proposals stop. It must be in the future.
+          description: "When proposals stop, in the future; null for no deadline."
         currency:
           type:
           - string
@@ -9669,7 +9675,9 @@ components:
           - VND
           pattern: USD|VND
         currentProcess:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 2000
           minLength: 0
         currentSolutions:
@@ -9679,7 +9687,9 @@ components:
           maxLength: 2000
           minLength: 0
         dataReadiness:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 2000
           minLength: 0
         expectedOutcomes:
@@ -9692,7 +9702,9 @@ components:
           type: string
           pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|climate_sustainability|marketing_advertising|legal|hr_workforce|other
         integrationRequirements:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 2000
           minLength: 0
         organizationId:
@@ -9717,31 +9729,45 @@ components:
           type: boolean
           description: "True to publish at once, false to save a draft for the organization."
         requirements:
-          type: array
-          description: "What the solution must do, in the order written."
+          type:
+          - array
+          - "null"
+          description: "What the solution must do, in the order written; none when\
+            \ the brief lists none."
           items:
             $ref: "#/components/schemas/UseCaseRequirement"
           maxItems: 30
-          minItems: 1
+          minItems: 0
         targetUsers:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 2000
           minLength: 0
         technologies:
-          type: array
+          type:
+          - array
+          - "null"
+          description: None when the brief names none.
           items:
             type: string
             pattern: generative_ai|conversational_ai|predictive_analytics|computer_vision|recommendation|document_intelligence|voice_ai|anomaly_detection|knowledge_retrieval|process_automation|other
           maxItems: 11
-          minItems: 1
+          minItems: 0
         timelineMaxWeeks:
-          type: integer
+          type:
+          - integer
+          - "null"
           format: int32
+          description: Null with timelineMinWeeks when not known.
           maximum: 260
           minimum: 1
         timelineMinWeeks:
-          type: integer
+          type:
+          - integer
+          - "null"
           format: int32
+          description: Null with timelineMaxWeeks when not known.
           maximum: 260
           minimum: 1
         title:
@@ -9749,24 +9775,14 @@ components:
           maxLength: 200
           minLength: 0
       required:
-      - attachmentFileIds
       - budgetMembersOnly
       - budgetToBeDetermined
-      - closesAt
-      - currentProcess
-      - dataReadiness
       - expectedOutcomes
       - hideOrganizationName
       - industry
-      - integrationRequirements
       - organizationId
       - problemStatement
       - publishNow
-      - requirements
-      - targetUsers
-      - technologies
-      - timelineMaxWeeks
-      - timelineMinWeeks
       - title
     CustomerDeployment:
       type: object
@@ -12663,9 +12679,11 @@ components:
         budgetToBeDetermined:
           type: boolean
         closesAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
-          description: Proposals close at this instant.
+          description: Proposals close at this instant; null for no deadline.
         currency:
           type: string
           description: The currency of the amounts.
@@ -12693,25 +12711,28 @@ components:
           items:
             type: string
         timelineMaxWeeks:
-          type: integer
+          type:
+          - integer
+          - "null"
           format: int32
+          description: Null when the brief does not say.
         timelineMinWeeks:
-          type: integer
+          type:
+          - integer
+          - "null"
           format: int32
+          description: Null when the brief does not say.
         title:
           type: string
       required:
       - budgetMembersOnly
       - budgetToBeDetermined
-      - closesAt
       - currency
       - goal
       - id
       - industry
       - publishedAt
       - technologies
-      - timelineMaxWeeks
-      - timelineMinWeeks
       - title
     ReceivedIntroductions:
       type: object
