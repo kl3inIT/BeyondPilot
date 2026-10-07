@@ -36,7 +36,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
  * it, and every change lands in the audit log.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		properties = "beyondpilot.identity.operator-emails=operator@email.test")
+		properties = "beyondpilot.identity.operator-emails=operator@email.test,tester@email.test")
 @Import({ TestcontainersConfiguration.class, EmailAdministrationTest.Mail.class })
 class EmailAdministrationTest {
 
@@ -150,9 +150,47 @@ class EmailAdministrationTest {
 
 		// A test to oneself is not recorded; one to anyone else is, with what was sent.
 		post(operator, API + "/settings/test", form).expectStatus().isOk();
-		assertThat(events("email_address")).filteredOn("email.test_send"::equals).hasSize(2);
+		assertThat(testsBy("operator@email.test")).isEqualTo(2);
 		assertProblem(post(operator, API + "/settings/test?to=not-an-address", form), 400,
 				"NOTIFICATION_TEST_RECIPIENT_INVALID");
+	}
+
+	@Test
+	void aTestNeverReachesASuppressedAddressNorOneThatReadsAsSeveral() {
+		String read = body(get(operator, API + "/settings").expectStatus().isOk());
+		Map<String, Object> form = settings("smtp", version(read), smtp(mail.smtpPort()), ses(null, null, null), null);
+		Map<String, String> draft = Map.of("subject", "{{code}} opens BeyondPilot", "body", "**{{code}}** for {{minutes}} minutes.");
+		post(operator, API + "/suppressions", Map.of("address", "unreachable@email.test")).expectStatus().isCreated();
+
+		assertProblem(post(operator, API + "/settings/test?to=Unreachable@Email.test", form), 409,
+				"NOTIFICATION_ADDRESS_SUPPRESSED");
+		assertProblem(post(operator, API + "/templates/sign_in_code/test?to=unreachable@email.test", draft), 409,
+				"NOTIFICATION_ADDRESS_SUPPRESSED");
+		assertThat(mail.countTo("unreachable@email.test")).isZero();
+		// A mail library reads these as more than one recipient, or as a name and an address.
+		for (String several : List.of("first,second@email.test", "first;second@email.test", "first!second@email.test")) {
+			assertProblem(post(operator, API + "/settings/test?to=" + several, form), 400,
+					"NOTIFICATION_TEST_RECIPIENT_INVALID");
+		}
+		assertThat(mail.countTo("second@email.test")).isZero();
+	}
+
+	@Test
+	void testsToOtherAddressesStopAtTheHourlyLimitAndEachIsRecordedBeforeItLeaves() {
+		String tester = TestSignIn.session(client, mail, "tester@email.test");
+		String read = body(get(tester, API + "/settings").expectStatus().isOk());
+		Map<String, Object> form = settings("smtp", version(read), smtp(mail.smtpPort()), ses(null, null, null), null);
+
+		for (int i = 0; i < TestRecipients.HOURLY_LIMIT; i++) {
+			post(tester, API + "/settings/test?to=reader" + i + "@email.test", form).expectStatus().isOk();
+		}
+		assertProblem(post(tester, API + "/settings/test?to=one-more@email.test", form), 429,
+				"NOTIFICATION_TEST_LIMIT_REACHED");
+		assertThat(mail.countTo("one-more@email.test")).isZero();
+		assertThat(testsBy("tester@email.test")).isEqualTo(TestRecipients.HOURLY_LIMIT);
+		// The limit is on mail to other people; a test to oneself still goes.
+		String own = body(post(tester, API + "/settings/test", form).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(own, "$.sent")).isTrue();
 	}
 
 	@Test
@@ -384,6 +422,13 @@ class EmailAdministrationTest {
 			.param(resourceType)
 			.query(String.class)
 			.list();
+	}
+
+	private long testsBy(String operatorEmail) {
+		return jdbc.sql("select count(*) from audit_event where action = 'email.test_send' and actor_email = ?")
+			.param(operatorEmail)
+			.query(Long.class)
+			.single();
 	}
 
 	private RestTestClient.ResponseSpec get(String session, String path) {

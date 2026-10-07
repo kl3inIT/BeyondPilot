@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.audit;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.audit.persistence.AuditEventRepository;
@@ -46,6 +47,14 @@ public class AuditTrail {
 			.addKeyValue("resource_type", record.resource().type())
 			.addKeyValue("resource_id", record.resource().id())
 			.log("Audit event recorded");
+	}
+
+	/**
+	 * How many events of one action an actor has recorded since a moment: what a limit on that action counts.
+	 */
+	@Transactional(readOnly = true)
+	public long count(AuditAction action, UUID actorId, Instant since) {
+		return events.count(action.value(), actorId, since);
 	}
 
 }

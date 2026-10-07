@@ -1981,7 +1981,10 @@
         "throttled": "The provider is limiting sending right now. Try again in a minute.",
         "unavailable": "The provider could not be reached. Try again in a minute.",
         "rejected": "The provider refused the email. Check that the sender's domain is verified.",
-        "invalidRecipient": "The provider refused your address as a recipient."
+        "invalidRecipient": "The provider refused your address as a recipient.",
+        "recipientInvalid": "Write one plain email address, without a name or a second address.",
+        "suppressed": "This address is suppressed, so no email goes to it. Remove it from the suppression list first.",
+        "limitReached": "You have sent as many test emails to other people as an hour allows. Send one to yourself, or try later."
       },
       "templates": {
         "metaTitle": "Email templates",

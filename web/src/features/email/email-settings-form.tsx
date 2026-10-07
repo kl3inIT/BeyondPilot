@@ -40,7 +40,7 @@ import {
   type SaveEmailSettings,
 } from "@/lib/api/generated";
 
-import { testFailures } from "./email-test-failures";
+import { testFailures, testRefusals } from "./email-test-failures";
 import { TestSend } from "./test-send";
 
 const providers = ["ses", "resend", "smtp"] as const;
@@ -321,11 +321,12 @@ function EmailSettingsForm({
     } catch (error) {
       const code = error instanceof ApiError ? error.code : undefined;
       notify.error(
-        code === "NOTIFICATION_SETTINGS_INCOMPLETE"
-          ? "Admin.email.settings.errors.incomplete"
-          : code === "NOTIFICATION_ENCRYPTION_KEY_MISSING"
-            ? "Admin.email.settings.errors.encryption"
-            : "Admin.email.settings.errors.unknown",
+        (code === undefined ? undefined : testRefusals[code]) ??
+          (code === "NOTIFICATION_SETTINGS_INCOMPLETE"
+            ? "Admin.email.settings.errors.incomplete"
+            : code === "NOTIFICATION_ENCRYPTION_KEY_MISSING"
+              ? "Admin.email.settings.errors.encryption"
+              : "Admin.email.settings.errors.unknown"),
       );
     } finally {
       setTesting(false);
