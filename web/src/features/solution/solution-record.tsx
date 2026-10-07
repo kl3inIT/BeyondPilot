@@ -101,7 +101,7 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
         <ExternalLinkIcon aria-hidden="true" />
       </TextButton>
     ) : null;
-  const waiting = solution.customerDeployments.filter((item) => item.status === "submitted").length;
+  const waiting = solution.customerDeployments.filter((item) => item.status === "in_review").length;
   const pictured = solution.logo || solution.cover || solution.images.length > 0;
   const open = (image: SolutionImage) => t("openImage", { name: image.fileName });
 

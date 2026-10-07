@@ -6,7 +6,7 @@ import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
-import { ReviewStatus } from "@/components/composites/review-status";
+import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVocabulary } from "@/i18n/vocabulary";
@@ -43,7 +43,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
     sender: solution.submittedBy ?? t("senderUnknown"),
     status: (
       <span className="flex flex-col items-start gap-0.5">
-        <ReviewStatus state={solution.status}>{status(solution.status)}</ReviewStatus>
+        <ReviewStatus state={reviewState(solution)}>{status(reviewState(solution))}</ReviewStatus>
         {solution.deploymentsAwaitingReview > 0 && (
           <span className="text-xs text-muted-foreground">
             {t("deploymentsWaiting", { count: solution.deploymentsAwaitingReview })}
@@ -54,17 +54,17 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
     // A record that waits says for how long; a decided one keeps the day it was sent.
     submitted: !solution.submittedAt
       ? ""
-      : solution.status === "submitted"
+      : solution.status === "in_review"
         ? t("waitingSince", { time: format.relativeTime(new Date(solution.submittedAt)) })
         : format.dateTime(new Date(solution.submittedAt), { dateStyle: "medium" }),
-    waiting: solution.status === "submitted" || solution.deploymentsAwaitingReview > 0,
+    waiting: solution.status === "in_review" || solution.deploymentsAwaitingReview > 0,
   }));
 
   const narrowed = search.status !== null || search.industry !== null;
   const filtered = search.q.trim() !== "" || narrowed;
   const empty =
     rows.length > 0 ? null : search.q.trim() === "" &&
-      search.status === "submitted" &&
+      search.status === "in_review" &&
       search.industry === null ? (
       <DataTableEmpty
         icon={<BoxesIcon aria-hidden="true" />}
@@ -112,12 +112,12 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
         </div>
         {/* How much waits, whatever the list is narrowed to, and the way to only that. */}
         {solutions.awaitingReview > 0 &&
-          (search.status === "submitted" ? (
+          (search.status === "in_review" ? (
             <span className="text-sm font-medium">
               {t("awaiting", { count: solutions.awaitingReview })}
             </span>
           ) : (
-            <TextButton href={address(siteRoutes.adminSolutions, { status: "submitted" })}>
+            <TextButton href={address(siteRoutes.adminSolutions, { status: "in_review" })}>
               {t("awaiting", { count: solutions.awaitingReview })}
             </TextButton>
           ))}

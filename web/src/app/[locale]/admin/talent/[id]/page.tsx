@@ -33,7 +33,7 @@ export default async function AdminTalentRoute({
     notFound();
   }
 
-  const waiting = await readAdminTalentList({ q: "", status: "submitted", page: 1 });
+  const waiting = await readAdminTalentList({ q: "", status: "in_review", page: 1 });
   // The queue is walked in its order: the record after this one, or its first when this is the last.
   const at = waiting.items.findIndex((item) => item.id === id);
   const other = waiting.items[at + 1] ?? waiting.items.find((item) => item.id !== id);

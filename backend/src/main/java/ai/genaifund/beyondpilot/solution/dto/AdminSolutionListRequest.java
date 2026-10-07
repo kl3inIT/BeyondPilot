@@ -11,9 +11,12 @@ import org.jspecify.annotations.Nullable;
 public record AdminSolutionListRequest(
 		@Parameter(description = "Solutions whose name, or whose organization's name, contains this, ignoring case.") @Size(
 				max = 100) @Nullable String q,
-		@Parameter(description = "Only solutions of this status. Drafts are never listed.",
-				schema = @Schema(allowableValues = { "submitted", "approved", "rejected" })) @Pattern(
-						regexp = "submitted|approved|rejected") @Nullable String status,
+		@Parameter(
+				description = "Only solutions of this review status, or `suspended` for those taken down; `approved` "
+						+ "leaves out those taken down. Drafts are never listed.",
+				schema = @Schema(allowableValues = { "in_review", "needs_changes", "approved", "rejected",
+						"suspended" })) @Pattern(
+								regexp = "in_review|needs_changes|approved|rejected|suspended") @Nullable String status,
 		@Parameter(description = "Only solutions for this industry.") @Pattern(
 				regexp = SolutionCodes.INDUSTRY) @Nullable String industry,
 		@Parameter(description = "The page, counted from 1.",

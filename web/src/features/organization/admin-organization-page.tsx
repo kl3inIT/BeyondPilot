@@ -7,7 +7,7 @@ import { TextButton } from "@/components/actions/text-button";
 import { DataTable } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
-import { ReviewStatus } from "@/components/composites/review-status";
+import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { Badge } from "@/components/ui/badge";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
@@ -59,7 +59,8 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
   const { organization } = detail;
   const record = `${siteRoutes.adminOrganizations}/${organization.id}`;
   const day = (at: string) => format.dateTime(new Date(at), { dateStyle: "medium" });
-  const suspended = organization.status === "suspended";
+  const state = reviewState(organization);
+  const suspended = state === "suspended";
 
   const tabs = adminOrganizationTabs.map((key) => ({
     key,
@@ -88,15 +89,15 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
               <h1 className="text-2xl font-semibold tracking-tight break-words">
                 {organization.name}
               </h1>
-              <ReviewStatus state={organization.status} appearance="pill">
-                {s(organization.status)}
+              <ReviewStatus state={state} appearance="pill">
+                {s(state)}
               </ReviewStatus>
             </div>
             <p className="text-sm text-muted-foreground">{kind.join(" · ")}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {organization.status === "approved" && (
+          {state === "approved" && (
             <>
               <Button
                 prominence="secondary"
@@ -107,17 +108,21 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
               <TakeDownMenu organization={organization} members={detail.members.length} />
             </>
           )}
-          {organization.status === "pending" && (
-            <OrganizationReviewButton organization={organization} />
-          )}
+          {state === "in_review" && <OrganizationReviewButton organization={organization} />}
         </div>
       </div>
 
-      {organization.status === "rejected" && (
+      {state === "rejected" && (
         <p className="rounded-lg border bg-muted p-3 text-sm">
           <span className="font-medium">
             {t("refused", { reason: reasonName(organization.decisionReason ?? "other") })}
           </span>
+          {organization.decisionMessage && <> {organization.decisionMessage}</>}
+        </p>
+      )}
+      {state === "needs_changes" && (
+        <p className="rounded-lg border bg-muted p-3 text-sm">
+          <span className="font-medium">{t("sentBack")}</span>
           {organization.decisionMessage && <> {organization.decisionMessage}</>}
         </p>
       )}

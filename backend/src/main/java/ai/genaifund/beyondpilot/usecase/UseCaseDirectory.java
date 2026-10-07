@@ -43,31 +43,51 @@ public class UseCaseDirectory {
 	}
 
 	/**
-	 * A published use case as search indexes it; empty for any other. One past its close date is still returned, and
-	 * search leaves it out by that date.
+	 * A published use case as search indexes it; empty for any other, or when its organization is not approved or is
+	 * taken down. One past its close date is still returned, and search leaves it out by that date.
 	 */
 	@Transactional(readOnly = true)
 	public Optional<IndexedUseCase> indexed(UUID useCaseId) {
 		return useCases.findById(useCaseId)
-			.filter(useCase -> UseCase.PUBLISHED.equals(useCase.getStatus()) && useCase.getTitle() != null)
+			.filter(useCase -> UseCase.APPROVED.equals(useCase.getStatus()) && useCase.getTitle() != null)
 			.flatMap(useCase -> indexed(List.of(useCase)).stream().findFirst());
 	}
 
 	/** Every published use case as search indexes it, for a rebuild of the index. */
 	@Transactional(readOnly = true)
 	public List<IndexedUseCase> indexedAll() {
-		return indexed(useCases.findByStatus(UseCase.PUBLISHED)
+		return indexed(useCases.findByStatus(UseCase.APPROVED)
 			.stream()
 			.filter(useCase -> useCase.getTitle() != null)
 			.toList());
 	}
 
+	/**
+	 * The published use cases of an organization as search indexes them, when what is shown of it changed; none while
+	 * the organization is not approved or is taken down.
+	 */
+	@Transactional(readOnly = true)
+	public List<IndexedUseCase> indexedOf(UUID organizationId) {
+		return indexed(useCases.findByOrganizationIdOrderByUpdatedAtDescIdAsc(organizationId)
+			.stream()
+			.filter(useCase -> UseCase.APPROVED.equals(useCase.getStatus()) && useCase.getTitle() != null)
+			.toList());
+	}
+
+	/** Every use case of an organization, whatever its status, so search can take out those it no longer shows. */
+	@Transactional(readOnly = true)
+	public List<UUID> idsOf(UUID organizationId) {
+		return useCases.findByOrganizationIdOrderByUpdatedAtDescIdAsc(organizationId)
+			.stream()
+			.map(UseCase::getId)
+			.toList();
+	}
+
+	/** Those of these published use cases whose organization is approved and not taken down. */
 	private List<IndexedUseCase> indexed(List<UseCase> published) {
-		Map<UUID, OrganizationName> names = organizations.names(published.stream()
-			.filter(useCase -> !useCase.isHideOrganizationName())
-			.map(UseCase::getOrganizationId)
-			.collect(Collectors.toSet()));
-		return published.stream().map(useCase -> {
+		Map<UUID, OrganizationName> names = organizations
+			.approvedNames(published.stream().map(UseCase::getOrganizationId).collect(Collectors.toSet()));
+		return published.stream().filter(useCase -> names.containsKey(useCase.getOrganizationId())).map(useCase -> {
 			OrganizationName organization = useCase.isHideOrganizationName() ? null
 					: names.get(useCase.getOrganizationId());
 			boolean hidden = useCase.isBudgetMembersOnly();

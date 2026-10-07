@@ -217,7 +217,7 @@ public class UseCaseAdministration {
 	public AdminUseCaseResponse sendBack(Actor actor, UUID id, SendBackUseCaseRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		Instant now = Instant.now();
-		UseCase useCase = decidable(id, now, UseCase.IN_REVIEW, UseCase.PUBLISHED);
+		UseCase useCase = decidable(id, now, UseCase.IN_REVIEW, UseCase.APPROVED);
 		String reason = request.reason().strip();
 		useCase.sendBack(operator.accountId(), now, reason);
 		useCases.saveAndFlush(useCase);

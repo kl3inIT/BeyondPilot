@@ -122,8 +122,18 @@ public class EmailService {
 	/** What GenAI Fund decided about a talent profile. */
 	public enum TalentDecision {
 
-		APPROVED, CHANGES_REQUESTED, REMOVED
+		APPROVED, CHANGES_REQUESTED, REMOVED, RESTORED
 
+	}
+
+	/**
+	 * Tells an owner that GenAI Fund sent their organization back with what to change.
+	 * @param reason what GenAI Fund asks them to change
+	 */
+	@Transactional
+	public void sendOrganizationSentBack(String recipient, String organizationName, String reason) {
+		queue(EmailKind.ORGANIZATION_SENT_BACK, recipient,
+				values("organizationName", organizationName, "reason", reason));
 	}
 
 	/**
@@ -162,6 +172,7 @@ public class EmailService {
 			case APPROVED -> EmailKind.TALENT_APPROVED;
 			case CHANGES_REQUESTED -> EmailKind.TALENT_CHANGES_REQUESTED;
 			case REMOVED -> EmailKind.TALENT_REMOVED;
+			case RESTORED -> EmailKind.TALENT_RESTORED;
 		};
 		queue(kind, recipient, values("profileName", profileName, "note", note));
 	}
@@ -181,6 +192,32 @@ public class EmailService {
 				values("senderName", senderName, "senderOrganization", senderOrganization, "aboutProject",
 						"project".equals(topic), "aboutRole", "role".equals(topic), "aboutOther",
 						!"project".equals(topic) && !"role".equals(topic), "message", message));
+	}
+
+	/** What GenAI Fund decided about a solution. */
+	public enum SolutionDecision {
+
+		APPROVED, SENT_BACK, REJECTED, TAKEN_DOWN, RESTORED
+
+	}
+
+	/**
+	 * Tells a member of an organization what GenAI Fund decided about one of its solutions. What to change, when GenAI
+	 * Fund sent it back, is quoted as written; any other reason is read after signing in.
+	 * @param reason what GenAI Fund asked to change, when it sent the solution back; null otherwise
+	 */
+	@Transactional
+	public void sendSolutionDecision(String recipient, String organizationName, String solutionName,
+			SolutionDecision decision, @Nullable String reason) {
+		EmailKind kind = switch (decision) {
+			case APPROVED -> EmailKind.SOLUTION_APPROVED;
+			case SENT_BACK -> EmailKind.SOLUTION_SENT_BACK;
+			case REJECTED -> EmailKind.SOLUTION_REJECTED;
+			case TAKEN_DOWN -> EmailKind.SOLUTION_TAKEN_DOWN;
+			case RESTORED -> EmailKind.SOLUTION_RESTORED;
+		};
+		queue(kind, recipient,
+				values("solutionName", solutionName, "organizationName", organizationName, "reason", reason));
 	}
 
 	/**

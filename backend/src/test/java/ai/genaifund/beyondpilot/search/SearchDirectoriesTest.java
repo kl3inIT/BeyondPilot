@@ -31,7 +31,8 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 /**
  * Solutions and talent in search over real HTTP against PostgreSQL, changed the way their owners and operators change
  * them: approved items are found without a session, an unlisted solution stays in the index for matching but out of a
- * visitor's results, a renamed organization is shown under its new name, and a rejected or unlisted item leaves. Only
+ * visitor's results, a renamed organization is shown under its new name, a rejected or unlisted item leaves, and so
+ * do the items of an organization taken down. Only
  * the SMTP server is replaced.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -65,7 +66,7 @@ class SearchDirectoriesTest {
 	}
 
 	@Test
-	void anApprovedSolutionIsFoundUnderItsOrganizationAndLeavesTheResultsWhenUnlistedOrRejected() {
+	void anApprovedSolutionIsFoundUnderItsOrganizationAndLeavesTheResultsWhenUnlistedOrTakenDown() {
 		String owner = TestSignIn.session(client, mail, "owner-" + word + "@directories.test");
 		UUID organization = organization(owner, "Revve " + word);
 		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
@@ -98,13 +99,35 @@ class SearchDirectoriesTest {
 		// Matching may still use it.
 		assertThat(listed(solution)).isFalse();
 
-		post(operator, "/api/solution/admin/solutions/" + solution + "/reject",
-				Map.of("reason", "other", "message", "Tell us where the model is."));
+		post(operator, "/api/solution/admin/solutions/" + solution + "/take-down",
+				Map.of("reason", "unverifiable", "message", "Tell us where the model is."));
+		// Out of matching too while it is down, and back once restored.
 		await().atMost(WAIT).until(() -> listed(solution) == null);
+		post(operator, "/api/solution/admin/solutions/" + solution + "/restore", null);
+		await().atMost(WAIT).until(() -> listed(solution) != null);
 	}
 
 	@Test
-	void anApprovedListedProfileIsFoundAndLeavesTheResultsWhenUnlisted() {
+	void theSolutionsOfAnOrganizationTakenDownLeaveTheIndexUntilItIsRestored() {
+		String owner = TestSignIn.session(client, mail, "down-" + word + "@directories.test");
+		UUID organization = organization(owner, "Down " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		UUID solution = submittedSolution(owner, "Claims Desk " + word);
+		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
+		await().atMost(WAIT).until(() -> total("claims desk " + word) == 1);
+
+		post(operator, "/api/organization/admin/organizations/" + organization + "/take-down",
+				Map.of("reason", "breaks_the_rules"));
+		// Out of the results and out of matching while it is down.
+		await().atMost(WAIT).until(() -> listed(solution) == null);
+		assertThat(total("claims desk " + word)).isZero();
+
+		post(operator, "/api/organization/admin/organizations/" + organization + "/restore", null);
+		await().atMost(WAIT).until(() -> total("claims desk " + word) == 1);
+	}
+
+	@Test
+	void anApprovedListedProfileIsFoundAndLeavesTheResultsWhenTakenDownOrUnlisted() {
 		String person = TestSignIn.session(client, mail, "person-" + word + "@directories.test");
 		String saved = body(put(person, "/api/talent/mine", profile("Lan " + word, null)));
 		UUID profile = UUID.fromString(JsonPath.read(saved, "$.id"));
@@ -119,6 +142,11 @@ class SearchDirectoriesTest {
 		assertThat(JsonPath.<List<String>>read(body, "$.items[0].roles")).containsExactly("ml_engineer");
 		assertThat(JsonPath.<String>read(body, "$.items[0].worksAt")).isEqualTo("Revve AI");
 		assertThat(JsonPath.<String>read(body, "$.items[0].city")).isEqualTo("Ho Chi Minh City");
+
+		post(operator, "/api/talent/admin/profiles/" + profile + "/take-down", Map.of("reason", "other"));
+		await().atMost(WAIT).until(() -> total("lan " + word) == 0);
+		post(operator, "/api/talent/admin/profiles/" + profile + "/restore", null);
+		await().atMost(WAIT).until(() -> total("lan " + word) == 1);
 
 		String mine = body(client.get()
 			.uri("/api/talent/mine")

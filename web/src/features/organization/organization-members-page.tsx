@@ -17,6 +17,7 @@ import { MemberRole } from "./member-role";
 import { NoticeCard } from "./notice-card";
 import { OrganizationAction } from "./organization-action";
 import { OrganizationFrame } from "./organization-frame";
+import { isApproved } from "./organization-format";
 import { organizationMembersSearch } from "./organization-members-search";
 import { OrganizationSection } from "./organization-section";
 
@@ -209,7 +210,7 @@ function OrganizationMembersPage({
         />
       </OrganizationSection>
 
-      {owner && organization.status === "approved" && (
+      {owner && isApproved(organization) && (
         <OrganizationSection id="members-access" title={t("access.title")}>
           <JoinAccess emailDomain={emailDomain} autoJoin={organization.autoJoin} />
         </OrganizationSection>

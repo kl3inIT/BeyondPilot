@@ -726,6 +726,7 @@
           "create": "Thêm tổ chức",
           "approve": "Duyệt tổ chức",
           "refuse": "Không duyệt tổ chức",
+          "send_back": "Trả lại tổ chức",
           "claim_approve": "Chấp nhận yêu cầu nhận tổ chức",
           "claim_decline": "Từ chối yêu cầu nhận tổ chức",
           "member_role": "Đổi vai trò thành viên",
@@ -738,7 +739,10 @@
         },
         "solution": {
           "approve": "Duyệt giải pháp",
-          "reject": "Trả lại giải pháp",
+          "send_back": "Trả lại giải pháp",
+          "reject": "Từ chối hoặc trả lại giải pháp",
+          "take_down": "Gỡ giải pháp xuống",
+          "restore": "Khôi phục giải pháp",
           "deployment_approve": "Duyệt triển khai khách hàng",
           "deployment_reject": "Trả lại triển khai khách hàng",
           "back": "Ghi xác nhận của GenAI Fund về giải pháp"
@@ -754,7 +758,8 @@
           "enquiry_decline": "Đã từ chối một lời nhắn qua hồ sơ nhân lực",
           "enquiry_report": "Đã báo cáo một lời nhắn qua hồ sơ nhân lực",
           "request_changes": "Đã yêu cầu sửa một hồ sơ nhân lực",
-          "remove": "Đã gỡ một hồ sơ nhân lực",
+          "remove": "Đã gỡ xuống một hồ sơ nhân lực",
+          "restore": "Khôi phục một hồ sơ nhân lực",
           "delete": "Đã xoá một hồ sơ nhân lực"
         },
         "proposal": {
@@ -813,6 +818,7 @@
           "create": "Thêm tổ chức <resource></resource>",
           "approve": "Duyệt tổ chức <resource></resource>",
           "refuse": "Không duyệt tổ chức <resource></resource>",
+          "send_back": "Trả lại tổ chức <resource></resource>",
           "claim_approve": "Chấp nhận yêu cầu nhận <resource></resource>",
           "claim_decline": "Từ chối yêu cầu nhận <resource></resource>",
           "member_role": "Đổi vai trò một thành viên của <resource></resource>",
@@ -825,7 +831,10 @@
         },
         "solution": {
           "approve": "Duyệt giải pháp <resource></resource>",
-          "reject": "Trả lại giải pháp <resource></resource>",
+          "send_back": "Trả lại giải pháp <resource></resource>",
+          "reject": "Từ chối giải pháp <resource></resource>",
+          "take_down": "Gỡ giải pháp <resource></resource> xuống",
+          "restore": "Khôi phục giải pháp <resource></resource>",
           "deployment_approve": "Duyệt triển khai khách hàng <resource></resource>",
           "deployment_reject": "Trả lại triển khai khách hàng <resource></resource>",
           "back": "Ghi xác nhận của GenAI Fund về giải pháp <resource></resource>"
@@ -841,7 +850,8 @@
           "enquiry_decline": "Đã từ chối một lời nhắn tới <resource></resource>",
           "enquiry_report": "Đã báo cáo một lời nhắn tới <resource></resource>",
           "request_changes": "Đã yêu cầu sửa hồ sơ nhân lực của <resource></resource>",
-          "remove": "Đã gỡ hồ sơ nhân lực của <resource></resource>",
+          "remove": "Đã gỡ xuống hồ sơ nhân lực của <resource></resource>",
+          "restore": "Khôi phục hồ sơ nhân lực của <resource></resource>",
           "delete": "Đã xoá hồ sơ nhân lực của <resource></resource>"
         },
         "proposal": {
@@ -922,7 +932,8 @@
         }
       },
       "status": {
-        "pending": "Cần duyệt",
+        "in_review": "Cần duyệt",
+        "needs_changes": "Đã trả lại",
         "approved": "Đã duyệt",
         "rejected": "Không được duyệt",
         "suspended": "Đã gỡ xuống"
@@ -978,6 +989,7 @@
         "back": "Tất cả tổ chức",
         "createdByOn": "{name}, ngày {day}",
         "refused": "Không được duyệt: {reason}.",
+        "sentBack": "Đã trả lại cho các chủ sở hữu:",
         "claims": "Yêu cầu nhận tổ chức",
         "tabs": {
           "label": "Các phần của tổ chức này",
@@ -997,10 +1009,15 @@
         "lead": "Do {creator} tạo ngày {day}.",
         "leadUnknown": "Tạo ngày {day}.",
         "approve": "Duyệt",
-        "refuse": "Không duyệt…",
-        "refuseTitle": "Không duyệt {name}",
-        "refuseLead": "Các chủ sở hữu đọc được lý do, và có thể sửa tổ chức rồi gửi lại.",
+        "refuse": "Từ chối…",
+        "refuseTitle": "Từ chối {name}",
+        "refuseLead": "Các chủ sở hữu đọc được lý do. Từ chối là quyết định cuối cùng; nếu cần sửa, hãy trả lại tổ chức.",
         "refuseConfirm": "Gửi quyết định",
+        "sendBack": "Trả lại…",
+        "sendBackTitle": "Trả lại {name}",
+        "sendBackLead": "Các chủ sở hữu đọc được cần sửa gì. Khi họ sửa và lưu tổ chức, tổ chức được gửi duyệt lại.",
+        "sendBackLabel": "Các chủ sở hữu cần sửa gì?",
+        "sendBackConfirm": "Trả lại",
         "reason": "Lý do",
         "message": "Lời nhắn cho các chủ sở hữu",
         "messageHint": "Quyết định được ghi vào nhật ký kiểm toán.",
@@ -1129,19 +1146,28 @@
       "review": {
         "open": "Duyệt",
         "approve": "Duyệt",
-        "reject": "Trả lại…",
+        "sendBack": "Trả lại…",
+        "reject": "Từ chối…",
         "takeDown": "Gỡ xuống…",
-        "rejectTitle": "Trả lại {name}?",
-        "rejectLead": "Giải pháp trở về tổ chức để chỉnh sửa. Chủ sở hữu đọc được lý do.",
-        "takeDownLead": "Giải pháp rời danh mục ngay. Chủ sở hữu đọc được lý do và có thể gửi lại.",
-        "reason": "Lý do",
-        "message": "Ghi chú (không bắt buộc)",
-        "messageHint": "Người nhận đọc nguyên văn. Hãy nêu cần sửa gì.",
-        "cancel": "Hủy",
-        "rejectConfirm": "Trả lại",
-        "takeDownConfirm": "Gỡ xuống",
-        "reasonPlaceholder": "Chọn lý do",
+        "restore": "Khôi phục",
+        "sendBackTitle": "Trả lại {name}?",
+        "sendBackLead": "Giải pháp trở về tổ chức để chỉnh sửa. Chủ sở hữu đọc nội dung bạn viết rồi gửi lại.",
+        "sendBackLabel": "Cần sửa gì",
+        "sendBackConfirm": "Trả lại",
+        "rejectTitle": "Từ chối hẳn {name}?",
+        "rejectLead": "Chủ sở hữu không gửi lại được. Nếu chỉ thiếu thông tin, hãy trả lại.",
+        "rejectConfirm": "Từ chối",
         "takeDownTitle": "Gỡ {name} xuống?",
+        "takeDownLead": "Giải pháp rời danh mục và matching ngay nhưng vẫn ở trạng thái đã duyệt. Chủ sở hữu đọc lý do; bạn có thể khôi phục.",
+        "takeDownConfirm": "Gỡ xuống",
+        "restoreTitle": "Đưa {name} trở lại?",
+        "restoreLead": "Giải pháp trở lại danh mục và matching, không cần duyệt lại, theo cách hiển thị chủ sở hữu đã chọn. Họ nhận email.",
+        "reason": "Lý do",
+        "reasonPlaceholder": "Chọn lý do",
+        "message": "Ghi chú (không bắt buộc)",
+        "messageHint": "Người nhận đọc nguyên văn.",
+        "cancel": "Hủy",
+        "back": "Quay lại",
         "keys": "Phím: A duyệt · S trả lại",
         "keysApproved": "Phím: S gỡ xuống"
       },
@@ -1149,7 +1175,7 @@
         "back": "Tất cả giải pháp",
         "submitted": "Gửi ngày {day}",
         "unlisted": "Tổ chức đang ẩn",
-        "rejected": "Cần chỉnh sửa: {reason}.",
+        "rejected": "Bị từ chối: {reason}.",
         "next": "Chờ duyệt tiếp theo: {name}",
         "position": "{place} trên {total} đang chờ",
         "waitingSince": "Gửi {time}",
@@ -1162,7 +1188,9 @@
         "sent": "Thời điểm gửi",
         "directory": "Danh mục",
         "listed": "Sẽ hiện khi được duyệt",
-        "deploymentsWaiting": "{count} triển khai khách hàng chờ duyệt"
+        "deploymentsWaiting": "{count} triển khai khách hàng chờ duyệt",
+        "sentBack": "Đã trả lại:",
+        "takenDown": "Đã gỡ xuống: {reason}."
       },
       "record": {
         "basics": "Thông tin cơ bản",
@@ -1261,7 +1289,7 @@
         "takeDown": "Gỡ…",
         "rejectTitle": "Yêu cầu {name} sửa hồ sơ?",
         "rejectLead": "Hồ sơ trở về chủ nhân để chỉnh sửa. Họ đọc được lý do.",
-        "takeDownLead": "Hồ sơ rời khỏi danh mục ngay. Người đó nhận email, đọc lý do của bạn và có thể gửi lại.",
+        "takeDownLead": "Hồ sơ rời khỏi danh mục ngay nhưng vẫn ở trạng thái đã duyệt. Người đó nhận email và đọc lý do; họ có thể sửa rồi gửi lại, hoặc bạn khôi phục.",
         "reason": "Lý do",
         "message": "Ghi chú (không bắt buộc)",
         "messageHint": "Người nhận đọc nguyên văn. Hãy nêu cần sửa gì.",
@@ -1269,40 +1297,43 @@
         "rejectConfirm": "Yêu cầu sửa",
         "takeDownConfirm": "Gỡ",
         "reasonPlaceholder": "Chọn lý do",
-        "takeDownTitle": "Gỡ hồ sơ {name}?",
+        "takeDownTitle": "Gỡ hồ sơ {name} xuống?",
         "keyA": "Phím: A",
-        "keyS": "Phím: S"
+        "keyS": "Phím: S",
+        "restore": "Khôi phục",
+        "restoreTitle": "Đưa {name} trở lại danh mục?",
+        "restoreLead": "Hồ sơ công khai trở lại khi người này để hiển thị, không cần duyệt lại. Người này nhận email."
       },
       "detail": {
         "back": "Tất cả nhân lực",
         "submitted": "Gửi ngày {day}",
         "unlisted": "Chủ nhân đang ẩn",
-        "rejected": "Cần sửa: {reason}.",
+        "sentBack": "Cần sửa: {reason}.",
         "next": "Chờ duyệt tiếp theo: {name}",
         "position": "{place} trên {total} đang chờ",
         "waitingSince": "Gửi {time}",
         "public": "Mở trang công khai",
-        "removed": "Đã gỡ: {reason}.",
+        "takenDown": "Đã gỡ xuống: {reason}.",
         "decision": {
           "draft": {
             "title": "Chưa gửi duyệt",
             "lead": "Người này vẫn đang viết hồ sơ. Chưa ai thấy hồ sơ cho tới khi được duyệt."
           },
-          "submitted": {
+          "in_review": {
             "title": "Đề nghị được hiển thị trong danh mục",
             "lead": "Kiểm tra rằng trang nói về công việc chuyên môn, không nêu tên khách hàng khi chưa được phép, và ghi rõ người này làm gì trong từng dự án. Duyệt sẽ mở trang và đưa vào danh mục."
           },
           "approved": {
             "title": "Đã duyệt",
-            "lead": "Trang công khai khi người này để hiển thị. Gỡ sẽ đưa trang khỏi danh mục ngay và báo lý do cho họ."
+            "lead": "Trang công khai khi người này để hiển thị. Gỡ xuống sẽ đưa trang khỏi danh mục ngay và báo lý do cho họ."
           },
-          "changes_requested": {
+          "needs_changes": {
             "title": "Đã yêu cầu sửa",
             "lead": "Hồ sơ đã trả về cho người này. Hồ sơ quay lại đây khi họ gửi lại."
           },
-          "removed": {
+          "suspended": {
             "title": "Đã gỡ khỏi danh mục",
-            "lead": "Trang không còn công khai. Hồ sơ quay lại đây nếu người này gửi lại."
+            "lead": "Trang không còn công khai nhưng hồ sơ vẫn ở trạng thái đã duyệt. Khôi phục để hiển thị lại; hồ sơ cũng quay lại đây nếu người này gửi lại."
           }
         },
         "audited": "Quyết định được ghi vào nhật ký kiểm tra."
@@ -1393,14 +1424,14 @@
         "draft": "Bản nháp",
         "in_review": "Đang duyệt",
         "needs_changes": "Cần chỉnh sửa",
-        "published": "Đã đăng",
+        "approved": "Đã đăng",
         "closed": "Đã đóng"
       },
       "note": {
         "draft": "Chỉ {organization} xem được",
         "in_review": "Đang chờ GenAI Fund",
         "needs_changes": "Đã gửi lại cho {organization}",
-        "published": "Hiển thị trong danh mục",
+        "approved": "Hiển thị trong danh mục",
         "closed": "Đã hết hạn · bị khóa, không ai sửa được"
       },
       "columns": {
@@ -1565,7 +1596,7 @@
           "in_review": "{organization} · đang chờ GenAI Fund",
           "needs_changes": "{organization} · đã gửi lại, đang chờ các thành viên",
           "draft": "{organization} · chỉ các thành viên của họ xem được",
-          "published": "{organization} · có trong danh mục",
+          "approved": "{organization} · có trong danh mục",
           "closed": "{organization} · đã đóng"
         },
         "history": {
@@ -1847,6 +1878,7 @@
         "organizations": "Tổ chức",
         "applications": "Chương trình và đơn",
         "introductions": "Giới thiệu",
+        "solutions": "Giải pháp",
         "use_cases": "Use case",
         "talent": "Nhân lực"
       },
@@ -1865,7 +1897,11 @@
         },
         "organization_refused": {
           "name": "Tổ chức chưa được duyệt",
-          "description": "Báo chủ sở hữu cần sửa gì trước khi được hiển thị."
+          "description": "Báo chủ sở hữu rằng tổ chức bị từ chối, và lý do."
+        },
+        "organization_sent_back": {
+          "name": "Tổ chức bị trả lại",
+          "description": "Báo chủ sở hữu cần sửa gì trước khi được duyệt."
         },
         "organization_request_approved": {
           "name": "Yêu cầu tham gia được chấp nhận",
@@ -1907,6 +1943,26 @@
           "name": "Từ chối giới thiệu",
           "description": "Báo người yêu cầu rằng bên cung cấp đã từ chối."
         },
+        "solution_approved": {
+          "name": "Giải pháp được duyệt",
+          "description": "Báo các thành viên của tổ chức rằng giải pháp đã được duyệt."
+        },
+        "solution_sent_back": {
+          "name": "Giải pháp bị trả lại",
+          "description": "Báo các thành viên của tổ chức cần sửa gì trước khi giải pháp được duyệt."
+        },
+        "solution_rejected": {
+          "name": "Giải pháp không được duyệt",
+          "description": "Báo các thành viên của tổ chức rằng giải pháp bị từ chối hẳn."
+        },
+        "solution_taken_down": {
+          "name": "Giải pháp bị gỡ xuống",
+          "description": "Báo các thành viên của tổ chức rằng GenAI Fund đã gỡ giải pháp xuống."
+        },
+        "solution_restored": {
+          "name": "Giải pháp được khôi phục",
+          "description": "Báo các thành viên của tổ chức rằng giải pháp đã trở lại."
+        },
         "use_case_approved": {
           "name": "Use case được đăng",
           "description": "Báo các thành viên của tổ chức rằng use case đã được duyệt và đăng."
@@ -1924,8 +1980,12 @@
           "description": "Báo một người cần sửa gì trước khi hồ sơ được hiển thị."
         },
         "talent_removed": {
-          "name": "Hồ sơ nhân lực bị gỡ",
+          "name": "Hồ sơ nhân lực bị gỡ xuống",
           "description": "Báo một người rằng hồ sơ đã rời danh mục."
+        },
+        "talent_restored": {
+          "name": "Hồ sơ nhân lực được khôi phục",
+          "description": "Báo một người rằng hồ sơ đã hiển thị lại trong danh mục."
         },
         "talent_enquiry": {
           "name": "Lời nhắn tới nhân lực",
@@ -2448,7 +2508,6 @@
     "organizationRefusal": {
       "duplicate": "Đã có trên BeyondPilot",
       "not_a_real_organization": "Không xác minh được là một tổ chức",
-      "incomplete": "Hồ sơ chưa đầy đủ",
       "out_of_scope": "Ngoài phạm vi của BeyondPilot",
       "other": "Lý do khác"
     },
@@ -2458,9 +2517,11 @@
     },
     "reviewStatus": {
       "draft": "Bản nháp",
-      "submitted": "Đang duyệt",
+      "in_review": "Đang duyệt",
+      "needs_changes": "Cần chỉnh sửa",
       "approved": "Đã duyệt",
-      "rejected": "Cần chỉnh sửa"
+      "rejected": "Bị từ chối",
+      "suspended": "Đã gỡ xuống"
     },
     "focusArea": {
       "conversational_ai": "AI hội thoại",
@@ -2512,10 +2573,16 @@
       "hybrid": "Kết hợp"
     },
     "solutionRejection": {
-      "incomplete": "Thiếu thông tin",
       "not_an_ai_solution": "Không phải giải pháp AI",
       "duplicate": "Đã được đăng",
       "unverifiable": "Không xác minh được thông tin",
+      "other": "Lý do khác"
+    },
+    "solutionTakedown": {
+      "misleading_information": "Thông tin gây hiểu nhầm",
+      "not_an_ai_solution": "Không phải giải pháp AI",
+      "unverifiable": "Không xác minh được thông tin",
+      "breaks_the_rules": "Vi phạm quy định",
       "other": "Lý do khác"
     },
     "talentRole": {
@@ -2588,10 +2655,10 @@
     },
     "talentStatus": {
       "draft": "Bản nháp",
-      "submitted": "Đang duyệt",
+      "in_review": "Đang duyệt",
+      "needs_changes": "Cần sửa",
       "approved": "Đã duyệt",
-      "changes_requested": "Cần sửa",
-      "removed": "Đã gỡ"
+      "suspended": "Đã gỡ xuống"
     },
     "language": {
       "vi": "Tiếng Việt",
@@ -2645,23 +2712,28 @@
       "useCases": "Use case"
     },
     "status": {
-      "pending": "Đang duyệt",
+      "in_review": "Đang duyệt",
+      "needs_changes": "Cần sửa",
       "approved": "Đã duyệt",
       "rejected": "Không được duyệt",
       "suspended": "Đã gỡ xuống"
     },
-    "pending": {
+    "inReview": {
       "title": "GenAI Fund đang duyệt tổ chức của bạn",
       "lead": "Cho tới khi được duyệt, {name} chưa xuất hiện trong các danh mục và chưa thể đăng giải pháp công khai. Bạn có thể hoàn thiện hồ sơ và mời mọi người ngay bây giờ.",
       "foot": "Chúng tôi gửi email cho các chủ sở hữu khi có quyết định.",
       "edit": "Sửa hồ sơ"
     },
-    "rejected": {
-      "title": "GenAI Fund không duyệt {name}",
-      "reason": "Lý do: {reason}.",
+    "needsChanges": {
+      "title": "GenAI Fund yêu cầu sửa {name}",
       "owner": "Hãy chỉnh sửa hồ sơ rồi lưu để gửi duyệt lại.",
       "member": "Chủ sở hữu có thể chỉnh sửa hồ sơ và gửi duyệt lại.",
       "edit": "Sửa và gửi lại"
+    },
+    "rejected": {
+      "title": "GenAI Fund không duyệt {name}",
+      "reason": "Lý do: {reason}.",
+      "foot": "Đây là quyết định cuối cùng. Hãy viết cho GenAI Fund nếu bạn cho rằng có nhầm lẫn."
     },
     "errors": {
       "ORGANIZATION_NOT_FOUND": "Tổ chức này không còn tồn tại.",
@@ -2695,6 +2767,7 @@
       "requestWithdrawn": "Đã rút yêu cầu.",
       "organizationApproved": "Đã duyệt tổ chức.",
       "organizationRefused": "Đã từ chối tổ chức. Chủ sở hữu sẽ đọc được lý do.",
+      "organizationSentBack": "Đã trả lại tổ chức. Chủ sở hữu đã được báo cần sửa gì.",
       "claimApproved": "Đã chấp nhận. Người này đã là chủ sở hữu tổ chức.",
       "claimDeclined": "Đã từ chối yêu cầu nhận tổ chức.",
       "saved": "Đã lưu hồ sơ.",
@@ -2977,7 +3050,7 @@
       "genaiFund": "GenAI Fund",
       "cancel": "Hủy",
       "summary": {
-        "published": "{count} đã đăng",
+        "approved": "{count} đã đăng",
         "in_review": "{count} đang duyệt",
         "needs_changes": "{count} cần chỉnh sửa",
         "draft": "{count} bản nháp",
@@ -2987,12 +3060,12 @@
         "draft": "Bản nháp",
         "in_review": "Đang duyệt",
         "needs_changes": "Cần chỉnh sửa",
-        "published": "Đã đăng",
+        "approved": "Đã đăng",
         "closed": "Đã đóng"
       },
       "note": {
         "in_review": "Đã gửi {date} · GenAI Fund đang duyệt",
-        "published": "Có trong danh mục · đóng {date}",
+        "approved": "Có trong danh mục · đóng {date}",
         "needs_changes": "GenAI Fund yêu cầu chỉnh sửa · mở ra để xem chi tiết",
         "draft": "Chưa gửi · chỉ tổ chức của bạn xem được",
         "closed": "Đã đóng {date}"
@@ -3222,7 +3295,8 @@
     "errors": {
       "SOLUTION_NOT_FOUND": "Giải pháp này không còn tồn tại.",
       "SOLUTION_INCOMPLETE": "Hãy điền các trường được đánh dấu trước khi gửi duyệt.",
-      "SOLUTION_NOT_SUBMITTABLE": "Giải pháp này đang được duyệt hoặc đã duyệt.",
+      "SOLUTION_NOT_SUBMITTABLE": "Giải pháp này đang được duyệt, đã duyệt hoặc đã bị từ chối hẳn.",
+      "SOLUTION_NOT_EDITABLE": "Giải pháp này đã bị từ chối hẳn nên không sửa được nữa.",
       "SOLUTION_NOT_A_DRAFT": "Chỉ xóa được bản nháp.",
       "SOLUTION_NOT_AWAITING_REVIEW": "Giải pháp này đã được duyệt xong.",
       "SOLUTION_CHANGED_MEANWHILE": "Có người vừa sửa giải pháp này. Hãy tải lại trang rồi thử lại.",
@@ -3235,21 +3309,26 @@
       "SOLUTION_DECK_NOT_USABLE": "Tệp này không dùng làm tài liệu giới thiệu được. Hãy tải PDF lên lại.",
       "unknown": "Chưa thực hiện được. Hãy thử lại.",
       "SOLUTION_IMAGE_NOT_USABLE": "Ảnh này không dùng được. Hãy tải lên lại.",
-      "linkNotCopied": "Chưa sao chép được liên kết. Hãy thử lại."
+      "linkNotCopied": "Chưa sao chép được liên kết. Hãy thử lại.",
+      "SOLUTION_NOT_APPROVED": "Chỉ gỡ được giải pháp đã duyệt và chưa bị gỡ.",
+      "SOLUTION_NOT_TAKEN_DOWN": "Giải pháp này chưa bị gỡ xuống."
     },
     "done": {
       "saved": "Đã lưu giải pháp.",
       "submitted": "Đã gửi GenAI Fund duyệt.",
       "deleted": "Đã xóa {name}.",
       "approved": "Đã duyệt {name}.",
-      "rejected": "Đã trả lại {name} kèm lý do.",
+      "rejected": "Đã từ chối {name}.",
       "deploymentSaved": "Đã gửi {name} cho GenAI Fund duyệt.",
       "deploymentRemoved": "Đã gỡ {name}.",
       "deploymentApproved": "Đã duyệt {name}.",
       "deploymentRejected": "Đã trả lại {name}.",
       "shown": "{name} đã được đăng trong danh mục.",
       "hidden": "{name} đã ẩn khỏi danh mục.",
-      "linkCopied": "Đã sao chép liên kết"
+      "linkCopied": "Đã sao chép liên kết",
+      "sentBack": "Đã trả lại {name} kèm nội dung cần sửa.",
+      "takenDown": "Đã gỡ {name} xuống.",
+      "restored": "Đã khôi phục {name}."
     },
     "directory": {
       "metaTitle": "Giải pháp AI · BeyondPilot",
@@ -3419,7 +3498,8 @@
           "lead": "Ai có liên kết vẫn mở được. Giải pháp rời danh mục và kết quả tìm kiếm ngay.",
           "confirm": "Ẩn"
         },
-        "view": "Mở"
+        "view": "Mở",
+        "takenDown": "GenAI Fund đã gỡ xuống"
       },
       "create": {
         "title": "Thêm giải pháp",
@@ -3439,19 +3519,24 @@
         "listed": "Đang đăng",
         "unlisted": "Không đăng · chỉ mở bằng liên kết",
         "notYet": "Chưa công khai",
-        "notPublic": "Không công khai"
+        "notPublic": "Không công khai",
+        "takenDown": "GenAI Fund đã gỡ xuống"
       },
       "about": {
         "draft": "Bản nháp · đã điền {filled}/{total} mục bắt buộc",
         "sentBack": "Bị trả lại: {reason}",
-        "sentBackPlain": "Bị trả lại"
+        "sentBackPlain": "Bị trả lại",
+        "rejected": "Bị từ chối: {reason}",
+        "takenDown": "Đã gỡ xuống: {reason}"
       },
       "sent": "Gửi ngày {date}",
       "review": {
         "draft": "Bản nháp",
-        "submitted": "Đang duyệt",
+        "in_review": "Đang duyệt",
+        "needs_changes": "Bị trả lại",
         "approved": "Đã duyệt",
-        "rejected": "Bị trả lại"
+        "rejected": "Bị từ chối",
+        "suspended": "Đã gỡ xuống"
       }
     },
     "editor": {
@@ -3615,19 +3700,27 @@
         "leave": "Rời trang, không lưu",
         "stay": "Ở lại"
       },
-      "submitted": {
-        "title": "GenAI Fund đang duyệt giải pháp này",
-        "lead": "Thường mất một đến hai ngày làm việc. Bạn vẫn có thể chỉnh sửa."
-      },
       "approved": {
         "listed": "Đã duyệt và hiển thị trong danh mục",
         "unlisted": "Đã duyệt nhưng không niêm yết trong danh mục",
         "open": "Mở trang công khai",
         "unlistedLead": "Ai có liên kết đều mở được. Bật niêm yết ở bước cuối để hiển thị trong danh mục."
       },
-      "rejected": {
-        "title": "Cần chỉnh sửa: {reason}",
+      "in_review": {
+        "title": "GenAI Fund đang duyệt giải pháp này",
+        "lead": "Thường mất một đến hai ngày làm việc. Bạn vẫn có thể chỉnh sửa."
+      },
+      "needsChanges": {
+        "title": "GenAI Fund đã trả lại giải pháp này",
         "lead": "Hãy chỉnh sửa rồi gửi duyệt lại."
+      },
+      "rejected": {
+        "title": "Không được duyệt: {reason}",
+        "lead": "GenAI Fund sẽ không đăng giải pháp này. Không thể gửi duyệt lại."
+      },
+      "suspended": {
+        "title": "Đã gỡ xuống: {reason}",
+        "lead": "Giải pháp không có trong danh mục và matching khi GenAI Fund còn gỡ. Hãy liên hệ GenAI Fund nếu bạn cho rằng có nhầm lẫn."
       },
       "imagesRequired": "Cần có logo và ảnh bìa để gửi duyệt. Các mục còn lại ở bước này không bắt buộc.",
       "images": {
@@ -3813,7 +3906,8 @@
       "TALENT_ENQUIRY_LIMIT": "Hôm nay bạn đã bắt đầu mười cuộc trao đổi. Hãy viết lại vào ngày mai.",
       "TALENT_ENQUIRY_NOT_FOUND": "Lời nhắn này không còn tồn tại.",
       "TALENT_ENQUIRY_NOT_PENDING": "Lời nhắn này đã được trả lời hoặc đã đóng.",
-      "TALENT_NOT_APPROVED": "Chỉ có thể gỡ hồ sơ đã được duyệt.",
+      "TALENT_NOT_APPROVED": "Chỉ hồ sơ đã duyệt và chưa bị gỡ xuống mới gỡ xuống được.",
+      "TALENT_NOT_TAKEN_DOWN": "Hồ sơ này không bị gỡ xuống.",
       "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
       "unknown": "Chưa thực hiện được. Hãy thử lại."
     },
@@ -3824,8 +3918,9 @@
       "accepted": "Đã chấp nhận. Hai bên đã có email của nhau.",
       "declined": "Đã từ chối. Người gửi đã được báo.",
       "reported": "Đã báo cho GenAI Fund. Người gửi được báo là lời nhắn bị từ chối.",
-      "changesRequested": "Đã yêu cầu {name} sửa hồ sơ.",
-      "removed": "Đã gỡ {name}.",
+      "sentBack": "Đã yêu cầu {name} sửa hồ sơ.",
+      "takenDown": "Đã gỡ {name} xuống.",
+      "restored": "Đã khôi phục {name}.",
       "deleted": "Đã xoá hồ sơ nhân lực của bạn."
     },
     "directory": {
@@ -3996,11 +4091,11 @@
           "cancel": "Giữ lại"
         }
       },
-      "changesRequested": {
+      "sentBack": {
         "title": "Cần sửa: {reason}",
         "lead": "Hãy chỉnh sửa rồi gửi duyệt lại."
       },
-      "removed": {
+      "takenDown": {
         "title": "Đã gỡ khỏi danh mục: {reason}",
         "lead": "Hiện không ai khác thấy hồ sơ. Hãy chỉnh sửa rồi gửi duyệt lại."
       },

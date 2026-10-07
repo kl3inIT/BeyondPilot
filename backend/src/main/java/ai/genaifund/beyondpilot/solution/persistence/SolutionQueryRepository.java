@@ -20,7 +20,7 @@ import org.springframework.stereotype.Repository;
 public class SolutionQueryRepository {
 
 	private static final String PUBLIC_FILTER = """
-			where status = 'approved' and listed
+			where status = 'approved' and listed and suspended_at is null
 			  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\'
 			       or lower(summary) like :pattern escape '\\')
 			  and (cast(:industry as text) is null or industries @> array[cast(:industry as text)])
@@ -33,18 +33,21 @@ public class SolutionQueryRepository {
 			where status <> 'draft'
 			  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\'
 			       or organization_id = any(cast(:organizationIds as uuid[])))
-			  and (cast(:status as text) is null or status = :status)
+			  and (cast(:status as text) is null
+			       or (:status = 'suspended' and suspended_at is not null)
+			       or (:status = 'approved' and status = 'approved' and suspended_at is null)
+			       or (:status not in ('suspended', 'approved') and status = :status))
 			  and (cast(:industry as text) is null or industries @> array[cast(:industry as text)])
 			""";
 
 	private static final String ROW = """
-			select id, organization_id, slug, name, summary, focus_areas, industries, maturity, status, listed,
-			       submitted_at, submitted_by_account_id, updated_at, logo_file_id, cover_file_id,
+			select id, organization_id, slug, name, summary, focus_areas, industries, maturity, status, suspended_at,
+			       listed, submitted_at, submitted_by_account_id, updated_at, logo_file_id, cover_file_id,
 			       coalesce(program, backed_by) as backing,
 			       (select count(*) from solution_customer_deployment d
 			        where d.solution_id = solution.id and d.status = 'approved') as deployments,
 			       (select count(*) from solution_customer_deployment d
-			        where d.solution_id = solution.id and d.status = 'submitted') as deployments_awaiting
+			        where d.solution_id = solution.id and d.status = 'in_review') as deployments_awaiting
 			from solution
 			""";
 
@@ -56,7 +59,8 @@ public class SolutionQueryRepository {
 
 	/** One solution in a list, with how many of its customer deployments are approved and how many wait for review. */
 	public record Row(UUID id, UUID organizationId, String slug, String name, @Nullable String summary,
-			List<String> focusAreas, List<String> industries, @Nullable String maturity, String status, boolean listed,
+			List<String> focusAreas, List<String> industries, @Nullable String maturity, String status,
+			@Nullable Instant suspendedAt, boolean listed,
 			@Nullable Instant submittedAt, @Nullable UUID submittedByAccountId, Instant updatedAt,
 			@Nullable UUID logoFileId, @Nullable UUID coverFileId, @Nullable String backing, int deployments,
 			int deploymentsAwaiting) {
@@ -89,9 +93,9 @@ public class SolutionQueryRepository {
 	public List<Row> adminPage(@Nullable String text, List<UUID> organizationIds, @Nullable String status,
 			@Nullable String industry, int limit, long offset) {
 		return adminFiltered(ROW + ADMIN_FILTER + """
-				order by case when status = 'submitted' or exists (
+				order by case when status = 'in_review' or exists (
 				             select 1 from solution_customer_deployment d
-				             where d.solution_id = solution.id and d.status = 'submitted') then 0 else 1 end,
+				             where d.solution_id = solution.id and d.status = 'in_review') then 0 else 1 end,
 				         submitted_at, id
 				limit :limit offset :offset
 				""", text, organizationIds, status, industry).param("limit", limit)
@@ -109,7 +113,7 @@ public class SolutionQueryRepository {
 
 	/** How many solutions wait for review. */
 	public long awaitingReview() {
-		return jdbc.sql("select count(*) from solution where status = 'submitted'").query(Long.class).single();
+		return jdbc.sql("select count(*) from solution where status = 'in_review'").query(Long.class).single();
 	}
 
 	/** The orders of the public directory. The value is never the caller's text: it is chosen here by its name. */
@@ -144,11 +148,15 @@ public class SolutionQueryRepository {
 		return new Row(row.getObject("id", UUID.class), row.getObject("organization_id", UUID.class),
 				row.getString("slug"), row.getString("name"), row.getString("summary"),
 				strings(row.getArray("focus_areas")), strings(row.getArray("industries")), row.getString("maturity"),
-				row.getString("status"), row.getBoolean("listed"),
+				row.getString("status"), instant(row.getTimestamp("suspended_at")), row.getBoolean("listed"),
 				submittedAt == null ? null : submittedAt.toInstant(),
 				row.getObject("submitted_by_account_id", UUID.class), row.getTimestamp("updated_at").toInstant(),
 				row.getObject("logo_file_id", UUID.class), row.getObject("cover_file_id", UUID.class),
 				row.getString("backing"), row.getInt("deployments"), row.getInt("deployments_awaiting"));
+	}
+
+	private static @Nullable Instant instant(@Nullable Timestamp timestamp) {
+		return timestamp == null ? null : timestamp.toInstant();
 	}
 
 	private static List<String> strings(Array array) throws SQLException {

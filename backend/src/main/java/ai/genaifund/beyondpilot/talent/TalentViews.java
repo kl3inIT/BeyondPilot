@@ -28,7 +28,8 @@ final class TalentViews {
 				profile.getEngagement(), profile.getRateBand(), profile.getWebsite(),
 				profile.getPhotoFileId(), profile.getCity(), profile.getLanguages(), profile.getIndustries(),
 				profile.getWorksAt(), projects(projects), profile.getStatus(), profile.getDecisionReason(),
-				profile.getDecisionMessage(), profile.isListed(), profile.isComplete(), profile.getSubmittedAt(),
+				profile.getDecisionMessage(), profile.getSuspendedAt(), profile.getSuspensionReason(),
+				profile.getSuspensionMessage(), profile.isListed(), profile.isComplete(), profile.getSubmittedAt(),
 				profile.getVersion(), profile.getUpdatedAt());
 	}
 

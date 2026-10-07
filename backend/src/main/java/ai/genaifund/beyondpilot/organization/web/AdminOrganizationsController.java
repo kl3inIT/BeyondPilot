@@ -14,6 +14,7 @@ import ai.genaifund.beyondpilot.organization.dto.ApproveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.ChangeMemberRoleRequest;
 import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.SendBackOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.TakeDownOrganizationRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -116,7 +117,7 @@ class AdminOrganizationsController {
 
 	@PostMapping(path = "/organizations/{id}/refuse", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "refuseOrganization", summary = "Refuse an organization that waits for review",
+	@Operation(operationId = "refuseOrganization", summary = "Refuse an organization that waits for review for good",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "204", description = "The organization is refused, with the reason.",
 			content = @Content)
@@ -129,6 +130,24 @@ class AdminOrganizationsController {
 	void refuse(@CurrentActor Actor actor, @PathVariable UUID id,
 			@Valid @RequestBody RefuseOrganizationRequest request) {
 		organizations.refuse(actor, id, request);
+	}
+
+	@PostMapping(path = "/organizations/{id}/send-back", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "sendBackOrganization",
+			summary = "Send an organization that waits for review back to its owners with what to change",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The organization needs changes; its owners are told why.",
+			content = @Content)
+	@ApiResponse(responseCode = "400", description = "The reason is blank or over 1000 characters.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = NOT_AWAITING,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void sendBack(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody SendBackOrganizationRequest request) {
+		organizations.sendBack(actor, id, request);
 	}
 
 	@PutMapping(path = "/organizations/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,

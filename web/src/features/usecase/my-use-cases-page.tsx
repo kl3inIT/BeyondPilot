@@ -2,17 +2,12 @@ import { LightbulbIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
-import { Status } from "@/components/composites/status";
+import { ReviewStatus } from "@/components/composites/review-status";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { OrganizationFrame } from "@/features/organization/organization-frame";
 import { OrganizationSection } from "@/features/organization/organization-section";
 import { Link } from "@/i18n/navigation";
-import type {
-  MyOrganization,
-  MyUseCases,
-  MyUseCaseSummary,
-  Organization,
-} from "@/lib/api/generated";
+import type { MyOrganization, MyUseCases, Organization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { MyUseCaseActions } from "./my-use-case-actions";
@@ -29,16 +24,7 @@ type MyUseCasesPageProps = {
 };
 
 /** The statuses a use case is counted under, in the order the summary says them. */
-const statuses = ["published", "in_review", "needs_changes", "draft", "closed"] as const;
-
-/** How each status reads to the people of the organization. */
-const tones = {
-  draft: "neutral",
-  in_review: "warning",
-  needs_changes: "info",
-  published: "success",
-  closed: "neutral",
-} as const satisfies Record<MyUseCaseSummary["status"], string>;
+const statuses = ["approved", "in_review", "needs_changes", "draft", "closed"] as const;
 
 /**
  * My organization › Use cases: what the organization has asked providers for, each with where it
@@ -58,7 +44,7 @@ function MyUseCasesPage({ mine, useCases, members, solutions }: MyUseCasesPagePr
     const note =
       useCase.status === "in_review"
         ? t("note.in_review", { date: useCase.submittedAt ? day(useCase.submittedAt) : "" })
-        : useCase.status === "published" || useCase.status === "closed"
+        : useCase.status === "approved" || useCase.status === "closed"
           ? t(`note.${useCase.status}`, { date })
           : t(`note.${useCase.status}`);
     const editor = useCase.lastEditedBy;
@@ -76,7 +62,7 @@ function MyUseCasesPage({ mine, useCases, members, solutions }: MyUseCasesPagePr
           <span className="truncate text-muted-foreground">{note}</span>
         </div>
       ),
-      status: <Status tone={tones[useCase.status]}>{t(`status.${useCase.status}`)}</Status>,
+      status: <ReviewStatus state={useCase.status}>{t(`status.${useCase.status}`)}</ReviewStatus>,
       editedBy: (
         <span className="text-sm">
           {editor.you ? t("you") : editor.genaiFund ? t("genaiFund") : editor.name}

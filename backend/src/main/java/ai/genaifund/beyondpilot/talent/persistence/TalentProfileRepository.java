@@ -29,7 +29,7 @@ public interface TalentProfileRepository extends JpaRepository<TalentProfile, UU
 
 	Optional<TalentProfile> findBySlug(String slug);
 
-	List<TalentProfile> findByStatusAndListedTrue(String status);
+	List<TalentProfile> findByStatusAndListedTrueAndSuspendedAtIsNull(String status);
 
 	boolean existsBySlug(String slug);
 

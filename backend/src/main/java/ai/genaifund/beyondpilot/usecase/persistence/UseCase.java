@@ -38,7 +38,7 @@ public class UseCase {
 
 	public static final String NEEDS_CHANGES = "needs_changes";
 
-	public static final String PUBLISHED = "published";
+	public static final String APPROVED = "approved";
 
 	/** What a use case reads as once its close date has passed, whatever it was stored as. It is never stored. */
 	public static final String CLOSED = "closed";
@@ -215,7 +215,7 @@ public class UseCase {
 	}
 
 	public void publish(Instant now) {
-		this.status = PUBLISHED;
+		this.status = APPROVED;
 		this.publishedAt = now;
 	}
 
@@ -229,7 +229,7 @@ public class UseCase {
 
 	/** GenAI Fund approves the use case: it is published at once. */
 	public void approve(UUID accountId, Instant now) {
-		this.status = PUBLISHED;
+		this.status = APPROVED;
 		this.publishedAt = now;
 		this.reviewedAt = now;
 		this.reviewedByAccountId = accountId;

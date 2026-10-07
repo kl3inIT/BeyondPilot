@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
 
 @Schema(name = "TalentDecision",
-		description = "Why GenAI Fund asks for changes to a talent profile or removes it, and what its person is told.")
+		description = "Why GenAI Fund sends a talent profile back or takes it down, and what its person is told.")
 public record TalentDecisionRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "incomplete", "unverifiable", "inappropriate",

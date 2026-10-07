@@ -4,10 +4,9 @@ import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import { Badge } from "@/components/ui/badge";
+import { ReviewStatus } from "@/components/composites/review-status";
 import type { AdminUseCase } from "@/lib/api/generated";
 
-import { statusVariants } from "./admin-use-cases-page";
 import { draftValuesOf, steps, type Step } from "./use-case-draft";
 import { UseCaseStepFields } from "./use-case-step-fields";
 import { UseCaseSummary } from "./use-case-summary";
@@ -30,7 +29,7 @@ function AdminUseCaseReview({ useCase }: { useCase: AdminUseCase }) {
   const [view, setView] = useState<View>("review");
   const organization = useCase.organization.name;
   const status = (
-    <Badge variant={statusVariants[useCase.status]}>{list(`status.${useCase.status}`)}</Badge>
+    <ReviewStatus state={useCase.status}>{list(`status.${useCase.status}`)}</ReviewStatus>
   );
 
   function go(step: Step) {

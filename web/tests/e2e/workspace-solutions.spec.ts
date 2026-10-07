@@ -34,7 +34,7 @@ type Write = { call: string; body: Record<string, unknown> | null };
  * Answers what the editor of one solution writes, as the backend would: a save with the solution as
  * saved at its next version, a submission with it waiting for review. Returns the writes it saw.
  */
-async function answerEditor(page: Page, id: string, status: "draft" | "rejected") {
+async function answerEditor(page: Page, id: string, status: "draft" | "needs_changes") {
   const writes: Write[] = [];
   let saved: Record<string, unknown> = {};
   let version = 0;
@@ -80,7 +80,7 @@ async function answerEditor(page: Page, id: string, status: "draft" | "rejected"
         organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
         organizationName: "Pocket Policy",
         slug: "fraud-lens",
-        status: submitted ? "submitted" : status,
+        status: submitted ? "in_review" : status,
         complete: true,
         customerDeployments: [],
         submittedAt: null,
@@ -490,7 +490,7 @@ test.describe("workspace solutions", () => {
     await expect(page.getByRole("button", { name: "Delete draft…" })).toHaveCount(0);
 
     await openEditor(page, quoteBot, "review");
-    await expect(page.getByText("Changes needed: Already listed")).toBeVisible();
+    await expect(page.getByText("GenAI Fund sent this solution back")).toBeVisible();
     await expect(page.getByText("It is Policy Chat under another name.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Send for review again" })).toBeEnabled();
     await expectNoSeriousA11yViolations(page);

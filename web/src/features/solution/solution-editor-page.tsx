@@ -2,7 +2,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
-import { ReviewStatus } from "@/components/composites/review-status";
+import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { BrandLockup } from "@/components/layout/brand-lockup";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { Solution } from "@/lib/api/generated";
@@ -54,7 +54,7 @@ function SolutionEditorPage({ solution, editable }: SolutionEditorPageProps) {
       >
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <h1 className="text-2xl font-semibold tracking-tight">{solution.name}</h1>
-          <ReviewStatus state={solution.status}>{status(solution.status)}</ReviewStatus>
+          <ReviewStatus state={reviewState(solution)}>{status(reviewState(solution))}</ReviewStatus>
         </div>
         <SolutionView solution={solution} />
       </main>

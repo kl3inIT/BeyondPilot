@@ -80,7 +80,7 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
       meta: t("history.closedMeta", { date: closes }),
       current: true,
     });
-  } else if (status === "published") {
+  } else if (status === "approved") {
     history[history.length - 1].current = true;
   } else {
     history.push({
@@ -106,7 +106,7 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
 
         {/* The decision and the history stay in view while the use case is read. */}
         <div className="flex flex-col gap-4 lg:sticky lg:top-4">
-          {(status === "in_review" || status === "published") && (
+          {(status === "in_review" || status === "approved") && (
             <Card size="lg">
               <CardHeader>
                 <CardTitle>{d("title")}</CardTitle>
@@ -114,13 +114,13 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
               <CardContent>
                 <div className="flex flex-col gap-4">
                   <p className="text-sm text-muted-foreground">
-                    {d(status === "published" ? "leadPublished" : "lead", { organization })}
+                    {d(status === "approved" ? "leadPublished" : "lead", { organization })}
                   </p>
                   <AdminUseCaseDecision
                     id={useCase.id}
                     title={title}
                     organization={organization}
-                    published={status === "published"}
+                    published={status === "approved"}
                   />
                 </div>
               </CardContent>
