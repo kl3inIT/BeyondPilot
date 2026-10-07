@@ -176,7 +176,11 @@ async function McpToolsPage({ settings, counts }: { settings: McpSettings; count
                         ? t(`${server}.search`)
                         : tool.name === "fetch"
                           ? t(`${server}.fetch`)
-                          : tool.description}
+                          : tool.name === "list_applications"
+                            ? t("operator.list_applications")
+                            : tool.name === "list_pending_reviews"
+                              ? t("operator.list_pending_reviews")
+                              : tool.description}
                     </p>
                   </div>
                   <ToolSwitch

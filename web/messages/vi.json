@@ -2005,7 +2005,9 @@
           "title": "Server cho operator",
           "lead": "Khi tắt, công cụ biến khỏi danh sách ứng dụng thấy và lời gọi tới nó bị từ chối.",
           "search": "Tìm giải pháp đã hoặc chưa niêm yết, chương trình, talent, use case và công ty.",
-          "fetch": "Đọc đầy đủ một mục theo id mà search trả về."
+          "fetch": "Đọc đầy đủ một mục theo id mà search trả về.",
+          "list_applications": "Liệt kê hồ sơ ứng tuyển của một chương trình, kèm quyết định của GenAI Fund và điểm trung bình của người chấm.",
+          "list_pending_reviews": "Liệt kê những gì đang chờ duyệt: tổ chức, giải pháp, talent, use case và customer deployment."
         },
         "user": {
           "title": "Server cho người dùng",

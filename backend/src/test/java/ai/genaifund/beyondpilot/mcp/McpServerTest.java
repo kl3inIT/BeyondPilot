@@ -295,7 +295,8 @@ class McpServerTest {
 		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
 		McpSyncClient app = app(token, "/mcp/operator");
 		app.initialize();
-		assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name).containsExactly("search", "fetch");
+		assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name)
+			.containsExactly("search", "fetch", "list_applications", "list_pending_reviews");
 
 		String found = text(app.callTool(McpSchema.CallToolRequest.builder("search")
 			.arguments(Map.of("query", "hidden agent " + word))
@@ -331,6 +332,37 @@ class McpServerTest {
 	}
 
 	@Test
+	void anOperatorsAppListsWhatWaitsForReviewWithThePageToReviewItOn() {
+		String owner = TestSignIn.session(client, mail, "waiting-" + word + "@mcp.test");
+		UUID organization = organization(owner, "Waiting " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		UUID solution = submittedSolution(owner, "Pending Agent " + word);
+		String other = TestSignIn.session(client, mail, "unreviewed-" + word + "@mcp.test");
+		UUID unreviewed = organization(other, "Unreviewed " + word);
+
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = app(token, "/mcp/operator");
+		app.initialize();
+		String all = text(app.callTool(McpSchema.CallToolRequest.builder("list_pending_reviews").build()));
+		assertThat(JsonPath.<List<String>>read(all, "$.solutions.items[*].name")).contains("Pending Agent " + word);
+		assertThat(JsonPath.<List<String>>read(all, "$.solutions.items[*].url"))
+			.contains(ISSUER + "/admin/solutions/" + solution);
+		assertThat(JsonPath.<List<String>>read(all, "$.organizations.items[*].url"))
+			.contains(ISSUER + "/admin/organizations/" + unreviewed);
+		assertThat(JsonPath.<Integer>read(all, "$.waiting")).isPositive();
+		assertThat(JsonPath.<Map<String, Object>>read(all, "$")).containsKeys("talent", "use_cases", "deployments");
+
+		String solutions = text(app.callTool(McpSchema.CallToolRequest.builder("list_pending_reviews")
+			.arguments(Map.of("area", "solutions"))
+			.build()));
+		assertThat(JsonPath.<Map<String, Object>>read(solutions, "$")).containsOnlyKeys("waiting", "solutions");
+		assertThat(app.callTool(McpSchema.CallToolRequest.builder("list_pending_reviews")
+			.arguments(Map.of("area", "everything"))
+			.build()).isError()).isTrue();
+		app.closeGracefully();
+	}
+
+	@Test
 	void operatorsSwitchAToolOffAndTheUserServerOffAndEachChangeIsAudited() {
 		String person = TestSignIn.session(client, mail, "switched-" + word + "@mcp.test");
 		String token = TestAppConnection.connect(client, port, person, "mcp.read").access();
@@ -354,7 +386,7 @@ class McpServerTest {
 			.jsonPath("$.userServerAddress")
 			.isEqualTo(ISSUER + "/mcp")
 			.jsonPath("$.tools.length()")
-			.isEqualTo(4);
+			.isEqualTo(6);
 
 		switchTool("user", "fetch", false);
 		try {

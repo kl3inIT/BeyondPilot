@@ -21,6 +21,7 @@ import io.modelcontextprotocol.server.transport.DefaultServerTransportSecurityVa
 import io.modelcontextprotocol.spec.McpSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.mcp.server.webmvc.transport.WebMvcStatelessServerTransport;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -171,7 +172,7 @@ class McpServerConfiguration {
 			.capabilities(McpSchema.ServerCapabilities.builder().tools(false).build())
 			.jsonMapper(new JacksonMcpJsonMapper(json))
 			.immediateExecution(true)
-			.tools(toolsOf(McpAudience.USER, tools, log))
+			.tools(toolsOf(McpAudience.USER, tools, null, log))
 			.build();
 	}
 
@@ -187,7 +188,7 @@ class McpServerConfiguration {
 
 	@Bean(destroyMethod = "close")
 	McpStatelessSyncServer operatorMcpServer(WebMvcStatelessServerTransport operatorMcpTransport, ListingTools tools,
-			CallLog log, JsonMapper json) {
+			OperatorTools operatorTools, CallLog log, JsonMapper json) {
 		return McpServer.sync(operatorMcpTransport)
 			.serverInfo("BeyondPilot for operators", "1")
 			.instructions("Research BeyondPilot as a GenAI Fund operator: AI solutions listed or not, programs, AI "
@@ -196,23 +197,30 @@ class McpServerConfiguration {
 			.capabilities(McpSchema.ServerCapabilities.builder().tools(false).build())
 			.jsonMapper(new JacksonMcpJsonMapper(json))
 			.immediateExecution(true)
-			.tools(toolsOf(McpAudience.OPERATOR, tools, log))
+			.tools(toolsOf(McpAudience.OPERATOR, tools, operatorTools, log))
 			.build();
 	}
 
 	@Bean
 	McpSwitches mcpSwitches(McpStatelessSyncServer userMcpServer, McpStatelessSyncServer operatorMcpServer,
-			ListingTools tools, CallLog log, McpSwitchRepository switches) {
+			ListingTools tools, OperatorTools operatorTools, CallLog log, McpSwitchRepository switches) {
 		return new McpSwitches(Map.of(McpAudience.USER, userMcpServer, McpAudience.OPERATOR, operatorMcpServer),
-				Map.of(McpAudience.USER, toolsOf(McpAudience.USER, tools, log), McpAudience.OPERATOR,
-						toolsOf(McpAudience.OPERATOR, tools, log)),
+				Map.of(McpAudience.USER, toolsOf(McpAudience.USER, tools, null, log), McpAudience.OPERATOR,
+						toolsOf(McpAudience.OPERATOR, tools, operatorTools, log)),
 				switches);
 	}
 
-	/** Every tool of a server, logged; the switches decide which it lists. */
-	private static List<SyncToolSpecification> toolsOf(McpAudience server, ListingTools tools, CallLog log) {
+	/** Every tool of a server, logged; the switches decide which it lists. The operators' server has its own too. */
+	private static List<SyncToolSpecification> toolsOf(McpAudience server, ListingTools tools,
+			@Nullable OperatorTools operatorTools, CallLog log) {
 		String name = server.name().toLowerCase(Locale.ROOT);
-		return List.of(log.logged(name, tools.search(server)), log.logged(name, tools.fetch(server)));
+		List<SyncToolSpecification> all = new ArrayList<>(
+				List.of(log.logged(name, tools.search(server)), log.logged(name, tools.fetch(server))));
+		if (operatorTools != null) {
+			all.add(log.logged(name, operatorTools.listApplications()));
+			all.add(log.logged(name, operatorTools.listPendingReviews()));
+		}
+		return List.copyOf(all);
 	}
 
 	/**

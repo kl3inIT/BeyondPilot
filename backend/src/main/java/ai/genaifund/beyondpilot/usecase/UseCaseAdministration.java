@@ -390,4 +390,23 @@ public class UseCaseAdministration {
 	private static UseCaseException refused(UseCaseErrorCode code, String diagnostic) {
 		return new UseCaseException(code, "Creation of a use case refused: " + diagnostic);
 	}
+
+	/**
+	 * The use cases waiting for an operator's review, at most this many, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public UseCasesAwaitingReview awaitingReview(Actor actor, int limit) {
+		identity.requireOperator(actor);
+		Instant now = Instant.now();
+		List<UseCaseQueryRepository.Row> rows = useCaseList.page(null, List.of(), null, "in_review", now, limit, 0);
+		Map<UUID, OrganizationName> names = organizations
+			.names(rows.stream().map(UseCaseQueryRepository.Row::organizationId).collect(Collectors.toSet()));
+		return new UseCasesAwaitingReview(useCaseList.count(null, List.of(), null, "in_review", now), rows.stream()
+			.map(row -> new UseCasesAwaitingReview.Item(row.id(), row.title(),
+					names.containsKey(row.organizationId()) ? names.get(row.organizationId()).name() : null,
+					row.updatedAt()))
+			.toList());
+	}
+
 }
