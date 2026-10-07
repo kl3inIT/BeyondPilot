@@ -11,6 +11,9 @@ type FooterLink = { href: string; label: string; external?: boolean };
 // On touch screens each link row grows to 44px instead of the 14px gaps between rows.
 const linkClass =
   "flex w-fit items-center rounded-sm text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 pointer-coarse:min-h-11";
+// The legal links sit in the small print beside the copyright, with the same focus ring and touch target.
+const legalLinkClass =
+  "flex w-fit items-center rounded-sm outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 pointer-coarse:min-h-11";
 
 function SiteFooter() {
   const t = useTranslations("Site");
@@ -82,10 +85,10 @@ function SiteFooter() {
         <div className="flex flex-col gap-2 border-t pt-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <p>{t("footer.copyright", { year: new Date().getFullYear() })}</p>
-            <Link href={siteRoutes.privacy} className="hover:text-foreground">
+            <Link href={siteRoutes.privacy} className={legalLinkClass}>
               {t("footer.privacy")}
             </Link>
-            <Link href={siteRoutes.terms} className="hover:text-foreground">
+            <Link href={siteRoutes.terms} className={legalLinkClass}>
               {t("footer.terms")}
             </Link>
           </div>
