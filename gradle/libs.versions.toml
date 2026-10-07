@@ -8,6 +8,8 @@ aws-sdk = "2.55.11"
 commonmark = "0.30.0"
 resend = "4.28.0"
 greenmail = "2.1.14"
+bucket4j = "8.21.0"
+caffeine = "3.3.0"
 
 [libraries]
 spring-modulith-bom = { module = "org.springframework.modulith:spring-modulith-bom", version.ref = "spring-modulith" }
@@ -36,6 +38,8 @@ aws-sdk-sesv2 = { module = "software.amazon.awssdk:sesv2" }
 jmustache = { module = "com.samskivert:jmustache" }
 commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
 resend-java = { module = "com.resend:resend-java", version.ref = "resend" }
+bucket4j-core = { module = "com.bucket4j:bucket4j_jdk17-core", version.ref = "bucket4j" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 springdoc-webmvc-api = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version.ref = "springdoc" }
 
 spring-boot-starter-actuator-test = { module = "org.springframework.boot:spring-boot-starter-actuator-test" }

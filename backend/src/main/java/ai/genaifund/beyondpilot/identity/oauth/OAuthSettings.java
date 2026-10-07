@@ -17,12 +17,14 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * @param accessTokenLifetime how long an access token works
  * @param refreshTokenLifetime how long a refresh token works unused; each use replaces it
  * @param connectionLifetime how long a connection lasts from the person's consent, however often it is refreshed
+ * @param documentFetchesPerMinute how many client ID metadata documents the server may fetch in a minute, all addresses
+ * together; documents read before are stored, so only a new app or an outsider's address fetches
  */
 @ConfigurationProperties("beyondpilot.identity.oauth")
 record OAuthSettings(String issuer, @Nullable String signingKey,
 		@DefaultValue({ "claude.ai", "claude.com", "chatgpt.com" }) List<String> trustedClientHosts,
 		@DefaultValue("1h") Duration accessTokenLifetime, @DefaultValue("30d") Duration refreshTokenLifetime,
-		@DefaultValue("180d") Duration connectionLifetime) {
+		@DefaultValue("180d") Duration connectionLifetime, @DefaultValue("30") int documentFetchesPerMinute) {
 
 	/** The address of the server every signed-in person may use. */
 	String userServer() {

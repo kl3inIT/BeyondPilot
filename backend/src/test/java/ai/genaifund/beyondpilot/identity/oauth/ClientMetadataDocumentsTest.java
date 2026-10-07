@@ -4,13 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import ai.genaifund.beyondpilot.identity.oauth.ClientMetadataDocuments.ClientMetadata;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Which client ID metadata documents are fetched and what is kept of them: only addresses on a trusted host, only
- * redirects to a trusted host or this computer, and ChatGPT's signed requests.
+ * redirects to a trusted host or this computer, and ChatGPT's signed requests; an address that could not be read is
+ * not fetched again at once, and the fetches of all addresses together are limited.
  */
 class ClientMetadataDocumentsTest {
 
@@ -18,10 +22,48 @@ class ClientMetadataDocumentsTest {
 
 	private final JsonMapper json = JsonMapper.builder().build();
 
-	private final ClientMetadataDocuments documents = new ClientMetadataDocuments(
-			new OAuthSettings("https://beyondpilot.test", null, List.of("claude.ai", "chatgpt.com"), Duration.ofHours(1),
-					Duration.ofDays(30), Duration.ofDays(180)),
-			json);
+	private final ClientMetadataDocuments documents = new ClientMetadataDocuments(settings(30), json);
+
+	private static OAuthSettings settings(int fetchesPerMinute) {
+		return new OAuthSettings("https://beyondpilot.test", null, List.of("claude.ai", "chatgpt.com"),
+				Duration.ofHours(1), Duration.ofDays(30), Duration.ofDays(180), fetchesPerMinute);
+	}
+
+	@Test
+	void anAddressThatCouldNotBeReadIsNotFetchedAgainAtOnce() {
+		AtomicInteger calls = new AtomicInteger();
+		ClientMetadataDocuments unreachable = new ClientMetadataDocuments(settings(30), json) {
+			@Override
+			Optional<ClientMetadata> read(String clientId) {
+				calls.incrementAndGet();
+				return Optional.empty();
+			}
+		};
+
+		for (int attempt = 0; attempt < 5; attempt++) {
+			assertThat(unreachable.fetch("https://claude.ai/missing")).isEmpty();
+		}
+
+		assertThat(calls).hasValue(1);
+	}
+
+	@Test
+	void theFetchesOfAllAddressesTogetherAreLimited() {
+		AtomicInteger calls = new AtomicInteger();
+		ClientMetadataDocuments limited = new ClientMetadataDocuments(settings(3), json) {
+			@Override
+			Optional<ClientMetadata> read(String clientId) {
+				calls.incrementAndGet();
+				return Optional.empty();
+			}
+		};
+
+		for (int address = 0; address < 10; address++) {
+			limited.fetch("https://claude.ai/client-" + address);
+		}
+
+		assertThat(calls).hasValue(3);
+	}
 
 	@Test
 	void onlyAPlainHttpsAddressOnATrustedHostIsFetched() {

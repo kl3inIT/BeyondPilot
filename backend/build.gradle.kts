@@ -54,6 +54,8 @@ dependencies {
 	}
 	implementation(libs.aws.sdk.url.connection.client)
 	// Email: templates operators edit (logic-less, so a template cannot reach code), their Markdown, and Resend.
+	implementation(libs.bucket4j.core)
+	implementation(libs.caffeine)
 	implementation(libs.jmustache)
 	implementation(libs.commonmark)
 	implementation(libs.resend.java)

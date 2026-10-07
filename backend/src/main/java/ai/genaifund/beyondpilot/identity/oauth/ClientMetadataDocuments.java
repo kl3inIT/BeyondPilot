@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +28,9 @@ import tools.jackson.databind.json.JsonMapper;
  * Reads the client ID metadata document of an AI app (draft-ietf-oauth-client-id-metadata-document, preferred by MCP
  * 2026-07-28): the app's client ID is the HTTPS address of a JSON document naming it and its redirect addresses. Only
  * documents on a trusted host are fetched, so the server never requests an address an outsider chose; the fetch is
- * short, small and never follows a redirect.
+ * short, small and never follows a redirect. Anyone can send any address on those hosts, so an address that could not
+ * be read is not fetched again for a few minutes, and the fetches of all addresses together are limited per minute:
+ * repeating or varying the address cannot make the server call out without end.
  */
 @Component
 class ClientMetadataDocuments {
@@ -34,11 +40,22 @@ class ClientMetadataDocuments {
 	/** A metadata document is a few hundred bytes; anything far larger is not one. */
 	private static final int MAX_BYTES = 64 * 1024;
 
+	/** How long an address that could not be read is refused without asking its host again. */
+	private static final Duration UNREADABLE_FOR = Duration.ofMinutes(5);
+
 	private final OAuthSettings settings;
 
 	private final JsonMapper json;
 
 	private final RestClient http;
+
+	/** Addresses that could not be read lately; bounded, so varied addresses cannot fill the memory. */
+	private final Cache<String, Boolean> unreadable = Caffeine.newBuilder()
+		.maximumSize(10_000)
+		.expireAfterWrite(UNREADABLE_FOR)
+		.build();
+
+	private final Bucket fetches;
 
 	ClientMetadataDocuments(OAuthSettings settings, JsonMapper json) {
 		this.settings = settings;
@@ -50,6 +67,10 @@ class ClientMetadataDocuments {
 		JdkClientHttpRequestFactory requests = new JdkClientHttpRequestFactory(client);
 		requests.setReadTimeout(Duration.ofSeconds(5));
 		this.http = RestClient.builder().requestFactory(requests).build();
+		int perMinute = settings.documentFetchesPerMinute();
+		this.fetches = Bucket.builder()
+			.addLimit(Bandwidth.builder().capacity(perMinute).refillGreedy(perMinute, Duration.ofMinutes(1)).build())
+			.build();
 	}
 
 	/** Whether this client ID is the address of a document BeyondPilot may fetch. */
@@ -64,12 +85,28 @@ class ClientMetadataDocuments {
 	 * The app the document at this address describes, with only the redirect addresses BeyondPilot accepts: HTTPS on a
 	 * trusted host, or this computer for an app that runs on it.
 	 * @return empty when the address is not trusted, the document cannot be read, it names another client ID, or it
-	 * leaves no accepted redirect address
+	 * leaves no accepted redirect address; also, without asking the host, when the address could not be read in the last
+	 * few minutes or the fetches of the minute are spent
 	 */
 	Optional<ClientMetadata> fetch(String clientId) {
-		if (!isDocumentAddress(clientId)) {
+		if (!isDocumentAddress(clientId) || unreadable.getIfPresent(clientId) != null) {
 			return Optional.empty();
 		}
+		if (!fetches.tryConsume(1)) {
+			LOG.atWarn()
+				.addKeyValue("event", "identity.oauth.client_document_fetches_limited")
+				.log("Client ID metadata documents are being fetched too often; this one was not");
+			return Optional.empty();
+		}
+		Optional<ClientMetadata> metadata = read(clientId);
+		if (metadata.isEmpty()) {
+			unreadable.put(clientId, Boolean.TRUE);
+		}
+		return metadata;
+	}
+
+	/** Fetches and reads the document; the one call that leaves the server. */
+	Optional<ClientMetadata> read(String clientId) {
 		try {
 			JsonNode document = http.get().uri(URI.create(clientId)).exchange((request, response) -> {
 				if (!response.getStatusCode().is2xxSuccessful()) {
