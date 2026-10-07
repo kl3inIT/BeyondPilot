@@ -206,6 +206,11 @@ public class Program {
 		return true;
 	}
 
+	/** Whether the program is on the public site now. */
+	public boolean isPublished() {
+		return status == ProgramStatus.PUBLISHED;
+	}
+
 	/** The address is fixed from the first publication on. */
 	public boolean hasBeenPublished() {
 		return publishedAt != null;

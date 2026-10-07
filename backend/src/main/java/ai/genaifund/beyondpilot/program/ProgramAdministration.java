@@ -168,6 +168,7 @@ public class ProgramAdministration {
 		if (request.startsOn() != null && request.endsOn() != null && request.endsOn().isBefore(request.startsOn())) {
 			throw refused(ProgramErrorCode.DAYS_OUT_OF_ORDER, id);
 		}
+		requireOpeningKept(program, request.applications());
 		program.moveTo(request.slug());
 		program.describe(request.name().strip(), ProgramType.of(request.type()), text(request.partnerName()),
 				text(request.summary()), text(request.about()));
@@ -176,6 +177,12 @@ public class ProgramAdministration {
 		takeApplications(program, request.applications());
 		program.schedule(milestones(id, request.keyDates()), events(id, request.events()));
 		program.coverWith(cover);
+		// What publishing asks for stays while the program is public: a save cannot take its cover or summary away.
+		List<PublishIssue> missing = program.isPublished() ? PublishIssue.of(program) : List.of();
+		if (!missing.isEmpty()) {
+			throw new ProgramException(ProgramErrorCode.PUBLISHED_INCOMPLETE,
+					"Save of published program " + id + " without " + missing);
+		}
 		try {
 			programs.flush();
 		}
@@ -198,6 +205,17 @@ public class ProgramAdministration {
 			events.publishEvent(new ReplacedCovers.CoverReplaced(id, replacedCover));
 		}
 		return response(program);
+	}
+
+	/**
+	 * Once applications have opened, when they open is settled: moving it later, or taking the window away, would make
+	 * the program look unopened and free its questions while answers to them exist. When they close can still move.
+	 */
+	private static void requireOpeningKept(Program program, @Nullable ProgramApplications applications) {
+		if (opened(program) && (applications == null
+				|| !applications.opensAt().equals(program.getApplicationsOpenAt()))) {
+			throw refused(ProgramErrorCode.OPENING_FIXED, program.getId());
+		}
 	}
 
 	private static void takeApplications(Program program, @Nullable ProgramApplications applications) {
@@ -261,6 +279,9 @@ public class ProgramAdministration {
 	public void publish(Actor actor, UUID id) {
 		Operator operator = identity.requireOperator(actor);
 		Program program = programs.findForUpdate(id).orElseThrow(() -> notFound(id));
+		if (program.isPublished()) {
+			return;
+		}
 		List<PublishIssue> issues = PublishIssue.of(program);
 		if (!issues.isEmpty()) {
 			throw new ProgramException(ProgramErrorCode.NOT_READY_TO_PUBLISH,

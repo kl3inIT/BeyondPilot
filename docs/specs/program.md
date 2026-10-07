@@ -58,7 +58,9 @@ Constraints in the database:
 - **Publish.** Sets `status` to `published`. The first publication sets `published_at`, which never changes again.
 - **Unpublish.** Sets `status` back to `draft` and keeps everything else, the address included.
 - **Repeats.** Publishing a published program, or unpublishing a draft, changes nothing, records nothing and publishes
-  no event; the answer is still `204`.
+  no event; the answer is still `204`. A published program is not checked again when it is published again.
+- **A published program stays complete.** While a program is published, a save that leaves it without what publishing
+  asks for is refused with `PROGRAM_PUBLISHED_INCOMPLETE`; it is unpublished first to remove one.
 - **The address is fixed once published.** While `published_at` is null a save may change `slug` (if no other program
   has it). From the first publication on, a different `slug` is refused with `PROGRAM_SLUG_FIXED`, whether the program
   is published now or not. The program read for editing carries this as `slugFixed`.
@@ -116,6 +118,9 @@ application window, key dates and events, all or nothing.
   - `maxLength` is kept only for `short_text` and `long_text`; null takes the form's default.
   - Once `opensAt` has passed, the questions are fixed: a save is refused with `PROGRAM_QUESTIONS_FIXED`, and the read
     answers `fixed: true`.
+- **The opening is fixed once passed.** Once `opensAt` has passed, a save that moves it or takes the window away is
+  refused with `PROGRAM_OPENING_FIXED`, so the program cannot look unopened again and free its questions while answers
+  to them exist. `closesAt` and the rest of the window still change.
 
 ## Phase
 

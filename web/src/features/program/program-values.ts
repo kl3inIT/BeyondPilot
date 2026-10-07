@@ -128,6 +128,7 @@ export const fieldOfCode: Partial<Record<string, keyof SettingsValues>> = {
   PROGRAM_OUTCOMES_BEFORE_CLOSE: "outcomesDueOn",
   PROGRAM_EXTERNAL_URL_REQUIRED: "externalUrl",
   PROGRAM_COVER_NOT_USABLE: "coverFileId",
+  PROGRAM_OPENING_FIXED: "opensDay",
 };
 
 /** The settings field a member of the request is shown in. */
