@@ -15,7 +15,7 @@ import type { HeldDeck } from "./solution-editor-state";
 
 /** What the backend accepts as a solution's deck (storage › FilePurpose.SOLUTION_DECK). */
 const accepted = "application/pdf";
-const maxBytes = 25 * 1024 * 1024;
+const maxBytes = 100 * 1024 * 1024;
 
 type DeckUploadProps = {
   /** The id of the control that chooses a file, so a label and a link from another step reach it. */
