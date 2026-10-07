@@ -323,6 +323,7 @@ function ApplyFlow({ initial }: { initial: ApplicationView }) {
     const known = [
       "PROPOSAL_CLOSED",
       "PROPOSAL_LOCKED",
+      "PROPOSAL_WITHDRAWN_FOR_GOOD",
       "PROPOSAL_CHANGED_MEANWHILE",
       "PROPOSAL_ORGANIZATION_REQUIRED",
       "PROPOSAL_ORGANIZATION_APPLIED",

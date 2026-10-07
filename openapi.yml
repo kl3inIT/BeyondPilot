@@ -10702,6 +10702,10 @@ components:
       type: object
       description: "One of the person's applications, as My applications lists it."
       properties:
+        allowUpdatesUntilClose:
+          type: boolean
+          description: "Whether the program takes changes after submission; where\
+            \ it does not, a withdrawal is final."
         closesAt:
           type: string
           format: date-time
@@ -10756,6 +10760,7 @@ components:
           type: string
           format: date-time
       required:
+      - allowUpdatesUntilClose
       - closesAt
       - id
       - programName

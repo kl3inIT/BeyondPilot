@@ -170,7 +170,8 @@ public class ProposalService {
 					organizationId == null ? null
 							: organizations.profile(organizationId).map(OrganizationProfile::name).orElse(null),
 					solutionId == null ? null : solutions.offered(solutionId).map(OfferedSolution::name).orElse(null),
-					proposal.getSubmittedAt(), proposal.getUpdatedAt(), outcome(proposal), nextStep(form)));
+					proposal.getSubmittedAt(), proposal.getUpdatedAt(), outcome(proposal), nextStep(form),
+					form.allowUpdatesUntilClose()));
 		}
 		return new MyApplicationsResponse(items);
 	}
@@ -550,10 +551,21 @@ public class ProposalService {
 		}
 	}
 
+	/**
+	 * Where a program takes no changes after submission, a submitted application stays as it is, and a withdrawn one
+	 * stays withdrawn: withdrawing and submitting again would be a change by another name.
+	 */
 	private static void requireChangeable(ApplicationForm form, Proposal proposal) {
-		if (proposal.isSubmitted() && !form.allowUpdatesUntilClose()) {
+		if (form.allowUpdatesUntilClose()) {
+			return;
+		}
+		if (proposal.isSubmitted()) {
 			throw new ProposalException(ProposalErrorCode.LOCKED,
 					"Change of submitted application " + proposal.getId() + " to " + form.slug());
+		}
+		if (Proposal.WITHDRAWN.equals(proposal.getStatus())) {
+			throw new ProposalException(ProposalErrorCode.WITHDRAWN_FOR_GOOD,
+					"Change of withdrawn application " + proposal.getId() + " to " + form.slug());
 		}
 	}
 

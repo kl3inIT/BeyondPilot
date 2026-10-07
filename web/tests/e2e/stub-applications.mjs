@@ -180,6 +180,7 @@ export function answerApplication(url, session, email) {
         submittedAt: view.application.submittedAt,
         updatedAt: view.application.updatedAt,
         outcome: null,
+        allowUpdatesUntilClose: true,
         next: {
           title: "Demo day",
           at: new Date(Date.now() + 18 * day).toISOString(),
@@ -199,6 +200,7 @@ export function answerApplication(url, session, email) {
         submittedAt: new Date(Date.now() - 25 * day).toISOString(),
         updatedAt: new Date(Date.now() - 25 * day).toISOString(),
         outcome: "shortlisted",
+        allowUpdatesUntilClose: true,
         next: {
           title: "Demo day",
           at: new Date(Date.now() + 4 * day).toISOString(),

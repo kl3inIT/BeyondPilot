@@ -1566,6 +1566,10 @@ export type Me = {
  * One of the person's applications, as My applications lists it.
  */
 export type MyApplication = {
+    /**
+     * Whether the program takes changes after submission; where it does not, a withdrawal is final.
+     */
+    allowUpdatesUntilClose: boolean;
     closesAt: string;
     id: string;
     /**

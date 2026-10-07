@@ -186,6 +186,16 @@ class ReviewTest extends ApplicationsHttpTest {
 	}
 
 	@Test
+	void aProgramNobodyAppliedToHasNoOutcomesToRelease() {
+		Form form = program("empty-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		close(form);
+
+		String release = REVIEW + form.programId() + "/release";
+		assertThat(JsonPath.<Boolean>read(body(get(operator, release).expectStatus().isOk()), "$.ready")).isFalse();
+		assertProblem(post(operator, release, emails()), 409, "PROPOSAL_OUTCOMES_NOT_READY");
+	}
+
+	@Test
 	void nobodyScoresOrDecidesAnApplicationOfTheirOwn() {
 		Form form = program("own-challenge", true, Instant.now().plus(Duration.ofDays(10)));
 		List<String> criteria = criteriaOf(form, "Practical impact");

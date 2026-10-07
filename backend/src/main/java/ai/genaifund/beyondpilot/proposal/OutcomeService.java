@@ -135,7 +135,8 @@ public class OutcomeService {
 		ApplicationForm form = setup.form(programId);
 		review.requireNotReleased(form);
 		List<Proposal> submitted = proposals.findByProgramIdAndStatusOrderBySubmittedAt(programId, Proposal.SUBMITTED);
-		if (Instant.now().isBefore(form.closesAt())
+		// Nothing to tell anyone is not an outcome: the preview says it is not ready, and so does the release.
+		if (Instant.now().isBefore(form.closesAt()) || submitted.isEmpty()
 				|| submitted.stream().anyMatch(proposal -> Proposal.UNDER_REVIEW.equals(proposal.getReviewStatus()))) {
 			throw new ProposalException(ProposalErrorCode.OUTCOMES_NOT_READY,
 					"Release of program " + programId + " before its close or with an application undecided");

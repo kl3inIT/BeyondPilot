@@ -90,13 +90,15 @@ async function MyApplicationsPage({ list }: { list: MyApplications }) {
                           : item.status === "draft"
                             ? t("draftUntil", { when: format.deadline(item.closesAt) })
                             : item.status === "withdrawn"
-                              ? t("withdrawnUntil", { when: format.deadline(item.closesAt) })
+                              ? item.allowUpdatesUntilClose
+                                ? t("withdrawnUntil", { when: format.deadline(item.closesAt) })
+                                : t("withdrawnForGood")
                               : item.outcomesDueOn
                                 ? t("hearBack", { day: format.day(item.outcomesDueOn) })
                                 : t("editUntil", { when: format.deadline(item.closesAt) })}
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {open(item) && (
+                      {open(item) && (item.status === "draft" || item.allowUpdatesUntilClose) && (
                         <Button
                           prominence={item.status === "draft" ? "primary" : "secondary"}
                           href={programApplyUrl(item.programSlug)}

@@ -117,7 +117,10 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 ### Withdrawing
 
 - **Only a submitted application**, before the close (`PROPOSAL_NOT_SUBMITTED`, `PROPOSAL_CLOSED`). It becomes
-  `withdrawn` and can be saved and submitted again while the window is open.
+  `withdrawn` and can be saved and submitted again while the window is open, when the program sets
+  `allowUpdatesUntilClose`. Otherwise the withdrawal is final: a save or a submission of the withdrawn application is
+  refused with `PROPOSAL_WITHDRAWN_FOR_GOOD`, since withdrawing and submitting again would be a change by another
+  name. My applications carries `allowUpdatesUntilClose` so the applicant is told before and after.
 - **A withdrawal returns the decision to under review.** When `review_status` is not `under_review`, a
   `proposal_review_decision` row is appended from that decision to `under_review`, with the applicant's account and
   the reason "The applicant withdrew the application.", and the status is reset. The history keeps the earlier
@@ -221,8 +224,8 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   their averages, counts the withdrawals, and says whether the release is `ready`: not released, closed, every
   application decided and at least one submitted. Before the release it offers starting emails in the program's
   words; after, the emails that were sent.
-- **Release.** `POST …/release` is refused with `PROPOSAL_OUTCOMES_NOT_READY` before the close or while a submitted
-  application is `under_review`, and with `PROPOSAL_RELEASED` once released. It stores the two subjects (at most 200
+- **Release.** `POST …/release` is refused with `PROPOSAL_OUTCOMES_NOT_READY` before the close, when nothing was
+  submitted, or while a submitted application is `under_review`, and with `PROPOSAL_RELEASED` once released. It stores the two subjects (at most 200
   characters) and messages (at most 5000) once in `proposal_release`.
 - **Emails per applicant.** For each submitted application the group's subject and message are filled in, replacing
   `{organization}` and `{solution}` with the names in the last snapshot. `OutcomesReleased` carries them, and
@@ -287,9 +290,9 @@ Every endpoint needs a session.
 
 `ProposalErrorCode`; the category sets the status (validation 400, not permitted 403, not found 404, conflict 409).
 
-| Status | Codes                                                                                                                                                                                                                                                                                                                                                  |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 400    | `PROPOSAL_ORGANIZATION_REQUIRED`, `PROPOSAL_CONTACT_INCOMPLETE`, `PROPOSAL_TEAM_BACKGROUND_REQUIRED`, `PROPOSAL_SOLUTION_NOT_FOUND`, `PROPOSAL_SOLUTION_REQUIRED`, `PROPOSAL_SOLUTION_INCOMPLETE`, `PROPOSAL_DECK_REQUIRED`, `PROPOSAL_ANSWER_INVALID`, `PROPOSAL_ANSWER_REQUIRED`, `PROPOSAL_CRITERIA_INVALID`, `PROPOSAL_ASSESSMENT_INVALID`         |
-| 403    | `PROPOSAL_OWN_APPLICATION`, `PROPOSAL_REVIEW_NOT_ALLOWED`                                                                                                                                                                                                                                                                                              |
-| 404    | `PROPOSAL_APPLICATION_NOT_FOUND`, `PROPOSAL_REVIEW_PROGRAM_NOT_FOUND`, `PROPOSAL_REVIEWER_NOT_FOUND`                                                                                                                                                                                                                                                   |
-| 409    | `PROPOSAL_NOT_OPEN`, `PROPOSAL_CLOSED`, `PROPOSAL_LOCKED`, `PROPOSAL_CHANGED_MEANWHILE`, `PROPOSAL_ALREADY_IN_ORGANIZATION`, `PROPOSAL_ORGANIZATION_APPLIED`, `PROPOSAL_NOT_SUBMITTED`, `PROPOSAL_CRITERIA_FIXED`, `PROPOSAL_NO_CRITERIA`, `PROPOSAL_REVIEWER_INVITED`, `PROPOSAL_REVIEWER_JOINED`, `PROPOSAL_RELEASED`, `PROPOSAL_OUTCOMES_NOT_READY` |
+| Status | Codes                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | `PROPOSAL_ORGANIZATION_REQUIRED`, `PROPOSAL_CONTACT_INCOMPLETE`, `PROPOSAL_TEAM_BACKGROUND_REQUIRED`, `PROPOSAL_SOLUTION_NOT_FOUND`, `PROPOSAL_SOLUTION_REQUIRED`, `PROPOSAL_SOLUTION_INCOMPLETE`, `PROPOSAL_DECK_REQUIRED`, `PROPOSAL_ANSWER_INVALID`, `PROPOSAL_ANSWER_REQUIRED`, `PROPOSAL_CRITERIA_INVALID`, `PROPOSAL_ASSESSMENT_INVALID`                                        |
+| 403    | `PROPOSAL_OWN_APPLICATION`, `PROPOSAL_REVIEW_NOT_ALLOWED`                                                                                                                                                                                                                                                                                                                             |
+| 404    | `PROPOSAL_APPLICATION_NOT_FOUND`, `PROPOSAL_REVIEW_PROGRAM_NOT_FOUND`, `PROPOSAL_REVIEWER_NOT_FOUND`                                                                                                                                                                                                                                                                                  |
+| 409    | `PROPOSAL_NOT_OPEN`, `PROPOSAL_CLOSED`, `PROPOSAL_LOCKED`, `PROPOSAL_WITHDRAWN_FOR_GOOD`, `PROPOSAL_CHANGED_MEANWHILE`, `PROPOSAL_ALREADY_IN_ORGANIZATION`, `PROPOSAL_ORGANIZATION_APPLIED`, `PROPOSAL_NOT_SUBMITTED`, `PROPOSAL_CRITERIA_FIXED`, `PROPOSAL_NO_CRITERIA`, `PROPOSAL_REVIEWER_INVITED`, `PROPOSAL_REVIEWER_JOINED`, `PROPOSAL_RELEASED`, `PROPOSAL_OUTCOMES_NOT_READY` |

@@ -189,6 +189,16 @@ class ProposalTest extends ApplicationsHttpTest {
 			.isOk());
 		assertProblem(put(early, fixed.path(), application(contact(), solution, answers(fixed, email),
 				versionOf(submitted))), 409, "PROPOSAL_LOCKED");
+
+		// Withdrawing is still possible, but it is final: submitting again would be a change by another name.
+		String id = JsonPath.read(submitted, "$.application.id");
+		post(early, API + "/applications/" + id + "/withdraw", null).expectStatus().isOk();
+		assertProblem(post(early, API + "/applications/" + id + "/submit", null), 409, "PROPOSAL_WITHDRAWN_FOR_GOOD");
+		String withdrawn = body(get(early, fixed.path()).expectStatus().isOk());
+		assertProblem(put(early, fixed.path(), application(contact(), solution, answers(fixed, email),
+				versionOf(withdrawn))), 409, "PROPOSAL_WITHDRAWN_FOR_GOOD");
+		assertThat(JsonPath.<List<Boolean>>read(body(get(early, API + "/applications").expectStatus().isOk()),
+				"$.items[*].allowUpdatesUntilClose")).containsExactly(false);
 	}
 
 	@Test

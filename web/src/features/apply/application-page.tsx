@@ -21,8 +21,9 @@ async function ApplicationPage({ view }: { view: ApplicationView }) {
   const application = view.application!;
   const program = view.program;
   const solution = view.solutions.find((option) => option.id === application.solutionId);
+  // Where the program takes no changes after submission, a withdrawn application stays withdrawn too.
   const changeable =
-    program.open && (application.status !== "submitted" || program.allowUpdatesUntilClose);
+    program.open && (application.status === "draft" || program.allowUpdatesUntilClose);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
@@ -100,7 +101,11 @@ async function ApplicationPage({ view }: { view: ApplicationView }) {
                 {t("editHint", { when: format.deadline(program.closesAt) })}
               </p>
               {application.status === "submitted" && (
-                <WithdrawApplication id={application.id} program={program.name} />
+                <WithdrawApplication
+                  id={application.id}
+                  program={program.name}
+                  final={!program.allowUpdatesUntilClose}
+                />
               )}
             </div>
           ) : (
