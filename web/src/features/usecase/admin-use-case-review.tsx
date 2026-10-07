@@ -47,7 +47,12 @@ function AdminUseCaseReview({ useCase }: { useCase: AdminUseCase }) {
           </div>
           {status}
         </div>
-        <UseCaseSummary values={values} onEdit={go} viewLabel={t("viewDetails")} />
+        <UseCaseSummary
+          values={values}
+          onEdit={go}
+          viewLabel={t("viewDetails")}
+          hideEmpty={useCase.status === "approved"}
+        />
       </div>
     );
   }

@@ -128,7 +128,7 @@ GenAI Fund owns `beyondpilot.ai` and keeps its DNS at Namecheap: the `@` and `ww
 The browser sees one origin, so Spring's paths go to the api in the advanced configuration of each proxy host; staging sets `$beyondpilot_api` to `beyondpilot-staging-api`. The upstream is a variable, so nginx resolves it per request and the host keeps working while the api container is being replaced. A custom location would resolve it at load and disable the host whenever the container is absent. The proxy is the edge, so it replaces `X-Forwarded-For` with the address that connected to it and drops `Forwarded`, which Spring would read first: either header as the client wrote it would be taken for the client's address, and limits kept per address would believe it:
 
 ```nginx
-location ~ ^/(api|login|logout|oauth2|ott|\.well-known/oauth-authorization-server)(/|$) {
+location ~ ^/(api|login|logout|oauth2|ott|mcp|\.well-known/oauth-authorization-server|\.well-known/oauth-protected-resource)(/|$) {
     set $beyondpilot_api beyondpilot-api;
     proxy_pass http://$beyondpilot_api:8080;
     proxy_set_header Host $host;

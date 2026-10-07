@@ -20,7 +20,7 @@ function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
   const technologyName = useVocabulary("technology");
   const format = useFormatter();
   const locale = useLocale();
-  const deadline = new Date(useCase.closesAt);
+  const deadline = useCase.closesAt ? new Date(useCase.closesAt) : null;
   const technologies = useCase.technologies.map((technology) => technologyName(technology));
   const budget = useCase.budgetToBeDetermined
     ? t("budget.toBeDetermined")
@@ -85,29 +85,41 @@ function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
             <dt className="text-sm text-muted-foreground">{t("budget.label")}</dt>
             <dd className="font-semibold xl:text-lg">{budget}</dd>
           </div>
-          <div className="flex flex-col gap-0.5">
-            <dt className="text-sm text-muted-foreground">{t("timeline.label")}</dt>
-            <dd>
-              {t("timeline.range", {
-                min: useCase.timelineMinWeeks,
-                max: useCase.timelineMaxWeeks,
-              })}
-            </dd>
-          </div>
+          {useCase.timelineMinWeeks != null && useCase.timelineMaxWeeks != null && (
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-sm text-muted-foreground">{t("timeline.label")}</dt>
+              <dd>
+                {t("timeline.range", {
+                  min: useCase.timelineMinWeeks,
+                  max: useCase.timelineMaxWeeks,
+                })}
+              </dd>
+            </div>
+          )}
         </dl>
         <p className="text-sm text-muted-foreground">
-          {t("deadline.date", {
-            date: format.dateTime(deadline, { day: "numeric", month: "short", year: "numeric" }),
-          })}
-          <br />
-          {t("deadline.time", {
-            time: format.dateTime(deadline, {
-              hour: "2-digit",
-              minute: "2-digit",
-              hourCycle: "h23",
-              timeZone: "Asia/Ho_Chi_Minh",
-            }),
-          })}
+          {deadline ? (
+            <>
+              {t("deadline.date", {
+                date: format.dateTime(deadline, {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                }),
+              })}
+              <br />
+              {t("deadline.time", {
+                time: format.dateTime(deadline, {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hourCycle: "h23",
+                  timeZone: "Asia/Ho_Chi_Minh",
+                }),
+              })}
+            </>
+          ) : (
+            t("deadline.none")
+          )}
         </p>
         <Button disabled className="disabled:opacity-100" size="sm" title={t("viewUnavailable")}>
           {t("view")}
