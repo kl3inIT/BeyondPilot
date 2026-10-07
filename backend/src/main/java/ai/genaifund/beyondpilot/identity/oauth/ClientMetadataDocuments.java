@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -29,8 +31,10 @@ import tools.jackson.databind.json.JsonMapper;
  * 2026-07-28): the app's client ID is the HTTPS address of a JSON document naming it and its redirect addresses. Only
  * documents on a trusted host are fetched, so the server never requests an address an outsider chose; the fetch is
  * short, small and never follows a redirect. Anyone can send any address on those hosts, so an address that could not
- * be read is not fetched again for a few minutes, and the fetches of all addresses together are limited per minute:
- * repeating or varying the address cannot make the server call out without end.
+ * be read is not fetched again for a few minutes, and fetches are limited per minute for each requester and for all of
+ * them together: repeating or varying the address cannot make the server call out without end. A new app is first read
+ * when a person's browser asks to connect it, from that person's own address, so an outsider spending their own share
+ * does not stop it; an app read before keeps its stored document whenever a fetch is refused.
  */
 @Component
 class ClientMetadataDocuments {
@@ -57,6 +61,12 @@ class ClientMetadataDocuments {
 
 	private final Bucket fetches;
 
+	/** Each requester's share of the fetches; bounded and forgotten when idle. */
+	private final Cache<String, Bucket> requesters = Caffeine.newBuilder()
+		.maximumSize(10_000)
+		.expireAfterAccess(Duration.ofMinutes(10))
+		.build();
+
 	ClientMetadataDocuments(OAuthSettings settings, JsonMapper json) {
 		this.settings = settings;
 		this.json = json;
@@ -67,10 +77,22 @@ class ClientMetadataDocuments {
 		JdkClientHttpRequestFactory requests = new JdkClientHttpRequestFactory(client);
 		requests.setReadTimeout(Duration.ofSeconds(5));
 		this.http = RestClient.builder().requestFactory(requests).build();
-		int perMinute = settings.documentFetchesPerMinute();
-		this.fetches = Bucket.builder()
-			.addLimit(Bandwidth.builder().capacity(perMinute).refillGreedy(perMinute, Duration.ofMinutes(1)).build())
+		this.fetches = perMinute(settings.documentFetchesPerMinute());
+	}
+
+	private static Bucket perMinute(int limit) {
+		return Bucket.builder()
+			.addLimit(Bandwidth.builder().capacity(limit).refillGreedy(limit, Duration.ofMinutes(1)).build())
 			.build();
+	}
+
+	/**
+	 * The address of the request being served, as the proxy reported it. Calls outside a request, which only tests
+	 * make, share one share.
+	 */
+	private static String requester() {
+		return RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes current
+				? current.getRequest().getRemoteAddr() : "none";
 	}
 
 	/** Whether this client ID is the address of a document BeyondPilot may fetch. */
@@ -92,7 +114,9 @@ class ClientMetadataDocuments {
 		if (!isDocumentAddress(clientId) || unreadable.getIfPresent(clientId) != null) {
 			return Optional.empty();
 		}
-		if (!fetches.tryConsume(1)) {
+		Bucket share = requesters.get(requester(),
+				address -> perMinute(settings.documentFetchesPerRequesterPerMinute()));
+		if (!share.tryConsume(1) || !fetches.tryConsume(1)) {
 			LOG.atWarn()
 				.addKeyValue("event", "identity.oauth.client_document_fetches_limited")
 				.log("Client ID metadata documents are being fetched too often; this one was not");
