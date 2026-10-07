@@ -1,6 +1,4 @@
-import { useTranslations } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
-import { use } from "react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { JsonLd } from "@/components/layout/json-ld";
 import { Directory } from "@/components/sections/directory/directory";
@@ -9,14 +7,21 @@ import { Faq } from "@/components/sections/faq/faq";
 import { Founders } from "@/components/sections/founders/founders";
 import { Hero } from "@/components/sections/hero/hero";
 import { PartnerNetwork } from "@/components/sections/logos/partner-network";
+import { readHome } from "@/features/home/home-data";
 import { routing } from "@/i18n/routing";
 import { genaiFundLinks, siteOrigin } from "@/lib/site";
 
-export default function HomePage({ params }: PageProps<"/[locale]">) {
-  const { locale } = use(params);
+/** The programs and the directories change at most every few minutes; the page is built again after five. */
+export const revalidate = 300;
+
+export default async function HomePage({ params }: PageProps<"/[locale]">) {
+  const { locale } = await params;
   setRequestLocale(locale);
-  const site = useTranslations("Site");
-  const metadata = useTranslations("Metadata");
+  const [site, metadata, home] = await Promise.all([
+    getTranslations("Site"),
+    getTranslations("Metadata"),
+    readHome(),
+  ]);
 
   return (
     <>
@@ -48,9 +53,9 @@ export default function HomePage({ params }: PageProps<"/[locale]">) {
           ],
         }}
       />
-      <Hero />
-      <ProgramsEvents />
-      <Directory />
+      <Hero cards={home.heroCards} />
+      <ProgramsEvents data={home.events} />
+      <Directory data={home.directory} />
       <PartnerNetwork />
       <Founders />
       <Faq />

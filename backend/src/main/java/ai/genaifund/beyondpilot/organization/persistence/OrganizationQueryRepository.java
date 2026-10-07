@@ -61,8 +61,8 @@ public class OrganizationQueryRepository {
 			@Nullable Instant claimedAt, @Nullable String mergedIntoName) {
 	}
 
-	/** What another module shows of an organization. */
-	public record Name(UUID id, String slug, String name, @Nullable String country) {
+	/** What another module shows of an organization, its logo included. */
+	public record Name(UUID id, String slug, String name, @Nullable String country, @Nullable UUID logoFileId) {
 	}
 
 	/** The approved organizations whose name contains the text, by name; at most {@code limit}. */
@@ -80,7 +80,7 @@ public class OrganizationQueryRepository {
 	 */
 	public List<Name> approvedOrganizations(@Nullable String text, int limit) {
 		return jdbc.sql("""
-				select id, slug, name, country from organization
+				select id, slug, name, country, logo_file_id from organization
 				where status = 'approved' and suspended_at is null
 				  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\')
 				order by lower(name), id
@@ -89,7 +89,7 @@ public class OrganizationQueryRepository {
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
 			.param("limit", limit)
 			.query((row, index) -> new Name(row.getObject("id", UUID.class), row.getString("slug"),
-					row.getString("name"), row.getString("country")))
+					row.getString("name"), row.getString("country"), row.getObject("logo_file_id", UUID.class)))
 			.list();
 	}
 
@@ -114,10 +114,10 @@ public class OrganizationQueryRepository {
 		if (ids.isEmpty()) {
 			return List.of();
 		}
-		return jdbc.sql("select id, slug, name, country from organization where id in (:ids)" + condition)
+		return jdbc.sql("select id, slug, name, country, logo_file_id from organization where id in (:ids)" + condition)
 			.param("ids", ids)
 			.query((row, index) -> new Name(row.getObject("id", UUID.class), row.getString("slug"),
-					row.getString("name"), row.getString("country")))
+					row.getString("name"), row.getString("country"), row.getObject("logo_file_id", UUID.class)))
 			.list();
 	}
 

@@ -19,7 +19,7 @@ public record PublicSolutionSummaryResponse(@Schema(requiredMode = Schema.Requir
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> focusAreas,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> industries,
 		@Schema(types = { "string", "null" }, format = "uuid",
-				description = "Its logo, read at /api/storage/files/{id}; null for none.") @Nullable UUID logoFileId,
+				description = "Its logo, or its organization's when it has none, read at /api/storage/files/{id}; null when neither has one.") @Nullable UUID logoFileId,
 		@Schema(types = { "string", "null" }, format = "uuid",
 				description = "Its cover, read at /api/storage/files/{id}; null for none.") @Nullable UUID coverFileId,
 		@Schema(types = { "string", "null" },

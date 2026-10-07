@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * An approved solution as search indexes it: what its page says, who offers it, and whether its owners list it.
- * @param logoFileId its logo, read at the public address of stored files
+ * @param logoFileId its logo, or its organization's when it has none, read at the public address of stored files
  * @param customerDeployments how many of its customer deployments GenAI Fund approved
  * @param listed false when its owners keep it out of the directory; matching may still use it
  */
