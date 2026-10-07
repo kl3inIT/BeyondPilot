@@ -115,7 +115,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
   // A draft and a solution sent back are written step by step and sent for review at the end.
   const autosaves = server.status === "draft" || server.status === "needs_changes";
   // A solution refused for good stays as it was reviewed: it is read, never saved.
-  const refused = server.status === "rejected";
+  const finallyRefused = server.status === "rejected";
   const standing = reviewState(server);
   const content = contentOf(draft);
   const dirty = content !== contentOf(held(server));
@@ -406,7 +406,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
           <div className="flex shrink-0 items-center gap-3">
             <p
               role="status"
-              hidden={refused}
+              hidden={finallyRefused}
               className="flex items-center gap-1.5 text-xs font-medium"
             >
               {state === "saving" && (
@@ -483,7 +483,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               </>
             ) : (
               <>
-                {!refused && (
+                {!finallyRefused && (
                   <Button
                     size="sm"
                     pending={pending === "save"}
@@ -647,7 +647,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
             </div>
 
             {/* A refused solution is read as it was reviewed; its fields take no input. */}
-            <fieldset disabled={refused} className="min-w-0">
+            <fieldset disabled={finallyRefused} className="min-w-0">
               <FieldGroup>
                 {step === "basics" && (
                   <BasicsStep draft={draft} change={change} errorOf={errorOf} />
@@ -713,7 +713,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
                   {t(server.status === "needs_changes" ? "review.resubmit" : "review.submit")}
                 </Button>
               )}
-              {last && !autosaves && !refused && (
+              {last && !autosaves && !finallyRefused && (
                 <Button
                   size="lg"
                   pending={pending === "save"}
