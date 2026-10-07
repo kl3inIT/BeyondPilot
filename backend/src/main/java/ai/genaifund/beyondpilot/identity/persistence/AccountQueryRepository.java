@@ -55,6 +55,14 @@ public class AccountQueryRepository {
 			.single();
 	}
 
+	/** The accounts whose name or address contains the text, ignoring case, at most this many. */
+	public List<UUID> idsMatching(String text, int limit) {
+		return filtered("select id from identity_account " + FILTER + " order by id limit :limit", text, null, null)
+			.param("limit", limit)
+			.query(UUID.class)
+			.list();
+	}
+
 	private JdbcClient.StatementSpec filtered(String sql, @Nullable String text, @Nullable String status,
 			@Nullable String role) {
 		return jdbc.sql(sql)

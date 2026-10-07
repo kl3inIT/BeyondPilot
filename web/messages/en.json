@@ -1964,12 +1964,16 @@
     "mcp": {
       "metaSetup": "MCP · Admin · BeyondPilot",
       "metaTools": "MCP tools · Admin · BeyondPilot",
+      "metaApps": "Connected apps · MCP · Admin · BeyondPilot",
+      "metaActivity": "Activity · MCP · Admin · BeyondPilot",
       "title": "MCP",
       "lead": "The servers AI apps reach BeyondPilot through, and what they may do.",
       "tabs": {
         "label": "MCP",
         "setup": "Setup",
-        "tools": "Tools"
+        "tools": "Tools",
+        "apps": "Connected apps",
+        "activity": "Activity"
       },
       "saved": "Saved",
       "failed": "That did not save. Try again.",
@@ -2008,6 +2012,79 @@
           "lead": "What any signed-in person's app may call.",
           "search": "Finds listed solutions and published programs.",
           "fetch": "Reads one of them in full by the id search returned."
+        }
+      },
+      "apps": {
+        "label": "Connected apps",
+        "none": "No app is connected",
+        "noneLead": "An app appears here once someone connects it to an MCP server.",
+        "operator": "Operator",
+        "user": "User",
+        "used": "used {time}",
+        "revoke": {
+          "open": "Revoke",
+          "label": "Revoke {name} of {person}",
+          "title": "Revoke {name} of {person}?",
+          "lead": "It stops working at once for {person}. They can connect it again.",
+          "confirm": "Revoke",
+          "cancel": "Cancel",
+          "done": "{name} of {person} can no longer use BeyondPilot.",
+          "failed": "We could not revoke it. Try again."
+        }
+      },
+      "activity": {
+        "search": "Search person or email",
+        "period": {
+          "day": "Last 24 hours",
+          "week": "Last 7 days",
+          "month": "Last 30 days",
+          "all": "All 90 days"
+        },
+        "filters": {
+          "periodLabel": "Period",
+          "app": "All apps",
+          "appLabel": "App",
+          "tool": "All tools",
+          "toolLabel": "Tool",
+          "outcome": "All outcomes",
+          "outcomeLabel": "Outcome"
+        },
+        "outcome": {
+          "ok": "Succeeded",
+          "refused": "Refused",
+          "failed": "Failed"
+        },
+        "server": {
+          "user": "User server",
+          "operator": "Operators' server"
+        },
+        "columns": {
+          "time": "Time",
+          "person": "Person",
+          "app": "App",
+          "tool": "Tool",
+          "outcome": "Outcome"
+        },
+        "today": "Today, {time}",
+        "dayAndTime": "{day}, {time}",
+        "goneAccount": "A deleted account",
+        "count": "{count, plural, one {# call} other {# calls}}",
+        "noMatch": {
+          "title": "No call matches",
+          "description": "Try another search or fewer filters.",
+          "clear": "Clear search and filters"
+        },
+        "empty": {
+          "title": "No call in this period",
+          "description": "Calls appear here as AI apps use the MCP servers. What was asked is never kept."
+        },
+        "pagination": {
+          "label": "Pages of calls",
+          "previous": "Previous",
+          "next": "Next",
+          "goToPrevious": "Go to the previous page",
+          "goToNext": "Go to the next page",
+          "page": "Page {page}"
         }
       }
     },

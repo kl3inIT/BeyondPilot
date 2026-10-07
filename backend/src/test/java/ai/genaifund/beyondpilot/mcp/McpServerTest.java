@@ -121,6 +121,73 @@ class McpServerTest {
 	}
 
 	@Test
+	void operatorsSeeEveryCallAndEveryConnectionAndRevokeOne() {
+		String email = "watched-" + word + "@mcp.test";
+		String person = TestSignIn.session(client, mail, email);
+		String token = TestAppConnection.connect(client, port, person, "mcp.read").access();
+		McpSyncClient app = app(token);
+		app.initialize();
+		app.callTool(McpSchema.CallToolRequest.builder("search").arguments(Map.of("query", "anything")).build());
+		app.callTool(McpSchema.CallToolRequest.builder("fetch")
+			.arguments(Map.of("id", "solution:no-such-" + word))
+			.build());
+		app.closeGracefully();
+
+		// Only operators read the activity.
+		client.get()
+			.uri("/api/mcp/admin/calls")
+			.cookie(TestSignIn.SESSION_COOKIE, person)
+			.exchange()
+			.expectStatus()
+			.isForbidden();
+		String all = adminGet("/api/mcp/admin/calls?q=watched-" + word);
+		assertThat(JsonPath.<Integer>read(all, "$.total")).isEqualTo(2);
+		assertThat(JsonPath.<List<String>>read(all, "$.items[*].tool")).containsExactly("fetch", "search");
+		assertThat(JsonPath.<String>read(all, "$.items[0].outcome")).isEqualTo("refused");
+		assertThat(JsonPath.<String>read(all, "$.items[0].personEmail")).isEqualTo(email);
+		assertThat(JsonPath.<String>read(all, "$.items[0].clientId")).isEqualTo(TestAppConnection.CLIENT);
+		assertThat(JsonPath.<List<String>>read(all, "$.apps[*].clientId")).contains(TestAppConnection.CLIENT);
+		assertThat(JsonPath.<List<String>>read(all, "$.tools")).containsExactly("search", "fetch");
+		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&outcome=refused"),
+				"$.total")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&tool=search"),
+				"$.total")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=nobody-matches-" + word), "$.total"))
+			.isZero();
+
+		// Operators see the connection and end it; the app is refused at its next call.
+		client.get()
+			.uri("/api/identity/admin/apps")
+			.cookie(TestSignIn.SESSION_COOKIE, person)
+			.exchange()
+			.expectStatus()
+			.isForbidden();
+		String connections = adminGet("/api/identity/admin/apps");
+		List<Map<String, Object>> mine = JsonPath.read(connections, "$[?(@.personEmail == '" + email + "')]");
+		assertThat(mine).hasSize(1);
+		assertThat(mine.getFirst()).containsEntry("servers", List.of("user")).containsEntry("operator", false);
+		String revoke = "/api/identity/admin/apps/" + mine.getFirst().get("accountId") + "/" + mine.getFirst().get("id")
+				+ "/revoke";
+		post(operator, revoke, null);
+		assertThat(initialize(token, null, null)).isEqualTo(401);
+		client.post()
+			.uri(revoke)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.exchange()
+			.expectStatus()
+			.isNotFound();
+		assertThat(jdbc.sql("""
+				select actor_email || ' ' || resource_label from audit_event
+				where action = 'mcp.app_revoke' and resource_label like :label
+				""").param("label", "% · " + email).query(String.class).list()).hasSize(1);
+	}
+
+	private String adminGet(String path) {
+		return body(client.get().uri(path).cookie(TestSignIn.SESSION_COOKIE, operator).exchange().expectStatus().isOk());
+	}
+
+	@Test
 	void aCallWithoutATokenIsToldWhereToSignIn() {
 		client.post()
 			.uri("/mcp")

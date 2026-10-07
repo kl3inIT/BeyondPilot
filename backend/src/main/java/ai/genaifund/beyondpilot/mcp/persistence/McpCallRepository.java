@@ -3,8 +3,12 @@ package ai.genaifund.beyondpilot.mcp.persistence;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -34,6 +38,67 @@ public class McpCallRepository {
 			.update();
 	}
 
+	/** One page of the calls the filter keeps, newest first. */
+	public List<LoggedCall> page(Filter filter, int limit, long offset) {
+		return filtered("select called_at, account_id, client_id, server, tool, outcome, duration_ms from mcp_call",
+				filter, " order by called_at desc, id limit :limit offset :offset")
+			.param("limit", limit)
+			.param("offset", offset)
+			.query((row, number) -> new LoggedCall(row.getObject("called_at", OffsetDateTime.class).toInstant(),
+					row.getObject("account_id", UUID.class), row.getString("client_id"), row.getString("server"),
+					row.getString("tool"), row.getString("outcome"), row.getInt("duration_ms")))
+			.list();
+	}
+
+	/** How many calls the filter keeps. */
+	public long count(Filter filter) {
+		return filtered("select count(*) from mcp_call", filter, "").query(Long.class).single();
+	}
+
+	/** The apps that called since this instant, or ever when it is null. */
+	public List<String> clientsSince(@Nullable Instant from) {
+		return filtered("select distinct client_id from mcp_call", new Filter(from, null, null, null, null), "")
+			.query(String.class)
+			.list();
+	}
+
+	private JdbcClient.StatementSpec filtered(String select, Filter filter, String tail) {
+		List<String> where = new ArrayList<>();
+		if (filter.from() != null) {
+			where.add("called_at >= :from");
+		}
+		if (filter.clientId() != null) {
+			where.add("client_id = :client");
+		}
+		if (filter.tool() != null) {
+			where.add("tool = :tool");
+		}
+		if (filter.outcome() != null) {
+			where.add("outcome = :outcome");
+		}
+		if (filter.accountIds() != null) {
+			where.add(filter.accountIds().isEmpty() ? "false" : "account_id in (:accounts)");
+		}
+		JdbcClient.StatementSpec spec = jdbc
+			.sql(select + (where.isEmpty() ? "" : " where " + String.join(" and ", where)) + tail);
+		if (filter.from() != null) {
+			spec = spec.param("from", OffsetDateTime.ofInstant(filter.from(), ZoneOffset.UTC));
+		}
+		if (filter.clientId() != null) {
+			spec = spec.param("client", filter.clientId());
+		}
+		if (filter.tool() != null) {
+			spec = spec.param("tool", filter.tool());
+		}
+		if (filter.outcome() != null) {
+			spec = spec.param("outcome", filter.outcome());
+		}
+		if (filter.accountIds() != null && !filter.accountIds().isEmpty()) {
+			spec = spec.param("accounts", filter.accountIds());
+		}
+		return spec;
+	}
+
 	/**
 	 * Deletes the calls made before this instant.
 	 * @return how many were deleted
@@ -52,6 +117,19 @@ public class McpCallRepository {
 	 */
 	public record Call(Instant calledAt, UUID accountId, String clientId, String server, String tool, String outcome,
 			int durationMs) {
+	}
+
+	/** A call as the log keeps it. */
+	public record LoggedCall(Instant calledAt, UUID accountId, String clientId, String server, String tool,
+			String outcome, int durationMs) {
+	}
+
+	/**
+	 * Which calls to keep; a null member keeps any.
+	 * @param accountIds the people whose calls to keep; empty keeps none
+	 */
+	public record Filter(@Nullable Instant from, @Nullable String clientId, @Nullable String tool,
+			@Nullable String outcome, @Nullable Collection<UUID> accountIds) {
 	}
 
 }

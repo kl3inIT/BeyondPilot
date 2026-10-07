@@ -1658,6 +1658,62 @@ export type JoinOutcome = {
     outcome: 'joined' | 'requested';
 };
 
+export type McpCall = {
+    accountId: string;
+    appHost?: string | null;
+    appName: string;
+    calledAt: string;
+    clientId: string;
+    durationMs: number;
+    /**
+     * `ok`; `refused`, the tool answered with an error such as an unknown id; `failed`, it broke.
+     */
+    outcome: 'ok' | 'refused' | 'failed';
+    /**
+     * Null when the account is gone.
+     */
+    personEmail?: string | null;
+    /**
+     * Null until the person gives a name, or when the account is gone.
+     */
+    personName?: string | null;
+    server: 'user' | 'operator';
+    tool: string;
+};
+
+export type McpCallApp = {
+    clientId: string;
+    host?: string | null;
+    name: string;
+};
+
+/**
+ * One page of the calls AI apps made to the MCP servers, newest first.
+ */
+export type McpCallList = {
+    /**
+     * The apps that called in the period, to filter by.
+     */
+    apps: Array<McpCallApp>;
+    items: Array<McpCall>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    /**
+     * How many calls a page holds.
+     */
+    pageSize: number;
+    /**
+     * The tools of the servers, to filter by.
+     */
+    tools: Array<string>;
+    /**
+     * How many calls match, over all pages.
+     */
+    total: number;
+};
+
 /**
  * The MCP servers, their switches and their tools.
  */
@@ -2062,6 +2118,51 @@ export type OrganizationMembers = {
  */
 export type OrganizationSearch = {
     items: Array<OrganizationMatch>;
+};
+
+/**
+ * An AI app someone connected to BeyondPilot, as operators see it.
+ */
+export type PersonConnectedApp = {
+    accountId: string;
+    /**
+     * When the person first allowed it.
+     */
+    allowedAt?: string | null;
+    clientId: string;
+    /**
+     * The host the app's metadata document lives on; null for a client BeyondPilot registered.
+     */
+    host?: string | null;
+    /**
+     * What a revoke names, with the account.
+     */
+    id: string;
+    /**
+     * The app's name; its host when BeyondPilot has not reviewed the host.
+     */
+    name: string;
+    /**
+     * Whether the person is an operator.
+     */
+    operator: boolean;
+    personEmail: string;
+    /**
+     * Null until the person gives a name.
+     */
+    personName?: string | null;
+    /**
+     * Whether BeyondPilot has reviewed the app's host or registered the app.
+     */
+    reviewed: boolean;
+    /**
+     * The servers the app may call: `user` for /mcp, `operator` for /mcp/operator.
+     */
+    servers: Array<'user' | 'operator'>;
+    /**
+     * When it last got a token, which it does only while in use, so within the hour of its last use.
+     */
+    usedAt?: string | null;
 };
 
 export type Problem = {
@@ -4600,6 +4701,59 @@ export type RemoveAppHostResponses = {
 
 export type RemoveAppHostResponse = RemoveAppHostResponses[keyof RemoveAppHostResponses];
 
+export type ListEveryConnectedAppData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/identity/admin/apps';
+};
+
+export type ListEveryConnectedAppErrors = {
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListEveryConnectedAppError = ListEveryConnectedAppErrors[keyof ListEveryConnectedAppErrors];
+
+export type ListEveryConnectedAppResponses = {
+    /**
+     * The connections, the latest used first.
+     */
+    200: Array<PersonConnectedApp>;
+};
+
+export type ListEveryConnectedAppResponse = ListEveryConnectedAppResponses[keyof ListEveryConnectedAppResponses];
+
+export type RevokePersonsAppData = {
+    body?: never;
+    path: {
+        accountId: string;
+        id: string;
+    };
+    query?: never;
+    url: '/api/identity/admin/apps/{accountId}/{id}/revoke';
+};
+
+export type RevokePersonsAppErrors = {
+    /**
+     * That person has not connected that app.
+     */
+    404: Problem;
+};
+
+export type RevokePersonsAppError = RevokePersonsAppErrors[keyof RevokePersonsAppErrors];
+
+export type RevokePersonsAppResponses = {
+    /**
+     * Revoked.
+     */
+    204: void;
+};
+
+export type RevokePersonsAppResponse = RevokePersonsAppResponses[keyof RevokePersonsAppResponses];
+
 export type ListConnectedAppsData = {
     body?: never;
     path?: never;
@@ -4897,6 +5051,56 @@ export type ReplyToIntroductionResponses = {
 };
 
 export type ReplyToIntroductionResponse = ReplyToIntroductionResponses[keyof ReplyToIntroductionResponses];
+
+export type ListMcpCallsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Only calls made at or after this instant.
+         */
+        from?: string;
+        /**
+         * Only calls of the app with this client id.
+         */
+        app?: string | null;
+        /**
+         * Only calls to this tool.
+         */
+        tool?: string | null;
+        /**
+         * Only calls that ended this way.
+         */
+        outcome?: 'ok' | 'refused' | 'failed';
+        /**
+         * Only calls of people whose name or address contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/mcp/admin/calls';
+};
+
+export type ListMcpCallsErrors = {
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListMcpCallsError = ListMcpCallsErrors[keyof ListMcpCallsErrors];
+
+export type ListMcpCallsResponses = {
+    /**
+     * One page of calls, newest first.
+     */
+    200: McpCallList;
+};
+
+export type ListMcpCallsResponse = ListMcpCallsResponses[keyof ListMcpCallsResponses];
 
 export type GetMcpSettingsData = {
     body?: never;

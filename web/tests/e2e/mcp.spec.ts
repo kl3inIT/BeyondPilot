@@ -118,4 +118,47 @@ test.describe("MCP", () => {
     const response = await page.goto("/admin/ai/mcp");
     expect(response?.status()).toBe(404);
   });
+
+  test("an operator sees every connected app and revokes one, and reads the calls by filter", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/ai/mcp/apps");
+
+    const apps = page.getByRole("list", { name: "Connected apps" });
+    await expect(apps.getByText("ChatGPT · Minh Tran")).toBeVisible();
+    await expect(apps.getByText("Claude Code · Đạt Phan")).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+
+    const revoked: string[] = [];
+    await page.route("**/api/identity/admin/apps/*/*/revoke", async (route) => {
+      revoked.push(new URL(route.request().url()).pathname);
+      await route.fulfill({ status: 204 });
+    });
+    await apps.getByRole("button", { name: "Revoke ChatGPT of Minh Tran" }).click();
+    await page
+      .getByRole("alertdialog", { name: "Revoke ChatGPT of Minh Tran?" })
+      .getByRole("button", { name: "Revoke" })
+      .click();
+    await expect(
+      page.getByText("ChatGPT of Minh Tran can no longer use BeyondPilot."),
+    ).toBeVisible();
+    expect(revoked).toEqual([
+      "/api/identity/admin/apps/5b1f2c3d-0000-4000-8000-000000000001/0d6c1b9e-7f2a-3c41-9a8e-111111111111/revoke",
+    ]);
+
+    await page.goto("/admin/ai/mcp/activity");
+    const calls = isMobile ? page.getByRole("listitem") : page.getByRole("row");
+    await expect(calls.filter({ hasText: "Minh Tran" })).toContainText("Refused");
+    await expect(calls.filter({ hasText: "Đạt Phan" })).toContainText("Succeeded");
+    await expect(page.getByText("2 calls")).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+
+    await page.getByRole("combobox", { name: "Outcome" }).click();
+    await page.getByRole("option", { name: "Refused" }).click();
+    await expect(page).toHaveURL(/outcome=refused/);
+  });
 });
