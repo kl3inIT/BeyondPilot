@@ -53,7 +53,15 @@ public class StorageService {
 	private static final DateTimeFormatter KEY_MONTH = DateTimeFormatter.ofPattern("yyyy/MM").withZone(ZoneOffset.UTC);
 
 	/** Enough to recognise every accepted media type by how its content starts. */
-	private static final int SIGNATURE_LENGTH = 12;
+	/** Enough of the start of a file to recognize its kind, and to see that a text file holds text. */
+	private static final int SIGNATURE_LENGTH = 512;
+
+	/** Every Office file of 2007 and later is a ZIP archive. */
+	private static final byte[] ZIP = { 'P', 'K', 3, 4 };
+
+	/** Word, Excel and PowerPoint files before 2007 are OLE compound documents. */
+	private static final byte[] OLE = { (byte) 0xD0, (byte) 0xCF, 0x11, (byte) 0xE0, (byte) 0xA1, (byte) 0xB1, 0x1A,
+			(byte) 0xE1 };
 
 	private static final int MAX_FILE_NAME_LENGTH = 255;
 
@@ -275,8 +283,27 @@ public class StorageService {
 			case "image/jpeg" -> startsWith(start, 0, new byte[] { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF });
 			case "image/webp" -> startsWith(start, 0, "RIFF".getBytes(StandardCharsets.US_ASCII))
 					&& startsWith(start, 8, "WEBP".getBytes(StandardCharsets.US_ASCII));
+			case "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+					"application/vnd.openxmlformats-officedocument.presentationml.presentation" ->
+				startsWith(start, 0, ZIP);
+			case "application/msword", "application/vnd.ms-powerpoint" -> startsWith(start, 0, OLE);
+			// Browsers on Windows announce a CSV file as Excel's, since Excel opens it.
+			case "application/vnd.ms-excel" -> startsWith(start, 0, OLE) || isText(start);
+			case "text/plain", "text/csv" -> isText(start);
 			default -> false;
 		};
+	}
+
+	/** Text has no control character but tab, line feed, form feed and carriage return; UTF-8 bytes above 0x7F pass. */
+	private static boolean isText(byte[] start) {
+		for (byte value : start) {
+			int unsigned = value & 0xFF;
+			if (unsigned < 0x20 && unsigned != 0x09 && unsigned != 0x0A && unsigned != 0x0C && unsigned != 0x0D) {
+				return false;
+			}
+		}
+		return start.length > 0;
 	}
 
 	private static boolean startsWith(byte[] content, int offset, byte[] signature) {

@@ -435,7 +435,9 @@
             "PROGRAM_EXTERNAL_URL_REQUIRED": "Nhập địa chỉ của trang ở nơi khác.",
             "PROGRAM_COVER_NOT_USABLE": "Ảnh này không dùng làm ảnh bìa được. Hãy tải lên lại.",
             "PROGRAM_KEY_DATE_OUT_OF_ORDER": "Có mốc thời gian kết thúc trước khi bắt đầu.",
-            "PROGRAM_EVENT_OUT_OF_ORDER": "Có sự kiện kết thúc trước khi bắt đầu."
+            "PROGRAM_EVENT_OUT_OF_ORDER": "Có sự kiện kết thúc trước khi bắt đầu.",
+            "PROGRAM_OPENING_FIXED": "Đơn đã mở nên không thể đổi thời điểm mở đơn nữa.",
+            "PROGRAM_PUBLISHED_INCOMPLETE": "Chương trình đang công khai phải giữ tóm tắt, ảnh bìa và ngày diễn ra. Hãy gỡ công khai trước nếu muốn bỏ một mục."
           }
         },
         "cover": {
@@ -1561,7 +1563,7 @@
           "uploaded": "Tải lên {time}",
           "uploading": "Đang tải lên…",
           "errors": {
-            "type": "Đính kèm tệp PDF, Word, Excel hoặc PowerPoint, hoặc ảnh PNG, JPEG.",
+            "type": "Đính kèm tệp PDF, Word, Excel, PowerPoint, CSV hoặc văn bản, hoặc ảnh PNG, JPEG, WebP.",
             "size": "Mỗi tệp tối đa 25 MB.",
             "failed": "Chưa tải được tệp. Hãy thử lại."
           }
@@ -4713,7 +4715,8 @@
         "PROPOSAL_DECK_REQUIRED": "Thêm deck giải pháp ở bước 2.",
         "PROPOSAL_ANSWER_REQUIRED": "Trả lời mọi câu hỏi của chương trình.",
         "PROPOSAL_ANSWER_INVALID": "Có câu trả lời không khớp với câu hỏi.",
-        "ORGANIZATION_ALREADY_MEMBER": "Bạn đã thuộc một tổ chức. Tải lại trang."
+        "ORGANIZATION_ALREADY_MEMBER": "Bạn đã thuộc một tổ chức. Tải lại trang.",
+        "PROPOSAL_WITHDRAWN_FOR_GOOD": "Bạn đã rút đơn này, và chương trình không nhận thay đổi sau khi nộp, nên không thể nộp lại."
       }
     }
   },
@@ -4774,7 +4777,8 @@
       },
       "done": " (đã xong)",
       "ahead": " (sắp tới)"
-    }
+    },
+    "withdrawnForGood": "Đã rút. Chương trình này không nhận thay đổi sau khi nộp, nên không thể nộp lại."
   },
   "Application": {
     "metaTitle": "Đơn nộp",
@@ -4803,7 +4807,8 @@
       "cancel": "Giữ lại",
       "done": "Đã rút đơn của bạn.",
       "closed": "Đợt nhận đơn đã đóng, nên không rút đơn được nữa.",
-      "failed": "Chưa rút được đơn. Thử lại."
+      "failed": "Chưa rút được đơn. Thử lại.",
+      "leadFinal": "Người chấm sẽ không đọc đơn nữa. Chương trình này không nhận thay đổi sau khi nộp, nên bạn sẽ không nộp lại được."
     },
     "receipt": {
       "title": "Đã nộp đơn",

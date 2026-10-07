@@ -1,5 +1,7 @@
 package ai.genaifund.beyondpilot.storage.persistence;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +23,9 @@ public interface StorageFileRepository extends JpaRepository<StorageFile, UUID> 
 			where id = :id and status = 'pending' and upload_token_hash = :tokenHash
 			""", nativeQuery = true)
 	int spendUploadToken(UUID id, String tokenHash);
+
+	/** The uploads never confirmed whose time to send their bytes ended before the given moment. */
+	@Query("select f from StorageFile f where f.status = ai.genaifund.beyondpilot.storage.persistence.FileStatus.PENDING "
+			+ "and f.uploadExpiresAt < :before")
+	List<StorageFile> findAbandoned(Instant before);
 }

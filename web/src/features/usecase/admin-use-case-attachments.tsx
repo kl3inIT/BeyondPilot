@@ -18,6 +18,12 @@ const accepted = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "image/webp",
+  "application/msword",
+  "application/vnd.ms-excel",
+  "application/vnd.ms-powerpoint",
+  "text/csv",
+  "text/plain",
 ];
 const maxBytes = 25 * 1024 * 1024;
 const maxAttachments = 10;
