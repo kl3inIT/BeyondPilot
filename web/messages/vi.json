@@ -2564,6 +2564,10 @@
       "technology": "Công nghệ",
       "automotive_mobility": "Ô tô và di chuyển",
       "consumer_goods": "Hàng tiêu dùng",
+      "climate_sustainability": "Khí hậu và phát triển bền vững",
+      "marketing_advertising": "Marketing và quảng cáo",
+      "legal": "Pháp lý",
+      "hr_workforce": "Nhân sự",
       "other": "Khác"
     },
     "maturity": {
