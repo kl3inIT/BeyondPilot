@@ -10,6 +10,7 @@ import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditRecord;
 import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.identity.Operator;
+import ai.genaifund.beyondpilot.notification.persistence.EmailMessageRepository;
 import ai.genaifund.beyondpilot.notification.persistence.EmailSuppressionRepository;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -40,12 +41,16 @@ class TestRecipients {
 
 	private final EmailSuppressionRepository suppressions;
 
+	private final EmailMessageRepository messages;
+
 	private final AuditTrail audit;
 
 	private final TransactionOperations transactions;
 
-	TestRecipients(EmailSuppressionRepository suppressions, AuditTrail audit, TransactionOperations transactions) {
+	TestRecipients(EmailSuppressionRepository suppressions, EmailMessageRepository messages, AuditTrail audit,
+			TransactionOperations transactions) {
 		this.suppressions = suppressions;
+		this.messages = messages;
 		this.audit = audit;
 		this.transactions = transactions;
 	}
@@ -74,6 +79,8 @@ class TestRecipients {
 	}
 
 	private void recordWithinLimit(Operator operator, String recipient, String subject) {
+		// Tests asked at once would otherwise all count the same number and all pass the limit.
+		messages.takeTestTurnFor(operator.accountId());
 		if (audit.count(AuditAction.EMAIL_TEST_SEND, operator.accountId(), Instant.now().minus(WINDOW)) >= HOURLY_LIMIT) {
 			throw new NotificationException(NotificationErrorCode.TEST_LIMIT_REACHED,
 					"The operator has sent " + HOURLY_LIMIT + " tests to other people within the hour");

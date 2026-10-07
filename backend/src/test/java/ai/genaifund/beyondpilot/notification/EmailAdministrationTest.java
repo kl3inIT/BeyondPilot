@@ -4,11 +4,17 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -36,7 +42,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
  * it, and every change lands in the audit log.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		properties = "beyondpilot.identity.operator-emails=operator@email.test,tester@email.test")
+		properties = "beyondpilot.identity.operator-emails=operator@email.test,tester@email.test,rush@email.test")
 @Import({ TestcontainersConfiguration.class, EmailAdministrationTest.Mail.class })
 class EmailAdministrationTest {
 
@@ -191,6 +197,32 @@ class EmailAdministrationTest {
 		// The limit is on mail to other people; a test to oneself still goes.
 		String own = body(post(tester, API + "/settings/test", form).expectStatus().isOk());
 		assertThat(JsonPath.<Boolean>read(own, "$.sent")).isTrue();
+	}
+
+	@Test
+	void testsAskedAtOnceStillStopAtTheHourlyLimit() throws Exception {
+		String tester = TestSignIn.session(client, mail, "rush@email.test");
+		String read = body(get(tester, API + "/settings").expectStatus().isOk());
+		Map<String, Object> form = settings("smtp", version(read), smtp(mail.smtpPort()), ses(null, null, null), null);
+		int asked = TestRecipients.HOURLY_LIMIT + 5;
+
+		try (ExecutorService pool = Executors.newFixedThreadPool(asked)) {
+			List<Callable<Integer>> tests = IntStream.range(0, asked)
+				.<Callable<Integer>>mapToObj(i -> () -> post(tester, API + "/settings/test?to=rush" + i + "@email.test",
+						form)
+					.expectBody()
+					.returnResult()
+					.getStatus()
+					.value())
+				.toList();
+			List<Integer> statuses = new ArrayList<>();
+			for (Future<Integer> status : pool.invokeAll(tests)) {
+				statuses.add(status.get());
+			}
+			assertThat(statuses).filteredOn(status -> status == 200).hasSize(TestRecipients.HOURLY_LIMIT);
+			assertThat(statuses).filteredOn(status -> status == 429).hasSize(asked - TestRecipients.HOURLY_LIMIT);
+		}
+		assertThat(testsBy("rush@email.test")).isEqualTo(TestRecipients.HOURLY_LIMIT);
 	}
 
 	@Test
