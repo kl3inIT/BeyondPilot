@@ -4224,7 +4224,7 @@
       "rateHint": "Chỉ bạn và GenAI Fund thấy mức giá.",
       "title": "Hồ sơ",
       "lead": "Những gì mọi người thấy trên trang của bạn. Email của bạn không bao giờ hiển thị; lời nhắn đến bạn qua BeyondPilot.",
-      "optionalNote": "Trường ghi Không bắt buộc có thể để trống. Các trường còn lại cần có trước khi GenAI Fund duyệt hồ sơ.",
+      "optionalNote": "Trường có dấu * cần có trước khi GenAI Fund duyệt hồ sơ. Trường ghi Không bắt buộc có thể để trống.",
       "optional": "Không bắt buộc",
       "headlinePlaceholder": "Ví dụ: Kỹ sư ML xây dựng AI xử lý tài liệu cho ngân hàng",
       "skillsPlaceholder": "Thêm kỹ năng",

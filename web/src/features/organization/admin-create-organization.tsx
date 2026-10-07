@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
 import { ChoiceSelect } from "@/components/composites/choice-select";
+import { RequiredMark } from "@/components/composites/required-mark";
 import {
   Dialog,
   DialogContent,
@@ -40,15 +41,6 @@ const blank = {
   description: "",
   logoFileId: "",
 };
-
-/** The red star after the label of a field that must be filled; screen readers hear the error instead. */
-function RequiredMark() {
-  return (
-    <span aria-hidden="true" className="text-destructive">
-      *
-    </span>
-  );
-}
 
 /**
  * Creates an organization on behalf of its people, already approved: GenAI Fund lists a company

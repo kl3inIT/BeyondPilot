@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { RequiredMark } from "@/components/composites/required-mark";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
@@ -69,7 +70,10 @@ function ReasonDialog({
         </DialogHeader>
         <FieldGroup>
           <Field>
-            <FieldLabel htmlFor={reasonId}>{reasonLabel}</FieldLabel>
+            <FieldLabel htmlFor={reasonId}>
+              {reasonLabel}
+              <RequiredMark />
+            </FieldLabel>
             <NativeSelect
               id={reasonId}
               className="w-full"

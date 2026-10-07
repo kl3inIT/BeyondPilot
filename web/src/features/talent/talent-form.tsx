@@ -11,6 +11,7 @@ import { IconButton } from "@/components/actions/icon-button";
 import { ChoiceChips } from "@/components/composites/choice-chips";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
 import { LeaveGuard } from "@/components/composites/leave-guard";
+import { RequiredMark } from "@/components/composites/required-mark";
 import { ReviewReadiness } from "@/components/composites/review-readiness";
 import { TagInput } from "@/components/composites/tag-input";
 import {
@@ -335,7 +336,10 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
       <h3 className={group}>{t("sections.basics")}</h3>
       <div className="grid gap-x-3 gap-y-7 sm:grid-cols-2">
         <Field data-invalid={bad("name")}>
-          <FieldLabel htmlFor="talent-name">{t("name")}</FieldLabel>
+          <FieldLabel htmlFor="talent-name">
+            {t("name")}
+            <RequiredMark />
+          </FieldLabel>
           <Input
             id="talent-name"
             autoComplete="name"
@@ -364,7 +368,10 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
         </Field>
       </div>
       <Field data-invalid={bad("headline")}>
-        <FieldLabel htmlFor="talent-headline">{t("headline")}</FieldLabel>
+        <FieldLabel htmlFor="talent-headline">
+          {t("headline")}
+          <RequiredMark />
+        </FieldLabel>
         <Input
           id="talent-headline"
           aria-describedby={about("talent-headline")}
@@ -413,7 +420,10 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
         </Field>
       </div>
       <Field data-invalid={bad("roles")}>
-        <FieldLabel>{t("roles")}</FieldLabel>
+        <FieldLabel>
+          {t("roles")}
+          <RequiredMark />
+        </FieldLabel>
         <ChoiceChips
           id="talent-roles"
           aria-describedby={about("talent-roles")}
@@ -431,7 +441,10 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
 
       <h3 className={group}>{t("sections.skills")}</h3>
       <Field data-invalid={bad("skills")}>
-        <FieldLabel htmlFor="talent-skills">{t("skills")}</FieldLabel>
+        <FieldLabel htmlFor="talent-skills">
+          {t("skills")}
+          <RequiredMark />
+        </FieldLabel>
         <TagInput
           id="talent-skills"
           aria-describedby={about("talent-skills")}
@@ -489,7 +502,10 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
         </Field>
       </div>
       <Field data-invalid={bad("bio")}>
-        <FieldLabel htmlFor="talent-bio">{t("bio")}</FieldLabel>
+        <FieldLabel htmlFor="talent-bio">
+          {t("bio")}
+          <RequiredMark />
+        </FieldLabel>
         <Textarea
           id="talent-bio"
           aria-describedby={about("talent-bio")}
@@ -575,6 +591,7 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
                   >
                     <FieldLabel htmlFor={`project-title-${project.key}`}>
                       {t("projects.name", { number: index + 1 })}
+                      <RequiredMark />
                     </FieldLabel>
                     <Input
                       id={`project-title-${project.key}`}

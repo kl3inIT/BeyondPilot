@@ -4224,7 +4224,7 @@
       "rateHint": "Only you and GenAI Fund see the rate.",
       "title": "Profile",
       "lead": "What people see on your page. Your email address is never shown; enquiries reach you through BeyondPilot.",
-      "optionalNote": "Fields marked Optional can stay empty. The others are needed before GenAI Fund reviews the profile.",
+      "optionalNote": "Fields marked * are needed before GenAI Fund reviews the profile. Fields marked Optional can stay empty.",
       "optional": "Optional",
       "headlinePlaceholder": "For example: ML engineer building document AI for banks",
       "skillsPlaceholder": "Add a skill",
