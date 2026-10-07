@@ -32,16 +32,33 @@ final class RedirectAddresses {
 		return lower.equals("localhost") || lower.equals("127.0.0.1") || lower.equals("[::1]") || lower.equals("::1");
 	}
 
-	/** The redirect check: {@code localhost} on any port, then Spring's own. */
+	/**
+	 * The redirect check: for the client of agents on this computer, any address on it; for others, {@code localhost}
+	 * on any port; then Spring's own.
+	 */
 	static Consumer<OAuth2AuthorizationCodeRequestAuthenticationContext> validator() {
 		return context -> {
 			OAuth2AuthorizationCodeRequestAuthenticationToken request = context.getAuthentication();
 			String requested = request.getRedirectUri();
-			if (requested != null && matchesLocalhostOnAnyPort(requested, context.getRegisteredClient())) {
+			RegisteredClient client = context.getRegisteredClient();
+			if (requested != null && (McpClients.LOCAL.equals(client.getClientId()) ? isOnThisComputer(requested)
+					: matchesLocalhostOnAnyPort(requested, client))) {
 				return;
 			}
 			OAuth2AuthorizationCodeRequestAuthenticationValidator.DEFAULT_REDIRECT_URI_VALIDATOR.accept(context);
 		};
+	}
+
+	/** An {@code http} address on this computer, any port and path, with nothing a parser could read two ways. */
+	static boolean isOnThisComputer(String address) {
+		try {
+			UriComponents uri = UriComponentsBuilder.fromUriString(address).build();
+			return "http".equals(uri.getScheme()) && isThisComputer(uri.getHost()) && uri.getFragment() == null
+					&& uri.getUserInfo() == null;
+		}
+		catch (IllegalArgumentException malformed) {
+			return false;
+		}
 	}
 
 	private static boolean matchesLocalhostOnAnyPort(String requested, RegisteredClient client) {

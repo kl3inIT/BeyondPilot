@@ -30,13 +30,14 @@ class AppsController {
 	}
 
 	@GetMapping(path = "/connecting", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getConnectingApp", summary = "The AI app asking to connect",
+	@Operation(operationId = "getConnectingApp", summary = "The AI app waiting for the caller's answer",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "200", description = "The app the consent page names.")
-	@ApiResponse(responseCode = "404", description = "No such app may sign in.",
+	@ApiResponse(responseCode = "200", description = "The app the consent page shows.")
+	@ApiResponse(responseCode = "404", description = "No request of the caller's waits with this app and state.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	ConnectingAppResponse connecting(@CurrentActor Actor actor, @RequestParam String clientId) {
-		return apps.connectingApp(actor, clientId);
+	ConnectingAppResponse connecting(@CurrentActor Actor actor, @RequestParam String clientId,
+			@RequestParam String state) {
+		return apps.connectingApp(actor, clientId, state);
 	}
 
 }

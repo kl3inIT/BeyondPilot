@@ -878,15 +878,31 @@ export type ChooseEmbeddingModel = {
 };
 
 /**
- * An AI app asking the signed-in person to connect it to BeyondPilot.
+ * An AI app waiting for the signed-in person to allow or deny it.
  */
 export type ConnectingApp = {
+    /**
+     * Whether it is the client any agent on a person's computer uses, which names no app.
+     */
+    anyLocalApp: boolean;
     clientId: string;
     /**
-     * The host the app's client ID belongs to, or `beyondpilot` for a client BeyondPilot registered.
+     * The host the app's metadata document lives on; null for a client BeyondPilot registered.
      */
-    host: string;
+    host?: string | null;
+    /**
+     * Whether the answer goes to this computer, where any program could be listening.
+     */
+    local: boolean;
     name: string;
+    /**
+     * The host the answer goes to; null when it goes to this computer.
+     */
+    returnsTo?: string | null;
+    /**
+     * Whether BeyondPilot has reviewed the app's host or registered the app.
+     */
+    reviewed: boolean;
 };
 
 /**
@@ -4363,13 +4379,14 @@ export type GetConnectingAppData = {
     path?: never;
     query: {
         clientId: string;
+        state: string;
     };
     url: '/api/identity/apps/connecting';
 };
 
 export type GetConnectingAppErrors = {
     /**
-     * No such app may sign in.
+     * No request of the caller's waits with this app and state.
      */
     404: Problem;
 };
@@ -4378,7 +4395,7 @@ export type GetConnectingAppError = GetConnectingAppErrors[keyof GetConnectingAp
 
 export type GetConnectingAppResponses = {
     /**
-     * The app the consent page names.
+     * The app the consent page shows.
      */
     200: ConnectingApp;
 };

@@ -4,15 +4,19 @@ import {
   BriefcaseBusinessIcon,
   Building2Icon,
   CalendarRangeIcon,
+  CornerDownLeftIcon,
+  GlobeIcon,
   InfoIcon,
   SearchIcon,
   ShieldCheckIcon,
+  TriangleAlertIcon,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { BrandMark } from "@/components/layout/brand-mark";
+import { Badge } from "@/components/ui/badge";
 import { AppMark } from "@/features/identity/app-mark";
 import { SwitchAccount } from "@/features/identity/switch-account";
 import type { ConnectingApp, Me } from "@/lib/api/generated";
@@ -35,17 +39,20 @@ type AppConsentProps = {
  * Asks the signed-in person to let an AI app use BeyondPilot's MCP server as them. Allow grants
  * every scope the app asked for; Deny grants none, which tells the app access was denied. Someone
  * who is not an operator cannot connect an app to the operators' server, so they only get the way
- * back.
+ * back. The page says where the app's document lives and where the answer goes, labels a host
+ * BeyondPilot has not reviewed, and warns when the answer goes to this computer, where any program
+ * could be listening.
  */
 function AppConsent({ app, account, scopes, state }: AppConsentProps) {
   const t = useTranslations("AppConsent");
   const forOperators = scopes.includes(OPERATOR_SCOPE);
+  const name = app.anyLocalApp ? t("anyLocalApp") : app.name;
   const person = account.displayName ? `${account.displayName} (${account.email})` : account.email;
 
   if (forOperators && account.role !== "operator") {
     return (
       <Frame app={app}>
-        <Head title={t("refusedTitle", { app: app.name })}>
+        <Head title={t("refusedTitle", { app: name })}>
           <p>{t("refusedLead")}</p>
           <p>{t("signedInAs", { person })}</p>
         </Head>
@@ -54,7 +61,7 @@ function AppConsent({ app, account, scopes, state }: AppConsentProps) {
           {t("useUserServer")}
         </p>
         <Answer clientId={app.clientId} state={state} scopes={[]} className="w-full">
-          {t("back", { app: app.name })}
+          {t("back", { app: app.anyLocalApp ? t("theApp") : app.name })}
         </Answer>
         <SwitchAccount label={t("anotherAccount")} />
       </Frame>
@@ -75,11 +82,30 @@ function AppConsent({ app, account, scopes, state }: AppConsentProps) {
 
   return (
     <Frame app={app}>
-      <Head title={t("title", { app: app.name })}>
+      <Head title={t("title", { app: name })}>
         <p>{t("as", { person })}</p>
       </Head>
+      {app.local && (
+        <p className="flex w-full gap-2.5 rounded-lg bg-muted p-3 text-sm">
+          <TriangleAlertIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-warning" />
+          {t("localWarning")}
+        </p>
+      )}
       <section className="flex w-full flex-col gap-3 rounded-xl border bg-background p-4">
-        <h2 className="text-sm font-medium">{t("ableTo", { app: app.name })}</h2>
+        <dl className="flex flex-col gap-3 text-sm">
+          {app.host && (
+            <Fact icon={GlobeIcon} label={t("from")}>
+              {app.host}
+              {!app.reviewed && <Badge variant="outline">{t("notReviewed")}</Badge>}
+            </Fact>
+          )}
+          <Fact icon={CornerDownLeftIcon} label={t("returnsTo")}>
+            {app.local ? t("thisComputer") : app.returnsTo}
+          </Fact>
+        </dl>
+        <h2 className="border-t pt-3 text-sm font-medium">
+          {app.anyLocalApp ? t("ableToLocal") : t("ableTo", { app: app.name })}
+        </h2>
         <ul className="flex flex-col gap-3">
           {abilities.map(({ icon: Icon, text }) => (
             <li key={text} className="flex gap-2.5 text-sm">
@@ -103,6 +129,25 @@ function AppConsent({ app, account, scopes, state }: AppConsentProps) {
       </div>
       <SwitchAccount label={t("switchAccount")} />
     </Frame>
+  );
+}
+
+/** One fact about the app: an icon, a muted label and the value in full weight. */
+function Fact({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: LucideIcon;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <Icon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="flex items-center gap-2 font-medium">{children}</dd>
+    </div>
   );
 }
 

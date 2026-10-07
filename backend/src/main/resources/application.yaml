@@ -62,6 +62,13 @@ spring:
       client:
         enabled: false
 
+  http:
+    clients:
+      imperative:
+        # The JDK's client, as before Apache HttpClient joined the classpath for the authorization server's own
+        # fetches of addresses outsiders name (identity.oauth.OutsideHttp).
+        factory: jdk
+
 server:
   # The web application and the reverse proxy forward the browser's host and scheme.
   forward-headers-strategy: framework

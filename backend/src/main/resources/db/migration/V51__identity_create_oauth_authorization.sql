@@ -1,6 +1,7 @@
--- The authorization server AI apps sign in through (BEY-78): Spring Security's JDBC schema for registered clients,
--- authorizations and consents, with PostgreSQL types (blob becomes text, timestamp becomes timestamptz) and wider
+-- The authorization server AI apps sign in through (BEY-78): Spring Security's JDBC schema for registered clients and
+-- authorizations, with PostgreSQL types (blob becomes text, timestamp becomes timestamptz) and wider
 -- columns for clients identified by the URL of their metadata document. Spring writes these tables; identity owns them.
+-- No consent is stored: every connection asks the person again.
 create table oauth2_registered_client (
     id                            varchar(100)  not null primary key,
     client_id                     varchar(500)  not null unique,
@@ -61,10 +62,3 @@ create index oauth2_authorization_refresh_token on oauth2_authorization using ha
 -- A person's connected apps, and the cleanup of expired ones.
 create index oauth2_authorization_principal on oauth2_authorization (principal_name, registered_client_id);
 create index oauth2_authorization_refresh_expiry on oauth2_authorization (refresh_token_expires_at);
-
-create table oauth2_authorization_consent (
-    registered_client_id varchar(100)  not null,
-    principal_name       varchar(200)  not null,
-    authorities          varchar(1000) not null,
-    primary key (registered_client_id, principal_name)
-);

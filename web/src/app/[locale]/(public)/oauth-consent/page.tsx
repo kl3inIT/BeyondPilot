@@ -35,7 +35,7 @@ export default async function AppConsentRoute({
   const account = await requireAccount(siteRoutes.home);
   const { data: app } = await getConnectingApp({
     ...(await sessionRequest()),
-    query: { clientId },
+    query: { clientId, state },
     throwOnError: false,
   });
   if (!app) {

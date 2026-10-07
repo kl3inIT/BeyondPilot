@@ -1,48 +1,35 @@
 package ai.genaifund.beyondpilot.identity;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import ai.genaifund.beyondpilot.identity.dto.ConnectingAppResponse;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import ai.genaifund.beyondpilot.identity.oauth.ConnectingApps;
 import org.springframework.stereotype.Service;
 
 /** The AI apps people connect to BeyondPilot's MCP servers (BEY-78). */
 @Service
 public class AppConnections {
 
-	private final RegisteredClientRepository clients;
+	private final ConnectingApps connecting;
 
 	private final IdentityService identity;
 
-	AppConnections(RegisteredClientRepository clients, IdentityService identity) {
-		this.clients = clients;
+	AppConnections(ConnectingApps connecting, IdentityService identity) {
+		this.connecting = connecting;
 		this.identity = identity;
 	}
 
 	/**
-	 * The app asking the person to connect, as the consent page names it: its name, and the host its client ID belongs
-	 * to, which is what proves who it is.
-	 * @throws IdentityException {@link IdentityErrorCode#APP_NOT_FOUND} when no such app may sign in
+	 * The app waiting for the caller's answer, as the consent page shows it: its name, the host its document lives on,
+	 * where the answer goes, and whether BeyondPilot has reviewed it.
+	 * @throws IdentityException {@link IdentityErrorCode#APP_REQUEST_NOT_FOUND} when no request of the caller's waits
+	 * with this app and state
 	 */
-	public ConnectingAppResponse connectingApp(Actor actor, String clientId) {
+	public ConnectingAppResponse connectingApp(Actor actor, String clientId, String state) {
 		identity.requireActive(actor);
-		RegisteredClient client = clients.findByClientId(clientId);
-		if (client == null) {
-			throw new IdentityException(IdentityErrorCode.APP_NOT_FOUND, "Unknown OAuth client");
-		}
-		return new ConnectingAppResponse(client.getClientId(), client.getClientName(), hostOf(client.getClientId()));
-	}
-
-	private static String hostOf(String clientId) {
-		try {
-			String host = new URI(clientId).getHost();
-			return host == null ? "beyondpilot" : host;
-		}
-		catch (URISyntaxException registeredByBeyondPilot) {
-			return "beyondpilot";
-		}
+		return connecting.waiting(actor.accountId(), clientId, state)
+			.map(app -> new ConnectingAppResponse(app.clientId(), app.name(), app.host(), app.returnsTo(), app.local(),
+					app.reviewed(), app.anyLocalApp()))
+			.orElseThrow(() -> new IdentityException(IdentityErrorCode.APP_REQUEST_NOT_FOUND,
+					"No waiting request for this client and state"));
 	}
 
 }

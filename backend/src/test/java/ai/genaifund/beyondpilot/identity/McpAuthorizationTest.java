@@ -20,6 +20,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -54,7 +55,7 @@ class McpAuthorizationTest {
 
 	@BeforeEach
 	void setUp() {
-		client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+		client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory()).baseUrl("http://localhost:" + port).build();
 	}
 
 	@Test
@@ -207,7 +208,7 @@ class McpAuthorizationTest {
 	}
 
 	@Test
-	void aClientIdOnAHostThatIsNotTrustedIsRefused() {
+	void aClientWhoseDocumentCannotBeReadIsRefused() {
 		String session = TestSignIn.session(client, mail, "minh.mcp@example.test");
 
 		client.get()
@@ -235,6 +236,67 @@ class McpAuthorizationTest {
 	}
 
 	@Test
+	void everyConnectionAsksThePersonAgain() {
+		String session = TestSignIn.session(client, mail, "vy.mcp@example.test");
+
+		consent(session, "mcp.read", "mcp.read");
+
+		stateOfConsentPage(session, "cursor", REDIRECT, "mcp.read");
+	}
+
+	@Test
+	void anAgentOnThisComputerConnectsThroughTheSharedClientOnAnyPortAndPath() {
+		String session = TestSignIn.session(client, mail, "son.mcp@example.test");
+		String redirect = "http://127.0.0.1:61234/oauth/cb";
+
+		Map<String, String> answer = consent(session, "mcp-local", redirect, "mcp.read", "mcp.read");
+		String tokens = token("grant_type=authorization_code&client_id=mcp-local&code=" + answer.get("code")
+				+ "&redirect_uri=" + redirect + "&code_verifier=" + VERIFIER);
+
+		assertThat(audienceOf(JsonPath.read(tokens, "$.access_token"))).isEqualTo(ISSUER + "/mcp");
+		client.get()
+			.uri(authorizeBuilder("mcp-local", "https://attacker.example/cb", "mcp.read").build().toUri())
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.exchange()
+			.expectStatus()
+			.isBadRequest();
+	}
+
+	@Test
+	void theConsentPageLearnsWhereTheAnswerGoesForItsOwnRequestOnly() {
+		String session = TestSignIn.session(client, mail, "nga.mcp@example.test");
+		String state = stateOfConsentPage(session, "mcp-local", "http://127.0.0.1:61234/cb", "mcp.read");
+
+		client.get()
+			.uri("/api/identity/apps/connecting?clientId={client}&state={state}", "mcp-local", state)
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.name")
+			.isEqualTo("An app on this computer")
+			.jsonPath("$.local")
+			.isEqualTo(true)
+			.jsonPath("$.anyLocalApp")
+			.isEqualTo(true)
+			.jsonPath("$.reviewed")
+			.isEqualTo(false)
+			.jsonPath("$.host")
+			.isEmpty()
+			.jsonPath("$.returnsTo")
+			.isEmpty();
+
+		String someoneElse = TestSignIn.session(client, mail, "khanh.mcp@example.test");
+		client.get()
+			.uri("/api/identity/apps/connecting?clientId={client}&state={state}", "mcp-local", state)
+			.cookie(TestSignIn.SESSION_COOKIE, someoneElse)
+			.exchange()
+			.expectStatus()
+			.isNotFound();
+	}
+
+	@Test
 	void theMetadataAdvertisesWhatAppsNeed() {
 		client.get()
 			.uri("/.well-known/oauth-authorization-server")
@@ -256,19 +318,16 @@ class McpAuthorizationTest {
 
 	/** Asks for a code, consents to {@code granted}, and returns the parameters the app receives. */
 	private Map<String, String> consent(String session, String requested, String granted) {
-		URI consentPage = client.get()
-			.uri(authorize(requested))
-			.cookie(TestSignIn.SESSION_COOKIE, session)
-			.exchange()
-			.expectStatus()
-			.is3xxRedirection()
-			.returnResult()
-			.getResponseHeaders()
-			.getLocation();
-		assertThat(consentPage.toString()).contains("/oauth-consent?");
-		String state = UriComponentsBuilder.fromUri(consentPage).build().getQueryParams().getFirst("state");
+		return consent(session, "cursor", REDIRECT, requested, granted);
+	}
 
-		StringBuilder form = new StringBuilder("client_id=cursor&state=" + state);
+	/** Asks for a code as {@code clientId}, consents to {@code granted}, and returns what the app receives. */
+	private Map<String, String> consent(String session, String clientId, String redirect, String requested,
+			String granted) {
+		String state = stateOfConsentPage(session, clientId, redirect, requested);
+
+		StringBuilder form = new StringBuilder(
+				"client_id=" + clientId + "&state=" + java.net.URLEncoder.encode(state, StandardCharsets.UTF_8));
 		for (String scope : granted.split(" ")) {
 			form.append("&scope=").append(scope);
 		}
@@ -283,10 +342,26 @@ class McpAuthorizationTest {
 			.returnResult()
 			.getResponseHeaders()
 			.getLocation();
-		assertThat(back.toString()).startsWith(REDIRECT + "?");
+		assertThat(back.toString()).startsWith(redirect + "?");
 		return UriComponentsBuilder.fromUri(back).build(true).getQueryParams().toSingleValueMap().entrySet().stream()
 			.collect(java.util.stream.Collectors.toMap(Map.Entry::getKey,
 					entry -> java.net.URLDecoder.decode(entry.getValue(), StandardCharsets.UTF_8)));
+	}
+
+	/** Asks for a code and returns the state the consent page is opened with. */
+	private String stateOfConsentPage(String session, String clientId, String redirect, String scope) {
+		URI consentPage = client.get()
+			.uri(authorizeBuilder(clientId, redirect, scope).build().toUri())
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.exchange()
+			.expectStatus()
+			.is3xxRedirection()
+			.returnResult()
+			.getResponseHeaders()
+			.getLocation();
+		assertThat(consentPage.toString()).contains("/oauth-consent?");
+		return java.net.URLDecoder.decode(
+				UriComponentsBuilder.fromUri(consentPage).build().getQueryParams().getFirst("state"), StandardCharsets.UTF_8);
 	}
 
 	private String token(String form) {
@@ -311,11 +386,15 @@ class McpAuthorizationTest {
 	}
 
 	private UriComponentsBuilder authorizeBuilder(String scope) {
+		return authorizeBuilder("cursor", REDIRECT, scope);
+	}
+
+	private UriComponentsBuilder authorizeBuilder(String clientId, String redirect, String scope) {
 		return UriComponentsBuilder.fromUriString("http://localhost:" + port + "/oauth2/authorize")
 			.queryParam("response_type", "code")
-			.queryParam("client_id", "cursor")
+			.queryParam("client_id", clientId)
 			.queryParam("scope", scope)
-			.queryParam("redirect_uri", REDIRECT)
+			.queryParam("redirect_uri", redirect)
 			.queryParam("code_challenge", challenge())
 			.queryParam("code_challenge_method", "S256")
 			.queryParam("state", "state-1")

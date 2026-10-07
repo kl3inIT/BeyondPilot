@@ -303,7 +303,15 @@
     "signedInAs": "Đang đăng nhập với {person}",
     "useUserServer": "Hãy dùng server cho người dùng: server này tìm các giải pháp đã đăng.",
     "back": "Quay lại {app}",
-    "anotherAccount": "Không phải bạn? Đăng nhập bằng tài khoản khác"
+    "anotherAccount": "Không phải bạn? Đăng nhập bằng tài khoản khác",
+    "anyLocalApp": "Một ứng dụng trên máy này",
+    "theApp": "ứng dụng",
+    "localWarning": "Chạy trên máy này. Chỉ cho phép nếu bạn vừa tự mở nó.",
+    "from": "Từ",
+    "returnsTo": "Quay về",
+    "thisComputer": "máy này",
+    "notReviewed": "Chưa xem xét",
+    "ableToLocal": "Ứng dụng sẽ có thể"
   },
   "Admin": {
     "metaTitle": "Quản trị · BeyondPilot",

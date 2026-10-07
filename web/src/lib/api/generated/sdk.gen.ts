@@ -97,7 +97,7 @@ export const withdrawOperator = <ThrowOnError extends boolean = true>(options: O
 });
 
 /**
- * The AI app asking to connect
+ * The AI app waiting for the caller's answer
  */
 export const getConnectingApp = <ThrowOnError extends boolean = true>(options: Options<GetConnectingAppData, ThrowOnError>): RequestResult<GetConnectingAppResponses, GetConnectingAppErrors, ThrowOnError> => (options.client ?? client).get<GetConnectingAppResponses, GetConnectingAppErrors, ThrowOnError>({
     security: [{

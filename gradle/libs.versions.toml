@@ -39,6 +39,7 @@ jmustache = { module = "com.samskivert:jmustache" }
 commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
 resend-java = { module = "com.resend:resend-java", version.ref = "resend" }
 bucket4j-core = { module = "com.bucket4j:bucket4j_jdk17-core", version.ref = "bucket4j" }
+httpclient5 = { module = "org.apache.httpcomponents.client5:httpclient5" }
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 springdoc-webmvc-api = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version.ref = "springdoc" }
 

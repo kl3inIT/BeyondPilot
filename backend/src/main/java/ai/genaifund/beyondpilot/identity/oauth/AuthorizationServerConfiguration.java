@@ -19,6 +19,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationRunner;
@@ -31,10 +32,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.core.OAuth2Token;
-import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.authentication.JwtClientAssertionAuthenticationProvider;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationProvider;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationConsentAuthenticationProvider;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
@@ -64,9 +66,29 @@ class AuthorizationServerConfiguration {
 		return new JdbcOAuth2AuthorizationService(jdbc, clients);
 	}
 
+	/**
+	 * No consent is remembered, so every connection shows the consent page. An app that redirects to this computer can
+	 * be imitated by any program on it (RFC 8252 §8.6), and a connection is made about once in six months, so asking
+	 * every time costs a click and closes that.
+	 */
 	@Bean
-	OAuth2AuthorizationConsentService oauthConsents(JdbcOperations jdbc, McpClients clients) {
-		return new JdbcOAuth2AuthorizationConsentService(jdbc, clients);
+	OAuth2AuthorizationConsentService oauthConsents() {
+		return new OAuth2AuthorizationConsentService() {
+
+			@Override
+			public void save(OAuth2AuthorizationConsent consent) {
+			}
+
+			@Override
+			public void remove(OAuth2AuthorizationConsent consent) {
+			}
+
+			@Override
+			public @Nullable OAuth2AuthorizationConsent findById(String registeredClientId, String principalName) {
+				return null;
+			}
+
+		};
 	}
 
 	@Bean
@@ -91,10 +113,10 @@ class AuthorizationServerConfiguration {
 		return new DelegatingOAuth2TokenGenerator(jwt, new PublicClientRefresh.TokenGenerator());
 	}
 
-	/** Cursor's client exists from the first start, and stays up to date with this code. */
+	/** BeyondPilot's own clients exist from the first start, and stay up to date with this code. */
 	@Bean
-	ApplicationRunner cursorClient(McpClients clients) {
-		return arguments -> clients.registerCursor();
+	ApplicationRunner ownClients(McpClients clients) {
+		return arguments -> clients.registerOwn();
 	}
 
 	/**
@@ -123,8 +145,14 @@ class AuthorizationServerConfiguration {
 					})))
 				.clientAuthentication(client -> client
 					.authenticationConverters(converters -> converters.addFirst(new PublicClientRefresh.RequestConverter()))
-					.authenticationProviders(
-							providers -> providers.addFirst(new PublicClientRefresh.ClientProvider(clients))))
+					.authenticationProviders(providers -> {
+						providers.addFirst(new PublicClientRefresh.ClientProvider(clients));
+						providers.forEach(provider -> {
+							if (provider instanceof JwtClientAssertionAuthenticationProvider signed) {
+								signed.setJwtDecoderFactory(new ClientKeys());
+							}
+						});
+					}))
 				.authorizationServerMetadataEndpoint(metadata -> metadata.authorizationServerMetadataCustomizer(
 						builder -> builder.scopes(scopes -> scopes.addAll(McpScopes.ALL))
 							.codeChallengeMethods(methods -> {
