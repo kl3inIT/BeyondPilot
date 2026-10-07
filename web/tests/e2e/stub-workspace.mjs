@@ -30,7 +30,7 @@ const newCo = {
   id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04",
   name: "Newco",
   slug: "newco",
-  status: "pending",
+  status: "in_review",
   roles: ["enterprise"],
   emailDomain: "newco.example",
 };
@@ -199,7 +199,7 @@ const solutions = [
       }),
     ],
   }),
-  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e12", "Claims Vision", "submitted"),
+  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e12", "Claims Vision", "in_review"),
   solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e13", "Fraud Lens", "draft", {
     summary: null,
     problemsSolved: null,
@@ -214,8 +214,8 @@ const solutions = [
     submittedAt: null,
     version: 0,
   }),
-  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e14", "Quote Bot", "rejected", {
-    decisionReason: "duplicate",
+  // Sent back by GenAI Fund with what to change; its owners correct it and send it again.
+  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e14", "Quote Bot", "needs_changes", {
     decisionMessage: "It is Policy Chat under another name.",
   }),
 ];
@@ -230,6 +230,9 @@ const summaryOf = (item) => ({
   maturity: item.maturity,
   decisionReason: item.decisionReason ?? null,
   decisionMessage: item.decisionMessage ?? null,
+  suspendedAt: item.suspendedAt ?? null,
+  suspensionReason: item.suspensionReason ?? null,
+  suspensionMessage: item.suspensionMessage ?? null,
   listed: item.listed,
   // What a review needs and the solution lacks, as the backend names it.
   missing: [
@@ -314,7 +317,7 @@ const talent = {
     ],
   },
   member: {
-    profile: profile("Siti Rahma", "siti-rahma", "changes_requested", {
+    profile: profile("Siti Rahma", "siti-rahma", "needs_changes", {
       projects: [],
       decisionReason: "incomplete",
       decisionMessage: "Add a project.",

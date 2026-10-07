@@ -40,7 +40,7 @@ function MyUseCaseActions({ useCase }: MyUseCaseActionsProps) {
 
   const status = useCase.status;
   const editable = status === "draft" || status === "needs_changes";
-  const published = status === "published";
+  const published = status === "approved";
   const inReview = status === "in_review";
 
   async function toDraft() {

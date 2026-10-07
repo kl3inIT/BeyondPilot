@@ -26,27 +26,27 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
   await requireRole("operator", siteRoutes.admin);
   const t = await getTranslations("Admin");
   const [organizations, solutions, talent] = await Promise.all([
-    readAdminOrganizations({ q: "", status: "pending", page: 1 }),
-    readAdminSolutions({ q: "", status: "submitted", industry: null, page: 1 }),
-    readAdminTalentList({ q: "", status: "submitted", page: 1 }),
+    readAdminOrganizations({ q: "", status: "in_review", page: 1 }),
+    readAdminSolutions({ q: "", status: "in_review", industry: null, page: 1 }),
+    readAdminTalentList({ q: "", status: "in_review", page: 1 }),
   ]);
   const queues = [
     {
       key: "organizations" as const,
       Icon: BuildingIcon,
-      href: `${siteRoutes.adminOrganizations}?status=pending`,
+      href: `${siteRoutes.adminOrganizations}?status=in_review`,
       count: organizations.total,
     },
     {
       key: "solutions" as const,
       Icon: BoxesIcon,
-      href: `${siteRoutes.adminSolutions}?status=submitted`,
+      href: `${siteRoutes.adminSolutions}?status=in_review`,
       count: solutions.total,
     },
     {
       key: "talent" as const,
       Icon: UsersIcon,
-      href: `${siteRoutes.adminTalent}?status=submitted`,
+      href: `${siteRoutes.adminTalent}?status=in_review`,
       count: talent.total,
     },
   ];

@@ -5,9 +5,9 @@ import { createSerializer } from "nuqs/server";
 import { Button } from "@/components/actions/button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
+import { ReviewStatus } from "@/components/composites/review-status";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,11 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type {
-  AdminUseCaseList,
-  AdminUseCaseSummary,
-  UseCaseOrganization,
-} from "@/lib/api/generated";
+import type { AdminUseCaseList, UseCaseOrganization } from "@/lib/api/generated";
 import { initials } from "@/lib/initials";
 import { siteRoutes } from "@/lib/site";
 
@@ -30,15 +26,6 @@ import { AdminUseCasesToolbar } from "./admin-use-cases-toolbar";
 import { LiveRefresh } from "./live-refresh";
 
 const address = createSerializer(adminUseCasesSearch);
-
-/** How each status reads to the operator; draft and closed are quiet, the rest ask for attention. */
-const statusVariants = {
-  draft: "secondary",
-  in_review: "warning",
-  needs_changes: "info",
-  published: "success",
-  closed: "secondary",
-} as const satisfies Record<AdminUseCaseSummary["status"], string>;
 
 type AdminUseCasesPageProps = {
   useCases: AdminUseCaseList;
@@ -79,7 +66,7 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
       </div>
     ),
     organization: <span className="text-muted-foreground">{useCase.organization.name}</span>,
-    status: <Badge variant={statusVariants[useCase.status]}>{t(`status.${useCase.status}`)}</Badge>,
+    status: <ReviewStatus state={useCase.status}>{t(`status.${useCase.status}`)}</ReviewStatus>,
     closes: <span className="font-medium">{useCase.closesAt ? day(useCase.closesAt) : "—"}</span>,
     updated: <span className="text-muted-foreground">{day(useCase.updatedAt)}</span>,
     actions: (
@@ -212,4 +199,4 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
   );
 }
 
-export { AdminUseCasesPage, statusVariants };
+export { AdminUseCasesPage };

@@ -10,6 +10,11 @@ export function websiteHost(website: string | null | undefined): string | null {
   }
 }
 
+/** Whether an organization is approved and not taken down, so it can have members and publish. */
+export function isApproved(organization: { status: string; suspendedAt?: string | null }): boolean {
+  return organization.status === "approved" && !organization.suspendedAt;
+}
+
 /** The longest description the backend takes. */
 export const MAX_DESCRIPTION = 280;
 /** The most industries the backend takes. */

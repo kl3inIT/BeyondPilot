@@ -110,6 +110,26 @@ class UseCaseServiceTest {
 	}
 
 	@Test
+	void aBudgetKeepsItsCurrencyWhenASaveNamesNone() {
+		Team team = team("currency.test", true);
+		UUID id = create(team.founder);
+		Map<String, Object> inDong = save(0);
+		inDong.put("currency", "VND");
+		inDong.put("budgetMin", 200_000_000L);
+		inDong.put("budgetMax", 200_000_000L);
+		String saved = body(put(team.founder, MINE + "/" + id, inDong).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(saved, "$.currency")).isEqualTo("VND");
+
+		// A form that leaves the currency out does not turn 200 million đồng into 200 million dollars.
+		Map<String, Object> silent = save(1);
+		silent.put("budgetMin", 250_000_000L);
+		silent.put("budgetMax", 250_000_000L);
+		String kept = body(put(team.founder, MINE + "/" + id, silent).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(kept, "$.currency")).isEqualTo("VND");
+		assertThat(JsonPath.<Number>read(kept, "$.budgetMin").longValue()).isEqualTo(250_000_000L);
+	}
+
+	@Test
 	void aPartThatCannotStandIsRefusedWhateverIsMissing() {
 		Team team = team("refuse.test", true);
 		UUID id = create(team.founder);
@@ -173,7 +193,7 @@ class UseCaseServiceTest {
 		UUID second = adminPublished(team.organization, "Published two");
 
 		String listed = body(get(team.founder, MINE).expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(listed, "$.items[*].status")).containsOnly("published");
+		assertThat(JsonPath.<List<String>>read(listed, "$.items[*].status")).containsOnly("approved");
 		assertThat(JsonPath.<Boolean>read(listed, "$.items[0].lastEditedBy.genaiFund")).isTrue();
 
 		String edited = body(put(team.founder, MINE + "/" + first, complete(0)).expectStatus().isOk());
@@ -229,11 +249,11 @@ class UseCaseServiceTest {
 		assertThat(JsonPath.<String>read(read, "$.submittedAt")).isNotNull();
 
 		String approved = body(post(operator, ADMIN + "/" + id + "/approve", null).expectStatus().isOk());
-		assertThat(JsonPath.<String>read(approved, "$.status")).isEqualTo("published");
+		assertThat(JsonPath.<String>read(approved, "$.status")).isEqualTo("approved");
 		assertThat(JsonPath.<String>read(approved, "$.publishedAt")).isNotNull();
 		assertThat(JsonPath.<Boolean>read(approved, "$.reviewedBy.genaiFund")).isTrue();
 		assertThat(JsonPath.<String>read(body(get(team.founder, MINE + "/" + id).expectStatus().isOk()), "$.status"))
-			.isEqualTo("published");
+			.isEqualTo("approved");
 		assertThat(events(id)).containsExactly("use_case.submit", "use_case.approve");
 		assertThat(mail.latestSubjectTo("founder@approve.test")).contains("is published");
 		assertThat(mail.latestSubjectTo("colleague@approve.test")).contains("is published");

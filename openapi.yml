@@ -104,12 +104,16 @@ paths:
           - organization.invite
           - organization.invitation_revoke
           - organization.refuse
+          - organization.send_back
           - organization.claim_approve
           - organization.claim_decline
           - organization.member_role
           - organization.member_remove
           - solution.approve
+          - solution.send_back
           - solution.reject
+          - solution.take_down
+          - solution.restore
           - solution.back
           - solution.deployment_approve
           - solution.deployment_reject
@@ -118,6 +122,7 @@ paths:
           - use_case.draft
           - use_case.approve
           - use_case.send_back
+          - use_case.set_programs
           - introduction.reply
           - introduction.decline
           - talent.approve
@@ -127,6 +132,7 @@ paths:
           - talent.enquiry_report
           - talent.request_changes
           - talent.remove
+          - talent.restore
           - talent.delete
           - proposal.criteria_update
           - proposal.reviewer_invite
@@ -1683,19 +1689,21 @@ paths:
           - "null"
           maxLength: 100
           minLength: 0
-      - description: Only organizations of this review status; `pending` also selects
-          an approved one with an open claim.
+      - description: "Only organizations of this review status; `in_review` also selects\
+          \ an approved one with an open claim, `approved` leaves out those taken\
+          \ down, and `suspended` selects those taken down."
         in: query
         name: status
         required: false
         schema:
           type: string
           enum:
-          - pending
+          - in_review
+          - needs_changes
           - approved
           - rejected
           - suspended
-          pattern: pending|approved|rejected|suspended
+          pattern: in_review|needs_changes|approved|rejected|suspended
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -2179,7 +2187,7 @@ paths:
           description: The organization is not waiting for review.
       security:
       - session: []
-      summary: Refuse an organization that waits for review
+      summary: Refuse an organization that waits for review for good
       tags:
       - Organization administration
   /api/organization/admin/organizations/{id}/restore:
@@ -2222,6 +2230,61 @@ paths:
       security:
       - session: []
       summary: Return a taken-down organization to the directories
+      tags:
+      - Organization administration
+  /api/organization/admin/organizations/{id}/send-back:
+    post:
+      operationId: sendBackOrganization
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendBackOrganization"
+        required: true
+      responses:
+        "204":
+          description: The organization needs changes; its owners are told why.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The reason is blank or over 1000 characters.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization is not waiting for review.
+      security:
+      - session: []
+      summary: Send an organization that waits for review back to its owners with
+        what to change
       tags:
       - Organization administration
   /api/organization/admin/organizations/{id}/take-down:
@@ -4922,17 +4985,20 @@ paths:
           - "null"
           maxLength: 100
           minLength: 0
-      - description: Only solutions of this status. Drafts are never listed.
+      - description: "Only solutions of this review status, or `suspended` for those\
+          \ taken down; `approved` leaves out those taken down. Drafts are never listed."
         in: query
         name: status
         required: false
         schema:
           type: string
           enum:
-          - submitted
+          - in_review
+          - needs_changes
           - approved
           - rejected
-          pattern: submitted|approved|rejected
+          - suspended
+          pattern: in_review|needs_changes|approved|rejected|suspended
       - description: Only solutions for this industry.
         in: query
         name: industry
@@ -5160,11 +5226,162 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The solution is neither waiting for review nor approved.
+          description: The solution is not waiting for review.
       security:
       - session: []
-      summary: "Reject a solution that waits for review, or take an approved one out\
-        \ of the directory"
+      summary: Refuse a solution that waits for review for good
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/restore:
+    post:
+      operationId: restoreSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The solution is back.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution is not taken down.
+      security:
+      - session: []
+      summary: "Put a solution that was taken down back, without a new review"
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/send-back:
+    post:
+      operationId: sendBackSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendBackSolution"
+        required: true
+      responses:
+        "204":
+          description: The solution needs changes; its owners are told.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The reason is blank or longer than 1000 characters.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution is not waiting for review.
+      security:
+      - session: []
+      summary: "Send a solution that waits for review back to its owners, with what\
+        \ to change"
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/take-down:
+    post:
+      operationId: takeDownSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TakeDownSolution"
+        required: true
+      responses:
+        "204":
+          description: The solution is taken down; its review stays approved.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The solution is not approved, or is already taken down."
+      security:
+      - session: []
+      summary: "Take an approved solution out of the directory and matching, with\
+        \ a reason"
       tags:
       - Solution administration
   /api/solution/deployments:
@@ -5934,18 +6151,20 @@ paths:
           - "null"
           maxLength: 100
           minLength: 0
-      - description: Only profiles of this status. Drafts are never listed.
+      - description: "Only profiles of this review status; `approved` leaves out those\
+          \ taken down, and `suspended` selects those taken down. Drafts are never\
+          \ listed."
         in: query
         name: status
         required: false
         schema:
           type: string
           enum:
-          - submitted
+          - in_review
+          - needs_changes
           - approved
-          - changes_requested
-          - removed
-          pattern: submitted|approved|changes_requested|removed
+          - suspended
+          pattern: in_review|needs_changes|approved|suspended
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -6067,9 +6286,9 @@ paths:
       summary: Approve a talent profile that waits for review
       tags:
       - Talent administration
-  /api/talent/admin/profiles/{id}/remove:
+  /api/talent/admin/profiles/{id}/restore:
     post:
-      operationId: removeTalent
+      operationId: restoreTalent
       parameters:
       - in: path
         name: id
@@ -6077,21 +6296,9 @@ paths:
         schema:
           type: string
           format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TalentDecision"
-        required: true
       responses:
         "204":
-          description: The profile is removed; the person was emailed.
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: A member is not valid.
+          description: The profile is back; the person was emailed.
         "401":
           content:
             application/problem+json:
@@ -6115,15 +6322,16 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The profile is not approved.
+          description: The profile is not taken down.
       security:
       - session: []
-      summary: "Remove an approved talent profile from the public, with a reason"
+      summary: "Put a talent profile that was taken down back in the public, without\
+        \ a new review"
       tags:
       - Talent administration
-  /api/talent/admin/profiles/{id}/request-changes:
+  /api/talent/admin/profiles/{id}/send-back:
     post:
-      operationId: requestTalentChanges
+      operationId: sendBackTalent
       parameters:
       - in: path
         name: id
@@ -6139,7 +6347,7 @@ paths:
         required: true
       responses:
         "204":
-          description: Changes are asked for; the person was emailed.
+          description: The profile needs changes; the person was emailed.
         "400":
           content:
             application/problem+json:
@@ -6172,8 +6380,63 @@ paths:
           description: The profile is not waiting for review.
       security:
       - session: []
-      summary: "Ask the person to change a talent profile that waits for review, with\
+      summary: "Send a talent profile that waits for review back to its person, with\
         \ a reason"
+      tags:
+      - Talent administration
+  /api/talent/admin/profiles/{id}/take-down:
+    post:
+      operationId: takeDownTalent
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TalentDecision"
+        required: true
+      responses:
+        "204":
+          description: The profile is taken down and stays approved; the person was
+            emailed.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted talent profile.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The profile is not approved, or is taken down already."
+      security:
+      - session: []
+      summary: "Take an approved talent profile down from the public, with a reason"
       tags:
       - Talent administration
   /api/talent/admin/reported-enquiries:
@@ -6687,9 +6950,9 @@ paths:
           - draft
           - in_review
           - needs_changes
-          - published
+          - approved
           - closed
-          pattern: draft|in_review|needs_changes|published|closed
+          pattern: draft|in_review|needs_changes|approved|closed
       - description: Only use cases of this organization.
         in: query
         name: organizationId
@@ -6862,6 +7125,58 @@ paths:
       security:
       - session: []
       summary: Approve a use case in review and publish it
+      tags:
+      - Use case administration
+  /api/usecase/admin/use-cases/{id}/programs:
+    put:
+      operationId: setAdminUseCasePrograms
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetUseCasePrograms"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUseCase"
+          description: The use case with its programs.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A program does not exist, or there are more than ten."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+      security:
+      - session: []
+      summary: Set the programs a use case belongs to
       tags:
       - Use case administration
   /api/usecase/admin/use-cases/{id}/send-back:
@@ -7226,6 +7541,16 @@ paths:
           format: int32
           default: 1
           minimum: 1
+      - description: Only use cases of the published program at this address.
+        in: query
+        name: program
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
       responses:
         "200":
           content:
@@ -7611,11 +7936,18 @@ components:
           type: string
         status:
           type: string
+          description: GenAI Fund's review of the organization.
           enum:
-          - pending
+          - in_review
+          - needs_changes
           - approved
           - rejected
-          - suspended
+        suspendedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When it was taken down; null while it is not.
         type:
           type: string
           enum:
@@ -7925,7 +8257,8 @@ components:
         status:
           type: string
           enum:
-          - submitted
+          - in_review
+          - needs_changes
           - approved
           - rejected
         submittedAt:
@@ -7943,6 +8276,13 @@ components:
           type:
           - string
           - "null"
+        suspendedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: "When GenAI Fund took it down, while it is down; its status\
+            \ stays approved."
         updatedAt:
           type: string
           format: date-time
@@ -8074,16 +8414,16 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: US dollars. Null while the budget is to be determined.
+          format: int64
+          description: Whole units of currency. Null while the budget is to be determined.
         budgetMembersOnly:
           type: boolean
         budgetMin:
           type:
           - integer
           - "null"
-          format: int32
-          description: US dollars. Null while the budget is to be determined.
+          format: int64
+          description: Whole units of currency. Null while the budget is to be determined.
         budgetToBeDetermined:
           type: boolean
         closesAt:
@@ -8096,6 +8436,12 @@ components:
           format: date-time
         createdBy:
           $ref: "#/components/schemas/UseCasePerson"
+        currency:
+          type: string
+          description: The currency of the amounts.
+          enum:
+          - USD
+          - VND
         currentProcess:
           type:
           - string
@@ -8131,6 +8477,11 @@ components:
           type:
           - string
           - "null"
+        programs:
+          type: array
+          description: "The programs it belongs to, by name."
+          items:
+            $ref: "#/components/schemas/UseCaseProgram"
         publishedAt:
           type:
           - string
@@ -8162,7 +8513,7 @@ components:
           - draft
           - in_review
           - needs_changes
-          - published
+          - approved
           - closed
         submittedAt:
           type:
@@ -8206,9 +8557,11 @@ components:
       - budgetToBeDetermined
       - createdAt
       - createdBy
+      - currency
       - hideOrganizationName
       - id
       - organization
+      - programs
       - requirements
       - status
       - technologies
@@ -8266,7 +8619,7 @@ components:
           - draft
           - in_review
           - needs_changes
-          - published
+          - approved
           - closed
         title:
           type:
@@ -8740,12 +9093,16 @@ components:
           - organization.invite
           - organization.invitation_revoke
           - organization.refuse
+          - organization.send_back
           - organization.claim_approve
           - organization.claim_decline
           - organization.member_role
           - organization.member_remove
           - solution.approve
+          - solution.send_back
           - solution.reject
+          - solution.take_down
+          - solution.restore
           - solution.back
           - solution.deployment_approve
           - solution.deployment_reject
@@ -8754,6 +9111,7 @@ components:
           - use_case.draft
           - use_case.approve
           - use_case.send_back
+          - use_case.set_programs
           - introduction.reply
           - introduction.decline
           - talent.approve
@@ -8763,6 +9121,7 @@ components:
           - talent.enquiry_report
           - talent.request_changes
           - talent.remove
+          - talent.restore
           - talent.delete
           - proposal.criteria_update
           - proposal.reviewer_invite
@@ -9105,9 +9464,9 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: US dollars. Null while the budget is to be determined.
-          maximum: 100000000
+          format: int64
+          description: Whole units of currency. Null while the budget is to be determined.
+          maximum: 1000000000000
           minimum: 0
         budgetMembersOnly:
           type: boolean
@@ -9116,9 +9475,9 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: US dollars. Null while the budget is to be determined.
-          maximum: 100000000
+          format: int64
+          description: Whole units of currency. Null while the budget is to be determined.
+          maximum: 1000000000000
           minimum: 0
         budgetToBeDetermined:
           type: boolean
@@ -9126,6 +9485,15 @@ components:
           type: string
           format: date-time
           description: When proposals stop. It must be in the future.
+        currency:
+          type:
+          - string
+          - "null"
+          description: The currency of the budget; USD when absent.
+          enum:
+          - USD
+          - VND
+          pattern: USD|VND
         currentProcess:
           type: string
           maxLength: 2000
@@ -9161,6 +9529,16 @@ components:
           type: string
           maxLength: 2000
           minLength: 0
+        programIds:
+          type:
+          - array
+          - "null"
+          description: The programs it belongs to; none when absent.
+          items:
+            type: string
+            format: uuid
+          maxItems: 10
+          minItems: 0
         publishNow:
           type: boolean
           description: "True to publish at once, false to save a draft for the organization."
@@ -9268,7 +9646,7 @@ components:
         status:
           type: string
           enum:
-          - submitted
+          - in_review
           - approved
           - rejected
         title:
@@ -10484,14 +10862,14 @@ components:
           type:
           - integer
           - "null"
-          format: int32
+          format: int64
         budgetMembersOnly:
           type: boolean
         budgetMin:
           type:
           - integer
           - "null"
-          format: int32
+          format: int64
         budgetToBeDetermined:
           type: boolean
         changedSinceReview:
@@ -10507,6 +10885,12 @@ components:
           type: boolean
           description: Whether it holds everything a use case needs to be sent for
             review.
+        currency:
+          type: string
+          description: The currency of the amounts.
+          enum:
+          - USD
+          - VND
         currentProcess:
           type:
           - string
@@ -10571,7 +10955,7 @@ components:
           - draft
           - in_review
           - needs_changes
-          - published
+          - approved
           - closed
         submittedAt:
           type:
@@ -10615,6 +10999,7 @@ components:
       - budgetToBeDetermined
       - changedSinceReview
       - complete
+      - currency
       - editable
       - hideOrganizationName
       - id
@@ -10647,7 +11032,7 @@ components:
           - draft
           - in_review
           - needs_changes
-          - published
+          - approved
           - closed
         submittedAt:
           type:
@@ -10699,16 +11084,16 @@ components:
           type:
           - string
           - "null"
-          description: What the operator wrote to the owners with the refusal.
+          description: What the operator wrote to the owners when refusing it or sending
+            it back.
         decisionReason:
           type:
           - string
           - "null"
-          description: Why it was last refused.
+          description: Why it was refused; null when it was sent back.
           enum:
           - duplicate
           - not_a_real_organization
-          - incomplete
           - out_of_scope
           - other
         description:
@@ -10748,18 +11133,19 @@ components:
           type: string
         status:
           type: string
-          description: GenAI Fund's review of the organization.
+          description: GenAI Fund's review of the organization. One taken down stays
+            `approved`; `suspendedAt` says it is down.
           enum:
-          - pending
+          - in_review
+          - needs_changes
           - approved
           - rejected
-          - suspended
         suspendedAt:
           type:
           - string
           - "null"
           format: date-time
-          description: When it was last taken down.
+          description: When it was taken down; null while it is not.
         suspensionMessage:
           type:
           - string
@@ -12082,7 +12468,7 @@ components:
           type:
           - integer
           - "null"
-          format: int32
+          format: int64
         budgetMembersOnly:
           type: boolean
           description: Whether the organization shows the budget to members only.
@@ -12090,15 +12476,21 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: In US dollars; null while the budget is to be determined or
-            is for members only.
+          format: int64
+          description: Whole units of currency; null while the budget is to be determined
+            or is for members only.
         budgetToBeDetermined:
           type: boolean
         closesAt:
           type: string
           format: date-time
           description: Proposals close at this instant.
+        currency:
+          type: string
+          description: The currency of the amounts.
+          enum:
+          - USD
+          - VND
         goal:
           type: string
           description: The outcomes the organization expects.
@@ -12131,6 +12523,7 @@ components:
       - budgetMembersOnly
       - budgetToBeDetermined
       - closesAt
+      - currency
       - goal
       - id
       - industry
@@ -12157,7 +12550,8 @@ components:
       - items
     RefuseOrganization:
       type: object
-      description: "Why an organization is not approved, and what its owners are told."
+      description: "Why an organization is refused for good, and what its owners are\
+        \ told. Missing information is a send back instead."
       properties:
         message:
           type:
@@ -12171,10 +12565,9 @@ components:
           enum:
           - duplicate
           - not_a_real_organization
-          - incomplete
           - out_of_scope
           - other
-          pattern: duplicate|not_a_real_organization|incomplete|out_of_scope|other
+          pattern: duplicate|not_a_real_organization|out_of_scope|other
       required:
       - reason
     RejectCustomerDeployment:
@@ -12200,7 +12593,7 @@ components:
       - reason
     RejectSolution:
       type: object
-      description: "Why a solution is not approved, and what its owners are told."
+      description: "Why a solution is refused for good, and what its owners are told."
       properties:
         message:
           type:
@@ -12212,12 +12605,11 @@ components:
         reason:
           type: string
           enum:
-          - incomplete
           - not_an_ai_solution
           - duplicate
           - unverifiable
           - other
-          pattern: incomplete|not_an_ai_solution|duplicate|unverifiable|other
+          pattern: not_an_ai_solution|duplicate|unverifiable|other
       required:
       - reason
     Release:
@@ -13210,9 +13602,9 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: US dollars. Null while the budget is to be determined.
-          maximum: 100000000
+          format: int64
+          description: Whole units of currency. Null while the budget is to be determined.
+          maximum: 1000000000000
           minimum: 0
         budgetMembersOnly:
           type: boolean
@@ -13221,9 +13613,9 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: US dollars. Null while the budget is to be determined.
-          maximum: 100000000
+          format: int64
+          description: Whole units of currency. Null while the budget is to be determined.
+          maximum: 1000000000000
           minimum: 0
         budgetToBeDetermined:
           type: boolean
@@ -13233,6 +13625,16 @@ components:
           - "null"
           format: date-time
           description: When proposals stop. It must be in the future.
+        currency:
+          type:
+          - string
+          - "null"
+          description: "The currency of the budget; the stored one when absent, USD\
+            \ for a new use case."
+          enum:
+          - USD
+          - VND
+          pattern: USD|VND
         currentProcess:
           type:
           - string
@@ -13987,14 +14389,16 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: "A use case's budget, when its organization shows it."
+          format: int64
+          description: "A use case's budget in its currency, when its organization\
+            \ shows it."
         budgetMin:
           type:
           - integer
           - "null"
-          format: int32
-          description: "A use case's budget, when its organization shows it."
+          format: int64
+          description: "A use case's budget in its currency, when its organization\
+            \ shows it."
         budgetToBeDetermined:
           type:
           - boolean
@@ -14022,6 +14426,14 @@ components:
           - "null"
           format: uuid
           description: "A program's cover, read at the public address of stored files."
+        currency:
+          type:
+          - string
+          - "null"
+          description: The currency of a use case's budget.
+          enum:
+          - USD
+          - VND
         customerDeployments:
           type:
           - integer
@@ -14213,6 +14625,30 @@ components:
       required:
       - enabled
       - state
+    SendBackOrganization:
+      type: object
+      description: Why GenAI Fund sends an organization back to its owners.
+      properties:
+        reason:
+          type: string
+          description: What the owners should change. They read it and receive it
+            by email.
+          maxLength: 1000
+          minLength: 0
+      required:
+      - reason
+    SendBackSolution:
+      type: object
+      description: Why GenAI Fund sends a solution back to its owners.
+      properties:
+        reason:
+          type: string
+          description: What the owners should change. They read it and receive it
+            by email.
+          maxLength: 1000
+          minLength: 0
+      required:
+      - reason
     SendBackUseCase:
       type: object
       description: Why GenAI Fund sends a use case back to its organization.
@@ -14264,6 +14700,20 @@ components:
       required:
       - enabled
       - version
+    SetUseCasePrograms:
+      type: object
+      description: "The programs a use case belongs to, replacing those it had."
+      properties:
+        programIds:
+          type: array
+          description: Empty for none.
+          items:
+            type: string
+            format: uuid
+          maxItems: 10
+          minItems: 0
+      required:
+      - programIds
     Solution:
       type: object
       description: "A solution as its organization, and operators, see it."
@@ -14306,14 +14756,14 @@ components:
           type:
           - string
           - "null"
-          description: What the operator wrote to the owners with the rejection.
+          description: "What the operator wrote to the owners with the last decision:\
+            \ what to change when it was sent back, or why it was refused."
         decisionReason:
           type:
           - string
           - "null"
-          description: Why it was last rejected.
+          description: Why it was refused for good; null for any other decision.
           enum:
-          - incomplete
           - not_an_ai_solution
           - duplicate
           - unverifiable
@@ -14389,7 +14839,8 @@ components:
           type: string
           enum:
           - draft
-          - submitted
+          - in_review
+          - needs_changes
           - approved
           - rejected
         submittedAt:
@@ -14408,6 +14859,29 @@ components:
           type:
           - string
           - "null"
+        suspendedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: "When GenAI Fund took it down, while it is down; its status\
+            \ stays approved."
+        suspensionMessage:
+          type:
+          - string
+          - "null"
+          description: What the operator wrote to the owners when taking it down.
+        suspensionReason:
+          type:
+          - string
+          - "null"
+          description: Why GenAI Fund last took it down.
+          enum:
+          - misleading_information
+          - not_an_ai_solution
+          - unverifiable
+          - breaks_the_rules
+          - other
         traction:
           type:
           - string
@@ -14549,14 +15023,13 @@ components:
           type:
           - string
           - "null"
-          description: What the operator wrote to the owners when sending it back.
+          description: What the operator wrote to the owners with the last decision.
         decisionReason:
           type:
           - string
           - "null"
-          description: Why it was last sent back.
+          description: Why it was refused for good; null for any other decision.
           enum:
-          - incomplete
           - not_an_ai_solution
           - duplicate
           - unverifiable
@@ -14597,7 +15070,8 @@ components:
           type: string
           enum:
           - draft
-          - submitted
+          - in_review
+          - needs_changes
           - approved
           - rejected
         submittedAt:
@@ -14609,6 +15083,29 @@ components:
           type:
           - string
           - "null"
+        suspendedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: "When GenAI Fund took it down, while it is down; its status\
+            \ stays approved."
+        suspensionMessage:
+          type:
+          - string
+          - "null"
+          description: What the operator wrote to the owners when taking it down.
+        suspensionReason:
+          type:
+          - string
+          - "null"
+          description: Why GenAI Fund last took it down.
+          enum:
+          - misleading_information
+          - not_an_ai_solution
+          - unverifiable
+          - breaks_the_rules
+          - other
         updatedAt:
           type: string
           format: date-time
@@ -14752,10 +15249,33 @@ components:
           pattern: misleading_information|not_a_real_organization|breaks_the_rules|other
       required:
       - reason
+    TakeDownSolution:
+      type: object
+      description: "Why an approved solution is taken down, and what its owners are\
+        \ told."
+      properties:
+        message:
+          type:
+          - string
+          - "null"
+          description: Shown to the owners in their workspace.
+          maxLength: 1000
+          minLength: 0
+        reason:
+          type: string
+          enum:
+          - misleading_information
+          - not_an_ai_solution
+          - unverifiable
+          - breaks_the_rules
+          - other
+          pattern: misleading_information|not_an_ai_solution|unverifiable|breaks_the_rules|other
+      required:
+      - reason
     TalentDecision:
       type: object
-      description: "Why GenAI Fund asks for changes to a talent profile or removes\
-        \ it, and what its person is told."
+      description: "Why GenAI Fund sends a talent profile back or takes it down, and\
+        \ what its person is told."
       properties:
         message:
           type:
@@ -14862,12 +15382,12 @@ components:
           type:
           - string
           - "null"
-          description: What the operator wrote to the person with the rejection.
+          description: What the operator wrote to the person when sending it back.
         decisionReason:
           type:
           - string
           - "null"
-          description: Why GenAI Fund last asked for changes or removed it.
+          description: Why GenAI Fund last sent it back.
           enum:
           - incomplete
           - unverifiable
@@ -14931,17 +15451,39 @@ components:
           type: string
         status:
           type: string
+          description: GenAI Fund's review of the profile.
           enum:
           - draft
-          - submitted
+          - in_review
+          - needs_changes
           - approved
-          - changes_requested
-          - removed
         submittedAt:
           type:
           - string
           - "null"
           format: date-time
+        suspendedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When GenAI Fund took it down from the public; null while it
+            is not.
+        suspensionMessage:
+          type:
+          - string
+          - "null"
+          description: What the operator wrote to the person when taking it down.
+        suspensionReason:
+          type:
+          - string
+          - "null"
+          description: Why GenAI Fund last took it down.
+          enum:
+          - incomplete
+          - unverifiable
+          - inappropriate
+          - other
         updatedAt:
           type: string
           format: date-time
@@ -15038,17 +15580,23 @@ components:
           type: string
         status:
           type: string
+          description: GenAI Fund's review of the profile.
           enum:
           - draft
-          - submitted
+          - in_review
+          - needs_changes
           - approved
-          - changes_requested
-          - removed
         submittedAt:
           type:
           - string
           - "null"
           format: date-time
+        suspendedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When it was taken down; null while it is not.
         updatedAt:
           type: string
           format: date-time
@@ -15186,6 +15734,27 @@ components:
       - genaiFund
       - name
       - you
+    UseCaseProgram:
+      type: object
+      description: A program the use case belongs to.
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        published:
+          type: boolean
+          description: Whether visitors see the program; a draft is for operators
+            only.
+        slug:
+          type: string
+          description: The address of its public page.
+      required:
+      - id
+      - name
+      - published
+      - slug
     UseCaseRequirement:
       type: object
       description: One thing the solution must do.

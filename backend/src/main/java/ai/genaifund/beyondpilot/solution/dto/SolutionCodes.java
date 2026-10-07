@@ -21,7 +21,9 @@ final class SolutionCodes {
 
 	static final String WEBSITE = "https?://[^\\s]+";
 
-	static final String REJECTION = "incomplete|not_an_ai_solution|duplicate|unverifiable|other";
+	static final String REJECTION = "not_an_ai_solution|duplicate|unverifiable|other";
+
+	static final String TAKEDOWN = "misleading_information|not_an_ai_solution|unverifiable|breaks_the_rules|other";
 
 	static final String STAGE = "pilot|production";
 

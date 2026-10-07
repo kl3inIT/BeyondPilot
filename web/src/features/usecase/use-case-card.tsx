@@ -1,8 +1,10 @@
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicUseCaseSummary } from "@/lib/api/generated";
+
+import { budgetFigures, budgetText } from "./use-case-budget";
 
 /**
  * One use case of the list. From 768px: a frame for the organization's logo, the brief in short, and a
@@ -16,13 +18,17 @@ function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
   const industryName = useVocabulary("industry");
   const technologyName = useVocabulary("technology");
   const format = useFormatter();
+  const locale = useLocale();
   const deadline = new Date(useCase.closesAt);
   const technologies = useCase.technologies.map((technology) => technologyName(technology));
   const budget = useCase.budgetToBeDetermined
     ? t("budget.toBeDetermined")
     : useCase.budgetMin == null || useCase.budgetMax == null
       ? t("budget.membersOnly")
-      : t("budget.range", { min: useCase.budgetMin, max: useCase.budgetMax });
+      : budgetText(
+          budgetFigures(useCase.budgetMin, useCase.budgetMax, useCase.currency, locale),
+          (key, values) => t(`budget.${key}`, values),
+        );
 
   return (
     <li className="flex flex-wrap gap-3 rounded-2xl border bg-card p-4 text-card-foreground md:flex-nowrap md:gap-4 md:p-5 xl:gap-5">

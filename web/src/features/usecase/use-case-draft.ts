@@ -3,6 +3,7 @@ import { instantInVietnam, partsInVietnam } from "@/lib/vietnam-time";
 
 import { timelinePresets } from "./admin-use-case-codes";
 import type { UploadedAttachment } from "./admin-use-case-attachments";
+import { isCurrency, type BudgetCurrency } from "./use-case-budget";
 
 /** One thing the solution must do, as it is written; a row may still be empty while it is typed. */
 export type RequirementValue = { statement: string; necessity: "required" | "optional" };
@@ -24,6 +25,8 @@ export type DraftValues = {
   dataReadiness: string;
   integrationRequirements: string;
   attachments: UploadedAttachment[];
+  /** The currency the amounts are in. */
+  currency: BudgetCurrency;
   budgetMin: string;
   budgetMax: string;
   budgetToBeDetermined: boolean;
@@ -54,6 +57,7 @@ export type UseCaseContent = Pick<
   | "dataReadiness"
   | "integrationRequirements"
   | "attachments"
+  | "currency"
   | "budgetMin"
   | "budgetMax"
   | "budgetToBeDetermined"
@@ -83,6 +87,7 @@ export function draftValuesOf(useCase: UseCaseContent): DraftValues {
       fileName,
       sizeBytes,
     })),
+    currency: isCurrency(useCase.currency) ? useCase.currency : "USD",
     budgetMin:
       useCase.budgetMin === null || useCase.budgetMin === undefined
         ? ""
@@ -105,7 +110,7 @@ const orNull = (text: string) => (text.trim() === "" ? null : text);
 
 /** A whole number typed into a field, or null while it is empty or not a number. */
 function amount(text: string): number | null {
-  return /^\d{1,9}$/.test(text.trim()) ? Number(text.trim()) : null;
+  return /^\d{1,13}$/.test(text.trim()) ? Number(text.trim()) : null;
 }
 
 /**
@@ -126,6 +131,7 @@ export function bodyOf(values: DraftValues, version: number): SaveMyUseCase {
     dataReadiness: orNull(values.dataReadiness),
     integrationRequirements: orNull(values.integrationRequirements),
     attachmentFileIds: values.attachments.map((file) => file.id),
+    currency: values.currency,
     budgetMin: values.budgetToBeDetermined ? null : amount(values.budgetMin),
     budgetMax: values.budgetToBeDetermined ? null : amount(values.budgetMax),
     budgetToBeDetermined: values.budgetToBeDetermined,

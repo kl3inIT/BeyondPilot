@@ -67,9 +67,9 @@ test.describe("admin", () => {
     // An organization waits when it is new, and when someone claims one nobody owns.
     await expect(page.getByText("6 records wait for a decision.")).toBeVisible();
     for (const [queue, count, href] of [
-      ["Organizations to review", 2, "/admin/organizations?status=pending"],
-      ["Solutions to review", 2, "/admin/solutions?status=submitted"],
-      ["Talent profiles to review", 2, "/admin/talent?status=submitted"],
+      ["Organizations to review", 2, "/admin/organizations?status=in_review"],
+      ["Solutions to review", 2, "/admin/solutions?status=in_review"],
+      ["Talent profiles to review", 2, "/admin/talent?status=in_review"],
     ] as const) {
       const link = page.getByRole("main").getByRole("link", { name: queue });
       await expect(link).toHaveAttribute("href", href);
@@ -77,7 +77,7 @@ test.describe("admin", () => {
     }
 
     await page.getByRole("main").getByRole("link", { name: "Solutions to review" }).click();
-    await expect(page).toHaveURL("/admin/solutions?status=submitted");
+    await expect(page).toHaveURL("/admin/solutions?status=in_review");
     await expect(page.getByText("2 solutions")).toBeVisible();
   });
 

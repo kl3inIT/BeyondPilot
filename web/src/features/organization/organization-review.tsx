@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { ReasonDialog } from "@/components/composites/reason-dialog";
@@ -14,11 +14,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import {
   approveOrganization,
   refuseOrganization,
+  sendBackOrganization,
   type AdminOrganizationSummary,
   type RefuseOrganization,
 } from "@/lib/api/generated";
@@ -27,6 +30,9 @@ import { refusalReasons } from "./organization-codes";
 import { organizationError } from "./organization-errors";
 import { websiteHost } from "./organization-format";
 import { useAdminOrganization, useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
+
+/** The longest reason for a send back that the backend takes. */
+const MAX_REASON = 1000;
 
 type OrganizationReviewProps = {
   /** The organization that waits for a decision, as the list already holds it. */
@@ -37,9 +43,9 @@ type OrganizationReviewProps = {
 
 /**
  * The decision on an organization that waits for review, in a dialog: approve it, with the email
- * domain the operator verified, or go on to refuse it with a reason its owners read. Who created it,
- * its website and the domain to confirm are read when the dialog opens; the dialog does not wait for
- * them.
+ * domain the operator verified; send it back with what its owners should change; or refuse it for
+ * good with a reason they read. Who created it, its website and the domain to confirm are read when
+ * the dialog opens; the dialog does not wait for them.
  */
 function OrganizationReview({ organization, onClose }: OrganizationReviewProps) {
   const t = useTranslations("Admin.organizations.review");
@@ -52,6 +58,9 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
   const detail = useAdminOrganization(organization.id);
   const domain = useVerifiedDomain(detail?.suggestedDomain);
   const [refusing, setRefusing] = useState(false);
+  const [sendingBack, setSendingBack] = useState(false);
+  const [sendBackReason, setSendBackReason] = useState("");
+  const sendBackId = useId();
   const [pending, setPending] = useState(false);
   // Set at the first press, before the pending state has rendered, so presses in one tick decide once.
   const deciding = useRef(false);
@@ -97,6 +106,49 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
         }),
       "Organization.done.organizationRefused",
     );
+
+  const sendBack = () =>
+    decide(
+      () => sendBackOrganization({ path: { id }, body: { reason: sendBackReason.trim() } }),
+      "Organization.done.organizationSentBack",
+    );
+
+  if (sendingBack) {
+    return (
+      // Leaving the reason goes back to the review, where the organization can still be approved.
+      <Dialog open onOpenChange={(open) => !open && !pending && setSendingBack(false)}>
+        <DialogContent showCloseButton={false} className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("sendBackTitle", { name })}</DialogTitle>
+            <DialogDescription>{t("sendBackLead")}</DialogDescription>
+          </DialogHeader>
+          <Field>
+            <FieldLabel htmlFor={sendBackId}>{t("sendBackLabel")}</FieldLabel>
+            <Textarea
+              id={sendBackId}
+              rows={4}
+              maxLength={MAX_REASON}
+              value={sendBackReason}
+              onChange={(event) => setSendBackReason(event.target.value)}
+            />
+            <FieldDescription>{t("messageHint")}</FieldDescription>
+          </Field>
+          <DialogFooter>
+            <Button prominence="secondary" disabled={pending} onClick={() => setSendingBack(false)}>
+              {t("back")}
+            </Button>
+            <Button
+              pending={pending}
+              disabled={sendBackReason.trim() === ""}
+              onClick={() => void sendBack()}
+            >
+              {t("sendBackConfirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   if (refusing) {
     return (
@@ -149,6 +201,9 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
         <DialogFooter>
           <Button prominence="secondary" disabled={pending} onClick={() => setRefusing(true)}>
             {t("refuse")}
+          </Button>
+          <Button prominence="secondary" disabled={pending} onClick={() => setSendingBack(true)}>
+            {t("sendBack")}
           </Button>
           <Button size="lg" pending={pending} onClick={approve}>
             {t("approve")}

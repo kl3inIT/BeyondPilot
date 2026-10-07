@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
 @Table(name = "solution_customer_deployment")
 public class CustomerDeployment {
 
-	public static final String SUBMITTED = "submitted";
+	public static final String IN_REVIEW = "in_review";
 
 	public static final String APPROVED = "approved";
 
@@ -57,7 +57,7 @@ public class CustomerDeployment {
 	private @Nullable String result;
 
 	@Column(nullable = false)
-	private String status = SUBMITTED;
+	private String status = IN_REVIEW;
 
 	private @Nullable String decisionReason;
 
@@ -98,7 +98,7 @@ public class CustomerDeployment {
 		this.languages = languages;
 		this.period = period;
 		this.result = result;
-		status = SUBMITTED;
+		status = IN_REVIEW;
 		decisionReason = null;
 		decisionMessage = null;
 		decidedAt = null;
@@ -118,8 +118,8 @@ public class CustomerDeployment {
 		decidedAt = at;
 	}
 
-	public boolean isSubmitted() {
-		return SUBMITTED.equals(status);
+	public boolean isInReview() {
+		return IN_REVIEW.equals(status);
 	}
 
 	public boolean isApproved() {

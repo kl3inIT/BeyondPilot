@@ -153,7 +153,10 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
   const [pending, setPending] = useState<"save" | "submit" | null>(null);
   const [invalid, setInvalid] = useState<Set<string>>(new Set());
 
-  const returned = profile?.status === "changes_requested" || profile?.status === "removed";
+  // Sent back, or taken down after approval: either way the person corrects it and sends it again.
+  const returned =
+    profile?.status === "needs_changes" ||
+    (profile?.status === "approved" && Boolean(profile.suspendedAt));
   const submittable = !profile || profile.status === "draft" || returned;
   const dirty =
     pending === null &&

@@ -63,7 +63,11 @@ export default async function SolutionRoute({ params }: PageProps<"/[locale]/sol
             name={solution.name}
             provider={solution.organizationName}
             organization={organization?.name ?? null}
-            awaitingApproval={organization ? organization.status !== "approved" : false}
+            awaitingApproval={
+              organization
+                ? organization.status !== "approved" || !!organization.suspendedAt
+                : false
+            }
             signInHref={signInHref}
           />
         )

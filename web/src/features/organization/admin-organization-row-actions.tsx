@@ -44,7 +44,7 @@ function AdminOrganizationRowActions({ organization }: { organization: AdminOrga
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuGroup>
-            {organization.status === "pending" && (
+            {organization.status === "in_review" && (
               <DropdownMenuItem onClick={() => setReviewing(true)}>
                 <ClipboardCheckIcon aria-hidden="true" />
                 {t("review")}

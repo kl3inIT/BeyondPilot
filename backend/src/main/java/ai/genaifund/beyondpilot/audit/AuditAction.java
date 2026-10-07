@@ -53,6 +53,9 @@ public enum AuditAction {
 	/** {@code reason} is the code of the reason given. */
 	ORGANIZATION_REFUSE("organization.refuse", "reason"),
 
+	/** An operator sent an organization back to its owners with what to change. */
+	ORGANIZATION_SEND_BACK("organization.send_back"),
+
 	/** An operator let a person own an organization nobody owned. {@code account} is that person's identifier. */
 	ORGANIZATION_CLAIM_APPROVE("organization.claim_approve", "account"),
 
@@ -65,8 +68,20 @@ public enum AuditAction {
 
 	SOLUTION_APPROVE("solution.approve"),
 
-	/** {@code reason} is the code of the reason given. */
+	/** An operator sent a solution back to its owners with what to change. */
+	SOLUTION_SEND_BACK("solution.send_back"),
+
+	/**
+	 * An operator refused a solution for good. {@code reason} is the code of the reason given. Before BEY-76 it also
+	 * recorded taking an approved solution out of the directory.
+	 */
 	SOLUTION_REJECT("solution.reject", "reason"),
+
+	/** An operator took an approved solution down. {@code reason} is the code of the reason given. */
+	SOLUTION_TAKE_DOWN("solution.take_down", "reason"),
+
+	/** An operator put a solution that was taken down back. */
+	SOLUTION_RESTORE("solution.restore"),
 
 	/** An operator wrote what GenAI Fund says of a solution: who backs its company, its programme, its funding. */
 	SOLUTION_BACK("solution.back"),
@@ -90,6 +105,10 @@ public enum AuditAction {
 	USE_CASE_APPROVE("use_case.approve", "organization"),
 
 	USE_CASE_SEND_BACK("use_case.send_back", "organization"),
+
+	/** An operator set the programs a use case belongs to. */
+	USE_CASE_SET_PROGRAMS("use_case.set_programs", "organization"),
+
 	/** An owner answered a request for an introduction, and both sides were told each other's address. */
 	INTRODUCTION_REPLY("introduction.reply"),
 
@@ -108,11 +127,14 @@ public enum AuditAction {
 	/** The person reported a message as unwanted; the sender was told it was declined. */
 	TALENT_ENQUIRY_REPORT("talent.enquiry_report"),
 
-	/** {@code reason} is the code of the reason given. */
+	/** An operator sent a profile back to its person. {@code reason} is the code of the reason given. */
 	TALENT_REQUEST_CHANGES("talent.request_changes", "reason"),
 
-	/** An operator took an approved profile away from the public. {@code reason} is the code of the reason given. */
+	/** {@code reason} is the code of the reason given. Its value is from when taking down was called removing. */
 	TALENT_REMOVE("talent.remove", "reason"),
+
+	/** An operator put a profile that was taken down back in the public. */
+	TALENT_RESTORE("talent.restore"),
 
 	/** The person deleted their own profile. */
 	TALENT_DELETE("talent.delete"),

@@ -136,7 +136,7 @@ public class UseCaseService {
 		}
 		files.requireUsable(actor, request.attachmentFileIds(), useCase.getAttachmentFileIds());
 
-		if (UseCase.PUBLISHED.equals(status)) {
+		if (UseCase.APPROVED.equals(status)) {
 			useCase.backToDraft();
 		}
 		useCase.describe(text(request.title()), text(request.problemStatement()), request.industry(),
@@ -151,11 +151,14 @@ public class UseCaseService {
 		if (UseCase.NEEDS_CHANGES.equals(status)) {
 			useCase.changedAfterReview();
 		}
+		// A save that names no currency keeps the one stored, so the amounts never change meaning.
+		String currency = request.currency() == null ? useCase.getCurrency()
+				: UseCaseAdministration.currencyOf(request.currency());
 		if (request.budgetToBeDetermined()) {
-			useCase.budget(null, null, true, request.budgetMembersOnly());
+			useCase.budget(currency, null, null, true, request.budgetMembersOnly());
 		}
 		else {
-			useCase.budget(request.budgetMin(), request.budgetMax(), false, request.budgetMembersOnly());
+			useCase.budget(currency, request.budgetMin(), request.budgetMax(), false, request.budgetMembersOnly());
 		}
 		useCase.takeWeeks(request.timelineMinWeeks(), request.timelineMaxWeeks());
 		useCase.closeAt(closesAt);
@@ -203,7 +206,7 @@ public class UseCaseService {
 		Membership membership = writer(actor);
 		UseCase useCase = own(membership, id);
 		String status = useCase.statusAt(Instant.now());
-		if (!UseCase.IN_REVIEW.equals(status) && !UseCase.PUBLISHED.equals(status)) {
+		if (!UseCase.IN_REVIEW.equals(status) && !UseCase.APPROVED.equals(status)) {
 			throw new UseCaseException(UseCaseErrorCode.CANNOT_MOVE_TO_DRAFT, "Use case " + id + " is " + status);
 		}
 		useCase.backToDraft();
@@ -243,8 +246,8 @@ public class UseCaseService {
 	}
 
 	private static void checkBudget(SaveMyUseCaseRequest request) {
-		Integer min = request.budgetMin();
-		Integer max = request.budgetMax();
+		Long min = request.budgetMin();
+		Long max = request.budgetMax();
 		if (request.budgetToBeDetermined()) {
 			return;
 		}
@@ -275,7 +278,7 @@ public class UseCaseService {
 		People people = people(actor, List.of(useCase));
 		UUID sender = useCase.getSubmittedByAccountId();
 		return new MyUseCaseResponse(useCase.getId(), membership.organizationName(), status,
-				UseCase.DRAFT.equals(status) || UseCase.NEEDS_CHANGES.equals(status) || UseCase.PUBLISHED.equals(status),
+				UseCase.DRAFT.equals(status) || UseCase.NEEDS_CHANGES.equals(status) || UseCase.APPROVED.equals(status),
 				useCase.isComplete(), useCase.getTitle(), useCase.getProblemStatement(), useCase.getIndustry(),
 				useCase.getTechnologies(), useCase.getExpectedOutcomes(), useCase.getCurrentProcess(),
 				useCase.getCurrentSolutions(), useCase.getTargetUsers(),
@@ -284,7 +287,7 @@ public class UseCaseService {
 					.map(requirement -> new UseCaseRequirementEntry(requirement.statement(), requirement.necessity()))
 					.toList(),
 				useCase.getDataReadiness(), useCase.getIntegrationRequirements(), files.of(useCase),
-				useCase.getBudgetMin(), useCase.getBudgetMax(), useCase.isBudgetToBeDetermined(),
+				useCase.getBudgetMin(), useCase.getBudgetMax(), useCase.getCurrency(), useCase.isBudgetToBeDetermined(),
 				useCase.isBudgetMembersOnly(), useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(),
 				useCase.isHideOrganizationName(), useCase.getClosesAt(), useCase.getPublishedAt(),
 				useCase.getSubmittedAt(), sender == null ? null : people.of(sender), useCase.getReviewNote(),

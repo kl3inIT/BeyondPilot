@@ -25,11 +25,20 @@ export const deployments = ["cloud_saas", "private_cloud", "on_premise", "hybrid
 /** The languages a solution works in: English, then those of the region. */
 export const languages = ["en", "vi", "id", "ms", "th", "fil", "zh", "ja", "ko", "other"] as const;
 
+/** Why a solution is refused for good; missing information is a send back instead. */
 export const solutionRejections = [
-  "incomplete",
   "not_an_ai_solution",
   "duplicate",
   "unverifiable",
+  "other",
+] as const;
+
+/** Why an approved solution is taken down. */
+export const solutionTakedowns = [
+  "misleading_information",
+  "not_an_ai_solution",
+  "unverifiable",
+  "breaks_the_rules",
   "other",
 ] as const;
 
@@ -38,4 +47,10 @@ export const deploymentStages = ["pilot", "production"] as const;
 export const deploymentRejections = ["incomplete", "unverifiable", "other"] as const;
 
 /** The statuses operators see; a draft is its organization's alone. */
-export const reviewedStatuses = ["submitted", "approved", "rejected"] as const;
+export const reviewedStatuses = [
+  "in_review",
+  "needs_changes",
+  "approved",
+  "rejected",
+  "suspended",
+] as const;

@@ -63,7 +63,7 @@ class OrganizationTest {
 		String created = body(post(founder, API + "/organizations", creation("Created Co")).expectStatus()
 			.isCreated());
 
-		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("pending");
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("in_review");
 		assertThat(JsonPath.<String>read(created, "$.slug")).isEqualTo("created-co");
 		// A work address vouches for nothing: an operator verifies the domain.
 		assertThat(JsonPath.<String>read(created, "$.emailDomain")).isNull();
@@ -117,7 +117,7 @@ class OrganizationTest {
 		String created = body(post(signIn("dat@builder.test"), API + "/organizations", builder).expectStatus()
 			.isCreated());
 		assertThat(JsonPath.<String>read(created, "$.type")).isEqualTo("independent_builder");
-		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("pending");
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("in_review");
 
 		Map<String, Object> company = new HashMap<>(creation("No Industry Co"));
 		company.put("industries", List.of());
@@ -218,32 +218,66 @@ class OrganizationTest {
 				Map.of("emailDomain", "Not A Domain")), 400, "REQUEST_INVALID");
 
 		// Nothing was decided.
-		assertThat(JsonPath.<String>read(mine(second), "$.organization.status")).isEqualTo("pending");
+		assertThat(JsonPath.<String>read(mine(second), "$.organization.status")).isEqualTo("in_review");
 	}
 
 	@Test
-	void aRefusedOrganizationShowsWhyAndWaitsAgainOnceItsOwnerSavesIt() {
+	void anOrganizationSentBackShowsWhyAndWaitsAgainOnceItsOwnerSavesIt() {
+		String founder = signIn("founder@sentback.test");
+		UUID id = create(founder, "Sent Back Co");
+		String sendBack = API + "/admin/organizations/" + id + "/send-back";
+
+		assertProblem(post(founder, sendBack, Map.of("reason", "Tell us what you build.")), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(operator, sendBack, Map.of("reason", " ")), 400, "REQUEST_INVALID");
+		post(operator, sendBack, Map.of("reason", "Tell us what you build.")).expectStatus().isNoContent();
+		assertThat(mail.latestSubjectTo("founder@sentback.test")).isEqualTo("Changes needed: Sent Back Co");
+		// It no longer waits for review, so it is not decided twice.
+		assertProblem(post(operator, sendBack, Map.of("reason", "Again.")), 409, "ORGANIZATION_NOT_AWAITING_REVIEW");
+		assertProblem(post(operator, API + "/admin/organizations/" + id + "/approve", Map.of()), 409,
+				"ORGANIZATION_NOT_AWAITING_REVIEW");
+
+		String sentBack = mine(founder);
+		assertThat(JsonPath.<String>read(sentBack, "$.organization.status")).isEqualTo("needs_changes");
+		assertThat(JsonPath.<Object>read(sentBack, "$.organization.decisionReason")).isNull();
+		assertThat(JsonPath.<String>read(sentBack, "$.organization.decisionMessage"))
+			.isEqualTo("Tell us what you build.");
+		assertThat(events(id)).containsExactly("organization.send_back");
+
+		Map<String, Object> corrected = save(profile("Sent Back Co"),
+				JsonPath.<Integer>read(sentBack, "$.organization.version"));
+		put(founder, API + "/mine", corrected).expectStatus().isOk();
+		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("in_review");
+		// The screen that read the older version is told, instead of overwriting.
+		assertProblem(put(founder, API + "/mine", corrected), 409, "ORGANIZATION_CHANGED_MEANWHILE");
+	}
+
+	@Test
+	void aRefusedOrganizationIsRefusedForGoodAndOnlyWhileItWaitsForReview() {
 		String founder = signIn("founder@refused.test");
 		UUID id = create(founder, "Refused Co");
+		String refuse = API + "/admin/organizations/" + id + "/refuse";
 
-		post(operator, API + "/admin/organizations/" + id + "/refuse",
-				Map.of("reason", "incomplete", "message", "Tell us what you build."))
+		// Missing information is a send back, not a refusal.
+		assertProblem(post(operator, refuse, Map.of("reason", "incomplete")), 400, "REQUEST_INVALID");
+		post(operator, refuse, Map.of("reason", "not_a_real_organization", "message", "We found no such company."))
 			.expectStatus()
 			.isNoContent();
+		assertProblem(post(operator, refuse, Map.of("reason", "duplicate")), 409, "ORGANIZATION_NOT_AWAITING_REVIEW");
 
 		String refused = mine(founder);
 		assertThat(JsonPath.<String>read(refused, "$.organization.status")).isEqualTo("rejected");
-		assertThat(JsonPath.<String>read(refused, "$.organization.decisionReason")).isEqualTo("incomplete");
+		assertThat(JsonPath.<String>read(refused, "$.organization.decisionReason")).isEqualTo("not_a_real_organization");
 		assertThat(JsonPath.<String>read(refused, "$.organization.decisionMessage"))
-			.isEqualTo("Tell us what you build.");
+			.isEqualTo("We found no such company.");
 		assertThat(events(id)).containsExactly("organization.refuse");
 
-		Map<String, Object> corrected = save(profile("Refused Co"),
-				JsonPath.<Integer>read(refused, "$.organization.version"));
-		put(founder, API + "/mine", corrected).expectStatus().isOk();
-		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("pending");
-		// The screen that read the older version is told, instead of overwriting.
-		assertProblem(put(founder, API + "/mine", corrected), 409, "ORGANIZATION_CHANGED_MEANWHILE");
+		// Its owner may still correct the profile, but it is not reviewed again.
+		put(founder, API + "/mine",
+				save(profile("Refused Co"), JsonPath.<Integer>read(refused, "$.organization.version")))
+			.expectStatus()
+			.isOk();
+		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("rejected");
 	}
 
 	@Test
@@ -460,9 +494,11 @@ class OrganizationTest {
 		assertThat(mail.latestSubjectTo("founder@takedown.test")).isEqualTo("Takedown Co on BeyondPilot");
 		assertProblem(post(operator, takeDown, Map.of("reason", "other")), 409, "ORGANIZATION_CANNOT_TAKE_DOWN");
 
-		// Its members keep the workspace and read why; it is in no directory and invites nobody.
+		// Its review stays approved; its members keep the workspace and read why; it is in no directory and invites
+		// nobody.
 		String mine = mine(founder);
-		assertThat(JsonPath.<String>read(mine, "$.organization.status")).isEqualTo("suspended");
+		assertThat(JsonPath.<String>read(mine, "$.organization.status")).isEqualTo("approved");
+		assertThat(JsonPath.<String>read(mine, "$.organization.suspendedAt")).isNotNull();
 		assertThat(JsonPath.<String>read(mine, "$.organization.suspensionReason")).isEqualTo("misleading_information");
 		assertThat(JsonPath.<String>read(mine, "$.organization.suspensionMessage")).isEqualTo("Send us the contract.");
 		assertThat(JsonPath.<String>read(mine, "$.role")).isEqualTo("owner");
@@ -474,13 +510,18 @@ class OrganizationTest {
 				"ORGANIZATION_NOT_FOUND");
 		assertProblem(post(founder, API + "/mine/invitations", Map.of("email", "new@takedown.test", "role", "member")),
 				409, "ORGANIZATION_NOT_APPROVED");
-		assertThat(JsonPath.<String>read(
-				body(get(operator, API + "/admin/organizations?status=suspended").expectStatus().isOk()),
-				"$.items[0].status"))
-			.isEqualTo("suspended");
+		String suspended = body(get(operator, API + "/admin/organizations?status=suspended").expectStatus().isOk());
+		assertThat(JsonPath.<String>read(suspended, "$.items[0].id")).isEqualTo(id.toString());
+		assertThat(JsonPath.<String>read(suspended, "$.items[0].status")).isEqualTo("approved");
+		assertThat(JsonPath.<String>read(suspended, "$.items[0].suspendedAt")).isNotNull();
+		assertThat(JsonPath.<List<Object>>read(
+				body(get(operator, API + "/admin/organizations?q=takedown&status=approved").expectStatus().isOk()),
+				"$.items"))
+			.isEmpty();
 
 		post(operator, API + "/admin/organizations/" + id + "/restore", null).expectStatus().isNoContent();
 		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("approved");
+		assertThat(JsonPath.<Object>read(mine(founder), "$.organization.suspendedAt")).isNull();
 		// What was said when it was taken down stays on the record.
 		assertThat(JsonPath.<String>read(mine(founder), "$.organization.suspensionReason"))
 			.isEqualTo("misleading_information");
@@ -751,7 +792,7 @@ class OrganizationTest {
 		assertThat(JsonPath.<Boolean>read(mine(insider), "$.request.claim")).isTrue();
 
 		String waiting = body(
-				get(operator, API + "/admin/organizations?q=unowned one&status=pending").expectStatus().isOk());
+				get(operator, API + "/admin/organizations?q=unowned one&status=in_review").expectStatus().isOk());
 		assertThat(JsonPath.<String>read(waiting, "$.items[0].request")).isEqualTo("claim");
 		assertThat(JsonPath.<String>read(waiting, "$.items[0].status")).isEqualTo("approved");
 		assertThat(JsonPath.<String>read(waiting, "$.items[0].askedBy")).isEqualTo("first@unowned-one.test");

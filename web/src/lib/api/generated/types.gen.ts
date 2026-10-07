@@ -219,7 +219,14 @@ export type AdminOrganizationSummary = {
      */
     requestedAt?: string | null;
     slug: string;
-    status: 'pending' | 'approved' | 'rejected' | 'suspended';
+    /**
+     * GenAI Fund's review of the organization.
+     */
+    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
+    /**
+     * When it was taken down; null while it is not.
+     */
+    suspendedAt?: string | null;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
 };
 
@@ -363,13 +370,17 @@ export type AdminSolutionSummary = {
     name: string;
     organizationName: string;
     slug: string;
-    status: 'submitted' | 'approved' | 'rejected';
+    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
     submittedAt?: string | null;
     /**
      * Who sent it for review last: their name, or their address until they have one. Null when it was sent before the sender was recorded.
      */
     submittedBy?: string | null;
     summary?: string | null;
+    /**
+     * When GenAI Fund took it down, while it is down; its status stays approved.
+     */
+    suspendedAt?: string | null;
     updatedAt: string;
 };
 
@@ -443,18 +454,22 @@ export type AdminTalentList = {
 export type AdminUseCase = {
     attachments: Array<UseCaseAttachment>;
     /**
-     * US dollars. Null while the budget is to be determined.
+     * Whole units of currency. Null while the budget is to be determined.
      */
     budgetMax?: number | null;
     budgetMembersOnly: boolean;
     /**
-     * US dollars. Null while the budget is to be determined.
+     * Whole units of currency. Null while the budget is to be determined.
      */
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
     closesAt?: string | null;
     createdAt: string;
     createdBy: UseCasePerson;
+    /**
+     * The currency of the amounts.
+     */
+    currency: 'USD' | 'VND';
     currentProcess?: string | null;
     currentSolutions?: string | null;
     dataReadiness?: string | null;
@@ -465,6 +480,10 @@ export type AdminUseCase = {
     integrationRequirements?: string | null;
     organization: UseCaseOrganization;
     problemStatement?: string | null;
+    /**
+     * The programs it belongs to, by name.
+     */
+    programs: Array<UseCaseProgram>;
     publishedAt?: string | null;
     requirements: Array<UseCaseRequirement>;
     /**
@@ -479,7 +498,7 @@ export type AdminUseCase = {
     /**
      * Closed once the close date has passed, whatever the use case was before.
      */
-    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
     submittedAt?: string | null;
     /**
      * Who sent it for review; null if it was never sent.
@@ -524,7 +543,7 @@ export type AdminUseCaseSummary = {
     /**
      * Closed once the close date has passed, whatever the use case was before.
      */
-    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
     title?: string | null;
     updatedAt: string;
 };
@@ -760,7 +779,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -933,7 +952,7 @@ export type CreateUseCase = {
      */
     attachmentFileIds: Array<string>;
     /**
-     * US dollars. Null while the budget is to be determined.
+     * Whole units of currency. Null while the budget is to be determined.
      */
     budgetMax?: number | null;
     /**
@@ -941,7 +960,7 @@ export type CreateUseCase = {
      */
     budgetMembersOnly: boolean;
     /**
-     * US dollars. Null while the budget is to be determined.
+     * Whole units of currency. Null while the budget is to be determined.
      */
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
@@ -949,6 +968,10 @@ export type CreateUseCase = {
      * When proposals stop. It must be in the future.
      */
     closesAt: string;
+    /**
+     * The currency of the budget; USD when absent.
+     */
+    currency?: 'USD' | 'VND';
     currentProcess: string;
     currentSolutions?: string | null;
     dataReadiness: string;
@@ -961,6 +984,10 @@ export type CreateUseCase = {
      */
     organizationId: string;
     problemStatement: string;
+    /**
+     * The programs it belongs to; none when absent.
+     */
+    programIds?: Array<string> | null;
     /**
      * True to publish at once, false to save a draft for the organization.
      */
@@ -997,7 +1024,7 @@ export type CustomerDeployment = {
     problem: string;
     result?: string | null;
     stage: 'pilot' | 'production';
-    status: 'submitted' | 'approved' | 'rejected';
+    status: 'in_review' | 'approved' | 'rejected';
     title: string;
     updatedAt: string;
     /**
@@ -1636,6 +1663,10 @@ export type MyUseCase = {
      * Whether it holds everything a use case needs to be sent for review.
      */
     complete: boolean;
+    /**
+     * The currency of the amounts.
+     */
+    currency: 'USD' | 'VND';
     currentProcess?: string | null;
     currentSolutions?: string | null;
     dataReadiness?: string | null;
@@ -1660,7 +1691,7 @@ export type MyUseCase = {
     /**
      * Closed once the close date has passed, whatever the use case was before.
      */
-    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
     submittedAt?: string | null;
     /**
      * Who sent it for review; null if it was never sent.
@@ -1685,7 +1716,7 @@ export type MyUseCaseSummary = {
     /**
      * Closed once the close date has passed, whatever the use case was before.
      */
-    status: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
     submittedAt?: string | null;
     /**
      * Null until someone has named the use case.
@@ -1715,13 +1746,13 @@ export type Organization = {
     country?: string | null;
     createdAt: string;
     /**
-     * What the operator wrote to the owners with the refusal.
+     * What the operator wrote to the owners when refusing it or sending it back.
      */
     decisionMessage?: string | null;
     /**
-     * Why it was last refused.
+     * Why it was refused; null when it was sent back.
      */
-    decisionReason?: 'duplicate' | 'not_a_real_organization' | 'incomplete' | 'out_of_scope' | 'other';
+    decisionReason?: 'duplicate' | 'not_a_real_organization' | 'out_of_scope' | 'other';
     description?: string | null;
     /**
      * The domain GenAI Fund verified as the organization's; null until it has.
@@ -1743,11 +1774,11 @@ export type Organization = {
     name: string;
     slug: string;
     /**
-     * GenAI Fund's review of the organization.
+     * GenAI Fund's review of the organization. One taken down stays `approved`; `suspendedAt` says it is down.
      */
-    status: 'pending' | 'approved' | 'rejected' | 'suspended';
+    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
     /**
-     * When it was last taken down.
+     * When it was taken down; null while it is not.
      */
     suspendedAt?: string | null;
     /**
@@ -2428,7 +2459,7 @@ export type PublicUseCaseSummary = {
      */
     budgetMembersOnly: boolean;
     /**
-     * In US dollars; null while the budget is to be determined or is for members only.
+     * Whole units of currency; null while the budget is to be determined or is for members only.
      */
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
@@ -2436,6 +2467,10 @@ export type PublicUseCaseSummary = {
      * Proposals close at this instant.
      */
     closesAt: string;
+    /**
+     * The currency of the amounts.
+     */
+    currency: 'USD' | 'VND';
     /**
      * The outcomes the organization expects.
      */
@@ -2468,14 +2503,14 @@ export type ReceivedIntroductions = {
 };
 
 /**
- * Why an organization is not approved, and what its owners are told.
+ * Why an organization is refused for good, and what its owners are told. Missing information is a send back instead.
  */
 export type RefuseOrganization = {
     /**
      * Shown to the owners with the refusal.
      */
     message?: string | null;
-    reason: 'duplicate' | 'not_a_real_organization' | 'incomplete' | 'out_of_scope' | 'other';
+    reason: 'duplicate' | 'not_a_real_organization' | 'out_of_scope' | 'other';
 };
 
 /**
@@ -2490,14 +2525,14 @@ export type RejectCustomerDeployment = {
 };
 
 /**
- * Why a solution is not approved, and what its owners are told.
+ * Why a solution is refused for good, and what its owners are told.
  */
 export type RejectSolution = {
     /**
      * Shown to the owners with the rejection.
      */
     message?: string | null;
-    reason: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    reason: 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
 };
 
 /**
@@ -3009,7 +3044,7 @@ export type SaveMyUseCase = {
      */
     attachmentFileIds: Array<string>;
     /**
-     * US dollars. Null while the budget is to be determined.
+     * Whole units of currency. Null while the budget is to be determined.
      */
     budgetMax?: number | null;
     /**
@@ -3017,7 +3052,7 @@ export type SaveMyUseCase = {
      */
     budgetMembersOnly: boolean;
     /**
-     * US dollars. Null while the budget is to be determined.
+     * Whole units of currency. Null while the budget is to be determined.
      */
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
@@ -3025,6 +3060,10 @@ export type SaveMyUseCase = {
      * When proposals stop. It must be in the future.
      */
     closesAt?: string | null;
+    /**
+     * The currency of the budget; the stored one when absent, USD for a new use case.
+     */
+    currency?: 'USD' | 'VND';
     currentProcess?: string | null;
     currentSolutions?: string | null;
     dataReadiness?: string | null;
@@ -3323,11 +3362,11 @@ export type SearchIndexRebuild = {
  */
 export type SearchItem = {
     /**
-     * A use case's budget, when its organization shows it.
+     * A use case's budget in its currency, when its organization shows it.
      */
     budgetMax?: number | null;
     /**
-     * A use case's budget, when its organization shows it.
+     * A use case's budget in its currency, when its organization shows it.
      */
     budgetMin?: number | null;
     /**
@@ -3350,6 +3389,10 @@ export type SearchItem = {
      * A program's cover, read at the public address of stored files.
      */
     coverFileId?: string | null;
+    /**
+     * The currency of a use case's budget.
+     */
+    currency?: 'USD' | 'VND';
     /**
      * How many of a solution's customer deployments GenAI Fund approved.
      */
@@ -3457,6 +3500,26 @@ export type SemanticSearchState = {
 };
 
 /**
+ * Why GenAI Fund sends an organization back to its owners.
+ */
+export type SendBackOrganization = {
+    /**
+     * What the owners should change. They read it and receive it by email.
+     */
+    reason: string;
+};
+
+/**
+ * Why GenAI Fund sends a solution back to its owners.
+ */
+export type SendBackSolution = {
+    /**
+     * What the owners should change. They read it and receive it by email.
+     */
+    reason: string;
+};
+
+/**
  * Why GenAI Fund sends a use case back to its organization.
  */
 export type SendBackUseCase = {
@@ -3493,6 +3556,16 @@ export type SetSemanticSearch = {
 };
 
 /**
+ * The programs a use case belongs to, replacing those it had.
+ */
+export type SetUseCasePrograms = {
+    /**
+     * Empty for none.
+     */
+    programIds: Array<string>;
+};
+
+/**
  * A solution as its organization, and operators, see it.
  */
 export type Solution = {
@@ -3516,13 +3589,13 @@ export type Solution = {
      */
     customerDeployments: Array<CustomerDeployment>;
     /**
-     * What the operator wrote to the owners with the rejection.
+     * What the operator wrote to the owners with the last decision: what to change when it was sent back, or why it was refused.
      */
     decisionMessage?: string | null;
     /**
-     * Why it was last rejected.
+     * Why it was refused for good; null for any other decision.
      */
-    decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    decisionReason?: 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
     /**
      * Its deck, when it has one.
      */
@@ -3554,13 +3627,25 @@ export type Solution = {
     organizationName: string;
     problemsSolved?: string | null;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'rejected';
     submittedAt?: string | null;
     /**
      * Who sent it for review last: their name, or their address until they have one. Null when it was never sent, or was sent before the sender was recorded.
      */
     submittedBy?: string | null;
     summary?: string | null;
+    /**
+     * When GenAI Fund took it down, while it is down; its status stays approved.
+     */
+    suspendedAt?: string | null;
+    /**
+     * What the operator wrote to the owners when taking it down.
+     */
+    suspensionMessage?: string | null;
+    /**
+     * Why GenAI Fund last took it down.
+     */
+    suspensionReason?: 'misleading_information' | 'not_an_ai_solution' | 'unverifiable' | 'breaks_the_rules' | 'other';
     traction?: string | null;
     updatedAt: string;
     valueProposition?: string | null;
@@ -3638,13 +3723,13 @@ export type SolutionOption = {
  */
 export type SolutionSummary = {
     /**
-     * What the operator wrote to the owners when sending it back.
+     * What the operator wrote to the owners with the last decision.
      */
     decisionMessage?: string | null;
     /**
-     * Why it was last sent back.
+     * Why it was refused for good; null for any other decision.
      */
-    decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    decisionReason?: 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
     /**
      * How many of its customer deployments wait for review.
      */
@@ -3659,9 +3744,21 @@ export type SolutionSummary = {
     name: string;
     organizationName: string;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'rejected';
     submittedAt?: string | null;
     summary?: string | null;
+    /**
+     * When GenAI Fund took it down, while it is down; its status stays approved.
+     */
+    suspendedAt?: string | null;
+    /**
+     * What the operator wrote to the owners when taking it down.
+     */
+    suspensionMessage?: string | null;
+    /**
+     * Why GenAI Fund last took it down.
+     */
+    suspensionReason?: 'misleading_information' | 'not_an_ai_solution' | 'unverifiable' | 'breaks_the_rules' | 'other';
     updatedAt: string;
 };
 
@@ -3717,7 +3814,18 @@ export type TakeDownOrganization = {
 };
 
 /**
- * Why GenAI Fund asks for changes to a talent profile or removes it, and what its person is told.
+ * Why an approved solution is taken down, and what its owners are told.
+ */
+export type TakeDownSolution = {
+    /**
+     * Shown to the owners in their workspace.
+     */
+    message?: string | null;
+    reason: 'misleading_information' | 'not_an_ai_solution' | 'unverifiable' | 'breaks_the_rules' | 'other';
+};
+
+/**
+ * Why GenAI Fund sends a talent profile back or takes it down, and what its person is told.
  */
 export type TalentDecision = {
     /**
@@ -3773,11 +3881,11 @@ export type TalentProfile = {
      */
     country?: string | null;
     /**
-     * What the operator wrote to the person with the rejection.
+     * What the operator wrote to the person when sending it back.
      */
     decisionMessage?: string | null;
     /**
-     * Why GenAI Fund last asked for changes or removed it.
+     * Why GenAI Fund last sent it back.
      */
     decisionReason?: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
     engagement: Array<string>;
@@ -3805,8 +3913,23 @@ export type TalentProfile = {
     roles: Array<string>;
     skills: Array<string>;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'changes_requested' | 'removed';
+    /**
+     * GenAI Fund's review of the profile.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved';
     submittedAt?: string | null;
+    /**
+     * When GenAI Fund took it down from the public; null while it is not.
+     */
+    suspendedAt?: string | null;
+    /**
+     * What the operator wrote to the person when taking it down.
+     */
+    suspensionMessage?: string | null;
+    /**
+     * Why GenAI Fund last took it down.
+     */
+    suspensionReason?: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
     updatedAt: string;
     /**
      * Sent back with a save, which is refused when the profile changed since.
@@ -3849,8 +3972,15 @@ export type TalentSummary = {
     listed: boolean;
     name: string;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'changes_requested' | 'removed';
+    /**
+     * GenAI Fund's review of the profile.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved';
     submittedAt?: string | null;
+    /**
+     * When it was taken down; null while it is not.
+     */
+    suspendedAt?: string | null;
     updatedAt: string;
 };
 
@@ -3937,6 +4067,22 @@ export type UseCasePerson = {
 };
 
 /**
+ * A program the use case belongs to.
+ */
+export type UseCaseProgram = {
+    id: string;
+    name: string;
+    /**
+     * Whether visitors see the program; a draft is for operators only.
+     */
+    published: boolean;
+    /**
+     * The address of its public page.
+     */
+    slug: string;
+};
+
+/**
  * One thing the solution must do.
  */
 export type UseCaseRequirement = {
@@ -3955,7 +4101,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -5237,9 +5383,9 @@ export type ListAdminOrganizationsData = {
          */
         q?: string | null;
         /**
-         * Only organizations of this review status; `pending` also selects an approved one with an open claim.
+         * Only organizations of this review status; `in_review` also selects an approved one with an open claim, `approved` leaves out those taken down, and `suspended` selects those taken down.
          */
-        status?: 'pending' | 'approved' | 'rejected' | 'suspended';
+        status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended';
         /**
          * The page, counted from 1.
          */
@@ -5668,6 +5814,49 @@ export type RestoreOrganizationResponses = {
 };
 
 export type RestoreOrganizationResponse = RestoreOrganizationResponses[keyof RestoreOrganizationResponses];
+
+export type SendBackOrganizationData = {
+    body: SendBackOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/send-back';
+};
+
+export type SendBackOrganizationErrors = {
+    /**
+     * The reason is blank or over 1000 characters.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not waiting for review.
+     */
+    409: Problem;
+};
+
+export type SendBackOrganizationError = SendBackOrganizationErrors[keyof SendBackOrganizationErrors];
+
+export type SendBackOrganizationResponses = {
+    /**
+     * The organization needs changes; its owners are told why.
+     */
+    204: void;
+};
+
+export type SendBackOrganizationResponse = SendBackOrganizationResponses[keyof SendBackOrganizationResponses];
 
 export type TakeDownOrganizationData = {
     body: TakeDownOrganization;
@@ -7944,9 +8133,9 @@ export type ListAdminSolutionsData = {
          */
         q?: string | null;
         /**
-         * Only solutions of this status. Drafts are never listed.
+         * Only solutions of this review status, or `suspended` for those taken down; `approved` leaves out those taken down. Drafts are never listed.
          */
-        status?: 'submitted' | 'approved' | 'rejected';
+        status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended';
         /**
          * Only solutions for this industry.
          */
@@ -8125,7 +8314,7 @@ export type RejectSolutionErrors = {
      */
     404: Problem;
     /**
-     * The solution is neither waiting for review nor approved.
+     * The solution is not waiting for review.
      */
     409: Problem;
 };
@@ -8140,6 +8329,131 @@ export type RejectSolutionResponses = {
 };
 
 export type RejectSolutionResponse = RejectSolutionResponses[keyof RejectSolutionResponses];
+
+export type RestoreSolutionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/restore';
+};
+
+export type RestoreSolutionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+    /**
+     * The solution is not taken down.
+     */
+    409: Problem;
+};
+
+export type RestoreSolutionError = RestoreSolutionErrors[keyof RestoreSolutionErrors];
+
+export type RestoreSolutionResponses = {
+    /**
+     * The solution is back.
+     */
+    204: void;
+};
+
+export type RestoreSolutionResponse = RestoreSolutionResponses[keyof RestoreSolutionResponses];
+
+export type SendBackSolutionData = {
+    body: SendBackSolution;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/send-back';
+};
+
+export type SendBackSolutionErrors = {
+    /**
+     * The reason is blank or longer than 1000 characters.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+    /**
+     * The solution is not waiting for review.
+     */
+    409: Problem;
+};
+
+export type SendBackSolutionError = SendBackSolutionErrors[keyof SendBackSolutionErrors];
+
+export type SendBackSolutionResponses = {
+    /**
+     * The solution needs changes; its owners are told.
+     */
+    204: void;
+};
+
+export type SendBackSolutionResponse = SendBackSolutionResponses[keyof SendBackSolutionResponses];
+
+export type TakeDownSolutionData = {
+    body: TakeDownSolution;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/take-down';
+};
+
+export type TakeDownSolutionErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+    /**
+     * The solution is not approved, or is already taken down.
+     */
+    409: Problem;
+};
+
+export type TakeDownSolutionError = TakeDownSolutionErrors[keyof TakeDownSolutionErrors];
+
+export type TakeDownSolutionResponses = {
+    /**
+     * The solution is taken down; its review stays approved.
+     */
+    204: void;
+};
+
+export type TakeDownSolutionResponse = TakeDownSolutionResponses[keyof TakeDownSolutionResponses];
 
 export type ListCustomerDeploymentsData = {
     body?: never;
@@ -8765,9 +9079,9 @@ export type ListAdminTalentData = {
          */
         q?: string | null;
         /**
-         * Only profiles of this status. Drafts are never listed.
+         * Only profiles of this review status; `approved` leaves out those taken down, and `suspended` selects those taken down. Drafts are never listed.
          */
-        status?: 'submitted' | 'approved' | 'changes_requested' | 'removed';
+        status?: 'in_review' | 'needs_changes' | 'approved' | 'suspended';
         /**
          * The page, counted from 1.
          */
@@ -8876,20 +9190,16 @@ export type ApproveTalentResponses = {
 
 export type ApproveTalentResponse = ApproveTalentResponses[keyof ApproveTalentResponses];
 
-export type RemoveTalentData = {
-    body: TalentDecision;
+export type RestoreTalentData = {
+    body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/api/talent/admin/profiles/{id}/remove';
+    url: '/api/talent/admin/profiles/{id}/restore';
 };
 
-export type RemoveTalentErrors = {
-    /**
-     * A member is not valid.
-     */
-    400: Problem;
+export type RestoreTalentErrors = {
     /**
      * Nobody is signed in.
      */
@@ -8903,32 +9213,32 @@ export type RemoveTalentErrors = {
      */
     404: Problem;
     /**
-     * The profile is not approved.
+     * The profile is not taken down.
      */
     409: Problem;
 };
 
-export type RemoveTalentError = RemoveTalentErrors[keyof RemoveTalentErrors];
+export type RestoreTalentError = RestoreTalentErrors[keyof RestoreTalentErrors];
 
-export type RemoveTalentResponses = {
+export type RestoreTalentResponses = {
     /**
-     * The profile is removed; the person was emailed.
+     * The profile is back; the person was emailed.
      */
     204: void;
 };
 
-export type RemoveTalentResponse = RemoveTalentResponses[keyof RemoveTalentResponses];
+export type RestoreTalentResponse = RestoreTalentResponses[keyof RestoreTalentResponses];
 
-export type RequestTalentChangesData = {
+export type SendBackTalentData = {
     body: TalentDecision;
     path: {
         id: string;
     };
     query?: never;
-    url: '/api/talent/admin/profiles/{id}/request-changes';
+    url: '/api/talent/admin/profiles/{id}/send-back';
 };
 
-export type RequestTalentChangesErrors = {
+export type SendBackTalentErrors = {
     /**
      * A member is not valid.
      */
@@ -8951,16 +9261,59 @@ export type RequestTalentChangesErrors = {
     409: Problem;
 };
 
-export type RequestTalentChangesError = RequestTalentChangesErrors[keyof RequestTalentChangesErrors];
+export type SendBackTalentError = SendBackTalentErrors[keyof SendBackTalentErrors];
 
-export type RequestTalentChangesResponses = {
+export type SendBackTalentResponses = {
     /**
-     * Changes are asked for; the person was emailed.
+     * The profile needs changes; the person was emailed.
      */
     204: void;
 };
 
-export type RequestTalentChangesResponse = RequestTalentChangesResponses[keyof RequestTalentChangesResponses];
+export type SendBackTalentResponse = SendBackTalentResponses[keyof SendBackTalentResponses];
+
+export type TakeDownTalentData = {
+    body: TalentDecision;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/admin/profiles/{id}/take-down';
+};
+
+export type TakeDownTalentErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted talent profile.
+     */
+    404: Problem;
+    /**
+     * The profile is not approved, or is taken down already.
+     */
+    409: Problem;
+};
+
+export type TakeDownTalentError = TakeDownTalentErrors[keyof TakeDownTalentErrors];
+
+export type TakeDownTalentResponses = {
+    /**
+     * The profile is taken down and stays approved; the person was emailed.
+     */
+    204: void;
+};
+
+export type TakeDownTalentResponse = TakeDownTalentResponses[keyof TakeDownTalentResponses];
 
 export type ListReportedTalentEnquiriesData = {
     body?: never;
@@ -9402,7 +9755,7 @@ export type ListAdminUseCasesData = {
         /**
          * Only use cases in this status, as a reader sees it now.
          */
-        status?: 'draft' | 'in_review' | 'needs_changes' | 'published' | 'closed';
+        status?: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
         /**
          * Only use cases of this organization.
          */
@@ -9547,6 +9900,45 @@ export type ApproveAdminUseCaseResponses = {
 };
 
 export type ApproveAdminUseCaseResponse = ApproveAdminUseCaseResponses[keyof ApproveAdminUseCaseResponses];
+
+export type SetAdminUseCaseProgramsData = {
+    body: SetUseCasePrograms;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}/programs';
+};
+
+export type SetAdminUseCaseProgramsErrors = {
+    /**
+     * A program does not exist, or there are more than ten.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+};
+
+export type SetAdminUseCaseProgramsError = SetAdminUseCaseProgramsErrors[keyof SetAdminUseCaseProgramsErrors];
+
+export type SetAdminUseCaseProgramsResponses = {
+    /**
+     * The use case with its programs.
+     */
+    200: AdminUseCase;
+};
+
+export type SetAdminUseCaseProgramsResponse = SetAdminUseCaseProgramsResponses[keyof SetAdminUseCaseProgramsResponses];
 
 export type SendBackAdminUseCaseData = {
     body: SendBackUseCase;
@@ -9829,6 +10221,10 @@ export type ListUseCasesData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * Only use cases of the published program at this address.
+         */
+        program?: string | null;
     };
     url: '/api/usecase/use-cases';
 };

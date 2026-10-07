@@ -64,39 +64,46 @@ public class UseCaseQueryRepository {
 	 * The published use cases a visitor can answer: the deadline is ahead. The text matches a title or the expected
 	 * outcomes, or an organization the caller found by name that did not ask to stay anonymous.
 	 */
-	private static final String PUBLIC_FILTER = "where status = 'published' and closes_at > :now\n"
+	private static final String PUBLIC_FILTER = "where status = 'approved' and closes_at > :now\n"
 			+ "  and (cast(:pattern as text) is null or lower(title) like :pattern escape '\\'\n"
 			+ "       or lower(expected_outcomes) like :pattern escape '\\'\n"
 			+ "       or (not hide_organization_name and organization_id::text = any(:matching)))\n"
-			+ "  and (cast(:industry as text) is null or industry = :industry)\n";
+			+ "  and (cast(:industry as text) is null or industry = :industry)\n"
+			+ "  and (cast(:program as text) is null or exists (select 1 from use_case_program p\n"
+			+ "       where p.use_case_id = use_case.id and p.program_id::text = :program))\n";
 
 	/** What the public list shows of one use case; the organization is named by its own module. */
 	public record PublicRow(UUID id, UUID organizationId, boolean hideOrganizationName, String title, String industry,
-			String goal, List<String> technologies, @Nullable Integer budgetMin, @Nullable Integer budgetMax,
+			String goal, List<String> technologies, @Nullable Long budgetMin, @Nullable Long budgetMax, String currency,
 			boolean budgetToBeDetermined, boolean budgetMembersOnly, int timelineMinWeeks, int timelineMaxWeeks,
 			Instant closesAt, Instant publishedAt) {
 	}
 
-	/** One page of the public list; {@code sort} is newest, deadline or budget. */
+	/**
+	 * One page of the public list; {@code sort} is newest, deadline or budget. A budget in đồng orders as its value in
+	 * US dollars at {@code vndPerUsd}, which no reader sees.
+	 */
 	public List<PublicRow> publicPage(@Nullable String text, List<UUID> matching, @Nullable String industry,
-			String sort, Instant now, int limit, long offset) {
+			@Nullable UUID program, String sort, long vndPerUsd, Instant now, int limit, long offset) {
 		String order = switch (sort) {
 			case "deadline" -> "closes_at, id";
 			// A budget for members only is not a number a visitor sees, so it does not order the list either.
-			case "budget" -> "(case when budget_members_only then null else budget_max end) desc nulls last, id";
+			case "budget" -> "(case when budget_members_only then null when currency = 'VND' "
+					+ "then budget_max::numeric / :vndPerUsd else budget_max end) desc nulls last, id";
 			default -> "published_at desc, id";
 		};
 		return publicFiltered("select id, organization_id, hide_organization_name, title, industry, expected_outcomes, "
-				+ "technologies, budget_min, budget_max, budget_to_be_determined, budget_members_only, "
+				+ "technologies, budget_min, budget_max, currency, budget_to_be_determined, budget_members_only, "
 				+ "timeline_min_weeks, timeline_max_weeks, closes_at, published_at from use_case\n" + PUBLIC_FILTER
-				+ "order by " + order + " limit :limit offset :offset", text, matching, industry, now)
+				+ "order by " + order + " limit :limit offset :offset", text, matching, industry, program, now)
+			.param("vndPerUsd", vndPerUsd)
 			.param("limit", limit)
 			.param("offset", offset)
 			.query((row, index) -> new PublicRow(row.getObject("id", UUID.class),
 					row.getObject("organization_id", UUID.class), row.getBoolean("hide_organization_name"),
 					row.getString("title"), row.getString("industry"), row.getString("expected_outcomes"),
-					List.of((String[]) row.getArray("technologies").getArray()), integerOf(row, "budget_min"),
-					integerOf(row, "budget_max"), row.getBoolean("budget_to_be_determined"),
+					List.of((String[]) row.getArray("technologies").getArray()), longOf(row, "budget_min"),
+					longOf(row, "budget_max"), row.getString("currency"), row.getBoolean("budget_to_be_determined"),
 					row.getBoolean("budget_members_only"), row.getInt("timeline_min_weeks"),
 					row.getInt("timeline_max_weeks"), row.getTimestamp("closes_at").toInstant(),
 					row.getTimestamp("published_at").toInstant()))
@@ -104,23 +111,25 @@ public class UseCaseQueryRepository {
 	}
 
 	/** How many use cases the public list holds for these parameters, over all pages. */
-	public long publicCount(@Nullable String text, List<UUID> matching, @Nullable String industry, Instant now) {
-		return publicFiltered("select count(*) from use_case\n" + PUBLIC_FILTER, text, matching, industry, now)
+	public long publicCount(@Nullable String text, List<UUID> matching, @Nullable String industry,
+			@Nullable UUID program, Instant now) {
+		return publicFiltered("select count(*) from use_case\n" + PUBLIC_FILTER, text, matching, industry, program, now)
 			.query(Long.class)
 			.single();
 	}
 
 	private JdbcClient.StatementSpec publicFiltered(String sql, @Nullable String text, List<UUID> matching,
-			@Nullable String industry, Instant now) {
+			@Nullable String industry, @Nullable UUID program, Instant now) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
 			.param("matching", matching.stream().map(UUID::toString).toArray(String[]::new))
 			.param("industry", industry, Types.VARCHAR)
+			.param("program", program == null ? null : program.toString(), Types.VARCHAR)
 			.param("now", Timestamp.from(now));
 	}
 
-	private static @Nullable Integer integerOf(ResultSet row, String column) throws SQLException {
-		int value = row.getInt(column);
+	private static @Nullable Long longOf(ResultSet row, String column) throws SQLException {
+		long value = row.getLong(column);
 		return row.wasNull() ? null : value;
 	}
 

@@ -5,15 +5,18 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { ReasonDialog } from "@/components/composites/reason-dialog";
+import { reviewState } from "@/components/composites/review-status";
 import { useNotify } from "@/hooks/use-notify";
 import { useShortcuts } from "@/hooks/use-shortcuts";
 import { getPathname } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import {
   approveTalent,
-  removeTalent,
-  requestTalentChanges,
+  restoreTalent,
+  sendBackTalent,
+  takeDownTalent,
   type TalentDecision,
   type TalentProfile,
 } from "@/lib/api/generated";
@@ -22,15 +25,15 @@ import { talentRejections } from "./talent-codes";
 import { talentError } from "./talent-errors";
 
 type TalentReviewProps = {
-  profile: Pick<TalentProfile, "id" | "name" | "status">;
+  profile: Pick<TalentProfile, "id" | "name" | "status" | "suspendedAt">;
   /** The next record that waits for a decision; a decision on a waiting record goes there. */
   nextHref?: string;
 };
 
 /**
- * The decision on a talent profile: approve one that waits for review, or ask for changes with a
- * reason its person reads. An approved profile can be removed from the public, with a reason too.
- * Each decision is emailed to the person.
+ * The decision on a talent profile: approve one that waits for review, or send it back with a
+ * reason its person reads. An approved profile can be taken down from the public, with a reason
+ * too, and one taken down restored. Each decision is emailed to the person.
  */
 function TalentReview({ profile, nextHref }: TalentReviewProps) {
   const t = useTranslations("Admin.talent.review");
@@ -39,13 +42,15 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
   const router = useRouter();
   const locale = useLocale();
   const [rejecting, setRejecting] = useState(false);
-  const [pending, setPending] = useState<"approve" | "reject" | null>(null);
+  const [restoring, setRestoring] = useState(false);
+  const [pending, setPending] = useState<"approve" | "reject" | "restore" | null>(null);
   // Set at the first press, before the pending state has rendered, so presses in one tick decide once.
   const deciding = useRef(false);
-  const waiting = profile.status === "submitted";
-  const approved = profile.status === "approved";
+  const state = reviewState(profile);
+  const waiting = state === "in_review";
+  const approved = state === "approved";
 
-  async function decide(kind: "approve" | "reject", run: () => Promise<unknown>) {
+  async function decide(kind: "approve" | "reject" | "restore", run: () => Promise<unknown>) {
     if (deciding.current) {
       return;
     }
@@ -56,12 +61,15 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
       notify.success(
         kind === "approve"
           ? "Talent.done.approved"
-          : approved
-            ? "Talent.done.removed"
-            : "Talent.done.changesRequested",
+          : kind === "restore"
+            ? "Talent.done.restored"
+            : approved
+              ? "Talent.done.takenDown"
+              : "Talent.done.sentBack",
         { name: profile.name },
       );
       setRejecting(false);
+      setRestoring(false);
       // A decision on a record of the queue moves on to the next one that waits.
       // It stays pending until that page arrives, so a second press cannot decide twice.
       if (waiting && nextHref) {
@@ -83,8 +91,30 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
   const idle = pending === null;
   useShortcuts({
     a: waiting && idle ? approve : undefined,
-    s: idle ? () => setRejecting(true) : undefined,
+    s: (waiting || approved) && idle ? () => setRejecting(true) : undefined,
   });
+
+  if (state === "suspended") {
+    return (
+      <>
+        <Button prominence="secondary" onClick={() => setRestoring(true)}>
+          {t("restore")}
+        </Button>
+        {restoring && (
+          <ConfirmDialog
+            open
+            onOpenChange={(open) => !open && pending === null && setRestoring(false)}
+            title={t("restoreTitle", { name: profile.name })}
+            description={t("restoreLead")}
+            confirmLabel={t("restore")}
+            cancelLabel={t("cancel")}
+            pending={pending === "restore"}
+            onConfirm={() => decide("restore", () => restoreTalent({ path: { id: profile.id } }))}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -132,7 +162,7 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
                   message: message.trim() || null,
                 },
               };
-              return approved ? removeTalent(decision) : requestTalentChanges(decision);
+              return approved ? takeDownTalent(decision) : sendBackTalent(decision);
             })
           }
         />

@@ -6,6 +6,7 @@ import { Button } from "@/components/actions/button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
+import { reviewState } from "@/components/composites/review-status";
 import { Status } from "@/components/composites/status";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -25,7 +26,8 @@ const address = createSerializer(adminOrganizationsSearch);
 
 /** How each state of the review reads to the operator who decides it. */
 const tones = {
-  pending: "warning",
+  in_review: "warning",
+  needs_changes: "warning",
   approved: "success",
   rejected: "destructive",
   suspended: "destructive",
@@ -73,8 +75,8 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
       <span className="text-muted-foreground">{t("request.none")}</span>
     ),
     status: (
-      <Status appearance="pill" tone={tones[organization.status]}>
-        {t(`status.${organization.status}`)}
+      <Status appearance="pill" tone={tones[reviewState(organization)]}>
+        {t(`status.${reviewState(organization)}`)}
       </Status>
     ),
     askedBy: (
@@ -92,7 +94,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
     actions: <AdminOrganizationRowActions organization={organization} />,
   }));
 
-  const queue = search.q.trim() === "" && search.status === "pending";
+  const queue = search.q.trim() === "" && search.status === "in_review";
   const filtered = search.q.trim() !== "" || search.status !== null;
   const empty =
     rows.length > 0 ? null : queue ? (

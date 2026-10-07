@@ -49,10 +49,12 @@ public record SearchItem(
 				description = "A person's photo or a solution's logo, read at the public address of stored files.") @Nullable UUID photoFileId,
 		@Schema(types = { "string", "null" }, format = "date-time",
 				description = "When a use case stops taking proposals.") @Nullable Instant closesAt,
-		@Schema(types = { "integer", "null" }, format = "int32",
-				description = "A use case's budget, when its organization shows it.") @Nullable Integer budgetMin,
-		@Schema(types = { "integer", "null" }, format = "int32",
-				description = "A use case's budget, when its organization shows it.") @Nullable Integer budgetMax,
+		@Schema(types = { "integer", "null" }, format = "int64",
+				description = "A use case's budget in its currency, when its organization shows it.") @Nullable Long budgetMin,
+		@Schema(types = { "integer", "null" }, format = "int64",
+				description = "A use case's budget in its currency, when its organization shows it.") @Nullable Long budgetMax,
 		@Schema(types = { "boolean", "null" },
-				description = "Whether a use case's budget is still to be determined.") @Nullable Boolean budgetToBeDetermined) {
+				description = "Whether a use case's budget is still to be determined.") @Nullable Boolean budgetToBeDetermined,
+		@Schema(types = { "string", "null" }, allowableValues = { "USD", "VND" },
+				description = "The currency of a use case's budget.") @Nullable String currency) {
 }

@@ -9,6 +9,7 @@ const claimsCopilot = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e01";
 const underwritingRadar = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e02";
 const policyChat = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e03";
 const quoteBot = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e04";
+const riskLens = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e05";
 const waitingDeployment = "be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f01";
 const approvedDeployment = "be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f02";
 
@@ -50,14 +51,14 @@ test.describe("admin solutions", () => {
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Solutions");
     // A record that waits is opened to review it; so is one whose customer deployment waits.
-    await expect(shownSolutions(page)).toHaveText(["Review", "Review", "Review", "Open"]);
+    await expect(shownSolutions(page)).toHaveText(["Review", "Review", "Review", "Open", "Open"]);
     await expect(page.getByRole("link", { name: "Open Claims Copilot" })).toHaveAttribute(
       "href",
       `/admin/solutions/${claimsCopilot}`,
     );
     await expect(page.getByText("Sent 3 hours ago").and(page.locator(":visible"))).toHaveCount(1);
     await expect(page.getByText("1 deployment waits").and(page.locator(":visible"))).toHaveCount(1);
-    await expect(page.getByText("4 solutions")).toBeVisible();
+    await expect(page.getByText("5 solutions")).toBeVisible();
     // A table from 768px, stacked rows below it.
     await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
     await expectNoSeriousA11yViolations(page);
@@ -73,7 +74,7 @@ test.describe("admin solutions", () => {
 
     await page.getByRole("combobox", { name: "Status" }).click();
     await page.getByRole("option", { name: "In review" }).click();
-    await expect(page).toHaveURL(/status=submitted/);
+    await expect(page).toHaveURL(/status=in_review/);
     await expect(shownSolutions(page)).toHaveCount(2);
     await expect(page.getByText("2 solutions")).toBeVisible();
 
@@ -85,7 +86,13 @@ test.describe("admin solutions", () => {
 
     await page.getByRole("link", { name: "Clear search and filter" }).click();
     await expect(page).toHaveURL("/admin/solutions");
-    await expect(shownSolutions(page)).toHaveCount(4);
+    await expect(shownSolutions(page)).toHaveCount(5);
+
+    // A solution taken down is found under its own status.
+    await page.getByRole("combobox", { name: "Status" }).click();
+    await page.getByRole("option", { name: "Taken down" }).click();
+    await expect(page).toHaveURL(/status=suspended/);
+    await expect(shownSolutions(page)).toHaveCount(1);
   });
 
   test("the queue is walked from its records: a decision opens the next that waits", async ({
@@ -148,7 +155,7 @@ test.describe("admin solutions", () => {
     await expect(page).toHaveURL(`/admin/solutions/${underwritingRadar}`);
   });
 
-  test("a solution is not sent back without a reason, and carries the note to its owners", async ({
+  test("a solution is not sent back without what to change, which reaches its owners", async ({
     page,
     context,
     baseURL,
@@ -163,15 +170,43 @@ test.describe("admin solutions", () => {
     await expect(dialog.getByRole("button", { name: "Send back" })).toBeDisabled();
     await expectNoSeriousA11yViolations(page);
 
-    await giveReason(page, "Claims could not be verified", "Name the pilot customer.");
+    await dialog
+      .getByRole("textbox", { name: "What to change" })
+      .fill(" Name the pilot customer. ");
     await dialog.getByRole("button", { name: "Send back" }).click();
 
-    await expect(page.getByText("Underwriting Radar sent back with your reason.")).toBeVisible();
+    await expect(page.getByText("Underwriting Radar sent back with what to change.")).toBeVisible();
     await expect(page).toHaveURL(`/admin/solutions/${claimsCopilot}`);
     expect(decisions).toEqual([
       {
+        call: `POST /api/solution/admin/solutions/${underwritingRadar}/send-back`,
+        body: { reason: "Name the pilot customer." },
+      },
+    ]);
+  });
+
+  test("a solution is rejected for good with a reason that is not missing information", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    await page.goto(`/admin/solutions/${underwritingRadar}`);
+
+    await page.getByRole("button", { name: "Reject…" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("heading")).toHaveText("Reject Underwriting Radar for good?");
+    await expect(dialog.getByRole("option", { name: "Information is missing" })).toHaveCount(0);
+
+    await giveReason(page, "Already listed", "Listed as Policy Chat.");
+    await dialog.getByRole("button", { name: "Reject" }).click();
+
+    await expect(page.getByText("Underwriting Radar is rejected.")).toBeVisible();
+    expect(decisions).toEqual([
+      {
         call: `POST /api/solution/admin/solutions/${underwritingRadar}/reject`,
-        body: { reason: "unverifiable", message: "Name the pilot customer." },
+        body: { reason: "duplicate", message: "Listed as Policy Chat." },
       },
     ]);
   });
@@ -197,16 +232,41 @@ test.describe("admin solutions", () => {
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading")).toHaveText("Take Policy Chat down?");
 
-    await giveReason(page, "Other reason", "");
+    await giveReason(page, "Misleading information", "");
     await dialog.getByRole("button", { name: "Take down" }).click();
 
-    await expect(page.getByText("Policy Chat sent back with your reason.")).toBeVisible();
+    await expect(page.getByText("Policy Chat is taken down.")).toBeVisible();
     await expect(page).toHaveURL(`/admin/solutions/${policyChat}`);
     expect(decisions).toEqual([
       {
-        call: `POST /api/solution/admin/solutions/${policyChat}/reject`,
-        body: { reason: "other", message: null },
+        call: `POST /api/solution/admin/solutions/${policyChat}/take-down`,
+        body: { reason: "misleading_information", message: null },
       },
+    ]);
+  });
+
+  test("a solution taken down says why and is restored without a new review", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    await page.goto(`/admin/solutions/${riskLens}`);
+
+    await expect(page.getByText("Taken down: Misleading information.")).toBeVisible();
+    await expect(page.getByText("The customers named are not real.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open the public page" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Take down…" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Restore" }).click();
+    const dialog = page.getByRole("alertdialog");
+    await expect(dialog.getByRole("heading")).toHaveText("Put Risk Lens back?");
+    await expectNoSeriousA11yViolations(page);
+    await dialog.getByRole("button", { name: "Restore" }).click();
+
+    await expect(page.getByText("Risk Lens is back.")).toBeVisible();
+    expect(decisions).toEqual([
+      { call: `POST /api/solution/admin/solutions/${riskLens}/restore`, body: null },
     ]);
   });
 
@@ -280,10 +340,11 @@ test.describe("admin solutions", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto(`/admin/solutions/${quoteBot}`);
 
-    await expect(page.getByText("Changes needed: Already listed.")).toBeVisible();
+    await expect(page.getByText("Rejected: Already listed.")).toBeVisible();
     await expect(page.getByText("It is Policy Chat under another name.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Approve" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Send back…" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Reject…" })).toHaveCount(0);
 
     expect((await page.goto("/admin/solutions/no-such-record"))?.status()).toBe(404);
   });

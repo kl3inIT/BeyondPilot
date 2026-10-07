@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.usecase;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,17 +20,21 @@ import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.notification.NotificationException;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
+import ai.genaifund.beyondpilot.program.ProgramName;
+import ai.genaifund.beyondpilot.program.ProgramService;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseListResponse;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseResponse;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseSummaryResponse;
 import ai.genaifund.beyondpilot.usecase.dto.CreateUseCaseRequest;
 import ai.genaifund.beyondpilot.usecase.dto.SendBackUseCaseRequest;
+import ai.genaifund.beyondpilot.usecase.dto.SetUseCaseProgramsRequest;
 import ai.genaifund.beyondpilot.usecase.dto.UseCasePersonResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseAttachmentResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationResponse;
+import ai.genaifund.beyondpilot.usecase.dto.UseCaseProgramResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseRequirementEntry;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCase;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseQueryRepository;
@@ -75,10 +80,13 @@ public class UseCaseAdministration {
 
 	private final ApplicationEventPublisher events;
 
+	private final ProgramService programs;
+
 	UseCaseAdministration(UseCaseRepository useCases, UseCaseQueryRepository useCaseList,
 			OrganizationDirectory organizations, IdentityService identity, AuditTrail audit, UseCaseAttachments files,
-			UseCasePeople people, EmailService email, ApplicationEventPublisher events) {
+			UseCasePeople people, EmailService email, ApplicationEventPublisher events, ProgramService programs) {
 		this.events = events;
+		this.programs = programs;
 		this.useCases = useCases;
 		this.useCaseList = useCaseList;
 		this.organizations = organizations;
@@ -174,8 +182,9 @@ public class UseCaseAdministration {
 					.map(requirement -> new UseCaseRequirement(requirement.statement().strip(), requirement.necessity()))
 					.toList(),
 				request.dataReadiness().strip(), request.integrationRequirements().strip());
-		useCase.budget(request.budgetMin(), request.budgetMax(), request.budgetToBeDetermined(),
-				request.budgetMembersOnly());
+		useCase.budget(currencyOf(request.currency()), request.budgetMin(), request.budgetMax(),
+				request.budgetToBeDetermined(), request.budgetMembersOnly());
+		useCase.belongTo(programsNamed(request.programIds() == null ? List.of() : request.programIds()).keySet());
 		files.requireUsable(actor, request.attachmentFileIds(), List.of());
 		useCase.attach(request.attachmentFileIds());
 		useCase.takeWeeks(request.timelineMinWeeks(), request.timelineMaxWeeks());
@@ -217,12 +226,35 @@ public class UseCaseAdministration {
 	public AdminUseCaseResponse sendBack(Actor actor, UUID id, SendBackUseCaseRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		Instant now = Instant.now();
-		UseCase useCase = decidable(id, now, UseCase.IN_REVIEW, UseCase.PUBLISHED);
+		UseCase useCase = decidable(id, now, UseCase.IN_REVIEW, UseCase.APPROVED);
 		String reason = request.reason().strip();
 		useCase.sendBack(operator.accountId(), now, reason);
 		useCases.saveAndFlush(useCase);
 		events.publishEvent(new UseCaseChanged(useCase.getId()));
 		return decided(actor, operator, AuditAction.USE_CASE_SEND_BACK, useCase, false, reason, now);
+	}
+
+	/**
+	 * Files a use case under these programs and no others, whatever its status. The organization is not told: it
+	 * changes where GenAI Fund features the use case, not what it says.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException when there is no such use case, or a program does not exist
+	 */
+	@Transactional
+	public AdminUseCaseResponse setPrograms(Actor actor, UUID id, SetUseCaseProgramsRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		UseCase useCase = useCases.findForUpdate(id)
+			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No use case " + id));
+		Map<UUID, ProgramName> named = programsNamed(request.programIds());
+		useCase.belongTo(named.keySet());
+		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(useCase.getId()));
+		audit.record(new AuditRecord(AuditAction.USE_CASE_SET_PROGRAMS,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource(USE_CASE, useCase.getId().toString(), titleOf(useCase)),
+				Map.of("organization", useCase.getOrganizationId().toString())));
+		Map<UUID, OrganizationName> names = organizations.names(Set.of(useCase.getOrganizationId()));
+		return response(actor, useCase, organization(useCase.getOrganizationId(), names), Instant.now());
 	}
 
 	private UseCase awaitingReview(UUID id, Instant now) {
@@ -266,8 +298,8 @@ public class UseCaseAdministration {
 
 	/** A budget is a range in order, or it is to be determined and has no amount. */
 	private static void checkBudget(CreateUseCaseRequest request) {
-		Integer min = request.budgetMin();
-		Integer max = request.budgetMax();
+		Long min = request.budgetMin();
+		Long max = request.budgetMax();
 		if (request.budgetToBeDetermined()) {
 			if (min != null || max != null) {
 				throw refused(UseCaseErrorCode.BUDGET_INCOMPLETE, "A budget to be determined carries an amount");
@@ -305,12 +337,35 @@ public class UseCaseAdministration {
 					.map(requirement -> new UseCaseRequirementEntry(requirement.statement(), requirement.necessity()))
 					.toList(),
 				useCase.getDataReadiness(), useCase.getIntegrationRequirements(), attachments, useCase.getBudgetMin(),
-				useCase.getBudgetMax(), useCase.isBudgetToBeDetermined(), useCase.isBudgetMembersOnly(),
+				useCase.getBudgetMax(), useCase.getCurrency(), useCase.isBudgetToBeDetermined(),
+				useCase.isBudgetMembersOnly(),
 				useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(), useCase.isHideOrganizationName(),
 				useCase.getPublishedAt(), useCase.getClosesAt(), useCase.getVersion(), useCase.getCreatedAt(),
 				useCase.getUpdatedAt(), useCase.getSubmittedAt(), named.get(useCase.getCreatedByAccountId()),
 				sender == null ? null : named.get(sender), useCase.getReviewedAt(),
-				reviewer == null ? null : named.get(reviewer), useCase.getReviewNote());
+				reviewer == null ? null : named.get(reviewer), useCase.getReviewNote(),
+				programs.names(useCase.getProgramIds())
+					.values()
+					.stream()
+					.map(program -> new UseCaseProgramResponse(program.id(), program.name(), program.slug(),
+							program.published()))
+					.sorted(Comparator.comparing(UseCaseProgramResponse::name))
+					.toList());
+	}
+
+	/** The programs these identifiers name; one that names none refuses the request. */
+	private Map<UUID, ProgramName> programsNamed(List<UUID> ids) {
+		Map<UUID, ProgramName> named = programs.names(Set.copyOf(ids));
+		if (named.size() != Set.copyOf(ids).size()) {
+			throw new UseCaseException(UseCaseErrorCode.PROGRAM_NOT_FOUND,
+					"Program among " + ids + " that does not exist");
+		}
+		return named;
+	}
+
+	/** The currency a budget is written in: US dollars unless the request names another. */
+	static String currencyOf(@Nullable String currency) {
+		return currency == null ? UseCase.USD : currency;
 	}
 
 	/** The organization named by its own module; a use case always has one, since the table references it. */

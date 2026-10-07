@@ -20,7 +20,7 @@ public interface SolutionRepository extends JpaRepository<Solution, UUID> {
 	@Query("select s from Solution s where s.id = :id")
 	Optional<Solution> findForUpdate(UUID id);
 
-	List<Solution> findByStatus(String status);
+	List<Solution> findByStatusAndSuspendedAtIsNull(String status);
 
 	boolean existsBySlug(String slug);
 

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.organization.OrganizationChanged;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Document;
 import ai.genaifund.beyondpilot.usecase.IndexedUseCase;
@@ -40,6 +41,18 @@ class UseCaseIndexing {
 					() -> index.remove(SearchDocumentRepository.USE_CASE, id));
 	}
 
+	/** Writes again what the organization's use cases show of it, and takes them out while it is not approved. */
+	@ApplicationModuleListener
+	void on(OrganizationChanged changed) {
+		List<IndexedUseCase> shown = useCases.indexedOf(changed.organizationId());
+		shown.forEach(useCase -> index.save(document(useCase)));
+		List<UUID> kept = shown.stream().map(IndexedUseCase::id).toList();
+		useCases.idsOf(changed.organizationId())
+			.stream()
+			.filter(id -> !kept.contains(id))
+			.forEach(id -> index.remove(SearchDocumentRepository.USE_CASE, id));
+	}
+
 	/** Saves every published use case and takes out every other. */
 	Rebuilt rebuild() {
 		List<IndexedUseCase> published = useCases.indexedAll();
@@ -56,6 +69,7 @@ class UseCaseIndexing {
 		Cards.put(facets, Cards.BUDGET_MIN, useCase.budgetMin());
 		Cards.put(facets, Cards.BUDGET_MAX, useCase.budgetMax());
 		facets.put(Cards.BUDGET_TO_BE_DETERMINED, useCase.budgetToBeDetermined());
+		facets.put(Cards.CURRENCY, useCase.currency());
 		String keywords = Cards.words(useCase.industry() == null ? List.of() : List.of(useCase.industry()),
 				useCase.technologies());
 		return new Document(SearchDocumentRepository.USE_CASE, useCase.id(), useCase.id().toString(),

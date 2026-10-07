@@ -47,7 +47,8 @@ final class SolutionViews {
 				cover == null ? null : image(cover, storage).orElse(null),
 				solution.getImageFileIds().stream().flatMap(fileId -> image(fileId, storage).stream()).toList(),
 				solution.getStatus(),
-				solution.getDecisionReason(), solution.getDecisionMessage(), solution.isListed(), solution.isComplete(),
+				solution.getDecisionReason(), solution.getDecisionMessage(), solution.getSuspendedAt(),
+				solution.getSuspensionReason(), solution.getSuspensionMessage(), solution.isListed(), solution.isComplete(),
 				solution.getSubmittedAt(), submittedBy, solution.getVersion(), solution.getUpdatedAt(),
 				deployments.stream().map(SolutionViews::deployment).toList());
 	}
@@ -107,14 +108,15 @@ final class SolutionViews {
 	static SolutionSummaryResponse summary(Solution solution, String organizationName, int deploymentsAwaiting) {
 		return new SolutionSummaryResponse(solution.getId(), organizationName, solution.getSlug(), solution.getName(),
 				solution.getSummary(), solution.getMaturity(), solution.getStatus(), solution.getDecisionReason(),
-				solution.getDecisionMessage(), solution.isListed(), solution.missing(), solution.getSubmittedAt(),
+				solution.getDecisionMessage(), solution.getSuspendedAt(), solution.getSuspensionReason(),
+				solution.getSuspensionMessage(), solution.isListed(), solution.missing(), solution.getSubmittedAt(),
 				solution.getUpdatedAt(), deploymentsAwaiting);
 	}
 
 	static AdminSolutionSummaryResponse adminSummary(SolutionQueryRepository.Row row, String organizationName,
 			@Nullable String submittedBy) {
 		return new AdminSolutionSummaryResponse(row.id(), organizationName, row.slug(), row.name(), row.summary(),
-				row.industries(), row.maturity(), row.status(), row.listed(), row.submittedAt(), submittedBy,
+				row.industries(), row.maturity(), row.status(), row.suspendedAt(), row.listed(), row.submittedAt(), submittedBy,
 				row.updatedAt(), row.deploymentsAwaiting());
 	}
 

@@ -12,7 +12,7 @@ public record AdminUseCaseResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UseCaseOrganizationResponse organization,
 		@Schema(types = { "string", "null" }) @Nullable String title,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				allowableValues = { "draft", "in_review", "needs_changes", "published", "closed" },
+				allowableValues = { "draft", "in_review", "needs_changes", "approved", "closed" },
 				description = "Closed once the close date has passed, whatever the use case was before.") String status,
 		@Schema(types = { "string", "null" }) @Nullable String problemStatement,
 		@Schema(types = { "string", "null" }) @Nullable String industry,
@@ -25,8 +25,10 @@ public record AdminUseCaseResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 		@Schema(types = { "string", "null" }) @Nullable String dataReadiness,
 		@Schema(types = { "string", "null" }) @Nullable String integrationRequirements,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<UseCaseAttachmentResponse> attachments,
-		@Schema(types = { "integer", "null" }, description = "US dollars. Null while the budget is to be determined.") @Nullable Integer budgetMin,
-		@Schema(types = { "integer", "null" }, description = "US dollars. Null while the budget is to be determined.") @Nullable Integer budgetMax,
+		@Schema(types = { "integer", "null" }, format = "int64", description = "Whole units of currency. Null while the budget is to be determined.") @Nullable Long budgetMin,
+		@Schema(types = { "integer", "null" }, format = "int64", description = "Whole units of currency. Null while the budget is to be determined.") @Nullable Long budgetMax,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "USD", "VND" },
+				description = "The currency of the amounts.") String currency,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean budgetToBeDetermined,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean budgetMembersOnly,
 		@Schema(types = { "integer", "null" }) @Nullable Integer timelineMinWeeks,
@@ -43,5 +45,7 @@ public record AdminUseCaseResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant reviewedAt,
 		@Schema(description = "Who approved it or sent it back; null while no one has.") @Nullable UseCasePersonResponse reviewedBy,
 		@Schema(types = { "string", "null" },
-				description = "What GenAI Fund asked to change, while the use case is sent back.") @Nullable String reviewNote) {
+				description = "What GenAI Fund asked to change, while the use case is sent back.") @Nullable String reviewNote,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The programs it belongs to, by name.") List<UseCaseProgramResponse> programs) {
 }

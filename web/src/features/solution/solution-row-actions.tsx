@@ -39,7 +39,10 @@ import { held, reviewFields, toRequest } from "./solution-editor-state";
 import { solutionError } from "./solution-errors";
 
 type SolutionRowActionsProps = {
-  solution: Pick<SolutionSummary, "id" | "slug" | "name" | "status" | "listed" | "missing">;
+  solution: Pick<
+    SolutionSummary,
+    "id" | "slug" | "name" | "status" | "suspendedAt" | "listed" | "missing"
+  >;
   /** False for a reader who may not change the organization's solutions: they open one, no more. */
   editable: boolean;
 };
@@ -166,7 +169,7 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
               </DropdownMenuGroup>
             </>
           )}
-          {editable && solution.status === "submitted" && (
+          {editable && solution.status === "in_review" && (
             <>
               <DropdownMenuGroup>
                 <DropdownMenuItem render={<Link href={review} />}>
@@ -187,7 +190,7 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
               </DropdownMenuGroup>
             </>
           )}
-          {editable && solution.status === "rejected" && (
+          {editable && solution.status === "needs_changes" && (
             <DropdownMenuGroup>
               <DropdownMenuItem render={<Link href={editor} />}>
                 <CircleAlertIcon aria-hidden="true" />
@@ -199,7 +202,29 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
           )}
-          {editable && solution.status === "approved" && (
+          {editable && solution.status === "rejected" && (
+            <DropdownMenuGroup>
+              <DropdownMenuItem render={<Link href={editor} />}>
+                <EyeIcon aria-hidden="true" />
+                {t("view")}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          )}
+          {editable && solution.status === "approved" && solution.suspendedAt && (
+            <>
+              <DropdownMenuGroup>
+                <DropdownMenuItem render={<Link href={editor} />}>
+                  <PencilIcon aria-hidden="true" />
+                  {t("edit")}
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>{t("takenDown")}</DropdownMenuLabel>
+              </DropdownMenuGroup>
+            </>
+          )}
+          {editable && solution.status === "approved" && !solution.suspendedAt && (
             <>
               <DropdownMenuGroup>
                 <DropdownMenuItem render={<Link href={editor} />}>
