@@ -33,6 +33,7 @@ dependencies {
 	implementation(libs.spring.boot.starter.mail)
 	implementation(libs.spring.boot.starter.security)
 	implementation(libs.spring.boot.starter.security.oauth2.client)
+	implementation(libs.spring.boot.starter.security.oauth2.authorization.server)
 	implementation(libs.spring.boot.starter.session.jdbc)
 	implementation(libs.spring.boot.starter.validation)
 	implementation(libs.spring.boot.starter.webmvc)
@@ -53,6 +54,9 @@ dependencies {
 	}
 	implementation(libs.aws.sdk.url.connection.client)
 	// Email: templates operators edit (logic-less, so a template cannot reach code), their Markdown, and Resend.
+	implementation(libs.bucket4j.core)
+	implementation(libs.caffeine)
+	implementation(libs.httpclient5)
 	implementation(libs.jmustache)
 	implementation(libs.commonmark)
 	implementation(libs.resend.java)

@@ -882,6 +882,34 @@ export type ChooseEmbeddingModel = {
 };
 
 /**
+ * An AI app waiting for the signed-in person to allow or deny it.
+ */
+export type ConnectingApp = {
+    /**
+     * Whether it is the client any agent on a person's computer uses, which names no app.
+     */
+    anyLocalApp: boolean;
+    clientId: string;
+    /**
+     * The host the app's metadata document lives on; null for a client BeyondPilot registered.
+     */
+    host?: string | null;
+    /**
+     * Whether the answer goes to this computer, where any program could be listening.
+     */
+    local: boolean;
+    name: string;
+    /**
+     * The host the answer goes to; null when it goes to this computer.
+     */
+    returnsTo?: string | null;
+    /**
+     * Whether BeyondPilot has reviewed the app's host or registered the app.
+     */
+    reviewed: boolean;
+};
+
+/**
  * How judges and GenAI Fund reach an applicant. Each part may be empty while the application is a draft.
  */
 export type ContactDetails = {
@@ -4353,6 +4381,34 @@ export type WithdrawOperatorResponses = {
 };
 
 export type WithdrawOperatorResponse = WithdrawOperatorResponses[keyof WithdrawOperatorResponses];
+
+export type GetConnectingAppData = {
+    body?: never;
+    path?: never;
+    query: {
+        clientId: string;
+        state: string;
+    };
+    url: '/api/identity/apps/connecting';
+};
+
+export type GetConnectingAppErrors = {
+    /**
+     * No request of the caller's waits with this app and state.
+     */
+    404: Problem;
+};
+
+export type GetConnectingAppError = GetConnectingAppErrors[keyof GetConnectingAppErrors];
+
+export type GetConnectingAppResponses = {
+    /**
+     * The app the consent page shows.
+     */
+    200: ConnectingApp;
+};
+
+export type GetConnectingAppResponse = GetConnectingAppResponses[keyof GetConnectingAppResponses];
 
 export type GetMeData = {
     body?: never;
