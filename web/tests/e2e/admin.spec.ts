@@ -190,7 +190,7 @@ test.describe("admin", () => {
     await expect(menu.getByRole("menuitem")).toHaveText([
       "Back to the site",
       /^LanguageEnglish/,
-      /^AppearanceSystem/,
+      /^AppearanceLight/,
       "Sign out",
     ]);
     await expectNoSeriousA11yViolations(page);

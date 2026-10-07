@@ -10,6 +10,7 @@ import {
   SunMoonIcon,
 } from "lucide-react";
 import { hasLocale, useLocale, useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useTransition } from "react";
 
@@ -55,14 +56,18 @@ function AdminAccountItems() {
   const locale = useLocale();
   const active = hasLocale(routing.locales, locale) ? locale : routing.defaultLocale;
   const pathname = usePathname();
+  const search = useSearchParams().toString();
   const router = useRouter();
   const [, startTransition] = useTransition();
-  const { theme = "system", setTheme } = useTheme();
-  const look = themes.find((option) => option.value === theme)?.value ?? "system";
+  const { theme = "light", setTheme } = useTheme();
+  const look = themes.find((option) => option.value === theme)?.value ?? "light";
 
   function choose(locale: string) {
     if (hasLocale(routing.locales, locale)) {
-      startTransition(() => router.replace(pathname, { locale }));
+      // The same page in the other language, with its filters and place in a list.
+      startTransition(() =>
+        router.replace(search ? `${pathname}?${search}` : pathname, { locale }),
+      );
     }
   }
 
