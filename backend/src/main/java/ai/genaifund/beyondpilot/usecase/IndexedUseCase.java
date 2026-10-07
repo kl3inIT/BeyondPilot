@@ -12,10 +12,11 @@ import org.jspecify.annotations.Nullable;
  * @param organizationName null when the organization asked to stay anonymous, so no search finds it by that name
  * @param budgetMin null when the budget is to be determined or shown to members only
  * @param budgetMax null when the budget is to be determined or shown to members only
+ * @param currency USD or VND, the currency of the amounts
  * @param closesAt when it stops taking proposals; past it, search leaves it out
  */
 public record IndexedUseCase(UUID id, String title, @Nullable String organizationName, @Nullable String industry,
 		List<String> technologies, @Nullable String expectedOutcomes,
-		@Nullable Integer budgetMin, @Nullable Integer budgetMax, boolean budgetToBeDetermined,
+		@Nullable Long budgetMin, @Nullable Long budgetMax, String currency, boolean budgetToBeDetermined,
 		boolean budgetMembersOnly, @Nullable Instant closesAt) {
 }

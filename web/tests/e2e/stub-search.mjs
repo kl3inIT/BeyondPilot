@@ -27,6 +27,7 @@ const item = (fields) => ({
   budgetMin: null,
   budgetMax: null,
   budgetToBeDetermined: null,
+  currency: null,
   ...fields,
 });
 
@@ -128,6 +129,7 @@ const results = {
       budgetMin: 10000,
       budgetMax: 50000,
       budgetToBeDetermined: false,
+      currency: "USD",
     }),
   ],
 };

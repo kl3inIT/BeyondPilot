@@ -202,6 +202,83 @@ class UseCaseAdministrationTest {
 	}
 
 	@Test
+	void aBudgetKeepsItsCurrencyAndTheListOrdersBudgetsByTheirValueInDollars() {
+		String tag = UUID.randomUUID().toString().substring(0, 8);
+		UUID organization = organization("Currency Bank " + tag);
+		Map<String, Object> dollars = useCase(organization, "Dollars " + tag, true);
+		String inDollars = body(post(operator, USE_CASES, dollars).expectStatus().isCreated());
+		// A budget without a currency is in US dollars, as every budget was before.
+		assertThat(JsonPath.<String>read(inDollars, "$.currency")).isEqualTo("USD");
+		Map<String, Object> small = useCase(organization, "Small dong " + tag, true);
+		small.put("currency", "VND");
+		small.put("budgetMin", 200_000_000L);
+		small.put("budgetMax", 200_000_000L);
+		String inDong = body(post(operator, USE_CASES, small).expectStatus().isCreated());
+		assertThat(JsonPath.<String>read(inDong, "$.currency")).isEqualTo("VND");
+		assertThat(JsonPath.<Number>read(inDong, "$.budgetMax").longValue()).isEqualTo(200_000_000L);
+		Map<String, Object> large = useCase(organization, "Large dong " + tag, true);
+		large.put("currency", "VND");
+		large.put("budgetMin", 1_000_000_000L);
+		large.put("budgetMax", 2_000_000_000L);
+		post(operator, USE_CASES, large).expectStatus().isCreated();
+
+		// 2,000,000,000 đồng is about 77,000 dollars and 200,000,000 about 7,700: the amounts never compare raw.
+		String byBudget = body(client.get().uri(DIRECTORY + "?q=" + tag + "&sort=budget").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(byBudget, "$.items[*].title")).containsExactly("Large dong " + tag,
+				"Dollars " + tag, "Small dong " + tag);
+		assertThat(JsonPath.<List<String>>read(byBudget, "$.items[*].currency")).containsExactly("VND", "USD", "VND");
+
+		Map<String, Object> euros = useCase(organization, "Euros " + tag, true);
+		euros.put("currency", "EUR");
+		assertProblem(post(operator, USE_CASES, euros), 400, "REQUEST_INVALID");
+	}
+
+	@Test
+	void aUseCaseBelongsToProgramsAndTheListNarrowsByAPublishedOne() {
+		String tag = UUID.randomUUID().toString().substring(0, 8);
+		UUID organization = organization("Program Bank " + tag);
+		UUID published = program("Published " + tag, "published-" + tag);
+		jdbc.sql("update program set status = 'published' where id = ?").param(published).update();
+		UUID draft = program("Draft " + tag, "draft-" + tag);
+		Map<String, Object> featured = useCase(organization, "Featured " + tag, true);
+		featured.put("programIds", List.of(published, draft));
+		String created = body(post(operator, USE_CASES, featured).expectStatus().isCreated());
+		assertThat(JsonPath.<List<String>>read(created, "$.programs[*].slug")).containsExactly("draft-" + tag,
+				"published-" + tag);
+		assertThat(JsonPath.<List<Boolean>>read(created, "$.programs[*].published")).containsExactly(false, true);
+		post(operator, USE_CASES, useCase(organization, "Unfeatured " + tag, true)).expectStatus().isCreated();
+
+		String byProgram = body(
+				client.get().uri(DIRECTORY + "?q=" + tag + "&program=published-" + tag).exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(byProgram, "$.items[*].title")).containsExactly("Featured " + tag);
+		// A draft program features nothing a visitor sees, and neither does an address that names none.
+		assertThat(JsonPath.<List<String>>read(
+				body(client.get().uri(DIRECTORY + "?program=draft-" + tag).exchange().expectStatus().isOk()), "$.items"))
+			.isEmpty();
+		assertThat(JsonPath.<List<String>>read(
+				body(client.get().uri(DIRECTORY + "?program=nowhere-" + tag).exchange().expectStatus().isOk()), "$.items"))
+			.isEmpty();
+
+		String id = JsonPath.read(created, "$.id");
+		String reset = body(put(operator, USE_CASES + "/" + id + "/programs", Map.of("programIds", List.of(draft)))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<List<String>>read(reset, "$.programs[*].slug")).containsExactly("draft-" + tag);
+		assertThat(JsonPath.<List<String>>read(body(client.get()
+			.uri(DIRECTORY + "?q=" + tag + "&program=published-" + tag)
+			.exchange()
+			.expectStatus()
+			.isOk()), "$.items")).isEmpty();
+		assertProblem(put(operator, USE_CASES + "/" + id + "/programs", Map.of("programIds", List.of(UUID.randomUUID()))),
+				400, "USECASE_PROGRAM_NOT_FOUND");
+		Map<String, Object> unknown = useCase(organization, "Unknown program " + tag, false);
+		unknown.put("programIds", List.of(UUID.randomUUID()));
+		assertProblem(post(operator, USE_CASES, unknown), 400, "USECASE_PROGRAM_NOT_FOUND");
+		assertThat(eventsOf(id)).extracting(event -> event.get("action"))
+			.containsExactly("use_case.create", "use_case.set_programs");
+	}
+
+	@Test
 	void onlyAnApprovedOrganizationCanHaveAUseCase() {
 		UUID pending = pendingOrganization("pending-owner@usecase.test");
 
@@ -370,6 +447,14 @@ class UseCaseAdministrationTest {
 			.isCreated()), "$.organization.id"));
 	}
 
+	/** A draft program. */
+	private UUID program(String name, String slug) {
+		return UUID.fromString(JsonPath.read(body(post(operator, "/api/program/admin/programs",
+				Map.of("name", name, "slug", slug, "type", "enterprise_challenge"))
+			.expectStatus()
+			.isCreated()), "$.id"));
+	}
+
 	/** An organization a person created and nobody has approved yet. */
 	private UUID pendingOrganization(String email) {
 		String owner = TestSignIn.session(client, mail, email);
@@ -418,6 +503,16 @@ class UseCaseAdministrationTest {
 			request = request.cookie(TestSignIn.SESSION_COOKIE, session);
 		}
 		return request.body(body).exchange();
+	}
+
+	private RestTestClient.ResponseSpec put(String session, String uri, Map<String, Object> body) {
+		return client.put()
+			.uri(uri)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.contentType(MediaType.APPLICATION_JSON)
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.body(body)
+			.exchange();
 	}
 
 	private RestTestClient.ResponseSpec get(String session, String uri) {

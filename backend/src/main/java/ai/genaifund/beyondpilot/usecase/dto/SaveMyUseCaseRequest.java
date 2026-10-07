@@ -36,10 +36,15 @@ public record SaveMyUseCaseRequest(@Schema(types = { "string", "null" }) @Size(m
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Files the caller uploaded for a use case, in the order shown.") @NotNull @Size(
 						max = 10) List<@NotNull UUID> attachmentFileIds,
-		@Schema(types = { "integer", "null" }, description = "US dollars. Null while the budget is to be determined.") @Min(0) @Max(
-				100_000_000) @Nullable Integer budgetMin,
-		@Schema(types = { "integer", "null" }, description = "US dollars. Null while the budget is to be determined.") @Min(0) @Max(
-				100_000_000) @Nullable Integer budgetMax,
+		@Schema(types = { "string", "null" }, allowableValues = { "USD", "VND" },
+				description = "The currency of the budget; USD when absent.") @Pattern(
+						regexp = UseCaseCodes.CURRENCY) @Nullable String currency,
+		@Schema(types = { "integer", "null" }, format = "int64",
+				description = "Whole units of currency. Null while the budget is to be determined.") @Min(0) @Max(
+				1_000_000_000_000L) @Nullable Long budgetMin,
+		@Schema(types = { "integer", "null" }, format = "int64",
+				description = "Whole units of currency. Null while the budget is to be determined.") @Min(0) @Max(
+				1_000_000_000_000L) @Nullable Long budgetMax,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean budgetToBeDetermined,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Only signed-in members see the amount.") boolean budgetMembersOnly,

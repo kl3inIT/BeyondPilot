@@ -774,7 +774,8 @@
           "submit": "Gửi một use case đi duyệt",
           "draft": "Chuyển một use case về bản nháp",
           "approve": "Duyệt một use case",
-          "send_back": "Gửi lại một use case"
+          "send_back": "Gửi lại một use case",
+          "set_programs": "Đặt chương trình cho một use case"
         },
         "email": {
           "settings_update": "Đổi cấu hình email",
@@ -866,7 +867,8 @@
           "submit": "Đã gửi use case <resource></resource> đi duyệt",
           "draft": "Đã chuyển use case <resource></resource> về bản nháp",
           "approve": "Đã duyệt use case <resource></resource>",
-          "send_back": "Đã gửi lại use case <resource></resource>"
+          "send_back": "Đã gửi lại use case <resource></resource>",
+          "set_programs": "Đặt chương trình cho use case <resource></resource>"
         },
         "email": {
           "settings_update": "Đổi <resource></resource>",
@@ -1504,8 +1506,13 @@
         "dataReadinessHint": "Có dữ liệu gì, ở định dạng nào, và nhà cung cấp truy cập bằng cách nào.",
         "integrationRequirements": "Tích hợp, triển khai và hạ tầng",
         "integrationRequirementsHint": "Hệ thống cần kết nối, nơi chạy, bảo mật và nơi lưu trữ dữ liệu.",
-        "budgetMin": "Ngân sách tối thiểu (USD)",
-        "budgetMax": "Ngân sách tối đa (USD)",
+        "budgetMin": "Ngân sách tối thiểu ({currency})",
+        "budgetMax": "Ngân sách tối đa ({currency})",
+        "currency": "Đơn vị tiền",
+        "currencies": {
+          "USD": "USD — Đô la Mỹ",
+          "VND": "VND — Việt Nam đồng"
+        },
         "budgetToBeDetermined": "Ngân sách sẽ xác định sau",
         "budgetMembersOnly": "Chỉ hiện ngân sách cho thành viên đã đăng nhập",
         "timeline": {
@@ -3197,8 +3204,13 @@
         "dataReadinessHint": "Có dữ liệu gì, ở định dạng nào, và nhà cung cấp truy cập bằng cách nào.",
         "integrationRequirements": "Tích hợp, triển khai và hạ tầng",
         "integrationRequirementsHint": "Hệ thống cần kết nối, nơi chạy, bảo mật và nơi lưu trữ dữ liệu.",
-        "budgetMin": "Ngân sách tối thiểu (USD)",
-        "budgetMax": "Ngân sách tối đa (USD)",
+        "budgetMin": "Ngân sách tối thiểu ({currency})",
+        "budgetMax": "Ngân sách tối đa ({currency})",
+        "currency": "Đơn vị tiền",
+        "currencies": {
+          "USD": "USD — Đô la Mỹ",
+          "VND": "VND — Việt Nam đồng"
+        },
         "budgetToBeDetermined": "Ngân sách sẽ xác định sau",
         "budgetMembersOnly": "Chỉ hiện ngân sách cho thành viên đã đăng nhập",
         "timeline": {
@@ -3225,7 +3237,8 @@
         "missing": "Chưa điền",
         "requirementsCount": "{total} yêu cầu: {required} bắt buộc, {optional} tùy chọn",
         "budgetTbd": "Sẽ xác định sau",
-        "budgetRange": "{min}–{max} USD",
+        "budgetRange": "{min}–{max} {currency}",
+        "budgetSingle": "{amount} {currency}",
         "closesAt": "{date}, {time} ICT",
         "companyShown": "Hiện trên use case",
         "companyHidden": "Ẩn trên use case",
@@ -5183,7 +5196,8 @@
     "goal": "Mục tiêu: {goal}",
     "budget": {
       "label": "Ngân sách",
-      "range": "{min, number}–{max, number} USD",
+      "range": "{min}–{max} {currency}",
+      "single": "{amount} {currency}",
       "toBeDetermined": "Chưa xác định",
       "membersOnly": "Chỉ thành viên xem được"
     },

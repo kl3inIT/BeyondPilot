@@ -54,6 +54,8 @@ final class Cards {
 
 	static final String BUDGET_TO_BE_DETERMINED = "budgetToBeDetermined";
 
+	static final String CURRENCY = "currency";
+
 	private Cards() {
 	}
 

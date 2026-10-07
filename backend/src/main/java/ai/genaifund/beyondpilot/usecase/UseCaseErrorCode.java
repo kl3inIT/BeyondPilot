@@ -19,6 +19,8 @@ public enum UseCaseErrorCode implements ErrorCode {
 	BUDGET_OUT_OF_ORDER("USECASE_BUDGET_OUT_OF_ORDER", ErrorCategory.VALIDATION,
 			"The minimum budget is above the maximum."),
 
+	PROGRAM_NOT_FOUND("USECASE_PROGRAM_NOT_FOUND", ErrorCategory.VALIDATION, "One of the programs does not exist."),
+
 	ENTERPRISE_REQUIRED("USECASE_ENTERPRISE_REQUIRED", ErrorCategory.NOT_PERMITTED,
 			"Only the members of an approved organization can write its use cases."),
 

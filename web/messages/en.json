@@ -774,7 +774,8 @@
           "submit": "Sent a use case for review",
           "draft": "Moved a use case back to Draft",
           "approve": "Approved a use case",
-          "send_back": "Sent a use case back"
+          "send_back": "Sent a use case back",
+          "set_programs": "Set the programs of a use case"
         },
         "email": {
           "settings_update": "Changed the email settings",
@@ -866,7 +867,8 @@
           "submit": "Sent the use case <resource></resource> for review",
           "draft": "Moved the use case <resource></resource> back to Draft",
           "approve": "Approved the use case <resource></resource>",
-          "send_back": "Sent the use case <resource></resource> back"
+          "send_back": "Sent the use case <resource></resource> back",
+          "set_programs": "Set the programs of the use case <resource></resource>"
         },
         "email": {
           "settings_update": "Changed <resource></resource>",
@@ -1504,8 +1506,13 @@
         "dataReadinessHint": "What data exists, in what format, and how providers can access it.",
         "integrationRequirements": "Integration, deployment and infrastructure",
         "integrationRequirementsHint": "Systems to connect to, where it runs, security and data residency.",
-        "budgetMin": "Minimum budget (USD)",
-        "budgetMax": "Maximum budget (USD)",
+        "budgetMin": "Minimum budget ({currency})",
+        "budgetMax": "Maximum budget ({currency})",
+        "currency": "Currency",
+        "currencies": {
+          "USD": "USD — US dollar",
+          "VND": "VND — Vietnamese đồng"
+        },
         "budgetToBeDetermined": "Budget to be determined",
         "budgetMembersOnly": "Show the budget to signed-in members only",
         "timeline": {
@@ -3197,8 +3204,13 @@
         "dataReadinessHint": "What data exists, in what format, and how providers can access it.",
         "integrationRequirements": "Integration, deployment and infrastructure",
         "integrationRequirementsHint": "Systems to connect to, where it runs, security and data residency.",
-        "budgetMin": "Minimum budget (USD)",
-        "budgetMax": "Maximum budget (USD)",
+        "budgetMin": "Minimum budget ({currency})",
+        "budgetMax": "Maximum budget ({currency})",
+        "currency": "Currency",
+        "currencies": {
+          "USD": "USD — US dollar",
+          "VND": "VND — Vietnamese đồng"
+        },
         "budgetToBeDetermined": "Budget to be determined",
         "budgetMembersOnly": "Show the budget to signed-in members only",
         "timeline": {
@@ -3225,7 +3237,8 @@
         "missing": "Not written yet",
         "requirementsCount": "{total, plural, one {# requirement} other {# requirements}}: {required} required, {optional} optional",
         "budgetTbd": "To be determined",
-        "budgetRange": "USD {min}–{max}",
+        "budgetRange": "{currency} {min}–{max}",
+        "budgetSingle": "{currency} {amount}",
         "closesAt": "{date}, {time} ICT",
         "companyShown": "Shown on the use case",
         "companyHidden": "Hidden on the use case",
@@ -5183,7 +5196,8 @@
     "goal": "Goal: {goal}",
     "budget": {
       "label": "Budget",
-      "range": "USD {min, number}–{max, number}",
+      "range": "{currency} {min}–{max}",
+      "single": "{currency} {amount}",
       "toBeDetermined": "To be determined",
       "membersOnly": "Shown to members"
     },
