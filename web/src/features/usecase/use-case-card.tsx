@@ -2,6 +2,7 @@ import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
+import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicUseCaseSummary } from "@/lib/api/generated";
 
 /**
