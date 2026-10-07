@@ -172,14 +172,26 @@ test.describe("sign in", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
-  test("the fourth request says when another code can be asked for", async ({ page }) => {
+  test("a refused request says when another code can be asked for", async ({ page }) => {
     await answerCodeRequests(page, 429, { "Retry-After": "720" });
     await page.goto("/sign-in");
 
     await askForCode(page, "an.tran@tasco.com.vn");
 
-    await expect(page.getByText("You can ask for another in 12 minutes")).toBeVisible();
+    await expect(page.getByText("You can ask for a new code in 12 minutes")).toBeVisible();
     await expect(page.getByRole("button", { name: "Send a new code" })).toHaveCount(0);
+  });
+
+  test("a short wait counts down and the link comes back", async ({ page }) => {
+    await answerCodeRequests(page, 429, { "Retry-After": "2" });
+    await page.goto("/sign-in");
+
+    await askForCode(page, "an.tran@tasco.com.vn");
+
+    await expect(page.getByText(/You can ask for a new code in [12] seconds?/)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Send a new code" })).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test("Google is a link to the backend that keeps the return path", async ({ page }) => {

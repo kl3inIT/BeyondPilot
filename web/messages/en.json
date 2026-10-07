@@ -267,7 +267,7 @@
       "resend": "Send a new code",
       "resent": "Sent a new code. Not there yet?",
       "resendFailed": "We couldn't send it. Try once more?",
-      "limited": "You have asked for three codes. You can ask for another in {minutes, plural, one {# minute} other {# minutes}}; the newest code still works.",
+      "limited": "You can ask for a new code in {minutes, plural, =0 {{seconds, plural, one {# second} other {# seconds}}} one {# minute} other {# minutes}}. The newest code still works.",
       "differentEmail": "Use a different email",
       "problem": {
         "wrong": "That code is not right. Check the newest email and try again.",
