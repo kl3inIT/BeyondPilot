@@ -9535,8 +9535,11 @@ components:
         \ budget are required; the rest may be left out when the brief does not say."
       properties:
         attachmentFileIds:
-          type: array
-          description: "Files the caller uploaded for a use case, in the order shown."
+          type:
+          - array
+          - "null"
+          description: "Files the caller uploaded for a use case, in the order shown;\
+            \ none when absent."
           items:
             type: string
             format: uuid
@@ -9633,12 +9636,15 @@ components:
           type: boolean
           description: "True to publish at once, false to save a draft for the organization."
         requirements:
-          type: array
-          description: "What the solution must do, in the order written."
+          type:
+          - array
+          - "null"
+          description: "What the solution must do, in the order written; none when\
+            \ the brief lists none."
           items:
             $ref: "#/components/schemas/UseCaseRequirement"
           maxItems: 30
-          minItems: 1
+          minItems: 0
         targetUsers:
           type:
           - string
@@ -9676,7 +9682,6 @@ components:
           maxLength: 200
           minLength: 0
       required:
-      - attachmentFileIds
       - budgetMembersOnly
       - budgetToBeDetermined
       - expectedOutcomes
@@ -9685,7 +9690,6 @@ components:
       - organizationId
       - problemStatement
       - publishNow
-      - requirements
       - title
     CustomerDeployment:
       type: object

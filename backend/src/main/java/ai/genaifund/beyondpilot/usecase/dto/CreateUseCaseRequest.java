@@ -32,14 +32,14 @@ public record CreateUseCaseRequest(
 		@Schema(types = { "string", "null" }) @Size(max = 2000) @Nullable String currentProcess,
 		@Schema(types = { "string", "null" }) @Size(max = 2000) @Nullable String currentSolutions,
 		@Schema(types = { "string", "null" }) @Size(max = 2000) @Nullable String targetUsers,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "What the solution must do, in the order written.") @NotNull @Size(min = 1,
-						max = 30) List<@NotNull @Valid UseCaseRequirementEntry> requirements,
+		@Schema(types = { "array", "null" },
+				description = "What the solution must do, in the order written; none when the brief lists none.") @Size(
+						max = 30) @Nullable List<@NotNull @Valid UseCaseRequirementEntry> requirements,
 		@Schema(types = { "string", "null" }) @Size(max = 2000) @Nullable String dataReadiness,
 		@Schema(types = { "string", "null" }) @Size(max = 2000) @Nullable String integrationRequirements,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Files the caller uploaded for a use case, in the order shown.") @NotNull @Size(
-						max = 10) List<@NotNull UUID> attachmentFileIds,
+		@Schema(types = { "array", "null" },
+				description = "Files the caller uploaded for a use case, in the order shown; none when absent.") @Size(
+						max = 10) @Nullable List<@NotNull UUID> attachmentFileIds,
 		@Schema(types = { "string", "null" }, allowableValues = { "USD", "VND" },
 				description = "The currency of the budget; USD when absent.") @Pattern(
 						regexp = UseCaseCodes.CURRENCY) @Nullable String currency,

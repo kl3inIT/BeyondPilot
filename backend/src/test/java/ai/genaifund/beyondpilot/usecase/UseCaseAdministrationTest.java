@@ -159,8 +159,12 @@ class UseCaseAdministrationTest {
 			brief.put(left, null);
 		}
 		brief.put("technologies", List.of());
+		// A brief that lists no requirement and comes with no file leaves both out.
+		brief.remove("requirements");
+		brief.remove("attachmentFileIds");
 
 		String created = body(post(operator, USE_CASES, brief).expectStatus().isCreated());
+		assertThat(JsonPath.<List<Object>>read(created, "$.requirements")).isEmpty();
 		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
 		assertThat(JsonPath.<Object>read(created, "$.closesAt")).isNull();
 		assertThat(JsonPath.<Object>read(created, "$.currentProcess")).isNull();
@@ -348,12 +352,8 @@ class UseCaseAdministrationTest {
 		unknown.put("industry", "space_mining");
 		post(operator, USE_CASES, unknown).expectStatus().isBadRequest();
 
-		Map<String, Object> noRequirement = useCase(organization, "No requirement", false);
-		noRequirement.put("requirements", List.of());
-		post(operator, USE_CASES, noRequirement).expectStatus().isBadRequest();
-
 		assertThat(titles()).doesNotContain("Closes yesterday", "Budget upside down", "Budget half given",
-				"Budget both ways", "Timeline upside down", "Unknown industry", "No requirement");
+				"Budget both ways", "Timeline upside down", "Unknown industry");
 	}
 
 	@Test

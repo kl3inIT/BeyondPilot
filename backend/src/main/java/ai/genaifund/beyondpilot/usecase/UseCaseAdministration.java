@@ -184,7 +184,7 @@ public class UseCaseAdministration {
 		useCase.explain(request.expectedOutcomes().strip(), text(request.currentProcess()),
 				text(request.currentSolutions()), text(request.targetUsers()));
 		useCase.specify(
-				request.requirements()
+				(request.requirements() == null ? List.<UseCaseRequirementEntry>of() : request.requirements())
 					.stream()
 					.map(requirement -> new UseCaseRequirement(requirement.statement().strip(), requirement.necessity()))
 					.toList(),
@@ -192,8 +192,9 @@ public class UseCaseAdministration {
 		useCase.budget(currencyOf(request.currency()), request.budgetMin(), request.budgetMax(),
 				request.budgetToBeDetermined(), request.budgetMembersOnly());
 		useCase.belongTo(programsNamed(request.programIds() == null ? List.of() : request.programIds()).keySet());
-		files.requireUsable(actor, request.attachmentFileIds(), List.of());
-		useCase.attach(request.attachmentFileIds());
+		List<UUID> attachments = request.attachmentFileIds() == null ? List.of() : request.attachmentFileIds();
+		files.requireUsable(actor, attachments, List.of());
+		useCase.attach(attachments);
 		useCase.takeWeeks(minWeeks, maxWeeks);
 		useCase.showCompanyName(request.hideOrganizationName());
 		if (request.publishNow()) {

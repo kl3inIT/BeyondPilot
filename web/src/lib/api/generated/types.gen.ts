@@ -984,9 +984,9 @@ export type CreateSolution = {
  */
 export type CreateUseCase = {
     /**
-     * Files the caller uploaded for a use case, in the order shown.
+     * Files the caller uploaded for a use case, in the order shown; none when absent.
      */
-    attachmentFileIds: Array<string>;
+    attachmentFileIds?: Array<string> | null;
     /**
      * Whole units of currency. Null while the budget is to be determined.
      */
@@ -1029,9 +1029,9 @@ export type CreateUseCase = {
      */
     publishNow: boolean;
     /**
-     * What the solution must do, in the order written.
+     * What the solution must do, in the order written; none when the brief lists none.
      */
-    requirements: Array<UseCaseRequirement>;
+    requirements?: Array<UseCaseRequirement> | null;
     targetUsers?: string | null;
     /**
      * None when the brief names none.
