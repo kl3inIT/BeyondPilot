@@ -787,6 +787,7 @@ class SolutionTest {
 		String deployments = MINE + "/" + solution + "/deployments";
 		String page = DIRECTORY + "/wombat-desk";
 
+		long waiting = deploymentsWaiting();
 		assertProblem(post(founder, deployments, Map.of("title", "No customer")), 400, "REQUEST_INVALID");
 		String added = body(post(founder, deployments, deployment("Card enquiries", null)).expectStatus().isCreated());
 		UUID id = UUID.fromString(JsonPath.read(added, "$.id"));
@@ -797,6 +798,8 @@ class SolutionTest {
 			.containsExactly("Card enquiries");
 		String queue = body(get(operator, ADMIN + "?q=Wombat").expectStatus().isOk());
 		assertThat(JsonPath.<Integer>read(queue, "$.items[0].deploymentsAwaitingReview")).isEqualTo(1);
+		// The count of what waits is not narrowed by the search.
+		assertThat(deploymentsWaiting()).isEqualTo(waiting + 1);
 		assertThat(JsonPath.<List<Object>>read(body(client.get().uri(page).exchange().expectStatus().isOk()),
 				"$.customerDeployments"))
 			.isEmpty();
@@ -805,6 +808,7 @@ class SolutionTest {
 		assertProblem(post(founder, review + "/approve", null), 403, "IDENTITY_OPERATOR_REQUIRED");
 		post(operator, review + "/approve", null).expectStatus().isNoContent();
 		assertProblem(post(operator, review + "/approve", null), 409, "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW");
+		assertThat(deploymentsWaiting()).isEqualTo(waiting);
 		String shown = body(client.get().uri(page).exchange().expectStatus().isOk());
 		assertThat(JsonPath.<String>read(shown, "$.customerDeployments[0].customer")).isEqualTo("A retail bank");
 		assertThat(JsonPath.<Integer>read(body(client.get().uri(DIRECTORY + "?q=Wombat").exchange().expectStatus().isOk()),
@@ -1021,6 +1025,13 @@ class SolutionTest {
 
 	private List<String> names(String session, String path) {
 		return JsonPath.read(body(get(session, path).expectStatus().isOk()), "$.items[*].name");
+	}
+
+	private long deploymentsWaiting() {
+		return JsonPath
+			.<Number>read(body(get(operator, ADMIN + "?q=nothing-is-named-so").expectStatus().isOk()),
+					"$.deploymentsAwaitingReview")
+			.longValue();
 	}
 
 	private RestTestClient.ResponseSpec get(String session, String path) {

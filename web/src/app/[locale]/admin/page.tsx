@@ -1,4 +1,4 @@
-import { BoxesIcon, BuildingIcon, UsersIcon } from "lucide-react";
+import { BoxesIcon, BuildingIcon, RocketIcon, UsersIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
@@ -49,6 +49,13 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
       href: `${siteRoutes.adminTalent}?status=in_review`,
       count: talent.total,
     },
+    {
+      // A deployment is reviewed on its solution; the list puts the solutions holding one first.
+      key: "deployments" as const,
+      Icon: RocketIcon,
+      href: siteRoutes.adminSolutions,
+      count: solutions.deploymentsAwaitingReview,
+    },
   ];
   const waiting = queues.reduce((sum, queue) => sum + queue.count, 0);
 
@@ -58,7 +65,7 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
         <AdminPageTitle destination="home">{t("title")}</AdminPageTitle>
         <p className="text-sm text-muted-foreground">{t("home.lead", { count: waiting })}</p>
       </div>
-      <ul className="grid gap-4 sm:grid-cols-3">
+      <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {queues.map((queue) => (
           <li key={queue.key}>
             <Link

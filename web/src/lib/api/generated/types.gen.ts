@@ -347,6 +347,10 @@ export type AdminSolutionList = {
      * How many solutions wait for review, whatever narrows this list.
      */
     awaitingReview: number;
+    /**
+     * How many customer deployments wait for review, whatever narrows this list.
+     */
+    deploymentsAwaitingReview: number;
     items: Array<AdminSolutionSummary>;
     /**
      * The page returned, counted from 1.

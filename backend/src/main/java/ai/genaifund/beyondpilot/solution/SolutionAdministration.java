@@ -107,7 +107,7 @@ public class SolutionAdministration {
 			.map(row -> SolutionViews.adminSummary(row, name(names, row.organizationId()),
 					sender(senders, row.submittedByAccountId())))
 			.toList(), page, PAGE_SIZE, solutionList.adminCount(text, named, request.status(), request.industry()),
-				solutionList.awaitingReview());
+				solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview());
 	}
 
 	/**

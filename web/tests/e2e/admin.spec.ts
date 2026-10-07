@@ -65,11 +65,13 @@ test.describe("admin", () => {
     await page.goto("/admin");
 
     // An organization waits when it is new, and when someone claims one nobody owns.
-    await expect(page.getByText("6 records wait for a decision.")).toBeVisible();
+    await expect(page.getByText("7 records wait for a decision.")).toBeVisible();
     for (const [queue, count, href] of [
       ["Organizations to review", 2, "/admin/organizations?status=in_review"],
       ["Solutions to review", 2, "/admin/solutions?status=in_review"],
       ["Talent profiles to review", 2, "/admin/talent?status=in_review"],
+      // A deployment is reviewed on its solution, so the whole list opens, those holding one first.
+      ["Customer deployments to review", 1, "/admin/solutions"],
     ] as const) {
       const link = page.getByRole("main").getByRole("link", { name: queue });
       await expect(link).toHaveAttribute("href", href);
