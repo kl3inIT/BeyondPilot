@@ -1370,6 +1370,7 @@
       "organizations": "Organizations to review",
       "solutions": "Solutions to review",
       "talent": "Talent profiles to review",
+      "deployments": "Customer deployments to review",
       "review": "Open the queue, longest wait first",
       "none": "Nothing waiting"
     },
@@ -2951,7 +2952,7 @@
       "summary": {
         "members": "{count, plural, one {# member} other {# members}}",
         "invitations": "{count, plural, one {# invitation pending} other {# invitations pending}}",
-        "left": "{left} of {limit} invitations left today",
+        "left": "{left} of {limit} invitations left in 24 hours",
         "notApproved": "you can invite people once the organization is approved"
       },
       "columns": {
@@ -3029,7 +3030,7 @@
       "invite": {
         "open": "Invite people",
         "title": "Invite people to {name}",
-        "lead": "{leftToday} of {dailyLimit} invitations left today; {leftOpen} of {openLimit} can be open at once.",
+        "lead": "{leftToday} of {dailyLimit} invitations left in 24 hours; {leftOpen} of {openLimit} can be open at once.",
         "emails": "Email addresses",
         "emailsPlaceholder": "name@company.com, name@company.com",
         "emailsInvalid": "Enter full email addresses, separated by commas.",
@@ -3039,12 +3040,12 @@
         "send": "Send invitations",
         "limit": {
           "daily": {
-            "lead": "{name} has sent {limit} invitations today, the most an organization can send in a day. You can invite more people tomorrow.",
-            "note": "Revoking an invitation nobody answered does not give today's count back. Write to GenAI Fund if you are bringing a larger team."
+            "lead": "{name} has sent {limit} invitations in the last 24 hours, the most an organization can send. You can invite more people once the earliest of them is 24 hours old.",
+            "note": "Revoking an invitation nobody answered does not give its turn back. Write to GenAI Fund if you are bringing a larger team."
           },
           "open": {
             "lead": "{name} has {limit} invitations that nobody has answered yet, the most an organization can keep open. Revoke the ones you no longer need, or wait for people to answer.",
-            "note": "An invitation is open until the person answers or you revoke it. Write to GenAI Fund if you are bringing a larger team."
+            "note": "An invitation is open until the person answers, you revoke it, or it lapses seven days after it was sent. Write to GenAI Fund if you are bringing a larger team."
           },
           "close": "Close"
         }
@@ -3669,7 +3670,7 @@
       },
       "deck": {
         "empty": "Upload the deck",
-        "limits": "PDF, up to 25 MB",
+        "limits": "PDF, up to 100 MB",
         "uploading": "Uploading…",
         "uploaded": "{size} · Uploaded {when}",
         "waiting": "{size} · Not saved yet",
@@ -3678,7 +3679,7 @@
         "remove": "Remove",
         "errors": {
           "type": "Only a PDF can be uploaded here.",
-          "size": "This file is larger than 25 MB.",
+          "size": "This file is larger than 100 MB.",
           "failed": "The deck was not uploaded. Try again."
         }
       },
@@ -5221,6 +5222,8 @@
       "time": "{time} ICT"
     },
     "posted": "Posted {when}",
+    "view": "View use case",
+    "viewUnavailable": "Use case details are not available yet.",
     "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
     "empty": {
       "title": "No use cases match",

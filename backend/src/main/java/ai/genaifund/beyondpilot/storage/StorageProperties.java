@@ -30,7 +30,7 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties("beyondpilot.storage")
 public record StorageProperties(ObjectStorageProvider provider, @DefaultValue("15m") Duration ticketLifetime,
 		@DefaultValue("1h") Duration readAddressLifetime, @DefaultValue("5MB") DataSize programImageMaxSize,
-		@DefaultValue("25MB") DataSize applicationFileMaxSize, @DefaultValue("25MB") DataSize solutionDeckMaxSize,
+		@DefaultValue("25MB") DataSize applicationFileMaxSize, @DefaultValue("100MB") DataSize solutionDeckMaxSize,
 		@DefaultValue("2MB") DataSize solutionLogoMaxSize, @DefaultValue("5MB") DataSize solutionImageMaxSize,
 		@DefaultValue("2MB") DataSize talentPhotoMaxSize, @DefaultValue("5MB") DataSize organizationLogoMaxSize,
 		@DefaultValue("25MB") DataSize useCaseAttachmentMaxSize,

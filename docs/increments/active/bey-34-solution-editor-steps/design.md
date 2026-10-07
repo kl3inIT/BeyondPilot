@@ -8,7 +8,7 @@ Tracked in Linear as BEY-34. The screens are the frames "Solution editor — 1 B
 - **Not lose a draft.** A draft, and a solution that was sent back, save as the person types: only their organization reads them. The top bar says where the save stands: saving, saved at a time, or not saved with a way to try again.
 - **Change what others read deliberately.** A solution in review or approved is read by operators or by anyone, so nothing is kept until the person chooses Save changes, and leaving with a change unsaved asks first.
 - **Say more about the solution.** New, optional fields: milestones and traction, what it is built with, the languages it works in and its best customer profile. The public page and the operators' review show them.
-- **Attach a deck.** One PDF of up to 25 MB, uploaded from the Evidence step and named by the solution with its next save. Anyone downloads the deck of an approved solution from its page.
+- **Attach a deck.** one PDF of up to 100 MB, uploaded from the Evidence step and named by the solution with its next save. Anyone downloads the deck of an approved solution from its page.
 - **See what a review still needs.** The last step reads the solution back by step, marks what is missing and leads to each missing field. Sending for review asks once more and is offered only when nothing is missing.
 
 ## Decisions
@@ -32,7 +32,7 @@ Tracked in Linear as BEY-34. The screens are the frames "Solution editor — 1 B
 | `GET /api/solution/mine/{id}`, `GET /api/solution/admin/solutions/{id}` | Answer the new fields and `deck` (file, name, size, when it was attached)                                                                                                                                               |
 | `GET /api/solution/solutions/{slug}`                                    | Answers the new fields and `deck` (name and size)                                                                                                                                                                       |
 | `GET /api/solution/solutions/{slug}/deck`                               | New: the PDF, or a redirect to where the object store serves it                                                                                                                                                         |
-| `POST /api/storage/uploads`                                             | Accepts the purpose `solution_deck`: a PDF of up to `beyondpilot.storage.solution-deck-max-size` (25 MB)                                                                                                                |
+| `POST /api/storage/uploads`                                             | Accepts the purpose `solution_deck`: a PDF of up to `beyondpilot.storage.solution-deck-max-size` (100 MB)                                                                                                                |
 
 ## Data
 

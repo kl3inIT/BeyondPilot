@@ -1,5 +1,6 @@
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
+import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicUseCaseSummary } from "@/lib/api/generated";
@@ -108,6 +109,9 @@ function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
             }),
           })}
         </p>
+        <Button disabled className="disabled:opacity-100" size="sm" title={t("viewUnavailable")}>
+          {t("view")}
+        </Button>
       </div>
     </li>
   );
