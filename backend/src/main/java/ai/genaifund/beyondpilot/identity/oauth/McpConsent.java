@@ -17,7 +17,7 @@ import org.springframework.security.oauth2.server.authorization.authentication.O
 
 /**
  * The rules of an authorization request and of the person's consent. A request may name only one of BeyondPilot's two
- * servers as its resource. The operators' scope is granted to an operator only: when someone else consents, it is taken
+ * servers as its resource, and must ask for that server's scope. The operators' scope is granted to an operator only: when someone else consents, it is taken
  * out of the consent, so the app receives nothing for the operator server. The operator server reads the role again on
  * every call, so a role withdrawn later stops it too.
  */
@@ -39,7 +39,8 @@ final class McpConsent {
 			.andThen(context -> {
 				OAuth2AuthorizationCodeRequestAuthenticationToken request = context.getAuthentication();
 				Object resource = request.getAdditionalParameters().get(McpTokens.RESOURCE);
-				if (resource != null && !(resource instanceof String value && tokens.isServer(value))) {
+				if (resource != null && !(resource instanceof String value && tokens.isServer(value)
+						&& request.getScopes().contains(tokens.scopeOf(value)))) {
 					throw RedirectAddresses.invalid(McpTokens.RESOURCE, request);
 				}
 			});

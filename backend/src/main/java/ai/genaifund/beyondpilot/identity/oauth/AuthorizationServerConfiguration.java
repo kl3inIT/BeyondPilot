@@ -80,8 +80,8 @@ class AuthorizationServerConfiguration {
 	}
 
 	@Bean
-	McpTokens mcpTokens(OAuthSettings settings) {
-		return new McpTokens(settings);
+	McpTokens mcpTokens(OAuthSettings settings, IdentityService identity) {
+		return new McpTokens(settings, identity);
 	}
 
 	@Bean
@@ -139,7 +139,7 @@ class AuthorizationServerConfiguration {
 							.claim("authorization_response_iss_parameter_supported", true))))
 			.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
 			.requestCache(AbstractHttpConfigurer::disable)
-			.addFilterAfter(new AuthorizationServerHttp.AccountPrincipal(), SecurityContextHolderFilter.class)
+			.addFilterAfter(new AuthorizationServerHttp.AccountPrincipal(identity), SecurityContextHolderFilter.class)
 			.exceptionHandling(handling -> handling
 				.defaultAuthenticationEntryPointFor(AuthorizationServerHttp.signIn(),
 						new MediaTypeRequestMatcher(MediaType.TEXT_HTML))

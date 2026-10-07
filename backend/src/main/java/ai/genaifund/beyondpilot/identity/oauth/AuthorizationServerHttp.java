@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import ai.genaifund.beyondpilot.identity.Actor;
+import ai.genaifund.beyondpilot.identity.IdentityException;
+import ai.genaifund.beyondpilot.identity.IdentityService;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -76,11 +78,18 @@ final class AuthorizationServerHttp {
 	/**
 	 * Presents the signed-in person to the authorization server by their account alone. The server stores who
 	 * consented with each authorization; an account identifier is what it needs and all it keeps, whatever way the
-	 * person signed in. The session itself is left as it is.
+	 * person signed in. An account disabled since it signed in counts as nobody, so its session cannot connect an
+	 * app. The session itself is left as it is.
 	 */
 	static final class AccountPrincipal extends OncePerRequestFilter {
 
 		private final SecurityContextHolderStrategy contexts = SecurityContextHolder.getContextHolderStrategy();
+
+		private final IdentityService identity;
+
+		AccountPrincipal(IdentityService identity) {
+			this.identity = identity;
+		}
 
 		@Override
 		protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -89,8 +98,10 @@ final class AuthorizationServerHttp {
 			Actor actor = actorOf(context.getAuthentication());
 			if (actor != null) {
 				SecurityContext account = contexts.createEmptyContext();
-				account.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(actor.accountId().toString(),
-						null, AuthorityUtils.NO_AUTHORITIES));
+				if (isActive(actor)) {
+					account.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(actor.accountId().toString(),
+							null, AuthorityUtils.NO_AUTHORITIES));
+				}
 				contexts.setContext(account);
 			}
 			chain.doFilter(request, response);
@@ -98,6 +109,16 @@ final class AuthorizationServerHttp {
 
 		private static @Nullable Actor actorOf(@Nullable Authentication authentication) {
 			return SignedIn.actorOf(authentication);
+		}
+
+		private boolean isActive(Actor actor) {
+			try {
+				identity.requireActive(actor);
+				return true;
+			}
+			catch (IdentityException disabled) {
+				return false;
+			}
 		}
 
 	}

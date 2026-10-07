@@ -20,6 +20,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -45,6 +46,9 @@ class McpAuthorizationTest {
 
 	@Autowired
 	private TestMailbox mail;
+
+	@Autowired
+	private JdbcClient jdbc;
 
 	private RestTestClient client;
 
@@ -101,6 +105,40 @@ class McpAuthorizationTest {
 	}
 
 	@Test
+	void aDisabledAccountCannotConnectAnAppAndItsConnectionsStopRefreshing() {
+		String session = TestSignIn.session(client, mail, "khoa.mcp@example.test");
+		Map<String, String> answer = consent(session, "mcp.read", "mcp.read");
+		String tokens = token("grant_type=authorization_code&client_id=cursor&code=" + answer.get("code")
+				+ "&redirect_uri=" + REDIRECT + "&code_verifier=" + VERIFIER);
+
+		jdbc.sql("update identity_account set status = 'disabled' where email = 'khoa.mcp@example.test'").update();
+
+		URI location = client.get()
+			.uri(authorize("mcp.read"))
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML_VALUE)
+			.exchange()
+			.expectStatus()
+			.is3xxRedirection()
+			.returnResult()
+			.getResponseHeaders()
+			.getLocation();
+		assertThat(location.getPath()).isEqualTo("/sign-in");
+
+		client.post()
+			.uri("/oauth2/token")
+			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+			.body("grant_type=refresh_token&client_id=cursor&refresh_token="
+					+ JsonPath.read(tokens, "$.refresh_token"))
+			.exchange()
+			.expectStatus()
+			.isBadRequest()
+			.expectBody()
+			.jsonPath("$.error")
+			.isEqualTo("invalid_grant");
+	}
+
+	@Test
 	void theOperatorsScopeIsLeftOutOfTheConsentOfAnyoneElse() {
 		String session = TestSignIn.session(client, mail, "quan.mcp@example.test");
 
@@ -110,6 +148,51 @@ class McpAuthorizationTest {
 
 		assertThat((String) JsonPath.read(tokens, "$.scope")).isEqualTo("mcp.read");
 		assertThat(audienceOf(JsonPath.read(tokens, "$.access_token"))).isEqualTo(ISSUER + "/mcp");
+	}
+
+	@Test
+	void aRequestForTheOperatorServerWithoutItsScopeIsRefused() {
+		String session = TestSignIn.session(client, mail, "tam.mcp@example.test");
+
+		URI back = client.get()
+			.uri(authorize("mcp.read", ISSUER + "/mcp/operator"))
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.exchange()
+			.expectStatus()
+			.is3xxRedirection()
+			.returnResult()
+			.getResponseHeaders()
+			.getLocation();
+
+		assertThat(back.toString()).startsWith(REDIRECT + "?error=invalid_request");
+	}
+
+	@Test
+	void anOperatorWhoLosesTheRoleStopsGettingTokensForTheOperatorServer() {
+		String email = "lan.operator@genaifund.test";
+		String session = TestSignIn.session(client, mail, email);
+		jdbc.sql("update identity_account set platform_role = 'operator' where email = :email")
+			.param("email", email)
+			.update();
+		Map<String, String> answer = consent(session, "mcp.research", "mcp.research");
+		String tokens = token("grant_type=authorization_code&client_id=cursor&code=" + answer.get("code")
+				+ "&redirect_uri=" + REDIRECT + "&code_verifier=" + VERIFIER);
+
+		jdbc.sql("update identity_account set platform_role = 'user' where email = :email")
+			.param("email", email)
+			.update();
+
+		client.post()
+			.uri("/oauth2/token")
+			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+			.body("grant_type=refresh_token&client_id=cursor&refresh_token="
+					+ JsonPath.read(tokens, "$.refresh_token"))
+			.exchange()
+			.expectStatus()
+			.isBadRequest()
+			.expectBody()
+			.jsonPath("$.error")
+			.isEqualTo("invalid_grant");
 	}
 
 	@Test
@@ -220,6 +303,14 @@ class McpAuthorizationTest {
 	}
 
 	private URI authorize(String scope) {
+		return authorizeBuilder(scope).build().toUri();
+	}
+
+	private URI authorize(String scope, String resource) {
+		return authorizeBuilder(scope).queryParam("resource", resource).encode().build().toUri();
+	}
+
+	private UriComponentsBuilder authorizeBuilder(String scope) {
 		return UriComponentsBuilder.fromUriString("http://localhost:" + port + "/oauth2/authorize")
 			.queryParam("response_type", "code")
 			.queryParam("client_id", "cursor")
@@ -228,9 +319,7 @@ class McpAuthorizationTest {
 			.queryParam("code_challenge", challenge())
 			.queryParam("code_challenge_method", "S256")
 			.queryParam("state", "state-1")
-			.encode()
-			.build()
-			.toUri();
+			.encode();
 	}
 
 	private static String challenge() {
