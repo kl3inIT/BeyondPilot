@@ -8,6 +8,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Map;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.UUID;
 
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
@@ -22,6 +25,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -50,6 +58,9 @@ class McpAuthorizationTest {
 
 	@Autowired
 	private JdbcClient jdbc;
+
+	@Autowired
+	private RegisteredClientRepository clients;
 
 	private RestTestClient client;
 
@@ -294,6 +305,31 @@ class McpAuthorizationTest {
 			.exchange()
 			.expectStatus()
 			.isNotFound();
+	}
+
+	@Test
+	void anErrorBeforeThePersonAnswersIsShownNotRedirectedForAnAppNotReviewed() {
+		String clientId = "https://unreviewed.example/client.json";
+		clients.save(RegisteredClient.withId(UUID.randomUUID().toString())
+			.clientId(clientId)
+			.clientName("Claude")
+			.clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
+			.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+			.redirectUri("https://unreviewed.example/cb")
+			.scope("mcp.read")
+			.clientSettings(ClientSettings.builder()
+				.requireProofKey(true)
+				.setting("beyondpilot.document-fresh-until", Instant.now().plus(Duration.ofHours(1)).toString())
+				.build())
+			.build());
+		String session = TestSignIn.session(client, mail, "phuc.mcp@example.test");
+
+		client.get()
+			.uri(authorizeBuilder(clientId, "https://unreviewed.example/cb", "no.such.scope").build().toUri())
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.exchange()
+			.expectStatus()
+			.isBadRequest();
 	}
 
 	@Test

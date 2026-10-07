@@ -74,7 +74,7 @@ class McpClients implements RegisteredClientRepository {
 		}
 		// A document that cannot be read now keeps the version stored, so a short outage of the app's host signs
 		// nobody out; one never read is refused.
-		return documents.fetch(clientId).map(fetched -> {
+		return documents.fetch(clientId, known != null).map(fetched -> {
 			RegisteredClient client = fromDocument(fetched);
 			stored.save(client);
 			return client;

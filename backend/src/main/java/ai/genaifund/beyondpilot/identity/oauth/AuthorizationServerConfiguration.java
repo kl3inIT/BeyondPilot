@@ -127,13 +127,14 @@ class AuthorizationServerConfiguration {
 	@Bean
 	@Order(1)
 	SecurityFilterChain authorizationServerFilterChain(HttpSecurity http, McpClients clients, McpTokens tokens,
-			IdentityService identity, OAuthSettings settings) {
+			IdentityService identity, OAuthSettings settings, ClientMetadataDocuments documents) {
 		McpConsent consent = new McpConsent(tokens, identity);
 		OAuth2AuthorizationServerConfigurer server = new OAuth2AuthorizationServerConfigurer();
 		http.securityMatcher(server.getEndpointsMatcher())
 			.with(server, as -> as.registeredClientRepository(clients)
 				.authorizationEndpoint(endpoint -> endpoint.consentPage(AuthorizationServerHttp.CONSENT_PAGE)
 					.authorizationResponseHandler(AuthorizationServerHttp.codeWithIssuer(settings))
+					.errorResponseHandler(AuthorizationServerHttp.errorAnswer(settings, documents))
 					.authenticationProviders(providers -> providers.replaceAll(provider -> switch (provider) {
 						case OAuth2AuthorizationCodeRequestAuthenticationProvider request -> {
 							request.setAuthenticationValidator(consent.requestValidator());

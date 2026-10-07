@@ -20,8 +20,8 @@ import org.springframework.web.client.RestClient;
 
 /**
  * The only way the authorization server reads an address an outsider names: client ID metadata documents and the keys
- * a client signs with. It connects to public addresses only ({@link PublicAddresses}), follows no redirect, gives up
- * after five seconds and reads at most a set number of bytes.
+ * a client signs with. It connects to public addresses only ({@link PublicAddresses}), follows no redirect, reads at
+ * most a set number of bytes, and gives up five seconds after asking, however slowly the answer trickles in.
  */
 final class OutsideHttp {
 
@@ -56,6 +56,7 @@ final class OutsideHttp {
 
 	private static ClientHttpRequestInterceptor limit(int maxBytes) {
 		return (request, body, execution) -> {
+			long started = System.nanoTime();
 			ClientHttpResponse response = execution.execute(request, body);
 			return new ClientHttpResponse() {
 
@@ -76,7 +77,7 @@ final class OutsideHttp {
 
 				@Override
 				public InputStream getBody() throws IOException {
-					return new Bounded(response.getBody(), maxBytes);
+					return new Bounded(response.getBody(), maxBytes, started);
 				}
 
 				@Override
@@ -88,14 +89,22 @@ final class OutsideHttp {
 		};
 	}
 
-	/** Fails once more than the limit has been read. */
+	/**
+	 * Fails once more than the limit has been read, or once the whole exchange has lasted longer than allowed: the
+	 * socket timeout alone resets with every byte.
+	 */
 	private static final class Bounded extends FilterInputStream {
+
+		private static final long DEADLINE = TimeUnit.SECONDS.toNanos(5);
 
 		private long left;
 
-		Bounded(InputStream in, int limit) {
+		private final long started;
+
+		Bounded(InputStream in, int limit, long started) {
 			super(in);
 			this.left = limit;
+			this.started = started;
 		}
 
 		@Override
@@ -117,6 +126,9 @@ final class OutsideHttp {
 		}
 
 		private void spend(int bytes) throws IOException {
+			if (System.nanoTime() - started > DEADLINE) {
+				throw new IOException("The answer took longer than allowed");
+			}
 			left -= bytes;
 			if (left < 0) {
 				throw new IOException("The answer is longer than allowed");

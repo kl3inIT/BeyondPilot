@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * What the consent page shows of an app waiting for a person's answer: who it is, where its document lives, where the
- * answer goes, and whether BeyondPilot has reviewed its host. The request is found by its state and must be this
+ * answer goes, and whether BeyondPilot has reviewed its host. An app on a host not reviewed is named by its host. The request is found by its state and must be this
  * person's, so nobody reads another's.
  */
 @Component
@@ -54,9 +54,12 @@ public class ConnectingApps {
 		URI document = own ? null : uri(clientId);
 		String host = document == null ? null : document.getHost().toLowerCase(Locale.ROOT);
 		boolean local = clientId.equals(McpClients.LOCAL) || !"https".equals(redirect.getScheme());
-		return Optional.of(new ConnectingApp(client.getClientId(), client.getClientName(), host,
-				local ? null : redirect.getHost().toLowerCase(Locale.ROOT), local,
-				own ? !clientId.equals(McpClients.LOCAL) : host != null && documents.isReviewed(host),
+		boolean reviewed = own ? !clientId.equals(McpClients.LOCAL) : host != null && documents.isReviewed(host);
+		// A document on a host BeyondPilot has not reviewed may call itself anything, Claude included: its host is
+		// what the person can trust, so it stands in for the name.
+		String name = reviewed || own || host == null ? client.getClientName() : host;
+		return Optional.of(new ConnectingApp(client.getClientId(), name, host,
+				local ? null : redirect.getHost().toLowerCase(Locale.ROOT), local, reviewed,
 				clientId.equals(McpClients.LOCAL)));
 	}
 

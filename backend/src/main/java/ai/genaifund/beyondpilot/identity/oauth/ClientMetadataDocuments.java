@@ -1,9 +1,15 @@
 package ai.genaifund.beyondpilot.identity.oauth;
 
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -37,10 +43,12 @@ import tools.jackson.databind.json.JsonMapper;
  * hosts. The fetch goes through {@link OutsideHttp}: public addresses only, no redirect, five seconds, five kilobytes.
  * <p>
  * Anyone can send any address, so the server never calls out without end: an address that could not be read is not
- * fetched again for a few minutes; fetches are limited per minute for each requester, each document host and all of
- * them together; and requests for one address at once share one fetch. A new app is first read when a person's browser
- * asks to connect it, from that person's own address, so an outsider spending their own share does not stop it; an app
- * read before keeps its stored document whenever a fetch is refused.
+ * fetched again for a few minutes; fetches are limited per minute for each requester (an IPv6 requester by its /64,
+ * which one person holds whole), each document host and all of them together; and requests for one address at once
+ * share one fetch. A new app is first read when a person's browser asks to connect it, from that person's own address,
+ * so an outsider spending their own share does not stop it. An outsider cannot spend a reviewed host's share, which has
+ * none, nor stop an app read before from being read again, which spends no host's or common share and keeps its stored
+ * document whenever a fetch is refused.
  */
 @Component
 class ClientMetadataDocuments {
@@ -115,8 +123,18 @@ class ClientMetadataDocuments {
 	 * (docs/runbooks/ci-cd.md › The reverse proxy). Calls outside a request, which only tests make, share one share.
 	 */
 	private static String requester() {
-		return RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes current
+		String address = RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes current
 				? current.getRequest().getRemoteAddr() : "none";
+		try {
+			if (address.contains(":") && InetAddress.getByName(address) instanceof Inet6Address v6) {
+				byte[] prefix = Arrays.copyOf(v6.getAddress(), 8);
+				return "v6:" + HexFormat.of().formatHex(prefix);
+			}
+		}
+		catch (UnknownHostException notAnAddress) {
+			return address;
+		}
+		return address;
 	}
 
 	/**
@@ -149,11 +167,12 @@ class ClientMetadataDocuments {
 
 	/**
 	 * The app the document at this address describes, and how long to keep it.
+	 * @param stored whether this app was read before, so this is a read again that spends no host's or common share
 	 * @return empty when the address may not be fetched, the document cannot be read or does not describe a usable
 	 * client; also, without asking the host, when the address could not be read in the last few minutes or a share of
 	 * the minute's fetches is spent
 	 */
-	Optional<Fetched> fetch(String clientId) {
+	Optional<Fetched> fetch(String clientId, boolean stored) {
 		if (!isDocumentAddress(clientId) || unreadable.getIfPresent(clientId) != null) {
 			return Optional.empty();
 		}
@@ -163,7 +182,7 @@ class ClientMetadataDocuments {
 			return running.join();
 		}
 		try {
-			Optional<Fetched> fetched = limitedRead(clientId);
+			Optional<Fetched> fetched = limitedRead(clientId, stored);
 			mine.complete(fetched);
 			return fetched;
 		}
@@ -176,11 +195,16 @@ class ClientMetadataDocuments {
 		}
 	}
 
-	private Optional<Fetched> limitedRead(String clientId) {
+	private Optional<Fetched> limitedRead(String clientId, boolean stored) {
 		String host = URI.create(clientId).getHost().toLowerCase(Locale.ROOT);
 		Bucket requester = requesters.get(requester(), key -> perMinute(settings.documentFetchesPerRequesterPerMinute()));
-		Bucket ofHost = hosts.get(host, key -> perMinute(settings.documentFetchesPerHostPerMinute()));
-		if (!requester.tryConsume(1) || !ofHost.tryConsume(1) || !fetches.tryConsume(1)) {
+		boolean allowed = requester.tryConsume(1);
+		if (allowed && !stored) {
+			allowed = (isReviewed(host)
+					|| hosts.get(host, key -> perMinute(settings.documentFetchesPerHostPerMinute())).tryConsume(1))
+					&& fetches.tryConsume(1);
+		}
+		if (!allowed) {
 			LOG.atWarn()
 				.addKeyValue("event", "identity.oauth.client_document_fetches_limited")
 				.log("Client ID metadata documents are being fetched too often; this one was not");
@@ -243,7 +267,8 @@ class ClientMetadataDocuments {
 	 * What BeyondPilot keeps of the document at {@code clientId}, or empty when it does not describe a usable client:
 	 * it must name its own address, keep at least one accepted redirect, and authenticate with nothing or with a key
 	 * published on its own host. Accepted redirects: HTTPS on the document's host, this computer on any port, or an
-	 * app's own scheme such as {@code cursor://}. Unknown fields are ignored, so a document cannot set anything else.
+	 * app's own scheme named after the reverse of the document's host, such as {@code dev.zed://} for a document on
+	 * {@code zed.dev}. Unknown fields are ignored, so a document cannot set anything else.
 	 */
 	Optional<ClientMetadata> metadata(String clientId, JsonNode document) {
 		if (!clientId.equals(document.path("client_id").asString(""))) {
@@ -282,8 +307,17 @@ class ClientMetadataDocuments {
 		return switch (scheme) {
 			case "https" -> host.equalsIgnoreCase(uri.getHost());
 			case "http" -> RedirectAddresses.isThisComputer(uri.getHost());
-			default -> SCHEME.matcher(scheme).matches() && !FORBIDDEN_SCHEMES.contains(scheme);
+			// An app's own scheme is named after the reverse of a domain it holds (RFC 8252 §7.1), here the document's:
+			// any other could open another app, a browser among them, that sends the code elsewhere.
+			default -> SCHEME.matcher(scheme).matches() && !FORBIDDEN_SCHEMES.contains(scheme)
+					&& (scheme.equals(reversed(host)) || scheme.startsWith(reversed(host) + "."));
 		};
+	}
+
+	private static String reversed(String host) {
+		List<String> labels = new ArrayList<>(List.of(host.toLowerCase(Locale.ROOT).split("\\.")));
+		Collections.reverse(labels);
+		return String.join(".", labels);
 	}
 
 	private static boolean sameHttpsHost(String value, String host) {

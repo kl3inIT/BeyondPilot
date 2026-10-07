@@ -91,11 +91,12 @@ class ClientMetadataDocumentsTest {
 	}
 
 	@Test
-	void redirectsKeptAreTheDocumentsHostThisComputerOrTheAppsOwnScheme() {
+	void redirectsKeptAreTheDocumentsHostThisComputerOrASchemeNamedAfterIt() {
 		var metadata = documents.metadata(CLAUDE, json.readTree("""
 				{"client_id": "%s", "client_name": "Claude",
 				 "redirect_uris": ["https://claude.ai/api/mcp/auth_callback", "http://localhost/callback",
-				                   "http://[::1]/cb", "claude://auth/callback", "https://attacker.example/cb",
+				                   "http://[::1]/cb", "ai.claude://auth/callback", "ai.claude.code://cb",
+				                   "claude://auth/callback", "x-safari-https://attacker.example/cb", "https://attacker.example/cb",
 				                   "http://claude.ai/cb", "javascript://alert(1)", "data:text/html,x",
 				                   "https://claude.ai/cb#x", "https://user@claude.ai/cb"]}
 				""".formatted(CLAUDE)));
@@ -103,7 +104,7 @@ class ClientMetadataDocumentsTest {
 		assertThat(metadata).hasValueSatisfying(client -> {
 			assertThat(client.name()).isEqualTo("Claude");
 			assertThat(client.redirectUris()).containsExactly("https://claude.ai/api/mcp/auth_callback",
-					"http://localhost/callback", "http://[::1]/cb", "claude://auth/callback");
+					"http://localhost/callback", "http://[::1]/cb", "ai.claude://auth/callback", "ai.claude.code://cb");
 			assertThat(client.authenticationMethod()).isEqualTo("none");
 		});
 	}
@@ -160,7 +161,7 @@ class ClientMetadataDocumentsTest {
 		ClientMetadataDocuments unreachable = counting(settings(true, 10, 30, 120), calls);
 
 		for (int attempt = 0; attempt < 5; attempt++) {
-			assertThat(unreachable.fetch("https://claude.ai/missing")).isEmpty();
+			assertThat(unreachable.fetch("https://claude.ai/missing", false)).isEmpty();
 		}
 
 		assertThat(calls).hasValue(1);
@@ -173,12 +174,12 @@ class ClientMetadataDocumentsTest {
 
 		requestFrom("203.0.113.7");
 		for (int address = 0; address < 10; address++) {
-			limited.fetch("https://claude.ai/client-" + address);
+			limited.fetch("https://claude.ai/client-" + address, false);
 		}
 		assertThat(calls).hasValue(3);
 
 		requestFrom("198.51.100.20");
-		limited.fetch("https://chatgpt.com/oauth/client.json");
+		limited.fetch("https://chatgpt.com/oauth/client.json", false);
 		assertThat(calls).hasValue(4);
 	}
 
@@ -189,11 +190,11 @@ class ClientMetadataDocumentsTest {
 
 		for (int address = 0; address < 10; address++) {
 			requestFrom("203.0.113." + address);
-			limited.fetch("https://spam.example/client-" + address);
+			limited.fetch("https://spam.example/client-" + address, false);
 		}
 		assertThat(calls).hasValue(3);
 
-		limited.fetch("https://zed.dev/oauth/client-metadata.json");
+		limited.fetch("https://zed.dev/oauth/client-metadata.json", false);
 		assertThat(calls).hasValue(4);
 	}
 
@@ -204,7 +205,36 @@ class ClientMetadataDocumentsTest {
 
 		for (int requester = 0; requester < 10; requester++) {
 			requestFrom("203.0.113." + requester);
-			limited.fetch("https://claude.ai/client-" + requester);
+			limited.fetch("https://spam.example/client-" + requester, false);
+		}
+
+		assertThat(calls).hasValue(3);
+	}
+
+	@Test
+	void anOutsiderCannotSpendAReviewedHostsShareNorStopAStoredAppBeingReadAgain() {
+		AtomicInteger calls = new AtomicInteger();
+		ClientMetadataDocuments limited = counting(settings(true, 100, 3, 5), calls);
+
+		for (int address = 0; address < 5; address++) {
+			requestFrom("203.0.113." + address);
+			limited.fetch("https://claude.ai/fake-" + address, false);
+		}
+		assertThat(calls).hasValue(5);
+
+		requestFrom("198.51.100.1");
+		limited.fetch("https://claude.ai/oauth/mcp-oauth-client-metadata", true);
+		assertThat(calls).hasValue(6);
+	}
+
+	@Test
+	void oneIpv6NetworkIsOneRequester() {
+		AtomicInteger calls = new AtomicInteger();
+		ClientMetadataDocuments limited = counting(settings(true, 3, 100, 120), calls);
+
+		for (int address = 1; address <= 10; address++) {
+			requestFrom("2001:4860:4860:1::" + Integer.toHexString(address));
+			limited.fetch("https://spam.example/client-" + address, false);
 		}
 
 		assertThat(calls).hasValue(3);

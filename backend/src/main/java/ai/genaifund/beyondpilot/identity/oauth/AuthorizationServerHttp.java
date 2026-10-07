@@ -20,9 +20,14 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationCode;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationException;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationToken;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -73,6 +78,51 @@ final class AuthorizationServerHttp {
 			uri.queryParam("iss", UriUtils.encode(settings.issuer(), StandardCharsets.UTF_8));
 			response.sendRedirect(uri.build(true).toUriString());
 		};
+	}
+
+	/**
+	 * The error sent back to the app, with the issuer. Not for a request no person has answered yet from an app on a
+	 * host BeyondPilot has not reviewed: anyone can publish such an app with redirects to their own site, and sending a
+	 * browser there straight from BeyondPilot would make it an open redirect (RFC 9700 §4.11.2). That error is shown
+	 * here instead. After the person's answer, as when they deny, it goes back to the app.
+	 */
+	static AuthenticationFailureHandler errorAnswer(OAuthSettings settings, ClientMetadataDocuments documents) {
+		return (request, response, failure) -> {
+			OAuth2Error error = failure instanceof OAuth2AuthenticationException oauth ? oauth.getError()
+					: new OAuth2Error(OAuth2ErrorCodes.INVALID_REQUEST);
+			OAuth2AuthorizationCodeRequestAuthenticationToken asked = failure instanceof OAuth2AuthorizationCodeRequestAuthenticationException codeRequest
+					? codeRequest.getAuthorizationCodeRequestAuthentication() : null;
+			String redirect = asked == null ? null : asked.getRedirectUri();
+			if (redirect == null || redirect.isEmpty()
+					|| ("GET".equals(request.getMethod()) && !isReviewedOrOwn(asked.getClientId(), documents))) {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, error.getErrorCode());
+				return;
+			}
+			UriComponentsBuilder uri = UriComponentsBuilder.fromUriString(redirect)
+				.queryParam(OAuth2ParameterNames.ERROR, error.getErrorCode());
+			if (error.getDescription() != null && !error.getDescription().isEmpty()) {
+				uri.queryParam(OAuth2ParameterNames.ERROR_DESCRIPTION,
+						UriUtils.encode(error.getDescription(), StandardCharsets.UTF_8));
+			}
+			if (asked.getState() != null && !asked.getState().isEmpty()) {
+				uri.queryParam(OAuth2ParameterNames.STATE, UriUtils.encode(asked.getState(), StandardCharsets.UTF_8));
+			}
+			uri.queryParam("iss", UriUtils.encode(settings.issuer(), StandardCharsets.UTF_8));
+			response.sendRedirect(uri.build(true).toUriString());
+		};
+	}
+
+	private static boolean isReviewedOrOwn(String clientId, ClientMetadataDocuments documents) {
+		if (clientId.equals(McpClients.CURSOR) || clientId.equals(McpClients.LOCAL)) {
+			return true;
+		}
+		try {
+			String host = java.net.URI.create(clientId).getHost();
+			return host != null && documents.isReviewed(host);
+		}
+		catch (IllegalArgumentException malformed) {
+			return false;
+		}
 	}
 
 	/**
