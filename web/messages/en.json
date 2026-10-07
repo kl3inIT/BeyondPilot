@@ -62,7 +62,9 @@
       "linkedin": "LinkedIn",
       "facebook": "Facebook",
       "x": "X",
-      "copyright": "© {year} BeyondPilot"
+      "copyright": "© {year} BeyondPilot",
+      "privacy": "Privacy",
+      "terms": "Terms"
     }
   },
   "Campaign": {
@@ -5501,5 +5503,192 @@
       "action": "Publish a use case"
     },
     "anonymous": "Organization not named"
+  },
+  "Legal": {
+    "updated": "Last updated: {date}",
+    "contents": "On this page",
+    "privacy": {
+      "metaTitle": "Privacy Policy",
+      "title": "Privacy Policy",
+      "intro": "This policy explains what personal data BeyondPilot collects, why, who it is shared with, and the choices you have. BeyondPilot is an AI adoption platform backed by GenAI Fund that connects enterprises with AI solutions, talent, use cases, events and programs.",
+      "sections": [
+        {
+          "heading": "Who we are",
+          "body": [
+            "BeyondPilot operates the website and web application at beyondpilot.ai. For any privacy question or request, write to team@beyondpilot.ai."
+          ]
+        },
+        {
+          "heading": "What we collect",
+          "body": ["We collect only what the platform needs to work:"],
+          "items": [
+            "Account details: your name and email address, and, when you add them, your phone number, country, job title, LinkedIn profile and photo.",
+            "Sign-in with Google: your name, email address and profile picture from your Google account. We do not read your Gmail, contacts or files.",
+            "What you publish or submit: organization profiles, AI solutions, use cases, proposals, talent profiles, enquiries and introduction requests, and the files you upload with them, such as decks and attachments.",
+            "Activity needed to run the service safely: sign-in times, security events and a record of administrative actions.",
+            "Technical data: your IP address and browser type in server logs, kept for security and troubleshooting."
+          ]
+        },
+        {
+          "heading": "How we use it",
+          "items": [
+            "To create and secure your account and sign you in.",
+            "To show the profiles, solutions and use cases you choose to publish.",
+            "To help enterprises and AI providers find each other, including search and AI-assisted matching of use cases with solutions.",
+            "To review applications to programs and challenges, and to send you emails about your account, submissions and decisions.",
+            "To keep the platform safe, prevent abuse and meet legal obligations."
+          ]
+        },
+        {
+          "heading": "AI features",
+          "body": [
+            "Search and matching use AI models to read the text of public profiles, solutions, decks and use cases. That text is sent to our AI provider (OpenAI, directly or through OpenRouter) only to produce search results and match explanations. We do not use your data to train AI models, and our providers process it under their API terms, which do not allow training on it either."
+          ]
+        },
+        {
+          "heading": "What is public",
+          "body": [
+            "Profiles, solutions and use cases are public only once they are approved and listed. An organization can keep a use case anonymous, and an owner can unlist a solution at any time. Proposals, enquiries, introductions, contact details and uploaded files that are not marked public are visible only to you, the people you send them to, and GenAI Fund operators."
+          ]
+        },
+        {
+          "heading": "Who we share it with",
+          "body": [
+            "We do not sell personal data. We share it only with the service providers that run the platform for us, each bound to use it only for that purpose:"
+          ],
+          "items": [
+            "Hosting and storage on servers we operate.",
+            "Email delivery through Resend.",
+            "Sign-in through Google.",
+            "AI processing through OpenAI and OpenRouter."
+          ],
+          "after": [
+            "We may also disclose data when the law requires it, or to protect the rights and safety of our users."
+          ]
+        },
+        {
+          "heading": "Cookies",
+          "body": [
+            "We use a session cookie to keep you signed in and a cookie to remember your language. We do not use advertising or third-party tracking cookies."
+          ]
+        },
+        {
+          "heading": "How long we keep it",
+          "body": [
+            "We keep your data while your account is active. When you delete your account or ask us to, we delete or anonymize your personal data within 30 days, except what we must keep for legal, security or audit reasons. Submissions to a program may be kept as part of that program's record."
+          ]
+        },
+        {
+          "heading": "Your choices and rights",
+          "body": [
+            "You can view and edit most of your data in your account. You can also ask us to give you a copy of your data, correct it, delete it, or stop processing it, by writing to team@beyondpilot.ai. We answer within 30 days."
+          ]
+        },
+        {
+          "heading": "Security",
+          "body": [
+            "We protect data in transit with HTTPS, encrypt stored credentials and provider keys, limit access to operators who need it, and record administrative actions. No system is perfectly secure; if a breach affects you, we will tell you."
+          ]
+        },
+        {
+          "heading": "International processing",
+          "body": [
+            "Our providers may process data outside your country. When they do, we rely on their contractual safeguards to protect it."
+          ]
+        },
+        {
+          "heading": "Children",
+          "body": [
+            "BeyondPilot is meant for professionals and is not directed at children under 16. We do not knowingly collect their data."
+          ]
+        },
+        {
+          "heading": "Changes",
+          "body": [
+            "We will update this page when our practices change, and tell signed-in users about significant changes before they take effect."
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "metaTitle": "Terms of Service",
+      "title": "Terms of Service",
+      "intro": "These terms govern your use of BeyondPilot at beyondpilot.ai. By creating an account or using the platform, you agree to them.",
+      "sections": [
+        {
+          "heading": "The service",
+          "body": [
+            "BeyondPilot helps enterprises and AI providers find each other. It lists AI solutions, talent, use cases, events and programs, and lets you publish your own, apply to programs and challenges, and request introductions. Some features are labelled as previews and may change."
+          ]
+        },
+        {
+          "heading": "Your account",
+          "items": [
+            "You must give accurate information and keep your sign-in secure.",
+            "You are responsible for what happens in your account, and for the organization you act for.",
+            "You must be at least 16 and able to enter into this agreement."
+          ]
+        },
+        {
+          "heading": "What you publish",
+          "body": [
+            "You keep ownership of the content you publish or submit. You allow us to host, display and process it to run the platform, including showing listed content publicly and using it for search and matching. You confirm that you have the right to share it and that it is accurate and lawful."
+          ]
+        },
+        {
+          "heading": "Review and listing",
+          "body": [
+            "GenAI Fund reviews organizations, solutions, use cases and talent profiles before they are listed, and may decline, unlist or remove content that is inaccurate, misleading or breaks these terms. Approval does not mean endorsement."
+          ]
+        },
+        {
+          "heading": "Applications, proposals and introductions",
+          "body": [
+            "When you apply to a program or send a proposal, its organizers and reviewers can read it. Program outcomes are decided by their organizers. Commercial terms, NDAs and any pilot are agreed directly between the parties; BeyondPilot is not a party to them."
+          ]
+        },
+        {
+          "heading": "AI features",
+          "body": [
+            "AI-assisted search and matching help you find options faster. Their results may be incomplete or wrong. Check the sources shown and make your own decisions."
+          ]
+        },
+        {
+          "heading": "Acceptable use",
+          "body": ["Do not:"],
+          "items": [
+            "publish false information or impersonate anyone;",
+            "send spam or unsolicited commercial messages through the platform;",
+            "scrape, copy or resell the directory, or access it by automated means outside the tools we provide;",
+            "try to break, overload or bypass the platform's security;",
+            "upload unlawful content or content you have no right to share."
+          ]
+        },
+        {
+          "heading": "Our platform",
+          "body": [
+            "BeyondPilot, its software and design belong to us and our licensors. These terms do not give you any right to them beyond using the platform as offered."
+          ]
+        },
+        {
+          "heading": "Suspension and closing your account",
+          "body": [
+            "You can stop using BeyondPilot and ask us to close your account at any time. We may suspend or close an account that breaks these terms or puts other users at risk, and will tell you why unless the law prevents it."
+          ]
+        },
+        {
+          "heading": "Disclaimers and liability",
+          "body": [
+            "The platform is provided as is. We do not guarantee that a listing is accurate, that a match will lead to business, or that the service will always be available. To the extent the law allows, we are not liable for indirect or consequential losses, and our total liability is limited to the amount you paid us in the past 12 months."
+          ]
+        },
+        {
+          "heading": "Changes and governing law",
+          "body": [
+            "We may update these terms and will tell signed-in users about significant changes before they take effect. These terms are governed by the laws of Vietnam. Questions: team@beyondpilot.ai."
+          ]
+        }
+      ]
+    }
   }
 }
