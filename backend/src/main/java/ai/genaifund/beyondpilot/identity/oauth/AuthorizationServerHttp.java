@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityException;
 import ai.genaifund.beyondpilot.identity.IdentityService;
+import ai.genaifund.beyondpilot.identity.persistence.AppHostRepository;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -86,7 +87,7 @@ final class AuthorizationServerHttp {
 	 * browser there straight from BeyondPilot would make it an open redirect (RFC 9700 §4.11.2). That error is shown
 	 * here instead. After the person's answer, as when they deny, it goes back to the app.
 	 */
-	static AuthenticationFailureHandler errorAnswer(OAuthSettings settings, ClientMetadataDocuments documents) {
+	static AuthenticationFailureHandler errorAnswer(OAuthSettings settings, AppHostRepository hosts) {
 		return (request, response, failure) -> {
 			OAuth2Error error = failure instanceof OAuth2AuthenticationException oauth ? oauth.getError()
 					: new OAuth2Error(OAuth2ErrorCodes.INVALID_REQUEST);
@@ -94,7 +95,7 @@ final class AuthorizationServerHttp {
 					? codeRequest.getAuthorizationCodeRequestAuthentication() : null;
 			String redirect = asked == null ? null : asked.getRedirectUri();
 			if (redirect == null || redirect.isEmpty()
-					|| (!isPersonsAnswer(request) && !isReviewedOrOwn(asked.getClientId(), documents))) {
+					|| (!isPersonsAnswer(request) && !isReviewedOrOwn(asked.getClientId(), hosts))) {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, error.getErrorCode());
 				return;
 			}
@@ -120,13 +121,13 @@ final class AuthorizationServerHttp {
 		return "POST".equals(request.getMethod()) && request.getParameter(OAuth2ParameterNames.RESPONSE_TYPE) == null;
 	}
 
-	private static boolean isReviewedOrOwn(String clientId, ClientMetadataDocuments documents) {
+	private static boolean isReviewedOrOwn(String clientId, AppHostRepository hosts) {
 		if (clientId.equals(McpClients.CURSOR) || clientId.equals(McpClients.LOCAL)) {
 			return true;
 		}
 		try {
 			String host = java.net.URI.create(clientId).getHost();
-			return host != null && documents.isReviewed(host);
+			return host != null && hosts.isReviewed(host.toLowerCase(java.util.Locale.ROOT));
 		}
 		catch (IllegalArgumentException malformed) {
 			return false;

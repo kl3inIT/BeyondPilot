@@ -197,6 +197,17 @@ public class SolutionDirectory {
 			.filter(IndexedSolution::listed);
 	}
 
+	/**
+	 * An approved solution by its address, listed or not, not taken down, with an approved organization; empty for any
+	 * other. For the operators' MCP server's {@code fetch}.
+	 */
+	@Transactional(readOnly = true)
+	public Optional<IndexedSolution> approved(String slug) {
+		return solutions.findBySlug(slug)
+			.filter(Solution::isApproved)
+			.flatMap(solution -> indexed(List.of(solution)).stream().findFirst());
+	}
+
 	/** Every approved solution not taken down as search indexes it, for a rebuild of the index. */
 	@Transactional(readOnly = true)
 	public List<IndexedSolution> indexedAll() {

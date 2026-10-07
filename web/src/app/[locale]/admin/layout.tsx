@@ -88,6 +88,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
           label: t("nav.searchIndex"),
           icon: <adminIcons.searchIndex aria-hidden="true" />,
         },
+        {
+          href: siteRoutes.adminMcp,
+          label: t("nav.mcp"),
+          icon: <adminIcons.mcp aria-hidden="true" />,
+        },
       ],
     },
     {

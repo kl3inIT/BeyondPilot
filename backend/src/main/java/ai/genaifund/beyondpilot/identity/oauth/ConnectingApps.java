@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.identity.persistence.AppHostRepository;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
@@ -29,12 +30,12 @@ public class ConnectingApps {
 
 	private final OAuth2AuthorizationService authorizations;
 
-	private final ClientMetadataDocuments documents;
+	private final AppHostRepository hosts;
 
-	ConnectingApps(McpClients clients, OAuth2AuthorizationService authorizations, ClientMetadataDocuments documents) {
+	ConnectingApps(McpClients clients, OAuth2AuthorizationService authorizations, AppHostRepository hosts) {
 		this.clients = clients;
 		this.authorizations = authorizations;
-		this.documents = documents;
+		this.hosts = hosts;
 	}
 
 	/** The app, or empty when no request of this person's waits with this client and state. */
@@ -66,7 +67,7 @@ public class ConnectingApps {
 		URI document = own ? null : uri(clientId);
 		String host = document == null || document.getHost() == null ? null
 				: document.getHost().toLowerCase(Locale.ROOT);
-		boolean reviewed = own ? !clientId.equals(McpClients.LOCAL) : host != null && documents.isReviewed(host);
+		boolean reviewed = own ? !clientId.equals(McpClients.LOCAL) : host != null && hosts.isReviewed(host);
 		return new AppIdentity(reviewed || own || host == null ? clientName : host, host, reviewed);
 	}
 

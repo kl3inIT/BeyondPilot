@@ -65,4 +65,57 @@ test.describe("MCP", () => {
     await page.getByRole("menuitem", { name: "MCP" }).click();
     await expect(page).toHaveURL(/\/account\/mcp$/);
   });
+
+  test("an operator finds the operators' server, switches a tool and trusts a host", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/ai/mcp");
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("MCP");
+    await expect(page.getByLabel("Server address").first()).toHaveValue(
+      "https://beyondpilot.test/mcp/operator",
+    );
+    await page.getByRole("tab", { name: "Other apps" }).click();
+    await expect(page.getByText(/signs in as mcp-local/)).toBeVisible();
+    const trusted = page.getByRole("region", { name: "Trusted app hosts" });
+    await expect(trusted.getByText("zed.dev")).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+
+    const added: unknown[] = [];
+    await page.route("**/api/identity/admin/app-hosts/add", async (route) => {
+      added.push(route.request().postDataJSON());
+      await route.fulfill({ status: 204 });
+    });
+    await trusted.getByRole("textbox", { name: "Add host" }).fill("app.example.com");
+    await trusted.getByRole("button", { name: "Add host" }).click();
+    await expect.poll(() => added).toEqual([{ host: "app.example.com" }]);
+
+    await page.getByRole("link", { name: /Tools/ }).click();
+    await expect(page).toHaveURL(/\/admin\/ai\/mcp\/tools$/);
+    const switched: unknown[] = [];
+    await page.route("**/api/mcp/admin/tools/**", async (route) => {
+      switched.push([new URL(route.request().url()).pathname, route.request().postDataJSON()]);
+      await route.fulfill({ status: 204 });
+    });
+    const user = page.getByRole("region", { name: "User server" });
+    await expect(user.getByRole("switch", { name: "Turn fetch on or off" })).not.toBeChecked();
+    await user.getByRole("switch", { name: "Turn fetch on or off" }).click();
+    await expect
+      .poll(() => switched)
+      .toEqual([["/api/mcp/admin/tools/user/fetch", { enabled: true }]]);
+    await expectNoSeriousA11yViolations(page);
+  });
+
+  test("someone who is not an operator is not shown the MCP admin", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "unnamed", baseURL!);
+    const response = await page.goto("/admin/ai/mcp");
+    expect(response?.status()).toBe(404);
+  });
 });

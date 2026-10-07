@@ -6,6 +6,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.identity.persistence.AppHostRepository;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -46,10 +47,13 @@ class McpClients implements RegisteredClientRepository {
 
 	private final OAuthSettings settings;
 
-	McpClients(JdbcOperations jdbc, ClientMetadataDocuments documents, OAuthSettings settings) {
+	private final AppHostRepository hosts;
+
+	McpClients(JdbcOperations jdbc, ClientMetadataDocuments documents, OAuthSettings settings, AppHostRepository hosts) {
 		this.stored = new JdbcRegisteredClientRepository(jdbc);
 		this.documents = documents;
 		this.settings = settings;
+		this.hosts = hosts;
 	}
 
 	@Override
@@ -66,15 +70,19 @@ class McpClients implements RegisteredClientRepository {
 	public @Nullable RegisteredClient findByClientId(String clientId) {
 		RegisteredClient known = stored.findByClientId(clientId);
 		if (!documents.isDocumentAddress(clientId)) {
-			// An app whose host is no longer allowed loses its stored document with it.
 			return known == null || isOwn(known) ? known : null;
+		}
+		boolean reviewed = hosts.isReviewed(ClientMetadataDocuments.hostOf(clientId));
+		if (!reviewed && !hosts.allowOtherHosts()) {
+			// Operators let only reviewed hosts connect: an app of another host is refused, stored or not.
+			return null;
 		}
 		if (known != null && Instant.now().isBefore(freshUntil(known))) {
 			return known;
 		}
 		// A document that cannot be read now keeps the version stored, so a short outage of the app's host signs
 		// nobody out; one never read is refused.
-		return documents.fetch(clientId, known != null).map(fetched -> {
+		return documents.fetch(clientId, known != null, reviewed).map(fetched -> {
 			RegisteredClient client = fromDocument(fetched);
 			stored.save(client);
 			return client;

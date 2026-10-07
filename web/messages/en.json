@@ -311,6 +311,12 @@
           "name": "Codex",
           "step1": "Run codex mcp add beyondpilot --url {address}",
           "step2": "Run codex mcp login beyondpilot, sign in and choose Allow"
+        },
+        "other": {
+          "name": "Other apps",
+          "step1": "Add the server {address} as streamable HTTP with OAuth",
+          "step2": "An app that names no client of its own signs in as mcp-local",
+          "step3": "Sign in to BeyondPilot and choose Allow"
         }
       },
       "askTitle": "Or ask your AI to set it up",
@@ -359,6 +365,7 @@
       "ai": "AI",
       "aiProviders": "Providers",
       "searchIndex": "Search index",
+      "mcp": "MCP",
       "email": "Email"
     },
     "toggleSidebar": "Toggle sidebar",
@@ -864,7 +871,15 @@
           "embedding_retry": "Let refused items be embedded again"
         },
         "mcp": {
-          "app_revoke": "Revoked an AI app"
+          "app_revoke": "Revoked an AI app",
+          "host_add": "Trusted an app host",
+          "host_remove": "Removed a trusted app host",
+          "other_hosts_allow": "Allowed apps from other hosts",
+          "other_hosts_refuse": "Stopped apps from other hosts",
+          "user_server_enable": "Turned the user MCP server on",
+          "user_server_disable": "Turned the user MCP server off",
+          "tool_enable": "Turned an MCP tool on",
+          "tool_disable": "Turned an MCP tool off"
         }
       },
       "activity": {
@@ -961,7 +976,15 @@
           "embedding_retry": "Let refused items of <resource></resource> be embedded again"
         },
         "mcp": {
-          "app_revoke": "Revoked the AI app <resource></resource>"
+          "app_revoke": "Revoked the AI app <resource></resource>",
+          "host_add": "Trusted the app host <resource></resource>",
+          "host_remove": "Removed the trusted app host <resource></resource>",
+          "other_hosts_allow": "Allowed <resource></resource>",
+          "other_hosts_refuse": "Stopped <resource></resource>",
+          "user_server_enable": "Turned on the <resource></resource>",
+          "user_server_disable": "Turned off the <resource></resource>",
+          "tool_enable": "Turned on the MCP tool <resource></resource>",
+          "tool_disable": "Turned off the MCP tool <resource></resource>"
         }
       },
       "columns": {
@@ -1934,6 +1957,56 @@
         "off": "Semantic search is off",
         "rebuilt": "Index rebuilt: {saved} items read, {removed} removed",
         "retried": "{count, plural, =0 {Nothing to try again} one {# item is tried again at the next run} other {# items are tried again at the next run}}"
+      }
+    },
+    "mcp": {
+      "metaSetup": "MCP · Admin · BeyondPilot",
+      "metaTools": "MCP tools · Admin · BeyondPilot",
+      "title": "MCP",
+      "lead": "The servers AI apps reach BeyondPilot through, and what they may do.",
+      "tabs": {
+        "label": "MCP",
+        "setup": "Setup",
+        "tools": "Tools"
+      },
+      "saved": "Saved",
+      "failed": "That did not save. Try again.",
+      "setup": {
+        "address": "Server address",
+        "operator": {
+          "title": "Operators' server",
+          "lead": "Reads every area, listed or not. Only operators connect, and the role is checked on every call."
+        },
+        "user": {
+          "title": "User server",
+          "lead": "Every signed-in person may connect to it from their MCP page. It reads what visitors see.",
+          "on": "On: people can connect apps",
+          "off": "Off: it answers 404 and connected apps stop"
+        },
+        "hosts": {
+          "title": "Trusted app hosts",
+          "lead": "Apps from these hosts connect without a Not reviewed label.",
+          "others": "Allow apps from other hosts",
+          "othersHint": "They can connect, labelled Not reviewed on the consent screen.",
+          "add": "Add host",
+          "remove": "Remove {host}"
+        }
+      },
+      "tools": {
+        "reads": "Reads",
+        "switch": "Turn {tool} on or off",
+        "operator": {
+          "title": "Operators' server",
+          "lead": "Off, a tool leaves the list apps see and a call to it is refused.",
+          "search": "Finds solutions listed or not, programs, talent, use cases and companies.",
+          "fetch": "Reads one of them in full by the id search returned."
+        },
+        "user": {
+          "title": "User server",
+          "lead": "What any signed-in person's app may call.",
+          "search": "Finds listed solutions and published programs.",
+          "fetch": "Reads one of them in full by the id search returned."
+        }
       }
     },
     "email": {

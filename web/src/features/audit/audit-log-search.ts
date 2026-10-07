@@ -74,6 +74,14 @@ export const auditActions = [
   "search.index_rebuild",
   "search.embedding_retry",
   "mcp.app_revoke",
+  "mcp.host_add",
+  "mcp.host_remove",
+  "mcp.other_hosts_allow",
+  "mcp.other_hosts_refuse",
+  "mcp.user_server_enable",
+  "mcp.user_server_disable",
+  "mcp.tool_enable",
+  "mcp.tool_disable",
 ] as const;
 
 /**

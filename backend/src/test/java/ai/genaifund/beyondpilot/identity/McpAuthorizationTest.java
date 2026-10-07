@@ -31,6 +31,7 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.test.web.servlet.client.StatusAssertions;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -341,6 +342,112 @@ class McpAuthorizationTest {
 			.exchange()
 			.expectStatus()
 			.isBadRequest();
+	}
+
+	@Test
+	void operatorsManageTheTrustedHostsAndCanStopAppsOfOtherHosts() {
+		String clientId = "https://quiet-host.example/client.json";
+		clients.save(RegisteredClient.withId(UUID.randomUUID().toString())
+			.clientId(clientId)
+			.clientName("Quiet App")
+			.clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
+			.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+			.redirectUri("https://quiet-host.example/cb")
+			.scope("mcp.read")
+			.clientSettings(ClientSettings.builder()
+				.requireProofKey(true)
+				.requireAuthorizationConsent(true)
+				.setting("beyondpilot.document-fresh-until", Instant.now().plus(Duration.ofHours(1)).toString())
+				.build())
+			.build());
+		String person = TestSignIn.session(client, mail, "hoa.mcp@example.test");
+		String operator = TestSignIn.session(client, mail, "Operator@genaifund.test");
+
+		client.get()
+			.uri("/api/identity/admin/app-hosts")
+			.cookie(TestSignIn.SESSION_COOKIE, person)
+			.exchange()
+			.expectStatus()
+			.isForbidden();
+		client.get()
+			.uri("/api/identity/admin/app-hosts")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.allowOtherHosts")
+			.isEqualTo(true)
+			.jsonPath("$.hosts[?(@.host == 'zed.dev')]")
+			.exists();
+
+		// Trusted, the app connects without the Not reviewed label.
+		hostsChange(operator, "/add", Map.of("host", "Quiet-Host.example")).isNoContent();
+		try {
+			String state = stateOfConsentPage(person, clientId, "https://quiet-host.example/cb", "mcp.read");
+			client.get()
+				.uri("/api/identity/apps/connecting?clientId={client}&state={state}", clientId, state)
+				.cookie(TestSignIn.SESSION_COOKIE, person)
+				.exchange()
+				.expectStatus()
+				.isOk()
+				.expectBody()
+				.jsonPath("$.reviewed")
+				.isEqualTo(true);
+		}
+		finally {
+			hostsChange(operator, "/remove", Map.of("host", "quiet-host.example")).isNoContent();
+		}
+		hostsChange(operator, "/add", Map.of("host", "not a host")).isBadRequest();
+		hostsChange(operator, "/remove", Map.of("host", "never-added.example")).isNotFound();
+
+		// With apps of other hosts stopped, the app is unknown and the error is shown, not redirected.
+		client.put()
+			.uri("/api/identity/admin/app-hosts/other-hosts")
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of("allowed", false))
+			.exchange()
+			.expectStatus()
+			.isNoContent();
+		try {
+			client.get()
+				.uri(authorizeBuilder(clientId, "https://quiet-host.example/cb", "mcp.read").build().toUri())
+				.cookie(TestSignIn.SESSION_COOKIE, person)
+				.exchange()
+				.expectStatus()
+				.isBadRequest();
+		}
+		finally {
+			client.put()
+				.uri("/api/identity/admin/app-hosts/other-hosts")
+				.header(TestSignIn.CSRF_HEADER, "1")
+				.cookie(TestSignIn.SESSION_COOKIE, operator)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(Map.of("allowed", true))
+				.exchange()
+				.expectStatus()
+				.isNoContent();
+		}
+
+		assertThat(jdbc.sql("""
+				select action || ' ' || resource_id from audit_event
+				where action like 'mcp.host_%' or action like 'mcp.other_hosts_%' order by occurred_at
+				""").query(String.class).list()).containsSubsequence("mcp.host_add quiet-host.example",
+				"mcp.host_remove quiet-host.example", "mcp.other_hosts_refuse Apps from other hosts",
+				"mcp.other_hosts_allow Apps from other hosts");
+	}
+
+	private StatusAssertions hostsChange(String session, String path, Object body) {
+		return client.post()
+			.uri("/api/identity/admin/app-hosts" + path)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(body)
+			.exchange()
+			.expectStatus();
 	}
 
 	@Test

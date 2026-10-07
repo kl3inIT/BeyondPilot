@@ -63,6 +63,8 @@ tags:
 - description: "The AI providers operators connect, the model search embeds with,\
     \ and the state of the search index."
   name: AI and search administration
+- description: The MCP servers AI apps reach BeyondPilot through.
+  name: MCP
 - description: "Finding, joining and creating an organization."
   name: Organizations
 paths:
@@ -157,6 +159,14 @@ paths:
           - search.index_rebuild
           - search.embedding_retry
           - mcp.app_revoke
+          - mcp.host_add
+          - mcp.host_remove
+          - mcp.other_hosts_allow
+          - mcp.other_hosts_refuse
+          - mcp.user_server_enable
+          - mcp.user_server_disable
+          - mcp.tool_enable
+          - mcp.tool_disable
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
         in: query
@@ -447,6 +457,90 @@ paths:
       summary: Take the operator role from an account
       tags:
       - Accounts
+  /api/identity/admin/app-hosts:
+    get:
+      operationId: getAppHosts
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppHosts"
+          description: The reviewed hosts and whether others may connect.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Which AI apps may connect to the MCP servers
+      tags:
+      - Identity
+  /api/identity/admin/app-hosts/add:
+    post:
+      operationId: addAppHost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppHostRequest"
+        required: true
+      responses:
+        "204":
+          description: The host is in the list.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: It is not a host name.
+      security:
+      - session: []
+      summary: Mark a host's apps as reviewed
+      tags:
+      - Identity
+  /api/identity/admin/app-hosts/other-hosts:
+    put:
+      operationId: allowOtherAppHosts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AllowOtherHostsRequest"
+        required: true
+      responses:
+        "204":
+          description: Saved.
+      security:
+      - session: []
+      summary: "Let apps of other hosts connect, or stop them"
+      tags:
+      - Identity
+  /api/identity/admin/app-hosts/remove:
+    post:
+      operationId: removeAppHost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppHostRequest"
+        required: true
+      responses:
+        "204":
+          description: The host is no longer reviewed.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The host is not in the list.
+      security:
+      - session: []
+      summary: Take a host off the reviewed list
+      tags:
+      - Identity
   /api/identity/apps:
     get:
       operationId: listConnectedApps
@@ -777,6 +871,78 @@ paths:
       summary: "Accept a request: both sides learn each other's address"
       tags:
       - Introductions
+  /api/mcp/admin/settings:
+    get:
+      operationId: getMcpSettings
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/McpSettings"
+          description: The settings.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The MCP servers, their switches and their tools"
+      tags:
+      - MCP
+  /api/mcp/admin/tools/{server}/{tool}:
+    put:
+      operationId: switchMcpTool
+      parameters:
+      - in: path
+        name: server
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tool
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/McpSwitchRequest"
+        required: true
+      responses:
+        "204":
+          description: Saved.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: That server has no such tool.
+      security:
+      - session: []
+      summary: Turn a tool of an MCP server on or off
+      tags:
+      - MCP
+  /api/mcp/admin/user-server:
+    put:
+      operationId: switchMcpUserServer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/McpSwitchRequest"
+        required: true
+      responses:
+        "204":
+          description: Saved.
+      security:
+      - session: []
+      summary: Turn the user MCP server on or off
+      tags:
+      - MCP
   /api/notification/admin/email/messages:
     get:
       operationId: listEmailMessages
@@ -8843,6 +9009,55 @@ components:
       - baseUrl
       - id
       - models
+    AllowOtherHostsRequest:
+      type: object
+      properties:
+        allowed:
+          type: boolean
+          description: Whether apps of hosts not reviewed may connect.
+      required:
+      - allowed
+    AppHost:
+      type: object
+      properties:
+        apps:
+          type: array
+          description: The names of the apps of this host that have signed in.
+          items:
+            type: string
+        host:
+          type: string
+      required:
+      - apps
+      - host
+    AppHostRequest:
+      type: object
+      description: A host whose apps BeyondPilot has reviewed.
+      properties:
+        host:
+          type: string
+          example: app.example.com
+          maxLength: 253
+          minLength: 0
+      required:
+      - host
+    AppHosts:
+      type: object
+      description: Which AI apps may connect to the MCP servers.
+      properties:
+        allowOtherHosts:
+          type: boolean
+          description: "Whether apps of hosts not in the list may connect, labelled\
+            \ Not reviewed."
+        hosts:
+          type: array
+          description: "The hosts whose apps BeyondPilot has reviewed, in order of\
+            \ host."
+          items:
+            $ref: "#/components/schemas/AppHost"
+      required:
+      - allowOtherHosts
+      - hosts
     ApplicantOrganization:
       type: object
       description: "Who applies, for someone in no organization: themselves on their\
@@ -9232,6 +9447,14 @@ components:
           - search.index_rebuild
           - search.embedding_retry
           - mcp.app_revoke
+          - mcp.host_add
+          - mcp.host_remove
+          - mcp.other_hosts_allow
+          - mcp.other_hosts_refuse
+          - mcp.user_server_enable
+          - mcp.user_server_disable
+          - mcp.tool_enable
+          - mcp.tool_disable
         actor:
           type:
           - object
@@ -10859,6 +11082,61 @@ components:
           - requested
       required:
       - outcome
+    McpSettings:
+      type: object
+      description: "The MCP servers, their switches and their tools."
+      properties:
+        operatorServerAddress:
+          type: string
+          description: The address of the operators' server.
+        tools:
+          type: array
+          description: "Every tool of both servers, the operators' first."
+          items:
+            $ref: "#/components/schemas/McpToolSwitch"
+        userServerAddress:
+          type: string
+          description: The address of the server every signed-in person may use.
+        userServerEnabled:
+          type: boolean
+          description: "Whether the user server answers; off, it answers 404."
+      required:
+      - operatorServerAddress
+      - tools
+      - userServerAddress
+      - userServerEnabled
+    McpSwitchRequest:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+      required:
+      - enabled
+    McpToolSwitch:
+      type: object
+      properties:
+        description:
+          type:
+          - string
+          - "null"
+        enabled:
+          type: boolean
+          description: Whether the server lists it and takes calls to it.
+        name:
+          type: string
+        server:
+          type: string
+          enum:
+          - user
+          - operator
+        title:
+          type:
+          - string
+          - "null"
+      required:
+      - enabled
+      - name
+      - server
     Me:
       type: object
       description: The signed-in account.

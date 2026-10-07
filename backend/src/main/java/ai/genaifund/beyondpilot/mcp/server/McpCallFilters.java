@@ -111,6 +111,28 @@ final class McpCallFilters {
 
 	}
 
+	/** Answers 404 for the user server while operators have it switched off; the operators' server has no switch. */
+	static final class UserServerSwitch extends OncePerRequestFilter {
+
+		private final McpSwitches switches;
+
+		UserServerSwitch(McpSwitches switches) {
+			this.switches = switches;
+		}
+
+		@Override
+		protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+				throws ServletException, IOException {
+			String path = request.getRequestURI().substring(request.getContextPath().length());
+			if (path.equals("/mcp") && !switches.isUserServerOn()) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND);
+				return;
+			}
+			chain.doFilter(request, response);
+		}
+
+	}
+
 	/**
 	 * Answers a protocol version the server does not speak with 400 and JSON-RPC error -32000, so a client on a later
 	 * version falls back to one it shares. A request without the header is taken as 2025-03-26, as the specification
