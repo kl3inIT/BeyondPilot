@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.identity;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -126,6 +127,15 @@ public class AccountAdministration {
 	@Transactional(readOnly = true)
 	public boolean isOperator(Actor actor) {
 		return accounts.findById(actor.accountId()).filter(AccountAdministration::operates).isPresent();
+	}
+
+	/**
+	 * The accounts whose name or address contains the text, ignoring case, for a module that searches its records by
+	 * person; at most a thousand.
+	 */
+	@Transactional(readOnly = true)
+	public List<UUID> accountsMatching(String text) {
+		return accountList.idsMatching(text.strip(), 1000);
 	}
 
 	private static boolean operates(Account account) {

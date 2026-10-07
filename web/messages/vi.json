@@ -1964,12 +1964,16 @@
     "mcp": {
       "metaSetup": "MCP · Quản trị · BeyondPilot",
       "metaTools": "Công cụ MCP · Quản trị · BeyondPilot",
+      "metaApps": "Ứng dụng đã kết nối · MCP · Quản trị · BeyondPilot",
+      "metaActivity": "Hoạt động · MCP · Quản trị · BeyondPilot",
       "title": "MCP",
       "lead": "Các server để ứng dụng AI kết nối với BeyondPilot, và những gì chúng được làm.",
       "tabs": {
         "label": "MCP",
         "setup": "Thiết lập",
-        "tools": "Công cụ"
+        "tools": "Công cụ",
+        "apps": "Ứng dụng đã kết nối",
+        "activity": "Hoạt động"
       },
       "saved": "Đã lưu",
       "failed": "Chưa lưu được. Hãy thử lại.",
@@ -2008,6 +2012,79 @@
           "lead": "Những gì ứng dụng của bất kỳ người đã đăng nhập nào được gọi.",
           "search": "Tìm giải pháp đã niêm yết và chương trình đã công bố.",
           "fetch": "Đọc đầy đủ một mục theo id mà search trả về."
+        }
+      },
+      "apps": {
+        "label": "Ứng dụng đã kết nối",
+        "none": "Chưa có ứng dụng nào kết nối",
+        "noneLead": "Ứng dụng xuất hiện ở đây khi có người kết nối nó với một server MCP.",
+        "operator": "Operator",
+        "user": "Người dùng",
+        "used": "dùng {time}",
+        "revoke": {
+          "open": "Thu hồi",
+          "label": "Thu hồi {name} của {person}",
+          "title": "Thu hồi {name} của {person}?",
+          "lead": "Ứng dụng ngừng hoạt động ngay với {person}. Họ có thể kết nối lại.",
+          "confirm": "Thu hồi",
+          "cancel": "Huỷ",
+          "done": "{name} của {person} không còn dùng được BeyondPilot.",
+          "failed": "Không thu hồi được. Hãy thử lại."
+        }
+      },
+      "activity": {
+        "search": "Tìm theo người hoặc email",
+        "period": {
+          "day": "24 giờ qua",
+          "week": "7 ngày qua",
+          "month": "30 ngày qua",
+          "all": "Cả 90 ngày"
+        },
+        "filters": {
+          "periodLabel": "Khoảng thời gian",
+          "app": "Mọi ứng dụng",
+          "appLabel": "Ứng dụng",
+          "tool": "Mọi công cụ",
+          "toolLabel": "Công cụ",
+          "outcome": "Mọi kết quả",
+          "outcomeLabel": "Kết quả"
+        },
+        "outcome": {
+          "ok": "Thành công",
+          "refused": "Bị từ chối",
+          "failed": "Lỗi"
+        },
+        "server": {
+          "user": "Server cho người dùng",
+          "operator": "Server cho operator"
+        },
+        "columns": {
+          "time": "Thời gian",
+          "person": "Người dùng",
+          "app": "Ứng dụng",
+          "tool": "Công cụ",
+          "outcome": "Kết quả"
+        },
+        "today": "Hôm nay, {time}",
+        "dayAndTime": "{day}, {time}",
+        "goneAccount": "Tài khoản đã xoá",
+        "count": "{count} lời gọi",
+        "noMatch": {
+          "title": "Không có lời gọi nào khớp",
+          "description": "Thử tìm khác hoặc bớt bộ lọc.",
+          "clear": "Xoá tìm kiếm và bộ lọc"
+        },
+        "empty": {
+          "title": "Không có lời gọi nào trong khoảng này",
+          "description": "Lời gọi xuất hiện ở đây khi ứng dụng AI dùng các server MCP. Nội dung câu hỏi không bao giờ được lưu."
+        },
+        "pagination": {
+          "label": "Các trang lời gọi",
+          "previous": "Trước",
+          "next": "Sau",
+          "goToPrevious": "Về trang trước",
+          "goToNext": "Sang trang sau",
+          "page": "Trang {page}"
         }
       }
     },

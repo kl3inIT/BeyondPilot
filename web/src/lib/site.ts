@@ -28,6 +28,8 @@ export const siteRoutes = {
   adminSearchIndex: "/admin/ai/search-index",
   adminMcp: "/admin/ai/mcp",
   adminMcpTools: "/admin/ai/mcp/tools",
+  adminMcpApps: "/admin/ai/mcp/apps",
+  adminMcpActivity: "/admin/ai/mcp/activity",
   adminEmail: "/admin/email",
   adminEmailTemplates: "/admin/email/templates",
   adminEmailAppearance: "/admin/email/appearance",

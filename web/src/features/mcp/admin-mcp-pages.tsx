@@ -15,14 +15,19 @@ import {
 } from "./admin-mcp-actions";
 import { AddressField, AppSteps } from "./connect-panel";
 
-type McpTab = "setup" | "tools";
+type McpTab = "setup" | "tools" | "apps" | "activity";
+
+/** How many tools the servers have and how many apps are connected, which the tabs show. */
+type McpCounts = { tools: number; apps: number };
 
 /** The head of Admin › AI › MCP: its title and its tabs. */
-async function McpAdminHeader({ current, tools }: { current: McpTab; tools: number }) {
+async function McpAdminHeader({ current, counts }: { current: McpTab; counts: McpCounts }) {
   const t = await getTranslations("Admin.mcp");
   const tabs = [
-    { key: "setup", href: siteRoutes.adminMcp },
-    { key: "tools", href: siteRoutes.adminMcpTools },
+    { key: "setup", href: siteRoutes.adminMcp, count: null },
+    { key: "tools", href: siteRoutes.adminMcpTools, count: counts.tools },
+    { key: "apps", href: siteRoutes.adminMcpApps, count: counts.apps },
+    { key: "activity", href: siteRoutes.adminMcpActivity, count: null },
   ] as const;
 
   return (
@@ -45,7 +50,9 @@ async function McpAdminHeader({ current, tools }: { current: McpTab; tools: numb
                 }
               >
                 {t(`tabs.${tab.key}`)}
-                {tab.key === "tools" && <span className="text-xs font-medium">{tools}</span>}
+                {tab.count !== null && tab.count > 0 && (
+                  <span className="text-xs font-medium">{tab.count}</span>
+                )}
               </Link>
             </li>
           ))}
@@ -85,12 +92,20 @@ function SettingsSection({
  * Admin › AI › MCP › Setup: how an operator connects their app to the operators' server, the user
  * server's switch and address, and which apps may connect.
  */
-async function McpSetupPage({ settings, hosts }: { settings: McpSettings; hosts: AppHosts }) {
+async function McpSetupPage({
+  settings,
+  hosts,
+  counts,
+}: {
+  settings: McpSettings;
+  hosts: AppHosts;
+  counts: McpCounts;
+}) {
   const t = await getTranslations("Admin.mcp.setup");
 
   return (
     <div className="flex flex-1 flex-col gap-8 px-4 pt-2 pb-12 md:px-6 lg:px-8">
-      <McpAdminHeader current="setup" tools={settings.tools.length} />
+      <McpAdminHeader current="setup" counts={counts} />
       <SettingsSection title={t("operator.title")} lead={t("operator.lead")} first>
         <AddressField address={settings.operatorServerAddress} label={t("address")} />
         <AppSteps
@@ -129,13 +144,13 @@ async function McpSetupPage({ settings, hosts }: { settings: McpSettings; hosts:
 }
 
 /** Admin › AI › MCP › Tools: every tool of both servers, each with its switch. */
-async function McpToolsPage({ settings }: { settings: McpSettings }) {
+async function McpToolsPage({ settings, counts }: { settings: McpSettings; counts: McpCounts }) {
   const t = await getTranslations("Admin.mcp.tools");
   const servers = ["operator", "user"] as const;
 
   return (
     <div className="flex flex-1 flex-col gap-8 px-4 pt-2 pb-12 md:px-6 lg:px-8">
-      <McpAdminHeader current="tools" tools={settings.tools.length} />
+      <McpAdminHeader current="tools" counts={counts} />
       {servers.map((server, index) => (
         <SettingsSection
           key={server}
@@ -179,4 +194,4 @@ async function McpToolsPage({ settings }: { settings: McpSettings }) {
   );
 }
 
-export { McpSetupPage, McpToolsPage };
+export { McpAdminHeader, McpSetupPage, McpToolsPage, type McpCounts };
