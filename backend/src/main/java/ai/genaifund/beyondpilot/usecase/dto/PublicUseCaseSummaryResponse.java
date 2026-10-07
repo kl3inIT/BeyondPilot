@@ -24,9 +24,9 @@ public record PublicUseCaseSummaryResponse(@Schema(requiredMode = Schema.Require
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean budgetToBeDetermined,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether the organization shows the budget to members only.") boolean budgetMembersOnly,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) int timelineMinWeeks,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) int timelineMaxWeeks,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Proposals close at this instant.") Instant closesAt,
+		@Schema(types = { "integer", "null" }, description = "Null when the brief does not say.") @Nullable Integer timelineMinWeeks,
+		@Schema(types = { "integer", "null" }, description = "Null when the brief does not say.") @Nullable Integer timelineMaxWeeks,
+		@Schema(types = { "string", "null" }, format = "date-time",
+				description = "Proposals close at this instant; null for no deadline.") @Nullable Instant closesAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant publishedAt) {
 }

@@ -61,10 +61,10 @@ public class UseCaseQueryRepository {
 	}
 
 	/**
-	 * The published use cases a visitor can answer: the deadline is ahead. The text matches a title or the expected
+	 * The published use cases a visitor can answer: the deadline is ahead, or there is none. The text matches a title or the expected
 	 * outcomes, or an organization the caller found by name that did not ask to stay anonymous.
 	 */
-	private static final String PUBLIC_FILTER = "where status = 'approved' and closes_at > :now\n"
+	private static final String PUBLIC_FILTER = "where status = 'approved' and (closes_at is null or closes_at > :now)\n"
 			+ "  and (cast(:pattern as text) is null or lower(title) like :pattern escape '\\'\n"
 			+ "       or lower(expected_outcomes) like :pattern escape '\\'\n"
 			+ "       or (not hide_organization_name and organization_id::text = any(:matching)))\n"
@@ -75,8 +75,8 @@ public class UseCaseQueryRepository {
 	/** What the public list shows of one use case; the organization is named by its own module. */
 	public record PublicRow(UUID id, UUID organizationId, boolean hideOrganizationName, String title, String industry,
 			String goal, List<String> technologies, @Nullable Long budgetMin, @Nullable Long budgetMax, String currency,
-			boolean budgetToBeDetermined, boolean budgetMembersOnly, int timelineMinWeeks, int timelineMaxWeeks,
-			Instant closesAt, Instant publishedAt) {
+			boolean budgetToBeDetermined, boolean budgetMembersOnly, @Nullable Integer timelineMinWeeks,
+			@Nullable Integer timelineMaxWeeks, @Nullable Instant closesAt, Instant publishedAt) {
 	}
 
 	/**
@@ -86,7 +86,7 @@ public class UseCaseQueryRepository {
 	public List<PublicRow> publicPage(@Nullable String text, List<UUID> matching, @Nullable String industry,
 			@Nullable UUID program, String sort, long vndPerUsd, Instant now, int limit, long offset) {
 		String order = switch (sort) {
-			case "deadline" -> "closes_at, id";
+			case "deadline" -> "closes_at nulls last, id";
 			// A budget for members only is not a number a visitor sees, so it does not order the list either.
 			case "budget" -> "(case when budget_members_only then null when currency = 'VND' "
 					+ "then budget_max::numeric / :vndPerUsd else budget_max end) desc nulls last, id";
@@ -104,8 +104,8 @@ public class UseCaseQueryRepository {
 					row.getString("title"), row.getString("industry"), row.getString("expected_outcomes"),
 					List.of((String[]) row.getArray("technologies").getArray()), longOf(row, "budget_min"),
 					longOf(row, "budget_max"), row.getString("currency"), row.getBoolean("budget_to_be_determined"),
-					row.getBoolean("budget_members_only"), row.getInt("timeline_min_weeks"),
-					row.getInt("timeline_max_weeks"), row.getTimestamp("closes_at").toInstant(),
+					row.getBoolean("budget_members_only"), row.getObject("timeline_min_weeks", Integer.class),
+					row.getObject("timeline_max_weeks", Integer.class), instantOf(row.getTimestamp("closes_at")),
 					row.getTimestamp("published_at").toInstant()))
 			.list();
 	}

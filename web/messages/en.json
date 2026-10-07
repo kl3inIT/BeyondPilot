@@ -5256,7 +5256,8 @@
     },
     "deadline": {
       "date": "Apply by {date}",
-      "time": "{time} ICT"
+      "time": "{time} ICT",
+      "none": "Open, no deadline"
     },
     "posted": "Posted {when}",
     "view": "View use case",

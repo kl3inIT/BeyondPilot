@@ -77,7 +77,7 @@ function UseCaseView({ useCase }: { useCase: MyUseCase }) {
           {inReview ? t("inReview.lead", { date: sent }) : t("closed.lead", { date: closes })}
         </p>
       </div>
-      <UseCaseSummary values={values} />
+      <UseCaseSummary values={values} hideEmpty={useCase.status === "approved"} />
       <div className="flex items-center justify-between gap-3 border-t pt-6">
         <Button prominence="tertiary" href={siteRoutes.workspaceUseCases}>
           {w("backToList")}

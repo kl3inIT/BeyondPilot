@@ -150,6 +150,34 @@ class UseCaseAdministrationTest {
 	}
 
 	@Test
+	void anOperatorPublishesWhatABriefGivesAndTheRestMayWait() {
+		String tag = UUID.randomUUID().toString().substring(0, 8);
+		UUID organization = organization("Brief Bank " + tag);
+		Map<String, Object> brief = useCase(organization, "Brief only " + tag, true);
+		for (String left : List.of("currentProcess", "targetUsers", "dataReadiness", "integrationRequirements",
+				"timelineMinWeeks", "timelineMaxWeeks", "closesAt")) {
+			brief.put(left, null);
+		}
+		brief.put("technologies", List.of());
+
+		String created = body(post(operator, USE_CASES, brief).expectStatus().isCreated());
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
+		assertThat(JsonPath.<Object>read(created, "$.closesAt")).isNull();
+		assertThat(JsonPath.<Object>read(created, "$.currentProcess")).isNull();
+
+		// With no deadline it stays open in the directory, without a timeline.
+		String listed = body(client.get().uri(DIRECTORY + "?q=" + tag).exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(listed, "$.items[*].title")).containsExactly("Brief only " + tag);
+		assertThat(JsonPath.<Object>read(listed, "$.items[0].closesAt")).isNull();
+		assertThat(JsonPath.<Object>read(listed, "$.items[0].timelineMinWeeks")).isNull();
+
+		// A timeline is both ends or neither.
+		Map<String, Object> halfTimeline = useCase(organization, "Half timeline " + tag, false);
+		halfTimeline.put("timelineMaxWeeks", null);
+		assertProblem(post(operator, USE_CASES, halfTimeline), 400, "USECASE_TIMELINE_OUT_OF_ORDER");
+	}
+
+	@Test
 	void theDirectoryListsPublishedUseCasesToVisitorsAndKeepsAnonymousOrganizationsAnonymous() {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
 		UUID open = organization("Open Bank " + tag);
