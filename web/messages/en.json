@@ -954,9 +954,9 @@
       "unowned": "No owner",
       "actions": {
         "open": "Actions for {name}",
-        "review": "Review…",
+        "review": "Review",
         "record": "Open record",
-        "claim": "Decide claim…"
+        "claim": "Decide claim"
       },
       "needReview": "{count, plural, one {# needs review} other {# need review}}",
       "empty": {
@@ -1009,11 +1009,11 @@
         "lead": "Created by {creator} on {day}.",
         "leadUnknown": "Created on {day}.",
         "approve": "Approve",
-        "refuse": "Refuse…",
+        "refuse": "Refuse",
         "refuseTitle": "Refuse {name}",
         "refuseLead": "The owners see the reason. A refusal is final; to ask for changes, send the organization back instead.",
         "refuseConfirm": "Send decision",
-        "sendBack": "Send back…",
+        "sendBack": "Send back",
         "sendBackTitle": "Send {name} back",
         "sendBackLead": "The owners read what to change. Once they correct the organization and save it, it waits for review again.",
         "sendBackLabel": "What should the owners change?",
@@ -1047,7 +1047,7 @@
       },
       "takeDown": {
         "open": "Actions for {name}",
-        "menu": "Take down…",
+        "menu": "Take down",
         "title": "Take down {name}",
         "lead": "Its public page and its solutions leave the directories at once. Its {members, plural, one {# member keeps} other {# members keep}} their workspace and read the reason there.",
         "reason": "Reason",
@@ -1106,7 +1106,7 @@
         "invite": {
           "open": "Invite a person",
           "title": "Invite someone to {name}",
-          "lead": "They get an email, and join after signing in. Your invitations do not count against the organization's limits.",
+          "lead": "Your invitations do not count against the organization's limits.",
           "email": "Email address",
           "emailInvalid": "Enter one email address.",
           "role": "Role",
@@ -2880,8 +2880,7 @@
       },
       "ask": {
         "request": {
-          "title": "Ask to join {name}?",
-          "lead": "An owner reads your request and decides."
+          "title": "Ask to join {name}?"
         },
         "claim": {
           "title": "Claim {name}?",
@@ -2982,16 +2981,15 @@
       "actions": {
         "open": "Actions for {name}",
         "openInvitation": "Actions for the invitation to {email}",
-        "editJobTitle": "Edit job title…",
+        "editJobTitle": "Edit job title",
         "makeMember": "Make member",
         "makeOwner": "Make owner",
-        "leave": "Leave organization…",
-        "remove": "Remove from organization…",
+        "leave": "Leave organization",
+        "remove": "Remove from organization",
         "revoke": "Withdraw invitation"
       },
       "jobTitle": {
         "title": "Your job title",
-        "lead": "Shown beside your name on the organization's team.",
         "label": "Job title",
         "placeholder": "e.g. Solutions engineer",
         "save": "Save",
@@ -3014,7 +3012,7 @@
       "invite": {
         "open": "Invite people",
         "title": "Invite people to {name}",
-        "lead": "Each person gets an email and sees the invitation after signing in with that address. {leftToday} of {dailyLimit} invitations left today; {leftOpen} of {openLimit} can still be open at once.",
+        "lead": "{leftToday} of {dailyLimit} invitations left today; {leftOpen} of {openLimit} can be open at once.",
         "emails": "Email addresses",
         "emailsPlaceholder": "name@company.com, name@company.com",
         "emailsInvalid": "Enter full email addresses, separated by commas.",

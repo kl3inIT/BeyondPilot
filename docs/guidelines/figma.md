@@ -24,6 +24,7 @@ The third page stays free until a real need appears.
 - Each `Theme` variable sets the WEB code syntax to its CSS custom property (`var(--primary)`), so code generation emits the token instead of deriving a name.
 - Collection `Scale` holds radius and spacing. Radius mirrors `--radius` and its derived steps (`radius/sm` … `radius/4xl`); spacing follows the Tailwind 4px scale (`space/1` = 4px, `space/2` = 8px, …).
 - Text styles are named after the Tailwind utilities they produce (`text-sm/font-medium`, `text-5xl/font-semibold`), so a style maps one to one to classes. The font is Inter, the font the web application loads. Effect styles follow the same rule (`shadow/sm`, `shadow/lg`, `blur/2xl`, `glow/brand/sm`).
+- A caption is smaller than the text it explains: every hint under a field, character counter and footnote uses `text-xs/font-normal` in `muted-foreground`, in pages and dialogs alike, under 14px body text. In code it is `FieldDescription`, which carries `text-xs`.
 - A token change lands in Figma and in `tokens.css` in the same change.
 - Gradients that no single variable can express (card covers, edge fades) are paint styles named by role (`cover/brand`, `cover/use-case`, `fade/muted-start`), never literal fills on a screen.
 
