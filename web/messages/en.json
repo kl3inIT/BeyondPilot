@@ -2792,7 +2792,7 @@
       "createTitle": "Create your organization",
       "createLead": "Everyone belongs to one organization. Independent builders can create a practice or team.",
       "profileTitle": "Organization profile",
-      "profileLead": "Shown with every solution the organization lists. Only owners can edit it.",
+      "edit": "Edit profile",
       "basics": "Basics",
       "about": "About",
       "name": "Organization name",
