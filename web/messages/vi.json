@@ -27,7 +27,8 @@
       "talentProfile": "Hồ sơ nhân lực",
       "admin": "Quản trị",
       "applications": "Đơn của tôi",
-      "reviews": "Chấm đơn"
+      "reviews": "Chấm đơn",
+      "mcp": "MCP"
     },
     "menu": {
       "open": "Mở menu",
@@ -277,6 +278,66 @@
     "thisComputer": "máy này",
     "notReviewed": "Chưa xem xét",
     "ableToLocal": "Ứng dụng sẽ có thể"
+  },
+  "Mcp": {
+    "metaTitle": "MCP · BeyondPilot",
+    "title": "MCP",
+    "lead": "Tìm kiếm BeyondPilot từ ChatGPT, Claude hoặc Codex.",
+    "tabs": {
+      "label": "MCP",
+      "connect": "Kết nối",
+      "apps": "Ứng dụng đã kết nối"
+    },
+    "connect": {
+      "address": "Địa chỉ server",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép",
+      "copyPrompt": "Sao chép câu lệnh",
+      "appsLabel": "Ứng dụng",
+      "apps": {
+        "chatgpt": {
+          "name": "ChatGPT",
+          "step1": "Settings › Apps and connectors › Create",
+          "step2": "Dán địa chỉ, giữ OAuth",
+          "step3": "Đăng nhập BeyondPilot và chọn Allow"
+        },
+        "claude": {
+          "name": "Claude",
+          "step1": "Settings › Connectors › Add custom connector",
+          "step2": "Dán địa chỉ",
+          "step3": "Đăng nhập BeyondPilot và chọn Allow"
+        },
+        "codex": {
+          "name": "Codex",
+          "step1": "Chạy codex mcp add beyondpilot --url {address}",
+          "step2": "Chạy codex mcp login beyondpilot, đăng nhập và chọn Allow"
+        }
+      },
+      "askTitle": "Hoặc nhờ AI của bạn tự cài",
+      "prompt": "Add the MCP server \"beyondpilot\" at {address} (streamable HTTP, OAuth). Start its login so I can sign in to BeyondPilot and choose Allow, then list its tools to confirm it works.",
+      "askNote": "Chỉ dùng được với Codex, Claude Code và Cursor.",
+      "tryTitle": "Thử hỏi",
+      "try": {
+        "claims": "Tìm giải pháp AI xử lý hồ sơ bồi thường bảo hiểm đã triển khai ở Việt Nam.",
+        "programs": "Chương trình AI nào của GenAI Fund đang nhận hồ sơ?",
+        "compare": "So sánh các voice agent trên BeyondPilot cho tổng đài của ngân hàng."
+      }
+    },
+    "apps": {
+      "none": "Chưa có ứng dụng nào kết nối",
+      "connect": "Kết nối ứng dụng",
+      "allowed": "Cho phép {date}",
+      "used": "dùng {time}"
+    },
+    "revoke": {
+      "open": "Thu hồi",
+      "title": "Thu hồi {name}?",
+      "lead": "Ứng dụng ngừng hoạt động ngay. Kết nối lại nếu muốn dùng tiếp.",
+      "confirm": "Thu hồi",
+      "cancel": "Huỷ",
+      "done": "{name} không còn dùng được BeyondPilot.",
+      "failed": "Không thu hồi được. Hãy thử lại."
+    }
   },
   "Admin": {
     "metaTitle": "Quản trị · BeyondPilot",
@@ -800,6 +861,9 @@
           "semantic_disable": "Tắt semantic search",
           "index_rebuild": "Dựng lại chỉ mục tìm kiếm",
           "embedding_retry": "Cho embed lại các mục bị từ chối"
+        },
+        "mcp": {
+          "app_revoke": "Thu hồi một ứng dụng AI"
         }
       },
       "activity": {
@@ -893,6 +957,9 @@
           "semantic_disable": "Tắt semantic search trong <resource></resource>",
           "index_rebuild": "Dựng lại <resource></resource>",
           "embedding_retry": "Cho embed lại các mục bị từ chối của <resource></resource>"
+        },
+        "mcp": {
+          "app_revoke": "Thu hồi ứng dụng AI <resource></resource>"
         }
       },
       "columns": {

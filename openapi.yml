@@ -155,6 +155,7 @@ paths:
           - search.semantic_disable
           - search.index_rebuild
           - search.embedding_retry
+          - mcp.app_revoke
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
         in: query
@@ -445,6 +446,23 @@ paths:
       summary: Take the operator role from an account
       tags:
       - Accounts
+  /api/identity/apps:
+    get:
+      operationId: listConnectedApps
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ConnectedApp"
+          description: "The apps, the latest used first."
+      security:
+      - session: []
+      summary: The AI apps the caller has connected
+      tags:
+      - Identity
   /api/identity/apps/connecting:
     get:
       operationId: getConnectingApp
@@ -475,6 +493,29 @@ paths:
       security:
       - session: []
       summary: The AI app waiting for the caller's answer
+      tags:
+      - Identity
+  /api/identity/apps/{id}/revoke:
+    post:
+      operationId: revokeConnectedApp
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: The app can no longer call BeyondPilot.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller has not connected this app.
+      security:
+      - session: []
+      summary: End an AI app's connection
       tags:
       - Identity
   /api/identity/me:
@@ -9188,6 +9229,7 @@ components:
           - search.semantic_disable
           - search.index_rebuild
           - search.embedding_retry
+          - mcp.app_revoke
         actor:
           type:
           - object
@@ -9336,6 +9378,57 @@ components:
       - model
       - providerId
       - version
+    ConnectedApp:
+      type: object
+      description: An AI app the signed-in person connected to BeyondPilot.
+      properties:
+        allowedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the person first allowed it.
+        clientId:
+          type: string
+        host:
+          type:
+          - string
+          - "null"
+          description: The host the app's metadata document lives on; null for a client
+            BeyondPilot registered.
+        id:
+          type: string
+          description: What a revoke names.
+        name:
+          type: string
+          description: The app's name; its host when BeyondPilot has not reviewed
+            the host.
+        reviewed:
+          type: boolean
+          description: Whether BeyondPilot has reviewed the app's host or registered
+            the app.
+        servers:
+          type: array
+          description: "The servers the app may call: `user` for /mcp, `operator`\
+            \ for /mcp/operator."
+          items:
+            type: string
+            enum:
+            - user
+            - operator
+        usedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: "When it last got a token, which it does only while in use,\
+            \ so within the hour of its last use."
+      required:
+      - clientId
+      - id
+      - name
+      - reviewed
+      - servers
     ConnectingApp:
       type: object
       description: An AI app waiting for the signed-in person to allow or deny it.

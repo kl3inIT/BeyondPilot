@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.identity.dto;
 import java.time.Instant;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.jspecify.annotations.Nullable;
 
@@ -16,9 +17,9 @@ public record ConnectedAppResponse(
 				description = "The host the app's metadata document lives on; null for a client BeyondPilot registered.") @Nullable String host,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether BeyondPilot has reviewed the app's host or registered the app.") boolean reviewed,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				allowableValues = { "user", "operator" },
-				description = "The servers the app may call: `user` for /mcp, `operator` for /mcp/operator.") List<String> servers,
+		@ArraySchema(arraySchema = @Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The servers the app may call: `user` for /mcp, `operator` for /mcp/operator."),
+				schema = @Schema(allowableValues = { "user", "operator" })) List<String> servers,
 		@Schema(types = { "string", "null" }, format = "date-time",
 				description = "When the person first allowed it.") @Nullable Instant allowedAt,
 		@Schema(types = { "string", "null" }, format = "date-time",

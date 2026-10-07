@@ -10,6 +10,9 @@ const springPaths = [
   "/oauth2/:path*",
   "/ott/:path*",
   "/.well-known/oauth-authorization-server",
+  "/.well-known/oauth-protected-resource/:path*",
+  "/mcp",
+  "/mcp/:path*",
 ];
 
 const nextConfig: NextConfig = {

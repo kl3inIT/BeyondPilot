@@ -1,0 +1,18 @@
+# MCP: verification matrix
+
+Boundaries follow [conventions › Testing](../conventions.md#testing). The servers are reached the way an AI app reaches them: the full application on a real port, a token from a real connection through the authorization server, and the MCP Java SDK's own client.
+
+| Contract                                                                                                                                                   | Regression it catches                                                                          | Test                                                                               |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| A connected app lists `search` and `fetch`, finds a listed solution by its words and reads it whole; an id nothing listed has is an error the app can show | A server an app cannot use, or that answers what a visitor could not see                       | `McpServerTest.anAppSearchesAndReadsWhatBeyondPilotListsAndTheLogKeepsNoArguments` |
+| Every call is logged with who, which app, which tool, how it ended and how long it took, never its arguments                                               | The log keeping what a person searched for                                                     | `McpServerTest.anAppSearchesAndReadsWhatBeyondPilotListsAndTheLogKeepsNoArguments` |
+| A call without a token answers 401 with the server's scope and the address of its protected resource metadata, which names the authorization server        | An app that cannot find where to sign in                                                       | `McpServerTest.aCallWithoutATokenIsToldWhereToSignIn`                              |
+| A token for the operator server, a revoked connection and a disabled account are refused at the next call                                                  | Access that outlives a revoke, a disabled account, or crosses servers                          | `McpServerTest.aTokenForTheOperatorServerARevokedAppOrADisabledAccountIsRefused`   |
+| An unknown protocol version answers 400 with JSON-RPC error -32000; another site's page is refused; calls past the per-person limit answer 429             | A browser page driving the server; a client that cannot fall back; one app flooding the server | `McpServerTest.anUnknownProtocolVersionAForeignPageOrTooManyCallsAreRefused`       |
+| The module is closed and depends on `identity`, `program`, `search` and `solution` only, through their published types                                     | A tool reaching another module's internals                                                     | `ModulithArchitectureTest`                                                         |
+
+## Not automated
+
+| Contract                                                                          | How it is checked                                                                                  |
+| --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| ChatGPT, Claude, Claude Code, Codex and Cursor connect, list the tools and search | By hand on staging after each change to the servers or the authorization server (step D of BEY-78) |
