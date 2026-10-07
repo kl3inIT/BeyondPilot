@@ -62,7 +62,9 @@
       "linkedin": "LinkedIn",
       "facebook": "Facebook",
       "x": "X",
-      "copyright": "© {year} BeyondPilot"
+      "copyright": "© {year} BeyondPilot",
+      "privacy": "Quyền riêng tư",
+      "terms": "Điều khoản"
     }
   },
   "Campaign": {
@@ -5501,5 +5503,192 @@
       "action": "Đăng bài toán"
     },
     "anonymous": "Tổ chức ẩn danh"
+  },
+  "Legal": {
+    "updated": "Cập nhật lần cuối: {date}",
+    "contents": "Trên trang này",
+    "privacy": {
+      "metaTitle": "Chính sách quyền riêng tư",
+      "title": "Chính sách quyền riêng tư",
+      "intro": "Chính sách này giải thích BeyondPilot thu thập dữ liệu cá nhân nào, vì sao, chia sẻ với ai và bạn có những lựa chọn gì. BeyondPilot là nền tảng ứng dụng AI do GenAI Fund hậu thuẫn, kết nối doanh nghiệp với giải pháp AI, nhân tài, use case, sự kiện và chương trình.",
+      "sections": [
+        {
+          "heading": "Chúng tôi là ai",
+          "body": [
+            "BeyondPilot vận hành website và ứng dụng web tại beyondpilot.ai. Mọi câu hỏi hoặc yêu cầu về quyền riêng tư, vui lòng gửi tới team@beyondpilot.ai."
+          ]
+        },
+        {
+          "heading": "Chúng tôi thu thập gì",
+          "body": ["Chúng tôi chỉ thu thập những gì nền tảng cần để hoạt động:"],
+          "items": [
+            "Thông tin tài khoản: họ tên và email, cùng số điện thoại, quốc gia, chức danh, hồ sơ LinkedIn và ảnh khi bạn thêm vào.",
+            "Đăng nhập bằng Google: họ tên, email và ảnh đại diện từ tài khoản Google. Chúng tôi không đọc Gmail, danh bạ hay tệp của bạn.",
+            "Nội dung bạn đăng hoặc gửi: hồ sơ tổ chức, giải pháp AI, use case, proposal, hồ sơ nhân tài, lời hỏi thăm, yêu cầu giới thiệu và các tệp đính kèm như deck.",
+            "Hoạt động cần cho vận hành an toàn: thời điểm đăng nhập, sự kiện bảo mật và nhật ký thao tác quản trị.",
+            "Dữ liệu kỹ thuật: địa chỉ IP và loại trình duyệt trong log máy chủ, lưu để bảo mật và xử lý sự cố."
+          ]
+        },
+        {
+          "heading": "Chúng tôi dùng để làm gì",
+          "items": [
+            "Tạo, bảo vệ tài khoản và cho bạn đăng nhập.",
+            "Hiển thị hồ sơ, giải pháp và use case bạn chọn công khai.",
+            "Giúp doanh nghiệp và nhà cung cấp AI tìm thấy nhau, gồm tìm kiếm và AI hỗ trợ ghép use case với giải pháp.",
+            "Xét hồ sơ ứng tuyển chương trình, cuộc thi và gửi email về tài khoản, bài nộp và kết quả.",
+            "Giữ nền tảng an toàn, ngăn lạm dụng và tuân thủ pháp luật."
+          ]
+        },
+        {
+          "heading": "Tính năng AI",
+          "body": [
+            "Tìm kiếm và ghép nối dùng mô hình AI để đọc nội dung công khai của hồ sơ, giải pháp, deck và use case. Nội dung đó chỉ được gửi tới nhà cung cấp AI (OpenAI, trực tiếp hoặc qua OpenRouter) để tạo kết quả tìm kiếm và giải thích ghép nối. Chúng tôi không dùng dữ liệu của bạn để huấn luyện AI, và điều khoản API của các nhà cung cấp cũng không cho phép việc đó."
+          ]
+        },
+        {
+          "heading": "Những gì được công khai",
+          "body": [
+            "Hồ sơ, giải pháp và use case chỉ công khai sau khi được duyệt và hiển thị. Tổ chức có thể ẩn tên trên use case, và chủ giải pháp có thể ngừng hiển thị bất cứ lúc nào. Proposal, lời hỏi thăm, yêu cầu giới thiệu, thông tin liên hệ và tệp không đánh dấu công khai chỉ bạn, người nhận và operator của GenAI Fund xem được."
+          ]
+        },
+        {
+          "heading": "Chúng tôi chia sẻ với ai",
+          "body": [
+            "Chúng tôi không bán dữ liệu cá nhân. Chúng tôi chỉ chia sẻ với các nhà cung cấp dịch vụ vận hành nền tảng, và họ chỉ được dùng cho mục đích đó:"
+          ],
+          "items": [
+            "Lưu trữ và máy chủ do chúng tôi vận hành.",
+            "Gửi email qua Resend.",
+            "Đăng nhập qua Google.",
+            "Xử lý AI qua OpenAI và OpenRouter."
+          ],
+          "after": [
+            "Chúng tôi cũng có thể cung cấp dữ liệu khi pháp luật yêu cầu, hoặc để bảo vệ quyền và an toàn của người dùng."
+          ]
+        },
+        {
+          "heading": "Cookie",
+          "body": [
+            "Chúng tôi dùng một cookie phiên để giữ bạn đăng nhập và một cookie để nhớ ngôn ngữ. Chúng tôi không dùng cookie quảng cáo hay theo dõi của bên thứ ba."
+          ]
+        },
+        {
+          "heading": "Lưu giữ bao lâu",
+          "body": [
+            "Chúng tôi lưu dữ liệu khi tài khoản còn hoạt động. Khi bạn xoá tài khoản hoặc yêu cầu, chúng tôi xoá hoặc ẩn danh dữ liệu cá nhân trong 30 ngày, trừ phần phải giữ vì lý do pháp lý, bảo mật hoặc kiểm toán. Bài nộp vào chương trình có thể được giữ trong hồ sơ của chương trình đó."
+          ]
+        },
+        {
+          "heading": "Lựa chọn và quyền của bạn",
+          "body": [
+            "Bạn xem và sửa được phần lớn dữ liệu trong tài khoản. Bạn cũng có thể yêu cầu nhận bản sao, sửa, xoá hoặc ngừng xử lý dữ liệu bằng cách gửi email tới team@beyondpilot.ai. Chúng tôi phản hồi trong 30 ngày."
+          ]
+        },
+        {
+          "heading": "Bảo mật",
+          "body": [
+            "Chúng tôi bảo vệ dữ liệu khi truyền bằng HTTPS, mã hoá thông tin đăng nhập và khoá nhà cung cấp, giới hạn quyền truy cập cho operator cần thiết và ghi nhật ký thao tác quản trị. Không hệ thống nào an toàn tuyệt đối; nếu có sự cố ảnh hưởng tới bạn, chúng tôi sẽ thông báo."
+          ]
+        },
+        {
+          "heading": "Xử lý ngoài lãnh thổ",
+          "body": [
+            "Nhà cung cấp của chúng tôi có thể xử lý dữ liệu ngoài quốc gia của bạn. Khi đó, chúng tôi dựa vào các cam kết theo hợp đồng của họ để bảo vệ dữ liệu."
+          ]
+        },
+        {
+          "heading": "Trẻ em",
+          "body": [
+            "BeyondPilot dành cho người đi làm và không hướng tới trẻ em dưới 16 tuổi. Chúng tôi không cố ý thu thập dữ liệu của các em."
+          ]
+        },
+        {
+          "heading": "Thay đổi",
+          "body": [
+            "Chúng tôi sẽ cập nhật trang này khi cách xử lý dữ liệu thay đổi, và báo trước cho người dùng đã đăng nhập về các thay đổi quan trọng."
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "metaTitle": "Điều khoản sử dụng",
+      "title": "Điều khoản sử dụng",
+      "intro": "Các điều khoản này áp dụng khi bạn dùng BeyondPilot tại beyondpilot.ai. Khi tạo tài khoản hoặc sử dụng nền tảng, bạn đồng ý với các điều khoản này.",
+      "sections": [
+        {
+          "heading": "Dịch vụ",
+          "body": [
+            "BeyondPilot giúp doanh nghiệp và nhà cung cấp AI tìm thấy nhau. Nền tảng liệt kê giải pháp AI, nhân tài, use case, sự kiện và chương trình; cho phép bạn đăng nội dung của mình, ứng tuyển chương trình, cuộc thi và yêu cầu giới thiệu. Một số tính năng được ghi là bản xem trước và có thể thay đổi."
+          ]
+        },
+        {
+          "heading": "Tài khoản của bạn",
+          "items": [
+            "Bạn phải cung cấp thông tin chính xác và giữ an toàn việc đăng nhập.",
+            "Bạn chịu trách nhiệm về mọi hoạt động trong tài khoản và về tổ chức bạn đại diện.",
+            "Bạn phải từ 16 tuổi trở lên và có đủ năng lực để đồng ý với các điều khoản này."
+          ]
+        },
+        {
+          "heading": "Nội dung bạn đăng",
+          "body": [
+            "Bạn vẫn sở hữu nội dung bạn đăng hoặc gửi. Bạn cho phép chúng tôi lưu trữ, hiển thị và xử lý nội dung đó để vận hành nền tảng, gồm hiển thị công khai nội dung đã duyệt và dùng cho tìm kiếm, ghép nối. Bạn xác nhận có quyền chia sẻ và nội dung là chính xác, hợp pháp."
+          ]
+        },
+        {
+          "heading": "Duyệt và hiển thị",
+          "body": [
+            "GenAI Fund duyệt tổ chức, giải pháp, use case và hồ sơ nhân tài trước khi hiển thị, và có thể từ chối, ngừng hiển thị hoặc gỡ nội dung sai lệch, gây hiểu nhầm hoặc vi phạm điều khoản. Việc được duyệt không có nghĩa là được bảo chứng."
+          ]
+        },
+        {
+          "heading": "Ứng tuyển, proposal và giới thiệu",
+          "body": [
+            "Khi bạn ứng tuyển chương trình hoặc gửi proposal, ban tổ chức và người chấm có thể đọc nội dung đó. Kết quả chương trình do ban tổ chức quyết định. Điều khoản thương mại, NDA và mọi dự án thí điểm do các bên tự thoả thuận; BeyondPilot không phải một bên trong các thoả thuận đó."
+          ]
+        },
+        {
+          "heading": "Tính năng AI",
+          "body": [
+            "Tìm kiếm và ghép nối có AI hỗ trợ giúp bạn tìm phương án nhanh hơn. Kết quả có thể chưa đầy đủ hoặc chưa đúng. Hãy kiểm tra các nguồn được hiển thị và tự đưa ra quyết định."
+          ]
+        },
+        {
+          "heading": "Sử dụng hợp lệ",
+          "body": ["Không được:"],
+          "items": [
+            "đăng thông tin sai hoặc mạo danh người khác;",
+            "gửi thư rác hoặc tin nhắn thương mại không được yêu cầu qua nền tảng;",
+            "thu thập, sao chép hoặc bán lại dữ liệu danh mục, hay truy cập tự động ngoài các công cụ chúng tôi cung cấp;",
+            "cố phá, làm quá tải hoặc vượt qua cơ chế bảo mật của nền tảng;",
+            "tải lên nội dung trái pháp luật hoặc nội dung bạn không có quyền chia sẻ."
+          ]
+        },
+        {
+          "heading": "Nền tảng của chúng tôi",
+          "body": [
+            "BeyondPilot, phần mềm và thiết kế thuộc về chúng tôi và bên cấp phép. Các điều khoản này không trao cho bạn quyền nào ngoài việc sử dụng nền tảng như được cung cấp."
+          ]
+        },
+        {
+          "heading": "Tạm ngưng và đóng tài khoản",
+          "body": [
+            "Bạn có thể ngừng dùng BeyondPilot và yêu cầu đóng tài khoản bất cứ lúc nào. Chúng tôi có thể tạm ngưng hoặc đóng tài khoản vi phạm điều khoản hoặc gây rủi ro cho người dùng khác, và sẽ cho bạn biết lý do trừ khi pháp luật không cho phép."
+          ]
+        },
+        {
+          "heading": "Miễn trừ và giới hạn trách nhiệm",
+          "body": [
+            "Nền tảng được cung cấp theo hiện trạng. Chúng tôi không bảo đảm mọi thông tin hiển thị là chính xác, mọi ghép nối sẽ dẫn tới hợp tác, hay dịch vụ luôn sẵn sàng. Trong phạm vi pháp luật cho phép, chúng tôi không chịu trách nhiệm về thiệt hại gián tiếp, và tổng trách nhiệm của chúng tôi giới hạn ở số tiền bạn đã trả cho chúng tôi trong 12 tháng gần nhất."
+          ]
+        },
+        {
+          "heading": "Thay đổi và luật áp dụng",
+          "body": [
+            "Chúng tôi có thể cập nhật điều khoản và sẽ báo trước cho người dùng đã đăng nhập về các thay đổi quan trọng. Các điều khoản này chịu sự điều chỉnh của pháp luật Việt Nam. Câu hỏi: team@beyondpilot.ai."
+          ]
+        }
+      ]
+    }
   }
 }

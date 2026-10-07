@@ -80,7 +80,15 @@ function SiteFooter() {
           </div>
         </div>
         <div className="flex flex-col gap-2 border-t pt-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <p>{t("footer.copyright", { year: new Date().getFullYear() })}</p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <p>{t("footer.copyright", { year: new Date().getFullYear() })}</p>
+            <Link href={siteRoutes.privacy} className="hover:text-foreground">
+              {t("footer.privacy")}
+            </Link>
+            <Link href={siteRoutes.terms} className="hover:text-foreground">
+              {t("footer.terms")}
+            </Link>
+          </div>
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
             <ThemeToggle />

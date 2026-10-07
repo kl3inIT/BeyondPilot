@@ -13,6 +13,8 @@ export const siteRoutes = {
   accountMcp: "/account/mcp",
   founders: "/founders",
   search: "/search",
+  privacy: "/privacy",
+  terms: "/terms",
   admin: "/admin",
   adminPrograms: "/admin/programs",
   adminAccounts: "/admin/accounts",
