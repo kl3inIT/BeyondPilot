@@ -84,6 +84,13 @@ const accounts = {
     displayName: "Lan Phạm",
     role: "user",
   },
+  // A member moved into the organization when GenAI Fund merged a duplicate into it (stub-workspace.mjs).
+  moved: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a17",
+    email: "khoa.bui@pocketpolicy.example",
+    displayName: "Khoa Bùi",
+    role: "user",
+  },
 };
 
 /** What the operators' list holds, latest sign-in first. */

@@ -39,6 +39,26 @@ const person = (accountId, name, email, role) => ({
 /** Every organization as an operator's record page reads it, those waiting for review first. */
 const organizations = [
   {
+    // A duplicate merged into Pocket Policy: it only says where it went.
+    organization: organization(
+      "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c08",
+      "Pocket Policy Ltd",
+      "merged",
+    ),
+    createdBy: "Minh Trần",
+    createdByEmail: "minh.tran@pocketpolicy.example",
+    members: [],
+    invitations: [],
+    claims: [],
+    merged: {
+      intoId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+      intoSlug: "pocket-policy",
+      intoName: "Pocket Policy",
+      mergedAt: "2026-10-07T03:00:00Z",
+      mergedBy: "Young Xv",
+    },
+  },
+  {
     organization: organization(
       "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c01",
       "Lumen Health",
@@ -348,8 +368,9 @@ function page(url, records, statusOf, textOf, summaryOf) {
   const text = (url.searchParams.get("q") ?? "").toLowerCase();
   const status = url.searchParams.get("status");
   const items = records.filter(
+    // A merged record is listed only when merged ones are asked for, as the backend lists it.
     (record) =>
-      (!status || statusOf(record) === status) &&
+      (status ? statusOf(record) === status : statusOf(record) !== "merged") &&
       (!text || textOf(record).toLowerCase().includes(text)),
   );
   return { items: items.map(summaryOf), page: 1, pageSize: 25, total: items.length };
@@ -447,6 +468,7 @@ const lists = {
       claimId: record.claims[0]?.id ?? null,
       askedBy: status === "in_review" ? record.createdBy : (record.claims[0]?.name ?? null),
       requestedAt: status === "in_review" || record.claims.length > 0 ? day : null,
+      mergedInto: record.merged?.intoName ?? null,
     }),
   },
   "/api/solution/admin/solutions": {

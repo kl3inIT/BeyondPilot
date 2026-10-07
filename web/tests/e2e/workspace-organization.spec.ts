@@ -215,6 +215,30 @@ test.describe("workspace organization", () => {
     expect(changes).toEqual([{ call: "POST /api/organization/join-request/withdraw", body: null }]);
   });
 
+  test("a person moved by a merge is told once where they came from", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "moved", baseURL!);
+    const changes = await answerDecisions(page, changesPath, 204);
+    await page.goto("/workspace/organization");
+
+    await expect(
+      page.getByRole("heading", { name: "Pocket Policy Ltd is now part of Pocket Policy" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Merged on Oct 7. The old address pocket-policy-ltd leads to the new page."),
+    ).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+
+    await page.getByRole("button", { name: "Got it" }).click();
+
+    await expect
+      .poll(() => changes)
+      .toEqual([{ call: "POST /api/organization/mine/merge-notice/dismiss", body: null }]);
+  });
+
   test("a person whose request was declined reads it, asks again or looks elsewhere", async ({
     page,
     context,

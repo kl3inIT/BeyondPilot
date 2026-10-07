@@ -26,6 +26,7 @@ export const auditActions = [
   "organization.claim_decline",
   "organization.member_role",
   "organization.member_remove",
+  "organization.merge",
   "solution.approve",
   "solution.send_back",
   "solution.reject",
