@@ -12,10 +12,9 @@ import { siteRoutes } from "@/lib/site";
 import { InvitationActions } from "./invitation-actions";
 import { InvitePeople } from "./invite-people";
 import { JoinAccess } from "./join-access";
+import { JoinRequestCard } from "./join-request-card";
 import { MemberActions } from "./member-actions";
 import { MemberRole } from "./member-role";
-import { NoticeCard } from "./notice-card";
-import { OrganizationAction } from "./organization-action";
 import { OrganizationFrame } from "./organization-frame";
 import { isApproved } from "./organization-format";
 import { organizationMembersSearch } from "./organization-members-search";
@@ -110,36 +109,14 @@ function OrganizationMembersPage({
           summary={String(members.requests.length)}
         >
           {members.requests.map((request) => (
-            <NoticeCard
+            <JoinRequestCard
               key={request.id}
-              titleAs="h3"
-              title={request.name ?? request.email}
-              description={
-                <>
-                  <p>
-                    {request.name && <>{request.email} · </>}
-                    {t("requests.asked", { day: day(request.createdAt) })}
-                    {emailDomain && request.email.toLowerCase().endsWith(`@${emailDomain}`) && (
-                      <> {t("requests.onDomain", { domain: emailDomain })}</>
-                    )}
-                  </p>
-                  {request.message && <p className="whitespace-pre-line">{request.message}</p>}
-                </>
-              }
-              foot={t("requests.foot")}
-              actions={
-                <>
-                  <OrganizationAction
-                    action="approveRequest"
-                    id={request.id}
-                    prominence="secondary"
-                  >
-                    {t("requests.approve")}
-                  </OrganizationAction>
-                  <OrganizationAction action="declineRequest" id={request.id} prominence="tertiary">
-                    {t("requests.decline")}
-                  </OrganizationAction>
-                </>
+              request={request}
+              asked={day(request.createdAt)}
+              onDomain={
+                emailDomain && request.email.toLowerCase().endsWith(`@${emailDomain}`)
+                  ? emailDomain
+                  : null
               }
             />
           ))}
@@ -187,7 +164,7 @@ function OrganizationMembersPage({
         {/* Below 768px: one stacked row per person, never a table scrolled sideways. */}
         <ul className="overflow-hidden rounded-lg border bg-background md:hidden">
           {rows.map((row) => (
-            <li key={row.key} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
+            <li key={row.key} className="flex flex-col gap-2 border-b px-5 py-3 last:border-b-0">
               <div className="flex items-start justify-between gap-3">
                 {row.person}
                 {row.actions}

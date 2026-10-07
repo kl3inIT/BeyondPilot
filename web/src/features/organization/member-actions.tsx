@@ -18,7 +18,6 @@ import { Person } from "@/components/composites/person";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -191,7 +190,6 @@ function MemberActions({ member, owner }: MemberActionsProps) {
             <form noValidate onSubmit={saveJobTitle} className="flex flex-col gap-4">
               <DialogHeader>
                 <DialogTitle size="lg">{t("jobTitle.title")}</DialogTitle>
-                <DialogDescription>{t("jobTitle.lead")}</DialogDescription>
               </DialogHeader>
               <Field>
                 <FieldLabel htmlFor="member-job-title">{t("jobTitle.label")}</FieldLabel>

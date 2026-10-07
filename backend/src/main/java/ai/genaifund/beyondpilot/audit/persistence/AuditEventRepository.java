@@ -1,6 +1,9 @@
 package ai.genaifund.beyondpilot.audit.persistence;
 
 import java.sql.Types;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.audit.AuditRecord;
@@ -9,7 +12,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.json.JsonMapper;
 
-/** Inserts into the append-only {@code audit_event} table; nothing here updates or deletes. */
+/** Inserts into and counts the append-only {@code audit_event} table; nothing here updates or deletes. */
 @Repository
 public class AuditEventRepository {
 
@@ -41,6 +44,18 @@ public class AuditEventRepository {
 			.param("details", json.writeValueAsString(record.details()))
 			.param("requestId", requestId, Types.VARCHAR)
 			.update();
+	}
+
+	public long count(String action, UUID actorId, Instant since) {
+		return jdbc.sql("""
+				select count(*) from audit_event
+				where actor_id = :actorId and action = :action and occurred_at >= :since
+				""")
+			.param("actorId", actorId)
+			.param("action", action)
+			.param("since", OffsetDateTime.ofInstant(since, ZoneOffset.UTC))
+			.query(Long.class)
+			.single();
 	}
 
 }

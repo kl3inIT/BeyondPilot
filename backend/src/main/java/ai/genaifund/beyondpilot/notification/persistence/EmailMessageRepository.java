@@ -41,6 +41,17 @@ public class EmailMessageRepository {
 		this.jdbc = jdbc;
 	}
 
+	/**
+	 * Makes one operator's tests to other people take turns until the surrounding transaction ends, so that counting
+	 * them against the hourly limit and recording one is a single step.
+	 */
+	public void takeTestTurnFor(UUID accountId) {
+		jdbc.sql("select 1 from pg_advisory_xact_lock(hashtext(:key))")
+			.param("key", "email-test:" + accountId)
+			.query(Integer.class)
+			.single();
+	}
+
 	/** Records a rendered message to send now: queued and due. */
 	public void insertQueued(UUID id, String kind, String recipient, String subject, String html, String text) {
 		insert(id, kind, recipient, subject, html, text, "queued", null);

@@ -956,9 +956,9 @@
       "unowned": "Chưa có chủ",
       "actions": {
         "open": "Thao tác với {name}",
-        "review": "Xem xét…",
+        "review": "Xem xét",
         "record": "Mở hồ sơ",
-        "claim": "Quyết định yêu cầu nhận…"
+        "claim": "Quyết định yêu cầu nhận"
       },
       "needReview": "{count} cần duyệt",
       "empty": {
@@ -1011,11 +1011,11 @@
         "lead": "Do {creator} tạo ngày {day}.",
         "leadUnknown": "Tạo ngày {day}.",
         "approve": "Duyệt",
-        "refuse": "Từ chối…",
+        "refuse": "Từ chối",
         "refuseTitle": "Từ chối {name}",
         "refuseLead": "Các chủ sở hữu đọc được lý do. Từ chối là quyết định cuối cùng; nếu cần sửa, hãy trả lại tổ chức.",
         "refuseConfirm": "Gửi quyết định",
-        "sendBack": "Trả lại…",
+        "sendBack": "Trả lại",
         "sendBackTitle": "Trả lại {name}",
         "sendBackLead": "Các chủ sở hữu đọc được cần sửa gì. Khi họ sửa và lưu tổ chức, tổ chức được gửi duyệt lại.",
         "sendBackLabel": "Các chủ sở hữu cần sửa gì?",
@@ -1049,7 +1049,7 @@
       },
       "takeDown": {
         "open": "Thao tác cho {name}",
-        "menu": "Gỡ xuống…",
+        "menu": "Gỡ xuống",
         "title": "Gỡ {name} xuống",
         "lead": "Trang công khai và các giải pháp của tổ chức rời khỏi danh bạ ngay. {members} thành viên vẫn giữ workspace và đọc lý do ở đó.",
         "reason": "Lý do",
@@ -1108,7 +1108,7 @@
         "invite": {
           "open": "Mời một người",
           "title": "Mời người vào {name}",
-          "lead": "Họ nhận được email và tham gia sau khi đăng nhập. Lời mời của bạn không tính vào giới hạn của tổ chức.",
+          "lead": "Lời mời của bạn không tính vào giới hạn của tổ chức.",
           "email": "Địa chỉ email",
           "emailInvalid": "Nhập một địa chỉ email.",
           "role": "Vai trò",
@@ -2048,7 +2048,10 @@
         "throttled": "Nhà cung cấp đang giới hạn gửi. Thử lại sau một phút.",
         "unavailable": "Không kết nối được nhà cung cấp. Thử lại sau một phút.",
         "rejected": "Nhà cung cấp từ chối email. Kiểm tra domain người gửi đã được xác thực chưa.",
-        "invalidRecipient": "Nhà cung cấp không nhận địa chỉ của bạn làm người nhận."
+        "invalidRecipient": "Nhà cung cấp không nhận địa chỉ của bạn làm người nhận.",
+        "recipientInvalid": "Hãy nhập đúng một địa chỉ email, không kèm tên hay địa chỉ thứ hai.",
+        "suppressed": "Địa chỉ này đang bị chặn nên không email nào được gửi tới. Hãy gỡ nó khỏi danh sách chặn trước.",
+        "limitReached": "Bạn đã gửi đủ số email thử cho người khác trong một giờ. Hãy gửi cho chính mình, hoặc thử lại sau."
       },
       "templates": {
         "metaTitle": "Mẫu email",
@@ -2802,8 +2805,8 @@
       "metaTitle": "Tạo tổ chức · BeyondPilot",
       "createTitle": "Tạo tổ chức của bạn",
       "createLead": "Ai cũng thuộc về một tổ chức. Người làm độc lập có thể tạo một studio hoặc một nhóm.",
+      "edit": "Sửa hồ sơ",
       "profileTitle": "Hồ sơ tổ chức",
-      "profileLead": "Hiển thị cùng mọi giải pháp tổ chức đăng. Chỉ chủ sở hữu mới sửa được.",
       "basics": "Thông tin cơ bản",
       "about": "Giới thiệu",
       "name": "Tên tổ chức",
@@ -2891,8 +2894,7 @@
       },
       "ask": {
         "request": {
-          "title": "Xin tham gia {name}?",
-          "lead": "Chủ sở hữu sẽ đọc yêu cầu của bạn và quyết định."
+          "title": "Xin tham gia {name}?"
         },
         "claim": {
           "title": "Nhận {name}?",
@@ -2963,8 +2965,9 @@
       "invitePending": "Chờ chấp nhận",
       "requests": {
         "title": "Yêu cầu tham gia",
-        "asked": "Xin tham gia ngày {day}.",
-        "onDomain": "Email thuộc tên miền đã xác minh {domain} của tổ chức.",
+        "asked": "Gửi ngày {day}",
+        "onDomain": "Thuộc {domain}",
+        "message": "Lời nhắn",
         "foot": "Khi được chấp nhận, người này trở thành thành viên.",
         "approve": "Chấp nhận",
         "decline": "Từ chối"
@@ -2993,16 +2996,15 @@
       "actions": {
         "open": "Thao tác với {name}",
         "openInvitation": "Thao tác với lời mời gửi {email}",
-        "editJobTitle": "Sửa chức danh…",
+        "editJobTitle": "Sửa chức danh",
         "makeMember": "Chuyển thành thành viên",
         "makeOwner": "Trao quyền chủ sở hữu",
-        "leave": "Rời tổ chức…",
-        "remove": "Xóa khỏi tổ chức…",
+        "leave": "Rời tổ chức",
+        "remove": "Xóa khỏi tổ chức",
         "revoke": "Thu hồi lời mời"
       },
       "jobTitle": {
         "title": "Chức danh của bạn",
-        "lead": "Hiển thị bên cạnh tên bạn trong đội ngũ của tổ chức.",
         "label": "Chức danh",
         "placeholder": "ví dụ: Kỹ sư giải pháp",
         "save": "Lưu",
@@ -3025,7 +3027,7 @@
       "invite": {
         "open": "Mời mọi người",
         "title": "Mời mọi người vào {name}",
-        "lead": "Mỗi người nhận một email và thấy lời mời sau khi đăng nhập bằng địa chỉ đó. Hôm nay còn {leftToday} trên {dailyLimit} lời mời; còn có thể mở cùng lúc {leftOpen} trên {openLimit} lời mời.",
+        "lead": "Hôm nay còn {leftToday}/{dailyLimit} lời mời; có thể mở cùng lúc {leftOpen}/{openLimit} lời mời.",
         "emails": "Địa chỉ email",
         "emailsPlaceholder": "ten@congty.com, ten@congty.com",
         "emailsInvalid": "Hãy nhập các địa chỉ email đầy đủ, cách nhau bằng dấu phẩy.",

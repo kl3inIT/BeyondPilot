@@ -19,7 +19,13 @@ const claim = "9c4f6d85-3c31-4d86-8d88-3a6c9c9e0d01";
 const decisionsPath = "**/api/organization/admin/**";
 
 /** The organizations shown, by the name each row leads with, whichever layout the viewport has. */
+/** The organizations the list shows, by the link to each one's record. */
 function shownOrganizations(page: Page) {
+  return page.locator('a[href*="/admin/organizations/"]:visible');
+}
+
+/** The people of an organization's members tab, by their names. */
+function shownPeople(page: Page) {
   return page.locator('[data-slot="person"]:visible >> span.font-medium');
 }
 
@@ -40,7 +46,7 @@ async function openReview(page: Page) {
   );
   await page.goto("/admin/organizations");
   await page.getByRole("button", { name: "Actions for Lumen Health" }).click();
-  await page.getByRole("menuitem", { name: "Review…" }).click();
+  await page.getByRole("menuitem", { name: "Review" }).click();
   return page.getByRole("dialog");
 }
 
@@ -210,7 +216,7 @@ test.describe("admin organizations", () => {
     await page.goto("/admin/organizations");
 
     await page.getByRole("button", { name: "Actions for Open Kitchen" }).click();
-    await page.getByRole("menuitem", { name: "Decide claim…" }).click();
+    await page.getByRole("menuitem", { name: "Decide claim" }).click();
     const dialog = page.getByRole("dialog");
 
     await expect(dialog.getByRole("heading")).toHaveText("Decide the claim for Open Kitchen");
@@ -239,14 +245,14 @@ test.describe("admin organizations", () => {
     const decisions = await answerDecisions(page, decisionsPath, 204);
     const dialog = await openReview(page);
 
-    await dialog.getByRole("button", { name: "Refuse…" }).click();
+    await dialog.getByRole("button", { name: "Refuse" }).click();
     await expect(dialog.getByRole("heading")).toHaveText("Refuse Lumen Health");
     await expect(dialog.getByRole("button", { name: "Send decision" })).toBeDisabled();
 
     // Leaving the reason goes back to the review, where the organization can still be approved.
     await dialog.getByRole("button", { name: "Back" }).click();
     await expect(dialog.getByRole("heading")).toHaveText("Review Lumen Health");
-    await dialog.getByRole("button", { name: "Refuse…" }).click();
+    await dialog.getByRole("button", { name: "Refuse" }).click();
 
     await giveReason(page, "Already on BeyondPilot", "  It is listed as Lumen Clinics.  ");
     await dialog.getByRole("button", { name: "Send decision" }).click();
@@ -272,14 +278,14 @@ test.describe("admin organizations", () => {
     const decisions = await answerDecisions(page, decisionsPath, 204);
     const dialog = await openReview(page);
 
-    await dialog.getByRole("button", { name: "Send back…" }).click();
+    await dialog.getByRole("button", { name: "Send back" }).click();
     await expect(dialog.getByRole("heading")).toHaveText("Send Lumen Health back");
     const send = dialog.getByRole("button", { name: "Send back", exact: true });
     await expect(send).toBeDisabled();
 
     await dialog.getByRole("button", { name: "Back", exact: true }).click();
     await expect(dialog.getByRole("heading")).toHaveText("Review Lumen Health");
-    await dialog.getByRole("button", { name: "Send back…" }).click();
+    await dialog.getByRole("button", { name: "Send back" }).click();
 
     await dialog
       .getByRole("textbox", { name: "What should the owners change?" })
@@ -328,7 +334,7 @@ test.describe("admin organizations", () => {
 
     await page.getByRole("button", { name: "Actions for Open Kitchen" }).click();
     // An approved organization has no review; its claim is decided from the menu or on the record.
-    await expect(page.getByRole("menuitem", { name: "Review…" })).toHaveCount(0);
+    await expect(page.getByRole("menuitem", { name: "Review" })).toHaveCount(0);
     await page.getByRole("menuitem", { name: "Open record" }).click();
 
     await expect(page).toHaveURL(`/admin/organizations/${openKitchen}`);
@@ -339,7 +345,7 @@ test.describe("admin organizations", () => {
     await expect(claims.getByText("I founded the team.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
 
-    await claims.getByRole("button", { name: "Decide claim…" }).click();
+    await claims.getByRole("button", { name: "Decide claim" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByLabel("Email domain to verify (optional)")).toHaveValue(
       "openkitchen.example",
@@ -390,7 +396,7 @@ test.describe("admin organizations", () => {
     await page.goto(`/admin/organizations/${pocketPolicy}`);
 
     await page.getByRole("button", { name: "Actions for Pocket Policy" }).click();
-    await page.getByRole("menuitem", { name: "Take down…" }).click();
+    await page.getByRole("menuitem", { name: "Take down" }).click();
     const dialog = await giveReason(
       page,
       "Misleading or false information",
@@ -422,6 +428,9 @@ test.describe("admin organizations", () => {
     const decisions = await answerDecisions(page, decisionsPath, 200, {});
     await page.goto(`/admin/organizations/${pocketPolicy}`);
 
+    // The profile reads until the operator chooses to edit it.
+    await expect(page.getByRole("textbox")).toHaveCount(0);
+    await page.getByRole("button", { name: "Edit profile" }).click();
     await page.getByLabel("Short description").fill("Claim assistants for insurers.");
     await page.getByLabel("Year founded").fill("2021");
     await page.getByLabel("Verified domain").fill("pocketpolicy.example");
@@ -448,13 +457,13 @@ test.describe("admin organizations", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto(`/admin/organizations/${harborBank}?tab=members`);
 
-    await expect(shownOrganizations(page)).toHaveCount(10);
+    await expect(shownPeople(page)).toHaveCount(10);
     await expect(page.getByText("12 members · 1 invitation open")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
 
     await page.getByRole("link", { name: "Go to the next page" }).first().click();
     await expect(page).toHaveURL(/page=2/);
-    await expect(shownOrganizations(page)).toHaveText([
+    await expect(shownPeople(page)).toHaveText([
       "Teller 11",
       "Teller 12",
       "newhire@harborbank.example",

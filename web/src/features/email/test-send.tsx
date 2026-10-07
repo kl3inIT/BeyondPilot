@@ -13,8 +13,8 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 
-/** One address, loosely; the backend checks it. */
-const ADDRESS = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** One plain address, in the characters the backend accepts for a test recipient. */
+const ADDRESS = /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
 
 /**
  * Where a test email goes and the button that sends it. The operator's own address is filled in; another address may

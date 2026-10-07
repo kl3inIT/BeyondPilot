@@ -36,7 +36,6 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionOperations;
 
 /**
  * What operators do with the email settings: read them, choose who delivers and as whom, test a connection before
@@ -70,15 +69,15 @@ public class EmailSettingsAdministration {
 
 	private final AuditTrail audit;
 
-	private final TransactionOperations transactions;
+	private final TestRecipients recipients;
 
 	private final EmailAdapterRegistry adapters;
 
 	EmailSettingsAdministration(IdentityService identity, EmailSettingsRepository settings, SecretBox secrets,
 			DeliverySettings delivery, EmailRenderer renderer, EmailDelivery sender, AuditTrail audit,
 			EmailAdapterRegistry adapters,
-			TransactionOperations transactions) {
-		this.transactions = transactions;
+			TestRecipients recipients) {
+		this.recipients = recipients;
 		this.adapters = adapters;
 		this.identity = identity;
 		this.settings = settings;
@@ -150,21 +149,21 @@ public class EmailSettingsAdministration {
 
 	/**
 	 * Sends a test through the settings as the form holds them, saved or not.
-	 * @param to where to send it; null for the operator's own address. A test to anyone else is recorded in the audit
-	 * log, so the button cannot quietly send mail in BeyondPilot's name.
+	 * @param to where to send it; null for the operator's own address. A test to anyone else is limited and recorded in
+	 * the audit log, so the button cannot quietly send mail in BeyondPilot's name.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws NotificationException when a field the provider needs is missing
+	 * @throws NotificationException when a field the provider needs is missing, or {@link TestRecipients} refuses the
+	 * address
 	 */
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public EmailTestResponse test(Actor actor, SaveEmailSettingsRequest request, @Nullable String to) {
 		Operator operator = identity.requireOperator(actor);
-		String recipient = TestRecipients.recipient(operator, to);
 		EmailSettings row = settings.current();
 		EmailConnection connection = connection(request, kept(row, request));
 		DeliverySettings.Delivery draft = new DeliverySettings.Delivery(connection, request.fromName().strip(),
 				request.fromAddress().strip(), blankToNull(request.replyTo()));
+		String recipient = recipients.admit(operator, to, "settings");
 		Optional<DeliveryFailure> failure = sender.sendTest(draft, recipient, renderer.render(TEST, delivery.appearance()));
-		TestRecipients.record(audit, transactions, operator, recipient, "settings");
 		return new EmailTestResponse(recipient, failure.isEmpty(), failure.map(DeliveryFailure::value).orElse(null));
 	}
 
