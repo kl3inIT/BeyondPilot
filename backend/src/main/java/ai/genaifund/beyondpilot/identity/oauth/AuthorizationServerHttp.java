@@ -94,7 +94,7 @@ final class AuthorizationServerHttp {
 					? codeRequest.getAuthorizationCodeRequestAuthentication() : null;
 			String redirect = asked == null ? null : asked.getRedirectUri();
 			if (redirect == null || redirect.isEmpty()
-					|| ("GET".equals(request.getMethod()) && !isReviewedOrOwn(asked.getClientId(), documents))) {
+					|| (!isPersonsAnswer(request) && !isReviewedOrOwn(asked.getClientId(), documents))) {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, error.getErrorCode());
 				return;
 			}
@@ -110,6 +110,14 @@ final class AuthorizationServerHttp {
 			uri.queryParam("iss", UriUtils.encode(settings.issuer(), StandardCharsets.UTF_8));
 			response.sendRedirect(uri.build(true).toUriString());
 		};
+	}
+
+	/**
+	 * Whether this is the consent page's answer, as Spring tells it: a POST without {@code response_type}. An
+	 * authorization request may be posted too, by a page anyone can make, so the method alone proves no answer.
+	 */
+	private static boolean isPersonsAnswer(HttpServletRequest request) {
+		return "POST".equals(request.getMethod()) && request.getParameter(OAuth2ParameterNames.RESPONSE_TYPE) == null;
 	}
 
 	private static boolean isReviewedOrOwn(String clientId, ClientMetadataDocuments documents) {

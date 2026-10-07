@@ -330,6 +330,17 @@ class McpAuthorizationTest {
 			.exchange()
 			.expectStatus()
 			.isBadRequest();
+
+		// A request posted by a page that submits itself is no answer either.
+		client.post()
+			.uri("/oauth2/authorize")
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+			.body("response_type=code&client_id=" + clientId + "&scope=no.such.scope&redirect_uri=https://unreviewed.example/cb"
+					+ "&code_challenge=" + challenge() + "&code_challenge_method=S256&state=s")
+			.exchange()
+			.expectStatus()
+			.isBadRequest();
 	}
 
 	@Test
