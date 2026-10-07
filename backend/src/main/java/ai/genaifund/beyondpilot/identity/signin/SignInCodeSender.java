@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
  * Splits a freshly generated sign-in code in two: the challenge goes into the session of the browser that asked, the
  * code goes to the mailbox. The answer is the same whether or not the address has an account, so the endpoint tells
  * nobody who is registered. {@link SignInCodeRequestGuard} has already refused a value that is not a plain address,
- * and {@link SignInCodeService} an address that holds its share of codes.
+ * and {@link SignInCodeService} an address that may not have another code yet.
  */
 @Component
 class SignInCodeSender implements OneTimeTokenGenerationSuccessHandler {

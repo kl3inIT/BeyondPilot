@@ -42,11 +42,13 @@ class SignInCodeService implements OneTimeTokenService {
 
 	private final SignInChallengeRepository challenges;
 	private final IdentityProperties properties;
+	private final SignInCodeLimits limits;
 	private final SecureRandom random = new SecureRandom();
 
-	SignInCodeService(SignInChallengeRepository challenges, IdentityProperties properties) {
+	SignInCodeService(SignInChallengeRepository challenges, IdentityProperties properties, SignInCodeLimits limits) {
 		this.challenges = challenges;
 		this.properties = properties;
+		this.limits = limits;
 	}
 
 	@Override
@@ -55,16 +57,10 @@ class SignInCodeService implements OneTimeTokenService {
 		Instant now = Instant.now();
 		// Requests for one address take turns here, so the limit holds however many arrive together.
 		challenges.takeTurnFor(request.getUsername());
-		if (challenges.countUnexpired(request.getUsername(), now) >= properties.signInCodeLimit()) {
+		Instant refusedUntil = limits.refusedUntil(request.getUsername(), now);
+		if (refusedUntil != null) {
 			LOG.atWarn().addKeyValue("event", "identity.sign_in_code.limited").log("Sign-in code limit reached");
-			return SignInCode.refused(request.getUsername(), now.plus(request.getExpiresIn()));
-		}
-		// Six digits are guessable given enough codes to guess at, so an address that keeps getting wrong codes gets
-		// no new one for a day. Google sign-in is not affected.
-		if (challenges.wrongCodesSince(request.getUsername(), now.minus(KEEP_EXPIRED)) >= properties
-			.signInCodeDailyAttempts()) {
-			LOG.atWarn().addKeyValue("event", "identity.sign_in_code.guarded").log("Sign-in codes paused for an address");
-			return SignInCode.refused(request.getUsername(), now.plus(KEEP_EXPIRED));
+			return SignInCode.refused(request.getUsername(), refusedUntil);
 		}
 		challenges.removeExpiredBefore(now.minus(KEEP_EXPIRED));
 		UUID challengeId = UUID.randomUUID();
