@@ -200,7 +200,10 @@ public enum AuditAction {
 	SEARCH_INDEX_REBUILD("search.index_rebuild"),
 
 	/** An operator let held-back items be embedded again at once. {@code count} is how many. */
-	SEARCH_EMBEDDING_RETRY("search.embedding_retry", "count");
+	SEARCH_EMBEDDING_RETRY("search.embedding_retry", "count"),
+
+	/** A person, or an operator for them, ended an AI app's connection to the MCP servers. */
+	MCP_APP_REVOKE("mcp.app_revoke");
 
 	private final String value;
 

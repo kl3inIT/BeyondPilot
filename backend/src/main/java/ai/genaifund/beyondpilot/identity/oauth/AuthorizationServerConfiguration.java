@@ -164,6 +164,13 @@ class AuthorizationServerConfiguration {
 								methods.clear();
 								methods.addAll(List.of("none", "private_key_jwt"));
 							})
+							// Only what AI apps here use: no client credentials, no token exchange, no client certificates.
+							.grantTypes(grants -> grants.retainAll(List.of("authorization_code", "refresh_token")))
+							.tokenRevocationEndpointAuthenticationMethods(methods -> methods
+								.retainAll(List.of("none", "private_key_jwt")))
+							.tokenIntrospectionEndpointAuthenticationMethods(methods -> methods
+								.retainAll(List.of("private_key_jwt")))
+							.tlsClientCertificateBoundAccessTokens(false)
 							.claim("client_id_metadata_document_supported", true)
 							.claim("authorization_response_iss_parameter_supported", true))))
 			.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
