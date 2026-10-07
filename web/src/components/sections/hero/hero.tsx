@@ -2,7 +2,11 @@ import { ArrowRightIcon, SearchIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
-import { FloatingCards, FloatingCardsStack } from "@/components/sections/hero/floating-cards";
+import {
+  FloatingCards,
+  FloatingCardsStack,
+  type HeroCardsData,
+} from "@/components/sections/hero/floating-cards";
 import { Badge } from "@/components/ui/badge";
 import { Glow } from "@/components/ui/glow";
 import { Section } from "@/components/ui/section";
@@ -17,7 +21,7 @@ const scopes = ["agentic", "document", "insurance", "retail"] as const;
  * rises without fading, because a browser skips an invisible element when it measures the largest
  * paint, and the heading is that paint.
  */
-function Hero() {
+function Hero({ cards }: { cards: HeroCardsData }) {
   const t = useTranslations("Home.hero");
   const c = useTranslations("Campaign");
   const locale = useLocale();
@@ -25,7 +29,7 @@ function Hero() {
   return (
     <Section surface="muted" className="overflow-hidden">
       <Glow />
-      <FloatingCards />
+      <FloatingCards cards={cards} />
       <div className="relative flex flex-col items-center gap-2 pt-12 pb-6 lg:h-205 lg:pt-44 lg:pb-0">
         <div className="@container flex w-full max-w-190 flex-col items-center gap-6 text-center">
           <a
@@ -103,7 +107,7 @@ function Hero() {
             ))}
           </ul>
         </div>
-        <FloatingCardsStack />
+        <FloatingCardsStack cards={cards} />
       </div>
     </Section>
   );
