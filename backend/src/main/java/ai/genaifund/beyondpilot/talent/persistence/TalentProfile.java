@@ -26,15 +26,12 @@ public class TalentProfile {
 
 	public static final String DRAFT = "draft";
 
-	public static final String SUBMITTED = "submitted";
+	public static final String IN_REVIEW = "in_review";
+
+	/** GenAI Fund sent a profile that waited for review back to its person, with what to change. */
+	public static final String NEEDS_CHANGES = "needs_changes";
 
 	public static final String APPROVED = "approved";
-
-	/** GenAI Fund asked the person to change a profile that waited for review. */
-	public static final String CHANGES_REQUESTED = "changes_requested";
-
-	/** GenAI Fund took the profile away from the public. */
-	public static final String REMOVED = "removed";
 
 	@Id
 	private UUID id;
@@ -95,6 +92,12 @@ public class TalentProfile {
 
 	private @Nullable Instant submittedAt;
 
+	private @Nullable String suspensionReason;
+
+	private @Nullable String suspensionMessage;
+
+	private @Nullable Instant suspendedAt;
+
 	@Column(nullable = false)
 	private boolean listed = true;
 
@@ -154,30 +157,39 @@ public class TalentProfile {
 	}
 
 	public void submit(Instant at) {
-		status = SUBMITTED;
+		status = IN_REVIEW;
 		submittedAt = at;
 	}
 
+	/** Approves a profile that waits for review; a profile taken down and sent again is back in the public too. */
 	public void approve(Instant at) {
 		status = APPROVED;
 		decisionReason = null;
 		decisionMessage = null;
 		decidedAt = at;
+		suspendedAt = null;
 	}
 
-	public void requestChanges(String reason, @Nullable String message, Instant at) {
-		decide(CHANGES_REQUESTED, reason, message, at);
-	}
-
-	public void remove(String reason, @Nullable String message, Instant at) {
-		decide(REMOVED, reason, message, at);
-	}
-
-	private void decide(String status, String reason, @Nullable String message, Instant at) {
-		this.status = status;
+	public void sendBack(String reason, @Nullable String message, Instant at) {
+		status = NEEDS_CHANGES;
 		decisionReason = reason;
 		decisionMessage = message;
 		decidedAt = at;
+	}
+
+	/**
+	 * Takes an approved profile away from the public. Its review stays approved, so restoring needs no new review;
+	 * while it is down {@link #isApproved()} is false.
+	 */
+	public void takeDown(String reason, @Nullable String message, Instant at) {
+		suspensionReason = reason;
+		suspensionMessage = message;
+		suspendedAt = at;
+	}
+
+	/** Puts a profile taken down back in the public; the reason it was taken down stays readable on the record. */
+	public void restore() {
+		suspendedAt = null;
 	}
 
 	/** What a profile needs before GenAI Fund reviews it: a headline, a bio, a role and a skill. */
@@ -189,17 +201,25 @@ public class TalentProfile {
 		return DRAFT.equals(status);
 	}
 
-	public boolean isSubmitted() {
-		return SUBMITTED.equals(status);
+	public boolean isInReview() {
+		return IN_REVIEW.equals(status);
 	}
 
+	/** Approved by GenAI Fund and not taken down: what puts it in the public directory once listed. */
 	public boolean isApproved() {
-		return APPROVED.equals(status);
+		return APPROVED.equals(status) && suspendedAt == null;
 	}
 
-	/** Whether GenAI Fund sent the profile back to its person, who corrects it and sends it again. */
+	public boolean isTakenDown() {
+		return suspendedAt != null;
+	}
+
+	/**
+	 * Whether GenAI Fund sent the profile back to its person or took it down; either way they correct it and send it
+	 * again.
+	 */
 	public boolean isReturned() {
-		return CHANGES_REQUESTED.equals(status) || REMOVED.equals(status);
+		return NEEDS_CHANGES.equals(status) || (APPROVED.equals(status) && isTakenDown());
 	}
 
 	public UUID getId() {
@@ -280,6 +300,18 @@ public class TalentProfile {
 
 	public @Nullable String getDecisionMessage() {
 		return decisionMessage;
+	}
+
+	public @Nullable String getSuspensionReason() {
+		return suspensionReason;
+	}
+
+	public @Nullable String getSuspensionMessage() {
+		return suspensionMessage;
+	}
+
+	public @Nullable Instant getSuspendedAt() {
+		return suspendedAt;
 	}
 
 	public @Nullable Instant getSubmittedAt() {

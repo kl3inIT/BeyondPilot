@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcceptOrganizationInvitationData, AcceptOrganizationInvitationErrors, AcceptOrganizationInvitationResponses, AcceptTalentEnquiryData, AcceptTalentEnquiryErrors, AcceptTalentEnquiryResponses, AddCustomerDeploymentData, AddCustomerDeploymentErrors, AddCustomerDeploymentResponses, ApproveCustomerDeploymentData, ApproveCustomerDeploymentErrors, ApproveCustomerDeploymentResponses, ApproveJoinRequestData, ApproveJoinRequestErrors, ApproveJoinRequestResponses, ApproveOrganizationClaimData, ApproveOrganizationClaimErrors, ApproveOrganizationClaimResponses, ApproveOrganizationData, ApproveOrganizationErrors, ApproveOrganizationResponses, ApproveSolutionData, ApproveSolutionErrors, ApproveSolutionResponses, ApproveTalentData, ApproveTalentErrors, ApproveTalentResponses, ChangeMyJobTitleData, ChangeMyJobTitleErrors, ChangeMyJobTitleResponses, ChangeOrganizationAutoJoinData, ChangeOrganizationAutoJoinErrors, ChangeOrganizationAutoJoinResponses, ChangeOrganizationMemberRoleData, ChangeOrganizationMemberRoleErrors, ChangeOrganizationMemberRoleResponses, ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateAdminOrganizationData, CreateAdminOrganizationErrors, CreateAdminOrganizationResponses, CreateOrganizationData, CreateOrganizationErrors, CreateOrganizationResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, CreateSolutionData, CreateSolutionErrors, CreateSolutionResponses, DecideApplicationsData, DecideApplicationsErrors, DecideApplicationsResponses, DeclineIntroductionData, DeclineIntroductionErrors, DeclineIntroductionResponses, DeclineJoinRequestData, DeclineJoinRequestErrors, DeclineJoinRequestResponses, DeclineOrganizationClaimData, DeclineOrganizationClaimErrors, DeclineOrganizationClaimResponses, DeclineOrganizationInvitationData, DeclineOrganizationInvitationErrors, DeclineOrganizationInvitationResponses, DeclineTalentEnquiryData, DeclineTalentEnquiryErrors, DeclineTalentEnquiryResponses, DeleteCustomerDeploymentData, DeleteCustomerDeploymentErrors, DeleteCustomerDeploymentResponses, DeleteMyTalentProfileData, DeleteMyTalentProfileErrors, DeleteMyTalentProfileResponses, DeleteSolutionDraftData, DeleteSolutionDraftErrors, DeleteSolutionDraftResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminOrganizationData, GetAdminOrganizationErrors, GetAdminOrganizationResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetAdminSolutionData, GetAdminSolutionErrors, GetAdminSolutionResponses, GetAdminTalentData, GetAdminTalentErrors, GetAdminTalentResponses, GetApplicationFormData, GetApplicationFormErrors, GetApplicationFormResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyApplicationData, GetMyApplicationErrors, GetMyApplicationResponses, GetMyOrganizationData, GetMyOrganizationErrors, GetMyOrganizationResponses, GetMySolutionData, GetMySolutionErrors, GetMySolutionResponses, GetMyTalentProfileData, GetMyTalentProfileErrors, GetMyTalentProfileResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetProgramData, GetProgramErrors, GetProgramQuestionsData, GetProgramQuestionsErrors, GetProgramQuestionsResponses, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GetReceivedIntroductionsData, GetReceivedIntroductionsErrors, GetReceivedIntroductionsResponses, GetReleaseData, GetReleaseErrors, GetReleaseResponses, GetReviewApplicationData, GetReviewApplicationErrors, GetReviewApplicationResponses, GetReviewCriteriaData, GetReviewCriteriaErrors, GetReviewCriteriaResponses, GetReviewFileData, GetReviewFileErrors, GetReviewFileResponses, GetSolutionData, GetSolutionDeckData, GetSolutionDeckErrors, GetSolutionDeckResponses, GetSolutionErrors, GetSolutionResponses, GetTalentData, GetTalentErrors, GetTalentResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, InviteOrganizationMemberData, InviteOrganizationMemberErrors, InviteOrganizationMemberResponses, InviteReviewerData, InviteReviewerErrors, InviteReviewerResponses, JoinOrganizationData, JoinOrganizationErrors, JoinOrganizationResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminIntroductionsData, ListAdminIntroductionsErrors, ListAdminIntroductionsResponses, ListAdminOrganizationsData, ListAdminOrganizationsErrors, ListAdminOrganizationsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAdminSolutionsData, ListAdminSolutionsErrors, ListAdminSolutionsResponses, ListAdminTalentData, ListAdminTalentErrors, ListAdminTalentResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListCustomerDeploymentsData, ListCustomerDeploymentsErrors, ListCustomerDeploymentsResponses, ListMyApplicationsData, ListMyApplicationsErrors, ListMyApplicationsResponses, ListMyOrganizationMembersData, ListMyOrganizationMembersErrors, ListMyOrganizationMembersResponses, ListMySolutionsData, ListMySolutionsErrors, ListMySolutionsResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, ListReportedTalentEnquiriesData, ListReportedTalentEnquiriesErrors, ListReportedTalentEnquiriesResponses, ListReviewApplicationsData, ListReviewApplicationsErrors, ListReviewApplicationsResponses, ListReviewersData, ListReviewersErrors, ListReviewersResponses, ListReviewProgramsData, ListReviewProgramsErrors, ListReviewProgramsResponses, ListSolutionsData, ListSolutionsErrors, ListSolutionsResponses, ListTalentData, ListTalentErrors, ListTalentResponses, OrganizeApplicantData, OrganizeApplicantErrors, OrganizeApplicantResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, RefuseOrganizationData, RefuseOrganizationErrors, RefuseOrganizationResponses, RejectCustomerDeploymentData, RejectCustomerDeploymentErrors, RejectCustomerDeploymentResponses, RejectSolutionData, RejectSolutionErrors, RejectSolutionResponses, ReleaseOutcomesData, ReleaseOutcomesErrors, ReleaseOutcomesResponses, RemoveOrganizationMemberData, RemoveOrganizationMemberErrors, RemoveOrganizationMemberResponses, RemoveReviewerData, RemoveReviewerErrors, RemoveReviewerResponses, RemoveTalentData, RemoveTalentErrors, RemoveTalentResponses, ReplyToIntroductionData, ReplyToIntroductionErrors, ReplyToIntroductionResponses, ReportTalentEnquiryData, ReportTalentEnquiryErrors, ReportTalentEnquiryResponses, RequestIntroductionData, RequestIntroductionErrors, RequestIntroductionResponses, RequestTalentChangesData, RequestTalentChangesErrors, RequestTalentChangesResponses, ResendReviewerInvitationData, ResendReviewerInvitationErrors, ResendReviewerInvitationResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, RevokeOrganizationInvitationData, RevokeOrganizationInvitationErrors, RevokeOrganizationInvitationResponses, SaveApplicationData, SaveApplicationErrors, SaveApplicationResponses, SaveAssessmentData, SaveAssessmentErrors, SaveAssessmentResponses, SaveCustomerDeploymentData, SaveCustomerDeploymentErrors, SaveCustomerDeploymentResponses, SaveMyOrganizationData, SaveMyOrganizationErrors, SaveMyOrganizationResponses, SaveMyTalentProfileData, SaveMyTalentProfileErrors, SaveMyTalentProfileResponses, SaveProgramData, SaveProgramErrors, SaveProgramQuestionsData, SaveProgramQuestionsErrors, SaveProgramQuestionsResponses, SaveProgramResponses, SaveReviewCriteriaData, SaveReviewCriteriaErrors, SaveReviewCriteriaResponses, SaveSolutionData, SaveSolutionErrors, SaveSolutionResponses, SearchData, SearchErrors, SearchOrganizationsData, SearchOrganizationsErrors, SearchOrganizationsResponses, SearchResponses, SendTalentEnquiryData, SendTalentEnquiryErrors, SendTalentEnquiryResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, SubmitApplicationData, SubmitApplicationErrors, SubmitApplicationResponses, SubmitMyTalentProfileData, SubmitMyTalentProfileErrors, SubmitMyTalentProfileResponses, SubmitSolutionData, SubmitSolutionErrors, SubmitSolutionResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, WithdrawApplicationData, WithdrawApplicationErrors, WithdrawApplicationResponses, WithdrawJoinRequestData, WithdrawJoinRequestErrors, WithdrawJoinRequestResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
+import type { AcceptOrganizationInvitationData, AcceptOrganizationInvitationErrors, AcceptOrganizationInvitationResponses, AcceptTalentEnquiryData, AcceptTalentEnquiryErrors, AcceptTalentEnquiryResponses, AddCustomerDeploymentData, AddCustomerDeploymentErrors, AddCustomerDeploymentResponses, AddEmailSuppressionData, AddEmailSuppressionErrors, AddEmailSuppressionResponses, ApproveAdminUseCaseData, ApproveAdminUseCaseErrors, ApproveAdminUseCaseResponses, ApproveCustomerDeploymentData, ApproveCustomerDeploymentErrors, ApproveCustomerDeploymentResponses, ApproveJoinRequestData, ApproveJoinRequestErrors, ApproveJoinRequestResponses, ApproveOrganizationClaimData, ApproveOrganizationClaimErrors, ApproveOrganizationClaimResponses, ApproveOrganizationData, ApproveOrganizationErrors, ApproveOrganizationResponses, ApproveSolutionData, ApproveSolutionErrors, ApproveSolutionResponses, ApproveTalentData, ApproveTalentErrors, ApproveTalentResponses, BackSolutionData, BackSolutionErrors, BackSolutionResponses, ChangeAdminOrganizationMemberRoleData, ChangeAdminOrganizationMemberRoleErrors, ChangeAdminOrganizationMemberRoleResponses, ChangeMyJobTitleData, ChangeMyJobTitleErrors, ChangeMyJobTitleResponses, ChangeOrganizationAutoJoinData, ChangeOrganizationAutoJoinErrors, ChangeOrganizationAutoJoinResponses, ChangeOrganizationMemberRoleData, ChangeOrganizationMemberRoleErrors, ChangeOrganizationMemberRoleResponses, CheckEmailSetupData, CheckEmailSetupErrors, CheckEmailSetupResponses, ChooseEmbeddingModelData, ChooseEmbeddingModelErrors, ChooseEmbeddingModelResponses, ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateAdminOrganizationData, CreateAdminOrganizationErrors, CreateAdminOrganizationResponses, CreateAdminUseCaseData, CreateAdminUseCaseErrors, CreateAdminUseCaseResponses, CreateAiProviderData, CreateAiProviderErrors, CreateAiProviderResponses, CreateMyUseCaseData, CreateMyUseCaseErrors, CreateMyUseCaseResponses, CreateOrganizationData, CreateOrganizationErrors, CreateOrganizationResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, CreateSolutionData, CreateSolutionErrors, CreateSolutionResponses, DecideApplicationsData, DecideApplicationsErrors, DecideApplicationsResponses, DeclineIntroductionData, DeclineIntroductionErrors, DeclineIntroductionResponses, DeclineJoinRequestData, DeclineJoinRequestErrors, DeclineJoinRequestResponses, DeclineOrganizationClaimData, DeclineOrganizationClaimErrors, DeclineOrganizationClaimResponses, DeclineOrganizationInvitationData, DeclineOrganizationInvitationErrors, DeclineOrganizationInvitationResponses, DeclineTalentEnquiryData, DeclineTalentEnquiryErrors, DeclineTalentEnquiryResponses, DeleteAiProviderData, DeleteAiProviderErrors, DeleteAiProviderResponses, DeleteCustomerDeploymentData, DeleteCustomerDeploymentErrors, DeleteCustomerDeploymentResponses, DeleteMyTalentProfileData, DeleteMyTalentProfileErrors, DeleteMyTalentProfileResponses, DeleteSolutionDraftData, DeleteSolutionDraftErrors, DeleteSolutionDraftResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminOrganizationData, GetAdminOrganizationErrors, GetAdminOrganizationResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetAdminSolutionData, GetAdminSolutionErrors, GetAdminSolutionResponses, GetAdminTalentData, GetAdminTalentErrors, GetAdminTalentResponses, GetAdminUseCaseData, GetAdminUseCaseErrors, GetAdminUseCaseResponses, GetApplicationFormData, GetApplicationFormErrors, GetApplicationFormResponses, GetConnectingAppData, GetConnectingAppErrors, GetConnectingAppResponses, GetEmailMessageData, GetEmailMessageErrors, GetEmailMessageResponses, GetEmailSettingsData, GetEmailSettingsErrors, GetEmailSettingsResponses, GetEmailTemplateData, GetEmailTemplateErrors, GetEmailTemplateResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyApplicationData, GetMyApplicationErrors, GetMyApplicationResponses, GetMyOrganizationData, GetMyOrganizationErrors, GetMyOrganizationResponses, GetMySolutionData, GetMySolutionErrors, GetMySolutionResponses, GetMyTalentProfileData, GetMyTalentProfileErrors, GetMyTalentProfileResponses, GetMyUseCaseData, GetMyUseCaseErrors, GetMyUseCaseResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetProgramData, GetProgramErrors, GetProgramQuestionsData, GetProgramQuestionsErrors, GetProgramQuestionsResponses, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GetReceivedIntroductionsData, GetReceivedIntroductionsErrors, GetReceivedIntroductionsResponses, GetReleaseData, GetReleaseErrors, GetReleaseResponses, GetReviewApplicationData, GetReviewApplicationErrors, GetReviewApplicationResponses, GetReviewCriteriaData, GetReviewCriteriaErrors, GetReviewCriteriaResponses, GetReviewFileData, GetReviewFileErrors, GetReviewFileResponses, GetSearchIndexData, GetSearchIndexErrors, GetSearchIndexResponses, GetSolutionData, GetSolutionDeckData, GetSolutionDeckErrors, GetSolutionDeckResponses, GetSolutionErrors, GetSolutionResponses, GetTalentData, GetTalentErrors, GetTalentResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, InviteAdminOrganizationMemberData, InviteAdminOrganizationMemberErrors, InviteAdminOrganizationMemberResponses, InviteOrganizationMemberData, InviteOrganizationMemberErrors, InviteOrganizationMemberResponses, InviteReviewerData, InviteReviewerErrors, InviteReviewerResponses, JoinOrganizationData, JoinOrganizationErrors, JoinOrganizationResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminIntroductionsData, ListAdminIntroductionsErrors, ListAdminIntroductionsResponses, ListAdminOrganizationsData, ListAdminOrganizationsErrors, ListAdminOrganizationsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAdminSolutionsData, ListAdminSolutionsErrors, ListAdminSolutionsResponses, ListAdminTalentData, ListAdminTalentErrors, ListAdminTalentResponses, ListAdminUseCasesData, ListAdminUseCasesErrors, ListAdminUseCasesResponses, ListAiProvidersData, ListAiProvidersErrors, ListAiProvidersResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListCustomerDeploymentsData, ListCustomerDeploymentsErrors, ListCustomerDeploymentsResponses, ListEmailMessagesData, ListEmailMessagesErrors, ListEmailMessagesResponses, ListEmailSuppressionsData, ListEmailSuppressionsErrors, ListEmailSuppressionsResponses, ListEmailTemplatesData, ListEmailTemplatesErrors, ListEmailTemplatesResponses, ListMyApplicationsData, ListMyApplicationsErrors, ListMyApplicationsResponses, ListMyOrganizationMembersData, ListMyOrganizationMembersErrors, ListMyOrganizationMembersResponses, ListMySolutionsData, ListMySolutionsErrors, ListMySolutionsResponses, ListMyUseCasesData, ListMyUseCasesErrors, ListMyUseCasesResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, ListReportedTalentEnquiriesData, ListReportedTalentEnquiriesErrors, ListReportedTalentEnquiriesResponses, ListReviewApplicationsData, ListReviewApplicationsErrors, ListReviewApplicationsResponses, ListReviewersData, ListReviewersErrors, ListReviewersResponses, ListReviewProgramsData, ListReviewProgramsErrors, ListReviewProgramsResponses, ListSolutionsData, ListSolutionsErrors, ListSolutionsResponses, ListTalentData, ListTalentErrors, ListTalentResponses, ListUseCaseOrganizationsData, ListUseCaseOrganizationsErrors, ListUseCaseOrganizationsResponses, ListUseCasesData, ListUseCasesErrors, ListUseCasesResponses, MoveMyUseCaseToDraftData, MoveMyUseCaseToDraftErrors, MoveMyUseCaseToDraftResponses, OrganizeApplicantData, OrganizeApplicantErrors, OrganizeApplicantResponses, PreviewEmailTemplateData, PreviewEmailTemplateErrors, PreviewEmailTemplateResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, RebuildSearchIndexData, RebuildSearchIndexErrors, RebuildSearchIndexResponses, ReceiveResendEventData, ReceiveResendEventErrors, ReceiveResendEventResponses, ReceiveSesEventData, ReceiveSesEventErrors, ReceiveSesEventResponses, RefuseOrganizationData, RefuseOrganizationErrors, RefuseOrganizationResponses, RejectCustomerDeploymentData, RejectCustomerDeploymentErrors, RejectCustomerDeploymentResponses, RejectSolutionData, RejectSolutionErrors, RejectSolutionResponses, ReleaseOutcomesData, ReleaseOutcomesErrors, ReleaseOutcomesResponses, RemoveAdminOrganizationMemberData, RemoveAdminOrganizationMemberErrors, RemoveAdminOrganizationMemberResponses, RemoveEmailSuppressionData, RemoveEmailSuppressionErrors, RemoveEmailSuppressionResponses, RemoveOrganizationMemberData, RemoveOrganizationMemberErrors, RemoveOrganizationMemberResponses, RemoveReviewerData, RemoveReviewerErrors, RemoveReviewerResponses, ReplyToIntroductionData, ReplyToIntroductionErrors, ReplyToIntroductionResponses, ReportTalentEnquiryData, ReportTalentEnquiryErrors, ReportTalentEnquiryResponses, RequestIntroductionData, RequestIntroductionErrors, RequestIntroductionResponses, ResendEmailMessageData, ResendEmailMessageErrors, ResendEmailMessageResponses, ResendReviewerInvitationData, ResendReviewerInvitationErrors, ResendReviewerInvitationResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, ResetEmailTemplateData, ResetEmailTemplateErrors, ResetEmailTemplateResponses, RestoreOrganizationData, RestoreOrganizationErrors, RestoreOrganizationResponses, RestoreSolutionData, RestoreSolutionErrors, RestoreSolutionResponses, RestoreTalentData, RestoreTalentErrors, RestoreTalentResponses, RetrySearchEmbeddingsData, RetrySearchEmbeddingsErrors, RetrySearchEmbeddingsResponses, RevokeAdminOrganizationInvitationData, RevokeAdminOrganizationInvitationErrors, RevokeAdminOrganizationInvitationResponses, RevokeOrganizationInvitationData, RevokeOrganizationInvitationErrors, RevokeOrganizationInvitationResponses, SaveAdminOrganizationData, SaveAdminOrganizationErrors, SaveAdminOrganizationResponses, SaveApplicationData, SaveApplicationErrors, SaveApplicationResponses, SaveAssessmentData, SaveAssessmentErrors, SaveAssessmentResponses, SaveCustomerDeploymentData, SaveCustomerDeploymentErrors, SaveCustomerDeploymentResponses, SaveEmailAppearanceData, SaveEmailAppearanceErrors, SaveEmailAppearanceResponses, SaveEmailSettingsData, SaveEmailSettingsErrors, SaveEmailSettingsResponses, SaveEmailTemplateData, SaveEmailTemplateErrors, SaveEmailTemplateResponses, SaveMyOrganizationData, SaveMyOrganizationErrors, SaveMyOrganizationResponses, SaveMyTalentProfileData, SaveMyTalentProfileErrors, SaveMyTalentProfileResponses, SaveMyUseCaseData, SaveMyUseCaseErrors, SaveMyUseCaseResponses, SaveProgramData, SaveProgramErrors, SaveProgramQuestionsData, SaveProgramQuestionsErrors, SaveProgramQuestionsResponses, SaveProgramResponses, SaveReviewCriteriaData, SaveReviewCriteriaErrors, SaveReviewCriteriaResponses, SaveSolutionData, SaveSolutionErrors, SaveSolutionResponses, SearchData, SearchErrors, SearchOrganizationsData, SearchOrganizationsErrors, SearchOrganizationsResponses, SearchResponses, SendBackAdminUseCaseData, SendBackAdminUseCaseErrors, SendBackAdminUseCaseResponses, SendBackOrganizationData, SendBackOrganizationErrors, SendBackOrganizationResponses, SendBackSolutionData, SendBackSolutionErrors, SendBackSolutionResponses, SendBackTalentData, SendBackTalentErrors, SendBackTalentResponses, SendTalentEnquiryData, SendTalentEnquiryErrors, SendTalentEnquiryResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, SetAdminUseCaseProgramsData, SetAdminUseCaseProgramsErrors, SetAdminUseCaseProgramsResponses, SetSemanticSearchData, SetSemanticSearchErrors, SetSemanticSearchResponses, SubmitApplicationData, SubmitApplicationErrors, SubmitApplicationResponses, SubmitMyTalentProfileData, SubmitMyTalentProfileErrors, SubmitMyTalentProfileResponses, SubmitMyUseCaseData, SubmitMyUseCaseErrors, SubmitMyUseCaseResponses, SubmitSolutionData, SubmitSolutionErrors, SubmitSolutionResponses, TakeDownOrganizationData, TakeDownOrganizationErrors, TakeDownOrganizationResponses, TakeDownSolutionData, TakeDownSolutionErrors, TakeDownSolutionResponses, TakeDownTalentData, TakeDownTalentErrors, TakeDownTalentResponses, TestAiProviderData, TestAiProviderErrors, TestAiProviderResponses, TestEmailSettingsData, TestEmailSettingsErrors, TestEmailSettingsResponses, TestEmailTemplateData, TestEmailTemplateErrors, TestEmailTemplateResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, UpdateAiProviderData, UpdateAiProviderErrors, UpdateAiProviderResponses, WithdrawApplicationData, WithdrawApplicationErrors, WithdrawApplicationResponses, WithdrawJoinRequestData, WithdrawJoinRequestErrors, WithdrawJoinRequestResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -97,6 +97,19 @@ export const withdrawOperator = <ThrowOnError extends boolean = true>(options: O
 });
 
 /**
+ * The AI app waiting for the caller's answer
+ */
+export const getConnectingApp = <ThrowOnError extends boolean = true>(options: Options<GetConnectingAppData, ThrowOnError>): RequestResult<GetConnectingAppResponses, GetConnectingAppErrors, ThrowOnError> => (options.client ?? client).get<GetConnectingAppResponses, GetConnectingAppErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/identity/apps/connecting',
+    ...options
+});
+
+/**
  * The signed-in account
  */
 export const getMe = <ThrowOnError extends boolean = true>(options?: Options<GetMeData, ThrowOnError>): RequestResult<GetMeResponses, GetMeErrors, ThrowOnError> => (options?.client ?? client).get<GetMeResponses, GetMeErrors, ThrowOnError>({
@@ -179,6 +192,279 @@ export const replyToIntroduction = <ThrowOnError extends boolean = true>(options
 });
 
 /**
+ * The email log, newest first, a page at a time
+ */
+export const listEmailMessages = <ThrowOnError extends boolean = true>(options?: Options<ListEmailMessagesData, ThrowOnError>): RequestResult<ListEmailMessagesResponses, ListEmailMessagesErrors, ThrowOnError> => (options?.client ?? client).get<ListEmailMessagesResponses, ListEmailMessagesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/messages',
+    ...options
+});
+
+/**
+ * One email as it was sent, with what happened to it
+ */
+export const getEmailMessage = <ThrowOnError extends boolean = true>(options: Options<GetEmailMessageData, ThrowOnError>): RequestResult<GetEmailMessageResponses, GetEmailMessageErrors, ThrowOnError> => (options.client ?? client).get<GetEmailMessageResponses, GetEmailMessageErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/messages/{id}',
+    ...options
+});
+
+/**
+ * Send an email again, as it was sent, to the same address
+ */
+export const resendEmailMessage = <ThrowOnError extends boolean = true>(options: Options<ResendEmailMessageData, ThrowOnError>): RequestResult<ResendEmailMessageResponses, ResendEmailMessageErrors, ThrowOnError> => (options.client ?? client).post<ResendEmailMessageResponses, ResendEmailMessageErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/messages/{id}/resend',
+    ...options
+});
+
+/**
+ * The email settings, without their secrets
+ */
+export const getEmailSettings = <ThrowOnError extends boolean = true>(options?: Options<GetEmailSettingsData, ThrowOnError>): RequestResult<GetEmailSettingsResponses, GetEmailSettingsErrors, ThrowOnError> => (options?.client ?? client).get<GetEmailSettingsResponses, GetEmailSettingsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/settings',
+    ...options
+});
+
+/**
+ * Choose who delivers email and as whom
+ */
+export const saveEmailSettings = <ThrowOnError extends boolean = true>(options: Options<SaveEmailSettingsData, ThrowOnError>): RequestResult<SaveEmailSettingsResponses, SaveEmailSettingsErrors, ThrowOnError> => (options.client ?? client).put<SaveEmailSettingsResponses, SaveEmailSettingsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/settings',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Set the accent colour and footer note of every email
+ */
+export const saveEmailAppearance = <ThrowOnError extends boolean = true>(options: Options<SaveEmailAppearanceData, ThrowOnError>): RequestResult<SaveEmailAppearanceResponses, SaveEmailAppearanceErrors, ThrowOnError> => (options.client ?? client).put<SaveEmailAppearanceResponses, SaveEmailAppearanceErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/settings/appearance',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Ask the saved provider whether email from the sender's domain can leave, and which DNS records it needs
+ */
+export const checkEmailSetup = <ThrowOnError extends boolean = true>(options?: Options<CheckEmailSetupData, ThrowOnError>): RequestResult<CheckEmailSetupResponses, CheckEmailSetupErrors, ThrowOnError> => (options?.client ?? client).get<CheckEmailSetupResponses, CheckEmailSetupErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/settings/checks',
+    ...options
+});
+
+/**
+ * Send a test through the settings as the form holds them
+ */
+export const testEmailSettings = <ThrowOnError extends boolean = true>(options: Options<TestEmailSettingsData, ThrowOnError>): RequestResult<TestEmailSettingsResponses, TestEmailSettingsErrors, ThrowOnError> => (options.client ?? client).post<TestEmailSettingsResponses, TestEmailSettingsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/settings/test',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The suppressed addresses, newest first
+ */
+export const listEmailSuppressions = <ThrowOnError extends boolean = true>(options?: Options<ListEmailSuppressionsData, ThrowOnError>): RequestResult<ListEmailSuppressionsResponses, ListEmailSuppressionsErrors, ThrowOnError> => (options?.client ?? client).get<ListEmailSuppressionsResponses, ListEmailSuppressionsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/suppressions',
+    ...options
+});
+
+/**
+ * Stop sending to an address
+ */
+export const addEmailSuppression = <ThrowOnError extends boolean = true>(options: Options<AddEmailSuppressionData, ThrowOnError>): RequestResult<AddEmailSuppressionResponses, AddEmailSuppressionErrors, ThrowOnError> => (options.client ?? client).post<AddEmailSuppressionResponses, AddEmailSuppressionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/suppressions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Let email reach an address again
+ */
+export const removeEmailSuppression = <ThrowOnError extends boolean = true>(options: Options<RemoveEmailSuppressionData, ThrowOnError>): RequestResult<RemoveEmailSuppressionResponses, RemoveEmailSuppressionErrors, ThrowOnError> => (options.client ?? client).delete<RemoveEmailSuppressionResponses, RemoveEmailSuppressionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/suppressions/{address}',
+    ...options
+});
+
+/**
+ * Every kind of email operators word
+ */
+export const listEmailTemplates = <ThrowOnError extends boolean = true>(options?: Options<ListEmailTemplatesData, ThrowOnError>): RequestResult<ListEmailTemplatesResponses, ListEmailTemplatesErrors, ThrowOnError> => (options?.client ?? client).get<ListEmailTemplatesResponses, ListEmailTemplatesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/templates',
+    ...options
+});
+
+/**
+ * Put one kind back to its default wording
+ */
+export const resetEmailTemplate = <ThrowOnError extends boolean = true>(options: Options<ResetEmailTemplateData, ThrowOnError>): RequestResult<ResetEmailTemplateResponses, ResetEmailTemplateErrors, ThrowOnError> => (options.client ?? client).delete<ResetEmailTemplateResponses, ResetEmailTemplateErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/templates/{kind}',
+    ...options
+});
+
+/**
+ * One kind's wording, its default and its variables
+ */
+export const getEmailTemplate = <ThrowOnError extends boolean = true>(options: Options<GetEmailTemplateData, ThrowOnError>): RequestResult<GetEmailTemplateResponses, GetEmailTemplateErrors, ThrowOnError> => (options.client ?? client).get<GetEmailTemplateResponses, GetEmailTemplateErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/templates/{kind}',
+    ...options
+});
+
+/**
+ * Replace one kind's wording
+ */
+export const saveEmailTemplate = <ThrowOnError extends boolean = true>(options: Options<SaveEmailTemplateData, ThrowOnError>): RequestResult<SaveEmailTemplateResponses, SaveEmailTemplateErrors, ThrowOnError> => (options.client ?? client).put<SaveEmailTemplateResponses, SaveEmailTemplateErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/templates/{kind}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Render a draft with sample values, and say what keeps it from being saved
+ */
+export const previewEmailTemplate = <ThrowOnError extends boolean = true>(options: Options<PreviewEmailTemplateData, ThrowOnError>): RequestResult<PreviewEmailTemplateResponses, PreviewEmailTemplateErrors, ThrowOnError> => (options.client ?? client).post<PreviewEmailTemplateResponses, PreviewEmailTemplateErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/templates/{kind}/preview',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Send a draft with sample values as a test
+ */
+export const testEmailTemplate = <ThrowOnError extends boolean = true>(options: Options<TestEmailTemplateData, ThrowOnError>): RequestResult<TestEmailTemplateResponses, TestEmailTemplateErrors, ThrowOnError> => (options.client ?? client).post<TestEmailTemplateResponses, TestEmailTemplateErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/notification/admin/email/templates/{kind}/test',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * A webhook of Resend, signed with the webhook secret
+ */
+export const receiveResendEvent = <ThrowOnError extends boolean = true>(options: Options<ReceiveResendEventData, ThrowOnError>): RequestResult<ReceiveResendEventResponses, ReceiveResendEventErrors, ThrowOnError> => (options.client ?? client).post<ReceiveResendEventResponses, ReceiveResendEventErrors, ThrowOnError>({
+    url: '/api/notification/email/events/resend',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * A message of Amazon SNS with an event of SES, or a request to confirm the subscription
+ */
+export const receiveSesEvent = <ThrowOnError extends boolean = true>(options: Options<ReceiveSesEventData, ThrowOnError>): RequestResult<ReceiveSesEventResponses, ReceiveSesEventErrors, ThrowOnError> => (options.client ?? client).post<ReceiveSesEventResponses, ReceiveSesEventErrors, ThrowOnError>({
+    url: '/api/notification/email/events/ses',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Let a person own an organization nobody owns, and verify its email domain
  */
 export const approveOrganizationClaim = <ThrowOnError extends boolean = true>(options: Options<ApproveOrganizationClaimData, ThrowOnError>): RequestResult<ApproveOrganizationClaimResponses, ApproveOrganizationClaimErrors, ThrowOnError> => (options.client ?? client).post<ApproveOrganizationClaimResponses, ApproveOrganizationClaimErrors, ThrowOnError>({
@@ -252,6 +538,23 @@ export const getAdminOrganization = <ThrowOnError extends boolean = true>(option
 });
 
 /**
+ * Save the profile and the verified domain of an organization
+ */
+export const saveAdminOrganization = <ThrowOnError extends boolean = true>(options: Options<SaveAdminOrganizationData, ThrowOnError>): RequestResult<SaveAdminOrganizationResponses, SaveAdminOrganizationErrors, ThrowOnError> => (options.client ?? client).put<SaveAdminOrganizationResponses, SaveAdminOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Approve an organization that waits for review, and verify its email domain
  */
 export const approveOrganization = <ThrowOnError extends boolean = true>(options: Options<ApproveOrganizationData, ThrowOnError>): RequestResult<ApproveOrganizationResponses, ApproveOrganizationErrors, ThrowOnError> => (options.client ?? client).post<ApproveOrganizationResponses, ApproveOrganizationErrors, ThrowOnError>({
@@ -269,7 +572,67 @@ export const approveOrganization = <ThrowOnError extends boolean = true>(options
 });
 
 /**
- * Refuse an organization that waits for review
+ * Ask an address to own or join an organization
+ */
+export const inviteAdminOrganizationMember = <ThrowOnError extends boolean = true>(options: Options<InviteAdminOrganizationMemberData, ThrowOnError>): RequestResult<InviteAdminOrganizationMemberResponses, InviteAdminOrganizationMemberErrors, ThrowOnError> => (options.client ?? client).post<InviteAdminOrganizationMemberResponses, InviteAdminOrganizationMemberErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/invitations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Take back an open invitation of an organization
+ */
+export const revokeAdminOrganizationInvitation = <ThrowOnError extends boolean = true>(options: Options<RevokeAdminOrganizationInvitationData, ThrowOnError>): RequestResult<RevokeAdminOrganizationInvitationResponses, RevokeAdminOrganizationInvitationErrors, ThrowOnError> => (options.client ?? client).post<RevokeAdminOrganizationInvitationResponses, RevokeAdminOrganizationInvitationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/invitations/{invitationId}/revoke',
+    ...options
+});
+
+/**
+ * Take a person out of an organization, the last owner included
+ */
+export const removeAdminOrganizationMember = <ThrowOnError extends boolean = true>(options: Options<RemoveAdminOrganizationMemberData, ThrowOnError>): RequestResult<RemoveAdminOrganizationMemberResponses, RemoveAdminOrganizationMemberErrors, ThrowOnError> => (options.client ?? client).post<RemoveAdminOrganizationMemberResponses, RemoveAdminOrganizationMemberErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/members/{accountId}/remove',
+    ...options
+});
+
+/**
+ * Make a member of an organization an owner, or an owner a member
+ */
+export const changeAdminOrganizationMemberRole = <ThrowOnError extends boolean = true>(options: Options<ChangeAdminOrganizationMemberRoleData, ThrowOnError>): RequestResult<ChangeAdminOrganizationMemberRoleResponses, ChangeAdminOrganizationMemberRoleErrors, ThrowOnError> => (options.client ?? client).put<ChangeAdminOrganizationMemberRoleResponses, ChangeAdminOrganizationMemberRoleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/members/{accountId}/role',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Refuse an organization that waits for review for good
  */
 export const refuseOrganization = <ThrowOnError extends boolean = true>(options: Options<RefuseOrganizationData, ThrowOnError>): RequestResult<RefuseOrganizationResponses, RefuseOrganizationErrors, ThrowOnError> => (options.client ?? client).post<RefuseOrganizationResponses, RefuseOrganizationErrors, ThrowOnError>({
     security: [{
@@ -278,6 +641,53 @@ export const refuseOrganization = <ThrowOnError extends boolean = true>(options:
             type: 'apiKey'
         }],
     url: '/api/organization/admin/organizations/{id}/refuse',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Return a taken-down organization to the directories
+ */
+export const restoreOrganization = <ThrowOnError extends boolean = true>(options: Options<RestoreOrganizationData, ThrowOnError>): RequestResult<RestoreOrganizationResponses, RestoreOrganizationErrors, ThrowOnError> => (options.client ?? client).post<RestoreOrganizationResponses, RestoreOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/restore',
+    ...options
+});
+
+/**
+ * Send an organization that waits for review back to its owners with what to change
+ */
+export const sendBackOrganization = <ThrowOnError extends boolean = true>(options: Options<SendBackOrganizationData, ThrowOnError>): RequestResult<SendBackOrganizationResponses, SendBackOrganizationErrors, ThrowOnError> => (options.client ?? client).post<SendBackOrganizationResponses, SendBackOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/send-back',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Take an approved organization down, with a reason
+ */
+export const takeDownOrganization = <ThrowOnError extends boolean = true>(options: Options<TakeDownOrganizationData, ThrowOnError>): RequestResult<TakeDownOrganizationResponses, TakeDownOrganizationErrors, ThrowOnError> => (options.client ?? client).post<TakeDownOrganizationResponses, TakeDownOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/take-down',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -976,6 +1386,160 @@ export const resendReviewerInvitation = <ThrowOnError extends boolean = true>(op
 export const search = <ThrowOnError extends boolean = true>(options: Options<SearchData, ThrowOnError>): RequestResult<SearchResponses, SearchErrors, ThrowOnError> => (options.client ?? client).get<SearchResponses, SearchErrors, ThrowOnError>({ url: '/api/search', ...options });
 
 /**
+ * Embed with this provider and model from now on, after it embeds a test sentence
+ */
+export const chooseEmbeddingModel = <ThrowOnError extends boolean = true>(options: Options<ChooseEmbeddingModelData, ThrowOnError>): RequestResult<ChooseEmbeddingModelResponses, ChooseEmbeddingModelErrors, ThrowOnError> => (options.client ?? client).put<ChooseEmbeddingModelResponses, ChooseEmbeddingModelErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/search/admin/embedding-model',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The state of the search index and of semantic search
+ */
+export const getSearchIndex = <ThrowOnError extends boolean = true>(options?: Options<GetSearchIndexData, ThrowOnError>): RequestResult<GetSearchIndexResponses, GetSearchIndexErrors, ThrowOnError> => (options?.client ?? client).get<GetSearchIndexResponses, GetSearchIndexErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/search/admin/index',
+    ...options
+});
+
+/**
+ * Rebuild the index from what the modules publish now
+ */
+export const rebuildSearchIndex = <ThrowOnError extends boolean = true>(options?: Options<RebuildSearchIndexData, ThrowOnError>): RequestResult<RebuildSearchIndexResponses, RebuildSearchIndexErrors, ThrowOnError> => (options?.client ?? client).post<RebuildSearchIndexResponses, RebuildSearchIndexErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/search/admin/index/rebuild',
+    ...options
+});
+
+/**
+ * Let held-back items be embedded at the next run: one, or all
+ */
+export const retrySearchEmbeddings = <ThrowOnError extends boolean = true>(options: Options<RetrySearchEmbeddingsData, ThrowOnError>): RequestResult<RetrySearchEmbeddingsResponses, RetrySearchEmbeddingsErrors, ThrowOnError> => (options.client ?? client).post<RetrySearchEmbeddingsResponses, RetrySearchEmbeddingsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/search/admin/index/retry',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The embedding providers and the model in use, without keys
+ */
+export const listAiProviders = <ThrowOnError extends boolean = true>(options?: Options<ListAiProvidersData, ThrowOnError>): RequestResult<ListAiProvidersResponses, ListAiProvidersErrors, ThrowOnError> => (options?.client ?? client).get<ListAiProvidersResponses, ListAiProvidersErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/search/admin/providers',
+    ...options
+});
+
+/**
+ * Connect an embedding provider
+ */
+export const createAiProvider = <ThrowOnError extends boolean = true>(options: Options<CreateAiProviderData, ThrowOnError>): RequestResult<CreateAiProviderResponses, CreateAiProviderErrors, ThrowOnError> => (options.client ?? client).post<CreateAiProviderResponses, CreateAiProviderErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/search/admin/providers',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Embed one test sentence with a connection as the editor holds it, saved or not
+ */
+export const testAiProvider = <ThrowOnError extends boolean = true>(options: Options<TestAiProviderData, ThrowOnError>): RequestResult<TestAiProviderResponses, TestAiProviderErrors, ThrowOnError> => (options.client ?? client).post<TestAiProviderResponses, TestAiProviderErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/search/admin/providers/test',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete an embedding provider and its key
+ */
+export const deleteAiProvider = <ThrowOnError extends boolean = true>(options: Options<DeleteAiProviderData, ThrowOnError>): RequestResult<DeleteAiProviderResponses, DeleteAiProviderErrors, ThrowOnError> => (options.client ?? client).delete<DeleteAiProviderResponses, DeleteAiProviderErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/search/admin/providers/{id}',
+    ...options
+});
+
+/**
+ * Change an embedding provider: its name, address or key
+ */
+export const updateAiProvider = <ThrowOnError extends boolean = true>(options: Options<UpdateAiProviderData, ThrowOnError>): RequestResult<UpdateAiProviderResponses, UpdateAiProviderErrors, ThrowOnError> => (options.client ?? client).put<UpdateAiProviderResponses, UpdateAiProviderErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/search/admin/providers/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Turn semantic search on or off
+ */
+export const setSemanticSearch = <ThrowOnError extends boolean = true>(options: Options<SetSemanticSearchData, ThrowOnError>): RequestResult<SetSemanticSearchResponses, SetSemanticSearchErrors, ThrowOnError> => (options.client ?? client).put<SetSemanticSearchResponses, SetSemanticSearchErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/search/admin/semantic',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Approve a customer deployment that waits for review
  */
 export const approveCustomerDeployment = <ThrowOnError extends boolean = true>(options: Options<ApproveCustomerDeploymentData, ThrowOnError>): RequestResult<ApproveCustomerDeploymentResponses, ApproveCustomerDeploymentErrors, ThrowOnError> => (options.client ?? client).post<ApproveCustomerDeploymentResponses, ApproveCustomerDeploymentErrors, ThrowOnError>({
@@ -1045,7 +1609,24 @@ export const approveSolution = <ThrowOnError extends boolean = true>(options: Op
 });
 
 /**
- * Reject a solution that waits for review, or take an approved one out of the directory
+ * Write what GenAI Fund says of a solution: who backs its company, its programme and its funding
+ */
+export const backSolution = <ThrowOnError extends boolean = true>(options: Options<BackSolutionData, ThrowOnError>): RequestResult<BackSolutionResponses, BackSolutionErrors, ThrowOnError> => (options.client ?? client).put<BackSolutionResponses, BackSolutionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/admin/solutions/{id}/backing',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Refuse a solution that waits for review for good
  */
 export const rejectSolution = <ThrowOnError extends boolean = true>(options: Options<RejectSolutionData, ThrowOnError>): RequestResult<RejectSolutionResponses, RejectSolutionErrors, ThrowOnError> => (options.client ?? client).post<RejectSolutionResponses, RejectSolutionErrors, ThrowOnError>({
     security: [{
@@ -1054,6 +1635,53 @@ export const rejectSolution = <ThrowOnError extends boolean = true>(options: Opt
             type: 'apiKey'
         }],
     url: '/api/solution/admin/solutions/{id}/reject',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Put a solution that was taken down back, without a new review
+ */
+export const restoreSolution = <ThrowOnError extends boolean = true>(options: Options<RestoreSolutionData, ThrowOnError>): RequestResult<RestoreSolutionResponses, RestoreSolutionErrors, ThrowOnError> => (options.client ?? client).post<RestoreSolutionResponses, RestoreSolutionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/admin/solutions/{id}/restore',
+    ...options
+});
+
+/**
+ * Send a solution that waits for review back to its owners, with what to change
+ */
+export const sendBackSolution = <ThrowOnError extends boolean = true>(options: Options<SendBackSolutionData, ThrowOnError>): RequestResult<SendBackSolutionResponses, SendBackSolutionErrors, ThrowOnError> => (options.client ?? client).post<SendBackSolutionResponses, SendBackSolutionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/admin/solutions/{id}/send-back',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Take an approved solution out of the directory and matching, with a reason
+ */
+export const takeDownSolution = <ThrowOnError extends boolean = true>(options: Options<TakeDownSolutionData, ThrowOnError>): RequestResult<TakeDownSolutionResponses, TakeDownSolutionErrors, ThrowOnError> => (options.client ?? client).post<TakeDownSolutionResponses, TakeDownSolutionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/solution/admin/solutions/{id}/take-down',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1312,15 +1940,28 @@ export const approveTalent = <ThrowOnError extends boolean = true>(options: Opti
 });
 
 /**
- * Remove an approved talent profile from the public, with a reason
+ * Put a talent profile that was taken down back in the public, without a new review
  */
-export const removeTalent = <ThrowOnError extends boolean = true>(options: Options<RemoveTalentData, ThrowOnError>): RequestResult<RemoveTalentResponses, RemoveTalentErrors, ThrowOnError> => (options.client ?? client).post<RemoveTalentResponses, RemoveTalentErrors, ThrowOnError>({
+export const restoreTalent = <ThrowOnError extends boolean = true>(options: Options<RestoreTalentData, ThrowOnError>): RequestResult<RestoreTalentResponses, RestoreTalentErrors, ThrowOnError> => (options.client ?? client).post<RestoreTalentResponses, RestoreTalentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
             name: 'BEYONDPILOT_SESSION',
             type: 'apiKey'
         }],
-    url: '/api/talent/admin/profiles/{id}/remove',
+    url: '/api/talent/admin/profiles/{id}/restore',
+    ...options
+});
+
+/**
+ * Send a talent profile that waits for review back to its person, with a reason
+ */
+export const sendBackTalent = <ThrowOnError extends boolean = true>(options: Options<SendBackTalentData, ThrowOnError>): RequestResult<SendBackTalentResponses, SendBackTalentErrors, ThrowOnError> => (options.client ?? client).post<SendBackTalentResponses, SendBackTalentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/talent/admin/profiles/{id}/send-back',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1329,15 +1970,15 @@ export const removeTalent = <ThrowOnError extends boolean = true>(options: Optio
 });
 
 /**
- * Ask the person to change a talent profile that waits for review, with a reason
+ * Take an approved talent profile down from the public, with a reason
  */
-export const requestTalentChanges = <ThrowOnError extends boolean = true>(options: Options<RequestTalentChangesData, ThrowOnError>): RequestResult<RequestTalentChangesResponses, RequestTalentChangesErrors, ThrowOnError> => (options.client ?? client).post<RequestTalentChangesResponses, RequestTalentChangesErrors, ThrowOnError>({
+export const takeDownTalent = <ThrowOnError extends boolean = true>(options: Options<TakeDownTalentData, ThrowOnError>): RequestResult<TakeDownTalentResponses, TakeDownTalentErrors, ThrowOnError> => (options.client ?? client).post<TakeDownTalentResponses, TakeDownTalentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
             name: 'BEYONDPILOT_SESSION',
             type: 'apiKey'
         }],
-    url: '/api/talent/admin/profiles/{id}/request-changes',
+    url: '/api/talent/admin/profiles/{id}/take-down',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1479,3 +2120,193 @@ export const sendTalentEnquiry = <ThrowOnError extends boolean = true>(options: 
         ...options.headers
     }
 });
+
+/**
+ * The organizations a use case can be written for
+ */
+export const listUseCaseOrganizations = <ThrowOnError extends boolean = true>(options?: Options<ListUseCaseOrganizationsData, ThrowOnError>): RequestResult<ListUseCaseOrganizationsResponses, ListUseCaseOrganizationsErrors, ThrowOnError> => (options?.client ?? client).get<ListUseCaseOrganizationsResponses, ListUseCaseOrganizationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/usecase/admin/organizations',
+    ...options
+});
+
+/**
+ * The use cases, the newest first
+ */
+export const listAdminUseCases = <ThrowOnError extends boolean = true>(options?: Options<ListAdminUseCasesData, ThrowOnError>): RequestResult<ListAdminUseCasesResponses, ListAdminUseCasesErrors, ThrowOnError> => (options?.client ?? client).get<ListAdminUseCasesResponses, ListAdminUseCasesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/usecase/admin/use-cases',
+    ...options
+});
+
+/**
+ * Create a use case for an organization, as a draft or published
+ */
+export const createAdminUseCase = <ThrowOnError extends boolean = true>(options: Options<CreateAdminUseCaseData, ThrowOnError>): RequestResult<CreateAdminUseCaseResponses, CreateAdminUseCaseErrors, ThrowOnError> => (options.client ?? client).post<CreateAdminUseCaseResponses, CreateAdminUseCaseErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/usecase/admin/use-cases',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * One use case as an operator reads it
+ */
+export const getAdminUseCase = <ThrowOnError extends boolean = true>(options: Options<GetAdminUseCaseData, ThrowOnError>): RequestResult<GetAdminUseCaseResponses, GetAdminUseCaseErrors, ThrowOnError> => (options.client ?? client).get<GetAdminUseCaseResponses, GetAdminUseCaseErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/usecase/admin/use-cases/{id}',
+    ...options
+});
+
+/**
+ * Approve a use case in review and publish it
+ */
+export const approveAdminUseCase = <ThrowOnError extends boolean = true>(options: Options<ApproveAdminUseCaseData, ThrowOnError>): RequestResult<ApproveAdminUseCaseResponses, ApproveAdminUseCaseErrors, ThrowOnError> => (options.client ?? client).post<ApproveAdminUseCaseResponses, ApproveAdminUseCaseErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/usecase/admin/use-cases/{id}/approve',
+    ...options
+});
+
+/**
+ * Set the programs a use case belongs to
+ */
+export const setAdminUseCasePrograms = <ThrowOnError extends boolean = true>(options: Options<SetAdminUseCaseProgramsData, ThrowOnError>): RequestResult<SetAdminUseCaseProgramsResponses, SetAdminUseCaseProgramsErrors, ThrowOnError> => (options.client ?? client).put<SetAdminUseCaseProgramsResponses, SetAdminUseCaseProgramsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/usecase/admin/use-cases/{id}/programs',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Send a use case in review back with what to change
+ */
+export const sendBackAdminUseCase = <ThrowOnError extends boolean = true>(options: Options<SendBackAdminUseCaseData, ThrowOnError>): RequestResult<SendBackAdminUseCaseResponses, SendBackAdminUseCaseErrors, ThrowOnError> => (options.client ?? client).post<SendBackAdminUseCaseResponses, SendBackAdminUseCaseErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/usecase/admin/use-cases/{id}/send-back',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The use cases of the caller's organization
+ */
+export const listMyUseCases = <ThrowOnError extends boolean = true>(options?: Options<ListMyUseCasesData, ThrowOnError>): RequestResult<ListMyUseCasesResponses, ListMyUseCasesErrors, ThrowOnError> => (options?.client ?? client).get<ListMyUseCasesResponses, ListMyUseCasesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/usecase/mine',
+    ...options
+});
+
+/**
+ * Start an empty draft for the caller's organization
+ */
+export const createMyUseCase = <ThrowOnError extends boolean = true>(options?: Options<CreateMyUseCaseData, ThrowOnError>): RequestResult<CreateMyUseCaseResponses, CreateMyUseCaseErrors, ThrowOnError> => (options?.client ?? client).post<CreateMyUseCaseResponses, CreateMyUseCaseErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/usecase/mine',
+    ...options
+});
+
+/**
+ * One use case of the caller's organization
+ */
+export const getMyUseCase = <ThrowOnError extends boolean = true>(options: Options<GetMyUseCaseData, ThrowOnError>): RequestResult<GetMyUseCaseResponses, GetMyUseCaseErrors, ThrowOnError> => (options.client ?? client).get<GetMyUseCaseResponses, GetMyUseCaseErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/usecase/mine/{id}',
+    ...options
+});
+
+/**
+ * Save what the members have written so far
+ */
+export const saveMyUseCase = <ThrowOnError extends boolean = true>(options: Options<SaveMyUseCaseData, ThrowOnError>): RequestResult<SaveMyUseCaseResponses, SaveMyUseCaseErrors, ThrowOnError> => (options.client ?? client).put<SaveMyUseCaseResponses, SaveMyUseCaseErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/usecase/mine/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Take a use case out of review, or out of the directory, back to a draft
+ */
+export const moveMyUseCaseToDraft = <ThrowOnError extends boolean = true>(options: Options<MoveMyUseCaseToDraftData, ThrowOnError>): RequestResult<MoveMyUseCaseToDraftResponses, MoveMyUseCaseToDraftErrors, ThrowOnError> => (options.client ?? client).post<MoveMyUseCaseToDraftResponses, MoveMyUseCaseToDraftErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/usecase/mine/{id}/draft',
+    ...options
+});
+
+/**
+ * Send a draft to GenAI Fund for review
+ */
+export const submitMyUseCase = <ThrowOnError extends boolean = true>(options: Options<SubmitMyUseCaseData, ThrowOnError>): RequestResult<SubmitMyUseCaseResponses, SubmitMyUseCaseErrors, ThrowOnError> => (options.client ?? client).post<SubmitMyUseCaseResponses, SubmitMyUseCaseErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/usecase/mine/{id}/submit',
+    ...options
+});
+
+/**
+ * The published use cases that still accept proposals
+ */
+export const listUseCases = <ThrowOnError extends boolean = true>(options?: Options<ListUseCasesData, ThrowOnError>): RequestResult<ListUseCasesResponses, ListUseCasesErrors, ThrowOnError> => (options?.client ?? client).get<ListUseCasesResponses, ListUseCasesErrors, ThrowOnError>({ url: '/api/usecase/use-cases', ...options });

@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { expectNoSeriousA11yViolations } from "./axe";
 import { answerDecisions, refusal } from "./reviews";
 import { signInAs } from "./session";
+import { answerUploads, pixel, serveStoredImages } from "./stored-files";
 
 const policyChat = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e11";
 const claimsVision = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e12";
@@ -10,6 +11,8 @@ const fraudLens = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e13";
 const quoteBot = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e14";
 const sentBack = "be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f12";
 const deckFile = "d0c1a2b3-4c5d-4e6f-8a9b-0c1d2e3f4a77";
+const logoFile = "1090a2b3-4c5d-4e6f-8a9b-0c1d2e3f4a61";
+const coverFile = "c0fea2b3-4c5d-4e6f-8a9b-0c1d2e3f4a62";
 
 const list = "/workspace/organization/solutions";
 const changesPath = "**/api/solution/mine**";
@@ -31,7 +34,7 @@ type Write = { call: string; body: Record<string, unknown> | null };
  * Answers what the editor of one solution writes, as the backend would: a save with the solution as
  * saved at its next version, a submission with it waiting for review. Returns the writes it saw.
  */
-async function answerEditor(page: Page, id: string, status: "draft" | "rejected") {
+async function answerEditor(page: Page, id: string, status: "draft" | "needs_changes") {
   const writes: Write[] = [];
   let saved: Record<string, unknown> = {};
   let version = 0;
@@ -48,10 +51,17 @@ async function answerEditor(page: Page, id: string, status: "draft" | "rejected"
     }
     const submitted = request.url().endsWith("/submit");
     if (body) {
-      const { version: read, deckFileId, ...fields } = body;
+      const { version: read, deckFileId, logoFileId, coverFileId, imageFileIds, ...fields } = body;
       version = Number(read) + 1;
+      const image = (fileId: unknown, fileName: string) =>
+        fileId ? { fileId, fileName, sizeBytes: 86016 } : null;
       saved = {
         ...fields,
+        logo: image(logoFileId, "fraud-lens-logo.png"),
+        cover: image(coverFileId, "fraud-lens-cover.png"),
+        images: ((imageFileIds as string[] | undefined) ?? []).map((fileId, index) =>
+          image(fileId, `fraud-lens-${index + 1}.png`),
+        ),
         deck: deckFileId
           ? {
               fileId: deckFileId,
@@ -70,7 +80,7 @@ async function answerEditor(page: Page, id: string, status: "draft" | "rejected"
         organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
         organizationName: "Pocket Policy",
         slug: "fraud-lens",
-        status: submitted ? "submitted" : status,
+        status: submitted ? "in_review" : status,
         complete: true,
         customerDeployments: [],
         submittedAt: null,
@@ -91,6 +101,7 @@ async function choose(page: Page, field: string, typed: string, option: string) 
 
 test.describe("workspace solutions", () => {
   test.use({ locale: "en-US" });
+  test.beforeEach(({ page }) => serveStoredImages(page));
 
   test("an owner reads the organization's solutions, each with where it stands", async ({
     page,
@@ -107,26 +118,51 @@ test.describe("workspace solutions", () => {
       "Fraud Lens",
       "Quote Bot",
     ]);
-    await expect(page.getByText("1 listed · 1 draft · 1 in review · 1 not approved")).toBeVisible();
-    await expect(page.getByText("Listed in the directory").locator("visible=true")).toBeVisible();
-    await expect(
-      page.getByText("Not submitted · visible to your organization only").locator("visible=true"),
-    ).toBeVisible();
+    // Each says whether the public reads it, and what its owners do next.
+    const shown = (text: string) => page.getByText(text, { exact: true }).locator("visible=true");
+    await expect(shown("Listed")).toBeVisible();
+    await expect(shown("Not public yet")).toBeVisible();
+    await expect(shown("Draft · 1 of 7 required fields filled")).toBeVisible();
+    await expect(shown("Sent back: It is Policy Chat under another name.")).toBeVisible();
     // A table from 768px, stacked rows below it.
     await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
     await expectNoSeriousA11yViolations(page);
 
     await page.getByRole("button", { name: "Actions for Policy Chat" }).click();
-    await expect(page.getByRole("menuitem")).toHaveText(["Edit", "View public page"]);
+    await expect(page.getByRole("menuitem")).toHaveText([
+      "Edit",
+      "View public page",
+      "Copy link",
+      "Hide from the directory",
+    ]);
     await expect(page.getByRole("menuitem", { name: "View public page" })).toHaveAttribute(
       "href",
       "/solutions/policy-chat",
     );
+    // Hiding asks first, and says what stays.
+    await page.getByRole("menuitem", { name: "Hide from the directory" }).click();
+    const hiding = page.getByRole("alertdialog", { name: "Hide from the directory?" });
+    await expect(hiding.getByText("People with the link can still open it.")).toBeVisible();
+    await hiding.getByRole("button", { name: "Cancel" }).click();
+
+    // What is in review is read or edited; what was sent back is fixed and sent again.
+    await page.getByRole("button", { name: "Actions for Claims Vision" }).click();
+    await expect(page.getByRole("menuitem")).toHaveText(["View what was sent", /^Edit/]);
+    await page.keyboard.press("Escape");
+    await page.getByRole("button", { name: "Actions for Quote Bot" }).click();
+    await expect(page.getByRole("menuitem")).toHaveText(["Read the reason and fix", "Send again"]);
     await page.keyboard.press("Escape");
 
-    // Only what is listed has a public page.
+    // A draft that lacks what a review needs cannot be sent yet, and only a draft is deleted.
     await page.getByRole("button", { name: "Actions for Fraud Lens" }).click();
-    await expect(page.getByRole("menuitem")).toHaveText(["Edit"]);
+    await expect(page.getByRole("menuitem")).toHaveText([
+      "Continue editing",
+      /^Send for review/,
+      "Delete draft…",
+    ]);
+    await expect(page.getByRole("menuitem", { name: /Send for review/ })).toBeDisabled();
+    await page.getByRole("menuitem", { name: "Delete draft…" }).click();
+    await expect(page.getByRole("alertdialog", { name: "Delete Fraud Lens?" })).toBeVisible();
   });
 
   test("a member reads the solutions and changes none", async ({ page, context, baseURL }) => {
@@ -195,6 +231,7 @@ test.describe("workspace solutions", () => {
   }) => {
     await signInAs(context, "owner", baseURL!);
     const writes = await answerEditor(page, fraudLens, "draft");
+    const uploads = await answerUploads(page, [logoFile, coverFile]);
     await openEditor(page, fraudLens);
 
     // The editor stands alone: the site's navigation does not pull a person away mid-way.
@@ -233,7 +270,24 @@ test.describe("workspace solutions", () => {
 
     await page.getByRole("button", { name: "Continue" }).click();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Evidence");
-    await expect(page.getByText("Every field on this step is optional.")).toBeVisible();
+    await expect(page.getByText("A logo and a cover image are needed for review.")).toBeVisible();
+    // The two images a review asks for, each uploaded at once and shown with its name.
+    const image = (place: string) =>
+      page.locator(`[data-slot="image-upload"][data-place="${place}"] input[type="file"]`);
+    await image("logo").setInputFiles({
+      name: "fraud-lens-logo.png",
+      mimeType: "image/png",
+      buffer: pixel,
+    });
+    await expect(page.getByText("fraud-lens-logo.png")).toBeVisible();
+    await image("cover").setInputFiles({
+      name: "fraud-lens-cover.png",
+      mimeType: "image/png",
+      buffer: pixel,
+    });
+    await expect(page.getByText("fraud-lens-cover.png")).toBeVisible();
+    expect(uploads.map((upload) => upload.purpose)).toEqual(["solution_logo", "solution_image"]);
+    await expectNoSeriousA11yViolations(page);
     await page.getByLabel("Product demo").fill("https://fraudlens.example/demo");
 
     await page.getByRole("button", { name: "Continue" }).click();
@@ -264,6 +318,9 @@ test.describe("workspace solutions", () => {
       demoUrl: "https://fraudlens.example/demo",
       website: null,
       deckFileId: null,
+      logoFileId: logoFile,
+      coverFileId: coverFile,
+      imageFileIds: [],
       listed: true,
     });
     // Each save carries the version the one before it answered with.
@@ -289,10 +346,12 @@ test.describe("workspace solutions", () => {
       "Stage",
       "Industries",
       "AI capabilities",
+      "Logo",
+      "Cover image",
     ]);
     await expect(page.getByRole("button", { name: "Send for review" })).toBeDisabled();
-    await expect(page.getByText("Missing")).toHaveCount(4);
-    await expect(page.getByText("2 to add")).toHaveCount(2);
+    await expect(page.getByText("Missing")).toHaveCount(6);
+    await expect(page.getByText("2 to add")).toHaveCount(3);
     await expectNoSeriousA11yViolations(page);
 
     await expect(async () => {
@@ -367,7 +426,7 @@ test.describe("workspace solutions", () => {
     await expectNoSeriousA11yViolations(page);
 
     // Anything but a PDF is refused before it is sent.
-    const file = page.locator('input[type="file"]');
+    const file = page.locator('[data-slot="deck-upload"] input[type="file"]');
     await file.setInputFiles({
       name: "notes.txt",
       mimeType: "text/plain",
@@ -431,7 +490,7 @@ test.describe("workspace solutions", () => {
     await expect(page.getByRole("button", { name: "Delete draft…" })).toHaveCount(0);
 
     await openEditor(page, quoteBot, "review");
-    await expect(page.getByText("Changes needed: Already listed")).toBeVisible();
+    await expect(page.getByText("GenAI Fund sent this solution back")).toBeVisible();
     await expect(page.getByText("It is Policy Chat under another name.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Send for review again" })).toBeEnabled();
     await expectNoSeriousA11yViolations(page);

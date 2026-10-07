@@ -38,15 +38,32 @@ export const industries = [
   "technology",
   "automotive_mobility",
   "consumer_goods",
+  "climate_sustainability",
+  "marketing_advertising",
+  "legal",
+  "hr_workforce",
   "other",
 ] as const;
 
 export const refusalReasons = [
   "duplicate",
   "not_a_real_organization",
-  "incomplete",
   "out_of_scope",
   "other",
 ] as const;
 
-export const organizationStatuses = ["pending", "approved", "rejected"] as const;
+export const takeDownReasons = [
+  "misleading_information",
+  "not_a_real_organization",
+  "breaks_the_rules",
+  "other",
+] as const;
+
+/** What the operators' list filters by: each review status, and `suspended` for those taken down. */
+export const organizationStatuses = [
+  "in_review",
+  "needs_changes",
+  "approved",
+  "rejected",
+  "suspended",
+] as const;

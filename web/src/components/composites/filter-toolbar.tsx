@@ -1,8 +1,8 @@
 "use client";
 
 import { SearchIcon, XIcon } from "lucide-react";
-import { debounce, useQueryStates, type UseQueryStatesKeysMap } from "nuqs";
-import { useEffect, useRef, useTransition } from "react";
+import { useQueryStates, type UseQueryStatesKeysMap } from "nuqs";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/actions/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
@@ -19,6 +19,8 @@ import { Spinner } from "@/components/ui/spinner";
 
 /** The value a select shows when its filter is off; the URL then has no such parameter. */
 const ALL = "all";
+/** How long typing rests before the list is asked for. */
+const SEARCH_DELAY_MS = 300;
 
 type Filter = {
   /** The parameter of the URL the select writes. */
@@ -49,6 +51,33 @@ function FilterToolbar({ parsers, searchLabel, clearLabel, filters }: FilterTool
   // The parameters are known by name only here; each list keeps their types in its own description.
   const values = search as Record<string, string | number | null>;
   const searchField = useRef<HTMLInputElement>(null);
+  // What is typed and not yet in the address. The toolbar waits itself and then writes the search
+  // and the return to page 1 as one change: nuqs debounces each parameter on its own timer, and the
+  // second one's write could come after a link had already taken the search off.
+  const [typed, setTyped] = useState<string | null>(null);
+  const writing = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => clearTimeout(writing.current), []);
+
+  function type(text: string) {
+    clearTimeout(writing.current);
+    const write = () => {
+      setTyped(null);
+      setSearch({ q: text, page: null });
+    };
+    if (text) {
+      setTyped(text);
+      writing.current = setTimeout(write, SEARCH_DELAY_MS);
+    } else {
+      write();
+    }
+  }
+
+  function clear() {
+    clearTimeout(writing.current);
+    setTyped(null);
+    setSearch(null);
+  }
 
   useEffect(() => {
     function toSearch(event: KeyboardEvent) {
@@ -77,14 +106,9 @@ function FilterToolbar({ parsers, searchLabel, clearLabel, filters }: FilterTool
           type="search"
           aria-label={searchLabel}
           placeholder={searchLabel}
-          value={String(values.q ?? "")}
+          value={typed ?? String(values.q ?? "")}
           maxLength={100}
-          onChange={(event) =>
-            setSearch(
-              { q: event.target.value, page: null },
-              { limitUrlUpdates: event.target.value ? debounce(300) : undefined },
-            )
-          }
+          onChange={(event) => type(event.target.value)}
         />
         <InputGroupAddon align="inline-end" className="hidden md:flex">
           <Kbd aria-hidden="true">/</Kbd>
@@ -125,12 +149,7 @@ function FilterToolbar({ parsers, searchLabel, clearLabel, filters }: FilterTool
         </div>
       )}
       {narrowed && (
-        <Button
-          prominence="tertiary"
-          size="sm"
-          className="self-start md:self-auto"
-          onClick={() => setSearch(null)}
-        >
+        <Button prominence="tertiary" size="sm" className="self-start md:self-auto" onClick={clear}>
           <XIcon aria-hidden="true" />
           {clearLabel}
         </Button>

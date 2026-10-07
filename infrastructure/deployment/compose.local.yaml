@@ -16,8 +16,6 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/beyondpilot
       SPRING_DATASOURCE_USERNAME: beyondpilot
       SPRING_DATASOURCE_PASSWORD: beyondpilot
-      BEYONDPILOT_MAIL_HOST: mailpit
-      BEYONDPILOT_MAIL_PORT: "1025"
       BEYONDPILOT_IDENTITY_OPERATOR_EMAILS: ${BEYONDPILOT_IDENTITY_OPERATOR_EMAILS:-}
 
   web:
@@ -25,11 +23,6 @@ services:
     build:
       context: ../..
       dockerfile: web/Dockerfile
-
-  # 8026, so it runs beside the Mailpit of bootRun on 8025.
-  mailpit:
-    ports:
-      - "127.0.0.1:8026:8025"
 
   # Stands in for the reverse proxy of a deployed host: Spring's paths go to the api, the rest to the web.
   proxy:

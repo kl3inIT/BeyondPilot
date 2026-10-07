@@ -22,11 +22,18 @@ import { Table } from "@/components/ui/table";
 /**
  * The frame every list of the application shares. A list is read by a Server Component from the
  * parameters of the URL and drawn with the registry table inside this frame; nothing here fetches
- * or keeps state (docs/conventions.md › Lists).
+ * or keeps state (docs/conventions.md › Lists). The header row sits on the muted ground, and the
+ * first and last columns keep the 20px inset of the cards around the list.
  */
 function DataTable({ className, ...props }: React.ComponentProps<typeof Table>) {
   return (
-    <div data-slot="data-table" className={cn("overflow-hidden rounded-lg border", className)}>
+    <div
+      data-slot="data-table"
+      className={cn(
+        "overflow-hidden rounded-lg border [&_td:first-child]:pl-5 [&_td:last-child]:pr-5 [&_th:first-child]:pl-5 [&_th:last-child]:pr-5 [&_thead]:bg-muted",
+        className,
+      )}
+    >
       <Table {...props} />
     </div>
   );

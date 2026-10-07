@@ -13,5 +13,7 @@ public record InvitationResponse(@Schema(requiredMode = Schema.RequiredMode.REQU
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "owner", "member" }) String role,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Who asked, as they are shown.") String invitedBy,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "When the invitation lapses if nobody answers it.") Instant expiresAt) {
 }

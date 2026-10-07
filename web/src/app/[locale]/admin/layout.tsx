@@ -1,17 +1,8 @@
-import {
-  BoxesIcon,
-  Building2Icon,
-  CalendarRangeIcon,
-  HouseIcon,
-  ScrollTextIcon,
-  UserCogIcon,
-  HandshakeIcon,
-  UsersIcon,
-} from "lucide-react";
 import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { AdminBreadcrumb } from "@/components/layout/admin-breadcrumb";
+import { adminIcons } from "@/components/layout/admin-icons";
 import type { AdminNavGroup } from "@/components/layout/admin-nav";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -36,12 +27,17 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
     cookies(),
   ]);
 
-  // The destinations of the admin area in the sidebar's groups: what GenAI Fund reviews, then the
-  // system's own records. One is listed here by the change that adds its screen.
+  // The destinations of the admin area in the sidebar's groups: what GenAI Fund reviews, the AI
+  // services BeyondPilot calls, then the system's own records. One is listed here by the change
+  // that adds its screen.
   const groups: AdminNavGroup[] = [
     {
       items: [
-        { href: siteRoutes.admin, label: t("nav.home"), icon: <HouseIcon aria-hidden="true" /> },
+        {
+          href: siteRoutes.admin,
+          label: t("nav.home"),
+          icon: <adminIcons.home aria-hidden="true" />,
+        },
       ],
     },
     {
@@ -50,27 +46,47 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
         {
           href: siteRoutes.adminPrograms,
           label: t("nav.programs"),
-          icon: <CalendarRangeIcon aria-hidden="true" />,
+          icon: <adminIcons.programs aria-hidden="true" />,
+        },
+        {
+          href: siteRoutes.adminUseCases,
+          label: t("nav.useCases"),
+          icon: <adminIcons.useCases aria-hidden="true" />,
         },
         {
           href: siteRoutes.adminSolutions,
           label: t("nav.solutions"),
-          icon: <BoxesIcon aria-hidden="true" />,
+          icon: <adminIcons.solutions aria-hidden="true" />,
         },
         {
           href: siteRoutes.adminTalent,
           label: t("nav.talent"),
-          icon: <UsersIcon aria-hidden="true" />,
+          icon: <adminIcons.talent aria-hidden="true" />,
         },
         {
           href: siteRoutes.adminOrganizations,
           label: t("nav.organizations"),
-          icon: <Building2Icon aria-hidden="true" />,
+          icon: <adminIcons.organizations aria-hidden="true" />,
         },
         {
           href: siteRoutes.adminIntroductions,
           label: t("nav.introductions"),
-          icon: <HandshakeIcon aria-hidden="true" />,
+          icon: <adminIcons.introductions aria-hidden="true" />,
+        },
+      ],
+    },
+    {
+      label: t("nav.ai"),
+      items: [
+        {
+          href: siteRoutes.adminAiProviders,
+          label: t("nav.aiProviders"),
+          icon: <adminIcons.aiProviders aria-hidden="true" />,
+        },
+        {
+          href: siteRoutes.adminSearchIndex,
+          label: t("nav.searchIndex"),
+          icon: <adminIcons.searchIndex aria-hidden="true" />,
         },
       ],
     },
@@ -80,12 +96,17 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
         {
           href: siteRoutes.adminAccounts,
           label: t("nav.accounts"),
-          icon: <UserCogIcon aria-hidden="true" />,
+          icon: <adminIcons.accounts aria-hidden="true" />,
         },
         {
           href: siteRoutes.adminAuditLog,
           label: t("nav.auditLog"),
-          icon: <ScrollTextIcon aria-hidden="true" />,
+          icon: <adminIcons.auditLog aria-hidden="true" />,
+        },
+        {
+          href: siteRoutes.adminEmail,
+          label: t("nav.email"),
+          icon: <adminIcons.email aria-hidden="true" />,
         },
       ],
     },
@@ -116,6 +137,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
           <AdminBreadcrumb
             area={{ href: siteRoutes.admin, label: t("title") }}
             items={destinations.map(({ href, label }) => ({ href, label }))}
+            subpages={[{ href: siteRoutes.adminUseCasesNew, label: t("nav.useCasesNew") }]}
           />
         </header>
         {children}

@@ -20,8 +20,11 @@ async function answerSearch(page: Page, items: object[]) {
 }
 
 /** The people shown, by the name each row leads with, whichever layout the viewport has. */
+/** The people of the members list, not those asking to join above it. */
 function shownPeople(page: Page) {
-  return page.locator('[data-slot="person"]:visible >> span.font-medium');
+  return page
+    .getByRole("region", { name: "Members", exact: true })
+    .locator('[data-slot="person"]:visible >> span.font-medium');
 }
 
 test.describe("workspace organization", () => {
@@ -262,26 +265,29 @@ test.describe("workspace organization", () => {
       "Members2",
       "Solutions4",
       "Introductions",
+      "Use cases0",
     ]);
     await expect(tabs.getByRole("link", { name: "Profile" })).toHaveAttribute(
       "aria-current",
       "page",
     );
+    // The profile reads until the owner chooses to edit it.
+    await expect(page.getByText("Assistants for insurers across Southeast Asia.")).toBeVisible();
+    await expect(page.getByRole("textbox")).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+    await page.getByRole("button", { name: "Edit profile" }).click();
+
     const save = page.getByRole("button", { name: "Save changes" });
     await expect(save).toBeDisabled();
     await expect(page.getByLabel("Verified email domain")).toBeDisabled();
     await expectNoSeriousA11yViolations(page);
 
-    const description = page.getByLabel("Short description");
-    await description.fill("Something else.");
-    await page.getByRole("button", { name: "Discard changes" }).click();
-    const confirm = page.getByRole("alertdialog");
-    await expect(confirm.getByRole("heading")).toHaveText("Discard your changes?");
-    await confirm.getByRole("button", { name: "Discard changes" }).click();
-    await expect(description).toHaveValue("Assistants for insurers across Southeast Asia.");
-    await expect(save).toBeDisabled();
+    // Unsaved changes are dropped by leaving the page, where the leave guard asks; there is no discard.
+    await expect(page.getByRole("button", { name: "Discard changes" })).toHaveCount(0);
 
+    const description = page.getByLabel("Short description");
     await description.fill("Assistants for insurers and brokers.");
+    await expect(save).toBeEnabled();
     await page.getByRole("combobox", { name: "Industries" }).fill("Health");
     await page.getByRole("option", { name: "Healthcare" }).click();
     await save.click();
@@ -315,6 +321,7 @@ test.describe("workspace organization", () => {
     await signInAs(context, "owner", baseURL!);
     await answerDecisions(page, changesPath, 409, refusal("ORGANIZATION_CHANGED_MEANWHILE"));
     await page.goto("/workspace/organization");
+    await page.getByRole("button", { name: "Edit profile" }).click();
 
     // Once the page answers a change: text typed before that is not the form's yet.
     const description = page.getByLabel("Short description");
@@ -349,6 +356,7 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("heading", { name: "Organization profile" })).toBeVisible();
     await expect(page.getByText("Assistants for insurers across Southeast Asia.")).toBeVisible();
     await expect(page.getByRole("textbox")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Edit profile" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Save changes" })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
   });
@@ -389,13 +397,15 @@ test.describe("workspace organization", () => {
 
     await expect(shownPeople(page)).toHaveText(["Minh Trần", "Siti Rahma", "hoa.le@example.com"]);
     await expect(
-      page.getByText("2 members · 1 invitation pending · 19 of 20 invitations left today"),
+      page.getByText("2 members · 1 invitation pending · 19 of 20 invitations left in 24 hours"),
     ).toBeVisible();
+    // The row is drawn as a table row and as a stacked row; one of them shows.
+    await expect(
+      page.getByText("Invited Oct 1, 2026 · expires Oct 8, 2026").filter({ visible: true }),
+    ).toHaveCount(1);
     // A table from 768px, stacked rows below it.
     await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
-    await expect(
-      page.getByText("The email is on your verified domain pocketpolicy.example."),
-    ).toBeVisible();
+    await expect(page.getByText("On pocketpolicy.example")).toBeVisible();
     await expect(page.getByText("I joined the claims team.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
 
@@ -423,7 +433,7 @@ test.describe("workspace organization", () => {
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading")).toHaveText("Invite people to Pocket Policy");
     await expect(
-      dialog.getByText("19 of 20 invitations left today; 49 of 50 can still be open at once.", {
+      dialog.getByText("19 of 20 invitations left in 24 hours; 49 of 50 can be open at once.", {
         exact: false,
       }),
     ).toBeVisible();
@@ -498,7 +508,7 @@ test.describe("workspace organization", () => {
     await expect(page.getByText("Siti Rahma is now an owner.")).toBeVisible();
 
     await page.getByRole("button", { name: "Actions for Siti Rahma" }).click();
-    await page.getByRole("menuitem", { name: "Remove from organization…" }).click();
+    await page.getByRole("menuitem", { name: "Remove from organization" }).click();
     const confirm = page.getByRole("alertdialog");
     await expect(confirm.getByRole("heading")).toHaveText("Remove this member?");
     await expect(confirm.getByText("siti@pocketpolicy.example")).toBeVisible();
@@ -542,7 +552,7 @@ test.describe("workspace organization", () => {
     await page.goto("/workspace/organization/members");
 
     await page.getByRole("button", { name: "Actions for Minh Trần" }).click();
-    await page.getByRole("menuitem", { name: "Leave organization…" }).click();
+    await page.getByRole("menuitem", { name: "Leave organization" }).click();
     await page.getByRole("alertdialog").getByRole("button", { name: "Leave organization" }).click();
 
     await expect(
@@ -569,8 +579,8 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("button", { name: "Turn on" })).toHaveCount(0);
 
     await page.getByRole("button", { name: "Actions for Siti Rahma" }).click();
-    await expect(page.getByRole("menuitem")).toHaveText(["Edit job title…", "Leave organization…"]);
-    await page.getByRole("menuitem", { name: "Edit job title…" }).click();
+    await expect(page.getByRole("menuitem")).toHaveText(["Edit job title", "Leave organization"]);
+    await page.getByRole("menuitem", { name: "Edit job title" }).click();
     const dialog = page.getByRole("dialog");
     await dialog.getByLabel("Job title").fill("Claims lead");
     await dialog.getByRole("button", { name: "Save" }).click();

@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { useLocale, useTranslations } from "next-intl";
+import { BriefcaseBusinessIcon } from "lucide-react";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,8 @@ import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { SearchItem } from "@/lib/api/generated";
 import { programRoute, siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
+
+import { budgetFigures, budgetText } from "@/features/usecase/use-case-budget";
 
 import { snippetParts } from "./search-snippet";
 
@@ -36,6 +39,9 @@ function SearchResult({ item }: { item: SearchItem }) {
   }
   if (item.kind === "solution") {
     return <SolutionResult item={item} />;
+  }
+  if (item.kind === "use_case") {
+    return <UseCaseResult item={item} />;
   }
   return <TalentResult item={item} />;
 }
@@ -100,7 +106,7 @@ function SolutionResult({ item }: { item: SearchItem }) {
 
   return (
     <Row
-      picture={<SolutionLogo name={item.title} size="card" />}
+      picture={<SolutionLogo name={item.title} fileId={item.photoFileId} size="card" />}
       title={item.title}
       href={`${siteRoutes.solutions}/${item.slug}`}
       subtitle={item.subtitle ? t("by", { name: item.subtitle }) : null}
@@ -135,6 +141,60 @@ function TalentResult({ item }: { item: SearchItem }) {
       subtitle={subtitle}
       snippet={item.snippet}
     />
+  );
+}
+
+/**
+ * A use case, said the way the use cases list says it: who asks (or that they stay anonymous), the
+ * industry, the budget when it is shown, and the date proposals close. A use case has no page of its
+ * own yet, so it leads to the list, searched for its title.
+ */
+function UseCaseResult({ item }: { item: SearchItem }) {
+  const t = useTranslations("UseCases");
+  const industryName = useVocabulary("industry");
+  const format = useFormatter();
+  const locale = useLocale();
+  const budget = item.budgetToBeDetermined
+    ? t("budget.toBeDetermined")
+    : item.budgetMin == null || item.budgetMax == null
+      ? t("budget.membersOnly")
+      : budgetText(
+          budgetFigures(item.budgetMin, item.budgetMax, item.currency, locale),
+          (key, values) => t(`budget.${key}`, values),
+        );
+  const facts = [
+    item.industries[0] && industryName(item.industries[0]),
+    budget,
+    item.closesAt &&
+      t("deadline.date", {
+        date: format.dateTime(new Date(item.closesAt), {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          timeZone: "Asia/Ho_Chi_Minh",
+        }),
+      }),
+  ].filter(Boolean);
+
+  return (
+    <Row
+      picture={
+        <div
+          aria-hidden="true"
+          className="flex size-12 shrink-0 items-center justify-center rounded-xl border bg-accent text-primary"
+        >
+          <BriefcaseBusinessIcon className="size-5" />
+        </div>
+      }
+      title={item.title}
+      href={`${siteRoutes.useCases}?q=${encodeURIComponent(item.title)}`}
+      subtitle={item.subtitle ?? t("anonymous")}
+      snippet={item.snippet}
+    >
+      {facts.length > 0 && (
+        <p className="truncate text-xs text-muted-foreground">{facts.join(" · ")}</p>
+      )}
+    </Row>
   );
 }
 

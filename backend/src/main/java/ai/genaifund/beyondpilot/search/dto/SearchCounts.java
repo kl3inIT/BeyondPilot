@@ -6,5 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record SearchCounts(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) long all,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) long program,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) long solution,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) long talent) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) long talent,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) long useCase) {
 }

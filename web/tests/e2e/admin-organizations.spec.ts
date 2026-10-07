@@ -6,13 +6,26 @@ import { signInAs } from "./session";
 
 const lumen = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c01";
 const openKitchen = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c02";
+const pocketPolicy = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03";
 const firstcall = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04";
+const quietMill = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c06";
+const harborBank = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c07";
+const firstTeller = "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a30";
+const secondTeller = "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a31";
+const thirdTeller = "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a32";
+const invitation = "7d5a7e96-4d42-4e97-9e99-4b7dad0f1e01";
 const claim = "9c4f6d85-3c31-4d86-8d88-3a6c9c9e0d01";
 
 const decisionsPath = "**/api/organization/admin/**";
 
 /** The organizations shown, by the name each row leads with, whichever layout the viewport has. */
+/** The organizations the list shows, by the link to each one's record. */
 function shownOrganizations(page: Page) {
+  return page.locator('a[href*="/admin/organizations/"]:visible');
+}
+
+/** The people of an organization's members tab, by their names. */
+function shownPeople(page: Page) {
   return page.locator('[data-slot="person"]:visible >> span.font-medium');
 }
 
@@ -33,7 +46,7 @@ async function openReview(page: Page) {
   );
   await page.goto("/admin/organizations");
   await page.getByRole("button", { name: "Actions for Lumen Health" }).click();
-  await page.getByRole("menuitem", { name: "Review…" }).click();
+  await page.getByRole("menuitem", { name: "Review" }).click();
   return page.getByRole("dialog");
 }
 
@@ -85,8 +98,10 @@ test.describe("admin organizations", () => {
       "Open Kitchen",
       "Pocket Policy",
       "Firstcall",
+      "Quiet Mill",
+      "Harbor Bank",
     ]);
-    await expect(page.getByText("4 organisations")).toBeVisible();
+    await expect(page.getByText("6 organisations")).toBeVisible();
     // Each row is in the page twice, as a table row and as a stacked one; the viewport shows one.
     const shown = page.locator(":visible");
     await expect(page.getByText("Company · Singapore · 2 members").and(shown)).toHaveCount(1);
@@ -112,7 +127,7 @@ test.describe("admin organizations", () => {
 
     await page.getByRole("combobox", { name: "Status" }).click();
     await page.getByRole("option", { name: "Needs review" }).click();
-    await expect(page).toHaveURL(/status=pending/);
+    await expect(page).toHaveURL(/status=in_review/);
     // A claim waits for a decision as a new organization does.
     await expect(shownOrganizations(page)).toHaveText(["Lumen Health", "Open Kitchen"]);
     await expect(page.getByText("2 need review")).toBeVisible();
@@ -123,12 +138,9 @@ test.describe("admin organizations", () => {
       "No organization matches",
     );
 
-    // The way back is checked on a page read from its address: a click within moments of typing
-    // races the toolbar's delayed write of the address, which puts the search back.
-    await page.reload();
     await page.getByRole("link", { name: "Clear search and filter" }).click();
     await expect(page).toHaveURL("/admin/organizations");
-    await expect(shownOrganizations(page)).toHaveCount(4);
+    await expect(shownOrganizations(page)).toHaveCount(6);
   });
 
   test("an organization that waits is approved from its row", async ({
@@ -142,7 +154,7 @@ test.describe("admin organizations", () => {
 
     await expect(dialog.getByRole("heading")).toHaveText("Review Lumen Health");
     // Who created it and its website are read when the dialog opens.
-    await expect(dialog.getByText(/created by Linh Nguyễn on Oct 1, 2026/)).toBeVisible();
+    await expect(dialog.getByText(/Created by Linh Nguyễn on Oct 1, 2026/)).toBeVisible();
     await expect(dialog.getByText("Company · Vietnam · lumenhealth.example")).toBeVisible();
     // The creator's work domain is proposed, for the operator to confirm.
     await expect(dialog.getByLabel("Email domain to verify (optional)")).toHaveValue(
@@ -204,7 +216,7 @@ test.describe("admin organizations", () => {
     await page.goto("/admin/organizations");
 
     await page.getByRole("button", { name: "Actions for Open Kitchen" }).click();
-    await page.getByRole("menuitem", { name: "Decide claim…" }).click();
+    await page.getByRole("menuitem", { name: "Decide claim" }).click();
     const dialog = page.getByRole("dialog");
 
     await expect(dialog.getByRole("heading")).toHaveText("Decide the claim for Open Kitchen");
@@ -233,26 +245,62 @@ test.describe("admin organizations", () => {
     const decisions = await answerDecisions(page, decisionsPath, 204);
     const dialog = await openReview(page);
 
-    await dialog.getByRole("button", { name: "Do not approve…" }).click();
-    await expect(dialog.getByRole("heading")).toHaveText("Do not approve Lumen Health");
+    await dialog.getByRole("button", { name: "Refuse" }).click();
+    await expect(dialog.getByRole("heading")).toHaveText("Refuse Lumen Health");
     await expect(dialog.getByRole("button", { name: "Send decision" })).toBeDisabled();
 
     // Leaving the reason goes back to the review, where the organization can still be approved.
     await dialog.getByRole("button", { name: "Back" }).click();
     await expect(dialog.getByRole("heading")).toHaveText("Review Lumen Health");
-    await dialog.getByRole("button", { name: "Do not approve…" }).click();
+    await dialog.getByRole("button", { name: "Refuse" }).click();
 
-    await giveReason(page, "Profile is incomplete", "  Say what you build.  ");
+    await giveReason(page, "Already on BeyondPilot", "  It is listed as Lumen Clinics.  ");
     await dialog.getByRole("button", { name: "Send decision" }).click();
 
     await expect(
-      page.getByText("Organization not approved. Its owners can read the reason."),
+      page.getByText("Organization refused. Its owners can read the reason."),
     ).toBeVisible();
     await expect(dialog).toHaveCount(0);
     expect(decisions).toEqual([
       {
         call: `POST /api/organization/admin/organizations/${lumen}/refuse`,
-        body: { reason: "incomplete", message: "Say what you build." },
+        body: { reason: "duplicate", message: "It is listed as Lumen Clinics." },
+      },
+    ]);
+  });
+
+  test("a send back is not sent without what to change, and goes back to the review", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    const dialog = await openReview(page);
+
+    await dialog.getByRole("button", { name: "Send back" }).click();
+    await expect(dialog.getByRole("heading")).toHaveText("Send Lumen Health back");
+    const send = dialog.getByRole("button", { name: "Send back", exact: true });
+    await expect(send).toBeDisabled();
+
+    await dialog.getByRole("button", { name: "Back", exact: true }).click();
+    await expect(dialog.getByRole("heading")).toHaveText("Review Lumen Health");
+    await dialog.getByRole("button", { name: "Send back" }).click();
+
+    await dialog
+      .getByRole("textbox", { name: "What should the owners change?" })
+      .fill("  Say what you build.  ");
+    await expectNoSeriousA11yViolations(page);
+    await send.click();
+
+    await expect(
+      page.getByText("Organization sent back. Its owners were told what to change."),
+    ).toBeVisible();
+    await expect(dialog).toHaveCount(0);
+    expect(decisions).toEqual([
+      {
+        call: `POST /api/organization/admin/organizations/${lumen}/send-back`,
+        body: { reason: "Say what you build." },
       },
     ]);
   });
@@ -286,19 +334,18 @@ test.describe("admin organizations", () => {
 
     await page.getByRole("button", { name: "Actions for Open Kitchen" }).click();
     // An approved organization has no review; its claim is decided from the menu or on the record.
-    await expect(page.getByRole("menuitem", { name: "Review…" })).toHaveCount(0);
+    await expect(page.getByRole("menuitem", { name: "Review" })).toHaveCount(0);
     await page.getByRole("menuitem", { name: "Open record" }).click();
 
     await expect(page).toHaveURL(`/admin/organizations/${openKitchen}`);
     await expect(page).toHaveTitle("Open Kitchen · BeyondPilot");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Open Kitchen");
     await expect(page.getByText("Đạt Phan on Oct 1, 2026")).toBeVisible();
-    await expect(page.getByText("Nobody belongs to this organization yet.")).toBeVisible();
     const claims = page.getByRole("region", { name: "Claims to own it" });
     await expect(claims.getByText("I founded the team.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
 
-    await claims.getByRole("button", { name: "Decide claim…" }).click();
+    await claims.getByRole("button", { name: "Decide claim" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByLabel("Email domain to verify (optional)")).toHaveValue(
       "openkitchen.example",
@@ -314,6 +361,178 @@ test.describe("admin organizations", () => {
     ]);
   });
 
+  test("a taken-down organization's record says why and restores it after asking", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    await page.goto(`/admin/organizations/${quietMill}`);
+
+    await expect(page.getByText("Taken down on Oct 6, 2026")).toBeVisible();
+    await expect(page.getByText("Reason: Misleading or false information.")).toBeVisible();
+    await expect(page.getByText("Send us the contract or remove the customer.")).toBeVisible();
+    // Taking down is for an approved organization; this one is back only by a restore.
+    await expect(page.getByRole("button", { name: "Actions for Quiet Mill" })).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+
+    await page.getByRole("button", { name: "Restore" }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Restore" }).click();
+
+    await expect(page.getByText("Quiet Mill is back. Its owners were told.")).toBeVisible();
+    expect(decisions).toEqual([
+      { call: `POST /api/organization/admin/organizations/${quietMill}/restore`, body: null },
+    ]);
+  });
+
+  test("an approved organization is taken down with a reason its owners read", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    await page.goto(`/admin/organizations/${pocketPolicy}`);
+
+    await page.getByRole("button", { name: "Actions for Pocket Policy" }).click();
+    await page.getByRole("menuitem", { name: "Take down" }).click();
+    const dialog = await giveReason(
+      page,
+      "Misleading or false information",
+      "  The customer says it has not worked with you.  ",
+    );
+    await expectNoSeriousA11yViolations(page);
+    await dialog.getByRole("button", { name: "Take down" }).click();
+
+    await expect(
+      page.getByText("Pocket Policy was taken down. Its owners were told."),
+    ).toBeVisible();
+    expect(decisions).toEqual([
+      {
+        call: `POST /api/organization/admin/organizations/${pocketPolicy}/take-down`,
+        body: {
+          reason: "misleading_information",
+          message: "The customer says it has not worked with you.",
+        },
+      },
+    ]);
+  });
+
+  test("an operator saves the profile with the verified domain", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 200, {});
+    await page.goto(`/admin/organizations/${pocketPolicy}`);
+
+    // The profile reads until the operator chooses to edit it.
+    await expect(page.getByRole("textbox")).toHaveCount(0);
+    await page.getByRole("button", { name: "Edit profile" }).click();
+    await page.getByLabel("Short description").fill("Claim assistants for insurers.");
+    await page.getByLabel("Year founded").fill("2021");
+    await page.getByLabel("Verified domain").fill("pocketpolicy.example");
+    await page.getByRole("button", { name: "Save changes" }).click();
+
+    await expect.poll(() => decisions.length).toBe(1);
+    expect(decisions[0].call).toBe(`PUT /api/organization/admin/organizations/${pocketPolicy}`);
+    expect(decisions[0].body).toMatchObject({
+      profile: {
+        name: "Pocket Policy",
+        description: "Claim assistants for insurers.",
+        foundedYear: 2021,
+        version: 0,
+      },
+      emailDomain: "pocketpolicy.example",
+    });
+  });
+
+  test("the members are paged ten at a time, with the open invitations on the last page", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto(`/admin/organizations/${harborBank}?tab=members`);
+
+    await expect(shownPeople(page)).toHaveCount(10);
+    await expect(page.getByText("12 members · 1 invitation open")).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+
+    await page.getByRole("link", { name: "Go to the next page" }).first().click();
+    await expect(page).toHaveURL(/page=2/);
+    await expect(shownPeople(page)).toHaveText([
+      "Teller 11",
+      "Teller 12",
+      "newhire@harborbank.example",
+    ]);
+    // The row is drawn as a table row and as a stacked row; one of them shows.
+    await expect(
+      page.getByText("Invited Oct 1, 2026 · expires Oct 8, 2026").filter({ visible: true }),
+    ).toHaveCount(1);
+  });
+
+  test("an operator changes a role, removes a person, invites and withdraws an invitation", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    const record = `/api/organization/admin/organizations/${harborBank}`;
+    await page.goto(`/admin/organizations/${harborBank}?tab=members`);
+    // Each person is in the page twice, as a table row and as a stacked one; the viewport shows one.
+    const actions = (name: string) =>
+      page.getByRole("button", { name: `Actions for ${name}` }).and(page.locator(":visible"));
+
+    await actions("Teller 02").click();
+    await page.getByRole("menuitem", { name: "Make owner" }).click();
+    await expect(page.getByText("Teller 02 is now an owner.")).toBeVisible();
+
+    // The only owner is made a member only after being told the organization will have none.
+    await actions("Teller 01").click();
+    await page.getByRole("menuitem", { name: "Make member" }).click();
+    const demote = page.getByRole("alertdialog", { name: "Make the only owner a member?" });
+    await expect(demote.getByText("The organization will have no owner.")).toBeVisible();
+    await demote.getByRole("button", { name: "Make member" }).click();
+    await expect(page.getByText("Teller 01 is now a member.")).toBeVisible();
+
+    await actions("Teller 03").click();
+    await page.getByRole("menuitem", { name: "Remove from organization" }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Remove member" }).click();
+    await expect(page.getByText("Teller 03 was removed.")).toBeVisible();
+
+    await page.getByRole("button", { name: "Invite a person" }).click();
+    const invite = page.getByRole("dialog");
+    await invite.getByLabel("Email address").fill("  cto@harborbank.example ");
+    await invite.getByRole("button", { name: "Send invitation" }).click();
+    await expect(page.getByText("Invitation sent.")).toBeVisible();
+
+    await page.goto(`/admin/organizations/${harborBank}?tab=members&page=2`);
+    await page
+      .getByRole("button", { name: "Withdraw the invitation to newhire@harborbank.example" })
+      .and(page.locator(":visible"))
+      .click();
+    await page
+      .getByRole("alertdialog")
+      .getByRole("button", { name: "Withdraw invitation" })
+      .click();
+    await expect(page.getByText("Invitation withdrawn.")).toBeVisible();
+
+    expect(decisions).toEqual([
+      { call: `PUT ${record}/members/${secondTeller}/role`, body: { role: "owner" } },
+      { call: `PUT ${record}/members/${firstTeller}/role`, body: { role: "member" } },
+      { call: `POST ${record}/members/${thirdTeller}/remove`, body: null },
+      {
+        call: `POST ${record}/invitations`,
+        body: { email: "cto@harborbank.example", role: "owner" },
+      },
+      { call: `POST ${record}/invitations/${invitation}/revoke`, body: null },
+    ]);
+  });
+
   test("a refused organization's record says why, and offers no review", async ({
     page,
     context,
@@ -322,14 +541,14 @@ test.describe("admin organizations", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto(`/admin/organizations/${firstcall}`);
 
-    await expect(page.getByText("Not approved: Profile is incomplete.")).toBeVisible();
+    await expect(page.getByText("Not approved: Already on BeyondPilot.")).toBeVisible();
     await expect(page.getByText("Say what the company builds.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Review…" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Review" })).toHaveCount(0);
 
     expect((await page.goto("/admin/organizations/no-such-record"))?.status()).toBe(404);
   });
 
-  test("an operator adds an organization, which needs a name", async ({
+  test("an operator adds an organization, which needs a name and a type", async ({
     page,
     context,
     baseURL,
@@ -345,10 +564,12 @@ test.describe("admin organizations", () => {
 
     await dialog.getByRole("button", { name: "Add organization" }).click();
     await expect(dialog.getByText("Enter the organization's name.")).toBeVisible();
+    await expect(dialog.getByText("Choose the type of organization.")).toBeVisible();
     expect(decisions).toEqual([]);
 
     await dialog.getByLabel("Organization name").fill("Sài Gòn Logistics");
-    await dialog.getByLabel("Owner's email (optional)").fill("owner@saigonlogistics.example");
+    await dialog.getByRole("combobox", { name: "Organization type" }).click();
+    await page.getByRole("option", { name: "Builder team" }).click();
     await dialog.getByRole("button", { name: "Add organization" }).click();
 
     await expect(page.getByText("Sài Gòn Logistics created.")).toBeVisible();
@@ -358,9 +579,67 @@ test.describe("admin organizations", () => {
         call: "POST /api/organization/admin/organizations",
         body: {
           name: "Sài Gòn Logistics",
-          type: "company",
-          ownerEmail: "owner@saigonlogistics.example",
+          type: "builder_team",
           website: null,
+          country: null,
+          teamSize: null,
+          industries: null,
+          description: null,
+          foundedYear: null,
+          logoFileId: null,
+          emailDomain: null,
+          ownerEmail: null,
+        },
+      },
+    ]);
+  });
+
+  test("an operator may describe the whole organization while adding it", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    await page.goto("/admin/organizations");
+
+    await page.getByRole("button", { name: "Add organization" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Organization name").fill("Sài Gòn Logistics");
+    await dialog.getByRole("combobox", { name: "Organization type" }).click();
+    await page.getByRole("option", { name: "Company" }).click();
+    await dialog.getByLabel("Website").fill("https://saigonlogistics.example");
+    await dialog.getByLabel("Owner's email").fill("owner@saigonlogistics.example");
+    await dialog.getByLabel("Email domain").fill("@SaigonLogistics.example");
+    await dialog.getByRole("combobox", { name: "Country" }).click();
+    await page.getByRole("option", { name: "Vietnam" }).click();
+    await dialog.getByRole("combobox", { name: "Team size" }).click();
+    await page.getByRole("option", { name: "10–49 people" }).click();
+    await dialog.getByLabel("Year founded").fill("20x9");
+    await dialog.getByRole("button", { name: "Add organization" }).click();
+    await expect(dialog.getByText("Enter a four-digit year, such as 2021.")).toBeVisible();
+    expect(decisions).toEqual([]);
+
+    await dialog.getByLabel("Year founded").fill("2019");
+    await dialog.getByLabel("Short description").fill("Routes parcels for small shops.");
+    await dialog.getByRole("button", { name: "Add organization" }).click();
+
+    await expect(page.getByText("Sài Gòn Logistics created.")).toBeVisible();
+    expect(decisions).toEqual([
+      {
+        call: "POST /api/organization/admin/organizations",
+        body: {
+          name: "Sài Gòn Logistics",
+          type: "company",
+          website: "https://saigonlogistics.example",
+          country: "VN",
+          teamSize: "10_49",
+          industries: null,
+          description: "Routes parcels for small shops.",
+          foundedYear: 2019,
+          logoFileId: null,
+          emailDomain: "saigonlogistics.example",
+          ownerEmail: "owner@saigonlogistics.example",
         },
       },
     ]);

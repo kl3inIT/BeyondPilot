@@ -53,6 +53,13 @@ export type AccountSummary = {
 };
 
 /**
+ * An address to stop sending to.
+ */
+export type AddEmailSuppression = {
+    address: string;
+};
+
+/**
  * An organization an operator creates for a company that is not here yet. It is approved from the start and has no member until someone accepts the invitation to own it, or claims it.
  */
 export type AdminCreateOrganization = {
@@ -61,14 +68,31 @@ export type AdminCreateOrganization = {
      */
     country?: string | null;
     /**
+     * What it does and for whom, in at most 280 characters.
+     */
+    description?: string | null;
+    /**
      * The domain of the company's work addresses, which the operator vouches for.
      */
     emailDomain?: string | null;
+    /**
+     * The year it started.
+     */
+    foundedYear?: number | null;
+    /**
+     * The industries it works in or serves, as the codes the solutions use.
+     */
+    industries?: Array<string> | null;
+    /**
+     * A logo the caller uploaded for an organization; null for none.
+     */
+    logoFileId?: string | null;
     name: string;
     /**
      * The address invited to own it.
      */
     ownerEmail?: string | null;
+    teamSize?: string | null;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     website?: string | null;
 };
@@ -180,6 +204,10 @@ export type AdminOrganizationSummary = {
     country?: string | null;
     createdAt: string;
     id: string;
+    /**
+     * Its logo, read at /api/storage/files/{id}; null for none.
+     */
+    logoFileId?: string | null;
     members: number;
     name: string;
     /**
@@ -195,7 +223,14 @@ export type AdminOrganizationSummary = {
      */
     requestedAt?: string | null;
     slug: string;
-    status: 'pending' | 'approved' | 'rejected';
+    /**
+     * GenAI Fund's review of the organization.
+     */
+    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
+    /**
+     * When it was taken down; null while it is not.
+     */
+    suspendedAt?: string | null;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
 };
 
@@ -294,6 +329,17 @@ export type AdminProgramSummary = {
 };
 
 /**
+ * The profile of an organization and its verified domain, as an operator saves them.
+ */
+export type AdminSaveOrganization = {
+    /**
+     * The domain GenAI Fund verifies for the organization; null clears it.
+     */
+    emailDomain?: string | null;
+    profile: SaveOrganization;
+};
+
+/**
  * One page of submitted solutions: those waiting for review first, the longest wait on top.
  */
 export type AdminSolutionList = {
@@ -301,6 +347,10 @@ export type AdminSolutionList = {
      * How many solutions wait for review, whatever narrows this list.
      */
     awaitingReview: number;
+    /**
+     * How many customer deployments wait for review, whatever narrows this list.
+     */
+    deploymentsAwaitingReview: number;
     items: Array<AdminSolutionSummary>;
     /**
      * The page returned, counted from 1.
@@ -328,13 +378,17 @@ export type AdminSolutionSummary = {
     name: string;
     organizationName: string;
     slug: string;
-    status: 'submitted' | 'approved' | 'rejected';
+    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
     submittedAt?: string | null;
     /**
      * Who sent it for review last: their name, or their address until they have one. Null when it was sent before the sender was recorded.
      */
     submittedBy?: string | null;
     summary?: string | null;
+    /**
+     * When GenAI Fund took it down, while it is down; its status stays approved.
+     */
+    suspendedAt?: string | null;
     updatedAt: string;
 };
 
@@ -403,6 +457,176 @@ export type AdminTalentList = {
 };
 
 /**
+ * One use case as an operator reads it.
+ */
+export type AdminUseCase = {
+    attachments: Array<UseCaseAttachment>;
+    /**
+     * Whole units of currency. Null while the budget is to be determined.
+     */
+    budgetMax?: number | null;
+    budgetMembersOnly: boolean;
+    /**
+     * Whole units of currency. Null while the budget is to be determined.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    closesAt?: string | null;
+    createdAt: string;
+    createdBy: UseCasePerson;
+    /**
+     * The currency of the amounts.
+     */
+    currency: 'USD' | 'VND';
+    currentProcess?: string | null;
+    currentSolutions?: string | null;
+    dataReadiness?: string | null;
+    expectedOutcomes?: string | null;
+    hideOrganizationName: boolean;
+    id: string;
+    industry?: string | null;
+    integrationRequirements?: string | null;
+    organization: UseCaseOrganization;
+    problemStatement?: string | null;
+    /**
+     * The programs it belongs to, by name.
+     */
+    programs: Array<UseCaseProgram>;
+    publishedAt?: string | null;
+    requirements: Array<UseCaseRequirement>;
+    /**
+     * What GenAI Fund asked to change, while the use case is sent back.
+     */
+    reviewNote?: string | null;
+    reviewedAt?: string | null;
+    /**
+     * Who approved it or sent it back; null while no one has.
+     */
+    reviewedBy?: UseCasePerson;
+    /**
+     * Closed once the close date has passed, whatever the use case was before.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
+    submittedAt?: string | null;
+    /**
+     * Who sent it for review; null if it was never sent.
+     */
+    submittedBy?: UseCasePerson;
+    targetUsers?: string | null;
+    technologies: Array<string>;
+    timelineMaxWeeks?: number | null;
+    timelineMinWeeks?: number | null;
+    title?: string | null;
+    updatedAt: string;
+    version: number;
+};
+
+/**
+ * One page of use cases, the newest first.
+ */
+export type AdminUseCaseList = {
+    /**
+     * How many use cases in the whole system wait for GenAI Fund, whatever the filter.
+     */
+    inReview: number;
+    items: Array<AdminUseCaseSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many use cases match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * One use case in the operators' list.
+ */
+export type AdminUseCaseSummary = {
+    closesAt?: string | null;
+    id: string;
+    organization: UseCaseOrganization;
+    /**
+     * Closed once the close date has passed, whatever the use case was before.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
+    title?: string | null;
+    updatedAt: string;
+};
+
+export type AiProvider = {
+    baseUrl: string;
+    hasKey: boolean;
+    id: string;
+    /**
+     * Whether search embeds with it; a provider in use cannot be deleted.
+     */
+    inUse: boolean;
+    name: string;
+    updatedAt: string;
+    /**
+     * Who saved it last, as they were named.
+     */
+    updatedBy: string;
+    vendor: 'openai' | 'openrouter';
+    /**
+     * Send it back with a change; a change made meanwhile is refused.
+     */
+    version: number;
+};
+
+/**
+ * How embedding one test sentence went. Nothing is stored.
+ */
+export type AiProviderTest = {
+    /**
+     * The length of the vector the provider gave.
+     */
+    dimensions?: number | null;
+    /**
+     * How long the provider took, in milliseconds.
+     */
+    latencyMs: number;
+    model: string;
+    ok: boolean;
+    /**
+     * Why it failed; null when it worked.
+     */
+    reason?: 'rejected' | 'model_refused' | 'unreachable' | 'wrong_dimensions';
+};
+
+/**
+ * The AI providers operators connected for embeddings, and the model search embeds with. A key is never returned: each provider says only whether it has one.
+ */
+export type AiProviders = {
+    /**
+     * The model in use; null until an operator chooses one.
+     */
+    embedding?: EmbeddingModelInUse;
+    /**
+     * Whether the server holds the key that encrypts provider keys; without it none can be saved.
+     */
+    keysCanBeStored: boolean;
+    providers: Array<AiProvider>;
+    /**
+     * The version of the search settings; send it back to change the model.
+     */
+    settingsVersion: number;
+    /**
+     * The providers that can be connected, with their address and models.
+     */
+    vendors: Array<AiVendor>;
+};
+
+export type AiVendor = {
+    baseUrl: string;
+    id: 'openai' | 'openrouter';
+    models: Array<string>;
+};
+
+/**
  * Who applies, for someone in no organization: themselves on their own, or their team.
  */
 export type ApplicantOrganization = {
@@ -458,6 +682,15 @@ export type Application = {
      */
     version: number;
     withdrawnAt?: string | null;
+};
+
+export type ApplicationNextStep = {
+    /**
+     * A day, not a moment.
+     */
+    allDay: boolean;
+    at: string;
+    title: string;
 };
 
 /**
@@ -554,7 +787,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -614,8 +847,66 @@ export type AutoJoin = {
     autoJoin: boolean;
 };
 
+/**
+ * What GenAI Fund says of a solution, as an operator writes it. A member left out or empty is taken away.
+ */
+export type BackSolution = {
+    /**
+     * Who backs its company, such as GenAI Fund's portfolio.
+     */
+    backedBy?: string | null;
+    /**
+     * How its company is funded.
+     */
+    funding?: string | null;
+    /**
+     * The programme it was selected for, with its cohort.
+     */
+    program?: string | null;
+};
+
 export type ChangeMemberRole = {
     role: 'owner' | 'member';
+};
+
+/**
+ * The provider and model search embeds with from now on. Every item is embedded again when the model changes.
+ */
+export type ChooseEmbeddingModel = {
+    model: string;
+    providerId: string;
+    /**
+     * The version of the search settings it was read at.
+     */
+    version: number;
+};
+
+/**
+ * An AI app waiting for the signed-in person to allow or deny it.
+ */
+export type ConnectingApp = {
+    /**
+     * Whether it is the client any agent on a person's computer uses, which names no app.
+     */
+    anyLocalApp: boolean;
+    clientId: string;
+    /**
+     * The host the app's metadata document lives on; null for a client BeyondPilot registered.
+     */
+    host?: string | null;
+    /**
+     * Whether the answer goes to this computer, where any program could be listening.
+     */
+    local: boolean;
+    name: string;
+    /**
+     * The host the answer goes to; null when it goes to this computer.
+     */
+    returnsTo?: string | null;
+    /**
+     * Whether BeyondPilot has reviewed the app's host or registered the app.
+     */
+    reviewed: boolean;
 };
 
 /**
@@ -689,6 +980,66 @@ export type CreateSolution = {
 };
 
 /**
+ * A use case an operator writes for an organization. It is saved as a draft the organization's members can edit, or published at once when publishNow is true.
+ */
+export type CreateUseCase = {
+    /**
+     * Files the caller uploaded for a use case, in the order shown.
+     */
+    attachmentFileIds: Array<string>;
+    /**
+     * Whole units of currency. Null while the budget is to be determined.
+     */
+    budgetMax?: number | null;
+    /**
+     * Only signed-in members see the amount.
+     */
+    budgetMembersOnly: boolean;
+    /**
+     * Whole units of currency. Null while the budget is to be determined.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * When proposals stop. It must be in the future.
+     */
+    closesAt: string;
+    /**
+     * The currency of the budget; USD when absent.
+     */
+    currency?: 'USD' | 'VND';
+    currentProcess: string;
+    currentSolutions?: string | null;
+    dataReadiness: string;
+    expectedOutcomes: string;
+    hideOrganizationName: boolean;
+    industry: string;
+    integrationRequirements: string;
+    /**
+     * An approved organization.
+     */
+    organizationId: string;
+    problemStatement: string;
+    /**
+     * The programs it belongs to; none when absent.
+     */
+    programIds?: Array<string> | null;
+    /**
+     * True to publish at once, false to save a draft for the organization.
+     */
+    publishNow: boolean;
+    /**
+     * What the solution must do, in the order written.
+     */
+    requirements: Array<UseCaseRequirement>;
+    targetUsers: string;
+    technologies: Array<string>;
+    timelineMaxWeeks: number;
+    timelineMinWeeks: number;
+    title: string;
+};
+
+/**
  * A customer deployment of a solution as its organization, and operators, see it.
  */
 export type CustomerDeployment = {
@@ -709,7 +1060,7 @@ export type CustomerDeployment = {
     problem: string;
     result?: string | null;
     stage: 'pilot' | 'production';
-    status: 'submitted' | 'approved' | 'rejected';
+    status: 'in_review' | 'approved' | 'rejected';
     title: string;
     updatedAt: string;
     /**
@@ -747,6 +1098,373 @@ export type DeclinedOrganizationRequest = {
     organizationId: string;
     organizationName: string;
     organizationType: 'company' | 'builder_team' | 'independent_builder' | 'other';
+};
+
+/**
+ * What became of the emails of the period, filtered by kind but not by state or search.
+ */
+export type EmailCounts = {
+    bounced: number;
+    complained: number;
+    delivered: number;
+    /**
+     * Failed or skipped.
+     */
+    notSent: number;
+    sent: number;
+    total: number;
+};
+
+/**
+ * Wording being edited, to preview or to send as a test.
+ */
+export type EmailDraft = {
+    /**
+     * An appearance being edited, to see it before it is saved; null for the saved one.
+     */
+    appearance?: EmailDraftAppearance | null;
+    /**
+     * Markdown.
+     */
+    body: string;
+    subject: string;
+};
+
+export type EmailDraftAppearance = {
+    accentColor: string;
+    footer: string;
+};
+
+/**
+ * What the provider reported about the email.
+ */
+export type EmailEvent = {
+    detail?: string | null;
+    occurredAt: string;
+    type: 'delivered' | 'bounced' | 'soft_bounced' | 'complained';
+};
+
+/**
+ * One email as it was sent, with what happened to it.
+ */
+export type EmailMessage = {
+    attempts: number;
+    createdAt: string;
+    events: Array<EmailEvent>;
+    html: string;
+    id: string;
+    kind: string;
+    lastError?: string | null;
+    provider?: 'ses' | 'resend' | 'smtp';
+    providerMessageId?: string | null;
+    recipient: string;
+    /**
+     * Whether an operator may send it again.
+     */
+    resendable: boolean;
+    sentAt?: string | null;
+    status: 'queued' | 'sent' | 'delivered' | 'bounced' | 'complained' | 'failed' | 'skipped';
+    subject: string;
+    /**
+     * Why the address is not sent to; null when it is.
+     */
+    suppression?: EmailSuppression | null;
+    text: string;
+};
+
+/**
+ * One page of the email log, newest first, with the counts of the period.
+ */
+export type EmailMessageList = {
+    counts: EmailCounts;
+    items: Array<EmailMessageSummary>;
+    /**
+     * Pass as `after` for the page towards the present.
+     */
+    newer?: string | null;
+    /**
+     * Pass as `before` for the page towards the past.
+     */
+    older?: string | null;
+};
+
+/**
+ * One email in the log.
+ */
+export type EmailMessageSummary = {
+    attempts: number;
+    createdAt: string;
+    id: string;
+    kind: string;
+    /**
+     * The typed reason of the last failure.
+     */
+    lastError?: string | null;
+    recipient: string;
+    status: 'queued' | 'sent' | 'delivered' | 'bounced' | 'complained' | 'failed' | 'skipped';
+    subject: string;
+};
+
+/**
+ * A draft rendered with sample values, and what keeps it from being saved. With problems the rendering is the default's.
+ */
+export type EmailPreview = {
+    html: string;
+    problems: Array<EmailTemplateProblem>;
+    subject: string;
+    text: string;
+};
+
+export type EmailResendSettings = {
+    apiKeySet: boolean;
+    /**
+     * The endpoint to give Resend's webhook.
+     */
+    eventsUrl: string;
+    webhookSecretSet: boolean;
+};
+
+/**
+ * The new email, queued with the content of the one sent again.
+ */
+export type EmailResent = {
+    id: string;
+};
+
+export type EmailSesSettings = {
+    accessKeyId?: string | null;
+    configurationSet?: string | null;
+    /**
+     * The SNS topic whose reports are accepted.
+     */
+    eventsTopicArn?: string | null;
+    /**
+     * Where to subscribe the SNS topic over HTTPS.
+     */
+    eventsUrl: string;
+    region?: string | null;
+    secretAccessKeySet: boolean;
+};
+
+/**
+ * Who delivers BeyondPilot's email and as whom. Secrets are never returned: each says only whether it is set.
+ */
+export type EmailSettings = {
+    accentColor: string;
+    /**
+     * Whether the server holds the key that encrypts secrets; without it none can be saved.
+     */
+    encryptionReady: boolean;
+    footer: string;
+    fromAddress?: string | null;
+    fromName?: string | null;
+    /**
+     * The provider chosen; null until an operator chooses one, and email waits meanwhile.
+     */
+    provider?: 'ses' | 'resend' | 'smtp';
+    /**
+     * Whether email can leave now: a provider is chosen and everything it needs is set.
+     */
+    ready: boolean;
+    replyTo?: string | null;
+    resend: EmailResendSettings;
+    ses: EmailSesSettings;
+    smtp: EmailSmtpSettings;
+    updatedAt?: string | null;
+    /**
+     * Who saved the settings last, as they were named.
+     */
+    updatedBy?: string | null;
+    /**
+     * Send it back with a change; a change made meanwhile is refused.
+     */
+    version: number;
+};
+
+/**
+ * What the saved provider says about whether email from the sender's domain can leave, read from its API just now.
+ */
+export type EmailSetup = {
+    checkedAt: string;
+    /**
+     * Each step the provider answered, in order. Empty for SMTP, which has no API to ask.
+     */
+    checks: Array<EmailSetupCheck>;
+    /**
+     * The domain of the sender's address.
+     */
+    domain: string;
+    /**
+     * Why the provider could not be asked everything; null when it answered.
+     */
+    limit?: 'permission_missing' | 'credentials_refused' | 'unreachable';
+    provider: 'ses' | 'resend' | 'smtp';
+    /**
+     * The DNS records the domain must hold.
+     */
+    records: Array<EmailSetupDnsRecord>;
+};
+
+export type EmailSetupCheck = {
+    state: 'ok' | 'pending' | 'failed' | 'unknown';
+    step: 'credentials' | 'domain_added' | 'domain_verified' | 'dkim' | 'mail_from' | 'production_access' | 'sending_enabled';
+};
+
+export type EmailSetupDnsRecord = {
+    /**
+     * The name relative to the domain, as DNS hosts ask for it; @ for the domain itself.
+     */
+    host: string;
+    /**
+     * The MX priority; null for any other type.
+     */
+    priority?: number | null;
+    /**
+     * dkim, spf, mail_from, dmarc, or the provider's own word.
+     */
+    purpose: string;
+    /**
+     * Whether the provider found it; unknown for a record it does not look for.
+     */
+    state: 'ok' | 'pending' | 'failed' | 'unknown';
+    type: string;
+    value: string;
+};
+
+export type EmailSmtpSettings = {
+    host?: string | null;
+    passwordSet: boolean;
+    port?: number | null;
+    security: 'starttls' | 'tls' | 'none';
+    username?: string | null;
+};
+
+/**
+ * An address BeyondPilot does not send to, and why.
+ */
+export type EmailSuppression = {
+    address: string;
+    createdAt: string;
+    /**
+     * The operator who added it by hand.
+     */
+    createdBy?: string | null;
+    /**
+     * The email that caused it.
+     */
+    messageId?: string | null;
+    /**
+     * The kind of that email.
+     */
+    messageKind?: string | null;
+    reason: 'bounce' | 'complaint' | 'manual';
+};
+
+/**
+ * One page of suppressed addresses, the newest first.
+ */
+export type EmailSuppressionList = {
+    items: Array<EmailSuppression>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many addresses match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * The wording of one kind of email, with the default it replaces and what it may use.
+ */
+export type EmailTemplate = {
+    /**
+     * Markdown.
+     */
+    body: string;
+    defaultBody: string;
+    defaultSubject: string;
+    edited: boolean;
+    group: 'sign_in' | 'organizations' | 'applications' | 'introductions' | 'use_cases' | 'talent';
+    kind: string;
+    subject: string;
+    updatedAt?: string | null;
+    updatedBy?: string | null;
+    variables: Array<EmailTemplateVariable>;
+    /**
+     * The version of the operator's wording; null while the default is in use.
+     */
+    version?: number | null;
+};
+
+/**
+ * Every kind of email operators can word, in the order the screen groups them.
+ */
+export type EmailTemplateList = {
+    items: Array<EmailTemplateListItem>;
+};
+
+export type EmailTemplateListItem = {
+    /**
+     * Whether an operator's wording replaces the default.
+     */
+    edited: boolean;
+    group: 'sign_in' | 'organizations' | 'applications' | 'introductions' | 'use_cases' | 'talent';
+    kind: string;
+    /**
+     * The subject in use, with its variables as written.
+     */
+    subject: string;
+    updatedAt?: string | null;
+    updatedBy?: string | null;
+};
+
+export type EmailTemplateProblem = {
+    field: 'subject' | 'body';
+    type: 'syntax' | 'unknown_variable' | 'missing_variable' | 'subject_line';
+    variable?: string | null;
+};
+
+export type EmailTemplateVariable = {
+    name: string;
+    required: boolean;
+    /**
+     * What the preview puts in its place.
+     */
+    sample?: string | null;
+};
+
+/**
+ * How a test email went. It is sent to the operator who asked, and to nobody else.
+ */
+export type EmailTest = {
+    /**
+     * Why it was not sent; null when it was.
+     */
+    failure?: 'not_configured' | 'authentication' | 'throttled' | 'unavailable' | 'rejected' | 'invalid_recipient';
+    recipient: string;
+    sent: boolean;
+};
+
+export type EmbeddingModelInUse = {
+    dimensions: number;
+    /**
+     * Items embedded with this model.
+     */
+    embedded: number;
+    model: string;
+    providerId: string;
+    providerName: string;
+    /**
+     * When the model was chosen.
+     */
+    since?: string | null;
+    /**
+     * Items in the index.
+     */
+    total: number;
 };
 
 /**
@@ -882,6 +1600,10 @@ export type Me = {
 export type MyApplication = {
     closesAt: string;
     id: string;
+    /**
+     * The program's first key date after the outcome, such as a demo day; null when it has none.
+     */
+    next?: ApplicationNextStep | null;
     organizationName?: string | null;
     /**
      * GenAI Fund's decision, once the program's outcomes are released; null until then.
@@ -960,6 +1682,93 @@ export type MyTalent = {
 };
 
 /**
+ * One use case as a member of its organization reads and edits it.
+ */
+export type MyUseCase = {
+    attachments: Array<UseCaseAttachment>;
+    budgetMax?: number | null;
+    budgetMembersOnly: boolean;
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * Whether the members changed it since GenAI Fund sent it back; it cannot be sent again before.
+     */
+    changedSinceReview: boolean;
+    closesAt?: string | null;
+    /**
+     * Whether it holds everything a use case needs to be sent for review.
+     */
+    complete: boolean;
+    /**
+     * The currency of the amounts.
+     */
+    currency: 'USD' | 'VND';
+    currentProcess?: string | null;
+    currentSolutions?: string | null;
+    dataReadiness?: string | null;
+    /**
+     * Whether the members can edit it now: a draft, one GenAI Fund sent back, or one that is published.
+     */
+    editable: boolean;
+    expectedOutcomes?: string | null;
+    hideOrganizationName: boolean;
+    id: string;
+    industry?: string | null;
+    integrationRequirements?: string | null;
+    lastEditedBy: UseCasePerson;
+    organizationName: string;
+    problemStatement?: string | null;
+    publishedAt?: string | null;
+    requirements: Array<UseCaseRequirement>;
+    /**
+     * What GenAI Fund asked to change, when it sent the use case back.
+     */
+    reviewNote?: string | null;
+    /**
+     * Closed once the close date has passed, whatever the use case was before.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
+    submittedAt?: string | null;
+    /**
+     * Who sent it for review; null if it was never sent.
+     */
+    submittedBy?: UseCasePerson;
+    targetUsers?: string | null;
+    technologies: Array<string>;
+    timelineMaxWeeks?: number | null;
+    timelineMinWeeks?: number | null;
+    title?: string | null;
+    updatedAt: string;
+    version: number;
+};
+
+/**
+ * One use case of the caller's organization in the tab's list.
+ */
+export type MyUseCaseSummary = {
+    closesAt?: string | null;
+    id: string;
+    lastEditedBy: UseCasePerson;
+    /**
+     * Closed once the close date has passed, whatever the use case was before.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
+    submittedAt?: string | null;
+    /**
+     * Null until someone has named the use case.
+     */
+    title?: string | null;
+    updatedAt: string;
+};
+
+/**
+ * The use cases of the caller's organization, the most recently touched first.
+ */
+export type MyUseCases = {
+    items: Array<MyUseCaseSummary>;
+};
+
+/**
  * An organization as the people who belong to it, and operators, see it.
  */
 export type Organization = {
@@ -973,13 +1782,13 @@ export type Organization = {
     country?: string | null;
     createdAt: string;
     /**
-     * What the operator wrote to the owners with the refusal.
+     * What the operator wrote to the owners when refusing it or sending it back.
      */
     decisionMessage?: string | null;
     /**
-     * Why it was last refused.
+     * Why it was refused; null when it was sent back.
      */
-    decisionReason?: 'duplicate' | 'not_a_real_organization' | 'incomplete' | 'out_of_scope' | 'other';
+    decisionReason?: 'duplicate' | 'not_a_real_organization' | 'out_of_scope' | 'other';
     description?: string | null;
     /**
      * The domain GenAI Fund verified as the organization's; null until it has.
@@ -1001,9 +1810,21 @@ export type Organization = {
     name: string;
     slug: string;
     /**
-     * GenAI Fund's review of the organization.
+     * GenAI Fund's review of the organization. One taken down stays `approved`; `suspendedAt` says it is down.
      */
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
+    /**
+     * When it was taken down; null while it is not.
+     */
+    suspendedAt?: string | null;
+    /**
+     * What the operator wrote to the owners when taking it down.
+     */
+    suspensionMessage?: string | null;
+    /**
+     * Why it was last taken down; kept after it is restored.
+     */
+    suspensionReason?: 'misleading_information' | 'not_a_real_organization' | 'breaks_the_rules' | 'other';
     /**
      * Null is unknown.
      */
@@ -1025,6 +1846,10 @@ export type OrganizationInvitation = {
      * The address that was asked.
      */
     email: string;
+    /**
+     * When the invitation lapses if nobody answers it.
+     */
+    expiresAt: string;
     id: string;
     /**
      * Who asked, as they are shown.
@@ -1433,6 +2258,10 @@ export type PublicOrganization = {
     country?: string | null;
     description?: string | null;
     industries: Array<string>;
+    /**
+     * Its logo, read at /api/storage/files/{id}; null for none.
+     */
+    logoFileId?: string | null;
     name: string;
     slug: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
@@ -1443,12 +2272,21 @@ export type PublicOrganization = {
  * An approved solution as anyone with its address reads it, listed or not.
  */
 export type PublicSolution = {
+    /**
+     * What GenAI Fund says of it; null when it has said nothing.
+     */
+    backing?: SolutionBacking | null;
     bestCustomerProfile?: string | null;
     builtWith: Array<string>;
+    channels?: string | null;
     /**
      * ISO 3166-1 alpha-2.
      */
     country?: string | null;
+    /**
+     * Its cover, read at /api/storage/files/{id}; null for none.
+     */
+    coverFileId?: string | null;
     /**
      * Its approved customer deployments, the most recently approved first.
      */
@@ -1460,12 +2298,20 @@ export type PublicSolution = {
     demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
+    /**
+     * The images shown under the cover, in their order, each read at /api/storage/files/{id}.
+     */
+    imageFileIds: Array<string>;
     industries: Array<string>;
     languages: Array<string>;
     /**
      * Whether the directory lists it. False is approved but shared by its address only.
      */
     listed: boolean;
+    /**
+     * Its logo, or its organization's when it has none, read at /api/storage/files/{id}; null when neither has one.
+     */
+    logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
     organizationName: string;
@@ -1510,15 +2356,27 @@ export type PublicSolutionList = {
  */
 export type PublicSolutionSummary = {
     /**
+     * What GenAI Fund says of it in a line: the programme it was selected for, or else who backs its company. Null when it has said neither.
+     */
+    backing?: string | null;
+    /**
      * ISO 3166-1 alpha-2.
      */
     country?: string | null;
+    /**
+     * Its cover, read at /api/storage/files/{id}; null for none.
+     */
+    coverFileId?: string | null;
     /**
      * How many approved customer deployments it lists.
      */
     customerDeployments: number;
     focusAreas: Array<string>;
     industries: Array<string>;
+    /**
+     * Its logo, or its organization's when it has none, read at /api/storage/files/{id}; null when neither has one.
+     */
+    logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
     organizationName: string;
@@ -1612,6 +2470,61 @@ export type PublicTalentSummary = {
 };
 
 /**
+ * One page of the public list of use cases.
+ */
+export type PublicUseCaseList = {
+    items: Array<PublicUseCaseSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    pageSize: number;
+    /**
+     * How many use cases match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * A published use case as the public list shows it.
+ */
+export type PublicUseCaseSummary = {
+    budgetMax?: number | null;
+    /**
+     * Whether the organization shows the budget to members only.
+     */
+    budgetMembersOnly: boolean;
+    /**
+     * Whole units of currency; null while the budget is to be determined or is for members only.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * Proposals close at this instant.
+     */
+    closesAt: string;
+    /**
+     * The currency of the amounts.
+     */
+    currency: 'USD' | 'VND';
+    /**
+     * The outcomes the organization expects.
+     */
+    goal: string;
+    id: string;
+    industry: string;
+    /**
+     * The organization's name; null when it asked to stay anonymous.
+     */
+    organizationName?: string | null;
+    publishedAt: string;
+    technologies: Array<string>;
+    timelineMaxWeeks: number;
+    timelineMinWeeks: number;
+    title: string;
+};
+
+/**
  * The requests for an introduction to the caller's organization.
  */
 export type ReceivedIntroductions = {
@@ -1626,14 +2539,14 @@ export type ReceivedIntroductions = {
 };
 
 /**
- * Why an organization is not approved, and what its owners are told.
+ * Why an organization is refused for good, and what its owners are told. Missing information is a send back instead.
  */
 export type RefuseOrganization = {
     /**
      * Shown to the owners with the refusal.
      */
     message?: string | null;
-    reason: 'duplicate' | 'not_a_real_organization' | 'incomplete' | 'out_of_scope' | 'other';
+    reason: 'duplicate' | 'not_a_real_organization' | 'out_of_scope' | 'other';
 };
 
 /**
@@ -1648,14 +2561,14 @@ export type RejectCustomerDeployment = {
 };
 
 /**
- * Why a solution is not approved, and what its owners are told.
+ * Why a solution is refused for good, and what its owners are told.
  */
 export type RejectSolution = {
     /**
      * Shown to the owners with the rejection.
      */
     message?: string | null;
-    reason: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    reason: 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
 };
 
 /**
@@ -1725,11 +2638,26 @@ export type ReserveUpload = {
     /**
      * Why the file is uploaded; it fixes the allowed media types and the largest size.
      */
-    purpose: 'program_image' | 'talent_photo' | 'organization_logo' | 'application_file' | 'solution_deck';
+    purpose: 'program_image' | 'talent_photo' | 'organization_logo' | 'application_file' | 'use_case_attachment' | 'solution_deck' | 'solution_logo' | 'solution_image';
     /**
      * The exact length of the file in bytes.
      */
     sizeBytes: number;
+};
+
+/**
+ * How many held-back items the next run of the job tries.
+ */
+export type RetriedEmbeddings = {
+    count: number;
+};
+
+/**
+ * The held-back item to try again at once, or every one when no item is named.
+ */
+export type RetryEmbeddings = {
+    itemId?: string | null;
+    kind?: 'program' | 'solution' | 'talent' | 'use_case';
 };
 
 /**
@@ -1964,6 +2892,27 @@ export type Reviewers = {
 };
 
 /**
+ * A provider to connect or change. The address must be the vendor's own; a saved key is kept only while it is unchanged.
+ */
+export type SaveAiProvider = {
+    /**
+     * The new key, with key = replace.
+     */
+    apiKey?: string | null;
+    baseUrl: string;
+    /**
+     * Keep the saved key, replace it with apiKey, or remove it. A new provider takes replace.
+     */
+    key: 'keep' | 'replace' | 'remove';
+    name: string;
+    vendor: 'openai' | 'openrouter';
+    /**
+     * The version the provider was read at; 0 for a new one.
+     */
+    version: number;
+};
+
+/**
  * What the application form holds now. Nothing is checked for completeness until it is submitted.
  */
 export type SaveApplication = {
@@ -2037,6 +2986,141 @@ export type SaveCustomerDeployment = {
      * The version the form read; absent for a new deployment.
      */
     version?: number | null;
+};
+
+/**
+ * What every email's layout takes from the settings.
+ */
+export type SaveEmailAppearance = {
+    accentColor: string;
+    /**
+     * Plain text in the band at the bottom of every email.
+     */
+    footer: string;
+    /**
+     * The version the settings were read at.
+     */
+    version: number;
+};
+
+export type SaveEmailResendSettings = {
+    /**
+     * Empty to keep the stored one.
+     */
+    apiKey?: string | null;
+    /**
+     * The secret Resend signs its webhooks with; empty to keep the stored one.
+     */
+    webhookSecret?: string | null;
+};
+
+export type SaveEmailSesSettings = {
+    accessKeyId?: string | null;
+    configurationSet?: string | null;
+    /**
+     * The SNS topic the configuration set reports to.
+     */
+    eventsTopicArn?: string | null;
+    region?: string | null;
+    /**
+     * Empty to keep the stored one.
+     */
+    secretAccessKey?: string | null;
+};
+
+/**
+ * Who delivers email and as whom. An empty secret keeps the stored one while what it belongs to is unchanged.
+ */
+export type SaveEmailSettings = {
+    fromAddress: string;
+    fromName: string;
+    provider: 'ses' | 'resend' | 'smtp';
+    replyTo?: string | null;
+    resend: SaveEmailResendSettings;
+    ses: SaveEmailSesSettings;
+    smtp: SaveEmailSmtpSettings;
+    /**
+     * The version the settings were read at.
+     */
+    version: number;
+};
+
+export type SaveEmailSmtpSettings = {
+    host?: string | null;
+    /**
+     * Empty to keep the stored one.
+     */
+    password?: string | null;
+    port?: number | null;
+    security: 'starttls' | 'tls' | 'none';
+    username?: string | null;
+};
+
+/**
+ * An operator's wording of one kind of email.
+ */
+export type SaveEmailTemplate = {
+    /**
+     * Markdown.
+     */
+    body: string;
+    subject: string;
+    /**
+     * The version read; null when the default was in use.
+     */
+    version?: number | null;
+};
+
+/**
+ * What the members have written of a use case so far; any part may be missing.
+ */
+export type SaveMyUseCase = {
+    /**
+     * Files the caller uploaded for a use case, in the order shown.
+     */
+    attachmentFileIds: Array<string>;
+    /**
+     * Whole units of currency. Null while the budget is to be determined.
+     */
+    budgetMax?: number | null;
+    /**
+     * Only signed-in members see the amount.
+     */
+    budgetMembersOnly: boolean;
+    /**
+     * Whole units of currency. Null while the budget is to be determined.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * When proposals stop. It must be in the future.
+     */
+    closesAt?: string | null;
+    /**
+     * The currency of the budget; the stored one when absent, USD for a new use case.
+     */
+    currency?: 'USD' | 'VND';
+    currentProcess?: string | null;
+    currentSolutions?: string | null;
+    dataReadiness?: string | null;
+    expectedOutcomes?: string | null;
+    hideOrganizationName: boolean;
+    industry?: string | null;
+    integrationRequirements?: string | null;
+    problemStatement?: string | null;
+    /**
+     * What the solution must do, in the order written.
+     */
+    requirements: Array<UseCaseRequirement>;
+    targetUsers?: string | null;
+    technologies: Array<string>;
+    timelineMaxWeeks?: number | null;
+    timelineMinWeeks?: number | null;
+    title?: string | null;
+    /**
+     * The version the caller read; a save over a newer one is refused.
+     */
+    version: number;
 };
 
 /**
@@ -2148,6 +3232,14 @@ export type SaveSolution = {
      */
     builtWith: Array<string>;
     /**
+     * The channels it works through, such as voice and chat.
+     */
+    channels?: string | null;
+    /**
+     * The stored image that is its cover, named in the same way.
+     */
+    coverFileId?: string | null;
+    /**
      * The stored PDF that is its deck: the one it has, one the caller uploaded for it, or null for none.
      */
     deckFileId?: string | null;
@@ -2157,6 +3249,10 @@ export type SaveSolution = {
     demoUrl?: string | null;
     deployment: Array<string>;
     focusAreas: Array<string>;
+    /**
+     * The stored images shown under the cover, in their order: those it has and those the caller uploaded for it.
+     */
+    imageFileIds: Array<string>;
     industries: Array<string>;
     /**
      * The languages it works in.
@@ -2166,6 +3262,10 @@ export type SaveSolution = {
      * Whether it appears in the public directory once approved.
      */
     listed: boolean;
+    /**
+     * The stored image that is its logo: the one it has, one the caller uploaded for it, or null for none.
+     */
+    logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
     problemsSolved?: string | null;
@@ -2237,6 +3337,60 @@ export type SearchCounts = {
     program: number;
     solution: number;
     talent: number;
+    useCase: number;
+};
+
+/**
+ * What search can find by keyword, and how much of it is embedded for semantic search.
+ */
+export type SearchIndex = {
+    /**
+     * Items the provider refused, tried again on their own later.
+     */
+    heldBack: Array<SearchIndexHeldBack>;
+    kinds: Array<SearchIndexKind>;
+    /**
+     * The last rebuild since the application started.
+     */
+    lastRebuild?: SearchIndexRebuild;
+    semantic: SemanticSearchState;
+    /**
+     * The version of the search settings; send it back to switch semantic search.
+     */
+    settingsVersion: number;
+};
+
+export type SearchIndexHeldBack = {
+    attempts: number;
+    itemId: string;
+    kind: 'program' | 'solution' | 'talent' | 'use_case';
+    nextAttemptAt?: string | null;
+    reason: 'bad_request' | 'unprocessable' | 'refused';
+    title: string;
+};
+
+export type SearchIndexKind = {
+    embedded: number;
+    heldBack: number;
+    kind: 'program' | 'solution' | 'talent' | 'use_case';
+    /**
+     * What visitors may find; unlisted items stay for operators matching use cases.
+     */
+    listed: number;
+    total: number;
+    waiting: number;
+};
+
+export type SearchIndexRebuild = {
+    at: string;
+    /**
+     * Rows taken out because their item is no longer published.
+     */
+    removed: number;
+    /**
+     * Items read from their modules.
+     */
+    saved: number;
 };
 
 /**
@@ -2244,9 +3398,25 @@ export type SearchCounts = {
  */
 export type SearchItem = {
     /**
+     * A use case's budget in its currency, when its organization shows it.
+     */
+    budgetMax?: number | null;
+    /**
+     * A use case's budget in its currency, when its organization shows it.
+     */
+    budgetMin?: number | null;
+    /**
+     * Whether a use case's budget is still to be determined.
+     */
+    budgetToBeDetermined?: boolean | null;
+    /**
      * A person's city.
      */
     city?: string | null;
+    /**
+     * When a use case stops taking proposals.
+     */
+    closesAt?: string | null;
     /**
      * The country of a solution's organization, or of a person.
      */
@@ -2255,6 +3425,10 @@ export type SearchItem = {
      * A program's cover, read at the public address of stored files.
      */
     coverFileId?: string | null;
+    /**
+     * The currency of a use case's budget.
+     */
+    currency?: 'USD' | 'VND';
     /**
      * How many of a solution's customer deployments GenAI Fund approved.
      */
@@ -2269,10 +3443,10 @@ export type SearchItem = {
      */
     focusAreas: Array<string>;
     /**
-     * The industries of a solution or a person.
+     * The industries of a solution, a person or a use case.
      */
     industries: Array<string>;
-    kind: 'program' | 'solution' | 'talent';
+    kind: 'program' | 'solution' | 'talent' | 'use_case';
     /**
      * A solution's maturity.
      */
@@ -2286,7 +3460,7 @@ export type SearchItem = {
      */
     phase?: 'upcoming' | 'open' | 'running' | 'done';
     /**
-     * A person's photo, read at the public address of stored files.
+     * A person's photo or a solution's logo, read at the public address of stored files.
      */
     photoFileId?: string | null;
     /**
@@ -2298,7 +3472,7 @@ export type SearchItem = {
      */
     skills: Array<string>;
     /**
-     * The address of its page under the path of its kind.
+     * The address of its page under the path of its kind; a use case's identifier.
      */
     slug: string;
     /**
@@ -2307,11 +3481,11 @@ export type SearchItem = {
     snippet: string;
     startsOn?: string | null;
     /**
-     * The partner of a program, the organization of a solution, the headline of a person.
+     * The partner of a program, the organization of a solution, the headline of a person, the organization of a use case unless it stays anonymous.
      */
     subtitle?: string | null;
     /**
-     * A program's or a solution's summary, a person's bio.
+     * A program's or a solution's summary, a person's bio, a use case's goal.
      */
     summary: string;
     title: string;
@@ -2339,6 +3513,58 @@ export type SearchResults = {
     total: number;
 };
 
+export type SemanticSearchState = {
+    /**
+     * Whether an operator turned semantic search on.
+     */
+    enabled: boolean;
+    /**
+     * Why it is paused.
+     */
+    failure?: 'rejected' | 'model_refused' | 'unreachable';
+    lastBatchAt?: string | null;
+    model?: string | null;
+    /**
+     * When the provider is tried again.
+     */
+    pausedUntil?: string | null;
+    providerName?: string | null;
+    /**
+     * How it goes: on, turned off, paused after the provider failed, or on without a usable provider.
+     */
+    state: 'on' | 'off' | 'paused' | 'no_provider';
+};
+
+/**
+ * Why GenAI Fund sends an organization back to its owners.
+ */
+export type SendBackOrganization = {
+    /**
+     * What the owners should change. They read it and receive it by email.
+     */
+    reason: string;
+};
+
+/**
+ * Why GenAI Fund sends a solution back to its owners.
+ */
+export type SendBackSolution = {
+    /**
+     * What the owners should change. They read it and receive it by email.
+     */
+    reason: string;
+};
+
+/**
+ * Why GenAI Fund sends a use case back to its organization.
+ */
+export type SendBackUseCase = {
+    /**
+     * What the organization should change. Its members read it and receive it by email.
+     */
+    reason: string;
+};
+
 /**
  * A message to the person behind a talent profile.
  */
@@ -2355,27 +3581,57 @@ export type SendTalentEnquiry = {
 };
 
 /**
+ * Turns semantic search on or off. Off, search matches keywords only and nothing is sent to the provider.
+ */
+export type SetSemanticSearch = {
+    enabled: boolean;
+    /**
+     * The version of the search settings it was read at.
+     */
+    version: number;
+};
+
+/**
+ * The programs a use case belongs to, replacing those it had.
+ */
+export type SetUseCasePrograms = {
+    /**
+     * Empty for none.
+     */
+    programIds: Array<string>;
+};
+
+/**
  * A solution as its organization, and operators, see it.
  */
 export type Solution = {
+    /**
+     * What GenAI Fund says of it; null until an operator writes it.
+     */
+    backing?: SolutionBacking | null;
     bestCustomerProfile?: string | null;
     builtWith: Array<string>;
+    channels?: string | null;
     /**
-     * Whether it has what a submission needs: a summary, a maturity, a focus area and an industry.
+     * Whether it has what a submission needs: a summary, a maturity, a focus area, an industry, a logo and a cover.
      */
     complete: boolean;
+    /**
+     * Its cover, when it has one.
+     */
+    cover?: SolutionImage | null;
     /**
      * Its customer deployments, the newest first, whatever their review says.
      */
     customerDeployments: Array<CustomerDeployment>;
     /**
-     * What the operator wrote to the owners with the rejection.
+     * What the operator wrote to the owners with the last decision: what to change when it was sent back, or why it was refused.
      */
     decisionMessage?: string | null;
     /**
-     * Why it was last rejected.
+     * Why it was refused for good; null for any other decision.
      */
-    decisionReason?: 'incomplete' | 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    decisionReason?: 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
     /**
      * Its deck, when it has one.
      */
@@ -2384,12 +3640,20 @@ export type Solution = {
     deployment: Array<string>;
     focusAreas: Array<string>;
     id: string;
+    /**
+     * The images shown under the cover, in their order.
+     */
+    images: Array<SolutionImage>;
     industries: Array<string>;
     languages: Array<string>;
     /**
      * Whether it appears in the public directory once approved.
      */
     listed: boolean;
+    /**
+     * Its logo, when it has one.
+     */
+    logo?: SolutionImage | null;
     /**
      * Null is unknown.
      */
@@ -2399,13 +3663,25 @@ export type Solution = {
     organizationName: string;
     problemsSolved?: string | null;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'rejected';
     submittedAt?: string | null;
     /**
      * Who sent it for review last: their name, or their address until they have one. Null when it was never sent, or was sent before the sender was recorded.
      */
     submittedBy?: string | null;
     summary?: string | null;
+    /**
+     * When GenAI Fund took it down, while it is down; its status stays approved.
+     */
+    suspendedAt?: string | null;
+    /**
+     * What the operator wrote to the owners when taking it down.
+     */
+    suspensionMessage?: string | null;
+    /**
+     * Why GenAI Fund last took it down.
+     */
+    suspensionReason?: 'misleading_information' | 'not_an_ai_solution' | 'unverifiable' | 'breaks_the_rules' | 'other';
     traction?: string | null;
     updatedAt: string;
     valueProposition?: string | null;
@@ -2417,10 +3693,44 @@ export type Solution = {
 };
 
 /**
+ * What GenAI Fund says of a solution beside its owners' words. Operators write it; at least one member is set.
+ */
+export type SolutionBacking = {
+    /**
+     * Who backs its company, such as GenAI Fund's portfolio.
+     */
+    backedBy?: string | null;
+    /**
+     * How its company is funded.
+     */
+    funding?: string | null;
+    /**
+     * The programme it was selected for, with its cohort.
+     */
+    program?: string | null;
+    /**
+     * When an operator last wrote it.
+     */
+    updatedAt: string;
+};
+
+/**
  * The deck of a solution as its organization, and operators, see it.
  */
 export type SolutionDeck = {
     attachedAt: string;
+    /**
+     * The stored file, sent back with a save to keep it.
+     */
+    fileId: string;
+    fileName: string;
+    sizeBytes: number;
+};
+
+/**
+ * A stored image of a solution as its organization, and operators, see it. Its bytes are read at /api/storage/files/{fileId}.
+ */
+export type SolutionImage = {
     /**
      * The stored file, sent back with a save to keep it.
      */
@@ -2449,18 +3759,42 @@ export type SolutionOption = {
  */
 export type SolutionSummary = {
     /**
+     * What the operator wrote to the owners with the last decision.
+     */
+    decisionMessage?: string | null;
+    /**
+     * Why it was refused for good; null for any other decision.
+     */
+    decisionReason?: 'not_an_ai_solution' | 'duplicate' | 'unverifiable' | 'other';
+    /**
      * How many of its customer deployments wait for review.
      */
     deploymentsAwaitingReview: number;
     id: string;
     listed: boolean;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
+    /**
+     * What a review needs and it lacks, in the order of the editor: any of summary, maturity, industries, focusAreas, logo and cover. Empty when it can be sent for review.
+     */
+    missing: Array<string>;
     name: string;
     organizationName: string;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'rejected';
     submittedAt?: string | null;
     summary?: string | null;
+    /**
+     * When GenAI Fund took it down, while it is down; its status stays approved.
+     */
+    suspendedAt?: string | null;
+    /**
+     * What the operator wrote to the owners when taking it down.
+     */
+    suspensionMessage?: string | null;
+    /**
+     * Why GenAI Fund last took it down.
+     */
+    suspensionReason?: 'misleading_information' | 'not_an_ai_solution' | 'unverifiable' | 'breaks_the_rules' | 'other';
     updatedAt: string;
 };
 
@@ -2505,7 +3839,29 @@ export type SubmittedApplication = {
 };
 
 /**
- * Why GenAI Fund asks for changes to a talent profile or removes it, and what its person is told.
+ * Why an approved organization is taken down, and what its owners are told.
+ */
+export type TakeDownOrganization = {
+    /**
+     * Shown to the owners in the email and in their workspace.
+     */
+    message?: string | null;
+    reason: 'misleading_information' | 'not_a_real_organization' | 'breaks_the_rules' | 'other';
+};
+
+/**
+ * Why an approved solution is taken down, and what its owners are told.
+ */
+export type TakeDownSolution = {
+    /**
+     * Shown to the owners in their workspace.
+     */
+    message?: string | null;
+    reason: 'misleading_information' | 'not_an_ai_solution' | 'unverifiable' | 'breaks_the_rules' | 'other';
+};
+
+/**
+ * Why GenAI Fund sends a talent profile back or takes it down, and what its person is told.
  */
 export type TalentDecision = {
     /**
@@ -2561,11 +3917,11 @@ export type TalentProfile = {
      */
     country?: string | null;
     /**
-     * What the operator wrote to the person with the rejection.
+     * What the operator wrote to the person when sending it back.
      */
     decisionMessage?: string | null;
     /**
-     * Why GenAI Fund last asked for changes or removed it.
+     * Why GenAI Fund last sent it back.
      */
     decisionReason?: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
     engagement: Array<string>;
@@ -2593,8 +3949,23 @@ export type TalentProfile = {
     roles: Array<string>;
     skills: Array<string>;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'changes_requested' | 'removed';
+    /**
+     * GenAI Fund's review of the profile.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved';
     submittedAt?: string | null;
+    /**
+     * When GenAI Fund took it down from the public; null while it is not.
+     */
+    suspendedAt?: string | null;
+    /**
+     * What the operator wrote to the person when taking it down.
+     */
+    suspensionMessage?: string | null;
+    /**
+     * Why GenAI Fund last took it down.
+     */
+    suspensionReason?: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
     updatedAt: string;
     /**
      * Sent back with a save, which is refused when the profile changed since.
@@ -2637,9 +4008,30 @@ export type TalentSummary = {
     listed: boolean;
     name: string;
     slug: string;
-    status: 'draft' | 'submitted' | 'approved' | 'changes_requested' | 'removed';
+    /**
+     * GenAI Fund's review of the profile.
+     */
+    status: 'draft' | 'in_review' | 'needs_changes' | 'approved';
     submittedAt?: string | null;
+    /**
+     * When it was taken down; null while it is not.
+     */
+    suspendedAt?: string | null;
     updatedAt: string;
+};
+
+/**
+ * A connection to try, saved or not. Without an apiKey the saved key of providerId is used, while the address is the one it was saved with.
+ */
+export type TestAiProvider = {
+    apiKey?: string | null;
+    baseUrl: string;
+    model: string;
+    /**
+     * The saved provider whose key to use when apiKey is empty.
+     */
+    providerId?: string | null;
+    vendor: 'openai' | 'openrouter';
 };
 
 /**
@@ -2667,6 +4059,73 @@ export type UploadTicket = {
     url: string;
 };
 
+/**
+ * A file attached to a use case.
+ */
+export type UseCaseAttachment = {
+    fileName: string;
+    id: string;
+    mediaType: string;
+    sizeBytes: number;
+};
+
+/**
+ * The organization a use case is for.
+ */
+export type UseCaseOrganization = {
+    id: string;
+    name: string;
+};
+
+/**
+ * The approved organizations that can have use cases, by name; at most 50.
+ */
+export type UseCaseOrganizationList = {
+    items: Array<UseCaseOrganization>;
+};
+
+/**
+ * Who last changed a use case, as the reader may be shown them.
+ */
+export type UseCasePerson = {
+    /**
+     * Whether the person works for GenAI Fund rather than for the organization.
+     */
+    genaiFund: boolean;
+    /**
+     * Their name, or their address until they have a name.
+     */
+    name: string;
+    /**
+     * Whether it is the caller.
+     */
+    you: boolean;
+};
+
+/**
+ * A program the use case belongs to.
+ */
+export type UseCaseProgram = {
+    id: string;
+    name: string;
+    /**
+     * Whether visitors see the program; a draft is for operators only.
+     */
+    published: boolean;
+    /**
+     * The address of its public page.
+     */
+    slug: string;
+};
+
+/**
+ * One thing the solution must do.
+ */
+export type UseCaseRequirement = {
+    necessity: 'required' | 'optional';
+    statement: string;
+};
+
 export type ListAuditEventsData = {
     body?: never;
     path?: never;
@@ -2678,7 +4137,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.refuse' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.reject' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -2919,6 +4378,34 @@ export type WithdrawOperatorResponses = {
 
 export type WithdrawOperatorResponse = WithdrawOperatorResponses[keyof WithdrawOperatorResponses];
 
+export type GetConnectingAppData = {
+    body?: never;
+    path?: never;
+    query: {
+        clientId: string;
+        state: string;
+    };
+    url: '/api/identity/apps/connecting';
+};
+
+export type GetConnectingAppErrors = {
+    /**
+     * No request of the caller's waits with this app and state.
+     */
+    404: Problem;
+};
+
+export type GetConnectingAppError = GetConnectingAppErrors[keyof GetConnectingAppErrors];
+
+export type GetConnectingAppResponses = {
+    /**
+     * The app the consent page shows.
+     */
+    200: ConnectingApp;
+};
+
+export type GetConnectingAppResponse = GetConnectingAppResponses[keyof GetConnectingAppResponses];
+
 export type GetMeData = {
     body?: never;
     path?: never;
@@ -3146,6 +4633,733 @@ export type ReplyToIntroductionResponses = {
 
 export type ReplyToIntroductionResponse = ReplyToIntroductionResponses[keyof ReplyToIntroductionResponses];
 
+export type ListEmailMessagesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Only emails queued at or after this instant; the counts cover the same period.
+         */
+        from?: string | null;
+        /**
+         * Only emails of this kind.
+         */
+        kind?: string | null;
+        /**
+         * Only emails in this state.
+         */
+        status?: string | null;
+        /**
+         * Emails whose recipient or subject contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * The `older` cursor of a page: the emails before it.
+         */
+        before?: string | null;
+        /**
+         * The `newer` cursor of a page: the emails after it.
+         */
+        after?: string | null;
+    };
+    url: '/api/notification/admin/email/messages';
+};
+
+export type ListEmailMessagesErrors = {
+    /**
+     * A filter or a cursor is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListEmailMessagesError = ListEmailMessagesErrors[keyof ListEmailMessagesErrors];
+
+export type ListEmailMessagesResponses = {
+    /**
+     * One page, its cursors and the counts of the period.
+     */
+    200: EmailMessageList;
+};
+
+export type ListEmailMessagesResponse = ListEmailMessagesResponses[keyof ListEmailMessagesResponses];
+
+export type GetEmailMessageData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/messages/{id}';
+};
+
+export type GetEmailMessageErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such email.
+     */
+    404: Problem;
+};
+
+export type GetEmailMessageError = GetEmailMessageErrors[keyof GetEmailMessageErrors];
+
+export type GetEmailMessageResponses = {
+    /**
+     * The email.
+     */
+    200: EmailMessage;
+};
+
+export type GetEmailMessageResponse = GetEmailMessageResponses[keyof GetEmailMessageResponses];
+
+export type ResendEmailMessageData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/messages/{id}/resend';
+};
+
+export type ResendEmailMessageErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such email.
+     */
+    404: Problem;
+    /**
+     * It is a sign-in code, or its address is suppressed.
+     */
+    409: Problem;
+};
+
+export type ResendEmailMessageError = ResendEmailMessageErrors[keyof ResendEmailMessageErrors];
+
+export type ResendEmailMessageResponses = {
+    /**
+     * The new email, queued.
+     */
+    201: EmailResent;
+};
+
+export type ResendEmailMessageResponse = ResendEmailMessageResponses[keyof ResendEmailMessageResponses];
+
+export type GetEmailSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/notification/admin/email/settings';
+};
+
+export type GetEmailSettingsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetEmailSettingsError = GetEmailSettingsErrors[keyof GetEmailSettingsErrors];
+
+export type GetEmailSettingsResponses = {
+    /**
+     * The settings.
+     */
+    200: EmailSettings;
+};
+
+export type GetEmailSettingsResponse = GetEmailSettingsResponses[keyof GetEmailSettingsResponses];
+
+export type SaveEmailSettingsData = {
+    body: SaveEmailSettings;
+    path?: never;
+    query?: never;
+    url: '/api/notification/admin/email/settings';
+};
+
+export type SaveEmailSettingsErrors = {
+    /**
+     * A member is not valid, or the provider chosen lacks a field or its secret.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The settings changed since they were read.
+     */
+    409: Problem;
+    /**
+     * A secret was given but the server has no key to encrypt it.
+     */
+    503: Problem;
+};
+
+export type SaveEmailSettingsError = SaveEmailSettingsErrors[keyof SaveEmailSettingsErrors];
+
+export type SaveEmailSettingsResponses = {
+    /**
+     * The settings as saved, with their new version.
+     */
+    200: EmailSettings;
+};
+
+export type SaveEmailSettingsResponse = SaveEmailSettingsResponses[keyof SaveEmailSettingsResponses];
+
+export type SaveEmailAppearanceData = {
+    body: SaveEmailAppearance;
+    path?: never;
+    query?: never;
+    url: '/api/notification/admin/email/settings/appearance';
+};
+
+export type SaveEmailAppearanceErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The settings changed since they were read.
+     */
+    409: Problem;
+};
+
+export type SaveEmailAppearanceError = SaveEmailAppearanceErrors[keyof SaveEmailAppearanceErrors];
+
+export type SaveEmailAppearanceResponses = {
+    /**
+     * The settings as saved, with their new version.
+     */
+    200: EmailSettings;
+};
+
+export type SaveEmailAppearanceResponse = SaveEmailAppearanceResponses[keyof SaveEmailAppearanceResponses];
+
+export type CheckEmailSetupData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/notification/admin/email/settings/checks';
+};
+
+export type CheckEmailSetupErrors = {
+    /**
+     * No provider and sender are saved.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type CheckEmailSetupError = CheckEmailSetupErrors[keyof CheckEmailSetupErrors];
+
+export type CheckEmailSetupResponses = {
+    /**
+     * What the provider answered; a limit says why it could not be asked everything.
+     */
+    200: EmailSetup;
+};
+
+export type CheckEmailSetupResponse = CheckEmailSetupResponses[keyof CheckEmailSetupResponses];
+
+export type TestEmailSettingsData = {
+    body: SaveEmailSettings;
+    path?: never;
+    query?: {
+        /**
+         * Where to send the test; the caller's own address when left out. A test to anyone else is recorded in the audit log.
+         */
+        to?: string;
+    };
+    url: '/api/notification/admin/email/settings/test';
+};
+
+export type TestEmailSettingsErrors = {
+    /**
+     * A member is not valid, or the provider chosen lacks a field or its secret.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * A secret was given but the server has no key to encrypt it.
+     */
+    503: Problem;
+};
+
+export type TestEmailSettingsError = TestEmailSettingsErrors[keyof TestEmailSettingsErrors];
+
+export type TestEmailSettingsResponses = {
+    /**
+     * Whether the provider took the test, and why not.
+     */
+    200: EmailTest;
+};
+
+export type TestEmailSettingsResponse = TestEmailSettingsResponses[keyof TestEmailSettingsResponses];
+
+export type ListEmailSuppressionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Only addresses suppressed for this reason.
+         */
+        reason?: string | null;
+        /**
+         * Addresses that contain this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * The page, counted from 1.
+         */
+        page?: number | null;
+    };
+    url: '/api/notification/admin/email/suppressions';
+};
+
+export type ListEmailSuppressionsErrors = {
+    /**
+     * A filter or the page is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListEmailSuppressionsError = ListEmailSuppressionsErrors[keyof ListEmailSuppressionsErrors];
+
+export type ListEmailSuppressionsResponses = {
+    /**
+     * One page of addresses.
+     */
+    200: EmailSuppressionList;
+};
+
+export type ListEmailSuppressionsResponse = ListEmailSuppressionsResponses[keyof ListEmailSuppressionsResponses];
+
+export type AddEmailSuppressionData = {
+    body: AddEmailSuppression;
+    path?: never;
+    query?: never;
+    url: '/api/notification/admin/email/suppressions';
+};
+
+export type AddEmailSuppressionErrors = {
+    /**
+     * The address is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The address is already suppressed.
+     */
+    409: Problem;
+};
+
+export type AddEmailSuppressionError = AddEmailSuppressionErrors[keyof AddEmailSuppressionErrors];
+
+export type AddEmailSuppressionResponses = {
+    /**
+     * The address, suppressed.
+     */
+    201: EmailSuppression;
+};
+
+export type AddEmailSuppressionResponse = AddEmailSuppressionResponses[keyof AddEmailSuppressionResponses];
+
+export type RemoveEmailSuppressionData = {
+    body?: never;
+    path: {
+        address: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/suppressions/{address}';
+};
+
+export type RemoveEmailSuppressionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The address is not suppressed.
+     */
+    404: Problem;
+};
+
+export type RemoveEmailSuppressionError = RemoveEmailSuppressionErrors[keyof RemoveEmailSuppressionErrors];
+
+export type RemoveEmailSuppressionResponses = {
+    /**
+     * Email reaches the address again.
+     */
+    204: void;
+};
+
+export type RemoveEmailSuppressionResponse = RemoveEmailSuppressionResponses[keyof RemoveEmailSuppressionResponses];
+
+export type ListEmailTemplatesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/notification/admin/email/templates';
+};
+
+export type ListEmailTemplatesErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListEmailTemplatesError = ListEmailTemplatesErrors[keyof ListEmailTemplatesErrors];
+
+export type ListEmailTemplatesResponses = {
+    /**
+     * The kinds, with the subject in use and who changed it.
+     */
+    200: EmailTemplateList;
+};
+
+export type ListEmailTemplatesResponse = ListEmailTemplatesResponses[keyof ListEmailTemplatesResponses];
+
+export type ResetEmailTemplateData = {
+    body?: never;
+    path: {
+        kind: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/templates/{kind}';
+};
+
+export type ResetEmailTemplateErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such kind of email.
+     */
+    404: Problem;
+    /**
+     * Operators do not word this kind.
+     */
+    409: Problem;
+};
+
+export type ResetEmailTemplateError = ResetEmailTemplateErrors[keyof ResetEmailTemplateErrors];
+
+export type ResetEmailTemplateResponses = {
+    /**
+     * The template, now the default.
+     */
+    200: EmailTemplate;
+};
+
+export type ResetEmailTemplateResponse = ResetEmailTemplateResponses[keyof ResetEmailTemplateResponses];
+
+export type GetEmailTemplateData = {
+    body?: never;
+    path: {
+        kind: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/templates/{kind}';
+};
+
+export type GetEmailTemplateErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such kind of email.
+     */
+    404: Problem;
+    /**
+     * Operators do not word this kind.
+     */
+    409: Problem;
+};
+
+export type GetEmailTemplateError = GetEmailTemplateErrors[keyof GetEmailTemplateErrors];
+
+export type GetEmailTemplateResponses = {
+    /**
+     * The template.
+     */
+    200: EmailTemplate;
+};
+
+export type GetEmailTemplateResponse = GetEmailTemplateResponses[keyof GetEmailTemplateResponses];
+
+export type SaveEmailTemplateData = {
+    body: SaveEmailTemplate;
+    path: {
+        kind: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/templates/{kind}';
+};
+
+export type SaveEmailTemplateErrors = {
+    /**
+     * A member is not valid, or the template does not pass the checks; preview it to see why.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such kind of email.
+     */
+    404: Problem;
+    /**
+     * Operators do not word this kind, or the wording changed since it was read.
+     */
+    409: Problem;
+};
+
+export type SaveEmailTemplateError = SaveEmailTemplateErrors[keyof SaveEmailTemplateErrors];
+
+export type SaveEmailTemplateResponses = {
+    /**
+     * The template as saved, with its new version.
+     */
+    200: EmailTemplate;
+};
+
+export type SaveEmailTemplateResponse = SaveEmailTemplateResponses[keyof SaveEmailTemplateResponses];
+
+export type PreviewEmailTemplateData = {
+    body: EmailDraft;
+    path: {
+        kind: string;
+    };
+    query?: never;
+    url: '/api/notification/admin/email/templates/{kind}/preview';
+};
+
+export type PreviewEmailTemplateErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such kind of email.
+     */
+    404: Problem;
+    /**
+     * Operators do not word this kind.
+     */
+    409: Problem;
+};
+
+export type PreviewEmailTemplateError = PreviewEmailTemplateErrors[keyof PreviewEmailTemplateErrors];
+
+export type PreviewEmailTemplateResponses = {
+    /**
+     * The rendering and its problems.
+     */
+    200: EmailPreview;
+};
+
+export type PreviewEmailTemplateResponse = PreviewEmailTemplateResponses[keyof PreviewEmailTemplateResponses];
+
+export type TestEmailTemplateData = {
+    body: EmailDraft;
+    path: {
+        kind: string;
+    };
+    query?: {
+        /**
+         * Where to send the test; the caller's own address when left out. A test to anyone else is recorded in the audit log.
+         */
+        to?: string;
+    };
+    url: '/api/notification/admin/email/templates/{kind}/test';
+};
+
+export type TestEmailTemplateErrors = {
+    /**
+     * A member is not valid, or the draft does not pass the checks.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such kind of email.
+     */
+    404: Problem;
+    /**
+     * Operators do not word this kind.
+     */
+    409: Problem;
+};
+
+export type TestEmailTemplateError = TestEmailTemplateErrors[keyof TestEmailTemplateErrors];
+
+export type TestEmailTemplateResponses = {
+    /**
+     * Whether the provider took the test, and why not.
+     */
+    200: EmailTest;
+};
+
+export type TestEmailTemplateResponse = TestEmailTemplateResponses[keyof TestEmailTemplateResponses];
+
+export type ReceiveResendEventData = {
+    body: string;
+    path?: never;
+    query?: never;
+    url: '/api/notification/email/events/resend';
+};
+
+export type ReceiveResendEventErrors = {
+    /**
+     * The report's signature does not check, or it is not from the configured provider.
+     */
+    403: Problem;
+};
+
+export type ReceiveResendEventError = ReceiveResendEventErrors[keyof ReceiveResendEventErrors];
+
+export type ReceiveResendEventResponses = {
+    /**
+     * The report was taken, or it concerns no email of BeyondPilot.
+     */
+    204: void;
+};
+
+export type ReceiveResendEventResponse = ReceiveResendEventResponses[keyof ReceiveResendEventResponses];
+
+export type ReceiveSesEventData = {
+    body: string;
+    path?: never;
+    query?: never;
+    url: '/api/notification/email/events/ses';
+};
+
+export type ReceiveSesEventErrors = {
+    /**
+     * The report's signature does not check, or it is not from the configured provider.
+     */
+    403: Problem;
+    /**
+     * The subscription could not be confirmed now; SNS asks again.
+     */
+    503: Problem;
+};
+
+export type ReceiveSesEventError = ReceiveSesEventErrors[keyof ReceiveSesEventErrors];
+
+export type ReceiveSesEventResponses = {
+    /**
+     * The message was taken.
+     */
+    204: void;
+};
+
+export type ReceiveSesEventResponse = ReceiveSesEventResponses[keyof ReceiveSesEventResponses];
+
 export type ApproveOrganizationClaimData = {
     body: ApproveOrganization;
     path: {
@@ -3233,9 +5447,9 @@ export type ListAdminOrganizationsData = {
          */
         q?: string | null;
         /**
-         * Only organizations of this review status; `pending` also selects an approved one with an open claim.
+         * Only organizations of this review status; `in_review` also selects an approved one with an open claim, `approved` leaves out those taken down, and `suspended` selects those taken down.
          */
-        status?: 'pending' | 'approved' | 'rejected';
+        status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended';
         /**
          * The page, counted from 1.
          */
@@ -3342,6 +5556,49 @@ export type GetAdminOrganizationResponses = {
 
 export type GetAdminOrganizationResponse = GetAdminOrganizationResponses[keyof GetAdminOrganizationResponses];
 
+export type SaveAdminOrganizationData = {
+    body: AdminSaveOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}';
+};
+
+export type SaveAdminOrganizationErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization changed since it was read, or another organization has the domain.
+     */
+    409: Problem;
+};
+
+export type SaveAdminOrganizationError = SaveAdminOrganizationErrors[keyof SaveAdminOrganizationErrors];
+
+export type SaveAdminOrganizationResponses = {
+    /**
+     * The organization as saved.
+     */
+    200: AdminOrganization;
+};
+
+export type SaveAdminOrganizationResponse = SaveAdminOrganizationResponses[keyof SaveAdminOrganizationResponses];
+
 export type ApproveOrganizationData = {
     body: ApproveOrganization;
     path: {
@@ -3385,6 +5642,161 @@ export type ApproveOrganizationResponses = {
 
 export type ApproveOrganizationResponse = ApproveOrganizationResponses[keyof ApproveOrganizationResponses];
 
+export type InviteAdminOrganizationMemberData = {
+    body: InviteMember;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/invitations';
+};
+
+export type InviteAdminOrganizationMemberErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The address belongs to the organization or holds an open invitation.
+     */
+    409: Problem;
+};
+
+export type InviteAdminOrganizationMemberError = InviteAdminOrganizationMemberErrors[keyof InviteAdminOrganizationMemberErrors];
+
+export type InviteAdminOrganizationMemberResponses = {
+    /**
+     * The invitation is open and the address was told.
+     */
+    204: void;
+};
+
+export type InviteAdminOrganizationMemberResponse = InviteAdminOrganizationMemberResponses[keyof InviteAdminOrganizationMemberResponses];
+
+export type RevokeAdminOrganizationInvitationData = {
+    body?: never;
+    path: {
+        id: string;
+        invitationId: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/invitations/{invitationId}/revoke';
+};
+
+export type RevokeAdminOrganizationInvitationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The organization does not exist, or the invitation is not one of its open ones.
+     */
+    404: Problem;
+};
+
+export type RevokeAdminOrganizationInvitationError = RevokeAdminOrganizationInvitationErrors[keyof RevokeAdminOrganizationInvitationErrors];
+
+export type RevokeAdminOrganizationInvitationResponses = {
+    /**
+     * The invitation is closed.
+     */
+    204: void;
+};
+
+export type RevokeAdminOrganizationInvitationResponse = RevokeAdminOrganizationInvitationResponses[keyof RevokeAdminOrganizationInvitationResponses];
+
+export type RemoveAdminOrganizationMemberData = {
+    body?: never;
+    path: {
+        id: string;
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/members/{accountId}/remove';
+};
+
+export type RemoveAdminOrganizationMemberErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The organization does not exist, or the person does not belong to it.
+     */
+    404: Problem;
+};
+
+export type RemoveAdminOrganizationMemberError = RemoveAdminOrganizationMemberErrors[keyof RemoveAdminOrganizationMemberErrors];
+
+export type RemoveAdminOrganizationMemberResponses = {
+    /**
+     * The person is out.
+     */
+    204: void;
+};
+
+export type RemoveAdminOrganizationMemberResponse = RemoveAdminOrganizationMemberResponses[keyof RemoveAdminOrganizationMemberResponses];
+
+export type ChangeAdminOrganizationMemberRoleData = {
+    body: ChangeMemberRole;
+    path: {
+        id: string;
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/members/{accountId}/role';
+};
+
+export type ChangeAdminOrganizationMemberRoleErrors = {
+    /**
+     * The role is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The organization does not exist, or the person does not belong to it.
+     */
+    404: Problem;
+};
+
+export type ChangeAdminOrganizationMemberRoleError = ChangeAdminOrganizationMemberRoleErrors[keyof ChangeAdminOrganizationMemberRoleErrors];
+
+export type ChangeAdminOrganizationMemberRoleResponses = {
+    /**
+     * The role is changed.
+     */
+    204: void;
+};
+
+export type ChangeAdminOrganizationMemberRoleResponse = ChangeAdminOrganizationMemberRoleResponses[keyof ChangeAdminOrganizationMemberRoleResponses];
+
 export type RefuseOrganizationData = {
     body: RefuseOrganization;
     path: {
@@ -3427,6 +5839,131 @@ export type RefuseOrganizationResponses = {
 };
 
 export type RefuseOrganizationResponse = RefuseOrganizationResponses[keyof RefuseOrganizationResponses];
+
+export type RestoreOrganizationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/restore';
+};
+
+export type RestoreOrganizationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not taken down.
+     */
+    409: Problem;
+};
+
+export type RestoreOrganizationError = RestoreOrganizationErrors[keyof RestoreOrganizationErrors];
+
+export type RestoreOrganizationResponses = {
+    /**
+     * The organization is back.
+     */
+    204: void;
+};
+
+export type RestoreOrganizationResponse = RestoreOrganizationResponses[keyof RestoreOrganizationResponses];
+
+export type SendBackOrganizationData = {
+    body: SendBackOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/send-back';
+};
+
+export type SendBackOrganizationErrors = {
+    /**
+     * The reason is blank or over 1000 characters.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not waiting for review.
+     */
+    409: Problem;
+};
+
+export type SendBackOrganizationError = SendBackOrganizationErrors[keyof SendBackOrganizationErrors];
+
+export type SendBackOrganizationResponses = {
+    /**
+     * The organization needs changes; its owners are told why.
+     */
+    204: void;
+};
+
+export type SendBackOrganizationResponse = SendBackOrganizationResponses[keyof SendBackOrganizationResponses];
+
+export type TakeDownOrganizationData = {
+    body: TakeDownOrganization;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/organization/admin/organizations/{id}/take-down';
+};
+
+export type TakeDownOrganizationErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * The organization is not approved.
+     */
+    409: Problem;
+};
+
+export type TakeDownOrganizationError = TakeDownOrganizationErrors[keyof TakeDownOrganizationErrors];
+
+export type TakeDownOrganizationResponses = {
+    /**
+     * The organization is taken down.
+     */
+    204: void;
+};
+
+export type TakeDownOrganizationResponse = TakeDownOrganizationResponses[keyof TakeDownOrganizationResponses];
 
 export type AcceptOrganizationInvitationData = {
     body?: never;
@@ -5180,7 +7717,7 @@ export type SearchData = {
         /**
          * Only items of this kind; every kind when absent.
          */
-        kind?: 'program' | 'solution' | 'talent';
+        kind?: 'program' | 'solution' | 'talent' | 'use_case';
         /**
          * The page, counted from 1.
          */
@@ -5206,6 +7743,368 @@ export type SearchResponses = {
 };
 
 export type SearchResponse = SearchResponses[keyof SearchResponses];
+
+export type ChooseEmbeddingModelData = {
+    body: ChooseEmbeddingModel;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/embedding-model';
+};
+
+export type ChooseEmbeddingModelErrors = {
+    /**
+     * A member is not valid, the model is not offered, the provider has no key, or it did not embed the test.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+    /**
+     * The search settings changed since they were read.
+     */
+    409: Problem;
+};
+
+export type ChooseEmbeddingModelError = ChooseEmbeddingModelErrors[keyof ChooseEmbeddingModelErrors];
+
+export type ChooseEmbeddingModelResponses = {
+    /**
+     * The providers, with the model in use.
+     */
+    200: AiProviders;
+};
+
+export type ChooseEmbeddingModelResponse = ChooseEmbeddingModelResponses[keyof ChooseEmbeddingModelResponses];
+
+export type GetSearchIndexData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/index';
+};
+
+export type GetSearchIndexErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetSearchIndexError = GetSearchIndexErrors[keyof GetSearchIndexErrors];
+
+export type GetSearchIndexResponses = {
+    /**
+     * The state.
+     */
+    200: SearchIndex;
+};
+
+export type GetSearchIndexResponse = GetSearchIndexResponses[keyof GetSearchIndexResponses];
+
+export type RebuildSearchIndexData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/index/rebuild';
+};
+
+export type RebuildSearchIndexErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type RebuildSearchIndexError = RebuildSearchIndexErrors[keyof RebuildSearchIndexErrors];
+
+export type RebuildSearchIndexResponses = {
+    /**
+     * The state, with what the rebuild did.
+     */
+    200: SearchIndex;
+};
+
+export type RebuildSearchIndexResponse = RebuildSearchIndexResponses[keyof RebuildSearchIndexResponses];
+
+export type RetrySearchEmbeddingsData = {
+    body: RetryEmbeddings;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/index/retry';
+};
+
+export type RetrySearchEmbeddingsErrors = {
+    /**
+     * A member is not valid, or an item is named without its kind.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type RetrySearchEmbeddingsError = RetrySearchEmbeddingsErrors[keyof RetrySearchEmbeddingsErrors];
+
+export type RetrySearchEmbeddingsResponses = {
+    /**
+     * How many items the next run tries.
+     */
+    200: RetriedEmbeddings;
+};
+
+export type RetrySearchEmbeddingsResponse = RetrySearchEmbeddingsResponses[keyof RetrySearchEmbeddingsResponses];
+
+export type ListAiProvidersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/providers';
+};
+
+export type ListAiProvidersErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAiProvidersError = ListAiProvidersErrors[keyof ListAiProvidersErrors];
+
+export type ListAiProvidersResponses = {
+    /**
+     * The providers.
+     */
+    200: AiProviders;
+};
+
+export type ListAiProvidersResponse = ListAiProvidersResponses[keyof ListAiProvidersResponses];
+
+export type CreateAiProviderData = {
+    body: SaveAiProvider;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/providers';
+};
+
+export type CreateAiProviderErrors = {
+    /**
+     * A member is not valid, the address is not an https URL, or the key is missing.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * Another provider has this name.
+     */
+    409: Problem;
+    /**
+     * The server has no key to encrypt provider keys.
+     */
+    503: Problem;
+};
+
+export type CreateAiProviderError = CreateAiProviderErrors[keyof CreateAiProviderErrors];
+
+export type CreateAiProviderResponses = {
+    /**
+     * The providers, with the new one.
+     */
+    200: AiProviders;
+};
+
+export type CreateAiProviderResponse = CreateAiProviderResponses[keyof CreateAiProviderResponses];
+
+export type TestAiProviderData = {
+    body: TestAiProvider;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/providers/test';
+};
+
+export type TestAiProviderErrors = {
+    /**
+     * A member is not valid, the model is not offered, or no key can be used.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The provider named for its saved key does not exist.
+     */
+    404: Problem;
+};
+
+export type TestAiProviderError = TestAiProviderErrors[keyof TestAiProviderErrors];
+
+export type TestAiProviderResponses = {
+    /**
+     * Whether the provider embedded it, and why not.
+     */
+    200: AiProviderTest;
+};
+
+export type TestAiProviderResponse = TestAiProviderResponses[keyof TestAiProviderResponses];
+
+export type DeleteAiProviderData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/search/admin/providers/{id}';
+};
+
+export type DeleteAiProviderErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+    /**
+     * Search embeds with this provider.
+     */
+    409: Problem;
+};
+
+export type DeleteAiProviderError = DeleteAiProviderErrors[keyof DeleteAiProviderErrors];
+
+export type DeleteAiProviderResponses = {
+    /**
+     * The providers left.
+     */
+    200: AiProviders;
+};
+
+export type DeleteAiProviderResponse = DeleteAiProviderResponses[keyof DeleteAiProviderResponses];
+
+export type UpdateAiProviderData = {
+    body: SaveAiProvider;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/search/admin/providers/{id}';
+};
+
+export type UpdateAiProviderErrors = {
+    /**
+     * A member is not valid, the address is not an https URL, or a key is needed.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+    /**
+     * The provider changed since it was read, or another one has this name.
+     */
+    409: Problem;
+    /**
+     * The server has no key to encrypt provider keys.
+     */
+    503: Problem;
+};
+
+export type UpdateAiProviderError = UpdateAiProviderErrors[keyof UpdateAiProviderErrors];
+
+export type UpdateAiProviderResponses = {
+    /**
+     * The providers, with the change.
+     */
+    200: AiProviders;
+};
+
+export type UpdateAiProviderResponse = UpdateAiProviderResponses[keyof UpdateAiProviderResponses];
+
+export type SetSemanticSearchData = {
+    body: SetSemanticSearch;
+    path?: never;
+    query?: never;
+    url: '/api/search/admin/semantic';
+};
+
+export type SetSemanticSearchErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The search settings changed since they were read.
+     */
+    409: Problem;
+};
+
+export type SetSemanticSearchError = SetSemanticSearchErrors[keyof SetSemanticSearchErrors];
+
+export type SetSemanticSearchResponses = {
+    /**
+     * The state, with the change.
+     */
+    200: SearchIndex;
+};
+
+export type SetSemanticSearchResponse = SetSemanticSearchResponses[keyof SetSemanticSearchResponses];
 
 export type ApproveCustomerDeploymentData = {
     body?: never;
@@ -5298,9 +8197,9 @@ export type ListAdminSolutionsData = {
          */
         q?: string | null;
         /**
-         * Only solutions of this status. Drafts are never listed.
+         * Only solutions of this review status, or `suspended` for those taken down; `approved` leaves out those taken down. Drafts are never listed.
          */
-        status?: 'submitted' | 'approved' | 'rejected';
+        status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended';
         /**
          * Only solutions for this industry.
          */
@@ -5413,6 +8312,45 @@ export type ApproveSolutionResponses = {
 
 export type ApproveSolutionResponse = ApproveSolutionResponses[keyof ApproveSolutionResponses];
 
+export type BackSolutionData = {
+    body: BackSolution;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/backing';
+};
+
+export type BackSolutionErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+};
+
+export type BackSolutionError = BackSolutionErrors[keyof BackSolutionErrors];
+
+export type BackSolutionResponses = {
+    /**
+     * What GenAI Fund says of the solution is written.
+     */
+    204: void;
+};
+
+export type BackSolutionResponse = BackSolutionResponses[keyof BackSolutionResponses];
+
 export type RejectSolutionData = {
     body: RejectSolution;
     path: {
@@ -5440,7 +8378,7 @@ export type RejectSolutionErrors = {
      */
     404: Problem;
     /**
-     * The solution is neither waiting for review nor approved.
+     * The solution is not waiting for review.
      */
     409: Problem;
 };
@@ -5455,6 +8393,131 @@ export type RejectSolutionResponses = {
 };
 
 export type RejectSolutionResponse = RejectSolutionResponses[keyof RejectSolutionResponses];
+
+export type RestoreSolutionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/restore';
+};
+
+export type RestoreSolutionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+    /**
+     * The solution is not taken down.
+     */
+    409: Problem;
+};
+
+export type RestoreSolutionError = RestoreSolutionErrors[keyof RestoreSolutionErrors];
+
+export type RestoreSolutionResponses = {
+    /**
+     * The solution is back.
+     */
+    204: void;
+};
+
+export type RestoreSolutionResponse = RestoreSolutionResponses[keyof RestoreSolutionResponses];
+
+export type SendBackSolutionData = {
+    body: SendBackSolution;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/send-back';
+};
+
+export type SendBackSolutionErrors = {
+    /**
+     * The reason is blank or longer than 1000 characters.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+    /**
+     * The solution is not waiting for review.
+     */
+    409: Problem;
+};
+
+export type SendBackSolutionError = SendBackSolutionErrors[keyof SendBackSolutionErrors];
+
+export type SendBackSolutionResponses = {
+    /**
+     * The solution needs changes; its owners are told.
+     */
+    204: void;
+};
+
+export type SendBackSolutionResponse = SendBackSolutionResponses[keyof SendBackSolutionResponses];
+
+export type TakeDownSolutionData = {
+    body: TakeDownSolution;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/take-down';
+};
+
+export type TakeDownSolutionErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+    /**
+     * The solution is not approved, or is already taken down.
+     */
+    409: Problem;
+};
+
+export type TakeDownSolutionError = TakeDownSolutionErrors[keyof TakeDownSolutionErrors];
+
+export type TakeDownSolutionResponses = {
+    /**
+     * The solution is taken down; its review stays approved.
+     */
+    204: void;
+};
+
+export type TakeDownSolutionResponse = TakeDownSolutionResponses[keyof TakeDownSolutionResponses];
 
 export type ListCustomerDeploymentsData = {
     body?: never;
@@ -6080,9 +9143,9 @@ export type ListAdminTalentData = {
          */
         q?: string | null;
         /**
-         * Only profiles of this status. Drafts are never listed.
+         * Only profiles of this review status; `approved` leaves out those taken down, and `suspended` selects those taken down. Drafts are never listed.
          */
-        status?: 'submitted' | 'approved' | 'changes_requested' | 'removed';
+        status?: 'in_review' | 'needs_changes' | 'approved' | 'suspended';
         /**
          * The page, counted from 1.
          */
@@ -6191,20 +9254,16 @@ export type ApproveTalentResponses = {
 
 export type ApproveTalentResponse = ApproveTalentResponses[keyof ApproveTalentResponses];
 
-export type RemoveTalentData = {
-    body: TalentDecision;
+export type RestoreTalentData = {
+    body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/api/talent/admin/profiles/{id}/remove';
+    url: '/api/talent/admin/profiles/{id}/restore';
 };
 
-export type RemoveTalentErrors = {
-    /**
-     * A member is not valid.
-     */
-    400: Problem;
+export type RestoreTalentErrors = {
     /**
      * Nobody is signed in.
      */
@@ -6218,32 +9277,32 @@ export type RemoveTalentErrors = {
      */
     404: Problem;
     /**
-     * The profile is not approved.
+     * The profile is not taken down.
      */
     409: Problem;
 };
 
-export type RemoveTalentError = RemoveTalentErrors[keyof RemoveTalentErrors];
+export type RestoreTalentError = RestoreTalentErrors[keyof RestoreTalentErrors];
 
-export type RemoveTalentResponses = {
+export type RestoreTalentResponses = {
     /**
-     * The profile is removed; the person was emailed.
+     * The profile is back; the person was emailed.
      */
     204: void;
 };
 
-export type RemoveTalentResponse = RemoveTalentResponses[keyof RemoveTalentResponses];
+export type RestoreTalentResponse = RestoreTalentResponses[keyof RestoreTalentResponses];
 
-export type RequestTalentChangesData = {
+export type SendBackTalentData = {
     body: TalentDecision;
     path: {
         id: string;
     };
     query?: never;
-    url: '/api/talent/admin/profiles/{id}/request-changes';
+    url: '/api/talent/admin/profiles/{id}/send-back';
 };
 
-export type RequestTalentChangesErrors = {
+export type SendBackTalentErrors = {
     /**
      * A member is not valid.
      */
@@ -6266,16 +9325,59 @@ export type RequestTalentChangesErrors = {
     409: Problem;
 };
 
-export type RequestTalentChangesError = RequestTalentChangesErrors[keyof RequestTalentChangesErrors];
+export type SendBackTalentError = SendBackTalentErrors[keyof SendBackTalentErrors];
 
-export type RequestTalentChangesResponses = {
+export type SendBackTalentResponses = {
     /**
-     * Changes are asked for; the person was emailed.
+     * The profile needs changes; the person was emailed.
      */
     204: void;
 };
 
-export type RequestTalentChangesResponse = RequestTalentChangesResponses[keyof RequestTalentChangesResponses];
+export type SendBackTalentResponse = SendBackTalentResponses[keyof SendBackTalentResponses];
+
+export type TakeDownTalentData = {
+    body: TalentDecision;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/admin/profiles/{id}/take-down';
+};
+
+export type TakeDownTalentErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted talent profile.
+     */
+    404: Problem;
+    /**
+     * The profile is not approved, or is taken down already.
+     */
+    409: Problem;
+};
+
+export type TakeDownTalentError = TakeDownTalentErrors[keyof TakeDownTalentErrors];
+
+export type TakeDownTalentResponses = {
+    /**
+     * The profile is taken down and stays approved; the person was emailed.
+     */
+    204: void;
+};
+
+export type TakeDownTalentResponse = TakeDownTalentResponses[keyof TakeDownTalentResponses];
 
 export type ListReportedTalentEnquiriesData = {
     body?: never;
@@ -6667,3 +9769,544 @@ export type SendTalentEnquiryResponses = {
 };
 
 export type SendTalentEnquiryResponse = SendTalentEnquiryResponses[keyof SendTalentEnquiryResponses];
+
+export type ListUseCaseOrganizationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Organizations whose name contains this, ignoring case.
+         */
+        q?: string | null;
+    };
+    url: '/api/usecase/admin/organizations';
+};
+
+export type ListUseCaseOrganizationsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListUseCaseOrganizationsError = ListUseCaseOrganizationsErrors[keyof ListUseCaseOrganizationsErrors];
+
+export type ListUseCaseOrganizationsResponses = {
+    /**
+     * The approved organizations, by name.
+     */
+    200: UseCaseOrganizationList;
+};
+
+export type ListUseCaseOrganizationsResponse = ListUseCaseOrganizationsResponses[keyof ListUseCaseOrganizationsResponses];
+
+export type ListAdminUseCasesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Use cases whose title or organization name contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only use cases in this status, as a reader sees it now.
+         */
+        status?: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
+        /**
+         * Only use cases of this organization.
+         */
+        organizationId?: string | null;
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/usecase/admin/use-cases';
+};
+
+export type ListAdminUseCasesErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminUseCasesError = ListAdminUseCasesErrors[keyof ListAdminUseCasesErrors];
+
+export type ListAdminUseCasesResponses = {
+    /**
+     * One page of the use cases the parameters select.
+     */
+    200: AdminUseCaseList;
+};
+
+export type ListAdminUseCasesResponse = ListAdminUseCasesResponses[keyof ListAdminUseCasesResponses];
+
+export type CreateAdminUseCaseData = {
+    body: CreateUseCase;
+    path?: never;
+    query?: never;
+    url: '/api/usecase/admin/use-cases';
+};
+
+export type CreateAdminUseCaseErrors = {
+    /**
+     * A member is not valid, the organization is not approved, the close date is not in the future, or the budget or the timeline is out of order.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type CreateAdminUseCaseError = CreateAdminUseCaseErrors[keyof CreateAdminUseCaseErrors];
+
+export type CreateAdminUseCaseResponses = {
+    /**
+     * The use case, a draft or published as asked.
+     */
+    201: AdminUseCase;
+};
+
+export type CreateAdminUseCaseResponse = CreateAdminUseCaseResponses[keyof CreateAdminUseCaseResponses];
+
+export type GetAdminUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}';
+};
+
+export type GetAdminUseCaseErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+};
+
+export type GetAdminUseCaseError = GetAdminUseCaseErrors[keyof GetAdminUseCaseErrors];
+
+export type GetAdminUseCaseResponses = {
+    /**
+     * The use case.
+     */
+    200: AdminUseCase;
+};
+
+export type GetAdminUseCaseResponse = GetAdminUseCaseResponses[keyof GetAdminUseCaseResponses];
+
+export type ApproveAdminUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}/approve';
+};
+
+export type ApproveAdminUseCaseErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is not in review.
+     */
+    409: Problem;
+};
+
+export type ApproveAdminUseCaseError = ApproveAdminUseCaseErrors[keyof ApproveAdminUseCaseErrors];
+
+export type ApproveAdminUseCaseResponses = {
+    /**
+     * The use case, now published.
+     */
+    200: AdminUseCase;
+};
+
+export type ApproveAdminUseCaseResponse = ApproveAdminUseCaseResponses[keyof ApproveAdminUseCaseResponses];
+
+export type SetAdminUseCaseProgramsData = {
+    body: SetUseCasePrograms;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}/programs';
+};
+
+export type SetAdminUseCaseProgramsErrors = {
+    /**
+     * A program does not exist, or there are more than ten.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+};
+
+export type SetAdminUseCaseProgramsError = SetAdminUseCaseProgramsErrors[keyof SetAdminUseCaseProgramsErrors];
+
+export type SetAdminUseCaseProgramsResponses = {
+    /**
+     * The use case with its programs.
+     */
+    200: AdminUseCase;
+};
+
+export type SetAdminUseCaseProgramsResponse = SetAdminUseCaseProgramsResponses[keyof SetAdminUseCaseProgramsResponses];
+
+export type SendBackAdminUseCaseData = {
+    body: SendBackUseCase;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}/send-back';
+};
+
+export type SendBackAdminUseCaseErrors = {
+    /**
+     * The reason is missing or too long.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is not in review.
+     */
+    409: Problem;
+};
+
+export type SendBackAdminUseCaseError = SendBackAdminUseCaseErrors[keyof SendBackAdminUseCaseErrors];
+
+export type SendBackAdminUseCaseResponses = {
+    /**
+     * The use case, now needing changes.
+     */
+    200: AdminUseCase;
+};
+
+export type SendBackAdminUseCaseResponse = SendBackAdminUseCaseResponses[keyof SendBackAdminUseCaseResponses];
+
+export type ListMyUseCasesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/usecase/mine';
+};
+
+export type ListMyUseCasesErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+};
+
+export type ListMyUseCasesError = ListMyUseCasesErrors[keyof ListMyUseCasesErrors];
+
+export type ListMyUseCasesResponses = {
+    /**
+     * Every use case of the organization, the most recently touched first.
+     */
+    200: MyUseCases;
+};
+
+export type ListMyUseCasesResponse = ListMyUseCasesResponses[keyof ListMyUseCasesResponses];
+
+export type CreateMyUseCaseData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/usecase/mine';
+};
+
+export type CreateMyUseCaseErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+};
+
+export type CreateMyUseCaseError = CreateMyUseCaseErrors[keyof CreateMyUseCaseErrors];
+
+export type CreateMyUseCaseResponses = {
+    /**
+     * The empty draft.
+     */
+    201: MyUseCase;
+};
+
+export type CreateMyUseCaseResponse = CreateMyUseCaseResponses[keyof CreateMyUseCaseResponses];
+
+export type GetMyUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}';
+};
+
+export type GetMyUseCaseErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The organization has no such use case.
+     */
+    404: Problem;
+};
+
+export type GetMyUseCaseError = GetMyUseCaseErrors[keyof GetMyUseCaseErrors];
+
+export type GetMyUseCaseResponses = {
+    /**
+     * The use case.
+     */
+    200: MyUseCase;
+};
+
+export type GetMyUseCaseResponse = GetMyUseCaseResponses[keyof GetMyUseCaseResponses];
+
+export type SaveMyUseCaseData = {
+    body: SaveMyUseCase;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}';
+};
+
+export type SaveMyUseCaseErrors = {
+    /**
+     * A part is not valid, or the budget or the timeline is out of order.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The organization has no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is in review or closed, or someone saved a newer version.
+     */
+    409: Problem;
+};
+
+export type SaveMyUseCaseError = SaveMyUseCaseErrors[keyof SaveMyUseCaseErrors];
+
+export type SaveMyUseCaseResponses = {
+    /**
+     * The use case as saved, with its new version.
+     */
+    200: MyUseCase;
+};
+
+export type SaveMyUseCaseResponse = SaveMyUseCaseResponses[keyof SaveMyUseCaseResponses];
+
+export type MoveMyUseCaseToDraftData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}/draft';
+};
+
+export type MoveMyUseCaseToDraftErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The organization has no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is neither in review nor published.
+     */
+    409: Problem;
+};
+
+export type MoveMyUseCaseToDraftError = MoveMyUseCaseToDraftErrors[keyof MoveMyUseCaseToDraftErrors];
+
+export type MoveMyUseCaseToDraftResponses = {
+    /**
+     * The use case, now a draft.
+     */
+    200: MyUseCase;
+};
+
+export type MoveMyUseCaseToDraftResponse = MoveMyUseCaseToDraftResponses[keyof MoveMyUseCaseToDraftResponses];
+
+export type SubmitMyUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}/submit';
+};
+
+export type SubmitMyUseCaseErrors = {
+    /**
+     * A part is missing, or the close date has passed.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The organization has no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case is not a draft.
+     */
+    409: Problem;
+};
+
+export type SubmitMyUseCaseError = SubmitMyUseCaseErrors[keyof SubmitMyUseCaseErrors];
+
+export type SubmitMyUseCaseResponses = {
+    /**
+     * The use case, now in review.
+     */
+    200: MyUseCase;
+};
+
+export type SubmitMyUseCaseResponse = SubmitMyUseCaseResponses[keyof SubmitMyUseCaseResponses];
+
+export type ListUseCasesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Use cases whose title or goal contains this, or whose organization name does, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only use cases of this industry.
+         */
+        industry?: string | null;
+        /**
+         * The order: the most recently published first, the nearest deadline first, or the largest budget first.
+         */
+        sort?: 'newest' | 'deadline' | 'budget';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+        /**
+         * Only use cases of the published program at this address.
+         */
+        program?: string | null;
+    };
+    url: '/api/usecase/use-cases';
+};
+
+export type ListUseCasesErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+};
+
+export type ListUseCasesError = ListUseCasesErrors[keyof ListUseCasesErrors];
+
+export type ListUseCasesResponses = {
+    /**
+     * One page of the use cases the parameters select.
+     */
+    200: PublicUseCaseList;
+};
+
+export type ListUseCasesResponse = ListUseCasesResponses[keyof ListUseCasesResponses];

@@ -99,7 +99,7 @@ function ClaimDecision({ organization, claimId, onClose }: ClaimDecisionProps) {
     <Dialog open onOpenChange={(open) => !open && !pending && onClose()}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>{t("title", { name })}</DialogTitle>
+          <DialogTitle size="lg">{t("title", { name })}</DialogTitle>
           <DialogDescription>
             {claim
               ? t("lead", {
@@ -122,7 +122,6 @@ function ClaimDecision({ organization, claimId, onClose }: ClaimDecisionProps) {
           problems={{ invalid: t("domainInvalid"), taken: t("domainTaken") }}
           disabled={pending !== null}
         />
-        <p className="text-sm text-muted-foreground">{t("note")}</p>
         <DialogFooter>
           <Button
             prominence="secondary"

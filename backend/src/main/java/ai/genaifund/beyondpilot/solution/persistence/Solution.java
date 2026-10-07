@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.solution.persistence;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,10 +27,14 @@ public class Solution {
 
 	public static final String DRAFT = "draft";
 
-	public static final String SUBMITTED = "submitted";
+	public static final String IN_REVIEW = "in_review";
+
+	/** GenAI Fund sent a solution that waited for review back to its owners, with what to change. */
+	public static final String NEEDS_CHANGES = "needs_changes";
 
 	public static final String APPROVED = "approved";
 
+	/** GenAI Fund refused the solution for good; its owners cannot send it again. */
 	public static final String REJECTED = "rejected";
 
 	@Id
@@ -53,6 +58,16 @@ public class Solution {
 	private @Nullable String traction;
 
 	private @Nullable String bestCustomerProfile;
+
+	private @Nullable String channels;
+
+	private @Nullable String backedBy;
+
+	private @Nullable String program;
+
+	private @Nullable String funding;
+
+	private @Nullable Instant backingUpdatedAt;
 
 	@JdbcTypeCode(SqlTypes.ARRAY)
 	@Column(nullable = false, columnDefinition = "text[]")
@@ -88,6 +103,14 @@ public class Solution {
 
 	private @Nullable Instant deckAttachedAt;
 
+	private @Nullable UUID logoFileId;
+
+	private @Nullable UUID coverFileId;
+
+	@JdbcTypeCode(SqlTypes.ARRAY)
+	@Column(nullable = false, columnDefinition = "uuid[]")
+	private UUID[] imageFileIds = {};
+
 	@Column(nullable = false)
 	private String status = DRAFT;
 
@@ -100,6 +123,12 @@ public class Solution {
 	private @Nullable Instant submittedAt;
 
 	private @Nullable UUID submittedByAccountId;
+
+	private @Nullable String suspensionReason;
+
+	private @Nullable String suspensionMessage;
+
+	private @Nullable Instant suspendedAt;
 
 	@Column(nullable = false)
 	private boolean listed = true;
@@ -147,7 +176,8 @@ public class Solution {
 
 	/** Who should find the solution and where it can run. */
 	public void fit(List<String> industries, List<String> focusAreas, List<String> languages, List<String> deployment,
-			@Nullable String bestCustomerProfile) {
+			@Nullable String channels, @Nullable String bestCustomerProfile) {
+		this.channels = channels;
 		this.industries = industries.toArray(String[]::new);
 		this.focusAreas = focusAreas.toArray(String[]::new);
 		this.languages = languages.toArray(String[]::new);
@@ -176,12 +206,33 @@ public class Solution {
 		deckAttachedAt = null;
 	}
 
+	/** The stored images it shows: its logo, its cover and those under the cover, in the order they are shown. */
+	public void picture(@Nullable UUID logoFileId, @Nullable UUID coverFileId, List<UUID> imageFileIds) {
+		this.logoFileId = logoFileId;
+		this.coverFileId = coverFileId;
+		this.imageFileIds = imageFileIds.toArray(UUID[]::new);
+	}
+
+	/**
+	 * What GenAI Fund says of the solution beside its owners' words: who backs its company, the programme it was
+	 * selected for and its funding. Only operators write it.
+	 */
+	public void back(@Nullable String backedBy, @Nullable String program, @Nullable String funding, Instant at) {
+		this.backedBy = backedBy;
+		this.program = program;
+		this.funding = funding;
+		this.backingUpdatedAt = at;
+	}
+
 	public void list(boolean listed) {
 		this.listed = listed;
 	}
 
+	/** Sends the solution for review; a send back it answers is cleared, as a refusal only ever ends a review. */
 	public void submit(Instant at, UUID byAccountId) {
-		status = SUBMITTED;
+		status = IN_REVIEW;
+		decisionReason = null;
+		decisionMessage = null;
 		submittedAt = at;
 		submittedByAccountId = byAccountId;
 	}
@@ -200,21 +251,80 @@ public class Solution {
 		decidedAt = at;
 	}
 
-	/** What a solution needs before GenAI Fund reviews it: a summary, a maturity, a focus area and an industry. */
+	/** Sends a solution that waits for review back to its owners with what to change; there is no reason code. */
+	public void sendBack(String message, Instant at) {
+		status = NEEDS_CHANGES;
+		decisionReason = null;
+		decisionMessage = message;
+		decidedAt = at;
+	}
+
+	/**
+	 * Takes an approved solution out of the directory and matching. Its review stays approved, so restoring needs no
+	 * new review; while it is down {@link #isApproved()} is false.
+	 */
+	public void takeDown(String reason, @Nullable String message, Instant at) {
+		suspensionReason = reason;
+		suspensionMessage = message;
+		suspendedAt = at;
+	}
+
+	/** Puts a solution taken down back; the reason it was taken down stays readable on the record. */
+	public void restore() {
+		suspendedAt = null;
+	}
+
+	/**
+	 * What a solution needs before GenAI Fund reviews it: a summary, a maturity, a focus area, an industry, a logo
+	 * and a cover.
+	 */
 	public boolean isComplete() {
-		return summary != null && maturity != null && focusAreas.length > 0 && industries.length > 0;
+		return missing().isEmpty();
+	}
+
+	/** What a review needs and the solution lacks, by the name of each in the API, in the order of the editor. */
+	public List<String> missing() {
+		List<String> missing = new ArrayList<>();
+		if (summary == null) {
+			missing.add("summary");
+		}
+		if (maturity == null) {
+			missing.add("maturity");
+		}
+		if (industries.length == 0) {
+			missing.add("industries");
+		}
+		if (focusAreas.length == 0) {
+			missing.add("focusAreas");
+		}
+		if (logoFileId == null) {
+			missing.add("logo");
+		}
+		if (coverFileId == null) {
+			missing.add("cover");
+		}
+		return List.copyOf(missing);
 	}
 
 	public boolean isDraft() {
 		return DRAFT.equals(status);
 	}
 
-	public boolean isSubmitted() {
-		return SUBMITTED.equals(status);
+	public boolean isInReview() {
+		return IN_REVIEW.equals(status);
 	}
 
+	public boolean isNeedsChanges() {
+		return NEEDS_CHANGES.equals(status);
+	}
+
+	/** Approved by GenAI Fund and not taken down: what puts it in the directory once listed, and in matching. */
 	public boolean isApproved() {
-		return APPROVED.equals(status);
+		return APPROVED.equals(status) && suspendedAt == null;
+	}
+
+	public boolean isTakenDown() {
+		return suspendedAt != null;
 	}
 
 	public boolean isRejected() {
@@ -281,6 +391,26 @@ public class Solution {
 		return bestCustomerProfile;
 	}
 
+	public @Nullable String getChannels() {
+		return channels;
+	}
+
+	public @Nullable String getBackedBy() {
+		return backedBy;
+	}
+
+	public @Nullable String getProgram() {
+		return program;
+	}
+
+	public @Nullable String getFunding() {
+		return funding;
+	}
+
+	public @Nullable Instant getBackingUpdatedAt() {
+		return backingUpdatedAt;
+	}
+
 	public List<String> getBuiltWith() {
 		return List.of(builtWith);
 	}
@@ -305,6 +435,30 @@ public class Solution {
 		return deckAttachedAt;
 	}
 
+	public @Nullable UUID getLogoFileId() {
+		return logoFileId;
+	}
+
+	public @Nullable UUID getCoverFileId() {
+		return coverFileId;
+	}
+
+	public List<UUID> getImageFileIds() {
+		return List.of(imageFileIds);
+	}
+
+	/** Every stored image it names: the logo, the cover and those under the cover. */
+	public List<UUID> pictures() {
+		List<UUID> pictures = new ArrayList<>(List.of(imageFileIds));
+		if (coverFileId != null) {
+			pictures.addFirst(coverFileId);
+		}
+		if (logoFileId != null) {
+			pictures.addFirst(logoFileId);
+		}
+		return List.copyOf(pictures);
+	}
+
 	public String getStatus() {
 		return status;
 	}
@@ -315,6 +469,18 @@ public class Solution {
 
 	public @Nullable String getDecisionMessage() {
 		return decisionMessage;
+	}
+
+	public @Nullable String getSuspensionReason() {
+		return suspensionReason;
+	}
+
+	public @Nullable String getSuspensionMessage() {
+		return suspensionMessage;
+	}
+
+	public @Nullable Instant getSuspendedAt() {
+		return suspendedAt;
 	}
 
 	public @Nullable Instant getSubmittedAt() {

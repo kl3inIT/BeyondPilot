@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2Icon, FileTextIcon, type LucideIcon } from "lucide-react";
+import { Building2Icon, FileTextIcon, ShieldCheckIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -8,7 +8,6 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
 import { ChoiceSelect } from "@/components/composites/choice-select";
-import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -18,6 +17,7 @@ import { getPathname } from "@/i18n/navigation";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import {
   createOrganization,
+  saveAdminOrganization,
   saveMyOrganization,
   type Organization,
   type SaveOrganization,
@@ -28,15 +28,10 @@ import { siteRoutes } from "@/lib/site";
 
 import { industries, organizationTypes, teamSizes } from "./organization-codes";
 import { organizationError } from "./organization-errors";
+import { OrganizationProfileSection } from "./organization-profile-section";
+import { MAX_DESCRIPTION, MAX_INDUSTRIES, yearOf } from "./organization-format";
+import { useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
 import { OrganizationLogoUpload } from "./organization-logo-upload";
-
-/** The longest description the backend takes. */
-const MAX_DESCRIPTION = 280;
-/** The years the backend takes for when an organization started. */
-const FIRST_YEAR = 1800;
-const LAST_YEAR = 2100;
-/** The most industries the backend takes. */
-const MAX_INDUSTRIES = 5;
 
 /** The fields the form checks before it asks the backend, in the order the page shows them. */
 const checkedFields = [
@@ -49,48 +44,20 @@ const checkedFields = [
   { name: "description", id: "organization-description" },
 ] as const;
 
-/** The year written in the field when it is one the backend takes; otherwise null. */
-function yearOf(text: string) {
-  const year = Number(text);
-  return /^\d{4}$/.test(text.trim()) && year >= FIRST_YEAR && year <= LAST_YEAR ? year : null;
-}
-
-/** A group of related fields on a tinted panel, with what the group is about under its title. */
-function FormSection({
-  icon: Icon,
-  title,
-  lead,
-  children,
-}: {
-  icon: LucideIcon;
-  title: string;
-  lead: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="flex flex-col gap-6 rounded-2xl border bg-muted p-4 md:p-6">
-      <div className="flex flex-col gap-1">
-        <h3 className="flex items-center gap-2 text-lg font-semibold">
-          <Icon className="size-5 text-primary" aria-hidden="true" />
-          {title}
-        </h3>
-        <p className="text-sm text-muted-foreground">{lead}</p>
-      </div>
-      {children}
-    </section>
-  );
-}
-
 type OrganizationFormProps = {
   /** The organization to change; without one the form creates it. */
   organization?: Organization;
+  /** Set when an operator changes the organization: the form then also holds its verified domain. */
+  admin?: boolean;
+  /** Leaves a saved profile unchanged and closes the form. */
+  onCancel?: () => void;
 };
 
 /**
  * The profile of an organization, as its owner writes it: to create one, or to change the one they
  * own. The backend decides what is valid; a member it rejects is marked here by its name.
  */
-function OrganizationForm({ organization }: OrganizationFormProps) {
+function OrganizationForm({ organization, admin, onCancel }: OrganizationFormProps) {
   const t = useTranslations("Organization.form");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
@@ -110,9 +77,9 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
   const [description, setDescription] = useState(organization?.description ?? "");
   const [foundedYear, setFoundedYear] = useState(String(organization?.foundedYear ?? ""));
   const [logoFileId, setLogoFileId] = useState(organization?.logoFileId ?? "");
+  const domain = useVerifiedDomain(organization?.emailDomain);
   const [pending, setPending] = useState(false);
   const [invalid, setInvalid] = useState<Set<string>>(new Set());
-  const [discarding, setDiscarding] = useState(false);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -141,7 +108,8 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
       missing.add("foundedYear");
     }
     setInvalid(missing);
-    if (missing.size > 0 || year === null) {
+    const emailDomain = admin ? domain.read() : null;
+    if (missing.size > 0 || year === null || emailDomain === undefined) {
       focusField(checkedFields.find((field) => missing.has(field.name))?.id ?? checkedFields[0].id);
       return;
     }
@@ -158,7 +126,15 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
     };
     setPending(true);
     try {
-      if (organization) {
+      if (organization && admin) {
+        await saveAdminOrganization({
+          path: { id: organization.id },
+          body: { profile: { ...body, version: organization.version }, emailDomain },
+        });
+        notify.success("Organization.done.saved");
+        router.refresh();
+        setPending(false);
+      } else if (organization) {
         await saveMyOrganization({ body: { ...body, version: organization.version } });
         notify.success("Organization.done.saved");
         router.refresh();
@@ -171,29 +147,16 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
       }
     } catch (error) {
       setInvalid(rejectedFields(error));
-      notify.error(organizationError(error));
+      // A domain another organization has is said at its field; anything else in a toast.
+      if (!domain.refused(error)) {
+        notify.error(organizationError(error));
+      }
       setPending(false);
     }
   }
 
   const bad = (field: string) => invalid.has(field) || undefined;
 
-  function discard() {
-    if (!organization) {
-      return;
-    }
-    setName(organization.name);
-    setType(organization.type);
-    setCountry(organization.country ?? "");
-    setTeamSize(organization.teamSize ?? "");
-    setChosenIndustries(organization.industries);
-    setWebsite(organization.website ?? "");
-    setDescription(organization.description ?? "");
-    setFoundedYear(String(organization.foundedYear ?? ""));
-    setLogoFileId(organization.logoFileId ?? "");
-    setInvalid(new Set());
-    setDiscarding(false);
-  }
   // Only a saved profile can differ from what was saved; a new one has nothing to lose yet.
   const dirty =
     organization !== undefined &&
@@ -208,6 +171,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
       description,
       foundedYear,
       logoFileId,
+      domain.text,
     ]) !==
       JSON.stringify([
         organization.name,
@@ -219,6 +183,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
         organization.description ?? "",
         String(organization.foundedYear ?? ""),
         organization.logoFileId ?? "",
+        organization.emailDomain ?? "",
       ]);
 
   // The form's title is the page's on the create page; on the profile it sits under the organization's name.
@@ -240,10 +205,10 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
         <Title className="text-3xl font-semibold tracking-title">
           {t(organization ? "profileTitle" : "createTitle")}
         </Title>
-        <p className="text-muted-foreground">{t(organization ? "profileLead" : "createLead")}</p>
+        {!organization && <p className="text-muted-foreground">{t("createLead")}</p>}
       </div>
 
-      <FormSection icon={Building2Icon} title={t("basics")} lead={t("basicsLead")}>
+      <OrganizationProfileSection icon={Building2Icon} title={t("basics")} lead={t("basicsLead")}>
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
           <Field data-invalid={bad("name")}>
             <FieldLabel htmlFor="organization-name">
@@ -283,7 +248,8 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
             </p>
           </Field>
         </div>
-        {organization?.emailDomain && (
+        {/* An operator changes the verified domain in its own section below. */}
+        {organization?.emailDomain && !admin && (
           <Field>
             <FieldLabel htmlFor="organization-email-domain">{t("emailDomain")}</FieldLabel>
             <Input
@@ -325,9 +291,9 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
             {bad("teamSize") && <FieldError>{t("teamSizeRequired")}</FieldError>}
           </Field>
         </div>
-      </FormSection>
+      </OrganizationProfileSection>
 
-      <FormSection icon={FileTextIcon} title={t("about")} lead={t("aboutLead")}>
+      <OrganizationProfileSection icon={FileTextIcon} title={t("about")} lead={t("aboutLead")}>
         <Field data-invalid={bad("industries")}>
           <FieldLabel htmlFor="organization-industries">
             {t("industries")} {type === "company" && required}
@@ -386,7 +352,7 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
             </p>
           </Field>
         </div>
-        <div className="flex flex-col gap-x-3 gap-y-6 sm:flex-row">
+        <div className="flex flex-col gap-x-6 gap-y-6 sm:flex-row">
           <Field data-invalid={bad("description")} className="sm:flex-1">
             <FieldLabel htmlFor="organization-description">
               {t("description")} {required}
@@ -408,25 +374,39 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
               </span>
             </div>
           </Field>
-          <Field className="sm:w-52">
+          <Field className="sm:w-28 sm:shrink-0">
             <FieldLabel htmlFor="organization-logo">{t("logo.label")}</FieldLabel>
             <OrganizationLogoUpload value={logoFileId} onChange={setLogoFileId} />
           </Field>
         </div>
-      </FormSection>
+      </OrganizationProfileSection>
+
+      {admin && (
+        <OrganizationProfileSection
+          icon={ShieldCheckIcon}
+          title={t("domain.title")}
+          lead={t("domain.lead")}
+        >
+          <VerifiedDomainField
+            id="organization-email-domain"
+            domain={domain}
+            label={t("domain.label")}
+            hint={t("domain.hint")}
+            problems={{ invalid: t("domain.invalid"), taken: t("domain.taken") }}
+            disabled={pending}
+          />
+        </OrganizationProfileSection>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
-        {organization ? (
-          <Button
-            prominence="tertiary"
-            size="lg"
-            disabled={!dirty}
-            onClick={() => setDiscarding(true)}
-          >
-            {t("discard")}
-          </Button>
-        ) : (
+        {/* Unsaved changes to a saved profile are kept or dropped on leaving, where LeaveGuard asks. */}
+        {!organization && (
           <Button prominence="tertiary" size="lg" href={siteRoutes.workspaceOrganization}>
+            {t("cancel")}
+          </Button>
+        )}
+        {onCancel && (
+          <Button prominence="tertiary" size="lg" disabled={pending} onClick={onCancel}>
             {t("cancel")}
           </Button>
         )}
@@ -435,23 +415,11 @@ function OrganizationForm({ organization }: OrganizationFormProps) {
           size="lg"
           pending={pending}
           disabled={organization !== undefined && !dirty}
+          className="ml-auto"
         >
           {t(organization ? "save" : "create")}
         </Button>
       </div>
-      {discarding && (
-        <ConfirmDialog
-          open
-          onOpenChange={setDiscarding}
-          title={t("confirmDiscard.title")}
-          description={t("confirmDiscard.lead")}
-          confirmLabel={t("discard")}
-          cancelLabel={t("confirmDiscard.cancel")}
-          tone="danger"
-          pending={false}
-          onConfirm={discard}
-        />
-      )}
       <LeaveGuard
         active={dirty}
         title={t("leave.title")}

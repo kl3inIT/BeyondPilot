@@ -96,7 +96,7 @@ test.describe("workspace talent profile", () => {
     const changes = await answerDecisions(page, changesPath, 200, {});
     await page.goto(mine);
 
-    await expect(page.getByText("Changes requested: Information is missing")).toBeVisible();
+    await expect(page.getByText("Sent back: Information is missing")).toBeVisible();
     await expect(page.getByText("Add a project.", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Save draft" })).toBeDisabled();
 

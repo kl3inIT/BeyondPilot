@@ -23,17 +23,32 @@ test.describe("home page", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
-  test("the directory tabs switch what the grid shows", async ({ page }) => {
+  test("the directory shows the directories' own counts and cards", async ({ page }) => {
     await page.goto("/");
+
+    // The newest use cases open the directory, with the public count beside their tab from md up.
+    if ((page.viewportSize()?.width ?? 0) >= 768) {
+      await expect(page.getByRole("tab", { name: /Use cases\s*3/ })).toBeVisible();
+    }
+    await expect(
+      page.getByRole("heading", { name: "Voice assistant for vehicle owners" }),
+    ).toBeVisible();
 
     const solutions = page.getByRole("tab", { name: /AI solutions/ });
     await solutions.click();
 
     await expect(solutions).toHaveAttribute("aria-selected", "true");
-    await expect(page.getByRole("heading", { name: "Revve AI" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Policy Chat" })).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "AI-powered contact centre automation" }),
+      page.getByRole("heading", { name: "Voice assistant for vehicle owners" }),
     ).toBeHidden();
+
+    await page.getByRole("tab", { name: /Programs/ }).click();
+    await expect(
+      page
+        .getByRole("tabpanel")
+        .getByRole("heading", { name: "AI for Insurance Challenge × Tasco" }),
+    ).toBeVisible();
   });
 
   test("the search leads to its results", async ({ page }) => {
@@ -43,11 +58,11 @@ test.describe("home page", () => {
     await page.getByRole("button", { name: "Search" }).click();
 
     await expect(page).toHaveURL("/search?q=AI");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("7 results for “AI”");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("8 results for “AI”");
   });
 
   test("a planned page renders the coming-soon screen", async ({ page }) => {
-    await page.goto("/use-cases");
+    await page.goto("/get-started");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Coming soon");
   });

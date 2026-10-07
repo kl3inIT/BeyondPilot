@@ -3,8 +3,11 @@ package ai.genaifund.beyondpilot.search.persistence;
 import static ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.PROGRAM;
 import static ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.SOLUTION;
 import static ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.TALENT;
+import static ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.USE_CASE;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -79,9 +82,9 @@ class SearchDocumentRepositoryTest {
 	void anUnlistedSolutionReachesMatchingButNoVisitor() {
 		save(SOLUTION, "Fraud Radar", "Gamma", "Flags suspicious claims", false);
 
-		assertThat(index.page("fraud", null, true, 12, 0)).isEmpty();
-		assertThat(index.counts("fraud", true)).isEmpty();
-		assertThat(index.page("fraud", null, false, 12, 0)).extracting(Hit::title).containsExactly("Fraud Radar");
+		assertThat(index.page("fraud", null, null, true, 12, 0)).isEmpty();
+		assertThat(index.counts("fraud", null, true)).isEmpty();
+		assertThat(index.page("fraud", null, null, false, 12, 0)).extracting(Hit::title).containsExactly("Fraud Radar");
 	}
 
 	@Test
@@ -91,12 +94,12 @@ class SearchDocumentRepositoryTest {
 		save(SOLUTION, "Insurance Pricing Engine", "Epsilon", "Prices policies", true);
 		save(TALENT, "Lan Nguyen", "Insurance data scientist", "Builds pricing models", true);
 
-		assertThat(index.counts("insurance", true)).containsExactlyInAnyOrderEntriesOf(
+		assertThat(index.counts("insurance", null, true)).containsExactlyInAnyOrderEntriesOf(
 				Map.of(PROGRAM, 1L, SOLUTION, 2L, TALENT, 1L));
-		assertThat(index.page("insurance", SOLUTION, true, 12, 0)).extracting(Hit::kind)
+		assertThat(index.page("insurance", null, SOLUTION, true, 12, 0)).extracting(Hit::kind)
 			.containsOnly(SOLUTION)
 			.hasSize(2);
-		assertThat(index.page("insurance", null, true, 2, 2)).hasSize(2);
+		assertThat(index.page("insurance", null, null, true, 2, 2)).hasSize(2);
 	}
 
 	@Test
@@ -130,11 +133,11 @@ class SearchDocumentRepositoryTest {
 	void theSnippetMarksTheMatchedWordsAsTheyAreWritten() {
 		save(PROGRAM, "Chương trình Đổi mới Sáng tạo", null, "Doanh nghiệp Việt Nam thử nghiệm AI", true);
 
-		assertThat(index.page("viet nam", null, true, 12, 0)).extracting(Hit::snippet)
+		assertThat(index.page("viet nam", null, null, true, 12, 0)).extracting(Hit::snippet)
 			.containsExactly("Doanh nghiệp Việt Nam thử nghiệm AI");
 		// A word is marked whole, never inside another word.
 		save(SOLUTION, "GenAI Desk", "Beta", "GenAI tools for AI teams", true);
-		assertThat(index.page("ai teams", SOLUTION, true, 12, 0)).extracting(Hit::snippet)
+		assertThat(index.page("ai teams", null, SOLUTION, true, 12, 0)).extracting(Hit::snippet)
 			.containsExactly("GenAI tools for AI teams");
 	}
 
@@ -146,14 +149,27 @@ class SearchDocumentRepositoryTest {
 		save(SOLUTION, "Underwriting Copilot", "Zeta", "Helps insurance underwriters", true);
 		save(TALENT, "Lan Nguyen", "Data scientist", "Prices insurance risk", true);
 
-		List<Hit> best = index.bestOfEachKind("insurance", true, 3);
+		List<Hit> best = index.bestOfEachKind("insurance", null, true, 3);
 
 		assertThat(best).extracting(Hit::kind).containsExactly(SOLUTION, SOLUTION, SOLUTION, TALENT);
 		assertThat(best).extracting(Hit::title).doesNotContain("Underwriting Copilot");
 	}
 
+	@Test
+	void aUseCaseLeavesTheResultsAtItsCloseDate() {
+		for (var closes : Map.of("Open claims triage", Duration.ofDays(1), "Closed claims triage", Duration.ofDays(-1))
+			.entrySet()) {
+			UUID id = UUID.randomUUID();
+			index.save(new Document(USE_CASE, id, id.toString(), closes.getKey(), null, "Claims wait days.", "",
+					closes.getKey(), Map.of("closesAt", Instant.now().plus(closes.getValue()).toString()), true, null,
+					null));
+		}
+
+		assertThat(titles("claims triage")).containsExactly("Open claims triage");
+	}
+
 	private List<String> titles(String query) {
-		return index.page(query, null, true, 12, 0).stream().map(Hit::title).toList();
+		return index.page(query, null, null, true, 12, 0).stream().map(Hit::title).toList();
 	}
 
 	private UUID save(String kind, String title, @Nullable String subtitle, String summary, boolean listed) {

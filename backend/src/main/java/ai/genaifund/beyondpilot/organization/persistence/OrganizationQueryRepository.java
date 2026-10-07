@@ -29,7 +29,11 @@ public class OrganizationQueryRepository {
 			                   limit 1) c on true
 			where (cast(:pattern as text) is null or lower(o.name) like :pattern escape '\\'
 			       or lower(o.email_domain) like :pattern escape '\\')
-			  and (cast(:status as text) is null or o.status = :status or (:status = 'pending' and c.id is not null))
+			  and (cast(:status as text) is null
+			       or (:status = 'suspended' and o.suspended_at is not null)
+			       or (:status = 'approved' and o.status = 'approved' and o.suspended_at is null)
+			       or (:status not in ('suspended', 'approved') and o.status = :status)
+			       or (:status = 'in_review' and c.id is not null))
 			""";
 
 	private final JdbcClient jdbc;
@@ -47,23 +51,42 @@ public class OrganizationQueryRepository {
 	 * One organization in the operators' list, with the claim that waits on it when there is one.
 	 * @param claimId the oldest open claim, a request to own it that operators decide; null when nobody asks
 	 */
-	public record AdminRow(UUID id, String slug, String name, String type,
-			@Nullable String country, String status, int members, boolean owned, UUID createdByAccountId,
+	public record AdminRow(UUID id, String slug, String name, @Nullable UUID logoFileId, String type,
+			@Nullable String country, String status, @Nullable Instant suspendedAt, int members, boolean owned, UUID createdByAccountId,
 			Instant createdAt, @Nullable UUID claimId, @Nullable UUID claimantAccountId,
 			@Nullable Instant claimedAt) {
 	}
 
-	/** What another module shows of an organization. */
-	public record Name(UUID id, String slug, String name, @Nullable String country) {
+	/** What another module shows of an organization, its logo included. */
+	public record Name(UUID id, String slug, String name, @Nullable String country, @Nullable UUID logoFileId) {
 	}
 
 	/** The approved organizations whose name contains the text, by name; at most {@code limit}. */
 	public List<Match> search(String text, int limit) {
 		return jdbc.sql(MATCHES + """
-				where o.status = 'approved' and lower(o.name) like :pattern escape '\\'
+				where o.status = 'approved' and o.suspended_at is null and lower(o.name) like :pattern escape '\\'
 				order by lower(o.name), o.id
 				limit :limit
 				""").param("pattern", containing(text)).param("limit", limit).query(OrganizationQueryRepository::match).list();
+	}
+
+	/**
+	 * The approved organizations, the ones that can have use cases, by name; at most {@code limit}.
+	 * @param text only those whose name contains it, ignoring case; every one when null
+	 */
+	public List<Name> approvedOrganizations(@Nullable String text, int limit) {
+		return jdbc.sql("""
+				select id, slug, name, country, logo_file_id from organization
+				where status = 'approved' and suspended_at is null
+				  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\')
+				order by lower(name), id
+				limit :limit
+				""")
+			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
+			.param("limit", limit)
+			.query((row, index) -> new Name(row.getObject("id", UUID.class), row.getString("slug"),
+					row.getString("name"), row.getString("country"), row.getObject("logo_file_id", UUID.class)))
+			.list();
 	}
 
 	/** The organizations whose name contains the text, whatever their review says. */
@@ -75,36 +98,48 @@ public class OrganizationQueryRepository {
 	}
 
 	public List<Name> names(Collection<UUID> ids) {
+		return names(ids, "");
+	}
+
+	/** The names of those of these organizations that are approved; one taken down or in review is left out. */
+	public List<Name> approvedNames(Collection<UUID> ids) {
+		return names(ids, " and status = 'approved' and suspended_at is null");
+	}
+
+	private List<Name> names(Collection<UUID> ids, String condition) {
 		if (ids.isEmpty()) {
 			return List.of();
 		}
-		return jdbc.sql("select id, slug, name, country from organization where id in (:ids)")
+		return jdbc.sql("select id, slug, name, country, logo_file_id from organization where id in (:ids)" + condition)
 			.param("ids", ids)
 			.query((row, index) -> new Name(row.getObject("id", UUID.class), row.getString("slug"),
-					row.getString("name"), row.getString("country")))
+					row.getString("name"), row.getString("country"), row.getObject("logo_file_id", UUID.class)))
 			.list();
 	}
 
 	/**
 	 * One page for operators: those a decision waits on first, a new organization or a claim, then the newest.
-	 * @param status a review status; {@code pending} also selects an organization with an open claim
+	 * @param status a review status, or {@code suspended} for those taken down; {@code in_review} also selects an
+	 * organization with an open claim
 	 */
 	public List<AdminRow> adminPage(@Nullable String text, @Nullable String status, int limit, long offset) {
 		return adminFiltered("""
-				select o.id, o.slug, o.name, o.type, o.country, o.status, o.created_by_account_id, o.created_at,
+				select o.id, o.slug, o.name, o.logo_file_id, o.type, o.country, o.status, o.suspended_at, o.created_by_account_id,
+				       o.created_at,
 				       (select count(*) from organization_member m where m.organization_id = o.id) as members,
 				       exists (select 1 from organization_member m
 				               where m.organization_id = o.id and m.role = 'owner') as owned,
 				       c.id as claim_id, c.account_id as claimant_account_id, c.created_at as claimed_at
 				""" + ADMIN_SOURCE + """
-				order by case when o.status = 'pending' or c.id is not null then 0 else 1 end,
+				order by case when o.status = 'in_review' or c.id is not null then 0 else 1 end,
 				         coalesce(c.created_at, o.created_at) desc, o.id
 				limit :limit offset :offset
 				""", text, status).param("limit", limit).param("offset", offset).query((row, index) -> {
 			Timestamp claimedAt = row.getTimestamp("claimed_at");
+			Timestamp suspendedAt = row.getTimestamp("suspended_at");
 			return new AdminRow(row.getObject("id", UUID.class), row.getString("slug"), row.getString("name"),
-					row.getString("type"), row.getString("country"),
-					row.getString("status"), row.getInt("members"), row.getBoolean("owned"),
+					row.getObject("logo_file_id", UUID.class), row.getString("type"), row.getString("country"),
+					row.getString("status"), suspendedAt == null ? null : suspendedAt.toInstant(), row.getInt("members"), row.getBoolean("owned"),
 					row.getObject("created_by_account_id", UUID.class), row.getTimestamp("created_at").toInstant(),
 					row.getObject("claim_id", UUID.class), row.getObject("claimant_account_id", UUID.class),
 					claimedAt == null ? null : claimedAt.toInstant());

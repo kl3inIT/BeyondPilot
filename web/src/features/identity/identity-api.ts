@@ -6,7 +6,7 @@ import { csrfHeader } from "@/lib/api/client";
 type CodeRequestOutcome =
   | { kind: "sent" }
   | { kind: "invalid" }
-  | { kind: "limited"; retryAfterMinutes: number }
+  | { kind: "limited"; retryAfterSeconds: number }
   | { kind: "failed" };
 
 type CodeRequest = { email: string; locale: string };
@@ -34,7 +34,7 @@ async function requestSignInCode({ email, locale }: CodeRequest): Promise<CodeRe
   }
   if (response.status === 429) {
     const seconds = Number(response.headers.get("Retry-After"));
-    return { kind: "limited", retryAfterMinutes: Math.max(1, Math.ceil((seconds || 60) / 60)) };
+    return { kind: "limited", retryAfterSeconds: Math.max(1, Math.ceil(seconds || 60)) };
   }
   return { kind: "failed" };
 }

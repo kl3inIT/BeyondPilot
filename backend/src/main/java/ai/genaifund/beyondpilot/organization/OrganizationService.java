@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.organization;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,9 +37,6 @@ import ai.genaifund.beyondpilot.organization.persistence.Organization;
 import ai.genaifund.beyondpilot.organization.persistence.OrganizationQueryRepository;
 import ai.genaifund.beyondpilot.organization.persistence.OrganizationQueryRepository.Match;
 import ai.genaifund.beyondpilot.organization.persistence.OrganizationRepository;
-import ai.genaifund.beyondpilot.storage.FilePurpose;
-import ai.genaifund.beyondpilot.storage.StorageException;
-import ai.genaifund.beyondpilot.storage.StorageService;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +68,9 @@ public class OrganizationService {
 	/** The most invitations of an organization's owners that wait for an answer at once. */
 	private static final int OPEN_INVITATIONS = 50;
 
+	/** How long an invitation waits for its answer before it lapses. */
+	static final Duration INVITATION_LIFETIME = Duration.ofDays(7);
+
 	private final OrganizationRepository organizations;
 
 	private final OrganizationQueryRepository organizationList;
@@ -82,20 +83,20 @@ public class OrganizationService {
 
 	private final AuditTrail audit;
 
-	private final StorageService storage;
+	private final OrganizationLogos logos;
 
 	private final ApplicationEventPublisher events;
 
 	OrganizationService(OrganizationRepository organizations, OrganizationQueryRepository organizationList,
 			MembershipRepository memberships, IdentityService identity, EmailService email, AuditTrail audit,
-			StorageService storage, ApplicationEventPublisher events) {
+			OrganizationLogos logos, ApplicationEventPublisher events) {
 		this.organizations = organizations;
 		this.organizationList = organizationList;
 		this.memberships = memberships;
 		this.identity = identity;
 		this.email = email;
 		this.audit = audit;
-		this.storage = storage;
+		this.logos = logos;
 		this.events = events;
 	}
 
@@ -192,10 +193,10 @@ public class OrganizationService {
 					"Company created by account " + person.accountId() + " without an industry");
 		}
 		if (profile.logoFileId() != null) {
-			requireUsableLogo(actor, profile.logoFileId());
+			logos.requireUsable(actor, profile.logoFileId());
 		}
 		Organization organization = new Organization(UUID.randomUUID(), freeSlug(profile.name()),
-				profile.name().strip(), profile.type(), Organization.PENDING, person.accountId());
+				profile.name().strip(), profile.type(), Organization.IN_REVIEW, person.accountId());
 		organization.describe(profile.name().strip(), profile.type(), OrganizationViews.text(profile.website()),
 				profile.country(), profile.teamSize(), OrganizationViews.codes(profile.industries()),
 				OrganizationViews.text(profile.description()), profile.foundedYear(), profile.logoFileId());
@@ -305,7 +306,8 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Saves the profile. A refused organization that its owner saves waits for review again.
+	 * Saves the profile. An organization sent back that its owner saves waits for review again; a refused one stays
+	 * refused.
 	 * @throws OrganizationException when the caller is not an owner, or the organization changed since it was read
 	 */
 	@Transactional
@@ -320,37 +322,19 @@ public class OrganizationService {
 		UUID formerLogo = organization.getLogoFileId();
 		UUID logo = request.logoFileId();
 		if (logo != null && !logo.equals(formerLogo)) {
-			requireUsableLogo(actor, logo);
+			logos.requireUsable(actor, logo);
 		}
 		organization.describe(request.name().strip(), request.type(),
 				OrganizationViews.text(request.website()), request.country(), request.teamSize(),
 				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()),
 				request.foundedYear(), logo);
-		if (organization.isRejected()) {
+		if (organization.isSentBack()) {
 			organization.resubmit();
 		}
 		organizations.flush();
 		events.publishEvent(new OrganizationChanged(organization.getId()));
-		if (formerLogo != null && !formerLogo.equals(logo)) {
-			// The organization no longer names it, so nobody reads it again.
-			storage.delete(formerLogo);
-		}
+		logos.discardReplaced(formerLogo, logo);
 		return OrganizationViews.organization(organization);
-	}
-
-	/** A logo is a stored image the caller uploaded for an organization, and the logo of no other. */
-	private void requireUsableLogo(Actor actor, UUID logo) {
-		try {
-			storage.stored(logo, FilePurpose.ORGANIZATION_LOGO, actor);
-		}
-		catch (StorageException notUsable) {
-			throw new OrganizationException(OrganizationErrorCode.LOGO_NOT_USABLE,
-					"File " + logo + " as an organization logo: " + notUsable.code());
-		}
-		if (organizations.existsByLogoFileId(logo)) {
-			throw new OrganizationException(OrganizationErrorCode.LOGO_NOT_USABLE,
-					"File " + logo + " is another organization's logo");
-		}
 	}
 
 	/**
@@ -416,7 +400,7 @@ public class OrganizationService {
 					"Invitation of a member of organization " + organization.getId());
 		}
 		if (!memberships.invite(UUID.randomUUID(), organization.getId(), address, request.role(),
-				inviter.accountId(), false)) {
+				inviter.accountId(), false, INVITATION_LIFETIME)) {
 			throw new OrganizationException(OrganizationErrorCode.ALREADY_INVITED,
 					"Second open invitation of one address to organization " + organization.getId());
 		}

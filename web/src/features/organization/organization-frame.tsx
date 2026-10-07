@@ -11,26 +11,30 @@ import { NoticeCard } from "./notice-card";
 import { websiteHost } from "./organization-format";
 import { OrganizationMark } from "./organization-mark";
 
-type OrganizationTab = "profile" | "members" | "solutions" | "introductions";
+type OrganizationTab = "profile" | "members" | "solutions" | "introductions" | "useCases";
 
 type OrganizationFrameProps = {
   /** The caller's membership; the frame is drawn only for a person who belongs to an organization. */
   mine: MyOrganization & { organization: Organization };
   current: OrganizationTab;
-  /** How many members the organization has, and how many solutions when it is a provider. */
-  counts: { members: number; solutions: number | null };
+  /**
+   * How many members the organization has, how many solutions when it is a provider and how many
+   * use cases when it is an approved enterprise.
+   */
+  counts: { members: number; solutions: number | null; useCases: number | null };
   children: React.ReactNode;
 };
 
 /**
  * What every page of My organization shares: the organization's name and what it is, where its
  * review stands, and the tabs. The tabs follow the organization's role: only a provider has
- * solutions.
+ * solutions, only an approved enterprise has use cases.
  */
 function OrganizationFrame({ mine, current, counts, children }: OrganizationFrameProps) {
   const t = useTranslations("Organization");
   const typeName = useVocabulary("organizationType");
   const reasonName = useVocabulary("organizationRefusal");
+  const takeDownReasonName = useVocabulary("organizationTakeDown");
   const countryName = useCountryName();
   const { organization } = mine;
   const owner = mine.role === "owner";
@@ -58,6 +62,16 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
             label: t("tabs.introductions"),
           },
         ]),
+    ...(counts.useCases === null
+      ? []
+      : [
+          {
+            key: "useCases" as const,
+            href: siteRoutes.workspaceUseCases,
+            label: t("tabs.useCases"),
+            count: counts.useCases,
+          },
+        ]),
   ];
   const kind = [
     typeName(organization.type),
@@ -71,24 +85,46 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
     <div className="flex flex-1 justify-center bg-muted px-5 pt-10 pb-16 md:px-8 md:pt-14 md:pb-24 lg:px-16">
       <div className="flex w-full max-w-220 flex-col gap-6">
         <div className="flex flex-col gap-4">
-          <OrganizationMark name={organization.name} logoFileId={organization.logoFileId} />
-          <h1 className="text-3xl leading-none font-semibold tracking-title break-words md:text-5xl md:leading-none">
-            {organization.name}
-          </h1>
+          <div className="flex min-w-0 items-center gap-3.5">
+            <OrganizationMark name={organization.name} logoFileId={organization.logoFileId} />
+            <h1 className="min-w-0 text-3xl leading-none font-semibold tracking-title break-words md:text-5xl md:leading-none">
+              {organization.name}
+            </h1>
+          </div>
           <p className="text-sm text-muted-foreground">{kind.join(" · ")}</p>
         </div>
 
-        {organization.status === "pending" && (
+        {organization.status === "in_review" && (
           <NoticeCard
             titleAs="h2"
-            title={t("pending.title")}
-            description={<p>{t("pending.lead", { name: organization.name })}</p>}
-            badge={<Badge variant="info">{t("status.pending")}</Badge>}
-            foot={t("pending.foot")}
+            title={t("inReview.title")}
+            description={<p>{t("inReview.lead", { name: organization.name })}</p>}
+            badge={<Badge variant="info">{t("status.in_review")}</Badge>}
+            foot={t("inReview.foot")}
             actions={
               toProfile && (
                 <Button prominence="secondary" href={siteRoutes.workspaceOrganization}>
-                  {t("pending.edit")}
+                  {t("inReview.edit")}
+                </Button>
+              )
+            }
+          />
+        )}
+        {organization.status === "needs_changes" && (
+          <NoticeCard
+            titleAs="h2"
+            title={t("needsChanges.title", { name: organization.name })}
+            description={
+              organization.decisionMessage && (
+                <p className="whitespace-pre-line">{organization.decisionMessage}</p>
+              )
+            }
+            badge={<Badge variant="info">{t("status.needs_changes")}</Badge>}
+            foot={t(owner ? "needsChanges.owner" : "needsChanges.member")}
+            actions={
+              toProfile && (
+                <Button prominence="secondary" href={siteRoutes.workspaceOrganization}>
+                  {t("needsChanges.edit")}
                 </Button>
               )
             }
@@ -111,14 +147,28 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
               </>
             }
             badge={<Badge variant="info">{t("status.rejected")}</Badge>}
-            foot={t(owner ? "rejected.owner" : "rejected.member")}
-            actions={
-              toProfile && (
-                <Button prominence="secondary" href={siteRoutes.workspaceOrganization}>
-                  {t("rejected.edit")}
-                </Button>
-              )
+            foot={t("rejected.foot")}
+          />
+        )}
+
+        {organization.suspendedAt && organization.suspensionReason && (
+          <NoticeCard
+            titleAs="h2"
+            title={t("suspended.title", { name: organization.name })}
+            description={
+              <>
+                <p>
+                  {t("suspended.reason", {
+                    reason: takeDownReasonName(organization.suspensionReason),
+                  })}
+                </p>
+                {organization.suspensionMessage && (
+                  <p className="whitespace-pre-line">{organization.suspensionMessage}</p>
+                )}
+              </>
             }
+            badge={<Badge variant="info">{t("status.suspended")}</Badge>}
+            foot={t("suspended.foot")}
           />
         )}
 

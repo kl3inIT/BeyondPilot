@@ -3,12 +3,12 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { QueueNext } from "@/components/composites/queue-next";
+import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalent } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { TalentReview } from "./talent-review";
-import { TalentStatus } from "./talent-status";
 import { TalentView } from "./talent-view";
 
 type AdminTalentPageProps = {
@@ -26,6 +26,7 @@ type AdminTalentPageProps = {
 function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
   const t = useTranslations("Admin.talent.detail");
   const reason = useVocabulary("talentRejection");
+  const status = useVocabulary("talentStatus");
   const role = useVocabulary("talentRole");
   const countryName = useCountryName();
   const format = useFormatter();
@@ -37,10 +38,10 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
   ]
     .filter(Boolean)
     .join(" · ");
-  const decided = profile.status === "changes_requested" || profile.status === "removed";
+  const state = reviewState(profile);
   const sent =
     profile.submittedAt &&
-    (profile.status === "submitted"
+    (profile.status === "in_review"
       ? t("waitingSince", { time: format.relativeTime(new Date(profile.submittedAt)) })
       : t("submitted", {
           day: format.dateTime(new Date(profile.submittedAt), { dateStyle: "medium" }),
@@ -80,40 +81,45 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
           <div className="flex items-start justify-between gap-4">
             <div className="flex min-w-0 flex-col gap-1">
               <h2 id="talent-decision" className="text-lg font-semibold">
-                {t(`decision.${profile.status}.title`)}
+                {t(`decision.${state}.title`)}
               </h2>
-              <p className="text-sm text-muted-foreground">
-                {t(`decision.${profile.status}.lead`)}
-              </p>
+              <p className="text-sm text-muted-foreground">{t(`decision.${state}.lead`)}</p>
             </div>
             <div className="shrink-0 pt-1">
-              <TalentStatus status={profile.status} />
+              <ReviewStatus state={state}>{status(state)}</ReviewStatus>
             </div>
           </div>
-          {decided && (
+          {profile.suspendedAt ? (
             <p className="rounded-lg bg-muted p-3 text-sm">
               <span className="font-medium">
-                {t(profile.status === "removed" ? "removed" : "rejected", {
-                  reason: reason(profile.decisionReason ?? "other"),
-                })}
+                {t("takenDown", { reason: reason(profile.suspensionReason ?? "other") })}
               </span>
-              {profile.decisionMessage && <> {profile.decisionMessage}</>}
+              {profile.suspensionMessage && <> {profile.suspensionMessage}</>}
             </p>
+          ) : (
+            profile.status === "needs_changes" && (
+              <p className="rounded-lg bg-muted p-3 text-sm">
+                <span className="font-medium">
+                  {t("sentBack", { reason: reason(profile.decisionReason ?? "other") })}
+                </span>
+                {profile.decisionMessage && <> {profile.decisionMessage}</>}
+              </p>
+            )
           )}
           <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
             <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
               {sent && <span>{sent}</span>}
               <span className="text-muted-foreground">{t("audited")}</span>
               {!profile.listed && <span className="text-muted-foreground">{t("unlisted")}</span>}
-              {profile.status === "approved" && profile.listed && (
+              {state === "approved" && profile.listed && (
                 <TextButton href={`${siteRoutes.talent}/${profile.slug}`}>{t("public")}</TextButton>
               )}
             </p>
-            {(profile.status === "submitted" || profile.status === "approved") && (
+            {(state === "in_review" || state === "approved" || state === "suspended") && (
               <TalentReview
                 key={profile.id}
                 profile={profile}
-                nextHref={next?.href ?? `${siteRoutes.adminTalent}?status=submitted`}
+                nextHref={next?.href ?? `${siteRoutes.adminTalent}?status=in_review`}
               />
             )}
           </div>

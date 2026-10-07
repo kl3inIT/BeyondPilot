@@ -1,6 +1,8 @@
+import { BoxesIcon, BuildingIcon, RocketIcon, UsersIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { readAdminOrganizations } from "@/features/organization/organization-queries";
 import { readAdminSolutions } from "@/features/solution/solution-queries";
 import { readAdminTalentList } from "@/features/talent/talent-queries";
@@ -24,25 +26,35 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
   await requireRole("operator", siteRoutes.admin);
   const t = await getTranslations("Admin");
   const [organizations, solutions, talent] = await Promise.all([
-    readAdminOrganizations({ q: "", status: "pending", page: 1 }),
-    readAdminSolutions({ q: "", status: "submitted", industry: null, page: 1 }),
-    readAdminTalentList({ q: "", status: "submitted", page: 1 }),
+    readAdminOrganizations({ q: "", status: "in_review", page: 1 }),
+    readAdminSolutions({ q: "", status: "in_review", industry: null, page: 1 }),
+    readAdminTalentList({ q: "", status: "in_review", page: 1 }),
   ]);
   const queues = [
     {
       key: "organizations" as const,
-      href: `${siteRoutes.adminOrganizations}?status=pending`,
+      Icon: BuildingIcon,
+      href: `${siteRoutes.adminOrganizations}?status=in_review`,
       count: organizations.total,
     },
     {
       key: "solutions" as const,
-      href: `${siteRoutes.adminSolutions}?status=submitted`,
+      Icon: BoxesIcon,
+      href: `${siteRoutes.adminSolutions}?status=in_review`,
       count: solutions.total,
     },
     {
       key: "talent" as const,
-      href: `${siteRoutes.adminTalent}?status=submitted`,
+      Icon: UsersIcon,
+      href: `${siteRoutes.adminTalent}?status=in_review`,
       count: talent.total,
+    },
+    {
+      // A deployment is reviewed on its solution; the list puts the solutions holding one first.
+      key: "deployments" as const,
+      Icon: RocketIcon,
+      href: siteRoutes.adminSolutions,
+      count: solutions.deploymentsAwaitingReview,
     },
   ];
   const waiting = queues.reduce((sum, queue) => sum + queue.count, 0);
@@ -50,10 +62,10 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <AdminPageTitle destination="home">{t("title")}</AdminPageTitle>
         <p className="text-sm text-muted-foreground">{t("home.lead", { count: waiting })}</p>
       </div>
-      <ul className="grid gap-4 sm:grid-cols-3">
+      <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {queues.map((queue) => (
           <li key={queue.key}>
             <Link
@@ -63,7 +75,15 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
               <span className="text-3xl font-semibold tracking-tight tabular-nums">
                 {queue.count}
               </span>
-              <span className="text-sm font-medium">{t(`home.${queue.key}`)}</span>
+              <span className="flex items-center gap-2 text-sm font-medium">
+                {/* The destination's icon in the sidebar, so the card and the menu read as one place. */}
+                <queue.Icon
+                  aria-hidden="true"
+                  strokeWidth={1.75}
+                  className="size-4 shrink-0 text-muted-foreground"
+                />
+                {t(`home.${queue.key}`)}
+              </span>
               <span className="text-sm text-muted-foreground">
                 {t(queue.count > 0 ? "home.review" : "home.none")}
               </span>

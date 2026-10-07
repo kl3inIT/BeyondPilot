@@ -1,24 +1,24 @@
-# Staging on the shared host (docs/runbooks/ci-cd.md). deploy.sh names the images by digest and reads the
-# rest from /apps/beyondpilot/.env.staging. The reverse proxy of the host, Nginx Proxy Manager on the external
+# Staging on the shared host (docs/runbooks/ci-cd.md), the overlay of compose.base.yaml. deploy.sh names the
+# images by digest and reads the rest from /apps/beyondpilot-staging/.env.staging; secrets are files under /apps/beyondpilot-staging/secrets.
+# Its email goes through the provider operators set in Admin › Email. The reverse proxy of the host, Nginx Proxy Manager on the external
 # proxy-network, reaches the web and the api by their container names; nothing publishes a host port.
 services:
   postgres:
-    container_name: beyondpilot-postgres
+    container_name: beyondpilot-staging-postgres
     environment:
       POSTGRES_PASSWORD_FILE: /run/secrets/database_password
     secrets:
       - database_password
 
   api:
-    container_name: beyondpilot-api
+    container_name: beyondpilot-staging-api
     image: ${BEYONDPILOT_API_IMAGE:?the api image is named by deploy.sh}
     environment:
       SPRING_PROFILES_ACTIVE: production,staging
       BEYONDPILOT_DATABASE_URL: jdbc:postgresql://postgres:5432/beyondpilot
       BEYONDPILOT_DATABASE_USERNAME: beyondpilot
-      BEYONDPILOT_MAIL_HOST: mailpit
-      BEYONDPILOT_MAIL_PORT: "1025"
-      BEYONDPILOT_MAIL_FROM: ${BEYONDPILOT_MAIL_FROM:?}
+      # Emails read the GenAI Fund logo from the site; who delivers them is set in Admin › Email.
+      BEYONDPILOT_SITE_URL: https://beyondpilot.vadan.app
       BEYONDPILOT_STORAGE_PROVIDER: local
       BEYONDPILOT_IDENTITY_OPERATOR_EMAILS: ${BEYONDPILOT_IDENTITY_OPERATOR_EMAILS:?}
       BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID: ${BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID:?}
@@ -28,36 +28,40 @@ services:
         target: BEYONDPILOT_DATABASE_PASSWORD
       - source: google_client_secret
         target: BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_SECRET
+      - source: notification_encryption_key
+        target: BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY
+      - source: ai_encryption_key
+        target: BEYONDPILOT_AI_ENCRYPTION_KEY
+      - source: mcp_signing_key
+        target: BEYONDPILOT_IDENTITY_OAUTH_SIGNING_KEY
     networks:
       - internal
       - proxy
 
   web:
-    container_name: beyondpilot-web
+    container_name: beyondpilot-staging-web
     image: ${BEYONDPILOT_WEB_IMAGE:?the web image is named by deploy.sh}
     networks:
       - internal
       - proxy
 
-  # Its mail holds sign-in codes, so it stays off proxy-network, which other tenants of the host share; the team
-  # reaches it through an SSH tunnel (docs/runbooks/ci-cd.md), and its web interface still asks for a login.
-  mailpit:
-    container_name: beyondpilot-mailpit
-    environment:
-      MP_UI_AUTH_FILE: /run/secrets/mailpit_ui_auth
-    secrets:
-      - mailpit_ui_auth
 
-# Each file is owned by uid 1654, the api's user, with mode 0400: Compose mounts it as it is on the host. Postgres and
-# Mailpit read theirs as root.
+# Each file is owned by uid 1654, the api's user, with mode 0400: Compose mounts it as it is on the host. Postgres reads
+# its own as root.
 secrets:
   database_password:
-    file: /apps/beyondpilot/secrets/database-password
+    file: /apps/beyondpilot-staging/secrets/database-password
   google_client_secret:
-    file: /apps/beyondpilot/secrets/google-client-secret
-  # htpasswd lines (bcrypt) of the people who read staging mail.
-  mailpit_ui_auth:
-    file: /apps/beyondpilot/secrets/mailpit-ui-auth
+    file: /apps/beyondpilot-staging/secrets/google-client-secret
+  # 32 random bytes in Base64 that encrypt the email providers' secrets in the database.
+  notification_encryption_key:
+    file: /apps/beyondpilot-staging/secrets/notification-encryption-key
+  # 32 random bytes in Base64 that encrypt the AI providers' keys operators enter in Admin › AI › Providers.
+  ai_encryption_key:
+    file: /apps/beyondpilot-staging/secrets/ai-encryption-key
+  # The RSA private key, PKCS#8 PEM, that signs the access tokens of AI apps connected to the MCP servers.
+  mcp_signing_key:
+    file: /apps/beyondpilot-staging/secrets/mcp-signing-key
 
 networks:
   proxy:

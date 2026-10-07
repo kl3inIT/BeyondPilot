@@ -14,15 +14,24 @@ public enum SolutionErrorCode implements ErrorCode {
 			"Approve the organization first: a solution is listed only when its organization is."),
 
 	INCOMPLETE("SOLUTION_INCOMPLETE", ErrorCategory.VALIDATION,
-			"A solution needs a summary, a maturity, a focus area and an industry before it is submitted."),
+			"A solution needs a summary, a maturity, a focus area, an industry, a logo and a cover image before it "
+					+ "is submitted."),
 
 	NOT_SUBMITTABLE("SOLUTION_NOT_SUBMITTABLE", ErrorCategory.CONFLICT,
-			"This solution is already submitted or approved."),
+			"This solution is already in review, approved, or refused for good."),
+
+	NOT_EDITABLE("SOLUTION_NOT_EDITABLE", ErrorCategory.CONFLICT,
+			"This solution was refused for good and can no longer be changed."),
 
 	NOT_A_DRAFT("SOLUTION_NOT_A_DRAFT", ErrorCategory.CONFLICT, "Only a draft can be deleted."),
 
 	NOT_AWAITING_REVIEW("SOLUTION_NOT_AWAITING_REVIEW", ErrorCategory.CONFLICT,
 			"This solution is not waiting for review."),
+
+	NOT_APPROVED("SOLUTION_NOT_APPROVED", ErrorCategory.CONFLICT,
+			"Only an approved solution that is not taken down can be taken down."),
+
+	NOT_TAKEN_DOWN("SOLUTION_NOT_TAKEN_DOWN", ErrorCategory.CONFLICT, "This solution is not taken down."),
 
 	CHANGED_MEANWHILE("SOLUTION_CHANGED_MEANWHILE", ErrorCategory.CONFLICT,
 			"Someone else saved this solution in the meantime. Reload it and make your changes again."),
@@ -30,6 +39,8 @@ public enum SolutionErrorCode implements ErrorCode {
 	DECK_NOT_USABLE("SOLUTION_DECK_NOT_USABLE", ErrorCategory.VALIDATION,
 			"This file cannot be the deck: upload a PDF and use it for one solution only."),
 
+	IMAGE_NOT_USABLE("SOLUTION_IMAGE_NOT_USABLE", ErrorCategory.VALIDATION,
+			"This image cannot be used: upload a PNG, JPG or WebP for this solution and use it once."),
 	DEPLOYMENT_NOT_FOUND("SOLUTION_DEPLOYMENT_NOT_FOUND", ErrorCategory.NOT_FOUND,
 			"There is no such customer deployment."),
 

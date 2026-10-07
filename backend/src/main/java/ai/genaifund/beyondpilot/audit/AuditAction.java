@@ -36,8 +36,25 @@ public enum AuditAction {
 
 	ORGANIZATION_APPROVE("organization.approve"),
 
+	/** An operator took an approved organization down. {@code reason} is the code of the reason given. */
+	ORGANIZATION_SUSPEND("organization.suspend", "reason"),
+
+	ORGANIZATION_RESTORE("organization.restore"),
+
+	/** An operator changed an organization's profile or its verified domain. */
+	ORGANIZATION_UPDATE("organization.update"),
+
+	/** An operator invited an address to an organization. {@code role} is the role offered. */
+	ORGANIZATION_INVITE("organization.invite", "role"),
+
+	/** An operator took back an open invitation of an organization. */
+	ORGANIZATION_INVITATION_REVOKE("organization.invitation_revoke"),
+
 	/** {@code reason} is the code of the reason given. */
 	ORGANIZATION_REFUSE("organization.refuse", "reason"),
+
+	/** An operator sent an organization back to its owners with what to change. */
+	ORGANIZATION_SEND_BACK("organization.send_back"),
 
 	/** An operator let a person own an organization nobody owned. {@code account} is that person's identifier. */
 	ORGANIZATION_CLAIM_APPROVE("organization.claim_approve", "account"),
@@ -51,14 +68,46 @@ public enum AuditAction {
 
 	SOLUTION_APPROVE("solution.approve"),
 
-	/** {@code reason} is the code of the reason given. */
+	/** An operator sent a solution back to its owners with what to change. */
+	SOLUTION_SEND_BACK("solution.send_back"),
+
+	/**
+	 * An operator refused a solution for good. {@code reason} is the code of the reason given. Before BEY-76 it also
+	 * recorded taking an approved solution out of the directory.
+	 */
 	SOLUTION_REJECT("solution.reject", "reason"),
+
+	/** An operator took an approved solution down. {@code reason} is the code of the reason given. */
+	SOLUTION_TAKE_DOWN("solution.take_down", "reason"),
+
+	/** An operator put a solution that was taken down back. */
+	SOLUTION_RESTORE("solution.restore"),
+
+	/** An operator wrote what GenAI Fund says of a solution: who backs its company, its programme, its funding. */
+	SOLUTION_BACK("solution.back"),
 
 	/** An operator approved what an organization tells about a customer of a solution. */
 	SOLUTION_DEPLOYMENT_APPROVE("solution.deployment_approve"),
 
 	/** {@code reason} is the code of the reason given. */
 	SOLUTION_DEPLOYMENT_REJECT("solution.deployment_reject", "reason"),
+
+	/**
+	 * An operator created a use case for an organization. {@code organization} is that organization's identifier,
+	 * {@code status} is {@code draft} or {@code published}.
+	 */
+	USE_CASE_CREATE("use_case.create", "organization", "status"),
+
+	USE_CASE_SUBMIT("use_case.submit", "organization"),
+
+	USE_CASE_DRAFT("use_case.draft", "organization", "from"),
+
+	USE_CASE_APPROVE("use_case.approve", "organization"),
+
+	USE_CASE_SEND_BACK("use_case.send_back", "organization"),
+
+	/** An operator set the programs a use case belongs to. */
+	USE_CASE_SET_PROGRAMS("use_case.set_programs", "organization"),
 
 	/** An owner answered a request for an introduction, and both sides were told each other's address. */
 	INTRODUCTION_REPLY("introduction.reply"),
@@ -78,11 +127,14 @@ public enum AuditAction {
 	/** The person reported a message as unwanted; the sender was told it was declined. */
 	TALENT_ENQUIRY_REPORT("talent.enquiry_report"),
 
-	/** {@code reason} is the code of the reason given. */
+	/** An operator sent a profile back to its person. {@code reason} is the code of the reason given. */
 	TALENT_REQUEST_CHANGES("talent.request_changes", "reason"),
 
-	/** An operator took an approved profile away from the public. {@code reason} is the code of the reason given. */
+	/** {@code reason} is the code of the reason given. Its value is from when taking down was called removing. */
 	TALENT_REMOVE("talent.remove", "reason"),
+
+	/** An operator put a profile that was taken down back in the public. */
+	TALENT_RESTORE("talent.restore"),
 
 	/** The person deleted their own profile. */
 	TALENT_DELETE("talent.delete"),
@@ -99,7 +151,56 @@ public enum AuditAction {
 	PROPOSAL_DECIDE("proposal.decide", "decision"),
 
 	/** An operator released a program's outcomes. The counts are how many applicants each group had. */
-	PROPOSAL_RELEASE("proposal.release", "shortlisted", "not_selected");
+	PROPOSAL_RELEASE("proposal.release", "shortlisted", "not_selected"),
+
+	/** An operator changed who delivers email or as whom. {@code provider} is the provider chosen. */
+	EMAIL_SETTINGS_UPDATE("email.settings_update", "provider"),
+
+	/** An operator changed the accent colour or the footer note of every email. */
+	EMAIL_APPEARANCE_UPDATE("email.appearance_update"),
+
+	/** An operator changed the wording of one kind of email; the resource is the kind. */
+	EMAIL_TEMPLATE_UPDATE("email.template_update"),
+
+	/** An operator put one kind of email back to its default wording. */
+	EMAIL_TEMPLATE_RESET("email.template_reset"),
+
+	/** An operator stopped email to an address. */
+	EMAIL_SUPPRESSION_ADD("email.suppression_add"),
+
+	/** An operator let email reach an address again. {@code reason} is why it had been suppressed. */
+	EMAIL_SUPPRESSION_REMOVE("email.suppression_remove", "reason"),
+
+	/** An operator sent an email again; the resource is the message sent again. */
+	EMAIL_RESEND("email.resend"),
+
+	/**
+	 * An operator sent a test email to an address not their own; the resource is that address. {@code subject} is
+	 * {@code settings} or the kind of email whose draft was sent.
+	 */
+	EMAIL_TEST_SEND("email.test_send", "subject"),
+
+	/** An operator connected an AI provider. {@code vendor} is {@code openai} or {@code openrouter}. */
+	AI_PROVIDER_CREATE("ai.provider_create", "vendor"),
+
+	/** An operator changed an AI provider. {@code key} is {@code kept}, {@code replaced} or {@code removed}. */
+	AI_PROVIDER_UPDATE("ai.provider_update", "vendor", "key"),
+
+	AI_PROVIDER_DELETE("ai.provider_delete"),
+
+	/** An operator chose the provider and model search embeds with. {@code model} is the model. */
+	SEARCH_MODEL_CHANGE("search.model_change", "model"),
+
+	SEARCH_SEMANTIC_ENABLE("search.semantic_enable"),
+
+	/** An operator turned semantic search off: search matches keywords only and calls no provider. */
+	SEARCH_SEMANTIC_DISABLE("search.semantic_disable"),
+
+	/** An operator rebuilt the search index from the published items. */
+	SEARCH_INDEX_REBUILD("search.index_rebuild"),
+
+	/** An operator let held-back items be embedded again at once. {@code count} is how many. */
+	SEARCH_EMBEDDING_RETRY("search.embedding_retry", "count");
 
 	private final String value;
 

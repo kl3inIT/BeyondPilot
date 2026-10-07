@@ -55,7 +55,7 @@ An operator may leave an organization without an owner: that is how a page is ha
 
 `V28__organization_drop_roles.sql` (slice 1): drops `organization.roles` and its check constraint.
 
-Slice 2 adds `suspended` to the status check with `suspension_reason`, `suspension_message` and `suspended_at` in `V13`. Slice 3 adds `merged` and `merged_into_id` in `V14`.
+Slice 2 adds `suspended` to the status check with `suspension_reason`, `suspension_message` and `suspended_at` in `V30`. Slice 3 adds `merged` and `merged_into_id` in `V14`.
 
 ## HTTP
 
@@ -85,9 +85,9 @@ The exact contract is `openapi.yml`, refreshed with each slice.
 
 ## Known limits
 
-- An invitation does not expire; the frames draw an expiry date, which is left out.
+- An invitation lapses seven days after it is sent (`V43`, BEY-71). A lapsed one is not open: nobody reads or answers it, it does not count against the open limit, and its address may be invited again. Nobody is told that it lapsed, and it still counts in the day it was sent.
 - "Ask to change the domain" is left out: an owner writes to GenAI Fund by email, as for anything else.
-- The logo is an address the owner writes; it is not uploaded, and the screens still draw initials until a screen that shows the logo reads it. A year in the future is accepted up to 2100.
+- The logo is an uploaded image. The workspace and the public page of the organization draw it; the operators' list and the search results draw initials, as their frames do. A year in the future is accepted up to 2100.
 - What the mockup's "Complete your account" step asks (first and last name, phone, country, LinkedIn, photo) belongs to `identity` and is not in this increment.
 - The Use cases tab of an enterprise waits for the use case module (BEY-35). When it exists, an owner drafts and submits and members read.
 - The daily limit is a rolling 24 hours, while the screen says "today".

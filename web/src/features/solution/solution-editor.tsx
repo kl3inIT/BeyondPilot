@@ -20,7 +20,7 @@ import { IconButton } from "@/components/actions/icon-button";
 import { TextButton } from "@/components/actions/text-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
-import { ReviewStatus } from "@/components/composites/review-status";
+import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { StepItem } from "@/components/composites/step-item";
 import { BrandLockup } from "@/components/layout/brand-lockup";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -50,10 +50,12 @@ import {
   fieldId,
   fieldSteps,
   held,
+  limits,
   missingForReview,
   reviewFields,
   toRequest,
   type EditorStep,
+  type HeldImage,
   type LinkField,
   type SolutionDraft,
 } from "./solution-editor-state";
@@ -83,6 +85,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
   const say = useTranslations();
   const reviewStatus = useVocabulary("reviewStatus");
   const rejection = useVocabulary("solutionRejection");
+  const takedown = useVocabulary("solutionTakedown");
   const format = useFormatter();
   const locale = useLocale();
   const notify = useNotify();
@@ -109,7 +112,11 @@ function SolutionEditor({ solution }: { solution: Solution }) {
   const firstStep = useRef(true);
 
   const list = getPathname({ href: siteRoutes.workspaceSolutions, locale });
-  const autosaves = server.status === "draft" || server.status === "rejected";
+  // A draft and a solution sent back are written step by step and sent for review at the end.
+  const autosaves = server.status === "draft" || server.status === "needs_changes";
+  // A solution refused for good stays as it was reviewed: it is read, never saved.
+  const finallyRefused = server.status === "rejected";
+  const standing = reviewState(server);
   const content = contentOf(draft);
   const dirty = content !== contentOf(held(server));
   const missing = missingForReview(draft);
@@ -129,6 +136,15 @@ function SolutionEditor({ solution }: { solution: Solution }) {
       Object.keys(patch).forEach((field) => next.delete(field));
       return next.size === current.size ? current : next;
     });
+  }
+
+  /** An image under the cover whose upload ended; the list may have changed while it was on its way. */
+  function addImage(image: HeldImage) {
+    setDraft((current) =>
+      current.images.length < limits.images
+        ? { ...current, images: [...current.images, image] }
+        : current,
+    );
   }
 
   async function send(body: SolutionDraft): Promise<boolean> {
@@ -320,10 +336,18 @@ function SolutionEditor({ solution }: { solution: Solution }) {
     if (wrong > 0) {
       return t("steps.toCheck", { count: wrong });
     }
-    const lacking = reviewFields.filter(
-      (entry) => entry.step === id && entry.field !== "name" && missing.includes(entry.field),
-    ).length;
-    return asking && lacking > 0 ? t("steps.toAdd", { count: lacking }) : undefined;
+    const lacking = reviewFields
+      .filter(
+        (entry) => entry.step === id && entry.field !== "name" && missing.includes(entry.field),
+      )
+      .map((entry) => entry.field);
+    if (!asking || lacking.length === 0) {
+      return undefined;
+    }
+    // The images are named: "2 fields to add" would not say that a file is what is asked for.
+    return id === "evidence"
+      ? t("steps.evidence.toAdd", { missing: lacking.length > 1 ? "both" : lacking[0] })
+      : t("steps.toAdd", { count: lacking.length });
   }
 
   /** Whether a step still lacks something a review needs; such a step is not shown as done. */
@@ -380,7 +404,11 @@ function SolutionEditor({ solution }: { solution: Solution }) {
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            <p role="status" className="flex items-center gap-1.5 text-xs font-medium">
+            <p
+              role="status"
+              hidden={finallyRefused}
+              className="flex items-center gap-1.5 text-xs font-medium"
+            >
               {state === "saving" && (
                 <>
                   <Loader2Icon
@@ -428,7 +456,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               </Badge>
             ) : (
               <span className="max-lg:hidden">
-                <ReviewStatus state={server.status}>{reviewStatus(server.status)}</ReviewStatus>
+                <ReviewStatus state={standing}>{reviewStatus(standing)}</ReviewStatus>
               </span>
             )}
             {autosaves ? (
@@ -455,14 +483,16 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               </>
             ) : (
               <>
-                <Button
-                  size="sm"
-                  pending={pending === "save"}
-                  disabled={pending !== null || !dirty}
-                  onClick={saveNow}
-                >
-                  {t("save")}
-                </Button>
+                {!finallyRefused && (
+                  <Button
+                    size="sm"
+                    pending={pending === "save"}
+                    disabled={pending !== null || !dirty}
+                    onClick={saveNow}
+                  >
+                    {t("save")}
+                  </Button>
+                )}
                 <Button prominence="tertiary" size="sm" href={siteRoutes.workspaceSolutions}>
                   {t("close")}
                 </Button>
@@ -488,7 +518,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
                 {t("visibility.draftShort", { organization: server.organizationName })}
               </p>
             ) : (
-              <ReviewStatus state={server.status}>{reviewStatus(server.status)}</ReviewStatus>
+              <ReviewStatus state={standing}>{reviewStatus(standing)}</ReviewStatus>
             )}
           </div>
           <Progress
@@ -538,14 +568,14 @@ function SolutionEditor({ solution }: { solution: Solution }) {
         </nav>
 
         <div className="flex w-full max-w-170 min-w-0 flex-col gap-4">
-          {server.status === "submitted" && (
+          {standing === "in_review" && (
             <Alert>
               <TimerIcon aria-hidden="true" />
-              <AlertTitle>{t("submitted.title")}</AlertTitle>
-              <AlertDescription>{t("submitted.lead")}</AlertDescription>
+              <AlertTitle>{t("in_review.title")}</AlertTitle>
+              <AlertDescription>{t("in_review.lead")}</AlertDescription>
             </Alert>
           )}
-          {server.status === "approved" && (
+          {standing === "approved" && (
             <Alert>
               <CircleCheckIcon aria-hidden="true" />
               <AlertTitle>{t(server.listed ? "approved.listed" : "approved.unlisted")}</AlertTitle>
@@ -557,7 +587,17 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               </AlertDescription>
             </Alert>
           )}
-          {server.status === "rejected" && (
+          {standing === "needs_changes" && (
+            <Alert variant="destructive">
+              <CircleAlertIcon aria-hidden="true" />
+              <AlertTitle>{t("needsChanges.title")}</AlertTitle>
+              <AlertDescription>
+                {server.decisionMessage && <p>{server.decisionMessage}</p>}
+                <p>{t("needsChanges.lead")}</p>
+              </AlertDescription>
+            </Alert>
+          )}
+          {standing === "rejected" && (
             <Alert variant="destructive">
               <CircleAlertIcon aria-hidden="true" />
               <AlertTitle>
@@ -566,6 +606,18 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               <AlertDescription>
                 {server.decisionMessage && <p>{server.decisionMessage}</p>}
                 <p>{t("rejected.lead")}</p>
+              </AlertDescription>
+            </Alert>
+          )}
+          {standing === "suspended" && (
+            <Alert variant="destructive">
+              <CircleAlertIcon aria-hidden="true" />
+              <AlertTitle>
+                {t("suspended.title", { reason: takedown(server.suspensionReason ?? "other") })}
+              </AlertTitle>
+              <AlertDescription>
+                {server.suspensionMessage && <p>{server.suspensionMessage}</p>}
+                <p>{t("suspended.lead")}</p>
               </AlertDescription>
             </Alert>
           )}
@@ -589,36 +641,42 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               <p className="text-muted-foreground">{stepLead}</p>
               {step !== "review" && (
                 <p className="text-sm text-muted-foreground">
-                  {t(step === "evidence" ? "allOptional" : "required")}
+                  {t(step === "evidence" ? "imagesRequired" : "required")}
                 </p>
               )}
             </div>
 
-            <FieldGroup>
-              {step === "basics" && <BasicsStep draft={draft} change={change} errorOf={errorOf} />}
-              {step === "fit" && <FitStep draft={draft} change={change} errorOf={errorOf} />}
-              {step === "evidence" && (
-                <EvidenceStep
-                  draft={draft}
-                  change={change}
-                  errorOf={errorOf}
-                  solutionId={solution.id}
-                  deckHref={deckHref}
-                  customerDeployments={solution.customerDeployments}
-                  onLinkLeft={(field) => setLeftLinks((current) => new Set(current).add(field))}
-                />
-              )}
-              {step === "review" && (
-                <ReviewStep
-                  draft={draft}
-                  change={change}
-                  customerDeployments={solution.customerDeployments}
-                  missing={missing}
-                  submittable={autosaves}
-                  onOpen={open}
-                />
-              )}
-            </FieldGroup>
+            {/* A refused solution is read as it was reviewed; its fields take no input. */}
+            <fieldset disabled={finallyRefused} className="min-w-0">
+              <FieldGroup>
+                {step === "basics" && (
+                  <BasicsStep draft={draft} change={change} errorOf={errorOf} />
+                )}
+                {step === "fit" && <FitStep draft={draft} change={change} errorOf={errorOf} />}
+                {step === "evidence" && (
+                  <EvidenceStep
+                    draft={draft}
+                    change={change}
+                    errorOf={errorOf}
+                    solutionId={solution.id}
+                    deckHref={deckHref}
+                    onImageAdded={addImage}
+                    customerDeployments={solution.customerDeployments}
+                    onLinkLeft={(field) => setLeftLinks((current) => new Set(current).add(field))}
+                  />
+                )}
+                {step === "review" && (
+                  <ReviewStep
+                    draft={draft}
+                    change={change}
+                    customerDeployments={solution.customerDeployments}
+                    missing={missing}
+                    submittable={autosaves}
+                    onOpen={open}
+                  />
+                )}
+              </FieldGroup>
+            </fieldset>
 
             <div className="sticky bottom-0 z-10 flex items-center justify-between gap-3 border-t bg-background py-4 max-md:-mx-5 max-md:px-5 md:static md:bg-transparent md:pb-0">
               {index === 0 ? (
@@ -652,10 +710,10 @@ function SolutionEditor({ solution }: { solution: Solution }) {
                   disabled={missing.length > 0 || !saveable || pending !== null}
                   onClick={() => setConfirming("submit")}
                 >
-                  {t(server.status === "rejected" ? "review.resubmit" : "review.submit")}
+                  {t(server.status === "needs_changes" ? "review.resubmit" : "review.submit")}
                 </Button>
               )}
-              {last && !autosaves && (
+              {last && !autosaves && !finallyRefused && (
                 <Button
                   size="lg"
                   pending={pending === "save"}

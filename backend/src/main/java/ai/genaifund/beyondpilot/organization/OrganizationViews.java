@@ -47,7 +47,9 @@ final class OrganizationViews {
 				organization.getFoundedYear(), organization.getLogoFileId(),
 				organization.getEmailDomain(),
 				organization.isAutoJoin(), organization.getStatus(), organization.getDecisionReason(),
-				organization.getDecisionMessage(), organization.getVersion(), organization.getCreatedAt());
+				organization.getDecisionMessage(), organization.getSuspensionReason(),
+				organization.getSuspensionMessage(), organization.getSuspendedAt(), organization.getVersion(),
+				organization.getCreatedAt());
 	}
 
 	static List<MemberResponse> members(List<Member> members, Map<UUID, Person> people, @Nullable UUID caller) {
@@ -62,7 +64,7 @@ final class OrganizationViews {
 		Person inviter = people.get(invitation.invitedByAccountId());
 		return new InvitationResponse(invitation.id(), invitation.organizationId(), organizationName,
 				invitation.email(), invitation.role(), inviter == null ? "GenAI Fund" : inviter.label(),
-				invitation.createdAt());
+				invitation.createdAt(), invitation.expiresAt());
 	}
 
 	static JoinRequestResponse joinRequest(JoinRequest request, Organization organization, Person person) {

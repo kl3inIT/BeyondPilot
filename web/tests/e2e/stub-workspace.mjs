@@ -30,7 +30,7 @@ const newCo = {
   id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04",
   name: "Newco",
   slug: "newco",
-  status: "pending",
+  status: "in_review",
   roles: ["enterprise"],
   emailDomain: "newco.example",
 };
@@ -51,6 +51,7 @@ const invitation = {
   role: "member",
   invitedBy: "Minh Trần",
   createdAt: day,
+  expiresAt: "2026-10-08T03:00:00Z",
   ...ofPocketPolicy,
 };
 
@@ -152,6 +153,17 @@ function solution(id, name, status, more) {
     website: "https://pocketpolicy.example",
     demoUrl: null,
     deck: null,
+    logo: {
+      fileId: `1090a2b3-4c5d-4e6f-8a9b-${id.slice(-12)}`,
+      fileName: "logo.png",
+      sizeBytes: 86016,
+    },
+    cover: {
+      fileId: `c0fea2b3-4c5d-4e6f-8a9b-${id.slice(-12)}`,
+      fileName: "cover.png",
+      sizeBytes: 1258291,
+    },
+    images: [],
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
     deployment: ["cloud_saas"],
@@ -187,7 +199,7 @@ const solutions = [
       }),
     ],
   }),
-  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e12", "Claims Vision", "submitted"),
+  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e12", "Claims Vision", "in_review"),
   solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e13", "Fraud Lens", "draft", {
     summary: null,
     problemsSolved: null,
@@ -196,12 +208,14 @@ const solutions = [
     industries: [],
     deployment: [],
     maturity: undefined,
+    logo: null,
+    cover: null,
     complete: false,
     submittedAt: null,
     version: 0,
   }),
-  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e14", "Quote Bot", "rejected", {
-    decisionReason: "duplicate",
+  // Sent back by GenAI Fund with what to change; its owners correct it and send it again.
+  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e14", "Quote Bot", "needs_changes", {
     decisionMessage: "It is Policy Chat under another name.",
   }),
 ];
@@ -214,7 +228,21 @@ const summaryOf = (item) => ({
   organizationName: item.organizationName,
   summary: item.summary,
   maturity: item.maturity,
+  decisionReason: item.decisionReason ?? null,
+  decisionMessage: item.decisionMessage ?? null,
+  suspendedAt: item.suspendedAt ?? null,
+  suspensionReason: item.suspensionReason ?? null,
+  suspensionMessage: item.suspensionMessage ?? null,
   listed: item.listed,
+  // What a review needs and the solution lacks, as the backend names it.
+  missing: [
+    ...(item.summary ? [] : ["summary"]),
+    ...(item.maturity ? [] : ["maturity"]),
+    ...(item.industries.length > 0 ? [] : ["industries"]),
+    ...(item.focusAreas.length > 0 ? [] : ["focusAreas"]),
+    ...(item.logo ? [] : ["logo"]),
+    ...(item.cover ? [] : ["cover"]),
+  ],
   submittedAt: item.submittedAt,
   updatedAt: item.updatedAt,
   deploymentsAwaitingReview: 0,
@@ -289,7 +317,7 @@ const talent = {
     ],
   },
   member: {
-    profile: profile("Siti Rahma", "siti-rahma", "changes_requested", {
+    profile: profile("Siti Rahma", "siti-rahma", "needs_changes", {
       projects: [],
       decisionReason: "incomplete",
       decisionMessage: "Add a project.",
@@ -347,6 +375,7 @@ export function answerWorkspace(url, session) {
     "/api/organization/mine",
     "/api/organization/mine/members",
     "/api/solution/mine",
+    "/api/usecase/mine",
     "/api/talent/mine",
     "/api/introduction/mine/received",
   ];
@@ -410,6 +439,10 @@ export function answerWorkspace(url, session) {
         allowance: role === "owner" ? allowance : null,
       },
     ];
+  }
+  if (pathname === "/api/usecase/mine") {
+    // Anyone who belongs to an approved organization may read its use cases; the stub has none.
+    return role ? [200, { items: [] }] : refused(403, "USECASE_ENTERPRISE_REQUIRED");
   }
   if (pathname === "/api/solution/mine") {
     // A person without an organization has no solutions, and is not refused.

@@ -2,6 +2,7 @@ import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
+import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { Status } from "@/components/composites/status";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVocabulary } from "@/i18n/vocabulary";
@@ -14,7 +15,6 @@ import { DeleteTalentProfile } from "./delete-talent-profile";
 import { TalentEnquiryActions } from "./talent-enquiry-actions";
 import { TalentForm } from "./talent-form";
 import { TalentPreview } from "./talent-preview";
-import { TalentStatus } from "./talent-status";
 
 type MyTalentPageProps = {
   mine: MyTalent;
@@ -35,7 +35,7 @@ function MyTalentPage({ mine, accountName }: MyTalentPageProps) {
   const profile = mine.profile ?? null;
   const waiting = mine.enquiries.filter((enquiry) => enquiry.status === "pending").length;
   const state = profile && [
-    word(profile.status),
+    word(reviewState(profile)),
     t("saved", {
       when: format.dateTime(new Date(profile.updatedAt), {
         dateStyle: "medium",
@@ -119,9 +119,9 @@ function MyTalentPage({ mine, accountName }: MyTalentPageProps) {
 /** Who can open the profile now, which the line under the title says after its status. */
 function seenBy(profile: TalentProfile) {
   if (profile.status === "approved") {
-    return profile.listed ? "listed" : "hidden";
+    return profile.listed && !profile.suspendedAt ? "listed" : "hidden";
   }
-  return profile.status === "submitted" ? "inReview" : "onlyYou";
+  return profile.status === "in_review" ? "inReview" : "onlyYou";
 }
 
 /**
@@ -132,9 +132,11 @@ function Decision({ profile }: { profile: TalentProfile }) {
   const t = useTranslations("Talent.mine");
   const reason = useVocabulary("talentRejection");
   const format = useFormatter();
-  const badge = <TalentStatus status={profile.status} />;
+  const status = useVocabulary("talentStatus");
+  const state = reviewState(profile);
+  const badge = <ReviewStatus state={state}>{status(state)}</ReviewStatus>;
 
-  if (profile.status === "submitted") {
+  if (state === "in_review") {
     return (
       <NoticeCard
         titleAs="h2"
@@ -151,7 +153,7 @@ function Decision({ profile }: { profile: TalentProfile }) {
       />
     );
   }
-  if (profile.status === "approved") {
+  if (state === "approved") {
     return (
       <NoticeCard
         titleAs="h2"
@@ -169,17 +171,19 @@ function Decision({ profile }: { profile: TalentProfile }) {
       />
     );
   }
-  if (profile.status === "changes_requested" || profile.status === "removed") {
-    const key = profile.status === "removed" ? "removed" : "changesRequested";
+  if (state === "suspended" || state === "needs_changes") {
+    const takenDown = state === "suspended";
+    const key = takenDown ? "takenDown" : "sentBack";
+    const message = takenDown ? profile.suspensionMessage : profile.decisionMessage;
     return (
       <NoticeCard
         titleAs="h2"
-        title={t(`${key}.title`, { reason: reason(profile.decisionReason ?? "other") })}
-        description={
-          profile.decisionMessage && (
-            <p className="whitespace-pre-line">{profile.decisionMessage}</p>
-          )
-        }
+        title={t(`${key}.title`, {
+          reason: reason(
+            (takenDown ? profile.suspensionReason : profile.decisionReason) ?? "other",
+          ),
+        })}
+        description={message && <p className="whitespace-pre-line">{message}</p>}
         badge={badge}
         foot={t(`${key}.lead`)}
       />

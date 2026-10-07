@@ -6,6 +6,7 @@ import { readReceivedIntroductions } from "@/features/introduction/introduction-
 import { IntroductionsPage } from "@/features/introduction/introductions-page";
 import { readMembers, readMyOrganization } from "@/features/organization/organization-queries";
 import { readMySolutions } from "@/features/solution/solution-queries";
+import { readUseCaseCount } from "@/features/usecase/my-use-case-queries";
 import { getPathname } from "@/i18n/navigation";
 import { requireAccount } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
@@ -37,12 +38,15 @@ export default async function IntroductionsRoute({
     redirect(getPathname({ href: siteRoutes.workspaceOrganization, locale }));
   }
 
+  const useCases = await readUseCaseCount({ ...mine, organization });
+
   return (
     <IntroductionsPage
       mine={{ ...mine, organization }}
       introductions={introductions}
-      members={members?.members.length ?? 0}
+      members={members?.total ?? 0}
       solutions={solutions.items.length}
+      useCases={useCases}
     />
   );
 }

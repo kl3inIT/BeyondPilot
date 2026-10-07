@@ -19,7 +19,7 @@ import org.springframework.stereotype.Repository;
 public class TalentQueryRepository {
 
 	private static final String PUBLIC_FILTER = """
-			where status = 'approved' and listed
+			where status = 'approved' and listed and suspended_at is null
 			  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\'
 			       or lower(headline) like :pattern escape '\\'
 			       or exists (select 1 from unnest(skills) skill where lower(skill) like :pattern escape '\\')
@@ -34,11 +34,14 @@ public class TalentQueryRepository {
 	private static final String ADMIN_FILTER = """
 			where status <> 'draft'
 			  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\')
-			  and (cast(:status as text) is null or status = :status)
+			  and (cast(:status as text) is null
+			       or (:status = 'suspended' and suspended_at is not null)
+			       or (:status = 'approved' and status = 'approved' and suspended_at is null)
+			       or (:status not in ('suspended', 'approved') and status = :status))
 			""";
 
 	private static final String ROW = """
-			select id, account_id, slug, name, headline, roles, skills, country, city, status, listed,
+			select id, account_id, slug, name, headline, roles, skills, country, city, status, suspended_at, listed,
 			       submitted_at, updated_at, photo_file_id,
 			       (select count(*) from talent_project p where p.profile_id = talent_profile.id) as project_count,
 			       (select array[p.title, p.stage] from talent_project p where p.profile_id = talent_profile.id
@@ -58,7 +61,8 @@ public class TalentQueryRepository {
 	 * @param leadStage how far that project went; null when not stated
 	 */
 	public record Row(UUID id, UUID accountId, String slug, String name, @Nullable String headline, List<String> roles,
-			List<String> skills, @Nullable String country, @Nullable String city, String status, boolean listed,
+			List<String> skills, @Nullable String country, @Nullable String city, String status,
+			@Nullable Instant suspendedAt, boolean listed,
 			@Nullable Instant submittedAt, Instant updatedAt, @Nullable UUID photoFileId, int projectCount,
 			@Nullable String leadTitle, @Nullable String leadStage) {
 	}
@@ -85,7 +89,7 @@ public class TalentQueryRepository {
 	/** One page for operators, drafts left out: those waiting for review first, the longest wait on top. */
 	public List<Row> adminPage(@Nullable String text, @Nullable String status, int limit, long offset) {
 		return adminFiltered(ROW + ADMIN_FILTER + """
-				order by case status when 'submitted' then 0 else 1 end, submitted_at, id
+				order by case status when 'in_review' then 0 else 1 end, submitted_at, id
 				limit :limit offset :offset
 				""", text, status).param("limit", limit).param("offset", offset).query(TalentQueryRepository::row).list();
 	}
@@ -117,12 +121,13 @@ public class TalentQueryRepository {
 
 	private static Row row(ResultSet row, int index) throws SQLException {
 		Timestamp submittedAt = row.getTimestamp("submitted_at");
+		Timestamp suspendedAt = row.getTimestamp("suspended_at");
 		Array lead = row.getArray("lead_project");
 		String[] leadProject = lead == null ? new String[2] : (String[]) lead.getArray();
 		return new Row(row.getObject("id", UUID.class), row.getObject("account_id", UUID.class), row.getString("slug"),
 				row.getString("name"), row.getString("headline"), strings(row.getArray("roles")),
 				strings(row.getArray("skills")), row.getString("country"), row.getString("city"), row.getString("status"),
-				row.getBoolean("listed"), submittedAt == null ? null : submittedAt.toInstant(),
+				suspendedAt == null ? null : suspendedAt.toInstant(), row.getBoolean("listed"), submittedAt == null ? null : submittedAt.toInstant(),
 				row.getTimestamp("updated_at").toInstant(), row.getObject("photo_file_id", UUID.class),
 				row.getInt("project_count"), leadProject[0], leadProject[1]);
 	}

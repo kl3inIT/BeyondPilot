@@ -3,13 +3,15 @@ package ai.genaifund.beyondpilot.organization;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
-import ai.genaifund.beyondpilot.identity.RecordingMailSender;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,9 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -40,7 +42,7 @@ class OrganizationTest {
 	private int port;
 
 	@Autowired
-	private RecordingMailSender mail;
+	private TestMailbox mail;
 
 	@Autowired
 	private JdbcClient jdbc;
@@ -51,7 +53,7 @@ class OrganizationTest {
 
 	@BeforeEach
 	void setUp() {
-		client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+		client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory()).baseUrl("http://localhost:" + port).build();
 		operator = signIn("operator@genaifund.test");
 	}
 
@@ -62,7 +64,7 @@ class OrganizationTest {
 		String created = body(post(founder, API + "/organizations", creation("Created Co")).expectStatus()
 			.isCreated());
 
-		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("pending");
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("in_review");
 		assertThat(JsonPath.<String>read(created, "$.slug")).isEqualTo("created-co");
 		// A work address vouches for nothing: an operator verifies the domain.
 		assertThat(JsonPath.<String>read(created, "$.emailDomain")).isNull();
@@ -116,7 +118,7 @@ class OrganizationTest {
 		String created = body(post(signIn("dat@builder.test"), API + "/organizations", builder).expectStatus()
 			.isCreated());
 		assertThat(JsonPath.<String>read(created, "$.type")).isEqualTo("independent_builder");
-		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("pending");
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("in_review");
 
 		Map<String, Object> company = new HashMap<>(creation("No Industry Co"));
 		company.put("industries", List.of());
@@ -217,32 +219,66 @@ class OrganizationTest {
 				Map.of("emailDomain", "Not A Domain")), 400, "REQUEST_INVALID");
 
 		// Nothing was decided.
-		assertThat(JsonPath.<String>read(mine(second), "$.organization.status")).isEqualTo("pending");
+		assertThat(JsonPath.<String>read(mine(second), "$.organization.status")).isEqualTo("in_review");
 	}
 
 	@Test
-	void aRefusedOrganizationShowsWhyAndWaitsAgainOnceItsOwnerSavesIt() {
+	void anOrganizationSentBackShowsWhyAndWaitsAgainOnceItsOwnerSavesIt() {
+		String founder = signIn("founder@sentback.test");
+		UUID id = create(founder, "Sent Back Co");
+		String sendBack = API + "/admin/organizations/" + id + "/send-back";
+
+		assertProblem(post(founder, sendBack, Map.of("reason", "Tell us what you build.")), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(operator, sendBack, Map.of("reason", " ")), 400, "REQUEST_INVALID");
+		post(operator, sendBack, Map.of("reason", "Tell us what you build.")).expectStatus().isNoContent();
+		assertThat(mail.latestSubjectTo("founder@sentback.test")).isEqualTo("Changes needed: Sent Back Co");
+		// It no longer waits for review, so it is not decided twice.
+		assertProblem(post(operator, sendBack, Map.of("reason", "Again.")), 409, "ORGANIZATION_NOT_AWAITING_REVIEW");
+		assertProblem(post(operator, API + "/admin/organizations/" + id + "/approve", Map.of()), 409,
+				"ORGANIZATION_NOT_AWAITING_REVIEW");
+
+		String sentBack = mine(founder);
+		assertThat(JsonPath.<String>read(sentBack, "$.organization.status")).isEqualTo("needs_changes");
+		assertThat(JsonPath.<Object>read(sentBack, "$.organization.decisionReason")).isNull();
+		assertThat(JsonPath.<String>read(sentBack, "$.organization.decisionMessage"))
+			.isEqualTo("Tell us what you build.");
+		assertThat(events(id)).containsExactly("organization.send_back");
+
+		Map<String, Object> corrected = save(profile("Sent Back Co"),
+				JsonPath.<Integer>read(sentBack, "$.organization.version"));
+		put(founder, API + "/mine", corrected).expectStatus().isOk();
+		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("in_review");
+		// The screen that read the older version is told, instead of overwriting.
+		assertProblem(put(founder, API + "/mine", corrected), 409, "ORGANIZATION_CHANGED_MEANWHILE");
+	}
+
+	@Test
+	void aRefusedOrganizationIsRefusedForGoodAndOnlyWhileItWaitsForReview() {
 		String founder = signIn("founder@refused.test");
 		UUID id = create(founder, "Refused Co");
+		String refuse = API + "/admin/organizations/" + id + "/refuse";
 
-		post(operator, API + "/admin/organizations/" + id + "/refuse",
-				Map.of("reason", "incomplete", "message", "Tell us what you build."))
+		// Missing information is a send back, not a refusal.
+		assertProblem(post(operator, refuse, Map.of("reason", "incomplete")), 400, "REQUEST_INVALID");
+		post(operator, refuse, Map.of("reason", "not_a_real_organization", "message", "We found no such company."))
 			.expectStatus()
 			.isNoContent();
+		assertProblem(post(operator, refuse, Map.of("reason", "duplicate")), 409, "ORGANIZATION_NOT_AWAITING_REVIEW");
 
 		String refused = mine(founder);
 		assertThat(JsonPath.<String>read(refused, "$.organization.status")).isEqualTo("rejected");
-		assertThat(JsonPath.<String>read(refused, "$.organization.decisionReason")).isEqualTo("incomplete");
+		assertThat(JsonPath.<String>read(refused, "$.organization.decisionReason")).isEqualTo("not_a_real_organization");
 		assertThat(JsonPath.<String>read(refused, "$.organization.decisionMessage"))
-			.isEqualTo("Tell us what you build.");
+			.isEqualTo("We found no such company.");
 		assertThat(events(id)).containsExactly("organization.refuse");
 
-		Map<String, Object> corrected = save(profile("Refused Co"),
-				JsonPath.<Integer>read(refused, "$.organization.version"));
-		put(founder, API + "/mine", corrected).expectStatus().isOk();
-		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("pending");
-		// The screen that read the older version is told, instead of overwriting.
-		assertProblem(put(founder, API + "/mine", corrected), 409, "ORGANIZATION_CHANGED_MEANWHILE");
+		// Its owner may still correct the profile, but it is not reviewed again.
+		put(founder, API + "/mine",
+				save(profile("Refused Co"), JsonPath.<Integer>read(refused, "$.organization.version")))
+			.expectStatus()
+			.isOk();
+		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("rejected");
 	}
 
 	@Test
@@ -374,6 +410,125 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anOperatorEditsTheProfileAndTheDomainAndManagesThePeopleOfAnyOrganization() {
+		String founder = signIn("founder@managed.test");
+		UUID id = approved(founder, "Managed Co");
+		String colleague = signIn("colleague@managed.test");
+		String detail = API + "/admin/organizations/" + id;
+		post(operator, detail + "/invitations", Map.of("email", "colleague@managed.test", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		post(colleague, API + "/invitations/"
+				+ JsonPath.<String>read(body(get(operator, detail).expectStatus().isOk()), "$.invitations[0].id")
+				+ "/accept", Map.of())
+			.expectStatus()
+			.isNoContent();
+
+		// The profile and the domain, saved against the version the screen read.
+		int version = JsonPath.<Integer>read(body(get(operator, detail).expectStatus().isOk()), "$.organization.version");
+		Map<String, Object> edit = Map.of("profile", save(profile("Managed Company"), version), "emailDomain",
+				"managed.test");
+		assertProblem(put(founder, detail, edit), 403, "IDENTITY_OPERATOR_REQUIRED");
+		String saved = body(put(operator, detail, edit).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(saved, "$.organization.name")).isEqualTo("Managed Company");
+		assertThat(JsonPath.<String>read(saved, "$.organization.emailDomain")).isEqualTo("managed.test");
+		assertProblem(put(operator, detail, edit), 409, "ORGANIZATION_CHANGED_MEANWHILE");
+		UUID other = approved(signIn("other@other-managed.test"), "Other Managed Co");
+		assertProblem(put(operator, API + "/admin/organizations/" + other,
+				Map.of("profile", save(profile("Other Managed Co"),
+						JsonPath.<Integer>read(body(get(operator, API + "/admin/organizations/" + other)
+							.expectStatus()
+							.isOk()), "$.organization.version")),
+						"emailDomain", "managed.test")),
+				409, "ORGANIZATION_DOMAIN_TAKEN");
+		put(founder, API + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
+		Map<String, Object> withoutDomain = new HashMap<>();
+		withoutDomain.put("profile", save(profile("Managed Company"),
+				JsonPath.<Integer>read(body(get(operator, detail).expectStatus().isOk()), "$.organization.version")));
+		withoutDomain.put("emailDomain", null);
+		String cleared = body(put(operator, detail, withoutDomain).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(cleared, "$.organization.emailDomain")).isNull();
+		// With no domain nobody joins at once any more.
+		assertThat(JsonPath.<Boolean>read(cleared, "$.organization.autoJoin")).isFalse();
+
+		// The people: a role changes, and an operator may leave the organization without an owner.
+		String colleagueId = JsonPath.<List<String>>read(cleared, "$.members[?(@.email == 'colleague@managed.test')].accountId").get(0);
+		String founderId = JsonPath.<List<String>>read(cleared, "$.members[?(@.email == 'founder@managed.test')].accountId").get(0);
+		put(operator, detail + "/members/" + colleagueId + "/role", Map.of("role", "owner")).expectStatus().isNoContent();
+		post(operator, detail + "/members/" + founderId + "/remove", null).expectStatus().isNoContent();
+		post(operator, detail + "/members/" + colleagueId + "/remove", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<List<Object>>read(body(get(operator, detail).expectStatus().isOk()), "$.members")).isEmpty();
+		assertProblem(post(operator, detail + "/members/" + colleagueId + "/remove", null), 404,
+				"ORGANIZATION_MEMBER_NOT_FOUND");
+
+		// An invitation by an operator is not counted against the organization, and is taken back by one.
+		post(operator, detail + "/invitations", Map.of("email", "new@managed.test", "role", "owner"))
+			.expectStatus()
+			.isNoContent();
+		assertProblem(post(operator, detail + "/invitations", Map.of("email", "new@managed.test", "role", "owner")),
+				409, "ORGANIZATION_ALREADY_INVITED");
+		String invitation = JsonPath.<String>read(body(get(operator, detail).expectStatus().isOk()),
+				"$.invitations[0].id");
+		post(operator, detail + "/invitations/" + invitation + "/revoke", null).expectStatus().isNoContent();
+		assertProblem(post(operator, detail + "/invitations/" + invitation + "/revoke", null), 404,
+				"ORGANIZATION_INVITATION_NOT_FOUND");
+		assertThat(events(id)).contains("organization.update", "organization.member_role",
+				"organization.member_remove", "organization.invite", "organization.invitation_revoke");
+	}
+
+	@Test
+	void anOperatorTakesAnApprovedOrganizationDownWithAReasonAndRestoresItKeepingTheMembersWorkspace() {
+		String founder = signIn("founder@takedown.test");
+		UUID id = approved(founder, "Takedown Co");
+		String takeDown = API + "/admin/organizations/" + id + "/take-down";
+
+		assertProblem(post(founder, takeDown, Map.of("reason", "other")), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(operator, takeDown, Map.of("reason", "not-a-reason")), 400, "REQUEST_INVALID");
+		assertProblem(post(operator, API + "/admin/organizations/" + UUID.randomUUID() + "/take-down",
+				Map.of("reason", "other")), 404, "ORGANIZATION_NOT_FOUND");
+		assertProblem(post(operator, API + "/admin/organizations/" + id + "/restore", null), 409,
+				"ORGANIZATION_NOT_TAKEN_DOWN");
+
+		post(operator, takeDown, Map.of("reason", "misleading_information", "message", "Send us the contract."))
+			.expectStatus()
+			.isNoContent();
+		assertThat(mail.latestSubjectTo("founder@takedown.test")).isEqualTo("Takedown Co on BeyondPilot");
+		assertProblem(post(operator, takeDown, Map.of("reason", "other")), 409, "ORGANIZATION_CANNOT_TAKE_DOWN");
+
+		// Its review stays approved; its members keep the workspace and read why; it is in no directory and invites
+		// nobody.
+		String mine = mine(founder);
+		assertThat(JsonPath.<String>read(mine, "$.organization.status")).isEqualTo("approved");
+		assertThat(JsonPath.<String>read(mine, "$.organization.suspendedAt")).isNotNull();
+		assertThat(JsonPath.<String>read(mine, "$.organization.suspensionReason")).isEqualTo("misleading_information");
+		assertThat(JsonPath.<String>read(mine, "$.organization.suspensionMessage")).isEqualTo("Send us the contract.");
+		assertThat(JsonPath.<String>read(mine, "$.role")).isEqualTo("owner");
+		assertThat(JsonPath.<List<Object>>read(
+				body(get(signIn("visitor@takedown.test"), API + "/organizations?q=takedown").expectStatus().isOk()),
+				"$.items"))
+			.isEmpty();
+		assertProblem(get(signIn("visitor@takedown.test"), API + "/organizations/takedown-co"), 404,
+				"ORGANIZATION_NOT_FOUND");
+		assertProblem(post(founder, API + "/mine/invitations", Map.of("email", "new@takedown.test", "role", "member")),
+				409, "ORGANIZATION_NOT_APPROVED");
+		String suspended = body(get(operator, API + "/admin/organizations?status=suspended").expectStatus().isOk());
+		assertThat(JsonPath.<String>read(suspended, "$.items[0].id")).isEqualTo(id.toString());
+		assertThat(JsonPath.<String>read(suspended, "$.items[0].status")).isEqualTo("approved");
+		assertThat(JsonPath.<String>read(suspended, "$.items[0].suspendedAt")).isNotNull();
+		assertThat(JsonPath.<List<Object>>read(
+				body(get(operator, API + "/admin/organizations?q=takedown&status=approved").expectStatus().isOk()),
+				"$.items"))
+			.isEmpty();
+
+		post(operator, API + "/admin/organizations/" + id + "/restore", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("approved");
+		assertThat(JsonPath.<Object>read(mine(founder), "$.organization.suspendedAt")).isNull();
+		// What was said when it was taken down stays on the record.
+		assertThat(JsonPath.<String>read(mine(founder), "$.organization.suspensionReason"))
+			.isEqualTo("misleading_information");
+	}
+
+	@Test
 	void anOrganizationThatIsNotApprovedIsNeitherFoundNorJoined() {
 		UUID id = create(signIn("founder@waiting.test"), "Waiting Co");
 		String colleague = signIn("colleague@waiting.test");
@@ -384,6 +539,36 @@ class OrganizationTest {
 			.isEmpty();
 		assertProblem(post(colleague, API + "/organizations/" + id + "/join", Map.of()), 404,
 				"ORGANIZATION_NOT_FOUND");
+	}
+
+	@Test
+	void anInvitationLapsesAfterSevenDaysAndTheAddressMayBeInvitedAgain() {
+		String founder = signIn("founder@lapsing.test");
+		UUID organization = approved(founder, "Lapsing Co");
+		post(founder, API + "/mine/invitations", Map.of("email", "late@gmail.com", "role", "member")).expectStatus()
+			.isNoContent();
+		String open = members(founder);
+		Instant sent = Instant.parse(JsonPath.<String>read(open, "$.invitations[0].createdAt"));
+		assertThat(Instant.parse(JsonPath.<String>read(open, "$.invitations[0].expiresAt")))
+			.isEqualTo(sent.plus(Duration.ofDays(7)));
+		String late = signIn("late@gmail.com");
+		String invitation = JsonPath.read(mine(late), "$.invitations[0].id");
+
+		jdbc.sql("update organization_invitation set expires_at = now() - interval '1 minute' where organization_id = ?")
+			.param(organization)
+			.update();
+
+		// A lapsed invitation is no longer open: nobody reads it, nobody answers it, and it frees its place.
+		assertThat(JsonPath.<List<String>>read(mine(late), "$.invitations")).isEmpty();
+		assertProblem(post(late, API + "/invitations/" + invitation + "/accept", Map.of()), 404,
+				"ORGANIZATION_INVITATION_NOT_FOUND");
+		String lapsed = members(founder);
+		assertThat(JsonPath.<List<String>>read(lapsed, "$.invitations")).isEmpty();
+		assertThat(JsonPath.<Integer>read(lapsed, "$.allowance.leftOpen")).isEqualTo(50);
+		post(founder, API + "/mine/invitations", Map.of("email", "late@gmail.com", "role", "member")).expectStatus()
+			.isNoContent();
+		assertThat(JsonPath.<List<String>>read(mine(late), "$.invitations[*].organizationName"))
+			.containsExactly("Lapsing Co");
 	}
 
 	@Test
@@ -481,8 +666,8 @@ class OrganizationTest {
 		UUID founderId = idOf("founder@open-limit.test");
 		for (int open = 1; open <= 50; open++) {
 			jdbc.sql("""
-					insert into organization_invitation (id, organization_id, email, role, invited_by_account_id, created_at)
-					values (?, ?, ?, 'member', ?, now() - interval '2 days')
+					insert into organization_invitation (id, organization_id, email, role, invited_by_account_id, created_at, expires_at)
+					values (?, ?, ?, 'member', ?, now() - interval '2 days', now() + interval '5 days')
 					""").params(UUID.randomUUID(), id, "waiting" + open + "@gmail.com", founderId).update();
 		}
 
@@ -564,6 +749,38 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anOperatorMayFillInTheWholeProfileWhenCreatingAnOrganization() {
+		UUID logo = uploadedLogo(operator);
+		String created = body(post(operator, API + "/admin/organizations",
+				Map.of("name", "Fully Described", "type", "builder_team", "website", "https://fully-described.test",
+						"country", "VN", "teamSize", "10_49", "industries", List.of("logistics", "insurance"),
+						"description", "Routes parcels for small shops.", "foundedYear", 2019, "logoFileId",
+						logo.toString()))
+			.expectStatus()
+			.isCreated());
+
+		assertThat(JsonPath.<String>read(created, "$.organization.teamSize")).isEqualTo("10_49");
+		assertThat(JsonPath.<List<String>>read(created, "$.organization.industries"))
+			.containsExactly("logistics", "insurance");
+		assertThat(JsonPath.<String>read(created, "$.organization.description"))
+			.isEqualTo("Routes parcels for small shops.");
+		assertThat(JsonPath.<Integer>read(created, "$.organization.foundedYear")).isEqualTo(2019);
+		assertThat(JsonPath.<String>read(created, "$.organization.logoFileId")).isEqualTo(logo.toString());
+		// Anyone reads the logo on the organization's public page.
+		String publicPage = body(get(signIn("reader@logo.test"), API + "/organizations/fully-described").expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(publicPage, "$.logoFileId")).isEqualTo(logo.toString());
+		// Operators see it in their list too.
+		String listed = body(get(operator, API + "/admin/organizations?q=fully described").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(listed, "$.items[*].logoFileId")).containsExactly(logo.toString());
+		assertProblem(post(operator, API + "/admin/organizations",
+				Map.of("name", "Too Many", "type", "company", "industries",
+						List.of("logistics", "insurance", "retail_ecommerce", "healthcare", "manufacturing",
+								"banking_finance"))),
+				400, "REQUEST_INVALID");
+	}
+
+	@Test
 	void anOrganizationNobodyOwnsIsClaimedEvenFromItsDomainAndAnOperatorDecides() {
 		String unowned = JsonPath.read(body(post(operator, API + "/admin/organizations",
 				Map.of("name", "Unowned One", "type", "company", "emailDomain",
@@ -579,7 +796,7 @@ class OrganizationTest {
 		assertThat(JsonPath.<Boolean>read(mine(insider), "$.request.claim")).isTrue();
 
 		String waiting = body(
-				get(operator, API + "/admin/organizations?q=unowned one&status=pending").expectStatus().isOk());
+				get(operator, API + "/admin/organizations?q=unowned one&status=in_review").expectStatus().isOk());
 		assertThat(JsonPath.<String>read(waiting, "$.items[0].request")).isEqualTo("claim");
 		assertThat(JsonPath.<String>read(waiting, "$.items[0].status")).isEqualTo("approved");
 		assertThat(JsonPath.<String>read(waiting, "$.items[0].askedBy")).isEqualTo("first@unowned-one.test");
@@ -822,13 +1039,13 @@ class OrganizationTest {
 			.isNotEmpty();
 	}
 
+	/**
+	 * The test mailbox, imported through a class of this test's own so that the test keeps a Spring context, and with
+	 * it a database, of its own.
+	 */
 	@TestConfiguration(proxyBeanMethods = false)
+	@Import(TestMailbox.Configuration.class)
 	static class Mail {
-
-		@Bean
-		RecordingMailSender recordingMailSender() {
-			return new RecordingMailSender();
-		}
 
 	}
 

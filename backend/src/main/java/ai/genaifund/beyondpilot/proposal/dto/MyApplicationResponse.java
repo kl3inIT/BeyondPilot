@@ -18,5 +18,13 @@ public record MyApplicationResponse(@Schema(requiredMode = Schema.RequiredMode.R
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant submittedAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt,
 		@Schema(types = { "string", "null" }, allowableValues = { "shortlisted", "not_selected" },
-				description = "GenAI Fund's decision, once the program's outcomes are released; null until then.") @Nullable String outcome) {
+				description = "GenAI Fund's decision, once the program's outcomes are released; null until then.") @Nullable String outcome,
+		@Schema(types = { "object", "null" },
+				description = "The program's first key date after the outcome, such as a demo day; null when it has none.") @Nullable NextStep next) {
+
+	@Schema(name = "ApplicationNextStep")
+	public record NextStep(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String title,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant at,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "A day, not a moment.") boolean allDay) {
+	}
 }

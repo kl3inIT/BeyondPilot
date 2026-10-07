@@ -408,9 +408,9 @@ async function TascoPage({ program }: { program: Program }) {
                 <Image
                   src="/programs/tasco/tasco.png"
                   alt="Tasco"
-                  width={168}
-                  height={24}
-                  className="h-6 w-auto"
+                  width={1238}
+                  height={178}
+                  className="h-6 w-auto self-start"
                 />
                 <p className="text-xs text-muted-foreground">{t("rail.hostText")}</p>
               </div>

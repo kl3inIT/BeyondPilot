@@ -82,12 +82,12 @@ class AdminTalentController {
 		talent.approve(actor, id);
 	}
 
-	@PostMapping(path = "/{id}/request-changes", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(path = "/{id}/send-back", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "requestTalentChanges",
-			summary = "Ask the person to change a talent profile that waits for review, with a reason",
+	@Operation(operationId = "sendBackTalent",
+			summary = "Send a talent profile that waits for review back to its person, with a reason",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "204", description = "Changes are asked for; the person was emailed.",
+	@ApiResponse(responseCode = "204", description = "The profile needs changes; the person was emailed.",
 			content = @Content)
 	@ApiResponse(responseCode = "400", description = "A member is not valid.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
@@ -95,24 +95,39 @@ class AdminTalentController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "409", description = "The profile is not waiting for review.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	void requestChanges(@CurrentActor Actor actor, @PathVariable UUID id,
-			@Valid @RequestBody TalentDecisionRequest request) {
-		talent.requestChanges(actor, id, request);
+	void sendBack(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody TalentDecisionRequest request) {
+		talent.sendBack(actor, id, request);
 	}
 
-	@PostMapping(path = "/{id}/remove", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(path = "/{id}/take-down", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "removeTalent", summary = "Remove an approved talent profile from the public, with a reason",
+	@Operation(operationId = "takeDownTalent",
+			summary = "Take an approved talent profile down from the public, with a reason",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "204", description = "The profile is removed; the person was emailed.",
-			content = @Content)
+	@ApiResponse(responseCode = "204",
+			description = "The profile is taken down and stays approved; the person was emailed.", content = @Content)
 	@ApiResponse(responseCode = "400", description = "A member is not valid.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "The profile is not approved.",
+	@ApiResponse(responseCode = "409", description = "The profile is not approved, or is taken down already.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	void remove(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody TalentDecisionRequest request) {
-		talent.remove(actor, id, request);
+	void takeDown(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody TalentDecisionRequest request) {
+		talent.takeDown(actor, id, request);
+	}
+
+	@PostMapping("/{id}/restore")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "restoreTalent",
+			summary = "Put a talent profile that was taken down back in the public, without a new review",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The profile is back; the person was emailed.",
+			content = @Content)
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The profile is not taken down.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void restore(@CurrentActor Actor actor, @PathVariable UUID id) {
+		talent.restore(actor, id);
 	}
 }

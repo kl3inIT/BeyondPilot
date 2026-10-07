@@ -1,9 +1,57 @@
+import { cva, type VariantProps } from "class-variance-authority";
 import { ExternalLinkIcon } from "lucide-react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { useVocabulary } from "@/i18n/vocabulary";
-import type { Solution } from "@/lib/api/generated";
+import type { Solution, SolutionImage } from "@/lib/api/generated";
+import { publicFileUrl } from "@/lib/storage/upload";
+
+const pictureVariants = cva(
+  "relative block h-14 overflow-hidden rounded-lg border bg-muted outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+  {
+    variants: {
+      shape: {
+        square: "w-14",
+        wide: "w-25",
+      },
+    },
+  },
+);
+
+type PictureProps = Required<VariantProps<typeof pictureVariants>> & {
+  image: SolutionImage;
+  /** What the image is to the solution: its logo, its cover, or its place under the cover. */
+  caption: string;
+  /** The words for opening it, which name the file. */
+  label: string;
+};
+
+/** One image of a solution in a review, small, opening the file itself in a new tab. */
+function Picture({ image, caption, label, shape }: PictureProps) {
+  return (
+    <li className="flex flex-col items-center gap-1">
+      <a
+        href={publicFileUrl(image.fileId)}
+        target="_blank"
+        rel="noreferrer"
+        aria-label={label}
+        className={pictureVariants({ shape })}
+      >
+        <Image
+          src={publicFileUrl(image.fileId)}
+          alt=""
+          fill
+          sizes="100px"
+          unoptimized
+          className={shape === "wide" ? "object-cover" : "object-contain"}
+        />
+      </a>
+      <span className="text-xs text-muted-foreground">{caption}</span>
+    </li>
+  );
+}
 
 /** What a review reads of a solution. */
 type SolutionRecordProps = {
@@ -20,10 +68,14 @@ type SolutionRecordProps = {
     | "website"
     | "demoUrl"
     | "deck"
+    | "logo"
+    | "cover"
+    | "images"
     | "traction"
     | "builtWith"
     | "languages"
     | "bestCustomerProfile"
+    | "channels"
     | "customerDeployments"
   >;
 };
@@ -49,9 +101,16 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
         <ExternalLinkIcon aria-hidden="true" />
       </TextButton>
     ) : null;
-  const waiting = solution.customerDeployments.filter((item) => item.status === "submitted").length;
+  const waiting = solution.customerDeployments.filter((item) => item.status === "in_review").length;
+  const pictured = solution.logo || solution.cover || solution.images.length > 0;
+  const open = (image: SolutionImage) => t("openImage", { name: image.fileName });
 
-  const groups: { title: string; rows: { label: string; value: React.ReactNode }[] }[] = [
+  const groups: {
+    title: string;
+    /** What the group shows before its rows. */
+    lead?: React.ReactNode;
+    rows: { label: string; value: React.ReactNode }[];
+  }[] = [
     {
       title: t("basics"),
       rows: [
@@ -71,12 +130,49 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
         { label: t("focusAreas"), value: words(solution.focusAreas.map(focusArea)) },
         { label: t("languages"), value: words(solution.languages.map(language)) },
         { label: t("deployment"), value: words(solution.deployment.map(deployment)) },
+        { label: t("channels"), value: solution.channels },
         { label: t("bestCustomerProfile"), value: solution.bestCustomerProfile },
       ],
     },
     {
       title: t("evidence"),
+      lead: pictured && (
+        <div className="mt-3 flex flex-col gap-2">
+          <h3 className="text-sm text-muted-foreground">{t("images")}</h3>
+          <ul className="flex flex-wrap gap-2">
+            {solution.logo && (
+              <Picture
+                image={solution.logo}
+                caption={t("logo")}
+                label={open(solution.logo)}
+                shape="square"
+              />
+            )}
+            {solution.cover && (
+              <Picture
+                image={solution.cover}
+                caption={t("cover")}
+                label={open(solution.cover)}
+                shape="wide"
+              />
+            )}
+            {solution.images.map((image, index) => (
+              <Picture
+                key={image.fileId}
+                image={image}
+                caption={String(index + 1)}
+                label={open(image)}
+                shape="square"
+              />
+            ))}
+          </ul>
+        </div>
+      ),
       rows: [
+        // An image that is there shows above; one that is not keeps its row, as every empty field does.
+        ...(solution.logo ? [] : [{ label: t("logo"), value: null }]),
+        ...(solution.cover ? [] : [{ label: t("coverImage"), value: null }]),
+        ...(solution.images.length > 0 ? [] : [{ label: t("moreImages"), value: null }]),
         { label: t("website"), value: link(solution.website) },
         { label: t("demo"), value: link(solution.demoUrl) },
         // The file is named, not linked: the address of a deck answers only once its solution is approved.
@@ -97,6 +193,7 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
       {groups.map((group) => (
         <section key={group.title} className="rounded-lg border bg-card p-5">
           <h2 className="text-base font-semibold">{group.title}</h2>
+          {group.lead}
           <dl className="mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-4 sm:gap-y-3">
             {group.rows.map((row) => (
               <div key={row.label} className="contents">

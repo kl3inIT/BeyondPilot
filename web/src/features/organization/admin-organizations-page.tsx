@@ -5,9 +5,11 @@ import { createSerializer } from "nuqs/server";
 import { Button } from "@/components/actions/button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
-import { Person } from "@/components/composites/person";
+import { reviewState } from "@/components/composites/review-status";
 import { Status } from "@/components/composites/status";
+import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganizationList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -19,11 +21,18 @@ import {
   type AdminOrganizationsSearch,
 } from "./admin-organizations-search";
 import { AdminOrganizationsToolbar } from "./admin-organizations-toolbar";
+import { OrganizationMark } from "./organization-mark";
 
 const address = createSerializer(adminOrganizationsSearch);
 
 /** How each state of the review reads to the operator who decides it. */
-const tones = { pending: "warning", approved: "success", rejected: "destructive" } as const;
+const tones = {
+  in_review: "warning",
+  needs_changes: "warning",
+  approved: "success",
+  rejected: "destructive",
+  suspended: "destructive",
+} as const;
 
 /** The tone of what waits for the operator: a first review, or a claim to own an organization. */
 const requestTones = { new: "info", claim: "warning" } as const;
@@ -48,16 +57,26 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
   const rows = organizations.items.map((organization) => ({
     id: organization.id,
     organization: (
-      <Person
-        name={organization.name}
-        email={[
-          typeName(organization.type),
-          organization.country && countryName(organization.country),
-          organization.owned ? t("members", { count: organization.members }) : t("unowned"),
-        ]
-          .filter(Boolean)
-          .join(" · ")}
-      />
+      <div className="flex min-w-0 items-center gap-3">
+        <OrganizationMark name={organization.name} logoFileId={organization.logoFileId} size="sm" />
+        <div className="grid min-w-0 text-sm">
+          <Link
+            href={`${siteRoutes.adminOrganizations}/${organization.id}`}
+            className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            {organization.name}
+          </Link>
+          <span className="truncate text-muted-foreground">
+            {[
+              typeName(organization.type),
+              organization.country && countryName(organization.country),
+              organization.owned ? t("members", { count: organization.members }) : t("unowned"),
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        </div>
+      </div>
     ),
     request: organization.request ? (
       <Status appearance="pill" tone={requestTones[organization.request]}>
@@ -67,8 +86,8 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
       <span className="text-muted-foreground">{t("request.none")}</span>
     ),
     status: (
-      <Status appearance="pill" tone={tones[organization.status]}>
-        {t(`status.${organization.status}`)}
+      <Status appearance="pill" tone={tones[reviewState(organization)]}>
+        {t(`status.${reviewState(organization)}`)}
       </Status>
     ),
     askedBy: (
@@ -86,7 +105,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
     actions: <AdminOrganizationRowActions organization={organization} />,
   }));
 
-  const queue = search.q.trim() === "" && search.status === "pending";
+  const queue = search.q.trim() === "" && search.status === "in_review";
   const filtered = search.q.trim() !== "" || search.status !== null;
   const empty =
     rows.length > 0 ? null : queue ? (
@@ -121,7 +140,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <AdminPageTitle destination="organizations">{t("title")}</AdminPageTitle>
           <p className="text-sm text-muted-foreground">{t("lead")}</p>
         </div>
         <AdminCreateOrganization />

@@ -90,7 +90,7 @@ function CustomerDeploymentsReview({ deployments }: { deployments: CustomerDeplo
                 </div>
                 {deployment.status !== "rejected" && (
                   <div className="flex flex-wrap gap-2">
-                    {deployment.status === "submitted" && (
+                    {deployment.status === "in_review" && (
                       <Button
                         size="sm"
                         pending={pending === deployment.id && rejecting === null}
@@ -111,7 +111,7 @@ function CustomerDeploymentsReview({ deployments }: { deployments: CustomerDeplo
                       disabled={pending !== null}
                       onClick={() => setRejecting(deployment)}
                     >
-                      {review(deployment.status === "approved" ? "takeDown" : "reject")}
+                      {review(deployment.status === "approved" ? "takeDown" : "sendBack")}
                     </Button>
                   </div>
                 )}
@@ -152,7 +152,7 @@ function CustomerDeploymentsReview({ deployments }: { deployments: CustomerDeplo
         <ReasonDialog
           open
           onOpenChange={(next) => (next ? undefined : setRejecting(null))}
-          title={review(rejecting.status === "approved" ? "takeDownTitle" : "rejectTitle", {
+          title={review(rejecting.status === "approved" ? "takeDownTitle" : "sendBackTitle", {
             name: rejecting.title,
           })}
           description={t(rejecting.status === "approved" ? "takeDownLead" : "rejectLead")}
@@ -162,7 +162,7 @@ function CustomerDeploymentsReview({ deployments }: { deployments: CustomerDeplo
           messageLabel={review("message")}
           messageHint={review("messageHint")}
           confirmLabel={review(
-            rejecting.status === "approved" ? "takeDownConfirm" : "rejectConfirm",
+            rejecting.status === "approved" ? "takeDownConfirm" : "sendBackConfirm",
           )}
           cancelLabel={review("cancel")}
           pending={pending === rejecting.id}

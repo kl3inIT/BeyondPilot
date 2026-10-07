@@ -40,9 +40,16 @@ class SolutionIndexing {
 					() -> index.remove(SearchDocumentRepository.SOLUTION, id));
 	}
 
+	/** Writes again what the organization's solutions show of it, and takes them out while it is not approved. */
 	@ApplicationModuleListener
 	void on(OrganizationChanged changed) {
-		solutions.indexedOf(changed.organizationId()).forEach(solution -> index.save(document(solution)));
+		List<IndexedSolution> shown = solutions.indexedOf(changed.organizationId());
+		shown.forEach(solution -> index.save(document(solution)));
+		List<UUID> kept = shown.stream().map(IndexedSolution::id).toList();
+		solutions.idsOf(changed.organizationId())
+			.stream()
+			.filter(id -> !kept.contains(id))
+			.forEach(id -> index.remove(SearchDocumentRepository.SOLUTION, id));
 	}
 
 	/** Saves every approved solution and takes out every other. */
@@ -61,6 +68,7 @@ class SolutionIndexing {
 		Cards.put(facets, Cards.MATURITY, solution.maturity());
 		Cards.put(facets, Cards.INDUSTRIES, solution.industries());
 		Cards.put(facets, Cards.FOCUS_AREAS, solution.focusAreas());
+		Cards.put(facets, Cards.PHOTO, solution.logoFileId());
 		facets.put(Cards.CUSTOMER_DEPLOYMENTS, solution.customerDeployments());
 		String maturity = solution.maturity();
 		String keywords = Cards.words(solution.focusAreas(), solution.industries(),

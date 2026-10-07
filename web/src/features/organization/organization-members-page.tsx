@@ -12,11 +12,11 @@ import { siteRoutes } from "@/lib/site";
 import { InvitationActions } from "./invitation-actions";
 import { InvitePeople } from "./invite-people";
 import { JoinAccess } from "./join-access";
+import { JoinRequestCard } from "./join-request-card";
 import { MemberActions } from "./member-actions";
 import { MemberRole } from "./member-role";
-import { NoticeCard } from "./notice-card";
-import { OrganizationAction } from "./organization-action";
 import { OrganizationFrame } from "./organization-frame";
+import { isApproved } from "./organization-format";
 import { organizationMembersSearch } from "./organization-members-search";
 import { OrganizationSection } from "./organization-section";
 
@@ -27,6 +27,8 @@ type OrganizationMembersPageProps = {
   members: OrganizationMembers;
   /** How many solutions the organization has, when it is a provider. */
   solutions: number | null;
+  /** How many use cases it has, when it is an approved enterprise. */
+  useCases: number | null;
 };
 
 /**
@@ -34,7 +36,12 @@ type OrganizationMembersPageProps = {
  * many more people they may invite and who may join by email domain. Everything an owner decides here, the backend decides again on each
  * request.
  */
-function OrganizationMembersPage({ mine, members, solutions }: OrganizationMembersPageProps) {
+function OrganizationMembersPage({
+  mine,
+  members,
+  solutions,
+  useCases,
+}: OrganizationMembersPageProps) {
   const t = useTranslations("Organization.members");
   const format = useFormatter();
   const { organization } = mine;
@@ -61,7 +68,13 @@ function OrganizationMembersPage({ mine, members, solutions }: OrganizationMembe
   const invited = (lastPage ? members.invitations : []).map((invitation) => ({
     key: invitation.id,
     person: (
-      <Person name={invitation.email} email={t("invited", { day: day(invitation.createdAt) })} />
+      <Person
+        name={invitation.email}
+        email={t("invited", {
+          day: day(invitation.createdAt),
+          expires: day(invitation.expiresAt),
+        })}
+      />
     ),
     role: <MemberRole role={invitation.role} />,
     jobTitle: t("none"),
@@ -84,7 +97,11 @@ function OrganizationMembersPage({ mine, members, solutions }: OrganizationMembe
     .join(" · ");
 
   return (
-    <OrganizationFrame mine={mine} current="members" counts={{ members: members.total, solutions }}>
+    <OrganizationFrame
+      mine={mine}
+      current="members"
+      counts={{ members: members.total, solutions, useCases }}
+    >
       {owner && members.requests.length > 0 && (
         <OrganizationSection
           id="members-requests"
@@ -92,36 +109,14 @@ function OrganizationMembersPage({ mine, members, solutions }: OrganizationMembe
           summary={String(members.requests.length)}
         >
           {members.requests.map((request) => (
-            <NoticeCard
+            <JoinRequestCard
               key={request.id}
-              titleAs="h3"
-              title={request.name ?? request.email}
-              description={
-                <>
-                  <p>
-                    {request.name && <>{request.email} · </>}
-                    {t("requests.asked", { day: day(request.createdAt) })}
-                    {emailDomain && request.email.toLowerCase().endsWith(`@${emailDomain}`) && (
-                      <> {t("requests.onDomain", { domain: emailDomain })}</>
-                    )}
-                  </p>
-                  {request.message && <p className="whitespace-pre-line">{request.message}</p>}
-                </>
-              }
-              foot={t("requests.foot")}
-              actions={
-                <>
-                  <OrganizationAction
-                    action="approveRequest"
-                    id={request.id}
-                    prominence="secondary"
-                  >
-                    {t("requests.approve")}
-                  </OrganizationAction>
-                  <OrganizationAction action="declineRequest" id={request.id} prominence="tertiary">
-                    {t("requests.decline")}
-                  </OrganizationAction>
-                </>
+              request={request}
+              asked={day(request.createdAt)}
+              onDomain={
+                emailDomain && request.email.toLowerCase().endsWith(`@${emailDomain}`)
+                  ? emailDomain
+                  : null
               }
             />
           ))}
@@ -169,7 +164,7 @@ function OrganizationMembersPage({ mine, members, solutions }: OrganizationMembe
         {/* Below 768px: one stacked row per person, never a table scrolled sideways. */}
         <ul className="overflow-hidden rounded-lg border bg-background md:hidden">
           {rows.map((row) => (
-            <li key={row.key} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
+            <li key={row.key} className="flex flex-col gap-2 border-b px-5 py-3 last:border-b-0">
               <div className="flex items-start justify-between gap-3">
                 {row.person}
                 {row.actions}
@@ -192,7 +187,7 @@ function OrganizationMembersPage({ mine, members, solutions }: OrganizationMembe
         />
       </OrganizationSection>
 
-      {owner && organization.status === "approved" && (
+      {owner && isApproved(organization) && (
         <OrganizationSection id="members-access" title={t("access.title")}>
           <JoinAccess emailDomain={emailDomain} autoJoin={organization.autoJoin} />
         </OrganizationSection>

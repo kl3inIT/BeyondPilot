@@ -102,14 +102,6 @@
         "insurance": "Insurance",
         "retail": "Retail & e-commerce"
       },
-      "demoDayMeta": "Build week · 12 Jul 2026",
-      "demoDayMetaShort": "Build week · 12 Jul",
-      "demoDayTitle": "Agentic AI Build Week 2026",
-      "demoDayTitleShort": "Agentic AI Build Week",
-      "demoDayAlt": "Builders at Agentic AI Build Week 2026",
-      "washMeta": "Program · Tasco Foundry",
-      "washTitle": "WASH3000",
-      "washAlt": "Tasco Foundry WASH3000 program poster",
       "meetupTime": "4–6 pm · Request to join on Luma"
     },
     "events": {
@@ -117,22 +109,9 @@
       "open": "Open now",
       "coming": "Coming up",
       "done": "Done",
-      "meetup": "GenAI Builders Meetup",
       "meetupSchedule": "Tuesdays, 4–6 pm ICT · Request to join on Luma",
       "meetupDates": "Next dates",
-      "tileMonth": "{date, date, ::MMM}",
-      "aabwMeta": "Build week · 8–12 Jul 2026",
-      "aabwTitle": "Agentic AI Build Week 2026",
-      "aabwFact": "3,230 attended",
-      "aabwAlt": "The hall at Agentic AI Build Week 2026",
-      "shinhanMeta": "Open innovation · Shinhan",
-      "shinhanTitle": "Global Shinhan InnoBoost 2026",
-      "shinhanFact": "Demo day 17 Sep 2026",
-      "shinhanAlt": "Shinhan Financial Group logo over a blue horizon",
-      "workforceMeta": "Two executive workshops · Zoom",
-      "workforceTitle": "The AI Workforce Shift · Beyond the Pilot",
-      "workforceFact": "9–10 Sep 2026",
-      "workforceAlt": "Illustration from The AI Workforce Shift workshop poster"
+      "tileMonth": "{date, date, ::MMM}"
     },
     "directory": {
       "title": "Explore the directory",
@@ -143,41 +122,27 @@
       "useCases": "Use cases",
       "solutions": "AI solutions",
       "talent": "AI talent",
-      "approx": "~{count, number}",
       "new": "New",
       "seeAllPrograms": "See all {count, number} programs",
       "seeAllUseCases": "See all {count, number} use cases",
       "seeAllSolutions": "See all AI solutions",
       "viewProgram": "View program",
       "viewUseCase": "View use case",
-      "tascoMeta": "Enterprise challenge · Vietnam",
-      "washMeta": "Program · Tasco Foundry",
-      "washTitle": "WASH3000: 3,000 car wash locations",
-      "washAlt": "Tasco Foundry WASH3000 program poster",
-      "workforceMeta": "Two executive workshops · Zoom",
-      "workforceTitle": "The AI Workforce Shift · Beyond the Pilot",
-      "workforceFact": "Ended · 9–10 Sep 2026",
-      "workforceAlt": "Illustration from The AI Workforce Shift workshop poster",
-      "contactCentreMeta": "Use case · Banking",
-      "contactCentreTitle": "AI-powered contact centre automation",
       "contactCentreAlt": "A team reviewing a laptop screen together at GenAI Open Innovation Vietnam",
-      "safetyMeta": "Use case · Real estate & construction",
-      "safetyTitle": "Vision-based safety surveillance on sites",
       "safetyAlt": "A founder pitching at the Startups’ Open Pitch, GenAI Open Innovation Vietnam",
-      "shelfMeta": "Use case · FMCG",
-      "shelfTitle": "Visual shelf monitoring from store photos",
       "shelfAlt": "A table discussion around laptops at GenAI Open Innovation Vietnam",
-      "revveMeta": "AI solution · Vietnam",
-      "revveText": "AI sales and service agents for voice and chat",
-      "ourteamMeta": "AI solution · Malaysia",
-      "ourteamText": "AI recruiter that screens every candidate",
-      "superagentMeta": "AI solution · Thailand",
-      "superagentText": "Full-stack AI real estate brokerage",
       "logoAlt": "{name} logo",
       "talentMeta": "AI talent · New",
       "talentTitle": "Talent profiles open with the launch.",
       "talentLink": "Create a talent profile",
-      "talentAlt": "A full audience of builders at Agentic AI Build Week 2026"
+      "talentAlt": "A full audience of builders at Agentic AI Build Week 2026",
+      "closesOn": "Closes {date, date, ::d MMM}",
+      "useCaseMeta": "Use case · {industry}",
+      "solutionMeta": "AI solution · {country}",
+      "solutionMetaPlain": "AI solution",
+      "viewSolution": "View solution",
+      "seeAllProgramsPlain": "See all programs",
+      "seeAllUseCasesPlain": "See all use cases"
     },
     "network": {
       "title": "The network behind every program",
@@ -267,7 +232,7 @@
       "resend": "Send a new code",
       "resent": "Sent a new code. Not there yet?",
       "resendFailed": "We couldn't send it. Try once more?",
-      "limited": "You have asked for three codes. You can ask for another in {minutes, plural, one {# minute} other {# minutes}}; the newest code still works.",
+      "limited": "You can ask for a new code in {minutes, plural, =0 {{seconds, plural, one {# second} other {# seconds}}} one {# minute} other {# minutes}}. The newest code still works.",
       "differentEmail": "Use a different email",
       "problem": {
         "wrong": "That code is not right. Check the newest email and try again.",
@@ -277,6 +242,41 @@
         "failed": "We couldn't check the code. Try again in a moment."
       }
     }
+  },
+  "AppConsent": {
+    "metaTitle": "Connect an app · BeyondPilot",
+    "title": "{app} wants to access BeyondPilot",
+    "as": "As {person}",
+    "ableTo": "{app} will be able to",
+    "user": {
+      "searchSolutions": "Search listed solutions",
+      "readSolution": "Read a listed solution",
+      "searchPrograms": "Search programs",
+      "limit": "Cannot change anything. Revoke any time."
+    },
+    "operator": {
+      "searchSolutions": "Search solutions, listed or not",
+      "readUseCases": "Read use cases",
+      "findCompanies": "Find companies",
+      "limit": "Cannot publish or edit listings. Revoke any time."
+    },
+    "deny": "Deny",
+    "allow": "Allow",
+    "switchAccount": "Not you? Switch account",
+    "refusedTitle": "{app} cannot connect to BeyondPilot",
+    "refusedLead": "Only GenAI Fund operators can connect.",
+    "signedInAs": "Signed in as {person}",
+    "useUserServer": "Use the user server instead: it searches listed solutions.",
+    "back": "Back to {app}",
+    "anotherAccount": "Not you? Sign in with another account",
+    "anyLocalApp": "An app on this computer",
+    "theApp": "the app",
+    "localWarning": "Runs on this computer. Allow only if you just started it.",
+    "from": "From",
+    "returnsTo": "Returns to",
+    "thisComputer": "this computer",
+    "notReviewed": "Not reviewed",
+    "ableToLocal": "It will be able to"
   },
   "Admin": {
     "metaTitle": "Admin · BeyondPilot",
@@ -292,7 +292,13 @@
       "talent": "AI talent",
       "introductions": "Introductions",
       "review": "Review",
-      "system": "System"
+      "system": "System",
+      "useCases": "Use cases",
+      "useCasesNew": "New use case",
+      "ai": "AI",
+      "aiProviders": "Providers",
+      "searchIndex": "Search index",
+      "email": "Email"
     },
     "toggleSidebar": "Toggle sidebar",
     "programs": {
@@ -638,7 +644,8 @@
         "makeOperator": "Make operator…",
         "withdrawOperator": "Withdraw operator role…",
         "disable": "Disable account…",
-        "enable": "Enable account"
+        "enable": "Enable account",
+        "emails": "Emails sent to them"
       },
       "confirm": {
         "cancel": "Cancel",
@@ -719,16 +726,26 @@
           "create": "Added an organization",
           "approve": "Approved an organization",
           "refuse": "Did not approve an organization",
+          "send_back": "Sent an organization back",
           "claim_approve": "Approved a claim",
           "claim_decline": "Declined a claim",
           "member_role": "Changed a member's role",
-          "member_remove": "Removed a member"
+          "member_remove": "Removed a member",
+          "suspend": "Took an organization down",
+          "restore": "Restored an organization",
+          "update": "Saved an organization's profile",
+          "invite": "Invited someone to an organization",
+          "invitation_revoke": "Withdrew an invitation"
         },
         "solution": {
           "approve": "Approved a solution",
-          "reject": "Sent a solution back",
+          "send_back": "Sent a solution back",
+          "reject": "Refused or sent back a solution",
+          "take_down": "Took a solution down",
+          "restore": "Restored a solution",
           "deployment_approve": "Approved a customer deployment",
-          "deployment_reject": "Sent a customer deployment back"
+          "deployment_reject": "Sent a customer deployment back",
+          "back": "Wrote what GenAI Fund says of a solution"
         },
         "introduction": {
           "reply": "Replied to a request for an introduction",
@@ -740,8 +757,9 @@
           "enquiry_accept": "Accepted a message through a talent profile",
           "enquiry_decline": "Declined a message through a talent profile",
           "enquiry_report": "Reported a message through a talent profile",
-          "request_changes": "Asked for changes to a talent profile",
-          "remove": "Removed a talent profile",
+          "request_changes": "Sent a talent profile back",
+          "remove": "Took a talent profile down",
+          "restore": "Restored a talent profile",
           "delete": "Deleted a talent profile"
         },
         "proposal": {
@@ -750,6 +768,36 @@
           "reviewer_remove": "Removed a judge",
           "decide": "Decided on an application",
           "release": "Released the outcomes"
+        },
+        "use_case": {
+          "create": "Created a use case",
+          "submit": "Sent a use case for review",
+          "draft": "Moved a use case back to Draft",
+          "approve": "Approved a use case",
+          "send_back": "Sent a use case back",
+          "set_programs": "Set the programs of a use case"
+        },
+        "email": {
+          "settings_update": "Changed the email settings",
+          "appearance_update": "Changed the email appearance",
+          "template_update": "Reworded an email",
+          "template_reset": "Reset an email's wording",
+          "suppression_add": "Stopped email to an address",
+          "suppression_remove": "Let email reach an address again",
+          "resend": "Sent an email again",
+          "test_send": "Sent a test email"
+        },
+        "ai": {
+          "provider_create": "Connected an AI provider",
+          "provider_update": "Changed an AI provider",
+          "provider_delete": "Deleted an AI provider"
+        },
+        "search": {
+          "model_change": "Changed the embedding model",
+          "semantic_enable": "Turned semantic search on",
+          "semantic_disable": "Turned semantic search off",
+          "index_rebuild": "Rebuilt the search index",
+          "embedding_retry": "Let refused items be embedded again"
         }
       },
       "activity": {
@@ -771,16 +819,26 @@
           "create": "Added the organization <resource></resource>",
           "approve": "Approved the organization <resource></resource>",
           "refuse": "Did not approve the organization <resource></resource>",
+          "send_back": "Sent the organization <resource></resource> back",
           "claim_approve": "Approved a claim to own <resource></resource>",
           "claim_decline": "Declined a claim to own <resource></resource>",
           "member_role": "Changed a member's role in <resource></resource>",
-          "member_remove": "Removed a member from <resource></resource>"
+          "member_remove": "Removed a member from <resource></resource>",
+          "suspend": "Took down the organization <resource></resource>",
+          "restore": "Restored the organization <resource></resource>",
+          "update": "Saved the profile of <resource></resource>",
+          "invite": "Invited someone to <resource></resource>",
+          "invitation_revoke": "Withdrew an invitation to <resource></resource>"
         },
         "solution": {
           "approve": "Approved the solution <resource></resource>",
-          "reject": "Sent the solution <resource></resource> back",
+          "send_back": "Sent the solution <resource></resource> back",
+          "reject": "Rejected the solution <resource></resource>",
+          "take_down": "Took the solution <resource></resource> down",
+          "restore": "Restored the solution <resource></resource>",
           "deployment_approve": "Approved the customer deployment <resource></resource>",
-          "deployment_reject": "Sent the customer deployment <resource></resource> back"
+          "deployment_reject": "Sent the customer deployment <resource></resource> back",
+          "back": "Wrote what GenAI Fund says of the solution <resource></resource>"
         },
         "introduction": {
           "reply": "Replied to the request for an introduction about <resource></resource>",
@@ -792,8 +850,9 @@
           "enquiry_accept": "Accepted a message to <resource></resource>",
           "enquiry_decline": "Declined a message to <resource></resource>",
           "enquiry_report": "Reported a message to <resource></resource>",
-          "request_changes": "Asked for changes to the talent profile of <resource></resource>",
-          "remove": "Removed the talent profile of <resource></resource>",
+          "request_changes": "Sent back the talent profile of <resource></resource>",
+          "remove": "Took the talent profile of <resource></resource> down",
+          "restore": "Restored the talent profile of <resource></resource>",
           "delete": "Deleted the talent profile of <resource></resource>"
         },
         "proposal": {
@@ -802,6 +861,36 @@
           "reviewer_remove": "Removed a judge from <resource></resource>",
           "decide": "Decided on an application to <resource></resource>",
           "release": "Released the outcomes of <resource></resource>"
+        },
+        "use_case": {
+          "create": "Created the use case <resource></resource>",
+          "submit": "Sent the use case <resource></resource> for review",
+          "draft": "Moved the use case <resource></resource> back to Draft",
+          "approve": "Approved the use case <resource></resource>",
+          "send_back": "Sent the use case <resource></resource> back",
+          "set_programs": "Set the programs of the use case <resource></resource>"
+        },
+        "email": {
+          "settings_update": "Changed <resource></resource>",
+          "appearance_update": "Changed the appearance in <resource></resource>",
+          "template_update": "Reworded the email <resource></resource>",
+          "template_reset": "Put the email <resource></resource> back to its default wording",
+          "suppression_add": "Stopped email to <resource></resource>",
+          "suppression_remove": "Let email reach <resource></resource> again",
+          "resend": "Sent the email <resource></resource> again",
+          "test_send": "Sent a test email to <resource></resource>"
+        },
+        "ai": {
+          "provider_create": "Connected the AI provider <resource></resource>",
+          "provider_update": "Changed the AI provider <resource></resource>",
+          "provider_delete": "Deleted the AI provider <resource></resource>"
+        },
+        "search": {
+          "model_change": "Changed the embedding model in <resource></resource>",
+          "semantic_enable": "Turned semantic search on in <resource></resource>",
+          "semantic_disable": "Turned semantic search off in <resource></resource>",
+          "index_rebuild": "Rebuilt <resource></resource>",
+          "embedding_retry": "Let refused items of <resource></resource> be embedded again"
         }
       },
       "columns": {
@@ -845,9 +934,11 @@
         }
       },
       "status": {
-        "pending": "Needs review",
+        "in_review": "Needs review",
+        "needs_changes": "Sent back",
         "approved": "Approved",
-        "rejected": "Not approved"
+        "rejected": "Not approved",
+        "suspended": "Taken down"
       },
       "columns": {
         "organization": "Organisation",
@@ -862,13 +953,12 @@
         "claim": "Claim",
         "none": "—"
       },
-      "members": "{count, plural, one {# member} other {# members}}",
       "unowned": "No owner",
       "actions": {
         "open": "Actions for {name}",
-        "review": "Review…",
+        "review": "Review",
         "record": "Open record",
-        "claim": "Decide claim…"
+        "claim": "Decide claim"
       },
       "needReview": "{count, plural, one {# needs review} other {# need review}}",
       "empty": {
@@ -886,49 +976,57 @@
         "title": "Add an organization",
         "name": "Organization name",
         "nameRequired": "Enter the organization's name.",
-        "ownerEmail": "Owner's email (optional)",
-        "ownerEmailHint": "They are invited to own it. Leave empty to let someone claim it.",
+        "type": "Organization type",
+        "typePlaceholder": "Choose a type",
+        "typeRequired": "Choose the type of organization.",
+        "ownerEmail": "Owner's email",
+        "emailDomain": "Email domain",
         "ownerEmailInvalid": "Enter a full email address.",
-        "website": "Website (optional)",
+        "website": "Website",
         "websiteInvalid": "Enter a full address that starts with https://",
         "cancel": "Cancel",
         "confirm": "Add organization"
       },
       "detail": {
         "back": "All organizations",
-        "type": "Type",
-        "country": "Country",
-        "teamSize": "Team size",
-        "website": "Website",
-        "emailDomain": "Email domain",
-        "createdBy": "Created",
         "createdByOn": "{name} on {day}",
-        "description": "About",
-        "notStated": "Not stated",
         "refused": "Not approved: {reason}.",
+        "sentBack": "Sent back to its owners:",
         "claims": "Claims to own it",
-        "members": "{count, plural, =0 {Members} one {# member} other {# members}}",
-        "noMembers": "Nobody belongs to this organization yet.",
-        "invitations": "Open invitations",
-        "industries": "Industries"
+        "tabs": {
+          "label": "Sections of this organization",
+          "profile": "Profile",
+          "members": "Members"
+        },
+        "viewPage": "View page",
+        "takenDown": {
+          "title": "Taken down on {day}",
+          "reason": "Reason: {reason}.",
+          "foot": "Its public page and its solutions are hidden. Its {members, plural, one {# member keeps} other {# members keep}} their workspace and read this reason there."
+        },
+        "review": "Review"
       },
       "review": {
         "title": "Review {name}",
-        "lead": "A new organization, created by {creator} on {day}. Until you decide, it is not shown in the directories.",
-        "leadUnknown": "A new organization, created on {day}. Until you decide, it is not shown in the directories.",
-        "note": "Approving lists the organization and lets it publish solutions. Its owners are told by email either way.",
+        "lead": "Created by {creator} on {day}.",
+        "leadUnknown": "Created on {day}.",
         "approve": "Approve",
-        "refuse": "Do not approve…",
-        "refuseTitle": "Do not approve {name}",
-        "refuseLead": "The owners see the reason, and can edit the organization and send it again.",
+        "refuse": "Refuse",
+        "refuseTitle": "Refuse {name}",
+        "refuseLead": "The owners see the reason. A refusal is final; to ask for changes, send the organization back instead.",
         "refuseConfirm": "Send decision",
+        "sendBack": "Send back",
+        "sendBackTitle": "Send {name} back",
+        "sendBackLead": "The owners read what to change. Once they correct the organization and save it, it waits for review again.",
+        "sendBackLabel": "What should the owners change?",
+        "sendBackConfirm": "Send back",
         "reason": "Reason",
         "message": "Message to the owners",
         "messageHint": "The decision is recorded in the audit log.",
         "back": "Back",
         "reasonPlaceholder": "Choose a reason",
         "domain": "Email domain to verify (optional)",
-        "domainHint": "Confirm it is the company's own domain. Its owners can then let colleagues on it join at once.",
+        "domainHint": "Only the company's own domain. Colleagues on it can then join at once.",
         "domainInvalid": "Enter a domain such as example.com, or leave it empty.",
         "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate."
       },
@@ -940,16 +1038,86 @@
       },
       "claim": {
         "title": "Decide the claim for {name}",
-        "lead": "Nobody owns this organization yet. This person asked to own it on {day}.",
-        "leadUnknown": "Nobody owns this organization yet, and someone asked to own it.",
+        "lead": "Nobody owns it yet. Asked on {day}.",
+        "leadUnknown": "Nobody owns it yet.",
         "domain": "Email domain to verify (optional)",
-        "domainHint": "Confirm it is the company's own domain. Its owner can then let colleagues on it join at once.",
+        "domainHint": "Only the company's own domain. Colleagues on it can then join at once.",
         "domainInvalid": "Enter a domain such as example.com, or leave it empty.",
         "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate.",
-        "note": "Approving makes the person its owner; other claims then go to them. The person is told by email either way, and the decision is recorded in the audit log.",
         "decline": "Decline",
         "approve": "Make owner"
-      }
+      },
+      "takeDown": {
+        "open": "Actions for {name}",
+        "menu": "Take down",
+        "title": "Take down {name}",
+        "lead": "Its public page and its solutions leave the directories at once. Its {members, plural, one {# member keeps} other {# members keep}} their workspace and read the reason there.",
+        "reason": "Reason",
+        "reasonPlaceholder": "Choose a reason",
+        "message": "Message to the owners",
+        "messageHint": "The owners are told by email. You can restore the organization at any time; both are recorded in the audit log.",
+        "confirm": "Take down",
+        "cancel": "Cancel",
+        "restore": "Restore",
+        "restoreTitle": "Restore {name}?",
+        "restoreLead": "Its public page, its solutions and its approved deployments are shown again, and its owners can invite people and publish.",
+        "restoreNote": "The owners are told by email. The take-down and its reason stay in the audit log."
+      },
+      "people": {
+        "title": "Members",
+        "summary": {
+          "members": "{count, plural, =0 {No members} one {# member} other {# members}}",
+          "invitations": "{count, plural, one {# invitation open} other {# invitations open}}"
+        },
+        "empty": "Nobody belongs to this organization yet. Invite its first owner.",
+        "invited": "Invited {day} · expires {expires}",
+        "invitePending": "Invited",
+        "columns": {
+          "member": "Member",
+          "role": "Role",
+          "joined": "Joined",
+          "actions": "Actions"
+        },
+        "actions": {
+          "open": "Actions for {name}",
+          "makeOwner": "Make owner",
+          "makeMember": "Make member",
+          "remove": "Remove from organization"
+        },
+        "demote": {
+          "title": "Make the only owner a member?",
+          "lead": "The organization will have no owner. Nobody can invite people or change its profile until you invite one.",
+          "confirm": "Make member"
+        },
+        "remove": {
+          "title": "Remove this member?",
+          "lead": "They lose access to the organization's profile, members and solutions.",
+          "lastOwnerLead": "They are the only owner. The organization will have none until you invite one.",
+          "confirm": "Remove member"
+        },
+        "confirm": {
+          "note": "What the organization published stays. They can be invited again at any time.",
+          "cancel": "Cancel"
+        },
+        "revoke": {
+          "open": "Withdraw the invitation to {email}",
+          "title": "Withdraw this invitation?",
+          "lead": "The link in the email stops working. You can invite them again.",
+          "confirm": "Withdraw invitation"
+        },
+        "invite": {
+          "open": "Invite a person",
+          "title": "Invite someone to {name}",
+          "lead": "Your invitations do not count against the organization's limits.",
+          "email": "Email address",
+          "emailInvalid": "Enter one email address.",
+          "role": "Role",
+          "note": "The invitation is recorded in the audit log.",
+          "cancel": "Cancel",
+          "send": "Send invitation"
+        }
+      },
+      "members": "{count, plural, one {# member} other {# members}}"
     },
     "solutions": {
       "metaTitle": "Solutions · BeyondPilot",
@@ -980,19 +1148,28 @@
       "review": {
         "open": "Review",
         "approve": "Approve",
-        "reject": "Send back…",
+        "sendBack": "Send back…",
+        "reject": "Reject…",
         "takeDown": "Take down…",
-        "rejectTitle": "Send {name} back?",
-        "rejectLead": "It goes back to its organization as a draft to correct. The owners read your reason.",
-        "takeDownLead": "It leaves the directory at once. The owners read your reason and can send it again.",
-        "reason": "Reason",
-        "message": "Note (optional)",
-        "messageHint": "They read this word for word. Say what to change.",
-        "cancel": "Cancel",
-        "rejectConfirm": "Send back",
-        "takeDownConfirm": "Take down",
-        "reasonPlaceholder": "Choose a reason",
+        "restore": "Restore",
+        "sendBackTitle": "Send {name} back?",
+        "sendBackLead": "It goes back to its organization to correct. The owners read what you write and send it again.",
+        "sendBackLabel": "What to change",
+        "sendBackConfirm": "Send back",
+        "rejectTitle": "Reject {name} for good?",
+        "rejectLead": "Its owners cannot send it again. If something is only missing, send it back instead.",
+        "rejectConfirm": "Reject",
         "takeDownTitle": "Take {name} down?",
+        "takeDownLead": "It leaves the directory and matching at once, but stays approved. The owners read your reason; you can restore it.",
+        "takeDownConfirm": "Take down",
+        "restoreTitle": "Put {name} back?",
+        "restoreLead": "It returns to the directory and matching without a new review, listed as its owners chose. They are emailed.",
+        "reason": "Reason",
+        "reasonPlaceholder": "Choose a reason",
+        "message": "Note (optional)",
+        "messageHint": "They read this word for word.",
+        "cancel": "Cancel",
+        "back": "Back",
         "keys": "Keys: A approve · S send back",
         "keysApproved": "Key: S take down"
       },
@@ -1000,7 +1177,7 @@
         "back": "All solutions",
         "submitted": "Submitted {day}",
         "unlisted": "Hidden by its organization",
-        "rejected": "Changes needed: {reason}.",
+        "rejected": "Rejected: {reason}.",
         "next": "Next in review: {name}",
         "position": "{place} of {total} waiting",
         "waitingSince": "Sent {time}",
@@ -1013,7 +1190,9 @@
         "sent": "Sent",
         "directory": "Directory",
         "listed": "Listed once approved",
-        "deploymentsWaiting": "{count, plural, one {# customer deployment waits for review} other {# customer deployments wait for review}}"
+        "deploymentsWaiting": "{count, plural, one {# customer deployment waits for review} other {# customer deployments wait for review}}",
+        "sentBack": "Sent back:",
+        "takenDown": "Taken down: {reason}."
       },
       "record": {
         "basics": "Basics",
@@ -1036,7 +1215,14 @@
         "deck": "Solution deck",
         "deployments": "Customer deployments",
         "deploymentsSummary": "{total, plural, one {# deployment} other {# deployments}}{waiting, plural, =0 {} other {, # waiting for review}}",
-        "missing": "Not published yet"
+        "missing": "Not published yet",
+        "images": "Images",
+        "logo": "Logo",
+        "cover": "Cover",
+        "coverImage": "Cover image",
+        "moreImages": "More images",
+        "openImage": "View {name}",
+        "channels": "Channels"
       },
       "queueEmpty": {
         "title": "Nothing waits for review",
@@ -1056,7 +1242,24 @@
         "rejectLead": "It stays off the solution's page. The owners read your reason and can correct it.",
         "takeDownLead": "It leaves the solution's page at once. The owners read your reason and can send it again."
       },
-      "deploymentsWaiting": "{count, plural, one {# deployment waits} other {# deployments wait}}"
+      "deploymentsWaiting": "{count, plural, one {# deployment waits} other {# deployments wait}}",
+      "backing": {
+        "title": "What GenAI Fund says",
+        "lead": "Shown on the solution's card and page, marked as GenAI Fund's. Its owners cannot change it.",
+        "fields": {
+          "backedBy": "Backed by",
+          "program": "Program",
+          "funding": "Funding"
+        },
+        "placeholders": {
+          "backedBy": "GenAI Fund portfolio",
+          "program": "FastTrack AI Accelerator, Cohort 1",
+          "funding": "Seed"
+        },
+        "hint": "Leave a line empty to take it away.",
+        "save": "Save",
+        "saved": "Saved for {name}."
+      }
     },
     "talent": {
       "metaTitle": "Talent · BeyondPilot",
@@ -1084,52 +1287,55 @@
       "review": {
         "open": "Review",
         "approve": "Approve and list",
-        "reject": "Ask for changes…",
-        "takeDown": "Remove…",
-        "rejectTitle": "Ask for changes to {name}?",
+        "reject": "Send back…",
+        "takeDown": "Take down…",
+        "rejectTitle": "Send {name} back?",
         "rejectLead": "The profile goes back to its person to correct. They read your reason.",
-        "takeDownLead": "The profile leaves the directory at once. Its person is emailed, reads your reason and can send it again.",
+        "takeDownLead": "The profile leaves the directory at once and stays approved. Its person is emailed and reads your reason; they can correct it and send it again, or you restore it.",
         "reason": "Reason",
         "message": "Note (optional)",
         "messageHint": "They read this word for word. Say what to change.",
         "cancel": "Cancel",
-        "rejectConfirm": "Ask for changes",
-        "takeDownConfirm": "Remove",
+        "rejectConfirm": "Send back",
+        "takeDownConfirm": "Take down",
         "reasonPlaceholder": "Choose a reason",
-        "takeDownTitle": "Remove {name}?",
+        "takeDownTitle": "Take {name} down?",
         "keyA": "Key: A",
-        "keyS": "Key: S"
+        "keyS": "Key: S",
+        "restore": "Restore",
+        "restoreTitle": "Put {name} back in the directory?",
+        "restoreLead": "The profile is public again while its person keeps it listed, without a new review. They are emailed."
       },
       "detail": {
         "back": "All talent",
         "submitted": "Submitted {day}",
         "unlisted": "Hidden by its person",
-        "rejected": "Changes requested: {reason}.",
+        "sentBack": "Sent back: {reason}.",
         "next": "Next in review: {name}",
         "position": "{place} of {total} waiting",
         "waitingSince": "Sent {time}",
         "public": "Open the public page",
-        "removed": "Removed: {reason}.",
+        "takenDown": "Taken down: {reason}.",
         "decision": {
           "draft": {
             "title": "Not sent for review yet",
             "lead": "The person is still writing the profile. Nobody sees it until it is approved."
           },
-          "submitted": {
+          "in_review": {
             "title": "Asks to be listed in the directory",
             "lead": "Check that the page is about professional work, names no customer without permission, and says what the person did in each project. Approving opens the page and lists it."
           },
           "approved": {
             "title": "Approved",
-            "lead": "The page is public while its person keeps it listed. Removing takes it out of the directory at once and tells them why."
+            "lead": "The page is public while its person keeps it listed. Taking it down removes it from the directory at once and tells them why."
           },
-          "changes_requested": {
-            "title": "Changes requested",
+          "needs_changes": {
+            "title": "Sent back",
             "lead": "The profile is back with its person. It returns here when they send it again."
           },
-          "removed": {
-            "title": "Removed from the directory",
-            "lead": "The page is not public. It returns here if its person sends it again."
+          "suspended": {
+            "title": "Taken down from the directory",
+            "lead": "The page is not public; the profile stays approved. Restore puts it back, and it returns here if its person sends it again."
           }
         },
         "audited": "The decision is recorded in the audit log."
@@ -1162,6 +1368,7 @@
       "organizations": "Organizations to review",
       "solutions": "Solutions to review",
       "talent": "Talent profiles to review",
+      "deployments": "Customer deployments to review",
       "review": "Open the queue, longest wait first",
       "none": "Nothing waiting"
     },
@@ -1197,6 +1404,1082 @@
         "title": "No request matches",
         "description": "Try another solution name, or another state.",
         "clear": "Clear search and filters"
+      }
+    },
+    "useCases": {
+      "metaTitle": "Use cases · BeyondPilot",
+      "title": "Use cases",
+      "lead": "Use cases of every organisation. Review the ones sent to you, or create one for an organisation.",
+      "create": "Create use case",
+      "search": "Search by title or organisation",
+      "clear": "Clear search",
+      "filters": {
+        "status": {
+          "label": "Status",
+          "all": "All statuses"
+        },
+        "organization": {
+          "label": "Organisation",
+          "all": "Organisation"
+        }
+      },
+      "status": {
+        "draft": "Draft",
+        "in_review": "In review",
+        "needs_changes": "Needs changes",
+        "approved": "Published",
+        "closed": "Closed"
+      },
+      "note": {
+        "draft": "Only {organization} can see it",
+        "in_review": "Waiting for GenAI Fund",
+        "needs_changes": "Sent back to {organization}",
+        "approved": "Visible in the directory",
+        "closed": "Deadline passed · locked, nobody can change it"
+      },
+      "columns": {
+        "useCase": "Use case",
+        "organization": "Organisation",
+        "status": "Status",
+        "closes": "Proposals close",
+        "updated": "Updated",
+        "actions": "Actions"
+      },
+      "count": "{count, plural, one {# use case} other {# use cases}}",
+      "inReview": "{count} in review",
+      "empty": {
+        "title": "No use cases yet",
+        "description": "Use cases appear here when organisations write them, or when you create one for an organisation."
+      },
+      "noMatch": {
+        "title": "No use case matches",
+        "description": "Nothing matches this search and these filters.",
+        "clear": "Clear search and filters"
+      },
+      "form": {
+        "metaTitle": "Create a use case · BeyondPilot",
+        "title": "Create a use case",
+        "lead": "Write it for an organisation. The audit log records it as created by GenAI Fund.",
+        "sections": {
+          "organization": "Organisation",
+          "challenge": "The challenge",
+          "outcomes": {
+            "title": "Outcomes and users",
+            "description": "Expected outcomes, current process, current solutions, target users"
+          },
+          "requirements": {
+            "title": "Requirements and data",
+            "description": "Requirements (required or optional), data readiness, integration, attachments"
+          },
+          "budget": {
+            "title": "Budget and timeline",
+            "description": "Budget range, preferred timeline, show or hide the company name"
+          }
+        },
+        "open": "Open",
+        "close": "Close",
+        "organization": "Create this use case for",
+        "organizationPlaceholder": "Choose an organisation",
+        "organizationHint": "Only approved organisations are listed.",
+        "choose": "Choose",
+        "useCaseTitle": "Use case title",
+        "useCaseTitleHint": "Name the outcome you want, not a technology.",
+        "problemStatement": "Problem statement",
+        "problemStatementHint": "What happens today, who it affects and what it costs.",
+        "industry": "Industry",
+        "technologies": "Relevant AI technologies",
+        "expectedOutcomes": "Expected outcomes and success metrics",
+        "expectedOutcomesHint": "Use numbers where you can.",
+        "currentProcess": "Current process",
+        "currentProcessHint": "How the work is done today.",
+        "currentSolutions": "Current solutions",
+        "currentSolutionsHint": "Optional. Tools or vendors you use or have tried.",
+        "targetUsers": "Target users and impacted teams",
+        "targetUsersHint": "Who uses the solution, and who is affected by it.",
+        "requirement": "Requirement {number}",
+        "addRequirement": "Add a requirement",
+        "necessity": {
+          "label": "Type",
+          "required": "Required",
+          "optional": "Optional"
+        },
+        "dataReadiness": "Data availability and readiness",
+        "dataReadinessHint": "What data exists, in what format, and how providers can access it.",
+        "integrationRequirements": "Integration, deployment and infrastructure",
+        "integrationRequirementsHint": "Systems to connect to, where it runs, security and data residency.",
+        "budgetMin": "Minimum budget ({currency})",
+        "budgetMax": "Maximum budget ({currency})",
+        "currency": "Currency",
+        "currencies": {
+          "USD": "USD — US dollar",
+          "VND": "VND — Vietnamese đồng"
+        },
+        "budgetToBeDetermined": "Budget to be determined",
+        "budgetMembersOnly": "Show the budget to signed-in members only",
+        "timeline": {
+          "label": "Preferred timeline",
+          "under_4": "Under 4 weeks",
+          "4_8": "4–8 weeks",
+          "8_12": "8–12 weeks",
+          "12_24": "12–24 weeks",
+          "over_24": "24 weeks or more"
+        },
+        "hideOrganizationName": "Hide the company name on the public use case",
+        "publish": {
+          "title": "Publish",
+          "when": "When you save",
+          "thisOrganization": "the organisation",
+          "publish": {
+            "title": "Publish now",
+            "description": "Visible in the directory at once. Providers can send proposals until the date below."
+          },
+          "draft": {
+            "title": "Save as a draft",
+            "description": "Only {organization}’s members can see it. They edit it, then send it to GenAI Fund for review."
+          }
+        },
+        "closes": "Proposals close",
+        "closesTime": "Time, Vietnam time",
+        "closesHint": "Providers cannot send proposals after this time (Vietnam time, ICT).",
+        "draftSubmit": "Save draft",
+        "publishSubmit": "Publish use case",
+        "cancel": "Cancel",
+        "saved": "Saved “{title}” as a draft.",
+        "published": "Published “{title}”.",
+        "errors": {
+          "budgetOutOfOrder": "The maximum is below the minimum.",
+          "USECASE_ORGANIZATION_NOT_ELIGIBLE": "This organisation is not an approved enterprise.",
+          "USECASE_CLOSES_IN_THE_PAST": "Choose a day after today.",
+          "USECASE_BUDGET_INCOMPLETE": "Give both amounts, or mark the budget to be determined.",
+          "USECASE_BUDGET_OUT_OF_ORDER": "The maximum is below the minimum.",
+          "unknown": "The use case was not saved. Try again.",
+          "USECASE_ATTACHMENT_NOT_USABLE": "Upload the file again: it cannot be attached."
+        },
+        "attachments": {
+          "label": "Attachments",
+          "add": "Add an attachment",
+          "replace": "Replace",
+          "uploaded": "Uploaded {time}",
+          "uploading": "Uploading…",
+          "errors": {
+            "type": "Attach a PDF, Word, Excel or PowerPoint file, or a PNG or JPEG image.",
+            "size": "Keep each file to 25 MB.",
+            "failed": "The file was not uploaded. Try again."
+          }
+        }
+      },
+      "untitled": "Untitled use case",
+      "actions": {
+        "open": "Actions for {name}",
+        "review": "Review use case",
+        "view": "Open use case",
+        "organisation": "View organisation"
+      },
+      "errors": {
+        "USECASE_NOT_AWAITING_REVIEW": "This use case is no longer in review. Its status was read again.",
+        "USECASE_NOT_FOUND": "This use case does not exist any more.",
+        "unknown": "The decision was not saved. Try again."
+      },
+      "decision": {
+        "title": "Decision",
+        "lead": "Approving publishes it at once and emails {organization}’s members. Sending it back needs a reason they can read.",
+        "approve": "Approve and publish",
+        "sendBack": "Send back…",
+        "approved": "“{name}” is published.",
+        "sentBack": "“{name}” was sent back to {organization}.",
+        "dialog": {
+          "title": "Send back to {organization}",
+          "description": "{organization}’s members get your reason by email and see it when they open the use case. They edit it and send it again.",
+          "label": "What should {organization} change?",
+          "hint": "Your reason is kept with the use case. {organization}’s members see it until they send the use case again.",
+          "cancel": "Cancel",
+          "confirm": "Send back"
+        },
+        "leadPublished": "It is public now. Sending it back takes it out of the directory and gives {organization}’s members a reason they can read; they edit it and send it again."
+      },
+      "detail": {
+        "metaTitle": "Use case · BeyondPilot",
+        "untitled": "Untitled use case",
+        "subtitle": {
+          "in_review": "{organization} · waiting for GenAI Fund",
+          "needs_changes": "{organization} · sent back, waiting for its members",
+          "draft": "{organization} · only its members can see it",
+          "approved": "{organization} · in the directory",
+          "closed": "{organization} · closed"
+        },
+        "history": {
+          "title": "Status history",
+          "created": "Created by {name}",
+          "createdMeta": "{date}, for {organization}",
+          "sent": "Sent for review",
+          "sentBack": "Sent back",
+          "published": "Published",
+          "by": "{date}, by {name}",
+          "closed": "Closed",
+          "closedMeta": "{date}. Automatic: the deadline passed.",
+          "now": {
+            "in_review": {
+              "title": "In review",
+              "meta": "Waiting for GenAI Fund to approve it or send it back."
+            },
+            "needs_changes": {
+              "title": "Needs changes",
+              "meta": "Waiting for {organization} to edit it and send it again."
+            },
+            "draft": {
+              "title": "Draft",
+              "meta": "Waiting for {organization} to send it for review."
+            }
+          },
+          "sentBackMeta": "{date}, by {name} · “{note}”"
+        },
+        "review": {
+          "title": "Review the use case",
+          "lead": "Check each section as {organization} wrote it. You cannot edit it: approve it, or send it back with what to change."
+        },
+        "readOnly": "Read only: this is what {organization} wrote. You cannot edit it.",
+        "viewDetails": "View details",
+        "backToReview": "Back to review"
+      }
+    },
+    "ai": {
+      "providers": {
+        "metaTitle": "AI providers",
+        "title": "AI providers",
+        "lead": "The AI services BeyondPilot calls, and the model each feature uses.",
+        "tabs": "Purposes",
+        "embedding": "Embedding",
+        "noEncryption": {
+          "title": "Keys cannot be saved yet",
+          "lead": "The server has no encryption key for provider keys. Ask the team to add BEYONDPILOT_AI_ENCRYPTION_KEY."
+        }
+      },
+      "model": {
+        "heading": "Embedding model",
+        "headingLead": "Turns text into vectors for semantic search. Every item and every query uses it.",
+        "active": "Active",
+        "through": "Through {name}",
+        "dimensions": "Dimensions",
+        "embedded": "Embedded",
+        "embeddedOf": "{embedded} of {total}",
+        "since": "Active since",
+        "usedBy": "Used by",
+        "search": "Search · {count, plural, one {# item} other {# items}}",
+        "openIndex": "Open search index",
+        "none": {
+          "title": "No embedding provider yet",
+          "lead": "Search matches keywords only. Connect a provider below to turn on semantic search."
+        },
+        "notChosen": {
+          "title": "No model chosen yet",
+          "lead": "Choose the provider and model search embeds with to turn on semantic search."
+        },
+        "change": "Change model",
+        "choose": "Choose model",
+        "title": "Change the embedding model",
+        "lead": "Search keeps working while the items are embedded again.",
+        "provider": "Provider",
+        "model": "Model",
+        "dimensionsHint": "Known models give 1,536 dimensions, the size the index stores.",
+        "test": "Test connection",
+        "testHint": "Embeds one sentence with the model above.",
+        "testButton": "Test",
+        "warning": "All {count, plural, one {# item is} other {# items are}} embedded again, about {minutes, plural, one {# minute} other {# minutes}} at 32 a minute. Until then an item is found by keyword search only. Each item is billed once by the provider.",
+        "cancel": "Cancel",
+        "embedAgain": "Embed again",
+        "use": "Use this model"
+      },
+      "connected": {
+        "heading": "Connected providers",
+        "lead": "Where the key is kept. A key is stored encrypted and never shown again, not even in part.",
+        "inUse": "In use",
+        "keySaved": "Key saved",
+        "noKey": "No key",
+        "meta": "{address} · saved by {name} on {date}",
+        "inUseNote": "Search embeds with it. Change the model to another provider before deleting it."
+      },
+      "add": {
+        "heading": "Add provider",
+        "lead": "Both speak the OpenAI API; only the address and the bill differ.",
+        "openai": "Embedding models from OpenAI, billed by OpenAI.",
+        "openrouter": "One key for models from many vendors, billed by OpenRouter."
+      },
+      "editor": {
+        "vendor": {
+          "openai": "OpenAI",
+          "openrouter": "OpenRouter"
+        },
+        "edit": "Edit",
+        "connect": "Connect",
+        "connectLabel": "Connect {name}",
+        "connectTitle": "Connect {name}",
+        "connectLead": "Saved providers can be picked under Change model. Test the key before you save it.",
+        "editTitle": "Edit {name}",
+        "editLead": "Changes take effect for every search once you save.",
+        "name": "Name",
+        "address": "Base URL",
+        "addressHint": "The provider's own API address. The key is only ever sent there.",
+        "apiKey": "API key",
+        "keyKeep": "Keep the saved key",
+        "keyReplace": "Replace the key",
+        "keyRemove": "Remove the key",
+        "newKey": "New API key",
+        "keyHint": {
+          "openai": "Create one at platform.openai.com/api-keys. It is stored encrypted and never shown again.",
+          "openrouter": "Create one at openrouter.ai/keys with a monthly limit. It is stored encrypted and never shown again."
+        },
+        "test": "Test connection",
+        "model": "Model to test",
+        "testButton": "Test",
+        "testHint": "Embeds one sentence with this key and model, saved or not. Nothing is stored.",
+        "cancel": "Cancel",
+        "save": "Save provider"
+      },
+      "probe": {
+        "connected": "Connected · {model} · {dimensions, number} dimensions · {ms} ms",
+        "failed": "Connection failed · {ms} ms",
+        "reason": {
+          "rejected": "The provider rejected the API key. Check that it is copied whole and not revoked.",
+          "model_refused": "The provider does not offer this model to this key.",
+          "unreachable": "The provider did not answer in time. Try again in a moment.",
+          "wrong_dimensions": "The model gave vectors of another length than the 1,536 the index stores."
+        }
+      },
+      "delete": {
+        "open": "Delete",
+        "title": "Delete {name}?",
+        "lead": "The provider and its saved key are deleted. Connect it again to use it.",
+        "confirm": "Delete provider",
+        "cancel": "Cancel"
+      },
+      "done": {
+        "connected": "{name} connected",
+        "saved": "{name} saved",
+        "deleted": "{name} deleted",
+        "modelChosen": "Search embeds with {model} from now on"
+      },
+      "errors": {
+        "SEARCH_PROVIDER_NOT_FOUND": "This provider no longer exists. Reload the page.",
+        "SEARCH_PROVIDER_INVALID": "The address must be the provider's own API address.",
+        "SEARCH_PROVIDER_NAME_TAKEN": "Another provider already has this name.",
+        "SEARCH_PROVIDER_CHANGED": "Someone changed this provider since you opened it. Reload and try again.",
+        "SEARCH_PROVIDER_IN_USE": "Search embeds with this provider. Change the model to another provider first.",
+        "SEARCH_PROVIDER_KEY_MISSING": "Enter the API key. A saved key is only used with the address it was saved for.",
+        "SEARCH_MODEL_UNKNOWN": "This provider does not offer that model.",
+        "SEARCH_MODEL_REJECTED": "The provider did not embed a test sentence with this key and model. Test the connection to see why.",
+        "SEARCH_RETRY_ITEM_INCOMPLETE": "Name the kind of the item to try again.",
+        "SEARCH_SETTINGS_CHANGED": "Someone changed the search settings since you opened them. Reload and try again.",
+        "SEARCH_ENCRYPTION_KEY_MISSING": "Keys cannot be saved: the server has no encryption key for them. Ask the team to add it.",
+        "unknown": "Something went wrong. Try again in a moment."
+      }
+    },
+    "searchIndex": {
+      "metaTitle": "Search index",
+      "title": "Search index",
+      "lead": "What search can find by keyword, and how much of it is embedded for semantic search.",
+      "rebuild": "Rebuild index",
+      "semantic": {
+        "label": "Semantic search",
+        "switch": "Semantic search",
+        "openProviders": "Open providers",
+        "on": {
+          "title": "Semantic search is on",
+          "lead": "Keyword and semantic results are ranked together. {provider} · {model} · last batch {last}.",
+          "noBatch": "none since the last start"
+        },
+        "off": {
+          "title": "Semantic search is off",
+          "lead": "Search matches keywords only and nothing is sent to the provider. Turned on again, it first embeds what changed meanwhile."
+        },
+        "paused": {
+          "title": "Semantic search paused until {until}",
+          "reason": {
+            "rejected": "The provider rejected the API key. Search matches keywords only until it answers; check the key under Providers.",
+            "model_refused": "The provider refused the model. Search matches keywords only until it answers; check the model under Providers.",
+            "unreachable": "The provider did not answer. Search matches keywords only until it does; it is tried again on its own."
+          }
+        },
+        "noProvider": {
+          "title": "Semantic search is off",
+          "lead": "No embedding provider is connected, so search matches keywords only. Connect one under Providers to turn it on."
+        }
+      },
+      "stats": {
+        "indexed": "In the index",
+        "listed": "{count} in public results",
+        "embedded": "Embedded",
+        "embeddedOf": "{embedded} of {total} · {model}",
+        "noModel": "No embedding model",
+        "waiting": "Waiting",
+        "waitingNote": "Embedded at the next run",
+        "heldBack": "Failed",
+        "heldBackNote": "Refused by the provider"
+      },
+      "kinds": {
+        "heading": "By kind",
+        "kind": "Kind",
+        "total": "In the index",
+        "listed": "In public results",
+        "embedded": "Embedded",
+        "waiting": "Waiting",
+        "heldBack": "Failed",
+        "name": {
+          "program": "Programs",
+          "solution": "AI solutions",
+          "talent": "AI talent",
+          "use_case": "Use cases"
+        },
+        "embeddedShare": "{count} · {share}",
+        "embeddedOf": "{embedded} of {total} embedded",
+        "mobileFacts": "{listed} in public results · {waiting} waiting",
+        "heldBackCount": "{count} failed",
+        "note": "Unlisted solutions and talent stay in the index for operators matching use cases, never in public results."
+      },
+      "heldBack": {
+        "heading": "Not embedded",
+        "lead": "Found by keyword search until they are embedded. The job tries again on its own, waiting longer each time.",
+        "retryAll": "Try all again",
+        "retry": "Try again",
+        "retryOne": "Try {title} again",
+        "item": "Item",
+        "reason": "Reason",
+        "attempts": "Attempts",
+        "next": "Next try",
+        "actions": "Actions",
+        "soon": "at the next run",
+        "mobileNext": "{count, plural, one {# attempt} other {# attempts}} · next {next}",
+        "reasons": {
+          "bad_request": "The provider refused the text (400 Bad request).",
+          "unprocessable": "The provider refused the text (422 Unprocessable).",
+          "refused": "The provider refused the text."
+        }
+      },
+      "repair": {
+        "last": "Rebuilt from the sources at every start and every night at 03:30. Last rebuilt {when}: {saved} items read, {removed} removed.",
+        "never": "Rebuilt from the sources at every start and every night at 03:30."
+      },
+      "done": {
+        "on": "Semantic search is on",
+        "off": "Semantic search is off",
+        "rebuilt": "Index rebuilt: {saved} items read, {removed} removed",
+        "retried": "{count, plural, =0 {Nothing to try again} one {# item is tried again at the next run} other {# items are tried again at the next run}}"
+      }
+    },
+    "email": {
+      "metaTitle": "Email",
+      "title": "Email",
+      "lead": "What BeyondPilot sends, how it reads, and whether it arrived.",
+      "notReady": {
+        "title": "No email can leave yet",
+        "description": "Choose a provider and a sender in Settings. Until then, emails wait in Activity and expire after a day.",
+        "action": "Open Settings"
+      },
+      "tabs": {
+        "label": "Email",
+        "templates": "Templates",
+        "activity": "Activity",
+        "suppressions": "Suppressions",
+        "settings": "Settings"
+      },
+      "groups": {
+        "sign_in": "Sign-in",
+        "organizations": "Organizations",
+        "applications": "Programs and applications",
+        "introductions": "Introductions",
+        "solutions": "Solutions",
+        "use_cases": "Use cases",
+        "talent": "Talent"
+      },
+      "kinds": {
+        "sign_in_code": {
+          "name": "Sign-in code",
+          "description": "The six-digit code a person types to sign in."
+        },
+        "organization_invitation": {
+          "name": "Organization invitation",
+          "description": "Asks someone to join or own an organization."
+        },
+        "organization_approved": {
+          "name": "Organization approved",
+          "description": "Tells the owners their organization is listed."
+        },
+        "organization_refused": {
+          "name": "Organization not approved",
+          "description": "Tells the owners their organization was refused, and why."
+        },
+        "organization_sent_back": {
+          "name": "Organization sent back",
+          "description": "Tells the owners what to change before it is approved."
+        },
+        "organization_request_approved": {
+          "name": "Request to join approved",
+          "description": "Tells a person their claim or request to join was accepted."
+        },
+        "organization_request_declined": {
+          "name": "Request to join declined",
+          "description": "Tells a person their claim or request to join was declined."
+        },
+        "organization_taken_down": {
+          "name": "Organization taken down",
+          "description": "Tells the owners GenAI Fund took their organization down."
+        },
+        "organization_restored": {
+          "name": "Organization restored",
+          "description": "Tells the owners their organization is back."
+        },
+        "application_received": {
+          "name": "Application received",
+          "description": "Confirms an application to a program was submitted."
+        },
+        "reviewer_invitation": {
+          "name": "Judge invitation",
+          "description": "Asks someone to judge the applications to a program."
+        },
+        "application_outcome": {
+          "name": "Application outcome",
+          "description": "The result of an application, written by an operator for each release."
+        },
+        "introduction_request": {
+          "name": "Introduction requested",
+          "description": "Tells a solution's provider that someone asked to meet them."
+        },
+        "introduction_made": {
+          "name": "Introduction made",
+          "description": "Introduces the two sides to each other by email."
+        },
+        "introduction_declined": {
+          "name": "Introduction declined",
+          "description": "Tells the person who asked that the provider declined."
+        },
+        "solution_approved": {
+          "name": "Solution approved",
+          "description": "Tells an organization's members their solution is approved."
+        },
+        "solution_sent_back": {
+          "name": "Solution sent back",
+          "description": "Tells an organization's members what to change before their solution is approved."
+        },
+        "solution_rejected": {
+          "name": "Solution not approved",
+          "description": "Tells an organization's members their solution was refused for good."
+        },
+        "solution_taken_down": {
+          "name": "Solution taken down",
+          "description": "Tells an organization's members GenAI Fund took their solution down."
+        },
+        "solution_restored": {
+          "name": "Solution restored",
+          "description": "Tells an organization's members their solution is back."
+        },
+        "use_case_approved": {
+          "name": "Use case published",
+          "description": "Tells an organization's members their use case is approved and published."
+        },
+        "use_case_sent_back": {
+          "name": "Use case sent back",
+          "description": "Tells an organization's members what to change before their use case is published."
+        },
+        "talent_approved": {
+          "name": "Talent profile approved",
+          "description": "Tells a person their profile is in the directory."
+        },
+        "talent_changes_requested": {
+          "name": "Talent profile sent back",
+          "description": "Tells a person what to change before their profile is listed."
+        },
+        "talent_removed": {
+          "name": "Talent profile taken down",
+          "description": "Tells a person their profile left the directory."
+        },
+        "talent_restored": {
+          "name": "Talent profile restored",
+          "description": "Tells a person their profile is back in the directory."
+        },
+        "talent_enquiry": {
+          "name": "Message to a talent",
+          "description": "Tells a person someone wrote to them through their profile."
+        },
+        "talent_enquiry_reminder": {
+          "name": "Message reminder",
+          "description": "Reminds a person a message waits for their answer."
+        },
+        "talent_introduction": {
+          "name": "Talent introduction",
+          "description": "Shares the two addresses once a message is accepted."
+        },
+        "talent_enquiry_declined": {
+          "name": "Message declined",
+          "description": "Tells the sender the person will not take it further."
+        },
+        "talent_enquiry_closed": {
+          "name": "Message closed",
+          "description": "Tells the sender the message closed without an answer."
+        }
+      },
+      "status": {
+        "queued": "Queued",
+        "sent": "Sent",
+        "delivered": "Delivered",
+        "bounced": "Bounced",
+        "complained": "Marked as spam",
+        "failed": "Failed",
+        "skipped": "Not sent"
+      },
+      "providers": {
+        "ses": {
+          "name": "Amazon SES"
+        },
+        "resend": {
+          "name": "Resend"
+        },
+        "smtp": {
+          "name": "SMTP"
+        }
+      },
+      "preview": {
+        "title": "Preview",
+        "width": "Width",
+        "desktop": "Desktop",
+        "phone": "Phone",
+        "subject": "Subject:"
+      },
+      "test": {
+        "notConfigured": "The settings are not complete, so the test email did not leave.",
+        "authentication": "The provider refused the credentials. Check the key or the login.",
+        "throttled": "The provider is limiting sending right now. Try again in a minute.",
+        "unavailable": "The provider could not be reached. Try again in a minute.",
+        "rejected": "The provider refused the email. Check that the sender's domain is verified.",
+        "invalidRecipient": "The provider refused your address as a recipient.",
+        "recipientInvalid": "Write one plain email address, without a name or a second address.",
+        "suppressed": "This address is suppressed, so no email goes to it. Remove it from the suppression list first.",
+        "limitReached": "You have sent as many test emails to other people as an hour allows. Send one to yourself, or try later."
+      },
+      "templates": {
+        "metaTitle": "Email templates",
+        "appearance": {
+          "title": "Appearance",
+          "description": "The colour of links and buttons and the note at the foot of every email.",
+          "action": "Edit appearance"
+        },
+        "edited": "Edited",
+        "editedBy": "{name} · {when}"
+      },
+      "editor": {
+        "required": "Required",
+        "saved": "Wording saved. New emails use it from now.",
+        "resetDone": "Default wording restored.",
+        "testSent": "Test email sent to {email}.",
+        "errors": {
+          "changed": "Someone saved this email while you were editing. Reload the page to see their wording.",
+          "invalid": "The wording has problems. Fix those marked under the fields.",
+          "unknown": "The wording could not be saved. Try again."
+        },
+        "problems": {
+          "unknownVariable": "{variable} is not a variable of this email.",
+          "missingVariable": "{variable} must appear: it is what this email is for.",
+          "subjectLine": "The subject must be one line and not empty.",
+          "syntax": "A tag is not closed or not allowed. Use '{{name}}', '{{#name}}…{{/name}}' or '{{^name}}…{{/name}}'."
+        },
+        "unsaved": "You have unsaved changes",
+        "discard": "Discard",
+        "save": "Save",
+        "edited": "Edited",
+        "lastEdited": "Last edited by {name}, {when}.",
+        "viewAudit": "Audit log",
+        "reset": "Restore default",
+        "subject": "Subject",
+        "body": "Body",
+        "bodyHint": "Markdown: # heading, **bold**, [link](https://…). Type '{{' to add a variable.",
+        "variables": "Variables",
+        "variablesHint": "Click one to add it where the cursor is. Those with * must appear.",
+        "previewTitle": "Preview of {name}",
+        "leave": {
+          "title": "Leave without saving?",
+          "lead": "Your changes on this page are not saved and will be lost.",
+          "leave": "Leave",
+          "stay": "Stay"
+        },
+        "resetConfirm": {
+          "title": "Restore the default wording?",
+          "lead": "{name} goes back to the wording BeyondPilot ships with.",
+          "note": "Your wording is removed. New emails use the default from now; emails already sent stay as they were.",
+          "confirm": "Restore default",
+          "cancel": "Cancel"
+        },
+        "back": "Templates"
+      },
+      "appearance": {
+        "metaTitle": "Email appearance",
+        "back": "Templates",
+        "title": "Appearance",
+        "lead": "What every email shares. The preview shows a sample email in the colour and footer you are editing.",
+        "color": "Accent colour",
+        "colorPicker": "Pick a colour",
+        "colorHint": "Links and buttons. Choose a dark colour: white text sits on it.",
+        "colorInvalid": "Write a colour as # and six hexadecimal digits.",
+        "footer": "Footer note",
+        "footerHint": "Under the GenAI Fund band of every email.",
+        "save": "Save appearance",
+        "saved": "Appearance saved. The preview shows it.",
+        "changed": "Someone changed the email settings meanwhile. Reload the page and save again.",
+        "unknown": "The appearance could not be saved. Try again.",
+        "previewTitle": "Preview of a sample email",
+        "leave": {
+          "title": "Leave without saving?",
+          "lead": "Your changes on this page are not saved and will be lost.",
+          "leave": "Leave",
+          "stay": "Stay"
+        }
+      },
+      "activity": {
+        "metaTitle": "Email activity",
+        "period": {
+          "day": "Last 24 hours",
+          "week": "Last 7 days",
+          "month": "Last 30 days",
+          "all": "All time"
+        },
+        "filters": {
+          "period": {
+            "label": "Period"
+          },
+          "kind": {
+            "label": "Kind of email",
+            "all": "All emails"
+          },
+          "status": {
+            "label": "Status",
+            "all": "All statuses"
+          }
+        },
+        "search": "Search by address or subject",
+        "counts": {
+          "total": "{period, select, day {Emails, 24 hours} week {Emails, 7 days} month {Emails, 30 days} other {Emails}}",
+          "delivered": "Delivered",
+          "sent": "Sent",
+          "bounced": "Bounced",
+          "complained": "Spam reports",
+          "notSent": "Not sent"
+        },
+        "columns": {
+          "time": "Time",
+          "recipient": "To",
+          "email": "Email",
+          "status": "Status"
+        },
+        "noMatch": {
+          "title": "No email matches",
+          "description": "Change the search or the filters.",
+          "clear": "Clear filters"
+        },
+        "empty": {
+          "title": "No email in this period",
+          "description": "Emails appear here as BeyondPilot sends them."
+        },
+        "pagination": {
+          "label": "Pages of emails",
+          "previous": "Newer",
+          "next": "Older",
+          "goToPrevious": "Go to newer emails",
+          "goToNext": "Go to older emails"
+        }
+      },
+      "message": {
+        "metaTitle": "Email",
+        "back": "Activity",
+        "lead": "{kind} to {recipient}",
+        "suppressed": {
+          "title": "This address receives no email",
+          "bounce": "Mail to it bounced, so BeyondPilot stopped writing to it.",
+          "complaint": "Its reader marked an email as spam, so BeyondPilot stopped writing to it.",
+          "manual": "An operator stopped email to it.",
+          "manage": "Manage suppressions"
+        },
+        "lastError": "Why it was not sent",
+        "failures": {
+          "not_configured": "Email was not set up when it was due.",
+          "authentication": "The provider refused the credentials.",
+          "throttled": "The provider was limiting sending; it was tried again later.",
+          "unavailable": "The provider could not be reached.",
+          "rejected": "The provider refused the email.",
+          "invalid_recipient": "The provider refused the address.",
+          "suppressed": "The address receives no email.",
+          "expired": "It could not leave within a day, so it was given up."
+        },
+        "facts": "Details",
+        "fields": {
+          "recipient": "To",
+          "kind": "Kind",
+          "created": "Created",
+          "sent": "Sent",
+          "provider": "Provider",
+          "providerId": "Provider's message ID",
+          "attempts": "Attempts"
+        },
+        "events": {
+          "title": "What happened",
+          "none": "The provider has reported nothing yet.",
+          "smtp": "SMTP reports nothing after sending.",
+          "types": {
+            "delivered": "Delivered",
+            "bounced": "Bounced",
+            "soft_bounced": "Bounced for now",
+            "complained": "Marked as spam"
+          }
+        },
+        "previewTitle": "The email {subject}",
+        "resend": {
+          "action": "Send again",
+          "title": "Send this email again?",
+          "lead": "The same content goes to {email} as a new email.",
+          "note": "It appears in Activity on its own.",
+          "confirm": "Send again",
+          "cancel": "Cancel",
+          "done": "Sent again to {email}.",
+          "errors": {
+            "notResendable": "This email cannot be sent again.",
+            "suppressed": "The address receives no email. Remove it from Suppressions first.",
+            "notReady": "Email is not set up. Complete Settings first.",
+            "unknown": "The email could not be sent again. Try again."
+          }
+        }
+      },
+      "suppressions": {
+        "metaTitle": "Email suppressions",
+        "search": "Search by address",
+        "clear": "Clear",
+        "filters": {
+          "reason": {
+            "label": "Reason",
+            "all": "All reasons"
+          }
+        },
+        "reasons": {
+          "bounce": "Bounced",
+          "complaint": "Spam report",
+          "manual": "Added by an operator"
+        },
+        "columns": {
+          "address": "Address",
+          "reason": "Reason",
+          "origin": "From",
+          "since": "Since",
+          "actions": "Actions"
+        },
+        "theEmail": "The email",
+        "addedBy": "Added by {name}",
+        "count": "{count, plural, one {# address} other {# addresses}}",
+        "noMatch": {
+          "title": "No address matches",
+          "description": "Change the search or the reason.",
+          "clear": "Clear filters"
+        },
+        "empty": {
+          "title": "Every address receives email",
+          "description": "An address appears here when mail to it bounces, its reader reports spam, or you stop it."
+        },
+        "add": {
+          "open": "Add address",
+          "title": "Stop email to an address",
+          "lead": "BeyondPilot sends nothing more to it, sign-in codes included, until you remove it.",
+          "address": "Email address",
+          "hint": "As when its reader asks to receive no more email.",
+          "invalid": "Write one email address.",
+          "exists": "This address already receives no email.",
+          "cancel": "Cancel",
+          "confirm": "Stop email",
+          "done": "{email} receives no more email."
+        },
+        "remove": {
+          "open": "Let email reach {email} again",
+          "title": "Let email reach this address again?",
+          "lead": "BeyondPilot writes to {email} again from now.",
+          "noteManual": "Emails already given up are not sent again.",
+          "noteProvider": "Mail to it bounced or was reported as spam. If it happens again, the provider counts it against your sending.",
+          "confirm": "Remove",
+          "cancel": "Cancel",
+          "done": "{email} receives email again."
+        },
+        "errors": {
+          "unknown": "The change could not be made. Try again."
+        }
+      },
+      "settings": {
+        "metaTitle": "Email settings",
+        "copy": "Copy",
+        "secretKept": "Saved. Leave it empty to keep it.",
+        "saved": "Settings saved.",
+        "testSent": "Test email sent to {email}. Check that it arrived.",
+        "errors": {
+          "address": "Write one email address.",
+          "port": "Write a port number.",
+          "changed": "Someone saved the settings while you were editing. Reload the page and save again.",
+          "incomplete": "The provider needs more: fill in the fields marked as required.",
+          "encryption": "The server has no encryption key, so it cannot keep secrets. Ask whoever runs it.",
+          "unknown": "The settings could not be saved. Try again."
+        },
+        "encryption": {
+          "title": "The server cannot keep secrets",
+          "description": "Its encryption key is missing, so no provider key or password can be saved. Whoever runs the server sets BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY."
+        },
+        "notReady": {
+          "title": "No email can leave yet",
+          "description": "Fill in the sender and a provider, then send yourself a test before you save."
+        },
+        "sender": {
+          "title": "Sender",
+          "what": "Who every email comes from. The address must be on a domain your provider verified.",
+          "fromName": "Name",
+          "fromAddress": "Address",
+          "replyTo": "Reply-to",
+          "replyToHint": "Where answers go. Without one, they go to the sender's address."
+        },
+        "provider": {
+          "title": "Provider",
+          "what": "The service that delivers the email. Only one is used at a time."
+        },
+        "ses": {
+          "region": "Region",
+          "accessKeyId": "Access key ID",
+          "secretAccessKey": "Secret access key",
+          "secretHint": "Of an IAM user allowed ses:SendEmail. Changing the region or the key ID asks for it again."
+        },
+        "resend": {
+          "apiKey": "API key",
+          "apiKeyHint": "A key with sending access, from resend.com › API Keys."
+        },
+        "smtp": {
+          "host": "Server",
+          "port": "Port",
+          "security": "Security",
+          "securities": {
+            "starttls": "STARTTLS (port 587)",
+            "tls": "TLS (port 465)",
+            "none": "None"
+          },
+          "username": "Username",
+          "password": "Password",
+          "passwordHint": "Changing the server, the port or the username asks for it again."
+        },
+        "reports": {
+          "title": "Delivery reports",
+          "what": "The provider tells BeyondPilot what became of each email: delivered, bounced or reported as spam. A bounce or a report stops email to that address.",
+          "smtp": "SMTP reports nothing after sending, so Activity shows emails as sent, never delivered.",
+          "endpoint": "Address for the provider",
+          "resendEndpointHint": "In Resend › Webhooks, add this address with the events email.delivered, email.bounced and email.complained.",
+          "resendSecret": "Signing secret",
+          "resendSecretHint": "The webhook's secret, starting with whsec_. Without it, reports are refused.",
+          "configurationSet": "Configuration set",
+          "configurationSetHint": "The SES configuration set that sends its events to the SNS topic below.",
+          "sesEndpointHint": "Subscribe this address to the SNS topic over HTTPS; BeyondPilot confirms the subscription.",
+          "topicArn": "SNS topic ARN",
+          "topicArnHint": "Only reports from this topic are accepted."
+        },
+        "unsaved": "You have unsaved changes.",
+        "lastSaved": "Last saved by {name}, {when}.",
+        "neverSaved": "Not saved yet.",
+        "save": "Save settings",
+        "leave": {
+          "title": "Leave without saving?",
+          "lead": "Your changes on this page are not saved and will be lost.",
+          "leave": "Leave",
+          "stay": "Stay"
+        }
+      },
+      "checks": {
+        "title": "Setup",
+        "done": "{done} of {total} done",
+        "lead": "What the provider says about sending from {domain}, checked at {when}.",
+        "leadChecking": "Asking the provider whether email can leave.",
+        "again": "Check again",
+        "checking": "Asking the provider…",
+        "failed": "The provider could not be asked. Try again in a minute.",
+        "smtp": "An SMTP server has no API to ask. Send yourself a test from the form below: if it arrives, email leaves.",
+        "limits": {
+          "permission_missing": {
+            "ses": "This IAM user may send but not read the account or the domain. Add ses:GetAccount and ses:GetEmailIdentity to its policy to see the checks.",
+            "resend": "This API key may only send, so it cannot read the domain. Your email still leaves; check the domain at resend.com › Domains."
+          },
+          "credentials_refused": {
+            "ses": "AWS refused the access key. Check its ID and secret, and that the user is active.",
+            "resend": "Resend refused the API key. Create a new one at resend.com › API Keys."
+          },
+          "unreachable": {
+            "ses": "Amazon SES did not answer. Check again in a minute.",
+            "resend": "Resend did not answer. Check again in a minute."
+          }
+        },
+        "steps": {
+          "credentials": {
+            "ok": "The provider takes the credentials",
+            "pending": "Checking the credentials",
+            "failed": "The provider refuses the credentials",
+            "unknown": "The credentials could not be checked",
+            "next": "Check the key or the login in the form below."
+          },
+          "domain_added": {
+            "ok": "The domain is added to the provider",
+            "pending": "The domain is being added",
+            "failed": "The domain is not added to the provider",
+            "unknown": "The domain could not be read",
+            "next": "Add the sender's domain in the provider's console, then publish the records below."
+          },
+          "domain_verified": {
+            "ok": "The domain is verified",
+            "pending": "Waiting for DNS to verify the domain",
+            "failed": "The domain could not be verified",
+            "unknown": "The domain's state is not known",
+            "next": "Publish the records below; DNS can take up to 72 hours."
+          },
+          "dkim": {
+            "ok": "Email is signed with DKIM",
+            "pending": "Waiting for the DKIM records",
+            "failed": "The DKIM records are not found",
+            "unknown": "DKIM could not be checked",
+            "next": "Publish the DKIM records below exactly as shown."
+          },
+          "mail_from": {
+            "ok": "Bounces return to your own subdomain",
+            "pending": "Waiting for the MAIL FROM records",
+            "failed": "The MAIL FROM records are not found",
+            "unknown": "MAIL FROM could not be checked",
+            "next": "Publish the MX and TXT records of the MAIL FROM subdomain below."
+          },
+          "production_access": {
+            "ok": "Production access: email reaches anyone",
+            "pending": "Sandbox: only verified addresses receive email",
+            "failed": "Production access was refused",
+            "unknown": "Production access could not be checked",
+            "next": "Ask AWS for production access in the SES console › Account dashboard."
+          },
+          "sending_enabled": {
+            "ok": "The account may send",
+            "pending": "Sending is being enabled",
+            "failed": "AWS paused sending for this account",
+            "unknown": "Sending could not be checked",
+            "next": "Read why in the SES console › Account dashboard; bounces or complaints ran high."
+          }
+        },
+        "records": {
+          "title": "DNS records for {domain}",
+          "status": "Status",
+          "type": "Type",
+          "host": "Host",
+          "value": "Value",
+          "copy": "Copy {what}",
+          "dmarc": "Recommended. Gmail and Yahoo expect DMARC from anyone who sends in bulk; the provider does not check it.",
+          "states": {
+            "ok": "Found",
+            "pending": "Waiting",
+            "failed": "Not found",
+            "unknown": "Not checked"
+          }
+        }
+      },
+      "testSend": {
+        "to": "Send a test to",
+        "send": "Send test",
+        "invalid": "Write one email address."
       }
     }
   },
@@ -1236,7 +2519,6 @@
     "organizationRefusal": {
       "duplicate": "Already on BeyondPilot",
       "not_a_real_organization": "Could not be verified as an organization",
-      "incomplete": "Profile is incomplete",
       "out_of_scope": "Outside what BeyondPilot covers",
       "other": "Other reason"
     },
@@ -1246,9 +2528,11 @@
     },
     "reviewStatus": {
       "draft": "Draft",
-      "submitted": "In review",
+      "in_review": "In review",
+      "needs_changes": "Changes needed",
       "approved": "Approved",
-      "rejected": "Changes needed"
+      "rejected": "Rejected",
+      "suspended": "Taken down"
     },
     "focusArea": {
       "conversational_ai": "Conversational AI",
@@ -1284,6 +2568,10 @@
       "technology": "Technology",
       "automotive_mobility": "Automotive and mobility",
       "consumer_goods": "Consumer goods",
+      "climate_sustainability": "Climate and sustainability",
+      "marketing_advertising": "Marketing and advertising",
+      "legal": "Legal",
+      "hr_workforce": "HR and workforce",
       "other": "Other"
     },
     "maturity": {
@@ -1300,10 +2588,16 @@
       "hybrid": "Hybrid"
     },
     "solutionRejection": {
-      "incomplete": "Information is missing",
       "not_an_ai_solution": "Not an AI solution",
       "duplicate": "Already listed",
       "unverifiable": "Claims could not be verified",
+      "other": "Other reason"
+    },
+    "solutionTakedown": {
+      "misleading_information": "Misleading information",
+      "not_an_ai_solution": "Not an AI solution",
+      "unverifiable": "Claims could not be verified",
+      "breaks_the_rules": "Breaks the rules",
       "other": "Other reason"
     },
     "talentRole": {
@@ -1368,12 +2662,18 @@
       "unverifiable": "Could not be verified",
       "other": "Another reason"
     },
+    "organizationTakeDown": {
+      "misleading_information": "Misleading or false information",
+      "not_a_real_organization": "Not a real organization",
+      "breaks_the_rules": "Breaks the rules",
+      "other": "Other reason"
+    },
     "talentStatus": {
       "draft": "Draft",
-      "submitted": "In review",
+      "in_review": "In review",
+      "needs_changes": "Changes needed",
       "approved": "Approved",
-      "changes_requested": "Changes requested",
-      "removed": "Removed"
+      "suspended": "Taken down"
     },
     "language": {
       "vi": "Vietnamese",
@@ -1401,6 +2701,19 @@
       "project": "About a project",
       "role": "About a role",
       "other": "About something else"
+    },
+    "technology": {
+      "recommendation": "Recommendation Systems / Personalization",
+      "predictive_analytics": "Predictive Analytics / Forecasting",
+      "generative_ai": "Generative AI",
+      "conversational_ai": "Conversational AI / Chatbots",
+      "computer_vision": "Computer Vision",
+      "document_intelligence": "Document Intelligence",
+      "voice_ai": "Voice AI",
+      "anomaly_detection": "Anomaly Detection / Fraud Detection",
+      "knowledge_retrieval": "Search & Knowledge Retrieval",
+      "process_automation": "Robotic Process Automation (RPA)",
+      "other": "Other"
     }
   },
   "Organization": {
@@ -1410,25 +2723,32 @@
       "profile": "Profile",
       "members": "Members",
       "solutions": "Solutions",
-      "introductions": "Introductions"
+      "introductions": "Introductions",
+      "useCases": "Use cases"
     },
     "status": {
-      "pending": "In review",
+      "in_review": "In review",
+      "needs_changes": "Changes needed",
       "approved": "Approved",
-      "rejected": "Not approved"
+      "rejected": "Not approved",
+      "suspended": "Taken down"
     },
-    "pending": {
+    "inReview": {
       "title": "GenAI Fund is reviewing your organization",
       "lead": "Until it is approved, {name} does not appear in the directories and cannot list a solution publicly. You can complete the profile and invite people now.",
       "foot": "We email the owners when it is decided.",
       "edit": "Edit profile"
     },
-    "rejected": {
-      "title": "GenAI Fund did not approve {name}",
-      "reason": "Reason: {reason}.",
+    "needsChanges": {
+      "title": "GenAI Fund asked for changes to {name}",
       "owner": "Change the profile and save it to send it for review again.",
       "member": "An owner can change the profile and send it for review again.",
       "edit": "Edit and send again"
+    },
+    "rejected": {
+      "title": "GenAI Fund did not approve {name}",
+      "reason": "Reason: {reason}.",
+      "foot": "This decision is final. Write to GenAI Fund if you think it is wrong."
     },
     "errors": {
       "ORGANIZATION_NOT_FOUND": "This organization no longer exists.",
@@ -1461,7 +2781,8 @@
       "requestDeclined": "Request declined.",
       "requestWithdrawn": "Request withdrawn.",
       "organizationApproved": "Organization approved.",
-      "organizationRefused": "Organization not approved. Its owners can read the reason.",
+      "organizationRefused": "Organization refused. Its owners can read the reason.",
+      "organizationSentBack": "Organization sent back. Its owners were told what to change.",
       "claimApproved": "Claim approved. They now own the organization.",
       "claimDeclined": "Claim declined.",
       "saved": "Profile saved.",
@@ -1477,14 +2798,16 @@
       "jobTitleSaved": "Job title saved.",
       "autoJoinOn": "Colleagues on your verified domain now join without asking.",
       "autoJoinOff": "Colleagues on your verified domain now ask to join.",
-      "askedAgain": "Request sent."
+      "askedAgain": "Request sent.",
+      "takenDown": "{name} was taken down. Its owners were told.",
+      "restored": "{name} is back. Its owners were told."
     },
     "form": {
       "metaTitle": "Create an organization · BeyondPilot",
       "createTitle": "Create your organization",
       "createLead": "Everyone belongs to one organization. Independent builders can create a practice or team.",
       "profileTitle": "Organization profile",
-      "profileLead": "Shown with every solution the organization lists. Only owners can edit it.",
+      "edit": "Edit profile",
       "basics": "Basics",
       "about": "About",
       "name": "Organization name",
@@ -1510,12 +2833,6 @@
         "lead": "Your changes to the organization's profile are not saved yet.",
         "leave": "Leave without saving",
         "stay": "Stay"
-      },
-      "discard": "Discard changes",
-      "confirmDiscard": {
-        "title": "Discard your changes?",
-        "lead": "The form goes back to the profile as it was last saved.",
-        "cancel": "Keep editing"
       },
       "industries": "Industries",
       "industriesRequired": "Choose at least one industry.",
@@ -1543,7 +2860,15 @@
       "aboutLead": "What you do, who you serve and how long you have been doing it.",
       "industriesPlaceholder": "Type to find an industry",
       "industriesEmpty": "No industry matches.",
-      "industriesRemove": "Remove {industry}"
+      "industriesRemove": "Remove {industry}",
+      "domain": {
+        "title": "Email domain",
+        "lead": "Verified by GenAI Fund. A person who signs in with an address on it is pointed to this organization.",
+        "label": "Verified domain",
+        "hint": "Leave it empty when the organization has no domain of its own, such as a team on Gmail. Joining without asking is off; the owners turn it on from their Members page.",
+        "invalid": "Enter a domain such as example.com, or leave it empty.",
+        "taken": "Another organization already has this domain."
+      }
     },
     "find": {
       "title": "Find your organization",
@@ -1570,8 +2895,7 @@
       },
       "ask": {
         "request": {
-          "title": "Ask to join {name}?",
-          "lead": "An owner reads your request and decides."
+          "title": "Ask to join {name}?"
         },
         "claim": {
           "title": "Claim {name}?",
@@ -1626,7 +2950,7 @@
       "summary": {
         "members": "{count, plural, one {# member} other {# members}}",
         "invitations": "{count, plural, one {# invitation pending} other {# invitations pending}}",
-        "left": "{left} of {limit} invitations left today",
+        "left": "{left} of {limit} invitations left in 24 hours",
         "notApproved": "you can invite people once the organization is approved"
       },
       "columns": {
@@ -1638,12 +2962,13 @@
       },
       "you": "You",
       "none": "—",
-      "invited": "Invited {day}",
+      "invited": "Invited {day} · expires {expires}",
       "invitePending": "Invite pending",
       "requests": {
         "title": "Requests to join",
-        "asked": "Asked to join on {day}.",
-        "onDomain": "The email is on your verified domain {domain}.",
+        "asked": "Asked on {day}",
+        "onDomain": "On {domain}",
+        "message": "Their message",
         "foot": "Approving adds them as a member.",
         "approve": "Approve",
         "decline": "Decline"
@@ -1672,16 +2997,15 @@
       "actions": {
         "open": "Actions for {name}",
         "openInvitation": "Actions for the invitation to {email}",
-        "editJobTitle": "Edit job title…",
+        "editJobTitle": "Edit job title",
         "makeMember": "Make member",
         "makeOwner": "Make owner",
-        "leave": "Leave organization…",
-        "remove": "Remove from organization…",
+        "leave": "Leave organization",
+        "remove": "Remove from organization",
         "revoke": "Withdraw invitation"
       },
       "jobTitle": {
         "title": "Your job title",
-        "lead": "Shown beside your name on the organization's team.",
         "label": "Job title",
         "placeholder": "e.g. Solutions engineer",
         "save": "Save",
@@ -1704,7 +3028,7 @@
       "invite": {
         "open": "Invite people",
         "title": "Invite people to {name}",
-        "lead": "Each person gets an email and sees the invitation after signing in with that address. {leftToday} of {dailyLimit} invitations left today; {leftOpen} of {openLimit} can still be open at once.",
+        "lead": "{leftToday} of {dailyLimit} invitations left in 24 hours; {leftOpen} of {openLimit} can be open at once.",
         "emails": "Email addresses",
         "emailsPlaceholder": "name@company.com, name@company.com",
         "emailsInvalid": "Enter full email addresses, separated by commas.",
@@ -1714,15 +3038,276 @@
         "send": "Send invitations",
         "limit": {
           "daily": {
-            "lead": "{name} has sent {limit} invitations today, the most an organization can send in a day. You can invite more people tomorrow.",
-            "note": "Revoking an invitation nobody answered does not give today's count back. Write to GenAI Fund if you are bringing a larger team."
+            "lead": "{name} has sent {limit} invitations in the last 24 hours, the most an organization can send. You can invite more people once the earliest of them is 24 hours old.",
+            "note": "Revoking an invitation nobody answered does not give its turn back. Write to GenAI Fund if you are bringing a larger team."
           },
           "open": {
             "lead": "{name} has {limit} invitations that nobody has answered yet, the most an organization can keep open. Revoke the ones you no longer need, or wait for people to answer.",
-            "note": "An invitation is open until the person answers or you revoke it. Write to GenAI Fund if you are bringing a larger team."
+            "note": "An invitation is open until the person answers, you revoke it, or it lapses seven days after it was sent. Write to GenAI Fund if you are bringing a larger team."
           },
           "close": "Close"
         }
+      }
+    },
+    "suspended": {
+      "title": "GenAI Fund took {name} down",
+      "reason": "Reason: {reason}.",
+      "foot": "Its public page and solutions are hidden. You keep your workspace; write to GenAI Fund to have it restored."
+    },
+    "useCases": {
+      "metaTitle": "Use cases · BeyondPilot",
+      "title": "Use cases",
+      "post": "Post a use case",
+      "postAnother": "Post another use case",
+      "untitled": "Untitled use case",
+      "you": "You",
+      "genaiFund": "GenAI Fund",
+      "cancel": "Cancel",
+      "summary": {
+        "approved": "{count} published",
+        "in_review": "{count} in review",
+        "needs_changes": "{count} needs changes",
+        "draft": "{count, plural, one {# draft} other {# drafts}}",
+        "closed": "{count} closed"
+      },
+      "status": {
+        "draft": "Draft",
+        "in_review": "In review",
+        "needs_changes": "Needs changes",
+        "approved": "Published",
+        "closed": "Closed"
+      },
+      "note": {
+        "in_review": "Sent {date} · GenAI Fund is reviewing it",
+        "approved": "In the directory · closes {date}",
+        "needs_changes": "GenAI Fund asked for changes · open it to see what",
+        "draft": "Not submitted · visible to your organisation only",
+        "closed": "Closed {date}"
+      },
+      "columns": {
+        "useCase": "Use case",
+        "status": "Status",
+        "editedBy": "Last edited by",
+        "updated": "Updated",
+        "actions": "Actions"
+      },
+      "empty": {
+        "title": "No use cases yet",
+        "description": "Describe a problem you want solved with AI. Providers read it and send proposals once GenAI Fund has published it."
+      },
+      "actions": {
+        "open": "Actions for {name}",
+        "edit": "Edit use case",
+        "view": "Open use case",
+        "pullBack": "Pull back to draft",
+        "moveToDraft": "Move back to Draft"
+      },
+      "editPublished": {
+        "title": "Edit a published use case?",
+        "description": "When you save your changes, GenAI Fund reviews them again. The use case leaves the directory until they approve it.",
+        "note": "Prefer not to send it again yet? Move it back to Draft instead: it leaves the directory and nobody reviews it until you submit it.",
+        "confirm": "Edit use case"
+      },
+      "moveToDraft": {
+        "title": "Move “{name}” back to Draft?",
+        "description": "It leaves the directory and nobody reviews it until you submit it again. Your members can edit it meanwhile.",
+        "confirm": "Move back to Draft"
+      },
+      "done": {
+        "draft": "“{name}” is a draft again."
+      },
+      "errors": {
+        "USECASE_NOT_FOUND": "This organisation has no such use case.",
+        "USECASE_ENTERPRISE_REQUIRED": "Only the members of an approved organisation can write its use cases.",
+        "USECASE_CHANGED_MEANWHILE": "Someone saved this use case in the meantime. Reload it to see their changes.",
+        "USECASE_NOT_EDITABLE": "This use case cannot be edited now: it waits for GenAI Fund, or its deadline has passed.",
+        "USECASE_INCOMPLETE": "Fill in every section before sending the use case.",
+        "USECASE_NOT_SUBMITTABLE": "Only a draft, or one GenAI Fund sent back, can be sent for review.",
+        "USECASE_CANNOT_MOVE_TO_DRAFT": "Only a use case in review or published can move back to Draft.",
+        "USECASE_CLOSES_IN_THE_PAST": "Choose a close date after today.",
+        "USECASE_BUDGET_INCOMPLETE": "Give both amounts, or mark the budget to be determined.",
+        "USECASE_BUDGET_OUT_OF_ORDER": "The maximum budget is below the minimum.",
+        "USECASE_TIMELINE_OUT_OF_ORDER": "The longest timeline is shorter than the shortest.",
+        "USECASE_ATTACHMENT_NOT_USABLE": "Upload the attachment again: it cannot be attached.",
+        "REQUEST_INVALID": "Something you wrote is not valid. Check the fields and try again.",
+        "unknown": "The use case was not saved. Try again.",
+        "USECASE_NOT_CHANGED": "Change the use case before sending it again."
+      },
+      "wizard": {
+        "brand": "BeyondPilot",
+        "untitled": "New use case",
+        "saving": "Saving…",
+        "notSaved": "Not saved",
+        "saved": "Saved {time}",
+        "saveAndExit": "Save draft",
+        "stepsLabel": "Steps of the use case",
+        "yourUseCase": "Your use case",
+        "steps": {
+          "challenge": {
+            "title": "The challenge",
+            "meta": "Problem, industry and technologies",
+            "lead": "Describe the business problem you want solved. Providers read this first to decide whether to send a proposal."
+          },
+          "outcomes": {
+            "title": "Outcomes and users",
+            "meta": "Goals, current solution, who benefits",
+            "lead": "Say what success looks like and who the solution is for."
+          },
+          "requirements": {
+            "title": "Requirements and data",
+            "meta": "What it must do, data and integration",
+            "lead": "List what the solution must do and mark each item required or optional. Then describe your data and systems."
+          },
+          "budget": {
+            "title": "Budget and timeline",
+            "meta": "Budget, duration and deadline",
+            "lead": "Set the budget, how long the work should take and when proposals close."
+          },
+          "review": {
+            "title": "Review and submit",
+            "meta": "Check everything, then send for approval",
+            "lead": "Check each section. After you submit, GenAI Fund reviews the use case before it is published."
+          }
+        },
+        "saveNote": "Your draft saves as you type. Only people at {name} can see it.",
+        "reviewNote": "GenAI Fund reviews every use case before it is published. A clear, measurable problem is approved faster.",
+        "reload": "Reload",
+        "backToList": "Back to use cases",
+        "back": "Back",
+        "continue": "Continue",
+        "submit": "Submit for approval",
+        "sentBack": {
+          "title": "GenAI Fund asked for changes",
+          "note": "“{note}” Make the changes, then submit the use case again."
+        },
+        "editingPublished": {
+          "title": "You are editing a published use case",
+          "description": "Your first change takes it out of the directory. It comes back when you submit it again and GenAI Fund approves it."
+        },
+        "allRequired": "All fields are required unless marked Optional.",
+        "title": "Use case title",
+        "titleHint": "Name the outcome you want, not a technology.",
+        "problemStatement": "Problem statement",
+        "problemStatementHint": "What happens today, who it affects and what it costs.",
+        "industry": "Industry",
+        "choose": "Choose",
+        "technologies": "Relevant AI technologies",
+        "expectedOutcomes": "Expected outcomes and success metrics",
+        "expectedOutcomesHint": "Use numbers where you can.",
+        "currentProcess": "Current process",
+        "currentProcessHint": "How the work is done today.",
+        "currentSolutions": "Current solutions",
+        "currentSolutionsHint": "Optional. Tools or vendors you use or have tried.",
+        "targetUsers": "Target users and impacted teams",
+        "targetUsersHint": "Who uses the solution, and who is affected by it.",
+        "requirement": "Requirement {number}",
+        "necessity": {
+          "label": "Type",
+          "required": "Required",
+          "optional": "Optional"
+        },
+        "addRequirement": "Add a requirement",
+        "dataReadiness": "Data availability and readiness",
+        "dataReadinessHint": "What data exists, in what format, and how providers can access it.",
+        "integrationRequirements": "Integration, deployment and infrastructure",
+        "integrationRequirementsHint": "Systems to connect to, where it runs, security and data residency.",
+        "budgetMin": "Minimum budget ({currency})",
+        "budgetMax": "Maximum budget ({currency})",
+        "currency": "Currency",
+        "currencies": {
+          "USD": "USD — US dollar",
+          "VND": "VND — Vietnamese đồng"
+        },
+        "budgetToBeDetermined": "Budget to be determined",
+        "budgetMembersOnly": "Show the budget to signed-in members only",
+        "timeline": {
+          "label": "Preferred timeline",
+          "under_4": "Under 4 weeks",
+          "4_8": "4–8 weeks",
+          "8_12": "8–12 weeks",
+          "12_24": "12–24 weeks",
+          "over_24": "24 weeks or more"
+        },
+        "closes": "Proposals close",
+        "closesTime": "Time, Vietnam time",
+        "closesHint": "Providers cannot send proposals after this time (Vietnam time, ICT).",
+        "hideOrganizationName": "Hide our company name on the public use case",
+        "missing": {
+          "title": "Add these before you submit"
+        },
+        "confirm": "I confirm this information is accurate and can be shown publicly.",
+        "confirmRequired": "Confirm the information before you submit.",
+        "unchanged": "Change the use case before sending it again: GenAI Fund asked for changes."
+      },
+      "review": {
+        "edit": "Edit",
+        "missing": "Not written yet",
+        "requirementsCount": "{total, plural, one {# requirement} other {# requirements}}: {required} required, {optional} optional",
+        "budgetTbd": "To be determined",
+        "budgetRange": "{currency} {min}–{max}",
+        "budgetSingle": "{currency} {amount}",
+        "closesAt": "{date}, {time} ICT",
+        "companyShown": "Shown on the use case",
+        "companyHidden": "Hidden on the use case",
+        "field": {
+          "title": "Title",
+          "problemStatement": "Problem statement",
+          "industry": "Industry",
+          "technologies": "AI technologies",
+          "expectedOutcomes": "Expected outcomes",
+          "currentProcess": "Current process",
+          "currentSolutions": "Current solutions",
+          "targetUsers": "Target users",
+          "requirements": "Requirements",
+          "dataReadiness": "Data readiness",
+          "integration": "Integration",
+          "attachments": "Attachments",
+          "budget": "Budget",
+          "timeline": "Timeline",
+          "closes": "Proposals close",
+          "companyName": "Company name"
+        }
+      },
+      "view": {
+        "inReview": {
+          "title": "Waiting for GenAI Fund",
+          "lead": "You sent this on {date} ICT. We'll email you when GenAI Fund has decided. To change something first, pull it back to Draft.",
+          "note": "It is read-only while GenAI Fund reviews it. Pulling it back to Draft lets you edit it again."
+        },
+        "closed": {
+          "title": "Closed",
+          "lead": "The deadline passed on {date}. Nobody can change this use case now.",
+          "note": "A closed use case stays in the directory as a record."
+        },
+        "pullBack": "Pull back to draft"
+      },
+      "sent": {
+        "metaTitle": "Sent for approval · BeyondPilot",
+        "title": "Sent for approval",
+        "lead": "GenAI Fund reviews every use case before it is published. We'll email you the result.",
+        "rows": {
+          "useCase": "Use case",
+          "organization": "Organisation",
+          "status": "Status",
+          "sent": "Sent",
+          "closes": "Proposals close"
+        },
+        "next": {
+          "title": "What happens next",
+          "review": {
+            "title": "Review by GenAI Fund",
+            "meta": "An operator checks that the brief is clear and complete."
+          },
+          "hearBack": {
+            "title": "You hear back",
+            "meta": "By email: approved, or what to change."
+          },
+          "published": {
+            "title": "Published",
+            "meta": "It appears in the use case directory and providers can send proposals."
+          }
+        },
+        "viewMine": "View my use cases"
       }
     }
   },
@@ -1730,7 +3315,8 @@
     "errors": {
       "SOLUTION_NOT_FOUND": "This solution no longer exists.",
       "SOLUTION_INCOMPLETE": "Fill in the marked fields before sending for review.",
-      "SOLUTION_NOT_SUBMITTABLE": "This solution is already in review or approved.",
+      "SOLUTION_NOT_SUBMITTABLE": "This solution is already in review, approved, or refused for good.",
+      "SOLUTION_NOT_EDITABLE": "This solution was refused for good and can no longer be changed.",
       "SOLUTION_NOT_A_DRAFT": "Only a draft can be deleted.",
       "SOLUTION_NOT_AWAITING_REVIEW": "This solution has already been reviewed.",
       "SOLUTION_CHANGED_MEANWHILE": "Someone else changed this solution. Reload the page and try again.",
@@ -1741,18 +3327,28 @@
       "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Someone else saved this customer deployment in the meantime. Reload the page and make your changes again.",
       "SOLUTION_MEMBER_REQUIRED": "Only a member of an organization can do this.",
       "SOLUTION_DECK_NOT_USABLE": "This file cannot be the deck. Upload the PDF again.",
-      "unknown": "That did not work. Try again."
+      "unknown": "That did not work. Try again.",
+      "SOLUTION_IMAGE_NOT_USABLE": "This image cannot be used. Upload it again.",
+      "linkNotCopied": "The link was not copied. Try again.",
+      "SOLUTION_NOT_APPROVED": "Only an approved solution that is not taken down can be taken down.",
+      "SOLUTION_NOT_TAKEN_DOWN": "This solution is not taken down."
     },
     "done": {
       "saved": "Solution saved.",
       "submitted": "Sent to GenAI Fund for review.",
       "deleted": "{name} deleted.",
       "approved": "{name} is approved.",
-      "rejected": "{name} sent back with your reason.",
+      "rejected": "{name} is rejected.",
       "deploymentSaved": "{name} sent to GenAI Fund for review.",
       "deploymentRemoved": "{name} removed.",
       "deploymentApproved": "{name} approved.",
-      "deploymentRejected": "{name} sent back."
+      "deploymentRejected": "{name} sent back.",
+      "shown": "{name} is listed in the directory.",
+      "hidden": "{name} is hidden from the directory.",
+      "linkCopied": "Link copied",
+      "sentBack": "{name} sent back with what to change.",
+      "takenDown": "{name} is taken down.",
+      "restored": "{name} is back."
     },
     "directory": {
       "metaTitle": "AI solutions · BeyondPilot",
@@ -1779,7 +3375,8 @@
       },
       "ownLead": "This is your organization's solution, as others see it.",
       "ownEdit": "Edit this solution",
-      "deployments": "{count, plural, one {# customer deployment} other {# customer deployments}}"
+      "deployments": "{count, plural, one {# customer deployment} other {# customer deployments}}",
+      "backing": "Confirmed by GenAI Fund:"
     },
     "filters": {
       "search": "Search by name or summary",
@@ -1825,28 +3422,13 @@
         "title": "Proof",
         "lead": "Every claim shows its kind of evidence and where it comes from. What isn't known is shown as unknown.",
         "customerCase": "Customer case",
-        "noCase": "No customer case published."
-      },
-      "fit": {
-        "title": "Where it fits",
-        "industries": "Industries",
-        "channels": "Channels",
-        "deployment": "Deployment",
-        "languages": "Languages"
-      },
-      "product": {
-        "title": "Product and business",
-        "capabilities": "Capabilities",
-        "stage": "Stage",
-        "notPublished": "Not published yet: core technology, segment, funding, pricing model, notable customers, alternatives.",
-        "traction": "Milestones and traction",
-        "builtWith": "Built with",
-        "bestCustomerProfile": "Best customer profile"
-      },
-      "offers": {
-        "title": "Offers",
-        "kind": "Offer",
-        "none": "No offer has been published yet."
+        "noCase": "No customer case published.",
+        "programme": "Programme selection",
+        "selected": "Selected for {program}.",
+        "byGenAiFund": "Confirmed by GenAI Fund · {date}",
+        "stated": "Stated by the company",
+        "byCompany": "Stated by {name}",
+        "cases": "{count, plural, one {One customer deployment reviewed by GenAI Fund, shown below.} other {# customer deployments reviewed by GenAI Fund, shown below.}}"
       },
       "company": {
         "title": "The company behind this solution",
@@ -1868,37 +3450,76 @@
         "website": "Visit website",
         "demo": "Watch the demo",
         "deck": "Download the deck",
-        "basedIn": "Based in"
+        "basedIn": "Based in",
+        "lead": "Get introduced by GenAI Fund. Your email stays private until you reply."
+      },
+      "facts": {
+        "stage": "Stage",
+        "industries": "Industries",
+        "capabilities": "AI capabilities",
+        "deployment": "Deployment",
+        "languages": "Languages",
+        "builtWith": "Core technology",
+        "bestCustomerProfile": "Best customer profile",
+        "backedBy": "Backed by",
+        "program": "Program",
+        "channels": "Channels",
+        "funding": "Funding"
+      },
+      "gallery": {
+        "open": "Open image {position} of {count}",
+        "cover": "The cover image of {name}",
+        "image": "{name}, image {position} of {count}",
+        "title": "Images of {name}",
+        "position": "Image {position} of {count}",
+        "previous": "Previous image",
+        "next": "Next image"
+      },
+      "references": {
+        "title": "Customer references & case studies",
+        "lead": "How enterprises have used this solution."
       }
     },
     "mine": {
       "metaTitle": "Solutions · BeyondPilot",
       "title": "Solutions",
-      "summary": {
-        "listed": "{count} listed",
-        "draft": "{count, plural, one {# draft} other {# drafts}}",
-        "submitted": "{count} in review",
-        "rejected": "{count} not approved",
-        "hidden": "{count} hidden"
-      },
       "columns": {
         "solution": "Solution",
-        "status": "Status",
+        "status": "Review",
         "updated": "Updated",
-        "actions": "Actions"
-      },
-      "state": {
-        "listed": "Listed in the directory",
-        "hidden": "Approved · hidden from the directory",
-        "draft": "Not submitted · visible to your organization only",
-        "submitted": "Sent for review · visible to your organization only",
-        "rejected": "Not approved · visible to your organization only"
+        "actions": "Actions",
+        "listing": "Public listing"
       },
       "actions": {
         "open": "Actions for {name}",
         "edit": "Edit",
+        "viewPublic": "View public page",
+        "continue": "Continue editing",
+        "send": "Send for review",
+        "filled": "{filled} of {total} required fields filled",
+        "delete": "Delete draft…",
+        "viewSent": "View what was sent",
+        "editLive": "Changes are saved when you ask",
+        "inReview": "GenAI Fund is reviewing it",
+        "fix": "Read the reason and fix",
+        "sendAgain": "Send again",
+        "openByLink": "Open by its link",
+        "copyLink": "Copy link",
+        "hide": "Hide from the directory",
+        "show": "Show in the directory",
+        "cancel": "Cancel",
+        "confirmDelete": {
+          "title": "Delete {name}?",
+          "lead": "The draft, its images and its deck are removed. This cannot be undone.",
+          "confirm": "Delete draft"
+        },
+        "confirmHide": {
+          "title": "Hide from the directory?",
+          "lead": "People with the link can still open it. It leaves the directory and search at once.",
+          "confirm": "Hide"
+        },
         "view": "Open",
-        "viewPublic": "View public page"
+        "takenDown": "Taken down by GenAI Fund"
       },
       "create": {
         "title": "Add a solution",
@@ -1911,8 +3532,31 @@
       "afterApproval": "You can add solutions once GenAI Fund approves your organization.",
       "empty": {
         "title": "No solutions yet",
-        "owner": "Add the first product your organization offers.",
+        "owner": "Add a solution to show what {name} offers. It stays a draft until you send it for review.",
         "member": "An owner of the organization adds its solutions."
+      },
+      "listing": {
+        "listed": "Listed",
+        "unlisted": "Unlisted · link only",
+        "notYet": "Not public yet",
+        "notPublic": "Not public",
+        "takenDown": "Taken down by GenAI Fund"
+      },
+      "about": {
+        "draft": "Draft · {filled} of {total} required fields filled",
+        "sentBack": "Sent back: {reason}",
+        "sentBackPlain": "Sent back",
+        "rejected": "Rejected: {reason}",
+        "takenDown": "Taken down: {reason}"
+      },
+      "sent": "Sent {date}",
+      "review": {
+        "draft": "Draft",
+        "in_review": "In review",
+        "needs_changes": "Sent back",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "suspended": "Taken down"
       }
     },
     "editor": {
@@ -1955,7 +3599,8 @@
         "evidence": {
           "title": "Evidence",
           "meta": "Deck, demo and customer cases",
-          "lead": "Proof that the solution works. Show what you know; what you leave out appears as not published yet."
+          "lead": "Proof that the solution works. Show what you know; what you leave out appears as not published yet.",
+          "toAdd": "{missing, select, both {Logo and cover image to add} logo {Logo to add} other {Cover image to add}}"
         },
         "review": {
           "title": "Review and submit",
@@ -1969,7 +3614,6 @@
       "note": "Changes save as you type. A draft is visible to your organization only.",
       "noteLive": "Changes are kept when you choose Save changes. On an approved solution they show at once.",
       "required": "All fields are required unless marked Optional.",
-      "allOptional": "Every field on this step is optional.",
       "optional": "Optional",
       "counter": "{count} / {max}",
       "previous": "Back",
@@ -2006,18 +3650,25 @@
         "demoUrlHint": "A video, a Figma prototype or a live demo. Check it opens without signing in.",
         "website": "Product page",
         "websiteHint": "Where a visitor reads more about it.",
-        "linkInvalid": "Enter a full address that starts with https://"
+        "linkInvalid": "Enter a full address that starts with https://",
+        "logo": "Logo",
+        "cover": "Cover image",
+        "images": "More images",
+        "channels": "Channels",
+        "channelsPlaceholder": "Voice, chat, email…"
       },
       "needed": {
         "name": "Enter the solution's name.",
         "summary": "Write two or three sentences about what it does.",
         "maturity": "Choose its stage.",
         "industries": "Choose at least one industry.",
-        "focusAreas": "Choose at least one capability."
+        "focusAreas": "Choose at least one capability.",
+        "logo": "Add a logo.",
+        "cover": "Add a cover image."
       },
       "deck": {
         "empty": "Upload the deck",
-        "limits": "PDF, up to 25 MB",
+        "limits": "PDF, up to 100 MB",
         "uploading": "Uploading…",
         "uploaded": "{size} · Uploaded {when}",
         "waiting": "{size} · Not saved yet",
@@ -2026,7 +3677,7 @@
         "remove": "Remove",
         "errors": {
           "type": "Only a PDF can be uploaded here.",
-          "size": "This file is larger than 25 MB.",
+          "size": "This file is larger than 100 MB.",
           "failed": "The deck was not uploaded. Try again."
         }
       },
@@ -2060,7 +3711,8 @@
           "lead": "The draft is removed for everyone in your organization. This cannot be undone.",
           "confirm": "Delete draft",
           "cancel": "Cancel"
-        }
+        },
+        "images": "{count, plural, one {# image} other {# images}}"
       },
       "leave": {
         "title": "Leave without saving?",
@@ -2068,19 +3720,64 @@
         "leave": "Leave without saving",
         "stay": "Stay"
       },
-      "submitted": {
-        "title": "GenAI Fund is reviewing this solution",
-        "lead": "This usually takes one or two working days. You can still correct it."
-      },
       "approved": {
         "listed": "Approved and listed in the directory",
         "unlisted": "Approved, but not listed in the directory",
         "open": "Open the public page",
         "unlistedLead": "Anyone with its link can open it. Turn on the listing in the last step to show it in the directory."
       },
-      "rejected": {
-        "title": "Changes needed: {reason}",
+      "in_review": {
+        "title": "GenAI Fund is reviewing this solution",
+        "lead": "This usually takes one or two working days. You can still correct it."
+      },
+      "needsChanges": {
+        "title": "GenAI Fund sent this solution back",
         "lead": "Correct it and send it for review again."
+      },
+      "rejected": {
+        "title": "Not approved: {reason}",
+        "lead": "GenAI Fund will not list this solution. It cannot be sent for review again."
+      },
+      "suspended": {
+        "title": "Taken down: {reason}",
+        "lead": "It is out of the directory and matching while GenAI Fund keeps it down. Write to GenAI Fund if you think this is a mistake."
+      },
+      "imagesRequired": "A logo and a cover image are needed for review. Everything else on this step is optional.",
+      "images": {
+        "uploading": "Uploading…",
+        "details": "{size} · {dimensions}",
+        "replace": "Replace",
+        "remove": "Remove",
+        "replaceNamed": "Replace {name}",
+        "removeNamed": "Remove {name}",
+        "logo": {
+          "add": "Add a logo",
+          "alt": "The logo",
+          "hint": "A square PNG, JPG or WebP, up to 2 MB."
+        },
+        "cover": {
+          "add": "Add a cover image",
+          "alt": "The cover image",
+          "hint": "PNG, JPG or WebP, 16:9, up to 5 MB. Shown on your card in the directory and at the top of the solution page."
+        },
+        "more": {
+          "add": "Add image",
+          "alt": "Image {position} of {count}",
+          "hint": "PNG, JPG or WebP, up to 5 MB each, 4 at most. Shown under the cover. Drag to reorder, or use the arrows on an image.",
+          "earlier": "Move image {position} earlier",
+          "later": "Move image {position} later",
+          "remove": "Remove image {position}",
+          "moved": "Image moved to position {position} of {count}."
+        },
+        "errors": {
+          "type": "Only a PNG, JPG or WebP image can be uploaded here.",
+          "size": {
+            "logo": "This image is larger than 2 MB.",
+            "cover": "This image is larger than 5 MB.",
+            "more": "This image is larger than 5 MB."
+          },
+          "failed": "The image was not uploaded. Try again."
+        }
       }
     },
     "deployment": {
@@ -2229,7 +3926,8 @@
       "TALENT_ENQUIRY_LIMIT": "You started ten conversations today. Write again tomorrow.",
       "TALENT_ENQUIRY_NOT_FOUND": "This message no longer exists.",
       "TALENT_ENQUIRY_NOT_PENDING": "This message was answered already, or it closed.",
-      "TALENT_NOT_APPROVED": "Only an approved profile can be removed.",
+      "TALENT_NOT_APPROVED": "Only an approved profile that is not taken down can be taken down.",
+      "TALENT_NOT_TAKEN_DOWN": "This profile is not taken down.",
       "REQUEST_INVALID": "Check the marked fields and try again.",
       "unknown": "That did not work. Try again."
     },
@@ -2240,8 +3938,9 @@
       "accepted": "Accepted. You both have each other's email address now.",
       "declined": "Declined. The sender was told.",
       "reported": "Reported to GenAI Fund. The sender was told it was declined.",
-      "changesRequested": "Changes asked of {name}.",
-      "removed": "{name} is removed.",
+      "sentBack": "{name} is sent back.",
+      "takenDown": "{name} is taken down.",
+      "restored": "{name} is back in the directory.",
       "deleted": "Your talent profile is deleted."
     },
     "directory": {
@@ -2416,13 +4115,13 @@
         },
         "none": "No enquiries yet. When someone writes to you through your page, it shows here."
       },
-      "changesRequested": {
-        "title": "Changes requested: {reason}",
-        "lead": "Correct it below and submit it for review again."
+      "sentBack": {
+        "title": "Sent back: {reason}",
+        "lead": "Correct it and send it for review again."
       },
-      "removed": {
-        "title": "Removed from the directory: {reason}",
-        "lead": "Nobody else sees it now. Correct it below and submit it for review again."
+      "takenDown": {
+        "title": "Taken down from the directory: {reason}",
+        "lead": "Nobody else sees it now. Correct it and send it for review again."
       },
       "delete": {
         "action": "Delete profile…",
@@ -2494,18 +4193,12 @@
         "note": "GenAI Fund checks that the profile is a real person's and says what you do. This usually takes one or two working days, and the decision shows on this page.",
         "count": "{count, plural, one {# field to add before review} other {# fields to add before review}}"
       },
-      "discard": "Discard changes",
       "unsaved": "Unsaved changes",
       "leave": {
         "title": "Leave without saving?",
         "lead": "Your changes to your profile are not saved yet.",
         "leave": "Leave without saving",
         "stay": "Stay"
-      },
-      "confirmDiscard": {
-        "title": "Discard your changes?",
-        "lead": "The form goes back to your profile as it was last saved.",
-        "cancel": "Keep editing"
       },
       "headlineHint": "One line under your name in the directory.",
       "photo": {
@@ -3105,6 +4798,20 @@
     "resultLead": {
       "shortlisted": "You're shortlisted. GenAI Fund's email has what comes next.",
       "not_selected": "Not selected this time. GenAI Fund's email has the details."
+    },
+    "tracker": {
+      "label": "Where your application stands",
+      "submitted": "Submitted",
+      "screening": "Screening",
+      "screeningBy": "GenAI Fund",
+      "outcome": "Outcome",
+      "toCome": "To come",
+      "result": {
+        "shortlisted": "Shortlisted",
+        "not_selected": "Not selected"
+      },
+      "done": " (done)",
+      "ahead": " (to come)"
     }
   },
   "Application": {
@@ -3478,14 +5185,16 @@
     "kindResults": {
       "program": "{count, plural, one {# program} other {# programs}} for <query>“{q}”</query>",
       "solution": "{count, plural, one {# AI solution} other {# AI solutions}} for <query>“{q}”</query>",
-      "talent": "{count, plural, one {# person} other {# people}} for <query>“{q}”</query>"
+      "talent": "{count, plural, one {# person} other {# people}} for <query>“{q}”</query>",
+      "use_case": "{count, plural, one {# use case} other {# use cases}} for <query>“{q}”</query>"
     },
     "kinds": {
       "label": "Kinds of result",
       "all": "All",
       "program": "Programs",
       "solution": "AI solutions",
-      "talent": "AI talent"
+      "talent": "AI talent",
+      "use_case": "Use cases"
     },
     "seeAll": "See all {count}",
     "count": "{count, plural, one {# result} other {# results}}",
@@ -3493,7 +5202,8 @@
     "directory": {
       "program": "Browse the programs by type and phase",
       "solution": "Narrow by industry, capability and stage in the AI solutions directory",
-      "talent": "Narrow by role, industry and country in the AI talent directory"
+      "talent": "Narrow by role, industry and country in the AI talent directory",
+      "use_case": "Narrow by industry in the use cases"
     },
     "by": "By {name}",
     "customerCases": "{count, plural, =0 {No customer case yet} one {# customer case} other {# customer cases}}",
@@ -3507,5 +5217,64 @@
     },
     "try": "Try",
     "browse": "Or browse"
+  },
+  "UseCases": {
+    "metaTitle": "Use cases · BeyondPilot",
+    "title": "Use cases",
+    "lead": "Business problems that enterprises want solved with AI. Read the brief, then send a proposal.",
+    "search": "Search use cases",
+    "sort": {
+      "label": "Sort by",
+      "newest": "Newest",
+      "deadline": "Closing soonest",
+      "budget": "Highest budget"
+    },
+    "industry": {
+      "label": "Industry",
+      "all": "All use cases"
+    },
+    "technology": {
+      "label": "Relevant AI technologies",
+      "more": "+{count, number}"
+    },
+    "goal": "Goal: {goal}",
+    "budget": {
+      "label": "Budget",
+      "range": "{currency} {min}–{max}",
+      "single": "{currency} {amount}",
+      "toBeDetermined": "To be determined",
+      "membersOnly": "Shown to members"
+    },
+    "timeline": {
+      "label": "Timeline",
+      "range": "{min, number}–{max, number} weeks"
+    },
+    "deadline": {
+      "date": "Apply by {date}",
+      "time": "{time} ICT"
+    },
+    "posted": "Posted {when}",
+    "view": "View use case",
+    "viewUnavailable": "Use case details are not available yet.",
+    "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
+    "empty": {
+      "title": "No use cases match",
+      "description": "No use case matches this search and industry.",
+      "clear": "Clear search and filters"
+    },
+    "pagination": {
+      "label": "Pages of use cases",
+      "previous": "Previous",
+      "next": "Next",
+      "goToPrevious": "Go to the previous page",
+      "goToNext": "Go to the next page",
+      "page": "Page {page}"
+    },
+    "publish": {
+      "title": "Have a business problem AI could solve?",
+      "description": "Publish a use case, review proposals in one place and pick providers for a pilot.",
+      "action": "Publish a use case"
+    },
+    "anonymous": "Organization not named"
   }
 }

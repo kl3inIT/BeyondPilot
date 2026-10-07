@@ -24,7 +24,9 @@ import org.jspecify.annotations.Nullable;
 @Table(name = "organization")
 public class Organization {
 
-	public static final String PENDING = "pending";
+	public static final String IN_REVIEW = "in_review";
+
+	public static final String NEEDS_CHANGES = "needs_changes";
 
 	public static final String APPROVED = "approved";
 
@@ -72,6 +74,12 @@ public class Organization {
 
 	private @Nullable Instant decidedAt;
 
+	private @Nullable String suspensionReason;
+
+	private @Nullable String suspensionMessage;
+
+	private @Nullable Instant suspendedAt;
+
 	@Column(nullable = false, updatable = false)
 	private UUID createdByAccountId;
 
@@ -91,7 +99,7 @@ public class Organization {
 	}
 
 	/**
-	 * @param status {@link #PENDING} for one a person creates, {@link #APPROVED} for one an operator creates
+	 * @param status {@link #IN_REVIEW} for one a person creates, {@link #APPROVED} for one an operator creates
 	 */
 	@SuppressWarnings("NullAway.Init")
 	public Organization(UUID id, String slug, String name, String type, String status,
@@ -146,21 +154,49 @@ public class Organization {
 		decidedAt = at;
 	}
 
-	/** A refused organization that its owner corrected waits for review again; the last decision stays readable. */
+	/** Sends an organization back to its owners with what to change; they correct it and it waits for review again. */
+	public void sendBack(String message, Instant at) {
+		status = NEEDS_CHANGES;
+		decisionReason = null;
+		decisionMessage = message;
+		decidedAt = at;
+	}
+
+	/** An organization sent back that its owner corrected waits for review again; the message stays readable. */
 	public void resubmit() {
-		status = PENDING;
+		status = IN_REVIEW;
 	}
 
+	/**
+	 * Takes an approved organization down. Its review stays approved, so restoring needs no new review; while it is
+	 * down {@link #isApproved()} is false.
+	 */
+	public void suspend(String reason, @Nullable String message, Instant at) {
+		suspensionReason = reason;
+		suspensionMessage = message;
+		suspendedAt = at;
+	}
+
+	/** Puts a taken-down organization back; the reason it was taken down stays readable on the record. */
+	public void restore() {
+		suspendedAt = null;
+	}
+
+	public boolean isSuspended() {
+		return suspendedAt != null;
+	}
+
+	/** Approved by GenAI Fund and not taken down: what lets it have members, solutions and use cases. */
 	public boolean isApproved() {
-		return APPROVED.equals(status);
+		return APPROVED.equals(status) && suspendedAt == null;
 	}
 
-	public boolean isRejected() {
-		return REJECTED.equals(status);
+	public boolean isInReview() {
+		return IN_REVIEW.equals(status);
 	}
 
-	public boolean isPending() {
-		return PENDING.equals(status);
+	public boolean isSentBack() {
+		return NEEDS_CHANGES.equals(status);
 	}
 
 	public UUID getId() {
@@ -225,6 +261,18 @@ public class Organization {
 
 	public @Nullable String getDecisionMessage() {
 		return decisionMessage;
+	}
+
+	public @Nullable String getSuspensionReason() {
+		return suspensionReason;
+	}
+
+	public @Nullable String getSuspensionMessage() {
+		return suspensionMessage;
+	}
+
+	public @Nullable Instant getSuspendedAt() {
+		return suspendedAt;
 	}
 
 	public UUID getCreatedByAccountId() {

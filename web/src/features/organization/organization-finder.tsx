@@ -205,8 +205,12 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
         <Dialog open onOpenChange={(open) => !open && !pending && setAsking(null)}>
           <DialogContent showCloseButton={false} className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>{t(`ask.${asking.way}.title`, { name: asking.name })}</DialogTitle>
-              <DialogDescription>{t(`ask.${asking.way}.lead`)}</DialogDescription>
+              <DialogTitle size="lg">
+                {t(`ask.${asking.way}.title`, { name: asking.name })}
+              </DialogTitle>
+              {asking.way !== "request" && (
+                <DialogDescription>{t(`ask.${asking.way}.lead`)}</DialogDescription>
+              )}
             </DialogHeader>
             <Field>
               <FieldLabel htmlFor="join-message">{t("ask.message")}</FieldLabel>

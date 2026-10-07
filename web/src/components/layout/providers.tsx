@@ -20,7 +20,7 @@ function Providers({ children }: { children: React.ReactNode }) {
       <NuqsAdapter>
         <TooltipProvider>{children}</TooltipProvider>
       </NuqsAdapter>
-      <Toaster containerAriaLabel={t("notifications")} />
+      <Toaster position="top-right" duration={4000} containerAriaLabel={t("notifications")} />
     </ThemeProvider>
   );
 }

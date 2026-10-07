@@ -216,6 +216,16 @@ A module tells others that something happened with a Spring application event, f
 - **Delivery.** The JDBC event publication registry records a publication for each `@ApplicationModuleListener` in the publisher's transaction and deletes it when the listener completes (`completion-mode: delete`). Incomplete publications are delivered again on startup, which is correct while one instance runs; more than one instance needs a resubmission that only one of them runs. Only `@ApplicationModuleListener` is recorded (`registry-trigger-annotation`), so an in-module `@TransactionalEventListener` stays a plain after-commit call whose event is never stored.
 - **Within a module**, an after-commit side effect such as a mail may use `@TransactionalEventListener` with a nested record; it is not part of the module's API.
 
+## Review lifecycle
+
+Whatever GenAI Fund reviews before the public sees it follows one lifecycle ([BEY-76](increments/active/bey-76-review-lifecycle/design.md), [research](research/2026-10-06-review-lifecycle.md)).
+
+- **Three axes, never one status.** The review is `status`; the owner's choice to show it in the directory is `listed`; GenAI Fund's takedown after approval is `suspended_at` with `suspension_reason` and `suspension_message`. Whether a record is public or eligible for matching is derived from them and never stored.
+- **One vocabulary.** `draft` (the owner writes), `in_review` (sent, waits for an operator), `needs_changes` (sent back with a reason; the owner changes it and sends it again), `approved`, `rejected` (refused for good with a reason; only an operator reopens it). A kind uses only the statuses it needs, and a refusal for missing information is a send back, not a rejection.
+- **A takedown is reversible** and keeps the review status `approved`; restoring needs no new review.
+- **The service guards every transition** and refuses a command from the wrong status with the module's typed `NOT_AWAITING_REVIEW`-style code, so two operators cannot decide twice. Every decision is audited and the owner is told.
+- **One badge** renders every status in the web: `components/composites/review-status.tsx`.
+
 ## Logging
 
 - Log through the SLF4J fluent API (`LOG.atWarn().addKeyValue(...).log(...)`); positional `{}` placeholders are not used.
@@ -297,7 +307,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 - `src/app/global-error.tsx` and an `error.tsx` per area show safe copy, Next's `digest` as a reference, and a retry action. Each area has a `not-found.tsx`; unknown paths under a locale render the localized not-found page through `[...rest]`.
 - API failures are read as RFC 9457 problems ([API errors](#api-errors)): branch on `status` or `code`, map `errors[].pointer` onto form fields, and show the `requestId` whenever a person is asked to report a problem.
 - Each segment that loads data has a `loading.tsx` with skeletons. Every data view designs its loading, empty and failure states.
-- Toasts use sonner; the one `Toaster` is mounted in `src/components/layout/providers.tsx`. They are raised through a helper that accepts message keys only, which is written with its first caller.
+- Toasts use sonner; the one `Toaster` is mounted in `src/components/layout/providers.tsx`. They are raised through a helper that accepts message keys only, which is written with its first caller. They appear at the top right on the pastel ground of their kind, and every toast closes by itself after four seconds. Every decision or change a reader makes ends in a toast that says its outcome, unless the screen itself shows a confirmation.
 - Server rendering errors are logged as structured JSON through `onRequestError` in `src/instrumentation.ts`, without a third-party service: `event` `web.render.failed`, the error's type, its `digest` (the reference the error screen shows) and the route pattern, never the error's text, the query string or headers.
 
 ### Design tokens and styling
@@ -313,7 +323,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 - Choose the layer before writing: an existing `ui` primitive (install a missing one with `shadcn add`, never hand-roll it), then a composite or section, then a feature component, then a page component. Before writing markup for a pattern, look for its primitive: a table is `table`, paging is `pagination`, an empty state is `empty`, a confirmation is `alert-dialog`, a row menu is `dropdown-menu`, a trail is `breadcrumb`. Where the shadcn documentation gives a change for Next.js, that change is made in the primitive: `pagination` renders the locale-aware `Link`.
 - Files are kebab-case, components are PascalCase, exports are named (default exports only where Next.js requires them), one main component per file, and no barrel `index.ts` files.
 - Props extend the native element's props; `ref` is an ordinary prop; `className` is merged last with `cn()`; variants use `cva`; parts are composed (`Card`, `CardHeader`, `CardContent`) rather than passed as convenience props. Base UI primitives take a `render` prop for polymorphism.
-- Product actions use the `Button`, `IconButton` and `TextButton` wrappers with `tone` (`default`, `danger`), `prominence` (`primary`, `secondary`, `tertiary`, `internal`), `size` (`sm`, `md`, `lg`) and `pending`. Product code does not pick shadcn button variants directly.
+- Product actions use the `Button`, `IconButton` and `TextButton` wrappers with `tone` (`default`, `danger`, `success` for the approving one of a pair of decisions), `prominence` (`primary`, `secondary`, `tertiary`, `internal`), `size` (`sm`, `md`, `lg`; `Button` also has `xl` for the one action a page leads to) and `pending`. Product code does not pick shadcn button variants directly.
 - Every interactive component covers hover, active, focus-visible, disabled, pending (`aria-busy`) and invalid (`aria-invalid`) in both themes. Destructive actions confirm in a dialog whose Cancel receives initial focus.
 - Use semantic elements first and Base UI for complex widgets; icon-only controls have an accessible name; buttons default to `type="button"`; everything works from the keyboard.
 - Registry primitives under `src/components/ui` are changed as little as possible, and the reason for a change is recorded in its commit.

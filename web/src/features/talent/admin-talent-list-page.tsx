@@ -7,12 +7,14 @@ import { TextButton } from "@/components/actions/text-button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
+import { ReviewStatus, reviewState } from "@/components/composites/review-status";
+import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalentList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { adminTalentSearch, type AdminTalentSearch } from "./talent-search";
-import { TalentStatus } from "./talent-status";
 import { TalentToolbar } from "./talent-toolbar";
 
 const address = createSerializer(adminTalentSearch);
@@ -30,6 +32,7 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
   const t = useTranslations("Admin.talent");
   const format = useFormatter();
   const locale = useLocale();
+  const word = useVocabulary("talentStatus");
 
   const rows = talent.items.map((profile) => ({
     id: profile.id,
@@ -37,19 +40,19 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
     name: profile.name,
     person: <Person name={profile.name} email={profile.email} />,
     headline: profile.headline ?? "",
-    status: <TalentStatus status={profile.status} />,
+    status: <ReviewStatus state={reviewState(profile)}>{word(reviewState(profile))}</ReviewStatus>,
     // A record that waits says for how long; a decided one keeps the day it was sent.
     submitted: !profile.submittedAt
       ? ""
-      : profile.status === "submitted"
+      : profile.status === "in_review"
         ? t("waitingSince", { time: format.relativeTime(new Date(profile.submittedAt)) })
         : format.dateTime(new Date(profile.submittedAt), { dateStyle: "medium" }),
-    waiting: profile.status === "submitted",
+    waiting: profile.status === "in_review",
   }));
 
   const filtered = search.q.trim() !== "" || search.status !== null;
   const empty =
-    rows.length > 0 ? null : search.q.trim() === "" && search.status === "submitted" ? (
+    rows.length > 0 ? null : search.q.trim() === "" && search.status === "in_review" ? (
       <DataTableEmpty
         icon={<UsersIcon aria-hidden="true" />}
         title={t("queueEmpty.title")}
@@ -86,7 +89,7 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <AdminPageTitle destination="talent">{t("title")}</AdminPageTitle>
           <p className="text-sm text-muted-foreground">{t("lead")}</p>
         </div>
         <TextButton href={siteRoutes.adminTalentReported}>{t("reported.link")}</TextButton>

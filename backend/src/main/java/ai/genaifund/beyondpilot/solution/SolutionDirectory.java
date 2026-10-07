@@ -80,12 +80,12 @@ public class SolutionDirectory {
 				request.focusArea(), request.maturity(), organizationId, request.sort(), PAGE_SIZE,
 				(long) (page - 1) * PAGE_SIZE);
 		Map<UUID, OrganizationName> names = organizations
-			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
+			.approvedNames(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
 		return new PublicSolutionListResponse(rows.stream().filter(row -> names.containsKey(row.organizationId())).map(row -> {
 			OrganizationName organization = names.get(row.organizationId());
 			return new PublicSolutionSummaryResponse(row.slug(), row.name(), organization.name(), organization.slug(),
 					organization.country(), row.summary(), row.maturity(), row.focusAreas(), row.industries(),
-					row.deployments());
+					shownLogo(row.logoFileId(), organization), row.coverFileId(), row.backing(), row.deployments());
 		}).toList(), page, PAGE_SIZE, solutionList.publicCount(text, request.industry(), request.focusArea(),
 				request.maturity(), organizationId));
 	}
@@ -101,7 +101,7 @@ public class SolutionDirectory {
 		Solution solution = solutions.findBySlug(slug)
 			.filter(Solution::isApproved)
 			.orElseThrow(() -> notFound(slug));
-		OrganizationName organization = organizations.names(List.of(solution.getOrganizationId()))
+		OrganizationName organization = organizations.approvedNames(List.of(solution.getOrganizationId()))
 			.get(solution.getOrganizationId());
 		if (organization == null) {
 			throw notFound(slug);
@@ -110,8 +110,11 @@ public class SolutionDirectory {
 				organization.slug(), organization.country(), solution.getSummary(), solution.getProblemsSolved(),
 				solution.getValueProposition(), solution.getMaturity(), solution.getTraction(), solution.getBuiltWith(),
 				solution.getIndustries(), solution.getFocusAreas(), solution.getLanguages(), solution.getDeployment(),
-				solution.getBestCustomerProfile(), solution.getWebsite(), solution.getDemoUrl(),
-				SolutionViews.publicDeck(solution), solution.isListed(),
+				solution.getChannels(), solution.getBestCustomerProfile(), SolutionViews.backing(solution),
+				solution.getWebsite(), solution.getDemoUrl(),
+				SolutionViews.publicDeck(solution), shownLogo(solution.getLogoFileId(), organization),
+				solution.getCoverFileId(),
+				solution.getImageFileIds(), solution.isListed(),
 				deployments.findBySolutionIdAndStatusOrderByDecidedAtDesc(solution.getId(), CustomerDeployment.APPROVED)
 					.stream()
 					.map(deployment -> SolutionViews.publicDeployment(deployment, solution))
@@ -172,7 +175,8 @@ public class SolutionDirectory {
 	}
 
 	/**
-	 * An approved solution as search indexes it, listed or not; empty for any other, or when its organization is gone.
+	 * An approved solution as search indexes it, listed or not; empty for any other, when it is taken down, or when its
+	 * organization is not approved or is taken down.
 	 */
 	@Transactional(readOnly = true)
 	public Optional<IndexedSolution> indexed(UUID solutionId) {
@@ -181,13 +185,16 @@ public class SolutionDirectory {
 			.findFirst());
 	}
 
-	/** Every approved solution as search indexes it, for a rebuild of the index. */
+	/** Every approved solution not taken down as search indexes it, for a rebuild of the index. */
 	@Transactional(readOnly = true)
 	public List<IndexedSolution> indexedAll() {
-		return indexed(solutions.findByStatus(Solution.APPROVED));
+		return indexed(solutions.findByStatusAndSuspendedAtIsNull(Solution.APPROVED));
 	}
 
-	/** The approved solutions of an organization as search indexes them, when what is shown of it changed. */
+	/**
+	 * The approved solutions of an organization as search indexes them, when what is shown of it changed; none while
+	 * the organization is not approved or is taken down.
+	 */
 	@Transactional(readOnly = true)
 	public List<IndexedSolution> indexedOf(UUID organizationId) {
 		return indexed(solutions.findByOrganizationIdOrderByCreatedAtDesc(organizationId)
@@ -196,9 +203,27 @@ public class SolutionDirectory {
 			.toList());
 	}
 
+	/** Every solution of an organization, whatever its review, so search can take out those it no longer shows. */
+	@Transactional(readOnly = true)
+	public List<UUID> idsOf(UUID organizationId) {
+		return solutions.findByOrganizationIdOrderByCreatedAtDesc(organizationId)
+			.stream()
+			.map(Solution::getId)
+			.toList();
+	}
+
+	/**
+	 * The logo a solution shows to the public: its own, or its organization's when it has none, so a provider that
+	 * set one logo on its organization shows it on every solution. The owners' editor keeps the solution's own field.
+	 */
+	private static @Nullable UUID shownLogo(@Nullable UUID own, OrganizationName organization) {
+		return own != null ? own : organization.logoFileId();
+	}
+
+	/** Those of these approved solutions whose organization is approved and not taken down. */
 	private List<IndexedSolution> indexed(List<Solution> approved) {
 		Map<UUID, OrganizationName> names = organizations
-			.names(approved.stream().map(Solution::getOrganizationId).distinct().toList());
+			.approvedNames(approved.stream().map(Solution::getOrganizationId).distinct().toList());
 		return approved.stream().filter(solution -> names.containsKey(solution.getOrganizationId())).map(solution -> {
 			OrganizationName organization = names.get(solution.getOrganizationId());
 			return new IndexedSolution(solution.getId(), solution.getSlug(), solution.getName(),
@@ -206,7 +231,7 @@ public class SolutionDirectory {
 					solution.getSummary(), solution.getProblemsSolved(), solution.getValueProposition(),
 					solution.getTraction(), solution.getBestCustomerProfile(), solution.getBuiltWith(),
 					solution.getFocusAreas(), solution.getIndustries(), solution.getMaturity(),
-					solution.getDeployment(),
+					solution.getDeployment(), shownLogo(solution.getLogoFileId(), organization),
 					deployments.countBySolutionIdAndStatus(solution.getId(), CustomerDeployment.APPROVED),
 					solution.isListed());
 		}).toList();

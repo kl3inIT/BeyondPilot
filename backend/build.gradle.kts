@@ -21,6 +21,7 @@ repositories {
 dependencyManagement {
 	imports {
 		mavenBom(libs.spring.modulith.bom.get().toString())
+		mavenBom(libs.spring.ai.bom.get().toString())
 		mavenBom(libs.aws.sdk.bom.get().toString())
 	}
 }
@@ -32,11 +33,14 @@ dependencies {
 	implementation(libs.spring.boot.starter.mail)
 	implementation(libs.spring.boot.starter.security)
 	implementation(libs.spring.boot.starter.security.oauth2.client)
+	implementation(libs.spring.boot.starter.security.oauth2.authorization.server)
 	implementation(libs.spring.boot.starter.session.jdbc)
 	implementation(libs.spring.boot.starter.validation)
 	implementation(libs.spring.boot.starter.webmvc)
 	implementation(libs.flyway.database.postgresql)
 	implementation(libs.spring.modulith.starter.jdbc)
+	// Embeddings for search over an OpenAI-compatible API; the other OpenAI models stay off (application.yaml).
+	implementation(libs.spring.ai.starter.model.openai)
 	implementation(libs.springdoc.webmvc.api)
 	// The SDK speaks HTTP through the JDK. Its default clients bring Apache HttpClient 5 and Netty onto the classpath,
 	// where Spring would pick HttpClient 5 for every RestClient and wait out a Retry-After before retrying a 429.
@@ -44,7 +48,18 @@ dependencies {
 		exclude(group = "software.amazon.awssdk", module = "apache5-client")
 		exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
 	}
+	implementation(libs.aws.sdk.sesv2) {
+		exclude(group = "software.amazon.awssdk", module = "apache5-client")
+		exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
+	}
 	implementation(libs.aws.sdk.url.connection.client)
+	// Email: templates operators edit (logic-less, so a template cannot reach code), their Markdown, and Resend.
+	implementation(libs.bucket4j.core)
+	implementation(libs.caffeine)
+	implementation(libs.httpclient5)
+	implementation(libs.jmustache)
+	implementation(libs.commonmark)
+	implementation(libs.resend.java)
 	developmentOnly(libs.spring.boot.docker.compose)
 	runtimeOnly(libs.postgresql)
 	testImplementation(libs.spring.boot.starter.actuator.test)
@@ -60,6 +75,7 @@ dependencies {
 	testImplementation(libs.spring.modulith.starter.test)
 	testImplementation(libs.testcontainers.junit.jupiter)
 	testImplementation(libs.testcontainers.postgresql)
+	testImplementation(libs.greenmail.junit5)
 	testRuntimeOnly(libs.junit.platform.launcher)
 }
 

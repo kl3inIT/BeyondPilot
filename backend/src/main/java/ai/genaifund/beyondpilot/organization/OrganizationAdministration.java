@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.organization;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -20,8 +21,13 @@ import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationListRequest;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationListResponse;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationSummaryResponse;
+import ai.genaifund.beyondpilot.organization.dto.AdminSaveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.ApproveOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.SaveOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.SendBackOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.TakeDownOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.Invitation;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.JoinRequest;
@@ -31,6 +37,7 @@ import ai.genaifund.beyondpilot.organization.persistence.OrganizationQueryReposi
 import ai.genaifund.beyondpilot.organization.persistence.OrganizationQueryRepository.AdminRow;
 import ai.genaifund.beyondpilot.organization.persistence.OrganizationRepository;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,14 +65,21 @@ public class OrganizationAdministration {
 
 	private final AuditTrail audit;
 
+	private final OrganizationLogos logos;
+
+	private final ApplicationEventPublisher events;
+
 	OrganizationAdministration(OrganizationRepository organizations, OrganizationQueryRepository organizationList,
-			MembershipRepository memberships, IdentityService identity, EmailService email, AuditTrail audit) {
+			MembershipRepository memberships, IdentityService identity, EmailService email, AuditTrail audit,
+			OrganizationLogos logos, ApplicationEventPublisher events) {
 		this.organizations = organizations;
 		this.organizationList = organizationList;
 		this.memberships = memberships;
 		this.identity = identity;
 		this.email = email;
 		this.audit = audit;
+		this.logos = logos;
+		this.events = events;
 	}
 
 	/**
@@ -113,6 +127,10 @@ public class OrganizationAdministration {
 			throw new OrganizationException(OrganizationErrorCode.DOMAIN_TAKEN,
 					"Second organization for one email domain");
 		}
+		UUID logo = request.logoFileId();
+		if (logo != null) {
+			logos.requireUsable(actor, logo);
+		}
 		String base = OrganizationViews.slug(request.name());
 		String slug = base;
 		for (int suffix = 2; organizations.existsBySlug(slug); suffix++) {
@@ -120,8 +138,10 @@ public class OrganizationAdministration {
 		}
 		Organization organization = new Organization(UUID.randomUUID(), slug, request.name().strip(),
 				request.type(), Organization.APPROVED, operator.accountId());
-		organization.describe(request.name().strip(), request.type(),
-				OrganizationViews.text(request.website()), request.country(), null, List.of(), null, null, null);
+		List<String> industries = request.industries() == null ? List.of() : request.industries();
+		organization.describe(request.name().strip(), request.type(), OrganizationViews.text(request.website()),
+				request.country(), request.teamSize(), industries, OrganizationViews.text(request.description()),
+				request.foundedYear(), logo);
 		organization.verifyDomain(domain);
 		organization.approve(Instant.now());
 		organizations.saveAndFlush(organization);
@@ -129,7 +149,7 @@ public class OrganizationAdministration {
 		String ownerEmail = OrganizationViews.text(request.ownerEmail());
 		if (ownerEmail != null) {
 			memberships.invite(UUID.randomUUID(), organization.getId(), ownerEmail, MembershipRepository.OWNER,
-					operator.accountId(), true);
+					operator.accountId(), true, OrganizationService.INVITATION_LIFETIME);
 			email.sendOrganizationInvitation(ownerEmail, organization.getName(), "GenAI Fund", true);
 		}
 		return response(organization);
@@ -149,11 +169,13 @@ public class OrganizationAdministration {
 		verifyDomain(organization, request.emailDomain());
 		organization.approve(Instant.now());
 		record(AuditAction.ORGANIZATION_APPROVE, operator, organization, Map.of());
+		events.publishEvent(new OrganizationChanged(organization.getId()));
 		tellOwners(organization, true);
 	}
 
 	/**
-	 * Refuses an organization that waits for review, with a reason its owners read, and tells them.
+	 * Refuses an organization that waits for review for good, with a reason its owners read, and tells them. Missing
+	 * information is a send back instead.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws OrganizationException when the organization does not exist or does not wait for review
 	 */
@@ -163,7 +185,183 @@ public class OrganizationAdministration {
 		Organization organization = awaitingReview(id);
 		organization.refuse(request.reason(), OrganizationViews.text(request.message()), Instant.now());
 		record(AuditAction.ORGANIZATION_REFUSE, operator, organization, Map.of("reason", request.reason()));
+		events.publishEvent(new OrganizationChanged(organization.getId()));
 		tellOwners(organization, false);
+	}
+
+	/**
+	 * Sends an organization that waits for review back to its owners with what to change, and tells them. They
+	 * correct it and it waits for review again.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist or does not wait for review
+	 */
+	@Transactional
+	public void sendBack(Actor actor, UUID id, SendBackOrganizationRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = awaitingReview(id);
+		String reason = request.reason().strip();
+		organization.sendBack(reason, Instant.now());
+		record(AuditAction.ORGANIZATION_SEND_BACK, operator, organization, Map.of());
+		events.publishEvent(new OrganizationChanged(organization.getId()));
+		owners(organization)
+			.forEach(owner -> email.sendOrganizationSentBack(owner.email(), organization.getName(), reason));
+	}
+
+	/**
+	 * Saves the profile and the verified domain of an organization, whatever its status. An organization may be left
+	 * without a domain, which also turns off joining at once.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist or changed since it was read, or another
+	 * organization has the domain
+	 */
+	@Transactional
+	public AdminOrganizationResponse save(Actor actor, UUID id, AdminSaveOrganizationRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		SaveOrganizationRequest profile = request.profile();
+		if (organization.getVersion() != profile.version()) {
+			throw new OrganizationException(OrganizationErrorCode.CHANGED_MEANWHILE,
+					"Operator save of organization " + id + " at version " + profile.version() + ", which is at "
+							+ organization.getVersion());
+		}
+		UUID formerLogo = organization.getLogoFileId();
+		UUID logo = profile.logoFileId();
+		if (logo != null && !logo.equals(formerLogo)) {
+			logos.requireUsable(actor, logo);
+		}
+		organization.describe(profile.name().strip(), profile.type(), OrganizationViews.text(profile.website()),
+				profile.country(), profile.teamSize(), OrganizationViews.codes(profile.industries()),
+				OrganizationViews.text(profile.description()), profile.foundedYear(), logo);
+		String domain = request.emailDomain();
+		if (!Objects.equals(domain, organization.getEmailDomain())) {
+			if (domain != null && organizations.findByEmailDomain(domain).isPresent()) {
+				throw new OrganizationException(OrganizationErrorCode.DOMAIN_TAKEN,
+						"Domain of organization " + id + " set to one another organization has");
+			}
+			organization.verifyDomain(domain);
+		}
+		organizations.flush();
+		events.publishEvent(new OrganizationChanged(organization.getId()));
+		logos.discardReplaced(formerLogo, logo);
+		record(AuditAction.ORGANIZATION_UPDATE, operator, organization, Map.of());
+		return response(organization);
+	}
+
+	/**
+	 * Makes a member of any organization an owner, or an owner a member. An operator may leave an organization
+	 * without an owner: that is how a page is handed to someone else.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist or the person does not belong to it
+	 */
+	@Transactional
+	public void changeMemberRole(Actor actor, UUID id, UUID accountId, String role) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		Member target = member(organization, accountId);
+		if (target.role().equals(role)) {
+			return;
+		}
+		memberships.changeRole(id, accountId, role);
+		record(AuditAction.ORGANIZATION_MEMBER_ROLE, operator, organization,
+				Map.of("account", accountId.toString(), "role", role));
+	}
+
+	/**
+	 * Takes a person out of any organization, the last owner included.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist or the person does not belong to it
+	 */
+	@Transactional
+	public void removeMember(Actor actor, UUID id, UUID accountId) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		member(organization, accountId);
+		memberships.remove(id, accountId);
+		record(AuditAction.ORGANIZATION_MEMBER_REMOVE, operator, organization, Map.of("account", accountId.toString()));
+	}
+
+	/**
+	 * Asks an address to own or join an organization and tells it by email. An operator's invitations stay out of the
+	 * organization's daily and open limits.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist, the address already belongs to it, or it
+	 * already holds an open invitation
+	 */
+	@Transactional
+	public void invite(Actor actor, UUID id, InviteMemberRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		String address = request.email().strip();
+		List<UUID> accounts = memberships.members(id).stream().map(Member::accountId).toList();
+		if (identity.people(accounts).values().stream().anyMatch(person -> person.email().equalsIgnoreCase(address))) {
+			throw new OrganizationException(OrganizationErrorCode.INVITEE_IS_MEMBER,
+					"Operator invitation of a member of organization " + id);
+		}
+		if (!memberships.invite(UUID.randomUUID(), id, address, request.role(), operator.accountId(), true,
+				OrganizationService.INVITATION_LIFETIME)) {
+			throw new OrganizationException(OrganizationErrorCode.ALREADY_INVITED,
+					"Second open invitation of one address to organization " + id);
+		}
+		email.sendOrganizationInvitation(address, organization.getName(), "GenAI Fund",
+				MembershipRepository.OWNER.equals(request.role()));
+		record(AuditAction.ORGANIZATION_INVITE, operator, organization, Map.of("role", request.role()));
+	}
+
+	/**
+	 * Takes back an open invitation of an organization.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist or the invitation is not one of its open ones
+	 */
+	@Transactional
+	public void revokeInvitation(Actor actor, UUID id, UUID invitationId) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findById(id).orElseThrow(() -> notFound(id));
+		memberships.openInvitation(invitationId)
+			.filter(invitation -> invitation.organizationId().equals(id))
+			.orElseThrow(() -> new OrganizationException(OrganizationErrorCode.INVITATION_NOT_FOUND,
+					"Invitation " + invitationId + " is not an open one of organization " + id));
+		memberships.closeInvitation(invitationId, "revoked");
+		record(AuditAction.ORGANIZATION_INVITATION_REVOKE, operator, organization, Map.of());
+	}
+
+	/**
+	 * Takes an approved organization down, with a reason its owners read, and tells them. Its members keep their
+	 * workspace; it leaves the directories until it is restored.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist, is not approved or is down already
+	 */
+	@Transactional
+	public void takeDown(Actor actor, UUID id, TakeDownOrganizationRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		if (!organization.isApproved()) {
+			throw new OrganizationException(OrganizationErrorCode.CANNOT_TAKE_DOWN,
+					"Take-down of organization " + id + ", which is " + organization.getStatus()
+							+ (organization.isSuspended() ? " and down" : ""));
+		}
+		organization.suspend(request.reason(), OrganizationViews.text(request.message()), Instant.now());
+		record(AuditAction.ORGANIZATION_SUSPEND, operator, organization, Map.of("reason", request.reason()));
+		events.publishEvent(new OrganizationChanged(organization.getId()));
+		tellOwnersOfSuspension(organization, true);
+	}
+
+	/**
+	 * Returns a taken-down organization to the directories, and tells its owners.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist or is not taken down
+	 */
+	@Transactional
+	public void restore(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		if (!organization.isSuspended()) {
+			throw new OrganizationException(OrganizationErrorCode.NOT_TAKEN_DOWN,
+					"Restore of organization " + id + ", which is " + organization.getStatus());
+		}
+		organization.restore();
+		record(AuditAction.ORGANIZATION_RESTORE, operator, organization, Map.of());
+		events.publishEvent(new OrganizationChanged(organization.getId()));
+		tellOwnersOfSuspension(organization, false);
 	}
 
 	/**
@@ -230,9 +428,16 @@ public class OrganizationAdministration {
 		organization.verifyDomain(domain);
 	}
 
+	private Member member(Organization organization, UUID accountId) {
+		return memberships.memberOf(accountId)
+			.filter(found -> found.organizationId().equals(organization.getId()))
+			.orElseThrow(() -> new OrganizationException(OrganizationErrorCode.MEMBER_NOT_FOUND,
+					"Account " + accountId + " is not in organization " + organization.getId()));
+	}
+
 	private Organization awaitingReview(UUID id) {
 		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
-		if (!organization.isPending()) {
+		if (!organization.isInReview()) {
 			throw new OrganizationException(OrganizationErrorCode.NOT_AWAITING_REVIEW,
 					"Decision on organization " + id + ", which is " + organization.getStatus());
 		}
@@ -240,14 +445,22 @@ public class OrganizationAdministration {
 	}
 
 	private void tellOwners(Organization organization, boolean approved) {
+		owners(organization)
+			.forEach(owner -> email.sendOrganizationDecision(owner.email(), organization.getName(), approved));
+	}
+
+	private void tellOwnersOfSuspension(Organization organization, boolean takenDown) {
+		owners(organization)
+			.forEach(owner -> email.sendOrganizationSuspension(owner.email(), organization.getName(), takenDown));
+	}
+
+	private Collection<Person> owners(Organization organization) {
 		List<UUID> owners = memberships.members(organization.getId())
 			.stream()
 			.filter(Member::isOwner)
 			.map(Member::accountId)
 			.toList();
-		identity.people(owners)
-			.values()
-			.forEach(owner -> email.sendOrganizationDecision(owner.email(), organization.getName(), approved));
+		return identity.people(owners).values();
 	}
 
 	private AdminOrganizationResponse response(Organization organization) {
@@ -284,7 +497,7 @@ public class OrganizationAdministration {
 		if (organization.getEmailDomain() != null) {
 			return organization.getEmailDomain();
 		}
-		String fromCreator = organization.isPending() && creator != null
+		String fromCreator = organization.isInReview() && creator != null
 				? OrganizationViews.workDomain(creator.email()) : null;
 		String candidate = fromCreator != null ? fromCreator
 				: OrganizationViews.websiteDomain(organization.getWebsite());
@@ -296,21 +509,21 @@ public class OrganizationAdministration {
 		if (row.claimantAccountId() != null) {
 			return row.claimantAccountId();
 		}
-		return Organization.PENDING.equals(row.status()) ? row.createdByAccountId() : null;
+		return Organization.IN_REVIEW.equals(row.status()) ? row.createdByAccountId() : null;
 	}
 
 	private static AdminOrganizationSummaryResponse summary(AdminRow row, Map<UUID, Person> askers) {
 		UUID askerId = asker(row);
 		Person asker = askerId == null ? null : askers.get(askerId);
 		String request = null;
-		if (Organization.PENDING.equals(row.status())) {
+		if (Organization.IN_REVIEW.equals(row.status())) {
 			request = "new";
 		}
 		else if (row.claimId() != null) {
 			request = "claim";
 		}
-		return new AdminOrganizationSummaryResponse(row.id(), row.slug(), row.name(), row.type(),
-				row.country(), row.status(), row.members(), row.owned(), request, row.claimId(),
+		return new AdminOrganizationSummaryResponse(row.id(), row.slug(), row.name(), row.logoFileId(), row.type(),
+				row.country(), row.status(), row.suspendedAt(), row.members(), row.owned(), request, row.claimId(),
 				asker == null ? null : asker.label(), row.claimedAt() != null ? row.claimedAt()
 						: request == null ? null : row.createdAt(),
 				row.createdAt());

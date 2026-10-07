@@ -13,6 +13,9 @@ public enum IdentityErrorCode implements ErrorCode {
 
 	ACCOUNT_NOT_FOUND("IDENTITY_ACCOUNT_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such account."),
 
+	APP_REQUEST_NOT_FOUND("IDENTITY_APP_REQUEST_NOT_FOUND", ErrorCategory.NOT_FOUND,
+			"This connection request has ended; connect again from the app."),
+
 	OWN_ACCOUNT("IDENTITY_OWN_ACCOUNT", ErrorCategory.CONFLICT,
 			"An operator cannot disable their own account or withdraw their own role."),
 

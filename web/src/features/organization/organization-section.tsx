@@ -14,7 +14,7 @@ function OrganizationSection({ id, title, summary, action, children }: Organizat
   return (
     <section aria-labelledby={id} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 id={id} className="text-base font-medium">
+        <h2 id={id} className="text-lg font-semibold">
           {title}
         </h2>
         <span className="flex-1 text-sm font-medium text-muted-foreground">{summary}</span>

@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
-import ai.genaifund.beyondpilot.identity.RecordingMailSender;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,9 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -46,7 +46,7 @@ class TalentTest {
 	private int port;
 
 	@Autowired
-	private RecordingMailSender mail;
+	private TestMailbox mail;
 
 	@Autowired
 	private JdbcClient jdbc;
@@ -60,7 +60,7 @@ class TalentTest {
 
 	@BeforeEach
 	void setUp() {
-		client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+		client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory()).baseUrl("http://localhost:" + port).build();
 		operator = signIn("operator@genaifund.test");
 	}
 
@@ -119,7 +119,7 @@ class TalentTest {
 		put(person, MINE, described("Bare Profile", versionOf(draft))).expectStatus().isOk();
 		String submitted = body(post(person, MINE + "/submit", null).expectStatus().isOk());
 
-		assertThat(JsonPath.<String>read(submitted, "$.status")).isEqualTo("submitted");
+		assertThat(JsonPath.<String>read(submitted, "$.status")).isEqualTo("in_review");
 		assertProblem(post(person, MINE + "/submit", null), 409, "TALENT_NOT_SUBMITTABLE");
 		// What operators review keeps what a submission needs.
 		bare.put("version", versionOf(submitted));
@@ -127,7 +127,7 @@ class TalentTest {
 	}
 
 	@Test
-	void anOperatorAsksForChangesWithAReasonAndApprovesWhatIsSentAgain() {
+	void anOperatorSendsAProfileBackWithAReasonAndApprovesWhatIsSentAgain() {
 		String person = signIn("reviewed@profile.test");
 		UUID id = submitted(person, "Reviewed Person");
 		String drafter = signIn("drafter@profile.test");
@@ -139,19 +139,19 @@ class TalentTest {
 		assertProblem(get(operator, ADMIN + "/" + draft), 404, "TALENT_PROFILE_NOT_FOUND");
 		String forOperator = body(get(operator, ADMIN + "/" + id).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(forOperator, "$.email")).isEqualTo("reviewed@profile.test");
-		assertThat(JsonPath.<String>read(forOperator, "$.profile.status")).isEqualTo("submitted");
-		assertProblem(post(operator, ADMIN + "/" + id + "/request-changes", Map.of("reason", "boring")), 400,
+		assertThat(JsonPath.<String>read(forOperator, "$.profile.status")).isEqualTo("in_review");
+		assertProblem(post(operator, ADMIN + "/" + id + "/send-back", Map.of("reason", "boring")), 400,
 				"REQUEST_INVALID");
-		// Removal is for a profile that is public, not one that waits.
-		assertProblem(post(operator, ADMIN + "/" + id + "/remove", Map.of("reason", "other")), 409,
+		// Taking down is for a profile that is public, not one that waits.
+		assertProblem(post(operator, ADMIN + "/" + id + "/take-down", Map.of("reason", "other")), 409,
 				"TALENT_NOT_APPROVED");
-		post(operator, ADMIN + "/" + id + "/request-changes",
+		post(operator, ADMIN + "/" + id + "/send-back",
 				Map.of("reason", "incomplete", "message", "Say what you built."))
 			.expectStatus()
 			.isNoContent();
 
 		String returned = mine(person);
-		assertThat(JsonPath.<String>read(returned, "$.profile.status")).isEqualTo("changes_requested");
+		assertThat(JsonPath.<String>read(returned, "$.profile.status")).isEqualTo("needs_changes");
 		assertThat(JsonPath.<String>read(returned, "$.profile.decisionReason")).isEqualTo("incomplete");
 		assertThat(JsonPath.<String>read(returned, "$.profile.decisionMessage")).isEqualTo("Say what you built.");
 		assertThat(mail.latestSubjectTo("reviewed@profile.test"))
@@ -170,23 +170,60 @@ class TalentTest {
 	}
 
 	@Test
-	void anOperatorRemovesAnApprovedProfileAndItsPersonCanSendItAgain() {
+	void anOperatorTakesAnApprovedProfileDownAndRestoresIt() {
 		String person = signIn("removed@profile.test");
 		UUID id = approved(person, "Removed Person");
 		client.get().uri(DIRECTORY + "/removed-person").exchange().expectStatus().isOk();
-		assertProblem(post(operator, ADMIN + "/" + id + "/request-changes", Map.of("reason", "other")), 409,
+		assertProblem(post(operator, ADMIN + "/" + id + "/send-back", Map.of("reason", "other")), 409,
 				"TALENT_NOT_AWAITING_REVIEW");
+		assertProblem(post(operator, ADMIN + "/" + id + "/restore", null), 409, "TALENT_NOT_TAKEN_DOWN");
+		assertProblem(post(person, ADMIN + "/" + id + "/take-down", Map.of("reason", "other")), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
 
-		post(operator, ADMIN + "/" + id + "/remove", Map.of("reason", "inappropriate")).expectStatus().isNoContent();
+		post(operator, ADMIN + "/" + id + "/take-down", Map.of("reason", "inappropriate", "message", "Not you."))
+			.expectStatus()
+			.isNoContent();
 
 		assertProblem(client.get().uri(DIRECTORY + "/removed-person").exchange(), 404, "TALENT_PROFILE_NOT_FOUND");
-		String removed = mine(person);
-		assertThat(JsonPath.<String>read(removed, "$.profile.status")).isEqualTo("removed");
-		assertThat(mail.latestSubjectTo("removed@profile.test")).isEqualTo("Your BeyondPilot talent profile was removed");
-		assertThat(events(id)).containsExactly("talent.approve", "talent.remove");
-		// A removed profile can be corrected and sent again.
+		String down = mine(person);
+		// The review stays approved; the takedown is a flag beside it.
+		assertThat(JsonPath.<String>read(down, "$.profile.status")).isEqualTo("approved");
+		assertThat(JsonPath.<String>read(down, "$.profile.suspendedAt")).isNotNull();
+		assertThat(JsonPath.<String>read(down, "$.profile.suspensionReason")).isEqualTo("inappropriate");
+		assertThat(JsonPath.<String>read(down, "$.profile.suspensionMessage")).isEqualTo("Not you.");
+		assertThat(mail.latestSubjectTo("removed@profile.test"))
+			.isEqualTo("Your BeyondPilot talent profile was taken down");
+		assertProblem(post(operator, ADMIN + "/" + id + "/take-down", Map.of("reason", "other")), 409,
+				"TALENT_NOT_APPROVED");
+		assertThat(listed("suspended")).contains(id.toString());
+		assertThat(listed("approved")).doesNotContain(id.toString());
+
+		post(operator, ADMIN + "/" + id + "/restore", null).expectStatus().isNoContent();
+
+		client.get().uri(DIRECTORY + "/removed-person").exchange().expectStatus().isOk();
+		assertThat(JsonPath.<String>read(mine(person), "$.profile.suspendedAt")).isNull();
+		assertThat(mail.latestSubjectTo("removed@profile.test")).isEqualTo("Your BeyondPilot talent profile is restored");
+		assertThat(listed("approved")).contains(id.toString());
+		assertThat(events(id)).containsExactly("talent.approve", "talent.remove", "talent.restore");
+	}
+
+	@Test
+	void aProfileTakenDownIsCorrectedAndSentAgainAndItsApprovalLiftsTheTakedown() {
+		String person = signIn("corrected@profile.test");
+		UUID id = approved(person, "Corrected Person");
+		assertProblem(post(person, MINE + "/submit", null), 409, "TALENT_NOT_SUBMITTABLE");
+		post(operator, ADMIN + "/" + id + "/take-down", Map.of("reason", "unverifiable")).expectStatus().isNoContent();
+
 		post(person, MINE + "/submit", null).expectStatus().isOk();
-		assertThat(JsonPath.<String>read(mine(person), "$.profile.status")).isEqualTo("submitted");
+
+		String sent = mine(person);
+		assertThat(JsonPath.<String>read(sent, "$.profile.status")).isEqualTo("in_review");
+		assertThat(JsonPath.<String>read(sent, "$.profile.suspendedAt")).isNotNull();
+		assertThat(listed("in_review")).contains(id.toString());
+		client.get().uri(DIRECTORY + "/corrected-person").exchange().expectStatus().isNotFound();
+		post(operator, ADMIN + "/" + id + "/approve", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<String>read(mine(person), "$.profile.suspendedAt")).isNull();
+		client.get().uri(DIRECTORY + "/corrected-person").exchange().expectStatus().isOk();
 	}
 
 	@Test
@@ -521,6 +558,11 @@ class TalentTest {
 		return body(get(session, MINE).expectStatus().isOk());
 	}
 
+	/** The identifiers on the first page of the operators' list narrowed to a status. */
+	private List<String> listed(String status) {
+		return JsonPath.read(body(get(operator, ADMIN + "?status=" + status).expectStatus().isOk()), "$.items[*].id");
+	}
+
 	private List<String> names(String path) {
 		return JsonPath.read(body(client.get().uri(path).exchange().expectStatus().isOk()), "$.items[*].name");
 	}
@@ -592,13 +634,13 @@ class TalentTest {
 			.isNotEmpty();
 	}
 
+	/**
+	 * The test mailbox, imported through a class of this test's own so that the test keeps a Spring context, and with
+	 * it a database, of its own.
+	 */
 	@TestConfiguration(proxyBeanMethods = false)
+	@Import(TestMailbox.Configuration.class)
 	static class Mail {
-
-		@Bean
-		RecordingMailSender recordingMailSender() {
-			return new RecordingMailSender();
-		}
 
 	}
 

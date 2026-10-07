@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,10 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.EntityExchangeResult;
 import org.springframework.test.web.servlet.client.RestTestClient;
@@ -44,7 +45,7 @@ class IdentitySignInTest {
 	private int port;
 
 	@Autowired
-	private RecordingMailSender mail;
+	private TestMailbox mail;
 
 	@Autowired
 	private JdbcClient jdbc;
@@ -56,7 +57,7 @@ class IdentitySignInTest {
 
 	@BeforeEach
 	void setUp() {
-		client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+		client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory()).baseUrl("http://localhost:" + port).build();
 	}
 
 	@Test
@@ -65,7 +66,8 @@ class IdentitySignInTest {
 			.isNoContent());
 
 		String code = mail.latestCodeTo("An.Tran@example.test");
-		assertThat(mail.latestSubjectTo("An.Tran@example.test")).isEqualTo(code + " là mã đăng nhập BeyondPilot của bạn");
+		// Email is written in English for now, whatever language the screen asked in.
+		assertThat(mail.latestSubjectTo("An.Tran@example.test")).isEqualTo(code + " is your BeyondPilot sign-in code");
 
 		String session = signIn(browser, code);
 
@@ -156,24 +158,46 @@ class IdentitySignInTest {
 	}
 
 	@Test
-	void anAddressThatKeepsGettingWrongCodesGetsNoNewCodeForADay() {
+	void anAddressThatKeepsGettingWrongCodesGetsNoNewCodeForTheRestOfTheHour() {
 		jdbc.sql("""
 				insert into identity_sign_in_challenge (id, email, code_hash, failed_attempts, expires_at, created_at)
-				select gen_random_uuid(), 'besieged@example.test', 'x', 5, now() - interval '1 hour', now() - interval '2 hours'
+				select gen_random_uuid(), 'besieged@example.test', 'x', 5, now() + interval '15 minutes', now() - interval '30 minutes'
 				from generate_series(1, 3)
 				""").update();
 
 		requestCode(null, "username=besieged@example.test").expectStatus()
 			.isEqualTo(429)
 			.expectHeader()
-			.value("Retry-After", seconds -> assertThat(Long.parseLong(seconds)).isBetween(86_000L, 86_400L));
+			.value("Retry-After", seconds -> assertThat(Long.parseLong(seconds)).isBetween(1_700L, 1_800L));
 		assertThat(mail.countTo("besieged@example.test")).isZero();
+
+		// An hour after them, the wrong codes no longer count: whoever typed them cannot keep the address out.
+		jdbc.sql("update identity_sign_in_challenge set created_at = created_at - interval '1 hour' "
+				+ "where email = 'besieged@example.test'").update();
+		requestCode(null, "username=besieged@example.test").expectStatus().isNoContent();
+	}
+
+	@Test
+	void anAddressGuessedAtAllDayGetsNoNewCodeForTheDay() {
+		jdbc.sql("""
+				insert into identity_sign_in_challenge (id, email, code_hash, failed_attempts, expires_at, created_at)
+				select gen_random_uuid(), 'patient@example.test', 'x', 5, now() - interval '3 hours', now() - interval '4 hours' + n * interval '10 minutes'
+				from generate_series(1, 6) n
+				""").update();
+
+		// Thirty wrong codes over the day, none in the last hour: the day's limit holds until the first is a day old.
+		requestCode(null, "username=patient@example.test").expectStatus()
+			.isEqualTo(429)
+			.expectHeader()
+			.value("Retry-After", seconds -> assertThat(Long.parseLong(seconds)).isBetween(72_000L, 72_600L));
+		assertThat(mail.countTo("patient@example.test")).isZero();
 	}
 
 	@Test
 	void aNewCodeReplacesTheOneBeforeItInTheSameBrowser() {
 		String browser = browserWaitingFor("again@example.test");
 		String first = mail.latestCodeTo("again@example.test");
+		aMinutePasses("again@example.test");
 		requestCode(browser, "username=again@example.test").expectStatus().isNoContent();
 		String second = mail.latestCodeTo("again@example.test");
 
@@ -289,19 +313,53 @@ class IdentitySignInTest {
 	}
 
 	@Test
-	void anAddressGetsALimitedNumberOfWorkingCodes() {
-		for (int request = 0; request < 3; request++) {
-			requestCode(null, "username=flood@example.test").expectStatus().isNoContent();
-		}
+	void anAddressWaitsAMinuteBetweenTwoCodes() {
+		requestCode(null, "username=hurry@example.test").expectStatus().isNoContent();
 
+		requestCode(null, "username=hurry@example.test").expectStatus()
+			.isEqualTo(429)
+			.expectHeader()
+			.value("Retry-After", seconds -> assertThat(Long.parseLong(seconds)).isBetween(1L, 60L))
+			.expectHeader()
+			.contentType(MediaType.APPLICATION_PROBLEM_JSON);
+		assertThat(storedCodesFor("hurry@example.test")).as("a refused request stores no code").isEqualTo(1);
+
+		aMinutePasses("hurry@example.test");
+		requestCode(null, "username=hurry@example.test").expectStatus().isNoContent();
+		assertThat(mail.countTo("hurry@example.test")).isEqualTo(2);
+	}
+
+	@Test
+	void aCodeThatCouldNotBeSentDoesNotHoldTheAddressBack() {
+		jdbc.sql("update email_settings set smtp_port = 1 where id = 1").update();
+		try {
+			requestCode(null, "username=unsent@example.test").expectStatus()
+				.isEqualTo(503)
+				.expectHeader()
+				.valueEquals("Retry-After", "30");
+		}
+		finally {
+			mail.pointSettingsHere();
+		}
+		assertThat(storedCodesFor("unsent@example.test")).isZero();
+
+		requestCode(null, "username=unsent@example.test").expectStatus().isNoContent();
+	}
+
+	@Test
+	void anAddressGetsALimitedNumberOfCodesAnHour() {
+		jdbc.sql("""
+				insert into identity_sign_in_challenge (id, email, code_hash, failed_attempts, expires_at, created_at)
+				select gen_random_uuid(), 'flood@example.test', 'x', 0, now() - interval '5 minutes', now() - interval '50 minutes' + n * interval '1 minute'
+				from generate_series(1, 10) n
+				""").update();
+
+		// The oldest of the ten was sent 49 minutes ago, so room for another opens in 11 minutes.
 		requestCode(null, "username=flood@example.test").expectStatus()
 			.isEqualTo(429)
 			.expectHeader()
-			.value("Retry-After", seconds -> assertThat(Long.parseLong(seconds)).isBetween(1L, 900L))
-			.expectHeader()
-			.contentType(MediaType.APPLICATION_PROBLEM_JSON);
-		assertThat(mail.countTo("flood@example.test")).isEqualTo(3);
-		assertThat(storedCodesFor("flood@example.test")).as("a refused request stores no code").isEqualTo(3);
+			.value("Retry-After", seconds -> assertThat(Long.parseLong(seconds)).isBetween(600L, 660L));
+		assertThat(mail.countTo("flood@example.test")).isZero();
 	}
 
 	@Test
@@ -314,7 +372,7 @@ class IdentitySignInTest {
 			}
 		}
 
-		assertThat(mail.countTo("together@example.test")).isBetween(1L, 3L);
+		assertThat(mail.countTo("together@example.test")).isEqualTo(1);
 	}
 
 	@Test
@@ -404,6 +462,13 @@ class IdentitySignInTest {
 		return JsonPath.read(body, "$.email");
 	}
 
+	/** Moves the codes waiting for the address a minute into the past, as if the person had waited. */
+	private void aMinutePasses(String email) {
+		jdbc.sql("update identity_sign_in_challenge set created_at = created_at - interval '61 seconds' where email = ?")
+			.param(email)
+			.update();
+	}
+
 	private int storedCodesFor(String email) {
 		return jdbc.sql("select count(*) from identity_sign_in_challenge where email = ?")
 			.param(email)
@@ -425,12 +490,14 @@ class IdentitySignInTest {
 		assertThat(result.getResponseHeaders().getFirst("X-Request-Id")).isNotBlank();
 	}
 
+	/**
+	 * The test mailbox, imported through a class of this test's own so that the test keeps a Spring context, and with
+	 * it a database, of its own.
+	 */
 	@TestConfiguration(proxyBeanMethods = false)
+	@Import(TestMailbox.Configuration.class)
 	static class Mail {
 
-		@Bean
-		RecordingMailSender recordingMailSender() {
-			return new RecordingMailSender();
-		}
 	}
+
 }

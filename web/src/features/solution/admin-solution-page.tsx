@@ -3,12 +3,13 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { QueueNext } from "@/components/composites/queue-next";
-import { ReviewStatus } from "@/components/composites/review-status";
+import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { Solution } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { CustomerDeploymentsReview } from "./customer-deployments-review";
+import { SolutionBacking } from "./solution-backing";
 import { SolutionRecord } from "./solution-record";
 import { SolutionReview } from "./solution-review";
 
@@ -25,16 +26,18 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
   const t = useTranslations("Admin.solutions.detail");
   const status = useVocabulary("reviewStatus");
   const reason = useVocabulary("solutionRejection");
+  const takedown = useVocabulary("solutionTakedown");
+  const state = reviewState(solution);
   const format = useFormatter();
   const locale = useLocale();
   const deploymentsWaiting = solution.customerDeployments.filter(
-    (item) => item.status === "submitted",
+    (item) => item.status === "in_review",
   ).length;
 
   const facts: { label: string; value: React.ReactNode }[] = [
     {
       label: t("status"),
-      value: <ReviewStatus state={solution.status}>{status(solution.status)}</ReviewStatus>,
+      value: <ReviewStatus state={state}>{status(state)}</ReviewStatus>,
     },
     {
       label: t("organization"),
@@ -51,7 +54,7 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
           {
             label: t("sent"),
             value:
-              solution.status === "submitted"
+              solution.status === "in_review"
                 ? t("waitingSince", { time: format.relativeTime(new Date(solution.submittedAt)) })
                 : t("submitted", {
                     day: format.dateTime(new Date(solution.submittedAt), { dateStyle: "medium" }),
@@ -62,7 +65,7 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
     {
       label: t("directory"),
       value:
-        solution.status === "approved" && solution.listed ? (
+        state === "approved" && solution.listed ? (
           <TextButton href={`${siteRoutes.solutions}/${solution.slug}`}>{t("public")}</TextButton>
         ) : (
           t(solution.listed ? "listed" : "unlisted")
@@ -90,46 +93,62 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
 
       <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
         {/* The decision: first on a narrow screen, beside the record and in view while it scrolls on a wide one. */}
-        <aside
-          aria-labelledby="solution-decision"
-          className="flex flex-col gap-4 rounded-lg border bg-card p-5 lg:sticky lg:top-4 lg:order-2"
-        >
-          <h2 id="solution-decision" className="text-base font-semibold">
-            {t("decision")}
-          </h2>
-          <dl className="grid grid-cols-3 gap-x-4 gap-y-2 text-sm">
-            {facts.map((fact) => (
-              <div key={fact.label} className="contents">
-                <dt className="text-muted-foreground">{fact.label}</dt>
-                <dd className="col-span-2 min-w-0 break-words">{fact.value}</dd>
-              </div>
-            ))}
-          </dl>
+        <div className="flex flex-col gap-6 lg:sticky lg:top-4 lg:order-2">
+          <aside
+            aria-labelledby="solution-decision"
+            className="flex flex-col gap-4 rounded-lg border bg-card p-5"
+          >
+            <h2 id="solution-decision" className="text-base font-semibold">
+              {t("decision")}
+            </h2>
+            <dl className="grid grid-cols-3 gap-x-4 gap-y-2 text-sm">
+              {facts.map((fact) => (
+                <div key={fact.label} className="contents">
+                  <dt className="text-muted-foreground">{fact.label}</dt>
+                  <dd className="col-span-2 min-w-0 break-words">{fact.value}</dd>
+                </div>
+              ))}
+            </dl>
 
-          {solution.status === "rejected" && (
-            <p className="rounded-lg border bg-muted p-3 text-sm">
-              <span className="font-medium">
-                {t("rejected", { reason: reason(solution.decisionReason ?? "other") })}
-              </span>
-              {solution.decisionMessage && <> {solution.decisionMessage}</>}
-            </p>
-          )}
-          {/* Approving the solution does not decide on what its owners claim about customers. */}
-          {deploymentsWaiting > 0 && (
-            <p className="text-sm">
-              <TextButton href="#customer-deployments">
-                {t("deploymentsWaiting", { count: deploymentsWaiting })}
-              </TextButton>
-            </p>
-          )}
-          {(solution.status === "submitted" || solution.status === "approved") && (
-            <SolutionReview
-              key={solution.id}
-              solution={solution}
-              nextHref={next?.href ?? `${siteRoutes.adminSolutions}?status=submitted`}
-            />
-          )}
-        </aside>
+            {solution.status === "rejected" && (
+              <p className="rounded-lg border bg-muted p-3 text-sm">
+                <span className="font-medium">
+                  {t("rejected", { reason: reason(solution.decisionReason ?? "other") })}
+                </span>
+                {solution.decisionMessage && <> {solution.decisionMessage}</>}
+              </p>
+            )}
+            {solution.status === "needs_changes" && solution.decisionMessage && (
+              <p className="rounded-lg border bg-muted p-3 text-sm">
+                <span className="font-medium">{t("sentBack")}</span> {solution.decisionMessage}
+              </p>
+            )}
+            {state === "suspended" && (
+              <p className="rounded-lg border bg-muted p-3 text-sm">
+                <span className="font-medium">
+                  {t("takenDown", { reason: takedown(solution.suspensionReason ?? "other") })}
+                </span>
+                {solution.suspensionMessage && <> {solution.suspensionMessage}</>}
+              </p>
+            )}
+            {/* Approving the solution does not decide on what its owners claim about customers. */}
+            {deploymentsWaiting > 0 && (
+              <p className="text-sm">
+                <TextButton href="#customer-deployments">
+                  {t("deploymentsWaiting", { count: deploymentsWaiting })}
+                </TextButton>
+              </p>
+            )}
+            {(state === "in_review" || state === "approved" || state === "suspended") && (
+              <SolutionReview
+                key={solution.id}
+                solution={solution}
+                nextHref={next?.href ?? `${siteRoutes.adminSolutions}?status=in_review`}
+              />
+            )}
+          </aside>
+          <SolutionBacking key={solution.id} solution={solution} />
+        </div>
 
         <div className="flex min-w-0 flex-col gap-6 lg:order-1 lg:col-span-2">
           <SolutionRecord solution={solution} />

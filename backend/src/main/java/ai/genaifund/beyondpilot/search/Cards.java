@@ -46,6 +46,16 @@ final class Cards {
 
 	static final String CUSTOMER_DEPLOYMENTS = "customerDeployments";
 
+	static final String CLOSES = "closesAt";
+
+	static final String BUDGET_MIN = "budgetMin";
+
+	static final String BUDGET_MAX = "budgetMax";
+
+	static final String BUDGET_TO_BE_DETERMINED = "budgetToBeDetermined";
+
+	static final String CURRENCY = "currency";
+
 	private Cards() {
 	}
 

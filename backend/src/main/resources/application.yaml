@@ -47,10 +47,27 @@ spring:
         # Flyway creates the event publication table.
         schema-initialization:
           enabled: false
-  mail:
-    # Local development delivers to the Mailpit container of backend/compose.yaml; nothing leaves the machine.
-    host: ${BEYONDPILOT_MAIL_HOST:localhost}
-    port: ${BEYONDPILOT_MAIL_PORT:1025}
+  ai:
+    model:
+      # Search builds its embedding client from the provider operators connect in Admin › AI › Providers; Spring AI
+      # configures no model of its own.
+      embedding: none
+      chat: none
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
+    chat:
+      client:
+        enabled: false
+
+  http:
+    clients:
+      imperative:
+        # The JDK's client, as before Apache HttpClient joined the classpath for the authorization server's own
+        # fetches of addresses outsiders name (identity.oauth.OutsideHttp).
+        factory: jdk
 
 server:
   # The web application and the reverse proxy forward the browser's host and scheme.
@@ -65,10 +82,26 @@ server:
         max-age: 365d
 
 beyondpilot:
+  notification:
+    # Who delivers email is chosen by operators in Admin › Email and stored in the database; the provider's secrets
+    # are encrypted with this key (32 bytes in Base64). Without it no secret can be saved, and email waits.
+    encryption-key: ${BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY:}
+    # The public address of the site: emails read the GenAI Fund logo from it.
+    site-url: ${BEYONDPILOT_SITE_URL:http://localhost:3000}
   identity:
     sign-in-code-lifetime: 15m
+    oauth:
+      # The public address of BeyondPilot: it names the authorization server AI apps sign in through and both MCP
+      # servers (BEY-78).
+      issuer: ${BEYONDPILOT_SITE_URL:http://localhost:3000}
+      # The RSA private key (PKCS#8 PEM) that signs access tokens, a secret file of the deployment. Without it a key is
+      # made at each start, so tokens do not survive a restart.
+      signing-key: ${BEYONDPILOT_IDENTITY_OAUTH_SIGNING_KEY:}
     # BEYONDPILOT_IDENTITY_OPERATOR_EMAILS lists the addresses that are operators from their first sign-in.
     # Google sign-in is on when BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID and _CLIENT_SECRET are set.
+  usecase:
+    # Đồng per US dollar, used only to order the public list by budget when budgets are in both currencies.
+    vnd-per-usd: ${BEYONDPILOT_USECASE_VND_PER_USD:26000}
   storage:
     # `local` keeps files in a directory; `s3` keeps them in a bucket and the browser uploads straight to it.
     provider: ${BEYONDPILOT_STORAGE_PROVIDER:local}
@@ -78,8 +111,19 @@ beyondpilot:
       bucket: ${BEYONDPILOT_STORAGE_S3_BUCKET:}
       region: ${BEYONDPILOT_STORAGE_S3_REGION:}
       endpoint: ${BEYONDPILOT_STORAGE_S3_ENDPOINT:}
-  notification:
-    from: ${BEYONDPILOT_MAIL_FROM:BeyondPilot <no-reply@beyondpilot.localhost>}
+  search:
+    embedding:
+      # 32 bytes in Base64 that encrypt the AI providers' keys in the database. Without it no key can be saved, and
+      # search goes by keywords alone.
+      encryption-key: ${BEYONDPILOT_AI_ENCRYPTION_KEY:}
+      # How many rows one request embeds, and how often the job looks for rows to embed.
+      batch-size: 32
+      interval: 1m
+      # The vector branch keeps what is at least this similar to the query (cosine). Measured on 6 October with
+      # text-embedding-3-large at 1,536 dimensions: relevant items 0.38 to 0.64, nonsense 0.18 to 0.22.
+      min-similarity: 0.35
+      # The nearest the vector branch takes before ranking; an approximate index returns only its nearest.
+      pool: 48
 
 springdoc:
   # OpenApiContractTest generates openapi.yml; no runtime profile serves the contract.

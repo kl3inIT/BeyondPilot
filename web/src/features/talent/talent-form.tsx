@@ -10,7 +10,6 @@ import { TextButton } from "@/components/actions/text-button";
 import { IconButton } from "@/components/actions/icon-button";
 import { ChoiceChips } from "@/components/composites/choice-chips";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
-import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { ReviewReadiness } from "@/components/composites/review-readiness";
 import { TagInput } from "@/components/composites/tag-input";
@@ -156,9 +155,11 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
   const [listed, setListed] = useState(initial.listed);
   const [pending, setPending] = useState<"save" | "submit" | null>(null);
   const [invalid, setInvalid] = useState<Set<string>>(new Set());
-  const [discarding, setDiscarding] = useState(false);
 
-  const returned = profile?.status === "changes_requested" || profile?.status === "removed";
+  // Sent back, or taken down after approval: either way the person corrects it and sends it again.
+  const returned =
+    profile?.status === "needs_changes" ||
+    (profile?.status === "approved" && Boolean(profile.suspendedAt));
   const submittable = !profile || profile.status === "draft" || returned;
   const dirty =
     pending === null &&
@@ -192,17 +193,6 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
     setProjects((current) =>
       current.map((project) => (project.key === key ? { ...project, [field]: value } : project)),
     );
-  }
-
-  function discard() {
-    setText(initial.text);
-    setChosen(initial.chosen);
-    setPhoto(initial.photo);
-    setPicked(initial.picked);
-    setProjects(initial.projects);
-    setListed(initial.listed);
-    setInvalid(new Set());
-    setDiscarding(false);
   }
 
   /** What a review needs and the form does not hold yet; the backend checks the same. */
@@ -762,14 +752,7 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
             {t("saveDraft")}
           </Button>
         )}
-        {dirty && (
-          <>
-            <span className="text-sm text-muted-foreground">{t("unsaved")}</span>
-            <TextButton size="sm" onClick={() => setDiscarding(true)}>
-              {t("discard")}
-            </TextButton>
-          </>
-        )}
+        {dirty && <span className="text-sm text-muted-foreground">{t("unsaved")}</span>}
         <div className="ml-auto flex flex-wrap items-center gap-3">
           {submittable && toAdd.length > 0 && (
             <TextButton className="max-sm:hidden" onClick={() => focusField(toAdd[0].id)}>
@@ -804,19 +787,6 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
         leaveLabel={t("leave.leave")}
         stayLabel={t("leave.stay")}
       />
-      {discarding && (
-        <ConfirmDialog
-          open
-          onOpenChange={setDiscarding}
-          title={t("confirmDiscard.title")}
-          description={t("confirmDiscard.lead")}
-          confirmLabel={t("discard")}
-          cancelLabel={t("confirmDiscard.cancel")}
-          tone="danger"
-          pending={false}
-          onConfirm={discard}
-        />
-      )}
     </form>
   );
 }

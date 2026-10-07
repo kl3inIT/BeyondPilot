@@ -1,0 +1,81 @@
+"use client";
+
+import { MonitorIcon, SmartphoneIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useRef, useState } from "react";
+
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
+
+/**
+ * An email as a mailbox shows it, in a sandboxed frame that runs nothing: the subject and the HTML the
+ * backend rendered, at a desktop or a phone's width. The frame grows to the email's height.
+ */
+function EmailPreview({
+  subject,
+  html,
+  title,
+  className,
+}: {
+  subject: string;
+  html: string;
+  /** What the preview shows, for the frame's accessible name. */
+  title: string;
+  className?: string;
+}) {
+  const t = useTranslations("Admin.email.preview");
+  const [width, setWidth] = useState<"desktop" | "phone">("desktop");
+  const frame = useRef<HTMLIFrameElement>(null);
+
+  /** Sizes the frame to its content once the email has been laid out. */
+  function fit() {
+    const document = frame.current?.contentDocument;
+    if (frame.current && document) {
+      frame.current.style.height = `${document.documentElement.scrollHeight}px`;
+    }
+  }
+
+  return (
+    <div className={cn("flex flex-col gap-3 rounded-xl border bg-muted/40 p-3 md:p-4", className)}>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium">{t("title")}</p>
+        <ToggleGroup
+          variant="outline"
+          size="sm"
+          spacing={0}
+          aria-label={t("width")}
+          value={[width]}
+          onValueChange={(values) => {
+            const next = values.at(-1);
+            if (next === "desktop" || next === "phone") {
+              setWidth(next);
+            }
+          }}
+        >
+          <ToggleGroupItem value="desktop" aria-label={t("desktop")}>
+            <MonitorIcon aria-hidden="true" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="phone" aria-label={t("phone")}>
+            <SmartphoneIcon aria-hidden="true" />
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+      <p className="truncate rounded-md border bg-background px-3 py-2 text-xs">
+        <span className="text-muted-foreground">{t("subject")} </span>
+        <span className="font-medium">{subject}</span>
+      </p>
+      <div className="flex justify-center overflow-hidden rounded-md border bg-background">
+        <iframe
+          ref={frame}
+          title={title}
+          srcDoc={html}
+          sandbox="allow-same-origin"
+          onLoad={fit}
+          className={cn("min-h-96 w-full border-0", width === "phone" && "max-w-sm")}
+        />
+      </div>
+    </div>
+  );
+}
+
+export { EmailPreview };

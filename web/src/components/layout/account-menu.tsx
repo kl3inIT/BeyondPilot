@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  Building2Icon,
+  BuildingIcon,
   ClipboardCheckIcon,
   FileTextIcon,
-  IdCardIcon,
+  LayoutDashboardIcon,
   LogOutIcon,
-  ShieldIcon,
+  UserRoundIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -72,11 +72,11 @@ function AccountMenuPanel({ name, email, operator, reviewer = false }: AccountMe
         {t("applications")}
       </DropdownMenuItem>
       <DropdownMenuItem render={<Link href={siteRoutes.workspaceOrganization} />}>
-        <Building2Icon aria-hidden="true" />
+        <BuildingIcon aria-hidden="true" />
         {t("organization")}
       </DropdownMenuItem>
       <DropdownMenuItem render={<Link href={siteRoutes.talentProfile} />}>
-        <IdCardIcon aria-hidden="true" />
+        <UserRoundIcon aria-hidden="true" />
         {t("talentProfile")}
       </DropdownMenuItem>
       {reviewer && (
@@ -87,7 +87,7 @@ function AccountMenuPanel({ name, email, operator, reviewer = false }: AccountMe
       )}
       {operator && (
         <DropdownMenuItem render={<Link href={siteRoutes.admin} />}>
-          <ShieldIcon aria-hidden="true" />
+          <LayoutDashboardIcon aria-hidden="true" />
           {t("admin")}
         </DropdownMenuItem>
       )}

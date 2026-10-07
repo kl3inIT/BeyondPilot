@@ -19,13 +19,24 @@ export const siteRoutes = {
   adminOrganizations: "/admin/organizations",
   adminSolutions: "/admin/solutions",
   adminTalent: "/admin/talent",
+  adminUseCases: "/admin/use-cases",
+  adminUseCasesNew: "/admin/use-cases/new",
   adminTalentReported: "/admin/talent/reported",
   adminIntroductions: "/admin/introductions",
+  adminAiProviders: "/admin/ai/providers",
+  adminSearchIndex: "/admin/ai/search-index",
+  adminEmail: "/admin/email",
+  adminEmailTemplates: "/admin/email/templates",
+  adminEmailAppearance: "/admin/email/appearance",
+  adminEmailActivity: "/admin/email/activity",
+  adminEmailSuppressions: "/admin/email/suppressions",
+  adminEmailSettings: "/admin/email/settings",
   workspaceOrganization: "/workspace/organization",
   myApplications: "/applications",
   reviews: "/reviews",
   workspaceMembers: "/workspace/organization/members",
   workspaceSolutions: "/workspace/organization/solutions",
+  workspaceUseCases: "/workspace/organization/use-cases",
   workspaceIntroductions: "/workspace/organization/introductions",
 } as const;
 
@@ -48,6 +59,16 @@ export function programRoute(slug: string) {
  */
 export function programApplyUrl(slug: string): string {
   return slug === "insurance-ai-tasco" ? `${liveCampaignUrl}/apply` : `${programRoute(slug)}/apply`;
+}
+
+/** One kind of email's wording in the admin area. */
+export function adminEmailTemplateRoute(kind: string) {
+  return `${siteRoutes.adminEmailTemplates}/${kind}`;
+}
+
+/** One sent email in the admin area's log. */
+export function adminEmailMessageRoute(id: string) {
+  return `${siteRoutes.adminEmailActivity}/${id}`;
 }
 
 /** A program's Settings in the admin area, the screen a program opens on. */
@@ -81,7 +102,7 @@ export function reviewProgramRoute(programId: string) {
 }
 
 /** Planned pages without a screen yet; they share the coming-soon page. */
-export const comingSoonPaths = ["use-cases", "use-cases/new", "get-started", "founders"] as const;
+export const comingSoonPaths = ["use-cases/new", "get-started", "founders"] as const;
 
 /** The product's name, as the end of a page title that is a record's own name. */
 export const titleSuffix = " · BeyondPilot";

@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.program;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,6 +20,7 @@ import ai.genaifund.beyondpilot.program.dto.ProgramListResponse;
 import ai.genaifund.beyondpilot.program.dto.ProgramResponse;
 import ai.genaifund.beyondpilot.program.persistence.PageKind;
 import ai.genaifund.beyondpilot.program.persistence.Program;
+import ai.genaifund.beyondpilot.program.persistence.ProgramMilestone;
 import ai.genaifund.beyondpilot.program.persistence.ProgramQueryRepository;
 import ai.genaifund.beyondpilot.program.persistence.ProgramRepository;
 import ai.genaifund.beyondpilot.program.persistence.ProgramStatus;
@@ -96,7 +98,32 @@ public class ProgramService {
 					.stream()
 					.map(question -> new ApplicationForm.Question(question.id(), question.kind(), question.label(),
 							question.help(), question.required(), List.of(question.options()), question.maxLength()))
+					.toList(),
+				program.getMilestones()
+					.stream()
+					.sorted(Comparator.comparing(ProgramMilestone::startsAt))
+					.map(milestone -> new ApplicationForm.KeyDate(milestone.title(), milestone.startsAt(),
+							milestone.allDay()))
 					.toList()));
+	}
+
+	/** The programs these identifiers name, drafts included; an identifier that names none is absent. */
+	@Transactional(readOnly = true)
+	public Map<UUID, ProgramName> names(Collection<UUID> ids) {
+		return programs.findAllById(ids)
+			.stream()
+			.collect(Collectors.toMap(Program::getId, ProgramService::name));
+	}
+
+	/** The program at this address, drafts included. */
+	@Transactional(readOnly = true)
+	public Optional<ProgramName> named(String slug) {
+		return programs.findBySlug(slug).map(ProgramService::name);
+	}
+
+	private static ProgramName name(Program program) {
+		return new ProgramName(program.getId(), program.getName(), program.getSlug(),
+				program.getStatus() == ProgramStatus.PUBLISHED);
 	}
 
 	/** The program as search indexes it, while it is published; empty for a draft or a program that is gone. */

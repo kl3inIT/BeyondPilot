@@ -12,6 +12,7 @@ import ai.genaifund.beyondpilot.search.dto.SearchRequest;
 import ai.genaifund.beyondpilot.search.dto.SearchResponse;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Hit;
+import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Meaning;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,8 +31,11 @@ public class SearchService {
 
 	private final SearchDocumentRepository index;
 
-	SearchService(SearchDocumentRepository index) {
+	private final SearchEmbeddings embeddings;
+
+	SearchService(SearchDocumentRepository index, SearchEmbeddings embeddings) {
 		this.index = index;
+		this.embeddings = embeddings;
 	}
 
 	@Transactional(readOnly = true)
@@ -39,19 +43,22 @@ public class SearchService {
 		String query = request.q().strip();
 		String kind = request.kind();
 		int page = request.page() == null ? 1 : request.page();
-		Map<String, Long> counts = index.counts(query, true);
+		// By meaning as well as by words, when a model is configured and answers; by words alone otherwise.
+		Meaning meaning = embeddings.of(query).orElse(null);
+		Map<String, Long> counts = index.counts(query, meaning, true);
 		long all = counts.values().stream().mapToLong(Long::longValue).sum();
 		Instant now = Instant.now();
 		// Every kind at once is the best few of each, the kinds in the order of their best item; one kind is paged.
-		List<Hit> hits = kind == null ? index.bestOfEachKind(query, true, PER_KIND)
-				: index.page(query, kind, true, PAGE_SIZE, (page - 1) * PAGE_SIZE);
+		List<Hit> hits = kind == null ? index.bestOfEachKind(query, meaning, true, PER_KIND)
+				: index.page(query, meaning, kind, true, PAGE_SIZE, (page - 1) * PAGE_SIZE);
 		List<SearchItem> items = hits.stream()
 			.map(hit -> item(hit, now))
 			.toList();
 		return new SearchResponse(
 				new SearchCounts(all, counts.getOrDefault(SearchDocumentRepository.PROGRAM, 0L),
 						counts.getOrDefault(SearchDocumentRepository.SOLUTION, 0L),
-						counts.getOrDefault(SearchDocumentRepository.TALENT, 0L)),
+						counts.getOrDefault(SearchDocumentRepository.TALENT, 0L),
+						counts.getOrDefault(SearchDocumentRepository.USE_CASE, 0L)),
 				items, page, PAGE_SIZE, kind == null ? all : counts.getOrDefault(kind, 0L));
 	}
 
@@ -68,7 +75,10 @@ public class SearchService {
 				facets.get(Cards.CUSTOMER_DEPLOYMENTS) instanceof Number count ? count.intValue() : null,
 				texts(facets, Cards.INDUSTRIES), texts(facets, Cards.FOCUS_AREAS), texts(facets, Cards.ROLES),
 				texts(facets, Cards.SKILLS), text(facets, Cards.CITY), text(facets, Cards.WORKS_AT),
-				uuid(facets, Cards.PHOTO));
+				uuid(facets, Cards.PHOTO), instant(facets, Cards.CLOSES), whole(facets, Cards.BUDGET_MIN),
+				whole(facets, Cards.BUDGET_MAX),
+				facets.get(Cards.BUDGET_TO_BE_DETERMINED) instanceof Boolean value ? value : null,
+				text(facets, Cards.CURRENCY));
 	}
 
 	private static @Nullable String text(Map<String, Object> facets, String name) {
@@ -78,6 +88,10 @@ public class SearchService {
 	private static List<String> texts(Map<String, Object> facets, String name) {
 		return facets.get(name) instanceof List<?> values
 				? values.stream().filter(String.class::isInstance).map(String.class::cast).toList() : List.of();
+	}
+
+	private static @Nullable Long whole(Map<String, Object> facets, String name) {
+		return facets.get(name) instanceof Number value ? value.longValue() : null;
 	}
 
 	private static @Nullable UUID uuid(Map<String, Object> facets, String name) {

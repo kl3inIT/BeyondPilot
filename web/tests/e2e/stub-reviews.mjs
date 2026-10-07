@@ -39,9 +39,14 @@ const person = (accountId, name, email, role) => ({
 /** Every organization as an operator's record page reads it, those waiting for review first. */
 const organizations = [
   {
-    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c01", "Lumen Health", "pending", {
-      description: "Triage assistants for clinics.",
-    }),
+    organization: organization(
+      "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c01",
+      "Lumen Health",
+      "in_review",
+      {
+        description: "Triage assistants for clinics.",
+      },
+    ),
     createdBy: "Linh Nguyễn",
     createdByEmail: "linh.nguyen@lumenhealth.example",
     suggestedDomain: "lumenhealth.example",
@@ -111,7 +116,7 @@ const organizations = [
   },
   {
     organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04", "Firstcall", "rejected", {
-      decisionReason: "incomplete",
+      decisionReason: "duplicate",
       decisionMessage: "Say what the company builds.",
     }),
     createdBy: "Quang Vũ",
@@ -125,6 +130,54 @@ const organizations = [
       ),
     ],
     invitations: [],
+    claims: [],
+  },
+  {
+    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c06", "Quiet Mill", "approved", {
+      suspensionReason: "misleading_information",
+      suspensionMessage: "Send us the contract or remove the customer.",
+      suspendedAt: "2026-10-06T03:00:00Z",
+    }),
+    createdBy: "Hana Lê",
+    createdByEmail: "hana.le@quietmill.example",
+    members: [
+      person(
+        "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a21",
+        "Hana Lê",
+        "hana.le@quietmill.example",
+        "owner",
+      ),
+    ],
+    invitations: [],
+    claims: [],
+  },
+  {
+    // Twelve people and an open invitation: the Members tab pages ten at a time.
+    organization: organization(
+      "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c07",
+      "Harbor Bank",
+      "approved",
+      {},
+    ),
+    createdBy: "Bao Tran",
+    createdByEmail: "bao.tran@harborbank.example",
+    members: Array.from({ length: 12 }, (_, index) =>
+      person(
+        `6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a${String(30 + index)}`,
+        `Teller ${String(index + 1).padStart(2, "0")}`,
+        `teller${index + 1}@harborbank.example`,
+        index === 0 ? "owner" : "member",
+      ),
+    ),
+    invitations: [
+      {
+        id: "7d5a7e96-4d42-4e97-9e99-4b7dad0f1e01",
+        email: "newhire@harborbank.example",
+        role: "member",
+        createdAt: day,
+        expiresAt: "2026-10-08T03:00:00Z",
+      },
+    ],
     claims: [],
   },
 ];
@@ -167,6 +220,17 @@ function solution(id, name, status, more) {
     website: "https://pocketpolicy.example",
     demoUrl: null,
     deck: null,
+    logo: {
+      fileId: `1090a2b3-4c5d-4e6f-8a9b-${id.slice(-12)}`,
+      fileName: "logo.png",
+      sizeBytes: 86016,
+    },
+    cover: {
+      fileId: `c0fea2b3-4c5d-4e6f-8a9b-${id.slice(-12)}`,
+      fileName: "cover.png",
+      sizeBytes: 1258291,
+    },
+    images: [],
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
     deployment: ["cloud_saas"],
@@ -183,17 +247,17 @@ function solution(id, name, status, more) {
 
 /** Every submitted solution, those waiting for a decision first and the longest wait on top. */
 const solutions = [
-  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e01", "Claims Copilot", "submitted", {
+  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e01", "Claims Copilot", "in_review", {
     submittedAt: ago(3),
   }),
-  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e02", "Underwriting Radar", "submitted", {
+  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e02", "Underwriting Radar", "in_review", {
     submittedAt: ago(1),
     maturity: "prototype",
   }),
   solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e03", "Policy Chat", "approved", {
     maturity: "production",
     customerDeployments: [
-      deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f01", "Claims line at Bảo An", "submitted"),
+      deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f01", "Claims line at Bảo An", "in_review"),
       deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f02", "Renewals at Mekong Life", "approved", {
         stage: "pilot",
         result: "Half of renewals answered without an agent.",
@@ -203,6 +267,12 @@ const solutions = [
   solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e04", "Quote Bot", "rejected", {
     decisionReason: "duplicate",
     decisionMessage: "It is Policy Chat under another name.",
+  }),
+  // Approved, then taken down: it stays approved with the day it went down.
+  solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e05", "Risk Lens", "approved", {
+    suspendedAt: ago(48),
+    suspensionReason: "misleading_information",
+    suspensionMessage: "The customers named are not real.",
   }),
 ];
 
@@ -236,13 +306,13 @@ function profile(id, name, status, more) {
 const talent = [
   {
     email: "bao.tran@example.com",
-    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a01", "Bảo Trần", "submitted", {
+    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a01", "Bảo Trần", "in_review", {
       submittedAt: ago(5),
     }),
   },
   {
     email: "mai.pham@example.com",
-    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a02", "Mai Phạm", "submitted", {
+    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a02", "Mai Phạm", "in_review", {
       submittedAt: ago(2),
       headline: "AI product manager",
       roles: ["ai_product_manager"],
@@ -258,9 +328,17 @@ const talent = [
   },
   {
     email: "siti@pocketpolicy.example",
-    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a04", "Siti Rahma", "changes_requested", {
+    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a04", "Siti Rahma", "needs_changes", {
       decisionReason: "incomplete",
       decisionMessage: "Add a project.",
+    }),
+  },
+  {
+    email: "dewi@example.com",
+    profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a05", "Dewi Lestari", "approved", {
+      suspendedAt: ago(30),
+      suspensionReason: "inappropriate",
+      suspensionMessage: "Remove the client logos.",
     }),
   },
 ];
@@ -342,35 +420,47 @@ const lists = {
   "/api/organization/admin/organizations": {
     records: organizations,
     idOf: (record) => record.organization.id,
-    // An open claim waits for a decision as a new organization does, whatever the review status.
-    statusOf: (record) => (record.claims.length > 0 ? "pending" : record.organization.status),
+    // An open claim waits for a decision as a new organization does, whatever the review status; one
+    // taken down is filtered as `suspended`, not as approved.
+    statusOf: (record) =>
+      record.claims.length > 0
+        ? "in_review"
+        : record.organization.suspendedAt
+          ? "suspended"
+          : record.organization.status,
     textOf: (record) => record.organization.name,
-    summaryOf: ({ organization: { id, name, slug, status, type, country }, ...record }) => ({
+    summaryOf: ({
+      organization: { id, name, slug, status, type, country, suspendedAt = null },
+      ...record
+    }) => ({
       id,
       name,
       slug,
       status,
+      suspendedAt,
       type,
       country,
       createdAt: day,
       members: record.members.length,
       owned: record.members.some((member) => member.role === "owner"),
-      request: status === "pending" ? "new" : record.claims.length > 0 ? "claim" : null,
+      request: status === "in_review" ? "new" : record.claims.length > 0 ? "claim" : null,
       claimId: record.claims[0]?.id ?? null,
-      askedBy: status === "pending" ? record.createdBy : (record.claims[0]?.name ?? null),
-      requestedAt: status === "pending" || record.claims.length > 0 ? day : null,
+      askedBy: status === "in_review" ? record.createdBy : (record.claims[0]?.name ?? null),
+      requestedAt: status === "in_review" || record.claims.length > 0 ? day : null,
     }),
   },
   "/api/solution/admin/solutions": {
     records: solutions,
     idOf: (record) => record.id,
-    statusOf: (record) => record.status,
+    // A solution taken down is approved with the date it went down, and filters as `suspended`.
+    statusOf: (record) => (record.suspendedAt ? "suspended" : record.status),
     textOf: (record) => `${record.name} ${record.organizationName}`,
     summaryOf: ({ id, name, slug, status, organizationName, summary, maturity, ...record }) => ({
       id,
       name,
       slug,
       status,
+      suspendedAt: record.suspendedAt ?? null,
       organizationName,
       summary,
       maturity,
@@ -380,7 +470,7 @@ const lists = {
       submittedBy: record.submittedBy,
       updatedAt: record.updatedAt,
       deploymentsAwaitingReview: record.customerDeployments.filter(
-        (item) => item.status === "submitted",
+        (item) => item.status === "in_review",
       ).length,
     }),
   },
@@ -394,13 +484,18 @@ const lists = {
   "/api/talent/admin/profiles": {
     records: talent,
     idOf: (record) => record.profile.id,
-    statusOf: (record) => record.profile.status,
+    // A profile taken down is approved with the date it went down, and filters as `suspended`.
+    statusOf: (record) => (record.profile.suspendedAt ? "suspended" : record.profile.status),
     textOf: (record) => `${record.profile.name} ${record.email}`,
-    summaryOf: ({ email, profile: { id, name, slug, status, headline, ...record } }) => ({
+    summaryOf: ({
+      email,
+      profile: { id, name, slug, status, headline, suspendedAt = null, ...record },
+    }) => ({
       id,
       name,
       slug,
       status,
+      suspendedAt,
       headline,
       email,
       listed: record.listed,
@@ -434,7 +529,10 @@ export function answerReview(url, account) {
         : path === "/api/solution/admin/solutions"
           ? {
               ...found,
-              awaitingReview: records.filter((record) => record.status === "submitted").length,
+              awaitingReview: records.filter((record) => record.status === "in_review").length,
+              deploymentsAwaitingReview: records
+                .flatMap((record) => record.customerDeployments)
+                .filter((item) => item.status === "in_review").length,
             }
           : found,
     ];

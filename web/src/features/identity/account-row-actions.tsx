@@ -4,6 +4,7 @@ import {
   BanIcon,
   CircleCheckIcon,
   EllipsisIcon,
+  MailIcon,
   ShieldCheckIcon,
   ShieldOffIcon,
 } from "lucide-react";
@@ -22,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotify, type MessageKey } from "@/hooks/use-notify";
+import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
 import {
   disableAccount,
@@ -30,6 +32,7 @@ import {
   withdrawOperator,
   type AccountSummary,
 } from "@/lib/api/generated";
+import { siteRoutes } from "@/lib/site";
 
 /** The changes an operator confirms first; enabling an account is the undo and happens at once. */
 type Confirmed = "disable" | "makeOperator" | "withdrawOperator";
@@ -136,6 +139,19 @@ function AccountRowActions({ account }: { account: AccountSummary }) {
           <EllipsisIcon className="size-4" aria-hidden="true" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              render={
+                <Link
+                  href={`${siteRoutes.adminEmailActivity}?period=all&q=${encodeURIComponent(account.email)}`}
+                />
+              }
+            >
+              <MailIcon aria-hidden="true" />
+              {t("actions.emails")}
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
           {operator && !account.configuredOperator && (
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => setAsking("withdrawOperator")}>
