@@ -11,6 +11,11 @@ A one-off load of GenAI Fund's v1 export (startups and use cases) into BeyondPil
 | `records.py` | The organizations, solutions, use cases and files the export becomes |
 | `fetch.py` | Fetches a file from v1's API or Google's public download addresses only, checks its type and size, and caches it |
 | `build.py` | Writes `load.sql` and the files in the local object store's layout |
+| `enrich_fetch.py`, `enrich_render.py` | Enrichment stage 1: each startup's deck text, website pages and logo and cover candidates; pages built by JavaScript and SVG logos read in headless Chromium |
+| `enrich_check.py` | Keeps a researched value only when its quote is in the saved source and the value is a code BeyondPilot accepts |
+| `enrich_apply.py` | Writes `update.sql` (empty parts filled, customers added) and `audit.sql` (one `solution.enrich` event per solution, with each value's quote and source) |
+| `enrich_images.py` | Writes the found logos and covers into the object store's layout and `images.sql` |
+| `usecase_extract.py`, `usecase_check.py` | Fill the imported use cases' empty fields from their v1 briefs, and approve them |
 
 ## Run
 
@@ -47,3 +52,15 @@ Staging first, then production, with the same `load.sql` and `files/` (the [desi
 5. **Staging only:** approve the imported organizations and approve and list every imported solution, so matching is built on real data: `python -I infrastructure/legacy-import/staging_list.py .tmp/legacy-import/out/load.sql > .tmp/legacy-import/out/staging-list.sql`, then run it with `psql -v ON_ERROR_STOP=1 -f -`. Production skips this step.
 6. Rebuild the search index from Admin › AI › Search index.
 7. Check the counts against `build.json` and the summary, and in Admin › Organizations and Solutions (In review on production, Approved on staging).
+
+## Enrich
+
+After the load, empty parts of the imported records are filled from public sources: the startup's deck, its website and, when the site is missing or dead, a web search. Nothing already there is overwritten, except the summary v1 generated ("Company founded in … focusing on: …"). A value is stored only with a verbatim quote from a saved source, and the quote goes to the audit log, which only operators read; nothing new is published about where it came from.
+
+1. Stage 1, no AI: `enrich_fetch.py <input.json> <work>`, then `enrich_render.py <input.json> <work>` for what needs a browser (`playwright install chromium` once).
+2. Stage 2, research: an agent per batch reads only the saved files, checks the site is still the same company, and writes `results/<id>.json`: for each value it fills, the quote and the source file.
+3. Stage 3: `enrich_check.py <work>`, then `enrich_apply.py <work> <out>`. Dump the database, run `update.sql`, then `audit.sql` once the application knows the `solution.enrich` action, and `images.sql` from `enrich_images.py` after copying its files like step 2 of the load.
+4. Use cases: `usecase_extract.py <export.xlsx> <work>` and `usecase_check.py <work>`; run `update.sql`, then `approve.sql`.
+5. Rebuild the search index.
+
+The work folders hold the companies' pages and decks: they stay under `.tmp/` and are never committed.
