@@ -8206,6 +8206,11 @@ components:
           format: int64
           description: "How many solutions wait for review, whatever narrows this\
             \ list."
+        deploymentsAwaitingReview:
+          type: integer
+          format: int64
+          description: "How many customer deployments wait for review, whatever narrows\
+            \ this list."
         items:
           type: array
           items:
@@ -8223,6 +8228,7 @@ components:
           description: "How many solutions match, over all pages."
       required:
       - awaitingReview
+      - deploymentsAwaitingReview
       - items
       - page
       - pageSize
