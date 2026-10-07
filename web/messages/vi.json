@@ -2075,7 +2075,10 @@
         "throttled": "Nhà cung cấp đang giới hạn gửi. Thử lại sau một phút.",
         "unavailable": "Không kết nối được nhà cung cấp. Thử lại sau một phút.",
         "rejected": "Nhà cung cấp từ chối email. Kiểm tra domain người gửi đã được xác thực chưa.",
-        "invalidRecipient": "Nhà cung cấp không nhận địa chỉ của bạn làm người nhận."
+        "invalidRecipient": "Nhà cung cấp không nhận địa chỉ của bạn làm người nhận.",
+        "recipientInvalid": "Hãy nhập đúng một địa chỉ email, không kèm tên hay địa chỉ thứ hai.",
+        "suppressed": "Địa chỉ này đang bị chặn nên không email nào được gửi tới. Hãy gỡ nó khỏi danh sách chặn trước.",
+        "limitReached": "Bạn đã gửi đủ số email thử cho người khác trong một giờ. Hãy gửi cho chính mình, hoặc thử lại sau."
       },
       "templates": {
         "metaTitle": "Mẫu email",
@@ -2591,6 +2594,10 @@
       "technology": "Công nghệ",
       "automotive_mobility": "Ô tô và di chuyển",
       "consumer_goods": "Hàng tiêu dùng",
+      "climate_sustainability": "Khí hậu và phát triển bền vững",
+      "marketing_advertising": "Marketing và quảng cáo",
+      "legal": "Pháp lý",
+      "hr_workforce": "Nhân sự",
       "other": "Khác"
     },
     "maturity": {

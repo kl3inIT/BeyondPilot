@@ -27,7 +27,7 @@ import {
 import { siteRoutes } from "@/lib/site";
 
 import { EmailPreview } from "./email-preview";
-import { testFailures } from "./email-test-failures";
+import { testFailures, testRefusals } from "./email-test-failures";
 import { TestSend } from "./test-send";
 import { TemplateCodeEditor, type TemplateCodeEditorHandle } from "./template-code-editor";
 
@@ -168,9 +168,10 @@ function EmailTemplateEditor({
     } catch (error) {
       const code = error instanceof ApiError ? error.code : undefined;
       notify.error(
-        code === "NOTIFICATION_TEMPLATE_INVALID"
-          ? "Admin.email.editor.errors.invalid"
-          : "Admin.email.editor.errors.unknown",
+        (code === undefined ? undefined : testRefusals[code]) ??
+          (code === "NOTIFICATION_TEMPLATE_INVALID"
+            ? "Admin.email.editor.errors.invalid"
+            : "Admin.email.editor.errors.unknown"),
       );
     } finally {
       setTesting(false);
