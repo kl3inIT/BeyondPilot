@@ -7,7 +7,23 @@ Status: accepted on 7 October 2026 ([plan](plan.md)). Tracked in Linear as BEY-7
 A person asks their own AI assistant (ChatGPT, Claude, Codex, Cursor) about BeyondPilot, and the assistant searches it through MCP, signed in as that person. Two servers, both behind a BeyondPilot sign-in:
 
 - **`/mcp`, for every signed-in person:** `search` and `fetch` over the publicly listed solutions and programs, in the shapes ChatGPT's deep research needs. Later it gains the person's own tools: preparing an application draft that the person submits on the site, and editing their own solution.
-- **`/mcp/operator`, for operators:** `search_solutions` (listed or not), `get_solution`, `search_use_cases`, `get_use_case`, `find_organization`. Once the `matching` module exists it adds `propose_candidates` and `record_research_run`, which only propose: an operator decides. This is the research Kai Yong Kang asked for at the kickoff (32:37), run with his `use-case-solution-research` skill.
+- **`/mcp/operator`, for operators:** the research Kai Yong Kang asked for at the kickoff (32:37), run with his `use-case-solution-research` skill, and the admin work an operator does on the web. Each tool calls the same application service as the admin screen, so validation, authorization and audit are the same.
+
+| Area                     | Read                                            | Write (each tool off until switched on)                                                                                     |
+| ------------------------ | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Solutions                | Search, listed or not; detail; review queue     | Approve, reject, GenAI Fund backing, approve or reject a customer deployment                                                |
+| Use cases                | Search, detail, review queue                    | Create for an organization, edit, approve, send back, back to draft                                                         |
+| Talent                   | Search, detail, review queue                    | Approve, request changes, remove                                                                                            |
+| Organizations            | Search by name or website, detail, review queue | Create, edit, approve, refuse, suspend, restore, invite, change a member's role, remove a member, decide an ownership claim |
+| Programs                 | List, detail, applications count                | Create a draft, edit, edit events and key dates, edit the criteria                                                          |
+| Applications             | List by program, detail, reviewers' scores      | Shortlist or not select (before release), invite or remove a reviewer                                                       |
+| Matching, once it merges | A use case's candidates                         | `propose_candidates`, `record_research_run`, `record_outreach`                                                              |
+
+Kept on the web only, because they publish at once, reach people outside, hand out power or touch secrets: publishing or unpublishing a program, releasing outcomes, disabling an account, granting or withdrawing the operator role, email settings, templates and suppressions, sending an email again, AI provider keys.
+
+**Outreach** (kickoff 03:30): after research, the operator invites a company's C-level to apply, from his own mailbox through his own agent (Codex or Claude with Gmail). BeyondPilot sends nothing; `record_outreach` keeps who was invited, when and for which use case, so a company is not invited twice and a later application is linked. A 1-to-1 email the operator sends is not the autonomous outreach brief §17 excludes. There is no tool that submits an application on a company's behalf: an operator adds a candidate and the company applies itself. Noted in BEY-39 for `matching`.
+
+**Confirmation of writes:** the protocol revision of 2026-07-28 is stateless and lets a server ask the person to confirm through Multi Round-Trip Requests (`input_required`). The Java SDK 2.0.1 speaks 2025-11-25, so until it moves a write relies on the client's own approval prompt (`readOnlyHint=false`, `destructiveHint` where it applies), a switch per tool that is off by default, server-side checks against duplicates, and the audit record naming the app. An instruction in a prompt is never the only guard: a tool reads text written by outsiders.
 
 Operators run it in Admin › AI › MCP: the setup of each app, the user server's switch, a switch per tool, every connected app with Revoke, and the activity. A person finds it under MCP in the account menu: how to connect, and the apps they connected, with Revoke.
 
@@ -62,4 +78,4 @@ Boundary: `mcp` is a delivery channel, like the web controllers, over other modu
 
 ## Out of scope
 
-The person's own tools (application drafts, editing a solution); `propose_candidates` and `record_research_run` until `matching` merges; Kai's skill as an MCP prompt (with the write tools); an Admin list of trusted apps (configuration for now); the 2026-07-28 transport (`server/discover`) until the SDK supports it.
+The person's own tools (application drafts, editing a solution); the matching tools until `matching` merges; Kai's skill as an MCP prompt (with the write tools); an Admin list of trusted apps (configuration for now); the 2026-07-28 transport (`server/discover`) until the SDK supports it.
