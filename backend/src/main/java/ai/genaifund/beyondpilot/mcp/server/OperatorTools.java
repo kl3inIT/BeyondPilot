@@ -14,6 +14,7 @@ import ai.genaifund.beyondpilot.organization.OrganizationsAwaitingReview;
 import ai.genaifund.beyondpilot.program.ProgramName;
 import ai.genaifund.beyondpilot.program.ProgramService;
 import ai.genaifund.beyondpilot.proposal.ProgramApplications;
+import ai.genaifund.beyondpilot.proposal.ProposalErrorCode;
 import ai.genaifund.beyondpilot.proposal.ReviewService;
 import ai.genaifund.beyondpilot.solution.SolutionAdministration;
 import ai.genaifund.beyondpilot.solution.SolutionsAwaitingReview;
@@ -108,7 +109,10 @@ class OperatorTools {
 				found = reviews.applicationsOf(actor(context.get(CallLog.CALLER)), program.id());
 			}
 			catch (BusinessException refused) {
-				return error("This program takes no applications.");
+				// A program without an application form takes none; any other refusal, such as a withdrawn
+				// operator role, is told in its own words.
+				return error(refused.code().equals(ProposalErrorCode.REVIEW_PROGRAM_NOT_FOUND.code())
+						? "This program takes no applications." : refused.safeMessage());
 			}
 			List<Map<String, Object>> applications = new ArrayList<>();
 			for (ProgramApplications.Application application : found.applications()) {
