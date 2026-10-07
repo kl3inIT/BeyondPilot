@@ -13,6 +13,8 @@ import type { SearchItem } from "@/lib/api/generated";
 import { programRoute, siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
+import { budgetFigures, budgetText } from "@/features/usecase/use-case-budget";
+
 import { snippetParts } from "./search-snippet";
 
 /** The badge of a program's phase, as its page shows it: open is the one that takes action. */
@@ -151,11 +153,15 @@ function UseCaseResult({ item }: { item: SearchItem }) {
   const t = useTranslations("UseCases");
   const industryName = useVocabulary("industry");
   const format = useFormatter();
+  const locale = useLocale();
   const budget = item.budgetToBeDetermined
     ? t("budget.toBeDetermined")
     : item.budgetMin == null || item.budgetMax == null
       ? t("budget.membersOnly")
-      : t("budget.range", { min: item.budgetMin, max: item.budgetMax });
+      : budgetText(
+          budgetFigures(item.budgetMin, item.budgetMax, item.currency, locale),
+          (key, values) => t(`budget.${key}`, values),
+        );
   const facts = [
     item.industries[0] && industryName(item.industries[0]),
     budget,

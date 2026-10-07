@@ -16,6 +16,8 @@ final class UseCaseCodes {
 
 	static final String STATUS = "draft|in_review|needs_changes|approved|closed";
 
+	static final String CURRENCY = "USD|VND";
+
 	static final String SORT = "newest|deadline|budget";
 
 	private UseCaseCodes() {

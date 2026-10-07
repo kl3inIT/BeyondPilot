@@ -69,6 +69,7 @@ class UseCaseIndexing {
 		Cards.put(facets, Cards.BUDGET_MIN, useCase.budgetMin());
 		Cards.put(facets, Cards.BUDGET_MAX, useCase.budgetMax());
 		facets.put(Cards.BUDGET_TO_BE_DETERMINED, useCase.budgetToBeDetermined());
+		facets.put(Cards.CURRENCY, useCase.currency());
 		String keywords = Cards.words(useCase.industry() == null ? List.of() : List.of(useCase.industry()),
 				useCase.technologies());
 		return new Document(SearchDocumentRepository.USE_CASE, useCase.id(), useCase.id().toString(),

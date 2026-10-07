@@ -107,6 +107,25 @@ public class ProgramService {
 					.toList()));
 	}
 
+	/** The programs these identifiers name, drafts included; an identifier that names none is absent. */
+	@Transactional(readOnly = true)
+	public Map<UUID, ProgramName> names(Collection<UUID> ids) {
+		return programs.findAllById(ids)
+			.stream()
+			.collect(Collectors.toMap(Program::getId, ProgramService::name));
+	}
+
+	/** The program at this address, drafts included. */
+	@Transactional(readOnly = true)
+	public Optional<ProgramName> named(String slug) {
+		return programs.findBySlug(slug).map(ProgramService::name);
+	}
+
+	private static ProgramName name(Program program) {
+		return new ProgramName(program.getId(), program.getName(), program.getSlug(),
+				program.getStatus() == ProgramStatus.PUBLISHED);
+	}
+
 	/** The program as search indexes it, while it is published; empty for a draft or a program that is gone. */
 	@Transactional(readOnly = true)
 	public Optional<IndexedProgram> indexed(UUID id) {

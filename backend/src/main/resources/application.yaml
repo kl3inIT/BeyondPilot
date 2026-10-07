@@ -85,6 +85,9 @@ beyondpilot:
     sign-in-code-lifetime: 15m
     # BEYONDPILOT_IDENTITY_OPERATOR_EMAILS lists the addresses that are operators from their first sign-in.
     # Google sign-in is on when BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID and _CLIENT_SECRET are set.
+  usecase:
+    # Đồng per US dollar, used only to order the public list by budget when budgets are in both currencies.
+    vnd-per-usd: ${BEYONDPILOT_USECASE_VND_PER_USD:26000}
   storage:
     # `local` keeps files in a directory; `s3` keeps them in a bucket and the browser uploads straight to it.
     provider: ${BEYONDPILOT_STORAGE_PROVIDER:local}

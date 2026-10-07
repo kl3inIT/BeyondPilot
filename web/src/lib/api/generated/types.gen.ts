@@ -458,18 +458,22 @@ export type AdminTalentList = {
 export type AdminUseCase = {
     attachments: Array<UseCaseAttachment>;
     /**
-     * US dollars. Null while the budget is to be determined.
+     * Whole units of currency. Null while the budget is to be determined.
      */
     budgetMax?: number | null;
     budgetMembersOnly: boolean;
     /**
-     * US dollars. Null while the budget is to be determined.
+     * Whole units of currency. Null while the budget is to be determined.
      */
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
     closesAt?: string | null;
     createdAt: string;
     createdBy: UseCasePerson;
+    /**
+     * The currency of the amounts.
+     */
+    currency: 'USD' | 'VND';
     currentProcess?: string | null;
     currentSolutions?: string | null;
     dataReadiness?: string | null;
@@ -480,6 +484,10 @@ export type AdminUseCase = {
     integrationRequirements?: string | null;
     organization: UseCaseOrganization;
     problemStatement?: string | null;
+    /**
+     * The programs it belongs to, by name.
+     */
+    programs: Array<UseCaseProgram>;
     publishedAt?: string | null;
     requirements: Array<UseCaseRequirement>;
     /**
@@ -775,7 +783,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -948,7 +956,7 @@ export type CreateUseCase = {
      */
     attachmentFileIds: Array<string>;
     /**
-     * US dollars. Null while the budget is to be determined.
+     * Whole units of currency. Null while the budget is to be determined.
      */
     budgetMax?: number | null;
     /**
@@ -956,7 +964,7 @@ export type CreateUseCase = {
      */
     budgetMembersOnly: boolean;
     /**
-     * US dollars. Null while the budget is to be determined.
+     * Whole units of currency. Null while the budget is to be determined.
      */
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
@@ -964,6 +972,10 @@ export type CreateUseCase = {
      * When proposals stop. It must be in the future.
      */
     closesAt: string;
+    /**
+     * The currency of the budget; USD when absent.
+     */
+    currency?: 'USD' | 'VND';
     currentProcess: string;
     currentSolutions?: string | null;
     dataReadiness: string;
@@ -976,6 +988,10 @@ export type CreateUseCase = {
      */
     organizationId: string;
     problemStatement: string;
+    /**
+     * The programs it belongs to; none when absent.
+     */
+    programIds?: Array<string> | null;
     /**
      * True to publish at once, false to save a draft for the organization.
      */
@@ -1651,6 +1667,10 @@ export type MyUseCase = {
      * Whether it holds everything a use case needs to be sent for review.
      */
     complete: boolean;
+    /**
+     * The currency of the amounts.
+     */
+    currency: 'USD' | 'VND';
     currentProcess?: string | null;
     currentSolutions?: string | null;
     dataReadiness?: string | null;
@@ -2443,7 +2463,7 @@ export type PublicUseCaseSummary = {
      */
     budgetMembersOnly: boolean;
     /**
-     * In US dollars; null while the budget is to be determined or is for members only.
+     * Whole units of currency; null while the budget is to be determined or is for members only.
      */
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
@@ -2451,6 +2471,10 @@ export type PublicUseCaseSummary = {
      * Proposals close at this instant.
      */
     closesAt: string;
+    /**
+     * The currency of the amounts.
+     */
+    currency: 'USD' | 'VND';
     /**
      * The outcomes the organization expects.
      */
@@ -3024,7 +3048,7 @@ export type SaveMyUseCase = {
      */
     attachmentFileIds: Array<string>;
     /**
-     * US dollars. Null while the budget is to be determined.
+     * Whole units of currency. Null while the budget is to be determined.
      */
     budgetMax?: number | null;
     /**
@@ -3032,7 +3056,7 @@ export type SaveMyUseCase = {
      */
     budgetMembersOnly: boolean;
     /**
-     * US dollars. Null while the budget is to be determined.
+     * Whole units of currency. Null while the budget is to be determined.
      */
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
@@ -3040,6 +3064,10 @@ export type SaveMyUseCase = {
      * When proposals stop. It must be in the future.
      */
     closesAt?: string | null;
+    /**
+     * The currency of the budget; the stored one when absent, USD for a new use case.
+     */
+    currency?: 'USD' | 'VND';
     currentProcess?: string | null;
     currentSolutions?: string | null;
     dataReadiness?: string | null;
@@ -3338,11 +3366,11 @@ export type SearchIndexRebuild = {
  */
 export type SearchItem = {
     /**
-     * A use case's budget, when its organization shows it.
+     * A use case's budget in its currency, when its organization shows it.
      */
     budgetMax?: number | null;
     /**
-     * A use case's budget, when its organization shows it.
+     * A use case's budget in its currency, when its organization shows it.
      */
     budgetMin?: number | null;
     /**
@@ -3365,6 +3393,10 @@ export type SearchItem = {
      * A program's cover, read at the public address of stored files.
      */
     coverFileId?: string | null;
+    /**
+     * The currency of a use case's budget.
+     */
+    currency?: 'USD' | 'VND';
     /**
      * How many of a solution's customer deployments GenAI Fund approved.
      */
@@ -3525,6 +3557,16 @@ export type SetSemanticSearch = {
      * The version of the search settings it was read at.
      */
     version: number;
+};
+
+/**
+ * The programs a use case belongs to, replacing those it had.
+ */
+export type SetUseCasePrograms = {
+    /**
+     * Empty for none.
+     */
+    programIds: Array<string>;
 };
 
 /**
@@ -4029,6 +4071,22 @@ export type UseCasePerson = {
 };
 
 /**
+ * A program the use case belongs to.
+ */
+export type UseCaseProgram = {
+    id: string;
+    name: string;
+    /**
+     * Whether visitors see the program; a draft is for operators only.
+     */
+    published: boolean;
+    /**
+     * The address of its public page.
+     */
+    slug: string;
+};
+
+/**
  * One thing the solution must do.
  */
 export type UseCaseRequirement = {
@@ -4047,7 +4105,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -9847,6 +9905,45 @@ export type ApproveAdminUseCaseResponses = {
 
 export type ApproveAdminUseCaseResponse = ApproveAdminUseCaseResponses[keyof ApproveAdminUseCaseResponses];
 
+export type SetAdminUseCaseProgramsData = {
+    body: SetUseCasePrograms;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}/programs';
+};
+
+export type SetAdminUseCaseProgramsErrors = {
+    /**
+     * A program does not exist, or there are more than ten.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+};
+
+export type SetAdminUseCaseProgramsError = SetAdminUseCaseProgramsErrors[keyof SetAdminUseCaseProgramsErrors];
+
+export type SetAdminUseCaseProgramsResponses = {
+    /**
+     * The use case with its programs.
+     */
+    200: AdminUseCase;
+};
+
+export type SetAdminUseCaseProgramsResponse = SetAdminUseCaseProgramsResponses[keyof SetAdminUseCaseProgramsResponses];
+
 export type SendBackAdminUseCaseData = {
     body: SendBackUseCase;
     path: {
@@ -10128,6 +10225,10 @@ export type ListUseCasesData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * Only use cases of the published program at this address.
+         */
+        program?: string | null;
     };
     url: '/api/usecase/use-cases';
 };

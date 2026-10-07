@@ -15,6 +15,7 @@ const empty: DraftValues = {
   dataReadiness: "",
   integrationRequirements: "",
   attachments: [],
+  currency: "USD",
   budgetMin: "",
   budgetMax: "",
   budgetToBeDetermined: false,

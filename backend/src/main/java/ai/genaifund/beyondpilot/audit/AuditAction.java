@@ -105,6 +105,10 @@ public enum AuditAction {
 	USE_CASE_APPROVE("use_case.approve", "organization"),
 
 	USE_CASE_SEND_BACK("use_case.send_back", "organization"),
+
+	/** An operator set the programs a use case belongs to. */
+	USE_CASE_SET_PROGRAMS("use_case.set_programs", "organization"),
+
 	/** An owner answered a request for an introduction, and both sides were told each other's address. */
 	INTRODUCTION_REPLY("introduction.reply"),
 

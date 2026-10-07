@@ -2,7 +2,10 @@ package ai.genaifund.beyondpilot.usecase.persistence;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import jakarta.persistence.CollectionTable;
@@ -43,6 +46,11 @@ public class UseCase {
 	/** What a use case reads as once its close date has passed, whatever it was stored as. It is never stored. */
 	public static final String CLOSED = "closed";
 
+	/** The currencies a budget is written in. */
+	public static final String USD = "USD";
+
+	public static final String VND = "VND";
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
@@ -72,9 +80,13 @@ public class UseCase {
 
 	private @Nullable String integrationRequirements;
 
-	private @Nullable Integer budgetMin;
+	private @Nullable Long budgetMin;
 
-	private @Nullable Integer budgetMax;
+	private @Nullable Long budgetMax;
+
+	/** USD or VND; the amounts are whole units of it. */
+	@Column(nullable = false)
+	private String currency = USD;
 
 	@Column(nullable = false)
 	private boolean budgetToBeDetermined;
@@ -125,6 +137,11 @@ public class UseCase {
 	@Column(name = "file_id")
 	private List<UUID> attachmentFileIds = new ArrayList<>();
 
+	@ElementCollection
+	@CollectionTable(name = "use_case_program", joinColumns = @JoinColumn(name = "use_case_id"))
+	@Column(name = "program_id")
+	private Set<UUID> programIds = new LinkedHashSet<>();
+
 	@Version
 	private long version;
 
@@ -170,6 +187,12 @@ public class UseCase {
 		this.targetUsers = targetUsers;
 	}
 
+	/** Files the use case under these programs, and under no other. */
+	public void belongTo(Collection<UUID> programIds) {
+		this.programIds.clear();
+		this.programIds.addAll(programIds);
+	}
+
 	/** Names the files that explain the use case, in the order given. */
 	public void attach(List<UUID> fileIds) {
 		this.attachmentFileIds.clear();
@@ -184,7 +207,9 @@ public class UseCase {
 		this.integrationRequirements = integrationRequirements;
 	}
 
-	public void budget(@Nullable Integer min, @Nullable Integer max, boolean toBeDetermined, boolean membersOnly) {
+	public void budget(String currency, @Nullable Long min, @Nullable Long max, boolean toBeDetermined,
+			boolean membersOnly) {
+		this.currency = currency;
 		this.budgetMin = min;
 		this.budgetMax = max;
 		this.budgetToBeDetermined = toBeDetermined;
@@ -321,16 +346,24 @@ public class UseCase {
 		return List.copyOf(requirements);
 	}
 
+	public Set<UUID> getProgramIds() {
+		return Set.copyOf(programIds);
+	}
+
 	public List<UUID> getAttachmentFileIds() {
 		return List.copyOf(attachmentFileIds);
 	}
 
-	public @Nullable Integer getBudgetMin() {
+	public @Nullable Long getBudgetMin() {
 		return budgetMin;
 	}
 
-	public @Nullable Integer getBudgetMax() {
+	public @Nullable Long getBudgetMax() {
 		return budgetMax;
+	}
+
+	public String getCurrency() {
+		return currency;
 	}
 
 	public boolean isBudgetToBeDetermined() {
