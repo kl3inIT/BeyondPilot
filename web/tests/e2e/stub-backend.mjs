@@ -344,6 +344,23 @@ createServer((request, response) => {
   if (url.pathname === "/api/identity/me") {
     return json(response, account ? 200 : 401, account ?? {});
   }
+  if (url.pathname === "/api/usecase/admin/organizations") {
+    if (account?.role !== "operator") {
+      return json(response, account ? 403 : 401, {});
+    }
+    return json(response, 200, {
+      items: [
+        { id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03", name: "Pocket Policy" },
+        { id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04", name: "Tasco" },
+      ],
+    });
+  }
+  if (url.pathname === "/api/usecase/admin/use-cases") {
+    if (account?.role !== "operator") {
+      return json(response, account ? 403 : 401, {});
+    }
+    return json(response, 200, { items: [], page: 1, pageSize: 25, total: 0 });
+  }
   if (url.pathname === "/api/identity/accounts") {
     if (account?.role !== "operator") {
       return json(response, account ? 403 : 401, {});
