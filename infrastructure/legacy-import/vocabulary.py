@@ -13,7 +13,8 @@ TEAM_SIZE = ("just_me", "2_9", "10_49", "50_99", "100_499", "500_999", "1000_499
 INDUSTRY = (
     "banking_finance", "insurance", "retail_ecommerce", "manufacturing", "logistics", "healthcare",
     "education", "real_estate", "telecom", "energy", "agriculture", "travel_hospitality", "media_entertainment",
-    "public_sector", "professional_services", "technology", "automotive_mobility", "consumer_goods", "other",
+    "public_sector", "professional_services", "technology", "automotive_mobility", "consumer_goods",
+    "climate_sustainability", "marketing_advertising", "legal", "hr_workforce", "other",
 )
 
 FOCUS_AREA = (

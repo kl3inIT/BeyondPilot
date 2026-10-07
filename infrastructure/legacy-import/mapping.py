@@ -72,23 +72,31 @@ INDUSTRY = {
     "media, entertainment & gaming": "media_entertainment", "media & entertainment": "media_entertainment",
     "entertainment": "media_entertainment", "gaming": "media_entertainment",
     "media & broadcasting": "media_entertainment", "media & publishing": "media_entertainment",
-    "content creation": "media_entertainment", "marketing & advertising": "media_entertainment",
-    "marketing": "media_entertainment", "adtech": "media_entertainment",
-    "marketing & content creation": "media_entertainment", "media": "media_entertainment",
+    "content creation": "media_entertainment", "media": "media_entertainment",
+    "marketing & advertising": "marketing_advertising", "marketing": "marketing_advertising",
+    "adtech": "marketing_advertising", "advertising": "marketing_advertising", "martech": "marketing_advertising",
     "hospitality & travel": "travel_hospitality", "travel": "travel_hospitality",
     "hospitality": "travel_hospitality", "travel & tourism": "travel_hospitality",
-    "legal & professional services": "professional_services", "professional services": "professional_services",
-    "legal": "professional_services", "consulting": "professional_services",
-    "legal and professional service": "professional_services", "legal & compliance": "professional_services",
-    "human resources": "professional_services", "hr tech": "professional_services",
-    "hr-tech": "professional_services", "human resources/tourism": "professional_services",
-    "energy": "energy", "oil and gas": "energy", "climate tech": "energy", "environmental solutions": "energy",
+    "professional services": "professional_services", "consulting": "professional_services",
+    "legal": "legal", "legaltech": "legal", "legal tech": "legal", "legal & compliance": "legal",
+    "human resources": "hr_workforce", "hr": "hr_workforce", "hr tech": "hr_workforce", "hr-tech": "hr_workforce",
+    "hrtech": "hr_workforce", "talent": "hr_workforce", "workforce": "hr_workforce", "recruitment": "hr_workforce",
+    "energy": "energy", "oil and gas": "energy",
+    "climate tech": "climate_sustainability", "climate": "climate_sustainability",
+    "environmental solutions": "climate_sustainability", "environment": "climate_sustainability",
+    "sustainability": "climate_sustainability", "cleantech": "climate_sustainability",
     "agritech": "agriculture", "agriculture": "agriculture",
     "other": "other", "others": "other",
 }
 
-# Retail & Hospitality names two industries.
-INDUSTRY_PAIRS = {"retail & hospitality": ("retail_ecommerce", "travel_hospitality")}
+# A label that names two industries.
+INDUSTRY_PAIRS = {
+    "retail & hospitality": ("retail_ecommerce", "travel_hospitality"),
+    "legal & professional services": ("legal", "professional_services"),
+    "legal and professional service": ("legal", "professional_services"),
+    "marketing & content creation": ("marketing_advertising", "media_entertainment"),
+    "human resources/tourism": ("hr_workforce", "travel_hospitality"),
+}
 
 
 def industries(value) -> Mapped:
