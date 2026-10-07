@@ -25,8 +25,8 @@ def main() -> None:
     sql = open(sys.argv[1], encoding="utf-8").read()
     organizations = ids(sql, "organization")
     solutions = ids(sql, "solution")
-    print(f"""-- Staging only: approve the imported organizations, then approve and list the imported solutions that wait for
--- review. Inactive startups' solutions stay drafts. Run after load.sql, then rebuild the search index.
+    print(f"""-- Staging only: approve the imported organizations, then approve and list every imported solution, active or
+-- not. Run after load.sql, then rebuild the search index.
 \\set ON_ERROR_STOP on
 begin;
 
@@ -38,7 +38,7 @@ where o.id = imported.id and o.status = 'in_review';
 update solution s set status = 'approved', listed = true, decided_at = now()
 from (values
     {values(solutions)}) imported(id)
-where s.id = imported.id and s.status = 'in_review';
+where s.id = imported.id and s.status in ('in_review', 'draft');
 
 commit;""")
 
