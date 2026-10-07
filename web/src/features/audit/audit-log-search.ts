@@ -39,6 +39,7 @@ export const auditActions = [
   "use_case.draft",
   "use_case.approve",
   "use_case.send_back",
+  "use_case.set_programs",
   "introduction.reply",
   "introduction.decline",
   "talent.approve",

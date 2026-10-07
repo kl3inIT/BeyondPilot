@@ -122,6 +122,7 @@ paths:
           - use_case.draft
           - use_case.approve
           - use_case.send_back
+          - use_case.set_programs
           - introduction.reply
           - introduction.decline
           - talent.approve
@@ -7126,6 +7127,58 @@ paths:
       summary: Approve a use case in review and publish it
       tags:
       - Use case administration
+  /api/usecase/admin/use-cases/{id}/programs:
+    put:
+      operationId: setAdminUseCasePrograms
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetUseCasePrograms"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUseCase"
+          description: The use case with its programs.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A program does not exist, or there are more than ten."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+      security:
+      - session: []
+      summary: Set the programs a use case belongs to
+      tags:
+      - Use case administration
   /api/usecase/admin/use-cases/{id}/send-back:
     post:
       operationId: sendBackAdminUseCase
@@ -7488,6 +7541,16 @@ paths:
           format: int32
           default: 1
           minimum: 1
+      - description: Only use cases of the published program at this address.
+        in: query
+        name: program
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
       responses:
         "200":
           content:
@@ -8351,16 +8414,16 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: US dollars. Null while the budget is to be determined.
+          format: int64
+          description: Whole units of currency. Null while the budget is to be determined.
         budgetMembersOnly:
           type: boolean
         budgetMin:
           type:
           - integer
           - "null"
-          format: int32
-          description: US dollars. Null while the budget is to be determined.
+          format: int64
+          description: Whole units of currency. Null while the budget is to be determined.
         budgetToBeDetermined:
           type: boolean
         closesAt:
@@ -8373,6 +8436,12 @@ components:
           format: date-time
         createdBy:
           $ref: "#/components/schemas/UseCasePerson"
+        currency:
+          type: string
+          description: The currency of the amounts.
+          enum:
+          - USD
+          - VND
         currentProcess:
           type:
           - string
@@ -8408,6 +8477,11 @@ components:
           type:
           - string
           - "null"
+        programs:
+          type: array
+          description: "The programs it belongs to, by name."
+          items:
+            $ref: "#/components/schemas/UseCaseProgram"
         publishedAt:
           type:
           - string
@@ -8483,9 +8557,11 @@ components:
       - budgetToBeDetermined
       - createdAt
       - createdBy
+      - currency
       - hideOrganizationName
       - id
       - organization
+      - programs
       - requirements
       - status
       - technologies
@@ -9035,6 +9111,7 @@ components:
           - use_case.draft
           - use_case.approve
           - use_case.send_back
+          - use_case.set_programs
           - introduction.reply
           - introduction.decline
           - talent.approve
@@ -9387,9 +9464,9 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: US dollars. Null while the budget is to be determined.
-          maximum: 100000000
+          format: int64
+          description: Whole units of currency. Null while the budget is to be determined.
+          maximum: 1000000000000
           minimum: 0
         budgetMembersOnly:
           type: boolean
@@ -9398,9 +9475,9 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: US dollars. Null while the budget is to be determined.
-          maximum: 100000000
+          format: int64
+          description: Whole units of currency. Null while the budget is to be determined.
+          maximum: 1000000000000
           minimum: 0
         budgetToBeDetermined:
           type: boolean
@@ -9408,6 +9485,15 @@ components:
           type: string
           format: date-time
           description: When proposals stop. It must be in the future.
+        currency:
+          type:
+          - string
+          - "null"
+          description: The currency of the budget; USD when absent.
+          enum:
+          - USD
+          - VND
+          pattern: USD|VND
         currentProcess:
           type: string
           maxLength: 2000
@@ -9443,6 +9529,16 @@ components:
           type: string
           maxLength: 2000
           minLength: 0
+        programIds:
+          type:
+          - array
+          - "null"
+          description: The programs it belongs to; none when absent.
+          items:
+            type: string
+            format: uuid
+          maxItems: 10
+          minItems: 0
         publishNow:
           type: boolean
           description: "True to publish at once, false to save a draft for the organization."
@@ -10766,14 +10862,14 @@ components:
           type:
           - integer
           - "null"
-          format: int32
+          format: int64
         budgetMembersOnly:
           type: boolean
         budgetMin:
           type:
           - integer
           - "null"
-          format: int32
+          format: int64
         budgetToBeDetermined:
           type: boolean
         changedSinceReview:
@@ -10789,6 +10885,12 @@ components:
           type: boolean
           description: Whether it holds everything a use case needs to be sent for
             review.
+        currency:
+          type: string
+          description: The currency of the amounts.
+          enum:
+          - USD
+          - VND
         currentProcess:
           type:
           - string
@@ -10897,6 +10999,7 @@ components:
       - budgetToBeDetermined
       - changedSinceReview
       - complete
+      - currency
       - editable
       - hideOrganizationName
       - id
@@ -12365,7 +12468,7 @@ components:
           type:
           - integer
           - "null"
-          format: int32
+          format: int64
         budgetMembersOnly:
           type: boolean
           description: Whether the organization shows the budget to members only.
@@ -12373,15 +12476,21 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: In US dollars; null while the budget is to be determined or
-            is for members only.
+          format: int64
+          description: Whole units of currency; null while the budget is to be determined
+            or is for members only.
         budgetToBeDetermined:
           type: boolean
         closesAt:
           type: string
           format: date-time
           description: Proposals close at this instant.
+        currency:
+          type: string
+          description: The currency of the amounts.
+          enum:
+          - USD
+          - VND
         goal:
           type: string
           description: The outcomes the organization expects.
@@ -12414,6 +12523,7 @@ components:
       - budgetMembersOnly
       - budgetToBeDetermined
       - closesAt
+      - currency
       - goal
       - id
       - industry
@@ -13492,9 +13602,9 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: US dollars. Null while the budget is to be determined.
-          maximum: 100000000
+          format: int64
+          description: Whole units of currency. Null while the budget is to be determined.
+          maximum: 1000000000000
           minimum: 0
         budgetMembersOnly:
           type: boolean
@@ -13503,9 +13613,9 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: US dollars. Null while the budget is to be determined.
-          maximum: 100000000
+          format: int64
+          description: Whole units of currency. Null while the budget is to be determined.
+          maximum: 1000000000000
           minimum: 0
         budgetToBeDetermined:
           type: boolean
@@ -13515,6 +13625,16 @@ components:
           - "null"
           format: date-time
           description: When proposals stop. It must be in the future.
+        currency:
+          type:
+          - string
+          - "null"
+          description: "The currency of the budget; the stored one when absent, USD\
+            \ for a new use case."
+          enum:
+          - USD
+          - VND
+          pattern: USD|VND
         currentProcess:
           type:
           - string
@@ -14269,14 +14389,16 @@ components:
           type:
           - integer
           - "null"
-          format: int32
-          description: "A use case's budget, when its organization shows it."
+          format: int64
+          description: "A use case's budget in its currency, when its organization\
+            \ shows it."
         budgetMin:
           type:
           - integer
           - "null"
-          format: int32
-          description: "A use case's budget, when its organization shows it."
+          format: int64
+          description: "A use case's budget in its currency, when its organization\
+            \ shows it."
         budgetToBeDetermined:
           type:
           - boolean
@@ -14304,6 +14426,14 @@ components:
           - "null"
           format: uuid
           description: "A program's cover, read at the public address of stored files."
+        currency:
+          type:
+          - string
+          - "null"
+          description: The currency of a use case's budget.
+          enum:
+          - USD
+          - VND
         customerDeployments:
           type:
           - integer
@@ -14570,6 +14700,20 @@ components:
       required:
       - enabled
       - version
+    SetUseCasePrograms:
+      type: object
+      description: "The programs a use case belongs to, replacing those it had."
+      properties:
+        programIds:
+          type: array
+          description: Empty for none.
+          items:
+            type: string
+            format: uuid
+          maxItems: 10
+          minItems: 0
+      required:
+      - programIds
     Solution:
       type: object
       description: "A solution as its organization, and operators, see it."
@@ -15590,6 +15734,27 @@ components:
       - genaiFund
       - name
       - you
+    UseCaseProgram:
+      type: object
+      description: A program the use case belongs to.
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        published:
+          type: boolean
+          description: Whether visitors see the program; a draft is for operators
+            only.
+        slug:
+          type: string
+          description: The address of its public page.
+      required:
+      - id
+      - name
+      - published
+      - slug
     UseCaseRequirement:
       type: object
       description: One thing the solution must do.

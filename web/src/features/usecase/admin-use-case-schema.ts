@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { currencies } from "./use-case-budget";
+
 import {
   necessities,
   publishChoices,
@@ -14,8 +16,8 @@ type Say = (
   values?: { max: number },
 ) => string;
 
-/** An amount in dollars: 0 or a whole number of up to nine digits. */
-const dollars = /^(0|[1-9]\d{0,8})$/;
+/** An amount in its currency: 0 or a whole number of up to thirteen digits, wide enough for đồng. */
+const whole = /^(0|[1-9]\d{0,12})$/;
 
 /** The most any text of the form holds, as the backend takes it. */
 export const MAX_TEXT = 2000;
@@ -24,7 +26,7 @@ export const MAX_TEXT = 2000;
 export function adminUseCaseSchema(say: Say) {
   const text = (max: number) =>
     z.string().trim().min(1, say("required")).max(max, say("tooLong", { max }));
-  const amount = z.string().refine((value) => value === "" || dollars.test(value), {
+  const amount = z.string().refine((value) => value === "" || whole.test(value), {
     message: say("positive"),
   });
 
@@ -57,6 +59,7 @@ export function adminUseCaseSchema(say: Say) {
           }),
         )
         .max(10),
+      currency: z.enum(currencies),
       budgetMin: amount,
       budgetMax: amount,
       budgetToBeDetermined: z.boolean(),

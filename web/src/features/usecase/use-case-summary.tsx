@@ -1,10 +1,11 @@
 import { PencilIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { useVocabulary } from "@/i18n/vocabulary";
 
 import { timelinePresets } from "./admin-use-case-codes";
+import { budgetFigures, budgetText } from "./use-case-budget";
 import { type DraftValues, type Step, timelineOf } from "./use-case-draft";
 
 type FieldKey =
@@ -54,7 +55,7 @@ function UseCaseSummary({ values, onEdit, viewLabel }: UseCaseSummaryProps) {
     (requirement) => requirement.statement.trim() !== "" && requirement.necessity === "optional",
   ).length;
   const timeline = timelineOf(values);
-  const money = (text: string) => format.number(Number(text));
+  const locale = useLocale();
 
   const blocks: {
     step: Step;
@@ -120,7 +121,15 @@ function UseCaseSummary({ values, onEdit, viewLabel }: UseCaseSummaryProps) {
           value: values.budgetToBeDetermined ? (
             r("budgetTbd")
           ) : values.budgetMin !== "" && values.budgetMax !== "" ? (
-            r("budgetRange", { min: money(values.budgetMin), max: money(values.budgetMax) })
+            budgetText(
+              budgetFigures(
+                Number(values.budgetMin),
+                Number(values.budgetMax),
+                values.currency,
+                locale,
+              ),
+              (key, figures) => r(key === "single" ? "budgetSingle" : "budgetRange", figures),
+            )
           ) : (
             <Missing />
           ),

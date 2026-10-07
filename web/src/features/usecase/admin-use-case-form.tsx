@@ -39,6 +39,7 @@ import {
 } from "./admin-use-case-codes";
 import { AttachmentsField } from "./admin-use-case-attachments";
 import { adminUseCaseSchema, MAX_TEXT, type AdminUseCaseValues } from "./admin-use-case-schema";
+import { currencies } from "./use-case-budget";
 
 const blank: AdminUseCaseValues = {
   organizationId: "",
@@ -58,6 +59,7 @@ const blank: AdminUseCaseValues = {
   dataReadiness: "",
   integrationRequirements: "",
   attachments: [],
+  currency: "USD",
   budgetMin: "",
   budgetMax: "",
   budgetToBeDetermined: false,
@@ -86,7 +88,7 @@ function refusalOf(code: string | undefined) {
 const sections = {
   outcomes: ["expectedOutcomes", "currentProcess", "currentSolutions", "targetUsers"],
   requirements: ["requirements", "dataReadiness", "integrationRequirements", "attachments"],
-  budget: ["budgetMin", "budgetMax", "timeline", "hideOrganizationName"],
+  budget: ["currency", "budgetMin", "budgetMax", "timeline", "hideOrganizationName"],
 } as const;
 
 type SectionName = keyof typeof sections;
@@ -191,6 +193,7 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
             dataReadiness: value.dataReadiness,
             integrationRequirements: value.integrationRequirements,
             attachmentFileIds: value.attachments.map((file) => file.id),
+            currency: value.currency,
             budgetMin: value.budgetToBeDetermined ? null : number(value.budgetMin),
             budgetMax: value.budgetToBeDetermined ? null : number(value.budgetMax),
             budgetToBeDetermined: value.budgetToBeDetermined,
@@ -477,26 +480,39 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
             open={open.budget}
             onToggle={toggle("budget")}
           >
-            <form.Subscribe selector={(state) => state.values.budgetToBeDetermined}>
-              {(undecided) => (
+            <form.AppField name="currency">
+              {(field) => (
+                <field.SelectField
+                  label={t("currency")}
+                  placeholder={t("choose")}
+                  options={currencies.map((value) => ({ value, label: t(`currencies.${value}`) }))}
+                />
+              )}
+            </form.AppField>
+            <form.Subscribe
+              selector={(state) =>
+                [state.values.budgetToBeDetermined, state.values.currency] as const
+              }
+            >
+              {([undecided, currency]) => (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <form.AppField name="budgetMin">
                     {(field) => (
                       <field.TextField
-                        label={t("budgetMin")}
+                        label={t("budgetMin", { currency })}
                         inputMode="numeric"
                         disabled={undecided}
-                        maxLength={9}
+                        maxLength={13}
                       />
                     )}
                   </form.AppField>
                   <form.AppField name="budgetMax">
                     {(field) => (
                       <field.TextField
-                        label={t("budgetMax")}
+                        label={t("budgetMax", { currency })}
                         inputMode="numeric"
                         disabled={undecided}
-                        maxLength={9}
+                        maxLength={13}
                       />
                     )}
                   </form.AppField>

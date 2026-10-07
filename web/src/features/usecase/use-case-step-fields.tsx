@@ -17,6 +17,7 @@ import {
   useCaseIndustries,
   useCaseTechnologies,
 } from "./admin-use-case-codes";
+import { currencies, type BudgetCurrency } from "./use-case-budget";
 import { timelineOf, type DraftValues, type Step } from "./use-case-draft";
 import { Choice, ReadOnlyProvider, TextArea, TextInput, Tick } from "./wizard-fields";
 
@@ -210,19 +211,26 @@ function UseCaseStepFields({ step, values, onChange, readOnly = false }: UseCase
 
       {step === "budget" && (
         <FieldGroup>
+          <Choice
+            label={t("currency")}
+            placeholder={t("choose")}
+            options={currencies.map((value) => ({ value, label: t(`currencies.${value}`) }))}
+            value={values.currency}
+            onValueChange={(currency) => onChange({ currency: currency as BudgetCurrency })}
+          />
           <div className="grid gap-4 sm:grid-cols-2">
             <TextInput
-              label={t("budgetMin")}
+              label={t("budgetMin", { currency: values.currency })}
               inputMode="numeric"
-              maxLength={9}
+              maxLength={13}
               disabled={values.budgetToBeDetermined}
               value={values.budgetMin}
               onValueChange={(budgetMin) => onChange({ budgetMin })}
             />
             <TextInput
-              label={t("budgetMax")}
+              label={t("budgetMax", { currency: values.currency })}
               inputMode="numeric"
-              maxLength={9}
+              maxLength={13}
               disabled={values.budgetToBeDetermined}
               value={values.budgetMax}
               onValueChange={(budgetMax) => onChange({ budgetMax })}

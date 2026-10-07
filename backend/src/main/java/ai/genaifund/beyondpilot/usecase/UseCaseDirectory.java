@@ -9,12 +9,15 @@ import java.util.stream.Collectors;
 
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
+import ai.genaifund.beyondpilot.program.ProgramName;
+import ai.genaifund.beyondpilot.program.ProgramService;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseListResponse;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseSummaryResponse;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCase;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseQueryRepository;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRepository;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
  * whose organization asked to stay anonymous shows no name, and no search finds it by that name.
  */
 @Service
+@EnableConfigurationProperties(UseCaseProperties.class)
 public class UseCaseDirectory {
 
 	static final int PAGE_SIZE = 10;
@@ -35,11 +39,17 @@ public class UseCaseDirectory {
 
 	private final OrganizationDirectory organizations;
 
+	private final ProgramService programs;
+
+	private final UseCaseProperties properties;
+
 	UseCaseDirectory(UseCaseQueryRepository useCaseList, UseCaseRepository useCases,
-			OrganizationDirectory organizations) {
+			OrganizationDirectory organizations, ProgramService programs, UseCaseProperties properties) {
 		this.useCaseList = useCaseList;
 		this.useCases = useCases;
 		this.organizations = organizations;
+		this.programs = programs;
+		this.properties = properties;
 	}
 
 	/**
@@ -95,7 +105,7 @@ public class UseCaseDirectory {
 					organization == null ? null : organization.name(), useCase.getIndustry(),
 					useCase.getTechnologies(), useCase.getExpectedOutcomes(),
 					hidden ? null : useCase.getBudgetMin(), hidden ? null : useCase.getBudgetMax(),
-					useCase.isBudgetToBeDetermined(), hidden, useCase.getClosesAt());
+					useCase.getCurrency(), useCase.isBudgetToBeDetermined(), hidden, useCase.getClosesAt());
 		}).toList();
 	}
 
@@ -106,20 +116,29 @@ public class UseCaseDirectory {
 		int page = request.page() == null ? 1 : request.page();
 		String sort = request.sort() == null ? "newest" : request.sort();
 		Instant now = Instant.now();
+		UUID program = null;
+		if (request.program() != null) {
+			Optional<ProgramName> named = programs.named(request.program());
+			if (named.isEmpty() || !named.get().published()) {
+				// A program a visitor cannot see features nothing for them.
+				return new PublicUseCaseListResponse(List.of(), page, PAGE_SIZE, 0);
+			}
+			program = named.get().id();
+		}
 		List<UUID> matching = text == null ? List.of()
 				: organizations.approvedOrganizations(text, ORGANIZATION_LIMIT)
 					.stream()
 					.map(OrganizationName::id)
 					.toList();
-		List<UseCaseQueryRepository.PublicRow> rows = useCaseList.publicPage(text, matching, request.industry(), sort,
-				now, PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
+		List<UseCaseQueryRepository.PublicRow> rows = useCaseList.publicPage(text, matching, request.industry(), program,
+				sort, properties.vndPerUsd(), now, PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
 		Map<UUID, OrganizationName> names = organizations.names(rows.stream()
 			.filter(row -> !row.hideOrganizationName())
 			.map(UseCaseQueryRepository.PublicRow::organizationId)
 			.collect(Collectors.toSet()));
 		List<PublicUseCaseSummaryResponse> items = rows.stream().map(row -> summary(row, names)).toList();
 		return new PublicUseCaseListResponse(items, page, PAGE_SIZE,
-				useCaseList.publicCount(text, matching, request.industry(), now));
+				useCaseList.publicCount(text, matching, request.industry(), program, now));
 	}
 
 	private static PublicUseCaseSummaryResponse summary(UseCaseQueryRepository.PublicRow row,
@@ -128,7 +147,7 @@ public class UseCaseDirectory {
 		boolean hidden = row.budgetMembersOnly();
 		return new PublicUseCaseSummaryResponse(row.id(), row.title(), organization == null ? null : organization.name(),
 				row.industry(), row.goal(), row.technologies(), hidden ? null : row.budgetMin(),
-				hidden ? null : row.budgetMax(), row.budgetToBeDetermined(), row.budgetMembersOnly(),
+				hidden ? null : row.budgetMax(), row.currency(), row.budgetToBeDetermined(), row.budgetMembersOnly(),
 				row.timelineMinWeeks(), row.timelineMaxWeeks(), row.closesAt(), row.publishedAt());
 	}
 }

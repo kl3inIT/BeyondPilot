@@ -10,6 +10,7 @@ import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseListResponse;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseResponse;
 import ai.genaifund.beyondpilot.usecase.dto.CreateUseCaseRequest;
 import ai.genaifund.beyondpilot.usecase.dto.SendBackUseCaseRequest;
+import ai.genaifund.beyondpilot.usecase.dto.SetUseCaseProgramsRequest;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -111,6 +113,20 @@ class AdminUseCasesController {
 	AdminUseCaseResponse sendBack(@CurrentActor Actor actor, @PathVariable UUID id,
 			@Valid @RequestBody SendBackUseCaseRequest request) {
 		return useCases.sendBack(actor, id, request);
+	}
+
+	@PutMapping(path = "/use-cases/{id}/programs", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "setAdminUseCasePrograms", summary = "Set the programs a use case belongs to",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The use case with its programs.")
+	@ApiResponse(responseCode = "400", description = "A program does not exist, or there are more than ten.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	AdminUseCaseResponse setPrograms(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody SetUseCaseProgramsRequest request) {
+		return useCases.setPrograms(actor, id, request);
 	}
 
 	@GetMapping(path = "/organizations", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -18,5 +18,7 @@ public record PublicUseCaseListRequest(
 				schema = @Schema(type = "string", allowableValues = { "newest", "deadline", "budget" },
 						defaultValue = "newest")) @Pattern(regexp = UseCaseCodes.SORT) @Nullable String sort,
 		@Parameter(description = "The page, counted from 1.",
-				schema = @Schema(type = "integer", format = "int32", defaultValue = "1", minimum = "1")) @Min(1) @Nullable Integer page) {
+				schema = @Schema(type = "integer", format = "int32", defaultValue = "1", minimum = "1")) @Min(1) @Nullable Integer page,
+		@Parameter(description = "Only use cases of the published program at this address.") @Size(
+				max = 120) @Nullable String program) {
 }
