@@ -28,7 +28,9 @@
       "admin": "Admin",
       "applications": "My applications",
       "reviews": "Reviews",
-      "mcp": "MCP"
+      "mcp": "MCP",
+      "backToSite": "Back to the site",
+      "appearance": "Appearance"
     },
     "menu": {
       "open": "Open menu",

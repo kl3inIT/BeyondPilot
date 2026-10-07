@@ -28,7 +28,9 @@
       "admin": "Quản trị",
       "applications": "Đơn của tôi",
       "reviews": "Chấm đơn",
-      "mcp": "MCP"
+      "mcp": "MCP",
+      "backToSite": "Về trang chính",
+      "appearance": "Giao diện"
     },
     "menu": {
       "open": "Mở menu",

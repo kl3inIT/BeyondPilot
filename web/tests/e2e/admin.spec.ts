@@ -163,4 +163,52 @@ test.describe("admin", () => {
     await expect(page).toHaveURL("/sign-in?returnTo=%2Fadmin");
     expect(signOuts).toEqual(["POST"]);
   });
+
+  test("the admin account menu leads back to the site and sets the language and appearance", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin");
+    const openMenu = async () => {
+      const account = page.getByRole("button", { name: /^(Account menu|Menu tài khoản)/ });
+      // On a phone the sidebar is a sheet, which may still be open from the last choice.
+      if (isMobile && !(await account.isVisible())) {
+        await page
+          .getByRole("main")
+          .getByRole("button", { name: /^(Toggle sidebar|Thu gọn hoặc mở thanh bên)$/ })
+          .click();
+      }
+      await account.click();
+      return page.getByRole("menu").first();
+    };
+
+    // The person's own pages are the site's; the admin menu holds what the admin area lacks.
+    let menu = await openMenu();
+    await expect(menu.getByRole("menuitem")).toHaveText([
+      "Back to the site",
+      /^LanguageEnglish/,
+      /^AppearanceSystem/,
+      "Sign out",
+    ]);
+    await expectNoSeriousA11yViolations(page);
+
+    await menu.getByRole("menuitem", { name: /^Appearance/ }).click();
+    await page.getByRole("menuitemradio", { name: "Dark" }).click();
+    await expect(page.locator("html")).toHaveClass(/dark/);
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("Escape");
+
+    menu = await openMenu();
+    await menu.getByRole("menuitem", { name: /^Language/ }).click();
+    await page.getByRole("menuitemradio", { name: "Tiếng Việt" }).click();
+    await expect(page).toHaveURL("/vi/admin");
+    await expect(page.locator("html")).toHaveAttribute("lang", "vi");
+
+    menu = await openMenu();
+    await menu.getByRole("menuitem", { name: "Về trang chính" }).click();
+    await expect(page).toHaveURL("/vi");
+  });
 });
