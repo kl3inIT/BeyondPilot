@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import ai.genaifund.beyondpilot.BusinessException;
 import ai.genaifund.beyondpilot.ErrorCategory;
 import ai.genaifund.beyondpilot.identity.IdentityProperties;
+import ai.genaifund.beyondpilot.identity.persistence.SignInChallengeRepository;
 import ai.genaifund.beyondpilot.identity.SignInCodeRequested;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
@@ -35,10 +36,13 @@ class SignInCodeSender implements OneTimeTokenGenerationSuccessHandler {
 
 	private final ApplicationEventPublisher events;
 	private final IdentityProperties properties;
+	private final SignInChallengeRepository challenges;
 
-	SignInCodeSender(ApplicationEventPublisher events, IdentityProperties properties) {
+	SignInCodeSender(ApplicationEventPublisher events, IdentityProperties properties,
+			SignInChallengeRepository challenges) {
 		this.events = events;
 		this.properties = properties;
+		this.challenges = challenges;
 	}
 
 	@Override
@@ -65,6 +69,8 @@ class SignInCodeSender implements OneTimeTokenGenerationSuccessHandler {
 			if (exception.category() != ErrorCategory.SERVICE_UNAVAILABLE) {
 				throw exception;
 			}
+			// A code that never left is no code: it must not hold the address back when the person tries again.
+			challenges.deleteById(challengeId);
 			response.setHeader(HttpHeaders.RETRY_AFTER, MAIL_RETRY_SECONDS);
 			response.sendError(HttpStatus.SERVICE_UNAVAILABLE.value());
 			return;

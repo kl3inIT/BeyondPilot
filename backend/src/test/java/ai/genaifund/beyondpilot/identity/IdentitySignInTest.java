@@ -329,6 +329,23 @@ class IdentitySignInTest {
 	}
 
 	@Test
+	void aCodeThatCouldNotBeSentDoesNotHoldTheAddressBack() {
+		jdbc.sql("update email_settings set smtp_port = 1 where id = 1").update();
+		try {
+			requestCode(null, "username=unsent@example.test").expectStatus()
+				.isEqualTo(503)
+				.expectHeader()
+				.valueEquals("Retry-After", "30");
+		}
+		finally {
+			mail.pointSettingsHere();
+		}
+		assertThat(storedCodesFor("unsent@example.test")).isZero();
+
+		requestCode(null, "username=unsent@example.test").expectStatus().isNoContent();
+	}
+
+	@Test
 	void anAddressGetsALimitedNumberOfCodesAnHour() {
 		jdbc.sql("""
 				insert into identity_sign_in_challenge (id, email, code_hash, failed_attempts, expires_at, created_at)
