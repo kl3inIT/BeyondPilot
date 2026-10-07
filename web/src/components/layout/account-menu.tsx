@@ -2,6 +2,7 @@
 
 import {
   BuildingIcon,
+  CableIcon,
   ClipboardCheckIcon,
   FileTextIcon,
   LayoutDashboardIcon,
@@ -78,6 +79,10 @@ function AccountMenuPanel({ name, email, operator, reviewer = false }: AccountMe
       <DropdownMenuItem render={<Link href={siteRoutes.talentProfile} />}>
         <UserRoundIcon aria-hidden="true" />
         {t("talentProfile")}
+      </DropdownMenuItem>
+      <DropdownMenuItem render={<Link href={siteRoutes.accountMcp} />}>
+        <CableIcon aria-hidden="true" />
+        {t("mcp")}
       </DropdownMenuItem>
       {reviewer && (
         <DropdownMenuItem render={<Link href={siteRoutes.reviews} />}>

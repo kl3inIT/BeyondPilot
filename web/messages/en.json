@@ -27,7 +27,8 @@
       "talentProfile": "Talent profile",
       "admin": "Admin",
       "applications": "My applications",
-      "reviews": "Reviews"
+      "reviews": "Reviews",
+      "mcp": "MCP"
     },
     "menu": {
       "open": "Open menu",
@@ -277,6 +278,66 @@
     "thisComputer": "this computer",
     "notReviewed": "Not reviewed",
     "ableToLocal": "It will be able to"
+  },
+  "Mcp": {
+    "metaTitle": "MCP · BeyondPilot",
+    "title": "MCP",
+    "lead": "Search BeyondPilot from ChatGPT, Claude or Codex.",
+    "tabs": {
+      "label": "MCP",
+      "connect": "Connect",
+      "apps": "Connected apps"
+    },
+    "connect": {
+      "address": "Server address",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyPrompt": "Copy the prompt",
+      "appsLabel": "Apps",
+      "apps": {
+        "chatgpt": {
+          "name": "ChatGPT",
+          "step1": "Settings › Apps and connectors › Create",
+          "step2": "Paste the address, keep OAuth",
+          "step3": "Sign in to BeyondPilot and choose Allow"
+        },
+        "claude": {
+          "name": "Claude",
+          "step1": "Settings › Connectors › Add custom connector",
+          "step2": "Paste the address",
+          "step3": "Sign in to BeyondPilot and choose Allow"
+        },
+        "codex": {
+          "name": "Codex",
+          "step1": "Run codex mcp add beyondpilot --url {address}",
+          "step2": "Run codex mcp login beyondpilot, sign in and choose Allow"
+        }
+      },
+      "askTitle": "Or ask your AI to set it up",
+      "prompt": "Add the MCP server \"beyondpilot\" at {address} (streamable HTTP, OAuth). Start its login so I can sign in to BeyondPilot and choose Allow, then list its tools to confirm it works.",
+      "askNote": "Codex, Claude Code and Cursor only.",
+      "tryTitle": "Try asking",
+      "try": {
+        "claims": "Find AI solutions for claims triage in insurance, deployed in Vietnam.",
+        "programs": "Which AI programs by GenAI Fund are open for applications now?",
+        "compare": "Compare the voice agents listed on BeyondPilot for a bank's call centre."
+      }
+    },
+    "apps": {
+      "none": "No app is connected",
+      "connect": "Connect an app",
+      "allowed": "Allowed {date}",
+      "used": "used {time}"
+    },
+    "revoke": {
+      "open": "Revoke",
+      "title": "Revoke {name}?",
+      "lead": "It stops working at once. Connect it again to use it.",
+      "confirm": "Revoke",
+      "cancel": "Cancel",
+      "done": "{name} can no longer use BeyondPilot.",
+      "failed": "We could not revoke it. Try again."
+    }
   },
   "Admin": {
     "metaTitle": "Admin · BeyondPilot",
@@ -747,6 +808,7 @@
           "restore": "Restored a solution",
           "deployment_approve": "Approved a customer deployment",
           "deployment_reject": "Sent a customer deployment back",
+          "enrich": "Filled a solution from public sources",
           "back": "Wrote what GenAI Fund says of a solution"
         },
         "introduction": {
@@ -800,6 +862,9 @@
           "semantic_disable": "Turned semantic search off",
           "index_rebuild": "Rebuilt the search index",
           "embedding_retry": "Let refused items be embedded again"
+        },
+        "mcp": {
+          "app_revoke": "Revoked an AI app"
         }
       },
       "activity": {
@@ -840,6 +905,7 @@
           "restore": "Restored the solution <resource></resource>",
           "deployment_approve": "Approved the customer deployment <resource></resource>",
           "deployment_reject": "Sent the customer deployment <resource></resource> back",
+          "enrich": "Filled the solution <resource></resource> from public sources",
           "back": "Wrote what GenAI Fund says of the solution <resource></resource>"
         },
         "introduction": {
@@ -893,6 +959,9 @@
           "semantic_disable": "Turned semantic search off in <resource></resource>",
           "index_rebuild": "Rebuilt <resource></resource>",
           "embedding_retry": "Let refused items of <resource></resource> be embedded again"
+        },
+        "mcp": {
+          "app_revoke": "Revoked the AI app <resource></resource>"
         }
       },
       "columns": {
@@ -5249,7 +5318,8 @@
     },
     "deadline": {
       "date": "Apply by {date}",
-      "time": "{time} ICT"
+      "time": "{time} ICT",
+      "none": "Open, no deadline"
     },
     "posted": "Posted {when}",
     "view": "View use case",

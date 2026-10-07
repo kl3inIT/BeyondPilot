@@ -93,6 +93,13 @@ public enum AuditAction {
 	SOLUTION_DEPLOYMENT_REJECT("solution.deployment_reject", "reason"),
 
 	/**
+	 * Empty parts of a solution and its organization were filled from public sources: its deck, its website or a web
+	 * search. {@code fields} names the parts filled; {@code evidence} is a JSON object giving, for each, the verbatim
+	 * quote and the source it was found in. Recorded by the one-off enrichment of the old platform's records.
+	 */
+	SOLUTION_ENRICH("solution.enrich", "fields", "evidence"),
+
+	/**
 	 * An operator created a use case for an organization. {@code organization} is that organization's identifier,
 	 * {@code status} is {@code draft} or {@code published}.
 	 */
@@ -200,7 +207,10 @@ public enum AuditAction {
 	SEARCH_INDEX_REBUILD("search.index_rebuild"),
 
 	/** An operator let held-back items be embedded again at once. {@code count} is how many. */
-	SEARCH_EMBEDDING_RETRY("search.embedding_retry", "count");
+	SEARCH_EMBEDDING_RETRY("search.embedding_retry", "count"),
+
+	/** A person, or an operator for them, ended an AI app's connection to the MCP servers. */
+	MCP_APP_REVOKE("mcp.app_revoke");
 
 	private final String value;
 

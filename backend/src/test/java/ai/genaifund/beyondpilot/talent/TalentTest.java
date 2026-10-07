@@ -436,6 +436,8 @@ class TalentTest {
 		post(sender, DIRECTORY + "/koala-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "project", "message", "Still there?"))
 			.expectStatus()
 			.isNoContent();
+		// The message's own email leaves first; sent together, the two may arrive in either order.
+		assertThat(mail.latestSubjectTo("koala@profile.test")).isNotEqualTo("A message waits for your answer on BeyondPilot");
 		Instant now = Instant.now();
 
 		assertThat(clock.remind(now.plus(Duration.ofDays(8)))).isPositive();

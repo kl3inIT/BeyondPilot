@@ -163,31 +163,39 @@ public class UseCaseAdministration {
 		OrganizationName organization = organizations.approvedOrganization(request.organizationId())
 			.orElseThrow(() -> refused(UseCaseErrorCode.ORGANIZATION_NOT_ELIGIBLE,
 					"Organization " + request.organizationId() + " is not an approved organization"));
-		if (!request.closesAt().isAfter(now)) {
-			throw refused(UseCaseErrorCode.CLOSES_IN_THE_PAST, "Close date " + request.closesAt() + " is not after " + now);
+		Instant closesAt = request.closesAt();
+		if (closesAt != null && !closesAt.isAfter(now)) {
+			throw refused(UseCaseErrorCode.CLOSES_IN_THE_PAST, "Close date " + closesAt + " is not after " + now);
 		}
 		checkBudget(request);
-		if (request.timelineMinWeeks() > request.timelineMaxWeeks()) {
+		Integer minWeeks = request.timelineMinWeeks();
+		Integer maxWeeks = request.timelineMaxWeeks();
+		if ((minWeeks == null) != (maxWeeks == null)) {
+			throw refused(UseCaseErrorCode.TIMELINE_OUT_OF_ORDER, "Timeline with one end only");
+		}
+		if (minWeeks != null && maxWeeks != null && minWeeks > maxWeeks) {
 			throw refused(UseCaseErrorCode.TIMELINE_OUT_OF_ORDER, "Timeline " + request.timelineMinWeeks() + " to "
 					+ request.timelineMaxWeeks() + " weeks");
 		}
-		UseCase useCase = new UseCase(organization.id(), operator.accountId(), request.closesAt());
+		// An operator may leave out what a brief does not say; only a member's own submission needs every part.
+		UseCase useCase = new UseCase(organization.id(), operator.accountId(), closesAt);
 		useCase.describe(request.title().strip(), request.problemStatement().strip(), request.industry(),
-				request.technologies().stream().distinct().toList());
-		useCase.explain(request.expectedOutcomes().strip(), request.currentProcess().strip(),
-				text(request.currentSolutions()), request.targetUsers().strip());
+				request.technologies() == null ? List.of() : request.technologies().stream().distinct().toList());
+		useCase.explain(request.expectedOutcomes().strip(), text(request.currentProcess()),
+				text(request.currentSolutions()), text(request.targetUsers()));
 		useCase.specify(
-				request.requirements()
+				(request.requirements() == null ? List.<UseCaseRequirementEntry>of() : request.requirements())
 					.stream()
 					.map(requirement -> new UseCaseRequirement(requirement.statement().strip(), requirement.necessity()))
 					.toList(),
-				request.dataReadiness().strip(), request.integrationRequirements().strip());
+				text(request.dataReadiness()), text(request.integrationRequirements()));
 		useCase.budget(currencyOf(request.currency()), request.budgetMin(), request.budgetMax(),
 				request.budgetToBeDetermined(), request.budgetMembersOnly());
 		useCase.belongTo(programsNamed(request.programIds() == null ? List.of() : request.programIds()).keySet());
-		files.requireUsable(actor, request.attachmentFileIds(), List.of());
-		useCase.attach(request.attachmentFileIds());
-		useCase.takeWeeks(request.timelineMinWeeks(), request.timelineMaxWeeks());
+		List<UUID> attachments = request.attachmentFileIds() == null ? List.of() : request.attachmentFileIds();
+		files.requireUsable(actor, attachments, List.of());
+		useCase.attach(attachments);
+		useCase.takeWeeks(minWeeks, maxWeeks);
 		useCase.showCompanyName(request.hideOrganizationName());
 		if (request.publishNow()) {
 			useCase.publish(now);

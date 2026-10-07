@@ -62,6 +62,21 @@ public class SearchService {
 				items, page, PAGE_SIZE, kind == null ? all : counts.getOrDefault(kind, 0L));
 	}
 
+	/**
+	 * What a visitor would find for {@code query} among these kinds, the best first within each, for a caller that
+	 * needs only what each item is and where it is: the MCP server's {@code search}.
+	 * @param kinds among {@code program}, {@code solution}, {@code talent} and {@code use_case}
+	 */
+	@Transactional(readOnly = true)
+	public List<Found> find(String query, List<String> kinds) {
+		String trimmed = query.strip();
+		Meaning meaning = embeddings.of(trimmed).orElse(null);
+		return kinds.stream()
+			.flatMap(kind -> index.page(trimmed, meaning, kind, true, PAGE_SIZE, 0).stream())
+			.map(hit -> new Found(hit.kind(), hit.slug(), hit.title()))
+			.toList();
+	}
+
 	private static SearchItem item(Hit hit, Instant now) {
 		Map<String, Object> facets = hit.facets();
 		String phase = SearchDocumentRepository.PROGRAM.equals(hit.kind())

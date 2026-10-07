@@ -50,17 +50,32 @@ public class ConnectingApps {
 		if (redirect == null) {
 			return Optional.empty();
 		}
+		AppIdentity app = identify(client.getClientId(), client.getClientName());
+		boolean local = clientId.equals(McpClients.LOCAL) || !"https".equals(redirect.getScheme());
+		return Optional.of(new ConnectingApp(client.getClientId(), app.name(), app.host(),
+				local ? null : redirect.getHost().toLowerCase(Locale.ROOT), local, app.reviewed(),
+				clientId.equals(McpClients.LOCAL)));
+	}
+
+	/**
+	 * How BeyondPilot names an app to a person. A document on a host BeyondPilot has not reviewed may call itself
+	 * anything, Claude included: its host is what the person can trust, so it stands in for the name.
+	 */
+	public AppIdentity identify(String clientId, String clientName) {
 		boolean own = clientId.equals(McpClients.CURSOR) || clientId.equals(McpClients.LOCAL);
 		URI document = own ? null : uri(clientId);
-		String host = document == null ? null : document.getHost().toLowerCase(Locale.ROOT);
-		boolean local = clientId.equals(McpClients.LOCAL) || !"https".equals(redirect.getScheme());
+		String host = document == null || document.getHost() == null ? null
+				: document.getHost().toLowerCase(Locale.ROOT);
 		boolean reviewed = own ? !clientId.equals(McpClients.LOCAL) : host != null && documents.isReviewed(host);
-		// A document on a host BeyondPilot has not reviewed may call itself anything, Claude included: its host is
-		// what the person can trust, so it stands in for the name.
-		String name = reviewed || own || host == null ? client.getClientName() : host;
-		return Optional.of(new ConnectingApp(client.getClientId(), name, host,
-				local ? null : redirect.getHost().toLowerCase(Locale.ROOT), local, reviewed,
-				clientId.equals(McpClients.LOCAL)));
+		return new AppIdentity(reviewed || own || host == null ? clientName : host, host, reviewed);
+	}
+
+	/**
+	 * An app as a person sees it.
+	 * @param host where its client ID metadata document lives; null for a client BeyondPilot registered
+	 * @param reviewed whether BeyondPilot has reviewed its host, or registered it
+	 */
+	public record AppIdentity(String name, @Nullable String host, boolean reviewed) {
 	}
 
 	private static @Nullable URI uri(@Nullable String value) {

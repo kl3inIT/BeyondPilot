@@ -30,7 +30,7 @@ import org.springframework.security.web.authentication.ott.OneTimeTokenGeneratio
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 /**
- * The application's security filter chain, after identity's authorization server chain for AI apps. The web
+ * The application's security filter chain, after identity's authorization server chain and mcp's chain for AI apps. The web
  * application is the only client and shares this origin, so the endpoints answer with a status and never with a
  * page: 204 for a sent code, an accepted code and a sign-out; a problem for every refusal. Only the Google round trip redirects, because the browser itself travels it.
  */
@@ -41,7 +41,7 @@ class SecurityConfiguration {
 	private static final String SIGN_IN_PAGE = "/sign-in";
 
 	@Bean
-	@Order(2)
+	@Order(3)
 	SecurityFilterChain securityFilterChain(HttpSecurity http,
 			OneTimeTokenGenerationSuccessHandler signInCodeSender,
 			ObjectProvider<GenerateOneTimeTokenRequestResolver> signInCodeRequest,
