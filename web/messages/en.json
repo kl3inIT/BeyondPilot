@@ -2567,6 +2567,10 @@
       "technology": "Technology",
       "automotive_mobility": "Automotive and mobility",
       "consumer_goods": "Consumer goods",
+      "climate_sustainability": "Climate and sustainability",
+      "marketing_advertising": "Marketing and advertising",
+      "legal": "Legal",
+      "hr_workforce": "HR and workforce",
       "other": "Other"
     },
     "maturity": {
