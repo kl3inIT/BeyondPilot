@@ -168,11 +168,12 @@ class McpServerTest {
 		assertThat(JsonPath.<List<String>>read(app, "$[0].servers")).containsExactly("user");
 		String appId = JsonPath.read(app, "$[0].id");
 
-		// Nobody else can revoke it.
+		// Someone who has not connected the app has nothing to revoke: a revoke ends only the caller's own connections.
+		String stranger = TestSignIn.session(client, mail, "stranger-" + word + "@mcp.test");
 		client.post()
 			.uri("/api/identity/apps/" + appId + "/revoke")
 			.header(TestSignIn.CSRF_HEADER, "1")
-			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.cookie(TestSignIn.SESSION_COOKIE, stranger)
 			.exchange()
 			.expectStatus()
 			.isNotFound();

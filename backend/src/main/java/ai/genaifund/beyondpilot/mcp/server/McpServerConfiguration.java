@@ -33,6 +33,7 @@ import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.server.resource.BearerTokenError;
 import org.springframework.security.oauth2.server.resource.BearerTokenErrors;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -66,6 +67,8 @@ class McpServerConfiguration {
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.requestCache(AbstractHttpConfigurer::disable)
 			.oauth2ResourceServer(resource -> resource
+				// Named, or Spring would take the application's sign-in code converter, the one such bean there is.
+				.authenticationConverter(new BearerTokenAuthenticationConverter())
 				.authenticationManagerResolver(request -> manager(callers, audienceOf(request)))
 				.authenticationEntryPoint(signIn(callers))
 				.protectedResourceMetadata(metadata -> metadata.protectedResourceMetadataCustomizer(builder -> builder
