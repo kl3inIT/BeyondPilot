@@ -5,57 +5,62 @@ import { expectNoSeriousA11yViolations } from "./axe";
 test.describe("home page", () => {
   test.use({ locale: "en-US" });
 
-  test("shows the live campaign, the sections and the footer", async ({ page }) => {
+  test("shows the live challenge, the sections and the footer", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page.getByRole("link", { name: /Live .*Apply/ })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: /Live challenge/ })).toHaveAttribute(
       "href",
       "https://beyondpilot.genaifund.ai/insurance-ai-tasco",
     );
-    await expect(page.getByRole("heading", { name: "Programs and events" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 1, name: /Your next step in\s+AI starts here/ }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Five ways to explore BeyondPilot" }),
+    ).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "AI for Insurance Challenge × Tasco" }),
     ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Explore the directory" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Questions and answers" })).toBeVisible();
-    await expect(page.getByText("Anyone with a solution")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "The team building BeyondPilot" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Founders building across the ecosystem" }),
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Frequently asked questions" })).toBeVisible();
     await expect(page.getByRole("contentinfo")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
   });
 
-  test("the directory shows the directories' own counts and cards", async ({ page }) => {
+  test("the five categories lead to their directories", async ({ page }) => {
     await page.goto("/");
 
-    // The newest use cases open the directory, with the public count beside their tab from md up.
-    if ((page.viewportSize()?.width ?? 0) >= 768) {
-      await expect(page.getByRole("tab", { name: /Use cases\s*3/ })).toBeVisible();
-    }
-    await expect(
-      page.getByRole("heading", { name: "Voice assistant for vehicle owners" }),
-    ).toBeVisible();
-
-    const solutions = page.getByRole("tab", { name: /AI solutions/ });
-    await solutions.click();
-
-    await expect(solutions).toHaveAttribute("aria-selected", "true");
-    await expect(page.getByRole("heading", { name: "Policy Chat" })).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Voice assistant for vehicle owners" }),
-    ).toBeHidden();
-
-    await page.getByRole("tab", { name: /Programs/ }).click();
-    await expect(
-      page
-        .getByRole("tabpanel")
-        .getByRole("heading", { name: "AI for Insurance Challenge × Tasco" }),
-    ).toBeVisible();
+    const categories = page
+      .getByRole("region")
+      .or(page.locator("section"))
+      .filter({
+        has: page.getByRole("heading", { name: "Five ways to explore BeyondPilot" }),
+      });
+    await expect(categories.getByRole("heading", { level: 3 })).toHaveText([
+      "AI Solutions",
+      "AI Talent",
+      "Use Cases & Projects",
+      "AI Events",
+      "AI Programs",
+    ]);
+    await categories.getByRole("link", { name: /Explore solutions/ }).click();
+    await expect(page).toHaveURL("/solutions");
   });
 
   test("the search leads to its results", async ({ page }) => {
     await page.goto("/");
 
-    await page.getByRole("searchbox", { name: "Search the directory" }).fill("AI");
-    await page.getByRole("button", { name: "Search" }).click();
+    await page
+      .getByRole("searchbox", {
+        name: "Search AI solutions, talent, use cases, events, and programs",
+      })
+      .fill("AI");
+    await page.keyboard.press("Enter");
 
     await expect(page).toHaveURL("/search?q=AI");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("8 results for “AI”");
@@ -84,6 +89,6 @@ test.describe("home page on a phone", () => {
     await page.goto("/");
 
     await page.getByRole("button", { name: "Open menu" }).click();
-    await expect(page.getByRole("dialog").getByRole("link", { name: /AI talent/ })).toBeVisible();
+    await expect(page.getByRole("dialog").getByRole("link", { name: /AI Talent/ })).toBeVisible();
   });
 });

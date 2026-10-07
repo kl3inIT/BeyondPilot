@@ -132,7 +132,7 @@ function CompanyPage({ organization, solutions, more, deployments }: CompanyPage
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-8 px-5 pt-6 pb-18 md:px-8 md:pb-22 xl:px-16 xl:pb-24">
+    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-8 px-5 pt-6 pb-18 md:px-8 md:pb-22 xl:px-16 xl:pb-24 desktop:px-20">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

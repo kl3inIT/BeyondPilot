@@ -12,6 +12,8 @@ const sectionVariants = cva("relative w-full", {
     surface: {
       default: "bg-background",
       muted: "bg-muted",
+      // Lets the hero's aurora run on behind the strip under it.
+      transparent: "bg-transparent",
     },
   },
   defaultVariants: { surface: "default" },
@@ -25,7 +27,9 @@ function Section({
 }: React.ComponentProps<"section"> & VariantProps<typeof sectionVariants>) {
   return (
     <section data-slot="section" className={cn(sectionVariants({ surface }), className)} {...props}>
-      <div className="relative mx-auto w-full max-w-360 px-5 md:px-8 xl:px-16">{children}</div>
+      <div className="relative mx-auto w-full max-w-360 px-5 md:px-8 xl:px-16 desktop:px-20">
+        {children}
+      </div>
     </section>
   );
 }

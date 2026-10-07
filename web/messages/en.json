@@ -11,12 +11,13 @@
     "notifications": "Notifications",
     "nav": {
       "label": "Main navigation",
-      "programs": "Programs",
-      "useCases": "Use cases",
-      "solutions": "AI solutions",
-      "talent": "AI talent",
+      "programs": "Events & Programs",
+      "useCases": "Use Cases & Projects",
+      "solutions": "AI Solutions",
+      "talent": "AI Talent",
       "signIn": "Sign in",
-      "getStarted": "Get started"
+      "getStarted": "Get started",
+      "howItWorks": "How It Works"
     },
     "account": {
       "open": "Account menu for {name}",
@@ -36,10 +37,11 @@
       "open": "Open menu",
       "close": "Close menu",
       "title": "Menu",
-      "programsHint": "Open challenges, build weeks and events",
-      "useCasesHint": "Problems enterprises want solved with AI",
-      "solutionsHint": "Products from AI companies across the region",
-      "talentHint": "Builders and teams to work with"
+      "programsHint": "Meetups, workshops, demo days, challenges and accelerators",
+      "useCasesHint": "Business challenges enterprises want solved with AI",
+      "solutionsHint": "Products and providers from AI companies across the region",
+      "talentHint": "Specialists and builders for your AI project",
+      "howItWorksHint": "How the AI adoption agent helps you move forward"
     },
     "language": {
       "label": "Language",
@@ -94,106 +96,114 @@
   },
   "Home": {
     "hero": {
-      "title": "Your next AI pilot starts here.",
-      "description": "Enterprise use cases, AI solutions, talent and programs, in one search.",
-      "searchLabel": "Search the directory",
-      "searchPlaceholder": "Search solutions, use cases, programs, talent",
-      "searchPlaceholderShort": "Search the directory",
-      "search": "Search",
-      "scopesLabel": "Popular searches",
+      "liveChallenge": "Live challenge · Insurance AI Challenge",
+      "eyebrow": "AI adoption, guided by an agent.",
+      "titleStart": "Your next step in",
+      "titleEnd": "AI starts here.",
+      "description": "BeyondPilot is your AI adoption agent — helping you discover AI solutions, find expert talent, explore real business challenges, and connect with events and programs that move you forward.",
+      "searchLabel": "Search AI solutions, talent, use cases, events, and programs",
+      "searchPlaceholder": "Search AI solutions, talent, use cases, events, and programs",
+      "searchPlaceholderShort": "Search BeyondPilot",
+      "primaryCta": "Explore BeyondPilot",
+      "secondaryCta": "See how it works",
+      "screenshotAlt": "BeyondPilot search results for “insurance claims”, listing AI solutions and programs",
       "scopes": {
         "agentic": "Agentic AI",
         "document": "Document AI",
         "insurance": "Insurance",
         "retail": "Retail & e-commerce"
+      }
+    },
+    "ecosystem": {
+      "title": "Connected to GenAI Fund’s enterprise ecosystem",
+      "listLabel": "Organizations in GenAI Fund’s enterprise ecosystem"
+    },
+    "categories": {
+      "eyebrow": "Explore",
+      "title": "Five ways to explore BeyondPilot",
+      "solutions": {
+        "title": "AI Solutions",
+        "description": "Discover products and providers that address your business needs.",
+        "action": "Explore solutions"
       },
-      "meetupTime": "4–6 pm · Request to join on Luma"
+      "talent": {
+        "title": "AI Talent",
+        "description": "Find specialists and builders to help bring your AI project to life.",
+        "action": "Discover talent"
+      },
+      "useCases": {
+        "title": "Use Cases & Projects",
+        "description": "Explore business challenges, practical applications, and opportunities to collaborate with enterprises.",
+        "action": "Explore opportunities"
+      },
+      "events": {
+        "title": "AI Events",
+        "description": "Connect with the ecosystem through meetups, workshops, and demo days.",
+        "action": "Discover events"
+      },
+      "programs": {
+        "title": "AI Programs",
+        "description": "Find challenges, accelerators, and initiatives that support your next stage.",
+        "action": "Explore programs"
+      }
     },
-    "events": {
-      "title": "Programs and events",
-      "open": "Open now",
-      "coming": "Coming up",
-      "done": "Done",
-      "meetupSchedule": "Tuesdays, 4–6 pm ICT · Request to join on Luma",
-      "meetupDates": "Next dates",
-      "tileMonth": "{date, date, ::MMM}"
+    "agentJourney": {
+      "eyebrow": "How it works",
+      "title": "From exploring possibilities to taking your next step.",
+      "tell": {
+        "title": "Tell BeyondPilot what you need",
+        "description": "Describe a business challenge, a project, or an opportunity you’re looking for."
+      },
+      "discover": {
+        "title": "Discover relevant options",
+        "description": "Explore solutions, talent, use cases, events, and programs relevant to your goals."
+      },
+      "move": {
+        "title": "Move forward",
+        "description": "Shortlist providers, connect with talent, submit a proposal, or join a program."
+      }
     },
-    "directory": {
-      "title": "Explore the directory",
-      "publish": "Publish a use case",
-      "tabsLabel": "Directory",
-      "programs": "Programs & events",
-      "programsShort": "Programs",
-      "useCases": "Use cases",
-      "solutions": "AI solutions",
-      "talent": "AI talent",
-      "new": "New",
-      "seeAllPrograms": "See all {count, number} programs",
-      "seeAllUseCases": "See all {count, number} use cases",
-      "seeAllSolutions": "See all AI solutions",
-      "viewProgram": "View program",
-      "viewUseCase": "View use case",
-      "contactCentreAlt": "A team reviewing a laptop screen together at GenAI Open Innovation Vietnam",
-      "safetyAlt": "A founder pitching at the Startups’ Open Pitch, GenAI Open Innovation Vietnam",
-      "shelfAlt": "A table discussion around laptops at GenAI Open Innovation Vietnam",
-      "logoAlt": "{name} logo",
-      "talentMeta": "AI talent · New",
-      "talentTitle": "Talent profiles open with the launch.",
-      "talentLink": "Create a talent profile",
-      "talentAlt": "A full audience of builders at Agentic AI Build Week 2026",
-      "closesOn": "Closes {date, date, ::d MMM}",
-      "useCaseMeta": "Use case · {industry}",
-      "solutionMeta": "AI solution · {country}",
-      "solutionMetaPlain": "AI solution",
-      "viewSolution": "View solution",
-      "seeAllProgramsPlain": "See all programs",
-      "seeAllUseCasesPlain": "See all use cases"
+    "challenge": {
+      "eyebrow": "Featured opportunity",
+      "description": "Tasco and GenAI Fund are looking for AI solutions to real operating problems in Vietnamese insurance. Apply directly through the challenge page."
     },
-    "network": {
-      "title": "The network behind every program",
-      "description": "Enterprises, technology companies and public institutions that took part in GenAI Fund programs in 2025 and 2026.",
-      "roles": {
-        "enterprises": {
-          "title": "Enterprises",
-          "description": "They set the problems and run the pilots"
-        },
-        "technology": {
-          "title": "Technology partners",
-          "description": "They bring the models, the cloud and the credits"
-        },
-        "government": {
-          "title": "Government and institutions",
-          "description": "They open doors across the region"
-        },
-        "investors": {
-          "title": "Investors and community",
-          "description": "They back the builders"
-        },
-        "press": {
-          "title": "In the press"
-        }
+    "team": {
+      "eyebrow": "Core team",
+      "title": "The team building BeyondPilot",
+      "description": "We’re building BeyondPilot to make it easier for enterprises and AI builders to find each other and move toward practical deployment.",
+      "role": "Full-stack engineer",
+      "linkedin": "LinkedIn",
+      "linkedinLabel": "{name} on LinkedIn (opens in a new tab)",
+      "backing": {
+        "title": "Backed by GenAI Fund",
+        "description": "BeyondPilot is an AI startup with its own product and team, backed by GenAI Fund. GenAI Fund’s programs and enterprise ecosystem are where many of the opportunities on BeyondPilot come from. Founders from the wider GenAI Fund network are part of that ecosystem, not the BeyondPilot operating team."
       }
     },
     "founders": {
-      "title": "Built with founders from the GenAI Fund network",
-      "description": "Teams GenAI Fund backs and works with across Southeast Asia.",
-      "seeAll": "See all founders"
+      "eyebrow": "In the GenAI Fund network",
+      "title": "Founders building across the ecosystem",
+      "description": "Startup founders from the GenAI Fund network. They are ecosystem peers, not members of the BeyondPilot team."
     },
     "faq": {
-      "title": "Questions and answers",
-      "contact": "Can’t find your answer? Write to <email>general@genaifund.ai</email>.",
-      "whoQ": "Who can apply to a campaign?",
-      "whoA": "Anyone with a solution: solo builders, student teams, startups, software houses, agencies and enterprise teams. Each campaign lists its own eligibility.",
-      "companyQ": "Do I need a company to submit a proposal?",
-      "companyA": "No. You can apply as an individual or as a team, and add an organisation profile later if you want one.",
-      "productQ": "Do I need a finished product?",
-      "productA": "No. A working prototype helps, but a clear point of view on the problem and how you would solve it is enough to apply.",
-      "reviewQ": "How are proposals reviewed and shortlisted?",
-      "reviewA": "GenAI Fund screens every submission and invites a shortlist to present on demo day, where the enterprise and judges score live. Every applicant hears back.",
-      "shortlistQ": "What happens if we are shortlisted?",
-      "shortlistA": "You move into a scoped pilot with the enterprise. Selected teams can also be considered for investment, at the programme partners’ discretion.",
-      "runsQ": "Who is behind BeyondPilot?",
-      "runsA": "BeyondPilot is backed by GenAI Fund, the AI-focused fund connecting enterprises with AI builders across Southeast Asia."
+      "eyebrow": "FAQ",
+      "title": "Frequently asked questions",
+      "whatQ": "What is BeyondPilot?",
+      "whatA": "BeyondPilot is an AI adoption agent backed by GenAI Fund. It helps you discover AI solutions, find AI talent, explore enterprise use cases and projects, and connect with AI events and programs.",
+      "whoQ": "Who is BeyondPilot for?",
+      "whoA": "Enterprises looking for AI solutions and builders, AI companies and startups with something to offer, and AI specialists looking for projects.",
+      "findQ": "How does BeyondPilot help me find relevant AI solutions or talent?",
+      "findA": "Search across AI solutions, talent, use cases, events, and programs from one place, then open a listing to see what it offers and how to take the next step.",
+      "listQ": "Can I list my solution or express interest in a project?",
+      "listA": "Organizations can create a profile and list their AI solutions. Use cases and projects show how to get in touch with the enterprise or with GenAI Fund. Some actions are still being built and are labelled as coming soon.",
+      "applyQ": "How do I apply to a challenge or program?",
+      "applyA": "Open the program, read its brief and eligibility, and use its Apply button. Each program lists its own dates and rules, so check its page for the details.",
+      "runsQ": "Who is building BeyondPilot, and how is GenAI Fund involved?",
+      "runsA": "BeyondPilot is an AI startup with its own product and core team, backed by GenAI Fund, the AI-focused fund connecting enterprises with AI builders across Southeast Asia."
+    },
+    "finalCta": {
+      "title": "What will you do with AI next?",
+      "description": "Find the solutions, people, and opportunities to move forward with BeyondPilot.",
+      "action": "Explore BeyondPilot"
     }
   },
   "ComingSoon": {
@@ -5689,6 +5699,85 @@
           ]
         }
       ]
+    }
+  },
+  "HowItWorks": {
+    "metaTitle": "How it works",
+    "metaDescription": "Tell BeyondPilot what you need, see who can help, and move forward.",
+    "intro": {
+      "eyebrow": "How it works",
+      "title": "From a question to your next step.",
+      "description": "Tell BeyondPilot what you need, see who can help, and move forward.",
+      "action": "Explore BeyondPilot"
+    },
+    "steps": {
+      "eyebrow": "Three steps",
+      "title": "Describe it, discover it, act on it.",
+      "badge": "Product preview · Illustrative",
+      "tell": {
+        "title": "Tell BeyondPilot what you need",
+        "description": "Describe a business challenge, a project, or an opportunity you're looking for.",
+        "label": "You ask",
+        "example": "“We want to automate insurance document processing in Vietnam.”"
+      },
+      "discover": {
+        "title": "Discover relevant options",
+        "description": "Explore solutions, talent, use cases, events, and programs relevant to your goals.",
+        "label": "BeyondPilot shows",
+        "example": "Relevant solutions or providers, each with a short explanation of its fit.",
+        "note": "Matched on: Document types · Vietnamese language support · Deployment needs"
+      },
+      "move": {
+        "title": "Move forward",
+        "description": "Shortlist providers, connect with talent, submit a proposal, or join a program.",
+        "label": "You decide",
+        "example": "Compare options, create a shortlist, or request a proposal where supported."
+      }
+    },
+    "example": {
+      "eyebrow": "Real example",
+      "title": "How the AI for Insurance Challenge runs on BeyondPilot",
+      "opens": {
+        "title": "Challenge opens",
+        "description": "GenAI Fund and Tasco publish the brief."
+      },
+      "discover": {
+        "title": "Providers discover it",
+        "description": "Search, directories and the challenge page."
+      },
+      "apply": {
+        "title": "Register and apply",
+        "description": "One profile, reused for every application."
+      },
+      "assess": {
+        "title": "Reviewers assess",
+        "description": "Invited reviewers score each proposal."
+      },
+      "shortlist": {
+        "title": "Shortlist",
+        "description": "Suitable providers go to demo day."
+      },
+      "closes": "Closes",
+      "closesWhen": "15 Oct, 23:59 ICT"
+    },
+    "paths": {
+      "eyebrow": "Pick your path",
+      "title": "Who it is for",
+      "solution": {
+        "title": "I have an AI solution",
+        "description": "List it, then apply to programs and challenges with one profile.",
+        "action": "List your solution"
+      },
+      "problem": {
+        "title": "I have a business problem",
+        "description": "Publish a use case or talk to GenAI Fund.",
+        "action": "Share a use case"
+      },
+      "talent": {
+        "title": "I'm AI talent or a small team",
+        "description": "Create a profile and get enquiries from enterprises.",
+        "action": "Create a profile"
+      }
     }
   }
 }

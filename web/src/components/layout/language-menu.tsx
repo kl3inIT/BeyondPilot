@@ -51,7 +51,7 @@ function LanguageMenu({ className }: { className?: string }) {
           <button
             type="button"
             className={cn(
-              "hit-area flex h-9 items-center gap-2 rounded-full pr-2.5 pl-2 text-sm font-medium transition-colors outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-accent",
+              "hit-area flex h-9 items-center gap-2 rounded-full px-2 text-sm font-medium transition-colors outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-accent",
               className,
             )}
           />
@@ -59,7 +59,7 @@ function LanguageMenu({ className }: { className?: string }) {
       >
         <Flag locale={active} />
         <span className="sr-only">{t("label")}: </span>
-        {active.toUpperCase()}
+        <span className="max-md:sr-only">{active.toUpperCase()}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-50">
         <DropdownMenuRadioGroup value={active} onValueChange={choose}>

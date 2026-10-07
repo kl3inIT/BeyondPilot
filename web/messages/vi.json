@@ -11,12 +11,13 @@
     "notifications": "Thông báo",
     "nav": {
       "label": "Điều hướng chính",
-      "programs": "Chương trình",
-      "useCases": "Bài toán",
+      "programs": "Sự kiện & Chương trình",
+      "useCases": "Bài toán & Dự án",
       "solutions": "Giải pháp AI",
       "talent": "Nhân lực AI",
       "signIn": "Đăng nhập",
-      "getStarted": "Bắt đầu"
+      "getStarted": "Bắt đầu",
+      "howItWorks": "Cách hoạt động"
     },
     "account": {
       "open": "Menu tài khoản của {name}",
@@ -36,10 +37,11 @@
       "open": "Mở menu",
       "close": "Đóng menu",
       "title": "Menu",
-      "programsHint": "Thử thách đang mở, build week và sự kiện",
+      "programsHint": "Meetup, workshop, demo day, thử thách và chương trình tăng tốc",
       "useCasesHint": "Bài toán doanh nghiệp muốn giải bằng AI",
-      "solutionsHint": "Sản phẩm của các công ty AI trong khu vực",
-      "talentHint": "Nhà phát triển và đội nhóm để cùng hợp tác"
+      "solutionsHint": "Sản phẩm và nhà cung cấp của các công ty AI trong khu vực",
+      "talentHint": "Chuyên gia và nhà phát triển cho dự án AI của bạn",
+      "howItWorksHint": "Cách trợ lý áp dụng AI giúp bạn tiến lên"
     },
     "language": {
       "label": "Ngôn ngữ",
@@ -94,106 +96,114 @@
   },
   "Home": {
     "hero": {
-      "title": "Pilot AI tiếp theo bắt đầu từ đây.",
-      "description": "Bài toán doanh nghiệp, giải pháp AI, nhân lực và chương trình, trong một ô tìm kiếm.",
-      "searchLabel": "Tìm trong danh mục",
-      "searchPlaceholder": "Tìm giải pháp, bài toán, chương trình, nhân lực",
-      "searchPlaceholderShort": "Tìm trong danh mục",
-      "search": "Tìm",
-      "scopesLabel": "Tìm kiếm phổ biến",
+      "liveChallenge": "Thử thách đang mở · Insurance AI Challenge",
+      "eyebrow": "Áp dụng AI, có trợ lý dẫn đường.",
+      "titleStart": "Bước tiếp theo của bạn với",
+      "titleEnd": "AI bắt đầu từ đây.",
+      "description": "BeyondPilot là trợ lý áp dụng AI của bạn: giúp bạn tìm giải pháp AI, tìm chuyên gia, khám phá các bài toán doanh nghiệp thực tế và kết nối với sự kiện, chương trình giúp bạn tiến lên.",
+      "searchLabel": "Tìm giải pháp AI, nhân lực, bài toán, sự kiện và chương trình",
+      "searchPlaceholder": "Tìm giải pháp AI, nhân lực, bài toán, sự kiện và chương trình",
+      "searchPlaceholderShort": "Tìm trên BeyondPilot",
+      "primaryCta": "Khám phá BeyondPilot",
+      "secondaryCta": "Xem cách hoạt động",
+      "screenshotAlt": "Kết quả tìm kiếm “insurance claims” trên BeyondPilot, gồm các giải pháp AI và chương trình",
       "scopes": {
         "agentic": "Agentic AI",
         "document": "Document AI",
         "insurance": "Bảo hiểm",
         "retail": "Bán lẻ & thương mại điện tử"
+      }
+    },
+    "ecosystem": {
+      "title": "Kết nối với hệ sinh thái doanh nghiệp của GenAI Fund",
+      "listLabel": "Các tổ chức trong hệ sinh thái doanh nghiệp của GenAI Fund"
+    },
+    "categories": {
+      "eyebrow": "Khám phá",
+      "title": "Năm cách khám phá BeyondPilot",
+      "solutions": {
+        "title": "Giải pháp AI",
+        "description": "Tìm sản phẩm và nhà cung cấp đáp ứng nhu cầu kinh doanh của bạn.",
+        "action": "Khám phá giải pháp"
       },
-      "meetupTime": "16:00–18:00 · Đăng ký tham gia trên Luma"
+      "talent": {
+        "title": "Nhân lực AI",
+        "description": "Tìm chuyên gia và nhà phát triển giúp dự án AI của bạn thành hiện thực.",
+        "action": "Tìm nhân lực"
+      },
+      "useCases": {
+        "title": "Bài toán & Dự án",
+        "description": "Khám phá bài toán doanh nghiệp, ứng dụng thực tế và cơ hội hợp tác với doanh nghiệp.",
+        "action": "Khám phá cơ hội"
+      },
+      "events": {
+        "title": "Sự kiện AI",
+        "description": "Kết nối với hệ sinh thái qua meetup, workshop và demo day.",
+        "action": "Xem sự kiện"
+      },
+      "programs": {
+        "title": "Chương trình AI",
+        "description": "Tìm thử thách, chương trình tăng tốc và sáng kiến hỗ trợ giai đoạn tiếp theo của bạn.",
+        "action": "Khám phá chương trình"
+      }
     },
-    "events": {
-      "title": "Chương trình và sự kiện",
-      "open": "Đang mở",
-      "coming": "Sắp diễn ra",
-      "done": "Đã diễn ra",
-      "meetupSchedule": "Thứ Ba, 16:00–18:00 ICT · Đăng ký tham gia trên Luma",
-      "meetupDates": "Các buổi sắp tới",
-      "tileMonth": "T{date, date, ::M}"
+    "agentJourney": {
+      "eyebrow": "Cách hoạt động",
+      "title": "Từ khám phá khả năng đến bước đi tiếp theo.",
+      "tell": {
+        "title": "Cho BeyondPilot biết bạn cần gì",
+        "description": "Mô tả bài toán kinh doanh, dự án hoặc cơ hội bạn đang tìm."
+      },
+      "discover": {
+        "title": "Khám phá lựa chọn phù hợp",
+        "description": "Xem giải pháp, nhân lực, bài toán, sự kiện và chương trình phù hợp với mục tiêu của bạn."
+      },
+      "move": {
+        "title": "Tiến lên",
+        "description": "Lập danh sách rút gọn nhà cung cấp, kết nối với nhân lực, gửi đề xuất hoặc tham gia chương trình."
+      }
     },
-    "directory": {
-      "title": "Khám phá danh mục",
-      "publish": "Đăng bài toán",
-      "tabsLabel": "Danh mục",
-      "programs": "Chương trình & sự kiện",
-      "programsShort": "Chương trình",
-      "useCases": "Bài toán",
-      "solutions": "Giải pháp AI",
-      "talent": "Nhân lực AI",
-      "new": "Mới",
-      "seeAllPrograms": "Xem tất cả {count, number} chương trình",
-      "seeAllUseCases": "Xem tất cả {count, number} bài toán",
-      "seeAllSolutions": "Xem tất cả giải pháp AI",
-      "viewProgram": "Xem chương trình",
-      "viewUseCase": "Xem bài toán",
-      "contactCentreAlt": "Một nhóm cùng xem màn hình laptop tại GenAI Open Innovation Vietnam",
-      "safetyAlt": "Một founder trình bày tại Startups’ Open Pitch, GenAI Open Innovation Vietnam",
-      "shelfAlt": "Một nhóm thảo luận quanh bàn laptop tại GenAI Open Innovation Vietnam",
-      "logoAlt": "Logo {name}",
-      "talentMeta": "Nhân lực AI · Mới",
-      "talentTitle": "Hồ sơ nhân lực mở cùng ngày ra mắt.",
-      "talentLink": "Tạo hồ sơ nhân lực",
-      "talentAlt": "Khán phòng kín chỗ tại Agentic AI Build Week 2026",
-      "closesOn": "Đóng ngày {date, date, ::d MMM}",
-      "useCaseMeta": "Bài toán · {industry}",
-      "solutionMeta": "Giải pháp AI · {country}",
-      "solutionMetaPlain": "Giải pháp AI",
-      "viewSolution": "Xem giải pháp",
-      "seeAllProgramsPlain": "Xem tất cả chương trình",
-      "seeAllUseCasesPlain": "Xem tất cả use case"
+    "challenge": {
+      "eyebrow": "Cơ hội nổi bật",
+      "description": "Tasco và GenAI Fund đang tìm các giải pháp AI cho những bài toán vận hành thực tế của ngành bảo hiểm Việt Nam. Ứng tuyển trực tiếp qua trang thử thách."
     },
-    "network": {
-      "title": "Mạng lưới đứng sau mỗi chương trình",
-      "description": "Doanh nghiệp, công ty công nghệ và cơ quan nhà nước đã tham gia các chương trình của GenAI Fund trong năm 2025 và 2026.",
-      "roles": {
-        "enterprises": {
-          "title": "Doanh nghiệp",
-          "description": "Đặt bài toán và chạy thử nghiệm"
-        },
-        "technology": {
-          "title": "Đối tác công nghệ",
-          "description": "Mang đến mô hình, hạ tầng đám mây và tín dụng sử dụng"
-        },
-        "government": {
-          "title": "Cơ quan nhà nước và tổ chức",
-          "description": "Mở cửa vào thị trường trong khu vực"
-        },
-        "investors": {
-          "title": "Nhà đầu tư và cộng đồng",
-          "description": "Đồng hành cùng đội xây dựng sản phẩm"
-        },
-        "press": {
-          "title": "Báo chí"
-        }
+    "team": {
+      "eyebrow": "Đội ngũ nòng cốt",
+      "title": "Đội ngũ xây dựng BeyondPilot",
+      "description": "Chúng tôi xây dựng BeyondPilot để doanh nghiệp và nhà phát triển AI dễ tìm thấy nhau hơn và tiến tới triển khai thực tế.",
+      "role": "Full-stack engineer",
+      "linkedin": "LinkedIn",
+      "linkedinLabel": "{name} trên LinkedIn (mở trong tab mới)",
+      "backing": {
+        "title": "Được GenAI Fund hậu thuẫn",
+        "description": "BeyondPilot là startup AI có sản phẩm và đội ngũ riêng, được GenAI Fund hậu thuẫn. Chương trình và hệ sinh thái doanh nghiệp của GenAI Fund là nơi nhiều cơ hội trên BeyondPilot xuất phát. Các founder trong mạng lưới GenAI Fund là một phần của hệ sinh thái đó, không phải đội ngũ vận hành BeyondPilot."
       }
     },
     "founders": {
-      "title": "Đồng hành cùng các founder trong mạng lưới GenAI Fund",
-      "description": "Các đội GenAI Fund đầu tư và hợp tác khắp Đông Nam Á.",
-      "seeAll": "Xem tất cả founder"
+      "eyebrow": "Trong mạng lưới GenAI Fund",
+      "title": "Các founder đang xây dựng trong hệ sinh thái",
+      "description": "Các founder startup trong mạng lưới GenAI Fund. Họ là đồng nghiệp trong hệ sinh thái, không phải thành viên đội ngũ BeyondPilot."
     },
     "faq": {
+      "eyebrow": "Hỏi đáp",
       "title": "Câu hỏi thường gặp",
-      "contact": "Chưa thấy câu trả lời? Viết cho chúng tôi tại <email>general@genaifund.ai</email>.",
-      "whoQ": "Ai có thể ứng tuyển chiến dịch?",
-      "whoA": "Bất kỳ ai có giải pháp: cá nhân, nhóm sinh viên, startup, công ty phần mềm, agency và đội ngũ doanh nghiệp. Mỗi chiến dịch có điều kiện tham gia riêng.",
-      "companyQ": "Tôi có cần thành lập công ty để gửi đề xuất không?",
-      "companyA": "Không. Bạn có thể ứng tuyển với tư cách cá nhân hoặc đội nhóm, và bổ sung hồ sơ tổ chức sau nếu muốn.",
-      "productQ": "Tôi có cần sản phẩm hoàn chỉnh không?",
-      "productA": "Không. Một bản prototype chạy được sẽ có lợi, nhưng một góc nhìn rõ ràng về vấn đề và cách giải là đủ để ứng tuyển.",
-      "reviewQ": "Đề xuất được duyệt và chọn như thế nào?",
-      "reviewA": "GenAI Fund sàng lọc mọi bài nộp và mời các đội được chọn trình bày tại demo day, nơi doanh nghiệp và ban giám khảo chấm điểm trực tiếp. Ai ứng tuyển cũng nhận được phản hồi.",
-      "shortlistQ": "Nếu được chọn thì chuyện gì xảy ra tiếp?",
-      "shortlistA": "Bạn bước vào giai đoạn pilot có phạm vi rõ ràng cùng doanh nghiệp. Các đội được chọn cũng có thể được xem xét đầu tư, tuỳ quyết định của đối tác chương trình.",
-      "runsQ": "Ai đứng sau BeyondPilot?",
-      "runsA": "BeyondPilot được GenAI Fund hậu thuẫn — quỹ tập trung vào AI, kết nối doanh nghiệp với nhà phát triển AI khắp Đông Nam Á."
+      "whatQ": "BeyondPilot là gì?",
+      "whatA": "BeyondPilot là trợ lý áp dụng AI được GenAI Fund hậu thuẫn. BeyondPilot giúp bạn tìm giải pháp AI, tìm nhân lực AI, khám phá bài toán và dự án của doanh nghiệp, và kết nối với sự kiện, chương trình AI.",
+      "whoQ": "BeyondPilot dành cho ai?",
+      "whoA": "Doanh nghiệp đang tìm giải pháp và nhà phát triển AI, các công ty và startup AI có sản phẩm để giới thiệu, và chuyên gia AI đang tìm dự án.",
+      "findQ": "BeyondPilot giúp tôi tìm giải pháp hoặc nhân lực AI phù hợp như thế nào?",
+      "findA": "Tìm trong giải pháp AI, nhân lực, bài toán, sự kiện và chương trình ngay tại một nơi, rồi mở từng mục để xem chi tiết và bước tiếp theo.",
+      "listQ": "Tôi có thể đăng giải pháp hoặc bày tỏ quan tâm đến một dự án không?",
+      "listA": "Tổ chức có thể tạo hồ sơ và đăng các giải pháp AI của mình. Các bài toán và dự án cho biết cách liên hệ với doanh nghiệp hoặc GenAI Fund. Một số thao tác vẫn đang được xây dựng và được ghi rõ là sắp ra mắt.",
+      "applyQ": "Tôi ứng tuyển thử thách hoặc chương trình như thế nào?",
+      "applyA": "Mở chương trình, đọc đề bài và điều kiện, rồi dùng nút Ứng tuyển. Mỗi chương trình có mốc thời gian và quy định riêng, hãy xem trang của chương trình để biết chi tiết.",
+      "runsQ": "Ai xây dựng BeyondPilot, và GenAI Fund tham gia như thế nào?",
+      "runsA": "BeyondPilot là startup AI có sản phẩm và đội ngũ nòng cốt riêng, được GenAI Fund hậu thuẫn — quỹ tập trung vào AI, kết nối doanh nghiệp với nhà phát triển AI khắp Đông Nam Á."
+    },
+    "finalCta": {
+      "title": "Bạn sẽ làm gì tiếp theo với AI?",
+      "description": "Tìm giải pháp, con người và cơ hội để tiến lên cùng BeyondPilot.",
+      "action": "Khám phá BeyondPilot"
     }
   },
   "ComingSoon": {
@@ -5689,6 +5699,85 @@
           ]
         }
       ]
+    }
+  },
+  "HowItWorks": {
+    "metaTitle": "Cách hoạt động",
+    "metaDescription": "Nói với BeyondPilot điều bạn cần, xem ai có thể giúp và tiến lên.",
+    "intro": {
+      "eyebrow": "Cách hoạt động",
+      "title": "Từ một câu hỏi đến bước tiếp theo của bạn.",
+      "description": "Nói với BeyondPilot điều bạn cần, xem ai có thể giúp và tiến lên.",
+      "action": "Khám phá BeyondPilot"
+    },
+    "steps": {
+      "eyebrow": "Ba bước",
+      "title": "Mô tả, khám phá, hành động.",
+      "badge": "Xem trước sản phẩm · Minh họa",
+      "tell": {
+        "title": "Nói với BeyondPilot điều bạn cần",
+        "description": "Mô tả một thách thức kinh doanh, một dự án hoặc một cơ hội bạn đang tìm.",
+        "label": "Bạn hỏi",
+        "example": "“Chúng tôi muốn tự động hóa xử lý hồ sơ bảo hiểm tại Việt Nam.”"
+      },
+      "discover": {
+        "title": "Khám phá các lựa chọn phù hợp",
+        "description": "Tìm giải pháp, nhân tài, ca ứng dụng, sự kiện và chương trình phù hợp với mục tiêu của bạn.",
+        "label": "BeyondPilot hiển thị",
+        "example": "Các giải pháp hoặc nhà cung cấp phù hợp, kèm giải thích ngắn về mức độ phù hợp.",
+        "note": "Khớp theo: Loại tài liệu · Hỗ trợ tiếng Việt · Nhu cầu triển khai"
+      },
+      "move": {
+        "title": "Tiến lên",
+        "description": "Lập danh sách rút gọn nhà cung cấp, kết nối nhân tài, gửi đề xuất hoặc tham gia chương trình.",
+        "label": "Bạn quyết định",
+        "example": "So sánh các lựa chọn, lập danh sách rút gọn hoặc yêu cầu đề xuất khi được hỗ trợ."
+      }
+    },
+    "example": {
+      "eyebrow": "Ví dụ thực tế",
+      "title": "Thử thách AI cho Bảo hiểm vận hành trên BeyondPilot như thế nào",
+      "opens": {
+        "title": "Thử thách mở",
+        "description": "GenAI Fund và Tasco công bố bản mô tả."
+      },
+      "discover": {
+        "title": "Nhà cung cấp tìm thấy",
+        "description": "Qua tìm kiếm, danh bạ và trang thử thách."
+      },
+      "apply": {
+        "title": "Đăng ký và nộp hồ sơ",
+        "description": "Một hồ sơ, dùng lại cho mọi đơn ứng tuyển."
+      },
+      "assess": {
+        "title": "Hội đồng đánh giá",
+        "description": "Các thành viên được mời chấm điểm từng đề xuất."
+      },
+      "shortlist": {
+        "title": "Danh sách rút gọn",
+        "description": "Các nhà cung cấp phù hợp được vào ngày demo."
+      },
+      "closes": "Đóng lúc",
+      "closesWhen": "15/10, 23:59 (GMT+7)"
+    },
+    "paths": {
+      "eyebrow": "Chọn hướng đi của bạn",
+      "title": "Dành cho ai",
+      "solution": {
+        "title": "Tôi có một giải pháp AI",
+        "description": "Đăng giải pháp, rồi ứng tuyển chương trình và thử thách bằng một hồ sơ.",
+        "action": "Đăng giải pháp"
+      },
+      "problem": {
+        "title": "Tôi có một bài toán kinh doanh",
+        "description": "Đăng một ca ứng dụng hoặc trao đổi với GenAI Fund.",
+        "action": "Chia sẻ ca ứng dụng"
+      },
+      "talent": {
+        "title": "Tôi là nhân tài AI hoặc một nhóm nhỏ",
+        "description": "Tạo hồ sơ và nhận yêu cầu từ doanh nghiệp.",
+        "action": "Tạo hồ sơ"
+      }
     }
   }
 }

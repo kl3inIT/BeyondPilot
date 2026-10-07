@@ -1,71 +1,72 @@
-import { ArrowRightIcon, SearchIcon } from "lucide-react";
+import { cn } from "cn";
+import { ArrowRightIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import Image from "next/image";
 
 import { Button } from "@/components/actions/button";
-import {
-  FloatingCards,
-  FloatingCardsStack,
-  type HeroCardsData,
-} from "@/components/sections/hero/floating-cards";
-import { Badge } from "@/components/ui/badge";
 import { Glow } from "@/components/ui/glow";
 import { Section } from "@/components/ui/section";
-import { getPathname, Link } from "@/i18n/navigation";
+import { getPathname } from "@/i18n/navigation";
 import { liveCampaignUrl, siteRoutes } from "@/lib/site";
 
-const scopes = ["agentic", "document", "insurance", "retail"] as const;
+const rise =
+  "animate-in ease-entrance animation-duration-800 fill-mode-both fade-in slide-in-from-bottom-4 motion-reduce:animate-none";
 
 /**
- * One question and one search on Cool Paper, with the sky light behind it and real cards around it
- * (DESIGN.md › Landing structure). Text rises in on load, one line after another; the heading
- * rises without fading, because a browser skips an invisible element when it measures the largest
- * paint, and the heading is that paint.
+ * The agent's promise, one search and a real screenshot of the product, on the aurora (Figma
+ * "Landing / 1440"). Text rises in on load, one line after another; the heading rises without
+ * fading, because a browser skips an invisible element when it measures the largest paint, and
+ * the heading is that paint.
  */
-function Hero({ cards }: { cards: HeroCardsData }) {
+function Hero() {
   const t = useTranslations("Home.hero");
-  const c = useTranslations("Campaign");
+  const s = useTranslations("Site");
   const locale = useLocale();
 
   return (
-    <Section surface="muted" className="overflow-hidden">
+    <Section className="overflow-x-clip">
       <Glow />
-      <FloatingCards cards={cards} />
-      <div className="relative flex flex-col items-center gap-2 pt-12 pb-6 lg:h-205 lg:pt-44 lg:pb-0">
-        <div className="@container flex w-full max-w-190 flex-col items-center gap-6 text-center">
+      <div className="relative flex flex-col gap-12 pt-10 lg:flex-row lg:justify-between lg:gap-10 lg:pt-13">
+        <div className="flex flex-col items-start lg:w-150 lg:shrink-0">
           <a
             href={liveCampaignUrl}
-            className="hit-area flex h-11 max-w-full animate-in items-center gap-2 rounded-full border py-1 pr-3 pl-2 text-sm delay-100 ease-entrance animation-duration-800 fill-mode-both outline-none fade-in slide-in-from-bottom-4 hover:bg-background/60 focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:animate-none md:h-auto md:gap-2.5 md:pr-3.5 md:pl-1"
+            className={cn(
+              rise,
+              "hit-area flex h-8 max-w-full items-center gap-2 rounded-full border bg-card px-4 text-caption font-medium delay-100 outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50",
+            )}
           >
-            <Badge variant="success">{c("live")}</Badge>
-            <span className="font-medium whitespace-nowrap">
-              <span className="md:hidden">{c("shortName")}</span>
-              <span className="hidden md:inline">{c("name")}</span>
-            </span>
-            <span className="min-w-0 truncate text-muted-foreground @max-chip:hidden">
-              <span className="md:hidden">{c("closesShort")}</span>
-              <span className="hidden md:inline">{c("submissionsClose")}</span>
-            </span>
-            <span className="flex items-center gap-1 font-semibold whitespace-nowrap">
-              {c("apply")}
-              <ArrowRightIcon className="size-3.5" aria-hidden="true" />
-            </span>
+            <span className="truncate">{t("liveChallenge")}</span>
+            <ArrowRightIcon className="size-3.5 shrink-0" aria-hidden="true" />
           </a>
-          <h1 className="animate-in text-4xl font-semibold text-balance delay-180 ease-entrance animation-duration-800 fill-mode-both slide-in-from-bottom-4 motion-reduce:animate-none lg:text-7xl lg:tracking-display">
-            {t("title")}
+          <p className={cn(rise, "mt-8 text-base font-medium text-primary delay-140")}>
+            {t("eyebrow")}
+          </p>
+          <h1 className="mt-4.5 animate-in text-5xl font-semibold delay-180 ease-entrance animation-duration-800 fill-mode-both slide-in-from-bottom-4 motion-reduce:animate-none lg:text-display lg:tracking-display">
+            {t("titleStart")}{" "}
+            <span className="block bg-linear-to-r from-primary to-lilac-foreground bg-clip-text text-transparent">
+              {t("titleEnd")}
+            </span>
           </h1>
-          <p className="max-w-145 animate-in text-base font-medium text-muted-foreground delay-260 ease-entrance animation-duration-800 fill-mode-both fade-in slide-in-from-bottom-4 motion-reduce:animate-none lg:text-xl">
+          <p
+            className={cn(
+              rise,
+              "mt-8 max-w-140 text-base text-muted-foreground delay-260 lg:text-lg",
+            )}
+          >
             {t("description")}
           </p>
           <form
             role="search"
             action={getPathname({ href: siteRoutes.search, locale })}
-            className="flex w-full max-w-160 animate-in items-center gap-3 rounded-full border bg-card py-2 pr-2 pl-6 shadow-search delay-340 ease-entrance animation-duration-800 fill-mode-both fade-in slide-in-from-bottom-4 focus-within:ring-3 focus-within:ring-ring/50 motion-reduce:animate-none"
+            className={cn(
+              rise,
+              "mt-4 flex h-16 w-full max-w-150 items-center rounded-full bg-card px-8 shadow-search delay-340 focus-within:ring-3 focus-within:ring-ring/50",
+            )}
           >
-            <SearchIcon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <label htmlFor="hero-search" className="sr-only">
+              {t("searchLabel")}
+            </label>
             <div className="relative min-w-0 flex-1">
-              <label htmlFor="hero-search" className="sr-only">
-                {t("searchLabel")}
-              </label>
               <input
                 id="hero-search"
                 name="q"
@@ -82,32 +83,63 @@ function Hero({ cards }: { cards: HeroCardsData }) {
                 <span className="hidden md:inline">{t("searchPlaceholder")}</span>
               </span>
             </div>
-            <Button type="submit" size="lg">
-              {t("search")}
-            </Button>
           </form>
-          <ul
-            aria-label={t("scopesLabel")}
-            className="flex animate-in flex-wrap justify-center gap-2 delay-420 ease-entrance animation-duration-800 fill-mode-both fade-in slide-in-from-bottom-4 motion-reduce:animate-none"
+          <div className={cn(rise, "mt-11.5 flex flex-col gap-4 delay-420 sm:flex-row")}>
+            <Button size="2xl" prominence="inverse" href={siteRoutes.solutions}>
+              {t("primaryCta")}
+            </Button>
+            <Button size="2xl" prominence="secondary" href={siteRoutes.howItWorks}>
+              {t("secondaryCta")}
+            </Button>
+          </div>
+          <p
+            className={cn(
+              rise,
+              "mt-8 flex items-center gap-2 text-sm text-muted-foreground delay-500",
+            )}
           >
-            {scopes.map((scope) => (
-              <li key={scope} className="flex">
-                <Badge
-                  variant="outline"
-                  render={
-                    <Link
-                      href={{ pathname: siteRoutes.search, query: { q: t(`scopes.${scope}`) } }}
-                    />
-                  }
-                  className="hit-area"
-                >
-                  {t(`scopes.${scope}`)}
-                </Badge>
-              </li>
-            ))}
-          </ul>
+            {s("backedBy")}
+            <Image
+              src="/brand/genaifund-logo.png"
+              alt={s("genaiFund")}
+              width={1200}
+              height={252}
+              className="h-5.25 w-auto dark:hidden"
+            />
+            <Image
+              src="/brand/genaifund-logo-white.png"
+              alt={s("genaiFund")}
+              width={1200}
+              height={254}
+              className="hidden h-5.25 w-auto dark:block"
+            />
+          </p>
         </div>
-        <FloatingCardsStack cards={cards} />
+        <div
+          className={cn(
+            rise,
+            "overflow-hidden rounded-3xl border border-card bg-card shadow-float delay-340 lg:mt-13 lg:w-140 lg:shrink-0 lg:self-start",
+          )}
+        >
+          <Image
+            src="/landing/product-search.png"
+            alt={t("screenshotAlt")}
+            width={900}
+            height={840}
+            sizes="(min-width: 1024px) 35rem, 100vw"
+            priority
+            className="hidden h-auto w-full md:block"
+          />
+          <Image
+            src="/landing/product-search-mobile.png"
+            alt={t("screenshotAlt")}
+            width={535}
+            height={1042}
+            sizes="100vw"
+            priority
+            className="h-auto w-full md:hidden"
+          />
+        </div>
       </div>
     </Section>
   );

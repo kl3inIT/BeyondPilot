@@ -69,7 +69,7 @@ function TalentProfilePage({ profile, signInHref, own, senderName }: TalentProfi
     .map(([key, count]) => ({ value: count, label: t(`stats.${key}`, { count }) }));
 
   return (
-    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-6 px-5 pt-4 pb-24 md:gap-8 md:px-8 md:pt-6 xl:px-16">
+    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-6 px-5 pt-4 pb-24 md:gap-8 md:px-8 md:pt-6 xl:px-16 desktop:px-20">
       <Breadcrumb aria-label={t("trail")}>
         <BreadcrumbList>
           <BreadcrumbItem>

@@ -69,6 +69,17 @@
   --color-peach-foreground: var(--peach-foreground);
   --color-rose: var(--rose);
   --color-rose-foreground: var(--rose-foreground);
+  --color-panel-deep: var(--panel-deep);
+  --color-panel-bright: var(--panel-bright);
+  --color-panel-foreground: var(--panel-foreground);
+  --color-wash-azure: var(--wash-azure);
+  --color-wash-violet: var(--wash-violet);
+  --color-wash-peach: var(--wash-peach);
+  --color-aurora-azure: var(--aurora-azure);
+  --color-aurora-violet: var(--aurora-violet);
+  --color-aurora-peach: var(--aurora-peach);
+  --color-lilac: var(--lilac);
+  --color-lilac-foreground: var(--lilac-foreground);
   /* Elevations of the landing (DESIGN.md › Elevation & Depth), all in the --elevation colour. */
   --shadow-card: 0 4px 16px -4px color-mix(in oklch, var(--elevation) 5%, transparent);
   --shadow-tile:
@@ -90,6 +101,22 @@
 
 /* Type, motion and layout steps the Figma landing uses that Tailwind's scale lacks. */
 @theme {
+  /* The landing's type scale (Figma "Landing"): display, section, step, quote, copy and caption. */
+  --text-display: 4.75rem;
+  --text-display--line-height: 5.25rem;
+  --text-cta: 3.25rem;
+  --text-cta--line-height: 3.9375rem;
+  --text-section: 2.75rem;
+  --text-section--line-height: 3.25rem;
+  --text-step: 1.375rem;
+  --text-step--line-height: 1.6875rem;
+  --text-copy: 0.9375rem;
+  --text-copy--line-height: 1.375rem;
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.25rem;
+  --tracking-section: -0.025em;
+  --text-quote: 2.125rem;
+  --text-quote--line-height: 2.5rem;
   --text-headline: 2.5rem;
   --text-headline--line-height: 3rem;
   --tracking-display: -0.03em;

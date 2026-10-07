@@ -20,6 +20,7 @@ const actionVariants = cva(
         secondary: "border-input bg-background shadow-sm",
         tertiary: "rounded-sm bg-transparent",
         internal: "",
+        inverse: "shadow-sm",
       },
     },
     compoundVariants: [
@@ -42,6 +43,11 @@ const actionVariants = cva(
         tone: "default",
         prominence: "internal",
         class: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+      },
+      {
+        tone: "default",
+        prominence: "inverse",
+        class: "bg-foreground text-background hover:bg-foreground/90",
       },
       {
         tone: "danger",

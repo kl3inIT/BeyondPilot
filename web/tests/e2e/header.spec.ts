@@ -85,7 +85,7 @@ test.describe("header", () => {
 
     await page.getByRole("button", { name: "Open menu" }).click();
     const menu = page.getByRole("dialog");
-    await expect(menu.getByRole("link", { name: "Programs" })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Events & Programs" })).toBeVisible();
     await expect(menu.getByRole("link", { name: "Get started" })).toHaveCount(0);
     await expect(menu.getByRole("link", { name: "Sign in" })).toHaveCount(0);
   });

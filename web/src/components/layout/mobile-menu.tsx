@@ -22,10 +22,11 @@ function MobileMenu({ signedIn = false }: { signedIn?: boolean }) {
   const close = () => setOpen(false);
 
   const links = [
-    { href: siteRoutes.programs, label: t("nav.programs"), hint: t("menu.programsHint") },
-    { href: siteRoutes.useCases, label: t("nav.useCases"), hint: t("menu.useCasesHint") },
     { href: siteRoutes.solutions, label: t("nav.solutions"), hint: t("menu.solutionsHint") },
     { href: siteRoutes.talent, label: t("nav.talent"), hint: t("menu.talentHint") },
+    { href: siteRoutes.useCases, label: t("nav.useCases"), hint: t("menu.useCasesHint") },
+    { href: siteRoutes.programs, label: t("nav.programs"), hint: t("menu.programsHint") },
+    { href: siteRoutes.howItWorks, label: t("nav.howItWorks"), hint: t("menu.howItWorksHint") },
   ];
 
   return (
@@ -64,7 +65,7 @@ function MobileMenu({ signedIn = false }: { signedIn?: boolean }) {
           <div className="flex flex-col gap-3 px-5 pt-6 pb-8">
             {!signedIn && (
               <>
-                <Button size="lg" href={siteRoutes.getStarted} onClick={close}>
+                <Button size="lg" prominence="inverse" href={siteRoutes.getStarted} onClick={close}>
                   {t("nav.getStarted")}
                 </Button>
                 <Button size="lg" prominence="secondary" href={siteRoutes.signIn} onClick={close}>

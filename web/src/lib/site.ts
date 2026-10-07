@@ -1,6 +1,7 @@
 /** Site-wide destinations. Routes without a page yet render the shared coming-soon page. */
 export const siteRoutes = {
   home: "/",
+  howItWorks: "/how-it-works",
   programs: "/programs",
   useCases: "/use-cases",
   solutions: "/solutions",

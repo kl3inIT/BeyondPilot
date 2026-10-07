@@ -21,10 +21,10 @@ function SiteFooter() {
     {
       title: t("footer.platform"),
       links: [
-        { href: siteRoutes.programs, label: t("nav.programs") },
-        { href: siteRoutes.useCases, label: t("nav.useCases") },
         { href: siteRoutes.solutions, label: t("nav.solutions") },
         { href: siteRoutes.talent, label: t("nav.talent") },
+        { href: siteRoutes.useCases, label: t("nav.useCases") },
+        { href: siteRoutes.programs, label: t("nav.programs") },
       ],
     },
     {
@@ -48,7 +48,7 @@ function SiteFooter() {
 
   return (
     <footer className="border-t bg-background">
-      <div className="mx-auto flex w-full max-w-360 flex-col gap-10 px-5 pt-12 pb-8 md:gap-12 md:px-8 md:pt-16 xl:px-16">
+      <div className="mx-auto flex w-full max-w-360 flex-col gap-10 px-5 pt-12 pb-8 md:gap-12 md:px-8 md:pt-16 xl:px-16 desktop:px-20">
         <div className="flex flex-col gap-8 md:flex-row md:justify-between">
           <div className="md:w-75">
             <BrandLockup />

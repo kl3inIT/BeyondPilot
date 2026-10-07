@@ -36,7 +36,9 @@ async function HeaderAccount() {
       <Button prominence="secondary" className="hidden md:inline-flex" href={siteRoutes.signIn}>
         {t("signIn")}
       </Button>
-      <Button href={siteRoutes.getStarted}>{t("getStarted")}</Button>
+      <Button prominence="inverse" href={siteRoutes.getStarted}>
+        {t("getStarted")}
+      </Button>
       <MobileMenu />
     </>
   );
