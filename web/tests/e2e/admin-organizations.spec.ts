@@ -430,6 +430,25 @@ test.describe("admin organizations", () => {
   }) => {
     await signInAs(context, "operator", baseURL!);
     const decisions = await answerDecisions(page, decisionsPath, 204);
+    // The browser asks for the organizations to keep as the name is typed; the duplicate is among them.
+    const searches: string[] = [];
+    await page.route(
+      (url) => url.pathname === "/api/organization/admin/organizations",
+      (route) => {
+        searches.push(new URL(route.request().url()).search);
+        return route.fulfill({
+          json: {
+            items: [
+              { id: harborBank, name: "Harbor Bank" },
+              { id: pocketPolicy, name: "Pocket Policy" },
+            ],
+            page: 1,
+            pageSize: 25,
+            total: 2,
+          },
+        });
+      },
+    );
     await page.goto(`/admin/organizations/${harborBank}`);
 
     await page.getByRole("button", { name: "Actions for Harbor Bank" }).click();
@@ -443,8 +462,9 @@ test.describe("admin organizations", () => {
     ).toBeVisible();
     await expect(dialog.getByRole("button", { name: "Continue" })).toBeDisabled();
     await dialog.getByRole("combobox", { name: "Keep" }).fill("Pocket");
-    // The duplicate itself and a merged organization are never offered.
+    // Only an approved organization is asked for, and the duplicate itself is never offered.
     await expect(page.getByRole("option")).toHaveText(["Pocket Policy"]);
+    expect(searches).toContain("?q=Pocket&status=approved");
     await page.getByRole("option", { name: "Pocket Policy" }).click();
     await expectNoSeriousA11yViolations(page);
     await dialog.getByRole("button", { name: "Continue" }).click();
@@ -500,7 +520,9 @@ test.describe("admin organizations", () => {
     await expect(shownOrganizations(page)).toHaveText(["Pocket Policy"]);
     await page.goto("/admin/organizations?status=merged");
     await expect(shownOrganizations(page)).toHaveText(["Pocket Policy Ltd"]);
-    await expect(page.getByText("Merged into Pocket Policy").first()).toBeVisible();
+    await expect(
+      page.getByText("Merged into Pocket Policy", { exact: true }).and(page.locator(":visible")),
+    ).toBeVisible();
   });
 
   test("an operator saves the profile with the verified domain", async ({

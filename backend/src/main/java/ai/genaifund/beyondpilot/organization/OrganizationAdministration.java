@@ -368,11 +368,12 @@ public class OrganizationAdministration {
 
 	/**
 	 * Merges a duplicate organization into the one to keep, in one transaction. Its people move as members and are
-	 * told by email, its open invitations and requests move, and the modules that keep records of organizations move
-	 * theirs. The kept organization takes the duplicate's domain when it has none. The duplicate stays as a record of
-	 * where it went, which nobody changes.
+	 * told by email, its open invitations move as invitations to join as a member, its requests move, and the modules
+	 * that keep records of organizations move theirs. The kept organization takes the duplicate's domain when it has
+	 * none. The duplicate stays as a record of where it went, which nobody changes.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws OrganizationException when either organization does not exist, they are the same, or either was merged
+	 * @throws OrganizationException when either organization does not exist, they are the same, the duplicate was
+	 * merged, or the one to keep is not approved and shown
 	 */
 	@Transactional
 	public void merge(Actor actor, UUID id, MergeOrganizationRequest request) {
@@ -389,9 +390,9 @@ public class OrganizationAdministration {
 			.orElseThrow(() -> notFound(duplicateFirst ? intoId : id));
 		Organization duplicate = duplicateFirst ? first : second;
 		Organization kept = duplicateFirst ? second : first;
-		if (duplicate.isMerged() || kept.isMerged()) {
-			throw new OrganizationException(OrganizationErrorCode.CANNOT_MERGE,
-					"Merge of organization " + id + " into " + intoId + " when one of them was merged");
+		if (duplicate.isMerged() || !kept.isApproved()) {
+			throw new OrganizationException(OrganizationErrorCode.CANNOT_MERGE, "Merge of organization " + id + " into "
+					+ intoId + ", which is " + kept.getStatus() + (kept.isSuspended() ? " and down" : ""));
 		}
 		Collection<Person> people = identity.people(memberships.members(id).stream().map(Member::accountId).toList())
 			.values();

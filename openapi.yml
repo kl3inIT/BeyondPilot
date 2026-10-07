@@ -2188,7 +2188,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "The organizations are the same, or one of them was merged."
+          description: "The organizations are the same, the duplicate was merged,\
+            \ or the one to keep is not approved and shown."
       security:
       - session: []
       summary: "Merge a duplicate organization into the one to keep, with its people\
@@ -10826,8 +10827,8 @@ components:
         intoId:
           type: string
           format: uuid
-          description: The organization kept; it receives the duplicate's people and
-            records.
+          description: "The organization kept, approved and shown; it receives the\
+            \ duplicate's people and records."
       required:
       - intoId
     MergedOrganization:

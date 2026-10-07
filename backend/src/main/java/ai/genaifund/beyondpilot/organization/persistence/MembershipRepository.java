@@ -271,8 +271,9 @@ public class MembershipRepository {
 	}
 
 	/**
-	 * Moves the open invitations of a merged organization to the one kept. An address the kept organization already
-	 * invited keeps that invitation, and the merged one is revoked; a lapsed one is closed.
+	 * Moves the open invitations of a merged organization to the one kept, each to join as a member: the duplicate's
+	 * owners never decide who owns the kept organization. An address the kept organization already invited keeps that
+	 * invitation, and the merged one is revoked; a lapsed one is closed.
 	 */
 	public void moveOpenInvitations(UUID from, UUID into) {
 		jdbc.sql("""
@@ -286,9 +287,10 @@ public class MembershipRepository {
 				              where kept.organization_id = :into and kept.status = 'pending'
 				                and lower(kept.email) = lower(moved.email))
 				""").param("from", from).param("into", into).update();
-		jdbc.sql("update organization_invitation set organization_id = ? where organization_id = ? and status = 'pending'")
-			.params(into, from)
-			.update();
+		jdbc.sql("""
+				update organization_invitation set organization_id = ?, role = 'member'
+				where organization_id = ? and status = 'pending'
+				""").params(into, from).update();
 	}
 
 	/**

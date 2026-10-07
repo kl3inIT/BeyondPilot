@@ -57,7 +57,7 @@ public enum OrganizationErrorCode implements ErrorCode {
 			"This organization was merged into another and can no longer be changed."),
 
 	CANNOT_MERGE("ORGANIZATION_CANNOT_MERGE", ErrorCategory.CONFLICT,
-			"An organization merges only into another one that was not merged itself."),
+			"An organization merges only into another one that is approved and shown."),
 
 	DOMAIN_TAKEN("ORGANIZATION_DOMAIN_TAKEN", ErrorCategory.CONFLICT,
 			"Another organization already has this email domain."),

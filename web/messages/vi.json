@@ -2798,7 +2798,7 @@
       "ORGANIZATION_NOT_AWAITING_REVIEW": "Tổ chức này đã được duyệt xong.",
       "ORGANIZATION_DOMAIN_TAKEN": "Một tổ chức khác đã dùng tên miền email này.",
       "ORGANIZATION_MERGED": "Tổ chức này đã được gộp vào tổ chức khác và không thể thay đổi nữa.",
-      "ORGANIZATION_CANNOT_MERGE": "Chỉ có thể gộp vào một tổ chức khác chưa bị gộp.",
+      "ORGANIZATION_CANNOT_MERGE": "Chỉ có thể gộp vào một tổ chức khác đã được duyệt và đang hiển thị.",
       "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
       "unknown": "Chưa thực hiện được. Hãy thử lại.",
       "ORGANIZATION_DOMAIN_NOT_VERIFIED": "Chỉ tham gia ngay được trên tên miền mà GenAI Fund đã xác minh cho một tổ chức đã duyệt.",

@@ -1591,7 +1591,7 @@ export type MergeNotice = {
  */
 export type MergeOrganization = {
     /**
-     * The organization kept; it receives the duplicate's people and records.
+     * The organization kept, approved and shown; it receives the duplicate's people and records.
      */
     intoId: string;
 };
@@ -5816,7 +5816,7 @@ export type MergeOrganizationErrors = {
      */
     404: Problem;
     /**
-     * The organizations are the same, or one of them was merged.
+     * The organizations are the same, the duplicate was merged, or the one to keep is not approved and shown.
      */
     409: Problem;
 };

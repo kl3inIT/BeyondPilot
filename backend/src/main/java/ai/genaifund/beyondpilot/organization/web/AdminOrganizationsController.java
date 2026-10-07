@@ -265,7 +265,7 @@ class AdminOrganizationsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "One of the two organizations does not exist.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "The organizations are the same, or one of them was merged.",
+	@ApiResponse(responseCode = "409", description = "The organizations are the same, the duplicate was merged, or the one to keep is not approved and shown.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void merge(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody MergeOrganizationRequest request) {
 		organizations.merge(actor, id, request);

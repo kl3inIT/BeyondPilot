@@ -2798,7 +2798,7 @@
       "ORGANIZATION_NOT_AWAITING_REVIEW": "This organization has already been reviewed.",
       "ORGANIZATION_DOMAIN_TAKEN": "Another organization already uses this email domain.",
       "ORGANIZATION_MERGED": "This organization was merged into another and can no longer be changed.",
-      "ORGANIZATION_CANNOT_MERGE": "An organization merges only into another one that was not merged itself.",
+      "ORGANIZATION_CANNOT_MERGE": "An organization merges only into another one that is approved and shown.",
       "REQUEST_INVALID": "Check the marked fields and try again.",
       "unknown": "That did not work. Try again.",
       "ORGANIZATION_DOMAIN_NOT_VERIFIED": "People join at once only on a domain GenAI Fund verified for an approved organization.",

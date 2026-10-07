@@ -537,7 +537,7 @@ class OrganizationTest {
 		post(duplicateOwner, API + "/mine/invitations", Map.of("email", "both@merge.test", "role", "member"))
 			.expectStatus()
 			.isNoContent();
-		post(duplicateOwner, API + "/mine/invitations", Map.of("email", "moved@merge.test", "role", "member"))
+		post(duplicateOwner, API + "/mine/invitations", Map.of("email", "moved@merge.test", "role", "owner"))
 			.expectStatus()
 			.isNoContent();
 		post(keptOwner, API + "/mine/invitations", Map.of("email", "both@merge.test", "role", "member"))
@@ -552,6 +552,9 @@ class OrganizationTest {
 		assertProblem(post(duplicateOwner, merge, Map.of("intoId", kept)), 403, "IDENTITY_OPERATOR_REQUIRED");
 		assertProblem(post(operator, merge, Map.of()), 400, "REQUEST_INVALID");
 		assertProblem(post(operator, merge, Map.of("intoId", duplicate)), 409, "ORGANIZATION_CANNOT_MERGE");
+		// Only an approved organization is kept.
+		UUID waiting = create(signIn("founder@keeper-waiting.test"), "Keeper Waiting");
+		assertProblem(post(operator, merge, Map.of("intoId", waiting)), 409, "ORGANIZATION_CANNOT_MERGE");
 		assertProblem(post(operator, merge, Map.of("intoId", UUID.randomUUID())), 404, "ORGANIZATION_NOT_FOUND");
 
 		post(operator, merge, Map.of("intoId", kept)).expectStatus().isNoContent();
@@ -572,6 +575,8 @@ class OrganizationTest {
 		assertThat(JsonPath.<String>read(record, "$.organization.emailDomain")).isEqualTo("merge-duplicate.test");
 		assertThat(JsonPath.<List<String>>read(record, "$.invitations[*].email"))
 			.containsExactlyInAnyOrder("both@merge.test", "moved@merge.test");
+		// The duplicate's owners never decide who owns the kept organization.
+		assertThat(JsonPath.<List<String>>read(record, "$.invitations[*].role")).containsOnly("member");
 		assertThat(JsonPath.<Object>read(record, "$.merged")).isNull();
 		// Its records moved, each to a new version, so a save read before the merge is refused.
 		assertThat(jdbc.sql("select organization_id from solution where id = ?").param(solution).query(UUID.class)

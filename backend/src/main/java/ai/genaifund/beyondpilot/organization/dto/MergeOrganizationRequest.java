@@ -8,5 +8,5 @@ import jakarta.validation.constraints.NotNull;
 @Schema(name = "MergeOrganization", description = "The organization a duplicate is merged into.")
 public record MergeOrganizationRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The organization kept; it receives the duplicate's people and records.") @NotNull UUID intoId) {
+				description = "The organization kept, approved and shown; it receives the duplicate's people and records.") @NotNull UUID intoId) {
 }
