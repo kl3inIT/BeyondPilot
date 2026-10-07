@@ -445,6 +445,38 @@ paths:
       summary: Take the operator role from an account
       tags:
       - Accounts
+  /api/identity/apps/connecting:
+    get:
+      operationId: getConnectingApp
+      parameters:
+      - in: query
+        name: clientId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: state
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectingApp"
+          description: The app the consent page shows.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No request of the caller's waits with this app and state.
+      security:
+      - session: []
+      summary: The AI app waiting for the caller's answer
+      tags:
+      - Identity
   /api/identity/me:
     get:
       operationId: getMe
@@ -9304,6 +9336,43 @@ components:
       - model
       - providerId
       - version
+    ConnectingApp:
+      type: object
+      description: An AI app waiting for the signed-in person to allow or deny it.
+      properties:
+        anyLocalApp:
+          type: boolean
+          description: "Whether it is the client any agent on a person's computer\
+            \ uses, which names no app."
+        clientId:
+          type: string
+        host:
+          type:
+          - string
+          - "null"
+          description: The host the app's metadata document lives on; null for a client
+            BeyondPilot registered.
+        local:
+          type: boolean
+          description: "Whether the answer goes to this computer, where any program\
+            \ could be listening."
+        name:
+          type: string
+        returnsTo:
+          type:
+          - string
+          - "null"
+          description: The host the answer goes to; null when it goes to this computer.
+        reviewed:
+          type: boolean
+          description: Whether BeyondPilot has reviewed the app's host or registered
+            the app.
+      required:
+      - anyLocalApp
+      - clientId
+      - local
+      - name
+      - reviewed
     ContactDetails:
       type: object
       description: How judges and GenAI Fund reach an applicant. Each part may be

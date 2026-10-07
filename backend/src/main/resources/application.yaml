@@ -62,6 +62,13 @@ spring:
       client:
         enabled: false
 
+  http:
+    clients:
+      imperative:
+        # The JDK's client, as before Apache HttpClient joined the classpath for the authorization server's own
+        # fetches of addresses outsiders name (identity.oauth.OutsideHttp).
+        factory: jdk
+
 server:
   # The web application and the reverse proxy forward the browser's host and scheme.
   forward-headers-strategy: framework
@@ -83,6 +90,13 @@ beyondpilot:
     site-url: ${BEYONDPILOT_SITE_URL:http://localhost:3000}
   identity:
     sign-in-code-lifetime: 15m
+    oauth:
+      # The public address of BeyondPilot: it names the authorization server AI apps sign in through and both MCP
+      # servers (BEY-78).
+      issuer: ${BEYONDPILOT_SITE_URL:http://localhost:3000}
+      # The RSA private key (PKCS#8 PEM) that signs access tokens, a secret file of the deployment. Without it a key is
+      # made at each start, so tokens do not survive a restart.
+      signing-key: ${BEYONDPILOT_IDENTITY_OAUTH_SIGNING_KEY:}
     # BEYONDPILOT_IDENTITY_OPERATOR_EMAILS lists the addresses that are operators from their first sign-in.
     # Google sign-in is on when BEYONDPILOT_IDENTITY_GOOGLE_CLIENT_ID and _CLIENT_SECRET are set.
   usecase:

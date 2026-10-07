@@ -243,6 +243,41 @@
       }
     }
   },
+  "AppConsent": {
+    "metaTitle": "Connect an app · BeyondPilot",
+    "title": "{app} wants to access BeyondPilot",
+    "as": "As {person}",
+    "ableTo": "{app} will be able to",
+    "user": {
+      "searchSolutions": "Search listed solutions",
+      "readSolution": "Read a listed solution",
+      "searchPrograms": "Search programs",
+      "limit": "Cannot change anything. Revoke any time."
+    },
+    "operator": {
+      "searchSolutions": "Search solutions, listed or not",
+      "readUseCases": "Read use cases",
+      "findCompanies": "Find companies",
+      "limit": "Cannot publish or edit listings. Revoke any time."
+    },
+    "deny": "Deny",
+    "allow": "Allow",
+    "switchAccount": "Not you? Switch account",
+    "refusedTitle": "{app} cannot connect to BeyondPilot",
+    "refusedLead": "Only GenAI Fund operators can connect.",
+    "signedInAs": "Signed in as {person}",
+    "useUserServer": "Use the user server instead: it searches listed solutions.",
+    "back": "Back to {app}",
+    "anotherAccount": "Not you? Sign in with another account",
+    "anyLocalApp": "An app on this computer",
+    "theApp": "the app",
+    "localWarning": "Runs on this computer. Allow only if you just started it.",
+    "from": "From",
+    "returnsTo": "Returns to",
+    "thisComputer": "this computer",
+    "notReviewed": "Not reviewed",
+    "ableToLocal": "It will be able to"
+  },
   "Admin": {
     "metaTitle": "Admin · BeyondPilot",
     "title": "Admin",

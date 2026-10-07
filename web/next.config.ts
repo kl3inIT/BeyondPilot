@@ -3,7 +3,14 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 // Paths Spring owns. In deployed environments a reverse proxy in front of both apps routes them;
 // during local development Next.js forwards them so the browser stays on one origin.
-const springPaths = ["/api/:path*", "/login/:path*", "/logout", "/oauth2/:path*", "/ott/:path*"];
+const springPaths = [
+  "/api/:path*",
+  "/login/:path*",
+  "/logout",
+  "/oauth2/:path*",
+  "/ott/:path*",
+  "/.well-known/oauth-authorization-server",
+];
 
 const nextConfig: NextConfig = {
   output: "standalone",
