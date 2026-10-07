@@ -10,3 +10,10 @@ export const testFailures: Record<NonNullable<EmailTest["failure"]>, MessageKey>
   rejected: "Admin.email.test.rejected",
   invalid_recipient: "Admin.email.test.invalidRecipient",
 };
+
+/** Why the backend refused to send a test at all, by the problem's code. */
+export const testRefusals: Partial<Record<string, MessageKey>> = {
+  NOTIFICATION_TEST_RECIPIENT_INVALID: "Admin.email.test.recipientInvalid",
+  NOTIFICATION_ADDRESS_SUPPRESSED: "Admin.email.test.suppressed",
+  NOTIFICATION_TEST_LIMIT_REACHED: "Admin.email.test.limitReached",
+};

@@ -31,6 +31,9 @@ public enum NotificationErrorCode implements ErrorCode {
 	TEST_RECIPIENT_INVALID("NOTIFICATION_TEST_RECIPIENT_INVALID", ErrorCategory.VALIDATION,
 			"A test email goes to one email address."),
 
+	TEST_LIMIT_REACHED("NOTIFICATION_TEST_LIMIT_REACHED", ErrorCategory.LIMIT_EXCEEDED,
+			"You have sent as many test emails to other people as an hour allows. Send one to yourself, or try later."),
+
 	MESSAGE_NOT_FOUND("NOTIFICATION_MESSAGE_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such email."),
 
 	MESSAGE_NOT_RESENDABLE("NOTIFICATION_MESSAGE_NOT_RESENDABLE", ErrorCategory.CONFLICT,
