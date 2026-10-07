@@ -151,7 +151,7 @@ Spring Security's OAuth 2.0 login with the scopes `openid`, `email` and `profile
 - **Return.** `GoogleOidcUserService` signs the Google user in as described under [Accounts](#accounts). Success
   redirects to the remembered path, or to `/`. Failure redirects to `/sign-in?error=google` and logs
   `identity.sign_in.failed` with `method`, `error_type` and `error_code`; the code is logged only when it matches
-  `[a-z_]{1,64}`, otherwise as `other`.
+  `[A-Za-z_]{1,64}` (a provider's lower-case codes and identity's own upper-case ones), otherwise as `other`.
 
 ## Session and roles
 
