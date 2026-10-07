@@ -125,7 +125,7 @@ Two proxy hosts in Nginx Proxy Manager, each with a Let's Encrypt certificate, F
 
 GenAI Fund owns `beyondpilot.ai` and keeps its DNS at Namecheap: the `@` and `www` A records point at this host, and the mail records are theirs. The web application opens `robots.txt` to crawlers on `beyondpilot.ai` only and closes it on every other host, so staging is never indexed next to it.
 
-The browser sees one origin, so Spring's paths go to the api in the advanced configuration of each proxy host; staging sets `$beyondpilot_api` to `beyondpilot-staging-api`. The upstream is a variable, so nginx resolves it per request and the host keeps working while the api container is being replaced. A custom location would resolve it at load and disable the host whenever the container is absent:
+The browser sees one origin, so Spring's paths go to the api in the advanced configuration of each proxy host; staging sets `$beyondpilot_api` to `beyondpilot-staging-api`. The upstream is a variable, so nginx resolves it per request and the host keeps working while the api container is being replaced. A custom location would resolve it at load and disable the host whenever the container is absent. The proxy is the edge, so it replaces `X-Forwarded-For` with the address that connected to it: appending would keep a value the client wrote first, which the api reads as the client's address, and limits kept per address would believe it:
 
 ```nginx
 location ~ ^/(api|login|logout|oauth2|ott|\.well-known/oauth-authorization-server)(/|$) {
@@ -134,7 +134,7 @@ location ~ ^/(api|login|logout|oauth2|ott|\.well-known/oauth-authorization-serve
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header X-Forwarded-Host $host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-For $remote_addr;
     proxy_set_header X-Real-IP $remote_addr;
 }
 ```
