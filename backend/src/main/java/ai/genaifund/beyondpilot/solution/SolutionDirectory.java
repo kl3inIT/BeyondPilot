@@ -187,7 +187,7 @@ public class SolutionDirectory {
 	/** Every approved solution not taken down as search indexes it, for a rebuild of the index. */
 	@Transactional(readOnly = true)
 	public List<IndexedSolution> indexedAll() {
-		return indexed(solutions.findByStatus(Solution.APPROVED).stream().filter(Solution::isApproved).toList());
+		return indexed(solutions.findByStatusAndSuspendedAtIsNull(Solution.APPROVED));
 	}
 
 	/**

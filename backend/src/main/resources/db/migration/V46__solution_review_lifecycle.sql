@@ -14,11 +14,29 @@ alter table solution
 alter table solution drop constraint solution_status_check;
 alter table solution drop constraint solution_decision_reason_check;
 
--- A rejection for missing information was a send back: the owners corrected it and sent it again. A solution taken
--- out of the directory before this change was stored as rejected, like a refused one, and stays so.
-update solution set status = 'needs_changes', decision_reason = null
-where status = 'rejected' and decision_reason = 'incomplete';
+-- Before this change a rejection was never final: its owners corrected the solution and sent it again. It also stood
+-- for taking an approved solution out of the directory. So no stored rejection becomes the new final one. A solution
+-- whose last decision before its last rejection was an approval was taken down (an approved solution could not be
+-- sent again, so that rejection was not a review): it stays approved and the rejection becomes the takedown. Every
+-- other rejection was a send back.
+update solution s
+set status = 'approved',
+    suspended_at = s.decided_at,
+    suspension_reason = case when s.decision_reason in ('unverifiable', 'not_an_ai_solution') then s.decision_reason
+                             else 'other' end,
+    suspension_message = s.decision_message,
+    decision_reason = null,
+    decision_message = null
+where s.status = 'rejected'
+  and (select d.action from audit_event d
+       where d.resource_type = 'solution' and d.resource_id = s.id::text
+         and d.action in ('solution.approve', 'solution.reject')
+       order by d.occurred_at desc, d.id desc
+       offset 1 limit 1) = 'solution.approve';
+update solution set status = 'needs_changes', decision_reason = null where status = 'rejected';
 update solution set status = 'in_review' where status = 'submitted';
+-- Only a refusal carries a reason; a solution sent again kept the one it was sent back with.
+update solution set decision_reason = null where status <> 'rejected';
 
 alter table solution
     add constraint solution_status_check

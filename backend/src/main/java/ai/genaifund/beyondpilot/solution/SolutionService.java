@@ -116,8 +116,9 @@ public class SolutionService {
 	}
 
 	/**
-	 * Saves a solution as its editor holds it. A change to an approved solution shows at once; one to a rejected
-	 * solution waits for the owner to submit it again. A deck or an image the solution stops naming is removed from
+	 * Saves a solution as its editor holds it. A change to an approved solution shows at once; one to a solution sent
+	 * back waits for the owner to submit it again; a solution refused for good is not changed. A deck or an image the
+	 * solution stops naming is removed from
 	 * the store. A solution that was sent for review does not lose anything a review needs; one approved before a
 	 * logo and a cover were asked for may stay without them.
 	 * @throws SolutionException when the caller is not a member, the organization has no such
@@ -128,6 +129,10 @@ public class SolutionService {
 	public SolutionResponse save(Actor actor, UUID id, SaveSolutionRequest request) {
 		Membership membership = writer(actor);
 		Solution solution = own(membership, id);
+		if (solution.isRejected()) {
+			// A refusal is final: what GenAI Fund refused stays as it was reviewed.
+			throw new SolutionException(SolutionErrorCode.NOT_EDITABLE, "Save of solution " + id + ", refused for good");
+		}
 		if (solution.getVersion() != request.version()) {
 			throw new SolutionException(SolutionErrorCode.CHANGED_MEANWHILE, "Save of solution " + id + " at version "
 					+ request.version() + ", which is at " + solution.getVersion());
@@ -143,8 +148,7 @@ public class SolutionService {
 		UUID replacedDeck = nameDeck(actor, solution, request.deckFileId());
 		List<UUID> droppedPictures = namePictures(actor, solution, request);
 		solution.list(request.listed());
-		if (!solution.isDraft() && !solution.isNeedsChanges() && !solution.isRejected()
-				&& !lackedBefore.containsAll(solution.missing())) {
+		if (!solution.isDraft() && !solution.isNeedsChanges() && !lackedBefore.containsAll(solution.missing())) {
 			// What operators review, and what the directory shows, keeps what a submission needs.
 			throw incomplete(id);
 		}

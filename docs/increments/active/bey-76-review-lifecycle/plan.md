@@ -19,4 +19,5 @@ The migrations take the next free versions when the branch takes in `main`.
 ## Next
 
 - Keep an approved record public while its owner's change waits for review (design, decision 3), per module.
+- One way to tell an organization's members of a decision: solution and use case each loop over the members and `EmailService` grows one method per kind.
 - The import of the old platform (BEY-74, BEY-75) writes organizations and active solutions as `in_review`, inactive solutions and use cases as `draft`.

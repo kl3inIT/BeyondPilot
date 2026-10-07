@@ -740,7 +740,7 @@
         "solution": {
           "approve": "Approved a solution",
           "send_back": "Sent a solution back",
-          "reject": "Rejected a solution",
+          "reject": "Refused or sent back a solution",
           "take_down": "Took a solution down",
           "restore": "Restored a solution",
           "deployment_approve": "Approved a customer deployment",
@@ -3303,6 +3303,7 @@
       "SOLUTION_NOT_FOUND": "This solution no longer exists.",
       "SOLUTION_INCOMPLETE": "Fill in the marked fields before sending for review.",
       "SOLUTION_NOT_SUBMITTABLE": "This solution is already in review, approved, or refused for good.",
+      "SOLUTION_NOT_EDITABLE": "This solution was refused for good and can no longer be changed.",
       "SOLUTION_NOT_A_DRAFT": "Only a draft can be deleted.",
       "SOLUTION_NOT_AWAITING_REVIEW": "This solution has already been reviewed.",
       "SOLUTION_CHANGED_MEANWHILE": "Someone else changed this solution. Reload the page and try again.",

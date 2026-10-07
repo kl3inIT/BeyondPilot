@@ -114,6 +114,8 @@ function SolutionEditor({ solution }: { solution: Solution }) {
   const list = getPathname({ href: siteRoutes.workspaceSolutions, locale });
   // A draft and a solution sent back are written step by step and sent for review at the end.
   const autosaves = server.status === "draft" || server.status === "needs_changes";
+  // A solution refused for good stays as it was reviewed: it is read, never saved.
+  const refused = server.status === "rejected";
   const standing = reviewState(server);
   const content = contentOf(draft);
   const dirty = content !== contentOf(held(server));
@@ -402,7 +404,11 @@ function SolutionEditor({ solution }: { solution: Solution }) {
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            <p role="status" className="flex items-center gap-1.5 text-xs font-medium">
+            <p
+              role="status"
+              hidden={refused}
+              className="flex items-center gap-1.5 text-xs font-medium"
+            >
               {state === "saving" && (
                 <>
                   <Loader2Icon
@@ -477,14 +483,16 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               </>
             ) : (
               <>
-                <Button
-                  size="sm"
-                  pending={pending === "save"}
-                  disabled={pending !== null || !dirty}
-                  onClick={saveNow}
-                >
-                  {t("save")}
-                </Button>
+                {!refused && (
+                  <Button
+                    size="sm"
+                    pending={pending === "save"}
+                    disabled={pending !== null || !dirty}
+                    onClick={saveNow}
+                  >
+                    {t("save")}
+                  </Button>
+                )}
                 <Button prominence="tertiary" size="sm" href={siteRoutes.workspaceSolutions}>
                   {t("close")}
                 </Button>
@@ -638,32 +646,37 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               )}
             </div>
 
-            <FieldGroup>
-              {step === "basics" && <BasicsStep draft={draft} change={change} errorOf={errorOf} />}
-              {step === "fit" && <FitStep draft={draft} change={change} errorOf={errorOf} />}
-              {step === "evidence" && (
-                <EvidenceStep
-                  draft={draft}
-                  change={change}
-                  errorOf={errorOf}
-                  solutionId={solution.id}
-                  deckHref={deckHref}
-                  onImageAdded={addImage}
-                  customerDeployments={solution.customerDeployments}
-                  onLinkLeft={(field) => setLeftLinks((current) => new Set(current).add(field))}
-                />
-              )}
-              {step === "review" && (
-                <ReviewStep
-                  draft={draft}
-                  change={change}
-                  customerDeployments={solution.customerDeployments}
-                  missing={missing}
-                  submittable={autosaves}
-                  onOpen={open}
-                />
-              )}
-            </FieldGroup>
+            {/* A refused solution is read as it was reviewed; its fields take no input. */}
+            <fieldset disabled={refused} className="min-w-0">
+              <FieldGroup>
+                {step === "basics" && (
+                  <BasicsStep draft={draft} change={change} errorOf={errorOf} />
+                )}
+                {step === "fit" && <FitStep draft={draft} change={change} errorOf={errorOf} />}
+                {step === "evidence" && (
+                  <EvidenceStep
+                    draft={draft}
+                    change={change}
+                    errorOf={errorOf}
+                    solutionId={solution.id}
+                    deckHref={deckHref}
+                    onImageAdded={addImage}
+                    customerDeployments={solution.customerDeployments}
+                    onLinkLeft={(field) => setLeftLinks((current) => new Set(current).add(field))}
+                  />
+                )}
+                {step === "review" && (
+                  <ReviewStep
+                    draft={draft}
+                    change={change}
+                    customerDeployments={solution.customerDeployments}
+                    missing={missing}
+                    submittable={autosaves}
+                    onOpen={open}
+                  />
+                )}
+              </FieldGroup>
+            </fieldset>
 
             <div className="sticky bottom-0 z-10 flex items-center justify-between gap-3 border-t bg-background py-4 max-md:-mx-5 max-md:px-5 md:static md:bg-transparent md:pb-0">
               {index === 0 ? (
@@ -700,7 +713,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
                   {t(server.status === "needs_changes" ? "review.resubmit" : "review.submit")}
                 </Button>
               )}
-              {last && !autosaves && (
+              {last && !autosaves && !refused && (
                 <Button
                   size="lg"
                   pending={pending === "save"}

@@ -14,7 +14,6 @@ import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.notification.EmailService;
-import ai.genaifund.beyondpilot.notification.NotificationException;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListRequest;
@@ -32,8 +31,6 @@ import ai.genaifund.beyondpilot.solution.persistence.SolutionQueryRepository;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
 import ai.genaifund.beyondpilot.storage.StorageService;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,8 +44,6 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class SolutionAdministration {
-
-	private static final Logger LOG = LoggerFactory.getLogger(SolutionAdministration.class);
 
 	static final int PAGE_SIZE = 25;
 
@@ -232,15 +227,21 @@ public class SolutionAdministration {
 	/**
 	 * Puts a solution that was taken down back in the directory and matching without a new review.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws SolutionException when the solution does not exist, or is not an approved solution taken down
+	 * @throws SolutionException when the solution does not exist or is not taken down, or its organization is not
+	 * approved
 	 */
 	@Transactional
 	public void restore(Actor actor, UUID id) {
 		Operator operator = identity.requireOperator(actor);
 		Solution solution = reviewable(id);
-		if (!Solution.APPROVED.equals(solution.getStatus()) || !solution.isTakenDown()) {
-			throw new SolutionException(SolutionErrorCode.NOT_TAKEN_DOWN, "Restore of solution " + id + ", which is "
-					+ solution.getStatus() + (solution.isTakenDown() ? " and taken down" : ""));
+		if (!solution.isTakenDown()) {
+			throw new SolutionException(SolutionErrorCode.NOT_TAKEN_DOWN,
+					"Restore of solution " + id + ", which is " + solution.getStatus() + " and not taken down");
+		}
+		if (!organizations.isApproved(solution.getOrganizationId())) {
+			// Back in the directory means its organization is shown too.
+			throw new SolutionException(SolutionErrorCode.ORGANIZATION_NOT_APPROVED,
+					"Restore of solution " + id + " whose organization is not approved");
 		}
 		solution.restore();
 		record(AuditAction.SOLUTION_RESTORE, operator, solution, Map.of());
@@ -307,13 +308,7 @@ public class SolutionAdministration {
 		UUID organizationId = solution.getOrganizationId();
 		String organization = name(organizations.names(List.of(organizationId)), organizationId);
 		for (Person member : identity.people(organizations.memberAccountIds(organizationId)).values()) {
-			try {
-				email.sendSolutionDecision(member.email(), organization, solution.getName(), decision, reason);
-			}
-			catch (NotificationException notSent) {
-				// The decision stands; EmailService has logged that this member was not told.
-				LOG.atWarn().addKeyValue("event", "solution.decision.member_not_told").log("Member not told");
-			}
+			email.sendSolutionDecision(member.email(), organization, solution.getName(), decision, reason);
 		}
 	}
 

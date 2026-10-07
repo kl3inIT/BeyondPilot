@@ -243,7 +243,10 @@ class SolutionTest {
 		assertProblem(post(operator, ADMIN + "/" + id + "/send-back", Map.of("reason", "Again.")), 409,
 				"SOLUTION_NOT_AWAITING_REVIEW");
 
-		post(founder, MINE + "/" + id + "/submit", null).expectStatus().isOk();
+		String sentAgain = body(post(founder, MINE + "/" + id + "/submit", null).expectStatus().isOk());
+		// Sending it again answers the send back, so the record waits with no decision on it.
+		assertThat(JsonPath.<String>read(sentAgain, "$.status")).isEqualTo("in_review");
+		assertThat(JsonPath.<String>read(sentAgain, "$.decisionMessage")).isNull();
 		post(operator, ADMIN + "/" + id + "/approve", null).expectStatus().isNoContent();
 
 		String approved = body(get(operator, ADMIN + "/" + id).expectStatus().isOk());
@@ -277,6 +280,9 @@ class SolutionTest {
 		assertProblem(post(founder, MINE + "/" + id + "/submit", null), 409, "SOLUTION_NOT_SUBMITTABLE");
 		assertProblem(post(operator, ADMIN + "/" + id + "/reject", Map.of("reason", "duplicate")), 409,
 				"SOLUTION_NOT_AWAITING_REVIEW");
+		// What was refused stays as it was reviewed.
+		assertProblem(put(founder, MINE + "/" + id, described("Rewritten Desk", versionOf(rejected))), 409,
+				"SOLUTION_NOT_EDITABLE");
 
 		// An approved solution is taken down, never refused.
 		UUID approved = approved(founder, "Approved Desk");
@@ -389,6 +395,15 @@ class SolutionTest {
 		assertThat(names(operator, ADMIN + "?q=removed desk&status=approved")).isEmpty();
 		assertThat(JsonPath.<String>read(body(get(operator, ADMIN + "?q=removed desk").expectStatus().isOk()),
 				"$.items[0].suspendedAt")).isNotNull();
+
+		// Back in the directory means its organization is shown too: not while the organization is down.
+		jdbc.sql("update organization set suspended_at = now() where id = (select organization_id from solution where id = ?)")
+			.param(id)
+			.update();
+		assertProblem(post(operator, ADMIN + "/" + id + "/restore", null), 409, "SOLUTION_ORGANIZATION_NOT_APPROVED");
+		jdbc.sql("update organization set suspended_at = null where id = (select organization_id from solution where id = ?)")
+			.param(id)
+			.update();
 
 		post(operator, ADMIN + "/" + id + "/restore", null).expectStatus().isNoContent();
 		client.get().uri(DIRECTORY + "/removed-desk").exchange().expectStatus().isOk();

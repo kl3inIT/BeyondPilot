@@ -740,7 +740,7 @@
         "solution": {
           "approve": "Duyệt giải pháp",
           "send_back": "Trả lại giải pháp",
-          "reject": "Từ chối giải pháp",
+          "reject": "Từ chối hoặc trả lại giải pháp",
           "take_down": "Gỡ giải pháp xuống",
           "restore": "Khôi phục giải pháp",
           "deployment_approve": "Duyệt triển khai khách hàng",
@@ -3303,6 +3303,7 @@
       "SOLUTION_NOT_FOUND": "Giải pháp này không còn tồn tại.",
       "SOLUTION_INCOMPLETE": "Hãy điền các trường được đánh dấu trước khi gửi duyệt.",
       "SOLUTION_NOT_SUBMITTABLE": "Giải pháp này đang được duyệt, đã duyệt hoặc đã bị từ chối hẳn.",
+      "SOLUTION_NOT_EDITABLE": "Giải pháp này đã bị từ chối hẳn nên không sửa được nữa.",
       "SOLUTION_NOT_A_DRAFT": "Chỉ xóa được bản nháp.",
       "SOLUTION_NOT_AWAITING_REVIEW": "Giải pháp này đã được duyệt xong.",
       "SOLUTION_CHANGED_MEANWHILE": "Có người vừa sửa giải pháp này. Hãy tải lại trang rồi thử lại.",

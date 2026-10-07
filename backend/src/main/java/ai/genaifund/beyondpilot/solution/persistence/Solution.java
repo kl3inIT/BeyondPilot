@@ -228,8 +228,11 @@ public class Solution {
 		this.listed = listed;
 	}
 
+	/** Sends the solution for review; a send back it answers is cleared, as a refusal only ever ends a review. */
 	public void submit(Instant at, UUID byAccountId) {
 		status = IN_REVIEW;
+		decisionReason = null;
+		decisionMessage = null;
 		submittedAt = at;
 		submittedByAccountId = byAccountId;
 	}

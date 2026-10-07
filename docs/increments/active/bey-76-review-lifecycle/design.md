@@ -62,13 +62,15 @@ An operator takes an approved record down with a reason its owner reads; it leav
 | Organization | `rejected` with reason `incomplete` | `needs_changes` |
 | Organization | `suspended` | `approved`, taken down |
 | Solution | `submitted` | `in_review` |
-| Solution | `rejected` with reason `incomplete` | `needs_changes` |
+| Solution | `rejected` after an approval (a takedown, per the audit log) | `approved`, taken down |
+| Solution | any other `rejected` | `needs_changes` |
+| Customer deployment | `submitted` | `in_review` |
 | Use case | `published` | `approved` |
 | Talent | `submitted` | `in_review` |
 | Talent | `changes_requested` | `needs_changes` |
 | Talent | `removed` | `approved`, taken down |
 
-A solution taken down before this change was stored as `rejected`, the same as a refused one, and stays `rejected`; its owner can no longer send it again, and an operator approves it to restore it. Only staging holds such rows.
+Before this change a solution's rejection was never final: its owners corrected it and sent it again, and an approved solution taken out of the directory was stored as rejected too. So no stored rejection becomes the new final one: when the last decision before it was an approval it becomes a takedown, and otherwise a send back. A solution sent again drops the reason it was sent back with.
 
 ## Commands and API
 

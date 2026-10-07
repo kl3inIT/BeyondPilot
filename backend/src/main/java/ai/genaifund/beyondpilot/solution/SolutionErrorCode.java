@@ -20,6 +20,9 @@ public enum SolutionErrorCode implements ErrorCode {
 	NOT_SUBMITTABLE("SOLUTION_NOT_SUBMITTABLE", ErrorCategory.CONFLICT,
 			"This solution is already in review, approved, or refused for good."),
 
+	NOT_EDITABLE("SOLUTION_NOT_EDITABLE", ErrorCategory.CONFLICT,
+			"This solution was refused for good and can no longer be changed."),
+
 	NOT_A_DRAFT("SOLUTION_NOT_A_DRAFT", ErrorCategory.CONFLICT, "Only a draft can be deleted."),
 
 	NOT_AWAITING_REVIEW("SOLUTION_NOT_AWAITING_REVIEW", ErrorCategory.CONFLICT,
