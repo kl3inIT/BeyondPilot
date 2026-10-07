@@ -13,6 +13,8 @@ public enum IdentityErrorCode implements ErrorCode {
 
 	ACCOUNT_NOT_FOUND("IDENTITY_ACCOUNT_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such account."),
 
+	APP_NOT_CONNECTED("IDENTITY_APP_NOT_CONNECTED", ErrorCategory.NOT_FOUND, "This app is not connected."),
+
 	APP_REQUEST_NOT_FOUND("IDENTITY_APP_REQUEST_NOT_FOUND", ErrorCategory.NOT_FOUND,
 			"This connection request has ended; connect again from the app."),
 

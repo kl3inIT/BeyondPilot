@@ -32,6 +32,12 @@ final class McpTokens implements OAuth2TokenCustomizer<JwtEncodingContext> {
 
 	static final String RESOURCE = "resource";
 
+	/** The app the token was issued to (RFC 9068). */
+	static final String CLIENT_ID = "client_id";
+
+	/** The connection the token belongs to: the authorization the person consented to. */
+	static final String CONNECTION = "connection";
+
 	private final OAuthSettings settings;
 
 	private final IdentityService identity;
@@ -72,6 +78,12 @@ final class McpTokens implements OAuth2TokenCustomizer<JwtEncodingContext> {
 		}
 		// A list Spring's stored-authorization reader accepts back.
 		context.getClaims().audience(new ArrayList<>(List.of(audience)));
+		// Which app, and which connection: each call to an MCP server checks the connection still stands, so a revoke
+		// takes effect at once rather than when the token lapses.
+		context.getClaims().claim(CLIENT_ID, context.getRegisteredClient().getClientId());
+		if (authorization != null) {
+			context.getClaims().claim(CONNECTION, authorization.getId());
+		}
 	}
 
 	/** Whether the account that connected the app may still use BeyondPilot; a disabled one ends its connections. */

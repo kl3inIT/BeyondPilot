@@ -134,6 +134,14 @@ public class ProgramService {
 			.map(ProgramService::indexed);
 	}
 
+	/** A published program by its address; empty for a draft or none. For the MCP server's {@code fetch}. */
+	@Transactional(readOnly = true)
+	public Optional<IndexedProgram> published(String slug) {
+		return programs.findBySlug(slug)
+			.filter(program -> program.getStatus() == ProgramStatus.PUBLISHED)
+			.map(ProgramService::indexed);
+	}
+
 	/** Every published program as search indexes it, for a rebuild of the index. */
 	@Transactional(readOnly = true)
 	public List<IndexedProgram> indexedAll() {

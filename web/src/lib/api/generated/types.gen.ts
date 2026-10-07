@@ -787,7 +787,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -879,6 +879,41 @@ export type ChooseEmbeddingModel = {
      * The version of the search settings it was read at.
      */
     version: number;
+};
+
+/**
+ * An AI app the signed-in person connected to BeyondPilot.
+ */
+export type ConnectedApp = {
+    /**
+     * When the person first allowed it.
+     */
+    allowedAt?: string | null;
+    clientId: string;
+    /**
+     * The host the app's metadata document lives on; null for a client BeyondPilot registered.
+     */
+    host?: string | null;
+    /**
+     * What a revoke names.
+     */
+    id: string;
+    /**
+     * The app's name; its host when BeyondPilot has not reviewed the host.
+     */
+    name: string;
+    /**
+     * Whether BeyondPilot has reviewed the app's host or registered the app.
+     */
+    reviewed: boolean;
+    /**
+     * The servers the app may call: `user` for /mcp, `operator` for /mcp/operator.
+     */
+    servers: Array<'user' | 'operator'>;
+    /**
+     * When it last got a token, which it does only while in use, so within the hour of its last use.
+     */
+    usedAt?: string | null;
 };
 
 /**
@@ -980,13 +1015,13 @@ export type CreateSolution = {
 };
 
 /**
- * A use case an operator writes for an organization. It is saved as a draft the organization's members can edit, or published at once when publishNow is true.
+ * A use case an operator writes for an organization. It is saved as a draft the organization's members can edit, or published at once when publishNow is true. Its title, problem, industry, expected outcomes and budget are required; the rest may be left out when the brief does not say.
  */
 export type CreateUseCase = {
     /**
-     * Files the caller uploaded for a use case, in the order shown.
+     * Files the caller uploaded for a use case, in the order shown; none when absent.
      */
-    attachmentFileIds: Array<string>;
+    attachmentFileIds?: Array<string> | null;
     /**
      * Whole units of currency. Null while the budget is to be determined.
      */
@@ -1001,20 +1036,20 @@ export type CreateUseCase = {
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
     /**
-     * When proposals stop. It must be in the future.
+     * When proposals stop, in the future; null for no deadline.
      */
-    closesAt: string;
+    closesAt?: string | null;
     /**
      * The currency of the budget; USD when absent.
      */
     currency?: 'USD' | 'VND';
-    currentProcess: string;
+    currentProcess?: string | null;
     currentSolutions?: string | null;
-    dataReadiness: string;
+    dataReadiness?: string | null;
     expectedOutcomes: string;
     hideOrganizationName: boolean;
     industry: string;
-    integrationRequirements: string;
+    integrationRequirements?: string | null;
     /**
      * An approved organization.
      */
@@ -1029,13 +1064,22 @@ export type CreateUseCase = {
      */
     publishNow: boolean;
     /**
-     * What the solution must do, in the order written.
+     * What the solution must do, in the order written; none when the brief lists none.
      */
-    requirements: Array<UseCaseRequirement>;
-    targetUsers: string;
-    technologies: Array<string>;
-    timelineMaxWeeks: number;
-    timelineMinWeeks: number;
+    requirements?: Array<UseCaseRequirement> | null;
+    targetUsers?: string | null;
+    /**
+     * None when the brief names none.
+     */
+    technologies?: Array<string> | null;
+    /**
+     * Null with timelineMinWeeks when not known.
+     */
+    timelineMaxWeeks?: number | null;
+    /**
+     * Null with timelineMaxWeeks when not known.
+     */
+    timelineMinWeeks?: number | null;
     title: string;
 };
 
@@ -2504,9 +2548,9 @@ export type PublicUseCaseSummary = {
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
     /**
-     * Proposals close at this instant.
+     * Proposals close at this instant; null for no deadline.
      */
-    closesAt: string;
+    closesAt?: string | null;
     /**
      * The currency of the amounts.
      */
@@ -2523,8 +2567,14 @@ export type PublicUseCaseSummary = {
     organizationName?: string | null;
     publishedAt: string;
     technologies: Array<string>;
-    timelineMaxWeeks: number;
-    timelineMinWeeks: number;
+    /**
+     * Null when the brief does not say.
+     */
+    timelineMaxWeeks?: number | null;
+    /**
+     * Null when the brief does not say.
+     */
+    timelineMinWeeks?: number | null;
     title: string;
 };
 
@@ -4141,7 +4191,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -4382,6 +4432,22 @@ export type WithdrawOperatorResponses = {
 
 export type WithdrawOperatorResponse = WithdrawOperatorResponses[keyof WithdrawOperatorResponses];
 
+export type ListConnectedAppsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/identity/apps';
+};
+
+export type ListConnectedAppsResponses = {
+    /**
+     * The apps, the latest used first.
+     */
+    200: Array<ConnectedApp>;
+};
+
+export type ListConnectedAppsResponse = ListConnectedAppsResponses[keyof ListConnectedAppsResponses];
+
 export type GetConnectingAppData = {
     body?: never;
     path?: never;
@@ -4409,6 +4475,33 @@ export type GetConnectingAppResponses = {
 };
 
 export type GetConnectingAppResponse = GetConnectingAppResponses[keyof GetConnectingAppResponses];
+
+export type RevokeConnectedAppData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/identity/apps/{id}/revoke';
+};
+
+export type RevokeConnectedAppErrors = {
+    /**
+     * The caller has not connected this app.
+     */
+    404: Problem;
+};
+
+export type RevokeConnectedAppError = RevokeConnectedAppErrors[keyof RevokeConnectedAppErrors];
+
+export type RevokeConnectedAppResponses = {
+    /**
+     * The app can no longer call BeyondPilot.
+     */
+    204: void;
+};
+
+export type RevokeConnectedAppResponse = RevokeConnectedAppResponses[keyof RevokeConnectedAppResponses];
 
 export type GetMeData = {
     body?: never;

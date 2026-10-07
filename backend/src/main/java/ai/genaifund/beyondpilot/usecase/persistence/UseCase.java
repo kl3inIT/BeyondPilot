@@ -166,7 +166,7 @@ public class UseCase {
 	}
 
 	/** A draft an operator writes for an organization, with the date proposals stop. */
-	public UseCase(UUID organizationId, UUID createdByAccountId, Instant closesAt) {
+	public UseCase(UUID organizationId, UUID createdByAccountId, @Nullable Instant closesAt) {
 		this(organizationId, createdByAccountId);
 		this.closesAt = closesAt;
 	}
