@@ -70,7 +70,7 @@ What each kind puts in its row:
 - **Solution.** Title the name, subtitle the organization's name, summary the summary; keywords the focus areas,
   industries, maturity, deployment and `builtWith`; the card adds problems solved, value proposition, best customer
   profile and traction. Facets `organizationSlug`, `country`, `maturity`, `industries`, `focusAreas`, `photoFileId`
-  (the logo), `customerDeployments` (the count of approved deployments). `listed` follows the solution.
+  (its logo, or its organization's when it has none), `customerDeployments` (the count of approved deployments). `listed` follows the solution.
 - **Talent.** Title the name, subtitle the headline, summary the bio; keywords the roles, skills and industries; the
   card adds where the person works and their city. Facets `country`, `city`, `worksAt`, `photoFileId`, `roles`,
   `skills`, `industries`.

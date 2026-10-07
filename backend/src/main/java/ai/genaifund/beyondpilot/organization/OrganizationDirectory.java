@@ -83,7 +83,7 @@ public class OrganizationDirectory {
 		return organizations.findBySlug(slug)
 			.filter(Organization::isApproved)
 			.map(organization -> new OrganizationName(organization.getId(), organization.getSlug(),
-					organization.getName(), organization.getCountry()));
+					organization.getName(), organization.getCountry(), organization.getLogoFileId()));
 	}
 
 	/**
@@ -95,7 +95,7 @@ public class OrganizationDirectory {
 		return organizations.findById(id)
 			.filter(Organization::isApproved)
 			.map(organization -> new OrganizationName(organization.getId(), organization.getSlug(),
-					organization.getName(), organization.getCountry()));
+					organization.getName(), organization.getCountry(), organization.getLogoFileId()));
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class OrganizationDirectory {
 	public List<OrganizationName> approvedOrganizations(@Nullable String text, int limit) {
 		return organizationList.approvedOrganizations(OrganizationViews.text(text), limit)
 			.stream()
-			.map(name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country()))
+			.map(name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country(), name.logoFileId()))
 			.toList();
 	}
 
@@ -132,7 +132,7 @@ public class OrganizationDirectory {
 		return organizationList.approvedNames(organizationIds)
 			.stream()
 			.collect(Collectors.toMap(OrganizationQueryRepository.Name::id,
-					name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country())));
+					name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country(), name.logoFileId())));
 	}
 
 	/**
@@ -150,6 +150,6 @@ public class OrganizationDirectory {
 		return organizationList.names(organizationIds)
 			.stream()
 			.collect(Collectors.toMap(OrganizationQueryRepository.Name::id,
-					name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country())));
+					name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country(), name.logoFileId())));
 	}
 }
