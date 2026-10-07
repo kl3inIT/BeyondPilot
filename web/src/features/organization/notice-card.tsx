@@ -12,14 +12,14 @@ type NoticeCardProps = {
 
 /**
  * One matter that waits for the reader, with what it is, where it stands and what can be done about
- * it: the review of the organization, a request to join, who may join by email domain.
+ * it: the review of the organization, who may join by email domain.
  */
 function NoticeCard({ titleAs: Title, title, description, badge, foot, actions }: NoticeCardProps) {
   return (
     <div className="flex flex-col gap-4 rounded-2xl border bg-card p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
-          <Title className="text-lg font-semibold break-words">{title}</Title>
+          <Title className="text-base font-semibold break-words">{title}</Title>
           <div className="flex flex-col gap-1 text-sm text-muted-foreground">{description}</div>
         </div>
         {badge}

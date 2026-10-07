@@ -2,7 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 /**
  * Product action appearance by role, not by look: `prominence` says how important the action is,
- * `tone` whether it is destructive. Mirrors the Figma `Button` component set
+ * `tone` whether it is destructive, or the approving one of a pair of decisions. Mirrors the Figma `Button` component set
  * (docs/guidelines/figma.md › Components): full pills, except the tertiary action's 6px corners
  * (DESIGN.md › Buttons). `hit-area` gives every action a 44px target on touch screens.
  */
@@ -13,6 +13,7 @@ const actionVariants = cva(
       tone: {
         default: "",
         danger: "",
+        success: "",
       },
       prominence: {
         primary: "shadow-sm",
@@ -61,6 +62,26 @@ const actionVariants = cva(
         tone: "danger",
         prominence: "internal",
         class: "bg-destructive/10 text-destructive hover:bg-destructive/20",
+      },
+      {
+        tone: "success",
+        prominence: "primary",
+        class: "bg-success text-success-foreground hover:bg-success/90",
+      },
+      {
+        tone: "success",
+        prominence: "secondary",
+        class: "text-success hover:bg-success/10",
+      },
+      {
+        tone: "success",
+        prominence: "tertiary",
+        class: "text-success hover:bg-success/10",
+      },
+      {
+        tone: "success",
+        prominence: "internal",
+        class: "bg-success/10 text-success hover:bg-success/20",
       },
     ],
     defaultVariants: {

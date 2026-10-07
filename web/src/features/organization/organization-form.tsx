@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2Icon, FileTextIcon, ShieldCheckIcon, type LucideIcon } from "lucide-react";
+import { Building2Icon, FileTextIcon, ShieldCheckIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -28,6 +28,7 @@ import { siteRoutes } from "@/lib/site";
 
 import { industries, organizationTypes, teamSizes } from "./organization-codes";
 import { organizationError } from "./organization-errors";
+import { OrganizationProfileSection } from "./organization-profile-section";
 import { MAX_DESCRIPTION, MAX_INDUSTRIES, yearOf } from "./organization-format";
 import { useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
 import { OrganizationLogoUpload } from "./organization-logo-upload";
@@ -43,44 +44,20 @@ const checkedFields = [
   { name: "description", id: "organization-description" },
 ] as const;
 
-/** A group of related fields on a tinted panel, with what the group is about under its title. */
-function FormSection({
-  icon: Icon,
-  title,
-  lead,
-  children,
-}: {
-  icon: LucideIcon;
-  title: string;
-  lead: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="flex flex-col gap-6 rounded-2xl border bg-muted p-4 md:p-6">
-      <div className="flex flex-col gap-1">
-        <h3 className="flex items-center gap-2 text-lg font-semibold">
-          <Icon className="size-5 text-primary" aria-hidden="true" />
-          {title}
-        </h3>
-        <p className="text-sm text-muted-foreground">{lead}</p>
-      </div>
-      {children}
-    </section>
-  );
-}
-
 type OrganizationFormProps = {
   /** The organization to change; without one the form creates it. */
   organization?: Organization;
   /** Set when an operator changes the organization: the form then also holds its verified domain. */
   admin?: boolean;
+  /** Leaves a saved profile unchanged and closes the form. */
+  onCancel?: () => void;
 };
 
 /**
  * The profile of an organization, as its owner writes it: to create one, or to change the one they
  * own. The backend decides what is valid; a member it rejects is marked here by its name.
  */
-function OrganizationForm({ organization, admin }: OrganizationFormProps) {
+function OrganizationForm({ organization, admin, onCancel }: OrganizationFormProps) {
   const t = useTranslations("Organization.form");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
@@ -228,10 +205,10 @@ function OrganizationForm({ organization, admin }: OrganizationFormProps) {
         <Title className="text-3xl font-semibold tracking-title">
           {t(organization ? "profileTitle" : "createTitle")}
         </Title>
-        <p className="text-muted-foreground">{t(organization ? "profileLead" : "createLead")}</p>
+        {!organization && <p className="text-muted-foreground">{t("createLead")}</p>}
       </div>
 
-      <FormSection icon={Building2Icon} title={t("basics")} lead={t("basicsLead")}>
+      <OrganizationProfileSection icon={Building2Icon} title={t("basics")} lead={t("basicsLead")}>
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
           <Field data-invalid={bad("name")}>
             <FieldLabel htmlFor="organization-name">
@@ -271,7 +248,8 @@ function OrganizationForm({ organization, admin }: OrganizationFormProps) {
             </p>
           </Field>
         </div>
-        {organization?.emailDomain && (
+        {/* An operator changes the verified domain in its own section below. */}
+        {organization?.emailDomain && !admin && (
           <Field>
             <FieldLabel htmlFor="organization-email-domain">{t("emailDomain")}</FieldLabel>
             <Input
@@ -313,9 +291,9 @@ function OrganizationForm({ organization, admin }: OrganizationFormProps) {
             {bad("teamSize") && <FieldError>{t("teamSizeRequired")}</FieldError>}
           </Field>
         </div>
-      </FormSection>
+      </OrganizationProfileSection>
 
-      <FormSection icon={FileTextIcon} title={t("about")} lead={t("aboutLead")}>
+      <OrganizationProfileSection icon={FileTextIcon} title={t("about")} lead={t("aboutLead")}>
         <Field data-invalid={bad("industries")}>
           <FieldLabel htmlFor="organization-industries">
             {t("industries")} {type === "company" && required}
@@ -401,10 +379,14 @@ function OrganizationForm({ organization, admin }: OrganizationFormProps) {
             <OrganizationLogoUpload value={logoFileId} onChange={setLogoFileId} />
           </Field>
         </div>
-      </FormSection>
+      </OrganizationProfileSection>
 
       {admin && (
-        <FormSection icon={ShieldCheckIcon} title={t("domain.title")} lead={t("domain.lead")}>
+        <OrganizationProfileSection
+          icon={ShieldCheckIcon}
+          title={t("domain.title")}
+          lead={t("domain.lead")}
+        >
           <VerifiedDomainField
             id="organization-email-domain"
             domain={domain}
@@ -413,13 +395,18 @@ function OrganizationForm({ organization, admin }: OrganizationFormProps) {
             problems={{ invalid: t("domain.invalid"), taken: t("domain.taken") }}
             disabled={pending}
           />
-        </FormSection>
+        </OrganizationProfileSection>
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
         {/* Unsaved changes to a saved profile are kept or dropped on leaving, where LeaveGuard asks. */}
         {!organization && (
           <Button prominence="tertiary" size="lg" href={siteRoutes.workspaceOrganization}>
+            {t("cancel")}
+          </Button>
+        )}
+        {onCancel && (
+          <Button prominence="tertiary" size="lg" disabled={pending} onClick={onCancel}>
             {t("cancel")}
           </Button>
         )}

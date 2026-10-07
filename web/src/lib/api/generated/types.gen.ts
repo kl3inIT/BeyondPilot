@@ -204,6 +204,10 @@ export type AdminOrganizationSummary = {
     country?: string | null;
     createdAt: string;
     id: string;
+    /**
+     * Its logo, read at /api/storage/files/{id}; null for none.
+     */
+    logoFileId?: string | null;
     members: number;
     name: string;
     /**

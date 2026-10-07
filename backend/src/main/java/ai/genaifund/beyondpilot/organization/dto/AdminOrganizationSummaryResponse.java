@@ -10,6 +10,8 @@ import org.jspecify.annotations.Nullable;
 public record AdminOrganizationSummaryResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String slug,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
+		@Schema(types = { "string", "null" },
+				description = "Its logo, read at /api/storage/files/{id}; null for none.") @Nullable UUID logoFileId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "company", "builder_team", "independent_builder", "other" }) String type,
 		@Schema(types = { "string", "null" }) @Nullable String country,

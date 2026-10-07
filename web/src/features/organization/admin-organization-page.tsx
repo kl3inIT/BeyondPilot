@@ -25,8 +25,8 @@ import {
 import { ClaimDecisionButton } from "./claim-decision";
 import { MemberRole } from "./member-role";
 import { NoticeCard } from "./notice-card";
-import { OrganizationForm } from "./organization-form";
 import { OrganizationMark } from "./organization-mark";
+import { OrganizationProfileEditor } from "./organization-profile-editor";
 import { OrganizationReviewButton } from "./organization-review";
 import { RestoreButton, TakeDownMenu } from "./organization-take-down";
 
@@ -189,8 +189,8 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
       </nav>
 
       {tab === "profile" ? (
-        // The key gives a saved organization a fresh form, so it holds the new version.
-        <OrganizationForm key={organization.version} organization={organization} admin />
+        // The key gives a saved organization a fresh editor, reading the new version.
+        <OrganizationProfileEditor key={organization.version} organization={organization} admin />
       ) : (
         <AdminMembers detail={detail} page={page} record={record} />
       )}

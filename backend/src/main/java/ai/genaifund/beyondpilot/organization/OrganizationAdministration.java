@@ -522,7 +522,7 @@ public class OrganizationAdministration {
 		else if (row.claimId() != null) {
 			request = "claim";
 		}
-		return new AdminOrganizationSummaryResponse(row.id(), row.slug(), row.name(), row.type(),
+		return new AdminOrganizationSummaryResponse(row.id(), row.slug(), row.name(), row.logoFileId(), row.type(),
 				row.country(), row.status(), row.suspendedAt(), row.members(), row.owned(), request, row.claimId(),
 				asker == null ? null : asker.label(), row.claimedAt() != null ? row.claimedAt()
 						: request == null ? null : row.createdAt(),
