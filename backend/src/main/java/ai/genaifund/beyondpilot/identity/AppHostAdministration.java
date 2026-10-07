@@ -1,5 +1,7 @@
 package ai.genaifund.beyondpilot.identity;
 
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -26,6 +28,14 @@ public class AppHostAdministration {
 	private static final Pattern HOST = Pattern
 		.compile("^(?=.{3,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z][a-z0-9-]{0,61}[a-z0-9]$");
 
+	/**
+	 * The apps known to publish their client document on each host, from docs/research/2026-10-07-mcp-oauth.md, so an
+	 * operator sees what trusting a host means before any of its apps connects.
+	 */
+	private static final Map<String, List<String>> KNOWN_APPS = Map.of("chatgpt.com", List.of("ChatGPT", "Codex"),
+			"claude.ai", List.of("Claude", "Claude Code"), "claude.com", List.of("Claude"), "vscode.dev",
+			List.of("Visual Studio Code"), "zed.dev", List.of("Zed"), "goose-docs.ai", List.of("Goose"));
+
 	private final AppHostRepository hosts;
 
 	private final IdentityService identity;
@@ -44,7 +54,7 @@ public class AppHostAdministration {
 		identity.requireOperator(actor);
 		return new AppHostsResponse(hosts.allowOtherHosts(), hosts.hosts()
 			.stream()
-			.map(host -> new AppHostsResponse.Host(host.host(), host.apps()))
+			.map(host -> new AppHostsResponse.Host(host.host(), appsOf(host)))
 			.toList());
 	}
 
@@ -88,6 +98,13 @@ public class AppHostAdministration {
 		hosts.allowOtherHosts(allow);
 		record(allow ? AuditAction.MCP_OTHER_HOSTS_ALLOW : AuditAction.MCP_OTHER_HOSTS_REFUSE, operator,
 				"Apps from other hosts", Map.of());
+	}
+
+	/** The apps known for the host, then any other app of it that has connected, each named once. */
+	private static List<String> appsOf(AppHostRepository.Host host) {
+		LinkedHashSet<String> apps = new LinkedHashSet<>(KNOWN_APPS.getOrDefault(host.host(), List.of()));
+		apps.addAll(host.apps());
+		return List.copyOf(apps);
 	}
 
 	private void record(AuditAction action, Operator operator, String label, Map<String, String> details) {

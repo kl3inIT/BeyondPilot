@@ -14,7 +14,7 @@ public record AppHostsResponse(
 	@Schema(name = "AppHost")
 	public record Host(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String host,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-					description = "The names of the apps of this host that have signed in.") List<String> apps) {
+					description = "The apps known to publish their document on this host, then any other of its apps that has signed in.") List<String> apps) {
 	}
 
 }

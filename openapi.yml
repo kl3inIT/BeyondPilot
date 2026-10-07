@@ -9022,7 +9022,8 @@ components:
       properties:
         apps:
           type: array
-          description: The names of the apps of this host that have signed in.
+          description: "The apps known to publish their document on this host, then\
+            \ any other of its apps that has signed in."
           items:
             type: string
         host:

@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.time.Duration;
 import java.time.Instant;
@@ -378,8 +379,8 @@ class McpAuthorizationTest {
 			.expectBody()
 			.jsonPath("$.allowOtherHosts")
 			.isEqualTo(true)
-			.jsonPath("$.hosts[?(@.host == 'zed.dev')]")
-			.exists();
+			.jsonPath("$.hosts[?(@.host == 'chatgpt.com')].apps[*]")
+			.isEqualTo(List.of("ChatGPT", "Codex"));
 
 		// Trusted, the app connects without the Not reviewed label.
 		hostsChange(operator, "/add", Map.of("host", "Quiet-Host.example")).isNoContent();

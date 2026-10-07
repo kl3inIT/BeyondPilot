@@ -635,7 +635,7 @@ export type AllowOtherHostsRequest = {
 
 export type AppHost = {
     /**
-     * The names of the apps of this host that have signed in.
+     * The apps known to publish their document on this host, then any other of its apps that has signed in.
      */
     apps: Array<string>;
     host: string;
