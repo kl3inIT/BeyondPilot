@@ -14,6 +14,18 @@ export const talentRoles = [
 
 export const engagements = ["full_time", "part_time", "contract", "advisory"] as const;
 
+/** Skills offered under the skills box, each added with one click; anything else can be typed. */
+export const suggestedSkills = [
+  "Python",
+  "LLM evaluation",
+  "RAG",
+  "Voice agents",
+  "LangGraph",
+  "Prompt engineering",
+  "MLOps",
+  "Computer vision",
+] as const;
+
 export const rateBands = ["under_25", "25_50", "50_100", "100_150", "150_plus"] as const;
 
 /** The languages a profile can name, by ISO 639-1 code; the region first. */

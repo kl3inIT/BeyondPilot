@@ -32,18 +32,18 @@ test.describe("workspace talent profile", () => {
         "Tell companies what you build. GenAI Fund reviews the profile before it is listed.",
       ),
     ).toBeVisible();
-    await expect(page.getByLabel("Name")).toHaveValue("Minh Trần");
+    await expect(page.getByLabel("Name shown")).toHaveValue("Minh Trần");
     const readiness = page.getByRole("note").filter({ hasText: "Before you send it for review" });
     await expect(readiness.getByRole("button")).toHaveText([
       "Headline",
-      "About you",
       "Roles",
       "Skills",
+      "About you",
     ]);
     await expectNoSeriousA11yViolations(page);
 
     await expect(async () => {
-      await page.getByRole("button", { name: "Send for review" }).click();
+      await page.getByRole("button", { name: "Submit for review" }).click();
       await expect(page.getByText("Say what you do in one line.")).toBeVisible({ timeout: 1000 });
     }).toPass();
     await expect(page.getByLabel("Headline")).toBeFocused();
@@ -54,13 +54,11 @@ test.describe("workspace talent profile", () => {
     await page.getByRole("group", { name: "Roles" }).getByText("AI engineer").click();
     await page.getByLabel("Skills").fill("Python, RAG ,  ");
     await page.getByLabel("City").fill("Đà Nẵng");
-    await page
-      .getByRole("group", { name: "Languages you work in" })
-      .getByText("Vietnamese")
-      .click();
+    await page.getByRole("combobox", { name: "Languages you work in" }).fill("Viet");
+    await page.getByRole("option", { name: "Vietnamese" }).click();
     await expect(page.getByRole("note").getByText("Ready to send for review")).toBeVisible();
 
-    await page.getByRole("button", { name: "Send for review" }).click();
+    await page.getByRole("button", { name: "Submit for review" }).click();
 
     await expect(page.getByText("Sent to GenAI Fund for review.")).toBeVisible();
     expect(changes).toEqual([
@@ -106,7 +104,7 @@ test.describe("workspace talent profile", () => {
       await page.getByRole("button", { name: "Add a project" }).click();
       await expect(page.getByLabel("Year")).toBeVisible({ timeout: 1000 });
     }).toPass();
-    await page.getByRole("button", { name: "Send for review again" }).click();
+    await page.getByRole("button", { name: "Submit for review again" }).click();
     await expect(page.getByText("Give every project a title, or remove it.")).toBeVisible();
     await expect(page.getByText("Check the marked fields and try again.").first()).toBeVisible();
     expect(changes).toEqual([]);
@@ -115,7 +113,7 @@ test.describe("workspace talent profile", () => {
 
     await page.getByRole("textbox", { name: "Project 1" }).fill("Renewals assistant");
     await page.getByLabel("Year").fill("2026");
-    await page.getByRole("button", { name: "Send for review again" }).click();
+    await page.getByRole("button", { name: "Submit for review again" }).click();
 
     await expect(page.getByText("Sent to GenAI Fund for review.")).toBeVisible();
     expect(changes.map((change) => change.call)).toEqual([
@@ -143,11 +141,12 @@ test.describe("workspace talent profile", () => {
       "href",
       "/talent/dat-phan",
     );
-    const messages = page.getByRole("region", { name: "Messages" });
+    await page.getByRole("tab", { name: /Enquiries/ }).click();
+    const messages = page.getByRole("tabpanel", { name: /Enquiries/ });
     await expect(
       messages.getByText("We are scoping a claims assistant and would like your view."),
     ).toBeVisible();
-    await expect(messages.getByText("1 waits for your answer")).toBeVisible();
+    await expect(messages.getByText("1 new")).toBeVisible();
     await expect(messages.getByText("Hà Lê · Mekong Insurance")).toBeVisible();
     // A waiting message shows no address; an accepted one gives the way to write.
     await expect(messages.getByText("ha.le@")).toHaveCount(0);
@@ -156,6 +155,7 @@ test.describe("workspace talent profile", () => {
     ).toHaveAttribute("href", "mailto:minh.tran@example.com");
     await expectNoSeriousA11yViolations(page);
 
+    await page.getByRole("tab", { name: "Profile" }).click();
     const save = page.getByRole("button", { name: "Save changes" });
     await expect(save).toBeDisabled();
     await expect(async () => {
@@ -178,7 +178,8 @@ test.describe("workspace talent profile", () => {
     await signInAs(context, "operator", baseURL!);
     const answers = await answerDecisions(page, changesPath, 204);
     await page.goto(mine);
-    const messages = page.getByRole("region", { name: "Messages" });
+    await page.getByRole("tab", { name: /Enquiries/ }).click();
+    const messages = page.getByRole("tabpanel", { name: /Enquiries/ });
 
     await messages.getByRole("button", { name: "Accept" }).click();
     await expect(

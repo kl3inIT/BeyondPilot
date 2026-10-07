@@ -4068,21 +4068,24 @@
     "mine": {
       "metaTitle": "Talent profile · BeyondPilot",
       "title": "Your talent profile",
-      "lead": "How companies see you in the AI talent directory.",
       "leadNew": "Tell companies what you build. GenAI Fund reviews the profile before it is listed.",
       "submitted": {
         "title": "GenAI Fund is reviewing your profile",
-        "lead": "This usually takes one or two working days. You can still correct it."
+        "lead": "This usually takes one or two working days. You can still correct it.",
+        "foot": "Sent on {date}. We email you when it is decided.",
+        "footUndated": "We email you when it is decided."
       },
       "approved": {
         "listed": "Approved and listed in the directory",
         "unlisted": "Approved, but hidden from the directory",
         "open": "Open your public profile",
-        "unlistedLead": "Turn on “Show in the directory” below to be listed."
+        "unlistedLead": "Only you see it. Choose “Listed in the directory” below to show it again; no new review.",
+        "listedLead": "Anyone can find you in AI talent and search.",
+        "foot": "A change you save shows on your page at once, without a new review."
       },
       "inbox": {
-        "title": "Messages",
-        "waiting": "{count, plural, one {# waits for your answer} other {# wait for your answer}}",
+        "title": "Received",
+        "waiting": "{count} new",
         "lead": "Accept to share your email address with the sender. Decline or report shares nothing.",
         "someone": "Someone",
         "from": "{name} · {organization}",
@@ -4111,7 +4114,8 @@
           "lead": "GenAI Fund reads it. The sender is told it was declined, not that you reported it.",
           "confirm": "Report",
           "cancel": "Keep it"
-        }
+        },
+        "none": "No enquiries yet. When someone writes to you through your page, it shows here."
       },
       "sentBack": {
         "title": "Sent back: {reason}",
@@ -4127,19 +4131,34 @@
         "lead": "Your profile, its projects and the messages sent through it are deleted for good. Nobody can find it in the directory.",
         "confirm": "Delete profile",
         "cancel": "Keep it"
+      },
+      "saved": "saved {when}",
+      "seen": {
+        "onlyYou": "only you can see it until GenAI Fund approves it",
+        "inReview": "GenAI Fund is reviewing it",
+        "listed": "listed in AI talent",
+        "hidden": "hidden from AI talent"
+      },
+      "preview": {
+        "action": "Preview",
+        "note": "Your profile as last saved. Changes you have not saved are not shown."
+      },
+      "tabs": {
+        "label": "Your talent profile",
+        "profile": "Profile",
+        "enquiries": "Enquiries"
       }
     },
     "form": {
-      "name": "Name",
+      "name": "Name shown",
       "nameRequired": "Enter your name.",
       "headline": "Headline",
       "bio": "About you",
-      "bioHint": "What you have built, for whom, and what you want to work on next.",
+      "bioHint": "What you have built, for whom, and what you want to work on next. Shown under About on your page.",
       "roles": "Roles",
       "upTo": "Choose up to {count}. {chosen} chosen.",
       "skills": "Skills",
-      "skillsHint": "Separate with commas, up to {count}. For example: Python, LangGraph, RAG, MLOps.",
-      "skillsInvalid": "Name at most {count} skills, each up to 40 characters.",
+      "skillsHint": "Type a skill and press Enter or Add, or pick a suggestion. Up to {count}, {chosen} added. People search and filter the directory by them.",
       "country": "Country",
       "rate": "Rate",
       "notStated": "Not stated",
@@ -4148,7 +4167,7 @@
       "websiteHint": "Shown on your profile. Your email address never is.",
       "websiteInvalid": "Enter a full address that starts with https://",
       "projects": {
-        "title": "Selected work",
+        "title": "Projects",
         "lead": "Up to {count} projects that show what you can do.",
         "titleRequired": "Give every project a title, or remove it.",
         "name": "Project {number}",
@@ -4160,13 +4179,10 @@
         "stage": "Stage",
         "stageNone": "Not stated"
       },
-      "listed": "Show in the directory",
-      "listedHint": "Takes effect once the profile is approved.",
-      "submit": "Send for review",
-      "resubmit": "Send for review again",
+      "submit": "Submit for review",
+      "resubmit": "Submit for review again",
       "saveDraft": "Save draft",
       "save": "Save changes",
-      "listedHintApproved": "Your profile is approved, so this and every saved change show in the directory at once.",
       "needed": {
         "headline": "Say what you do in one line.",
         "bio": "Write a few sentences about your work.",
@@ -4180,15 +4196,13 @@
         "count": "{count, plural, one {# field to add before review} other {# fields to add before review}}"
       },
       "unsaved": "Unsaved changes",
-      "neededMark": "· needed for review",
       "leave": {
         "title": "Leave without saving?",
         "lead": "Your changes to your profile are not saved yet.",
         "leave": "Leave without saving",
         "stay": "Stay"
       },
-      "requiredMark": "· required",
-      "headlineHint": "One line on what you do. For example: ML engineer building document AI for banks.",
+      "headlineHint": "One line under your name in the directory.",
       "photo": {
         "label": "Photo",
         "hint": "A clear photo of your face. PNG, JPEG or WebP, up to 2 MB.",
@@ -4205,16 +4219,39 @@
       },
       "city": "City",
       "worksAt": "Where you work",
-      "worksAtHint": "Shown as you state it. Leave empty if you work on your own.",
       "languages": "Languages you work in",
       "industries": "Industries you have worked in",
+      "rateHint": "Only you and GenAI Fund see the rate.",
+      "title": "Profile",
+      "lead": "What people see on your page. Your email address is never shown; enquiries reach you through BeyondPilot.",
+      "optionalNote": "Fields marked Optional can stay empty. The others are needed before GenAI Fund reviews the profile.",
+      "optional": "Optional",
+      "headlinePlaceholder": "For example: ML engineer building document AI for banks",
+      "skillsPlaceholder": "Add a skill",
+      "remove": "Remove {label}",
+      "searchPlaceholder": "Type to search",
+      "noMatch": "Nothing matches.",
       "sections": {
-        "about": "About you",
-        "work": "What you do",
-        "place": "Where you are",
-        "engagement": "Work you take on"
+        "basics": "Basics",
+        "skills": "Skills and experience",
+        "links": "Links",
+        "visibility": "Who can see it"
       },
-      "rateHint": "Only you and GenAI Fund see the rate."
+      "visibility": {
+        "listed": {
+          "title": "Listed in the directory",
+          "lead": "Anyone can find you in AI talent and search. Your page opens once GenAI Fund approves it.",
+          "leadApproved": "Anyone can find you in AI talent and search."
+        },
+        "hidden": {
+          "title": "Hidden",
+          "lead": "Only you see it. Show it again whenever you like; no new review."
+        }
+      },
+      "add": "Add",
+      "addOne": "Add {label}",
+      "skillsSuggested": "Suggested:",
+      "worksAtPlaceholder": "Company, or leave empty if independent"
     }
   },
   "Form": {
