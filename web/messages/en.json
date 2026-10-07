@@ -5252,6 +5252,8 @@
       "time": "{time} ICT"
     },
     "posted": "Posted {when}",
+    "view": "View use case",
+    "viewUnavailable": "Use case details are not available yet.",
     "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
     "empty": {
       "title": "No use cases match",
