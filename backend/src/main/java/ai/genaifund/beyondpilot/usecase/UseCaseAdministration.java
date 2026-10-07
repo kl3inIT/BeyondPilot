@@ -145,7 +145,8 @@ public class UseCaseAdministration {
 		identity.requireOperator(actor);
 		return new UseCaseOrganizationListResponse(organizations.approvedOrganizations(request.q(), ORGANIZATION_LIMIT)
 			.stream()
-			.map(organization -> new UseCaseOrganizationResponse(organization.id(), organization.name()))
+			.map(organization -> new UseCaseOrganizationResponse(organization.id(), organization.name(),
+					organization.logoFileId()))
 			.toList());
 	}
 
@@ -206,7 +207,8 @@ public class UseCaseAdministration {
 				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
 				new AuditRecord.Resource(USE_CASE, useCase.getId().toString(), useCase.getTitle()),
 				Map.of("organization", organization.id().toString(), "status", useCase.getStatus())));
-		return response(actor, useCase, new UseCaseOrganizationResponse(organization.id(), organization.name()), now);
+		return response(actor, useCase,
+				new UseCaseOrganizationResponse(organization.id(), organization.name(), organization.logoFileId()), now);
 	}
 
 	/**
@@ -379,7 +381,8 @@ public class UseCaseAdministration {
 	/** The organization named by its own module; a use case always has one, since the table references it. */
 	private static UseCaseOrganizationResponse organization(UUID id, Map<UUID, OrganizationName> names) {
 		OrganizationName name = names.get(id);
-		return new UseCaseOrganizationResponse(id, name == null ? "" : name.name());
+		return new UseCaseOrganizationResponse(id, name == null ? "" : name.name(),
+				name == null ? null : name.logoFileId());
 	}
 
 	/** What a person typed, or null when they typed nothing. */

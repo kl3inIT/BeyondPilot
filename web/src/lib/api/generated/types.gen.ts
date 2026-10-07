@@ -2562,6 +2562,10 @@ export type PublicUseCaseSummary = {
     id: string;
     industry: string;
     /**
+     * The organization's logo; null when it has none or asked to stay anonymous.
+     */
+    organizationLogoFileId?: string | null;
+    /**
      * The organization's name; null when it asked to stay anonymous.
      */
     organizationName?: string | null;
@@ -4127,6 +4131,10 @@ export type UseCaseAttachment = {
  * The organization a use case is for.
  */
 export type UseCaseOrganization = {
+    /**
+     * Its logo, read at /api/storage/files/{id}; null for none.
+     */
+    logoFileId?: string | null;
     id: string;
     name: string;
 };

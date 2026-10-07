@@ -351,8 +351,16 @@ createServer((request, response) => {
     }
     return json(response, 200, {
       items: [
-        { id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03", name: "Pocket Policy" },
-        { id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04", name: "Tasco" },
+        {
+          id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+          name: "Pocket Policy",
+          logoFileId: "0b6f2f0e-5d0e-4c57-9a55-6f6f3c1d2a10",
+        },
+        {
+          id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04",
+          name: "Tasco",
+          logoFileId: null,
+        },
       ],
     });
   }
@@ -360,7 +368,38 @@ createServer((request, response) => {
     if (account?.role !== "operator") {
       return json(response, account ? 403 : 401, {});
     }
-    return json(response, 200, { items: [], page: 1, pageSize: 25, total: 0 });
+    return json(response, 200, {
+      items: [
+        {
+          id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0011",
+          organization: {
+            id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+            name: "Pocket Policy",
+            logoFileId: "0b6f2f0e-5d0e-4c57-9a55-6f6f3c1d2a10",
+          },
+          title: "Claims triage",
+          status: "approved",
+          closesAt: "2026-12-31T16:59:00Z",
+          updatedAt: "2026-10-07T03:00:00Z",
+        },
+        {
+          id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0012",
+          organization: {
+            id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04",
+            name: "Tasco",
+            logoFileId: null,
+          },
+          title: "Inventory counting",
+          status: "draft",
+          closesAt: null,
+          updatedAt: "2026-10-06T03:00:00Z",
+        },
+      ],
+      page: 1,
+      pageSize: 25,
+      total: 2,
+      inReview: 0,
+    });
   }
   if (url.pathname === "/api/identity/accounts") {
     if (account?.role !== "operator") {

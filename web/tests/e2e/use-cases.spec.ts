@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
+import { serveStoredImages } from "./stored-files";
 
 test.describe("use cases", () => {
   test.use({ locale: "en-US" });
@@ -8,6 +9,7 @@ test.describe("use cases", () => {
   test("lists the published use cases with their organization, budget and deadline", async ({
     page,
   }) => {
+    await serveStoredImages(page);
     await page.goto("/use-cases");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Use cases");
@@ -18,6 +20,9 @@ test.describe("use cases", () => {
       "Have a business problem AI could solve?",
     ]);
     const first = page.getByRole("listitem").filter({ hasText: "Pocket Policy" });
+    await expect(first.locator("img")).toHaveCount(1);
+    const withoutLogo = page.getByRole("listitem").filter({ hasText: "Lumen Health" });
+    await expect(withoutLogo.getByText("LH", { exact: true })).toBeVisible();
     await expect(first.getByText("USD 15,000–40,000")).toBeVisible();
     await expect(first.getByText("Apply by Dec 31, 2026")).toBeVisible();
     await expect(first.getByText("23:59 ICT")).toBeVisible();
@@ -34,6 +39,7 @@ test.describe("use cases", () => {
     await expect(triage.getByText("To be determined")).toBeVisible();
     const forecasting = page.getByRole("listitem").filter({ hasText: "Demand forecasting" });
     await expect(forecasting.getByText("Organization not named")).toBeVisible();
+    await expect(forecasting.getByText("ON", { exact: true })).toBeVisible();
     await expect(forecasting.getByText("Shown to members")).toBeVisible();
   });
 

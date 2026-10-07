@@ -2,17 +2,16 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
+import { OrganizationMark } from "@/features/organization/organization-mark";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicUseCaseSummary } from "@/lib/api/generated";
 
 import { budgetFigures, budgetText } from "./use-case-budget";
 
 /**
- * One use case of the list. From 768px: a frame for the organization's logo, the brief in short, and a
- * side column with the budget, the timeline and the deadline. On a phone only what decides whether the
- * use case is worth reading stays: title, organization, tags, budget, timeline and deadline. The logo
- * frame stays empty until organizations have a logo to show; the page of one use case is not built yet,
- * so the card does not link to it.
+ * One use case of the list. From 768px: the organization's logo, the brief in short, and a side
+ * column with the budget, the timeline and the deadline. On a phone only what decides whether the
+ * use case is worth reading stays: title, organization, tags, budget, timeline and deadline.
  */
 function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
   const t = useTranslations("UseCases");
@@ -20,6 +19,7 @@ function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
   const technologyName = useVocabulary("technology");
   const format = useFormatter();
   const locale = useLocale();
+  const organizationName = useCase.organizationName ?? t("anonymous");
   const deadline = useCase.closesAt ? new Date(useCase.closesAt) : null;
   const technologies = useCase.technologies.map((technology) => technologyName(technology));
   const budget = useCase.budgetToBeDetermined
@@ -33,18 +33,17 @@ function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
 
   return (
     <li className="flex flex-wrap gap-3 rounded-2xl border bg-card p-4 text-card-foreground md:flex-nowrap md:gap-4 md:p-5 xl:gap-5">
-      <div
-        aria-hidden="true"
-        className="size-12 shrink-0 rounded-lg border bg-card md:size-24 md:rounded-xl xl:size-34"
+      <OrganizationMark
+        name={organizationName}
+        logoFileId={useCase.organizationLogoFileId}
+        size="card"
       />
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <h2 className="line-clamp-3 text-lg font-semibold tracking-title md:line-clamp-2 xl:text-xl">
           {useCase.title}
         </h2>
-        <p className="text-xs text-muted-foreground uppercase md:text-sm">
-          {useCase.organizationName ?? t("anonymous")}
-        </p>
+        <p className="text-xs text-muted-foreground uppercase md:text-sm">{organizationName}</p>
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">{industryName(useCase.industry)}</Badge>
         </div>

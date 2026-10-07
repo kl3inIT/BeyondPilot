@@ -146,8 +146,9 @@ public class UseCaseDirectory {
 		OrganizationName organization = row.hideOrganizationName() ? null : names.get(row.organizationId());
 		boolean hidden = row.budgetMembersOnly();
 		return new PublicUseCaseSummaryResponse(row.id(), row.title(), organization == null ? null : organization.name(),
-				row.industry(), row.goal(), row.technologies(), hidden ? null : row.budgetMin(),
-				hidden ? null : row.budgetMax(), row.currency(), row.budgetToBeDetermined(), row.budgetMembersOnly(),
-				row.timelineMinWeeks(), row.timelineMaxWeeks(), row.closesAt(), row.publishedAt());
+				organization == null ? null : organization.logoFileId(), row.industry(), row.goal(),
+				row.technologies(), hidden ? null : row.budgetMin(), hidden ? null : row.budgetMax(), row.currency(),
+				row.budgetToBeDetermined(), row.budgetMembersOnly(), row.timelineMinWeeks(), row.timelineMaxWeeks(),
+				row.closesAt(), row.publishedAt());
 	}
 }

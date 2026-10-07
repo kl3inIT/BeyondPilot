@@ -185,6 +185,8 @@ class UseCaseAdministrationTest {
 	void theDirectoryListsPublishedUseCasesToVisitorsAndKeepsAnonymousOrganizationsAnonymous() {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
 		UUID open = organization("Open Bank " + tag);
+		UUID logo = UUID.randomUUID();
+		jdbc.sql("update organization set logo_file_id = ? where id = ?").params(logo, open).update();
 		UUID quiet = organization("Quiet Bank " + tag);
 		post(operator, USE_CASES, useCase(open, "Open case " + tag, true)).expectStatus().isCreated();
 		post(operator, USE_CASES, useCase(open, "Draft case " + tag, false)).expectStatus().isCreated();
@@ -200,6 +202,11 @@ class UseCaseAdministrationTest {
 		assertThat(JsonPath.<Number>read(all, "$.total").intValue()).isEqualTo(2);
 		assertThat(JsonPath.<List<Object>>read(all, "$.items[?(@.title == 'Quiet case " + tag + "')].organizationName"))
 			.containsExactly((Object) null);
+		assertThat(JsonPath.<List<String>>read(all,
+				"$.items[?(@.title == 'Quiet case " + tag + "')].organizationLogoFileId")).containsExactly((String) null);
+		assertThat(JsonPath.<List<String>>read(all,
+				"$.items[?(@.title == 'Open case " + tag + "')].organizationLogoFileId"))
+			.containsExactly(logo.toString());
 		assertThat(JsonPath.<List<Object>>read(all, "$.items[?(@.title == 'Quiet case " + tag + "')].budgetMax"))
 			.containsExactly((Object) null);
 		assertThat(JsonPath.<List<Integer>>read(all, "$.items[?(@.title == 'Open case " + tag + "')].budgetMax"))
@@ -380,6 +387,8 @@ class UseCaseAdministrationTest {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
 		String bank = "Bank" + UUID.randomUUID().toString().substring(0, 8);
 		UUID organization = organization("Listed " + bank);
+		UUID logo = UUID.randomUUID();
+		jdbc.sql("update organization set logo_file_id = ? where id = ?").params(logo, organization).update();
 		post(operator, USE_CASES, useCase(organization, "Earlier " + tag, false)).expectStatus().isCreated();
 		post(operator, USE_CASES, useCase(organization, "Later " + tag, true)).expectStatus().isCreated();
 
@@ -401,7 +410,9 @@ class UseCaseAdministrationTest {
 			.jsonPath("$.inReview")
 			.isNumber()
 			.jsonPath("$.items[0].organization.id")
-			.isEqualTo(organization.toString()));
+			.isEqualTo(organization.toString())
+			.jsonPath("$.items[0].organization.logoFileId")
+			.isEqualTo(logo.toString()));
 		assertThat(JsonPath.<List<String>>read(page, "$.items[*].organization.name")).allSatisfy(
 				name -> assertThat(name).startsWith("Listed "));
 		get(operator, USE_CASES + "?status=sleeping").expectStatus().isBadRequest();

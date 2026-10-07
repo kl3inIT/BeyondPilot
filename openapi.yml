@@ -12700,6 +12700,13 @@ components:
           format: uuid
         industry:
           type: string
+        organizationLogoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: The organization's logo; null when it has none or asked to stay
+            anonymous.
         organizationName:
           type:
           - string
@@ -15901,6 +15908,12 @@ components:
       type: object
       description: The organization a use case is for.
       properties:
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Its logo, read at /api/storage/files/{id}; null for none."
         id:
           type: string
           format: uuid

@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { answerSignOut, signInAs } from "./session";
+import { serveStoredImages } from "./stored-files";
 
 /** The toggle in the bar above the page; the sidebar's own edge carries a second one. */
 function sidebarToggle(page: Page) {
@@ -163,6 +164,22 @@ test.describe("admin", () => {
     await expect(page).toHaveURL("/sign-in?returnTo=%2Fadmin");
     expect(signOuts).toEqual(["POST"]);
   });
+  test("the use-case list shows organization logos or two-letter initials", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await serveStoredImages(page);
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/use-cases");
+
+    const withLogo = page.getByRole("row").filter({ hasText: "Claims triage" });
+    await expect(withLogo.locator("img")).toHaveCount(1);
+    const withoutLogo = page.getByRole("row").filter({ hasText: "Inventory counting" });
+    await expect(withoutLogo.getByText("TA", { exact: true })).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+  });
+
   test("an operator writes a use case in steps and publishes it immediately", async ({
     page,
     context,
