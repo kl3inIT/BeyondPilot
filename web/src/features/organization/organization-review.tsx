@@ -29,6 +29,7 @@ import {
 import { refusalReasons } from "./organization-codes";
 import { organizationError } from "./organization-errors";
 import { websiteHost } from "./organization-format";
+import { OrganizationMark } from "./organization-mark";
 import { useAdminOrganization, useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
 
 /** The longest reason for a send back that the backend takes. */
@@ -183,13 +184,16 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
       <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle size="lg">{t("title", { name })}</DialogTitle>
-          <DialogDescription>
-            <span className="block">{kind.join(" · ")}</span>
-            <span className="block">
+        </DialogHeader>
+        <div className="flex items-center gap-3 rounded-lg border bg-muted p-3">
+          <OrganizationMark name={name} logoFileId={detail?.organization.logoFileId} />
+          <div className="grid min-w-0 gap-0.5 text-sm">
+            <span className="font-medium break-words">{kind.join(" · ")}</span>
+            <span className="text-muted-foreground">
               {detail ? t("lead", { creator: detail.createdBy, day }) : t("leadUnknown", { day })}
             </span>
-          </DialogDescription>
-        </DialogHeader>
+          </div>
+        </div>
         <VerifiedDomainField
           id="review-domain"
           domain={domain}

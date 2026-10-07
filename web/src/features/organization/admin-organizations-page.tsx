@@ -5,11 +5,11 @@ import { createSerializer } from "nuqs/server";
 import { Button } from "@/components/actions/button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
-import { Person } from "@/components/composites/person";
 import { reviewState } from "@/components/composites/review-status";
 import { Status } from "@/components/composites/status";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganizationList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -21,6 +21,7 @@ import {
   type AdminOrganizationsSearch,
 } from "./admin-organizations-search";
 import { AdminOrganizationsToolbar } from "./admin-organizations-toolbar";
+import { OrganizationMark } from "./organization-mark";
 
 const address = createSerializer(adminOrganizationsSearch);
 
@@ -56,16 +57,26 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
   const rows = organizations.items.map((organization) => ({
     id: organization.id,
     organization: (
-      <Person
-        name={organization.name}
-        email={[
-          typeName(organization.type),
-          organization.country && countryName(organization.country),
-          organization.owned ? t("members", { count: organization.members }) : t("unowned"),
-        ]
-          .filter(Boolean)
-          .join(" · ")}
-      />
+      <div className="flex min-w-0 items-center gap-3">
+        <OrganizationMark name={organization.name} logoFileId={organization.logoFileId} size="sm" />
+        <div className="grid min-w-0 text-sm">
+          <Link
+            href={`${siteRoutes.adminOrganizations}/${organization.id}`}
+            className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            {organization.name}
+          </Link>
+          <span className="truncate text-muted-foreground">
+            {[
+              typeName(organization.type),
+              organization.country && countryName(organization.country),
+              organization.owned ? t("members", { count: organization.members }) : t("unowned"),
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        </div>
+      </div>
     ),
     request: organization.request ? (
       <Status appearance="pill" tone={requestTones[organization.request]}>

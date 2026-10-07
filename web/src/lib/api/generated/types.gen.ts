@@ -205,6 +205,10 @@ export type AdminOrganizationSummary = {
     createdAt: string;
     id: string;
     members: number;
+    /**
+     * Its logo, read at /api/storage/files/{id}; null for none.
+     */
+    logoFileId?: string | null;
     name: string;
     /**
      * Whether a person owns it; an operator-created organization has no owner until someone accepts or claims it.
