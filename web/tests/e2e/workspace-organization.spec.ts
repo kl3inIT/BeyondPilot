@@ -397,7 +397,7 @@ test.describe("workspace organization", () => {
 
     await expect(shownPeople(page)).toHaveText(["Minh Trần", "Siti Rahma", "hoa.le@example.com"]);
     await expect(
-      page.getByText("2 members · 1 invitation pending · 19 of 20 invitations left today"),
+      page.getByText("2 members · 1 invitation pending · 19 of 20 invitations left in 24 hours"),
     ).toBeVisible();
     // The row is drawn as a table row and as a stacked row; one of them shows.
     await expect(
@@ -433,7 +433,7 @@ test.describe("workspace organization", () => {
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading")).toHaveText("Invite people to Pocket Policy");
     await expect(
-      dialog.getByText("19 of 20 invitations left today; 49 of 50 can be open at once.", {
+      dialog.getByText("19 of 20 invitations left in 24 hours; 49 of 50 can be open at once.", {
         exact: false,
       }),
     ).toBeVisible();

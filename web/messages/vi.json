@@ -2949,7 +2949,7 @@
       "summary": {
         "members": "{count} thành viên",
         "invitations": "{count} lời mời đang chờ",
-        "left": "còn {left} trên {limit} lời mời hôm nay",
+        "left": "còn {left} trên {limit} lời mời trong 24 giờ",
         "notApproved": "bạn có thể mời người khác sau khi tổ chức được duyệt"
       },
       "columns": {
@@ -3027,7 +3027,7 @@
       "invite": {
         "open": "Mời mọi người",
         "title": "Mời mọi người vào {name}",
-        "lead": "Hôm nay còn {leftToday}/{dailyLimit} lời mời; có thể mở cùng lúc {leftOpen}/{openLimit} lời mời.",
+        "lead": "Còn {leftToday}/{dailyLimit} lời mời trong 24 giờ; có thể mở cùng lúc {leftOpen}/{openLimit} lời mời.",
         "emails": "Địa chỉ email",
         "emailsPlaceholder": "ten@congty.com, ten@congty.com",
         "emailsInvalid": "Hãy nhập các địa chỉ email đầy đủ, cách nhau bằng dấu phẩy.",
@@ -3037,12 +3037,12 @@
         "send": "Gửi lời mời",
         "limit": {
           "daily": {
-            "lead": "Hôm nay {name} đã gửi {limit} lời mời, mức tối đa một tổ chức được gửi trong một ngày. Bạn có thể mời thêm vào ngày mai.",
-            "note": "Thu hồi một lời mời chưa ai trả lời không trả lại lượt của hôm nay. Hãy viết cho GenAI Fund nếu bạn đưa vào một đội lớn hơn."
+            "lead": "{name} đã gửi {limit} lời mời trong 24 giờ qua, mức tối đa một tổ chức được gửi. Bạn có thể mời thêm khi lời mời sớm nhất trong số đó đã qua 24 giờ.",
+            "note": "Thu hồi một lời mời chưa ai trả lời không trả lại lượt đã dùng. Hãy viết cho GenAI Fund nếu bạn đưa vào một đội lớn hơn."
           },
           "open": {
             "lead": "{name} đang có {limit} lời mời chưa ai trả lời, mức tối đa một tổ chức được giữ mở. Hãy thu hồi những lời mời không còn cần, hoặc chờ mọi người trả lời.",
-            "note": "Lời mời còn mở cho tới khi người nhận trả lời hoặc bạn thu hồi. Hãy viết cho GenAI Fund nếu bạn đưa vào một đội lớn hơn."
+            "note": "Lời mời còn mở cho tới khi người nhận trả lời, bạn thu hồi, hoặc lời mời hết hạn sau bảy ngày kể từ khi gửi. Hãy viết cho GenAI Fund nếu bạn đưa vào một đội lớn hơn."
           },
           "close": "Đóng"
         }
