@@ -9,7 +9,8 @@ final class SolutionCodes {
 
 	static final String INDUSTRY = "banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare"
 			+ "|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment"
-			+ "|public_sector|professional_services|technology|automotive_mobility|consumer_goods|other";
+			+ "|public_sector|professional_services|technology|automotive_mobility|consumer_goods"
+			+ "|climate_sustainability|marketing_advertising|legal|hr_workforce|other";
 
 	static final String MATURITY = "idea|prototype|pilot|production|scaled";
 

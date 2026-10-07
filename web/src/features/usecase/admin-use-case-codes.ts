@@ -29,6 +29,10 @@ export const useCaseIndustries = [
   "technology",
   "automotive_mobility",
   "consumer_goods",
+  "climate_sustainability",
+  "marketing_advertising",
+  "legal",
+  "hr_workforce",
   "other",
 ] as const;
 

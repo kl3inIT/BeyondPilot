@@ -158,6 +158,12 @@ class UseCaseServiceTest {
 
 		assertThat(JsonPath.<Number>read(body(get(team.founder, MINE + "/" + id).expectStatus().isOk()), "$.version")
 			.longValue()).isZero();
+
+		// The industries added for the old platform's records are stored, the database check included.
+		Map<String, Object> climate = save(0);
+		climate.put("industry", "climate_sustainability");
+		String filed = body(put(team.founder, MINE + "/" + id, climate).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(filed, "$.industry")).isEqualTo("climate_sustainability");
 	}
 
 	@Test
