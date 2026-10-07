@@ -39,7 +39,7 @@ MB = 1024 * 1024
 # What each purpose accepts, as StorageService and StorageProperties' defaults do.
 PURPOSES = {
     "organization_logo": ({"image/png", "image/jpeg", "image/webp"}, 5 * MB, True),
-    "solution_deck": ({"application/pdf"}, 25 * MB, False),
+    "solution_deck": ({"application/pdf"}, 100 * MB, False),
     "use_case_attachment": ({
         "application/pdf", "image/png", "image/jpeg",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

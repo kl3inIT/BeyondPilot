@@ -44,5 +44,6 @@ Staging first, then production, with the same `load.sql` and `files/` (the [desi
 2. Copy the files into the object store, keeping their paths: `docker compose cp files/. api:/var/lib/beyondpilot/storage/`, then make them the api user's (`docker compose exec -u root api chown -R 1654:1654 /var/lib/beyondpilot/storage`, the uid of `backend/Dockerfile`).
 3. Find the operator account: `docker compose exec -T postgres psql -U beyondpilot -d beyondpilot -tAc "select id, email from identity_account where platform_role = 'operator'"`.
 4. Load: `docker compose exec -T postgres psql -U beyondpilot -d beyondpilot -v ON_ERROR_STOP=1 -v operator=<id> -f - < load.sql`. It runs in one transaction and ends with a notice of what it wrote; a second run of the same export is refused and changes nothing.
-5. Rebuild the search index from Admin › AI › Search index.
-6. Check the counts against `build.json` and the summary, and in Admin › Organizations and Solutions (status In review).
+5. **Staging only:** approve the imported organizations and approve and list the active solutions, so matching is built on real data: `python -I infrastructure/legacy-import/staging_list.py .tmp/legacy-import/out/load.sql > .tmp/legacy-import/out/staging-list.sql`, then run it with `psql -v ON_ERROR_STOP=1 -f -`. Production skips this step.
+6. Rebuild the search index from Admin › AI › Search index.
+7. Check the counts against `build.json` and the summary, and in Admin › Organizations and Solutions (In review on production, Approved on staging).

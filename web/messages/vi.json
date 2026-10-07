@@ -3665,7 +3665,7 @@
       },
       "deck": {
         "empty": "Tải tài liệu giới thiệu lên",
-        "limits": "PDF, tối đa 25 MB",
+        "limits": "PDF, tối đa 100 MB",
         "uploading": "Đang tải lên…",
         "uploaded": "{size} · Tải lên {when}",
         "waiting": "{size} · Chưa lưu",
@@ -3674,7 +3674,7 @@
         "remove": "Bỏ tệp",
         "errors": {
           "type": "Ở đây chỉ tải lên được tệp PDF.",
-          "size": "Tệp này lớn hơn 25 MB.",
+          "size": "Tệp này lớn hơn 100 MB.",
           "failed": "Chưa tải tài liệu lên được. Hãy thử lại."
         }
       },
