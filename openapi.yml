@@ -7908,15 +7908,15 @@ components:
         id:
           type: string
           format: uuid
-        members:
-          type: integer
-          format: int32
         logoFileId:
           type:
           - string
           - "null"
           format: uuid
           description: "Its logo, read at /api/storage/files/{id}; null for none."
+        members:
+          type: integer
+          format: int32
         name:
           type: string
         owned:
