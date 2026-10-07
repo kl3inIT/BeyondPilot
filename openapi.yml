@@ -12700,6 +12700,13 @@ components:
           format: uuid
         industry:
           type: string
+        organizationLogoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The organization's logo, read at /api/storage/files/{id};\
+            \ null when it has none or asked to stay anonymous."
         organizationName:
           type:
           - string
