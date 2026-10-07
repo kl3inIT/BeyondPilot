@@ -185,6 +185,18 @@ public class SolutionDirectory {
 			.findFirst());
 	}
 
+	/**
+	 * A solution a visitor can find, by its address: approved, listed and not taken down, with an organization that is
+	 * approved; empty for any other. For the MCP server's {@code fetch}.
+	 */
+	@Transactional(readOnly = true)
+	public Optional<IndexedSolution> listed(String slug) {
+		return solutions.findBySlug(slug)
+			.filter(Solution::isApproved)
+			.flatMap(solution -> indexed(List.of(solution)).stream().findFirst())
+			.filter(IndexedSolution::listed);
+	}
+
 	/** Every approved solution not taken down as search indexes it, for a rebuild of the index. */
 	@Transactional(readOnly = true)
 	public List<IndexedSolution> indexedAll() {

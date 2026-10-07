@@ -10,6 +10,7 @@ export const siteRoutes = {
   getStarted: "/get-started",
   publishUseCase: "/use-cases/new",
   talentProfile: "/workspace/talent",
+  accountMcp: "/account/mcp",
   founders: "/founders",
   search: "/search",
   admin: "/admin",

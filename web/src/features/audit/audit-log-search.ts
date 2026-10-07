@@ -72,6 +72,7 @@ export const auditActions = [
   "search.semantic_disable",
   "search.index_rebuild",
   "search.embedding_retry",
+  "mcp.app_revoke",
 ] as const;
 
 /**
