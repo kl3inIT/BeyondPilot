@@ -88,7 +88,7 @@ class ClientMetadataDocuments {
 
 	/**
 	 * The address of the request being served, as the proxy reported it; the edge proxy replaces
-	 * {@code X-Forwarded-For} rather than appending to it, so a client cannot choose it (docs/runbooks/ci-cd.md › The
+	 * {@code X-Forwarded-For} rather than appending to it and drops {@code Forwarded}, so a client cannot choose it (docs/runbooks/ci-cd.md › The
 	 * reverse proxy). Calls outside a request, which only tests make, share one share.
 	 */
 	private static String requester() {
