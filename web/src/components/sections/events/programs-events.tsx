@@ -11,18 +11,23 @@ import { liveCampaignDeadline, liveCampaignUrl } from "@/lib/site";
 
 type Stage = "open" | "coming" | "done";
 
-/** GenAI Builders Meetup, Tuesdays 4–6 pm in Ho Chi Minh City: the next three sessions. */
-const meetupDates = [
-  "2026-10-13T16:00:00+07:00",
-  "2026-11-17T16:00:00+07:00",
-  "2026-12-15T16:00:00+07:00",
-];
+/** A program that ended, as its card under Done shows it. */
+export type PastProgram = {
+  slug: string;
+  name: string;
+  type: string;
+  partnerName: string | null;
+  coverUrl: string | null;
+  startsOn: string | null;
+  endsOn: string | null;
+};
 
-const pastPrograms = [
-  { id: "aabw", cover: "/landing/cover-aabw-2026.jpg", width: 1200, height: 450 },
-  { id: "shinhan", cover: "/landing/cover-shinhan-demo-day-2026.jpg", width: 1200, height: 450 },
-  { id: "workforce", cover: "/landing/cover-ai-workforce-shift.jpg", width: 1166, height: 351 },
-] as const;
+/** What the strip shows besides the live campaign; a stop with nothing to show is left out. */
+export type EventsData = {
+  /** The next sessions of an event series; `recurring` is the GenAI Builders Meetup, whose hours are known. */
+  meetup: { name: string; recurring: boolean; dates: string[] } | null;
+  past: PastProgram[];
+};
 
 const stagePill = cva("inline-flex w-fit rounded-full px-3.5 py-1.5 text-sm font-semibold", {
   variants: {
@@ -49,7 +54,7 @@ const stageDot = cva("relative size-3.5 rounded-full ring-3 ring-muted", {
  * "What can I join now?": one azure rail with three stops (DESIGN.md › Timeline). The stage pill
  * sits in its own column from `md` and above the content on phones, where everything stacks.
  */
-function ProgramsEvents() {
+function ProgramsEvents({ data }: { data: EventsData }) {
   const t = useTranslations("Home.events");
 
   return (
@@ -62,12 +67,16 @@ function ProgramsEvents() {
           <Stop stage="open" label={t("open")}>
             <LiveCampaign />
           </Stop>
-          <Stop stage="coming" label={t("coming")}>
-            <NextMeetup />
-          </Stop>
-          <Stop stage="done" label={t("done")} last>
-            <PastPrograms />
-          </Stop>
+          {data.meetup && (
+            <Stop stage="coming" label={t("coming")} last={data.past.length === 0}>
+              <NextMeetup meetup={data.meetup} />
+            </Stop>
+          )}
+          {data.past.length > 0 && (
+            <Stop stage="done" label={t("done")} last>
+              <PastPrograms programs={data.past} />
+            </Stop>
+          )}
         </ol>
       </div>
     </Section>
@@ -184,18 +193,18 @@ function LiveCampaign() {
 }
 
 /** A recurring event is one card with a date tile per upcoming session (DESIGN.md › Cards). */
-function NextMeetup() {
+function NextMeetup({ meetup }: { meetup: NonNullable<EventsData["meetup"]> }) {
   const t = useTranslations("Home.events");
   const format = useFormatter();
 
   return (
     <article className="flex flex-col gap-3 rounded-xl border bg-card py-3.5 pr-4.5 pl-3.5 text-card-foreground shadow-card md:flex-row md:items-center md:justify-between md:gap-3.5">
       <div className="flex flex-col gap-0.5">
-        <h4 className="text-sm font-semibold">{t("meetup")}</h4>
-        <p className="text-xs text-muted-foreground">{t("meetupSchedule")}</p>
+        <h4 className="text-sm font-semibold">{meetup.name}</h4>
+        {meetup.recurring && <p className="text-xs text-muted-foreground">{t("meetupSchedule")}</p>}
       </div>
       <ul aria-label={t("meetupDates")} className="flex gap-2">
-        {meetupDates.map((iso) => {
+        {meetup.dates.map((iso) => {
           const date = new Date(iso);
           return (
             <li key={iso}>
@@ -218,29 +227,51 @@ function NextMeetup() {
   );
 }
 
+/** "23 Sep – 5 Dec 2026", or one day, in Vietnam time. */
+function daysOf(format: ReturnType<typeof useFormatter>, startsOn: string, endsOn: string) {
+  const options = { day: "numeric", month: "short", year: "numeric" } as const;
+  const start = new Date(`${startsOn}T00:00:00+07:00`);
+  return startsOn === endsOn
+    ? format.dateTime(start, options)
+    : format.dateTimeRange(start, new Date(`${endsOn}T00:00:00+07:00`), options);
+}
+
 /** Past programs as cover cards; on phones they stack instead of scrolling sideways. */
-function PastPrograms() {
-  const t = useTranslations("Home.events");
+function PastPrograms({ programs }: { programs: PastProgram[] }) {
+  const kinds = useTranslations("Program.type") as unknown as (code: string) => string;
+  const format = useFormatter();
 
   return (
     <ul className="grid gap-3 md:gap-4 lg:grid-cols-3">
-      {pastPrograms.map(({ id, cover, width, height }) => (
+      {programs.map((program) => (
         <li
-          key={id}
+          key={program.slug}
           className="flex flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-card"
         >
-          <Image
-            src={cover}
-            alt={t(`${id}Alt`)}
-            width={width}
-            height={height}
-            sizes="(min-width: 1024px) 24rem, 100vw"
-            className="h-30 w-full object-cover md:h-37.5"
-          />
+          {program.coverUrl ? (
+            <Image
+              src={program.coverUrl}
+              alt=""
+              width={1200}
+              height={450}
+              unoptimized
+              className="h-30 w-full object-cover md:h-37.5"
+            />
+          ) : (
+            <div className="h-30 w-full bg-linear-155 from-primary to-brand md:h-37.5" />
+          )}
           <div className="flex flex-col gap-1 px-4.5 pt-4 pb-4.5">
-            <p className="text-xs font-medium text-muted-foreground">{t(`${id}Meta`)}</p>
-            <h4 className="text-base font-medium">{t(`${id}Title`)}</h4>
-            <p className="text-xs font-medium text-primary">{t(`${id}Fact`)}</p>
+            <p className="text-xs font-medium text-muted-foreground">
+              {program.partnerName
+                ? `${kinds(program.type)} · ${program.partnerName}`
+                : kinds(program.type)}
+            </p>
+            <h4 className="text-base font-medium">{program.name}</h4>
+            {program.startsOn && program.endsOn && (
+              <p className="text-xs font-medium text-primary">
+                {daysOf(format, program.startsOn, program.endsOn)}
+              </p>
+            )}
           </div>
         </li>
       ))}
