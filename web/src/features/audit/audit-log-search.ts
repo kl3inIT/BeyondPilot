@@ -34,6 +34,7 @@ export const auditActions = [
   "solution.back",
   "solution.deployment_approve",
   "solution.deployment_reject",
+  "solution.enrich",
   "use_case.create",
   "use_case.submit",
   "use_case.draft",

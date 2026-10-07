@@ -747,6 +747,7 @@
           "restore": "Khôi phục giải pháp",
           "deployment_approve": "Duyệt triển khai khách hàng",
           "deployment_reject": "Trả lại triển khai khách hàng",
+          "enrich": "Bổ sung solution từ nguồn công khai",
           "back": "Ghi xác nhận của GenAI Fund về giải pháp"
         },
         "introduction": {
@@ -840,6 +841,7 @@
           "restore": "Khôi phục giải pháp <resource></resource>",
           "deployment_approve": "Duyệt triển khai khách hàng <resource></resource>",
           "deployment_reject": "Trả lại triển khai khách hàng <resource></resource>",
+          "enrich": "Bổ sung solution <resource></resource> từ nguồn công khai",
           "back": "Ghi xác nhận của GenAI Fund về giải pháp <resource></resource>"
         },
         "introduction": {

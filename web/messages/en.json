@@ -747,6 +747,7 @@
           "restore": "Restored a solution",
           "deployment_approve": "Approved a customer deployment",
           "deployment_reject": "Sent a customer deployment back",
+          "enrich": "Filled a solution from public sources",
           "back": "Wrote what GenAI Fund says of a solution"
         },
         "introduction": {
@@ -840,6 +841,7 @@
           "restore": "Restored the solution <resource></resource>",
           "deployment_approve": "Approved the customer deployment <resource></resource>",
           "deployment_reject": "Sent the customer deployment <resource></resource> back",
+          "enrich": "Filled the solution <resource></resource> from public sources",
           "back": "Wrote what GenAI Fund says of the solution <resource></resource>"
         },
         "introduction": {
