@@ -3,6 +3,7 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
 import { OrganizationMark } from "@/features/organization/organization-mark";
+import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicUseCaseSummary } from "@/lib/api/generated";
 import { useCaseRoute } from "@/lib/site";
@@ -42,7 +43,12 @@ function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <h2 className="line-clamp-3 text-lg font-semibold tracking-title md:line-clamp-2 xl:text-xl">
-          {useCase.title}
+          <Link
+            className="hover:underline focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring/50"
+            href={useCaseRoute(useCase.id)}
+          >
+            {useCase.title}
+          </Link>
         </h2>
         <p className="text-xs text-muted-foreground uppercase md:text-sm">{organizationName}</p>
         <div className="flex flex-wrap gap-2">

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { debounce, useQueryStates } from "nuqs";
 import { useTransition } from "react";
 
+import { TextButton } from "@/components/actions/text-button";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import {
@@ -59,18 +60,29 @@ function UseCasesToolbar() {
             }
           />
         </InputGroup>
-        <div className="md:w-72">
-          <ChoiceCombobox
-            label={t("industry.label")}
-            placeholder={t("industry.placeholder")}
-            emptyLabel={t("industry.empty")}
-            removeLabel={(industry) => t("industry.remove", { industry })}
-            options={useCaseIndustries.map((value) => ({ value, label: industryName(value) }))}
-            value={search.industry}
-            onValueChange={(industry) =>
-              setSearch({ industry: industry.filter(isIndustry), page: null })
-            }
-          />
+        <div className="flex items-start gap-2 md:w-72">
+          <div className="min-w-0 flex-1">
+            <ChoiceCombobox
+              label={t("industry.label")}
+              placeholder={t("industry.placeholder")}
+              emptyLabel={t("industry.empty")}
+              removeLabel={(industry) => t("industry.remove", { industry })}
+              options={useCaseIndustries.map((value) => ({ value, label: industryName(value) }))}
+              value={search.industry}
+              onValueChange={(industry) =>
+                setSearch({ industry: industry.filter(isIndustry), page: null })
+              }
+            />
+          </div>
+          {search.industry.length > 0 && (
+            <TextButton
+              className="self-start"
+              size="sm"
+              onClick={() => setSearch({ industry: null, page: null })}
+            >
+              {t("industry.clear")}
+            </TextButton>
+          )}
         </div>
 
         <div className="flex items-center gap-3">

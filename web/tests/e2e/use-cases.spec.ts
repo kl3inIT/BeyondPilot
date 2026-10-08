@@ -26,6 +26,9 @@ test.describe("use cases", () => {
     await expect(first.getByText("USD 15,000–40,000")).toBeVisible();
     await expect(first.getByText("Apply by Dec 31, 2026")).toBeVisible();
     await expect(first.getByText("23:59 ICT")).toBeVisible();
+    await expect(
+      first.getByRole("link", { name: "Voice assistant for vehicle owners" }),
+    ).toHaveAttribute("href", "/use-cases/0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0001");
     await expect(page.getByText("3 use cases")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
   });
@@ -43,7 +46,11 @@ test.describe("use cases", () => {
     await expect(
       page.getByText("The team needs a clear, measurable way to improve this work."),
     ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Open for proposals" })).toBeVisible();
+    await expect(page.getByText("Open to proposals", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Send a proposal" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -79,12 +86,14 @@ test.describe("use cases", () => {
       /\/use-cases\?(?=.*q=retail)(?=.*industry=insurance,automotive_mobility)/,
     );
     await expect(page.getByText("No use cases match")).toBeVisible();
-
     // The way back is a plain link to the list without filters.
     await expect(page.getByRole("link", { name: "Clear search and filters" })).toHaveAttribute(
       "href",
       "/use-cases",
     );
+
+    await page.getByRole("button", { name: "Clear all" }).click();
+    await expect(page).toHaveURL(/\/use-cases\?q=retail$/);
   });
 
   test("the order follows the address", async ({ page }) => {
