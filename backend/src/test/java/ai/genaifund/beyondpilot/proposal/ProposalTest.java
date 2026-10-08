@@ -157,8 +157,17 @@ class ProposalTest extends ApplicationsHttpTest {
 		Map<String, Object> bareSolution = application(contact(), UUID.fromString(JsonPath.read(bare, "$.id")),
 				answers(form, email), versionOf(partial));
 		bareSolution.put("teamBackground", "Two engineers from an insurer.");
-		put(applicant, form.path(), bareSolution).expectStatus().isOk();
+		String incomplete = body(put(applicant, form.path(), bareSolution).expectStatus().isOk());
 		assertProblem(post(applicant, submit, null), 400, "PROPOSAL_SOLUTION_INCOMPLETE");
+
+		// A LinkedIn profile is the one contact detail a submission may leave out.
+		Map<String, Object> noLinkedin = withDeck(application(Map.of("firstName", "Dat", "lastName", "Phan", "phone",
+				"+84 912 345 678", "country", "VN"), solution, answers(form, email), versionOf(incomplete)), email);
+		noLinkedin.put("teamBackground", "Two engineers from an insurer.");
+		put(applicant, form.path(), noLinkedin).expectStatus().isOk();
+		assertThat(JsonPath.<String>read(body(post(applicant, submit, null).expectStatus().isOk()),
+				"$.application.status"))
+			.isEqualTo("submitted");
 	}
 
 	@Test

@@ -93,7 +93,7 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 | Check                                                                              | Code                                |
 | ---------------------------------------------------------------------------------- | ----------------------------------- |
 | The caller belongs to an organization                                              | `PROPOSAL_ORGANIZATION_REQUIRED`    |
-| First and last name, phone, country and LinkedIn are filled                        | `PROPOSAL_CONTACT_INCOMPLETE`       |
+| First and last name, phone and country are filled; a LinkedIn profile is optional  | `PROPOSAL_CONTACT_INCOMPLETE`       |
 | A team background, unless the organization is an `independent_builder`             | `PROPOSAL_TEAM_BACKGROUND_REQUIRED` |
 | A solution is chosen                                                               | `PROPOSAL_SOLUTION_REQUIRED`        |
 | It is the organization's                                                           | `PROPOSAL_SOLUTION_NOT_FOUND`       |

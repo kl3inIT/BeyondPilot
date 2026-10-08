@@ -266,7 +266,7 @@ public class ProposalService {
 			.orElseThrow(() -> refused(ProposalErrorCode.ORGANIZATION_REQUIRED, id));
 		ContactDetails contact = json.readValue(proposal.getContact(), ContactDetails.class);
 		if (blank(contact.firstName()) || blank(contact.lastName()) || blank(contact.phone())
-				|| blank(contact.country()) || blank(contact.linkedin())) {
+				|| blank(contact.country())) {
 			throw refused(ProposalErrorCode.CONTACT_INCOMPLETE, id);
 		}
 		boolean alone = "independent_builder".equals(organization.type());

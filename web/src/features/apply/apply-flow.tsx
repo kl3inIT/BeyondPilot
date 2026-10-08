@@ -183,7 +183,9 @@ function ApplyFlow({ initial }: { initial: ApplicationView }) {
         blank(contact.lastName) ? "lastName" : null,
         blank(contact.phone) ? "phone" : null,
         blank(contact.country) ? "country" : null,
-        !/^https:\/\/\S+$/.test(contact.linkedin.trim()) ? "linkedin" : null,
+        !blank(contact.linkedin) && !/^https:\/\/\S+$/.test(contact.linkedin.trim())
+          ? "linkedin"
+          : null,
         alone() ? null : blank(draft.teamBackground) ? "teamBackground" : null,
       ];
       return fields.filter((field): field is string => field !== null);
@@ -744,7 +746,7 @@ function StepYou({
               onChange={(event) => writeContact("linkedin", event.target.value)}
               aria-invalid={bad("linkedin")}
             />
-            <Required show={bad("linkedin")}>{t("linkedinRequired")}</Required>
+            <Required show={bad("linkedin")}>{t("linkedinInvalid")}</Required>
           </Field>
         </div>
       </section>
