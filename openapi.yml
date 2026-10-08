@@ -7110,7 +7110,7 @@ paths:
           type:
           - string
           - "null"
-          pattern: ai_engineer|ml_engineer|forward_deployed_engineer|automation_specialist|data_scientist|data_engineer|ai_product_manager|ai_consultant|ai_designer|other
+          pattern: ai_engineer|ml_engineer|forward_deployed_engineer|software_engineer|solution_architect|automation_specialist|data_scientist|data_engineer|researcher|ai_product_manager|ai_consultant|ai_designer|founder|student|other
       - description: "Only profiles in this country, ISO 3166-1 alpha-2."
         in: query
         name: country
@@ -15134,7 +15134,7 @@ components:
           type: array
           items:
             type: string
-            pattern: ai_engineer|ml_engineer|forward_deployed_engineer|automation_specialist|data_scientist|data_engineer|ai_product_manager|ai_consultant|ai_designer|other
+            pattern: ai_engineer|ml_engineer|forward_deployed_engineer|software_engineer|solution_architect|automation_specialist|data_scientist|data_engineer|researcher|ai_product_manager|ai_consultant|ai_designer|founder|student|other
           maxItems: 4
           minItems: 0
         skills:

@@ -2951,12 +2951,17 @@
       "ai_engineer": "Kỹ sư AI",
       "ml_engineer": "Kỹ sư ML",
       "forward_deployed_engineer": "Kỹ sư triển khai tại khách hàng",
+      "software_engineer": "Kỹ sư phần mềm",
+      "solution_architect": "Kiến trúc sư giải pháp",
       "automation_specialist": "Chuyên gia tự động hóa",
       "data_scientist": "Nhà khoa học dữ liệu",
       "data_engineer": "Kỹ sư dữ liệu",
+      "researcher": "Nhà nghiên cứu",
       "ai_product_manager": "Quản lý sản phẩm AI",
       "ai_consultant": "Tư vấn AI",
       "ai_designer": "Nhà thiết kế AI",
+      "founder": "Nhà sáng lập",
+      "student": "Sinh viên",
       "other": "Khác"
     },
     "engagement": {

@@ -2951,12 +2951,17 @@
       "ai_engineer": "AI engineer",
       "ml_engineer": "ML engineer",
       "forward_deployed_engineer": "Forward-deployed engineer",
+      "software_engineer": "Software engineer",
+      "solution_architect": "Solution architect",
       "automation_specialist": "Automation specialist",
       "data_scientist": "Data scientist",
       "data_engineer": "Data engineer",
+      "researcher": "Researcher",
       "ai_product_manager": "AI product manager",
       "ai_consultant": "AI consultant",
       "ai_designer": "AI designer",
+      "founder": "Founder",
+      "student": "Student",
       "other": "Other"
     },
     "engagement": {
