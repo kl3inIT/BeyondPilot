@@ -246,6 +246,17 @@ const useCases = [
   },
 ];
 
+const useCaseDetails = useCases.map((item) => ({
+  ...item,
+  problemStatement: `${item.goal} The team needs a clear, measurable way to improve this work.`,
+  expectedOutcomes: "Improve the outcome, reduce manual effort and make progress measurable.",
+  currentProcess: "The team coordinates this work manually across separate systems.",
+  currentSolutions: "The current tools do not solve the full problem.",
+  targetUsers: "The operating team and the people it serves.",
+  dataReadiness: "Relevant operational data is available and refreshed regularly.",
+  integrationRequirements: "The solution must work with the organization's existing systems.",
+}));
+
 /** The public list of use cases: the search looks in the title, the goal and the organization's name. */
 function pageOfUseCases(url) {
   const { searchParams: query } = url;
@@ -278,8 +289,12 @@ export function answerDirectory(url) {
   if (pathname === "/api/usecase/use-cases") {
     return [200, pageOfUseCases(url)];
   }
+  const useCaseId = /^\/api\/usecase\/use-cases\/([^/]+)$/.exec(pathname)?.[1];
+  if (useCaseId) {
+    const found = useCaseDetails.find((item) => item.id === useCaseId);
+    return found ? [200, found] : missing;
+  }
   const [, area, list, slug] = /^\/api\/(\w+)\/(\w+)(?:\/([^/]+))?$/.exec(pathname) ?? [];
-
   if (area === "solution" && list === "solutions") {
     if (slug) {
       const found = [...solutions, unlisted].find((item) => item.slug === slug);

@@ -56,6 +56,11 @@ export function programRoute(slug: string) {
   return `${siteRoutes.programs}/${slug}`;
 }
 
+/** One use case's public brief. */
+export function useCaseRoute(id: string) {
+  return `${siteRoutes.useCases}/${id}`;
+}
+
 /**
  * Where a program takes applications, while the application form of BeyondPilot is being built
  * (BEY-37): the Tasco challenge still takes them on its interim page. A program without one shows

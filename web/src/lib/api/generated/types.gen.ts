@@ -2692,6 +2692,58 @@ export type PublicTalentSummary = {
 };
 
 /**
+ * A published use case that still accepts proposals.
+ */
+export type PublicUseCase = {
+    budgetMax?: number | null;
+    /**
+     * Whether the organization shows the budget to members only.
+     */
+    budgetMembersOnly: boolean;
+    /**
+     * Whole units of currency; null while the budget is to be determined or is for members only.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * Proposals close at this instant; null for no deadline.
+     */
+    closesAt?: string | null;
+    /**
+     * The currency of the amounts.
+     */
+    currency: 'USD' | 'VND';
+    currentProcess?: string | null;
+    currentSolutions?: string | null;
+    dataReadiness?: string | null;
+    expectedOutcomes?: string | null;
+    id: string;
+    industry: string;
+    integrationRequirements?: string | null;
+    /**
+     * The organization's logo, read at /api/storage/files/{id}; null when it has none or asked to stay anonymous.
+     */
+    organizationLogoFileId?: string | null;
+    /**
+     * The organization's name; null when it asked to stay anonymous.
+     */
+    organizationName?: string | null;
+    problemStatement?: string | null;
+    publishedAt: string;
+    targetUsers?: string | null;
+    technologies: Array<string>;
+    /**
+     * Null when the brief does not say.
+     */
+    timelineMaxWeeks?: number | null;
+    /**
+     * Null when the brief does not say.
+     */
+    timelineMinWeeks?: number | null;
+    title: string;
+};
+
+/**
  * One page of the public list of use cases.
  */
 export type PublicUseCaseList = {
@@ -10852,3 +10904,30 @@ export type ListUseCasesResponses = {
 };
 
 export type ListUseCasesResponse = ListUseCasesResponses[keyof ListUseCasesResponses];
+
+export type GetUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/use-cases/{id}';
+};
+
+export type GetUseCaseErrors = {
+    /**
+     * No published use case has this identifier, or it has closed.
+     */
+    404: Problem;
+};
+
+export type GetUseCaseError = GetUseCaseErrors[keyof GetUseCaseErrors];
+
+export type GetUseCaseResponses = {
+    /**
+     * The use case.
+     */
+    200: PublicUseCase;
+};
+
+export type GetUseCaseResponse = GetUseCaseResponses[keyof GetUseCaseResponses];

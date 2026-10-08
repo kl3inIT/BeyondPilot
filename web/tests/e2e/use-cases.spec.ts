@@ -30,6 +30,23 @@ test.describe("use cases", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("opens a published use case's complete public brief", async ({ page }) => {
+    await page.goto("/use-cases");
+    await page.getByRole("link", { name: "View use case" }).first().click();
+
+    await expect(page).toHaveURL(/\/use-cases\/0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0001$/);
+    await expect(page).toHaveTitle("Voice assistant for vehicle owners · BeyondPilot");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Voice assistant for vehicle owners",
+    );
+    await expect(page.getByRole("heading", { name: "Problem statement" })).toBeVisible();
+    await expect(
+      page.getByText("The team needs a clear, measurable way to improve this work."),
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Open for proposals" })).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+  });
+
   test("an organization that stays anonymous and a budget to decide read as such", async ({
     page,
   }) => {
