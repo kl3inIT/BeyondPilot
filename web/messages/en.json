@@ -990,7 +990,11 @@
         "ai": {
           "provider_create": "Connected an AI provider",
           "provider_update": "Changed an AI provider",
-          "provider_delete": "Deleted an AI provider"
+          "provider_delete": "Deleted an AI provider",
+          "model_add": "Enabled an AI model",
+          "model_update": "Changed an AI model",
+          "model_remove": "Removed an AI model",
+          "task_model_change": "Chose a task's AI model"
         },
         "search": {
           "model_change": "Changed the embedding model",
@@ -1095,7 +1099,11 @@
         "ai": {
           "provider_create": "Connected the AI provider <resource></resource>",
           "provider_update": "Changed the AI provider <resource></resource>",
-          "provider_delete": "Deleted the AI provider <resource></resource>"
+          "provider_delete": "Deleted the AI provider <resource></resource>",
+          "model_add": "Enabled the AI model <resource></resource>",
+          "model_update": "Changed the AI model <resource></resource>",
+          "model_remove": "Removed the AI model <resource></resource>",
+          "task_model_change": "Chose the AI model of the task <resource></resource>"
         },
         "search": {
           "model_change": "Changed the embedding model in <resource></resource>",

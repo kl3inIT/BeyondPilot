@@ -199,7 +199,7 @@ public class SearchAdministration {
 		catch (AiException refused) {
 			throw worded(refused);
 		}
-		String model = model(provider.vendor(), request.model());
+		String model = model(Objects.requireNonNull(provider.vendor()), request.model());
 		AiConnection connection = providers.connection(AiProviders.EMBEDDING, provider.id())
 			.orElseThrow(() -> new SearchException(SearchErrorCode.PROVIDER_KEY_MISSING,
 					"Provider " + provider.id() + " has no key that can be read"));
@@ -314,7 +314,8 @@ public class SearchAdministration {
 		}
 		return new AiProvidersResponse(providers.keysCanBeStored(),
 				inUse, all.stream()
-					.map(p -> new AiProvidersResponse.Provider(p.id(), p.vendor(), p.name(), p.baseUrl(), p.hasKey(),
+					.map(p -> new AiProvidersResponse.Provider(p.id(), Objects.requireNonNull(p.vendor()), p.name(),
+							p.baseUrl(), p.hasKey(),
 							p.id().equals(row.getProviderId()), p.updatedBy(), p.updatedAt(), p.version()))
 					.toList(),
 				Arrays.stream(EmbeddingVendor.values())
@@ -356,7 +357,8 @@ public class SearchAdministration {
 			case "remove" -> AiProviderChange.Key.REMOVE;
 			default -> AiProviderChange.Key.KEEP;
 		};
-		return new AiProviderChange(request.vendor(), request.name(), baseUrl, key, request.apiKey(),
+		// Both embedding vendors speak the OpenAI API.
+		return new AiProviderChange(request.vendor(), "openai", request.name(), baseUrl, true, key, request.apiKey(),
 				request.version());
 	}
 
@@ -369,6 +371,8 @@ public class SearchAdministration {
 			case PROVIDER_IN_USE -> SearchErrorCode.PROVIDER_IN_USE;
 			case PROVIDER_KEY_MISSING -> SearchErrorCode.PROVIDER_KEY_MISSING;
 			case ENCRYPTION_KEY_MISSING -> SearchErrorCode.ENCRYPTION_KEY_MISSING;
+			// The others concern chat providers, models and tasks, which search never asks for.
+			default -> throw refused;
 		};
 		return new SearchException(code, Objects.requireNonNullElse(refused.getMessage(), code.message()));
 	}

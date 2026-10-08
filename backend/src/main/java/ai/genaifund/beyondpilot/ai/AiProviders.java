@@ -35,6 +35,9 @@ public class AiProviders {
 	/** What embeds text for search. */
 	public static final String EMBEDDING = AiProvider.EMBEDDING;
 
+	/** What answers a task: matching now, chat later. */
+	public static final String CHAT = AiProvider.CHAT;
+
 	private final AiProviderRepository providers;
 
 	private final AiKeys keys;
@@ -72,10 +75,10 @@ public class AiProviders {
 			throw new AiException(AiErrorCode.PROVIDER_KEY_MISSING, "A new provider needs its key");
 		}
 		AiProvider provider = new AiProvider(purpose, operator.accountId(), operator.label(), Instant.now());
-		provider.connectWith(change.vendor(), name, change.baseUrl(),
-				keys.seal(Objects.requireNonNull(change.apiKey()).strip()));
+		provider.connectWith(change.vendor(), change.adapterType(), name, change.baseUrl(),
+				keys.seal(Objects.requireNonNull(change.apiKey()).strip()), change.enabled());
 		providers.saveAndFlush(provider);
-		record(AuditAction.AI_PROVIDER_CREATE, operator, provider, Map.of("vendor", change.vendor()));
+		record(AuditAction.AI_PROVIDER_CREATE, operator, provider, Map.of("vendor", named(change)));
 		return view(provider);
 	}
 
@@ -111,7 +114,7 @@ public class AiProviders {
 				yield provider.getApiKey();
 			}
 		};
-		provider.connectWith(change.vendor(), name, change.baseUrl(), key);
+		provider.connectWith(change.vendor(), change.adapterType(), name, change.baseUrl(), key, change.enabled());
 		provider.changedBy(operator.accountId(), operator.label(), Instant.now());
 		try {
 			providers.saveAndFlush(provider);
@@ -124,7 +127,7 @@ public class AiProviders {
 			case REMOVE -> "removed";
 			case KEEP -> "kept";
 		};
-		record(AuditAction.AI_PROVIDER_UPDATE, operator, provider, Map.of("vendor", change.vendor(), "key", kept));
+		record(AuditAction.AI_PROVIDER_UPDATE, operator, provider, Map.of("vendor", named(change), "key", kept));
 		return view(provider);
 	}
 
@@ -152,7 +155,7 @@ public class AiProviders {
 		return providers.findById(id)
 			.filter(provider -> purpose.equals(provider.getPurpose()))
 			.flatMap(provider -> keys.open(provider.getApiKey())
-				.map(key -> new AiConnection(provider.getId(), provider.getVendor(), provider.getName(),
+				.map(key -> new AiConnection(provider.getId(), provider.getAdapterType(), provider.getName(),
 						provider.getBaseUrl(), key)));
 	}
 
@@ -197,9 +200,14 @@ public class AiProviders {
 	}
 
 	private static AiProviderView view(AiProvider provider) {
-		return new AiProviderView(provider.getId(), provider.getVendor(), provider.getName(), provider.getBaseUrl(),
-				provider.getApiKey() != null, provider.getUpdatedByLabel(), provider.getUpdatedAt(),
-				provider.getVersion());
+		return new AiProviderView(provider.getId(), provider.getVendor(), provider.getAdapterType(),
+				provider.getName(), provider.getBaseUrl(), provider.isEnabled(), provider.getApiKey() != null,
+				provider.getUpdatedByLabel(), provider.getUpdatedAt(), provider.getVersion());
+	}
+
+	/** What the audit record names the provider's kind by: its vendor, or its adapter where it has none. */
+	private static String named(AiProviderChange change) {
+		return change.vendor() != null ? change.vendor() : change.adapterType();
 	}
 
 	private static boolean blank(@Nullable String value) {

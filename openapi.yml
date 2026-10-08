@@ -32,6 +32,9 @@ tags:
   name: My talent profile
 - description: The use cases operators write and read.
   name: Use case administration
+- description: "What operators do in the Chat tab of Admin › AI › Providers: connect\
+    \ chat providers, enable their models and choose the model each task uses."
+  name: AI administration
 - description: The solutions operators review.
   name: Solution administration
 - description: The solutions of the caller's organization.
@@ -68,6 +71,375 @@ tags:
 - description: "Finding, joining and creating an organization."
   name: Organizations
 paths:
+  /api/ai/admin/chat:
+    get:
+      operationId: getChatSettings
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatSettings"
+          description: "The settings, without keys."
+      security:
+      - session: []
+      summary: "The chat providers with their models, and the model each task uses"
+      tags:
+      - AI administration
+  /api/ai/admin/chat/models/{id}:
+    delete:
+      operationId: removeChatModel
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatSettings"
+          description: The settings left. A task that used the model is unset.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such model.
+      security:
+      - session: []
+      summary: Remove a model from its provider
+      tags:
+      - AI administration
+    put:
+      operationId: changeChatModel
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveChatModel"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatSettings"
+          description: "The settings, with the change."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, or the answer limit does not fit the\
+            \ context window."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such model.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The model changed since it was read.
+      security:
+      - session: []
+      summary: "Correct a model's limits, capabilities or prices"
+      tags:
+      - AI administration
+  /api/ai/admin/chat/providers:
+    post:
+      operationId: connectChatProvider
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveChatProvider"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatSettings"
+          description: "The settings, with the new provider."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, the adapter is unknown, the address\
+            \ is not an http or https URL, or the key is missing."
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Another chat provider has this name.
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The server has no key to encrypt provider keys.
+      security:
+      - session: []
+      summary: Connect a chat provider
+      tags:
+      - AI administration
+  /api/ai/admin/chat/providers/reported-models:
+    post:
+      operationId: listReportedChatModels
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProbeChatProvider"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportedChatModels"
+          description: "The models, by name."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The adapter is unknown, the address is not valid, no usable\
+            \ key was given, the key was refused, or the answer was not the API's."
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The provider could not be reached.
+      security:
+      - session: []
+      summary: "The models a provider lists, saved or not, with their limits, capabilities\
+        \ and prices"
+      tags:
+      - AI administration
+  /api/ai/admin/chat/providers/test:
+    post:
+      operationId: testChatProvider
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProbeChatProvider"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatProviderTest"
+          description: "Whether the provider answered, how many models it listed and\
+            \ how long it took."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The adapter is unknown, the address is not valid, or no usable\
+            \ key was given."
+      security:
+      - session: []
+      summary: "Try a connection, saved or not, by listing the provider's models;\
+        \ no tokens are spent"
+      tags:
+      - AI administration
+  /api/ai/admin/chat/providers/{id}:
+    delete:
+      operationId: removeChatProvider
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatSettings"
+          description: The settings left. A task that used one of its models is unset.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such provider.
+      security:
+      - session: []
+      summary: Remove a chat provider with its key and its models
+      tags:
+      - AI administration
+    put:
+      operationId: changeChatProvider
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveChatProvider"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatSettings"
+          description: "The settings, with the change."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, the adapter is unknown, the address\
+            \ is not valid, or a key is needed."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such provider.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The provider changed since it was read, or another one has\
+            \ this name."
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The server has no key to encrypt provider keys.
+      security:
+      - session: []
+      summary: "Change a chat provider: its name, address or key, or switch it on\
+        \ or off"
+      tags:
+      - AI administration
+  /api/ai/admin/chat/providers/{id}/models:
+    post:
+      operationId: addChatModels
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddChatModels"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatSettings"
+          description: "The settings, with the models."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, or an answer limit does not fit its\
+            \ context window."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such provider.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The provider already has one of the models.
+      security:
+      - session: []
+      summary: Enable models on a chat provider
+      tags:
+      - AI administration
+  /api/ai/admin/chat/tasks/{task}:
+    put:
+      operationId: setTaskModel
+      parameters:
+      - in: path
+        name: task
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetTaskModel"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatSettings"
+          description: "The settings, with the choice."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, or the model's provider is switched\
+            \ off or has no key."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such task or model.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The task's model changed since it was read.
+      security:
+      - session: []
+      summary: "Choose the model a task uses, and how hard it reasons"
+      tags:
+      - AI administration
   /api/audit/events:
     get:
       operationId: listAuditEvents
@@ -153,6 +525,10 @@ paths:
           - ai.provider_create
           - ai.provider_update
           - ai.provider_delete
+          - ai.model_add
+          - ai.model_update
+          - ai.model_remove
+          - ai.task_model_change
           - search.model_change
           - search.semantic_enable
           - search.semantic_disable
@@ -8043,6 +8419,18 @@ components:
       - id
       - role
       - status
+    AddChatModels:
+      type: object
+      description: "The models to enable on a provider, as ticked in its list."
+      properties:
+        models:
+          type: array
+          items:
+            $ref: "#/components/schemas/SaveChatModel"
+          maxItems: 100
+          minItems: 0
+      required:
+      - models
     AddEmailSuppression:
       type: object
       description: An address to stop sending to.
@@ -9604,6 +9992,10 @@ components:
           - ai.provider_create
           - ai.provider_update
           - ai.provider_delete
+          - ai.model_add
+          - ai.model_update
+          - ai.model_remove
+          - ai.task_model_change
           - search.model_change
           - search.semantic_enable
           - search.semantic_disable
@@ -9746,6 +10138,194 @@ components:
           pattern: owner|member
       required:
       - role
+    ChatModel:
+      type: object
+      description: A model an operator enabled. Prices are US dollars per million
+        tokens; null is unknown.
+      properties:
+        cachedInputPrice:
+          type:
+          - number
+          - "null"
+        contextWindow:
+          type: integer
+          format: int32
+        displayName:
+          type: string
+        id:
+          type: string
+          format: uuid
+        inputPrice:
+          type:
+          - number
+          - "null"
+        maxOutputTokens:
+          type:
+          - integer
+          - "null"
+          format: int32
+        modelName:
+          type: string
+        outputPrice:
+          type:
+          - number
+          - "null"
+        reasoning:
+          type: boolean
+        toolCalling:
+          type: boolean
+        version:
+          type: integer
+          format: int64
+        vision:
+          type: boolean
+      required:
+      - contextWindow
+      - displayName
+      - id
+      - modelName
+      - reasoning
+      - toolCalling
+      - version
+      - vision
+    ChatProvider:
+      type: object
+      properties:
+        adapterType:
+          type: string
+          example: openai
+        baseUrl:
+          type: string
+        enabled:
+          type: boolean
+        hasKey:
+          type: boolean
+        id:
+          type: string
+          format: uuid
+        inUse:
+          type: boolean
+          description: Whether a task uses one of its models.
+        models:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatModel"
+        name:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        updatedBy:
+          type: string
+          description: "Who saved it last, as they were named."
+        version:
+          type: integer
+          format: int64
+          description: Send it back with a change; a change made meanwhile is refused.
+      required:
+      - adapterType
+      - baseUrl
+      - enabled
+      - hasKey
+      - id
+      - inUse
+      - models
+      - name
+      - updatedAt
+      - updatedBy
+      - version
+    ChatProviderTest:
+      type: object
+      description: What listing the provider's models answered. No tokens were spent.
+      properties:
+        latencyMs:
+          type: integer
+          format: int64
+        modelCount:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: How many models the provider listed.
+        ok:
+          type: boolean
+        reason:
+          type:
+          - string
+          - "null"
+          description: "Why it failed: the key was refused, no answer came, or the\
+            \ answer was not this API's."
+          enum:
+          - rejected
+          - unreachable
+          - incompatible
+      required:
+      - latencyMs
+      - ok
+    ChatSettings:
+      type: object
+      description: "Everything the Chat tab of Admin › AI › Providers shows: the chat\
+        \ providers with their models, and the model each task uses. A key is never\
+        \ returned: each provider says only whether it has one."
+      properties:
+        adapters:
+          type: array
+          description: "The APIs BeyondPilot speaks, as a provider's adapterType."
+          items:
+            type: string
+        keysCanBeStored:
+          type: boolean
+          description: Whether the server holds the key that encrypts provider keys;
+            without it none can be saved.
+        providers:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatProvider"
+        tasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatTask"
+      required:
+      - adapters
+      - keysCanBeStored
+      - providers
+      - tasks
+    ChatTask:
+      type: object
+      description: A task and the model it uses.
+      properties:
+        available:
+          type: boolean
+          description: "Whether the task can run now: a model is chosen and its provider\
+            \ is switched on with a key."
+        modelId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The model; null until an operator chooses one, and after its\
+            \ model is removed."
+        reasoningEffort:
+          type: string
+          description: "How hard the task reasons, on a model that does; the task's\
+            \ own default until an operator sets one."
+          enum:
+          - "off"
+          - low
+          - medium
+          - high
+        task:
+          type: string
+          enum:
+          - matching
+        version:
+          type: integer
+          format: int64
+      required:
+      - available
+      - reasoningEffort
+      - task
+      - version
     ChooseEmbeddingModel:
       type: object
       description: The provider and model search embeds with from now on. Every item
@@ -12230,6 +12810,36 @@ components:
       - personEmail
       - reviewed
       - servers
+    ProbeChatProvider:
+      type: object
+      description: "A connection to try or to list the models of, saved or not. Without\
+        \ an apiKey the saved key of providerId is used, while the address is the\
+        \ one it was saved with."
+      properties:
+        adapterType:
+          type: string
+          example: openai
+          maxLength: 40
+          minLength: 0
+        apiKey:
+          type:
+          - string
+          - "null"
+          maxLength: 8192
+          minLength: 0
+        baseUrl:
+          type: string
+          maxLength: 2048
+          minLength: 0
+        providerId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: The saved provider whose key to use when apiKey is empty.
+      required:
+      - adapterType
+      - baseUrl
     Problem:
       type: object
       additionalProperties: false
@@ -13636,6 +14246,68 @@ components:
       - organizationName
       - organizationType
       - solutionName
+    ReportedChatModel:
+      type: object
+      properties:
+        cachedInputPrice:
+          type:
+          - number
+          - "null"
+        configured:
+          type: boolean
+          description: Whether the saved provider already has this model.
+        contextWindow:
+          type: integer
+          format: int32
+        inputPrice:
+          type:
+          - number
+          - "null"
+          description: US dollars per million tokens.
+        maxOutputTokens:
+          type:
+          - integer
+          - "null"
+          format: int32
+        modelName:
+          type: string
+        outputPrice:
+          type:
+          - number
+          - "null"
+        reasoning:
+          type: boolean
+        source:
+          type: string
+          description: Where the context window came from; none means a default was
+            assumed.
+          enum:
+          - provider
+          - catalog
+          - none
+        toolCalling:
+          type: boolean
+        vision:
+          type: boolean
+      required:
+      - configured
+      - contextWindow
+      - modelName
+      - reasoning
+      - source
+      - toolCalling
+      - vision
+    ReportedChatModels:
+      type: object
+      description: "The models a provider lists, with what it and the bundled catalog\
+        \ know about each."
+      properties:
+        models:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportedChatModel"
+      required:
+      - models
     RequestIntroduction:
       type: object
       description: A request for an introduction to the organization behind a solution.
@@ -14276,6 +14948,120 @@ components:
       required:
       - conflict
       - scores
+    SaveChatModel:
+      type: object
+      description: A model to enable or correct. Prices are US dollars per million
+        tokens; null is unknown.
+      properties:
+        cachedInputPrice:
+          type:
+          - number
+          - "null"
+          maximum: 100000
+          minimum: 0
+        contextWindow:
+          type: integer
+          format: int32
+          maximum: 10000000
+          minimum: 256
+        displayName:
+          type:
+          - string
+          - "null"
+          description: The name shown; the model name when empty.
+          maxLength: 200
+          minLength: 0
+        inputPrice:
+          type:
+          - number
+          - "null"
+          maximum: 100000
+          minimum: 0
+        maxOutputTokens:
+          type:
+          - integer
+          - "null"
+          format: int32
+          minimum: 1
+        modelName:
+          type: string
+          description: The name the provider knows it by.
+          maxLength: 200
+          minLength: 0
+        outputPrice:
+          type:
+          - number
+          - "null"
+          maximum: 100000
+          minimum: 0
+        reasoning:
+          type: boolean
+        toolCalling:
+          type: boolean
+        version:
+          type: integer
+          format: int64
+          description: The version the model was read at; 0 for a new one.
+        vision:
+          type: boolean
+      required:
+      - contextWindow
+      - modelName
+      - reasoning
+      - toolCalling
+      - version
+      - vision
+    SaveChatProvider:
+      type: object
+      description: A chat provider to connect or change. The address is an http or
+        https URL; a saved key is kept only while it is unchanged.
+      properties:
+        adapterType:
+          type: string
+          description: One of the adapters the settings list.
+          example: openai
+          maxLength: 40
+          minLength: 0
+        apiKey:
+          type:
+          - string
+          - "null"
+          description: "The new key, with key = replace."
+          maxLength: 8192
+          minLength: 0
+        baseUrl:
+          type: string
+          example: https://openrouter.ai/api/v1
+          maxLength: 2048
+          minLength: 0
+        enabled:
+          type: boolean
+          description: A provider switched off keeps its key and its models; no task
+            can use it.
+        key:
+          type: string
+          description: "Keep the saved key, replace it with apiKey, or remove it.\
+            \ A new provider takes replace."
+          enum:
+          - keep
+          - replace
+          - remove
+          pattern: keep|replace|remove
+        name:
+          type: string
+          maxLength: 60
+          minLength: 0
+        version:
+          type: integer
+          format: int64
+          description: The version the provider was read at; 0 for a new one.
+      required:
+      - adapterType
+      - baseUrl
+      - enabled
+      - key
+      - name
+      - version
     SaveCustomerDeployment:
       type: object
       description: A customer deployment as its form holds it.
@@ -15633,6 +16419,33 @@ components:
           description: The version of the search settings it was read at.
       required:
       - enabled
+      - version
+    SetTaskModel:
+      type: object
+      description: The model a task uses from now on.
+      properties:
+        modelId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: The model; null leaves the task without one.
+        reasoningEffort:
+          type:
+          - string
+          - "null"
+          description: How hard to reason; null returns the task to its own default.
+          enum:
+          - "off"
+          - low
+          - medium
+          - high
+          pattern: off|low|medium|high
+        version:
+          type: integer
+          format: int64
+          description: The version the task was read at.
+      required:
       - version
     SetUseCasePrograms:
       type: object

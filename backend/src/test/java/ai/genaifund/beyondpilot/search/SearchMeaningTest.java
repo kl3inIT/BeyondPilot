@@ -85,7 +85,8 @@ class SearchMeaningTest {
 		jdbc.sql("delete from ai_provider").update();
 		UUID provider = providers
 			.connect(new Operator(UUID.randomUUID(), "Test", "test@search.test"), AiProviders.EMBEDDING,
-					new AiProviderChange("openai", "OpenAI", "https://api.openai.com/v1", AiProviderChange.Key.REPLACE,
+					new AiProviderChange("openai", "openai", "OpenAI", "https://api.openai.com/v1", true,
+							AiProviderChange.Key.REPLACE,
 							"sk-test", 0))
 			.id();
 		jdbc.sql("update search_settings set provider_id = ?, model = 'text-embedding-3-large', model_since = now()")

@@ -18,14 +18,23 @@ public class AiProvider {
 
 	public static final String EMBEDDING = "embedding";
 
+	public static final String CHAT = "chat";
+
 	@Id
 	private UUID id;
 
 	@Column(nullable = false)
 	private String purpose;
 
+	/** The vendor of an embedding provider, which fixes its address and models; null for a chat provider. */
+	private @Nullable String vendor;
+
+	/** The adapter that speaks this provider's API. */
 	@Column(nullable = false)
-	private String vendor;
+	private String adapterType;
+
+	@Column(nullable = false)
+	private boolean enabled;
 
 	@Column(nullable = false)
 	private String name;
@@ -50,7 +59,8 @@ public class AiProvider {
 	protected AiProvider() {
 		this.id = UUID.randomUUID();
 		this.purpose = EMBEDDING;
-		this.vendor = "";
+		this.adapterType = "";
+		this.enabled = true;
 		this.name = "";
 		this.baseUrl = "";
 		this.updatedBy = new UUID(0, 0);
@@ -61,7 +71,8 @@ public class AiProvider {
 	public AiProvider(String purpose, UUID createdBy, String createdByLabel, Instant at) {
 		this.id = UUID.randomUUID();
 		this.purpose = purpose;
-		this.vendor = "";
+		this.adapterType = "";
+		this.enabled = true;
 		this.name = "";
 		this.baseUrl = "";
 		this.updatedBy = createdBy;
@@ -70,8 +81,11 @@ public class AiProvider {
 	}
 
 	/** Replaces where the provider is reached and its key, passed sealed: a null key is cleared. */
-	public void connectWith(String vendor, String name, String baseUrl, byte @Nullable [] apiKey) {
+	public void connectWith(@Nullable String vendor, String adapterType, String name, String baseUrl,
+			byte @Nullable [] apiKey, boolean enabled) {
 		this.vendor = vendor;
+		this.adapterType = adapterType;
+		this.enabled = enabled;
 		this.name = name;
 		this.baseUrl = baseUrl;
 		this.apiKey = apiKey;
@@ -92,8 +106,16 @@ public class AiProvider {
 		return purpose;
 	}
 
-	public String getVendor() {
+	public @Nullable String getVendor() {
 		return vendor;
+	}
+
+	public String getAdapterType() {
+		return adapterType;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
 	}
 
 	public String getName() {
