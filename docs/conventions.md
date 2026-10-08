@@ -297,7 +297,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 
 ### Internationalization
 
-- English is the default locale with no URL prefix; Vietnamese lives under `/vi`. A first visit is matched to the browser language.
+- English is the default locale with no URL prefix; Vietnamese lives under `/vi`. The site opens in English for every visitor. The browser's language never chooses a language: `src/proxy.ts` takes it out of the request before locale routing. A person reads Vietnamese after choosing it in the language menu or opening a `/vi` address, and next-intl's locale cookie keeps that choice for the addresses without a prefix until the browser is closed.
 - Every visible string comes from `messages/en.json` and `messages/vi.json`, typed through `src/i18n/app-config.d.ts`. `pnpm check:messages` fails when the catalogs do not have the same keys. The only exception is `src/app/global-error.tsx`, which replaces the root layout and therefore has no translation provider; its copy is written in both languages inline.
 - Dates and times are formatted through next-intl in `Asia/Ho_Chi_Minh`. Deadlines always show their time zone.
 - Backend failures are shown by translating the problem `code`; backend text is never displayed.
