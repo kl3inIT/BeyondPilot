@@ -1,11 +1,11 @@
 {
   "Metadata": {
     "title": "BeyondPilot",
-    "description": "Cùng giải bài toán AI của doanh nghiệp. Khám phá các chương trình của GenAI Fund, ứng tuyển bằng một hồ sơ dùng lại được và theo dõi đề xuất của bạn qua từng vòng duyệt."
+    "description": "BeyondPilot là startup AI được GenAI Fund đầu tư. Trợ lý áp dụng AI của BeyondPilot giúp doanh nghiệp và nhà phát triển AI tìm giải pháp AI, nhân lực AI, bài toán doanh nghiệp, sự kiện và chương trình."
   },
   "Site": {
     "brand": "BeyondPilot",
-    "backedBy": "Được hậu thuẫn bởi",
+    "backedBy": "Được đầu tư bởi",
     "genaiFund": "GenAI Fund",
     "skipToContent": "Chuyển tới nội dung",
     "notifications": "Thông báo",
@@ -58,12 +58,10 @@
       "platform": "Nền tảng",
       "company": "Công ty",
       "about": "Về GenAI Fund",
-      "events": "Sự kiện",
-      "newsletter": "Bản tin",
       "contact": "Liên hệ",
-      "linkedin": "LinkedIn",
-      "facebook": "Facebook",
-      "x": "X",
+      "linkedin": "GenAI Fund trên LinkedIn",
+      "facebook": "GenAI Fund trên Facebook",
+      "x": "GenAI Fund trên X",
       "copyright": "© {year} BeyondPilot",
       "privacy": "Quyền riêng tư",
       "terms": "Điều khoản"
@@ -91,22 +89,65 @@
       "demoDay": "Demo day",
       "demoDayWhen": "14:00–16:00, 22/10",
       "investment": "Có thể được xem xét đầu tư",
-      "investmentValue": "Tối đa 100.000 USD"
+      "investmentValue": "Tối đa 100.000 USD",
+      "notified": "Thông báo kết quả",
+      "notifiedWhen": "16/10"
     }
   },
   "Home": {
     "hero": {
-      "liveChallenge": "Thử thách đang mở · Insurance AI Challenge",
       "eyebrow": "Áp dụng AI, có trợ lý dẫn đường.",
       "titleStart": "Bước tiếp theo của bạn với",
       "titleEnd": "AI bắt đầu từ đây.",
-      "description": "BeyondPilot là trợ lý áp dụng AI của bạn: giúp bạn tìm giải pháp AI, tìm chuyên gia, khám phá các bài toán doanh nghiệp thực tế và kết nối với sự kiện, chương trình giúp bạn tiến lên.",
+      "description": "BeyondPilot là startup AI được GenAI Fund đầu tư. Trợ lý áp dụng AI của chúng tôi giúp bạn tìm giải pháp AI, tìm chuyên gia, khám phá các bài toán doanh nghiệp thực tế và kết nối với sự kiện, chương trình giúp bạn tiến lên.",
       "searchLabel": "Tìm giải pháp AI, nhân lực, bài toán, sự kiện và chương trình",
-      "searchPlaceholder": "Tìm giải pháp AI, nhân lực, bài toán, sự kiện và chương trình",
-      "searchPlaceholderShort": "Tìm trên BeyondPilot",
+      "searchPlaceholder": "Bạn muốn đạt được điều gì với AI?",
+      "searchPlaceholderShort": "Mục tiêu AI của bạn",
       "primaryCta": "Khám phá BeyondPilot",
       "secondaryCta": "Xem cách hoạt động",
-      "screenshotAlt": "Kết quả tìm kiếm “insurance claims” trên BeyondPilot, gồm các giải pháp AI và chương trình",
+      "searchSubmit": "Tìm",
+      "promptsLabel": "Ví dụ tìm kiếm",
+      "prompts": {
+        "claims": "Tìm giải pháp AI cho bồi thường bảo hiểm",
+        "talent": "Tìm nhân lực AI cho dự án của tôi",
+        "projects": "Xem dự án doanh nghiệp đang tìm giải pháp",
+        "programs": "Tìm chương trình AI cho startup của tôi"
+      },
+      "preview": {
+        "alt": "Bản xem trước sản phẩm: kết quả tìm “insurance claims” trên BeyondPilot, gồm giải pháp AI, một bài toán và một chương trình",
+        "address": "beyondpilot.ai/search?q=insurance+claims",
+        "tabs": {
+          "all": "Tất cả",
+          "solutions": "Giải pháp AI",
+          "useCases": "Bài toán",
+          "programs": "Chương trình"
+        },
+        "kinds": {
+          "solution": "Giải pháp",
+          "useCase": "Bài toán",
+          "program": "Chương trình"
+        },
+        "papaya": {
+          "title": "Papaya",
+          "summary": "Đọc hồ sơ y tế phức tạp bằng chuỗi nhiều LLM, rồi hỗ trợ giám định viên quyết định các hồ sơ bồi thường thông thường.",
+          "meta": "Ngân hàng & tài chính · Cloud SaaS · Việt Nam"
+        },
+        "infall": {
+          "title": "Infall Insurtech",
+          "summary": "OCR dùng AI cùng bộ máy quyết định và bồi thường, tự động hoá hồ sơ từ tiếp nhận đến chi trả.",
+          "meta": "Y tế · Ngân hàng & tài chính · Việt Nam"
+        },
+        "renewal": {
+          "title": "AI for Insurance: Scaling Compulsory Motor Insurance Renewal",
+          "summary": "Của Tasco. Tìm, tiếp cận và chuyển đổi khách hàng đến hạn tái tục với ít thao tác thủ công hơn.",
+          "meta": "Ô tô & di chuyển"
+        },
+        "challenge": {
+          "title": "AI for Insurance Challenge × Tasco",
+          "summary": "Xây dựng một pilot AI cùng đội kinh doanh của Tasco. Có thể được xem xét đầu tư tối đa 100.000 USD.",
+          "meta": "Thử thách doanh nghiệp · Đang mở · Hạn nộp 15/10"
+        }
+      },
       "scopes": {
         "agentic": "Agentic AI",
         "document": "Document AI",
@@ -124,27 +165,52 @@
       "solutions": {
         "title": "Giải pháp AI",
         "description": "Tìm sản phẩm và nhà cung cấp đáp ứng nhu cầu kinh doanh của bạn.",
-        "action": "Khám phá giải pháp"
+        "action": "Khám phá giải pháp",
+        "item1Title": "Papaya",
+        "item1Meta": "Xử lý hồ sơ bồi thường · Việt Nam",
+        "item2Title": "Infall Insurtech",
+        "item2Meta": "Tự động hoá bồi thường toàn trình · Việt Nam"
       },
       "talent": {
         "title": "Nhân lực AI",
         "description": "Tìm chuyên gia và nhà phát triển giúp dự án AI của bạn thành hiện thực.",
-        "action": "Tìm nhân lực"
+        "action": "Tìm nhân lực",
+        "skillsLabel": "Kỹ năng bạn có thể tìm",
+        "skill1": "Machine learning",
+        "skill2": "Ứng dụng LLM",
+        "skill3": "Thị giác máy tính",
+        "skill4": "Kỹ thuật dữ liệu"
       },
       "useCases": {
         "title": "Bài toán & Dự án",
         "description": "Khám phá bài toán doanh nghiệp, ứng dụng thực tế và cơ hội hợp tác với doanh nghiệp.",
-        "action": "Khám phá cơ hội"
+        "action": "Khám phá cơ hội",
+        "item1Title": "AI-Powered Claim & Payment Automation",
+        "item1Meta": "Coca-Cola Beverages Vietnam",
+        "item2Title": "AI-Powered In-Store Support Assistant",
+        "item2Meta": "Pharmacity"
       },
       "events": {
         "title": "Sự kiện AI",
         "description": "Kết nối với hệ sinh thái qua meetup, workshop và demo day.",
-        "action": "Xem sự kiện"
+        "action": "Xem sự kiện",
+        "item1Month": "Th10",
+        "item1Day": "13",
+        "item1Title": "GenAI Builders Meetup",
+        "item1Meta": "Chuỗi meetup · tháng 10 đến tháng 12",
+        "item2Month": "Th10",
+        "item2Day": "22",
+        "item2Title": "Demo day · AI for Insurance Challenge",
+        "item2Meta": "Mười đội trình bày trực tiếp"
       },
       "programs": {
         "title": "Chương trình AI",
         "description": "Tìm thử thách, chương trình tăng tốc và sáng kiến hỗ trợ giai đoạn tiếp theo của bạn.",
-        "action": "Khám phá chương trình"
+        "action": "Khám phá chương trình",
+        "item1Title": "AI for Insurance Challenge × Tasco",
+        "item1Meta": "Thử thách doanh nghiệp · Mở đến 15/10",
+        "item2Title": "Agentic AI Build Week 2026",
+        "item2Meta": "Buildathon · tháng 7/2026"
       }
     },
     "agentJourney": {
@@ -161,23 +227,44 @@
       "move": {
         "title": "Tiến lên",
         "description": "Lập danh sách rút gọn nhà cung cấp, kết nối với nhân lực, gửi đề xuất hoặc tham gia chương trình."
+      },
+      "step": "Bước {number}",
+      "demo": {
+        "title": "Trợ lý BeyondPilot",
+        "need": "Nhu cầu của bạn",
+        "needQuote": "“Chúng tôi muốn tự động hoá xử lý hồ sơ bảo hiểm tại Việt Nam.”",
+        "matters": "Điều quan trọng",
+        "matter1": "Loại tài liệu",
+        "matter2": "Hỗ trợ tiếng Việt",
+        "matter3": "Yêu cầu triển khai",
+        "options": "Lựa chọn phù hợp",
+        "option1Title": "Papaya",
+        "option1Why": "Đọc hồ sơ bồi thường y tế phức tạp bằng chuỗi nhiều LLM. Phát triển tại Việt Nam.",
+        "option2Title": "Infall Insurtech",
+        "option2Why": "OCR cùng bộ máy quyết định và bồi thường, đã có các hãng bảo hiểm Việt Nam là khách hàng.",
+        "next": "Bước tiếp theo",
+        "introduce": "Yêu cầu giới thiệu",
+        "shortlist": "So sánh và lập danh sách rút gọn"
       }
     },
     "challenge": {
       "eyebrow": "Cơ hội nổi bật",
-      "description": "Tasco và GenAI Fund đang tìm các giải pháp AI cho những bài toán vận hành thực tế của ngành bảo hiểm Việt Nam. Ứng tuyển trực tiếp qua trang thử thách."
+      "description": "Tasco và GenAI Fund đang tìm các giải pháp AI cho những bài toán vận hành thực tế của ngành bảo hiểm Việt Nam. Ứng tuyển trực tiếp qua trang thử thách.",
+      "partners": "Cùng Microsoft for Startups và Notion"
     },
     "team": {
-      "eyebrow": "Đội ngũ nòng cốt",
+      "eyebrow": "Đội ngũ",
       "title": "Đội ngũ xây dựng BeyondPilot",
       "description": "Chúng tôi xây dựng BeyondPilot để doanh nghiệp và nhà phát triển AI dễ tìm thấy nhau hơn và tiến tới triển khai thực tế.",
       "role": "Full-stack engineer",
       "linkedin": "LinkedIn",
       "linkedinLabel": "{name} trên LinkedIn (mở trong tab mới)",
       "backing": {
-        "title": "Được GenAI Fund hậu thuẫn",
-        "description": "BeyondPilot là startup AI có sản phẩm và đội ngũ riêng, được GenAI Fund hậu thuẫn. Chương trình và hệ sinh thái doanh nghiệp của GenAI Fund là nơi nhiều cơ hội trên BeyondPilot xuất phát. Các founder trong mạng lưới GenAI Fund là một phần của hệ sinh thái đó, không phải đội ngũ vận hành BeyondPilot."
-      }
+        "title": "Được GenAI Fund đầu tư",
+        "description": "BeyondPilot là startup AI có sản phẩm riêng, được GenAI Fund đầu tư. Chương trình và hệ sinh thái doanh nghiệp của GenAI Fund là nơi nhiều cơ hội trên BeyondPilot xuất phát. Các founder trong mạng lưới GenAI Fund là một phần của hệ sinh thái đó, không phải đội ngũ vận hành BeyondPilot."
+      },
+      "partnerTitle": "Đối tác phát triển",
+      "partnerDescription": "Đội kỹ sư xây dựng sản phẩm cùng BeyondPilot."
     },
     "founders": {
       "eyebrow": "Trong mạng lưới GenAI Fund",
@@ -188,7 +275,7 @@
       "eyebrow": "Hỏi đáp",
       "title": "Câu hỏi thường gặp",
       "whatQ": "BeyondPilot là gì?",
-      "whatA": "BeyondPilot là trợ lý áp dụng AI được GenAI Fund hậu thuẫn. BeyondPilot giúp bạn tìm giải pháp AI, tìm nhân lực AI, khám phá bài toán và dự án của doanh nghiệp, và kết nối với sự kiện, chương trình AI.",
+      "whatA": "BeyondPilot là startup AI được GenAI Fund đầu tư. Trợ lý áp dụng AI của BeyondPilot giúp bạn tìm giải pháp AI, tìm nhân lực AI, khám phá bài toán và dự án của doanh nghiệp, và kết nối với sự kiện, chương trình AI.",
       "whoQ": "BeyondPilot dành cho ai?",
       "whoA": "Doanh nghiệp đang tìm giải pháp và nhà phát triển AI, các công ty và startup AI có sản phẩm để giới thiệu, và chuyên gia AI đang tìm dự án.",
       "findQ": "BeyondPilot giúp tôi tìm giải pháp hoặc nhân lực AI phù hợp như thế nào?",
@@ -198,12 +285,39 @@
       "applyQ": "Tôi ứng tuyển thử thách hoặc chương trình như thế nào?",
       "applyA": "Mở chương trình, đọc đề bài và điều kiện, rồi dùng nút Ứng tuyển. Mỗi chương trình có mốc thời gian và quy định riêng, hãy xem trang của chương trình để biết chi tiết.",
       "runsQ": "Ai xây dựng BeyondPilot, và GenAI Fund tham gia như thế nào?",
-      "runsA": "BeyondPilot là startup AI có sản phẩm và đội ngũ nòng cốt riêng, được GenAI Fund hậu thuẫn — quỹ tập trung vào AI, kết nối doanh nghiệp với nhà phát triển AI khắp Đông Nam Á."
+      "runsA": "BeyondPilot là startup AI có sản phẩm riêng, được GenAI Fund đầu tư, quỹ tập trung vào AI kết nối doanh nghiệp với nhà phát triển AI khắp Đông Nam Á. Sản phẩm được xây dựng cùng một đối tác phát triển, nêu trong phần đội ngũ."
     },
     "finalCta": {
       "title": "Bạn sẽ làm gì tiếp theo với AI?",
       "description": "Tìm giải pháp, con người và cơ hội để tiến lên cùng BeyondPilot.",
       "action": "Khám phá BeyondPilot"
+    },
+    "previewLabel": "Bản xem trước sản phẩm",
+    "comingSoon": "Sắp ra mắt",
+    "network": {
+      "title": "Mạng lưới đứng sau mỗi chương trình",
+      "description": "Doanh nghiệp, công ty công nghệ và cơ quan nhà nước đã tham gia các chương trình của GenAI Fund trong năm 2025 và 2026.",
+      "roles": {
+        "enterprises": {
+          "title": "Doanh nghiệp",
+          "description": "Đặt bài toán và chạy thử nghiệm"
+        },
+        "technology": {
+          "title": "Đối tác công nghệ",
+          "description": "Mang đến mô hình, hạ tầng đám mây và tín dụng sử dụng"
+        },
+        "government": {
+          "title": "Cơ quan nhà nước và tổ chức",
+          "description": "Mở cửa vào thị trường trong khu vực"
+        },
+        "investors": {
+          "title": "Nhà đầu tư và cộng đồng",
+          "description": "Đồng hành cùng đội xây dựng sản phẩm"
+        },
+        "press": {
+          "title": "Báo chí"
+        }
+      }
     }
   },
   "ComingSoon": {
