@@ -22,7 +22,7 @@ public enum AiErrorCode implements ErrorCode {
 			"Keys cannot be stored: the server has no encryption key for them."),
 
 	PROVIDER_ENDPOINT_INVALID("AI_PROVIDER_ENDPOINT_INVALID", ErrorCategory.VALIDATION,
-			"The address must be an http or https URL without credentials, a query or a fragment."),
+			"The address must be an http or https URL, not link-local, without credentials, a query or a fragment."),
 
 	PROVIDER_ADAPTER_UNKNOWN("AI_PROVIDER_ADAPTER_UNKNOWN", ErrorCategory.VALIDATION,
 			"BeyondPilot does not speak this provider's API."),

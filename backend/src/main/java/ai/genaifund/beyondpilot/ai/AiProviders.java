@@ -77,7 +77,13 @@ public class AiProviders {
 		AiProvider provider = new AiProvider(purpose, operator.accountId(), operator.label(), Instant.now());
 		provider.connectWith(change.vendor(), change.adapterType(), name, change.baseUrl(),
 				keys.seal(Objects.requireNonNull(change.apiKey()).strip()), change.enabled());
-		providers.saveAndFlush(provider);
+		try {
+			providers.saveAndFlush(provider);
+		}
+		catch (DataIntegrityViolationException raced) {
+			// Two operators took the name at once: the database's unique name decides.
+			throw new AiException(AiErrorCode.PROVIDER_NAME_TAKEN, "A provider is already named " + name);
+		}
 		record(AuditAction.AI_PROVIDER_CREATE, operator, provider, Map.of("vendor", named(change)));
 		return view(provider);
 	}
@@ -121,6 +127,9 @@ public class AiProviders {
 		}
 		catch (ObjectOptimisticLockingFailureException raced) {
 			throw new AiException(AiErrorCode.PROVIDER_CHANGED, "Provider " + id + " changed while it was saved");
+		}
+		catch (DataIntegrityViolationException raced) {
+			throw new AiException(AiErrorCode.PROVIDER_NAME_TAKEN, "A provider is already named " + name);
 		}
 		String kept = switch (change.key()) {
 			case REPLACE -> "replaced";

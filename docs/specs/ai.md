@@ -36,7 +36,7 @@ The AI providers BeyondPilot calls, the chat models operators enabled, the model
 ## Chat providers
 
 - **Adapters.** `openai` serves every provider that speaks the OpenAI API (OpenAI, 9Router, OpenRouter, any compatible endpoint); they differ only by address. `anthropic` serves Claude through Spring AI's Anthropic module.
-- **The address** is `http` or `https`, private hosts included, at most 2,048 characters, with no credentials, query or fragment (`ChatEndpoints`). An address typed with or without a trailing slash, or with `/v1` for Anthropic, reaches the same API.
+- **The address** is `http` or `https`, private hosts included, at most 2,048 characters, with no credentials, query or fragment (`ChatEndpoints`). An address written as a link-local IP (`169.254.0.0/16`, `fe80::/10`, the AWS metadata address) is refused; a host name is not looked up, since operators are trusted to name an endpoint. An address typed with or without a trailing slash, or with `/v1` for Anthropic, reaches the same API.
 - **Listing models** is one `GET` (`{base}/models` with a bearer key; `{base}/v1/models` with `x-api-key` for Anthropic) that never follows a redirect, reads at most 16 MiB and 1,000 models, and waits at most `beyondpilot.ai.list-timeout` (20 s).
 - **A failure has one of three names**, and nothing the provider said reaches a response or a log:
   - `rejected`: status 401 or 403;

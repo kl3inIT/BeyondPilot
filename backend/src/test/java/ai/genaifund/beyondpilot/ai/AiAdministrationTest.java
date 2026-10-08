@@ -178,9 +178,11 @@ class AiAdministrationTest {
 			.query(String.class)
 			.list()).containsOnly("{\"vendor\": \"openai\"}");
 
-		// An address never carries credentials, a query or a fragment, and it is a web address.
+		// An address never carries credentials, a query or a fragment, it is a web address, and it is not link-local,
+		// where a cloud host answers its own credentials.
 		for (String bad : List.of("https://user:pass@gateway.test/v1", "https://gateway.test/v1?key=1",
-				"https://gateway.test/v1#x", "ftp://gateway.test/v1", "gateway.test/v1")) {
+				"https://gateway.test/v1#x", "ftp://gateway.test/v1", "gateway.test/v1", "http://169.254.169.254/v1",
+				"http://[fe80::1]/v1", "http://[fd00:ec2::254]/v1")) {
 			assertProblem(send("POST", operator, API + "/providers", provider("Bad", "openai", bad, GOOD_KEY)), 400,
 					"AI_PROVIDER_ENDPOINT_INVALID");
 		}
