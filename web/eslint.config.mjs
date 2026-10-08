@@ -9,9 +9,10 @@ const eslintConfig = defineConfig([
   ...nextTs,
   {
     // Every @shadcn/lint design-system rule (docs/conventions.md › Frontend). Registry primitives
-    // under components/ui style their own internals and hold the variant tables, so they are exempt.
+    // under components/ui style their own internals and hold the variant tables, so they are exempt,
+    // and so are the elements taken from assistant-ui's registry under components/assistant-ui.
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/components/ui/**"],
+    ignores: ["src/components/ui/**", "src/components/assistant-ui/**"],
     plugins: { shadcn },
     rules: {
       "shadcn/no-raw-colors": "error",
