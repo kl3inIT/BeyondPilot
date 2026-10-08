@@ -143,6 +143,7 @@ paths:
           - proposal.decide
           - proposal.release
           - proposal.file_open
+          - proposal.export
           - email.settings_update
           - email.appearance_update
           - email.template_update
@@ -4352,6 +4353,54 @@ paths:
       security:
       - session: []
       summary: A program's submitted applications to review
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/applications/export:
+    post:
+      operationId: exportReviewApplications
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportApplicationsRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            text/csv:
+              schema:
+                type: string
+          description: "One row for each application, with its applicant's contact\
+            \ details, decision and scores. The download is recorded."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+      security:
+      - session: []
+      summary: Download a program's submitted applications as a spreadsheet
       tags:
       - Review
   /api/proposal/review/programs/{programId}/criteria:
@@ -9634,6 +9683,7 @@ components:
           - proposal.decide
           - proposal.release
           - proposal.file_open
+          - proposal.export
           - email.settings_update
           - email.appearance_update
           - email.template_update
@@ -11131,6 +11181,21 @@ components:
       - providerId
       - providerName
       - total
+    ExportApplicationsRequest:
+      type: object
+      description: Which of a program's submitted applications to download.
+      properties:
+        applicationIds:
+          type:
+          - array
+          - "null"
+          description: "Only these applications, as the list was narrowed; left out,\
+            \ every submitted application."
+          items:
+            type: string
+            format: uuid
+          maxItems: 5000
+          minItems: 0
     FormQuestion:
       type: object
       description: "One of the program's own questions, as the form asks it."

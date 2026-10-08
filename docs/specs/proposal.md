@@ -249,6 +249,17 @@ actor and the program as resource (type `program`); see [ADR 0003](../decisions/
 | `proposal.decide`          | One per application whose decision changed | `decision`                    |
 | `proposal.release`         | Outcomes released                          | `shortlisted`, `not_selected` |
 | `proposal.file_open`       | A reviewer opened a file of an application | `application`, `file`         |
+| `proposal.export`          | An operator downloaded the applications    | `count`                       |
+
+### Download
+
+An operator downloads a program's submitted applications as CSV (`ReviewService.export`): one row for each, the
+earliest submitted first, with the organization, the solution, the applicant's name, email, phone, country and
+LinkedIn, the answer to the first one-choice question, the submission time and version, GenAI Fund's decision,
+whether the outcomes are released, and how many judges scored it with their mean. The request may name the
+applications to include, which is how the web sends the list as it is narrowed. The file is UTF-8 with a byte order
+mark, and a cell a spreadsheet would run as a formula is written as text (`CsvRows`). A judge is refused. Each
+download is recorded as `proposal.export`, since it takes contact details out.
 
 Applicants' acts, joining as a judge and assessments are not audited; they are logged as `proposal.submission.accepted`,
 `proposal.withdrawal.accepted`, `proposal.reviewer.joined` and `proposal.assessment.saved`, beside
@@ -284,6 +295,7 @@ Every endpoint needs a session.
 | `POST /api/proposal/review/programs/{programId}/reviewers/{reviewerId}/resend` | Re-send an unused invitation                                      |
 | `DELETE /api/proposal/review/programs/{programId}/reviewers/{reviewerId}`      | Remove a judge                                                    |
 | `GET /api/proposal/review/programs/{programId}/applications`                   | The submitted applications as the caller reviews them             |
+| `POST /api/proposal/review/programs/{programId}/applications/export`           | The submitted applications as CSV, for operators; recorded        |
 | `GET /api/proposal/review/applications/{id}`                                   | One application as submitted last, with assessments and history   |
 | `PUT /api/proposal/review/applications/{id}/assessment`                        | Save the caller's assessment                                      |
 | `GET /api/proposal/review/applications/{id}/files/{fileId}`                    | A file of the last submission                                     |

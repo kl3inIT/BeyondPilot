@@ -166,6 +166,12 @@ public enum AuditAction {
 	 */
 	PROPOSAL_FILE_OPEN("proposal.file_open", "application", "file"),
 
+	/**
+	 * An operator downloaded a program's applications, with their applicants' contact details. {@code count} is how
+	 * many applications the download holds.
+	 */
+	PROPOSAL_EXPORT("proposal.export", "count"),
+
 	/** An operator changed who delivers email or as whom. {@code provider} is the provider chosen. */
 	EMAIL_SETTINGS_UPDATE("email.settings_update", "provider"),
 
