@@ -1,6 +1,6 @@
 # AI models: chat providers, models by task and usage
 
-Status: proposed on 8 October 2026 ([plan](plan.md)). Tracked in Linear as BEY-92. The screens are not drawn yet; the web part waits for their approval.
+Status: proposed on 8 October 2026 ([plan](plan.md)). Tracked in Linear as BEY-92. The screens are drawn in Figma (section "Admin — AI: chat providers and models by task (draft for review, BEY-92)") and wait for approval, as does the web part.
 
 ## What it does
 
