@@ -53,7 +53,7 @@ class SearchAdministrationTest {
 	static void encryptionKey(DynamicPropertyRegistry registry) {
 		byte[] key = new byte[32];
 		new SecureRandom().nextBytes(key);
-		registry.add("beyondpilot.search.embedding.encryption-key", () -> Base64.getEncoder().encodeToString(key));
+		registry.add("beyondpilot.ai.encryption-key", () -> Base64.getEncoder().encodeToString(key));
 	}
 
 	@LocalServerPort

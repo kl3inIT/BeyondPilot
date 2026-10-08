@@ -1,4 +1,4 @@
-package ai.genaifund.beyondpilot.search;
+package ai.genaifund.beyondpilot.ai;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -17,11 +17,11 @@ import org.springframework.stereotype.Component;
  * opened, so a provider key is never stored or read in clear.
  */
 @Component
-class ProviderKeys {
+class AiKeys {
 
 	private final @Nullable BytesEncryptor encryptor;
 
-	ProviderKeys(EmbeddingSettings settings) {
+	AiKeys(AiSettings settings) {
 		String key = settings.encryptionKey();
 		if (key == null || key.isBlank()) {
 			this.encryptor = null;
@@ -39,10 +39,10 @@ class ProviderKeys {
 		return encryptor != null;
 	}
 
-	/** @throws SearchException when no encryption key is configured */
+	/** @throws AiException when no encryption key is configured */
 	byte[] seal(String key) {
 		if (encryptor == null) {
-			throw new SearchException(SearchErrorCode.ENCRYPTION_KEY_MISSING,
+			throw new AiException(AiErrorCode.ENCRYPTION_KEY_MISSING,
 					"A provider key was given but BEYONDPILOT_AI_ENCRYPTION_KEY is not set");
 		}
 		return encryptor.encrypt(key.getBytes(StandardCharsets.UTF_8));
