@@ -5462,8 +5462,9 @@
       "label": "Ngành",
       "all": "Tất cả bài toán",
       "placeholder": "Lọc theo ngành",
-      "empty": "Không tìm thấy ngành phù hợp.",
-      "remove": "Bỏ {industry}"
+      "empty": "Không có ngành phù hợp.",
+      "remove": "Bỏ {industry}",
+      "clear": "Xóa tất cả"
     },
     "technology": {
       "label": "Công nghệ AI liên quan",
@@ -5503,10 +5504,12 @@
         "integration": "Tích hợp, triển khai và hạ tầng"
       },
       "open": {
-        "title": "Đang mở nhận đề xuất",
-        "closes": "Hạn nộp {date}",
+        "status": "Mở nhận đề xuất",
+        "closes": "Đóng {when}",
         "noDeadline": "Không có hạn chót",
-        "lead": "Bài toán này đang mở nhận đề xuất."
+        "send": "Gửi đề xuất",
+        "save": "Lưu để xem sau",
+        "note": "Đề xuất sẽ dùng lại hồ sơ giải pháp của bạn. Bạn chỉ cần bổ sung phần dành riêng cho bài toán này."
       }
     },
     "count": "{count, plural, =0 {Không có bài toán nào} other {# bài toán}}",

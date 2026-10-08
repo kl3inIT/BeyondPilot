@@ -1,5 +1,6 @@
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
+import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -56,8 +57,8 @@ function Fact({ label, value }: FactProps) {
 }
 
 /**
- * The public brief of one open use case. It only shows what the organization elected to make public;
- * proposal and saved-item actions wait for their own server-backed capability.
+ * The public brief of one open use case. The proposal controls mirror the approved design but stay
+ * inert until their server-backed capabilities exist.
  */
 function UseCasePage({ useCase }: { useCase: PublicUseCase }) {
   const t = useTranslations("UseCases");
@@ -89,6 +90,9 @@ function UseCasePage({ useCase }: { useCase: PublicUseCase }) {
         timeZone: "Asia/Ho_Chi_Minh",
       })
     : t("deadline.none");
+  const proposalDeadline = useCase.closesAt
+    ? t("detail.open.closes", { when: format.relativeTime(new Date(useCase.closesAt)) })
+    : t("detail.open.noDeadline");
   const sections = [
     ["problem", "problemStatement" as const],
     ["outcomes", "expectedOutcomes" as const],
@@ -176,18 +180,31 @@ function UseCasePage({ useCase }: { useCase: PublicUseCase }) {
           )}
         </div>
 
-        <aside className="flex flex-col gap-3 rounded-2xl border bg-card p-5 shadow-sm md:p-6 lg:sticky lg:top-23 lg:w-75 lg:shrink-0 xl:w-95">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-base font-medium">{t("detail.open.title")}</h2>
-            <p className="text-sm text-muted-foreground">
-              {useCase.closesAt
-                ? t("detail.open.closes", { date: deadline })
-                : t("detail.open.noDeadline")}
-            </p>
+        <aside className="flex flex-col gap-4 rounded-2xl border bg-card p-6 shadow-sm lg:sticky lg:top-23 lg:w-75 lg:shrink-0 xl:w-95">
+          <div className="flex items-center gap-2">
+            <Badge variant="success">{t("detail.open.status")}</Badge>
+            <span className="text-sm text-muted-foreground">{proposalDeadline}</span>
           </div>
-          <p className="border-t pt-3 text-xs leading-5 text-muted-foreground">
-            {t("detail.open.lead")}
-          </p>
+          <div className="flex flex-col gap-2">
+            <Button
+              aria-disabled="true"
+              tabIndex={-1}
+              className="pointer-events-none w-full"
+              size="lg"
+            >
+              {t("detail.open.send")}
+            </Button>
+            <Button
+              aria-disabled="true"
+              tabIndex={-1}
+              className="pointer-events-none w-full"
+              prominence="secondary"
+              size="lg"
+            >
+              {t("detail.open.save")}
+            </Button>
+          </div>
+          <p className="text-xs leading-5 text-muted-foreground">{t("detail.open.note")}</p>
         </aside>
       </div>
     </div>
