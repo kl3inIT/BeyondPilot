@@ -11,11 +11,12 @@ model is set. It was delivered by [BEY-65](../increments/completed/bey-65-search
 
 - **Published API.** The package root: `SearchService` (the public search), `SearchAdministration` (Admin › AI),
   `SearchErrorCode` and `SearchException`. Everything else at the root is package-private: the four indexing
-  listeners, `IndexRepair`, `SearchEmbeddings`, `EmbeddingClients`, `OpenAiEmbeddings`, `ProviderKeys`,
+  listeners, `IndexRepair`, `SearchEmbeddings`, `EmbeddingClients`, `OpenAiEmbeddings`,
   `EmbeddingVendor`, `EmbeddingSettings`, `Cards` and `Rebuilt`.
 - **Persistence.** `search.persistence` holds `SearchDocumentRepository` (`JdbcClient`: the index rows, the ranked
-  query and the embedding queue) and the JPA entities `AiProvider` and `SearchSettings` with their repositories.
-- **Dependencies.** A closed module that may use `audit`, `identity`, `organization`, `program`, `solution`, `talent`
+  query and the embedding queue) and the JPA entity `SearchSettings` with its repository. The providers and their keys
+  are the [`ai` module](ai.md)'s; search reads its embedding provider through `AiProviders`.
+- **Dependencies.** A closed module that may use `ai`, `audit`, `identity`, `organization`, `program`, `solution`, `talent`
   and `usecase`. The owning modules stay the source of truth; the index is a projection that can always be rebuilt
   from them. No other module reads its tables. The module's place in the whole is in
   [ARCHITECTURE.md](../../ARCHITECTURE.md).
@@ -152,7 +153,6 @@ Configuration, `beyondpilot.search.embedding` in `application.yaml`:
 | `interval`       | `1m`                            | Delay between runs of the job, which first runs 30 seconds after start        |
 | `min-similarity` | `0.35`                          | Least cosine similarity for a match by meaning                                |
 | `pool`           | `48`                            | Nearest rows the meaning branch takes before ranking                          |
-| `encryption-key` | `BEYONDPILOT_AI_ENCRYPTION_KEY` | 32 bytes in Base64 that seal provider keys; managed on the host, never in Git |
 
 Behavior:
 
@@ -197,17 +197,17 @@ Rules:
   `openrouter` at `https://openrouter.ai/api/v1` with `openai/text-embedding-3-large` and
   `openai/text-embedding-3-small`. The address must be the vendor's own (a trailing slash is ignored), so the server
   never sends a key to, or calls, another host.
-- **Keys.** Sealed with AES-256-GCM (`ProviderKeys`, Spring Security's `AesGcmBytesEncryptor`) in
-  `ai_provider.api_key`. Without the encryption key no key can be saved and none can be read, so search goes by
-  words. A saved key is kept on a change only while the address is unchanged, and a test uses it only for the address
+- **Keys.** Sealed by the [`ai` module](ai.md#providers-and-keys) in `ai_provider.api_key` under
+  `BEYONDPILOT_AI_ENCRYPTION_KEY`. Without the encryption key no key can be saved and none can be read, so search
+  goes by words. A saved key is kept on a change only while the address is unchanged, and a test uses it only for the address
   it was saved with.
 - **Names** are unique per purpose, ignoring case.
 - **A model is chosen only after the provider embeds a test sentence** with it and returns 1,536 dimensions. A test
   reports `rejected`, `model_refused`, `unreachable` or `wrong_dimensions`.
 - **Concurrent changes.** Provider and settings changes carry the version read; a stale one is refused.
 
-`ai_provider` (V42) holds the providers: `purpose` (only `embedding`), `vendor` (`openai` or `openrouter`), `name`,
-`base_url`, `api_key`, `version` and who changed it last. `search_settings` (V42) is one row (`id = 1`):
+`ai_provider` (V42, kept by the `ai` module since V56) holds the providers; search uses the rows whose `purpose` is
+`embedding`, with `vendor` `openai` or `openrouter`. `search_settings` (V42) is one row (`id = 1`):
 `semantic_enabled` (default true), `provider_id` and `model` (both set or both null), `model_since`, `version` and who
 changed it last.
 
@@ -231,7 +231,8 @@ Expected failures are `SearchException` with a `SearchErrorCode`, turned into pr
 
 ## Audit
 
-`SearchAdministration` records each operator change through `AuditTrail`
+The provider actions are recorded by the `ai` module, which keeps the providers; `SearchAdministration` records the
+rest. Each goes through `AuditTrail`
 ([ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md)). No key is ever a detail.
 
 | Action                                              | Resource          | Details                                                  |
