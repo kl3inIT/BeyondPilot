@@ -55,7 +55,7 @@ Built {datetime.now(timezone.utc):%Y-%m-%d %H:%M} UTC. Counts only.
 {table(filled)}
 
 - Profiles sharing an address with another, which take a number: {sum(n for n in shared.values() if n > 1)}
-- Skills per profile: fewest {min(len(p.skills) for p in profiles)}, most {max(len(p.skills) for p in profiles)}
+- Skills per profile: fewest {min((len(p.skills) for p in profiles), default=0)}, most {max((len(p.skills) for p in profiles), default=0)}
 
 ### Job titles
 
@@ -86,6 +86,7 @@ def full(read: records.Read) -> str:
     for reason, number, name in read.left_out_rows:
         by_reason[reason].append(f"- row {number}: {name}" if number else f"- {name}")
     named = ("test name", "name not usable", "no skill stated", "nothing to make a headline from",
+             "same address as a later registration",
              "same LinkedIn profile as a later registration")
     sections = [f"## {reason} ({len(by_reason[reason])})\n\n" + "\n".join(by_reason[reason])
                 for reason in named if by_reason[reason]]

@@ -218,10 +218,17 @@ def profile(row, number: int, read: Read) -> Profile | None:
 
 
 def one_per_person(profiles: list[Profile], read: Read) -> list[Profile]:
-    """One profile for a person who registered under several addresses: the latest registration is kept."""
+    """One profile for a person who registered twice, under one address or under several: the latest registration
+    is kept. Every identifier comes from the address, so two rows of one address would be one row written twice."""
     latest: dict[str, Profile] = {}
+    addresses: set[str] = set()
     kept = []
     for candidate in sorted(profiles, key=lambda p: (p.registered_at, p.email), reverse=True):
+        if candidate.email in addresses:
+            read.left_out["same address as a later registration"] += 1
+            read.left_out_rows.append(("same address as a later registration", 0, candidate.name))
+            continue
+        addresses.add(candidate.email)
         person = mapping.linkedin_person(candidate.website)
         if person is not None and person in latest:
             read.left_out["same LinkedIn profile as a later registration"] += 1
