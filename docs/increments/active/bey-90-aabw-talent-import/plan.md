@@ -9,6 +9,8 @@ Design: [design.md](design.md). Tracked in [BEY-90](https://linear.app/beyondpil
 | 3 | Script: the staging step that approves and lists fifty profiles and suppresses their addresses | The SQL is reviewed |
 | 4 | Staging: dump, load, the staging step, rebuild the search index, check the directory, a profile and that an enquiry sends nothing | The counts are on Linear |
 
+Steps 1 to 3 are done (8 October 2026): on the real file the script reads 3,908 rows and writes 2,118 profiles. Against a database built from the migrations, the load wrote 2,118 accounts and profiles, a second load wrote none, a profile deleted by hand came back alone, and the staging step approved and listed fifty and was harmless when run again. Step 4 is still to do.
+
 ## Next
 
 - Production, once GenAI Fund answers whether the profiles may be shown (BEY-41).
