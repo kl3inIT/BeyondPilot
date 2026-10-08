@@ -218,14 +218,14 @@ public class ReviewService {
 	}
 
 	/**
-	 * A file of an application's last submission, its deck or a file it answered with.
+	 * A file of an application's last submission, its deck or a file it answered with. Opening it is recorded.
 	 * @throws ProposalException when there is no such submitted application, the caller does not review its program, or
 	 * the file is not one the submission holds
 	 */
 	@Transactional
 	public FileDownload file(Actor actor, UUID id, UUID fileId) {
 		Proposal proposal = submitted(id);
-		access.of(actor, proposal.getProgramId());
+		Reviewing reviewing = access.of(actor, proposal.getProgramId());
 		Snapshot snapshot = snapshot(proposal);
 		boolean held = (snapshot.materials().deck() != null
 				&& Objects.requireNonNull(snapshot.materials().deck()).fileId().equals(fileId))
@@ -237,6 +237,7 @@ public class ReviewService {
 			throw new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
 					"File " + fileId + " is not of application " + id);
 		}
+		setup.opened(reviewing.person(), setup.form(proposal.getProgramId()), id, fileId);
 		return storage.download(fileId);
 	}
 

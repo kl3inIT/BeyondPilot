@@ -15,7 +15,7 @@ The AI providers BeyondPilot calls, the chat models operators enabled, the model
 
 ## Data
 
-`V42` created `ai_provider` under `search`; `V56` extended it and added the rest.
+`V42` created `ai_provider` under `search`; `V57` extended it and added the rest.
 
 | Table | Holds |
 | --- | --- |

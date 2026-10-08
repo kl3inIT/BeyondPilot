@@ -160,6 +160,12 @@ public enum AuditAction {
 	/** An operator released a program's outcomes. The counts are how many applicants each group had. */
 	PROPOSAL_RELEASE("proposal.release", "shortlisted", "not_selected"),
 
+	/**
+	 * An operator or a judge opened a file of a submitted application. {@code application} and {@code file} are their
+	 * identifiers.
+	 */
+	PROPOSAL_FILE_OPEN("proposal.file_open", "application", "file"),
+
 	/** An operator changed who delivers email or as whom. {@code provider} is the provider chosen. */
 	EMAIL_SETTINGS_UPDATE("email.settings_update", "provider"),
 

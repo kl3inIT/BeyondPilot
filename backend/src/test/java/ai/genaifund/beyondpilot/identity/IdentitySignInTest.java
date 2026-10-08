@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -294,6 +295,53 @@ class IdentitySignInTest {
 		client.get().uri("/logout").cookie(SESSION_COOKIE, session).exchange().expectStatus().isNotFound();
 
 		client.get().uri("/api/identity/me").cookie(SESSION_COOKIE, session).exchange().expectStatus().isOk();
+	}
+
+	@Test
+	void aPersonKeepsTheirCountryAndPhoneOnTheAccount() {
+		String browser = sessionOf(requestCode(null, "username=reach@example.test").expectStatus().isNoContent());
+		String session = signIn(browser, mail.latestCodeTo("reach@example.test"));
+
+		contact(session, "{\"country\":\"VN\",\"phone\":\"+84 912 345 678\"}").expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.country")
+			.isEqualTo("VN")
+			.jsonPath("$.phone")
+			.isEqualTo("+84 912 345 678");
+		assertProblem(contact(session, "{\"country\":\"Vietnam\",\"phone\":null}"), 400);
+		assertProblem(contact(session, "{\"country\":null,\"phone\":\"call me\"}"), 400);
+
+		// What an application gives only fills what the account does not hold yet.
+		Actor actor = new Actor(UUID.fromString(JsonPath.read(new String(client.get()
+			.uri("/api/identity/me")
+			.cookie(SESSION_COOKIE, session)
+			.exchange()
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), UTF_8), "$.id")));
+		identity.reachAtIfUnknown(actor, "SG", "+65 8123 4567");
+		assertThat(identity.me(actor).country()).isEqualTo("VN");
+
+		// A part left out is cleared, and the next application may fill it again.
+		contact(session, "{\"country\":null,\"phone\":\"+84 912 345 678\"}").expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.country")
+			.isEmpty();
+		identity.reachAtIfUnknown(actor, "SG", "+65 8123 4567");
+		assertThat(identity.me(actor).country()).isEqualTo("SG");
+		assertThat(identity.me(actor).phone()).isEqualTo("+84 912 345 678");
+	}
+
+	private RestTestClient.ResponseSpec contact(String session, String body) {
+		return client.put()
+			.uri("/api/identity/me/contact")
+			.header(CSRF_HEADER, "1")
+			.cookie(SESSION_COOKIE, session)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(body)
+			.exchange();
 	}
 
 	@Test

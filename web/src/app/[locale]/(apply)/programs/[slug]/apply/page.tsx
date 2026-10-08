@@ -19,8 +19,8 @@ export async function generateMetadata({
 export default async function ApplyRoute({ params }: PageProps<"/[locale]/programs/[slug]/apply">) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  await requireAccount(`${programRoute(slug)}/apply`);
+  const account = await requireAccount(`${programRoute(slug)}/apply`);
   const view = await readApplicationForm(slug);
 
-  return <ApplyFlow initial={view} />;
+  return <ApplyFlow initial={view} account={account} />;
 }

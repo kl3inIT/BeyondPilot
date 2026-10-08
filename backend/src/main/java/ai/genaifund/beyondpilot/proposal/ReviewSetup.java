@@ -293,6 +293,14 @@ public class ReviewSetup {
 				new AuditRecord.Resource(PROGRAM, form.programId().toString(), form.name()), details));
 	}
 
+	/** Records that a reviewer, an operator or a judge, opened a file of an application of the program. */
+	void opened(Person reviewer, ApplicationForm form, UUID applicationId, UUID fileId) {
+		audit.record(new AuditRecord(AuditAction.PROPOSAL_FILE_OPEN,
+				new AuditRecord.Actor(reviewer.accountId(), reviewer.label(), reviewer.email()),
+				new AuditRecord.Resource(PROGRAM, form.programId().toString(), form.name()),
+				Map.of("application", applicationId.toString(), "file", fileId.toString())));
+	}
+
 	private void sent(Operator operator, ApplicationForm form, ProposalReviewer reviewer) {
 		record(AuditAction.PROPOSAL_REVIEWER_INVITE, operator, form, Map.of("email", reviewer.getEmail()));
 		events.publishEvent(new ReviewerInvited(reviewer.getId(), reviewer.getEmail(), form.name(), operator.label(),

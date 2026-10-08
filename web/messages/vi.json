@@ -29,6 +29,7 @@
       "admin": "Quản trị",
       "applications": "Đơn của tôi",
       "reviews": "Chấm đơn",
+      "settings": "Tài khoản",
       "mcp": "MCP",
       "backToSite": "Về trang chính",
       "appearance": "Giao diện"
@@ -407,6 +408,21 @@
     "thisComputer": "máy này",
     "notReviewed": "Chưa xem xét",
     "ableToLocal": "Ứng dụng sẽ có thể"
+  },
+  "Account": {
+    "metaTitle": "Tài khoản · BeyondPilot",
+    "title": "Tài khoản",
+    "lead": "Bạn đăng nhập bằng địa chỉ nào, bạn ở đâu và liên hệ bạn bằng cách nào. Đơn nộp sẽ điền sẵn các thông tin này.",
+    "name": "Họ tên",
+    "email": "Email",
+    "emailHint": "Bạn đăng nhập bằng địa chỉ này nên không đổi được ở đây.",
+    "country": "Quốc gia",
+    "countryPlaceholder": "Chọn quốc gia",
+    "phone": "Số điện thoại",
+    "phoneInvalid": "Nhập số điện thoại kèm mã quốc gia, ví dụ +84 912 345 678.",
+    "save": "Lưu",
+    "saved": "Đã lưu tài khoản.",
+    "failed": "Chưa lưu được tài khoản. Hãy thử lại."
   },
   "Mcp": {
     "metaTitle": "MCP · BeyondPilot",
@@ -967,7 +983,8 @@
           "reviewer_invite": "Mời giám khảo",
           "reviewer_remove": "Gỡ giám khảo",
           "decide": "Quyết định một đơn",
-          "release": "Công bố kết quả"
+          "release": "Công bố kết quả",
+          "file_open": "Mở một file của đơn nộp"
         },
         "use_case": {
           "create": "Tạo một use case",
@@ -1076,7 +1093,8 @@
           "reviewer_invite": "Mời một giám khảo chấm <resource></resource>",
           "reviewer_remove": "Gỡ một giám khảo khỏi <resource></resource>",
           "decide": "Quyết định một đơn nộp vào <resource></resource>",
-          "release": "Công bố kết quả của <resource></resource>"
+          "release": "Công bố kết quả của <resource></resource>",
+          "file_open": "Mở một file của một đơn nộp vào <resource></resource>"
         },
         "use_case": {
           "create": "Đã tạo use case <resource></resource>",
@@ -4655,6 +4673,12 @@
       "online": "Trực tuyến",
       "register": "Đăng ký",
       "nothingYet": "Thông tin thêm về chương trình sẽ sớm có.",
+      "useCases": {
+        "title": "Use case trong chương trình này",
+        "lead": "Các bài toán đã đăng cho chương trình này. Mở từng bài để đọc mục tiêu, yêu cầu, ngân sách và thời gian.",
+        "shown": "Đang hiện {shown} trên {total} use case.",
+        "all": "Xem tất cả use case"
+      },
       "draft": {
         "message": "Bản nháp. Chỉ operator thấy trang này; trang chưa có trên danh sách chương trình.",
         "back": "Quay lại cài đặt"
@@ -4729,10 +4753,15 @@
       "who": "Ai được nộp",
       "win": "Bạn nhận được gì",
       "directions": "Hướng gợi ý",
+      "use-cases": "Use case",
       "timeline": "Dòng thời gian",
       "submit": "Cần nộp gì",
       "judges": "Giám khảo",
       "faq": "Hỏi đáp"
+    },
+    "useCases": {
+      "title": "Use case trong thử thách này",
+      "lead": "Các bài toán Tasco đã đăng cho thử thách này. Mở từng bài để đọc mục tiêu, yêu cầu, ngân sách và thời gian."
     },
     "challenge": {
       "title": "Thử thách",
@@ -5025,8 +5054,8 @@
       "country": "Quốc gia",
       "countryPlaceholder": "Chọn quốc gia",
       "countryRequired": "Chọn quốc gia.",
-      "linkedin": "Hồ sơ LinkedIn",
-      "linkedinRequired": "Nhập đầy đủ địa chỉ hồ sơ LinkedIn, bắt đầu bằng https://",
+      "linkedin": "Hồ sơ LinkedIn (không bắt buộc)",
+      "linkedinInvalid": "Nhập đầy đủ địa chỉ hồ sơ LinkedIn, bắt đầu bằng https://, hoặc để trống.",
       "yourTeam": "Nhóm của bạn",
       "teamName": "Tên nhóm",
       "teamNameHint": "Hiện cho giám khảo nếu bạn vào vòng trong.",

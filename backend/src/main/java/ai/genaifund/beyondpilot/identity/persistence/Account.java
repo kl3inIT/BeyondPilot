@@ -33,6 +33,10 @@ public class Account {
 
 	private @Nullable Instant lastLoginAt;
 
+	private @Nullable String country;
+
+	private @Nullable String phone;
+
 	@Version
 	private long version;
 
@@ -54,6 +58,16 @@ public class Account {
 
 	public @Nullable String getDisplayName() {
 		return displayName;
+	}
+
+	/** ISO 3166-1 alpha-2; null until the person says where they are. */
+	public @Nullable String getCountry() {
+		return country;
+	}
+
+	/** With its country code; null until the person gives a number. */
+	public @Nullable String getPhone() {
+		return phone;
 	}
 
 	public PlatformRole getPlatformRole() {
@@ -92,6 +106,26 @@ public class Account {
 
 	public void enable() {
 		status = AccountStatus.ACTIVE;
+	}
+
+	/** Replaces where the person is and their number; a blank part clears it. */
+	public void reachAt(@Nullable String country, @Nullable String phone) {
+		this.country = given(country);
+		this.phone = given(phone);
+	}
+
+	/** Keeps what the account already holds; a part given elsewhere only fills an empty one. */
+	public void reachAtIfUnknown(@Nullable String country, @Nullable String phone) {
+		if (this.country == null) {
+			this.country = given(country);
+		}
+		if (this.phone == null) {
+			this.phone = given(phone);
+		}
+	}
+
+	private static @Nullable String given(@Nullable String value) {
+		return value == null || value.isBlank() ? null : value.strip();
 	}
 
 	/** Keeps the name a person already has; a provider's name only fills an empty one. */

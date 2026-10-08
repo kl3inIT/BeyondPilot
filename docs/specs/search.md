@@ -206,7 +206,7 @@ Rules:
   reports `rejected`, `model_refused`, `unreachable` or `wrong_dimensions`.
 - **Concurrent changes.** Provider and settings changes carry the version read; a stale one is refused.
 
-`ai_provider` (V42, kept by the `ai` module since V56) holds the providers; search uses the rows whose `purpose` is
+`ai_provider` (V42, kept by the `ai` module since V57) holds the providers; search uses the rows whose `purpose` is
 `embedding`, with `vendor` `openai` or `openrouter`. `search_settings` (V42) is one row (`id = 1`):
 `semantic_enabled` (default true), `provider_id` and `model` (both set or both null), `model_since`, `version` and who
 changed it last.
