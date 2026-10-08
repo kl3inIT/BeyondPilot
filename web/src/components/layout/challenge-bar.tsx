@@ -8,8 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { usePathname } from "@/i18n/navigation";
 import { liveCampaignDeadline, liveCampaignUrl, siteRoutes } from "@/lib/site";
 
-// The deadline is read once when the page opens; a visit rarely spans it.
-const subscribe = () => () => {};
+/** Tells React once, at the deadline, so a page left open drops the bar when submissions close. */
+function subscribe(onChange: () => void) {
+  const wait = Date.parse(liveCampaignDeadline) - Date.now();
+  // A timer cannot wait longer than about 24 days; a visit that long reloads before then.
+  if (wait <= 0 || wait > 2_000_000_000) {
+    return () => {};
+  }
+  const timer = setTimeout(onChange, wait + 1000);
+  return () => clearTimeout(timer);
+}
 
 /**
  * The live challenge across the top of the landing (Figma "Landing v2 / ChallengeBar"): its name,

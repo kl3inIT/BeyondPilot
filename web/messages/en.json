@@ -145,7 +145,7 @@
         "challenge": {
           "title": "AI for Insurance Challenge × Tasco",
           "summary": "Build an AI pilot with Tasco’s business team. Up to US$100,000 considered for investment.",
-          "meta": "Enterprise challenge · Open · Submissions close 15 Oct"
+          "meta": "Enterprise challenge · Submissions close 15 Oct"
         }
       },
       "scopes": {
@@ -208,7 +208,7 @@
         "description": "Find challenges, accelerators, and initiatives that support your next stage.",
         "action": "Explore programs",
         "item1Title": "AI for Insurance Challenge × Tasco",
-        "item1Meta": "Enterprise challenge · Open until 15 Oct",
+        "item1Meta": "Enterprise challenge · Submissions close 15 Oct",
         "item2Title": "Agentic AI Build Week 2026",
         "item2Meta": "Buildathon · July 2026"
       }
@@ -244,7 +244,8 @@
         "option2Why": "OCR, decision and claim engines that Vietnamese insurers list as customers.",
         "next": "Next step",
         "introduce": "Request an introduction",
-        "shortlist": "Compare and shortlist"
+        "shortlist": "Compare and shortlist",
+        "alt": "an example journey. A need, “automate insurance document processing in Vietnam”, is narrowed to document types, Vietnamese language support and deployment needs; two relevant solutions are suggested, Papaya and Infall Insurtech; the next step is to request an introduction. Comparing and shortlisting is coming soon."
       }
     },
     "challenge": {

@@ -145,7 +145,7 @@
         "challenge": {
           "title": "AI for Insurance Challenge × Tasco",
           "summary": "Xây dựng một pilot AI cùng đội kinh doanh của Tasco. Có thể được xem xét đầu tư tối đa 100.000 USD.",
-          "meta": "Thử thách doanh nghiệp · Đang mở · Hạn nộp 15/10"
+          "meta": "Thử thách doanh nghiệp · Hạn nộp 15/10"
         }
       },
       "scopes": {
@@ -208,7 +208,7 @@
         "description": "Tìm thử thách, chương trình tăng tốc và sáng kiến hỗ trợ giai đoạn tiếp theo của bạn.",
         "action": "Khám phá chương trình",
         "item1Title": "AI for Insurance Challenge × Tasco",
-        "item1Meta": "Thử thách doanh nghiệp · Mở đến 15/10",
+        "item1Meta": "Thử thách doanh nghiệp · Hạn nộp 15/10",
         "item2Title": "Agentic AI Build Week 2026",
         "item2Meta": "Buildathon · tháng 7/2026"
       }
@@ -244,7 +244,8 @@
         "option2Why": "OCR cùng bộ máy quyết định và bồi thường, đã có các hãng bảo hiểm Việt Nam là khách hàng.",
         "next": "Bước tiếp theo",
         "introduce": "Yêu cầu giới thiệu",
-        "shortlist": "So sánh và lập danh sách rút gọn"
+        "shortlist": "So sánh và lập danh sách rút gọn",
+        "alt": "một hành trình ví dụ. Nhu cầu “tự động hoá xử lý hồ sơ bảo hiểm tại Việt Nam” được làm rõ thành loại tài liệu, hỗ trợ tiếng Việt và yêu cầu triển khai; hai giải pháp phù hợp được gợi ý là Papaya và Infall Insurtech; bước tiếp theo là yêu cầu giới thiệu. So sánh và lập danh sách rút gọn sắp ra mắt."
       }
     },
     "challenge": {

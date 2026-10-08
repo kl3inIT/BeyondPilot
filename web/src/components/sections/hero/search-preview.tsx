@@ -63,7 +63,7 @@ function SearchPreview({ className }: { className?: string }) {
             <li key={id} className="flex gap-4 px-4 py-4 md:px-5">
               <span
                 className={cn(
-                  "flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-sm font-semibold",
+                  "flex size-10 shrink-0 items-center justify-center rounded-lg border bg-card text-sm font-semibold",
                   ink,
                 )}
               >

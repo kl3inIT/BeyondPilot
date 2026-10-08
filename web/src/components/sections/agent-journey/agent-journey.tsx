@@ -50,7 +50,7 @@ function AgentJourney() {
         </div>
         <div
           role="img"
-          aria-label={`${h("previewLabel")}: ${t("demo.title")}. ${t("demo.needQuote")}`}
+          aria-label={`${h("previewLabel")}: ${t("demo.alt")}`}
           className="min-w-0 flex-1 self-start overflow-hidden rounded-3xl border bg-card shadow-float"
         >
           <div aria-hidden="true">
@@ -90,7 +90,7 @@ function AgentJourney() {
                 <ul className="divide-y rounded-xl border">
                   {options.map(({ row, monogram }) => (
                     <li key={row} className="flex gap-3 px-3.5 py-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-sm font-semibold text-solution">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-card text-sm font-semibold text-solution">
                         {monogram}
                       </span>
                       <span className="flex min-w-0 flex-col gap-0.5">
