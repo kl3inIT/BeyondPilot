@@ -22,7 +22,7 @@ function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background">
-      <div className="mx-auto flex h-17 w-full max-w-360 items-center justify-between gap-6 px-5 md:px-8 xl:px-16 desktop:px-20">
+      <div className="mx-auto flex h-17 w-full max-w-360 items-center justify-between gap-3 px-5 md:gap-6 md:px-8 xl:px-16 desktop:px-20">
         <div className="flex items-center gap-8">
           <BrandLockup showBackedBy={false} />
           <nav aria-label={t("label")} className="hidden items-center gap-7 md:flex">
