@@ -5,8 +5,9 @@ Source, checked by check_vocabulary.py:
 """
 
 ROLE = (
-    "ai_engineer", "ml_engineer", "forward_deployed_engineer", "automation_specialist", "data_scientist",
-    "data_engineer", "ai_product_manager", "ai_consultant", "ai_designer", "other",
+    "ai_engineer", "ml_engineer", "forward_deployed_engineer", "software_engineer", "solution_architect",
+    "automation_specialist", "data_scientist", "data_engineer", "researcher", "ai_product_manager",
+    "ai_consultant", "ai_designer", "founder", "student", "other",
 )
 
 INDUSTRY = (

@@ -123,8 +123,15 @@ TRACK = {
         "Interested in enterprise AI: B2B, workflows and internal tooling.",
 }
 
-# A role is given only when the stated title is that role; every other title is `other`, and the headline keeps it.
-ROLE_BY_TITLE = {code.replace("_", " "): code for code in vocabulary.ROLE if code != "other"}
+# A role is given only when the stated title is that role: a role's own name, or the choice of the form that says the
+# same. Every other title is `other`, and the headline keeps it.
+ROLE_BY_TITLE = {code.replace("_", " "): code for code in vocabulary.ROLE if code != "other"} | {
+    "developer / engineer": "software_engineer",
+    "solution or systems architect": "solution_architect",
+    "academic / researcher": "researcher",
+    "entrepreneur (founder/co-founder)": "founder",
+    "student": "student",
+}
 
 LINKEDIN = re.compile(r"(?i)^https?://([a-z]{2,3}\.)?linkedin\.com/\S+$")
 LINKEDIN_PERSON = re.compile(r"(?i)linkedin\.com/in/([^/?#\s]+)")
