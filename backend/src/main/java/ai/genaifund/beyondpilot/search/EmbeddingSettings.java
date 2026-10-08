@@ -2,7 +2,6 @@ package ai.genaifund.beyondpilot.search;
 
 import java.time.Duration;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -12,9 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param interval how often the job looks for items to embed
  * @param minSimilarity the least cosine similarity an item needs to match a query by meaning
  * @param pool how many of the nearest the vector branch takes before ranking
- * @param encryptionKey 32 bytes in Base64 that seal the providers' keys; without it no key is stored or read
  */
 @ConfigurationProperties("beyondpilot.search.embedding")
-record EmbeddingSettings(int batchSize, Duration interval, double minSimilarity, int pool,
-		@Nullable String encryptionKey) {
+record EmbeddingSettings(int batchSize, Duration interval, double minSimilarity, int pool) {
 }

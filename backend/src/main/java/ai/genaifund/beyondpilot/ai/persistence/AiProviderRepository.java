@@ -1,4 +1,4 @@
-package ai.genaifund.beyondpilot.search.persistence;
+package ai.genaifund.beyondpilot.ai.persistence;
 
 import java.util.List;
 import java.util.UUID;

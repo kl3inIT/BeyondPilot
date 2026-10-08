@@ -53,6 +53,13 @@ export type AccountSummary = {
 };
 
 /**
+ * The models to enable on a provider, as ticked in its list.
+ */
+export type AddChatModels = {
+    models: Array<SaveChatModel>;
+};
+
+/**
  * An address to stop sending to.
  */
 export type AddEmailSuppression = {
@@ -823,7 +830,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -903,6 +910,107 @@ export type BackSolution = {
 
 export type ChangeMemberRole = {
     role: 'owner' | 'member';
+};
+
+/**
+ * A model an operator enabled. Prices are US dollars per million tokens; null is unknown.
+ */
+export type ChatModel = {
+    cachedInputPrice?: number | null;
+    contextWindow: number;
+    displayName: string;
+    id: string;
+    inputPrice?: number | null;
+    maxOutputTokens?: number | null;
+    modelName: string;
+    outputPrice?: number | null;
+    reasoning: boolean;
+    toolCalling: boolean;
+    version: number;
+    vision: boolean;
+};
+
+/**
+ * Whether a model answered a one-line question. The call spent a few tokens and is in the usage record.
+ */
+export type ChatModelTest = {
+    latencyMs: number;
+    ok: boolean;
+};
+
+export type ChatProvider = {
+    adapterType: string;
+    baseUrl: string;
+    enabled: boolean;
+    hasKey: boolean;
+    id: string;
+    /**
+     * Whether a task uses one of its models.
+     */
+    inUse: boolean;
+    models: Array<ChatModel>;
+    name: string;
+    updatedAt: string;
+    /**
+     * Who saved it last, as they were named.
+     */
+    updatedBy: string;
+    /**
+     * Send it back with a change; a change made meanwhile is refused.
+     */
+    version: number;
+};
+
+/**
+ * What listing the provider's models answered. No tokens were spent.
+ */
+export type ChatProviderTest = {
+    latencyMs: number;
+    /**
+     * How many models the provider listed.
+     */
+    modelCount?: number | null;
+    ok: boolean;
+    /**
+     * Why it failed: the key was refused, no answer came, or the answer was not this API's.
+     */
+    reason?: 'rejected' | 'unreachable' | 'incompatible';
+};
+
+/**
+ * Everything the Chat tab of Admin › AI › Providers shows: the chat providers with their models, and the model each task uses. A key is never returned: each provider says only whether it has one.
+ */
+export type ChatSettings = {
+    /**
+     * The APIs BeyondPilot speaks, as a provider's adapterType.
+     */
+    adapters: Array<string>;
+    /**
+     * Whether the server holds the key that encrypts provider keys; without it none can be saved.
+     */
+    keysCanBeStored: boolean;
+    providers: Array<ChatProvider>;
+    tasks: Array<ChatTask>;
+};
+
+/**
+ * A task and the model it uses.
+ */
+export type ChatTask = {
+    /**
+     * Whether the task can run now: a model is chosen and its provider is switched on with a key.
+     */
+    available: boolean;
+    /**
+     * The model; null until an operator chooses one, and after its model is removed.
+     */
+    modelId?: string | null;
+    /**
+     * How hard the task reasons, on a model that does; the task's own default until an operator sets one.
+     */
+    reasoningEffort: 'off' | 'low' | 'medium' | 'high';
+    task: 'matching';
+    version: number;
 };
 
 /**
@@ -2187,6 +2295,19 @@ export type PersonConnectedApp = {
     usedAt?: string | null;
 };
 
+/**
+ * A connection to try or to list the models of, saved or not. Without an apiKey the saved key of providerId is used, while the address is the one it was saved with.
+ */
+export type ProbeChatProvider = {
+    adapterType: string;
+    apiKey?: string | null;
+    baseUrl: string;
+    /**
+     * The saved provider whose key to use when apiKey is empty.
+     */
+    providerId?: string | null;
+};
+
 export type Problem = {
     /**
      * Stable failure code for module failures and request validation; clients branch on it.
@@ -2918,6 +3039,36 @@ export type ReleaseItem = {
     solutionName: string;
 };
 
+export type ReportedChatModel = {
+    cachedInputPrice?: number | null;
+    /**
+     * Whether the saved provider already has this model.
+     */
+    configured: boolean;
+    contextWindow: number;
+    /**
+     * US dollars per million tokens.
+     */
+    inputPrice?: number | null;
+    maxOutputTokens?: number | null;
+    modelName: string;
+    outputPrice?: number | null;
+    reasoning: boolean;
+    /**
+     * Where the context window came from; none means a default was assumed.
+     */
+    source: 'provider' | 'catalog' | 'none';
+    toolCalling: boolean;
+    vision: boolean;
+};
+
+/**
+ * The models a provider lists, with what it and the bundled catalog know about each.
+ */
+export type ReportedChatModels = {
+    models: Array<ReportedChatModel>;
+};
+
 /**
  * A request for an introduction to the organization behind a solution.
  */
@@ -3270,6 +3421,60 @@ export type SaveAssessment = {
     scores: {
         [key: string]: number;
     };
+};
+
+/**
+ * A model to enable or correct. Prices are US dollars per million tokens; null is unknown.
+ */
+export type SaveChatModel = {
+    cachedInputPrice?: number | null;
+    contextWindow: number;
+    /**
+     * The name shown; the model name when empty.
+     */
+    displayName?: string | null;
+    inputPrice?: number | null;
+    maxOutputTokens?: number | null;
+    /**
+     * The name the provider knows it by.
+     */
+    modelName: string;
+    outputPrice?: number | null;
+    reasoning: boolean;
+    toolCalling: boolean;
+    /**
+     * The version the model was read at; 0 for a new one.
+     */
+    version: number;
+    vision: boolean;
+};
+
+/**
+ * A chat provider to connect or change. The address is an http or https URL; a saved key is kept only while it is unchanged.
+ */
+export type SaveChatProvider = {
+    /**
+     * One of the adapters the settings list.
+     */
+    adapterType: string;
+    /**
+     * The new key, with key = replace.
+     */
+    apiKey?: string | null;
+    baseUrl: string;
+    /**
+     * A provider switched off keeps its key and its models; no task can use it.
+     */
+    enabled: boolean;
+    /**
+     * Keep the saved key, replace it with apiKey, or remove it. A new provider takes replace.
+     */
+    key: 'keep' | 'replace' | 'remove';
+    name: string;
+    /**
+     * The version the provider was read at; 0 for a new one.
+     */
+    version: number;
 };
 
 /**
@@ -3898,6 +4103,24 @@ export type SetSemanticSearch = {
 };
 
 /**
+ * The model a task uses from now on.
+ */
+export type SetTaskModel = {
+    /**
+     * The model; null leaves the task without one.
+     */
+    modelId?: string | null;
+    /**
+     * How hard to reason; null returns the task to its own default.
+     */
+    reasoningEffort?: 'off' | 'low' | 'medium' | 'high';
+    /**
+     * The version the task was read at.
+     */
+    version: number;
+};
+
+/**
  * The programs a use case belongs to, replacing those it had.
  */
 export type SetUseCasePrograms = {
@@ -4436,6 +4659,342 @@ export type UseCaseRequirement = {
     statement: string;
 };
 
+export type GetChatSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/ai/admin/chat';
+};
+
+export type GetChatSettingsResponses = {
+    /**
+     * The settings, without keys.
+     */
+    200: ChatSettings;
+};
+
+export type GetChatSettingsResponse = GetChatSettingsResponses[keyof GetChatSettingsResponses];
+
+export type RemoveChatModelData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/models/{id}';
+};
+
+export type RemoveChatModelErrors = {
+    /**
+     * There is no such model.
+     */
+    404: Problem;
+};
+
+export type RemoveChatModelError = RemoveChatModelErrors[keyof RemoveChatModelErrors];
+
+export type RemoveChatModelResponses = {
+    /**
+     * The settings left. A task that used the model is unset.
+     */
+    200: ChatSettings;
+};
+
+export type RemoveChatModelResponse = RemoveChatModelResponses[keyof RemoveChatModelResponses];
+
+export type ChangeChatModelData = {
+    body: SaveChatModel;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/models/{id}';
+};
+
+export type ChangeChatModelErrors = {
+    /**
+     * A member is not valid, or the answer limit does not fit the context window.
+     */
+    400: Problem;
+    /**
+     * There is no such model.
+     */
+    404: Problem;
+    /**
+     * The model changed since it was read.
+     */
+    409: Problem;
+};
+
+export type ChangeChatModelError = ChangeChatModelErrors[keyof ChangeChatModelErrors];
+
+export type ChangeChatModelResponses = {
+    /**
+     * The settings, with the change.
+     */
+    200: ChatSettings;
+};
+
+export type ChangeChatModelResponse = ChangeChatModelResponses[keyof ChangeChatModelResponses];
+
+export type TestChatModelData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/models/{id}/test';
+};
+
+export type TestChatModelErrors = {
+    /**
+     * The model's provider is switched off or has no key.
+     */
+    400: Problem;
+    /**
+     * There is no such model.
+     */
+    404: Problem;
+    /**
+     * Too many models are in use at once.
+     */
+    503: Problem;
+};
+
+export type TestChatModelError = TestChatModelErrors[keyof TestChatModelErrors];
+
+export type TestChatModelResponses = {
+    /**
+     * Whether the model answered and how long it took.
+     */
+    200: ChatModelTest;
+};
+
+export type TestChatModelResponse = TestChatModelResponses[keyof TestChatModelResponses];
+
+export type ConnectChatProviderData = {
+    body: SaveChatProvider;
+    path?: never;
+    query?: never;
+    url: '/api/ai/admin/chat/providers';
+};
+
+export type ConnectChatProviderErrors = {
+    /**
+     * A member is not valid, the adapter is unknown, the address is not an http or https URL, or the key is missing.
+     */
+    400: Problem;
+    /**
+     * Another chat provider has this name.
+     */
+    409: Problem;
+    /**
+     * The server has no key to encrypt provider keys.
+     */
+    503: Problem;
+};
+
+export type ConnectChatProviderError = ConnectChatProviderErrors[keyof ConnectChatProviderErrors];
+
+export type ConnectChatProviderResponses = {
+    /**
+     * The settings, with the new provider.
+     */
+    200: ChatSettings;
+};
+
+export type ConnectChatProviderResponse = ConnectChatProviderResponses[keyof ConnectChatProviderResponses];
+
+export type ListReportedChatModelsData = {
+    body: ProbeChatProvider;
+    path?: never;
+    query?: never;
+    url: '/api/ai/admin/chat/providers/reported-models';
+};
+
+export type ListReportedChatModelsErrors = {
+    /**
+     * The adapter is unknown, the address is not valid, no usable key was given, the key was refused, or the answer was not the API's.
+     */
+    400: Problem;
+    /**
+     * The provider could not be reached.
+     */
+    503: Problem;
+};
+
+export type ListReportedChatModelsError = ListReportedChatModelsErrors[keyof ListReportedChatModelsErrors];
+
+export type ListReportedChatModelsResponses = {
+    /**
+     * The models, by name.
+     */
+    200: ReportedChatModels;
+};
+
+export type ListReportedChatModelsResponse = ListReportedChatModelsResponses[keyof ListReportedChatModelsResponses];
+
+export type TestChatProviderData = {
+    body: ProbeChatProvider;
+    path?: never;
+    query?: never;
+    url: '/api/ai/admin/chat/providers/test';
+};
+
+export type TestChatProviderErrors = {
+    /**
+     * The adapter is unknown, the address is not valid, or no usable key was given.
+     */
+    400: Problem;
+};
+
+export type TestChatProviderError = TestChatProviderErrors[keyof TestChatProviderErrors];
+
+export type TestChatProviderResponses = {
+    /**
+     * Whether the provider answered, how many models it listed and how long it took.
+     */
+    200: ChatProviderTest;
+};
+
+export type TestChatProviderResponse = TestChatProviderResponses[keyof TestChatProviderResponses];
+
+export type RemoveChatProviderData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/providers/{id}';
+};
+
+export type RemoveChatProviderErrors = {
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+};
+
+export type RemoveChatProviderError = RemoveChatProviderErrors[keyof RemoveChatProviderErrors];
+
+export type RemoveChatProviderResponses = {
+    /**
+     * The settings left. A task that used one of its models is unset.
+     */
+    200: ChatSettings;
+};
+
+export type RemoveChatProviderResponse = RemoveChatProviderResponses[keyof RemoveChatProviderResponses];
+
+export type ChangeChatProviderData = {
+    body: SaveChatProvider;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/providers/{id}';
+};
+
+export type ChangeChatProviderErrors = {
+    /**
+     * A member is not valid, the adapter is unknown, the address is not valid, or a key is needed.
+     */
+    400: Problem;
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+    /**
+     * The provider changed since it was read, or another one has this name.
+     */
+    409: Problem;
+    /**
+     * The server has no key to encrypt provider keys.
+     */
+    503: Problem;
+};
+
+export type ChangeChatProviderError = ChangeChatProviderErrors[keyof ChangeChatProviderErrors];
+
+export type ChangeChatProviderResponses = {
+    /**
+     * The settings, with the change.
+     */
+    200: ChatSettings;
+};
+
+export type ChangeChatProviderResponse = ChangeChatProviderResponses[keyof ChangeChatProviderResponses];
+
+export type AddChatModelsData = {
+    body: AddChatModels;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/providers/{id}/models';
+};
+
+export type AddChatModelsErrors = {
+    /**
+     * A member is not valid, or an answer limit does not fit its context window.
+     */
+    400: Problem;
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+    /**
+     * The provider already has one of the models.
+     */
+    409: Problem;
+};
+
+export type AddChatModelsError = AddChatModelsErrors[keyof AddChatModelsErrors];
+
+export type AddChatModelsResponses = {
+    /**
+     * The settings, with the models.
+     */
+    200: ChatSettings;
+};
+
+export type AddChatModelsResponse = AddChatModelsResponses[keyof AddChatModelsResponses];
+
+export type SetTaskModelData = {
+    body: SetTaskModel;
+    path: {
+        task: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/tasks/{task}';
+};
+
+export type SetTaskModelErrors = {
+    /**
+     * A member is not valid, or the model's provider is switched off or has no key.
+     */
+    400: Problem;
+    /**
+     * There is no such task or model.
+     */
+    404: Problem;
+    /**
+     * The task's model changed since it was read.
+     */
+    409: Problem;
+};
+
+export type SetTaskModelError = SetTaskModelErrors[keyof SetTaskModelErrors];
+
+export type SetTaskModelResponses = {
+    /**
+     * The settings, with the choice.
+     */
+    200: ChatSettings;
+};
+
+export type SetTaskModelResponse = SetTaskModelResponses[keyof SetTaskModelResponses];
+
 export type ListAuditEventsData = {
     body?: never;
     path?: never;
@@ -4447,7 +5006,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
