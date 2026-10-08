@@ -122,7 +122,7 @@ test.describe("programs", () => {
     await expectNoSeriousA11yViolations(page);
 
     await page.goto("/vi/programs/insurance-ai-tasco");
-    await expect(page.getByRole("heading", { name: "Thử thách" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Thử thách", exact: true })).toBeVisible();
   });
 
   test("a draft is found by an operator only, under a banner that leads back", async ({
