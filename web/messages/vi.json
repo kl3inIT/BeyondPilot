@@ -4665,6 +4665,12 @@
       "online": "Trực tuyến",
       "register": "Đăng ký",
       "nothingYet": "Thông tin thêm về chương trình sẽ sớm có.",
+      "useCases": {
+        "title": "Use case trong chương trình này",
+        "lead": "Các bài toán đã đăng cho chương trình này. Mở từng bài để đọc mục tiêu, yêu cầu, ngân sách và thời gian.",
+        "shown": "Đang hiện {shown} trên {total} use case.",
+        "all": "Xem tất cả use case"
+      },
       "draft": {
         "message": "Bản nháp. Chỉ operator thấy trang này; trang chưa có trên danh sách chương trình.",
         "back": "Quay lại cài đặt"
@@ -4739,10 +4745,15 @@
       "who": "Ai được nộp",
       "win": "Bạn nhận được gì",
       "directions": "Hướng gợi ý",
+      "use-cases": "Use case",
       "timeline": "Dòng thời gian",
       "submit": "Cần nộp gì",
       "judges": "Giám khảo",
       "faq": "Hỏi đáp"
+    },
+    "useCases": {
+      "title": "Use case trong thử thách này",
+      "lead": "Các bài toán Tasco đã đăng cho thử thách này. Mở từng bài để đọc mục tiêu, yêu cầu, ngân sách và thời gian."
     },
     "challenge": {
       "title": "Thử thách",

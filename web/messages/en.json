@@ -4665,6 +4665,12 @@
       "online": "Online",
       "register": "Register",
       "nothingYet": "More about this program is coming soon.",
+      "useCases": {
+        "title": "Use cases in this program",
+        "lead": "The business problems published for this program. Open one to read its goal, requirements, budget and timeline.",
+        "shown": "Showing {shown} of {total} use cases.",
+        "all": "See all use cases"
+      },
       "draft": {
         "message": "Draft. Only operators can see this page; it is not on the programs list yet.",
         "back": "Back to settings"
@@ -4739,10 +4745,15 @@
       "who": "Who can apply",
       "win": "What you win",
       "directions": "Directions",
+      "use-cases": "Use cases",
       "timeline": "Timeline",
       "submit": "What to submit",
       "judges": "Judges",
       "faq": "FAQ"
+    },
+    "useCases": {
+      "title": "Use cases in this challenge",
+      "lead": "The business problems Tasco has published for this challenge. Open one to read its goal, requirements, budget and timeline."
     },
     "challenge": {
       "title": "The challenge",

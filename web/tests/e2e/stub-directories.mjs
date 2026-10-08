@@ -265,9 +265,11 @@ function pageOfUseCases(url) {
     .getAll("industry")
     .flatMap((industry) => industry.split(","))
     .filter(Boolean);
+  const program = query.get("program");
   const items = useCases
     .filter(
       (item) =>
+        (!program || (programUseCases[program] ?? []).includes(item.title)) &&
         has(query.get("q"), item.title, item.goal, item.organizationName) &&
         (industries.length === 0 || industries.includes(item.industry)),
     )
@@ -280,6 +282,14 @@ function pageOfUseCases(url) {
     );
   return { items, page: 1, pageSize: 10, total: items.length };
 }
+
+/** The use cases an operator attached to a program, by the program's address. */
+const programUseCases = {
+  "insurance-ai-tasco": [
+    "Voice assistant for vehicle owners",
+    "Claims triage with document intelligence",
+  ],
+};
 
 const missing = [404, { status: 404, code: "NOT_FOUND" }];
 
