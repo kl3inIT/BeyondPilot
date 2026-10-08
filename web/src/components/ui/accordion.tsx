@@ -3,7 +3,7 @@ import { cn } from "cn";
 import { ChevronDownIcon, ChevronUpIcon, MinusIcon, PlusIcon } from "lucide-react";
 
 /**
- * `lg` is the marketing FAQ size from the Figma landing: 18px questions with a plus or minus, 16px muted
+ * `lg` is the marketing FAQ size from the Figma landing: 20px questions with a plus or minus, 16px muted
  * answers, a rule above every item and one below the list.
  */
 function Accordion({
@@ -40,7 +40,7 @@ function AccordionTrigger({ className, children, ...props }: AccordionPrimitive.
       <AccordionPrimitive.Trigger
         data-slot="accordion-trigger"
         className={cn(
-          "group/accordion-trigger relative flex flex-1 items-start justify-between rounded-lg border border-transparent py-2.5 text-left text-sm font-medium transition-all outline-none group-data-[size=lg]/accordion:gap-6 group-data-[size=lg]/accordion:py-6 group-data-[size=lg]/accordion:text-lg group-data-[size=lg]/accordion:font-semibold hover:underline focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:after:border-ring aria-disabled:pointer-events-none aria-disabled:opacity-50 group-data-[size=lg]/accordion:aria-expanded:pb-3 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-4 **:data-[slot=accordion-trigger-icon]:text-muted-foreground group-data-[size=lg]/accordion:**:data-[slot=accordion-trigger-icon]:size-5 group-data-[size=lg]/accordion:**:data-[slot=accordion-trigger-icon]:text-foreground",
+          "group/accordion-trigger relative flex flex-1 items-start justify-between rounded-lg border border-transparent py-2.5 text-left text-sm font-medium transition-all outline-none group-data-[size=lg]/accordion:gap-6 group-data-[size=lg]/accordion:py-5 group-data-[size=lg]/accordion:text-xl group-data-[size=lg]/accordion:font-medium hover:underline focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:after:border-ring aria-disabled:pointer-events-none aria-disabled:opacity-50 group-data-[size=lg]/accordion:aria-expanded:pb-3 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-4 **:data-[slot=accordion-trigger-icon]:text-muted-foreground group-data-[size=lg]/accordion:**:data-[slot=accordion-trigger-icon]:size-5 group-data-[size=lg]/accordion:**:data-[slot=accordion-trigger-icon]:text-foreground",
           className,
         )}
         {...props}

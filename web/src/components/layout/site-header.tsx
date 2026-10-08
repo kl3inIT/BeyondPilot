@@ -7,21 +7,22 @@ import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
 /**
- * Brand and four destinations on the left, account actions on the right. A destination turns azure
+ * Brand and five destinations on the left, account actions on the right. A destination turns azure
  * under the pointer.
  */
 function SiteHeader() {
   const t = useTranslations("Site.nav");
   const links = [
-    { href: siteRoutes.programs, label: t("programs") },
-    { href: siteRoutes.useCases, label: t("useCases") },
     { href: siteRoutes.solutions, label: t("solutions") },
     { href: siteRoutes.talent, label: t("talent") },
+    { href: siteRoutes.useCases, label: t("useCases") },
+    { href: siteRoutes.programs, label: t("programs") },
+    { href: siteRoutes.howItWorks, label: t("howItWorks") },
   ];
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background">
-      <div className="mx-auto flex h-17 w-full max-w-360 items-center justify-between gap-6 px-5 md:px-8 xl:px-16">
+      <div className="mx-auto flex h-17 w-full max-w-360 items-center justify-between gap-6 px-5 md:px-8 xl:px-16 desktop:px-20">
         <div className="flex items-center gap-8">
           <BrandLockup showBackedBy={false} />
           <nav aria-label={t("label")} className="hidden items-center gap-7 md:flex">
@@ -37,7 +38,7 @@ function SiteHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-2">
-          <LanguageMenu className="hidden md:flex" />
+          <LanguageMenu />
           <HeaderAccount />
         </div>
       </div>

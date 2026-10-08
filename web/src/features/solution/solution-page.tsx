@@ -177,7 +177,7 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
   ].filter((group) => group.labels.length > 0);
 
   return (
-    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-5 px-5 pt-4 pb-24 md:gap-7 md:px-8 md:pt-6 xl:px-16">
+    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-5 px-5 pt-4 pb-24 md:gap-7 md:px-8 md:pt-6 xl:px-16 desktop:px-20">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

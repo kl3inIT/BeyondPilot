@@ -11,7 +11,7 @@ test.describe("Markdown for agents", () => {
     expect(Number(response.headers()["x-markdown-tokens"])).toBeGreaterThan(0);
     const markdown = await response.text();
     expect(markdown).toMatch(/^---\ntitle: /);
-    expect(markdown).toContain("# Pilot AI tiếp theo bắt đầu từ đây.");
+    expect(markdown).toContain("# Bước tiếp theo của bạn với AI bắt đầu từ đây.");
     expect(markdown).not.toContain("<");
   });
 
@@ -41,7 +41,7 @@ test.describe("llms.txt and structured data", () => {
     const text = await response.text();
     expect(text).toMatch(/^# BeyondPilot\n\n> /);
     expect(text).toContain("AI for Insurance Challenge × Tasco");
-    expect(text).toContain("- **Who can apply to a campaign?**");
+    expect(text).toContain("- **What is BeyondPilot?**");
   });
 
   test("the home page describes the site and every answer as JSON-LD", async ({ page }) => {

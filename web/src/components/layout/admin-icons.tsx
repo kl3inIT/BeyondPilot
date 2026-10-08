@@ -1,6 +1,7 @@
 import {
   BoxesIcon,
   BuildingIcon,
+  CableIcon,
   CalendarRangeIcon,
   HandshakeIcon,
   HouseIcon,
@@ -30,6 +31,7 @@ const adminIcons = {
   introductions: HandshakeIcon,
   aiProviders: PlugZapIcon,
   searchIndex: ScanSearchIcon,
+  mcp: CableIcon,
   accounts: UserCogIcon,
   auditLog: ScrollTextIcon,
   email: MailIcon,

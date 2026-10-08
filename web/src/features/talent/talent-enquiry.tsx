@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { RequiredMark } from "@/components/composites/required-mark";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -106,7 +107,10 @@ function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnq
               <DialogDescription>{t("dialogLead", { name })}</DialogDescription>
             </DialogHeader>
             <Field data-invalid={unsigned || undefined}>
-              <FieldLabel htmlFor="talent-enquiry-name">{t("senderName")}</FieldLabel>
+              <FieldLabel htmlFor="talent-enquiry-name">
+                {t("senderName")}
+                <RequiredMark />
+              </FieldLabel>
               <Input
                 id="talent-enquiry-name"
                 autoComplete="name"
@@ -125,7 +129,10 @@ function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnq
               )}
             </Field>
             <Field>
-              <FieldLabel htmlFor="talent-enquiry-topic">{t("topic")}</FieldLabel>
+              <FieldLabel htmlFor="talent-enquiry-topic">
+                {t("topic")}
+                <RequiredMark />
+              </FieldLabel>
               <NativeSelect
                 id="talent-enquiry-topic"
                 className="w-full"
@@ -140,7 +147,10 @@ function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnq
               </NativeSelect>
             </Field>
             <Field data-invalid={invalid || undefined}>
-              <FieldLabel htmlFor="talent-enquiry">{t("message")}</FieldLabel>
+              <FieldLabel htmlFor="talent-enquiry">
+                {t("message")}
+                <RequiredMark />
+              </FieldLabel>
               <Textarea
                 id="talent-enquiry"
                 rows={5}

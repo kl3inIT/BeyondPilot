@@ -33,7 +33,7 @@ function SolutionsPage({ solutions, search }: SolutionsPageProps) {
   const shown = solutions.items.length;
 
   return (
-    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-5 px-5 pt-8 pb-18 md:gap-7 md:px-8 md:pt-12 md:pb-22 xl:px-16 xl:pt-14 xl:pb-24">
+    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-5 px-5 pt-8 pb-18 md:gap-7 md:px-8 md:pt-12 md:pb-22 xl:px-16 xl:pt-14 xl:pb-24 desktop:px-20">
       <header className="flex flex-col gap-2.5">
         <h1 className="text-3xl font-semibold tracking-title md:text-4xl xl:text-5xl xl:leading-none">
           {t("title")}

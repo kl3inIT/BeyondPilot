@@ -17,7 +17,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))  # run with -I, so the 
 
 import mapping
 
-TEST_NAME = re.compile(r"(?i)^(test|a|aaaa|startup import test \d+|genai test corp|test company|demo)$")
+TEST_NAME = re.compile(
+    r"(?i)^(test|test \d+|testing|testing startups|a|aaaa|startup import test \d+|startuptestcompany|companyname_test"
+    r"|genai test corp|test company|demo)$"
+)
 TEST_TITLE = re.compile(r"(?i)^(test|\[test\].*)$")
 TEST_WEBSITE = re.compile(r"(?i)(^|[/.])test\.com\b")
 

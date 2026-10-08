@@ -11,12 +11,13 @@
     "notifications": "Notifications",
     "nav": {
       "label": "Main navigation",
-      "programs": "Programs",
-      "useCases": "Use cases",
-      "solutions": "AI solutions",
-      "talent": "AI talent",
+      "programs": "Events & Programs",
+      "useCases": "Use Cases & Projects",
+      "solutions": "AI Solutions",
+      "talent": "AI Talent",
       "signIn": "Sign in",
-      "getStarted": "Get started"
+      "getStarted": "Get started",
+      "howItWorks": "How It Works"
     },
     "account": {
       "open": "Account menu for {name}",
@@ -28,16 +29,19 @@
       "admin": "Admin",
       "applications": "My applications",
       "reviews": "Reviews",
-      "mcp": "MCP"
+      "mcp": "MCP",
+      "backToSite": "Back to the site",
+      "appearance": "Appearance"
     },
     "menu": {
       "open": "Open menu",
       "close": "Close menu",
       "title": "Menu",
-      "programsHint": "Open challenges, build weeks and events",
-      "useCasesHint": "Problems enterprises want solved with AI",
-      "solutionsHint": "Products from AI companies across the region",
-      "talentHint": "Builders and teams to work with"
+      "programsHint": "Meetups, workshops, demo days, challenges and accelerators",
+      "useCasesHint": "Business challenges enterprises want solved with AI",
+      "solutionsHint": "Products and providers from AI companies across the region",
+      "talentHint": "Specialists and builders for your AI project",
+      "howItWorksHint": "How the AI adoption agent helps you move forward"
     },
     "language": {
       "label": "Language",
@@ -60,7 +64,9 @@
       "linkedin": "LinkedIn",
       "facebook": "Facebook",
       "x": "X",
-      "copyright": "© {year} BeyondPilot"
+      "copyright": "© {year} BeyondPilot",
+      "privacy": "Privacy",
+      "terms": "Terms"
     }
   },
   "Campaign": {
@@ -90,106 +96,114 @@
   },
   "Home": {
     "hero": {
-      "title": "Your next AI pilot starts here.",
-      "description": "Enterprise use cases, AI solutions, talent and programs, in one search.",
-      "searchLabel": "Search the directory",
-      "searchPlaceholder": "Search solutions, use cases, programs, talent",
-      "searchPlaceholderShort": "Search the directory",
-      "search": "Search",
-      "scopesLabel": "Popular searches",
+      "liveChallenge": "Live challenge · Insurance AI Challenge",
+      "eyebrow": "AI adoption, guided by an agent.",
+      "titleStart": "Your next step in",
+      "titleEnd": "AI starts here.",
+      "description": "BeyondPilot is your AI adoption agent — helping you discover AI solutions, find expert talent, explore real business challenges, and connect with events and programs that move you forward.",
+      "searchLabel": "Search AI solutions, talent, use cases, events, and programs",
+      "searchPlaceholder": "Search AI solutions, talent, use cases, events, and programs",
+      "searchPlaceholderShort": "Search BeyondPilot",
+      "primaryCta": "Explore BeyondPilot",
+      "secondaryCta": "See how it works",
+      "screenshotAlt": "BeyondPilot search results for “insurance claims”, listing AI solutions and programs",
       "scopes": {
         "agentic": "Agentic AI",
         "document": "Document AI",
         "insurance": "Insurance",
         "retail": "Retail & e-commerce"
+      }
+    },
+    "ecosystem": {
+      "title": "Connected to GenAI Fund’s enterprise ecosystem",
+      "listLabel": "Organizations in GenAI Fund’s enterprise ecosystem"
+    },
+    "categories": {
+      "eyebrow": "Explore",
+      "title": "Five ways to explore BeyondPilot",
+      "solutions": {
+        "title": "AI Solutions",
+        "description": "Discover products and providers that address your business needs.",
+        "action": "Explore solutions"
       },
-      "meetupTime": "4–6 pm · Request to join on Luma"
+      "talent": {
+        "title": "AI Talent",
+        "description": "Find specialists and builders to help bring your AI project to life.",
+        "action": "Discover talent"
+      },
+      "useCases": {
+        "title": "Use Cases & Projects",
+        "description": "Explore business challenges, practical applications, and opportunities to collaborate with enterprises.",
+        "action": "Explore opportunities"
+      },
+      "events": {
+        "title": "AI Events",
+        "description": "Connect with the ecosystem through meetups, workshops, and demo days.",
+        "action": "Discover events"
+      },
+      "programs": {
+        "title": "AI Programs",
+        "description": "Find challenges, accelerators, and initiatives that support your next stage.",
+        "action": "Explore programs"
+      }
     },
-    "events": {
-      "title": "Programs and events",
-      "open": "Open now",
-      "coming": "Coming up",
-      "done": "Done",
-      "meetupSchedule": "Tuesdays, 4–6 pm ICT · Request to join on Luma",
-      "meetupDates": "Next dates",
-      "tileMonth": "{date, date, ::MMM}"
+    "agentJourney": {
+      "eyebrow": "How it works",
+      "title": "From exploring possibilities to taking your next step.",
+      "tell": {
+        "title": "Tell BeyondPilot what you need",
+        "description": "Describe a business challenge, a project, or an opportunity you’re looking for."
+      },
+      "discover": {
+        "title": "Discover relevant options",
+        "description": "Explore solutions, talent, use cases, events, and programs relevant to your goals."
+      },
+      "move": {
+        "title": "Move forward",
+        "description": "Shortlist providers, connect with talent, submit a proposal, or join a program."
+      }
     },
-    "directory": {
-      "title": "Explore the directory",
-      "publish": "Publish a use case",
-      "tabsLabel": "Directory",
-      "programs": "Programs & events",
-      "programsShort": "Programs",
-      "useCases": "Use cases",
-      "solutions": "AI solutions",
-      "talent": "AI talent",
-      "new": "New",
-      "seeAllPrograms": "See all {count, number} programs",
-      "seeAllUseCases": "See all {count, number} use cases",
-      "seeAllSolutions": "See all AI solutions",
-      "viewProgram": "View program",
-      "viewUseCase": "View use case",
-      "contactCentreAlt": "A team reviewing a laptop screen together at GenAI Open Innovation Vietnam",
-      "safetyAlt": "A founder pitching at the Startups’ Open Pitch, GenAI Open Innovation Vietnam",
-      "shelfAlt": "A table discussion around laptops at GenAI Open Innovation Vietnam",
-      "logoAlt": "{name} logo",
-      "talentMeta": "AI talent · New",
-      "talentTitle": "Talent profiles open with the launch.",
-      "talentLink": "Create a talent profile",
-      "talentAlt": "A full audience of builders at Agentic AI Build Week 2026",
-      "closesOn": "Closes {date, date, ::d MMM}",
-      "useCaseMeta": "Use case · {industry}",
-      "solutionMeta": "AI solution · {country}",
-      "solutionMetaPlain": "AI solution",
-      "viewSolution": "View solution",
-      "seeAllProgramsPlain": "See all programs",
-      "seeAllUseCasesPlain": "See all use cases"
+    "challenge": {
+      "eyebrow": "Featured opportunity",
+      "description": "Tasco and GenAI Fund are looking for AI solutions to real operating problems in Vietnamese insurance. Apply directly through the challenge page."
     },
-    "network": {
-      "title": "The network behind every program",
-      "description": "Enterprises, technology companies and public institutions that took part in GenAI Fund programs in 2025 and 2026.",
-      "roles": {
-        "enterprises": {
-          "title": "Enterprises",
-          "description": "They set the problems and run the pilots"
-        },
-        "technology": {
-          "title": "Technology partners",
-          "description": "They bring the models, the cloud and the credits"
-        },
-        "government": {
-          "title": "Government and institutions",
-          "description": "They open doors across the region"
-        },
-        "investors": {
-          "title": "Investors and community",
-          "description": "They back the builders"
-        },
-        "press": {
-          "title": "In the press"
-        }
+    "team": {
+      "eyebrow": "Core team",
+      "title": "The team building BeyondPilot",
+      "description": "We’re building BeyondPilot to make it easier for enterprises and AI builders to find each other and move toward practical deployment.",
+      "role": "Full-stack engineer",
+      "linkedin": "LinkedIn",
+      "linkedinLabel": "{name} on LinkedIn (opens in a new tab)",
+      "backing": {
+        "title": "Backed by GenAI Fund",
+        "description": "BeyondPilot is an AI startup with its own product and team, backed by GenAI Fund. GenAI Fund’s programs and enterprise ecosystem are where many of the opportunities on BeyondPilot come from. Founders from the wider GenAI Fund network are part of that ecosystem, not the BeyondPilot operating team."
       }
     },
     "founders": {
-      "title": "Built with founders from the GenAI Fund network",
-      "description": "Teams GenAI Fund backs and works with across Southeast Asia.",
-      "seeAll": "See all founders"
+      "eyebrow": "In the GenAI Fund network",
+      "title": "Founders building across the ecosystem",
+      "description": "Startup founders from the GenAI Fund network. They are ecosystem peers, not members of the BeyondPilot team."
     },
     "faq": {
-      "title": "Questions and answers",
-      "contact": "Can’t find your answer? Write to <email>general@genaifund.ai</email>.",
-      "whoQ": "Who can apply to a campaign?",
-      "whoA": "Anyone with a solution: solo builders, student teams, startups, software houses, agencies and enterprise teams. Each campaign lists its own eligibility.",
-      "companyQ": "Do I need a company to submit a proposal?",
-      "companyA": "No. You can apply as an individual or as a team, and add an organisation profile later if you want one.",
-      "productQ": "Do I need a finished product?",
-      "productA": "No. A working prototype helps, but a clear point of view on the problem and how you would solve it is enough to apply.",
-      "reviewQ": "How are proposals reviewed and shortlisted?",
-      "reviewA": "GenAI Fund screens every submission and invites a shortlist to present on demo day, where the enterprise and judges score live. Every applicant hears back.",
-      "shortlistQ": "What happens if we are shortlisted?",
-      "shortlistA": "You move into a scoped pilot with the enterprise. Selected teams can also be considered for investment, at the programme partners’ discretion.",
-      "runsQ": "Who is behind BeyondPilot?",
-      "runsA": "BeyondPilot is backed by GenAI Fund, the AI-focused fund connecting enterprises with AI builders across Southeast Asia."
+      "eyebrow": "FAQ",
+      "title": "Frequently asked questions",
+      "whatQ": "What is BeyondPilot?",
+      "whatA": "BeyondPilot is an AI adoption agent backed by GenAI Fund. It helps you discover AI solutions, find AI talent, explore enterprise use cases and projects, and connect with AI events and programs.",
+      "whoQ": "Who is BeyondPilot for?",
+      "whoA": "Enterprises looking for AI solutions and builders, AI companies and startups with something to offer, and AI specialists looking for projects.",
+      "findQ": "How does BeyondPilot help me find relevant AI solutions or talent?",
+      "findA": "Search across AI solutions, talent, use cases, events, and programs from one place, then open a listing to see what it offers and how to take the next step.",
+      "listQ": "Can I list my solution or express interest in a project?",
+      "listA": "Organizations can create a profile and list their AI solutions. Use cases and projects show how to get in touch with the enterprise or with GenAI Fund. Some actions are still being built and are labelled as coming soon.",
+      "applyQ": "How do I apply to a challenge or program?",
+      "applyA": "Open the program, read its brief and eligibility, and use its Apply button. Each program lists its own dates and rules, so check its page for the details.",
+      "runsQ": "Who is building BeyondPilot, and how is GenAI Fund involved?",
+      "runsA": "BeyondPilot is an AI startup with its own product and core team, backed by GenAI Fund, the AI-focused fund connecting enterprises with AI builders across Southeast Asia."
+    },
+    "finalCta": {
+      "title": "What will you do with AI next?",
+      "description": "Find the solutions, people, and opportunities to move forward with BeyondPilot.",
+      "action": "Explore BeyondPilot"
     }
   },
   "ComingSoon": {
@@ -311,6 +325,12 @@
           "name": "Codex",
           "step1": "Run codex mcp add beyondpilot --url {address}",
           "step2": "Run codex mcp login beyondpilot, sign in and choose Allow"
+        },
+        "other": {
+          "name": "Other apps",
+          "step1": "Add the server {address} as streamable HTTP with OAuth",
+          "step2": "An app that names no client of its own signs in as mcp-local",
+          "step3": "Sign in to BeyondPilot and choose Allow"
         }
       },
       "askTitle": "Or ask your AI to set it up",
@@ -359,6 +379,7 @@
       "ai": "AI",
       "aiProviders": "Providers",
       "searchIndex": "Search index",
+      "mcp": "MCP",
       "email": "Email"
     },
     "toggleSidebar": "Toggle sidebar",
@@ -864,7 +885,15 @@
           "embedding_retry": "Let refused items be embedded again"
         },
         "mcp": {
-          "app_revoke": "Revoked an AI app"
+          "app_revoke": "Revoked an AI app",
+          "host_add": "Trusted an app host",
+          "host_remove": "Removed a trusted app host",
+          "other_hosts_allow": "Allowed apps from other hosts",
+          "other_hosts_refuse": "Stopped apps from other hosts",
+          "user_server_enable": "Turned the user MCP server on",
+          "user_server_disable": "Turned the user MCP server off",
+          "tool_enable": "Turned an MCP tool on",
+          "tool_disable": "Turned an MCP tool off"
         }
       },
       "activity": {
@@ -961,7 +990,15 @@
           "embedding_retry": "Let refused items of <resource></resource> be embedded again"
         },
         "mcp": {
-          "app_revoke": "Revoked the AI app <resource></resource>"
+          "app_revoke": "Revoked the AI app <resource></resource>",
+          "host_add": "Trusted the app host <resource></resource>",
+          "host_remove": "Removed the trusted app host <resource></resource>",
+          "other_hosts_allow": "Allowed <resource></resource>",
+          "other_hosts_refuse": "Stopped <resource></resource>",
+          "user_server_enable": "Turned on the <resource></resource>",
+          "user_server_disable": "Turned off the <resource></resource>",
+          "tool_enable": "Turned on the MCP tool <resource></resource>",
+          "tool_disable": "Turned off the MCP tool <resource></resource>"
         }
       },
       "columns": {
@@ -1927,6 +1964,135 @@
         "off": "Semantic search is off",
         "rebuilt": "Index rebuilt: {saved} items read, {removed} removed",
         "retried": "{count, plural, =0 {Nothing to try again} one {# item is tried again at the next run} other {# items are tried again at the next run}}"
+      }
+    },
+    "mcp": {
+      "metaSetup": "MCP · Admin · BeyondPilot",
+      "metaTools": "MCP tools · Admin · BeyondPilot",
+      "metaApps": "Connected apps · MCP · Admin · BeyondPilot",
+      "metaActivity": "Activity · MCP · Admin · BeyondPilot",
+      "title": "MCP",
+      "lead": "The servers AI apps reach BeyondPilot through, and what they may do.",
+      "tabs": {
+        "label": "MCP",
+        "setup": "Setup",
+        "tools": "Tools",
+        "apps": "Connected apps",
+        "activity": "Activity"
+      },
+      "saved": "Saved",
+      "failed": "That did not save. Try again.",
+      "setup": {
+        "address": "Server address",
+        "operator": {
+          "title": "Operators' server",
+          "lead": "Reads every area, listed or not. Only operators connect, and the role is checked on every call."
+        },
+        "user": {
+          "title": "User server",
+          "lead": "Every signed-in person may connect to it from their MCP page. It reads what visitors see.",
+          "on": "On: people can connect apps",
+          "off": "Off: it answers 404 and connected apps stop"
+        },
+        "hosts": {
+          "title": "Trusted app hosts",
+          "lead": "Apps from these hosts connect without a Not reviewed label.",
+          "others": "Allow apps from other hosts",
+          "othersHint": "They can connect, labelled Not reviewed on the consent screen.",
+          "add": "Add host",
+          "remove": "Remove {host}"
+        }
+      },
+      "tools": {
+        "reads": "Reads",
+        "switch": "Turn {tool} on or off",
+        "operator": {
+          "title": "Operators' server",
+          "lead": "Off, a tool leaves the list apps see and a call to it is refused.",
+          "search": "Finds solutions listed or not, programs, talent, use cases and companies.",
+          "fetch": "Reads one of them in full by the id search returned.",
+          "list_applications": "Lists a program's applications with GenAI Fund's decision and the judges' mean score.",
+          "list_pending_reviews": "Lists what waits for review: organizations, solutions, talent, use cases and customer deployments."
+        },
+        "user": {
+          "title": "User server",
+          "lead": "What any signed-in person's app may call.",
+          "search": "Finds listed solutions and published programs.",
+          "fetch": "Reads one of them in full by the id search returned."
+        }
+      },
+      "apps": {
+        "label": "Connected apps",
+        "none": "No app is connected",
+        "noneLead": "An app appears here once someone connects it to an MCP server.",
+        "operator": "Operator",
+        "user": "User",
+        "used": "used {time}",
+        "revoke": {
+          "open": "Revoke",
+          "label": "Revoke {name} of {person}",
+          "title": "Revoke {name} of {person}?",
+          "lead": "It stops working at once for {person}. They can connect it again.",
+          "confirm": "Revoke",
+          "cancel": "Cancel",
+          "done": "{name} of {person} can no longer use BeyondPilot.",
+          "failed": "We could not revoke it. Try again."
+        }
+      },
+      "activity": {
+        "search": "Search person or email",
+        "period": {
+          "day": "Last 24 hours",
+          "week": "Last 7 days",
+          "month": "Last 30 days",
+          "all": "All 90 days"
+        },
+        "filters": {
+          "periodLabel": "Period",
+          "app": "All apps",
+          "appLabel": "App",
+          "tool": "All tools",
+          "toolLabel": "Tool",
+          "outcome": "All outcomes",
+          "outcomeLabel": "Outcome"
+        },
+        "outcome": {
+          "ok": "Succeeded",
+          "refused": "Refused",
+          "failed": "Failed"
+        },
+        "server": {
+          "user": "User server",
+          "operator": "Operators' server"
+        },
+        "columns": {
+          "time": "Time",
+          "person": "Person",
+          "app": "App",
+          "tool": "Tool",
+          "outcome": "Outcome"
+        },
+        "today": "Today, {time}",
+        "dayAndTime": "{day}, {time}",
+        "goneAccount": "A deleted account",
+        "count": "{count, plural, one {# call} other {# calls}}",
+        "noMatch": {
+          "title": "No call matches",
+          "description": "Try another search or fewer filters.",
+          "clear": "Clear search and filters"
+        },
+        "empty": {
+          "title": "No call in this period",
+          "description": "Calls appear here as AI apps use the MCP servers. What was asked is never kept."
+        },
+        "pagination": {
+          "label": "Pages of calls",
+          "previous": "Previous",
+          "next": "Next",
+          "goToPrevious": "Go to the previous page",
+          "goToNext": "Go to the next page",
+          "page": "Page {page}"
+        }
       }
     },
     "email": {
@@ -4216,17 +4382,15 @@
       "nameRequired": "Enter your name.",
       "headline": "Headline",
       "bio": "About you",
-      "bioHint": "What you have built, for whom, and what you want to work on next. Shown under About on your page.",
       "roles": "Roles",
       "upTo": "Choose up to {count}. {chosen} chosen.",
       "skills": "Skills",
-      "skillsHint": "Type a skill and press Enter or Add, or pick a suggestion. Up to {count}, {chosen} added. People search and filter the directory by them.",
+      "skillsHint": "Up to {count}, {chosen} added.",
       "country": "Country",
       "rate": "Rate",
       "notStated": "Not stated",
       "engagement": "Open to",
       "website": "Portfolio or LinkedIn",
-      "websiteHint": "Shown on your profile. Your email address never is.",
       "websiteInvalid": "Enter a full address that starts with https://",
       "projects": {
         "title": "Projects",
@@ -4264,7 +4428,6 @@
         "leave": "Leave without saving",
         "stay": "Stay"
       },
-      "headlineHint": "One line under your name in the directory.",
       "photo": {
         "label": "Photo",
         "hint": "A clear photo of your face. PNG, JPEG or WebP, up to 2 MB.",
@@ -4286,7 +4449,6 @@
       "rateHint": "Only you and GenAI Fund see the rate.",
       "title": "Profile",
       "lead": "What people see on your page. Your email address is never shown; enquiries reach you through BeyondPilot.",
-      "optionalNote": "Fields marked Optional can stay empty. The others are needed before GenAI Fund reviews the profile.",
       "optional": "Optional",
       "headlinePlaceholder": "For example: ML engineer building document AI for banks",
       "skillsPlaceholder": "Add a skill",
@@ -5344,5 +5506,271 @@
       "action": "Publish a use case"
     },
     "anonymous": "Organization not named"
+  },
+  "Legal": {
+    "updated": "Last updated: {date}",
+    "contents": "On this page",
+    "privacy": {
+      "metaTitle": "Privacy Policy",
+      "title": "Privacy Policy",
+      "intro": "This policy explains what personal data BeyondPilot collects, why, who it is shared with, and the choices you have. BeyondPilot is an AI adoption platform backed by GenAI Fund that connects enterprises with AI solutions, talent, use cases, events and programs.",
+      "sections": [
+        {
+          "heading": "Who we are",
+          "body": [
+            "BeyondPilot operates the website and web application at beyondpilot.ai. For any privacy question or request, write to team@beyondpilot.ai."
+          ]
+        },
+        {
+          "heading": "What we collect",
+          "body": ["We collect only what the platform needs to work:"],
+          "items": [
+            "Account details: your name and email address, and, when you add them, your phone number, country, job title, LinkedIn profile and photo.",
+            "Sign-in with Google: your name, email address and profile picture from your Google account. We do not read your Gmail, contacts or files.",
+            "What you publish or submit: organization profiles, AI solutions, use cases, proposals, talent profiles, enquiries and introduction requests, and the files you upload with them, such as decks and attachments.",
+            "Activity needed to run the service safely: sign-in times, security events and a record of administrative actions.",
+            "Technical data: your IP address and browser type in server logs, kept for security and troubleshooting."
+          ]
+        },
+        {
+          "heading": "How we use it",
+          "items": [
+            "To create and secure your account and sign you in.",
+            "To show the profiles, solutions and use cases you choose to publish.",
+            "To help enterprises and AI providers find each other, including search and AI-assisted matching of use cases with solutions.",
+            "To review applications to programs and challenges, and to send you emails about your account, submissions and decisions.",
+            "To keep the platform safe, prevent abuse and meet legal obligations."
+          ]
+        },
+        {
+          "heading": "AI features",
+          "body": [
+            "Search and matching use AI models to read the text of public profiles, solutions, decks and use cases. That text is sent to our AI provider (OpenAI, directly or through OpenRouter) only to produce search results and match explanations. We do not use your data to train AI models, and our providers process it under their API terms, which do not allow training on it either."
+          ]
+        },
+        {
+          "heading": "What is public",
+          "body": [
+            "Profiles, solutions and use cases are public only once they are approved and listed. An organization can keep a use case anonymous, and an owner can unlist a solution at any time. Proposals, enquiries, introductions, contact details and uploaded files that are not marked public are visible only to you, the people you send them to, and GenAI Fund operators."
+          ]
+        },
+        {
+          "heading": "Who we share it with",
+          "body": [
+            "We do not sell personal data. We share it only with the service providers that run the platform for us, each bound to use it only for that purpose:"
+          ],
+          "items": [
+            "Hosting and storage on servers we operate.",
+            "Email delivery through Resend.",
+            "Sign-in through Google.",
+            "AI processing through OpenAI and OpenRouter."
+          ],
+          "after": [
+            "We may also disclose data when the law requires it, or to protect the rights and safety of our users."
+          ]
+        },
+        {
+          "heading": "Cookies",
+          "body": [
+            "We use a session cookie to keep you signed in and a cookie to remember your language. We do not use advertising or third-party tracking cookies."
+          ]
+        },
+        {
+          "heading": "How long we keep it",
+          "body": [
+            "We keep your data while your account is active. When you delete your account or ask us to, we delete or anonymize your personal data within 30 days, except what we must keep for legal, security or audit reasons. Submissions to a program may be kept as part of that program's record."
+          ]
+        },
+        {
+          "heading": "Your choices and rights",
+          "body": [
+            "You can view and edit most of your data in your account. You can also ask us to give you a copy of your data, correct it, delete it, or stop processing it, by writing to team@beyondpilot.ai. We answer within 30 days."
+          ]
+        },
+        {
+          "heading": "Security",
+          "body": [
+            "We protect data in transit with HTTPS, encrypt stored credentials and provider keys, limit access to operators who need it, and record administrative actions. No system is perfectly secure; if a breach affects you, we will tell you."
+          ]
+        },
+        {
+          "heading": "International processing",
+          "body": [
+            "Our providers may process data outside your country. When they do, we rely on their contractual safeguards to protect it."
+          ]
+        },
+        {
+          "heading": "Children",
+          "body": [
+            "BeyondPilot is meant for professionals and is not directed at children under 16. We do not knowingly collect their data."
+          ]
+        },
+        {
+          "heading": "Changes",
+          "body": [
+            "We will update this page when our practices change, and tell signed-in users about significant changes before they take effect."
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "metaTitle": "Terms of Service",
+      "title": "Terms of Service",
+      "intro": "These terms govern your use of BeyondPilot at beyondpilot.ai. By creating an account or using the platform, you agree to them.",
+      "sections": [
+        {
+          "heading": "The service",
+          "body": [
+            "BeyondPilot helps enterprises and AI providers find each other. It lists AI solutions, talent, use cases, events and programs, and lets you publish your own, apply to programs and challenges, and request introductions. Some features are labelled as previews and may change."
+          ]
+        },
+        {
+          "heading": "Your account",
+          "items": [
+            "You must give accurate information and keep your sign-in secure.",
+            "You are responsible for what happens in your account, and for the organization you act for.",
+            "You must be at least 16 and able to enter into this agreement."
+          ]
+        },
+        {
+          "heading": "What you publish",
+          "body": [
+            "You keep ownership of the content you publish or submit. You allow us to host, display and process it to run the platform, including showing listed content publicly and using it for search and matching. You confirm that you have the right to share it and that it is accurate and lawful."
+          ]
+        },
+        {
+          "heading": "Review and listing",
+          "body": [
+            "GenAI Fund reviews organizations, solutions, use cases and talent profiles before they are listed, and may decline, unlist or remove content that is inaccurate, misleading or breaks these terms. Approval does not mean endorsement."
+          ]
+        },
+        {
+          "heading": "Applications, proposals and introductions",
+          "body": [
+            "When you apply to a program or send a proposal, its organizers and reviewers can read it. Program outcomes are decided by their organizers. Commercial terms, NDAs and any pilot are agreed directly between the parties; BeyondPilot is not a party to them."
+          ]
+        },
+        {
+          "heading": "AI features",
+          "body": [
+            "AI-assisted search and matching help you find options faster. Their results may be incomplete or wrong. Check the sources shown and make your own decisions."
+          ]
+        },
+        {
+          "heading": "Acceptable use",
+          "body": ["Do not:"],
+          "items": [
+            "publish false information or impersonate anyone;",
+            "send spam or unsolicited commercial messages through the platform;",
+            "scrape, copy or resell the directory, or access it by automated means outside the tools we provide;",
+            "try to break, overload or bypass the platform's security;",
+            "upload unlawful content or content you have no right to share."
+          ]
+        },
+        {
+          "heading": "Our platform",
+          "body": [
+            "BeyondPilot, its software and design belong to us and our licensors. These terms do not give you any right to them beyond using the platform as offered."
+          ]
+        },
+        {
+          "heading": "Suspension and closing your account",
+          "body": [
+            "You can stop using BeyondPilot and ask us to close your account at any time. We may suspend or close an account that breaks these terms or puts other users at risk, and will tell you why unless the law prevents it."
+          ]
+        },
+        {
+          "heading": "Disclaimers and liability",
+          "body": [
+            "The platform is provided as is. We do not guarantee that a listing is accurate, that a match will lead to business, or that the service will always be available. To the extent the law allows, we are not liable for indirect or consequential losses, and our total liability is limited to the amount you paid us in the past 12 months."
+          ]
+        },
+        {
+          "heading": "Changes and governing law",
+          "body": [
+            "We may update these terms and will tell signed-in users about significant changes before they take effect. These terms are governed by the laws of Vietnam. Questions: team@beyondpilot.ai."
+          ]
+        }
+      ]
+    }
+  },
+  "HowItWorks": {
+    "metaTitle": "How it works",
+    "metaDescription": "Tell BeyondPilot what you need, see who can help, and move forward.",
+    "intro": {
+      "eyebrow": "How it works",
+      "title": "From a question to your next step.",
+      "description": "Tell BeyondPilot what you need, see who can help, and move forward.",
+      "action": "Explore BeyondPilot"
+    },
+    "steps": {
+      "eyebrow": "Three steps",
+      "title": "Describe it, discover it, act on it.",
+      "badge": "Product preview · Illustrative",
+      "tell": {
+        "title": "Tell BeyondPilot what you need",
+        "description": "Describe a business challenge, a project, or an opportunity you're looking for.",
+        "label": "You ask",
+        "example": "“We want to automate insurance document processing in Vietnam.”"
+      },
+      "discover": {
+        "title": "Discover relevant options",
+        "description": "Explore solutions, talent, use cases, events, and programs relevant to your goals.",
+        "label": "BeyondPilot shows",
+        "example": "Relevant solutions or providers, each with a short explanation of its fit.",
+        "note": "Matched on: Document types · Vietnamese language support · Deployment needs"
+      },
+      "move": {
+        "title": "Move forward",
+        "description": "Shortlist providers, connect with talent, submit a proposal, or join a program.",
+        "label": "You decide",
+        "example": "Compare options, create a shortlist, or request a proposal where supported."
+      }
+    },
+    "example": {
+      "eyebrow": "Real example",
+      "title": "How the AI for Insurance Challenge runs on BeyondPilot",
+      "opens": {
+        "title": "Challenge opens",
+        "description": "GenAI Fund and Tasco publish the brief."
+      },
+      "discover": {
+        "title": "Providers discover it",
+        "description": "Search, directories and the challenge page."
+      },
+      "apply": {
+        "title": "Register and apply",
+        "description": "One profile, reused for every application."
+      },
+      "assess": {
+        "title": "Reviewers assess",
+        "description": "Invited reviewers score each proposal."
+      },
+      "shortlist": {
+        "title": "Shortlist",
+        "description": "Suitable providers go to demo day."
+      },
+      "closes": "Closes",
+      "closesWhen": "15 Oct, 23:59 ICT"
+    },
+    "paths": {
+      "eyebrow": "Pick your path",
+      "title": "Who it is for",
+      "solution": {
+        "title": "I have an AI solution",
+        "description": "List it, then apply to programs and challenges with one profile.",
+        "action": "List your solution"
+      },
+      "problem": {
+        "title": "I have a business problem",
+        "description": "Publish a use case or talk to GenAI Fund.",
+        "action": "Share a use case"
+      },
+      "talent": {
+        "title": "I'm AI talent or a small team",
+        "description": "Create a profile and get enquiries from enterprises.",
+        "action": "Create a profile"
+      }
+    }
   }
 }

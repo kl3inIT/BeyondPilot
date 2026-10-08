@@ -69,10 +69,23 @@ public class SearchService {
 	 */
 	@Transactional(readOnly = true)
 	public List<Found> find(String query, List<String> kinds) {
+		return find(query, kinds, true);
+	}
+
+	/**
+	 * What an operator would find for {@code query} among these kinds: what a visitor finds, and what only matching
+	 * may use, such as a solution its owners left unlisted. For the operators' MCP server's {@code search}.
+	 */
+	@Transactional(readOnly = true)
+	public List<Found> findForOperators(String query, List<String> kinds) {
+		return find(query, kinds, false);
+	}
+
+	private List<Found> find(String query, List<String> kinds, boolean listedOnly) {
 		String trimmed = query.strip();
 		Meaning meaning = embeddings.of(trimmed).orElse(null);
 		return kinds.stream()
-			.flatMap(kind -> index.page(trimmed, meaning, kind, true, PAGE_SIZE, 0).stream())
+			.flatMap(kind -> index.page(trimmed, meaning, kind, listedOnly, PAGE_SIZE, 0).stream())
 			.map(hit -> new Found(hit.kind(), hit.slug(), hit.title()))
 			.toList();
 	}

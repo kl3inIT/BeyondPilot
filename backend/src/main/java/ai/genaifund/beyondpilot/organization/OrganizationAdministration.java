@@ -544,4 +544,20 @@ public class OrganizationAdministration {
 	private static OrganizationException requestNotFound(UUID requestId) {
 		return new OrganizationException(OrganizationErrorCode.REQUEST_NOT_FOUND, "No open claim " + requestId);
 	}
+
+	/**
+	 * The organizations waiting for an operator's review, at most this many, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public OrganizationsAwaitingReview awaitingReview(Actor actor, int limit) {
+		identity.requireOperator(actor);
+		return new OrganizationsAwaitingReview(organizationList.adminCount(null, "in_review"),
+				organizationList.adminPage(null, "in_review", limit, 0)
+					.stream()
+					.map(row -> new OrganizationsAwaitingReview.Item(row.id(), row.name(), row.type(), row.country(),
+							row.createdAt()))
+					.toList());
+	}
+
 }

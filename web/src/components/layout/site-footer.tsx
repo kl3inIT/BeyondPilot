@@ -11,6 +11,9 @@ type FooterLink = { href: string; label: string; external?: boolean };
 // On touch screens each link row grows to 44px instead of the 14px gaps between rows.
 const linkClass =
   "flex w-fit items-center rounded-sm text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 pointer-coarse:min-h-11";
+// The legal links sit in the small print beside the copyright, with the same focus ring and touch target.
+const legalLinkClass =
+  "flex w-fit items-center rounded-sm outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 pointer-coarse:min-h-11";
 
 function SiteFooter() {
   const t = useTranslations("Site");
@@ -18,10 +21,10 @@ function SiteFooter() {
     {
       title: t("footer.platform"),
       links: [
-        { href: siteRoutes.programs, label: t("nav.programs") },
-        { href: siteRoutes.useCases, label: t("nav.useCases") },
         { href: siteRoutes.solutions, label: t("nav.solutions") },
         { href: siteRoutes.talent, label: t("nav.talent") },
+        { href: siteRoutes.useCases, label: t("nav.useCases") },
+        { href: siteRoutes.programs, label: t("nav.programs") },
       ],
     },
     {
@@ -45,7 +48,7 @@ function SiteFooter() {
 
   return (
     <footer className="border-t bg-background">
-      <div className="mx-auto flex w-full max-w-360 flex-col gap-10 px-5 pt-12 pb-8 md:gap-12 md:px-8 md:pt-16 xl:px-16">
+      <div className="mx-auto flex w-full max-w-360 flex-col gap-10 px-5 pt-12 pb-8 md:gap-12 md:px-8 md:pt-16 xl:px-16 desktop:px-20">
         <div className="flex flex-col gap-8 md:flex-row md:justify-between">
           <div className="md:w-75">
             <BrandLockup />
@@ -80,7 +83,15 @@ function SiteFooter() {
           </div>
         </div>
         <div className="flex flex-col gap-2 border-t pt-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <p>{t("footer.copyright", { year: new Date().getFullYear() })}</p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <p>{t("footer.copyright", { year: new Date().getFullYear() })}</p>
+            <Link href={siteRoutes.privacy} className={legalLinkClass}>
+              {t("footer.privacy")}
+            </Link>
+            <Link href={siteRoutes.terms} className={legalLinkClass}>
+              {t("footer.terms")}
+            </Link>
+          </div>
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
             <ThemeToggle />

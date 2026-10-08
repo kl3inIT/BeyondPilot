@@ -121,6 +121,74 @@ class McpServerTest {
 	}
 
 	@Test
+	void operatorsSeeEveryCallAndEveryConnectionAndRevokeOne() {
+		String email = "watched-" + word + "@mcp.test";
+		String person = TestSignIn.session(client, mail, email);
+		String token = TestAppConnection.connect(client, port, person, "mcp.read").access();
+		McpSyncClient app = app(token);
+		app.initialize();
+		app.callTool(McpSchema.CallToolRequest.builder("search").arguments(Map.of("query", "anything")).build());
+		app.callTool(McpSchema.CallToolRequest.builder("fetch")
+			.arguments(Map.of("id", "solution:no-such-" + word))
+			.build());
+		app.closeGracefully();
+
+		// Only operators read the activity.
+		client.get()
+			.uri("/api/mcp/admin/calls")
+			.cookie(TestSignIn.SESSION_COOKIE, person)
+			.exchange()
+			.expectStatus()
+			.isForbidden();
+		String all = adminGet("/api/mcp/admin/calls?q=watched-" + word);
+		assertThat(JsonPath.<Integer>read(all, "$.total")).isEqualTo(2);
+		assertThat(JsonPath.<List<String>>read(all, "$.items[*].tool")).containsExactly("fetch", "search");
+		assertThat(JsonPath.<String>read(all, "$.items[0].outcome")).isEqualTo("refused");
+		assertThat(JsonPath.<String>read(all, "$.items[0].personEmail")).isEqualTo(email);
+		assertThat(JsonPath.<String>read(all, "$.items[0].clientId")).isEqualTo(TestAppConnection.CLIENT);
+		assertThat(JsonPath.<List<String>>read(all, "$.apps[*].clientId")).contains(TestAppConnection.CLIENT);
+		assertThat(JsonPath.<List<String>>read(all, "$.tools")).containsExactly("search", "fetch", "list_applications",
+				"list_pending_reviews");
+		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&outcome=refused"),
+				"$.total")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&tool=search"),
+				"$.total")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=nobody-matches-" + word), "$.total"))
+			.isZero();
+
+		// Operators see the connection and end it; the app is refused at its next call.
+		client.get()
+			.uri("/api/identity/admin/apps")
+			.cookie(TestSignIn.SESSION_COOKIE, person)
+			.exchange()
+			.expectStatus()
+			.isForbidden();
+		String connections = adminGet("/api/identity/admin/apps");
+		List<Map<String, Object>> mine = JsonPath.read(connections, "$[?(@.personEmail == '" + email + "')]");
+		assertThat(mine).hasSize(1);
+		assertThat(mine.getFirst()).containsEntry("servers", List.of("user")).containsEntry("operator", false);
+		String revoke = "/api/identity/admin/apps/" + mine.getFirst().get("accountId") + "/" + mine.getFirst().get("id")
+				+ "/revoke";
+		post(operator, revoke, null);
+		assertThat(initialize(token, null, null)).isEqualTo(401);
+		client.post()
+			.uri(revoke)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.exchange()
+			.expectStatus()
+			.isNotFound();
+		assertThat(jdbc.sql("""
+				select actor_email || ' ' || resource_label from audit_event
+				where action = 'mcp.app_revoke' and resource_label like :label
+				""").param("label", "% · " + email).query(String.class).list()).hasSize(1);
+	}
+
+	private String adminGet(String path) {
+		return body(client.get().uri(path).cookie(TestSignIn.SESSION_COOKIE, operator).exchange().expectStatus().isOk());
+	}
+
+	@Test
 	void aCallWithoutATokenIsToldWhereToSignIn() {
 		client.post()
 			.uri("/mcp")
@@ -212,6 +280,185 @@ class McpServerTest {
 		assertThat(refused).isPositive();
 	}
 
+	@Test
+	void anOperatorsAppSearchesEveryAreaIncludingWhatIsUnlistedAndAUserTokenIsRefused() {
+		String owner = TestSignIn.session(client, mail, "owner-" + word + "@mcp.test");
+		UUID organization = organization(owner, "Quiet " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		UUID solution = submittedSolution(owner, "Hidden Agent " + word, false);
+		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
+		await().atMost(WAIT)
+			.until(() -> jdbc.sql("select count(*) from search_document where item_id = :id")
+				.param("id", solution)
+				.query(Long.class)
+				.single() == 1);
+
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = app(token, "/mcp/operator");
+		app.initialize();
+		assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name)
+			.containsExactly("search", "fetch", "list_applications", "list_pending_reviews");
+
+		String found = text(app.callTool(McpSchema.CallToolRequest.builder("search")
+			.arguments(Map.of("query", "hidden agent " + word))
+			.build()));
+		String solutionId = JsonPath.read(found, "$.results[0].id");
+		assertThat(solutionId).startsWith("solution:");
+		String read = text(
+				app.callTool(McpSchema.CallToolRequest.builder("fetch").arguments(Map.of("id", solutionId)).build()));
+		assertThat(JsonPath.<Boolean>read(read, "$.metadata.listed")).isFalse();
+
+		String companies = text(app.callTool(McpSchema.CallToolRequest.builder("search")
+			.arguments(Map.of("query", "Quiet " + word))
+			.build()));
+		assertThat(JsonPath.<List<String>>read(companies, "$.results[*].id")).anyMatch(id -> id.startsWith("organization:"));
+		app.closeGracefully();
+
+		// What only operators read stays out of the user server.
+		String person = TestSignIn.session(client, mail, "visitor-" + word + "@mcp.test");
+		String userToken = TestAppConnection.connect(client, port, person, "mcp.read").access();
+		McpSyncClient visitor = app(userToken);
+		visitor.initialize();
+		String nothing = text(visitor.callTool(McpSchema.CallToolRequest.builder("search")
+			.arguments(Map.of("query", "hidden agent " + word))
+			.build()));
+		assertThat(JsonPath.<List<Object>>read(nothing, "$.results")).isEmpty();
+		CallToolResult refused = visitor.callTool(
+				McpSchema.CallToolRequest.builder("fetch").arguments(Map.of("id", solutionId)).build());
+		assertThat(refused.isError()).isTrue();
+		visitor.closeGracefully();
+
+		// A token for the user server does not open the operators' one.
+		assertThat(initializeAt("/mcp/operator", userToken)).isEqualTo(401);
+	}
+
+	@Test
+	void anOperatorsAppListsWhatWaitsForReviewWithThePageToReviewItOn() {
+		String owner = TestSignIn.session(client, mail, "waiting-" + word + "@mcp.test");
+		UUID organization = organization(owner, "Waiting " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		UUID solution = submittedSolution(owner, "Pending Agent " + word);
+		String other = TestSignIn.session(client, mail, "unreviewed-" + word + "@mcp.test");
+		UUID unreviewed = organization(other, "Unreviewed " + word);
+
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = app(token, "/mcp/operator");
+		app.initialize();
+		String all = text(app.callTool(McpSchema.CallToolRequest.builder("list_pending_reviews").build()));
+		assertThat(JsonPath.<List<String>>read(all, "$.solutions.items[*].name")).contains("Pending Agent " + word);
+		assertThat(JsonPath.<List<String>>read(all, "$.solutions.items[*].url"))
+			.contains(ISSUER + "/admin/solutions/" + solution);
+		assertThat(JsonPath.<List<String>>read(all, "$.organizations.items[*].url"))
+			.contains(ISSUER + "/admin/organizations/" + unreviewed);
+		assertThat(JsonPath.<Integer>read(all, "$.waiting")).isPositive();
+		assertThat(JsonPath.<Map<String, Object>>read(all, "$")).containsKeys("talent", "use_cases", "deployments");
+
+		String solutions = text(app.callTool(McpSchema.CallToolRequest.builder("list_pending_reviews")
+			.arguments(Map.of("area", "solutions"))
+			.build()));
+		assertThat(JsonPath.<Map<String, Object>>read(solutions, "$")).containsOnlyKeys("waiting", "solutions");
+		assertThat(app.callTool(McpSchema.CallToolRequest.builder("list_pending_reviews")
+			.arguments(Map.of("area", "everything"))
+			.build()).isError()).isTrue();
+		app.closeGracefully();
+	}
+
+	@Test
+	void operatorsSwitchAToolOffAndTheUserServerOffAndEachChangeIsAudited() {
+		String person = TestSignIn.session(client, mail, "switched-" + word + "@mcp.test");
+		String token = TestAppConnection.connect(client, port, person, "mcp.read").access();
+
+		// Only operators reach the settings.
+		client.get()
+			.uri("/api/mcp/admin/settings")
+			.cookie(TestSignIn.SESSION_COOKIE, person)
+			.exchange()
+			.expectStatus()
+			.isForbidden();
+		client.get()
+			.uri("/api/mcp/admin/settings")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.userServerEnabled")
+			.isEqualTo(true)
+			.jsonPath("$.userServerAddress")
+			.isEqualTo(ISSUER + "/mcp")
+			.jsonPath("$.tools.length()")
+			.isEqualTo(6);
+
+		switchTool("user", "fetch", false);
+		try {
+			McpSyncClient app = app(token);
+			app.initialize();
+			assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name).containsExactly("search");
+			app.closeGracefully();
+		}
+		finally {
+			switchTool("user", "fetch", true);
+		}
+
+		put(operator, "/api/mcp/admin/user-server", Map.of("enabled", false));
+		try {
+			assertThat(initialize(token, null, null)).isEqualTo(404);
+		}
+		finally {
+			put(operator, "/api/mcp/admin/user-server", Map.of("enabled", true));
+		}
+		assertThat(initialize(token, null, null)).isEqualTo(200);
+
+		List<String> recorded = jdbc.sql("""
+				select action || ' ' || resource_id from audit_event
+				where action like 'mcp.tool_%' or action like 'mcp.user_server_%' order by occurred_at
+				""").query(String.class).list();
+		assertThat(recorded).containsSubsequence("mcp.tool_disable user.fetch", "mcp.tool_enable user.fetch",
+				"mcp.user_server_disable User MCP server", "mcp.user_server_enable User MCP server");
+
+		client.put()
+			.uri("/api/mcp/admin/tools/user/no_such_tool")
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of("enabled", false))
+			.exchange()
+			.expectStatus()
+			.isNotFound();
+	}
+
+	private void switchTool(String server, String tool, boolean enabled) {
+		put(operator, "/api/mcp/admin/tools/" + server + "/" + tool, Map.of("enabled", enabled));
+	}
+
+	private void put(String session, String path, Object body) {
+		client.put()
+			.uri(path)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(body)
+			.exchange()
+			.expectStatus()
+			.isNoContent();
+	}
+
+	private int initializeAt(String path, String token) {
+		return client.post()
+			.uri(path)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+			.header(HttpHeaders.ACCEPT, "application/json, text/event-stream")
+			.contentType(MediaType.APPLICATION_JSON)
+			.body("""
+					{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25",
+					 "capabilities":{},"clientInfo":{"name":"test","version":"1"}}}
+					""")
+			.exchange()
+			.returnResult()
+			.getStatus()
+			.value();
+	}
+
 	/** The status of an {@code initialize} posted with this token, protocol version header and origin. */
 	private int initialize(String token, @Nullable String version, @Nullable String origin) {
 		RestTestClient.RequestBodySpec request = client.post()
@@ -237,11 +484,15 @@ class McpServerTest {
 	}
 
 	private McpSyncClient app(String token) {
+		return app(token, "/mcp");
+	}
+
+	private McpSyncClient app(String token, String endpoint) {
 		HttpClientStreamableHttpTransport transport = HttpClientStreamableHttpTransport
 			.builder("http://localhost:" + port)
-			.endpoint("/mcp")
+			.endpoint(endpoint)
 			.httpRequestCustomizer(
-					(builder, method, endpoint, body, context) -> builder.header("Authorization", "Bearer " + token))
+					(builder, method, uri, body, context) -> builder.header("Authorization", "Bearer " + token))
 			.build();
 		return McpClient.sync(transport).requestTimeout(Duration.ofSeconds(20)).build();
 	}
@@ -279,6 +530,10 @@ class McpServerTest {
 	}
 
 	private UUID submittedSolution(String owner, String name) {
+		return submittedSolution(owner, name, true);
+	}
+
+	private UUID submittedSolution(String owner, String name, boolean listed) {
 		String draft = body(client.post()
 			.uri("/api/solution/mine")
 			.header(TestSignIn.CSRF_HEADER, "1")
@@ -303,7 +558,7 @@ class McpServerTest {
 		request.put("builtWith", List.of("LangGraph"));
 		request.put("languages", List.of());
 		request.put("imageFileIds", List.of());
-		request.put("listed", true);
+		request.put("listed", listed);
 		request.put("version", JsonPath.<Number>read(draft, "$.version").longValue());
 		request.put("logoFileId", TestUploads.image(client, owner, "solution_logo", "logo.png"));
 		request.put("coverFileId", TestUploads.image(client, owner, "solution_image", "cover.png"));

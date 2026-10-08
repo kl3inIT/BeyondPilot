@@ -185,9 +185,11 @@ class UseCaseAdministrationTest {
 	void theDirectoryListsPublishedUseCasesToVisitorsAndKeepsAnonymousOrganizationsAnonymous() {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
 		UUID open = organization("Open Bank " + tag);
-		UUID logo = organizationLogo();
-		jdbc.sql("update organization set logo_file_id = ? where id = ?").params(logo, open).update();
 		UUID quiet = organization("Quiet Bank " + tag);
+		UUID openLogo = file("operator@usecase.test", "organization_logo", "stored");
+		UUID quietLogo = file("operator@usecase.test", "organization_logo", "stored");
+		jdbc.sql("update organization set logo_file_id = ? where id = ?").params(openLogo, open).update();
+		jdbc.sql("update organization set logo_file_id = ? where id = ?").params(quietLogo, quiet).update();
 		post(operator, USE_CASES, useCase(open, "Open case " + tag, true)).expectStatus().isCreated();
 		post(operator, USE_CASES, useCase(open, "Draft case " + tag, false)).expectStatus().isCreated();
 		Map<String, Object> hidden = useCase(quiet, "Quiet case " + tag, true);
@@ -202,11 +204,11 @@ class UseCaseAdministrationTest {
 		assertThat(JsonPath.<Number>read(all, "$.total").intValue()).isEqualTo(2);
 		assertThat(JsonPath.<List<Object>>read(all, "$.items[?(@.title == 'Quiet case " + tag + "')].organizationName"))
 			.containsExactly((Object) null);
-		assertThat(JsonPath.<List<String>>read(all,
-				"$.items[?(@.title == 'Quiet case " + tag + "')].organizationLogoFileId")).containsExactly((String) null);
-		assertThat(JsonPath.<List<String>>read(all,
-				"$.items[?(@.title == 'Open case " + tag + "')].organizationLogoFileId"))
-			.containsExactly(logo.toString());
+		// The logo names the organization as surely as its name does.
+		assertThat(JsonPath.<List<Object>>read(all, "$.items[?(@.title == 'Quiet case " + tag + "')].organizationLogoFileId"))
+			.containsExactly((Object) null);
+		assertThat(JsonPath.<List<String>>read(all, "$.items[?(@.title == 'Open case " + tag + "')].organizationLogoFileId"))
+			.containsExactly(openLogo.toString());
 		assertThat(JsonPath.<List<Object>>read(all, "$.items[?(@.title == 'Quiet case " + tag + "')].budgetMax"))
 			.containsExactly((Object) null);
 		assertThat(JsonPath.<List<Integer>>read(all, "$.items[?(@.title == 'Open case " + tag + "')].budgetMax"))

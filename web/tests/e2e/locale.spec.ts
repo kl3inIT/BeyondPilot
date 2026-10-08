@@ -11,7 +11,7 @@ test.describe("locale routing", () => {
     await expect(page).toHaveURL("/");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Your next AI pilot starts here.",
+      "Your next step in AI starts here.",
     );
     await expectNoSeriousA11yViolations(page);
   });
@@ -21,7 +21,7 @@ test.describe("locale routing", () => {
 
     await expect(page.locator("html")).toHaveAttribute("lang", "vi");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Pilot AI tiếp theo bắt đầu từ đây.",
+      "Bước tiếp theo của bạn với AI bắt đầu từ đây.",
     );
     await expectNoSeriousA11yViolations(page);
   });
@@ -39,8 +39,7 @@ test.describe("locale routing", () => {
 test.describe("header language menu", () => {
   test.use({ locale: "en-US" });
 
-  test("opens the current page in the chosen language", async ({ page, isMobile }) => {
-    test.skip(isMobile, "below 768px the language is chosen in the full-screen menu");
+  test("opens the current page in the chosen language", async ({ page }) => {
     await page.goto("/");
 
     await page.getByRole("banner").getByRole("button", { name: "Language: EN" }).click();

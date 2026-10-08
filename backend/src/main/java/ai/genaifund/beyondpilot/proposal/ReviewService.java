@@ -140,6 +140,23 @@ public class ReviewService {
 	}
 
 	/**
+	 * A program's submitted applications as an operator reviews them, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the program takes no applications
+	 */
+	@Transactional
+	public ProgramApplications applicationsOf(Actor actor, UUID programId) {
+		identity.requireOperator(actor);
+		ReviewApplicationsResponse response = applications(actor, programId);
+		return new ProgramApplications(response.drafts(), response.withdrawn(), response.items()
+			.stream()
+			.map(item -> new ProgramApplications.Application(item.id(), item.solutionName(), item.organizationName(),
+					item.organizationType(), item.country(), item.submittedAt(), item.version(), item.reviewStatus(),
+					item.average(), item.scored() == null ? 0 : item.scored()))
+			.toList());
+	}
+
+	/**
 	 * One submitted application as its applicant sent it last, with the caller's assessment; an operator also reads
 	 * every other assessment and the decisions.
 	 * @throws ProposalException when there is no such submitted application, or the caller does not review its program

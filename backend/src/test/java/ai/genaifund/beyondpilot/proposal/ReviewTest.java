@@ -8,9 +8,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.identity.TestAppConnection;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import com.jayway.jsonpath.JsonPath;
+import io.modelcontextprotocol.client.McpClient;
+import io.modelcontextprotocol.client.McpSyncClient;
+import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
+import io.modelcontextprotocol.spec.McpSchema;
+import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
 /**
  * Reviewing a program's applications over real HTTP against PostgreSQL: its criteria, the judges GenAI Fund invites,
@@ -19,6 +27,9 @@ import org.junit.jupiter.api.Test;
 class ReviewTest extends ApplicationsHttpTest {
 
 	private static final String REVIEW = API + "/review/programs/";
+
+	@LocalServerPort
+	private int port;
 
 	@Test
 	void anOperatorSetsTheCriteriaAndInvitesAJudgeWhoSignsInWithThatAddress() {
@@ -254,6 +265,44 @@ class ReviewTest extends ApplicationsHttpTest {
 		resubmit(form, applicant);
 		assertThat(JsonPath.<String>read(body(get(operator, one).expectStatus().isOk()), "$.reviewStatus"))
 			.isEqualTo("not_selected");
+	}
+
+	@Test
+	void anOperatorsAppListsAProgramsApplicationsWithTheirDecisionsAndCounts() {
+		Form form = program("listed-by-mcp", true, Instant.now().plus(Duration.ofDays(10)));
+		applicant(form, "first@mcp-apply.test", "First Builder");
+		applicant(form, "second@mcp-apply.test", "Second Builder");
+
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = McpClient
+			.sync(HttpClientStreamableHttpTransport.builder("http://localhost:" + port)
+				.endpoint("/mcp/operator")
+				.httpRequestCustomizer((builder, method, uri, body, context) -> builder.header("Authorization",
+						"Bearer " + token))
+				.build())
+			.requestTimeout(Duration.ofSeconds(20))
+			.build();
+		app.initialize();
+		assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name)
+			.containsExactly("search", "fetch", "list_applications", "list_pending_reviews");
+
+		CallToolResult result = app.callTool(McpSchema.CallToolRequest.builder("list_applications")
+			.arguments(Map.of("program", "program:listed-by-mcp"))
+			.build());
+		assertThat(result.isError()).isFalse();
+		String listed = ((TextContent) result.content().getFirst()).text();
+		assertThat(JsonPath.<Integer>read(listed, "$.submitted")).isEqualTo(2);
+		assertThat(JsonPath.<List<String>>read(listed, "$.applications[*].solution"))
+			.containsExactly("First Builder Desk", "Second Builder Desk");
+		assertThat(JsonPath.<List<String>>read(listed, "$.applications[*].decision")).containsOnly("under_review");
+		assertThat(JsonPath.<String>read(listed, "$.applications[0].url"))
+			.contains("/admin/programs/" + form.programId() + "/applications/");
+
+		CallToolResult unknown = app.callTool(McpSchema.CallToolRequest.builder("list_applications")
+			.arguments(Map.of("program", "program:no-such-program"))
+			.build());
+		assertThat(unknown.isError()).isTrue();
+		app.closeGracefully();
 	}
 
 	/** Submits an application of the caller, who already belongs to an organization, and answers its identifier. */

@@ -1,10 +1,7 @@
-import { ArrowRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 
-import { TextButton } from "@/components/actions/text-button";
 import { Section } from "@/components/ui/section";
-import { siteRoutes } from "@/lib/site";
 
 type Founder = { photo: string; name: string; role: string; company: string };
 
@@ -43,45 +40,36 @@ const founders: Founder[] = [
   { photo: "/founders/hieu.jpg", name: "Hieu Nguyen", role: "Co-Founder", company: "Revve AI" },
 ];
 
-/** One compact row of eight from `md`; two columns of avatar rows on phones. */
+/**
+ * The ecosystem's founders, apart from the team: peers of BeyondPilot, not its members. One row of
+ * eight round portraits from `lg`; two columns on phones.
+ */
 function Founders() {
   const t = useTranslations("Home.founders");
 
   return (
     <Section surface="muted">
-      <div className="flex flex-col gap-7 py-14 md:gap-10 md:py-24">
-        <div className="flex flex-col items-start gap-3 md:flex-row md:items-end md:justify-between md:gap-6">
-          <div className="flex flex-col gap-3">
-            <h2 className="text-3xl font-semibold tracking-headline md:text-headline">
-              {t("title")}
-            </h2>
-            <p className="text-lg text-muted-foreground">{t("description")}</p>
-          </div>
-          <TextButton href={siteRoutes.founders}>
-            {t("seeAll")}
-            <ArrowRightIcon aria-hidden="true" />
-          </TextButton>
-        </div>
-        <ul className="grid grid-cols-2 gap-x-3 gap-y-4 md:grid-cols-8 md:gap-4">
+      <div className="flex flex-col py-12 lg:py-20">
+        <p className="text-xs font-semibold tracking-widest text-primary uppercase">
+          {t("eyebrow")}
+        </p>
+        <h2 className="mt-4 text-3xl font-semibold lg:text-4xl lg:leading-10">{t("title")}</h2>
+        <p className="mt-4 max-w-160 text-base text-muted-foreground">{t("description")}</p>
+        <ul className="mt-10 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4 lg:mt-14 lg:grid-cols-8">
           {founders.map((founder) => (
-            <li
-              key={founder.name}
-              className="flex items-center gap-2.5 md:flex-col md:items-stretch md:gap-1.5"
-            >
+            <li key={founder.name} className="flex min-w-0 flex-col gap-1">
               <Image
                 src={founder.photo}
-                alt={founder.name}
-                width={320}
-                height={320}
-                sizes="(min-width: 768px) 10rem, 3rem"
-                className="size-12 shrink-0 rounded-full object-cover md:aspect-square md:size-auto md:w-full md:rounded-xl"
+                alt=""
+                width={192}
+                height={192}
+                sizes="6rem"
+                className="mb-1 size-24 rounded-full object-cover"
               />
-              <div className="flex min-w-0 flex-col gap-0.5 md:gap-1.5">
-                <p className="text-sm font-semibold">{founder.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {founder.role} · {founder.company}
-                </p>
-              </div>
+              <p className="text-sm leading-5 font-semibold">{founder.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {founder.role}, {founder.company}
+              </p>
             </li>
           ))}
         </ul>

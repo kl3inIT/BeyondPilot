@@ -207,13 +207,14 @@ A 1312px column with 64px gutters on desktop, 32px on tablet (1024) and 20px on 
 
 ### Landing structure
 
-1. Header.
-2. Hero: live campaign chip, display headline, lead, search with scope chips; real cards float around it (demo-day photo, next meetup, a founder, a partner logo).
-3. Programs and events: one azure timeline with three stops. **Open now** holds the live campaign card with its countdown, key dates and actions; **Coming up** shows each recurring event once with its next dates as tiles; **Done** shows past programs as cover cards.
-4. Explore the directory: underline tabs with counts and a three-card cover grid; "Publish a use case →" beside the heading.
-5. The network behind every program: one panel per role (enterprises, technology partners, government and institutions, investors and community, the press), each organisation's logo in its own colours straight on the panel. A logo's height follows its shape, so a long wordmark sits lower than a stacked mark. At night the logos turn to one light ink.
-6. Founders: one compact row.
-7. FAQ, then the footer.
+1. Header: five destinations (AI Solutions, AI Talent, Use Cases & Projects, Events & Programs, How It Works), the language menu, Sign in and Get started (the ink-coloured `inverse` action).
+2. Hero: live-challenge pill, eyebrow, display headline whose second line takes the azure-to-violet gradient, lead, one search, the two actions and "Backed by GenAI Fund", beside a real screenshot of the search results, on the aurora (`aurora-*` tokens).
+3. Ecosystem strip: a compact row of enterprise logos from GenAI Fund programs, never labelled as customers.
+4. Five ways to explore: photo cards for solutions, talent, use cases, events and programs.
+5. How it works: three steps on sky, lilac and peach tints.
+6. Featured opportunity: the live challenge card, a deep-to-bright azure panel (`panel-*` tokens) beside its facts and actions.
+7. Core team and GenAI Fund backing, then the ecosystem founders as a separate muted section.
+8. FAQ, the final call to action on the aurora tints, then the footer.
 
 ## Elevation & Depth
 

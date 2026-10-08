@@ -63,6 +63,8 @@ tags:
 - description: "The AI providers operators connect, the model search embeds with,\
     \ and the state of the search index."
   name: AI and search administration
+- description: The MCP servers AI apps reach BeyondPilot through.
+  name: MCP
 - description: "Finding, joining and creating an organization."
   name: Organizations
 paths:
@@ -157,6 +159,14 @@ paths:
           - search.index_rebuild
           - search.embedding_retry
           - mcp.app_revoke
+          - mcp.host_add
+          - mcp.host_remove
+          - mcp.other_hosts_allow
+          - mcp.other_hosts_refuse
+          - mcp.user_server_enable
+          - mcp.user_server_disable
+          - mcp.tool_enable
+          - mcp.tool_disable
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
         in: query
@@ -447,6 +457,142 @@ paths:
       summary: Take the operator role from an account
       tags:
       - Accounts
+  /api/identity/admin/app-hosts:
+    get:
+      operationId: getAppHosts
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppHosts"
+          description: The reviewed hosts and whether others may connect.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Which AI apps may connect to the MCP servers
+      tags:
+      - Identity
+  /api/identity/admin/app-hosts/add:
+    post:
+      operationId: addAppHost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppHostRequest"
+        required: true
+      responses:
+        "204":
+          description: The host is in the list.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: It is not a host name.
+      security:
+      - session: []
+      summary: Mark a host's apps as reviewed
+      tags:
+      - Identity
+  /api/identity/admin/app-hosts/other-hosts:
+    put:
+      operationId: allowOtherAppHosts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AllowOtherHostsRequest"
+        required: true
+      responses:
+        "204":
+          description: Saved.
+      security:
+      - session: []
+      summary: "Let apps of other hosts connect, or stop them"
+      tags:
+      - Identity
+  /api/identity/admin/app-hosts/remove:
+    post:
+      operationId: removeAppHost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppHostRequest"
+        required: true
+      responses:
+        "204":
+          description: The host is no longer reviewed.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The host is not in the list.
+      security:
+      - session: []
+      summary: Take a host off the reviewed list
+      tags:
+      - Identity
+  /api/identity/admin/apps:
+    get:
+      operationId: listEveryConnectedApp
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PersonConnectedApp"
+          description: "The connections, the latest used first."
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Every person's connected AI apps
+      tags:
+      - Identity
+  /api/identity/admin/apps/{accountId}/{id}/revoke:
+    post:
+      operationId: revokePersonsApp
+      parameters:
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Revoked.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: That person has not connected that app.
+      security:
+      - session: []
+      summary: End a person's connection with an AI app
+      tags:
+      - Identity
   /api/identity/apps:
     get:
       operationId: listConnectedApps
@@ -777,6 +923,158 @@ paths:
       summary: "Accept a request: both sides learn each other's address"
       tags:
       - Introductions
+  /api/mcp/admin/calls:
+    get:
+      operationId: listMcpCalls
+      parameters:
+      - description: Only calls made at or after this instant.
+        in: query
+        name: from
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - description: Only calls of the app with this client id.
+        in: query
+        name: app
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+      - description: Only calls to this tool.
+        in: query
+        name: tool
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only calls that ended this way.
+        in: query
+        name: outcome
+        required: false
+        schema:
+          type: string
+          enum:
+          - ok
+          - refused
+          - failed
+          pattern: ok|refused|failed
+      - description: "Only calls of people whose name or address contains this, ignoring\
+          \ case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/McpCallList"
+          description: "One page of calls, newest first."
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: The calls AI apps made to the MCP servers
+      tags:
+      - MCP
+  /api/mcp/admin/settings:
+    get:
+      operationId: getMcpSettings
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/McpSettings"
+          description: The settings.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The MCP servers, their switches and their tools"
+      tags:
+      - MCP
+  /api/mcp/admin/tools/{server}/{tool}:
+    put:
+      operationId: switchMcpTool
+      parameters:
+      - in: path
+        name: server
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tool
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/McpSwitchRequest"
+        required: true
+      responses:
+        "204":
+          description: Saved.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: That server has no such tool.
+      security:
+      - session: []
+      summary: Turn a tool of an MCP server on or off
+      tags:
+      - MCP
+  /api/mcp/admin/user-server:
+    put:
+      operationId: switchMcpUserServer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/McpSwitchRequest"
+        required: true
+      responses:
+        "204":
+          description: Saved.
+      security:
+      - session: []
+      summary: Turn the user MCP server on or off
+      tags:
+      - MCP
   /api/notification/admin/email/messages:
     get:
       operationId: listEmailMessages
@@ -8843,6 +9141,56 @@ components:
       - baseUrl
       - id
       - models
+    AllowOtherHostsRequest:
+      type: object
+      properties:
+        allowed:
+          type: boolean
+          description: Whether apps of hosts not reviewed may connect.
+      required:
+      - allowed
+    AppHost:
+      type: object
+      properties:
+        apps:
+          type: array
+          description: "The apps known to publish their document on this host, then\
+            \ any other of its apps that has signed in."
+          items:
+            type: string
+        host:
+          type: string
+      required:
+      - apps
+      - host
+    AppHostRequest:
+      type: object
+      description: A host whose apps BeyondPilot has reviewed.
+      properties:
+        host:
+          type: string
+          example: app.example.com
+          maxLength: 253
+          minLength: 0
+      required:
+      - host
+    AppHosts:
+      type: object
+      description: Which AI apps may connect to the MCP servers.
+      properties:
+        allowOtherHosts:
+          type: boolean
+          description: "Whether apps of hosts not in the list may connect, labelled\
+            \ Not reviewed."
+        hosts:
+          type: array
+          description: "The hosts whose apps BeyondPilot has reviewed, in order of\
+            \ host."
+          items:
+            $ref: "#/components/schemas/AppHost"
+      required:
+      - allowOtherHosts
+      - hosts
     ApplicantOrganization:
       type: object
       description: "Who applies, for someone in no organization: themselves on their\
@@ -9232,6 +9580,14 @@ components:
           - search.index_rebuild
           - search.embedding_retry
           - mcp.app_revoke
+          - mcp.host_add
+          - mcp.host_remove
+          - mcp.other_hosts_allow
+          - mcp.other_hosts_refuse
+          - mcp.user_server_enable
+          - mcp.user_server_disable
+          - mcp.tool_enable
+          - mcp.tool_disable
         actor:
           type:
           - object
@@ -10859,6 +11215,168 @@ components:
           - requested
       required:
       - outcome
+    McpCall:
+      type: object
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        appHost:
+          type:
+          - string
+          - "null"
+        appName:
+          type: string
+        calledAt:
+          type: string
+          format: date-time
+        clientId:
+          type: string
+        durationMs:
+          type: integer
+          format: int32
+        outcome:
+          type: string
+          description: "`ok`; `refused`, the tool answered with an error such as an\
+            \ unknown id; `failed`, it broke."
+          enum:
+          - ok
+          - refused
+          - failed
+        personEmail:
+          type:
+          - string
+          - "null"
+          description: Null when the account is gone.
+        personName:
+          type:
+          - string
+          - "null"
+          description: "Null until the person gives a name, or when the account is\
+            \ gone."
+        server:
+          type: string
+          enum:
+          - user
+          - operator
+        tool:
+          type: string
+      required:
+      - accountId
+      - appName
+      - calledAt
+      - clientId
+      - durationMs
+      - outcome
+      - server
+      - tool
+    McpCallApp:
+      type: object
+      properties:
+        clientId:
+          type: string
+        host:
+          type:
+          - string
+          - "null"
+        name:
+          type: string
+      required:
+      - clientId
+      - name
+    McpCallList:
+      type: object
+      description: "One page of the calls AI apps made to the MCP servers, newest\
+        \ first."
+      properties:
+        apps:
+          type: array
+          description: "The apps that called in the period, to filter by."
+          items:
+            $ref: "#/components/schemas/McpCallApp"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/McpCall"
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+          description: How many calls a page holds.
+        tools:
+          type: array
+          description: "The tools of the servers, to filter by."
+          items:
+            type: string
+        total:
+          type: integer
+          format: int64
+          description: "How many calls match, over all pages."
+      required:
+      - apps
+      - items
+      - page
+      - pageSize
+      - tools
+      - total
+    McpSettings:
+      type: object
+      description: "The MCP servers, their switches and their tools."
+      properties:
+        operatorServerAddress:
+          type: string
+          description: The address of the operators' server.
+        tools:
+          type: array
+          description: "Every tool of both servers, the operators' first."
+          items:
+            $ref: "#/components/schemas/McpToolSwitch"
+        userServerAddress:
+          type: string
+          description: The address of the server every signed-in person may use.
+        userServerEnabled:
+          type: boolean
+          description: "Whether the user server answers; off, it answers 404."
+      required:
+      - operatorServerAddress
+      - tools
+      - userServerAddress
+      - userServerEnabled
+    McpSwitchRequest:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+      required:
+      - enabled
+    McpToolSwitch:
+      type: object
+      properties:
+        description:
+          type:
+          - string
+          - "null"
+        enabled:
+          type: boolean
+          description: Whether the server lists it and takes calls to it.
+        name:
+          type: string
+        server:
+          type: string
+          enum:
+          - user
+          - operator
+        title:
+          type:
+          - string
+          - "null"
+      required:
+      - enabled
+      - name
+      - server
     Me:
       type: object
       description: The signed-in account.
@@ -11615,6 +12133,73 @@ components:
             $ref: "#/components/schemas/OrganizationMatch"
       required:
       - items
+    PersonConnectedApp:
+      type: object
+      description: "An AI app someone connected to BeyondPilot, as operators see it."
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        allowedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the person first allowed it.
+        clientId:
+          type: string
+        host:
+          type:
+          - string
+          - "null"
+          description: The host the app's metadata document lives on; null for a client
+            BeyondPilot registered.
+        id:
+          type: string
+          description: "What a revoke names, with the account."
+        name:
+          type: string
+          description: The app's name; its host when BeyondPilot has not reviewed
+            the host.
+        operator:
+          type: boolean
+          description: Whether the person is an operator.
+        personEmail:
+          type: string
+        personName:
+          type:
+          - string
+          - "null"
+          description: Null until the person gives a name.
+        reviewed:
+          type: boolean
+          description: Whether BeyondPilot has reviewed the app's host or registered
+            the app.
+        servers:
+          type: array
+          description: "The servers the app may call: `user` for /mcp, `operator`\
+            \ for /mcp/operator."
+          items:
+            type: string
+            enum:
+            - user
+            - operator
+        usedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: "When it last got a token, which it does only while in use,\
+            \ so within the hour of its last use."
+      required:
+      - accountId
+      - clientId
+      - id
+      - name
+      - operator
+      - personEmail
+      - reviewed
+      - servers
     Problem:
       type: object
       additionalProperties: false
@@ -12705,8 +13290,8 @@ components:
           - string
           - "null"
           format: uuid
-          description: The organization's logo; null when it has none or asked to stay
-            anonymous.
+          description: "The organization's logo, read at /api/storage/files/{id};\
+            \ null when it has none or asked to stay anonymous."
         organizationName:
           type:
           - string
@@ -15908,15 +16493,15 @@ components:
       type: object
       description: The organization a use case is for.
       properties:
+        id:
+          type: string
+          format: uuid
         logoFileId:
           type:
           - string
           - "null"
           format: uuid
           description: "Its logo, read at /api/storage/files/{id}; null for none."
-        id:
-          type: string
-          format: uuid
         name:
           type: string
       required:

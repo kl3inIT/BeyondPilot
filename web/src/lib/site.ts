@@ -1,6 +1,7 @@
 /** Site-wide destinations. Routes without a page yet render the shared coming-soon page. */
 export const siteRoutes = {
   home: "/",
+  howItWorks: "/how-it-works",
   programs: "/programs",
   useCases: "/use-cases",
   solutions: "/solutions",
@@ -13,6 +14,8 @@ export const siteRoutes = {
   accountMcp: "/account/mcp",
   founders: "/founders",
   search: "/search",
+  privacy: "/privacy",
+  terms: "/terms",
   admin: "/admin",
   adminPrograms: "/admin/programs",
   adminAccounts: "/admin/accounts",
@@ -26,6 +29,10 @@ export const siteRoutes = {
   adminIntroductions: "/admin/introductions",
   adminAiProviders: "/admin/ai/providers",
   adminSearchIndex: "/admin/ai/search-index",
+  adminMcp: "/admin/ai/mcp",
+  adminMcpTools: "/admin/ai/mcp/tools",
+  adminMcpApps: "/admin/ai/mcp/apps",
+  adminMcpActivity: "/admin/ai/mcp/activity",
   adminEmail: "/admin/email",
   adminEmailTemplates: "/admin/email/templates",
   adminEmailAppearance: "/admin/email/appearance",

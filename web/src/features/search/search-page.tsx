@@ -49,7 +49,7 @@ function SearchPage({ params, results }: SearchPageProps) {
   const kind = params.kind;
 
   return (
-    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col px-5 pt-6 pb-18 md:px-8 md:pt-10 md:pb-22 xl:px-16">
+    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col px-5 pt-6 pb-18 md:px-8 md:pt-10 md:pb-22 xl:px-16 desktop:px-20">
       <div className="flex w-full max-w-220 flex-col gap-6">
         <div className="flex flex-col gap-3">
           <SearchField q={q} />
