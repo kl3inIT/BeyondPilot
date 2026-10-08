@@ -47,7 +47,7 @@ The AI providers BeyondPilot calls, the chat models operators enabled, the model
 
 ## Models
 
-- **Read from the provider, completed by the catalog.** What a provider lists about a model wins; what it leaves out comes from `ai/known-models.json`, found by name with or without a vendor prefix. The catalog is built from LiteLLM's public price list by `backend/scripts/sync-known-models.mjs`, which is MemoryOS's transformation: chat models of OpenAI, Anthropic, Gemini, xAI, DeepSeek and Mistral that publish both limits and both prices and whose deprecation date has not passed. The LiteLLM commit, the day it was read and the licence are in the file. Otherwise:
+- **Read from the provider, completed by the catalog.** What a provider lists about a model wins; what it leaves out comes from `ai/known-models.json`, found by name with or without a vendor prefix. The catalog is built from LiteLLM's public price list by `backend/scripts/sync-known-models.mjs`, which is MemoryOS's transformation: chat models of OpenAI, Anthropic, Gemini, xAI, DeepSeek and Mistral that publish both limits and both prices and whose deprecation date has not passed. Each price is the base rate: the higher rate some vendors charge above a token threshold is not carried, by the catalog or by `ai_model` and `ai_usage`. The LiteLLM commit, the day it was read and the licence are in the file. Otherwise:
   - an unknown context window is 32,000 and marked `source: none`;
   - an unknown answer limit and an unknown price stay null;
   - a model is taken to call tools; vision and reasoning are declared only when published.

@@ -65,6 +65,8 @@ for (const [modelName, entry] of Object.entries(source)) {
     toolCalling: entry.supports_function_calling === true,
     vision: entry.supports_vision === true,
     reasoning: entry.supports_reasoning === true,
+    // Base rates only. LiteLLM's "*_above_<n>k_tokens" rates are left out: the catalog, ai_model and ai_usage hold
+    // one rate each, so a call above a vendor's threshold is recorded with the lower rate.
     inputPerMillion: Number((input * 1e6).toFixed(6)),
     outputPerMillion: Number((output * 1e6).toFixed(6)),
     // Prompt-cache reads are billed at their own rate; absent means the input rate applies.
