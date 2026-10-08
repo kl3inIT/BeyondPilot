@@ -1,16 +1,11 @@
 "use client";
 
+import { CircleXIcon } from "lucide-react";
 import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { RequiredMark } from "@/components/composites/required-mark";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -63,11 +58,13 @@ function ReasonDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => (pending ? undefined : onOpenChange(next))}>
-      <DialogContent showCloseButton={false} className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle size="lg">{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
+      <DialogContent showCloseButton={false} className="sm:max-w-lg">
+        <DecisionDialogHeader
+          tone="danger"
+          icon={CircleXIcon}
+          title={title}
+          description={description}
+        />
         <FieldGroup>
           <Field>
             <FieldLabel htmlFor={reasonId}>
@@ -103,11 +100,17 @@ function ReasonDialog({
             <FieldDescription id={hintId}>{messageHint}</FieldDescription>
           </Field>
         </FieldGroup>
-        <DialogFooter>
-          <Button prominence="secondary" disabled={pending} onClick={() => onOpenChange(false)}>
+        <DialogFooter variant="plain">
+          <Button
+            size="lg"
+            prominence="secondary"
+            disabled={pending}
+            onClick={() => onOpenChange(false)}
+          >
             {cancelLabel}
           </Button>
           <Button
+            size="lg"
             tone="danger"
             pending={pending}
             disabled={!reason}
