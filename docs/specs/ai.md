@@ -86,6 +86,15 @@ Every endpoint is for operators and is under `/api/ai/admin/chat`. Each change a
 
 The embedding providers keep their endpoints under `/api/search/admin` ([search](search.md)).
 
+## Screen
+
+Admin › AI › Providers (`/admin/ai/providers`) has a tab per purpose, each an address of its own: Chat first, and Embedding at `?tab=embedding` ([search](search.md)). The Chat tab is `web/src/features/ai`:
+
+- **Models by task.** One row per task with assistant-ui's Model selector: search, a group per provider, and the reasoning row for a model that reasons. A choice is saved at once. Only a model of a switched-on provider with a key is offered.
+- **Available connections.** One card per provider: test, edit, delete, and its models in a table, fetched from the provider or added by name, corrected, tested and removed. Below 768px the three actions fold into one menu and the table keeps the name and the context window.
+- **Add provider.** Presets are web data only: OpenAI and Claude, the gateways 9Router and OpenRouter, and OpenAI-Compatible. Each opens the same dialog with its adapter and, where there is one, its address.
+- **Marks.** A provider shows its own mark; a model shows the mark of the vendor that makes it, read from its name, so a model served through a gateway still shows who made it. The marks are the ones MemoryOS uses: assistant-ui's logos element and LobeHub's icons (MIT).
+
 ## Errors
 
 `AiErrorCode`, turned into a problem by `config.ApiExceptionHandler` ([API errors](../conventions.md#api-errors)).
@@ -103,6 +112,6 @@ Beside the provider actions: `ai.model_add`, `ai.model_update` and `ai.model_rem
 
 ## Not done
 
-- No screen shows usage or cost; `ai_usage` is read by a later cost module.
+- No screen shows usage or cost yet; `ai_usage` is read by a later cost module.
 - No budget or limit on calls.
 - No streaming advisor yet: the recorder covers `call()`, which is what matching uses.

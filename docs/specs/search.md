@@ -175,7 +175,7 @@ Behavior:
 
 ## Administration
 
-Admin › AI has two screens, `/admin/ai/providers` and `/admin/ai/search-index`, served by `SearchAdminController` at
+Admin › AI has two screens of search, the Embedding tab of `/admin/ai/providers` (`?tab=embedding`; the Chat tab is the [`ai` module](ai.md#screen)'s) and `/admin/ai/search-index`, served by `SearchAdminController` at
 `/api/search/admin`. Every call requires an operator (`IdentityService.requireOperator`).
 
 | Method and path          | Contract                                                                                                                                                                                                                            |
