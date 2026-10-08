@@ -1894,7 +1894,8 @@
         "noEncryption": {
           "title": "Chưa lưu được key",
           "lead": "Máy chủ chưa có khoá mã hoá cho key của nhà cung cấp. Hãy báo đội kỹ thuật thêm BEYONDPILOT_AI_ENCRYPTION_KEY."
-        }
+        },
+        "chat": "Chat"
       },
       "model": {
         "heading": "Model embedding",
@@ -2013,6 +2014,204 @@
         "SEARCH_SETTINGS_CHANGED": "Có người vừa sửa cấu hình tìm kiếm sau khi bạn mở. Hãy tải lại rồi thử lại.",
         "SEARCH_ENCRYPTION_KEY_MISSING": "Chưa lưu được key: máy chủ chưa có khoá mã hoá. Hãy báo đội kỹ thuật thêm vào.",
         "unknown": "Đã có lỗi. Hãy thử lại sau ít phút."
+      },
+      "chat": {
+        "tasks": {
+          "heading": "Model theo tác vụ",
+          "lead": "Model mỗi tác vụ dùng. Lựa chọn được lưu ngay.",
+          "name": {
+            "matching": "Ghép nối"
+          },
+          "about": {
+            "matching": "Xét giải pháp nào hợp với một use case, theo từng nhu cầu, kèm trích dẫn cho mỗi nhu cầu."
+          },
+          "unset": "Chưa chọn model; tác vụ này không chạy cho đến khi chọn.",
+          "unavailable": "Provider của model đang tắt hoặc không có key; tác vụ này không chạy.",
+          "choose": "Chọn model",
+          "pickerLabel": "Model cho {task}",
+          "search": "Tìm model…",
+          "searchLabel": "Tìm model",
+          "noMatch": "Không có model nào khớp.",
+          "reasoning": "Reasoning",
+          "effort": {
+            "off": "Tắt",
+            "low": "Thấp",
+            "medium": "Vừa",
+            "high": "Cao"
+          },
+          "empty": {
+            "title": "Chưa có provider chat",
+            "lead": "Chưa tác vụ nào chạy được. Kết nối một provider bên dưới, rồi chọn model của nó ở đây."
+          },
+          "noModels": {
+            "title": "Chưa có model để chọn",
+            "lead": "Bật một model ở một kết nối bên dưới, rồi chọn nó ở đây."
+          }
+        },
+        "connections": {
+          "heading": "Kết nối hiện có",
+          "lead": "Nơi giữ các key. Key được lưu mã hoá và không bao giờ hiện lại.",
+          "inUse": "Đang dùng",
+          "noKey": "Không có key",
+          "off": "Đang tắt",
+          "count": "{count, plural, =0 {Chưa có model} other {# model}}",
+          "test": "Thử kết nối",
+          "edit": "Sửa",
+          "delete": "Xoá",
+          "more": "Thao tác với {name}",
+          "toggle": "Model của {name}",
+          "testOk": "Kết nối thành công · {ms} ms · {count, plural, other {# model}}",
+          "testFailed": "Kết nối thất bại · {ms} ms",
+          "reason": {
+            "rejected": "Provider từ chối API key. Kiểm tra key đã chép đủ và chưa bị thu hồi.",
+            "unreachable": "Provider không trả lời. Kiểm tra địa chỉ, hoặc thử lại sau ít phút.",
+            "incompatible": "Địa chỉ có trả lời, nhưng không đúng kiểu của API này. Kiểm tra địa chỉ kết thúc đúng chỗ API bắt đầu."
+          },
+          "fetch": "Lấy model từ provider",
+          "addModel": "Thêm model",
+          "noModels": "Chưa bật model nào. Lấy từ provider, hoặc thêm một model theo tên."
+        },
+        "models": {
+          "caption": "Model đã bật trên {name}",
+          "model": "Model",
+          "context": "Context",
+          "maxOutput": "Output tối đa",
+          "input": "Vào / 1M",
+          "output": "Ra / 1M",
+          "actions": "Thao tác",
+          "tools": "Gọi được tool",
+          "vision": "Đọc được ảnh",
+          "reasons": "Có reasoning",
+          "edit": "Sửa {name}",
+          "delete": "Gỡ {name}"
+        },
+        "add": {
+          "heading": "Thêm provider",
+          "lead": "Các provider phổ biến, gateway và mọi endpoint nói được API của OpenAI.",
+          "group": {
+            "vendors": "Nhà cung cấp",
+            "gateways": "Gateway và router",
+            "custom": "Tuỳ chỉnh"
+          },
+          "connect": "Kết nối",
+          "connectLabel": "Kết nối {name}",
+          "preset": {
+            "openai": "Các model GPT của OpenAI.",
+            "claude": "Các model Claude của Anthropic.",
+            "ninerouter": "Một key đi tới nhiều nhà cung cấp.",
+            "openrouter": "Chợ model của nhiều nhà cung cấp, chạy sẵn trên mạng.",
+            "compatible": "Mọi endpoint nói được API của OpenAI, như vLLM hay một gateway."
+          }
+        },
+        "editor": {
+          "connectTitle": "Kết nối {name}",
+          "connectLead": "Thử kết nối, rồi đánh dấu các model BeyondPilot được dùng.",
+          "editTitle": "Sửa {name}",
+          "editLead": "Thay đổi có hiệu lực từ lượt gọi kế tiếp.",
+          "name": "Tên",
+          "endpoint": "Endpoint URL",
+          "endpointHint": {
+            "openai": "Địa chỉ của API, thường kết thúc bằng /v1. Chấp nhận http và địa chỉ nội bộ.",
+            "anthropic": "Địa chỉ API của Anthropic. Chấp nhận http và địa chỉ nội bộ."
+          },
+          "apiKey": "API key",
+          "keyHint": "Được lưu mã hoá và không bao giờ hiện lại.",
+          "keyKeep": "Giữ key đã lưu",
+          "keyReplace": "Thay key",
+          "keyRemove": "Gỡ key",
+          "newKey": "API key mới",
+          "keyMoved": "Key đã lưu chỉ dùng với địa chỉ lúc lưu. Hãy nhập lại key.",
+          "enabled": "Đang bật",
+          "enabledHint": "Khi tắt, provider vẫn giữ key và model, nhưng không tác vụ nào dùng được.",
+          "testTitle": "Thử kết nối",
+          "testHint": "Liệt kê model của provider bằng địa chỉ và key ở trên. Không tốn token.",
+          "cancel": "Huỷ",
+          "save": "Lưu provider"
+        },
+        "modelsField": {
+          "label": "Model",
+          "hint": "Đọc từ provider bằng địa chỉ và key ở trên.",
+          "list": "Liệt kê model",
+          "refresh": "Làm mới",
+          "count": "{shown} trên {total} model · đã chọn {selected}",
+          "search": "Tìm model…",
+          "searchLabel": "Tìm model",
+          "configured": "Đã bật",
+          "select": "Chọn {name}",
+          "none": "Provider không liệt kê model nào.",
+          "noMatch": "Không có model nào khớp."
+        },
+        "fetch": {
+          "title": "Lấy model từ provider",
+          "add": "{count, plural, =0 {Thêm model} other {Thêm # model}}",
+          "cancel": "Huỷ"
+        },
+        "model": {
+          "addTitle": "Thêm model vào {name}",
+          "addLead": "Dành cho model mà provider không liệt kê. Dùng đúng tên API của nó nhận.",
+          "editTitle": "Sửa {name}",
+          "editLead": "Sửa những gì provider hoặc danh mục ghi sai. Giá tính bằng đô la Mỹ trên một triệu token.",
+          "modelName": "Tên model",
+          "displayName": "Tên hiển thị",
+          "contextWindow": "Context window (token)",
+          "maxOutput": "Output tối đa (token)",
+          "maxOutputHint": "Để trống nếu chưa biết. Phải nhỏ hơn context window.",
+          "inputPrice": "Giá input",
+          "outputPrice": "Giá output",
+          "cachedPrice": "Giá input đã cache",
+          "capabilities": "Khả năng",
+          "toolCalling": "Gọi được tool",
+          "vision": "Đọc được ảnh",
+          "reasoning": "Có reasoning, và nhận mức reasoning",
+          "test": "Thử model",
+          "testHint": "Hỏi model đã lưu một câu. Tốn vài token và được ghi lại.",
+          "testButton": "Thử",
+          "testOk": "Model đã trả lời · {ms} ms",
+          "testFailed": "Model không trả lời · {ms} ms",
+          "cancel": "Huỷ",
+          "save": "Lưu model",
+          "add": "Thêm model"
+        },
+        "delete": {
+          "providerTitle": "Xoá {name}?",
+          "providerLead": "Provider, key và các model của nó sẽ bị xoá. Tác vụ nào đang dùng một model trong đó sẽ dừng cho đến khi chọn model khác.",
+          "providerConfirm": "Xoá provider",
+          "modelTitle": "Gỡ {name}?",
+          "modelLead": "Tác vụ nào đang dùng model này sẽ dừng cho đến khi chọn model khác.",
+          "modelConfirm": "Gỡ model",
+          "cancel": "Huỷ"
+        },
+        "done": {
+          "connected": "Đã kết nối {name}",
+          "saved": "Đã lưu {name}",
+          "deleted": "Đã xoá {name}",
+          "modelsAdded": "Đã thêm {count, plural, other {# model}}",
+          "modelSaved": "Đã lưu {name}",
+          "modelRemoved": "Đã gỡ {name}",
+          "taskSet": "{task} dùng {model} từ bây giờ"
+        },
+        "errors": {
+          "AI_PROVIDER_NOT_FOUND": "Provider này không còn nữa. Hãy tải lại trang.",
+          "AI_PROVIDER_NAME_TAKEN": "Đã có provider khác dùng tên này.",
+          "AI_PROVIDER_CHANGED": "Có người đã sửa provider này từ lúc bạn mở. Tải lại rồi thử lại.",
+          "AI_PROVIDER_IN_USE": "Provider này đang được dùng. Hãy chọn provider khác ở nơi đang dùng nó trước.",
+          "AI_PROVIDER_KEY_MISSING": "Hãy nhập API key. Key đã lưu chỉ dùng với địa chỉ lúc lưu.",
+          "AI_ENCRYPTION_KEY_MISSING": "Không lưu được key: máy chủ chưa có khoá mã hoá. Hãy nhờ đội kỹ thuật thêm.",
+          "AI_PROVIDER_ENDPOINT_INVALID": "Địa chỉ phải là URL http hoặc https, không phải link-local, không kèm tài khoản, query hay fragment.",
+          "AI_PROVIDER_ADAPTER_UNKNOWN": "BeyondPilot không nói được API của provider này.",
+          "AI_PROVIDER_CREDENTIAL_REJECTED": "Provider từ chối API key.",
+          "AI_PROVIDER_UNREACHABLE": "Provider không trả lời. Kiểm tra địa chỉ, hoặc thử lại sau ít phút.",
+          "AI_PROVIDER_INCOMPATIBLE": "Địa chỉ có trả lời, nhưng không đúng kiểu của API này.",
+          "AI_MODEL_NOT_FOUND": "Model này không còn nữa. Hãy tải lại trang.",
+          "AI_MODEL_NAME_TAKEN": "Provider này đã có model đó.",
+          "AI_MODEL_CHANGED": "Có người đã sửa model này từ lúc bạn mở. Tải lại rồi thử lại.",
+          "AI_MODEL_INVALID": "Output tối đa phải nhỏ hơn context window.",
+          "AI_MODEL_UNAVAILABLE": "Không dùng được model này: provider của nó đang tắt hoặc không có key.",
+          "AI_TASK_UNKNOWN": "Không có tác vụ này. Hãy tải lại trang.",
+          "AI_TASK_CHANGED": "Có người đã đổi model của tác vụ này từ lúc bạn mở. Tải lại rồi thử lại.",
+          "AI_BUSY": "Đang có quá nhiều model được dùng cùng lúc. Thử lại sau ít phút.",
+          "unknown": "Đã có lỗi. Thử lại sau ít phút."
+        }
       }
     },
     "searchIndex": {
