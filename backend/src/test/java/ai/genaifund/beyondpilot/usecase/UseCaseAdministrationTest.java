@@ -220,6 +220,14 @@ class UseCaseAdministrationTest {
 		assertThat(JsonPath.<List<String>>read(byOpen, "$.items[*].title")).containsExactly("Open case " + tag);
 		String insurance = body(client.get().uri(DIRECTORY + "?q=" + tag + "&industry=insurance").exchange().expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(insurance, "$.items[*].title")).containsExactly("Quiet case " + tag);
+
+		String selected = body(client.get()
+			.uri(DIRECTORY + "?q=" + tag + "&industry=insurance&industry=automotive_mobility")
+			.exchange()
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<List<String>>read(selected, "$.items[*].title")).containsExactlyInAnyOrder("Open case " + tag,
+				"Quiet case " + tag);
 		client.get().uri(DIRECTORY + "?sort=price").exchange().expectStatus().isBadRequest();
 		client.get().uri(DIRECTORY + "?sort=deadline&page=1").exchange().expectStatus().isOk();
 	}
@@ -389,6 +397,8 @@ class UseCaseAdministrationTest {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
 		String bank = "Bank" + UUID.randomUUID().toString().substring(0, 8);
 		UUID organization = organization("Listed " + bank);
+		UUID logo = organizationLogo();
+		jdbc.sql("update organization set logo_file_id = ? where id = ?").params(logo, organization).update();
 		post(operator, USE_CASES, useCase(organization, "Earlier " + tag, false)).expectStatus().isCreated();
 		post(operator, USE_CASES, useCase(organization, "Later " + tag, true)).expectStatus().isCreated();
 
@@ -410,7 +420,9 @@ class UseCaseAdministrationTest {
 			.jsonPath("$.inReview")
 			.isNumber()
 			.jsonPath("$.items[0].organization.id")
-			.isEqualTo(organization.toString()));
+			.isEqualTo(organization.toString())
+			.jsonPath("$.items[0].organization.logoFileId")
+			.isEqualTo(logo.toString()));
 		assertThat(JsonPath.<List<String>>read(page, "$.items[*].organization.name")).allSatisfy(
 				name -> assertThat(name).startsWith("Listed "));
 		get(operator, USE_CASES + "?status=sleeping").expectStatus().isBadRequest();
@@ -475,6 +487,18 @@ class UseCaseAdministrationTest {
 				select ?, 'local', ?, ?, false, 'samples.pdf', 'application/pdf', 2048, ?, id, now()
 				from identity_account where email = ?
 				""").params(id, "test/" + id, purpose, status, uploader).update();
+		return id;
+	}
+
+	/** A public organization logo as storage keeps it. */
+	private UUID organizationLogo() {
+		UUID id = UUID.randomUUID();
+		jdbc.sql("""
+				insert into storage_file (id, provider, object_key, purpose, public_read, file_name, media_type,
+				                          size_bytes, status, uploaded_by_account_id, upload_expires_at)
+				select ?, 'local', ?, 'organization_logo', true, 'logo.png', 'image/png', 2048, 'stored', id, now()
+				from identity_account where email = 'operator@usecase.test'
+				""").params(id, "test/" + id).update();
 		return id;
 	}
 

@@ -4,7 +4,6 @@ import { currencies } from "./use-case-budget";
 
 import {
   necessities,
-  publishChoices,
   timelineCodes,
   useCaseIndustries,
   useCaseTechnologies,
@@ -66,7 +65,6 @@ export function adminUseCaseSchema(say: Say) {
       budgetMembersOnly: z.boolean(),
       timeline: z.enum(timelineCodes, say("required")),
       hideOrganizationName: z.boolean(),
-      publish: z.enum(publishChoices),
       closesDay: z.string().min(1, say("required")),
       closesTime: z.string().min(1, say("required")),
     })
@@ -88,5 +86,3 @@ export function adminUseCaseSchema(say: Say) {
       }
     });
 }
-
-export type AdminUseCaseValues = z.input<ReturnType<typeof adminUseCaseSchema>>;

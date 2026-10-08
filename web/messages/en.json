@@ -1633,28 +1633,21 @@
           "over_24": "24 weeks or more"
         },
         "hideOrganizationName": "Hide the company name on the public use case",
-        "publish": {
-          "title": "Publish",
-          "when": "When you save",
-          "thisOrganization": "the organisation",
-          "publish": {
-            "title": "Publish now",
-            "description": "Visible in the directory at once. Providers can send proposals until the date below."
-          },
-          "draft": {
-            "title": "Save as a draft",
-            "description": "Only {organization}’s members can see it. They edit it, then send it to GenAI Fund for review."
-          }
-        },
+        "thisOrganization": "the organisation",
         "closes": "Proposals close",
         "closesTime": "Time, Vietnam time",
         "closesHint": "Providers cannot send proposals after this time (Vietnam time, ICT).",
-        "draftSubmit": "Save draft",
         "publishSubmit": "Publish use case",
+        "review": {
+          "title": "Review and publish",
+          "meta": "Check everything, then publish",
+          "lead": "Check each section. Publishing makes this use case visible immediately."
+        },
+        "publishNote": "Publishing makes this use case visible immediately as an opportunity from {organization}.",
         "cancel": "Cancel",
-        "saved": "Saved “{title}” as a draft.",
         "published": "Published “{title}”.",
         "errors": {
+          "fix": "Check this step",
           "budgetOutOfOrder": "The maximum is below the minimum.",
           "USECASE_ORGANIZATION_NOT_ELIGIBLE": "This organisation is not an approved enterprise.",
           "USECASE_CLOSES_IN_THE_PAST": "Choose a day after today.",
@@ -5466,7 +5459,10 @@
     },
     "industry": {
       "label": "Industry",
-      "all": "All use cases"
+      "all": "All use cases",
+      "placeholder": "Filter by industry",
+      "empty": "No industry matches.",
+      "remove": "Remove {industry}"
     },
     "technology": {
       "label": "Relevant AI technologies",

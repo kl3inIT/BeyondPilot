@@ -4310,6 +4310,10 @@ export type UseCaseAttachment = {
  */
 export type UseCaseOrganization = {
     id: string;
+    /**
+     * Its logo, read at /api/storage/files/{id}; null for none.
+     */
+    logoFileId?: string | null;
     name: string;
 };
 
@@ -10816,9 +10820,9 @@ export type ListUseCasesData = {
          */
         q?: string | null;
         /**
-         * Only use cases of this industry.
+         * Only use cases of these industries.
          */
-        industry?: string | null;
+        industry?: Array<string> | null;
         /**
          * The order: the most recently published first, the nearest deadline first, or the largest budget first.
          */
