@@ -5463,7 +5463,8 @@
       "all": "All use cases",
       "placeholder": "Filter by industry",
       "empty": "No industry matches.",
-      "remove": "Remove {industry}"
+      "remove": "Remove {industry}",
+      "clear": "Clear all"
     },
     "technology": {
       "label": "Relevant AI technologies",
@@ -5503,10 +5504,12 @@
         "integration": "Integration, deployment and infrastructure"
       },
       "open": {
-        "title": "Open for proposals",
-        "closes": "Apply by {date}",
+        "status": "Open to proposals",
+        "closes": "Closes {when}",
         "noDeadline": "No closing date",
-        "lead": "This use case is open to proposals."
+        "send": "Send a proposal",
+        "save": "Save for later",
+        "note": "A proposal reuses your solution profile. You only add what's specific to this use case."
       }
     },
     "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
