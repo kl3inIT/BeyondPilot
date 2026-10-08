@@ -14,6 +14,7 @@
 
 ## Active
 
+- [BEY-39 — Matching](increments/active/bey-39-matching/design.md): for a use case, the solutions already on BeyondPilot that fit, each with what its own material shows per requirement and the sentence that shows it, in GenAI Fund's three buckets; people shortlist, remove and add candidates. Proposed on 9 October 2026 after a probe on two real use cases; waiting for approval.
 - [BEY-92 — AI models](increments/active/bey-92-ai-models/design.md): a new `ai` module where operators connect chat providers (OpenAI, Claude, 9Router, OpenRouter, any OpenAI-compatible endpoint), choose the model each task uses, and every call is recorded with its tokens. Matching (BEY-39) is the first task. Accepted and the screens approved; the backend is being built.
 - [BEY-90 — Import of the Agentic AI Build Week registrations](increments/active/bey-90-aabw-talent-import/design.md): the approved builders who stated their work become hidden talent profiles, each with an account its owner signs in to; fifty are shown on staging. Loaded on staging on 8 October 2026: 2,118 hidden profiles, fifty of them shown. Production waits for GenAI Fund's answer on showing them (BEY-41).
 - [BEY-66 — The operators' review of solutions](increments/active/bey-66-admin-solution-review/design.md): the queue finds by organization, narrows by industry, names who sent each solution and says how many wait; the record reads as labelled rows with the decision in view. Backend verified; the web screens are checked by CI and still to be walked in the browser.
