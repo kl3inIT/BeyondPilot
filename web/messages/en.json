@@ -5488,7 +5488,27 @@
     },
     "posted": "Posted {when}",
     "view": "View use case",
-    "viewUnavailable": "Use case details are not available yet.",
+    "detail": {
+      "by": "{organization} · Posted {when}",
+      "applyBy": "Apply by",
+      "published": "Published",
+      "notSpecified": "Not specified",
+      "sections": {
+        "problem": "Problem statement",
+        "outcomes": "Expected outcomes and success metrics",
+        "currentProcess": "Current process",
+        "currentSolutions": "Current solution",
+        "targetUsers": "Target users and impacted teams",
+        "dataReadiness": "Data availability and readiness",
+        "integration": "Integration, deployment and infrastructure"
+      },
+      "open": {
+        "title": "Open for proposals",
+        "closes": "Apply by {date}",
+        "noDeadline": "No closing date",
+        "lead": "This use case is open to proposals."
+      }
+    },
     "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
     "empty": {
       "title": "No use cases match",

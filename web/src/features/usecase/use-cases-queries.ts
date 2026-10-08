@@ -1,4 +1,10 @@
-import { listUseCases, type PublicUseCaseList } from "@/lib/api/generated";
+import { ApiError } from "@/lib/api/client";
+import {
+  getUseCase,
+  listUseCases,
+  type PublicUseCase,
+  type PublicUseCaseList,
+} from "@/lib/api/generated";
 
 import type { UseCasesSearch } from "./use-cases-search";
 
@@ -19,4 +25,17 @@ export async function readUseCases(search: UseCasesSearch): Promise<UseCaseList>
     },
   });
   return data;
+}
+
+/** One public brief by identifier, or `null` when it is unavailable to visitors. */
+export async function readUseCase(id: string): Promise<PublicUseCase | null> {
+  try {
+    const { data } = await getUseCase({ cache: "no-store", path: { id } });
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 400 || error.status === 404)) {
+      return null;
+    }
+    throw error;
+  }
 }

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicUseCaseSummary } from "@/lib/api/generated";
+import { useCaseRoute } from "@/lib/site";
 
 import { budgetFigures, budgetText } from "./use-case-budget";
 
@@ -120,7 +121,7 @@ function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
             t("deadline.none")
           )}
         </p>
-        <Button disabled className="disabled:opacity-100" size="sm" title={t("viewUnavailable")}>
+        <Button href={useCaseRoute(useCase.id)} size="sm">
           {t("view")}
         </Button>
       </div>
