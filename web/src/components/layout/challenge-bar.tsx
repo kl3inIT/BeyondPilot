@@ -23,6 +23,7 @@ function subscribe(onChange: () => void) {
  * The live challenge across the top of the landing (Figma "Landing v2 / ChallengeBar"): its name,
  * when submissions close and the way in. It shows on the home page only and goes once the deadline
  * has passed; the page is rendered ahead of time, so the browser decides that when it hydrates.
+ * It sits above the hero's aurora, which reaches past the top of its section, as the header does.
  */
 function ChallengeBar() {
   const t = useTranslations("Campaign");
@@ -40,7 +41,7 @@ function ChallengeBar() {
   return (
     <a
       href={liveCampaignUrl}
-      className="group flex min-h-11 items-center justify-center gap-x-3 gap-y-1 bg-foreground px-5 py-2 text-sm text-background outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset md:px-8"
+      className="group relative z-50 flex min-h-11 items-center justify-center gap-x-3 gap-y-1 bg-foreground px-5 py-2 text-sm text-background outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset md:px-8"
     >
       <Badge variant="success">{t("live")}</Badge>
       <span className="flex min-w-0 flex-col md:flex-row md:items-center md:gap-3">
