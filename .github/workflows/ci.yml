@@ -30,7 +30,11 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      # actionlint asks for a newer Go than the runner's, and Go then fetches the latest toolchain it is told of;
+      # a release announced before its files are served fails the job. The toolchain is named instead.
       - name: Lint workflows
+        env:
+          GOTOOLCHAIN: go1.26.8
         run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 
       - name: Check deployment scripts
