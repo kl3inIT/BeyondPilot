@@ -1,5 +1,7 @@
 package ai.genaifund.beyondpilot.usecase.dto;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -11,8 +13,8 @@ import org.jspecify.annotations.Nullable;
 public record PublicUseCaseListRequest(
 		@Parameter(description = "Use cases whose title or goal contains this, or whose organization name does, "
 				+ "ignoring case.") @Size(max = 100) @Nullable String q,
-		@Parameter(description = "Only use cases of this industry.") @Pattern(
-				regexp = UseCaseCodes.INDUSTRY) @Nullable String industry,
+		@Parameter(description = "Only use cases of these industries.") @Size(max = 23) @Nullable List<@Pattern(
+				regexp = UseCaseCodes.INDUSTRY) String> industry,
 		@Parameter(description = "The order: the most recently published first, the nearest deadline first, or the "
 				+ "largest budget first.",
 				schema = @Schema(type = "string", allowableValues = { "newest", "deadline", "budget" },

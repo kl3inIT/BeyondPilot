@@ -194,6 +194,7 @@ const useCases = [
     id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0001",
     title: "Voice assistant for vehicle owners",
     organizationName: "Pocket Policy",
+    organizationLogoFileId: pocketPolicy.logoFileId,
     industry: "automotive_mobility",
     goal: "Cut hotline calls by 40%.",
     technologies: ["voice_ai", "conversational_ai"],
@@ -211,6 +212,7 @@ const useCases = [
     id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0002",
     title: "Claims triage with document intelligence",
     organizationName: "Lumen Health",
+    organizationLogoFileId: lumenHealth.logoFileId,
     industry: "insurance",
     goal: "Route claims to the right team on arrival.",
     technologies: ["document_intelligence"],
@@ -228,6 +230,7 @@ const useCases = [
     id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0003",
     title: "Demand forecasting for a retail chain",
     organizationName: null,
+    organizationLogoFileId: null,
     industry: "retail_ecommerce",
     goal: "Forecast weekly demand per store.",
     technologies: ["predictive_analytics", "anomaly_detection", "recommendation"],
@@ -247,11 +250,15 @@ const useCases = [
 function pageOfUseCases(url) {
   const { searchParams: query } = url;
   const sort = query.get("sort") ?? "newest";
+  const industries = query
+    .getAll("industry")
+    .flatMap((industry) => industry.split(","))
+    .filter(Boolean);
   const items = useCases
     .filter(
       (item) =>
         has(query.get("q"), item.title, item.goal, item.organizationName) &&
-        (!query.get("industry") || item.industry === query.get("industry")),
+        (industries.length === 0 || industries.includes(item.industry)),
     )
     .toSorted((one, other) =>
       sort === "deadline"

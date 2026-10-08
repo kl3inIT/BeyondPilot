@@ -7882,15 +7882,19 @@ paths:
           - "null"
           maxLength: 100
           minLength: 0
-      - description: Only use cases of this industry.
+      - description: Only use cases of these industries.
         in: query
         name: industry
         required: false
         schema:
           type:
-          - string
+          - array
           - "null"
-          pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|climate_sustainability|marketing_advertising|legal|hr_workforce|other
+          items:
+            type: string
+            pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|climate_sustainability|marketing_advertising|legal|hr_workforce|other
+          maxItems: 23
+          minItems: 0
       - description: "The order: the most recently published first, the nearest deadline\
           \ first, or the largest budget first."
         in: query
@@ -16496,6 +16500,12 @@ components:
         id:
           type: string
           format: uuid
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Its logo, read at /api/storage/files/{id}; null for none."
         name:
           type: string
       required:

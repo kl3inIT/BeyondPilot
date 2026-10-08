@@ -1633,28 +1633,21 @@
           "over_24": "Từ 24 tuần trở lên"
         },
         "hideOrganizationName": "Ẩn tên công ty trên use case công khai",
-        "publish": {
-          "title": "Đăng",
-          "when": "Khi lưu",
-          "thisOrganization": "tổ chức",
-          "publish": {
-            "title": "Đăng ngay",
-            "description": "Hiển thị ngay trong danh mục. Nhà cung cấp gửi đề xuất được đến hết ngày dưới đây."
-          },
-          "draft": {
-            "title": "Lưu thành bản nháp",
-            "description": "Chỉ thành viên của {organization} xem được. Họ chỉnh sửa rồi gửi cho GenAI Fund duyệt."
-          }
-        },
+        "thisOrganization": "tổ chức",
         "closes": "Hạn nhận đề xuất",
         "closesTime": "Giờ, theo giờ Việt Nam",
         "closesHint": "Nhà cung cấp không gửi được đề xuất sau thời điểm này (giờ Việt Nam, ICT).",
-        "draftSubmit": "Lưu bản nháp",
         "publishSubmit": "Đăng use case",
+        "review": {
+          "title": "Kiểm tra và đăng",
+          "meta": "Kiểm tra mọi thông tin rồi đăng",
+          "lead": "Kiểm tra từng phần. Khi đăng, use case sẽ hiển thị công khai ngay lập tức."
+        },
+        "publishNote": "Khi đăng, use case sẽ hiển thị ngay dưới dạng cơ hội của {organization}.",
         "cancel": "Hủy",
-        "saved": "Đã lưu “{title}” thành bản nháp.",
         "published": "Đã đăng “{title}”.",
         "errors": {
+          "fix": "Kiểm tra bước này",
           "budgetOutOfOrder": "Mức tối đa thấp hơn mức tối thiểu.",
           "USECASE_ORGANIZATION_NOT_ELIGIBLE": "Tổ chức này không phải doanh nghiệp đã được duyệt.",
           "USECASE_CLOSES_IN_THE_PAST": "Chọn một ngày sau hôm nay.",
@@ -5467,7 +5460,10 @@
     },
     "industry": {
       "label": "Ngành",
-      "all": "Tất cả bài toán"
+      "all": "Tất cả bài toán",
+      "placeholder": "Lọc theo ngành",
+      "empty": "Không tìm thấy ngành phù hợp.",
+      "remove": "Bỏ {industry}"
     },
     "technology": {
       "label": "Công nghệ AI liên quan",
