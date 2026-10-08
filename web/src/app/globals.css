@@ -72,14 +72,9 @@
   --color-panel-deep: var(--panel-deep);
   --color-panel-bright: var(--panel-bright);
   --color-panel-foreground: var(--panel-foreground);
-  --color-wash-azure: var(--wash-azure);
-  --color-wash-violet: var(--wash-violet);
-  --color-wash-peach: var(--wash-peach);
   --color-aurora-azure: var(--aurora-azure);
-  --color-aurora-violet: var(--aurora-violet);
+  --color-aurora-sky: var(--aurora-sky);
   --color-aurora-peach: var(--aurora-peach);
-  --color-lilac: var(--lilac);
-  --color-lilac-foreground: var(--lilac-foreground);
   /* Elevations of the landing (DESIGN.md › Elevation & Depth), all in the --elevation colour. */
   --shadow-card: 0 4px 16px -4px color-mix(in oklch, var(--elevation) 5%, transparent);
   --shadow-tile:
