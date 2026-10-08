@@ -1130,7 +1130,6 @@
         "sendBackConfirm": "Trả lại",
         "reason": "Lý do",
         "message": "Lời nhắn cho các chủ sở hữu",
-        "messageHint": "Quyết định được ghi vào nhật ký kiểm toán.",
         "back": "Quay lại",
         "reasonPlaceholder": "Chọn lý do",
         "domain": "Tên miền email cần xác minh (không bắt buộc)",

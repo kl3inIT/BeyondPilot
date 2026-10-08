@@ -9,7 +9,7 @@ import { Button } from "@/components/actions/button";
 import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { ReasonDialog } from "@/components/composites/reason-dialog";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
@@ -129,7 +129,6 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
               value={sendBackReason}
               onChange={(event) => setSendBackReason(event.target.value)}
             />
-            <FieldDescription>{t("messageHint")}</FieldDescription>
           </Field>
           <DialogFooter variant="plain">
             <Button
@@ -166,7 +165,6 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
         reasonPlaceholder={t("reasonPlaceholder")}
         reasons={refusalReasons.map((value) => ({ value, label: reasonName(value) }))}
         messageLabel={t("message")}
-        messageHint={t("messageHint")}
         confirmLabel={t("refuseConfirm")}
         cancelLabel={t("back")}
         pending={pending}

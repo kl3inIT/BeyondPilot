@@ -6,9 +6,9 @@ import { useId, useState } from "react";
 import { Button } from "@/components/actions/button";
 import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { ChoiceSelect } from "@/components/composites/choice-select";
 import { RequiredMark } from "@/components/composites/required-mark";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 
 type ReasonDialogProps = {
@@ -22,8 +22,8 @@ type ReasonDialogProps = {
   reasonPlaceholder: string;
   reasons: { value: string; label: string }[];
   messageLabel: string;
-  /** Who reads the message. */
-  messageHint: string;
+  /** Who reads the message, when it is worth saying. */
+  messageHint?: string;
   confirmLabel: string;
   cancelLabel: string;
   /** True while the decision is sent: the confirm button shows it and neither button can be used. */
@@ -71,21 +71,13 @@ function ReasonDialog({
               {reasonLabel}
               <RequiredMark />
             </FieldLabel>
-            <NativeSelect
+            <ChoiceSelect
               id={reasonId}
-              className="w-full"
+              options={reasons}
               value={reason}
-              onChange={(event) => setReason(event.target.value)}
-            >
-              <NativeSelectOption value="" disabled>
-                {reasonPlaceholder}
-              </NativeSelectOption>
-              {reasons.map((option) => (
-                <NativeSelectOption key={option.value} value={option.value}>
-                  {option.label}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
+              onValueChange={setReason}
+              placeholder={reasonPlaceholder}
+            />
           </Field>
           <Field>
             <FieldLabel htmlFor={messageId}>{messageLabel}</FieldLabel>
@@ -94,10 +86,10 @@ function ReasonDialog({
               rows={4}
               maxLength={1000}
               value={message}
-              aria-describedby={hintId}
+              aria-describedby={messageHint ? hintId : undefined}
               onChange={(event) => setMessage(event.target.value)}
             />
-            <FieldDescription id={hintId}>{messageHint}</FieldDescription>
+            {messageHint && <FieldDescription id={hintId}>{messageHint}</FieldDescription>}
           </Field>
         </FieldGroup>
         <DialogFooter variant="plain">

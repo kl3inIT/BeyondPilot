@@ -223,3 +223,10 @@
     }
   }
 }
+
+/* Notifications come in from the right edge and leave the same way, not down from the top. */
+[data-sonner-toaster] [data-sonner-toast][data-y-position="top"]:not([data-mounted="true"]),
+[data-sonner-toaster]
+  [data-sonner-toast][data-removed="true"][data-front="true"][data-swipe-out="false"] {
+  --y: translateX(calc(100% + 2rem));
+}

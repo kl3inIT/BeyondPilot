@@ -2,17 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { MailPlusIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -109,35 +104,39 @@ function InvitePeople({ organizationName, allowance }: InvitePeopleProps) {
         <DialogContent showCloseButton={false} className="sm:max-w-120">
           {reached ? (
             <>
-              <DialogHeader>
-                <DialogTitle size="lg">{t("title", { name: organizationName })}</DialogTitle>
-                <DialogDescription>
-                  {t(`limit.${reached}.lead`, {
-                    name: organizationName,
-                    limit: reached === "daily" ? allowance.dailyLimit : allowance.openLimit,
-                  })}
-                </DialogDescription>
-              </DialogHeader>
+              <DecisionDialogHeader
+                tone="info"
+                icon={MailPlusIcon}
+                title={t("title", { name: organizationName })}
+                description={
+                  <>
+                    {t(`limit.${reached}.lead`, {
+                      name: organizationName,
+                      limit: reached === "daily" ? allowance.dailyLimit : allowance.openLimit,
+                    })}
+                  </>
+                }
+              />
               <p className="text-sm text-muted-foreground">{t(`limit.${reached}.note`)}</p>
-              <DialogFooter>
-                <Button prominence="secondary" onClick={() => setOpen(false)}>
+              <DialogFooter variant="plain">
+                <Button size="lg" prominence="secondary" onClick={() => setOpen(false)}>
                   {t("limit.close")}
                 </Button>
               </DialogFooter>
             </>
           ) : (
             <form noValidate onSubmit={submit} className="flex flex-col gap-4">
-              <DialogHeader>
-                <DialogTitle size="lg">{t("title", { name: organizationName })}</DialogTitle>
-                <DialogDescription>
-                  {t("lead", {
-                    leftToday: allowance.leftToday,
-                    dailyLimit: allowance.dailyLimit,
-                    leftOpen: allowance.leftOpen,
-                    openLimit: allowance.openLimit,
-                  })}
-                </DialogDescription>
-              </DialogHeader>
+              <DecisionDialogHeader
+                tone="info"
+                icon={MailPlusIcon}
+                title={t("title", { name: organizationName })}
+                description={t("lead", {
+                  leftToday: allowance.leftToday,
+                  dailyLimit: allowance.dailyLimit,
+                  leftOpen: allowance.leftOpen,
+                  openLimit: allowance.openLimit,
+                })}
+              />
               <FieldGroup>
                 <Field data-invalid={invalid || undefined}>
                   <FieldLabel htmlFor="invite-emails">{t("emails")}</FieldLabel>
@@ -168,8 +167,13 @@ function InvitePeople({ organizationName, allowance }: InvitePeopleProps) {
                 </Field>
               </FieldGroup>
               <p className="text-sm text-muted-foreground">{t("note")}</p>
-              <DialogFooter>
-                <Button prominence="secondary" disabled={pending} onClick={() => setOpen(false)}>
+              <DialogFooter variant="plain">
+                <Button
+                  size="lg"
+                  prominence="secondary"
+                  disabled={pending}
+                  onClick={() => setOpen(false)}
+                >
                   {t("cancel")}
                 </Button>
                 <Button type="submit" size="lg" pending={pending}>

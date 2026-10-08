@@ -1130,7 +1130,6 @@
         "sendBackConfirm": "Send back",
         "reason": "Reason",
         "message": "Message to the owners",
-        "messageHint": "The decision is recorded in the audit log.",
         "back": "Back",
         "reasonPlaceholder": "Choose a reason",
         "domain": "Email domain to verify (optional)",

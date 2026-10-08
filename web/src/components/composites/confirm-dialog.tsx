@@ -1,12 +1,14 @@
 "use client";
 
+import { CircleHelpIcon, TriangleAlertIcon } from "lucide-react";
+
 import { Button } from "@/components/actions/button";
+import { DecisionMark } from "@/components/composites/decision-dialog";
 import {
   AlertDialog,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
-  AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
@@ -49,14 +51,19 @@ function ConfirmDialog({
   return (
     <AlertDialog open={open} onOpenChange={(next) => (pending ? undefined : onOpenChange(next))}>
       <AlertDialogContent>
-        <AlertDialogHeader>
+        <div className="flex flex-col items-center gap-3 pt-2 text-center">
+          <DecisionMark
+            tone={tone === "danger" ? "danger" : "info"}
+            icon={tone === "danger" ? TriangleAlertIcon : CircleHelpIcon}
+          />
           <AlertDialogTitle size="lg">{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
+        </div>
         {children}
         {note && <p className="text-sm text-muted-foreground">{note}</p>}
-        <AlertDialogFooter>
+        <AlertDialogFooter variant="plain">
           <Button
+            size="lg"
             prominence="secondary"
             disabled={pending}
             autoFocus
@@ -64,7 +71,7 @@ function ConfirmDialog({
           >
             {cancelLabel}
           </Button>
-          <Button tone={tone} pending={pending} onClick={onConfirm}>
+          <Button size="lg" tone={tone} pending={pending} onClick={onConfirm}>
             {confirmLabel}
           </Button>
         </AlertDialogFooter>

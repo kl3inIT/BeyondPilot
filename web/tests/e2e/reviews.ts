@@ -43,7 +43,8 @@ export function refusal(code: string) {
 /** Chooses the reason of a refusal and writes its note, in the dialog that asks for them. */
 export async function giveReason(page: Page, reason: string, note: string) {
   const dialog = page.getByRole("dialog");
-  await dialog.getByRole("combobox").selectOption({ label: reason });
+  await dialog.getByRole("combobox").click();
+  await page.getByRole("option", { name: reason }).click();
   await dialog.getByRole("textbox").fill(note);
   return dialog;
 }

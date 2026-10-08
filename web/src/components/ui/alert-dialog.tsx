@@ -67,12 +67,22 @@ function AlertDialogHeader({ className, ...props }: React.ComponentProps<"div">)
   );
 }
 
-function AlertDialogFooter({ className, ...props }: React.ComponentProps<"div">) {
+function AlertDialogFooter({
+  className,
+  variant = "bar",
+  ...props
+}: React.ComponentProps<"div"> & {
+  /** `plain` is the decision dialogs' footer: no bar, equal-width buttons. */
+  variant?: "bar" | "plain";
+}) {
   return (
     <div
       data-slot="alert-dialog-footer"
+      data-variant={variant}
       className={cn(
-        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end",
+        "flex flex-col-reverse gap-2",
+        "data-[variant=bar]:-mx-4 data-[variant=bar]:-mb-4 data-[variant=bar]:rounded-b-xl data-[variant=bar]:border-t data-[variant=bar]:bg-muted/50 data-[variant=bar]:p-4 data-[variant=bar]:group-data-[size=sm]/alert-dialog-content:grid data-[variant=bar]:group-data-[size=sm]/alert-dialog-content:grid-cols-2 data-[variant=bar]:sm:flex-row data-[variant=bar]:sm:justify-end",
+        "data-[variant=plain]:sm:flex-row data-[variant=plain]:sm:*:flex-1",
         className,
       )}
       {...props}
