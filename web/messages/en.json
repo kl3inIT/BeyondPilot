@@ -3114,7 +3114,6 @@
       "way": {
         "join": "You can join at once",
         "joinDomain": "Your email is on {domain}, so you join at once",
-        "request": "Managed by its owners",
         "claim": "No one manages this page yet"
       },
       "action": {

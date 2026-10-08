@@ -3114,7 +3114,6 @@
       "way": {
         "join": "Bạn được tham gia ngay",
         "joinDomain": "Email của bạn thuộc {domain} nên bạn được tham gia ngay",
-        "request": "Do các chủ sở hữu quản lý",
         "claim": "Chưa có ai quản lý trang này"
       },
       "action": {

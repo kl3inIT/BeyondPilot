@@ -147,7 +147,7 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
             className="flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-center"
           >
             <div className="flex min-w-0 flex-1 items-center gap-4">
-              <OrganizationMark name={match.name} />
+              <OrganizationMark name={match.name} logoFileId={match.logoFileId} />
               <div className="flex min-w-0 flex-col gap-0.5">
                 <span className="truncate text-sm font-medium">{match.name}</span>
                 <span className="text-xs text-muted-foreground">
@@ -155,11 +155,13 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
                     .filter(Boolean)
                     .join(" · ")}
                 </span>
-                <span className="text-xs text-muted-foreground">
-                  {match.way === "join" && match.emailDomain
-                    ? t("way.joinDomain", { domain: match.emailDomain })
-                    : t(`way.${match.way}`)}
-                </span>
+                {match.way !== "request" && (
+                  <span className="text-xs text-muted-foreground">
+                    {match.way === "join" && match.emailDomain
+                      ? t("way.joinDomain", { domain: match.emailDomain })
+                      : t(`way.${match.way}`)}
+                  </span>
+                )}
               </div>
             </div>
             <Button size="lg" pending={pending === match.id} onClick={() => choose(match)}>
