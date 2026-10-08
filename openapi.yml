@@ -7887,11 +7887,14 @@ paths:
         name: industry
         required: false
         schema:
-          type: array
-          maxItems: 23
+          type:
+          - array
+          - "null"
           items:
             type: string
             pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|climate_sustainability|marketing_advertising|legal|hr_workforce|other
+          maxItems: 23
+          minItems: 0
       - description: "The order: the most recently published first, the nearest deadline\
           \ first, or the largest budget first."
         in: query

@@ -10818,7 +10818,7 @@ export type ListUseCasesData = {
         /**
          * Only use cases of these industries.
          */
-        industry?: Array<string>;
+        industry?: Array<string> | null;
         /**
          * The order: the most recently published first, the nearest deadline first, or the largest budget first.
          */
