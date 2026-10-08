@@ -160,6 +160,47 @@ paths:
       summary: "Correct a model's limits, capabilities or prices"
       tags:
       - AI administration
+  /api/ai/admin/chat/models/{id}/test:
+    post:
+      operationId: testChatModel
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatModelTest"
+          description: Whether the model answered and how long it took.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The model's provider is switched off or has no key.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such model.
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Too many models are in use at once.
+      security:
+      - session: []
+      summary: Ask an enabled model one line to prove it answers; the call spends
+        a few tokens and is recorded
+      tags:
+      - AI administration
   /api/ai/admin/chat/providers:
     post:
       operationId: connectChatProvider
@@ -10188,6 +10229,19 @@ components:
       - toolCalling
       - version
       - vision
+    ChatModelTest:
+      type: object
+      description: Whether a model answered a one-line question. The call spent a
+        few tokens and is in the usage record.
+      properties:
+        latencyMs:
+          type: integer
+          format: int64
+        ok:
+          type: boolean
+      required:
+      - latencyMs
+      - ok
     ChatProvider:
       type: object
       properties:

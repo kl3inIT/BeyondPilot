@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.ai;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -10,6 +11,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import ai.genaifund.beyondpilot.TestMailbox;
@@ -71,6 +73,9 @@ class AiAdministrationTest {
 	@Autowired
 	private JdbcClient jdbc;
 
+	@Autowired
+	private AiModels models;
+
 	private RestTestClient client;
 
 	private String operator;
@@ -84,6 +89,7 @@ class AiAdministrationTest {
 	void setUp() throws IOException {
 		jdbc.sql("update ai_task_model set model_id = null, reasoning_effort = null, version = 0").update();
 		jdbc.sql("delete from ai_provider where purpose = 'chat'").update();
+		jdbc.sql("delete from ai_usage").update();
 		client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory()).baseUrl("http://localhost:" + port).build();
 		operator = TestSignIn.session(client, mail, "operator@chat.test");
 		provider = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
@@ -111,6 +117,17 @@ class AiAdministrationTest {
 					{"data":[{"id":"claude-haiku-4-5","max_input_tokens":200000,"max_tokens":64000,
 					  "capabilities":{"image_input":{"supported":true},"thinking":{"supported":true}}}],"has_more":false}""");
 		});
+		// The chat API of the same gateway: it answers OK and says what the call took.
+		provider.createContext("/v1/chat/completions", exchange -> {
+			String sent = new String(exchange.getRequestBody().readAllBytes(), UTF_8);
+			asked.add("POST /v1/chat/completions " + exchange.getRequestHeaders().getFirst("Authorization") + " " + sent);
+			answer(exchange, 200, """
+					{"id":"chatcmpl-1","object":"chat.completion","created":1,"model":"gpt-5-mini",
+					 "choices":[{"index":0,"message":{"role":"assistant","content":"OK"},"finish_reason":"stop"}],
+					 "usage":{"prompt_tokens":12,"completion_tokens":3,"total_tokens":15,
+					  "prompt_tokens_details":{"cached_tokens":4}}}""");
+		});
+		provider.createContext("/broken/chat/completions", exchange -> answer(exchange, 500, PROVIDER_TEXT));
 		provider.createContext("/down/models", exchange -> answer(exchange, 500, PROVIDER_TEXT));
 		provider.createContext("/html/models", exchange -> answer(exchange, 200, "<html>" + PROVIDER_TEXT + "</html>"));
 		provider.createContext("/moved/models", exchange -> {
@@ -137,6 +154,8 @@ class AiAdministrationTest {
 		assertProblem(send("POST", member, API + "/providers", provider("Gateway", "openai", url("/v1"), GOOD_KEY)), 403,
 				"IDENTITY_OPERATOR_REQUIRED");
 		assertProblem(send("POST", member, API + "/providers/test", probe(null, "openai", url("/v1"), GOOD_KEY)), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(send("POST", member, API + "/models/" + UUID.randomUUID() + "/test", null), 403,
 				"IDENTITY_OPERATOR_REQUIRED");
 		assertProblem(send("PUT", member, API + "/tasks/matching", task(null, null, 0)), 403,
 				"IDENTITY_OPERATOR_REQUIRED");
@@ -327,6 +346,133 @@ class AiAdministrationTest {
 
 	private static Map<String, Object> listedModel(String listed, String name) {
 		return JsonPath.<List<Map<String, Object>>>read(listed, "$.models[?(@.modelName=='" + name + "')]").getFirst();
+	}
+
+	@Test
+	void aTaskWithoutAModelDoesNotRun() {
+		assertThat(models.available(AiTask.MATCHING)).isFalse();
+		assertThatThrownBy(() -> models.chat(AiTask.MATCHING, null)).isInstanceOf(AiException.class)
+			.extracting(failure -> ((AiException) failure).errorCode())
+			.isEqualTo(AiErrorCode.TASK_NOT_CONFIGURED);
+	}
+
+	@Test
+	void everyCallIsRecordedWithItsTokensAndThePriceThen() {
+		String id = matchingOn(url("/v1"));
+
+		try (AiChat chat = models.chat(AiTask.MATCHING, new AiSubject("use_case", "uc-1"))) {
+			assertThat(chat.modelName()).isEqualTo("gpt-5-mini");
+			assertThat(chat.client().prompt().user("Does this solution fit?").call().content()).isEqualTo("OK");
+		}
+
+		// The model, the key and the task's reasoning level reached the provider.
+		String sent = asked.stream().filter(line -> line.startsWith("POST /v1/chat/completions")).findFirst().orElseThrow();
+		assertThat(sent).contains("Bearer " + GOOD_KEY, "\"model\":\"gpt-5-mini\"", "\"reasoning_effort\":\"high\"");
+		Map<String, Object> row = jdbc.sql("select * from ai_usage").query().singleRow();
+		assertThat(row).containsEntry("task", "matching")
+			.containsEntry("provider_name", "Gateway")
+			.containsEntry("model_name", "gpt-5-mini")
+			.containsEntry("input_tokens", 12L)
+			.containsEntry("output_tokens", 3L)
+			.containsEntry("outcome", "ok")
+			.containsEntry("subject_type", "use_case")
+			.containsEntry("subject_id", "uc-1");
+		assertThat(row.get("provider_id")).hasToString(id);
+		assertThat(((Number) row.get("input_price")).doubleValue()).isEqualTo(0.25);
+		assertThat(((Number) row.get("output_price")).doubleValue()).isEqualTo(2.0);
+		// Nothing the model was asked or answered is kept.
+		assertThat(row.toString()).doesNotContain("Does this solution fit").doesNotContain(SECRET);
+
+		// A later price change does not rewrite what this call cost.
+		String settings = body(get(operator, API).expectStatus().isOk());
+		String model = JsonPath.read(settings, "$.providers[0].models[0].id");
+		Map<String, Object> dearer = model("gpt-5-mini", 272000, 128000, JsonPath.<Integer>read(settings, "$.providers[0].models[0].version"));
+		dearer.put("inputPrice", 9);
+		send("PUT", operator, API + "/models/" + model, dearer).expectStatus().isOk();
+		assertThat(((Number) jdbc.sql("select input_price from ai_usage").query().singleValue()).doubleValue()).isEqualTo(0.25);
+	}
+
+	@Test
+	void aCallThatFailsIsRecordedWithoutTheProvidersWords() {
+		matchingOn(url("/broken"));
+
+		try (AiChat chat = models.chat(AiTask.MATCHING, null)) {
+			assertThatThrownBy(() -> chat.client().prompt().user("Does this solution fit?").call().content())
+				.isInstanceOf(RuntimeException.class);
+		}
+
+		Map<String, Object> row = jdbc.sql("select * from ai_usage").query().singleRow();
+		assertThat(row).containsEntry("outcome", "failed");
+		assertThat((String) row.get("error_type")).isNotBlank();
+		assertThat(row.get("input_tokens")).isNull();
+		assertThat(row.toString()).doesNotContain(PROVIDER_TEXT);
+	}
+
+	@Test
+	void anOperatorTriesAModelAndTheCallIsRecordedAsATest() {
+		matchingOn(url("/v1"));
+		String model = JsonPath.read(body(get(operator, API).expectStatus().isOk()), "$.providers[0].models[0].id");
+
+		String tried = body(send("POST", operator, API + "/models/" + model + "/test", null).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(tried, "$.ok")).isTrue();
+
+		// The model is asked as its provider runs it: the task's reasoning level is not sent.
+		String sent = asked.stream().filter(line -> line.startsWith("POST /v1/chat/completions")).findFirst().orElseThrow();
+		assertThat(sent).contains("Reply OK.").doesNotContain("reasoning_effort");
+		assertThat(jdbc.sql("select task from ai_usage").query(String.class).single()).isEqualTo("model_test");
+
+		assertProblem(send("POST", operator, API + "/models/" + UUID.randomUUID() + "/test", null), 404,
+				"AI_MODEL_NOT_FOUND");
+	}
+
+	@Test
+	void aModelThatDoesNotAnswerFailsItsTestWithoutTheProvidersWords() {
+		matchingOn(url("/broken"));
+		String model = JsonPath.read(body(get(operator, API).expectStatus().isOk()), "$.providers[0].models[0].id");
+
+		String tried = body(send("POST", operator, API + "/models/" + model + "/test", null).expectStatus().isOk());
+
+		assertThat(JsonPath.<Boolean>read(tried, "$.ok")).isFalse();
+		assertThat(tried).doesNotContain(PROVIDER_TEXT);
+		assertThat(jdbc.sql("select outcome from ai_usage").query(String.class).single()).isEqualTo("failed");
+	}
+
+	@Test
+	void aChangedKeyServesTheNextCallWhileACallInFlightKeepsItsClient() {
+		String id = matchingOn(url("/v1"));
+		try (AiChat before = models.chat(AiTask.MATCHING, null)) {
+			// An operator replaces the key while this work still holds its client.
+			Map<String, Object> rekeyed = provider("Gateway", "openai", url("/v1"), "sk-second-key");
+			rekeyed.put("version", JsonPath.<Integer>read(body(get(operator, API).expectStatus().isOk()), "$.providers[0].version"));
+			send("PUT", operator, API + "/providers/" + id, rekeyed).expectStatus().isOk();
+
+			try (AiChat after = models.chat(AiTask.MATCHING, null)) {
+				after.client().prompt().user("again").call().content();
+			}
+			before.client().prompt().user("still running").call().content();
+		}
+
+		List<String> keys = asked.stream()
+			.filter(line -> line.startsWith("POST /v1/chat/completions"))
+			.map(line -> line.split(" ")[3])
+			.toList();
+		assertThat(keys).containsExactly("sk-second-key", GOOD_KEY);
+	}
+
+	/** Connects the gateway at an address, enables one model on it and has matching use it; answers the provider's id. */
+	private String matchingOn(String baseUrl) {
+		String connected = body(send("POST", operator, API + "/providers", provider("Gateway", "openai", baseUrl, GOOD_KEY))
+			.expectStatus()
+			.isOk());
+		String id = JsonPath.read(connected, "$.providers[0].id");
+		String added = body(send("POST", operator, API + "/providers/" + id + "/models",
+				Map.of("models", List.of(model("gpt-5-mini", 272000, 128000, 0))))
+			.expectStatus()
+			.isOk());
+		String model = JsonPath.read(added, "$.providers[0].models[0].id");
+		int version = JsonPath.read(added, "$.tasks[0].version");
+		send("PUT", operator, API + "/tasks/matching", task(model, "high", version)).expectStatus().isOk();
+		return id;
 	}
 
 	private String url(String path) {

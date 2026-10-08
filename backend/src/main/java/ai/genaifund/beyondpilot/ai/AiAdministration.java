@@ -16,6 +16,7 @@ import ai.genaifund.beyondpilot.ai.adapter.ChatEndpoints;
 import ai.genaifund.beyondpilot.ai.adapter.ChatProviderException;
 import ai.genaifund.beyondpilot.ai.adapter.ReportedModel;
 import ai.genaifund.beyondpilot.ai.dto.AddChatModelsRequest;
+import ai.genaifund.beyondpilot.ai.dto.ChatModelTestResponse;
 import ai.genaifund.beyondpilot.ai.dto.ChatProviderTestResponse;
 import ai.genaifund.beyondpilot.ai.dto.ChatSettingsResponse;
 import ai.genaifund.beyondpilot.ai.dto.ProbeChatProviderRequest;
@@ -68,11 +69,13 @@ public class AiAdministration {
 
 	private final AiSettings settings;
 
+	private final AiModels chatModels;
+
 	private final AuditTrail audit;
 
 	AiAdministration(IdentityService identity, AiProviders providers, AiModelRepository models,
 			AiTaskModelRepository tasks, ChatAdapterRegistry adapters, KnownModels known, AiSettings settings,
-			AuditTrail audit) {
+			AiModels chatModels, AuditTrail audit) {
 		this.identity = identity;
 		this.providers = providers;
 		this.models = models;
@@ -80,6 +83,7 @@ public class AiAdministration {
 		this.adapters = adapters;
 		this.known = known;
 		this.settings = settings;
+		this.chatModels = chatModels;
 		this.audit = audit;
 	}
 
@@ -150,6 +154,32 @@ public class AiAdministration {
 		catch (ChatProviderException failed) {
 			logFailure(failed);
 			return new ChatProviderTestResponse(false, null, millisSince(started), reason(failed));
+		}
+	}
+
+	/**
+	 * Asks an enabled model one line, to prove it answers. The call spends a few tokens and is recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws AiException when the model is gone, its provider is switched off or has no key, or every client is in use
+	 */
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public ChatModelTestResponse testModel(Actor actor, UUID id) {
+		identity.requireOperator(actor);
+		long started = System.nanoTime();
+		try (AiChat chat = chatModels.probe(id)) {
+			String answer = chat.client().prompt().user("Reply OK.").call().content();
+			return new ChatModelTestResponse(answer != null && !answer.isBlank(), millisSince(started));
+		}
+		catch (AiException refused) {
+			throw refused;
+		}
+		catch (RuntimeException failed) {
+			// What the provider said can repeat the request, so only the kind of failure is kept.
+			LOG.atInfo()
+				.addKeyValue("event", "ai.model.test_failed")
+				.addKeyValue("error_type", failed.getClass().getName())
+				.log("A chat model did not answer its test");
+			return new ChatModelTestResponse(false, millisSince(started));
 		}
 	}
 

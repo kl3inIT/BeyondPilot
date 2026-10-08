@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import ai.genaifund.beyondpilot.ai.AiAdministration;
 import ai.genaifund.beyondpilot.ai.dto.AddChatModelsRequest;
+import ai.genaifund.beyondpilot.ai.dto.ChatModelTestResponse;
 import ai.genaifund.beyondpilot.ai.dto.ChatProviderTestResponse;
 import ai.genaifund.beyondpilot.ai.dto.ChatSettingsResponse;
 import ai.genaifund.beyondpilot.ai.dto.ProbeChatProviderRequest;
@@ -164,6 +165,21 @@ class AiAdminController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ChatSettingsResponse removeModel(@CurrentActor Actor actor, @PathVariable UUID id) {
 		return administration.removeModel(actor, id);
+	}
+
+	@PostMapping(path = "/chat/models/{id}/test", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "testChatModel",
+			summary = "Ask an enabled model one line to prove it answers; the call spends a few tokens and is recorded",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "Whether the model answered and how long it took.")
+	@ApiResponse(responseCode = "400", description = "The model's provider is switched off or has no key.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such model.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "503", description = "Too many models are in use at once.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ChatModelTestResponse testModel(@CurrentActor Actor actor, @PathVariable UUID id) {
+		return administration.testModel(actor, id);
 	}
 
 	@PutMapping(path = "/chat/tasks/{task}", consumes = MediaType.APPLICATION_JSON_VALUE,

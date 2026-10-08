@@ -930,6 +930,14 @@ export type ChatModel = {
     vision: boolean;
 };
 
+/**
+ * Whether a model answered a one-line question. The call spent a few tokens and is in the usage record.
+ */
+export type ChatModelTest = {
+    latencyMs: number;
+    ok: boolean;
+};
+
 export type ChatProvider = {
     adapterType: string;
     baseUrl: string;
@@ -4706,6 +4714,41 @@ export type ChangeChatModelResponses = {
 };
 
 export type ChangeChatModelResponse = ChangeChatModelResponses[keyof ChangeChatModelResponses];
+
+export type TestChatModelData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/models/{id}/test';
+};
+
+export type TestChatModelErrors = {
+    /**
+     * The model's provider is switched off or has no key.
+     */
+    400: Problem;
+    /**
+     * There is no such model.
+     */
+    404: Problem;
+    /**
+     * Too many models are in use at once.
+     */
+    503: Problem;
+};
+
+export type TestChatModelError = TestChatModelErrors[keyof TestChatModelErrors];
+
+export type TestChatModelResponses = {
+    /**
+     * Whether the model answered and how long it took.
+     */
+    200: ChatModelTest;
+};
+
+export type TestChatModelResponse = TestChatModelResponses[keyof TestChatModelResponses];
 
 export type ConnectChatProviderData = {
     body: SaveChatProvider;
