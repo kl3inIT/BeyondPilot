@@ -250,11 +250,15 @@ const useCases = [
 function pageOfUseCases(url) {
   const { searchParams: query } = url;
   const sort = query.get("sort") ?? "newest";
+  const industries = query
+    .getAll("industry")
+    .flatMap((industry) => industry.split(","))
+    .filter(Boolean);
   const items = useCases
     .filter(
       (item) =>
         has(query.get("q"), item.title, item.goal, item.organizationName) &&
-        (!query.get("industry") || item.industry === query.get("industry")),
+        (industries.length === 0 || industries.includes(item.industry)),
     )
     .toSorted((one, other) =>
       sort === "deadline"

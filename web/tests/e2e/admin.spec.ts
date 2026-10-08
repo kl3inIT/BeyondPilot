@@ -175,7 +175,6 @@ test.describe("admin", () => {
     await page.goto("/admin/use-cases");
     const records = isMobile ? page.getByRole("listitem") : page.getByRole("row");
 
-
     const withLogo = records.filter({ hasText: "Claims triage" });
     await expect(withLogo.locator("img")).toHaveCount(1);
     const withoutLogo = records.filter({ hasText: "Inventory counting" });
@@ -252,6 +251,7 @@ test.describe("admin", () => {
       title: "Faster claims triage",
       publishNow: true,
     });
+  });
 
   test("the admin account menu leads back to the site and sets the language and appearance", async ({
     page,

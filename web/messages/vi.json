@@ -5460,7 +5460,10 @@
     },
     "industry": {
       "label": "Ngành",
-      "all": "Tất cả bài toán"
+      "all": "Tất cả bài toán",
+      "placeholder": "Lọc theo ngành",
+      "empty": "Không tìm thấy ngành phù hợp.",
+      "remove": "Bỏ {industry}"
     },
     "technology": {
       "label": "Công nghệ AI liên quan",

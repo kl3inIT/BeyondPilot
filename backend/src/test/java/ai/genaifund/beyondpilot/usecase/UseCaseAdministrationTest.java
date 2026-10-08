@@ -220,6 +220,14 @@ class UseCaseAdministrationTest {
 		assertThat(JsonPath.<List<String>>read(byOpen, "$.items[*].title")).containsExactly("Open case " + tag);
 		String insurance = body(client.get().uri(DIRECTORY + "?q=" + tag + "&industry=insurance").exchange().expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(insurance, "$.items[*].title")).containsExactly("Quiet case " + tag);
+
+		String selected = body(client.get()
+			.uri(DIRECTORY + "?q=" + tag + "&industry=insurance&industry=automotive_mobility")
+			.exchange()
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<List<String>>read(selected, "$.items[*].title")).containsExactlyInAnyOrder("Open case " + tag,
+				"Quiet case " + tag);
 		client.get().uri(DIRECTORY + "?sort=price").exchange().expectStatus().isBadRequest();
 		client.get().uri(DIRECTORY + "?sort=deadline&page=1").exchange().expectStatus().isOk();
 	}

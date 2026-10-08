@@ -5460,7 +5460,10 @@
     },
     "industry": {
       "label": "Industry",
-      "all": "All use cases"
+      "all": "All use cases",
+      "placeholder": "Filter by industry",
+      "empty": "No industry matches.",
+      "remove": "Remove {industry}"
     },
     "technology": {
       "label": "Relevant AI technologies",

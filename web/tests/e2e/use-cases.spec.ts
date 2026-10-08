@@ -43,19 +43,24 @@ test.describe("use cases", () => {
     await expect(forecasting.getByText("Shown to members")).toBeVisible();
   });
 
-  test("an industry and a search narrow the list through the address", async ({ page }) => {
+  test("industries narrow the list through a multi-select field and the address", async ({
+    page,
+  }) => {
     await page.goto("/use-cases");
 
-    await page.getByRole("button", { name: "Insurance" }).click();
-    await expect(page).toHaveURL("/use-cases?industry=insurance");
-    await expect(page.getByRole("button", { name: "Insurance" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
-    await expect(page.getByText("1 use case", { exact: true })).toBeVisible();
+    const industry = page.getByRole("combobox", { name: "Industry" });
+    await industry.fill("Insurance");
+    await page.getByRole("option", { name: "Insurance" }).click();
+    await industry.click();
+    await industry.fill("Automotive");
+    await page.getByRole("option", { name: "Automotive and mobility" }).click();
+    await expect(page).toHaveURL(/\/use-cases\?industry=insurance,automotive_mobility$/);
+    await expect(page.getByText("2 use cases", { exact: true })).toBeVisible();
 
-    await page.getByRole("searchbox", { name: "Search use cases" }).fill("voice");
-    await expect(page).toHaveURL(/\/use-cases\?(?=.*q=voice)(?=.*industry=insurance)/);
+    await page.getByRole("searchbox", { name: "Search use cases" }).fill("retail");
+    await expect(page).toHaveURL(
+      /\/use-cases\?(?=.*q=retail)(?=.*industry=insurance,automotive_mobility)/,
+    );
     await expect(page.getByText("No use cases match")).toBeVisible();
 
     // The way back is a plain link to the list without filters.
