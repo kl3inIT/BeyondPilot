@@ -107,6 +107,9 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   website, team background), the solution (id, name, summary, problems solved, maturity), the materials (deck,
   built-with, traction) and each answer with its question's label and kind, and the file for a file answer. A later
   change to a profile leaves the snapshot as it was.
+- **The account keeps the country and the phone number.** A submission passes them to
+  `IdentityService.reachAtIfUnknown`, which fills the ones the account does not hold yet, so the next form starts
+  from them.
 - **Event and email.** It publishes `ProposalSubmitted`; `SubmissionMail` queues the applicant's copy in the same
   transaction, so none leaves for a submission that rolled back. The copy names the close when the program allows
   updates until then.

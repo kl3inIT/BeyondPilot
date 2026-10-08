@@ -38,6 +38,7 @@ import {
   submitApplication,
   type ApplicationView,
   type FormQuestion,
+  type Me,
 } from "@/lib/api/generated";
 import { focusField } from "@/lib/focus-field";
 import { myApplicationRoute, programRoute, siteRoutes } from "@/lib/site";
@@ -81,15 +82,15 @@ function solutionDraftOf(view: ApplicationView, id: string | null): SolutionDraf
  * review before submitting. What is typed is saved as the person goes; a step checks what it needs
  * only when the person moves on, and the backend checks everything again on submission.
  */
-function ApplyFlow({ initial }: { initial: ApplicationView }) {
+function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me }) {
   const t = useTranslations("Apply");
   const locale = useLocale();
   const router = useRouter();
   const format = applyFormatter(locale);
   const [view, setView] = useState(initial);
-  const [draft, setDraft] = useState<ApplyDraft>(() => draftOf(initial));
+  const [draft, setDraft] = useState<ApplyDraft>(() => draftOf(initial, account));
   const [solution, setSolution] = useState<SolutionDraft>(() =>
-    solutionDraftOf(initial, draftOf(initial).solutionId),
+    solutionDraftOf(initial, draftOf(initial, account).solutionId),
   );
   const [who, setWho] = useState<Who>("individual");
   const [team, setTeam] = useState({ name: "", size: "2_9" as string, website: "" });

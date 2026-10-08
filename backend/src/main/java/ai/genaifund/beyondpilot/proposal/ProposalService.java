@@ -298,6 +298,7 @@ public class ProposalService {
 		Instant now = Instant.now();
 		proposal.belongTo(organization.id());
 		int number = proposal.submit(now);
+		identity.reachAtIfUnknown(actor, contact.country(), contact.phone());
 		versions.save(new ProposalVersion(proposal.getId(), number, now,
 				json.writeValueAsString(snapshot(person, contact, organization, solution, proposal, form, answers))));
 		proposals.flush();

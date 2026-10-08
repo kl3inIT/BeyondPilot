@@ -11,5 +11,9 @@ public record MeResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UU
 		@Schema(types = { "string", "null" },
 				description = "The name the account shows; null until the person or their provider gives one.") @Nullable String displayName,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "user", "operator" },
-				description = "`operator` is GenAI Fund staff.") String role) {
+				description = "`operator` is GenAI Fund staff.") String role,
+		@Schema(types = { "string", "null" },
+				description = "ISO 3166-1 alpha-2; null until the person says where they are.") @Nullable String country,
+		@Schema(types = { "string", "null" },
+				description = "With its country code; null until the person gives a number.") @Nullable String phone) {
 }

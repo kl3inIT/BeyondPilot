@@ -78,6 +78,10 @@ class ProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Integer>read(submitted, "$.application.submissions")).isEqualTo(1);
 		assertThat(mail.latestSubjectTo(email)).isEqualTo("Application submitted: Claims challenge");
 		assertThat(snapshotName(id, 1)).isEqualTo("Dat Phan");
+		// The account keeps the country and the number of a first submission, for the next form to start from.
+		String me = body(get(applicant, "/api/identity/me").expectStatus().isOk());
+		assertThat(JsonPath.<String>read(me, "$.country")).isEqualTo("VN");
+		assertThat(JsonPath.<String>read(me, "$.phone")).isEqualTo("+84 912 345 678");
 
 		// It can change until the close; each submission is a version, and the earlier one stays as it was.
 		Map<String, String> changed = answers(form, email);

@@ -29,6 +29,7 @@
       "admin": "Admin",
       "applications": "My applications",
       "reviews": "Reviews",
+      "settings": "Account",
       "mcp": "MCP",
       "backToSite": "Back to the site",
       "appearance": "Appearance"
@@ -407,6 +408,21 @@
     "thisComputer": "this computer",
     "notReviewed": "Not reviewed",
     "ableToLocal": "It will be able to"
+  },
+  "Account": {
+    "metaTitle": "Account · BeyondPilot",
+    "title": "Account",
+    "lead": "Who you sign in as, and where and how to reach you. An application starts from these details.",
+    "name": "Name",
+    "email": "Email",
+    "emailHint": "You sign in with this address, so it can't be changed here.",
+    "country": "Country",
+    "countryPlaceholder": "Select a country",
+    "phone": "Phone number",
+    "phoneInvalid": "Enter a phone number with its country code, such as +84 912 345 678.",
+    "save": "Save",
+    "saved": "Your account is saved.",
+    "failed": "We could not save your account. Try again."
   },
   "Mcp": {
     "metaTitle": "MCP · BeyondPilot",

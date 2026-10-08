@@ -29,6 +29,7 @@
       "admin": "Quản trị",
       "applications": "Đơn của tôi",
       "reviews": "Chấm đơn",
+      "settings": "Tài khoản",
       "mcp": "MCP",
       "backToSite": "Về trang chính",
       "appearance": "Giao diện"
@@ -407,6 +408,21 @@
     "thisComputer": "máy này",
     "notReviewed": "Chưa xem xét",
     "ableToLocal": "Ứng dụng sẽ có thể"
+  },
+  "Account": {
+    "metaTitle": "Tài khoản · BeyondPilot",
+    "title": "Tài khoản",
+    "lead": "Bạn đăng nhập bằng địa chỉ nào, bạn ở đâu và liên hệ bạn bằng cách nào. Đơn nộp sẽ điền sẵn các thông tin này.",
+    "name": "Họ tên",
+    "email": "Email",
+    "emailHint": "Bạn đăng nhập bằng địa chỉ này nên không đổi được ở đây.",
+    "country": "Quốc gia",
+    "countryPlaceholder": "Chọn quốc gia",
+    "phone": "Số điện thoại",
+    "phoneInvalid": "Nhập số điện thoại kèm mã quốc gia, ví dụ +84 912 345 678.",
+    "save": "Lưu",
+    "saved": "Đã lưu tài khoản.",
+    "failed": "Chưa lưu được tài khoản. Hãy thử lại."
   },
   "Mcp": {
     "metaTitle": "MCP · BeyondPilot",

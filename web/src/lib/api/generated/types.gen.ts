@@ -998,6 +998,20 @@ export type ContactDetails = {
 };
 
 /**
+ * Where the person is and the number to reach them on. A part left out is cleared.
+ */
+export type ContactRequest = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    /**
+     * With its country code, such as +84 912 345 678.
+     */
+    phone?: string | null;
+};
+
+/**
  * A new organization. Its creator owns it, and it waits for GenAI Fund's review.
  */
 export type CreateOrganization = {
@@ -1756,11 +1770,19 @@ export type McpToolSwitch = {
  */
 export type Me = {
     /**
+     * ISO 3166-1 alpha-2; null until the person says where they are.
+     */
+    country?: string | null;
+    /**
      * The name the account shows; null until the person or their provider gives one.
      */
     displayName?: string | null;
     email: string;
     id: string;
+    /**
+     * With its country code; null until the person gives a number.
+     */
+    phone?: string | null;
     /**
      * `operator` is GenAI Fund staff.
      */
@@ -4909,6 +4931,39 @@ export type GetMeResponses = {
 };
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type UpdateMyContactData = {
+    body: ContactRequest;
+    path?: never;
+    query?: never;
+    url: '/api/identity/me/contact';
+};
+
+export type UpdateMyContactErrors = {
+    /**
+     * The country or the number is not written as asked.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The account has been disabled.
+     */
+    403: Problem;
+};
+
+export type UpdateMyContactError = UpdateMyContactErrors[keyof UpdateMyContactErrors];
+
+export type UpdateMyContactResponses = {
+    /**
+     * The account as it is now.
+     */
+    200: Me;
+};
+
+export type UpdateMyContactResponse = UpdateMyContactResponses[keyof UpdateMyContactResponses];
 
 export type ListAdminIntroductionsData = {
     body?: never;
