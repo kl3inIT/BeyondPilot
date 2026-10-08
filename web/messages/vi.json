@@ -967,7 +967,8 @@
           "reviewer_invite": "Mời giám khảo",
           "reviewer_remove": "Gỡ giám khảo",
           "decide": "Quyết định một đơn",
-          "release": "Công bố kết quả"
+          "release": "Công bố kết quả",
+          "file_open": "Mở một file của đơn nộp"
         },
         "use_case": {
           "create": "Tạo một use case",
@@ -1072,7 +1073,8 @@
           "reviewer_invite": "Mời một giám khảo chấm <resource></resource>",
           "reviewer_remove": "Gỡ một giám khảo khỏi <resource></resource>",
           "decide": "Quyết định một đơn nộp vào <resource></resource>",
-          "release": "Công bố kết quả của <resource></resource>"
+          "release": "Công bố kết quả của <resource></resource>",
+          "file_open": "Mở một file của một đơn nộp vào <resource></resource>"
         },
         "use_case": {
           "create": "Đã tạo use case <resource></resource>",

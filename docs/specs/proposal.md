@@ -235,8 +235,8 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 
 ## Audit
 
-Operator acts are recorded through `AuditTrail` with the operator as actor and the program as resource (type
-`program`); see [ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md).
+Operator acts, and a file opened by an operator or a judge, are recorded through `AuditTrail` with that person as
+actor and the program as resource (type `program`); see [ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md).
 
 | Action                     | When                                       | Details                       |
 | -------------------------- | ------------------------------------------ | ----------------------------- |
@@ -245,6 +245,7 @@ Operator acts are recorded through `AuditTrail` with the operator as actor and t
 | `proposal.reviewer_remove` | A judge removed                            | `email`                       |
 | `proposal.decide`          | One per application whose decision changed | `decision`                    |
 | `proposal.release`         | Outcomes released                          | `shortlisted`, `not_selected` |
+| `proposal.file_open`       | A reviewer opened a file of an application | `application`, `file`         |
 
 Applicants' acts, joining as a judge and assessments are not audited; they are logged as `proposal.submission.accepted`,
 `proposal.withdrawal.accepted`, `proposal.reviewer.joined` and `proposal.assessment.saved`, beside
