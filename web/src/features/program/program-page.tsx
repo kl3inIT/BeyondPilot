@@ -11,6 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { readProgramUseCases } from "@/features/usecase/use-cases-queries";
 import { Link } from "@/i18n/navigation";
 import type { Program } from "@/lib/api/generated";
 import { programApplyUrl, siteRoutes } from "@/lib/site";
@@ -19,6 +20,7 @@ import { publicFileUrl } from "@/lib/storage/upload";
 import { ProgramCountdown } from "./program-countdown";
 import { daysText, deadlineText, programFormatter, renderedAt } from "./program-format";
 import { ApplyCard, DraftBanner, EventList, Timeline, timelineOf } from "./program-parts";
+import { ProgramUseCases } from "./program-use-cases";
 
 /** The badge of a program's phase: open is the one that takes action. */
 const phaseVariant = {
@@ -50,13 +52,15 @@ export async function ProgramBreadcrumb({ name }: { name: string }) {
 
 /**
  * A program's standard page, built from what an operator entered: the summary and the cover, About,
- * the timeline of its key dates and application window, its events, and the card to apply.
+ * the use cases attached to it, the timeline of its key dates and application window, its events,
+ * and the card to apply.
  */
 async function ProgramPage({ program }: { program: Program }) {
-  const [t, types, locale] = await Promise.all([
+  const [t, types, locale, useCases] = await Promise.all([
     getTranslations("Program.page"),
     getTranslations("Program.type"),
     getLocale(),
+    readProgramUseCases(program.slug),
   ]);
   const format = programFormatter(locale);
   const now = renderedAt();
@@ -134,6 +138,13 @@ async function ProgramPage({ program }: { program: Program }) {
                 </p>
               </section>
             )}
+            {useCases.items.length > 0 && (
+              <ProgramUseCases
+                useCases={useCases}
+                title={t("useCases.title")}
+                lead={t("useCases.lead")}
+              />
+            )}
             {steps.length > 0 && (
               <section className="flex flex-col gap-4">
                 <h2 className="text-2xl font-semibold tracking-title">{t("timeline")}</h2>
@@ -146,9 +157,12 @@ async function ProgramPage({ program }: { program: Program }) {
                 <EventList program={program} />
               </section>
             )}
-            {!program.about && steps.length === 0 && program.events.length === 0 && (
-              <p className="text-muted-foreground">{t("nothingYet")}</p>
-            )}
+            {!program.about &&
+              useCases.items.length === 0 &&
+              steps.length === 0 &&
+              program.events.length === 0 && (
+                <p className="text-muted-foreground">{t("nothingYet")}</p>
+              )}
           </div>
           {card && (
             <div className="hidden lg:sticky lg:top-6 lg:block lg:w-80 lg:shrink-0">

@@ -68,6 +68,8 @@ test.describe("programs", () => {
       page.getByRole("listitem").filter({ hasText: "Doors open" }).first(),
     ).toBeVisible();
     await expect(page.getByRole("link", { name: "Apply now" })).toHaveCount(0);
+    // A program with no use case attached has no such section.
+    await expect(page.locator("#use-cases")).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -90,6 +92,20 @@ test.describe("programs", () => {
     await expect(
       page.locator("#judges").getByRole("link", { name: "Laura Nguyen on LinkedIn" }),
     ).toBeVisible();
+    // The use cases attached to the program, and only those, each leading to its brief.
+    const useCases = page.locator("#use-cases");
+    await expect(useCases.getByRole("heading", { level: 2 })).toHaveText(
+      "Use cases in this challenge",
+    );
+    await expect(useCases.getByRole("heading", { level: 3 })).toHaveText([
+      "Voice assistant for vehicle owners",
+      "Claims triage with document intelligence",
+    ]);
+    await expect(
+      page.getByRole("navigation", { name: "On this page" }).getByRole("link", {
+        name: "Use cases",
+      }),
+    ).toHaveAttribute("href", "#use-cases");
     await expect(page.getByRole("link", { name: "Apply now" }).first()).toHaveAttribute(
       "href",
       applyUrl,
@@ -106,7 +122,7 @@ test.describe("programs", () => {
     await expectNoSeriousA11yViolations(page);
 
     await page.goto("/vi/programs/insurance-ai-tasco");
-    await expect(page.getByRole("heading", { name: "Thử thách" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Thử thách", exact: true })).toBeVisible();
   });
 
   test("a draft is found by an operator only, under a banner that leads back", async ({

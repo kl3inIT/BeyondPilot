@@ -140,6 +140,10 @@ The operators' list shows each program's phase whatever its status.
   written for that address and fills it with the program's data; a `custom` program whose address has no such page is
   shown as a standard page (`web/src/app/[locale]/(public)/programs/[slug]/page.tsx`). `external`: the page is
   somewhere else, at `externalUrl`.
+- **Use cases.** A standard page and the Tasco page list the use cases an operator attached to the program, read
+  from the public use case list by the program's address (`GET /api/usecase/use-cases?program=`), newest first, its
+  first page. A program with none has no such section and no entry for it in the page's navigation; `program` gains
+  no dependency on `usecase`, the web page composes the two.
 - **One language.** What an operator enters is stored once and shown as entered.
 - **Times.** Stored as instants; the web application enters and shows them in Vietnam time.
 

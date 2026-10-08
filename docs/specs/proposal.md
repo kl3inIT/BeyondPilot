@@ -93,7 +93,7 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 | Check                                                                              | Code                                |
 | ---------------------------------------------------------------------------------- | ----------------------------------- |
 | The caller belongs to an organization                                              | `PROPOSAL_ORGANIZATION_REQUIRED`    |
-| First and last name, phone, country and LinkedIn are filled                        | `PROPOSAL_CONTACT_INCOMPLETE`       |
+| First and last name, phone and country are filled; a LinkedIn profile is optional  | `PROPOSAL_CONTACT_INCOMPLETE`       |
 | A team background, unless the organization is an `independent_builder`             | `PROPOSAL_TEAM_BACKGROUND_REQUIRED` |
 | A solution is chosen                                                               | `PROPOSAL_SOLUTION_REQUIRED`        |
 | It is the organization's                                                           | `PROPOSAL_SOLUTION_NOT_FOUND`       |
@@ -107,6 +107,9 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   website, team background), the solution (id, name, summary, problems solved, maturity), the materials (deck,
   built-with, traction) and each answer with its question's label and kind, and the file for a file answer. A later
   change to a profile leaves the snapshot as it was.
+- **The account keeps the country and the phone number.** A submission passes them to
+  `IdentityService.reachAtIfUnknown`, which fills the ones the account does not hold yet, so the next form starts
+  from them.
 - **Event and email.** It publishes `ProposalSubmitted`; `SubmissionMail` queues the applicant's copy in the same
   transaction, so none leaves for a submission that rolled back. The copy names the close when the program allows
   updates until then.
@@ -235,8 +238,8 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 
 ## Audit
 
-Operator acts are recorded through `AuditTrail` with the operator as actor and the program as resource (type
-`program`); see [ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md).
+Operator acts, and a file opened by an operator or a judge, are recorded through `AuditTrail` with that person as
+actor and the program as resource (type `program`); see [ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md).
 
 | Action                     | When                                       | Details                       |
 | -------------------------- | ------------------------------------------ | ----------------------------- |
@@ -245,6 +248,7 @@ Operator acts are recorded through `AuditTrail` with the operator as actor and t
 | `proposal.reviewer_remove` | A judge removed                            | `email`                       |
 | `proposal.decide`          | One per application whose decision changed | `decision`                    |
 | `proposal.release`         | Outcomes released                          | `shortlisted`, `not_selected` |
+| `proposal.file_open`       | A reviewer opened a file of an application | `application`, `file`         |
 
 Applicants' acts, joining as a judge and assessments are not audited; they are logged as `proposal.submission.accepted`,
 `proposal.withdrawal.accepted`, `proposal.reviewer.joined` and `proposal.assessment.saved`, beside

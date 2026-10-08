@@ -150,6 +150,16 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Integer>read(again, "$.version")).isEqualTo(2);
 		assertThat(JsonPath.<List<Integer>>read(again, "$.others[*].version")).containsExactly(1);
 		assertProblem(get(judge, one + "/files/" + UUID.randomUUID()), 404, "PROPOSAL_APPLICATION_NOT_FOUND");
+		assertThat(auditOf(form.programId())).doesNotContain("proposal.file_open");
+
+		// Opening a file of an application is recorded, with who opened which file.
+		String deck = JsonPath.read(again, "$.submitted.deck.fileId");
+		get(judge, one + "/files/" + deck);
+		assertThat(jdbc.sql("""
+				select actor_email || ' ' || (details ->> 'application') || ' ' || (details ->> 'file')
+				from audit_event where action = 'proposal.file_open' and resource_id = ?
+				""").params(form.programId().toString()).query(String.class).list())
+			.containsExactly("scorer@review.test " + first.id() + " " + deck);
 	}
 
 	@Test
