@@ -4,7 +4,7 @@ import { BrandLockup } from "@/components/layout/brand-lockup";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Link } from "@/i18n/navigation";
-import { genaiFundLinks, siteRoutes } from "@/lib/site";
+import { contactEmail, genaiFundLinks, siteRoutes } from "@/lib/site";
 
 type FooterLink = { href: string; label: string; external?: boolean };
 
@@ -30,18 +30,17 @@ function SiteFooter() {
     {
       title: t("footer.company"),
       links: [
+        { href: siteRoutes.howItWorks, label: t("nav.howItWorks") },
         { href: genaiFundLinks.about, label: t("footer.about"), external: true },
-        { href: genaiFundLinks.events, label: t("footer.events"), external: true },
-        { href: genaiFundLinks.newsletter, label: t("footer.newsletter"), external: true },
       ],
     },
     {
       title: t("footer.contact"),
       links: [
+        { href: `mailto:${contactEmail}`, label: contactEmail, external: true },
         { href: genaiFundLinks.linkedin, label: t("footer.linkedin"), external: true },
         { href: genaiFundLinks.facebook, label: t("footer.facebook"), external: true },
         { href: genaiFundLinks.x, label: t("footer.x"), external: true },
-        { href: `mailto:${genaiFundLinks.email}`, label: genaiFundLinks.email, external: true },
       ],
     },
   ];

@@ -7,7 +7,7 @@ import { Section } from "@/components/ui/section";
 import { liveCampaignDeadline, liveCampaignUrl, programApplyUrl } from "@/lib/site";
 
 const facts = [
-  { label: "briefing", value: "briefingWhen" },
+  { label: "notified", value: "notifiedWhen" },
   { label: "demoDay", value: "demoDayWhen" },
   { label: "investment", value: "investmentValue" },
 ] as const;
@@ -30,6 +30,7 @@ function FeaturedChallenge() {
             <p className="flex flex-wrap items-center gap-3 text-copy text-muted-foreground">
               <Badge variant="success">{c("live")}</Badge>
               {c("kind")}
+              <span>{t("partners")}</span>
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-headline lg:text-4xl">
               {c("name")}
