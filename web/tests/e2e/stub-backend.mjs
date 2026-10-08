@@ -4,6 +4,7 @@
 // sign-out) is answered by the test itself, with page.route.
 import { createServer } from "node:http";
 
+import { answerAiAdmin } from "./stub-ai.mjs";
 import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
 import { answerEmail } from "./stub-email.mjs";
@@ -473,6 +474,10 @@ createServer((request, response) => {
   const administered = answerSearchAdmin(url, account);
   if (administered) {
     return json(response, ...administered);
+  }
+  const chat = answerAiAdmin(url, account);
+  if (chat) {
+    return json(response, ...chat);
   }
   const searched = answerSearch(url);
   if (searched) {

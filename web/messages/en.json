@@ -1896,7 +1896,8 @@
         "noEncryption": {
           "title": "Keys cannot be saved yet",
           "lead": "The server has no encryption key for provider keys. Ask the team to add BEYONDPILOT_AI_ENCRYPTION_KEY."
-        }
+        },
+        "chat": "Chat"
       },
       "model": {
         "heading": "Embedding model",
@@ -2015,6 +2016,204 @@
         "SEARCH_SETTINGS_CHANGED": "Someone changed the search settings since you opened them. Reload and try again.",
         "SEARCH_ENCRYPTION_KEY_MISSING": "Keys cannot be saved: the server has no encryption key for them. Ask the team to add it.",
         "unknown": "Something went wrong. Try again in a moment."
+      },
+      "chat": {
+        "tasks": {
+          "heading": "Models by task",
+          "lead": "The model each task uses. A choice is saved at once.",
+          "name": {
+            "matching": "Matching"
+          },
+          "about": {
+            "matching": "Judges which solutions fit a use case, need by need, with a quote for each."
+          },
+          "unset": "No model chosen; this task does not run until one is.",
+          "unavailable": "Its provider is switched off or has no key; this task does not run.",
+          "choose": "Choose a model",
+          "pickerLabel": "Model for {task}",
+          "search": "Search models…",
+          "searchLabel": "Search models",
+          "noMatch": "No matching models.",
+          "reasoning": "Reasoning",
+          "effort": {
+            "off": "Off",
+            "low": "Low",
+            "medium": "Medium",
+            "high": "High"
+          },
+          "empty": {
+            "title": "No chat provider yet",
+            "lead": "No task can run. Connect a provider below, then choose its model here."
+          },
+          "noModels": {
+            "title": "No model to choose yet",
+            "lead": "Enable a model on a connection below, then choose it here."
+          }
+        },
+        "connections": {
+          "heading": "Available connections",
+          "lead": "Where the keys are kept. A key is stored encrypted and never shown again.",
+          "inUse": "In use",
+          "noKey": "No key",
+          "off": "Switched off",
+          "count": "{count, plural, =0 {No models} one {# model} other {# models}}",
+          "test": "Test connection",
+          "edit": "Edit",
+          "delete": "Delete",
+          "more": "Actions for {name}",
+          "toggle": "Models of {name}",
+          "testOk": "Connection succeeded · {ms} ms · {count, plural, one {# model} other {# models}}",
+          "testFailed": "Connection failed · {ms} ms",
+          "reason": {
+            "rejected": "The provider rejected the API key. Check that it is copied whole and has not been revoked.",
+            "unreachable": "The provider did not answer. Check the address, or try again in a moment.",
+            "incompatible": "The address answered, but not as this API does. Check that it ends where the API starts."
+          },
+          "fetch": "Fetch models from the provider",
+          "addModel": "Add model",
+          "noModels": "No model enabled yet. Fetch them from the provider, or add one by name."
+        },
+        "models": {
+          "caption": "Models enabled on {name}",
+          "model": "Model",
+          "context": "Context",
+          "maxOutput": "Max output",
+          "input": "In / 1M",
+          "output": "Out / 1M",
+          "actions": "Actions",
+          "tools": "Calls tools",
+          "vision": "Reads images",
+          "reasons": "Reasons",
+          "edit": "Edit {name}",
+          "delete": "Remove {name}"
+        },
+        "add": {
+          "heading": "Add provider",
+          "lead": "Popular providers, gateways and any endpoint that speaks the OpenAI API.",
+          "group": {
+            "vendors": "Vendors",
+            "gateways": "Gateways and routers",
+            "custom": "Custom"
+          },
+          "connect": "Connect",
+          "connectLabel": "Connect {name}",
+          "preset": {
+            "openai": "GPT models from OpenAI.",
+            "claude": "Claude models from Anthropic.",
+            "ninerouter": "One key routed to several vendors.",
+            "openrouter": "Hosted marketplace of models from many vendors.",
+            "compatible": "Any endpoint that speaks the OpenAI API, such as vLLM or a gateway."
+          }
+        },
+        "editor": {
+          "connectTitle": "Connect {name}",
+          "connectLead": "Test the connection, then tick the models BeyondPilot may use.",
+          "editTitle": "Edit {name}",
+          "editLead": "A change takes effect from the next call.",
+          "name": "Name",
+          "endpoint": "Endpoint URL",
+          "endpointHint": {
+            "openai": "The address of the API, usually ending in /v1. http and private addresses are accepted.",
+            "anthropic": "The address of the Anthropic API. http and private addresses are accepted."
+          },
+          "apiKey": "API key",
+          "keyHint": "Stored encrypted and never shown again.",
+          "keyKeep": "Keep the saved key",
+          "keyReplace": "Replace the key",
+          "keyRemove": "Remove the key",
+          "newKey": "New API key",
+          "keyMoved": "A saved key is only used with the address it was saved for. Enter the key again.",
+          "enabled": "Switched on",
+          "enabledHint": "Switched off, the provider keeps its key and its models, and no task can use it.",
+          "testTitle": "Test connection",
+          "testHint": "Lists the provider's models with the address and key above. No tokens are spent.",
+          "cancel": "Cancel",
+          "save": "Save provider"
+        },
+        "modelsField": {
+          "label": "Models",
+          "hint": "Read from the provider with the address and key above.",
+          "list": "List models",
+          "refresh": "Refresh",
+          "count": "{shown} of {total} models · {selected} selected",
+          "search": "Search models…",
+          "searchLabel": "Search models",
+          "configured": "Configured",
+          "select": "Select {name}",
+          "none": "The provider lists no model.",
+          "noMatch": "No matching models."
+        },
+        "fetch": {
+          "title": "Fetch models from the provider",
+          "add": "{count, plural, =0 {Add models} one {Add # model} other {Add # models}}",
+          "cancel": "Cancel"
+        },
+        "model": {
+          "addTitle": "Add a model to {name}",
+          "addLead": "For a model the provider does not list. Use the name its API expects.",
+          "editTitle": "Edit {name}",
+          "editLead": "Correct what the provider or the catalog got wrong. Prices are in US dollars per million tokens.",
+          "modelName": "Model name",
+          "displayName": "Display name",
+          "contextWindow": "Context window (tokens)",
+          "maxOutput": "Max output (tokens)",
+          "maxOutputHint": "Leave empty when unknown. It must be smaller than the context window.",
+          "inputPrice": "Input price",
+          "outputPrice": "Output price",
+          "cachedPrice": "Cached input price",
+          "capabilities": "Capabilities",
+          "toolCalling": "Calls tools",
+          "vision": "Reads images",
+          "reasoning": "Reasons, and takes a reasoning level",
+          "test": "Test model",
+          "testHint": "Asks the saved model one line. It spends a few tokens and is recorded.",
+          "testButton": "Test",
+          "testOk": "The model answered · {ms} ms",
+          "testFailed": "The model did not answer · {ms} ms",
+          "cancel": "Cancel",
+          "save": "Save model",
+          "add": "Add model"
+        },
+        "delete": {
+          "providerTitle": "Delete {name}?",
+          "providerLead": "The provider, its key and its models are deleted. A task that uses one of them stops until another model is chosen.",
+          "providerConfirm": "Delete provider",
+          "modelTitle": "Remove {name}?",
+          "modelLead": "A task that uses it stops until another model is chosen.",
+          "modelConfirm": "Remove model",
+          "cancel": "Cancel"
+        },
+        "done": {
+          "connected": "{name} connected",
+          "saved": "{name} saved",
+          "deleted": "{name} deleted",
+          "modelsAdded": "{count, plural, one {# model} other {# models}} added",
+          "modelSaved": "{name} saved",
+          "modelRemoved": "{name} removed",
+          "taskSet": "{task} uses {model} from now on"
+        },
+        "errors": {
+          "AI_PROVIDER_NOT_FOUND": "This provider no longer exists. Reload the page.",
+          "AI_PROVIDER_NAME_TAKEN": "Another provider already has this name.",
+          "AI_PROVIDER_CHANGED": "Someone changed this provider since you opened it. Reload and try again.",
+          "AI_PROVIDER_IN_USE": "This provider is in use. Choose another one where it is used first.",
+          "AI_PROVIDER_KEY_MISSING": "Enter the API key. A saved key is only used with the address it was saved for.",
+          "AI_ENCRYPTION_KEY_MISSING": "Keys cannot be saved: the server has no encryption key for them. Ask the team to add it.",
+          "AI_PROVIDER_ENDPOINT_INVALID": "The address must be an http or https URL, not link-local, without credentials, a query or a fragment.",
+          "AI_PROVIDER_ADAPTER_UNKNOWN": "BeyondPilot does not speak this provider's API.",
+          "AI_PROVIDER_CREDENTIAL_REJECTED": "The provider rejected the API key.",
+          "AI_PROVIDER_UNREACHABLE": "The provider did not answer. Check the address, or try again in a moment.",
+          "AI_PROVIDER_INCOMPATIBLE": "The address answered, but not as this API does.",
+          "AI_MODEL_NOT_FOUND": "This model no longer exists. Reload the page.",
+          "AI_MODEL_NAME_TAKEN": "This provider already has that model.",
+          "AI_MODEL_CHANGED": "Someone changed this model since you opened it. Reload and try again.",
+          "AI_MODEL_INVALID": "The max output must be smaller than the context window.",
+          "AI_MODEL_UNAVAILABLE": "This model cannot be used: its provider is switched off or has no key.",
+          "AI_TASK_UNKNOWN": "There is no such task. Reload the page.",
+          "AI_TASK_CHANGED": "Someone changed this task's model since you opened it. Reload and try again.",
+          "AI_BUSY": "Too many models are in use at once. Try again in a moment.",
+          "unknown": "Something went wrong. Try again in a moment."
+        }
       }
     },
     "searchIndex": {

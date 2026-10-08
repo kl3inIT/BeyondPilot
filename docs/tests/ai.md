@@ -22,6 +22,7 @@ Boundaries follow [conventions › Testing](../conventions.md#testing). What the
 | Shutting down closes idle clients and leaves one in use to its call | A call cut at shutdown; a client never closed | `ModelClientsTest.shuttingDownClosesIdleClientsAndLeavesOneInUseToItsCall` |
 | The provider `search` embeds with cannot be removed, and search behaves as before the move | The move to `ai` changing what Admin › AI › Embedding does | `SearchAdministrationTest`, `SearchMeaningTest` ([search matrix](search.md)) |
 | `ai` is a closed module that depends on `audit` and `identity` only | `ai` reaching into a module that calls it; a module reading its tables | `ModulithArchitectureTest` |
+| The Chat tab comes first and shows the model and level of each task, the connections with their models, and the providers that can be added; the selector groups models by provider and ends in the reasoning row; a gateway takes any address and a key typed blind; anyone but an operator gets nothing. At desktop and mobile widths, with axe | A tab that hides the task's model; a key field that shows what is typed; an address that cannot be typed for a gateway | `web/tests/e2e/admin-ai.spec.ts` |
 | The chat endpoints are in the contract | A web client generated from a stale contract | `OpenApiContractTest` |
 
 Not covered by a test, and checked by hand on staging: a call to the real OpenAI, Anthropic and 9Router APIs, which is what proves the reasoning level and the thinking budget are accepted by the models chosen.
