@@ -1008,7 +1008,11 @@
         "ai": {
           "provider_create": "Kết nối nhà cung cấp AI",
           "provider_update": "Sửa nhà cung cấp AI",
-          "provider_delete": "Xoá nhà cung cấp AI"
+          "provider_delete": "Xoá nhà cung cấp AI",
+          "model_add": "Bật một model AI",
+          "model_update": "Sửa một model AI",
+          "model_remove": "Gỡ một model AI",
+          "task_model_change": "Chọn model AI cho một tác vụ"
         },
         "search": {
           "model_change": "Đổi model embedding",
@@ -1115,7 +1119,11 @@
         "ai": {
           "provider_create": "Kết nối nhà cung cấp AI <resource></resource>",
           "provider_update": "Sửa nhà cung cấp AI <resource></resource>",
-          "provider_delete": "Xoá nhà cung cấp AI <resource></resource>"
+          "provider_delete": "Xoá nhà cung cấp AI <resource></resource>",
+          "model_add": "Bật model AI <resource></resource>",
+          "model_update": "Sửa model AI <resource></resource>",
+          "model_remove": "Gỡ model AI <resource></resource>",
+          "task_model_change": "Chọn model AI cho tác vụ <resource></resource>"
         },
         "search": {
           "model_change": "Đổi model embedding trong <resource></resource>",

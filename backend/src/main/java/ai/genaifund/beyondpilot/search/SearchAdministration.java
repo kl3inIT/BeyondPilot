@@ -7,6 +7,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.ai.AiConnection;
+import ai.genaifund.beyondpilot.ai.AiException;
+import ai.genaifund.beyondpilot.ai.AiProviderChange;
+import ai.genaifund.beyondpilot.ai.AiProviderView;
+import ai.genaifund.beyondpilot.ai.AiProviders;
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditRecord;
 import ai.genaifund.beyondpilot.audit.AuditTrail;
@@ -22,8 +27,6 @@ import ai.genaifund.beyondpilot.search.dto.SaveAiProviderRequest;
 import ai.genaifund.beyondpilot.search.dto.SearchIndexResponse;
 import ai.genaifund.beyondpilot.search.dto.SetSemanticSearchRequest;
 import ai.genaifund.beyondpilot.search.dto.TestAiProviderRequest;
-import ai.genaifund.beyondpilot.search.persistence.AiProvider;
-import ai.genaifund.beyondpilot.search.persistence.AiProviderRepository;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.KindStatus;
 import ai.genaifund.beyondpilot.search.persistence.SearchSettings;
@@ -37,12 +40,9 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
- * What operators do in Admin › AI: connect the providers search embeds with, choose its model, turn semantic search on
- * or off, and look after the index. Keys go in sealed and never come out.
- *
- * <p>
- * A saved key is kept only while the address it was given for is unchanged (Keycloak's rule, as for email): otherwise
- * an operator could point a provider, or a test, at a server of their own and receive the stored key.
+ * What operators do in Admin › AI for search: connect the providers it embeds with, choose its model, turn semantic
+ * search on or off, and look after the index. The providers and their keys are kept by the {@code ai} module; this
+ * service decides what an embedding provider's address and model may be, and words a refusal in search's own codes.
  */
 @Service
 public class SearchAdministration {
@@ -52,13 +52,11 @@ public class SearchAdministration {
 
 	private final IdentityService identity;
 
-	private final AiProviderRepository providers;
+	private final AiProviders providers;
 
 	private final SearchSettingsRepository settings;
 
 	private final SearchDocumentRepository index;
-
-	private final ProviderKeys keys;
 
 	private final OpenAiEmbeddings openAi;
 
@@ -70,14 +68,13 @@ public class SearchAdministration {
 
 	private final AuditTrail audit;
 
-	SearchAdministration(IdentityService identity, AiProviderRepository providers, SearchSettingsRepository settings,
-			SearchDocumentRepository index, ProviderKeys keys, OpenAiEmbeddings openAi, EmbeddingClients clients,
+	SearchAdministration(IdentityService identity, AiProviders providers, SearchSettingsRepository settings,
+			SearchDocumentRepository index, OpenAiEmbeddings openAi, EmbeddingClients clients,
 			SearchEmbeddings embeddings, IndexRepair repair, AuditTrail audit) {
 		this.identity = identity;
 		this.providers = providers;
 		this.settings = settings;
 		this.index = index;
-		this.keys = keys;
 		this.openAi = openAi;
 		this.clients = clients;
 		this.embeddings = embeddings;
@@ -104,19 +101,13 @@ public class SearchAdministration {
 	@Transactional
 	public AiProvidersResponse createProvider(Actor actor, SaveAiProviderRequest request) {
 		Operator operator = identity.requireOperator(actor);
-		String name = request.name().strip();
-		if (providers.existsByPurposeAndNameIgnoreCase(AiProvider.EMBEDDING, name)) {
-			throw new SearchException(SearchErrorCode.PROVIDER_NAME_TAKEN, "A provider is already named " + name);
+		String baseUrl = address(request.vendor(), request.baseUrl());
+		try {
+			providers.connect(operator, AiProviders.EMBEDDING, change(request, baseUrl));
 		}
-		if (!"replace".equals(request.key()) || blank(request.apiKey())) {
-			throw new SearchException(SearchErrorCode.PROVIDER_KEY_MISSING, "A new provider needs its key");
+		catch (AiException refused) {
+			throw worded(refused);
 		}
-		Instant now = Instant.now();
-		AiProvider provider = new AiProvider(AiProvider.EMBEDDING, operator.accountId(), operator.label(), now);
-		provider.connectWith(request.vendor(), name, address(request.vendor(), request.baseUrl()),
-				keys.seal(Objects.requireNonNull(request.apiKey()).strip()));
-		providers.saveAndFlush(provider);
-		record(AuditAction.AI_PROVIDER_CREATE, operator, provider, Map.of("vendor", request.vendor()));
 		return providersResponse();
 	}
 
@@ -129,47 +120,13 @@ public class SearchAdministration {
 	@Transactional
 	public AiProvidersResponse updateProvider(Actor actor, UUID id, SaveAiProviderRequest request) {
 		Operator operator = identity.requireOperator(actor);
-		AiProvider provider = provider(id);
-		if (provider.getVersion() != request.version()) {
-			throw new SearchException(SearchErrorCode.PROVIDER_CHANGED,
-					"Provider " + id + " read at version " + request.version() + ", now " + provider.getVersion());
-		}
-		String name = request.name().strip();
-		if (!name.equalsIgnoreCase(provider.getName())
-				&& providers.existsByPurposeAndNameIgnoreCase(AiProvider.EMBEDDING, name)) {
-			throw new SearchException(SearchErrorCode.PROVIDER_NAME_TAKEN, "A provider is already named " + name);
-		}
 		String baseUrl = address(request.vendor(), request.baseUrl());
-		byte[] key = switch (request.key()) {
-			case "replace" -> {
-				if (blank(request.apiKey())) {
-					throw new SearchException(SearchErrorCode.PROVIDER_KEY_MISSING, "Replace was asked without a key");
-				}
-				yield keys.seal(Objects.requireNonNull(request.apiKey()).strip());
-			}
-			case "remove" -> null;
-			default -> {
-				if (!baseUrl.equals(provider.getBaseUrl()) && provider.getApiKey() != null) {
-					throw new SearchException(SearchErrorCode.PROVIDER_KEY_MISSING,
-							"The address of provider " + id + " changed and its key was kept");
-				}
-				yield provider.getApiKey();
-			}
-		};
-		provider.connectWith(request.vendor(), name, baseUrl, key);
-		provider.changedBy(operator.accountId(), operator.label(), Instant.now());
 		try {
-			providers.saveAndFlush(provider);
+			providers.change(operator, AiProviders.EMBEDDING, id, change(request, baseUrl));
 		}
-		catch (ObjectOptimisticLockingFailureException raced) {
-			throw new SearchException(SearchErrorCode.PROVIDER_CHANGED, "Provider " + id + " changed while it was saved");
+		catch (AiException refused) {
+			throw worded(refused);
 		}
-		String change = switch (request.key()) {
-			case "replace" -> "replaced";
-			case "remove" -> "removed";
-			default -> "kept";
-		};
-		record(AuditAction.AI_PROVIDER_UPDATE, operator, provider, Map.of("vendor", request.vendor(), "key", change));
 		if (id.equals(settings.current().getProviderId())) {
 			changedForSearch();
 		}
@@ -184,13 +141,16 @@ public class SearchAdministration {
 	@Transactional
 	public AiProvidersResponse deleteProvider(Actor actor, UUID id) {
 		Operator operator = identity.requireOperator(actor);
-		AiProvider provider = provider(id);
-		if (id.equals(settings.current().getProviderId())) {
-			throw new SearchException(SearchErrorCode.PROVIDER_IN_USE, "Search embeds with provider " + id);
+		try {
+			providers.get(AiProviders.EMBEDDING, id);
+			if (id.equals(settings.current().getProviderId())) {
+				throw new SearchException(SearchErrorCode.PROVIDER_IN_USE, "Search embeds with provider " + id);
+			}
+			providers.remove(operator, AiProviders.EMBEDDING, id);
 		}
-		providers.delete(provider);
-		providers.flush();
-		record(AuditAction.AI_PROVIDER_DELETE, operator, provider, Map.of());
+		catch (AiException refused) {
+			throw worded(refused);
+		}
 		return providersResponse();
 	}
 
@@ -205,8 +165,14 @@ public class SearchAdministration {
 		identity.requireOperator(actor);
 		String baseUrl = address(request.vendor(), request.baseUrl());
 		String model = model(request.vendor(), request.model());
-		String key = blank(request.apiKey()) ? savedKey(request.providerId(), baseUrl)
-				: Objects.requireNonNull(request.apiKey()).strip();
+		String key;
+		try {
+			key = blank(request.apiKey()) ? providers.savedKey(AiProviders.EMBEDDING, request.providerId(), baseUrl)
+					: Objects.requireNonNull(request.apiKey()).strip();
+		}
+		catch (AiException refused) {
+			throw worded(refused);
+		}
 		OpenAiEmbeddings.Probe probe = openAi.probe(baseUrl, key, model);
 		return new AiProviderTestResponse(probe.ok(), probe.model(), probe.dimensions(), probe.latencyMs(),
 				probe.reason());
@@ -226,18 +192,24 @@ public class SearchAdministration {
 		if (row.getVersion() != request.version()) {
 			throw changed(request.version(), row.getVersion());
 		}
-		AiProvider provider = provider(request.providerId());
-		String model = model(provider.getVendor(), request.model());
-		String key = keys.open(provider.getApiKey())
+		AiProviderView provider;
+		try {
+			provider = providers.get(AiProviders.EMBEDDING, request.providerId());
+		}
+		catch (AiException refused) {
+			throw worded(refused);
+		}
+		String model = model(Objects.requireNonNull(provider.vendor()), request.model());
+		AiConnection connection = providers.connection(AiProviders.EMBEDDING, provider.id())
 			.orElseThrow(() -> new SearchException(SearchErrorCode.PROVIDER_KEY_MISSING,
-					"Provider " + provider.getId() + " has no key that can be read"));
-		OpenAiEmbeddings.Probe probe = openAi.probe(provider.getBaseUrl(), key, model);
+					"Provider " + provider.id() + " has no key that can be read"));
+		OpenAiEmbeddings.Probe probe = openAi.probe(connection.baseUrl(), connection.apiKey(), model);
 		if (!probe.ok()) {
 			throw new SearchException(SearchErrorCode.MODEL_REJECTED,
-					"Provider " + provider.getId() + " did not embed with " + model + ": " + probe.reason());
+					"Provider " + provider.id() + " did not embed with " + model + ": " + probe.reason());
 		}
 		Instant now = Instant.now();
-		row.embedWith(provider.getId(), model, now);
+		row.embedWith(provider.id(), model, now);
 		row.changedBy(operator.accountId(), operator.label(), now);
 		saveSettings(row, request.version());
 		audit.record(new AuditRecord(AuditAction.SEARCH_MODEL_CHANGE, actorOf(operator),
@@ -328,23 +300,23 @@ public class SearchAdministration {
 
 	private AiProvidersResponse providersResponse() {
 		SearchSettings row = settings();
-		List<AiProvider> all = providers.findByPurposeOrderByName(AiProvider.EMBEDDING);
+		List<AiProviderView> all = providers.list(AiProviders.EMBEDDING);
 		AiProvidersResponse.EmbeddingModel inUse = null;
 		if (row.getProviderId() != null && row.getModel() != null) {
 			String model = row.getModel();
-			AiProvider provider = all.stream().filter(p -> p.getId().equals(row.getProviderId())).findFirst().orElse(null);
+			AiProviderView provider = all.stream().filter(p -> p.id().equals(row.getProviderId())).findFirst().orElse(null);
 			List<KindStatus> status = index.status(model);
 			inUse = provider == null ? null
-					: new AiProvidersResponse.EmbeddingModel(provider.getId(), provider.getName(), model,
+					: new AiProvidersResponse.EmbeddingModel(provider.id(), provider.name(), model,
 							EmbeddingVendor.DIMENSIONS, row.getModelSince(),
 							status.stream().mapToLong(KindStatus::embedded).sum(),
 							status.stream().mapToLong(KindStatus::total).sum());
 		}
-		return new AiProvidersResponse(keys.open(),
+		return new AiProvidersResponse(providers.keysCanBeStored(),
 				inUse, all.stream()
-					.map(p -> new AiProvidersResponse.Provider(p.getId(), p.getVendor(), p.getName(), p.getBaseUrl(),
-							p.getApiKey() != null, p.getId().equals(row.getProviderId()), p.getUpdatedByLabel(),
-							p.getUpdatedAt(), p.getVersion()))
+					.map(p -> new AiProvidersResponse.Provider(p.id(), Objects.requireNonNull(p.vendor()), p.name(),
+							p.baseUrl(), p.hasKey(),
+							p.id().equals(row.getProviderId()), p.updatedBy(), p.updatedAt(), p.version()))
 					.toList(),
 				Arrays.stream(EmbeddingVendor.values())
 					.map(v -> new AiProvidersResponse.Vendor(v.id(), v.baseUrl(), v.models()))
@@ -378,25 +350,31 @@ public class SearchAdministration {
 				row.getVersion());
 	}
 
-	/** The saved key of a provider, for the address it was given for only. */
-	private String savedKey(@Nullable UUID providerId, String baseUrl) {
-		if (providerId == null) {
-			throw new SearchException(SearchErrorCode.PROVIDER_KEY_MISSING, "A test without a key names no provider");
-		}
-		AiProvider provider = provider(providerId);
-		if (!provider.getBaseUrl().equals(baseUrl)) {
-			throw new SearchException(SearchErrorCode.PROVIDER_KEY_MISSING,
-					"The saved key of provider " + providerId + " is not sent to another address");
-		}
-		return keys.open(provider.getApiKey())
-			.orElseThrow(() -> new SearchException(SearchErrorCode.PROVIDER_KEY_MISSING,
-					"Provider " + providerId + " has no key that can be read"));
+	/** A provider as the editor holds it, with the address already checked. */
+	private static AiProviderChange change(SaveAiProviderRequest request, String baseUrl) {
+		AiProviderChange.Key key = switch (request.key()) {
+			case "replace" -> AiProviderChange.Key.REPLACE;
+			case "remove" -> AiProviderChange.Key.REMOVE;
+			default -> AiProviderChange.Key.KEEP;
+		};
+		// Both embedding vendors speak the OpenAI API.
+		return new AiProviderChange(request.vendor(), "openai", request.name(), baseUrl, true, key, request.apiKey(),
+				request.version());
 	}
 
-	private AiProvider provider(UUID id) {
-		return providers.findById(id)
-			.filter(p -> AiProvider.EMBEDDING.equals(p.getPurpose()))
-			.orElseThrow(() -> new SearchException(SearchErrorCode.PROVIDER_NOT_FOUND, "No provider " + id));
+	/** A refusal of the ai module, in the code the Embedding tab has always answered with. */
+	private static SearchException worded(AiException refused) {
+		SearchErrorCode code = switch (refused.errorCode()) {
+			case PROVIDER_NOT_FOUND -> SearchErrorCode.PROVIDER_NOT_FOUND;
+			case PROVIDER_NAME_TAKEN -> SearchErrorCode.PROVIDER_NAME_TAKEN;
+			case PROVIDER_CHANGED -> SearchErrorCode.PROVIDER_CHANGED;
+			case PROVIDER_IN_USE -> SearchErrorCode.PROVIDER_IN_USE;
+			case PROVIDER_KEY_MISSING -> SearchErrorCode.PROVIDER_KEY_MISSING;
+			case ENCRYPTION_KEY_MISSING -> SearchErrorCode.ENCRYPTION_KEY_MISSING;
+			// The others concern chat providers, models and tasks, which search never asks for.
+			default -> throw refused;
+		};
+		return new SearchException(code, Objects.requireNonNullElse(refused.getMessage(), code.message()));
 	}
 
 	private SearchSettings settings() {
@@ -411,11 +389,6 @@ public class SearchAdministration {
 		catch (ObjectOptimisticLockingFailureException raced) {
 			throw changed(read, row.getVersion());
 		}
-	}
-
-	private void record(AuditAction action, Operator operator, AiProvider provider, Map<String, String> details) {
-		audit.record(new AuditRecord(action, actorOf(operator),
-				new AuditRecord.Resource("ai_provider", provider.getId().toString(), provider.getName()), details));
 	}
 
 	private static AuditRecord.Actor actorOf(Operator operator) {

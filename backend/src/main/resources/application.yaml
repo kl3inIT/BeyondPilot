@@ -111,11 +111,12 @@ beyondpilot:
       bucket: ${BEYONDPILOT_STORAGE_S3_BUCKET:}
       region: ${BEYONDPILOT_STORAGE_S3_REGION:}
       endpoint: ${BEYONDPILOT_STORAGE_S3_ENDPOINT:}
+  ai:
+    # 32 bytes in Base64 that encrypt the AI providers' keys in the database. Without it no key can be saved, and
+    # search goes by keywords alone.
+    encryption-key: ${BEYONDPILOT_AI_ENCRYPTION_KEY:}
   search:
     embedding:
-      # 32 bytes in Base64 that encrypt the AI providers' keys in the database. Without it no key can be saved, and
-      # search goes by keywords alone.
-      encryption-key: ${BEYONDPILOT_AI_ENCRYPTION_KEY:}
       # How many rows one request embeds, and how often the job looks for rows to embed.
       batch-size: 32
       interval: 1m
