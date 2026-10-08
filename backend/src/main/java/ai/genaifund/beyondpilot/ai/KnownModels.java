@@ -17,8 +17,9 @@ import tools.jackson.databind.json.JsonMapper;
 
 /**
  * What is publicly known about models by name: limits, capabilities and prices, from the list bundled at
- * {@code ai/known-models.json} (MemoryOS's, taken from LiteLLM's public price list). It fills what a provider's own
- * list leaves out: OpenAI names its models only, and Anthropic and 9Router publish no price.
+ * {@code ai/known-models.json} (built from LiteLLM's public price list by
+ * {@code backend/scripts/sync-known-models.mjs}). It fills what a provider's own list leaves out: OpenAI names its
+ * models only, and Anthropic and 9Router publish no price.
  */
 @Component
 class KnownModels {
