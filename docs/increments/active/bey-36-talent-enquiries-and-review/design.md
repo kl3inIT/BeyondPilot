@@ -44,6 +44,7 @@ The new edges are `talent → organization` and `talent → storage`. Neither mo
 13. **The photo is the person's own upload.** It is a public file of the purpose `talent_photo`, at most 2 MB, named by one profile. A photo the profile no longer names, or the photo of a deleted profile, is removed from the store.
 14. **A message is signed with a name.** The sender gives the name the person reads (`V22__talent_enquiry_sender_name.sql`); an account without a name of its own would otherwise reach the person as "someone", and an acceptance would hand an address to a stranger.
 15. **Buyers find people by industry and by the words of a project.** The directory filters by industry, and its search reads project titles as well as names, headlines and skills.
+16. **The roles hold plain ones beside the AI specialisms, and `other` carries no text.** On 8 October 2026 (BEY-91) `software_engineer`, `solution_architect`, `researcher`, `founder` and `student` joined the ten roles: the builders GenAI Fund's events bring are mostly these, and under the ten every one of them was `other` ([research](../../../research/2026-10-08-talent-roles.md)). What a person calls themselves stays in the headline; a role is only what the directory filters by. The chips gain Software engineer; the other new roles are reached by search. The column takes any code, so no migration was needed.
 
 ## HTTP
 
