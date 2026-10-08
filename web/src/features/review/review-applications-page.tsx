@@ -9,6 +9,7 @@ import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { ReviewApplicationItem, ReviewApplications } from "@/lib/api/generated";
 import { adminProgramReleaseRoute } from "@/lib/site";
 
+import { ExportApplications } from "./export-applications";
 import { narrowApplications, type ReviewSearch } from "./review-search";
 import { ReviewTable, type ReviewRow } from "./review-table";
 import { ReviewToolbar } from "./review-toolbar";
@@ -25,7 +26,8 @@ type ReviewApplicationsPageProps = {
 /**
  * A program's submitted applications to review, the earliest first. An operator reads GenAI Fund's
  * decisions and every judge's average and decides on several at once; a judge reads their own
- * scores. Drafts and withdrawn applications are counted under the list, never listed.
+ * scores. Drafts and withdrawn applications are counted under the list, never listed. An operator
+ * downloads the applications the list shows, and reads under it how many have a score.
  */
 function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplicationsPageProps) {
   const t = useTranslations("Review.list");
@@ -108,12 +110,20 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
           </p>
         </div>
         {head.operator && (
-          <Button
-            prominence={head.releasedAt ? "secondary" : "primary"}
-            href={adminProgramReleaseRoute(head.programId)}
-          >
-            {head.releasedAt ? t("seeRelease") : t("release")}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <ExportApplications
+              programId={head.programId}
+              slug={head.slug}
+              applicationIds={narrowed ? shown.map((item) => item.id) : null}
+              disabled={shown.length === 0}
+            />
+            <Button
+              prominence={head.releasedAt ? "secondary" : "primary"}
+              href={adminProgramReleaseRoute(head.programId)}
+            >
+              {head.releasedAt ? t("seeRelease") : t("release")}
+            </Button>
+          </div>
         )}
       </div>
       {tabs}
@@ -154,6 +164,12 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
       )}
       <p className="text-sm text-muted-foreground">
         {t("footer", { shown: rows.length, drafts: data.drafts, withdrawn: data.withdrawn })}
+        {head.operator &&
+          data.items.length > 0 &&
+          ` · ${t("footerScored", {
+            scored: data.items.filter((item) => (item.scored ?? 0) > 0).length,
+            total: data.items.length,
+          })}`}
       </p>
     </div>
   );

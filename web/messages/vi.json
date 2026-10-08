@@ -984,7 +984,8 @@
           "reviewer_remove": "Gỡ giám khảo",
           "decide": "Quyết định một đơn",
           "release": "Công bố kết quả",
-          "file_open": "Mở một file của đơn nộp"
+          "file_open": "Mở một file của đơn nộp",
+          "export": "Tải danh sách đơn nộp"
         },
         "use_case": {
           "create": "Tạo một use case",
@@ -1094,7 +1095,8 @@
           "reviewer_remove": "Gỡ một giám khảo khỏi <resource></resource>",
           "decide": "Quyết định một đơn nộp vào <resource></resource>",
           "release": "Công bố kết quả của <resource></resource>",
-          "file_open": "Mở một file của một đơn nộp vào <resource></resource>"
+          "file_open": "Mở một file của một đơn nộp vào <resource></resource>",
+          "export": "Tải danh sách đơn nộp vào <resource></resource>"
         },
         "use_case": {
           "create": "Đã tạo use case <resource></resource>",
@@ -5341,6 +5343,9 @@
         "description": "Các đơn đã nộp sẽ hiện ở đây. Bản nháp không bao giờ được liệt kê."
       },
       "footer": "{shown} đơn · {drafts} bản nháp chưa nộp · {withdrawn} đơn đã rút",
+      "footerScored": "{scored}/{total} đơn đã có điểm",
+      "download": "Tải về (CSV)",
+      "downloadFailed": "Chưa tải được danh sách đơn. Hãy thử lại.",
       "own": "Của bạn"
     },
     "application": {

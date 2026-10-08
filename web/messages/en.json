@@ -984,7 +984,8 @@
           "reviewer_remove": "Removed a judge",
           "decide": "Decided on an application",
           "release": "Released the outcomes",
-          "file_open": "Opened a file of an application"
+          "file_open": "Opened a file of an application",
+          "export": "Downloaded the applications"
         },
         "use_case": {
           "create": "Created a use case",
@@ -1094,7 +1095,8 @@
           "reviewer_remove": "Removed a judge from <resource></resource>",
           "decide": "Decided on an application to <resource></resource>",
           "release": "Released the outcomes of <resource></resource>",
-          "file_open": "Opened a file of an application to <resource></resource>"
+          "file_open": "Opened a file of an application to <resource></resource>",
+          "export": "Downloaded the applications to <resource></resource>"
         },
         "use_case": {
           "create": "Created the use case <resource></resource>",
@@ -5341,6 +5343,9 @@
         "description": "Submitted applications appear here. Drafts are never listed."
       },
       "footer": "{shown, plural, one {# application} other {# applications}} · {drafts, plural, one {# draft was} other {# drafts were}} not submitted · {withdrawn} withdrawn",
+      "footerScored": "{scored} of {total} scored",
+      "download": "Download (CSV)",
+      "downloadFailed": "We could not download the applications. Try again.",
       "own": "Yours"
     },
     "application": {

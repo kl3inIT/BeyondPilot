@@ -58,6 +58,7 @@ export const auditActions = [
   "proposal.decide",
   "proposal.release",
   "proposal.file_open",
+  "proposal.export",
   "email.settings_update",
   "email.appearance_update",
   "email.template_update",
