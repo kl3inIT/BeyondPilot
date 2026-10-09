@@ -24,7 +24,8 @@ public record OcrSettingsResponse(
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean enabled,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean hasKey,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Whether it is the reader.") boolean inUse,
-			@Schema(types = { "number", "null" }, description = "What 1,000 calls cost, in US dollars; null is unknown.") @Nullable BigDecimal pricePerThousandCalls,
+			@Schema(types = { "number", "null" }, description = "What 1,000 calls cost, in US dollars, in effect: the operator's where they set one, else the bundled catalog's; null is unknown.") @Nullable BigDecimal pricePerThousandCalls,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Whether the price is the catalog's, which the provider follows until an operator sets its own. Saving the same price, or none, keeps it following.") boolean priceFromCatalog,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Who saved it last, as they were named.") String updatedBy,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Send it back with a change; a change made meanwhile is refused.") long version) {

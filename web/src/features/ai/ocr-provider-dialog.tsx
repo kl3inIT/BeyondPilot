@@ -67,7 +67,7 @@ type OcrProviderDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** What to connect; ignored when a provider is given. */
-  preset: Pick<OcrPreset, "name" | "adapterType" | "baseUrl" | "pricePerThousandCalls">;
+  preset: Pick<OcrPreset, "name" | "adapterType" | "baseUrl">;
   /** The provider to change; none to connect a new one. */
   provider?: OcrProvider;
 };
@@ -89,9 +89,7 @@ function OcrProviderDialog({ open, onOpenChange, preset, provider }: OcrProvider
     provider?.hasKey ? "keep" : "replace",
   );
   const [apiKey, setApiKey] = useState("");
-  const [price, setPrice] = useState<string>(
-    String((provider ? provider.pricePerThousandCalls : preset.pricePerThousandCalls) ?? ""),
-  );
+  const [price, setPrice] = useState<string>(String(provider?.pricePerThousandCalls ?? ""));
   const [enabled, setEnabled] = useState(provider?.enabled ?? true);
   const [result, setResult] = useState<OcrProviderTest | null>(null);
   const [testing, setTesting] = useState(false);
@@ -266,7 +264,11 @@ function OcrProviderDialog({ open, onOpenChange, preset, provider }: OcrProvider
                 value={price}
                 onChange={(event) => setPrice(event.target.value)}
               />
-              <FieldDescription>{t("priceHint")}</FieldDescription>
+              <FieldDescription>
+                {provider && !provider.priceFromCatalog && provider.pricePerThousandCalls != null
+                  ? t("priceOwn")
+                  : t("priceHint")}
+              </FieldDescription>
             </Field>
             {editing && (
               <Field orientation="horizontal">

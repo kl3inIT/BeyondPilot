@@ -10973,8 +10973,9 @@ components:
       - role
     ChatModel:
       type: object
-      description: A model an operator enabled. Prices are US dollars per million
-        tokens; null is unknown.
+      description: "A model an operator enabled. Prices are US dollars per million\
+        \ tokens, those in effect: the operator's where they set them, else the bundled\
+        \ catalog's; null is unknown."
       properties:
         cachedInputPrice:
           type:
@@ -11003,6 +11004,11 @@ components:
           type:
           - number
           - "null"
+        priceFromCatalog:
+          type: boolean
+          description: "Whether the prices are the catalog's, which the model follows\
+            \ until an operator sets its own. Saving the same prices, or none, keeps\
+            \ it following."
         reasoning:
           type: boolean
         toolCalling:
@@ -11017,6 +11023,7 @@ components:
       - displayName
       - id
       - modelName
+      - priceFromCatalog
       - reasoning
       - toolCalling
       - version
@@ -13778,11 +13785,17 @@ components:
           description: Whether it is the reader.
         name:
           type: string
+        priceFromCatalog:
+          type: boolean
+          description: "Whether the price is the catalog's, which the provider follows\
+            \ until an operator sets its own. Saving the same price, or none, keeps\
+            \ it following."
         pricePerThousandCalls:
           type:
           - number
           - "null"
-          description: "What 1,000 calls cost, in US dollars; null is unknown."
+          description: "What 1,000 calls cost, in US dollars, in effect: the operator's\
+            \ where they set one, else the bundled catalog's; null is unknown."
         updatedAt:
           type: string
           format: date-time
@@ -13801,6 +13814,7 @@ components:
       - id
       - inUse
       - name
+      - priceFromCatalog
       - updatedAt
       - updatedBy
       - version

@@ -72,11 +72,14 @@ public class AiAdministration {
 
 	private final AiModels chatModels;
 
+	private final Prices prices;
+
 	private final AuditTrail audit;
 
 	AiAdministration(IdentityService identity, AiProviders providers, AiModelRepository models,
 			AiTaskModelRepository tasks, ChatAdapterRegistry adapters, KnownModels known, AiSettings settings,
-			AiModels chatModels, AuditTrail audit) {
+			AiModels chatModels, Prices prices, AuditTrail audit) {
+		this.prices = prices;
 		this.identity = identity;
 		this.providers = providers;
 		this.models = models;
@@ -355,10 +358,7 @@ public class AiAdministration {
 					own.stream().anyMatch(m -> chosen.contains(m.getId())), provider.updatedBy(), provider.updatedAt(),
 					provider.version(),
 					own.stream()
-						.map(m -> new ChatSettingsResponse.Model(m.getId(), m.getModelName(), m.getDisplayName(),
-								m.getContextWindow(), m.getMaxOutputTokens(), m.isToolCalling(), m.isVision(),
-								m.isReasoning(), m.getInputPrice(), m.getOutputPrice(), m.getCachedInputPrice(),
-								m.getVersion()))
+						.map(m -> shown(m, prices.of(m)))
 						.toList()));
 		}
 		List<ChatSettingsResponse.Task> taskRows = new ArrayList<>();
@@ -411,7 +411,14 @@ public class AiAdministration {
 		return models.findById(id).orElseThrow(() -> new AiException(AiErrorCode.MODEL_NOT_FOUND, "No model " + id));
 	}
 
-	private static void describe(AiModel model, SaveChatModelRequest request) {
+	private static ChatSettingsResponse.Model shown(AiModel model, Prices.OfModel price) {
+		return new ChatSettingsResponse.Model(model.getId(), model.getModelName(), model.getDisplayName(),
+				model.getContextWindow(), model.getMaxOutputTokens(), model.isToolCalling(), model.isVision(),
+				model.isReasoning(), price.input(), price.output(), price.cachedInput(), price.fromCatalog(),
+				model.getVersion());
+	}
+
+	private void describe(AiModel model, SaveChatModelRequest request) {
 		Integer output = request.maxOutputTokens();
 		if (output != null && output >= request.contextWindow()) {
 			throw new AiException(AiErrorCode.MODEL_INVALID, "An answer limit of " + output
@@ -419,8 +426,11 @@ public class AiAdministration {
 		}
 		String shown = request.displayName() == null || request.displayName().isBlank() ? request.modelName().strip()
 				: request.displayName().strip();
+		// Prices that are the catalog's are not kept: the model then follows the catalog.
+		Prices.OfModel kept = prices.toKeep(model.getModelName(), request.inputPrice(), request.outputPrice(),
+				request.cachedInputPrice());
 		model.describe(shown, request.contextWindow(), output, request.toolCalling(), request.vision(),
-				request.reasoning(), request.inputPrice(), request.outputPrice(), request.cachedInputPrice());
+				request.reasoning(), kept.input(), kept.output(), kept.cachedInput());
 	}
 
 	private void record(AuditAction action, Operator operator, AiModel model, String provider) {

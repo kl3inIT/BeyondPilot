@@ -936,7 +936,7 @@ export type ChangeMemberRole = {
 };
 
 /**
- * A model an operator enabled. Prices are US dollars per million tokens; null is unknown.
+ * A model an operator enabled. Prices are US dollars per million tokens, those in effect: the operator's where they set them, else the bundled catalog's; null is unknown.
  */
 export type ChatModel = {
     cachedInputPrice?: number | null;
@@ -947,6 +947,10 @@ export type ChatModel = {
     maxOutputTokens?: number | null;
     modelName: string;
     outputPrice?: number | null;
+    /**
+     * Whether the prices are the catalog's, which the model follows until an operator sets its own. Saving the same prices, or none, keeps it following.
+     */
+    priceFromCatalog: boolean;
     reasoning: boolean;
     toolCalling: boolean;
     version: number;
@@ -2434,7 +2438,11 @@ export type OcrProvider = {
     inUse: boolean;
     name: string;
     /**
-     * What 1,000 calls cost, in US dollars; null is unknown.
+     * Whether the price is the catalog's, which the provider follows until an operator sets its own. Saving the same price, or none, keeps it following.
+     */
+    priceFromCatalog: boolean;
+    /**
+     * What 1,000 calls cost, in US dollars, in effect: the operator's where they set one, else the bundled catalog's; null is unknown.
      */
     pricePerThousandCalls?: number | null;
     updatedAt: string;

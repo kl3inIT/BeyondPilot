@@ -45,8 +45,11 @@ public class AiModels {
 
 	private final ModelClients clients;
 
+	private final Prices prices;
+
 	AiModels(AiTaskModelRepository tasks, AiModelRepository models, AiProviders providers, ChatAdapterRegistry adapters,
-			AiUsageRepository usage, AiSettings settings, TransactionTemplate transactions) {
+			AiUsageRepository usage, AiSettings settings, TransactionTemplate transactions, Prices prices) {
+		this.prices = prices;
 		this.tasks = tasks;
 		this.models = models;
 		this.providers = providers;
@@ -120,10 +123,11 @@ public class AiModels {
 		if (!provider.enabled() || connection == null) {
 			return null;
 		}
+		Prices.OfModel price = prices.of(model);
 		return new Resolved(model.getId(), model.getModelName(), model.getMaxOutputTokens(),
 				effort != null && model.isReasoning(), effort == null ? ReasoningEffort.OFF : effort, provider.id(), provider.name(), connection.adapterType(),
 				connection.baseUrl(), connection.apiKey(), provider.version() + ":" + model.getVersion(),
-				model.getInputPrice(), model.getOutputPrice(), model.getCachedInputPrice());
+				price.input(), price.output(), price.cachedInput());
 	}
 
 	private ChatModel connect(Resolved resolved) {
