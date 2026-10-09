@@ -136,7 +136,12 @@ function MergeDialog({ organization, members, invitations, onClose }: MergeDialo
                 itemToStringLabel={(item: Kept) => item.name}
                 isItemEqualToValue={(item: Kept, other: Kept) => item.id === other.id}
               >
-                <ComboboxInput id={keepId} className="w-full" placeholder={t("keepPlaceholder")} />
+                <ComboboxInput
+                  id={keepId}
+                  className="w-full"
+                  placeholder={t("keepPlaceholder")}
+                  showTrigger={false}
+                />
                 <ComboboxContent>
                   <ComboboxEmpty>{t("noMatch")}</ComboboxEmpty>
                   <ComboboxList aria-label={t("keep")}>
