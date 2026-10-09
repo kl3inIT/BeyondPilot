@@ -27,17 +27,25 @@ class SolutionIndexing {
 
 	private final SearchDocumentRepository index;
 
-	SolutionIndexing(SolutionDirectory solutions, SearchDocumentRepository index) {
+	private final SolutionPassages passages;
+
+	SolutionIndexing(SolutionDirectory solutions, SearchDocumentRepository index, SolutionPassages passages) {
 		this.solutions = solutions;
 		this.index = index;
+		this.passages = passages;
 	}
 
 	@ApplicationModuleListener
 	void on(SolutionChanged changed) {
 		UUID id = changed.solutionId();
-		solutions.indexed(id)
-			.ifPresentOrElse(solution -> index.save(document(solution)),
-					() -> index.remove(SearchDocumentRepository.SOLUTION, id));
+		solutions.indexed(id).ifPresentOrElse(solution -> {
+			index.save(document(solution));
+			// Its deck is read by the job, which finds a new file by itself.
+			passages.casesOf(id, solution.name());
+		}, () -> {
+			index.remove(SearchDocumentRepository.SOLUTION, id);
+			passages.forget(id);
+		});
 	}
 
 	/** Writes again what the organization's solutions show of it, and takes them out while it is not approved. */
@@ -56,6 +64,7 @@ class SolutionIndexing {
 	Rebuilt rebuild() {
 		List<IndexedSolution> approved = solutions.indexedAll();
 		approved.forEach(solution -> index.save(document(solution)));
+		approved.forEach(solution -> passages.casesOf(solution.id(), solution.name()));
 		int removed = index.removeAllExcept(SearchDocumentRepository.SOLUTION,
 				approved.stream().map(IndexedSolution::id).toList());
 		return new Rebuilt(approved.size(), removed);

@@ -76,6 +76,9 @@ class AiAdministrationTest {
 	@Autowired
 	private AiModels models;
 
+	@Autowired
+	private DocumentPages documents;
+
 	private RestTestClient client;
 
 	private String operator;
@@ -348,6 +351,39 @@ class AiAdministrationTest {
 
 	private static Map<String, Object> listedModel(String listed, String name) {
 		return JsonPath.<List<Map<String, Object>>>read(listed, "$.models[?(@.modelName=='" + name + "')]").getFirst();
+	}
+
+	@Test
+	void readingDocumentsTakesOnlyAModelThatReadsImagesAndSendsEachPageAsAPicture() throws IOException {
+		String connected = body(send("POST", operator, API + "/providers", provider("Gateway", "openai", url("/v1"), GOOD_KEY))
+			.expectStatus()
+			.isOk());
+		String id = JsonPath.read(connected, "$.providers[0].id");
+		Map<String, Object> seeing = model("gpt-5", 272000, 128000, 0);
+		seeing.put("vision", true);
+		String added = body(send("POST", operator, API + "/providers/" + id + "/models",
+				Map.of("models", List.of(model("gpt-5-mini", 272000, 128000, 0), seeing)))
+			.expectStatus()
+			.isOk());
+		String blind = JsonPath.<List<String>>read(added, "$.providers[0].models[?(@.modelName=='gpt-5-mini')].id").getFirst();
+		String sees = JsonPath.<List<String>>read(added, "$.providers[0].models[?(@.modelName=='gpt-5')].id").getFirst();
+		int version = JsonPath.<List<Integer>>read(added, "$.tasks[?(@.task=='document_reading')].version").getFirst();
+		assertThat(documents.readsPictures()).isFalse();
+
+		assertProblem(send("PUT", operator, API + "/tasks/document_reading", task(blind, "low", version)), 400,
+				"AI_MODEL_WITHOUT_VISION");
+		send("PUT", operator, API + "/tasks/document_reading", task(sees, "low", version)).expectStatus().isOk();
+		assertThat(documents.readsPictures()).isTrue();
+
+		byte[] pdf = ai.genaifund.beyondpilot.TestPdf.of("A slide", "");
+		Map<Integer, String> read = documents.readPictures(() -> new java.io.ByteArrayInputStream(pdf), List.of(2),
+				new AiSubject("solution_deck", "s-1"));
+
+		assertThat(read).containsExactly(Map.entry(2, "OK"));
+		String sent = asked.stream().filter(line -> line.startsWith("POST /v1/chat/completions")).findFirst().orElseThrow();
+		assertThat(sent).contains("\"model\":\"gpt-5\"", "image_url", "data:image/png;base64,");
+		assertThat(jdbc.sql("select task || ' ' || subject_type from ai_usage").query(String.class).single())
+			.isEqualTo("document_reading solution_deck");
 	}
 
 	@Test

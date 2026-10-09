@@ -46,7 +46,7 @@ public record ChatSettingsResponse(
 	}
 
 	@Schema(name = "ChatTask", description = "A task and the model it uses.")
-	public record Task(@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "matching" }) String task,
+	public record Task(@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "matching", "document_reading" }) String task,
 			@Schema(types = { "string", "null" }, format = "uuid", description = "The model; null until an operator chooses one, and after its model is removed.") @Nullable UUID modelId,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "off", "low", "medium", "high" },
 					description = "How hard the task reasons, on a model that does; the task's own default until an operator sets one.") String reasoningEffort,

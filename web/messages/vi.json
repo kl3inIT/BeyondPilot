@@ -2022,10 +2022,12 @@
           "heading": "Model theo tác vụ",
           "lead": "Model mỗi tác vụ dùng. Lựa chọn được lưu ngay.",
           "name": {
-            "matching": "Ghép nối"
+            "matching": "Ghép nối",
+            "document_reading": "Đọc tài liệu"
           },
           "about": {
-            "matching": "Xét giải pháp nào hợp với một use case, theo từng nhu cầu, kèm trích dẫn cho mỗi nhu cầu."
+            "matching": "Xét giải pháp nào hợp với một use case, theo từng nhu cầu, kèm trích dẫn cho mỗi nhu cầu.",
+            "document_reading": "Chép lại chữ của một trang chỉ có ảnh, như một slide của deck. Cần model đọc được ảnh."
           },
           "unset": "Chưa chọn model; tác vụ này không chạy cho đến khi chọn.",
           "unavailable": "Provider của model đang tắt hoặc không có key; tác vụ này không chạy.",
@@ -2209,6 +2211,7 @@
           "AI_MODEL_CHANGED": "Có người đã sửa model này từ lúc bạn mở. Tải lại rồi thử lại.",
           "AI_MODEL_INVALID": "Output tối đa phải nhỏ hơn context window.",
           "AI_MODEL_UNAVAILABLE": "Không dùng được model này: provider của nó đang tắt hoặc không có key.",
+          "AI_MODEL_WITHOUT_VISION": "Tác vụ này cần model đọc được ảnh.",
           "AI_TASK_UNKNOWN": "Không có tác vụ này. Hãy tải lại trang.",
           "AI_TASK_CHANGED": "Có người đã đổi model của tác vụ này từ lúc bạn mở. Tải lại rồi thử lại.",
           "AI_BUSY": "Đang có quá nhiều model được dùng cùng lúc. Thử lại sau ít phút.",

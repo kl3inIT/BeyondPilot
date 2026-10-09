@@ -36,6 +36,7 @@ import ai.genaifund.beyondpilot.storage.persistence.StorageFileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -196,6 +197,19 @@ public class StorageService {
 	@Transactional(readOnly = true)
 	public FileDownload download(UUID id) {
 		return download(files.findById(id).filter(StorageFile::isStored).orElseThrow(() -> notFound(id)), true);
+	}
+
+	/**
+	 * The bytes of a stored file, for the module that owns the record it belongs to and reads the file itself, such as
+	 * to take its text. Whatever the store, they come through the application; nothing is sent to a reader.
+	 * @throws StorageException when no stored file has this identifier
+	 */
+	@Transactional(readOnly = true)
+	public InputStreamSource content(UUID id) {
+		StorageFile file = files.findById(id).filter(StorageFile::isStored).orElseThrow(() -> notFound(id));
+		ObjectStorageAdapter adapter = adapters.adapter(file.getProvider());
+		String objectKey = file.getObjectKey();
+		return () -> adapter.open(objectKey);
 	}
 
 	/**

@@ -2022,10 +2022,12 @@
           "heading": "Models by task",
           "lead": "The model each task uses. A choice is saved at once.",
           "name": {
-            "matching": "Matching"
+            "matching": "Matching",
+            "document_reading": "Reading documents"
           },
           "about": {
-            "matching": "Judges which solutions fit a use case, need by need, with a quote for each."
+            "matching": "Judges which solutions fit a use case, need by need, with a quote for each.",
+            "document_reading": "Copies the text of a page that is only a picture, such as a slide of a deck. Needs a model that reads images."
           },
           "unset": "No model chosen; this task does not run until one is.",
           "unavailable": "Its provider is switched off or has no key; this task does not run.",
@@ -2209,6 +2211,7 @@
           "AI_MODEL_CHANGED": "Someone changed this model since you opened it. Reload and try again.",
           "AI_MODEL_INVALID": "The max output must be smaller than the context window.",
           "AI_MODEL_UNAVAILABLE": "This model cannot be used: its provider is switched off or has no key.",
+          "AI_MODEL_WITHOUT_VISION": "This task needs a model that reads images.",
           "AI_TASK_UNKNOWN": "There is no such task. Reload the page.",
           "AI_TASK_CHANGED": "Someone changed this task's model since you opened it. Reload and try again.",
           "AI_BUSY": "Too many models are in use at once. Try again in a moment.",
