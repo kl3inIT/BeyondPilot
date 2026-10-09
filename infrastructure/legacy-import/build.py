@@ -94,7 +94,7 @@ def v1_details_sql(data: records.Records) -> str:
     """Refresh only the v1 detail fields on deterministic startup rows an older load already created."""
     organizations = {organization.id: organization for organization in data.organizations}
     statements = [
-        "-- Refresh v1 startup detail fields after V56 and V57, without repeating the one-off load.",
+        "-- Refresh v1 startup detail fields after V60 and V61, without repeating the one-off load.",
         "-- This changes only the imported company-size label and solution detail columns.",
         "begin;",
     ]

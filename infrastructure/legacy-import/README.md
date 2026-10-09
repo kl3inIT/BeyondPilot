@@ -53,7 +53,7 @@ Staging first, then production, with the same `load.sql` and `files/` (the [desi
 5. **Staging only:** approve the imported organizations and approve and list every imported solution, so matching is built on real data: `python -I infrastructure/legacy-import/staging_list.py .tmp/legacy-import/out/load.sql > .tmp/legacy-import/out/staging-list.sql`, then run it with `psql -v ON_ERROR_STOP=1 -f -`. Production skips this step.
 6. Rebuild the search index from Admin › AI › Search index.
 7. Check the counts against `build.json` and the summary, and in Admin › Organizations and Solutions (In review on production, Approved on staging).
-For an environment loaded before the detail columns were added, generate the current `v1-details.sql` from the same workbook and apply it after migrations V56 and V57. It updates only the imported company-size label and startup detail fields on deterministic v1 ids, including moving `Notable Paying Customers` out of `traction` and `Key Milestones` into it. It does not rerun the duplicate-protected load or alter review status or operator backing.
+For an environment loaded before the detail columns were added, generate the current `v1-details.sql` from the same workbook and apply it after migrations V60 and V61. It updates only the imported company-size label and startup detail fields on deterministic v1 ids, including moving `Notable Paying Customers` out of `traction` and `Key Milestones` into it. It does not rerun the duplicate-protected load or alter review status or operator backing.
 
 ## Enrich
 
