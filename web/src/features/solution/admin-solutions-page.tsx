@@ -199,9 +199,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
                   >
                     {row.name}
                   </Link>
-                  <span className="truncate text-sm text-muted-foreground">
-                    {row.organization}
-                  </span>
+                  <span className="truncate text-sm text-muted-foreground">{row.organization}</span>
                 </div>
               </div>
               <RowMenu id={row.id} name={row.name} organizationId={row.organizationId} />
@@ -227,7 +225,15 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
 }
 
 /** What the ⋯ menu of one row offers: the review page, and the organization's own page. */
-function RowMenu({ id, name, organizationId }: { id: string; name: string; organizationId: string }) {
+function RowMenu({
+  id,
+  name,
+  organizationId,
+}: {
+  id: string;
+  name: string;
+  organizationId: string;
+}) {
   const t = useTranslations("Admin.solutions");
   return (
     <DropdownMenu>
