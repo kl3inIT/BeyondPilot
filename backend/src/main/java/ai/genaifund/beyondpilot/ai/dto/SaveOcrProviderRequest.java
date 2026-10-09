@@ -1,6 +1,10 @@
 package ai.genaifund.beyondpilot.ai.dto;
 
+import java.math.BigDecimal;
+
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -17,6 +21,7 @@ public record SaveOcrProviderRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "keep", "replace", "remove" },
 				description = "Keep the saved key, replace it with apiKey, or remove it. A new provider takes replace.") @NotNull @Pattern(regexp = "keep|replace|remove") String key,
 		@Schema(types = { "string", "null" }, description = "The new key, with key = replace.") @Size(max = 8192) @Nullable String apiKey,
+		@Schema(types = { "number", "null" }, description = "What 1,000 calls cost, in US dollars; null when it is not known.") @DecimalMin("0") @DecimalMax("100000") @Nullable BigDecimal pricePerThousandCalls,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The version the provider was read at; 0 for a new one.") long version) {
 
 	@Override

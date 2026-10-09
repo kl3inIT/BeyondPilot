@@ -90,6 +90,7 @@ const ocrSettings = {
       hasKey: true,
       inUse: true,
       updatedBy: "Operator",
+      pricePerThousandCalls: 1.5,
       updatedAt: "2026-10-09T03:00:00Z",
       version: 1,
     },

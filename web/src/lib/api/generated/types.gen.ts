@@ -2412,6 +2412,10 @@ export type OcrProvider = {
      */
     inUse: boolean;
     name: string;
+    /**
+     * What 1,000 calls cost, in US dollars; null is unknown.
+     */
+    pricePerThousandCalls?: number | null;
     updatedAt: string;
     /**
      * Who saved it last, as they were named.
@@ -4077,6 +4081,10 @@ export type SaveOcrProvider = {
      */
     key: 'keep' | 'replace' | 'remove';
     name: string;
+    /**
+     * What 1,000 calls cost, in US dollars; null when it is not known.
+     */
+    pricePerThousandCalls?: number | null;
     /**
      * The version the provider was read at; 0 for a new one.
      */

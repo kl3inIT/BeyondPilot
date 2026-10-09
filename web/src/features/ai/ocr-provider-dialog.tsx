@@ -67,7 +67,7 @@ type OcrProviderDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** What to connect; ignored when a provider is given. */
-  preset: Pick<OcrPreset, "name" | "adapterType" | "baseUrl">;
+  preset: Pick<OcrPreset, "name" | "adapterType" | "baseUrl" | "pricePerThousandCalls">;
   /** The provider to change; none to connect a new one. */
   provider?: OcrProvider;
 };
@@ -89,12 +89,17 @@ function OcrProviderDialog({ open, onOpenChange, preset, provider }: OcrProvider
     provider?.hasKey ? "keep" : "replace",
   );
   const [apiKey, setApiKey] = useState("");
+  const [price, setPrice] = useState<string>(
+    String((provider ? provider.pricePerThousandCalls : preset.pricePerThousandCalls) ?? ""),
+  );
   const [enabled, setEnabled] = useState(provider?.enabled ?? true);
   const [result, setResult] = useState<OcrProviderTest | null>(null);
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const address = baseUrl.trim();
+  const typedPrice = price.trim() === "" ? null : Number(price);
+  const priceInvalid = typedPrice !== null && !(typedPrice >= 0 && typedPrice <= 100000);
   const typedKey = keyAction === "replace" ? apiKey.trim() : "";
   const keyMissing = keyAction === "replace" && typedKey === "";
   // A saved key is only used with the address it was saved for, so a new address needs the key again.
@@ -148,6 +153,7 @@ function OcrProviderDialog({ open, onOpenChange, preset, provider }: OcrProvider
       enabled,
       key: keyAction,
       apiKey: typedKey || null,
+      pricePerThousandCalls: typedPrice,
       version: provider?.version ?? 0,
     };
     try {
@@ -247,6 +253,21 @@ function OcrProviderDialog({ open, onOpenChange, preset, provider }: OcrProvider
               )}
               <FieldDescription>{keyMoved ? t("keyMoved") : t("keyHint")}</FieldDescription>
             </Field>
+            <Field>
+              <FieldLabel htmlFor={`${id}-price`}>{t("price")}</FieldLabel>
+              <Input
+                id={`${id}-price`}
+                type="number"
+                inputMode="decimal"
+                min={0}
+                max={100000}
+                step="any"
+                aria-invalid={priceInvalid || undefined}
+                value={price}
+                onChange={(event) => setPrice(event.target.value)}
+              />
+              <FieldDescription>{t("priceHint")}</FieldDescription>
+            </Field>
             {editing && (
               <Field orientation="horizontal">
                 <Switch id={`${id}-enabled`} checked={enabled} onCheckedChange={setEnabled} />
@@ -286,7 +307,9 @@ function OcrProviderDialog({ open, onOpenChange, preset, provider }: OcrProvider
             <Button
               type="submit"
               pending={saving}
-              disabled={keyMissing || keyMoved || name.trim() === "" || address === ""}
+              disabled={
+                keyMissing || keyMoved || priceInvalid || name.trim() === "" || address === ""
+              }
             >
               {t("save")}
             </Button>

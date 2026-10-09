@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.ai.persistence;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -45,6 +46,10 @@ public class AiProvider {
 	private String baseUrl;
 
 	private byte @Nullable [] apiKey;
+
+	/** What 1,000 calls cost in US dollars, for a service that bills by the call; null when nobody entered it. */
+	@Column(name = "price_per_1k_calls")
+	private @Nullable BigDecimal pricePerThousandCalls;
 
 	@Version
 	private long version;
@@ -93,6 +98,11 @@ public class AiProvider {
 		this.apiKey = apiKey;
 	}
 
+	/** What 1,000 calls cost in US dollars from now on; null when it is not known. */
+	public void price(@Nullable BigDecimal pricePerThousandCalls) {
+		this.pricePerThousandCalls = pricePerThousandCalls;
+	}
+
 	/** Records who changed the provider, as they were named, and when. */
 	public void changedBy(UUID accountId, String label, Instant at) {
 		this.updatedBy = accountId;
@@ -130,6 +140,10 @@ public class AiProvider {
 
 	public byte @Nullable [] getApiKey() {
 		return apiKey;
+	}
+
+	public @Nullable BigDecimal getPricePerThousandCalls() {
+		return pricePerThousandCalls;
 	}
 
 	public long getVersion() {

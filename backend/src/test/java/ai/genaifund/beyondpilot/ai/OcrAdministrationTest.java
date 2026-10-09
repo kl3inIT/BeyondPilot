@@ -171,6 +171,7 @@ class OcrAdministrationTest {
 		assertThat(connected).doesNotContain(SECRET);
 		assertThat(JsonPath.<Boolean>read(connected, "$.providers[0].hasKey")).isTrue();
 		assertThat(JsonPath.<Boolean>read(connected, "$.providers[0].inUse")).isFalse();
+		assertThat(JsonPath.<Double>read(connected, "$.providers[0].pricePerThousandCalls")).isEqualTo(1.5);
 		String id = JsonPath.read(connected, "$.providers[0].id");
 		// The same name is free for a chat provider: a name is unique within its purpose.
 		assertProblem(send("POST", operator, API + "/providers", provider("ai hay", url("/good"), GOOD_KEY)), 409,
@@ -256,6 +257,8 @@ class OcrAdministrationTest {
 			assertThat(row.get("provider_id")).hasToString(id);
 			assertThat(row.get("input_tokens")).isNull();
 			assertThat(row.get("input_price")).isNull();
+			// What 1,000 calls cost then is kept with the call, in US dollars.
+			assertThat(((Number) row.get("price_per_1k_calls")).doubleValue()).isEqualTo(1.5);
 		});
 	}
 
@@ -380,6 +383,7 @@ class OcrAdministrationTest {
 	private Models chatModels() {
 		Map<String, Object> gateway = provider("Gateway", url("/v1"), GOOD_KEY);
 		gateway.put("adapterType", "openai");
+		gateway.remove("pricePerThousandCalls");
 		String connected = body(send("POST", operator, CHAT + "/providers", gateway).expectStatus().isOk());
 		String id = JsonPath.read(connected, "$.providers[0].id");
 		String added = body(send("POST", operator, CHAT + "/providers/" + id + "/models",
@@ -427,6 +431,8 @@ class OcrAdministrationTest {
 		request.put("adapterType", "aihay");
 		request.put("baseUrl", baseUrl);
 		request.put("enabled", true);
+		// AI Hay lists OCR at 40,500 VND per 1,000 calls, which is 1.50 US dollars at its own rate.
+		request.put("pricePerThousandCalls", 1.5);
 		request.put("key", "replace");
 		request.put("apiKey", apiKey);
 		request.put("version", 0);
