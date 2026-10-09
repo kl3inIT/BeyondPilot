@@ -55,21 +55,24 @@ function JoinAccess({ emailDomain, autoJoin }: JoinAccessProps) {
   }
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl border bg-card p-5">
+    <div className="flex flex-col gap-4 rounded-2xl border bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 flex-col gap-1">
         <h3 id={titleId} className="text-base font-semibold break-words">
           {t(`${state}.title`, { domain: emailDomain })}
         </h3>
         <p className="text-sm text-muted-foreground">{t(`${state}.lead`)}</p>
-        <p className="text-xs text-muted-foreground">{t("domain", { domain: emailDomain })}</p>
       </div>
-      <Switch
-        aria-label={t("toggle")}
-        aria-describedby={titleId}
-        checked={autoJoin}
-        disabled={pending}
-        onCheckedChange={toggle}
-      />
+      <div className="flex shrink-0 items-center justify-between gap-8">
+        <p className="text-sm font-medium">{t("domain", { domain: emailDomain })}</p>
+        <Switch
+          aria-label={t("toggle")}
+          aria-describedby={titleId}
+          checked={autoJoin}
+          disabled={pending}
+          onCheckedChange={toggle}
+          className="origin-right scale-150"
+        />
+      </div>
     </div>
   );
 }
