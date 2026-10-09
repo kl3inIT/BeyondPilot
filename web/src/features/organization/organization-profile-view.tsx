@@ -19,7 +19,7 @@ type Fact = { label: string; value: string | null | undefined; wide?: boolean };
 function Facts({ facts }: { facts: Fact[] }) {
   const t = useTranslations("Organization.form");
   return (
-    <dl className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
+    <dl className="grid gap-x-3 gap-y-4 sm:grid-cols-2">
       {facts.map((fact) => (
         <div key={fact.label} className={cn("flex flex-col gap-1.5", fact.wide && "sm:col-span-2")}>
           <dt className="text-sm font-semibold">{fact.label}</dt>
@@ -41,42 +41,44 @@ function OrganizationProfileView({ organization, action }: OrganizationProfileVi
   const countryName = useCountryName();
 
   return (
-    <div className="flex flex-col gap-7 rounded-3xl border bg-card p-5 md:p-10">
+    <div className="flex flex-col gap-5 rounded-3xl border bg-card p-5 md:p-8">
       <div className="flex items-start justify-between gap-4">
-        <h2 className="text-3xl font-semibold tracking-title">{t("profileTitle")}</h2>
+        <h2 className="text-2xl font-semibold tracking-title">{t("profileTitle")}</h2>
         {action}
       </div>
-      <OrganizationProfileSection icon={Building2Icon} title={t("basics")}>
-        <Facts
-          facts={[
-            { label: t("name"), value: organization.name },
-            { label: t("website"), value: organization.website },
-            { label: t("emailDomain"), value: organization.emailDomain, wide: true },
-            { label: t("type"), value: typeName(organization.type) },
-            {
-              label: t("teamSize"),
-              value: organization.teamSize && sizeName(organization.teamSize),
-            },
-          ]}
-        />
-      </OrganizationProfileSection>
-      <OrganizationProfileSection icon={FileTextIcon} title={t("about")}>
-        <Facts
-          facts={[
-            {
-              label: t("industries"),
-              value: organization.industries.map(industryName).join(", "),
-              wide: true,
-            },
-            {
-              label: t("country"),
-              value: organization.country && countryName(organization.country),
-            },
-            { label: t("foundedYear"), value: organization.foundedYear?.toString() },
-            { label: t("description"), value: organization.description, wide: true },
-          ]}
-        />
-      </OrganizationProfileSection>
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+        <OrganizationProfileSection icon={Building2Icon} title={t("basics")}>
+          <Facts
+            facts={[
+              { label: t("name"), value: organization.name },
+              { label: t("website"), value: organization.website },
+              { label: t("emailDomain"), value: organization.emailDomain, wide: true },
+              { label: t("type"), value: typeName(organization.type) },
+              {
+                label: t("teamSize"),
+                value: organization.teamSize && sizeName(organization.teamSize),
+              },
+            ]}
+          />
+        </OrganizationProfileSection>
+        <OrganizationProfileSection icon={FileTextIcon} title={t("about")}>
+          <Facts
+            facts={[
+              {
+                label: t("industries"),
+                value: organization.industries.map(industryName).join(", "),
+                wide: true,
+              },
+              {
+                label: t("country"),
+                value: organization.country && countryName(organization.country),
+              },
+              { label: t("foundedYear"), value: organization.foundedYear?.toString() },
+              { label: t("description"), value: organization.description, wide: true },
+            ]}
+          />
+        </OrganizationProfileSection>
+      </div>
     </div>
   );
 }

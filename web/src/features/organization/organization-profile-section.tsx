@@ -19,7 +19,7 @@ function OrganizationProfileSection({
   children,
 }: OrganizationProfileSectionProps) {
   return (
-    <section className="flex flex-col gap-6 rounded-2xl border bg-muted p-4 md:p-6">
+    <section className="flex flex-col gap-5 rounded-2xl border bg-muted p-4 md:p-5">
       <div className="flex flex-col gap-1">
         <h3 className="flex items-center gap-2 text-lg font-semibold">
           <Icon className="size-5 text-primary" aria-hidden="true" />
