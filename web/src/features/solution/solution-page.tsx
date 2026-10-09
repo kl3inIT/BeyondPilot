@@ -68,9 +68,7 @@ function Evidence({
   className,
   ...props
 }: React.ComponentProps<"div"> & Required<VariantProps<typeof evidenceVariants>>) {
-  return (
-    <div data-slot="evidence" className={evidenceVariants({ state, className })} {...props} />
-  );
+  return <div data-slot="evidence" className={evidenceVariants({ state, className })} {...props} />;
 }
 
 const partHeadingVariants = cva(

@@ -57,7 +57,7 @@ function TextClamp({ lines = 5, more, less, children }: TextClampProps) {
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="group/badge hit-area pointer-events-auto inline-flex h-6 w-fit shrink-0 cursor-pointer items-center justify-center gap-1 rounded-full border border-input bg-background px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-foreground shadow-sm transition-all hover:bg-accent focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="group/badge pointer-events-auto hit-area inline-flex h-6 w-fit shrink-0 cursor-pointer items-center justify-center gap-1 rounded-full border border-input bg-background px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-foreground shadow-sm transition-all hover:bg-accent focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               {more}
             </button>

@@ -5990,9 +5990,7 @@
         },
         {
           "heading": "Chúng tôi thu thập gì",
-          "body": [
-            "Chúng tôi chỉ thu thập những gì nền tảng cần để hoạt động:"
-          ],
+          "body": ["Chúng tôi chỉ thu thập những gì nền tảng cần để hoạt động:"],
           "items": [
             "Thông tin tài khoản: họ tên và email, cùng số điện thoại, quốc gia, chức danh, hồ sơ LinkedIn và ảnh khi bạn thêm vào.",
             "Đăng nhập bằng Google: họ tên, email và ảnh đại diện từ tài khoản Google. Chúng tôi không đọc Gmail, danh bạ hay tệp của bạn.",
@@ -6127,9 +6125,7 @@
         },
         {
           "heading": "Sử dụng hợp lệ",
-          "body": [
-            "Không được:"
-          ],
+          "body": ["Không được:"],
           "items": [
             "đăng thông tin sai hoặc mạo danh người khác;",
             "gửi thư rác hoặc tin nhắn thương mại không được yêu cầu qua nền tảng;",
