@@ -52,6 +52,7 @@ public class Organization {
 	private @Nullable String country;
 
 	private @Nullable String teamSize;
+	private @Nullable String companySizeLabel;
 
 	@JdbcTypeCode(SqlTypes.ARRAY)
 	@Column(nullable = false, columnDefinition = "text[]")
@@ -129,6 +130,7 @@ public class Organization {
 		this.website = website;
 		this.country = country;
 		this.teamSize = teamSize;
+		this.companySizeLabel = null;
 		this.industries = industries.toArray(String[]::new);
 		this.description = description;
 		this.foundedYear = foundedYear;
@@ -250,6 +252,10 @@ public class Organization {
 
 	public @Nullable String getTeamSize() {
 		return teamSize;
+	}
+
+	public @Nullable String getCompanySizeLabel() {
+		return companySizeLabel;
 	}
 
 	public List<String> getIndustries() {

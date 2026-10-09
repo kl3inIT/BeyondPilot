@@ -1,6 +1,6 @@
 "use client";
 
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, BuildingIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -9,13 +9,8 @@ import { Button } from "@/components/actions/button";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
 import { ChoiceSelect } from "@/components/composites/choice-select";
 import { RequiredMark } from "@/components/composites/required-mark";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -130,9 +125,7 @@ function AdminCreateOrganization() {
       <Dialog open={open} onOpenChange={(next) => (pending ? undefined : setOpen(next))}>
         <DialogContent showCloseButton={false} className="max-h-dvh overflow-y-auto sm:max-w-3xl">
           <form noValidate onSubmit={submit} className="flex flex-col gap-4">
-            <DialogHeader>
-              <DialogTitle size="lg">{t("title")}</DialogTitle>
-            </DialogHeader>
+            <DecisionDialogHeader tone="info" icon={BuildingIcon} title={t("title")} />
             <FieldGroup>
               <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
                 <Field data-invalid={bad("name")}>
@@ -278,11 +271,16 @@ function AdminCreateOrganization() {
                 <OrganizationLogoUpload value={text.logoFileId} onChange={set("logoFileId")} />
               </Field>
             </FieldGroup>
-            <DialogFooter>
-              <Button prominence="secondary" disabled={pending} onClick={() => setOpen(false)}>
+            <DialogFooter variant="plain">
+              <Button
+                size="lg"
+                prominence="secondary"
+                disabled={pending}
+                onClick={() => setOpen(false)}
+              >
                 {t("cancel")}
               </Button>
-              <Button type="submit" pending={pending}>
+              <Button size="lg" type="submit" pending={pending}>
                 {t("confirm")}
               </Button>
             </DialogFooter>

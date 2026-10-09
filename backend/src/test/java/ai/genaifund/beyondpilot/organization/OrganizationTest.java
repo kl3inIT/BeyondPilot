@@ -853,6 +853,10 @@ class OrganizationTest {
 		String publicPage = body(get(signIn("reader@logo.test"), API + "/organizations/fully-described").expectStatus()
 			.isOk());
 		assertThat(JsonPath.<String>read(publicPage, "$.logoFileId")).isEqualTo(logo.toString());
+		// A person choosing an organization to join sees the logo beside its name.
+		String found = body(get(signIn("seeker@logo.test"), API + "/organizations?q=fully described").expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(found, "$.items[0].logoFileId")).isEqualTo(logo.toString());
 		// Operators see it in their list too.
 		String listed = body(get(operator, API + "/admin/organizations?q=fully described").expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(listed, "$.items[*].logoFileId")).containsExactly(logo.toString());

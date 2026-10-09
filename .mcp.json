@@ -5,8 +5,8 @@
       "url": "https://mcp.linear.app/mcp"
     },
     "figwright": {
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@figwright/mcp@latest"]
+      "command": "C:\\nvm4w\\nodejs\\node.exe",
+      "args": ["C:\\nvm4w\\nodejs\\node_modules\\@figwright\\mcp\\dist\\index.mjs"]
     }
   }
 }

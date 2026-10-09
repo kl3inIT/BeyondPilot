@@ -9854,6 +9854,12 @@ components:
             type: string
         listed:
           type: boolean
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The stored logo, or nothing for the initials' slot."
         maturity:
           type:
           - string
@@ -9866,6 +9872,9 @@ components:
           - scaled
         name:
           type: string
+        organizationId:
+          type: string
+          format: uuid
         organizationName:
           type: string
         slug:
@@ -9908,6 +9917,7 @@ components:
       - industries
       - listed
       - name
+      - organizationId
       - organizationName
       - slug
       - status
@@ -12845,7 +12855,8 @@ components:
           format: date-time
         removedBy:
           type: string
-          description: "Who removed it, by the name they are shown by."
+          description: "Who removed it, by the name they are shown by; absent for\
+            \ a member when GenAI Fund removed it."
         removedByOperator:
           type: boolean
           description: Whether GenAI Fund removed it; a member restores only what
@@ -12995,7 +13006,9 @@ components:
           format: date-time
         failure:
           type: string
-          description: "Why it failed or waits, as a code; never the provider's words."
+          description: "Why it failed or waits, as a code; never the provider's words.\
+            \ A caller who is not an operator reads `provider` for anything that happened\
+            \ at the AI provider."
         id:
           type: string
           format: uuid
@@ -14096,6 +14109,12 @@ components:
         id:
           type: string
           format: uuid
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Its logo, read at /api/storage/files/{id}; null for none."
         name:
           type: string
         type:
@@ -14971,6 +14990,26 @@ components:
           type:
           - string
           - "null"
+        companyFundingRaised:
+          type:
+          - string
+          - "null"
+          description: "The amount the company stated it raised, including its original\
+            \ wording and currency."
+        companyFundingStatus:
+          type:
+          - string
+          - "null"
+          description: "The company's stated funding status, distinct from GenAI Fund's\
+            \ backing."
+        competitors:
+          type:
+          - string
+          - "null"
+        coreTechnology:
+          type:
+          - string
+          - "null"
         country:
           type:
           - string
@@ -15017,6 +15056,10 @@ components:
           type: array
           items:
             type: string
+        infrastructureUsed:
+          type:
+          - string
+          - "null"
         languages:
           type: array
           items:
@@ -15042,17 +15085,54 @@ components:
           - pilot
           - production
           - scaled
+        monetizationModel:
+          type:
+          - string
+          - "null"
         name:
           type: string
+        notablePayingCustomers:
+          type:
+          - string
+          - "null"
+          description: Customers named by the company; these are not reviewed customer
+            deployments.
+        organizationCompanySizeLabel:
+          type:
+          - string
+          - "null"
+          description: Its exact imported company-size label; null for an organization
+            that has not supplied one.
+        organizationFoundedYear:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: The year the organization started.
         organizationName:
           type: string
         organizationSlug:
           type: string
           description: The address of the organization's public page.
+        organizationTeamSize:
+          type:
+          - string
+          - "null"
+          description: "The organization's team-size vocabulary code, when one is\
+            \ known."
         problemsSolved:
           type:
           - string
           - "null"
+        productNames:
+          type: array
+          description: Product names the company listed in the v1 export.
+          items:
+            type: string
+        segmentFocus:
+          type: array
+          items:
+            type: string
         slug:
           type: string
         summary:
@@ -15063,6 +15143,16 @@ components:
           type:
           - string
           - "null"
+        useCaseDescriptions:
+          type:
+          - string
+          - "null"
+          description: "Use-case descriptions stated by the company, separate from\
+            \ reviewed customer deployments."
+        useCaseIndustries:
+          type: array
+          items:
+            type: string
         valueProposition:
           type:
           - string
@@ -15083,7 +15173,10 @@ components:
       - name
       - organizationName
       - organizationSlug
+      - productNames
+      - segmentFocus
       - slug
+      - useCaseIndustries
     PublicSolutionDeck:
       type: object
       description: The deck of an approved solution. Its bytes are read at the address

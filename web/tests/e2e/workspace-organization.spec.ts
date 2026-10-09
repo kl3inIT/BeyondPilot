@@ -67,7 +67,7 @@ test.describe("workspace organization", () => {
 
     await page.getByRole("searchbox", { name: "Company or team name" }).fill("pocket");
     await expect(page.getByText("Company · Singapore")).toBeVisible();
-    await expect(page.getByText("Managed by its owners")).toBeVisible();
+    await expect(page.getByText("Managed by its owners")).toHaveCount(0);
     await expect(
       page.getByText(
         "Your email is not on pocketpolicy.example, so an owner of Pocket Policy decides.",

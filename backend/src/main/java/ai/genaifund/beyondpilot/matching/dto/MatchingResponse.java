@@ -34,7 +34,7 @@ public record MatchingResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIR
 			@Schema(description = "When it starts, while it waits for the use case to stay unchanged.") @Nullable Instant startsAt,
 			@Nullable Instant startedAt, @Nullable Instant endedAt,
 			@Schema(description = "When it goes on, while it waits for the AI provider.") @Nullable Instant resumesAt,
-			@Schema(description = "Why it failed or waits, as a code; never the provider's words.") @Nullable String failure,
+			@Schema(description = "Why it failed or waits, as a code; never the provider's words. A caller who is not an operator reads `provider` for anything that happened at the AI provider.") @Nullable String failure,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "How many candidates are judged.") int judged,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "How many candidates there are.") int total,
 			@Schema(description = "The model that judged; absent for a caller who is not an operator.") @Nullable String modelName) {
@@ -80,7 +80,7 @@ public record MatchingResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIR
 			@Schema(description = "Why it was removed.",
 					allowableValues = { "does_not_solve", "wrong_industry_or_size", "closed_or_wrong_website", "duplicate", "other" }) @Nullable String removedReason,
 			@Nullable String removedNote,
-			@Schema(description = "Who removed it, by the name they are shown by.") @Nullable String removedBy,
+			@Schema(description = "Who removed it, by the name they are shown by; absent for a member when GenAI Fund removed it.") @Nullable String removedBy,
 			@Schema(description = "Whether GenAI Fund removed it; a member restores only what members removed.") @Nullable Boolean removedByOperator,
 			@Nullable Instant removedAt,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
