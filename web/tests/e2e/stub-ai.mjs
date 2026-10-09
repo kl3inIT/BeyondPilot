@@ -76,13 +76,43 @@ const chatSettings = {
   ],
 };
 
-/** The Chat tab of Admin › AI, for an operator only, as the backend answers it. */
+// What GET /api/ai/admin/ocr answers: AI Hay connected and reading documents in a model's place.
+const ocrSettings = {
+  keysCanBeStored: true,
+  adapters: ["aihay"],
+  providers: [
+    {
+      id: "0c700000-0000-4000-8000-000000000001",
+      adapterType: "aihay",
+      name: "AI Hay",
+      baseUrl: "https://api.ai-hay.vn",
+      enabled: true,
+      hasKey: true,
+      inUse: true,
+      updatedBy: "Operator",
+      updatedAt: "2026-10-09T03:00:00Z",
+      version: 1,
+    },
+  ],
+  reader: {
+    modelId: null,
+    reasoningEffort: "low",
+    ocrProviderId: "0c700000-0000-4000-8000-000000000001",
+    available: true,
+    version: 2,
+  },
+};
+
+/** The Chat and OCR tabs of Admin › AI, for an operator only, as the backend answers them. */
 export function answerAiAdmin(url, account) {
   if (!url.pathname.startsWith("/api/ai/admin/")) {
     return null;
   }
   if (account?.role !== "operator") {
     return [account ? 403 : 401, { code: "IDENTITY_OPERATOR_REQUIRED" }];
+  }
+  if (url.pathname === "/api/ai/admin/ocr") {
+    return [200, ocrSettings];
   }
   return url.pathname === "/api/ai/admin/chat" ? [200, chatSettings] : [404, {}];
 }

@@ -1,7 +1,7 @@
 import type { MessageKey } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
 
-/** The refusals the Chat tab can meet, each with its own words in the catalog. */
+/** The refusals the Chat and OCR tabs can meet, each with its own words in the catalog. */
 const known = [
   "AI_PROVIDER_NOT_FOUND",
   "AI_PROVIDER_NAME_TAKEN",
@@ -20,12 +20,14 @@ const known = [
   "AI_MODEL_INVALID",
   "AI_MODEL_UNAVAILABLE",
   "AI_MODEL_WITHOUT_VISION",
+  "AI_READER_AMBIGUOUS",
+  "AI_OCR_PROVIDER_UNAVAILABLE",
   "AI_TASK_UNKNOWN",
   "AI_TASK_CHANGED",
   "AI_BUSY",
 ] as const;
 
-/** The words for a failed request of the Chat tab: by its code when the screen knows it, general otherwise. */
+/** The words for a failed request of the Chat or OCR tab: by its code when the screen knows it, general otherwise. */
 export function chatError(error: unknown): MessageKey {
   const code = error instanceof ApiError ? error.code : undefined;
   const match = known.find((candidate) => candidate === code);

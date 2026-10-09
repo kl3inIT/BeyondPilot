@@ -9,7 +9,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -23,6 +27,9 @@ final class PdfPages {
 
 	/** Enough to read a slide's text, and about 1,200 tokens for a model that reads images. */
 	private static final float PICTURE_DPI = 110;
+
+	/** Tried in order until a page fits: a slide stays readable down to the last. */
+	private static final float[] JPEG_QUALITIES = { 0.85f, 0.7f, 0.55f, 0.4f };
 
 	private PdfPages() {
 	}
@@ -57,6 +64,32 @@ final class PdfPages {
 
 	/** The pictures of these pages as PNG, by page number from 1; a page the file does not have is left out. */
 	static Map<Integer, byte[]> pictures(InputStreamSource pdf, List<Integer> pages) throws IOException {
+		return drawn(pdf, pages, image -> {
+			ByteArrayOutputStream png = new ByteArrayOutputStream();
+			ImageIO.write(image, "png", png);
+			return png.toByteArray();
+		});
+	}
+
+	/**
+	 * The pictures of these pages as JPEG no larger than a limit, for a service that takes no more: by page number
+	 * from 1, a page the file does not have left out. A page that stays over the limit at the lowest quality is an
+	 * empty array, so the caller knows it was drawn and cannot be sent.
+	 */
+	static Map<Integer, byte[]> jpegs(InputStreamSource pdf, List<Integer> pages, int maxBytes) throws IOException {
+		return drawn(pdf, pages, image -> {
+			for (float quality : JPEG_QUALITIES) {
+				byte[] jpeg = jpeg(image, quality);
+				if (jpeg.length <= maxBytes) {
+					return jpeg;
+				}
+			}
+			return new byte[0];
+		});
+	}
+
+	private static Map<Integer, byte[]> drawn(InputStreamSource pdf, List<Integer> pages, Encoding encoding)
+			throws IOException {
 		try (InputStream content = pdf.getInputStream(); PDDocument document = Loader.loadPDF(content.readAllBytes())) {
 			PDFRenderer renderer = new PDFRenderer(document);
 			Map<Integer, byte[]> pictures = new LinkedHashMap<>();
@@ -64,13 +97,33 @@ final class PdfPages {
 				if (page < 1 || page > document.getNumberOfPages()) {
 					continue;
 				}
-				BufferedImage image = renderer.renderImageWithDPI(page - 1, PICTURE_DPI, ImageType.RGB);
-				ByteArrayOutputStream png = new ByteArrayOutputStream();
-				ImageIO.write(image, "png", png);
-				pictures.put(page, png.toByteArray());
+				pictures.put(page, encoding.of(renderer.renderImageWithDPI(page - 1, PICTURE_DPI, ImageType.RGB)));
 			}
 			return pictures;
 		}
+	}
+
+	private static byte[] jpeg(BufferedImage image, float quality) throws IOException {
+		ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+		ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
+		try (ImageOutputStream out = ImageIO.createImageOutputStream(jpeg)) {
+			ImageWriteParam param = writer.getDefaultWriteParam();
+			param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			param.setCompressionQuality(quality);
+			writer.setOutput(out);
+			writer.write(null, new IIOImage(image, null, null), param);
+		}
+		finally {
+			writer.dispose();
+		}
+		return jpeg.toByteArray();
+	}
+
+	@FunctionalInterface
+	private interface Encoding {
+
+		byte[] of(BufferedImage image) throws IOException;
+
 	}
 
 }

@@ -4,6 +4,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { readChatSettings } from "@/features/ai/chat-queries";
 import { ChatTab } from "@/features/ai/chat-tab";
+import { readOcrSettings } from "@/features/ai/ocr-queries";
+import { OcrTab } from "@/features/ai/ocr-tab";
 import { ProvidersShell, providersTab } from "@/features/ai/providers-shell";
 import { readAiProviders } from "@/features/search/admin-ai-queries";
 import { EmbeddingTab } from "@/features/search/ai-providers-page";
@@ -28,6 +30,12 @@ function gone(error: unknown): never {
   throw error;
 }
 
+/** The OCR tab reads its own settings and the chat providers, whose models can read pages too. */
+async function readOcrTab() {
+  const [data, chat] = await Promise.all([readOcrSettings(), readChatSettings()]);
+  return { data, chat };
+}
+
 export default async function AiProvidersRoute({
   params,
   searchParams,
@@ -39,11 +47,9 @@ export default async function AiProvidersRoute({
 
   return (
     <ProvidersShell tab={tab}>
-      {tab === "chat" ? (
-        <ChatTab data={await readChatSettings().catch(gone)} />
-      ) : (
-        <EmbeddingTab data={await readAiProviders().catch(gone)} />
-      )}
+      {tab === "chat" && <ChatTab data={await readChatSettings().catch(gone)} />}
+      {tab === "embedding" && <EmbeddingTab data={await readAiProviders().catch(gone)} />}
+      {tab === "ocr" && <OcrTab {...await readOcrTab().catch(gone)} />}
     </ProvidersShell>
   );
 }
