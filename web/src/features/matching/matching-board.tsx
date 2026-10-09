@@ -379,14 +379,17 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
     />
   );
 
-  /** The list, and beside it on a wide screen the solution that is read in full. */
+  /**
+   * The list, and beside it on a wide screen the solution that is read in full. The panel stays in view
+   * while the list scrolls, so it is never taller than the window: what does not fit scrolls inside it.
+   */
   const listAndPanel = (
     <div className="grid items-start gap-6 xl:grid-cols-3">
       <div className="min-w-0 xl:col-span-2">{list}</div>
       {wide && (
         <aside
           aria-label={t("panel.label")}
-          className="hidden rounded-xl border bg-card p-5 xl:sticky xl:top-4 xl:block"
+          className="hidden overflow-y-auto overscroll-contain rounded-xl border bg-card p-5 xl:sticky xl:top-4 xl:block xl:max-h-[calc(100dvh-2rem)]"
         >
           {panel || <p className="text-sm text-muted-foreground">{t("panel.empty")}</p>}
         </aside>
