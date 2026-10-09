@@ -1037,7 +1037,7 @@
         "matching": {
           "run_start": "Chạy matching cho một use case",
           "candidate_add": "Thêm ứng viên bằng tay",
-          "candidate_shortlist": "Đưa ứng viên vào shortlist",
+          "candidate_shortlist": "Lưu một ứng viên",
           "candidate_remove": "Loại một ứng viên",
           "candidate_restore": "Khôi phục một ứng viên",
           "settings_change": "Đổi giới hạn của matching"
@@ -1157,7 +1157,7 @@
         "matching": {
           "run_start": "Chạy matching cho use case <resource></resource>",
           "candidate_add": "Thêm ứng viên bằng tay cho use case <resource></resource>",
-          "candidate_shortlist": "Đưa một ứng viên của use case <resource></resource> vào shortlist",
+          "candidate_shortlist": "Lưu một ứng viên của use case <resource></resource>",
           "candidate_remove": "Loại một ứng viên của use case <resource></resource>",
           "candidate_restore": "Khôi phục một ứng viên của use case <resource></resource>",
           "settings_change": "Đổi giới hạn của matching"
@@ -6552,14 +6552,14 @@
       },
       "runConfirm": {
         "title": "Tìm giải pháp ngay bây giờ?",
-        "description": "AI sẽ đọc lại đề bài và rà các giải pháp trên BeyondPilot. Danh sách rút gọn và những giải pháp bạn đã loại vẫn giữ nguyên.",
+        "description": "AI sẽ đọc lại đề bài và rà các giải pháp trên BeyondPilot. Những giải pháp bạn đã lưu và đã loại vẫn giữ nguyên.",
         "note": "{count, plural, =1 {Lần này dùng lượt cuối cùng của hôm nay.} other {Lần này dùng 1 trong # lượt còn lại hôm nay.}}",
         "cancel": "Hủy"
       },
       "reviewAllConfirm": {
         "title": "Xem xét lại toàn bộ giải pháp?",
         "description": "AI sẽ đọc lại mọi giải pháp, kể cả những giải pháp không đổi tài liệu. Hãy dùng sau khi đổi sang mô hình khác.",
-        "note": "Mỗi giải pháp là một lần gọi mô hình. Danh sách rút gọn và những giải pháp đã loại vẫn giữ nguyên.",
+        "note": "Mỗi giải pháp là một lần gọi mô hình. Những giải pháp đã lưu và đã loại vẫn giữ nguyên.",
         "confirm": "Xem xét lại toàn bộ",
         "cancel": "Hủy"
       }
@@ -6578,7 +6578,7 @@
     "tabs": {
       "label": "Giải pháp theo quyết định của bạn",
       "matches": "Phù hợp",
-      "shortlist": "Danh sách rút gọn",
+      "shortlist": "Đã lưu",
       "removed": "Đã loại"
     },
     "groups": {
@@ -6603,8 +6603,8 @@
         "about": "Đã tìm thấy cho use case này. Mỗi giải pháp sẽ chuyển vào nhóm của nó khi AI đọc xong."
       },
       "kept": {
-        "title": "Trong danh sách rút gọn, AI không còn gợi ý",
-        "about": "Sau lượt tìm gần nhất, AI không còn gợi ý các giải pháp này. Chúng vẫn ở đây cho tới khi có người bỏ khỏi danh sách rút gọn."
+        "title": "Đã lưu, AI không còn gợi ý",
+        "about": "Sau lượt tìm gần nhất, AI không còn gợi ý các giải pháp này. Chúng vẫn ở đây cho tới khi có người bỏ lưu."
       },
       "emptyDirect": "Chưa giải pháp nào có dẫn chứng là làm được đúng điều bạn cần.",
       "more": "Xem thêm {count}",
@@ -6622,8 +6622,8 @@
       "website": "Trích từ website"
     },
     "row": {
-      "shortlist": "Thêm vào danh sách rút gọn",
-      "shortlisted": "Đã trong danh sách",
+      "shortlist": "Lưu lại",
+      "shortlisted": "Đã lưu",
       "remove": "Không phù hợp…",
       "open": "Xem hồ sơ giải pháp",
       "menu": "Thao tác khác với {name}",
@@ -6698,7 +6698,7 @@
     },
     "empty": {
       "none": "AI chưa tìm thấy giải pháp nào trên BeyondPilot phù hợp với use case này.",
-      "shortlist": "Danh sách rút gọn còn trống. Hãy thêm những giải pháp bạn muốn trao đổi.",
+      "shortlist": "Chưa lưu giải pháp nào. Hãy lưu những giải pháp bạn muốn trao đổi.",
       "need": "Ở đây chưa giải pháp nào có dẫn chứng làm được: {need}",
       "clear": "Xem tất cả giải pháp"
     },
@@ -6706,8 +6706,8 @@
       "started": "Đang tìm giải pháp.",
       "reviewingAll": "AI đang đọc lại toàn bộ giải pháp.",
       "added": "Đã thêm {name}. AI sẽ đọc ở lượt tìm tới.",
-      "shortlisted": "Đã thêm {name} vào danh sách rút gọn.",
-      "unshortlisted": "Đã bỏ {name} khỏi danh sách rút gọn.",
+      "shortlisted": "Đã lưu {name}.",
+      "unshortlisted": "Đã bỏ lưu {name}.",
       "removed": "Đã loại {name} · {reason}",
       "restored": "Đã khôi phục {name}.",
       "undo": "Hoàn tác"

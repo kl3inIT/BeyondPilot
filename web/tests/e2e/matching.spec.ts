@@ -157,7 +157,7 @@ test.describe("solutions matched to a use case", () => {
     await expect(staple.getByText("Singapore · In production")).toBeVisible();
     await expect(staple.getByText("Website could not be read")).toBeVisible();
     await expect(staple.getByText("extracts and verifies the content")).toHaveCount(0);
-    await expect(staple.getByRole("button", { name: "Add to shortlist" })).toBeVisible();
+    await expect(staple.getByRole("button", { name: "Save", exact: true })).toBeVisible();
     await expect(row(page, "Kira Claims").getByText("Added by GenAI Fund")).toBeVisible();
 
     // The last group shows its header alone until it is opened.
@@ -208,7 +208,7 @@ test.describe("solutions matched to a use case", () => {
     await panel.getByRole("button", { name: "1 delivery condition to ask about" }).click();
     await expect(panel.getByText("SAP connector available")).toBeVisible();
     await expect(panel.getByText("From their BeyondPilot profile")).toBeVisible();
-    await expect(panel.getByRole("button", { name: "Add to shortlist" })).toBeVisible();
+    await expect(panel.getByRole("button", { name: "Save", exact: true })).toBeVisible();
     await expect(panel.getByRole("button", { name: "Not a fit…" })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
 
@@ -295,7 +295,7 @@ test.describe("solutions matched to a use case", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
-  test("a member adds a solution to the shortlist", async ({ page, context, baseURL, request }) => {
+  test("a member saves a solution", async ({ page, context, baseURL, request }) => {
     await signInAs(context, "owner", baseURL!);
     const state = await matchingAs(request, "owner");
     const asked: string[] = [];
@@ -308,22 +308,22 @@ test.describe("solutions matched to a use case", () => {
     });
     await page.goto(memberPath);
 
-    await page.getByRole("tab", { name: "Shortlist 0" }).click();
+    await page.getByRole("tab", { name: "Saved 0" }).click();
     await expect(
-      page.getByText("Your shortlist is empty. Add the solutions you want to talk to."),
+      page.getByText("Nothing saved yet. Save the solutions you want to talk to."),
     ).toBeVisible();
     await page.getByRole("tab", { name: "Matches 4" }).click();
 
     const staple = row(page, "Staple AI");
-    await staple.getByRole("button", { name: "Add to shortlist" }).click();
+    await staple.getByRole("button", { name: "Save", exact: true }).click();
 
-    await expect(page.getByText("Staple AI is on your shortlist.")).toBeVisible();
+    await expect(page.getByText("Staple AI is saved.")).toBeVisible();
     expect(asked).toEqual([`/api/matching/candidates/${candidateId(1)}/shortlist`]);
-    await expect(staple.getByRole("button", { name: "On shortlist" })).toHaveAttribute(
+    await expect(staple.getByRole("button", { name: "Saved", exact: true })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
-    await page.getByRole("tab", { name: "Shortlist 1" }).click();
+    await page.getByRole("tab", { name: "Saved 1" }).click();
     await expect(rowName(page, "Staple AI")).toBeVisible();
     await expect(rowName(page, "Sentosa Finance")).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
