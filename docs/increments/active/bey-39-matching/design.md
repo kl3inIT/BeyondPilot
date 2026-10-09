@@ -1,6 +1,6 @@
 # Matching: the solutions that fit a use case, with the reasons
 
-Status: proposed on 9 October 2026, waiting for Đạt's approval. Tracked in Linear as BEY-39. What was read and measured before this design is in [Matching: references read and a probe on real use cases](../../../research/2026-10-09-matching-references-and-probe.md).
+Status: approved by Đạt on 9 October 2026; being implemented. Tracked in Linear as BEY-39. What was read and measured before this design is in [Matching: references read and a probe on real use cases](../../../research/2026-10-09-matching-references-and-probe.md).
 
 ## What it does
 
@@ -20,7 +20,7 @@ This is the brief's "early recommendations" and the catalogue half of "formal ev
 
 Failure and recovery:
 
-- **The model's provider refuses or says its usage limit is reached:** the run waits for the time the provider names and continues; candidates already judged are kept. A run that cannot continue ends as failed with the kind of failure, and can be started again from where it stopped.
+- **The model's provider refuses or says its usage limit is reached:** the run stops asking, waits two minutes and continues; candidates already judged are kept. A run that stops five times in a row without judging anything ends as failed with the kind of failure, and can be started again from where it stopped.
 - **No model is chosen for matching:** no run starts; the screen says so to operators.
 - **A page of a deck has no text, only a picture:** a model reads the page from its picture, and the page is marked as read that way. A page nothing could read stays empty and is counted.
 - **A solution has no readable deck or website text at all:** it is judged on its profile and customer cases, and the candidate says which source could not be read. It is never reported as "not shown" for lack of text alone.
@@ -68,7 +68,7 @@ A new module, `matching`, owns five tables. No other module reads them.
 
 | Table | Holds | Invariant |
 | --- | --- | --- |
-| `matching_requirement` | The requirements of a use case as last extracted: kind, necessity, statement, quote, and the hash of what they came from: the use case's text and the text of its attached files | Replaced together when the use case's text or an attached file changes |
+| `matching_requirement` | The requirements of a use case as last extracted: kind, necessity, statement, quote, and the fingerprint of what they came from: the use case's text, its own list of requirements, which files are attached, and the prompt version | Replaced together when the use case's text or an attached file changes. A requirement whose quote is not in the brief is not kept |
 | `matching_run` | A run: use case, state, who started it, the prompt version, the models used, when it started and ended, the kind of failure | At most one running per use case |
 | `matching_run_step` | One step of a run: its name and order, how many it took in and gave out, the calls, the tokens and the time | Written by the run only |
 | `matching_candidate` | One solution for one use case: its origin, its bucket, how many required capabilities are met, the findings with their quotes and the state of each quote, the model's one-line reason, and the fingerprint of what was judged | Unique per use case and solution |
@@ -118,7 +118,10 @@ HTTP, under `/api/matching`: the candidates of a use case with its run and requi
 | Code decides the bucket and the order; it only lowers what the model said | candisift's guard. The hand method's rules are short enough to be code, and code can be tested and changed in one place |
 | Direct: every required capability is met. Industry: a similar workflow delivered in the use case's industry and at least one capability shown. Technology: the named technology or a capability met. Inside a bucket, more capabilities met comes first | The hand method ("an unverified essential capability disqualifies Direct"; "an empty Direct is acceptable"). This is the first version of the rule: it is confirmed or changed when GenAI Fund's own longlists arrive (BEY-41) |
 | One task and one model for every step of a run | Only one model is to be used. The model's quotes were all real in the probe, so a second model has nothing proven to add |
-| A run waits when the provider says its limit is reached | The probe met the limit of the 9Router route after about 330 calls |
+| A run waits when a call is refused, whatever the provider says, for a fixed two minutes | The probe met the limit of the 9Router route after about 330 calls, and calls went through again two minutes later. Providers name the wait in different ways, and a module that read each one's answer would depend on each provider |
+| A run is a row that a worker takes, one run at a time | Started by an approval, by an operator or after a restart, it is the same row; a stopped application leaves nothing half done that the next start does not take up |
+| The text of an attached file is read when the requirements are extracted and is not kept | It is needed once, to extract and to check the quotes. The fingerprint names the files, so a brief that did not change reads no file again |
+| An answer that does not fit its shape is asked for once more by matching's own code, not by Spring AI's `StructuredOutputValidationAdvisor` | The advisor repeats the call below the advisor that records usage, so a repeated call would cost tokens that no record shows |
 | What a person decided is outside what a run may change | candisift; the old platform could neither add nor remove a match (kickoff) |
 | The website text of imported solutions comes by a one-off load, the way BEY-74 loaded records: a script writes SQL, run on staging then production | That text exists only on a team machine until BEY-99 reads websites; the records are written once |
 | A deck's text is read by the application from the stored file, in the background, a few decks a minute, with PDFBox | No model is needed for a page that has text: `pdftotext` made the deck texts the probe used. PDFBox is what Spring AI's own PDF reader and MemoryOS's built-in reader are made of, and it also draws the picture of a page, which reading a page without text needs. The imported decks are read the same way as new ones, from the 735 files already stored, so no deck text is loaded from a team machine |
@@ -134,6 +137,7 @@ HTTP, under `/api/matching`: the candidates of a use case with its run and requi
 
 ## Left out
 
+- **Reading a picture attached to a use case** (5 of the 35 attachments): only PDFs are read for the requirements, their picture pages included.
 - **Reading the website of a newly registered solution** (BEY-99, through Firecrawl as MemoryOS does). Until then a new solution is judged on its profile, customer cases and deck.
 - **Judging the proposals a provider sent** against the use case. Proposals belong to programs today.
 - **Queries written by the model** and a **second model that checks the first**: each waits for a measure that shows the need.
