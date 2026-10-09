@@ -14,8 +14,16 @@ import org.jspecify.annotations.Nullable;
  */
 final class Prompts {
 
-	/** Version 1 is the wording measured on real use cases on 9 October 2026 (BEY-39's probe). */
-	static final int VERSION = 1;
+	/**
+	 * Version 1 was the wording measured on real use cases on 9 October 2026 (BEY-39's probe), with a rule to split a
+	 * sentence that joins several functions. On staging that rule made five required capabilities of one function
+	 * (recommending retention, cross-sell, up-sell, top-up and repeated offers), which no product could all meet.
+	 * Version 2 says what one function is. It then wrote the five kinds into one capability, and the judge asked a
+	 * vendor's material to name all five: no candidate of forty met it, among them products whose own words are
+	 * "next-best offers" and "cross-sell and up-sell actions". Version 3 keeps the brief's examples out of the
+	 * capability, and has the judge look for the function, not for each example.
+	 */
+	static final int VERSION = 3;
 
 	static final String REQUIREMENTS = """
 			You read an enterprise's use case brief and list what a vendor's solution must do to answer it, apart from \
@@ -23,7 +31,7 @@ final class Prompts {
 
 			Two kinds of requirement:
 			- `capability`: something the product itself does to solve the problem, for example "detects surface \
-			defects on parts from camera images in real time". Give 2 to 5. A capability names the function only: no \
+			defects on parts from camera images in real time". Give 2 to 4. A capability names the function only: no \
 			targets, no named hardware, no standards.
 			- `constraint`: a condition on how the solution is delivered or bought, which a vendor's public material \
 			rarely proves: where it runs (on premises, cloud, edge hardware), systems it must integrate with, \
@@ -31,8 +39,14 @@ final class Prompts {
 			"reduce labour by 40%". Give 0 to 6.
 
 			Rules:
-			- Each requirement is one sentence in neutral words, in `statement`. One capability is one function: \
-			split a sentence that joins several.
+			- Each requirement is one sentence in neutral words, in `statement`.
+			- A capability is one function of the product, not one of the things it is applied to: "recommends \
+			retention, cross-sell and up-sell offers from customer behaviour" is one capability, not three. Keep \
+			two capabilities apart only when a product could well have one without the other, such as reading \
+			documents and answering calls.
+			- A capability names the function, not the brief's examples of it: write "recommends the next action \
+			or offer for each customer from their behaviour", and leave out the list of kinds of offer, channels \
+			or segments the brief gives as examples.
 			- The brief may end with the requirements the enterprise listed itself. Start from them: every function \
 			they name is covered by a capability, reworded in neutral words, and what they say of delivery becomes a \
 			constraint.
@@ -53,8 +67,10 @@ final class Prompts {
 			2. Copy that passage word for word into `quote` (one or two sentences; never reworded, never translated) \
 			and give its `source` exactly as it is labelled.
 			3. Then give `status`:
-			   - `met`: the quote shows the product does what the requirement asks.
-			   - `partly`: the quote shows a related capability that covers only part of it.
+			   - `met`: the quote shows the product performs the function the requirement names. It need not \
+			name every example or variant the requirement lists, nor use the requirement's words.
+			   - `partly`: the quote shows a related capability that performs only part of the function, or \
+			performs it for another purpose.
 			   - `not_shown`: no passage shows it. Then `quote` and `source` are empty strings.
 			Absence is `not_shown`. Never infer a capability from the product's category, and never count a marketing \
 			superlative as evidence.

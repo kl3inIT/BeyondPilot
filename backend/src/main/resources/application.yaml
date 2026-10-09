@@ -120,7 +120,8 @@ beyondpilot:
       # How many rows one request embeds, and how often the job looks for rows to embed.
       batch-size: 32
       # Passages are many more than items: a solution has one row and dozens of passages. 64 a minute embeds
-      # the 22,000 of the imported solutions in about six hours.
+      # the 23,000 of the imported solutions in about six hours. 256 a minute was tried on 9 October: the
+      # account's rate limit refused it, and a refusal pauses search by meaning for visitors too.
       passage-batch-size: 64
       interval: 1m
       # The vector branch keeps what is at least this similar to the query (cosine). Measured on 6 October with

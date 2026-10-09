@@ -10,7 +10,7 @@ For one published use case, the solutions on BeyondPilot that fit it, each with 
 
 ## A run
 
-A run is a row of `matching_run` that a worker takes, one run at a time, every `beyondpilot.matching.interval` (10 seconds).
+A run is a row of `matching_run` that a worker takes, one run at a time, every `beyondpilot.matching.interval` (10 seconds). The worker works on a thread of its own, because scheduled work shares one thread and a run takes minutes.
 
 - **Queued** when a use case is published or changed (`UseCaseChanged`), if a model is chosen for the task and the brief is not the one its requirements were last read from. A use case has at most one run that has not ended.
 - **Requirements.** One call lists what the brief asks for: capabilities (what the product does) and constraints (the conditions of delivery), each required or optional, each with the words of the brief it comes from. The brief is the use case's text, the requirements its organization listed, and the text of its attached PDFs (40 pages a file, 40,000 characters in all; a page that is only a picture is read by the model of the task `document_reading` when one is chosen). A requirement of an unknown kind, or whose quote is not in the brief, is not kept. They are kept with the fingerprint of the brief, and a brief that did not change asks nothing.
@@ -30,4 +30,4 @@ A run is a row of `matching_run` that a worker takes, one run at a time, every `
 
 ## Prompts
 
-`Prompts` holds the wording, version 1, measured on two real use cases on 9 October 2026 ([research](../research/2026-10-09-matching-references-and-probe.md)). The version is part of every fingerprint, so a new wording reads the requirements and judges every candidate again. Everything the model reads and answers is in English.
+`Prompts` holds the wording. Version 1 was measured on two real use cases on 9 October 2026 ([research](../research/2026-10-09-matching-references-and-probe.md)); version 2 says what one function is, after the first run on staging made five required capabilities of one; version 3 keeps the brief's examples out of a capability and has the judge look for the function, after no candidate of forty met a capability that listed five kinds of offer. The version is part of every fingerprint, so a new wording reads the requirements and judges every candidate again. Everything the model reads and answers is in English.
