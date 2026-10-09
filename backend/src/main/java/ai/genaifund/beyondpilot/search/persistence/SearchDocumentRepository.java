@@ -315,7 +315,7 @@ public class SearchDocumentRepository {
 	}
 
 	/** pgvector's text form of a vector: "[0.1,0.2]". */
-	private static String vector(float[] values) {
+	static String vector(float[] values) {
 		StringBuilder text = new StringBuilder(values.length * 12).append('[');
 		for (int i = 0; i < values.length; i++) {
 			if (i > 0) {

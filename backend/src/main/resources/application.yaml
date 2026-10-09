@@ -119,6 +119,9 @@ beyondpilot:
     embedding:
       # How many rows one request embeds, and how often the job looks for rows to embed.
       batch-size: 32
+      # Passages are many more than items: a solution has one row and dozens of passages. 64 a minute embeds
+      # the 22,000 of the imported solutions in about six hours.
+      passage-batch-size: 64
       interval: 1m
       # The vector branch keeps what is at least this similar to the query (cosine). Measured on 6 October with
       # text-embedding-3-large at 1,536 dimensions: relevant items 0.38 to 0.64, nonsense 0.18 to 0.22.
