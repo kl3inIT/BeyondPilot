@@ -159,6 +159,89 @@ public class SearchPassageRepository {
 			.list();
 	}
 
+	/** Reciprocal rank fusion's constant, as the index fuses its rankings. */
+	private static final int FUSION_K = 60;
+
+	/**
+	 * The solutions in the index that answer one query, the best first, each with its fused score. Four rankings are
+	 * fused by reciprocal rank: the words and the meaning of the query against each solution's profile, and against
+	 * its passages, where a solution stands at the place of its best passage. Unlisted solutions are among them.
+	 * The caller's transaction lets the vector index look far enough for the passages asked.
+	 * @param terms the words of the query joined by {@code |}, so that a passage with some of them matches; each is
+	 * letters and digits only
+	 * @param meaning the query's embedding, or null to search by words alone
+	 * @param pool how many solutions each ranking gives, and how many are answered
+	 */
+	public Map<UUID, Double> solutions(String terms, SearchDocumentRepository.@Nullable Meaning meaning, int pool) {
+		int nearest = pool * 4;
+		// pgvector's index answers at most hnsw.ef_search rows; the default of 40 would cut the passages short.
+		jdbc.sql("select set_config('hnsw.ef_search', :reach, true)")
+			.param("reach", Integer.toString(Math.min(1000, Math.max(40, nearest))))
+			.query(String.class)
+			.single();
+		Map<UUID, Double> scores = new LinkedHashMap<>();
+		jdbc.sql("""
+				with input as (
+				    select to_tsquery('simple', search_unaccent(:terms)) as query
+				),
+				profile_text as (
+				    select d.item_id as solution_id,
+				           row_number() over (order by ts_rank(d.search_vector, input.query, 1) desc, d.item_id) as position
+				    from search_document d cross join input
+				    where d.kind = 'solution' and d.search_vector @@ input.query
+				    order by position
+				    limit :pool
+				),
+				profile_meaning as (
+				    select solution_id, row_number() over (order by distance, solution_id) as position
+				    from (select d.item_id as solution_id, d.embedding <=> cast(:vector as vector) as distance
+				          from search_document d
+				          where cast(:vector as vector) is not null and d.kind = 'solution' and d.embedding is not null
+				            and d.embedding_model = :model
+				          order by d.embedding <=> cast(:vector as vector)
+				          limit :pool) nearest
+				),
+				passage_text as (
+				    select solution_id, row_number() over (order by best desc, solution_id) as position
+				    from (select p.solution_id, max(ts_rank(p.search_vector, input.query, 1)) as best
+				          from search_passage p cross join input
+				          where p.search_vector @@ input.query
+				          group by p.solution_id) ranked
+				    order by position
+				    limit :pool
+				),
+				passage_meaning as (
+				    select solution_id, row_number() over (order by distance, solution_id) as position
+				    from (select solution_id, min(distance) as distance
+				          from (select p.solution_id, p.embedding <=> cast(:vector as vector) as distance
+				                from search_passage p
+				                where cast(:vector as vector) is not null and p.embedding is not null
+				                  and p.embedding_model = :model
+				                order by p.embedding <=> cast(:vector as vector)
+				                limit :nearest) passages
+				          group by solution_id) best
+				)
+				select ranked.solution_id, sum(1.0 / (:fusionK + ranked.position)) as score
+				from (select * from profile_text union all select * from profile_meaning
+				      union all select * from passage_text union all select * from passage_meaning) ranked
+				-- A passage that was loaded stays when its solution leaves the index; only solutions in it are answered.
+				join search_document d on d.kind = 'solution' and d.item_id = ranked.solution_id
+				group by ranked.solution_id
+				order by score desc, ranked.solution_id
+				limit :pool
+				""")
+			.param("terms", terms)
+			.param("vector", meaning == null ? null : SearchDocumentRepository.vector(meaning.vector()), Types.VARCHAR)
+			.param("model", meaning == null ? "" : meaning.model())
+			.param("pool", pool)
+			.param("nearest", nearest)
+			.param("fusionK", FUSION_K)
+			.query(row -> {
+				scores.put(row.getObject("solution_id", UUID.class), row.getDouble("score"));
+			});
+		return scores;
+	}
+
 	/** Takes out everything kept for a solution; nothing happens when nothing is. */
 	public void removeOf(UUID solutionId) {
 		jdbc.sql("delete from search_passage where solution_id = :solutionId").param("solutionId", solutionId).update();

@@ -37,10 +37,22 @@ final class PdfPages {
 			for (int page = 1; page <= count; page++) {
 				stripper.setStartPage(page);
 				stripper.setEndPage(page);
-				pages.add(stripper.getText(document).strip());
+				pages.add(clean(stripper.getText(document)));
 			}
 			return pages;
 		}
+	}
+
+	/**
+	 * A page's text without the characters no text holds: a font without a mapping gives the null character, which
+	 * PostgreSQL refuses in a text, and other control characters. Line ends and tabs stay.
+	 */
+	static String clean(String text) {
+		StringBuilder kept = new StringBuilder(text.length());
+		text.codePoints()
+			.filter(character -> character == '\n' || character == '\t' || !Character.isISOControl(character))
+			.forEach(kept::appendCodePoint);
+		return kept.toString().strip();
 	}
 
 	/** The pictures of these pages as PNG, by page number from 1; a page the file does not have is left out. */

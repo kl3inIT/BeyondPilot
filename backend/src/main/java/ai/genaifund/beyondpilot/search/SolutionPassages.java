@@ -126,8 +126,22 @@ class SolutionPassages {
 			.limit(DECKS_PER_RUN)
 			.toList();
 		for (SolutionDeckFile file : waiting) {
-			solutions.deck(file.solutionId())
-				.ifPresent(deck -> deck(file.solutionId(), names.get(file.solutionId()), deck));
+			try {
+				solutions.deck(file.solutionId())
+					.ifPresent(deck -> deck(file.solutionId(), names.get(file.solutionId()), deck));
+			}
+			catch (RuntimeException unwritten) {
+				// One deck that cannot be kept must not hold back those after it: it is marked as tried.
+				LOG.atWarn()
+					.addKeyValue("event", "search.deck.not_kept")
+					.addKeyValue("error_type", unwritten.getClass().getName())
+					.addKeyValue("solution_id", file.solutionId())
+					.log("A deck's pages could not be kept; its solution is found by its profile");
+				List<Passage> tried = List.of(new Passage(DECK, 1, 0, null,
+						names.get(file.solutionId()) + ", deck page 1", "", UNREAD));
+				transactions.executeWithoutResult(
+						status -> passages.replace(file.solutionId(), DECK, file.fileId().toString(), tried));
+			}
 		}
 	}
 
