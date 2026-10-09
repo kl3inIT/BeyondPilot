@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { MatchingCandidate, MatchingFinding, MatchingRequirement } from "@/lib/api/generated";
 
 import {
+  changesBetween,
   constraintsOf,
   coverageOf,
   FOLDED_ROWS,
@@ -13,7 +14,10 @@ import {
   recommendedOf,
   requirementName,
   rowVerdict,
+  runStages,
   sourceOf,
+  stageOf,
+  stageState,
   statusOf,
   tabsOf,
   unreadOf,
@@ -338,6 +342,98 @@ describe("what a row says beyond its group", () => {
     expect(unreadOf({ unread: ["deck"] })).toBe("deck");
     expect(unreadOf({ unread: ["website"] })).toBe("website");
     expect(unreadOf({ unread: ["website", "deck"] })).toBe("both");
+  });
+});
+
+describe("a run at work", () => {
+  const unread = (name: string) => candidate(name, "none", [], { judged: false });
+
+  it("is at the stage it says, at its end when it is done, and at none when it waits", () => {
+    expect(stageOf({ state: "running", stage: "search", total: 0 })).toBe("search");
+    expect(stageOf({ state: "done", total: 4 })).toBe("done");
+    expect(stageOf({ state: "queued", total: 0 })).toBeUndefined();
+    expect(stageOf({ state: "waiting", total: 4 })).toBeUndefined();
+    expect(stageOf({ state: "failed", total: 4 })).toBeUndefined();
+    expect(stageOf(undefined)).toBeUndefined();
+  });
+
+  it("is reading solutions once it found some, when it does not say its stage", () => {
+    expect(stageOf({ state: "running", total: 0 })).toBe("brief");
+    expect(stageOf({ state: "running", total: 12 })).toBe("reading");
+  });
+
+  it("has passed the stages before the one it is at, and every stage once it ended", () => {
+    expect(runStages.map((stage) => stageState(stage, "brief"))).toEqual([
+      "current",
+      "ahead",
+      "ahead",
+      "ahead",
+    ]);
+    expect(runStages.map((stage) => stageState(stage, "reading"))).toEqual([
+      "passed",
+      "passed",
+      "current",
+      "ahead",
+    ]);
+    expect(runStages.map((stage) => stageState(stage, "done"))).toEqual([
+      "passed",
+      "passed",
+      "passed",
+      "passed",
+    ]);
+  });
+
+  it("says which solution was added to which group when one is read", () => {
+    const before = [direct, unread("Kira"), unread("Formica")];
+    const after = [direct, candidate("Kira", "industry", [finding(1, "partly", "x")]), before[2]];
+    expect(changesBetween(before, after)).toEqual({
+      activity: { kind: "added", name: "Kira", group: "industry" },
+      arrived: ["candidate-Kira"],
+    });
+  });
+
+  it("says nothing of a solution that fits no group, which only leaves the list", () => {
+    const before = [direct, unread("Kira")];
+    expect(changesBetween(before, [direct, candidate("Kira", "none", [])])).toEqual({
+      arrived: [],
+    });
+  });
+
+  it("counts those read together and how many of them were added", () => {
+    const before = [unread("Kira"), unread("Formica"), unread("Ledgerly"), unread("Inkstone")];
+    const after = [
+      candidate("Kira", "direct", [finding(1, "met", "x")]),
+      candidate("Formica", "none", []),
+      candidate("Ledgerly", "none", []),
+      before[3],
+    ];
+    expect(changesBetween(before, after)).toEqual({
+      activity: { kind: "several", read: 3, added: 1 },
+      arrived: ["candidate-Kira"],
+    });
+  });
+
+  it("says nothing when nothing was read: a decision, a solution found, or the same state", () => {
+    const before = [direct, unread("Kira")];
+    expect(changesBetween(before, before)).toEqual({ arrived: [] });
+    expect(changesBetween(before, [{ ...direct, decision: "shortlisted" }, before[1]])).toEqual({
+      arrived: [],
+    });
+    // One the earlier read did not hold was found, or added by hand; nobody saw it wait to be read.
+    expect(changesBetween([direct], [direct, technology, unread("Kira")])).toEqual({ arrived: [] });
+  });
+
+  it("does not add what a person removed, and marks a row a run moved to another group", () => {
+    const gone = { ...unread("Kira"), decision: "removed" as const };
+    expect(
+      changesBetween(
+        [gone],
+        [{ ...candidate("Kira", "direct", []), decision: "removed" as const }],
+      ),
+    ).toEqual({ arrived: [] });
+    expect(changesBetween([technology], [{ ...technology, bucket: "direct" as const }])).toEqual({
+      arrived: ["candidate-Docbase"],
+    });
   });
 });
 

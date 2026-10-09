@@ -1,4 +1,9 @@
-import type { MatchingCandidate, MatchingFinding, MatchingRequirement } from "@/lib/api/generated";
+import type {
+  MatchingCandidate,
+  MatchingFinding,
+  MatchingRequirement,
+  MatchingRun,
+} from "@/lib/api/generated";
 
 /** How many words of a statement stand in for a need that has no label. */
 const NAME_WORDS = 4;
@@ -12,6 +17,15 @@ export type NeedStatus = MatchingFinding["status"];
 
 /** The parts of the list: the three groups, what waits to be read, and what a person keeps. */
 export type Section = Group | "waiting" | "kept";
+
+/** What a run goes through, in order; the last is its end. */
+export const runStages = ["brief", "search", "reading", "done"] as const;
+
+export type RunStage = (typeof runStages)[number];
+
+/** What just happened to the solutions, for the line under the stages of a run. */
+export type Activity =
+  { kind: "added"; name: string; group: Group } | { kind: "several"; read: number; added: number };
 
 /** How many rows a folding group shows when it is first opened. */
 export const FOLDED_ROWS = 5;
@@ -186,6 +200,62 @@ export function rowVerdict(
   const said =
     candidate.bucket === "direct" ? "met" : candidate.bucket === "none" ? null : "partly";
   return status === said ? undefined : status;
+}
+
+/**
+ * The stage a run is at. A run that is not at work is at none, and one that ended is at its end. A
+ * running run says its stage; one that does not is reading solutions once it has found some.
+ */
+export function stageOf(
+  run: Pick<MatchingRun, "state" | "stage" | "total"> | null | undefined,
+): RunStage | undefined {
+  if (run?.state === "done") {
+    return "done";
+  }
+  if (run?.state !== "running") {
+    return undefined;
+  }
+  return run.stage ?? (run.total > 0 ? "reading" : "brief");
+}
+
+/** Where a stage stands for a run that is at `at`: behind it, the one at work, or still ahead. */
+export function stageState(stage: RunStage, at: RunStage): "passed" | "current" | "ahead" {
+  const place = runStages.indexOf(stage);
+  const reached = runStages.indexOf(at);
+  // The end is not a stage at work: a run that reached it has passed every stage.
+  return place < reached || at === "done" ? "passed" : place === reached ? "current" : "ahead";
+}
+
+/**
+ * What became of the solutions between two reads of a use case. A solution is read when the earlier
+ * read held it unread and the later holds it read; it is added when it then stands in a group of the
+ * list. One read that fits no group leaves the list and is not spoken of. `arrived` names the rows that
+ * entered a group, those a run read again and moved to another group included.
+ */
+export function changesBetween(
+  before: MatchingCandidate[],
+  after: MatchingCandidate[],
+): { activity?: Activity; arrived: string[] } {
+  const earlier = new Map(before.map((candidate) => [candidate.id, candidate]));
+  const inGroup = (candidate: MatchingCandidate) =>
+    candidate.judged && candidate.bucket !== "none" && candidate.decision !== "removed";
+  const read = after.filter((candidate) => {
+    const was = earlier.get(candidate.id);
+    return was !== undefined && !was.judged && candidate.judged;
+  });
+  const added = read.filter(inGroup);
+  const moved = after.filter((candidate) => {
+    const was = earlier.get(candidate.id);
+    return was?.judged === true && inGroup(candidate) && was.bucket !== candidate.bucket;
+  });
+  const arrived = [...added, ...moved].map((candidate) => candidate.id);
+  if (read.length > 1) {
+    return { activity: { kind: "several", read: read.length, added: added.length }, arrived };
+  }
+  const [one] = added;
+  return one && one.bucket !== "none"
+    ? { activity: { kind: "added", name: one.solutionName, group: one.bucket }, arrived }
+    : { arrived };
 }
 
 /** Which of a solution's deck and website the AI could not read. */
