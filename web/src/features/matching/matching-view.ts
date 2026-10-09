@@ -75,11 +75,12 @@ export function statusOf(
 }
 
 /**
- * Whether a candidate is on the screen at all: one a run judged and put in no group is not, and one
- * that waits to be judged is.
+ * Whether a candidate is on the screen at all: one a run judged and put in no group is not, unless a
+ * person decided on it, since a later run must not hide what someone shortlisted or removed. One that
+ * waits to be judged is shown.
  */
-export function isShown(candidate: Pick<MatchingCandidate, "judged" | "bucket">) {
-  return !candidate.judged || candidate.bucket !== "none";
+export function isShown(candidate: Pick<MatchingCandidate, "judged" | "bucket" | "decision">) {
+  return !candidate.judged || candidate.bucket !== "none" || candidate.decision !== "none";
 }
 
 /** The candidates of each tab. A removed candidate is in the Removed tab alone. */
@@ -94,7 +95,9 @@ export function tabsOf(candidates: MatchingCandidate[]) {
 
 /** The candidates a run recommends: judged, in a group, and not removed. */
 export function recommendedOf(candidates: MatchingCandidate[]) {
-  return tabsOf(candidates).all.filter((candidate) => candidate.judged);
+  return tabsOf(candidates).all.filter(
+    (candidate) => candidate.judged && candidate.bucket !== "none",
+  );
 }
 
 /** For each need, the best any recommended candidate shows and how many show something of it. */
@@ -117,7 +120,10 @@ export function withNeed(candidates: MatchingCandidate[], position: number | nul
     : candidates.filter((candidate) => statusOf(candidate, position) !== "not_shown");
 }
 
-/** Candidates by group, in the order the run found them, and those that wait to be judged. */
+/**
+ * Candidates by group, in the order the run found them, those that wait to be judged, and those a
+ * person keeps although the last run put them in no group.
+ */
 export function grouped(candidates: MatchingCandidate[]) {
   const judged = candidates.filter((candidate) => candidate.judged);
   return {
@@ -125,6 +131,7 @@ export function grouped(candidates: MatchingCandidate[]) {
     industry: judged.filter((candidate) => candidate.bucket === "industry"),
     technology: judged.filter((candidate) => candidate.bucket === "technology"),
     waiting: candidates.filter((candidate) => !candidate.judged),
+    kept: judged.filter((candidate) => candidate.bucket === "none"),
   };
 }
 
@@ -173,16 +180,4 @@ export function sourceOf(label: string): Source | undefined {
     return { kind: "deck", page: Number(deck[1]) };
   }
   return /^website( \d+)?$/.test(text) ? { kind: "website" } : undefined;
-}
-
-/**
- * Which of a candidate's sources held no text. The contract types the list as one value; the backend
- * sends a list, so both are read.
- */
-export function unreadOf(candidate: { unread: unknown }): string[] {
-  const { unread } = candidate;
-  if (Array.isArray(unread)) {
-    return unread.filter((value): value is string => typeof value === "string");
-  }
-  return typeof unread === "string" && unread !== "" ? [unread] : [];
 }

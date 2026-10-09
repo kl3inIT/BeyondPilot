@@ -13,7 +13,6 @@ import {
   sourceOf,
   statusOf,
   tabsOf,
-  unreadOf,
   withNeed,
 } from "./matching-view";
 
@@ -185,6 +184,18 @@ describe("tabs and groups", () => {
     expect(found.industry).toEqual([industry]);
     expect(found.technology).toEqual([technology]);
     expect(found.waiting).toEqual([waiting]);
+    expect(found.kept).toEqual([]);
+  });
+
+  it("keeps a candidate a person decided on although the last run put it in no group", () => {
+    const shortlisted = { ...none, solutionName: "Kept", decision: "shortlisted" as const };
+    const gone = { ...none, solutionName: "Gone", decision: "removed" as const };
+    const tabs = tabsOf([direct, none, shortlisted, gone]);
+    expect(tabs.shortlist).toEqual([shortlisted]);
+    expect(tabs.removed).toEqual([gone]);
+    expect(grouped(tabs.all).kept).toEqual([shortlisted]);
+    // It is kept, and it is not what the run recommends.
+    expect(recommendedOf([direct, none, shortlisted, gone])).toEqual([direct]);
   });
 });
 
@@ -249,11 +260,5 @@ describe("sources", () => {
     expect(sourceOf("website")).toEqual({ kind: "website" });
     expect(sourceOf("")).toBeUndefined();
     expect(sourceOf("brochure")).toBeUndefined();
-  });
-
-  it("without text are a list, whatever shape the answer has", () => {
-    expect(unreadOf({ unread: ["deck", "website"] })).toEqual(["deck", "website"]);
-    expect(unreadOf({ unread: "deck" })).toEqual(["deck"]);
-    expect(unreadOf({ unread: [] })).toEqual([]);
   });
 });

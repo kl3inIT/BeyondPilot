@@ -6382,6 +6382,7 @@
         "no_model": "Lúc chạy chưa có mô hình AI nào được chọn cho việc ghép giải pháp.",
         "use_case_not_published": "Use case này không còn được đăng nên không được ghép nữa.",
         "no_capability": "AI chưa đọc ra được từ đề bài giải pháp cần làm gì. Hãy viết rõ hơn trong đề bài rồi chạy lại.",
+        "provider": "Dịch vụ AI chưa hoàn tất được lượt này. Có thể chạy lại.",
         "unknown": "Nhà cung cấp AI không phản hồi. Những ứng viên đã đánh giá vẫn được giữ; hãy chạy lại để tiếp tục."
       },
       "judgeAllConfirm": {
@@ -6423,6 +6424,10 @@
       "waiting": {
         "title": "Chờ đánh giá",
         "about": "Do GenAI Fund thêm vào. Lần chạy tới sẽ đọc và xếp nhóm cho giải pháp."
+      },
+      "kept": {
+        "title": "Do người giữ lại",
+        "about": "Có người đã đưa vào shortlist. Lượt chạy gần nhất không thấy lý do để gợi ý, nhưng nó vẫn ở đây cho tới khi có người bỏ ra."
       },
       "aboutLabel": "“{group}” nghĩa là gì",
       "emptyDirect": "{count, plural, =0 {Chưa giải pháp nào đáp ứng mọi nhu cầu.} =1 {Chưa giải pháp nào đáp ứng nhu cầu bắt buộc.} other {Chưa giải pháp nào đáp ứng đủ cả # nhu cầu bắt buộc.}}",
@@ -6471,7 +6476,6 @@
       "title": "Vì sao {name} không phù hợp?",
       "cancel": "Hủy",
       "note": "Ghi chú thêm (không bắt buộc)",
-      "noteNeeded": "Nói ngắn gọn lý do",
       "foot": "Giải pháp vẫn ở trên BeyondPilot và trong các lần ghép khác. Use case này sẽ không đề xuất lại nó.",
       "confirm": "Gỡ",
       "reasons": {

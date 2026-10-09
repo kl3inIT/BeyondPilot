@@ -11,7 +11,7 @@ import { siteRoutes } from "@/lib/site";
 
 import { SourceChip, StatusChip } from "./matching-marks";
 import { useCandidateMeta } from "./matching-row";
-import { findingOf, requirementName, unreadOf, type Need } from "./matching-view";
+import { findingOf, requirementName, type Need } from "./matching-view";
 
 type FindingItemProps = {
   name: string;
@@ -72,7 +72,7 @@ function MatchingPanel({
 }: MatchingPanelProps) {
   const t = useTranslations("Matching");
   const meta = useCandidateMeta()(candidate);
-  const unread = unreadOf(candidate);
+  const { unread } = candidate;
   const shortlisted = candidate.decision === "shortlisted";
 
   return (

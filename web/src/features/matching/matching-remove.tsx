@@ -30,14 +30,13 @@ type MatchingRemoveProps = {
 
 /**
  * Asks why a candidate is not a fit, in the place of its row: one reason out of five and a note if the
- * person wants. "Other" needs the note, since nothing else says what the reason is.
+ * person wants.
  */
 function MatchingRemove({ candidate, pending, onCancel, onRemove }: MatchingRemoveProps) {
   const t = useTranslations("Matching.remove");
   const titleId = useId();
   const [reason, setReason] = useState<RemoveMatchingCandidate["reason"] | null>(null);
   const [note, setNote] = useState("");
-  const noteNeeded = reason === "other" && note.trim() === "";
 
   return (
     <section
@@ -77,8 +76,8 @@ function MatchingRemove({ candidate, pending, onCancel, onRemove }: MatchingRemo
         ))}
       </ToggleGroup>
       <Input
-        aria-label={t(reason === "other" ? "noteNeeded" : "note")}
-        placeholder={t(reason === "other" ? "noteNeeded" : "note")}
+        aria-label={t("note")}
+        placeholder={t("note")}
         maxLength={MAX_NOTE}
         value={note}
         disabled={pending}
@@ -89,7 +88,7 @@ function MatchingRemove({ candidate, pending, onCancel, onRemove }: MatchingRemo
         <Button
           size="sm"
           pending={pending}
-          disabled={reason === null || noteNeeded}
+          disabled={reason === null}
           onClick={() => reason && onRemove({ reason, note: note.trim() || undefined })}
         >
           {t("confirm")}

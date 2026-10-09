@@ -6382,6 +6382,7 @@
         "no_model": "No AI model was chosen for matching when it ran.",
         "use_case_not_published": "This use case is not published any more, so it is not matched.",
         "no_capability": "The AI could not read from the brief what the solution has to do. Say it more plainly in the brief, then run again.",
+        "provider": "The AI service could not finish this run. It can be started again.",
         "unknown": "The AI provider did not answer. The candidates judged so far are kept; run again to continue."
       },
       "judgeAllConfirm": {
@@ -6423,6 +6424,10 @@
       "waiting": {
         "title": "Waiting to be judged",
         "about": "Added by GenAI Fund. The next run reads it and puts it in a group."
+      },
+      "kept": {
+        "title": "Kept by a person",
+        "about": "Shortlisted by a person. The last run found no reason to recommend it, and it stays until someone takes it off."
       },
       "aboutLabel": "What “{group}” means",
       "emptyDirect": "{count, plural, =0 {No one covers every need.} one {No one covers the required need.} other {No one covers all # required needs.}}",
@@ -6471,7 +6476,6 @@
       "title": "Why is {name} not a fit?",
       "cancel": "Cancel",
       "note": "Add a note (optional)",
-      "noteNeeded": "Say in a few words why",
       "foot": "It stays on BeyondPilot and in other matches. This use case will not suggest it again.",
       "confirm": "Remove",
       "reasons": {

@@ -58,7 +58,7 @@ function subscribeToWidth(onChange: () => void) {
 const tabNames = ["all", "shortlist", "removed"] as const;
 type TabName = (typeof tabNames)[number];
 
-type Section = Group | "waiting";
+type Section = Group | "waiting" | "kept";
 
 type GroupCardProps = {
   title: string;
@@ -129,6 +129,7 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
     ...sections.industry,
     ...sections.technology,
     ...sections.waiting,
+    ...sections.kept,
   ];
   const chosen =
     tab === "removed"
@@ -205,8 +206,11 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
 
   /** Opens the reason picker in the place of the candidate's row, wherever the person asked from. */
   function askWhy(candidate: MatchingCandidate) {
-    const section: Section =
-      candidate.judged && candidate.bucket !== "none" ? candidate.bucket : "waiting";
+    const section: Section = !candidate.judged
+      ? "waiting"
+      : candidate.bucket !== "none"
+        ? candidate.bucket
+        : "kept";
     setExpanded((current) => (current.includes(section) ? current : [...current, section]));
     setSheetOpen(false);
     setRemovingId(candidate.id);
@@ -314,6 +318,16 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
           count={sections.waiting.length}
         >
           {rows("waiting")}
+        </GroupCard>
+      )}
+      {sections.kept.length > 0 && (
+        <GroupCard
+          title={t("groups.kept.title")}
+          about={t("groups.kept.about")}
+          aboutLabel={t("groups.aboutLabel", { group: t("groups.kept.title") })}
+          count={sections.kept.length}
+        >
+          {rows("kept")}
         </GroupCard>
       )}
     </div>
