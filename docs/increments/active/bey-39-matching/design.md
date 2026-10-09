@@ -57,7 +57,7 @@ A **candidate** is not an **applicant**. A proposal a provider sent goes through
 
 Reactions, after commit and idempotent:
 
-- `UseCaseChanged`: when the use case is approved, or its text changed since the last run, a run is queued.
+- `UseCaseChanged`: when the use case is approved, or its text or its attached files changed since the last run, a run is queued; the run extracts the requirements again first.
 - `SolutionChanged`: `search` extracts the deck again when its file changed, and replaces its passages; `matching` hides the candidates of a solution that is no longer approved.
 
 A run is not a transaction. Each step saves what it produced, and each judged candidate is saved when its judgment ends, so a stop loses at most the judgments in flight.
@@ -68,7 +68,7 @@ A new module, `matching`, owns five tables. No other module reads them.
 
 | Table | Holds | Invariant |
 | --- | --- | --- |
-| `matching_requirement` | The requirements of a use case as last extracted: kind, necessity, statement, quote, and the hash of the text they came from | Replaced together when the use case's text changes |
+| `matching_requirement` | The requirements of a use case as last extracted: kind, necessity, statement, quote, and the hash of what they came from: the use case's text and the text of its attached files | Replaced together when the use case's text or an attached file changes |
 | `matching_run` | A run: use case, state, who started it, the prompt version, the models used, when it started and ended, the kind of failure | At most one running per use case |
 | `matching_run_step` | One step of a run: its name and order, how many it took in and gave out, the calls, the tokens and the time | Written by the run only |
 | `matching_candidate` | One solution for one use case: its origin, its bucket, how many required capabilities are met, the findings with their quotes and the state of each quote, the model's one-line reason, and the fingerprint of what was judged | Unique per use case and solution |
@@ -78,7 +78,7 @@ The text of decks and websites is kept by `search`, in one new table, because it
 
 | Table | Holds | Invariant |
 | --- | --- | --- |
-| `search_passage` | One passage of a solution's deck or website: the solution, the source (`deck` or `website`), the page number or the address, its place on the page, the text, how it was read (`text` or `model`), what it was extracted from, its full-text vector and its embedding with the queue columns `search_document` has | The passages of one source of one solution are replaced together. The public search never reads this table |
+| `search_passage` | One passage of a solution's deck, website or customer case: the solution, the source (`deck`, `website` or `customer_case`), the page number or the address, its place on the page, the text, how it was read (`text` or `model`), what it was extracted from, its full-text vector and its embedding with the queue columns `search_document` has | The passages of one source of one solution are replaced together. The public search never reads this table |
 
 A deck's passages can be made again from its file. The website passages of imported solutions are loaded once and cannot be made again until BEY-99 reads websites, so the nightly rebuild of the index leaves passages alone.
 

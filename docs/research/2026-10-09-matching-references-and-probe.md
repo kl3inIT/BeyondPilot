@@ -99,7 +99,7 @@ Of the findings with a quote, about four in five quote the website or the deck, 
 ## What is taken into the design
 
 - Requirements in two kinds, each capability one function in neutral words, with the passage of the brief it comes from.
-- Candidates from the existing search joined with a keyword search over the text of decks and websites, about 40 judged.
+- Candidates from the existing search joined with a search over the passages of decks, websites and customer cases, by keywords and by meaning, about 40 judged.
 - One judgment per candidate by the model, a quote and its source for every finding; code checks the quotes and decides the bucket and the order.
 - A run that waits when the provider says its limit is reached.
 - The two use cases of the probe, with the model's saved answers, as the first fixtures for the parts in code.
