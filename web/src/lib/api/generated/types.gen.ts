@@ -2588,6 +2588,10 @@ export type OrganizationMatch = {
     country?: string | null;
     emailDomain?: string | null;
     id: string;
+    /**
+     * Its logo, read at /api/storage/files/{id}; null for none.
+     */
+    logoFileId?: string | null;
     name: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     /**

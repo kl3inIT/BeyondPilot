@@ -2,17 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { MailPlusIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -69,10 +64,12 @@ function AdminInvite({ organization }: { organization: { id: string; name: strin
       <Dialog open={open} onOpenChange={(next) => (pending ? undefined : setOpen(next))}>
         <DialogContent showCloseButton={false} className="sm:max-w-120">
           <form noValidate onSubmit={submit} className="flex flex-col gap-4">
-            <DialogHeader>
-              <DialogTitle size="lg">{t("title", { name: organization.name })}</DialogTitle>
-              <DialogDescription>{t("lead")}</DialogDescription>
-            </DialogHeader>
+            <DecisionDialogHeader
+              tone="info"
+              icon={MailPlusIcon}
+              title={t("title", { name: organization.name })}
+              description={t("lead")}
+            />
             <FieldGroup>
               <Field data-invalid={invalid || undefined}>
                 <FieldLabel htmlFor="admin-invite-email">{t("email")}</FieldLabel>
@@ -104,11 +101,16 @@ function AdminInvite({ organization }: { organization: { id: string; name: strin
               </Field>
             </FieldGroup>
             <p className="text-sm text-muted-foreground">{t("note")}</p>
-            <DialogFooter>
-              <Button prominence="secondary" disabled={pending} onClick={() => setOpen(false)}>
+            <DialogFooter variant="plain">
+              <Button
+                size="lg"
+                prominence="secondary"
+                disabled={pending}
+                onClick={() => setOpen(false)}
+              >
                 {t("cancel")}
               </Button>
-              <Button type="submit" pending={pending}>
+              <Button size="lg" type="submit" pending={pending}>
                 {t("send")}
               </Button>
             </DialogFooter>

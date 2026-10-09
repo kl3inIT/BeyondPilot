@@ -1,18 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { SendIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -147,7 +142,7 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
             className="flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-center"
           >
             <div className="flex min-w-0 flex-1 items-center gap-4">
-              <OrganizationMark name={match.name} />
+              <OrganizationMark name={match.name} logoFileId={match.logoFileId} />
               <div className="flex min-w-0 flex-col gap-0.5">
                 <span className="truncate text-sm font-medium">{match.name}</span>
                 <span className="text-xs text-muted-foreground">
@@ -155,11 +150,13 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
                     .filter(Boolean)
                     .join(" · ")}
                 </span>
-                <span className="text-xs text-muted-foreground">
-                  {match.way === "join" && match.emailDomain
-                    ? t("way.joinDomain", { domain: match.emailDomain })
-                    : t(`way.${match.way}`)}
-                </span>
+                {match.way !== "request" && (
+                  <span className="text-xs text-muted-foreground">
+                    {match.way === "join" && match.emailDomain
+                      ? t("way.joinDomain", { domain: match.emailDomain })
+                      : t(`way.${match.way}`)}
+                  </span>
+                )}
               </div>
             </div>
             <Button size="lg" pending={pending === match.id} onClick={() => choose(match)}>
@@ -204,14 +201,12 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
       {asking && (
         <Dialog open onOpenChange={(open) => !open && !pending && setAsking(null)}>
           <DialogContent showCloseButton={false} className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle size="lg">
-                {t(`ask.${asking.way}.title`, { name: asking.name })}
-              </DialogTitle>
-              {asking.way !== "request" && (
-                <DialogDescription>{t(`ask.${asking.way}.lead`)}</DialogDescription>
-              )}
-            </DialogHeader>
+            <DecisionDialogHeader
+              tone="info"
+              icon={SendIcon}
+              title={t(`ask.${asking.way}.title`, { name: asking.name })}
+              description={asking.way !== "request" ? t(`ask.${asking.way}.lead`) : undefined}
+            />
             <Field>
               <FieldLabel htmlFor="join-message">{t("ask.message")}</FieldLabel>
               <Textarea
@@ -222,8 +217,9 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
                 onChange={(event) => setMessage(event.target.value)}
               />
             </Field>
-            <DialogFooter>
+            <DialogFooter variant="plain">
               <Button
+                size="lg"
                 prominence="secondary"
                 disabled={pending !== null}
                 onClick={() => setAsking(null)}
