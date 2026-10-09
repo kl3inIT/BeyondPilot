@@ -43,7 +43,6 @@ import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { PublicSolution } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
-import { cn } from "@/lib/utils";
 
 import { CustomerDeploymentCard } from "./customer-deployment-card";
 import { deckAddress, useFileSize } from "./solution-deck";
