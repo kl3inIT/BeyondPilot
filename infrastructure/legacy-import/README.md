@@ -1,16 +1,16 @@
 # Import from the old platform
 
-A one-off load of GenAI Fund's v1 export (startups and use cases) into BeyondPilot, as decided in the [import design](../../docs/increments/active/bey-74-v1-import/design.md). `report.py` only reads and maps the export and reports what an import would do. `build.py` fetches the files v1 names (on v1 or, when public, on Google Drive, Slides and Docs) and writes one SQL file that loads everything into a database, for whichever environment runs it.
+A one-off load of GenAI Fund's v1 export (startups and use cases) into BeyondPilot, as decided in the [import design](../../docs/increments/active/bey-74-v1-import/design.md). `report.py` reads and reconciles the export. `build.py` writes the duplicate-protected `load.sql`, a targeted `v1-details.sql` refresh for rows from an earlier load, and the files needed by the database's local object store.
 
 | File | Holds |
 | --- | --- |
 | `vocabulary.py` | The codes BeyondPilot accepts, copied from the backend |
 | `check_vocabulary.py` | Fails when `vocabulary.py` no longer matches the backend |
-| `mapping.py` | How each v1 value becomes a code; a value with no code is reported, never stored as free text |
+| `mapping.py` | Maps controlled v1 values to BeyondPilot codes; reports unsupported codes and leaves descriptive company claims as statements |
 | `report.py` | Reads the export and writes the report |
-| `records.py` | The organizations, solutions, use cases and files the export becomes |
+| `records.py` | The organizations, solutions, use cases and file references the export becomes, including the v1 solution-detail fields |
 | `fetch.py` | Fetches a file from v1's API or Google's public download addresses only, checks its type and size, and caches it |
-| `build.py` | Writes `load.sql` and the files in the local object store's layout |
+| `build.py` | Writes `load.sql`, `v1-details.sql` and the files in the local object store's layout |
 | `enrich_fetch.py`, `enrich_render.py` | Enrichment stage 1: each startup's deck text, website pages and logo and cover candidates; pages built by JavaScript and SVG logos read in headless Chromium |
 | `enrich_check.py` | Keeps a researched value only when its quote is in the saved source and the value is a code BeyondPilot accepts |
 | `enrich_apply.py` | Writes `update.sql` (empty parts filled, customers added) and `audit.sql` (one `solution.enrich` event per solution, with each value's quote and source) |
@@ -37,7 +37,7 @@ The build fetches each file once into the cache, so a second run fetches nothing
 
 - `summary.md`: counts only. It may go on Linear.
 - `report.md`: names companies, test records and duplicates. It stays on the machine that ran it.
-- `load.sql`, `files/` and `build.json`: the load and what was fetched or refused. They hold the export's content and stay with it.
+- `load.sql`, `v1-details.sql`, `files/` and `build.json`: the initial load, the targeted refresh and what was fetched or refused. They hold the export's content and stay with it.
 
 The export, both reports and anything produced later from them are never committed: they hold names and email addresses. `.tmp/` is ignored by Git.
 
@@ -52,6 +52,7 @@ Staging first, then production, with the same `load.sql` and `files/` (the [desi
 5. **Staging only:** approve the imported organizations and approve and list every imported solution, so matching is built on real data: `python -I infrastructure/legacy-import/staging_list.py .tmp/legacy-import/out/load.sql > .tmp/legacy-import/out/staging-list.sql`, then run it with `psql -v ON_ERROR_STOP=1 -f -`. Production skips this step.
 6. Rebuild the search index from Admin › AI › Search index.
 7. Check the counts against `build.json` and the summary, and in Admin › Organizations and Solutions (In review on production, Approved on staging).
+For an environment loaded before the detail columns were added, generate the current `v1-details.sql` from the same workbook and apply it after migrations V56 and V57. It updates only the imported company-size label and startup detail fields on deterministic v1 ids, including moving `Notable Paying Customers` out of `traction` and `Key Milestones` into it. It does not rerun the duplicate-protected load or alter review status or operator backing.
 
 ## Enrich
 
