@@ -53,13 +53,15 @@ function MatchingRun({ matching, pending, onStart, children }: MatchingRunProps)
     });
   const open = run?.state === "queued" || run?.state === "running" || run?.state === "waiting";
   // A run that waits for the brief to stay unchanged starts at once when a person asks.
-  const startable = !open || (run?.state === "queued" && run.startsAt !== undefined);
-  const noneLeft = runsLeftToday !== undefined && runsLeftToday <= 0;
+  const startable = !open || (run?.state === "queued" && Boolean(run.startsAt));
+  // The backend sends null where a value is absent: an operator has no limit, and reads no count.
+  const limited = typeof runsLeftToday === "number";
+  const noneLeft = limited && runsLeftToday <= 0;
   const blocked = !modelChosen || !startable || noneLeft || pending !== null;
 
   const actions = (
     <div className="flex flex-wrap items-center gap-2">
-      {runsLeftToday !== undefined && (
+      {limited && (
         <span className="text-xs text-muted-foreground">
           {t("left", { count: Math.max(0, runsLeftToday) })}
         </span>

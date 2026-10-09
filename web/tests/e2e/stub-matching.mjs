@@ -265,7 +265,8 @@ export function answerMatching(url, account) {
             },
           ]
         : [],
-      ...(operator ? {} : { runsLeftToday: 2 }),
+      // As Spring answers: a value that is absent is null, not left out. An operator has no limit.
+      runsLeftToday: operator ? null : 2,
     },
   ];
 }
