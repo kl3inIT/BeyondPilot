@@ -50,7 +50,8 @@ final class Buckets {
 		for (Requirement requirement : requirements) {
 			Judgment.Finding finding = answered.get(requirement.name());
 			Map<String, Object> settled = settled(finding == null ? null : finding.status(),
-					finding == null ? null : finding.quote(), finding == null ? null : finding.source(), sources);
+					finding == null ? null : finding.quote(), finding == null ? null : finding.source(),
+					finding == null ? null : finding.reason(), sources);
 			settled.put("requirement", requirement.position());
 			findings.add(settled);
 			if (requirement.isCapability() && requirement.isRequired()) {
@@ -64,6 +65,8 @@ final class Buckets {
 				}
 			}
 		}
+		// Whether the product is made for this problem is kept for people to read; it does not decide the group.
+		Map<String, Object> problem = settled(judgment.problemFit(), sources);
 		Map<String, Object> industry = settled(judgment.industryFit(), sources);
 		Map<String, Object> technology = settled(judgment.technologyFit(), sources);
 		String bucket;
@@ -81,6 +84,7 @@ final class Buckets {
 		}
 		Map<String, Object> stored = new LinkedHashMap<>();
 		stored.put("requirements", findings);
+		stored.put("problem", problem);
 		stored.put("industry", industry);
 		stored.put("technology", technology);
 		String summary = judgment.summary() == null || judgment.summary().isBlank() ? null : judgment.summary().strip();
@@ -88,12 +92,16 @@ final class Buckets {
 	}
 
 	private static Map<String, Object> settled(Judgment.@Nullable Fit fit, Sources sources) {
-		return fit == null ? settled(null, null, null, sources) : settled(fit.status(), fit.quote(), fit.source(), sources);
+		return fit == null ? settled(null, null, null, null, sources)
+				: settled(fit.status(), fit.quote(), fit.source(), fit.reason(), sources);
 	}
 
-	/** One answer as it is kept: the status after the check, the quote, its source and where the quote stands. */
+	/**
+	 * One answer as it is kept: the status after the check, the quote, its source, the model's reason and where the
+	 * quote stands. The reason of a finding that was lowered is not kept: it argued for what code refused.
+	 */
 	private static Map<String, Object> settled(@Nullable String status, @Nullable String quote, @Nullable String source,
-			Sources sources) {
+			@Nullable String reason, Sources sources) {
 		boolean claimed = Judgment.MET.equals(status) || Judgment.PARTLY.equals(status);
 		String state = claimed ? Quotes.state(quote, source, sources.texts()) : Quotes.NONE;
 		boolean stands = claimed && Quotes.stands(state);
@@ -101,6 +109,7 @@ final class Buckets {
 		settled.put("status", stands ? status : Judgment.NOT_SHOWN);
 		settled.put("quote", stands && quote != null ? quote.strip() : "");
 		settled.put("source", stands && source != null ? source.strip() : "");
+		settled.put("reason", (stands || !claimed) && reason != null ? reason.strip() : "");
 		settled.put("quoteState", state);
 		return settled;
 	}
