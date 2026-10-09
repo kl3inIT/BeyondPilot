@@ -195,12 +195,7 @@ test.describe("solutions directory", () => {
       await expect(heading).toBeVisible();
       await expect(heading.locator(":scope > svg")).toBeVisible();
     }
-    for (const name of [
-      "Backed by",
-      "Languages",
-      "Industries",
-      "Funding (GenAI Fund)",
-    ]) {
+    for (const name of ["Backed by", "Languages", "Industries", "Funding (GenAI Fund)"]) {
       const criterion = fact(name);
       await expect(criterion).toBeVisible();
       await expect(criterion.locator("dt > svg")).toBeVisible();
