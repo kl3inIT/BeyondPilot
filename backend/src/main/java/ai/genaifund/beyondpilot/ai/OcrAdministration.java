@@ -245,7 +245,8 @@ public class OcrAdministration {
 				all.stream()
 					.map(provider -> new OcrSettingsResponse.Provider(provider.id(), provider.name(),
 							provider.adapterType(), provider.baseUrl(), provider.enabled(), provider.hasKey(),
-							provider.id().equals(service), provider.updatedBy(), provider.updatedAt(), provider.version()))
+							provider.id().equals(service), provider.pricePerThousandCalls(), provider.updatedBy(),
+							provider.updatedAt(), provider.version()))
 					.toList(),
 				new OcrSettingsResponse.Reader(row.getModelId(), AiAdministration.effort(READING, row).value(), service,
 						available, row.getVersion()));
@@ -265,7 +266,7 @@ public class OcrAdministration {
 			default -> AiProviderChange.Key.KEEP;
 		};
 		return new AiProviderChange(null, request.adapterType(), request.name(), endpoint(request.baseUrl()),
-				request.enabled(), key, request.apiKey(), request.version());
+				request.enabled(), key, request.apiKey(), request.version(), request.pricePerThousandCalls());
 	}
 
 	private OcrAdapter adapter(String type) {

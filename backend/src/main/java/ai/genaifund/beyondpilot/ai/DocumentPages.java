@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.ai;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -168,19 +169,25 @@ public class DocumentPages {
 	/** The service to call; null when it is switched off, has no readable key, or speaks an API nothing here does. */
 	private @Nullable Ocr ocr(UUID providerId) {
 		AiConnection connection = providers.connection(AiProviders.OCR, providerId).orElse(null);
-		if (connection == null || !providers.get(AiProviders.OCR, providerId).enabled()) {
+		if (connection == null) {
 			return null;
 		}
+		AiProviderView provider = providers.get(AiProviders.OCR, providerId);
 		OcrAdapter adapter = adapters.adapter(connection.adapterType()).orElse(null);
-		return adapter == null ? null : new Ocr(adapter, connection);
+		return !provider.enabled() || adapter == null ? null
+				: new Ocr(adapter, connection, provider.pricePerThousandCalls());
 	}
 
-	/** One row per page sent, without tokens or a price: a service bills by the call. A failed write fails nothing. */
+	/**
+	 * One row per page sent, without tokens: a service bills by the call, and the row keeps what 1,000 calls cost
+	 * then. A failed write fails nothing.
+	 */
 	private void record(Ocr ocr, AiSubject subject, Instant started, long clock, @Nullable String errorType) {
 		try {
 			usage.add(new AiUsageRepository.Call(started, AiTask.DOCUMENT_READING.value(), ocr.connection().providerId(),
 					ocr.connection().name(), ocr.adapter().type(), null, null, null, null,
-					(System.nanoTime() - clock) / 1_000_000, errorType, subject.type(), subject.id(), null, null, null));
+					(System.nanoTime() - clock) / 1_000_000, errorType, subject.type(), subject.id(), null, null, null,
+					ocr.pricePerThousandCalls()));
 		}
 		catch (RuntimeException unwritten) {
 			LOG.atWarn()
@@ -191,7 +198,7 @@ public class DocumentPages {
 	}
 
 	/** An OCR service ready to be called. It holds the key in clear for as long as a file is being read. */
-	private record Ocr(OcrAdapter adapter, AiConnection connection) {
+	private record Ocr(OcrAdapter adapter, AiConnection connection, @Nullable BigDecimal pricePerThousandCalls) {
 
 		OcrConnection connectionOf() {
 			return new OcrConnection(connection.baseUrl(), connection.apiKey());

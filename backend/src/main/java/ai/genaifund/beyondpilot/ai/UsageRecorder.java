@@ -73,7 +73,7 @@ final class UsageRecorder implements CallAdvisor {
 					tokens == null ? null : tokens.getCacheReadInputTokens(),
 					tokens == null ? null : tokens.getCacheWriteInputTokens(), (System.nanoTime() - clock) / 1_000_000,
 					errorType, subject == null ? null : subject.type(), subject == null ? null : subject.id(),
-					used.inputPrice(), used.outputPrice(), used.cachedInputPrice()));
+					used.inputPrice(), used.outputPrice(), used.cachedInputPrice(), null));
 		}
 		catch (RuntimeException unwritten) {
 			LOG.atWarn()
