@@ -48,7 +48,7 @@ public class OrganizationQueryRepository {
 
 	/** What a person choosing an organization to join sees of one. */
 	public record Match(UUID id, String name, String type, @Nullable String country, @Nullable String emailDomain,
-			boolean autoJoin, boolean owned) {
+			@Nullable UUID logoFileId, boolean autoJoin, boolean owned) {
 	}
 
 	/**
@@ -162,7 +162,7 @@ public class OrganizationQueryRepository {
 	}
 
 	private static final String MATCHES = """
-			select o.id, o.name, o.type, o.country, o.email_domain, o.auto_join,
+			select o.id, o.name, o.type, o.country, o.email_domain, o.logo_file_id, o.auto_join,
 			       exists (select 1 from organization_member m
 			               where m.organization_id = o.id and m.role = 'owner') as owned
 			from organization o
@@ -170,7 +170,8 @@ public class OrganizationQueryRepository {
 
 	private static Match match(ResultSet row, int index) throws SQLException {
 		return new Match(row.getObject("id", UUID.class), row.getString("name"), row.getString("type"),
-				row.getString("country"), row.getString("email_domain"), row.getBoolean("auto_join"),
+				row.getString("country"), row.getString("email_domain"), row.getObject("logo_file_id", UUID.class),
+				row.getBoolean("auto_join"),
 				row.getBoolean("owned"));
 	}
 

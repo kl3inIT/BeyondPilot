@@ -2,18 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
+import { UserCheckIcon } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { Person } from "@/components/composites/person";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { useNotify } from "@/hooks/use-notify";
 import {
   approveOrganizationClaim,
@@ -98,16 +93,18 @@ function ClaimDecision({ organization, claimId, onClose }: ClaimDecisionProps) {
   return (
     <Dialog open onOpenChange={(open) => !open && !pending && onClose()}>
       <DialogContent showCloseButton={false}>
-        <DialogHeader>
-          <DialogTitle size="lg">{t("title", { name })}</DialogTitle>
-          <DialogDescription>
-            {claim
+        <DecisionDialogHeader
+          tone="info"
+          icon={UserCheckIcon}
+          title={t("title", { name })}
+          description={
+            claim
               ? t("lead", {
                   day: format.dateTime(new Date(claim.createdAt), { dateStyle: "medium" }),
                 })
-              : t("leadUnknown")}
-          </DialogDescription>
-        </DialogHeader>
+              : t("leadUnknown")
+          }
+        />
         {claim && (
           <div className="flex flex-col gap-3 rounded-lg border bg-muted p-3">
             <Person name={claim.name ?? null} email={claim.email} />
@@ -122,8 +119,9 @@ function ClaimDecision({ organization, claimId, onClose }: ClaimDecisionProps) {
           problems={{ invalid: t("domainInvalid"), taken: t("domainTaken") }}
           disabled={pending !== null}
         />
-        <DialogFooter>
+        <DialogFooter variant="plain">
           <Button
+            size="lg"
             prominence="secondary"
             pending={pending === "decline"}
             disabled={pending === "approve"}

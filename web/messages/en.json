@@ -1299,7 +1299,6 @@
         "sendBackConfirm": "Send back",
         "reason": "Reason",
         "message": "Message to the owners",
-        "messageHint": "The decision is recorded in the audit log.",
         "back": "Back",
         "reasonPlaceholder": "Choose a reason",
         "domain": "Email domain to verify (optional)",
@@ -3598,7 +3597,6 @@
       "way": {
         "join": "You can join at once",
         "joinDomain": "Your email is on {domain}, so you join at once",
-        "request": "Managed by its owners",
         "claim": "No one manages this page yet"
       },
       "action": {

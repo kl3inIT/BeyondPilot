@@ -137,7 +137,7 @@ public class OrganizationService {
 					.filter(Organization::isApproved)
 					.map(organization -> match(new Match(organization.getId(), organization.getName(),
 							organization.getType(), organization.getCountry(), organization.getEmailDomain(),
-							organization.isAutoJoin(), memberships.owners(organization.getId()) > 0), domain))
+							organization.getLogoFileId(), organization.isAutoJoin(), memberships.owners(organization.getId()) > 0), domain))
 					.orElse(null);
 		return new MyOrganizationResponse(null, null, null, invitations, request, declined, suggestion, null);
 	}
@@ -568,7 +568,7 @@ public class OrganizationService {
 			way = onDomain && found.autoJoin() ? "join" : "request";
 		}
 		return new OrganizationMatchResponse(found.id(), found.name(), found.type(), found.country(),
-				found.emailDomain(), way);
+				found.emailDomain(), found.logoFileId(), way);
 	}
 
 	/** A person who belongs nowhere and waits on nothing. */
