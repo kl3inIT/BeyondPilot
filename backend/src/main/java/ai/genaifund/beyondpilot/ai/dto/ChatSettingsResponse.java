@@ -30,7 +30,7 @@ public record ChatSettingsResponse(
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<Model> models) {
 	}
 
-	@Schema(name = "ChatModel", description = "A model an operator enabled. Prices are US dollars per million tokens; null is unknown.")
+	@Schema(name = "ChatModel", description = "A model an operator enabled. Prices are US dollars per million tokens, those in effect: the operator's where they set them, else the bundled catalog's; null is unknown.")
 	public record Model(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String modelName,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String displayName,
@@ -42,6 +42,7 @@ public record ChatSettingsResponse(
 			@Schema(types = { "number", "null" }) @Nullable BigDecimal inputPrice,
 			@Schema(types = { "number", "null" }) @Nullable BigDecimal outputPrice,
 			@Schema(types = { "number", "null" }) @Nullable BigDecimal cachedInputPrice,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Whether the prices are the catalog's, which the model follows until an operator sets its own. Saving the same prices, or none, keeps it following.") boolean priceFromCatalog,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) long version) {
 	}
 

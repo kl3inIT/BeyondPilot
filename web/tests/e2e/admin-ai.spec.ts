@@ -154,7 +154,8 @@ test.describe("admin AI", () => {
     await page.getByRole("button", { name: "Connect AI Hay" }).click();
     const dialog = page.getByRole("dialog", { name: "Connect AI Hay" });
     await expect(dialog.getByLabel("Endpoint URL")).toHaveValue("https://api.ai-hay.vn");
-    await expect(dialog.getByLabel("Price per 1,000 pages (USD)")).toHaveValue("1.5");
+    // No price is typed for it: left empty, the connection is charged at the catalog's.
+    await expect(dialog.getByLabel("Price per 1,000 pages (USD)")).toHaveValue("");
     await expect(dialog.getByLabel("API key")).toHaveAttribute("type", "password");
     await expect(dialog.getByRole("button", { name: "Test connection" })).toBeDisabled();
     await expect(dialog.getByRole("button", { name: "Save provider" })).toBeDisabled();

@@ -172,6 +172,11 @@ class OcrAdministrationTest {
 		assertThat(JsonPath.<Boolean>read(connected, "$.providers[0].hasKey")).isTrue();
 		assertThat(JsonPath.<Boolean>read(connected, "$.providers[0].inUse")).isFalse();
 		assertThat(JsonPath.<Double>read(connected, "$.providers[0].pricePerThousandCalls")).isEqualTo(1.5);
+		// 1.50 is what the catalog lists for AI Hay, so it is not copied into the row: the provider follows the catalog.
+		assertThat(JsonPath.<Boolean>read(connected, "$.providers[0].priceFromCatalog")).isTrue();
+		assertThat(jdbc.sql("select price_per_1k_calls is null from ai_provider where purpose = 'ocr'")
+			.query(Boolean.class)
+			.single()).isTrue();
 		String id = JsonPath.read(connected, "$.providers[0].id");
 		// The same name is free for a chat provider: a name is unique within its purpose.
 		assertProblem(send("POST", operator, API + "/providers", provider("ai hay", url("/good"), GOOD_KEY)), 409,
@@ -185,11 +190,15 @@ class OcrAdministrationTest {
 		// A stale change is refused; the one read at the current version is taken, and keeps the key.
 		Map<String, Object> renamed = provider("AI Hay OCR", url("/good"), null);
 		renamed.put("key", "keep");
+		// A price the operator sets is theirs.
+		renamed.put("pricePerThousandCalls", 2);
 		renamed.put("version", 7);
 		assertProblem(send("PUT", operator, API + "/providers/" + id, renamed), 409, "AI_PROVIDER_CHANGED");
 		renamed.put("version", JsonPath.<Integer>read(connected, "$.providers[0].version"));
 		String changed = body(send("PUT", operator, API + "/providers/" + id, renamed).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(changed, "$.providers[0].name")).isEqualTo("AI Hay OCR");
+		assertThat(JsonPath.<Number>read(changed, "$.providers[0].pricePerThousandCalls").doubleValue()).isEqualTo(2.0);
+		assertThat(JsonPath.<Boolean>read(changed, "$.providers[0].priceFromCatalog")).isFalse();
 		assertThat(JsonPath.<Boolean>read(changed, "$.providers[0].hasKey")).isTrue();
 
 		String removed = body(send("DELETE", operator, API + "/providers/" + id, null).expectStatus().isOk());
@@ -432,6 +441,7 @@ class OcrAdministrationTest {
 		request.put("baseUrl", baseUrl);
 		request.put("enabled", true);
 		// AI Hay lists OCR at 40,500 VND per 1,000 calls, which is 1.50 US dollars at its own rate.
+		// Sent as the screen shows it; a connection saved with no price at all is charged the same.
 		request.put("pricePerThousandCalls", 1.5);
 		request.put("key", "replace");
 		request.put("apiKey", apiKey);

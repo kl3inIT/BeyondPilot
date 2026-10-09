@@ -57,8 +57,11 @@ public class DocumentPages {
 
 	private final AiSettings settings;
 
+	private final Prices prices;
+
 	DocumentPages(AiModels models, AiTaskModelRepository tasks, AiProviders providers, OcrAdapterRegistry adapters,
-			AiUsageRepository usage, AiSettings settings) {
+			AiUsageRepository usage, AiSettings settings, Prices prices) {
+		this.prices = prices;
 		this.models = models;
 		this.tasks = tasks;
 		this.providers = providers;
@@ -187,7 +190,8 @@ public class DocumentPages {
 		AiProviderView provider = providers.get(AiProviders.OCR, providerId);
 		OcrAdapter adapter = adapters.adapter(connection.adapterType()).orElse(null);
 		return !provider.enabled() || adapter == null ? null
-				: new Ocr(adapter, connection, provider.pricePerThousandCalls());
+				: new Ocr(adapter, connection,
+						prices.ofOcr(connection.adapterType(), provider.pricePerThousandCalls()).perThousand());
 	}
 
 	/**

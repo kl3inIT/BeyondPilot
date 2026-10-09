@@ -350,6 +350,53 @@ class AiAdministrationTest {
 			.list()).contains("ai.model_add", "ai.task_model_change", "ai.model_remove", "ai.provider_delete");
 	}
 
+	@Test
+	void aModelsPriceFollowsTheCatalogUntilAnOperatorSetsOne() {
+		String connected = body(send("POST", operator, API + "/providers", provider("Gateway", "openai", url("/v1"), GOOD_KEY))
+			.expectStatus()
+			.isOk());
+		String id = JsonPath.read(connected, "$.providers[0].id");
+		// Added with no price, through a router that prefixes the name: the catalog knows gpt-5-mini at 0.25 and 2.
+		Map<String, Object> unpriced = model("cx/gpt-5-mini", 272000, 128000, 0);
+		unpriced.put("inputPrice", null);
+		unpriced.put("outputPrice", null);
+		String added = body(send("POST", operator, API + "/providers/" + id + "/models", Map.of("models", List.of(unpriced)))
+			.expectStatus()
+			.isOk());
+		String model = JsonPath.read(added, "$.providers[0].models[0].id");
+
+		assertThat(JsonPath.<Boolean>read(added, "$.providers[0].models[0].priceFromCatalog")).isTrue();
+		assertThat(JsonPath.<Double>read(added, "$.providers[0].models[0].inputPrice")).isEqualTo(0.25);
+		assertThat(JsonPath.<Double>read(added, "$.providers[0].models[0].cachedInputPrice")).isEqualTo(0.025);
+		// Nothing is copied into the row, so a corrected catalog reaches this model at the next deploy.
+		assertThat(jdbc.sql("select input_price is null and output_price is null from ai_model").query(Boolean.class).single())
+			.isTrue();
+
+		// A call is recorded at the catalog's price.
+		send("PUT", operator, API + "/tasks/matching", task(model, "low", JsonPath.<Integer>read(added, "$.tasks[0].version")))
+			.expectStatus()
+			.isOk();
+		try (AiChat chat = models.chat(AiTask.MATCHING, null)) {
+			chat.client().prompt().user("Does this solution fit?").call().content();
+		}
+		assertThat(((Number) jdbc.sql("select input_price from ai_usage").query().singleValue()).doubleValue()).isEqualTo(0.25);
+
+		// A price an operator sets is theirs, and the catalog no longer speaks for the model.
+		Map<String, Object> own = model("cx/gpt-5-mini", 272000, 128000, 0);
+		own.put("inputPrice", 0.4);
+		String set = body(send("PUT", operator, API + "/models/" + model, own).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(set, "$.providers[0].models[0].priceFromCatalog")).isFalse();
+		assertThat(JsonPath.<Double>read(set, "$.providers[0].models[0].inputPrice")).isEqualTo(0.4);
+
+		// Saving the catalog's own prices, as the form shows them, returns the model to the catalog.
+		Map<String, Object> listed = model("cx/gpt-5-mini", 272000, 128000,
+				JsonPath.<Integer>read(set, "$.providers[0].models[0].version"));
+		listed.put("cachedInputPrice", 0.025);
+		String back = body(send("PUT", operator, API + "/models/" + model, listed).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(back, "$.providers[0].models[0].priceFromCatalog")).isTrue();
+		assertThat(jdbc.sql("select input_price is null from ai_model").query(Boolean.class).single()).isTrue();
+	}
+
 	private static Map<String, Object> listedModel(String listed, String name) {
 		return JsonPath.<List<Map<String, Object>>>read(listed, "$.models[?(@.modelName=='" + name + "')]").getFirst();
 	}

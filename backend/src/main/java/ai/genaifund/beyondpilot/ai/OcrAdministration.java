@@ -68,10 +68,14 @@ public class OcrAdministration {
 
 	private final AiSettings settings;
 
+	private final Prices prices;
+
 	private final AuditTrail audit;
 
 	OcrAdministration(IdentityService identity, AiProviders providers, AiModelRepository models,
-			AiTaskModelRepository tasks, OcrAdapterRegistry adapters, AiSettings settings, AuditTrail audit) {
+			AiTaskModelRepository tasks, OcrAdapterRegistry adapters, AiSettings settings, Prices prices,
+			AuditTrail audit) {
+		this.prices = prices;
 		this.identity = identity;
 		this.providers = providers;
 		this.models = models;
@@ -243,10 +247,8 @@ public class OcrAdministration {
 		}
 		return new OcrSettingsResponse(providers.keysCanBeStored(), adapters.types(),
 				all.stream()
-					.map(provider -> new OcrSettingsResponse.Provider(provider.id(), provider.name(),
-							provider.adapterType(), provider.baseUrl(), provider.enabled(), provider.hasKey(),
-							provider.id().equals(service), provider.pricePerThousandCalls(), provider.updatedBy(),
-							provider.updatedAt(), provider.version()))
+					.map(provider -> shown(provider, provider.id().equals(service),
+							prices.ofOcr(provider.adapterType(), provider.pricePerThousandCalls())))
 					.toList(),
 				new OcrSettingsResponse.Reader(row.getModelId(), AiAdministration.effort(READING, row).value(), service,
 						available, row.getVersion()));
@@ -266,7 +268,15 @@ public class OcrAdministration {
 			default -> AiProviderChange.Key.KEEP;
 		};
 		return new AiProviderChange(null, request.adapterType(), request.name(), endpoint(request.baseUrl()),
-				request.enabled(), key, request.apiKey(), request.version(), request.pricePerThousandCalls());
+				request.enabled(), key, request.apiKey(), request.version(),
+				// A price that is the catalog's is not kept: the provider then follows the catalog.
+				prices.ocrToKeep(request.adapterType(), request.pricePerThousandCalls()));
+	}
+
+	private static OcrSettingsResponse.Provider shown(AiProviderView provider, boolean reads, Prices.OfCalls price) {
+		return new OcrSettingsResponse.Provider(provider.id(), provider.name(), provider.adapterType(),
+				provider.baseUrl(), provider.enabled(), provider.hasKey(), reads, price.perThousand(),
+				price.fromCatalog(), provider.updatedBy(), provider.updatedAt(), provider.version());
 	}
 
 	private OcrAdapter adapter(String type) {

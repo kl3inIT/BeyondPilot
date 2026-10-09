@@ -234,6 +234,9 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
               {amount("outputPrice", outputPrice, setOutputPrice)}
               {amount("cachedPrice", cachedPrice, setCachedPrice)}
             </div>
+            <FieldDescription>
+              {model && !model.priceFromCatalog ? t("pricesOwn") : t("pricesFromCatalog")}
+            </FieldDescription>
             <FieldSet>
               <FieldLegend variant="label">{t("capabilities")}</FieldLegend>
               <div className="flex flex-col gap-2">
