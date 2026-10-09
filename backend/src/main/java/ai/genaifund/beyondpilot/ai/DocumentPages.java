@@ -33,6 +33,13 @@ public class DocumentPages {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DocumentPages.class);
 
+	/**
+	 * The largest picture of a page sent to a model. A gateway refuses a request that is too large: on 9 October the
+	 * 9Router route answered 413 to a page of 4 MB and took one of 2.7 MB, and a refused page was asked for again
+	 * every minute. A slide is read as well from a JPEG of this size.
+	 */
+	private static final int MODEL_PICTURE_BYTES = 1_500_000;
+
 	private static final String COPY = """
 			You copy the text of one page from its picture. Copy every word you can read, in reading order, exactly \
 			as it is written and in its own language. Do not describe pictures or charts, do not translate, and do not \
@@ -99,16 +106,21 @@ public class DocumentPages {
 
 	private Map<Integer, String> readWithModel(InputStreamSource pdf, List<Integer> pages, AiSubject subject)
 			throws IOException {
-		Map<Integer, byte[]> pictures = PdfPages.pictures(pdf, pages);
+		Map<Integer, byte[]> pictures = PdfPages.jpegs(pdf, pages, MODEL_PICTURE_BYTES);
 		Map<Integer, String> read = new LinkedHashMap<>();
 		try (AiChat chat = models.chat(AiTask.DOCUMENT_READING, subject)) {
 			for (Map.Entry<Integer, byte[]> picture : pictures.entrySet()) {
+				if (picture.getValue().length == 0) {
+					// Still over the limit at the lowest quality: settled as empty, so it is not drawn again.
+					read.put(picture.getKey(), "");
+					continue;
+				}
 				try {
 					String text = chat.client()
 						.prompt()
 						.system(COPY)
 						.user(user -> user.text("Copy the text of this page.")
-							.media(MimeTypeUtils.IMAGE_PNG, new ByteArrayResource(picture.getValue())))
+							.media(MimeTypeUtils.IMAGE_JPEG, new ByteArrayResource(picture.getValue())))
 						.call()
 						.content();
 					read.put(picture.getKey(), text == null ? "" : text.strip());

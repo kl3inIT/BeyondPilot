@@ -40,6 +40,9 @@ class Requirements {
 
 	private static final int ATTACHMENTS_LIMIT = 40_000;
 
+	/** How long the label of a requirement may be. */
+	private static final int LABEL_LIMIT = 40;
+
 	/** How many pages without text of one file a model reads from their picture. */
 	private static final int PICTURE_PAGES = 10;
 
@@ -67,9 +70,10 @@ class Requirements {
 		 * @param necessity {@code required} or {@code optional}
 		 * @param statement one sentence in neutral words
 		 * @param quote the passage of the brief it comes from, copied word for word
+		 * @param label two or three words that name it in a list
 		 */
 		record Item(@Nullable String kind, @Nullable String necessity, @Nullable String statement,
-				@Nullable String quote) {
+				@Nullable String quote, @Nullable String label) {
 		}
 
 	}
@@ -141,9 +145,19 @@ class Requirements {
 		for (Extracted.Item item : usable) {
 			requirements.add(new Requirement(requirements.size() + 1, String.valueOf(item.kind()),
 					String.valueOf(item.necessity()), String.valueOf(item.statement()).strip(),
-					String.valueOf(item.quote()).strip()));
+					String.valueOf(item.quote()).strip(), label(item.label())));
 		}
 		return requirements;
+	}
+
+	/** A label short enough for a chip; a model that wrote a sentence is cut at a word. */
+	private static String label(@Nullable String label) {
+		String text = label == null ? "" : label.strip();
+		if (text.length() <= LABEL_LIMIT) {
+			return text;
+		}
+		int cut = text.lastIndexOf(' ', LABEL_LIMIT);
+		return text.substring(0, cut > 0 ? cut : LABEL_LIMIT).strip();
 	}
 
 	/**
