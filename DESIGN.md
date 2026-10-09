@@ -180,6 +180,12 @@ A cool azure system with a sky light, three directory accents and the status rol
 
 - **Success**, **Warning**, **Danger**: Live, Upcoming, Closed and destructive actions; always with a word.
 
+### Logo
+
+- The logo is GenAI Fund's approved kit, used as supplied: a purple tile (`#633ADB`) with a white B and a small GenAI Fund accent, beside a heavy wordmark, charcoal by day (`beyondpilot-logo.svg`) and white at night (`beyondpilot-logo-dark.svg`). Never recoloured, stretched, shadowed or given a gradient; its file carries its own clear space.
+- Wherever the icon is drawn small (the browser tab, the admin sidebar, the consent screen) it is the small-size form without the accent (`beyondpilot-icon.svg`).
+- The logo's purple belongs to the logo. It is not a token and colours nothing else in the interface.
+
 ### Named Rules
 
 **The One Azure Rule.** Each view has one primary (Azure-filled) action; everything else is secondary, tertiary or a link.
@@ -272,7 +278,7 @@ Underline tabs with a kind icon and a count; the active tab is ink with a 2px in
 
 ### Don't:
 
-- **Don't** use purple or indigo anywhere.
+- **Don't** use purple or indigo anywhere in the interface; the logo's purple stays inside the logo.
 - **Don't** invent statistics, testimonials, people or notification cards, and don't add "announcement" sparkle pills.
 - **Don't** spread the sky glow beyond the hero, the arc and the live campaign cover.
 - **Don't** fade in a page's main heading from invisible: it rises without fading, because browsers skip an invisible element when they measure the largest paint.
