@@ -5,7 +5,7 @@ For one published use case, the solutions on BeyondPilot that fit it, each with 
 ## Module
 
 - **`matching` is a closed module** that depends on `ai`, `audit`, `identity`, `organization`, `search`, `solution` and `usecase`. Nothing depends on it. `MatchingService` is what people use; `MatchingAdministration` is the limits operators set.
-- **It owns** `matching_requirement`, `matching_run`, `matching_run_step`, `matching_candidate` and `matching_decision` (V60), and `matching_settings` (V62).
+- **It owns** `matching_requirement`, `matching_run`, `matching_run_step`, `matching_candidate` and `matching_decision` (V60), and `matching_settings` (V63).
 - **It reads** a use case's whole brief with its attached files (`UseCaseDirectory.brief`), a solution's profile (`SolutionDirectory.indexed`), the solutions that answer a set of queries, the passages of one solution and how solutions are named (`SolutionEvidence` in `search`), a chat client for the task `matching` (`AiModels.chat`), who is an operator (`IdentityService`) and which organization a person belongs to (`OrganizationDirectory.membershipOf`).
 
 ## A run
