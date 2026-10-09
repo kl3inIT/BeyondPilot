@@ -383,7 +383,7 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                     </div>
                   )}
                   {solution.notablePayingCustomers && (
-                    <Evidence className="md:col-span-2">
+                    <Evidence state="known" className="md:col-span-2">
                       <h3 className="text-sm font-medium">
                         {t("audience.notablePayingCustomers")}
                       </h3>
@@ -455,7 +455,7 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
               </div>
               {/* Each claim under its kind, with who stands behind it. */}
               {solution.backing?.program && (
-                <Evidence>
+                <Evidence state="known">
                   <Badge variant="outline">{t("proof.programme")}</Badge>
                   <p className="text-sm">
                     {t("proof.selected", { program: solution.backing.program })}
@@ -471,7 +471,7 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                 </Evidence>
               )}
               {solution.traction && (
-                <Evidence>
+                <Evidence state="known">
                   <Badge variant="outline">{t("proof.milestones")}</Badge>
                   <p className="text-sm whitespace-pre-line">{solution.traction}</p>
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -481,7 +481,7 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                 </Evidence>
               )}
               {cases > 0 && (
-                <Evidence>
+                <Evidence state="known">
                   <Badge variant="outline">{t("proof.customerCase")}</Badge>
                   <p className="text-sm">{t("proof.cases", { count: cases })}</p>
                 </Evidence>
@@ -576,7 +576,7 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                 </PartHeading>
                 {backing && <p className="text-sm text-muted-foreground">{backing}</p>}
               </div>
-              <Evidence>
+              <Evidence state="known">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm">{solution.organizationName}</p>
                   {country && <Badge variant="outline">{country}</Badge>}
