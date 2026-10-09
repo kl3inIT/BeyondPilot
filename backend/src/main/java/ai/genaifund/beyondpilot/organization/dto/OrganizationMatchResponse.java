@@ -12,6 +12,8 @@ public record OrganizationMatchResponse(@Schema(requiredMode = Schema.RequiredMo
 				allowableValues = { "company", "builder_team", "independent_builder", "other" }) String type,
 		@Schema(types = { "string", "null" }) @Nullable String country,
 		@Schema(types = { "string", "null" }) @Nullable String emailDomain,
+		@Schema(types = { "string", "null" }, format = "uuid",
+				description = "Its logo, read at /api/storage/files/{id}; null for none.") @Nullable UUID logoFileId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "join", "request", "claim" },
 				description = """
 						What asking to get in does for this caller: `join` makes them a member at once, \

@@ -1299,7 +1299,6 @@
         "sendBackConfirm": "Trả lại",
         "reason": "Lý do",
         "message": "Lời nhắn cho các chủ sở hữu",
-        "messageHint": "Quyết định được ghi vào nhật ký kiểm toán.",
         "back": "Quay lại",
         "reasonPlaceholder": "Chọn lý do",
         "domain": "Tên miền email cần xác minh (không bắt buộc)",
@@ -3598,7 +3597,6 @@
       "way": {
         "join": "Bạn được tham gia ngay",
         "joinDomain": "Email của bạn thuộc {domain} nên bạn được tham gia ngay",
-        "request": "Do các chủ sở hữu quản lý",
         "claim": "Chưa có ai quản lý trang này"
       },
       "action": {

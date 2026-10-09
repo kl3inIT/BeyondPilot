@@ -7,6 +7,7 @@ import {
   ShieldCheckIcon,
   ShieldOffIcon,
   UserMinusIcon,
+  BriefcaseIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -15,13 +16,8 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { Person } from "@/components/composites/person";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -188,9 +184,7 @@ function MemberActions({ member, owner }: MemberActionsProps) {
         <Dialog open onOpenChange={(open) => !open && !pending && setTitling(false)}>
           <DialogContent showCloseButton={false}>
             <form noValidate onSubmit={saveJobTitle} className="flex flex-col gap-4">
-              <DialogHeader>
-                <DialogTitle size="lg">{t("jobTitle.title")}</DialogTitle>
-              </DialogHeader>
+              <DecisionDialogHeader tone="info" icon={BriefcaseIcon} title={t("jobTitle.title")} />
               <Field>
                 <FieldLabel htmlFor="member-job-title">{t("jobTitle.label")}</FieldLabel>
                 <Input
@@ -202,11 +196,16 @@ function MemberActions({ member, owner }: MemberActionsProps) {
                   onChange={(event) => setJobTitle(event.target.value)}
                 />
               </Field>
-              <DialogFooter>
-                <Button prominence="secondary" disabled={pending} onClick={() => setTitling(false)}>
+              <DialogFooter variant="plain">
+                <Button
+                  size="lg"
+                  prominence="secondary"
+                  disabled={pending}
+                  onClick={() => setTitling(false)}
+                >
                   {t("jobTitle.cancel")}
                 </Button>
-                <Button type="submit" pending={pending}>
+                <Button size="lg" type="submit" pending={pending}>
                   {t("jobTitle.save")}
                 </Button>
               </DialogFooter>

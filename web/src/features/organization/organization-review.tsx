@@ -2,19 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
+import { ShieldCheckIcon, Undo2Icon } from "lucide-react";
 import { useId, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { ReasonDialog } from "@/components/composites/reason-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
@@ -118,11 +113,13 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
     return (
       // Leaving the reason goes back to the review, where the organization can still be approved.
       <Dialog open onOpenChange={(open) => !open && !pending && setSendingBack(false)}>
-        <DialogContent showCloseButton={false} className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t("sendBackTitle", { name })}</DialogTitle>
-            <DialogDescription>{t("sendBackLead")}</DialogDescription>
-          </DialogHeader>
+        <DialogContent showCloseButton={false} className="sm:max-w-lg">
+          <DecisionDialogHeader
+            tone="warning"
+            icon={Undo2Icon}
+            title={t("sendBackTitle", { name })}
+            description={t("sendBackLead")}
+          />
           <Field>
             <FieldLabel htmlFor={sendBackId}>{t("sendBackLabel")}</FieldLabel>
             <Textarea
@@ -132,13 +129,18 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
               value={sendBackReason}
               onChange={(event) => setSendBackReason(event.target.value)}
             />
-            <FieldDescription>{t("messageHint")}</FieldDescription>
           </Field>
-          <DialogFooter>
-            <Button prominence="secondary" disabled={pending} onClick={() => setSendingBack(false)}>
+          <DialogFooter variant="plain">
+            <Button
+              size="lg"
+              prominence="secondary"
+              disabled={pending}
+              onClick={() => setSendingBack(false)}
+            >
               {t("back")}
             </Button>
             <Button
+              size="lg"
               pending={pending}
               disabled={sendBackReason.trim() === ""}
               onClick={() => void sendBack()}
@@ -163,7 +165,6 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
         reasonPlaceholder={t("reasonPlaceholder")}
         reasons={refusalReasons.map((value) => ({ value, label: reasonName(value) }))}
         messageLabel={t("message")}
-        messageHint={t("messageHint")}
         confirmLabel={t("refuseConfirm")}
         cancelLabel={t("back")}
         pending={pending}
@@ -181,10 +182,8 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
 
   return (
     <Dialog open onOpenChange={(open) => !open && !pending && onClose()}>
-      <DialogContent showCloseButton={false}>
-        <DialogHeader>
-          <DialogTitle size="lg">{t("title", { name })}</DialogTitle>
-        </DialogHeader>
+      <DialogContent showCloseButton={false} className="sm:max-w-xl">
+        <DecisionDialogHeader tone="success" icon={ShieldCheckIcon} title={t("title", { name })} />
         <div className="flex items-center gap-3 rounded-lg border bg-muted p-3">
           <OrganizationMark name={name} logoFileId={detail?.organization.logoFileId} />
           <div className="grid min-w-0 gap-0.5 text-sm">
@@ -202,11 +201,22 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
           problems={{ invalid: t("domainInvalid"), taken: t("domainTaken") }}
           disabled={pending}
         />
-        <DialogFooter>
-          <Button prominence="secondary" disabled={pending} onClick={() => setRefusing(true)}>
+        <DialogFooter variant="plain">
+          <Button
+            size="lg"
+            tone="danger"
+            prominence="secondary"
+            disabled={pending}
+            onClick={() => setRefusing(true)}
+          >
             {t("refuse")}
           </Button>
-          <Button prominence="secondary" disabled={pending} onClick={() => setSendingBack(true)}>
+          <Button
+            size="lg"
+            prominence="secondary"
+            disabled={pending}
+            onClick={() => setSendingBack(true)}
+          >
             {t("sendBack")}
           </Button>
           <Button size="lg" pending={pending} onClick={approve}>
