@@ -1,13 +1,13 @@
 "use client";
 
-import { ChevronDownIcon, ChevronUpIcon, InfoIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronUpIcon, CircleAlertIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { useId, useState, useSyncExternalStore, type ReactNode } from "react";
 
 import { IconButton } from "@/components/actions/icon-button";
 import { TextButton } from "@/components/actions/text-button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Sheet, SheetClose, SheetContent } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useNotify } from "@/hooks/use-notify";
@@ -24,7 +24,6 @@ import {
 } from "@/lib/api/generated";
 
 import { MatchingAdd } from "./matching-add";
-import { MatchingCoverage } from "./matching-coverage";
 import { describeMatchingError } from "./matching-errors";
 import { MatchingPanel } from "./matching-panel";
 import { MatchingRemove } from "./matching-remove";
@@ -36,18 +35,16 @@ import {
   coverageOf,
   grouped,
   groups,
+  groupView,
+  matchesOf,
   needsOf,
-  recommendedOf,
   tabsOf,
   withNeed,
-  type Group,
+  type Section,
 } from "./matching-view";
 
-/** How many candidates a group shows before "Show more". */
-const GROUP_ROWS = 5;
-
-/** From this width the chosen candidate is read beside the list; below it, in a sheet over it. */
-const WIDE = "(min-width: 1024px)";
+/** From this width the chosen solution is read beside the list; below it, in a sheet over it. */
+const WIDE = "(min-width: 1280px)";
 
 function subscribeToWidth(onChange: () => void) {
   const query = window.matchMedia(WIDE);
@@ -55,63 +52,108 @@ function subscribeToWidth(onChange: () => void) {
   return () => query.removeEventListener("change", onChange);
 }
 
-const tabNames = ["all", "shortlist", "removed"] as const;
+const tabNames = ["matches", "shortlist", "removed"] as const;
 type TabName = (typeof tabNames)[number];
 
-type Section = Group | "waiting" | "kept";
+/** Every part of the list, in the order it is drawn. */
+const sectionNames = [...groups, "waiting", "kept"] as const satisfies Section[];
 
 type GroupCardProps = {
   title: string;
+  /** What the group means, printed under its title. */
   about: string;
-  aboutLabel: string;
   count: number;
+  /** Given for a group that folds: whether it is open, and what a click on its header does. */
+  fold?: { open: boolean; onOpenChange: (open: boolean) => void };
   children: ReactNode;
 };
 
-/** One group of candidates: its name, how many it holds, what the group means, and its rows. */
-function GroupCard({ title, about, aboutLabel, count, children }: GroupCardProps) {
+/**
+ * One group of solutions as a named region: its title as a heading, how many it holds, what the group
+ * means in plain text, and its rows. A group that folds shows its header alone until it is opened.
+ */
+function GroupCard({ title, about, count, fold, children }: GroupCardProps) {
+  const titleId = useId();
+  const heading = (
+    <span className="flex min-w-0 items-baseline gap-2 text-base font-semibold">
+      <span id={titleId}>{title}</span>
+      <span className="text-sm font-normal text-muted-foreground">{count}</span>
+    </span>
+  );
+
+  if (!fold) {
+    return (
+      <section
+        aria-labelledby={titleId}
+        className="flex flex-col gap-2 rounded-xl border bg-card px-2 py-4"
+      >
+        <div className="flex flex-col gap-0.5 px-3">
+          <h2>{heading}</h2>
+          <p className="text-sm text-muted-foreground">{about}</p>
+        </div>
+        {children}
+      </section>
+    );
+  }
+
   return (
-    <section className="flex flex-col gap-1 rounded-xl border bg-card px-2 py-3">
-      <div className="flex items-center gap-2 px-3">
-        <h3 className="text-sm font-semibold">{title}</h3>
-        <span className="text-sm text-muted-foreground">{count}</span>
-        <Popover>
-          <PopoverTrigger
-            render={<IconButton prominence="tertiary" size="sm" aria-label={aboutLabel} />}
-          >
-            <InfoIcon aria-hidden="true" />
-          </PopoverTrigger>
-          <PopoverContent align="start">
-            <p className="text-sm">{about}</p>
-          </PopoverContent>
-        </Popover>
+    <Collapsible
+      open={fold.open}
+      onOpenChange={fold.onOpenChange}
+      render={
+        <section
+          aria-labelledby={titleId}
+          className="flex flex-col rounded-xl border bg-card px-2 py-2"
+        />
+      }
+    >
+      <div className="flex flex-col px-3">
+        <h2>
+          <CollapsibleTrigger variant="section">
+            {heading}
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground group-focus-visible/collapsible-section-trigger:ring-3 group-focus-visible/collapsible-section-trigger:ring-ring/50">
+              <ChevronDownIcon
+                aria-hidden="true"
+                className="size-4 transition-transform group-aria-expanded/collapsible-section-trigger:rotate-180 motion-reduce:transition-none"
+              />
+            </span>
+          </CollapsibleTrigger>
+        </h2>
+        <p className="pb-2 text-sm text-muted-foreground">{about}</p>
       </div>
-      {children}
-    </section>
+      <CollapsibleContent>
+        <div className="flex flex-col gap-2 pb-2">{children}</div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
 /**
- * The candidates of a use case and what people decide on them: the run and its actions, what the
- * candidates cover together, the list by group narrowed by need and by tab, and one candidate read in
- * full beside it. Every request answers with the whole state, which the screen shows at once; a newer
- * read of the page replaces it.
+ * The solutions matched to a use case and what people decide on them: the run and its action, one
+ * sentence on what was found, the list by group under three tabs, and one solution read in full, beside
+ * the list on a wide screen and in a sheet below that. Every request answers with the whole state,
+ * which the screen shows at once; a newer read of the page replaces it.
  */
 function MatchingBoard({ matching: read }: { matching: Matching }) {
   const t = useTranslations("Matching");
   const reasonName = useTranslations("Matching.remove.reasons");
   const notify = useNotify();
+  const filterId = useId();
   const wide = useSyncExternalStore(
     subscribeToWidth,
     () => window.matchMedia(WIDE).matches,
     () => true,
   );
   const [held, setHeld] = useState({ over: read, state: read });
-  const [tab, setTab] = useState<TabName>("all");
+  const [tab, setTab] = useState<TabName>("matches");
   const [need, setNeed] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
+  /** The folding group, once a person opened it. */
+  const [opened, setOpened] = useState<Section[]>([]);
+  /** The groups a person asked to see every row of. */
   const [expanded, setExpanded] = useState<Section[]>([]);
   const [pending, setPending] = useState<string | null>(null);
 
@@ -122,22 +164,32 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
   const constraints = constraintsOf(matching.requirements);
   const tabs = tabsOf(matching.candidates);
   const coverage = coverageOf(needs, matching.candidates);
-  const listed = withNeed(tab === "shortlist" ? tabs.shortlist : tabs.all, need);
-  const sections = grouped(listed);
-  const flat = [
-    ...sections.direct,
-    ...sections.industry,
-    ...sections.technology,
-    ...sections.waiting,
-    ...sections.kept,
-  ];
+  const found = matchesOf(matching.candidates);
+  // A use case that asks for one thing has nothing to filter by.
+  const several = needs.length > 1;
+  const chosenNeed = several ? needs.find((one) => one.position === need) : undefined;
+  const position = chosenNeed ? chosenNeed.position : null;
+  const sections = grouped(withNeed(tab === "shortlist" ? tabs.shortlist : tabs.matches, position));
+  const total = sectionNames.reduce((sum, section) => sum + sections[section].length, 0);
+  // The last group folds on the Matches tab, and only under a stronger group: alone, it is the list.
+  const folds = tab === "matches" && sections.direct.length + sections.industry.length > 0;
+  const views = Object.fromEntries(
+    sectionNames.map((section) => [
+      section,
+      groupView(section, sections[section].length, {
+        folds,
+        opened: opened.includes(section),
+        all: expanded.includes(section),
+      }),
+    ]),
+  ) as Record<Section, ReturnType<typeof groupView>>;
+  // The rows on the screen, in order: what the panel shows first, and steps through.
+  const flat = sectionNames.flatMap((section) => sections[section].slice(0, views[section].shown));
   const chosen =
     tab === "removed"
       ? undefined
       : (flat.find((candidate) => candidate.id === selectedId) ?? (wide ? flat[0] : undefined));
   const place = chosen ? flat.indexOf(chosen) : -1;
-  const required = needs.filter((one) => one.required).length;
-  const chosenNeed = needs.find((one) => one.position === need);
 
   /** Sends one request; its answer is the whole state, shown at once. */
   async function send(
@@ -163,7 +215,7 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
     await send(
       judgeAll ? "judgeAll" : "run",
       () => startMatchingRun({ path: { useCaseId }, body: { judgeAll } }),
-      () => notify.success(judgeAll ? "Matching.done.judgingAll" : "Matching.done.started"),
+      () => notify.success(judgeAll ? "Matching.done.reviewingAll" : "Matching.done.started"),
     );
   };
 
@@ -204,14 +256,8 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
       },
     );
 
-  /** Opens the reason picker in the place of the candidate's row, wherever the person asked from. */
+  /** Opens the reason picker in the place of the solution's row, wherever the person asked from. */
   function askWhy(candidate: MatchingCandidate) {
-    const section: Section = !candidate.judged
-      ? "waiting"
-      : candidate.bucket !== "none"
-        ? candidate.bucket
-        : "kept";
-    setExpanded((current) => (current.includes(section) ? current : [...current, section]));
     setSheetOpen(false);
     setRemovingId(candidate.id);
   }
@@ -221,14 +267,18 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
     setSheetOpen(true);
   }
 
+  const toggle = (list: Section[], section: Section, on: boolean) =>
+    on
+      ? [...list.filter((one) => one !== section), section]
+      : list.filter((one) => one !== section);
+
   const rows = (section: Section) => {
-    const all = sections[section];
-    const open = expanded.includes(section);
-    const shown = open ? all : all.slice(0, GROUP_ROWS);
+    const view = views[section];
+    const all = expanded.includes(section);
     return (
       <>
         <ul className="flex flex-col">
-          {shown.map((candidate) =>
+          {sections[section].slice(0, view.shown).map((candidate) =>
             candidate.id === removingId ? (
               <li key={candidate.id} className="p-1">
                 <MatchingRemove
@@ -243,7 +293,7 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
                 key={candidate.id}
                 candidate={candidate}
                 needs={needs}
-                selected={chosen?.id === candidate.id}
+                selected={chosen?.id === candidate.id && (wide || sheetOpen)}
                 pending={pending === candidate.id}
                 onSelect={() => select(candidate)}
                 onShortlist={() => void shortlist(candidate)}
@@ -252,18 +302,14 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
             ),
           )}
         </ul>
-        {all.length > GROUP_ROWS && (
+        {view.folds && (view.more > 0 || all) && (
           <div className="px-3 pt-1">
             <TextButton
-              aria-expanded={open}
-              onClick={() =>
-                setExpanded((current) =>
-                  open ? current.filter((one) => one !== section) : [...current, section],
-                )
-              }
+              aria-expanded={all}
+              onClick={() => setExpanded((current) => toggle(current, section, !all))}
             >
-              {open ? t("groups.fewer") : t("groups.more", { count: all.length - GROUP_ROWS })}
-              {open ? <ChevronUpIcon aria-hidden="true" /> : <ChevronDownIcon aria-hidden="true" />}
+              {all ? t("groups.fewer") : t("groups.more", { count: view.more })}
+              {all ? <ChevronUpIcon aria-hidden="true" /> : <ChevronDownIcon aria-hidden="true" />}
             </TextButton>
           </div>
         )}
@@ -273,63 +319,50 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
 
   const list = (
     <div className="flex flex-col gap-4">
-      {flat.length === 0 && chosenNeed && (
+      {total === 0 && chosenNeed && (
         <div className="flex flex-col items-start gap-2 rounded-xl border bg-card p-6">
           <p className="text-sm text-muted-foreground">
-            {t("empty.need", { need: chosenNeed.name })}
+            {t("empty.need", { need: chosenNeed.statement })}
           </p>
           <TextButton onClick={() => setNeed(null)}>{t("empty.clear")}</TextButton>
         </div>
       )}
-      {flat.length === 0 && !chosenNeed && tab === "shortlist" && (
+      {total === 0 && !chosenNeed && tab === "shortlist" && (
         <p className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">
           {t("empty.shortlist")}
         </p>
       )}
-      {groups.map((group) => {
-        const lone = group === "direct" && tab === "all" && !chosenNeed && tabs.all.length > 0;
-        if (sections[group].length === 0 && !lone) {
+      {sectionNames.map((section) => {
+        // The first group is drawn even when it is empty, so the page says that nobody is a strong fit.
+        const lone =
+          section === "direct" && tab === "matches" && !chosenNeed && tabs.matches.length > 0;
+        if (sections[section].length === 0 && !lone) {
           return null;
         }
-        const title = t(`groups.${group}.title`);
+        const view = views[section];
         return (
           <GroupCard
-            key={group}
-            title={title}
-            about={t(`groups.${group}.about`)}
-            aboutLabel={t("groups.aboutLabel", { group: title })}
-            count={sections[group].length}
+            key={section}
+            title={t(`groups.${section}.title`)}
+            about={t(`groups.${section}.about`)}
+            count={sections[section].length}
+            fold={
+              view.folds
+                ? {
+                    open: view.open,
+                    onOpenChange: (next) => setOpened((current) => toggle(current, section, next)),
+                  }
+                : undefined
+            }
           >
-            {sections[group].length === 0 ? (
-              <p className="px-3 py-1 text-sm text-muted-foreground">
-                {t("groups.emptyDirect", { count: required })}
-              </p>
+            {sections[section].length === 0 ? (
+              <p className="px-3 text-sm">{t("groups.emptyDirect")}</p>
             ) : (
-              rows(group)
+              rows(section)
             )}
           </GroupCard>
         );
       })}
-      {sections.waiting.length > 0 && (
-        <GroupCard
-          title={t("groups.waiting.title")}
-          about={t("groups.waiting.about")}
-          aboutLabel={t("groups.aboutLabel", { group: t("groups.waiting.title") })}
-          count={sections.waiting.length}
-        >
-          {rows("waiting")}
-        </GroupCard>
-      )}
-      {sections.kept.length > 0 && (
-        <GroupCard
-          title={t("groups.kept.title")}
-          about={t("groups.kept.about")}
-          aboutLabel={t("groups.aboutLabel", { group: t("groups.kept.title") })}
-          count={sections.kept.length}
-        >
-          {rows("kept")}
-        </GroupCard>
-      )}
     </div>
   );
 
@@ -346,7 +379,24 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
     />
   );
 
-  const anything = tabs.all.length + tabs.removed.length > 0;
+  /** The list, and beside it on a wide screen the solution that is read in full. */
+  const listAndPanel = (
+    <div className="grid items-start gap-6 xl:grid-cols-3">
+      <div className="min-w-0 xl:col-span-2">{list}</div>
+      {wide && (
+        <aside
+          aria-label={t("panel.label")}
+          className="hidden rounded-xl border bg-card p-5 xl:sticky xl:top-4 xl:block"
+        >
+          {panel || <p className="text-sm text-muted-foreground">{t("panel.empty")}</p>}
+        </aside>
+      )}
+    </div>
+  );
+
+  const anything = tabs.matches.length + tabs.removed.length > 0;
+  const covered = coverage.filter((one) => one.best === "met").length;
+  const gaps = coverage.filter((one) => one.best === "not_shown");
 
   return (
     <div className="flex flex-col gap-6">
@@ -354,16 +404,17 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
         matching={matching}
         pending={pending === "run" || pending === "judgeAll" ? pending : null}
         onStart={start}
-      >
-        {operator && (
-          <MatchingAdd
-            candidateSolutionIds={matching.candidates.map((candidate) => candidate.solutionId)}
-            pendingId={pending?.startsWith("add:") ? pending.slice(4) : null}
-            disabled={pending !== null}
-            onAdd={add}
-          />
-        )}
-      </MatchingRun>
+        onAddByHand={() => setAdding(true)}
+      />
+      {operator && (
+        <MatchingAdd
+          open={adding}
+          onOpenChange={setAdding}
+          candidateSolutionIds={matching.candidates.map((candidate) => candidate.solutionId)}
+          pendingId={pending?.startsWith("add:") ? pending.slice(4) : null}
+          onAdd={add}
+        />
+      )}
 
       {!anything && matching.run?.state === "done" && (
         <p className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">
@@ -372,85 +423,121 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
       )}
 
       {anything && (
-        <div className="grid items-start gap-6 lg:grid-cols-3">
-          <div className="flex min-w-0 flex-col gap-4 lg:col-span-2">
-            <MatchingCoverage
-              recommended={recommendedOf(matching.candidates).length}
-              coverage={coverage}
-            />
+        <>
+          <div className="flex max-w-3xl flex-col gap-3">
+            {several ? (
+              <div className="flex flex-col gap-1.5">
+                <p className="text-lg font-semibold">
+                  {t("summary.covered", { covered, total: needs.length })}
+                </p>
+                {gaps.map((one) => (
+                  <p key={one.position} className="flex items-start gap-2 text-sm">
+                    <CircleAlertIcon
+                      aria-hidden="true"
+                      className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                    />
+                    {t("summary.gap", { need: one.statement })}
+                  </p>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                <p className="text-lg font-semibold">{t("summary.matches", found)}</p>
+                {needs.map((one) => (
+                  <p key={one.position} className="text-sm wrap-break-word">
+                    {t("summary.asked", { need: one.statement })}
+                  </p>
+                ))}
+              </div>
+            )}
+            <p className="text-sm text-muted-foreground">{t("summary.ai")}</p>
+          </div>
 
-            {needs.length > 0 && (
+          {several && (
+            <div className="flex flex-col gap-2">
+              <p id={filterId} className="text-sm font-medium">
+                {t("filter.label")}
+              </p>
               <ToggleGroup
-                aria-label={t("filter.label")}
+                aria-labelledby={filterId}
                 variant="outline"
                 size="sm"
                 className="w-full flex-wrap"
-                value={[need === null ? "all" : String(need)]}
+                value={[chosenNeed ? String(chosenNeed.position) : "any"]}
                 onValueChange={(next) => {
                   const picked = needs.find((one) => String(one.position) === next[0]);
                   setNeed(picked ? picked.position : null);
                 }}
               >
-                <ToggleGroupItem value="all">
-                  {t("filter.all", { count: tabs.all.length })}
+                <ToggleGroupItem value="any" className="pointer-coarse:min-h-11">
+                  {t("filter.any")}
                 </ToggleGroupItem>
                 {coverage.map((one) => (
-                  <ToggleGroupItem key={one.position} value={String(one.position)}>
+                  <ToggleGroupItem
+                    key={one.position}
+                    value={String(one.position)}
+                    className="pointer-coarse:min-h-11"
+                  >
                     {one.name} <span className="text-muted-foreground">{one.count}</span>
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
-            )}
-
-            <Tabs
-              value={tab}
-              onValueChange={(next) => {
-                setTab(tabNames.find((name) => name === next) ?? "all");
-                setRemovingId(null);
-              }}
-            >
-              <TabsList variant="line" aria-label={t("tabs.label")}>
-                {tabNames.map((name) => (
-                  <TabsTrigger key={name} value={name}>
-                    {t(`tabs.${name}`)}{" "}
-                    <span className="text-xs text-muted-foreground">
-                      {withNeed(tabs[name], need).length}
-                    </span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              <TabsContent value="all">{list}</TabsContent>
-              <TabsContent value="shortlist">{list}</TabsContent>
-              <TabsContent value="removed">
-                <MatchingRemoved
-                  candidates={withNeed(tabs.removed, need)}
-                  operator={operator}
-                  pendingId={pending}
-                  onRestore={(candidate) => void restore(candidate, "restored")}
-                />
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          {wide && tab !== "removed" && (
-            <aside
-              aria-label={t("panel.label")}
-              className="hidden rounded-xl border bg-card p-5 lg:sticky lg:top-4 lg:block"
-            >
-              {panel || <p className="text-sm text-muted-foreground">{t("panel.empty")}</p>}
-            </aside>
+            </div>
           )}
-        </div>
+
+          <Tabs
+            value={tab}
+            onValueChange={(next) => {
+              setTab(tabNames.find((name) => name === next) ?? "matches");
+              setRemovingId(null);
+            }}
+          >
+            <TabsList
+              variant="line"
+              aria-label={t("tabs.label")}
+              className="pointer-coarse:min-h-11"
+            >
+              {tabNames.map((name) => (
+                <TabsTrigger key={name} value={name} className="pointer-coarse:min-h-11">
+                  {t(`tabs.${name}`)}{" "}
+                  <span className="text-xs text-muted-foreground">
+                    {withNeed(tabs[name], position).length}
+                  </span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <TabsContent value="matches">{listAndPanel}</TabsContent>
+            <TabsContent value="shortlist">{listAndPanel}</TabsContent>
+            {/* What was removed is a plain list: it has the whole width, and no panel beside it. */}
+            <TabsContent value="removed">
+              <MatchingRemoved
+                candidates={withNeed(tabs.removed, position)}
+                operator={operator}
+                pendingId={pending}
+                onRestore={(candidate) => void restore(candidate, "restored")}
+              />
+            </TabsContent>
+          </Tabs>
+        </>
       )}
 
       {!wide && (
         <Sheet open={sheetOpen && chosen !== undefined} onOpenChange={setSheetOpen}>
           <SheetContent
             aria-label={chosen?.solutionName}
-            closeLabel={t("panel.close")}
+            showCloseButton={false}
             className="data-[side=right]:w-full data-[side=right]:sm:max-w-md"
           >
-            <div className="flex-1 overflow-y-auto px-5 pt-12 pb-6">{panel}</div>
+            <div className="flex justify-end px-3 pt-3">
+              <SheetClose
+                render={
+                  <IconButton prominence="tertiary" size="lg" aria-label={t("panel.close")} />
+                }
+              >
+                <XIcon aria-hidden="true" />
+              </SheetClose>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5 pb-6">{panel}</div>
           </SheetContent>
         </Sheet>
       )}

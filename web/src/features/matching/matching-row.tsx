@@ -1,6 +1,13 @@
 "use client";
 
-import { CheckIcon, EllipsisIcon, ExternalLinkIcon, Trash2Icon } from "lucide-react";
+import {
+  BookmarkPlusIcon,
+  CheckIcon,
+  EllipsisIcon,
+  ExternalLinkIcon,
+  FileQuestionIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
@@ -20,15 +27,15 @@ import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { MatchingCandidate } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { NeedDots, SourceChip } from "./matching-marks";
-import { bestQuote, type Need } from "./matching-view";
+import { StatusChip } from "./matching-marks";
+import { rowVerdict, unreadOf, type Need } from "./matching-view";
 
 type MatchingRowProps = {
   candidate: MatchingCandidate;
   needs: Need[];
-  /** Whether the panel beside the list shows this candidate. */
+  /** Whether the panel shows this solution now. */
   selected: boolean;
-  /** True while a request about this candidate is on its way. */
+  /** True while a request about this solution is on its way. */
   pending: boolean;
   onSelect: () => void;
   /** Puts it on the shortlist, or takes it off when it is there. */
@@ -37,7 +44,7 @@ type MatchingRowProps = {
   onRemove: () => void;
 };
 
-/** Where and how far a solution is, as the line beside its name. */
+/** Where a solution is from and how far along it is, as one quiet line. */
 function useCandidateMeta() {
   const countryName = useCountryName();
   const maturityName = useVocabulary("maturity");
@@ -51,8 +58,9 @@ function useCandidateMeta() {
 }
 
 /**
- * One candidate in a group: its logo and name, a mark per need, where it is and how far, and the best
- * words of its own material. Choosing the row opens it in the panel; the actions stay on the row.
+ * One solution in a group. Its logo, its name and the shortlist action share the first line at every
+ * width; under them come what the group does not say already, the AI's sentence in two lines at most,
+ * and where the solution is from. The vendor's own words are read in the panel, which the row opens.
  */
 function MatchingRow({
   candidate,
@@ -65,90 +73,108 @@ function MatchingRow({
 }: MatchingRowProps) {
   const t = useTranslations("Matching.row");
   const meta = useCandidateMeta()(candidate);
-  const quote = bestQuote(candidate, needs);
+  const verdict = rowVerdict(candidate, needs);
+  const unread = candidate.judged ? unreadOf(candidate) : undefined;
+  const summary = candidate.judged ? candidate.summary?.trim() : undefined;
   const shortlisted = candidate.decision === "shortlisted";
 
   return (
     <li
       data-selected={selected}
-      className="relative flex flex-col gap-3 rounded-xl border border-transparent p-3 hover:bg-muted/50 data-[selected=true]:border-primary data-[selected=true]:bg-primary/5 sm:flex-row sm:items-center"
+      className="relative flex items-start gap-3 rounded-xl border border-transparent p-3 hover:bg-muted/50 data-[selected=true]:border-primary data-[selected=true]:bg-primary/5"
     >
-      <div className="flex min-w-0 flex-1 items-start gap-3">
-        <SolutionLogo
-          name={candidate.solutionName}
-          fileId={candidate.logoFileId}
-          size="card"
-          className="size-9 rounded-lg text-xs"
-        />
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <button
-              type="button"
-              aria-current={selected ? "true" : undefined}
-              onClick={onSelect}
-              className="text-left text-sm font-semibold outline-none after:absolute after:inset-0 after:rounded-xl focus-visible:after:ring-3 focus-visible:after:ring-ring/50"
-            >
-              {candidate.solutionName}
-            </button>
-            {candidate.judged && <NeedDots needs={needs} candidate={candidate} />}
-            {meta && <span className="text-xs text-muted-foreground">{meta}</span>}
-            {candidate.origin === "added" && <Badge variant="secondary">{t("added")}</Badge>}
-          </div>
-          {quote ? (
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <q className="text-sm text-muted-foreground">{quote.quote}</q>
-              <SourceChip source={quote.source} />
-            </div>
-          ) : (
-            !candidate.judged && <p className="text-sm text-muted-foreground">{t("waiting")}</p>
-          )}
-        </div>
-      </div>
-      <div className="relative flex shrink-0 items-center gap-1 self-end sm:self-center">
-        <Button
-          prominence="secondary"
-          size="sm"
-          aria-pressed={shortlisted}
-          pending={pending}
-          onClick={onShortlist}
-        >
-          {shortlisted && !pending && <CheckIcon aria-hidden="true" />}
-          {t(shortlisted ? "shortlisted" : "shortlist")}
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <IconButton
-                prominence="tertiary"
-                size="sm"
-                aria-label={t("menu", { name: candidate.solutionName })}
-              />
-            }
+      <SolutionLogo
+        name={candidate.solutionName}
+        fileId={candidate.logoFileId}
+        size="card"
+        className="size-9 rounded-lg text-xs"
+      />
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-current={selected ? "true" : undefined}
+            onClick={onSelect}
+            className="min-w-0 flex-1 text-left text-sm font-semibold wrap-break-word outline-none after:absolute after:inset-0 after:rounded-xl focus-visible:after:ring-3 focus-visible:after:ring-ring/50"
           >
-            <EllipsisIcon aria-hidden="true" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            {candidate.listed && (
-              <>
+            {candidate.solutionName}
+          </button>
+          <div className="relative flex shrink-0 items-center gap-1">
+            {/* On a phone the action keeps its place on the line as an icon; its name is the same. */}
+            <Button
+              prominence="secondary"
+              size="sm"
+              aria-pressed={shortlisted}
+              pending={pending}
+              onClick={onShortlist}
+            >
+              {!pending &&
+                (shortlisted ? (
+                  <CheckIcon aria-hidden="true" />
+                ) : (
+                  <BookmarkPlusIcon aria-hidden="true" className="sm:hidden" />
+                ))}
+              <span className="max-sm:sr-only">{t(shortlisted ? "shortlisted" : "shortlist")}</span>
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <IconButton
+                    prominence="tertiary"
+                    size="sm"
+                    aria-label={t("menu", { name: candidate.solutionName })}
+                  />
+                }
+              >
+                <EllipsisIcon aria-hidden="true" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60">
+                {candidate.listed && (
+                  <>
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem
+                        className="pointer-coarse:min-h-11"
+                        render={<Link href={`${siteRoutes.solutions}/${candidate.solutionSlug}`} />}
+                      >
+                        <ExternalLinkIcon aria-hidden="true" />
+                        {t("open")}
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    render={<Link href={`${siteRoutes.solutions}/${candidate.solutionSlug}`} />}
+                    variant="destructive"
+                    className="pointer-coarse:min-h-11"
+                    onClick={onRemove}
                   >
-                    <ExternalLinkIcon aria-hidden="true" />
-                    {t("open")}
+                    <Trash2Icon aria-hidden="true" />
+                    {t("remove")}
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-              </>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+        {(verdict || unread) && (
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            {verdict && <StatusChip status={verdict} />}
+            {unread && (
+              <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                <FileQuestionIcon aria-hidden="true" className="size-4 shrink-0" />
+                {t(`unread.${unread}`)}
+              </span>
             )}
-            <DropdownMenuGroup>
-              <DropdownMenuItem variant="destructive" onClick={onRemove}>
-                <Trash2Icon aria-hidden="true" />
-                {t("remove")}
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </p>
+        )}
+        {summary && <p className="line-clamp-2 text-sm">{summary}</p>}
+        {(meta || candidate.origin === "added") && (
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            {meta}
+            {candidate.origin === "added" && <Badge variant="secondary">{t("added")}</Badge>}
+          </p>
+        )}
       </div>
     </li>
   );

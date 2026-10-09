@@ -10,10 +10,17 @@ export type Group = (typeof groups)[number];
 
 export type NeedStatus = MatchingFinding["status"];
 
-/** One capability the use case asks for, as the coverage line, the chips and the dots name it. */
+/** The parts of the list: the three groups, what waits to be read, and what a person keeps. */
+export type Section = Group | "waiting" | "kept";
+
+/** How many rows a folding group shows when it is first opened. */
+export const FOLDED_ROWS = 5;
+
+/** One capability the use case asks for: a short name for a chip, and its statement in full. */
 export type Need = {
   position: number;
   name: string;
+  statement: string;
   required: boolean;
 };
 
@@ -49,6 +56,7 @@ export function needsOf(requirements: MatchingRequirement[]): Need[] {
     .map((requirement) => ({
       position: requirement.position,
       name: requirementName(requirement),
+      statement: requirement.statement.trim(),
       required: requirement.necessity === "required",
     }));
 }
@@ -87,7 +95,7 @@ export function isShown(candidate: Pick<MatchingCandidate, "judged" | "bucket" |
 export function tabsOf(candidates: MatchingCandidate[]) {
   const shown = candidates.filter(isShown);
   return {
-    all: shown.filter((candidate) => candidate.decision !== "removed"),
+    matches: shown.filter((candidate) => candidate.decision !== "removed"),
     shortlist: shown.filter((candidate) => candidate.decision === "shortlisted"),
     removed: shown.filter((candidate) => candidate.decision === "removed"),
   };
@@ -95,9 +103,21 @@ export function tabsOf(candidates: MatchingCandidate[]) {
 
 /** The candidates a run recommends: judged, in a group, and not removed. */
 export function recommendedOf(candidates: MatchingCandidate[]) {
-  return tabsOf(candidates).all.filter(
+  return tabsOf(candidates).matches.filter(
     (candidate) => candidate.judged && candidate.bucket !== "none",
   );
+}
+
+/**
+ * The numbers of the sentence above the list of a use case that asks for one thing: how many solutions
+ * a run recommends, and how many of them are in the first group.
+ */
+export function matchesOf(candidates: MatchingCandidate[]) {
+  const recommended = recommendedOf(candidates);
+  return {
+    matches: recommended.length,
+    strong: recommended.filter((candidate) => candidate.bucket === "direct").length,
+  };
 }
 
 /** For each need, the best any recommended candidate shows and how many show something of it. */
@@ -136,33 +156,45 @@ export function grouped(candidates: MatchingCandidate[]) {
 }
 
 /**
- * The quote a candidate's row shows: of a need it meets before one it comes near, a required need
- * before an optional one; without any, what shows its industry, its technology or its fit to the problem.
+ * How a group stands in the list. The first two groups and the small ones show every row. The last
+ * group folds: closed it shows its header alone, opened its first rows, and all of them on request.
  */
-export function bestQuote(
-  candidate: Pick<MatchingCandidate, "findings" | "industry" | "technology" | "problem">,
+export function groupView(
+  section: Section,
+  total: number,
+  state: { folds: boolean; opened: boolean; all: boolean },
+) {
+  const folds = state.folds && section === "technology";
+  const open = !folds || state.opened;
+  const shown = !open ? 0 : folds && !state.all ? Math.min(total, FOLDED_ROWS) : total;
+  return { folds, open, shown, more: open ? total - shown : 0 };
+}
+
+/**
+ * What a row says of a candidate beyond its group, when the use case asks for one thing: whether that
+ * thing is shown, unless the group says so already. The first group says it is shown, the two after it
+ * that it is partly shown. With several needs the row says nothing, and the panel says each.
+ */
+export function rowVerdict(
+  candidate: Pick<MatchingCandidate, "judged" | "bucket" | "findings">,
   needs: Need[],
-): Pick<MatchingFinding, "quote" | "source"> | undefined {
-  const ranked = needs
-    .map((need) => ({ need, finding: findingOf(candidate, need.position) }))
-    .filter(
-      (entry): entry is { need: Need; finding: MatchingFinding } =>
-        entry.finding !== undefined &&
-        entry.finding.status !== "not_shown" &&
-        entry.finding.quote.trim() !== "",
-    )
-    .sort(
-      (a, b) =>
-        Number(b.finding.status === "met") - Number(a.finding.status === "met") ||
-        Number(b.need.required) - Number(a.need.required) ||
-        a.need.position - b.need.position,
-    );
-  const found =
-    ranked[0]?.finding ??
-    [candidate.industry, candidate.technology, candidate.problem].find(
-      (finding) => finding && finding.status !== "not_shown" && finding.quote.trim() !== "",
-    );
-  return found ? { quote: found.quote, source: found.source } : undefined;
+): NeedStatus | undefined {
+  if (!candidate.judged || needs.length !== 1) {
+    return undefined;
+  }
+  const status = statusOf(candidate, needs[0].position);
+  const said =
+    candidate.bucket === "direct" ? "met" : candidate.bucket === "none" ? null : "partly";
+  return status === said ? undefined : status;
+}
+
+/** Which of a solution's deck and website the AI could not read. */
+export function unreadOf(
+  candidate: Pick<MatchingCandidate, "unread">,
+): "deck" | "website" | "both" | undefined {
+  const deck = candidate.unread.includes("deck");
+  const website = candidate.unread.includes("website");
+  return deck && website ? "both" : deck ? "deck" : website ? "website" : undefined;
 }
 
 /** Reads the backend's label of a source; a label this screen does not know gives nothing. */

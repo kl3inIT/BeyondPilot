@@ -39,7 +39,7 @@ function UseCaseTabs({ area, id, current }: UseCaseTabsProps) {
           key={tab.key}
           href={tab.href}
           aria-current={tab.key === current ? "page" : undefined}
-          className="-mb-px flex items-center border-b-2 border-transparent px-0.5 py-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-[current=page]:border-foreground aria-[current=page]:text-foreground"
+          className="-mb-px flex items-center border-b-2 border-transparent px-0.5 py-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-[current=page]:border-foreground aria-[current=page]:text-foreground pointer-coarse:min-h-11"
         >
           {t(tab.key)}
         </Link>

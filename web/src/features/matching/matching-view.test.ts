@@ -3,16 +3,20 @@ import { describe, expect, it } from "vitest";
 import type { MatchingCandidate, MatchingFinding, MatchingRequirement } from "@/lib/api/generated";
 
 import {
-  bestQuote,
   constraintsOf,
   coverageOf,
+  FOLDED_ROWS,
   grouped,
+  groupView,
+  matchesOf,
   needsOf,
   recommendedOf,
   requirementName,
+  rowVerdict,
   sourceOf,
   statusOf,
   tabsOf,
+  unreadOf,
   withNeed,
 } from "./matching-view";
 
@@ -100,8 +104,7 @@ const candidate = (
   origin: "recommended",
   requiredMet: findings.some((one) => one.requirement === 1 && one.status === "met") ? 1 : 0,
   requiredTotal: 1,
-  // The backend sends a list; the generated type names one value.
-  unread: [] as unknown as MatchingCandidate["unread"],
+  unread: [],
   ...more,
 });
 
@@ -143,11 +146,26 @@ const candidates = [direct, industry, technology, none, removed, waiting];
 const needs = needsOf(requirements);
 
 describe("needs", () => {
-  it("are the capabilities only, named by their label or the first words of their statement", () => {
+  it("are the capabilities only, named by their label or the first words of their statement, with the statement in full", () => {
     expect(needs).toEqual([
-      { position: 1, name: "Read documents", required: true },
-      { position: 2, name: "Check rules", required: false },
-      { position: 3, name: "Routes a claim to…", required: false },
+      {
+        position: 1,
+        name: "Read documents",
+        statement: "Reads invoices and claim forms and takes out their fields",
+        required: true,
+      },
+      {
+        position: 2,
+        name: "Check rules",
+        statement: "Checks each claim against the payment rules",
+        required: false,
+      },
+      {
+        position: 3,
+        name: "Routes a claim to…",
+        statement: "Routes a claim to the right approver before it is paid",
+        required: false,
+      },
     ]);
     expect(constraintsOf(requirements).map((one) => one.position)).toEqual([4, 5, 6]);
   });
@@ -160,7 +178,7 @@ describe("needs", () => {
 describe("tabs and groups", () => {
   it("leave out a candidate judged into no group, and keep one that waits to be judged", () => {
     const tabs = tabsOf(candidates);
-    expect(tabs.all.map((one) => one.solutionName)).toEqual([
+    expect(tabs.matches.map((one) => one.solutionName)).toEqual([
       "Staple",
       "Sentosa",
       "Docbase",
@@ -179,7 +197,7 @@ describe("tabs and groups", () => {
   });
 
   it("put each candidate in its group, and the unjudged apart", () => {
-    const found = grouped(tabsOf(candidates).all);
+    const found = grouped(tabsOf(candidates).matches);
     expect(found.direct).toEqual([direct]);
     expect(found.industry).toEqual([industry]);
     expect(found.technology).toEqual([technology]);
@@ -193,7 +211,7 @@ describe("tabs and groups", () => {
     const tabs = tabsOf([direct, none, shortlisted, gone]);
     expect(tabs.shortlist).toEqual([shortlisted]);
     expect(tabs.removed).toEqual([gone]);
-    expect(grouped(tabs.all).kept).toEqual([shortlisted]);
+    expect(grouped(tabs.matches).kept).toEqual([shortlisted]);
     // It is kept, and it is not what the run recommends.
     expect(recommendedOf([direct, none, shortlisted, gone])).toEqual([direct]);
   });
@@ -218,35 +236,108 @@ describe("coverage", () => {
   });
 
   it("narrows a list to those that show a need", () => {
-    const all = tabsOf(candidates).all;
+    const all = tabsOf(candidates).matches;
     expect(withNeed(all, 2).map((one) => one.solutionName)).toEqual(["Staple", "Sentosa"]);
     expect(withNeed(all, 3)).toEqual([]);
     expect(withNeed(all, null)).toEqual(all);
   });
 });
 
-describe("the quote of a row", () => {
-  it("is of a need the candidate meets, before one it comes near", () => {
-    expect(bestQuote(industry, needs)).toEqual({ quote: "Double payment", source: "profile" });
-    expect(bestQuote(direct, needs)).toEqual({
-      quote: "extracts and verifies the content",
-      source: "website 2",
+describe("the sentence above the list", () => {
+  it("counts what the run recommends, and how many of them are a strong fit", () => {
+    expect(matchesOf(candidates)).toEqual({ matches: 3, strong: 1 });
+  });
+
+  it("counts no strong fit when the first group is empty", () => {
+    expect(matchesOf([industry, technology, waiting])).toEqual({ matches: 2, strong: 0 });
+  });
+
+  it("counts nothing before a run recommends anything, and never what was removed or put in no group", () => {
+    expect(matchesOf([none, removed, waiting])).toEqual({ matches: 0, strong: 0 });
+    expect(matchesOf([])).toEqual({ matches: 0, strong: 0 });
+  });
+});
+
+describe("a group in the list", () => {
+  const closed = { folds: true, opened: false, all: false };
+
+  it("shows every row of the first two groups and of the small ones, however many", () => {
+    for (const section of ["direct", "industry", "waiting", "kept"] as const) {
+      expect(groupView(section, 12, closed)).toEqual({
+        folds: false,
+        open: true,
+        shown: 12,
+        more: 0,
+      });
+    }
+  });
+
+  it("folds the last group to its header until it is opened", () => {
+    expect(groupView("technology", 21, closed)).toEqual({
+      folds: true,
+      open: false,
+      shown: 0,
+      more: 0,
     });
   });
 
-  it("falls back to what shows the industry or the technology, and is absent without any", () => {
-    expect(bestQuote(technology, needs)).toEqual({
-      quote: "extracting data from PDFs and images",
-      source: "website",
+  it("shows the first rows of the opened group, and the rest on request", () => {
+    expect(groupView("technology", 21, { ...closed, opened: true })).toEqual({
+      folds: true,
+      open: true,
+      shown: FOLDED_ROWS,
+      more: 21 - FOLDED_ROWS,
     });
-    expect(bestQuote(waiting, needs)).toBeUndefined();
+    expect(groupView("technology", 21, { folds: true, opened: true, all: true })).toMatchObject({
+      shown: 21,
+      more: 0,
+    });
+    expect(groupView("technology", 3, { ...closed, opened: true })).toMatchObject({
+      shown: 3,
+      more: 0,
+    });
   });
 
-  it("never takes the quote of a constraint", () => {
-    const onlyConstraint = candidate("Sap", "technology", [
-      finding(4, "met", "SAP connector", "profile"),
-    ]);
-    expect(bestQuote(onlyConstraint, needs)).toBeUndefined();
+  it("does not fold where folding is off, as on the shortlist", () => {
+    expect(groupView("technology", 21, { folds: false, opened: false, all: false })).toEqual({
+      folds: false,
+      open: true,
+      shown: 21,
+      more: 0,
+    });
+  });
+});
+
+describe("what a row says beyond its group", () => {
+  const one = needs.slice(0, 1);
+
+  it("is nothing when the group says it already", () => {
+    expect(rowVerdict(direct, one)).toBeUndefined();
+    expect(rowVerdict(industry, one)).toBeUndefined();
+    expect(rowVerdict(technology, one)).toBeUndefined();
+  });
+
+  it("is the status of the one thing asked for when the group does not say it", () => {
+    const shownInIndustry = candidate("Shown", "industry", [finding(1, "met", "reads claims")]);
+    const nothingInTechnology = candidate("Bare", "technology", []);
+    expect(rowVerdict(shownInIndustry, one)).toBe("met");
+    expect(rowVerdict(nothingInTechnology, one)).toBe("not_shown");
+    // A solution a person keeps is in no group, so the row says what it shows.
+    expect(rowVerdict(none, one)).toBe("met");
+  });
+
+  it("is nothing for a solution not read yet, and with several things asked for", () => {
+    expect(rowVerdict(waiting, one)).toBeUndefined();
+    expect(rowVerdict(candidate("Shown", "industry", [finding(1, "met", "x")]), needs)).toBe(
+      undefined,
+    );
+  });
+
+  it("names which of the deck and the website could not be read", () => {
+    expect(unreadOf({ unread: [] })).toBeUndefined();
+    expect(unreadOf({ unread: ["deck"] })).toBe("deck");
+    expect(unreadOf({ unread: ["website"] })).toBe("website");
+    expect(unreadOf({ unread: ["website", "deck"] })).toBe("both");
   });
 });
 

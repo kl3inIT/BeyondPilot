@@ -1,10 +1,13 @@
-// What the Candidates page of a use case reads in the end-to-end tests: the published use case
-// "Claims triage" of Pocket Policy as its members and as operators read it, and the solutions matched
-// to it. One required capability, two optional ones and a condition of delivery; a candidate in each
-// group, one judged into no group, one a member removed, one GenAI Fund removed and one that waits
-// to be judged.
+// What the Matched solutions page of a use case reads in the end-to-end tests, as the members of
+// Pocket Policy and as operators read it. Two published use cases:
+// - "Claims triage" asks for three things: one required capability, two optional ones and a condition
+//   of delivery. A solution in each group, one the AI put in no group, one a member removed, one
+//   GenAI Fund removed and one the AI has not read yet.
+// - "Invoice capture" asks for one thing, as most use cases do, with a condition of delivery: one
+//   solution in each of the first two groups and six in the last, which folds.
 
 const matchedUseCaseId = "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0011";
+const oneNeedUseCaseId = "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0021";
 
 const person = (name, more = {}) => ({ name, genaiFund: false, you: false, ...more });
 
@@ -108,8 +111,8 @@ const finding = (requirement, status, quote = "", source = "", reason = "") => (
 });
 
 const candidate = (number, name, bucket, findings, more = {}) => ({
-  id: `c4d1d47e-0000-4000-8000-00000000000${number}`,
-  solutionId: `50101000-0000-4000-8000-00000000000${number}`,
+  id: `c4d1d47e-0000-4000-8000-${String(number).padStart(12, "0")}`,
+  solutionId: `50101000-0000-4000-8000-${String(number).padStart(12, "0")}`,
   solutionName: name,
   solutionSlug: name.toLowerCase().replaceAll(" ", "-"),
   organizationName: name,
@@ -219,16 +222,79 @@ const run = {
   total: 6,
 };
 
+// "Invoice capture": the one thing it asks for, and a condition of delivery.
+const oneNeedRequirements = [requirements[0], { ...requirements[3], position: 2 }];
+
+const oneNeedCandidates = [
+  candidate(
+    21,
+    "Staple AI",
+    "direct",
+    [
+      finding(
+        1,
+        "met",
+        "extracts and verifies the content",
+        "website 2",
+        "It reads documents and takes out their fields.",
+      ),
+      finding(2, "met", "SAP connector available", "profile", "The profile names a SAP connector."),
+    ],
+    { summary: "It reads invoices in production today.", unread: ["deck"] },
+  ),
+  candidate(
+    22,
+    "Sentosa Finance",
+    "industry",
+    [
+      finding(1, "partly", "More than 1K invoices per month", "customer case 1", "Invoices only."),
+      finding(2, "not_shown"),
+    ],
+    { country: "ID", maturity: "scaled", summary: "An insurer uses it for invoices." },
+  ),
+  ...["Docbase", "Paperline", "Scanwell", "Formica", "Ledgerly", "Inkstone"].map((name, index) =>
+    candidate(
+      23 + index,
+      name,
+      "technology",
+      [
+        finding(
+          1,
+          "partly",
+          "extracting data from PDFs and images",
+          "website",
+          "A general extractor.",
+        ),
+        finding(2, "not_shown"),
+      ],
+      { country: "VN", summary: "Built on document intelligence." },
+    ),
+  ),
+];
+
+const useCases = {
+  [matchedUseCaseId]: { title: "Claims triage", requirements, candidates },
+  [oneNeedUseCaseId]: {
+    title: "Invoice capture",
+    requirements: oneNeedRequirements,
+    candidates: oneNeedCandidates,
+  },
+};
+
 /**
- * The reads of the Candidates page, as `[status, body]`; nothing for another path. An operator reads
+ * The reads of the Matched solutions page, as `[status, body]`; nothing for another path. An operator reads
  * the model and the steps; a member reads how many runs the day still allows.
  */
 export function answerMatching(url, account) {
   const { pathname } = url;
+  const id = Object.keys(useCases).find((one) => pathname.endsWith(`/${one}`));
+  if (!id) {
+    return undefined;
+  }
   const paths = {
-    mine: `/api/usecase/mine/${matchedUseCaseId}`,
-    administered: `/api/usecase/admin/use-cases/${matchedUseCaseId}`,
-    matching: `/api/matching/use-cases/${matchedUseCaseId}`,
+    mine: `/api/usecase/mine/${id}`,
+    administered: `/api/usecase/admin/use-cases/${id}`,
+    matching: `/api/matching/use-cases/${id}`,
   };
   if (!Object.values(paths).includes(pathname)) {
     return undefined;
@@ -237,20 +303,21 @@ export function answerMatching(url, account) {
     return [401, {}];
   }
   const operator = account.role === "operator";
+  const useCase = useCases[id];
   if (pathname === paths.mine) {
-    return [200, mine];
+    return [200, { ...mine, id, title: useCase.title }];
   }
   if (pathname === paths.administered) {
-    return operator ? [200, administered] : [403, {}];
+    return operator ? [200, { ...administered, id, title: useCase.title }] : [403, {}];
   }
   return [
     200,
     {
-      useCaseId: matchedUseCaseId,
+      useCaseId: id,
       operator,
       modelChosen: true,
-      requirements,
-      candidates,
+      requirements: useCase.requirements,
+      candidates: useCase.candidates,
       run: operator ? { ...run, modelName: "claude-sonnet-4-5" } : run,
       steps: operator
         ? [
