@@ -52,6 +52,12 @@ public enum AiErrorCode implements ErrorCode {
 	MODEL_WITHOUT_VISION("AI_MODEL_WITHOUT_VISION", ErrorCategory.VALIDATION,
 			"This task needs a model that reads images."),
 
+	READER_AMBIGUOUS("AI_READER_AMBIGUOUS", ErrorCategory.VALIDATION,
+			"Pages are read by a model or by an OCR service, not both."),
+
+	OCR_PROVIDER_UNAVAILABLE("AI_OCR_PROVIDER_UNAVAILABLE", ErrorCategory.VALIDATION,
+			"This OCR service cannot be used: it is switched off or has no key."),
+
 	TASK_UNKNOWN("AI_TASK_UNKNOWN", ErrorCategory.NOT_FOUND, "There is no such task."),
 
 	TASK_CHANGED("AI_TASK_CHANGED", ErrorCategory.CONFLICT,

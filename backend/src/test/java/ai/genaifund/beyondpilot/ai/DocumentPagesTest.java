@@ -39,6 +39,20 @@ class DocumentPagesTest {
 	}
 
 	@Test
+	void aPageIsDrawnAsAJpegUnderALimitAndAsNothingWhenItCannotFit() throws IOException {
+		byte[] pdf = TestPdf.of("One", "");
+
+		var fits = PdfPages.jpegs(() -> new ByteArrayInputStream(pdf), java.util.List.of(1, 7), 1_400_000);
+		var tooLarge = PdfPages.jpegs(() -> new ByteArrayInputStream(pdf), java.util.List.of(1), 100);
+
+		assertThat(fits).containsOnlyKeys(1);
+		// A JPEG starts with these bytes.
+		assertThat(fits.get(1)).startsWith((byte) 0xFF, (byte) 0xD8).hasSizeLessThanOrEqualTo(1_400_000);
+		// Drawn, and over the limit at the lowest quality: the caller is told so by an empty picture.
+		assertThat(tooLarge.get(1)).isEmpty();
+	}
+
+	@Test
 	void aPagesTextKeepsItsLinesAndLosesTheCharactersADatabaseRefuses() {
 		// A font without a mapping gives the null character for each glyph.
 		assertThat(PdfPages.clean("  Claims\u0000 desk\r\n\u0007reads\tforms\n ")).isEqualTo("Claims desk\nreads\tforms");

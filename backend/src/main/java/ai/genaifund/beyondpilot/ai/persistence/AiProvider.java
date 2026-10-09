@@ -20,13 +20,15 @@ public class AiProvider {
 
 	public static final String CHAT = "chat";
 
+	public static final String OCR = "ocr";
+
 	@Id
 	private UUID id;
 
 	@Column(nullable = false)
 	private String purpose;
 
-	/** The vendor of an embedding provider, which fixes its address and models; null for a chat provider. */
+	/** The vendor of an embedding provider, which fixes its address and models; null for a chat or OCR provider. */
 	private @Nullable String vendor;
 
 	/** The adapter that speaks this provider's API. */

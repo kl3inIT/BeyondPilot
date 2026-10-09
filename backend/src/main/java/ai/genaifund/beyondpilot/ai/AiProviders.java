@@ -38,6 +38,9 @@ public class AiProviders {
 	/** What answers a task: matching now, chat later. */
 	public static final String CHAT = AiProvider.CHAT;
 
+	/** What reads a page from its picture, where an operator chose a service over a model. */
+	public static final String OCR = AiProvider.OCR;
+
 	private final AiProviderRepository providers;
 
 	private final AiKeys keys;

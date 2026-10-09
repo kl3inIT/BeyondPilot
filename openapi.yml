@@ -486,6 +486,215 @@ paths:
       summary: "Choose the model a task uses, and how hard it reasons"
       tags:
       - AI administration
+  /api/ai/admin/ocr:
+    get:
+      operationId: getOcrSettings
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OcrSettings"
+          description: "The settings, without keys."
+      security:
+      - session: []
+      summary: "The OCR providers, and what reads a page that is only a picture"
+      tags:
+      - AI administration
+  /api/ai/admin/ocr/providers:
+    post:
+      operationId: connectOcrProvider
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveOcrProvider"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OcrSettings"
+          description: "The settings, with the new provider."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, the adapter is unknown, the address\
+            \ is not an http or https URL, or the key is missing."
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Another OCR provider has this name.
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The server has no key to encrypt provider keys.
+      security:
+      - session: []
+      summary: Connect an OCR provider
+      tags:
+      - AI administration
+  /api/ai/admin/ocr/providers/test:
+    post:
+      operationId: testOcrProvider
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProbeOcrProvider"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OcrProviderTest"
+          description: Whether the service read the picture and how long it took.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The adapter is unknown, the address is not valid, or no usable\
+            \ key was given."
+      security:
+      - session: []
+      summary: "Try a connection, saved or not, by sending one small picture; the\
+        \ test spends one call"
+      tags:
+      - AI administration
+  /api/ai/admin/ocr/providers/{id}:
+    delete:
+      operationId: removeOcrProvider
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OcrSettings"
+          description: "The settings left. If the provider read pages, nothing does\
+            \ now."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such provider.
+      security:
+      - session: []
+      summary: Remove an OCR provider with its key
+      tags:
+      - AI administration
+    put:
+      operationId: changeOcrProvider
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveOcrProvider"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OcrSettings"
+          description: "The settings, with the change."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, the adapter is unknown, the address\
+            \ is not valid, or a key is needed."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such provider.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The provider changed since it was read, or another one has\
+            \ this name."
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The server has no key to encrypt provider keys.
+      security:
+      - session: []
+      summary: "Change an OCR provider: its name, address or key, or switch it on\
+        \ or off"
+      tags:
+      - AI administration
+  /api/ai/admin/ocr/reader:
+    put:
+      operationId: setDocumentReader
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetDocumentReader"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OcrSettings"
+          description: "The settings, with the choice."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, both a model and a provider are named,\
+            \ the one named is switched off or has no key, or the model does not read\
+            \ images."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such model or provider.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The reader changed since it was read.
+      security:
+      - session: []
+      summary: "Choose what reads a page that is only a picture: a model that reads\
+        \ images, or an OCR provider"
+      tags:
+      - AI administration
   /api/audit/events:
     get:
       operationId: listAuditEvents
@@ -10945,7 +11154,6 @@ components:
           type: string
           enum:
           - matching
-          - document_reading
         version:
           type: integer
           format: int64
@@ -11540,6 +11748,44 @@ components:
       - organizationId
       - organizationName
       - organizationType
+    DocumentReader:
+      type: object
+      description: "What reads a page that is only a picture: a chat model, an OCR\
+        \ provider, or nothing yet."
+      properties:
+        available:
+          type: boolean
+          description: "Whether pages can be read now: a reader is chosen, and it\
+            \ is switched on with a key."
+        modelId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The chat model that reads pages; null when an OCR provider\
+            \ does, or nothing."
+        ocrProviderId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The OCR provider that reads pages; null when a model does,\
+            \ or nothing."
+        reasoningEffort:
+          type: string
+          description: "How hard the model reasons, on a model that does."
+          enum:
+          - "off"
+          - low
+          - medium
+          - high
+        version:
+          type: integer
+          format: int64
+      required:
+      - available
+      - reasoningEffort
+      - version
     EmailCounts:
       type: object
       description: "What became of the emails of the period, filtered by kind but\
@@ -13476,6 +13722,101 @@ components:
             $ref: "#/components/schemas/MyUseCaseSummary"
       required:
       - items
+    OcrProvider:
+      type: object
+      properties:
+        adapterType:
+          type: string
+          example: aihay
+        baseUrl:
+          type: string
+        enabled:
+          type: boolean
+        hasKey:
+          type: boolean
+        id:
+          type: string
+          format: uuid
+        inUse:
+          type: boolean
+          description: Whether it is the reader.
+        name:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        updatedBy:
+          type: string
+          description: "Who saved it last, as they were named."
+        version:
+          type: integer
+          format: int64
+          description: Send it back with a change; a change made meanwhile is refused.
+      required:
+      - adapterType
+      - baseUrl
+      - enabled
+      - hasKey
+      - id
+      - inUse
+      - name
+      - updatedAt
+      - updatedBy
+      - version
+    OcrProviderTest:
+      type: object
+      description: What the service answered when it was sent the picture BeyondPilot
+        carries for this test. The test spends one call.
+      properties:
+        latencyMs:
+          type: integer
+          format: int64
+        ok:
+          type: boolean
+          description: Whether the service answered and the line of text on the picture
+            is in what it read.
+        reason:
+          type:
+          - string
+          - "null"
+          description: "Why it failed: the key was refused, no answer came, the answer\
+            \ was not this API's, the service would not take the picture, or it answered\
+            \ without the text on the picture."
+          enum:
+          - rejected
+          - unreachable
+          - incompatible
+          - refused
+          - misread
+      required:
+      - latencyMs
+      - ok
+    OcrSettings:
+      type: object
+      description: "Everything the OCR tab of Admin › AI › Providers shows: the OCR\
+        \ providers, and what reads a page that is only a picture. A key is never\
+        \ returned: each provider says only whether it has one."
+      properties:
+        adapters:
+          type: array
+          description: "The OCR APIs BeyondPilot speaks, as the adapterType of a provider."
+          items:
+            type: string
+        keysCanBeStored:
+          type: boolean
+          description: Whether the server holds the key that encrypts provider keys;
+            without it none can be saved.
+        providers:
+          type: array
+          items:
+            $ref: "#/components/schemas/OcrProvider"
+        reader:
+          $ref: "#/components/schemas/DocumentReader"
+      required:
+      - adapters
+      - keysCanBeStored
+      - providers
+      - reader
     Organization:
       type: object
       description: "An organization as the people who belong to it, and operators,\
@@ -13909,6 +14250,35 @@ components:
         adapterType:
           type: string
           example: openai
+          maxLength: 40
+          minLength: 0
+        apiKey:
+          type:
+          - string
+          - "null"
+          maxLength: 8192
+          minLength: 0
+        baseUrl:
+          type: string
+          maxLength: 2048
+          minLength: 0
+        providerId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: The saved provider whose key to use when apiKey is empty.
+      required:
+      - adapterType
+      - baseUrl
+    ProbeOcrProvider:
+      type: object
+      description: "A connection to try, saved or not. Without an apiKey the saved\
+        \ key of providerId is used, while the address is the one it was saved with."
+      properties:
+        adapterType:
+          type: string
+          example: aihay
           maxLength: 40
           minLength: 0
         apiKey:
@@ -16599,6 +16969,56 @@ components:
       - requirements
       - technologies
       - version
+    SaveOcrProvider:
+      type: object
+      description: An OCR provider to connect or change. The address is an http or
+        https URL; a saved key is kept only while it is unchanged.
+      properties:
+        adapterType:
+          type: string
+          description: One of the adapters the settings list.
+          example: aihay
+          maxLength: 40
+          minLength: 0
+        apiKey:
+          type:
+          - string
+          - "null"
+          description: "The new key, with key = replace."
+          maxLength: 8192
+          minLength: 0
+        baseUrl:
+          type: string
+          example: https://api.ai-hay.vn
+          maxLength: 2048
+          minLength: 0
+        enabled:
+          type: boolean
+          description: A provider switched off keeps its key; it cannot read pages.
+        key:
+          type: string
+          description: "Keep the saved key, replace it with apiKey, or remove it.\
+            \ A new provider takes replace."
+          enum:
+          - keep
+          - replace
+          - remove
+          pattern: keep|replace|remove
+        name:
+          type: string
+          maxLength: 60
+          minLength: 0
+        version:
+          type: integer
+          format: int64
+          description: The version the provider was read at; 0 for a new one.
+      required:
+      - adapterType
+      - baseUrl
+      - enabled
+      - key
+      - name
+      - version
     SaveOrganization:
       type: object
       description: The profile of an organization as its Profile screen holds it.
@@ -17555,6 +17975,42 @@ components:
       - message
       - senderName
       - topic
+    SetDocumentReader:
+      type: object
+      description: "What reads a page that is only a picture from now on: a model\
+        \ that reads images, or an OCR provider. One of the two, or neither to leave\
+        \ pages unread."
+      properties:
+        modelId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: A chat model that reads images.
+        ocrProviderId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: A connected OCR provider.
+        reasoningEffort:
+          type:
+          - string
+          - "null"
+          description: How hard the model reasons; null returns to the default of
+            document reading. Ignored for an OCR provider.
+          enum:
+          - "off"
+          - low
+          - medium
+          - high
+          pattern: off|low|medium|high
+        version:
+          type: integer
+          format: int64
+          description: The version the reader was read at.
+      required:
+      - version
     SetSemanticSearch:
       type: object
       description: "Turns semantic search on or off. Off, search matches keywords\

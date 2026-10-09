@@ -1939,7 +1939,8 @@
           "title": "Keys cannot be saved yet",
           "lead": "The server has no encryption key for provider keys. Ask the team to add BEYONDPILOT_AI_ENCRYPTION_KEY."
         },
-        "chat": "Chat"
+        "chat": "Chat",
+        "ocr": "OCR"
       },
       "model": {
         "heading": "Embedding model",
@@ -2064,12 +2065,10 @@
           "heading": "Models by task",
           "lead": "The model each task uses. A choice is saved at once.",
           "name": {
-            "matching": "Matching",
-            "document_reading": "Reading documents"
+            "matching": "Matching"
           },
           "about": {
-            "matching": "Judges which solutions fit a use case, need by need, with a quote for each.",
-            "document_reading": "Copies the text of a page that is only a picture, such as a slide of a deck. Needs a model that reads images."
+            "matching": "Judges which solutions fit a use case, need by need, with a quote for each."
           },
           "unset": "No model chosen; this task does not run until one is.",
           "unavailable": "Its provider is switched off or has no key; this task does not run.",
@@ -2254,10 +2253,96 @@
           "AI_MODEL_INVALID": "The max output must be smaller than the context window.",
           "AI_MODEL_UNAVAILABLE": "This model cannot be used: its provider is switched off or has no key.",
           "AI_MODEL_WITHOUT_VISION": "This task needs a model that reads images.",
+          "AI_READER_AMBIGUOUS": "Pages are read by a model or by an OCR service, not both.",
+          "AI_OCR_PROVIDER_UNAVAILABLE": "This OCR service cannot be used: it is switched off or has no key.",
           "AI_TASK_UNKNOWN": "There is no such task. Reload the page.",
           "AI_TASK_CHANGED": "Someone changed this task's model since you opened it. Reload and try again.",
           "AI_BUSY": "Too many models are in use at once. Try again in a moment.",
           "unknown": "Something went wrong. Try again in a moment."
+        }
+      },
+      "ocr": {
+        "reader": {
+          "heading": "Reader",
+          "lead": "What reads a page that is only a picture, such as a slide of a deck. A choice is saved at once.",
+          "name": "Reading documents",
+          "about": "Copies the text of a page that is only a picture. A model that reads images does it, or an OCR service.",
+          "unset": "No reader chosen; pages that are only a picture stay unread until one is.",
+          "unavailable": "The reader chosen is switched off or has no key; pages that are only a picture stay unread.",
+          "kindLabel": "Read with",
+          "kind": {
+            "model": "Model",
+            "ocr": "OCR service"
+          },
+          "modelLabel": "Model for Reading documents",
+          "modelsFrom": "Models come from the <chat>Chat tab</chat>; only those that read images are listed.",
+          "noModels": "No model that reads images can be used yet. Enable one in the <chat>Chat tab</chat>.",
+          "serviceLabel": "OCR service for Reading documents",
+          "chooseService": "Choose an OCR service",
+          "noServices": "No OCR service can be used yet. Connect one below."
+        },
+        "connections": {
+          "heading": "Available connections",
+          "lead": "The OCR services BeyondPilot may send the picture of a page to. A key is stored encrypted and never shown again.",
+          "inUse": "Reads documents",
+          "noKey": "No key",
+          "off": "Switched off",
+          "test": "Test connection",
+          "edit": "Edit",
+          "delete": "Delete",
+          "more": "Actions for {name}",
+          "testOk": "The service read the test picture · {ms} ms",
+          "testFailed": "Test failed · {ms} ms",
+          "reason": {
+            "rejected": "The service rejected the API key, or the key may not use OCR. Check that it is copied whole and has not been revoked.",
+            "unreachable": "The service did not answer. Check the address, or try again in a moment.",
+            "incompatible": "The address answered, but not as this API does. Check the address.",
+            "refused": "The service would not take the test picture.",
+            "misread": "The service answered, but the text of the test picture was not in what it read."
+          }
+        },
+        "add": {
+          "heading": "Add provider",
+          "lead": "OCR services BeyondPilot speaks to.",
+          "connect": "Connect",
+          "connectLabel": "Connect {name}",
+          "preset": {
+            "aihay": "OCR of the AI Hay platform: one picture in, its text out as Markdown."
+          }
+        },
+        "editor": {
+          "connectTitle": "Connect {name}",
+          "connectLead": "Test the connection before you save. When this service is the reader, the picture of a page is sent to it.",
+          "editTitle": "Edit {name}",
+          "editLead": "A change takes effect from the next page read.",
+          "name": "Name",
+          "endpoint": "Endpoint URL",
+          "endpointHint": "The address of the service, without a path. http and private addresses are accepted.",
+          "apiKey": "API key",
+          "keyHint": "Stored encrypted and never shown again.",
+          "keyKeep": "Keep the saved key",
+          "keyReplace": "Replace the key",
+          "keyRemove": "Remove the key",
+          "newKey": "New API key",
+          "keyMoved": "A saved key is only used with the address it was saved for. Enter the key again.",
+          "enabled": "Switched on",
+          "enabledHint": "Switched off, the service keeps its key and reads no page.",
+          "testTitle": "Test connection",
+          "testHint": "Sends one small picture with the address and key above. It spends one call at the service.",
+          "cancel": "Cancel",
+          "save": "Save provider"
+        },
+        "delete": {
+          "title": "Delete {name}?",
+          "lead": "The service and its key are deleted. If it reads documents, pages that are only a picture stay unread until another reader is chosen.",
+          "confirm": "Delete provider",
+          "cancel": "Cancel"
+        },
+        "done": {
+          "connected": "{name} connected",
+          "saved": "{name} saved",
+          "deleted": "{name} deleted",
+          "readerSet": "{name} reads documents from now on"
         }
       }
     },

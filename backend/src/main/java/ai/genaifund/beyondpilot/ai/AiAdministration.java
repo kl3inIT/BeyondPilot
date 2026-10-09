@@ -45,7 +45,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * What operators do in the Chat tab of Admin › AI › Providers: connect chat providers, enable their models and choose
  * the model each task uses. It follows MemoryOS's model catalog, kept smaller: no groups, no per-member choice, no
- * budgets.
+ * budgets. What reads document pages is chosen in the OCR tab ({@link OcrAdministration}); a model chosen there
+ * still counts as in use here.
  *
  * <p>
  * A call to a provider is never made inside a database transaction.
@@ -303,7 +304,10 @@ public class AiAdministration {
 	@Transactional
 	public ChatSettingsResponse setTaskModel(Actor actor, String task, SetTaskModelRequest request) {
 		Operator operator = identity.requireOperator(actor);
-		AiTask named = AiTask.of(task).orElseThrow(() -> new AiException(AiErrorCode.TASK_UNKNOWN, "No task " + task));
+		AiTask named = AiTask.of(task)
+			// What reads pages is chosen in the OCR tab, where it may also be an OCR service.
+			.filter(chosen -> chosen != AiTask.DOCUMENT_READING)
+			.orElseThrow(() -> new AiException(AiErrorCode.TASK_UNKNOWN, "No task " + task));
 		AiTaskModel row = tasks.findById(named.value())
 			.orElseThrow(() -> new AiException(AiErrorCode.TASK_UNKNOWN, "No row for task " + task));
 		if (row.getVersion() != request.version()) {
@@ -359,6 +363,10 @@ public class AiAdministration {
 		}
 		List<ChatSettingsResponse.Task> taskRows = new ArrayList<>();
 		for (AiTask task : AiTask.values()) {
+			if (task == AiTask.DOCUMENT_READING) {
+				// Shown in the OCR tab, with the OCR services that can read pages in a model's place.
+				continue;
+			}
 			AiTaskModel row = rows.stream().filter(r -> r.getTask().equals(task.value())).findFirst().orElse(null);
 			UUID modelId = row == null ? null : row.getModelId();
 			AiModel model = modelId == null ? null

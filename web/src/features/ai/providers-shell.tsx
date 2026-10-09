@@ -4,13 +4,13 @@ import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
-const tabs = ["chat", "embedding"] as const;
+const tabs = ["chat", "embedding", "ocr"] as const;
 
 type ProvidersTab = (typeof tabs)[number];
 
-/** The tab an address asks for: Chat unless it names Embedding. */
+/** The tab an address asks for: Chat unless it names another one. */
 function providersTab(asked: string | string[] | undefined): ProvidersTab {
-  return asked === "embedding" ? "embedding" : "chat";
+  return tabs.find((each) => each === asked) ?? "chat";
 }
 
 /**

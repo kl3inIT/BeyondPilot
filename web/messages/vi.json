@@ -1939,7 +1939,8 @@
           "title": "Chưa lưu được key",
           "lead": "Máy chủ chưa có khoá mã hoá cho key của nhà cung cấp. Hãy báo đội kỹ thuật thêm BEYONDPILOT_AI_ENCRYPTION_KEY."
         },
-        "chat": "Chat"
+        "chat": "Chat",
+        "ocr": "OCR"
       },
       "model": {
         "heading": "Model embedding",
@@ -2064,12 +2065,10 @@
           "heading": "Model theo tác vụ",
           "lead": "Model mỗi tác vụ dùng. Lựa chọn được lưu ngay.",
           "name": {
-            "matching": "Ghép nối",
-            "document_reading": "Đọc tài liệu"
+            "matching": "Ghép nối"
           },
           "about": {
-            "matching": "Xét giải pháp nào hợp với một use case, theo từng nhu cầu, kèm trích dẫn cho mỗi nhu cầu.",
-            "document_reading": "Chép lại chữ của một trang chỉ có ảnh, như một slide của deck. Cần model đọc được ảnh."
+            "matching": "Xét giải pháp nào hợp với một use case, theo từng nhu cầu, kèm trích dẫn cho mỗi nhu cầu."
           },
           "unset": "Chưa chọn model; tác vụ này không chạy cho đến khi chọn.",
           "unavailable": "Provider của model đang tắt hoặc không có key; tác vụ này không chạy.",
@@ -2254,10 +2253,96 @@
           "AI_MODEL_INVALID": "Output tối đa phải nhỏ hơn context window.",
           "AI_MODEL_UNAVAILABLE": "Không dùng được model này: provider của nó đang tắt hoặc không có key.",
           "AI_MODEL_WITHOUT_VISION": "Tác vụ này cần model đọc được ảnh.",
+          "AI_READER_AMBIGUOUS": "Trang được đọc bằng một model hoặc một dịch vụ OCR, không phải cả hai.",
+          "AI_OCR_PROVIDER_UNAVAILABLE": "Không dùng được dịch vụ OCR này: nó đang tắt hoặc không có key.",
           "AI_TASK_UNKNOWN": "Không có tác vụ này. Hãy tải lại trang.",
           "AI_TASK_CHANGED": "Có người đã đổi model của tác vụ này từ lúc bạn mở. Tải lại rồi thử lại.",
           "AI_BUSY": "Đang có quá nhiều model được dùng cùng lúc. Thử lại sau ít phút.",
           "unknown": "Đã có lỗi. Thử lại sau ít phút."
+        }
+      },
+      "ocr": {
+        "reader": {
+          "heading": "Nguồn đọc",
+          "lead": "Thứ đọc một trang chỉ có ảnh, như một slide của deck. Lựa chọn được lưu ngay.",
+          "name": "Đọc tài liệu",
+          "about": "Chép lại chữ của một trang chỉ có ảnh. Một model đọc được ảnh làm việc này, hoặc một dịch vụ OCR.",
+          "unset": "Chưa chọn nguồn đọc; các trang chỉ có ảnh chưa được đọc cho đến khi chọn.",
+          "unavailable": "Nguồn đọc đã chọn đang tắt hoặc không có key; các trang chỉ có ảnh chưa được đọc.",
+          "kindLabel": "Đọc bằng",
+          "kind": {
+            "model": "Model",
+            "ocr": "Dịch vụ OCR"
+          },
+          "modelLabel": "Model cho Đọc tài liệu",
+          "modelsFrom": "Model lấy từ <chat>tab Chat</chat>; chỉ liệt kê model đọc được ảnh.",
+          "noModels": "Chưa có model đọc được ảnh nào dùng được. Bật một model ở <chat>tab Chat</chat>.",
+          "serviceLabel": "Dịch vụ OCR cho Đọc tài liệu",
+          "chooseService": "Chọn dịch vụ OCR",
+          "noServices": "Chưa có dịch vụ OCR nào dùng được. Kết nối một dịch vụ bên dưới."
+        },
+        "connections": {
+          "heading": "Kết nối hiện có",
+          "lead": "Các dịch vụ OCR mà BeyondPilot có thể gửi ảnh của trang tới. Key được lưu mã hoá và không bao giờ hiện lại.",
+          "inUse": "Đang đọc tài liệu",
+          "noKey": "Không có key",
+          "off": "Đang tắt",
+          "test": "Thử kết nối",
+          "edit": "Sửa",
+          "delete": "Xoá",
+          "more": "Thao tác với {name}",
+          "testOk": "Dịch vụ đã đọc được ảnh thử · {ms} ms",
+          "testFailed": "Thử thất bại · {ms} ms",
+          "reason": {
+            "rejected": "Dịch vụ từ chối API key, hoặc key không được dùng OCR. Kiểm tra key đã chép đủ và chưa bị thu hồi.",
+            "unreachable": "Dịch vụ không trả lời. Kiểm tra địa chỉ, hoặc thử lại sau ít phút.",
+            "incompatible": "Địa chỉ có trả lời, nhưng không đúng kiểu của API này. Kiểm tra lại địa chỉ.",
+            "refused": "Dịch vụ không nhận ảnh thử.",
+            "misread": "Dịch vụ có trả lời, nhưng chữ trên ảnh thử không có trong kết quả đọc."
+          }
+        },
+        "add": {
+          "heading": "Thêm provider",
+          "lead": "Các dịch vụ OCR mà BeyondPilot gọi được.",
+          "connect": "Kết nối",
+          "connectLabel": "Kết nối {name}",
+          "preset": {
+            "aihay": "OCR của nền tảng AI Hay: gửi một ảnh, nhận lại chữ dạng Markdown."
+          }
+        },
+        "editor": {
+          "connectTitle": "Kết nối {name}",
+          "connectLead": "Thử kết nối trước khi lưu. Khi dịch vụ này là nguồn đọc, ảnh của trang sẽ được gửi tới nó.",
+          "editTitle": "Sửa {name}",
+          "editLead": "Thay đổi có hiệu lực từ trang được đọc kế tiếp.",
+          "name": "Tên",
+          "endpoint": "Endpoint URL",
+          "endpointHint": "Địa chỉ của dịch vụ, không kèm đường dẫn. Chấp nhận http và địa chỉ nội bộ.",
+          "apiKey": "API key",
+          "keyHint": "Được lưu mã hoá và không bao giờ hiện lại.",
+          "keyKeep": "Giữ key đã lưu",
+          "keyReplace": "Thay key",
+          "keyRemove": "Gỡ key",
+          "newKey": "API key mới",
+          "keyMoved": "Key đã lưu chỉ dùng với địa chỉ lúc lưu. Hãy nhập lại key.",
+          "enabled": "Đang bật",
+          "enabledHint": "Khi tắt, dịch vụ vẫn giữ key và không đọc trang nào.",
+          "testTitle": "Thử kết nối",
+          "testHint": "Gửi một ảnh nhỏ bằng địa chỉ và key ở trên. Tốn một lượt gọi ở dịch vụ.",
+          "cancel": "Huỷ",
+          "save": "Lưu provider"
+        },
+        "delete": {
+          "title": "Xoá {name}?",
+          "lead": "Dịch vụ và key của nó sẽ bị xoá. Nếu nó đang đọc tài liệu, các trang chỉ có ảnh sẽ chưa được đọc cho đến khi chọn nguồn đọc khác.",
+          "confirm": "Xoá provider",
+          "cancel": "Huỷ"
+        },
+        "done": {
+          "connected": "Đã kết nối {name}",
+          "saved": "Đã lưu {name}",
+          "deleted": "Đã xoá {name}",
+          "readerSet": "{name} đọc tài liệu từ bây giờ"
         }
       }
     },

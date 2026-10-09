@@ -1027,7 +1027,7 @@ export type ChatTask = {
      * How hard the task reasons, on a model that does; the task's own default until an operator sets one.
      */
     reasoningEffort: 'off' | 'low' | 'medium' | 'high';
-    task: 'matching' | 'document_reading';
+    task: 'matching';
     version: number;
 };
 
@@ -1318,6 +1318,29 @@ export type DeclinedOrganizationRequest = {
     organizationId: string;
     organizationName: string;
     organizationType: 'company' | 'builder_team' | 'independent_builder' | 'other';
+};
+
+/**
+ * What reads a page that is only a picture: a chat model, an OCR provider, or nothing yet.
+ */
+export type DocumentReader = {
+    /**
+     * Whether pages can be read now: a reader is chosen, and it is switched on with a key.
+     */
+    available: boolean;
+    /**
+     * The chat model that reads pages; null when an OCR provider does, or nothing.
+     */
+    modelId?: string | null;
+    /**
+     * The OCR provider that reads pages; null when a model does, or nothing.
+     */
+    ocrProviderId?: string | null;
+    /**
+     * How hard the model reasons, on a model that does.
+     */
+    reasoningEffort: 'off' | 'low' | 'medium' | 'high';
+    version: number;
 };
 
 /**
@@ -2369,6 +2392,59 @@ export type MyUseCases = {
     items: Array<MyUseCaseSummary>;
 };
 
+export type OcrProvider = {
+    adapterType: string;
+    baseUrl: string;
+    enabled: boolean;
+    hasKey: boolean;
+    id: string;
+    /**
+     * Whether it is the reader.
+     */
+    inUse: boolean;
+    name: string;
+    updatedAt: string;
+    /**
+     * Who saved it last, as they were named.
+     */
+    updatedBy: string;
+    /**
+     * Send it back with a change; a change made meanwhile is refused.
+     */
+    version: number;
+};
+
+/**
+ * What the service answered when it was sent the picture BeyondPilot carries for this test. The test spends one call.
+ */
+export type OcrProviderTest = {
+    latencyMs: number;
+    /**
+     * Whether the service answered and the line of text on the picture is in what it read.
+     */
+    ok: boolean;
+    /**
+     * Why it failed: the key was refused, no answer came, the answer was not this API's, the service would not take the picture, or it answered without the text on the picture.
+     */
+    reason?: 'rejected' | 'unreachable' | 'incompatible' | 'refused' | 'misread';
+};
+
+/**
+ * Everything the OCR tab of Admin › AI › Providers shows: the OCR providers, and what reads a page that is only a picture. A key is never returned: each provider says only whether it has one.
+ */
+export type OcrSettings = {
+    /**
+     * The OCR APIs BeyondPilot speaks, as the adapterType of a provider.
+     */
+    adapters: Array<string>;
+    /**
+     * Whether the server holds the key that encrypts provider keys; without it none can be saved.
+     */
+    keysCanBeStored: boolean;
+    providers: Array<OcrProvider>;
+    reader: DocumentReader;
+};
+
 /**
  * An organization as the people who belong to it, and operators, see it.
  */
@@ -2593,6 +2669,19 @@ export type PersonConnectedApp = {
  * A connection to try or to list the models of, saved or not. Without an apiKey the saved key of providerId is used, while the address is the one it was saved with.
  */
 export type ProbeChatProvider = {
+    adapterType: string;
+    apiKey?: string | null;
+    baseUrl: string;
+    /**
+     * The saved provider whose key to use when apiKey is empty.
+     */
+    providerId?: string | null;
+};
+
+/**
+ * A connection to try, saved or not. Without an apiKey the saved key of providerId is used, while the address is the one it was saved with.
+ */
+export type ProbeOcrProvider = {
     adapterType: string;
     apiKey?: string | null;
     baseUrl: string;
@@ -3958,6 +4047,34 @@ export type SaveMyUseCase = {
 };
 
 /**
+ * An OCR provider to connect or change. The address is an http or https URL; a saved key is kept only while it is unchanged.
+ */
+export type SaveOcrProvider = {
+    /**
+     * One of the adapters the settings list.
+     */
+    adapterType: string;
+    /**
+     * The new key, with key = replace.
+     */
+    apiKey?: string | null;
+    baseUrl: string;
+    /**
+     * A provider switched off keeps its key; it cannot read pages.
+     */
+    enabled: boolean;
+    /**
+     * Keep the saved key, replace it with apiKey, or remove it. A new provider takes replace.
+     */
+    key: 'keep' | 'replace' | 'remove';
+    name: string;
+    /**
+     * The version the provider was read at; 0 for a new one.
+     */
+    version: number;
+};
+
+/**
  * The profile of an organization as its Profile screen holds it.
  */
 export type SaveOrganization = {
@@ -4412,6 +4529,28 @@ export type SendTalentEnquiry = {
      * What the message is about.
      */
     topic: 'project' | 'role' | 'other';
+};
+
+/**
+ * What reads a page that is only a picture from now on: a model that reads images, or an OCR provider. One of the two, or neither to leave pages unread.
+ */
+export type SetDocumentReader = {
+    /**
+     * A chat model that reads images.
+     */
+    modelId?: string | null;
+    /**
+     * A connected OCR provider.
+     */
+    ocrProviderId?: string | null;
+    /**
+     * How hard the model reasons; null returns to the default of document reading. Ignored for an OCR provider.
+     */
+    reasoningEffort?: 'off' | 'low' | 'medium' | 'high';
+    /**
+     * The version the reader was read at.
+     */
+    version: number;
 };
 
 /**
@@ -5327,6 +5466,179 @@ export type SetTaskModelResponses = {
 };
 
 export type SetTaskModelResponse = SetTaskModelResponses[keyof SetTaskModelResponses];
+
+export type GetOcrSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/ai/admin/ocr';
+};
+
+export type GetOcrSettingsResponses = {
+    /**
+     * The settings, without keys.
+     */
+    200: OcrSettings;
+};
+
+export type GetOcrSettingsResponse = GetOcrSettingsResponses[keyof GetOcrSettingsResponses];
+
+export type ConnectOcrProviderData = {
+    body: SaveOcrProvider;
+    path?: never;
+    query?: never;
+    url: '/api/ai/admin/ocr/providers';
+};
+
+export type ConnectOcrProviderErrors = {
+    /**
+     * A member is not valid, the adapter is unknown, the address is not an http or https URL, or the key is missing.
+     */
+    400: Problem;
+    /**
+     * Another OCR provider has this name.
+     */
+    409: Problem;
+    /**
+     * The server has no key to encrypt provider keys.
+     */
+    503: Problem;
+};
+
+export type ConnectOcrProviderError = ConnectOcrProviderErrors[keyof ConnectOcrProviderErrors];
+
+export type ConnectOcrProviderResponses = {
+    /**
+     * The settings, with the new provider.
+     */
+    200: OcrSettings;
+};
+
+export type ConnectOcrProviderResponse = ConnectOcrProviderResponses[keyof ConnectOcrProviderResponses];
+
+export type TestOcrProviderData = {
+    body: ProbeOcrProvider;
+    path?: never;
+    query?: never;
+    url: '/api/ai/admin/ocr/providers/test';
+};
+
+export type TestOcrProviderErrors = {
+    /**
+     * The adapter is unknown, the address is not valid, or no usable key was given.
+     */
+    400: Problem;
+};
+
+export type TestOcrProviderError = TestOcrProviderErrors[keyof TestOcrProviderErrors];
+
+export type TestOcrProviderResponses = {
+    /**
+     * Whether the service read the picture and how long it took.
+     */
+    200: OcrProviderTest;
+};
+
+export type TestOcrProviderResponse = TestOcrProviderResponses[keyof TestOcrProviderResponses];
+
+export type RemoveOcrProviderData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/ocr/providers/{id}';
+};
+
+export type RemoveOcrProviderErrors = {
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+};
+
+export type RemoveOcrProviderError = RemoveOcrProviderErrors[keyof RemoveOcrProviderErrors];
+
+export type RemoveOcrProviderResponses = {
+    /**
+     * The settings left. If the provider read pages, nothing does now.
+     */
+    200: OcrSettings;
+};
+
+export type RemoveOcrProviderResponse = RemoveOcrProviderResponses[keyof RemoveOcrProviderResponses];
+
+export type ChangeOcrProviderData = {
+    body: SaveOcrProvider;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/ocr/providers/{id}';
+};
+
+export type ChangeOcrProviderErrors = {
+    /**
+     * A member is not valid, the adapter is unknown, the address is not valid, or a key is needed.
+     */
+    400: Problem;
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+    /**
+     * The provider changed since it was read, or another one has this name.
+     */
+    409: Problem;
+    /**
+     * The server has no key to encrypt provider keys.
+     */
+    503: Problem;
+};
+
+export type ChangeOcrProviderError = ChangeOcrProviderErrors[keyof ChangeOcrProviderErrors];
+
+export type ChangeOcrProviderResponses = {
+    /**
+     * The settings, with the change.
+     */
+    200: OcrSettings;
+};
+
+export type ChangeOcrProviderResponse = ChangeOcrProviderResponses[keyof ChangeOcrProviderResponses];
+
+export type SetDocumentReaderData = {
+    body: SetDocumentReader;
+    path?: never;
+    query?: never;
+    url: '/api/ai/admin/ocr/reader';
+};
+
+export type SetDocumentReaderErrors = {
+    /**
+     * A member is not valid, both a model and a provider are named, the one named is switched off or has no key, or the model does not read images.
+     */
+    400: Problem;
+    /**
+     * There is no such model or provider.
+     */
+    404: Problem;
+    /**
+     * The reader changed since it was read.
+     */
+    409: Problem;
+};
+
+export type SetDocumentReaderError = SetDocumentReaderErrors[keyof SetDocumentReaderErrors];
+
+export type SetDocumentReaderResponses = {
+    /**
+     * The settings, with the choice.
+     */
+    200: OcrSettings;
+};
+
+export type SetDocumentReaderResponse = SetDocumentReaderResponses[keyof SetDocumentReaderResponses];
 
 export type ListAuditEventsData = {
     body?: never;

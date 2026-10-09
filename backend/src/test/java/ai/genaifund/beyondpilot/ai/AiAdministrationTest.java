@@ -90,7 +90,8 @@ class AiAdministrationTest {
 
 	@BeforeEach
 	void setUp() throws IOException {
-		jdbc.sql("update ai_task_model set model_id = null, reasoning_effort = null, version = 0").update();
+		jdbc.sql("update ai_task_model set model_id = null, ocr_provider_id = null, reasoning_effort = null, version = 0")
+			.update();
 		jdbc.sql("delete from ai_provider where purpose = 'chat'").update();
 		jdbc.sql("delete from ai_usage").update();
 		client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory()).baseUrl("http://localhost:" + port).build();
@@ -354,36 +355,12 @@ class AiAdministrationTest {
 	}
 
 	@Test
-	void readingDocumentsTakesOnlyAModelThatReadsImagesAndSendsEachPageAsAPicture() throws IOException {
-		String connected = body(send("POST", operator, API + "/providers", provider("Gateway", "openai", url("/v1"), GOOD_KEY))
-			.expectStatus()
-			.isOk());
-		String id = JsonPath.read(connected, "$.providers[0].id");
-		Map<String, Object> seeing = model("gpt-5", 272000, 128000, 0);
-		seeing.put("vision", true);
-		String added = body(send("POST", operator, API + "/providers/" + id + "/models",
-				Map.of("models", List.of(model("gpt-5-mini", 272000, 128000, 0), seeing)))
-			.expectStatus()
-			.isOk());
-		String blind = JsonPath.<List<String>>read(added, "$.providers[0].models[?(@.modelName=='gpt-5-mini')].id").getFirst();
-		String sees = JsonPath.<List<String>>read(added, "$.providers[0].models[?(@.modelName=='gpt-5')].id").getFirst();
-		int version = JsonPath.<List<Integer>>read(added, "$.tasks[?(@.task=='document_reading')].version").getFirst();
-		assertThat(documents.readsPictures()).isFalse();
+	void whatReadsDocumentPagesIsNotChosenInTheChatTab() {
+		String settings = body(get(operator, API).expectStatus().isOk());
 
-		assertProblem(send("PUT", operator, API + "/tasks/document_reading", task(blind, "low", version)), 400,
-				"AI_MODEL_WITHOUT_VISION");
-		send("PUT", operator, API + "/tasks/document_reading", task(sees, "low", version)).expectStatus().isOk();
-		assertThat(documents.readsPictures()).isTrue();
-
-		byte[] pdf = ai.genaifund.beyondpilot.TestPdf.of("A slide", "");
-		Map<Integer, String> read = documents.readPictures(() -> new java.io.ByteArrayInputStream(pdf), List.of(2),
-				new AiSubject("solution_deck", "s-1"));
-
-		assertThat(read).containsExactly(Map.entry(2, "OK"));
-		String sent = asked.stream().filter(line -> line.startsWith("POST /v1/chat/completions")).findFirst().orElseThrow();
-		assertThat(sent).contains("\"model\":\"gpt-5\"", "image_url", "data:image/png;base64,");
-		assertThat(jdbc.sql("select task || ' ' || subject_type from ai_usage").query(String.class).single())
-			.isEqualTo("document_reading solution_deck");
+		// The OCR tab holds it, where an OCR service can read pages in a model's place.
+		assertThat(JsonPath.<List<String>>read(settings, "$.tasks[*].task")).containsExactly("matching");
+		assertProblem(send("PUT", operator, API + "/tasks/document_reading", task(null, "low", 0)), 404, "AI_TASK_UNKNOWN");
 	}
 
 	@Test
