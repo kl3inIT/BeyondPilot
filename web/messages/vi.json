@@ -6497,11 +6497,11 @@
     }
   },
   "Matching": {
-    "metaTitle": "Ứng viên",
+    "metaTitle": "Giải pháp phù hợp",
     "pageTabs": {
       "label": "Các trang của use case này",
       "brief": "Đề bài",
-      "candidates": "Ứng viên"
+      "candidates": "Giải pháp phù hợp"
     },
     "head": {
       "back": "{organization} · Use case",
@@ -6509,190 +6509,204 @@
     },
     "run": {
       "start": "Tìm giải pháp",
-      "again": "Chạy lại",
+      "again": "Tìm lại giải pháp",
       "startNow": "Bắt đầu ngay",
-      "judgeAll": "Đánh giá lại tất cả",
-      "left": "{count, plural, =0 {Hôm nay đã hết lượt chạy} other {Hôm nay còn # lượt chạy}}",
-      "queued": "Đang chờ đến lượt, sẽ bắt đầu ngay thôi.",
-      "startsAt": "Bắt đầu lúc {time}, khi đề bài không còn thay đổi.",
+      "more": "Thao tác khác",
+      "addByHand": "Thêm thủ công",
+      "reviewAll": "Xem xét lại toàn bộ",
+      "left": "{count, plural, =0 {Hôm nay đã hết lượt} other {Hôm nay còn # lượt}}",
+      "queued": "Đang chờ đến lượt, sẽ bắt đầu ngay.",
+      "startsAt": "Sẽ bắt đầu lúc {time}, khi đề bài không còn thay đổi.",
       "preparing": "Đang đọc đề bài và tìm giải pháp",
-      "running": "Đang đọc các giải pháp: đã đánh giá {judged}/{total}",
-      "waiting": "Tạm dừng vì nhà cung cấp AI đang bận. Đã đánh giá {judged}/{total}.",
+      "running": "Đang đọc các giải pháp: xong {judged}/{total}",
+      "waiting": "Tạm dừng vì dịch vụ AI đang bận. Đã xong {judged}/{total}.",
       "resumes": "Hệ thống sẽ tự chạy tiếp, bạn không cần bấm lại.",
       "resumesAt": "Hệ thống sẽ tự chạy tiếp vào khoảng {time}, bạn không cần bấm lại.",
-      "done": "Lần chạy gần nhất: {date} · đã đánh giá {judged} giải pháp",
-      "doneWhen": "Lần chạy gần nhất: {date}",
+      "done": "Cập nhật {date} · AI đọc kỹ {judged} giải pháp",
+      "doneModel": "Cập nhật {date} · AI đọc kỹ {judged} giải pháp · mô hình {model}",
+      "doneWhen": "Cập nhật {date}",
       "never": {
-        "title": "Chưa có giải pháp nào được ghép",
-        "lead": "AI đọc use case này, rà các giải pháp trên BeyondPilot và đưa ra những giải pháp phù hợp, kèm chính câu chữ chứng minh điều đó."
+        "title": "Tìm giải pháp cho use case này",
+        "lead": "AI đọc đề bài của bạn, rà các giải pháp trên BeyondPilot rồi liệt kê những giải pháp phù hợp, kèm dẫn chứng trích từ chính tài liệu của nhà cung cấp."
       },
       "noModel": {
-        "title": "Chưa thể ghép giải pháp",
-        "member": "GenAI Fund chưa thiết lập xong. Khi hệ thống chạy, các ứng viên sẽ hiện ở đây.",
-        "operator": "Chưa chọn mô hình AI cho việc ghép giải pháp.",
+        "title": "Chưa thể tìm giải pháp",
+        "member": "GenAI Fund đang thiết lập phần này. Khi xong, các giải pháp phù hợp sẽ hiện ở đây.",
+        "operator": "Chưa chọn mô hình AI cho việc tìm giải pháp.",
         "link": "Chọn trong Quản trị › AI"
       },
       "failed": {
-        "title": "Lần chạy gần nhất chưa hoàn tất",
-        "no_model": "Lúc chạy chưa có mô hình AI nào được chọn cho việc ghép giải pháp.",
-        "use_case_not_published": "Use case này không còn được đăng nên không được ghép nữa.",
-        "no_capability": "AI chưa đọc ra được từ đề bài giải pháp cần làm gì. Hãy viết rõ hơn trong đề bài rồi chạy lại.",
-        "provider": "Dịch vụ AI chưa hoàn tất được lượt này. Có thể chạy lại.",
-        "unknown": "Nhà cung cấp AI không phản hồi. Những ứng viên đã đánh giá vẫn được giữ; hãy chạy lại để tiếp tục."
+        "title": "Lượt tìm gần nhất chưa hoàn tất",
+        "no_model": "Lúc đó chưa có mô hình AI nào được chọn cho việc tìm giải pháp.",
+        "use_case_not_published": "Use case này không còn được đăng nên không tìm giải pháp nữa.",
+        "no_capability": "AI chưa đọc ra được từ đề bài là giải pháp cần làm gì. Hãy viết rõ hơn trong đề bài rồi tìm lại.",
+        "provider": "Dịch vụ AI chưa hoàn tất được lượt này. Bạn có thể tìm lại.",
+        "unknown": "Dịch vụ AI không phản hồi. Phần đã đọc vẫn được giữ, hãy tìm lại để tiếp tục."
       },
-      "judgeAllConfirm": {
-        "title": "Đánh giá lại mọi ứng viên?",
-        "description": "Mọi ứng viên sẽ được đọc và đánh giá lại, kể cả khi tài liệu của họ không đổi. Hãy dùng sau khi đổi sang mô hình khác.",
-        "note": "Mỗi ứng viên là một lần gọi mô hình. Danh sách chọn và những gì đã gỡ vẫn giữ nguyên.",
-        "confirm": "Đánh giá lại tất cả",
+      "runConfirm": {
+        "title": "Tìm giải pháp ngay bây giờ?",
+        "description": "AI sẽ đọc lại đề bài và rà các giải pháp trên BeyondPilot. Danh sách rút gọn và những giải pháp bạn đã loại vẫn giữ nguyên.",
+        "note": "{count, plural, =1 {Lần này dùng lượt cuối cùng của hôm nay.} other {Lần này dùng 1 trong # lượt còn lại hôm nay.}}",
+        "cancel": "Hủy"
+      },
+      "reviewAllConfirm": {
+        "title": "Xem xét lại toàn bộ giải pháp?",
+        "description": "AI sẽ đọc lại mọi giải pháp, kể cả những giải pháp không đổi tài liệu. Hãy dùng sau khi đổi sang mô hình khác.",
+        "note": "Mỗi giải pháp là một lần gọi mô hình. Danh sách rút gọn và những giải pháp đã loại vẫn giữ nguyên.",
+        "confirm": "Xem xét lại toàn bộ",
         "cancel": "Hủy"
       }
     },
-    "coverage": {
-      "recommended": "{count, plural, =0 {Chưa có đề xuất nào} other {# giải pháp được đề xuất}}",
-      "covered": "đáp ứng {covered}/{total} nhu cầu",
-      "gap": "Chưa giải pháp nào trên BeyondPilot cho thấy {need}"
+    "summary": {
+      "matches": "{matches, plural, =0 {Chưa có giải pháp nào phù hợp.} other {{strong, plural, =0 {{matches} giải pháp phù hợp, nhưng chưa giải pháp nào làm đúng điều bạn cần.} other {{matches} giải pháp phù hợp, trong đó {strong} làm đúng điều bạn cần.}}}}",
+      "asked": "Bạn cần: {need}",
+      "covered": "Gộp lại, các giải pháp đáp ứng {covered} trong {total} điều bạn cần",
+      "gap": "Chưa giải pháp nào trên BeyondPilot có dẫn chứng làm được: {need}",
+      "ai": "AI đọc tài liệu công khai của từng nhà cung cấp và chọn ra các giải pháp này. Hãy kiểm tra lại trước khi quyết định."
     },
     "filter": {
-      "label": "Lọc theo nhu cầu",
-      "all": "Tất cả {count}"
+      "label": "Lọc theo điều bạn cần",
+      "any": "Bất kỳ"
     },
     "tabs": {
-      "label": "Ứng viên theo quyết định",
-      "all": "Tất cả",
-      "shortlist": "Danh sách chọn",
-      "removed": "Đã gỡ"
+      "label": "Giải pháp theo quyết định của bạn",
+      "matches": "Phù hợp",
+      "shortlist": "Danh sách rút gọn",
+      "removed": "Đã loại"
     },
     "groups": {
       "direct": {
-        "title": "Phù hợp trực tiếp",
-        "about": "Tài liệu của chính giải pháp cho thấy nó đáp ứng mọi nhu cầu bắt buộc của use case này."
+        "title": "Phù hợp nhất",
+        "about": "Có dẫn chứng là làm được đúng điều bạn cần."
       },
       "industry": {
-        "title": "Phù hợp về ngành",
-        "about": "Giải pháp đã làm việc tương tự trong ngành này và cho thấy ít nhất một nhu cầu bắt buộc."
+        "title": "Có kinh nghiệm trong ngành của bạn",
+        "about": "Đã làm việc tương tự trong ngành của bạn, nhưng mới có dẫn chứng cho một phần điều bạn cần."
       },
       "technology": {
-        "title": "Năng lực công nghệ",
-        "about": "Giải pháp được xây trên công nghệ mà use case nêu và cho thấy một phần những gì cần có."
+        "title": "Đúng công nghệ, ít dẫn chứng hơn",
+        "about": "Dùng đúng công nghệ bạn nêu, nhưng mới có dẫn chứng cho một phần điều bạn cần."
       },
       "waiting": {
-        "title": "Chờ đánh giá",
-        "about": "Do GenAI Fund thêm vào. Lần chạy tới sẽ đọc và xếp nhóm cho giải pháp."
+        "title": "Chưa được xem xét",
+        "about": "GenAI Fund thêm thủ công. AI sẽ đọc các giải pháp này ở lượt tìm tới."
       },
       "kept": {
-        "title": "Do người giữ lại",
-        "about": "Có người đã đưa vào shortlist. Lượt chạy gần nhất không thấy lý do để gợi ý, nhưng nó vẫn ở đây cho tới khi có người bỏ ra."
+        "title": "Trong danh sách rút gọn, AI không còn gợi ý",
+        "about": "Sau lượt tìm gần nhất, AI không còn gợi ý các giải pháp này. Chúng vẫn ở đây cho tới khi có người bỏ khỏi danh sách rút gọn."
       },
-      "aboutLabel": "“{group}” nghĩa là gì",
-      "emptyDirect": "{count, plural, =0 {Chưa giải pháp nào đáp ứng mọi nhu cầu.} =1 {Chưa giải pháp nào đáp ứng nhu cầu bắt buộc.} other {Chưa giải pháp nào đáp ứng đủ cả # nhu cầu bắt buộc.}}",
+      "emptyDirect": "Chưa giải pháp nào có dẫn chứng là làm được đúng điều bạn cần.",
       "more": "Xem thêm {count}",
       "fewer": "Thu gọn"
     },
     "status": {
-      "met": "Đáp ứng",
-      "partly": "Một phần",
-      "not_shown": "Chưa thấy"
+      "met": "Có dẫn chứng",
+      "partly": "Có một phần",
+      "not_shown": "Chưa thấy dẫn chứng"
     },
     "source": {
-      "profile": "Hồ sơ",
-      "customerCase": "Khách hàng {number}",
-      "deck": "Deck, trang {page}",
-      "website": "Website"
+      "profile": "Trích từ hồ sơ trên BeyondPilot",
+      "customerCase": "Trích từ dự án khách hàng {number}",
+      "deck": "Trích từ deck, trang {page}",
+      "website": "Trích từ website"
     },
     "row": {
-      "shortlist": "Chọn",
-      "shortlisted": "Đã chọn",
-      "remove": "Gỡ…",
-      "open": "Mở trang",
+      "shortlist": "Thêm vào danh sách rút gọn",
+      "shortlisted": "Đã trong danh sách",
+      "remove": "Không phù hợp…",
+      "open": "Xem hồ sơ giải pháp",
       "menu": "Thao tác khác với {name}",
-      "need": "{need}: {status}",
       "added": "GenAI Fund thêm",
-      "waiting": "Chưa được đánh giá. Lần chạy tới sẽ đọc giải pháp này."
+      "unread": {
+        "deck": "Không đọc được deck",
+        "website": "Không đọc được website",
+        "both": "Không đọc được deck và website"
+      }
     },
     "panel": {
       "label": "Giải pháp đang xem",
-      "empty": "Chọn một giải pháp để xem vì sao nó được ghép.",
+      "empty": "Chọn một giải pháp để xem vì sao phù hợp.",
       "previous": "Giải pháp trước",
       "next": "Giải pháp sau",
       "close": "Đóng",
-      "waiting": "Chưa được đánh giá. Lần chạy tới sẽ đọc tài liệu của giải pháp và cho biết nó thể hiện được gì.",
-      "needs": "Tài liệu của giải pháp cho thấy gì",
+      "waiting": "AI chưa đọc giải pháp này. Lượt tìm tới AI sẽ đọc.",
+      "aiSummary": "Tóm tắt của AI",
+      "needs": "Điều bạn cần và dẫn chứng của họ",
       "required": "Bắt buộc",
-      "constraints": "Cần xác nhận với nhà cung cấp",
-      "constraintsLead": "Đây là các điều kiện triển khai. Nội dung lấy từ tài liệu của chính giải pháp; hãy hỏi lại nhà cung cấp trước khi dựa vào đó.",
+      "constraints": "Cần hỏi lại nhà cung cấp",
+      "constraintsCount": "{count} điều kiện triển khai cần hỏi lại",
+      "constraintsLead": "Thông tin dưới đây lấy từ tài liệu của chính nhà cung cấp và chưa ai kiểm chứng. Hãy xác nhận lại từng điểm với họ.",
       "unread": {
-        "deck": "Deck của giải pháp không có chữ để AI đọc nên việc đánh giá không tính đến deck.",
-        "website": "Website của giải pháp không có chữ để AI đọc nên việc đánh giá không tính đến website.",
-        "both": "Deck và website của giải pháp đều không có chữ để AI đọc nên chỉ đánh giá dựa trên hồ sơ."
+        "deck": "AI không đọc được deck của họ nên chỉ dựa vào các tài liệu còn lại.",
+        "website": "AI không đọc được website của họ nên chỉ dựa vào các tài liệu còn lại.",
+        "both": "AI không đọc được cả deck lẫn website của họ nên chỉ dựa vào hồ sơ."
       }
     },
     "remove": {
       "title": "Vì sao {name} không phù hợp?",
       "cancel": "Hủy",
       "note": "Ghi chú thêm (không bắt buộc)",
-      "foot": "Giải pháp vẫn ở trên BeyondPilot và trong các lần ghép khác. Use case này sẽ không đề xuất lại nó.",
-      "confirm": "Gỡ",
+      "foot": "Use case này sẽ không gợi ý lại. Giải pháp vẫn có trên BeyondPilot.",
+      "confirm": "Loại",
       "reasons": {
-        "does_not_solve": "Không giải quyết bài toán này",
-        "wrong_industry_or_size": "Sai ngành hoặc quy mô",
-        "closed_or_wrong_website": "Đã đóng, đổi hướng hoặc sai website",
-        "duplicate": "Trùng lặp",
+        "does_not_solve": "Không giải quyết vấn đề này",
+        "wrong_industry_or_size": "Không đúng ngành hoặc quy mô",
+        "closed_or_wrong_website": "Công ty đã đóng hoặc đổi hướng",
+        "duplicate": "Bị trùng",
         "other": "Lý do khác"
       }
     },
     "removed": {
-      "by": "{name} gỡ · {when}",
-      "byOnly": "{name} gỡ",
+      "by": "{name} loại · {when}",
+      "byOnly": "{name} loại",
       "genaiFund": "GenAI Fund",
       "someone": "Một thành viên",
       "restore": "Khôi phục",
-      "locked": "GenAI Fund đã gỡ nên chỉ GenAI Fund khôi phục được.",
-      "empty": "Chưa gỡ giải pháp nào."
+      "locked": "GenAI Fund đã loại nên chỉ GenAI Fund khôi phục được.",
+      "empty": "Chưa loại giải pháp nào. Giải pháp bị loại sẽ nằm ở đây kèm lý do và có thể khôi phục."
     },
     "add": {
-      "open": "Thêm giải pháp",
-      "title": "Thêm giải pháp",
-      "description": "Dành cho giải pháp mà lần chạy không tìm ra. Lần chạy kế tiếp sẽ đọc và đánh giá nó như các giải pháp khác.",
+      "title": "Thêm giải pháp thủ công",
+      "description": "Dành cho giải pháp AI chưa tìm ra. Ở lượt tìm tới, AI sẽ đọc nó như các giải pháp khác.",
       "search": "Tìm giải pháp đã duyệt theo tên hoặc tổ chức",
       "searching": "Đang tìm…",
       "empty": "Không có giải pháp đã duyệt nào khớp.",
-      "failed": "Không đọc được danh sách giải pháp. Hãy thử lại.",
-      "already": "Đã là ứng viên",
+      "failed": "Chưa tải được danh sách giải pháp. Hãy thử lại.",
+      "already": "Đã có trong danh sách",
       "add": "Thêm",
       "addNamed": "Thêm {name}",
       "close": "Đóng"
     },
     "empty": {
-      "none": "Lần chạy không tìm thấy giải pháp nào trên BeyondPilot phù hợp với use case này.",
-      "shortlist": "Danh sách chọn còn trống. Hãy chọn giải pháp từ thẻ Tất cả.",
-      "need": "Ở đây chưa giải pháp nào cho thấy {need}.",
-      "clear": "Xem tất cả"
+      "none": "AI chưa tìm thấy giải pháp nào trên BeyondPilot phù hợp với use case này.",
+      "shortlist": "Danh sách rút gọn còn trống. Hãy thêm những giải pháp bạn muốn trao đổi.",
+      "need": "Ở đây chưa giải pháp nào có dẫn chứng làm được: {need}",
+      "clear": "Xem tất cả giải pháp"
     },
     "done": {
-      "started": "Đã bắt đầu ghép giải pháp.",
-      "judgingAll": "Đang đánh giá lại mọi ứng viên.",
-      "added": "Đã thêm {name}. Lần chạy kế tiếp sẽ đánh giá.",
-      "shortlisted": "Đã đưa {name} vào danh sách chọn.",
-      "unshortlisted": "Đã bỏ {name} khỏi danh sách chọn.",
-      "removed": "Đã gỡ {name} · {reason}",
+      "started": "Đang tìm giải pháp.",
+      "reviewingAll": "AI đang đọc lại toàn bộ giải pháp.",
+      "added": "Đã thêm {name}. AI sẽ đọc ở lượt tìm tới.",
+      "shortlisted": "Đã thêm {name} vào danh sách rút gọn.",
+      "unshortlisted": "Đã bỏ {name} khỏi danh sách rút gọn.",
+      "removed": "Đã loại {name} · {reason}",
       "restored": "Đã khôi phục {name}.",
       "undo": "Hoàn tác"
     },
     "errors": {
       "MATCHING_USE_CASE_NOT_FOUND": "Use case này không còn tồn tại.",
-      "MATCHING_CANDIDATE_NOT_FOUND": "Giải pháp này không còn là ứng viên. Hãy tải lại trang.",
+      "MATCHING_CANDIDATE_NOT_FOUND": "Giải pháp này không còn trong danh sách. Hãy tải lại trang.",
       "MATCHING_SOLUTION_NOT_FOUND": "Giải pháp này không còn được duyệt nên không thể thêm.",
       "MATCHING_OPERATORS_ONLY": "Chỉ GenAI Fund mới làm được việc này.",
-      "MATCHING_NO_MODEL": "Chưa thể ghép giải pháp: chưa chọn mô hình AI cho việc này.",
-      "MATCHING_RUN_OPEN": "Use case này đang được ghép giải pháp rồi.",
-      "MATCHING_RUN_LIMIT": "Use case này đã dùng hết số lượt chạy trong ngày. Hãy thử lại vào ngày mai.",
-      "MATCHING_CANDIDATE_REMOVED": "Giải pháp này đã bị gỡ. Hãy khôi phục trước.",
-      "MATCHING_REMOVED_BY_OPERATOR": "GenAI Fund đã gỡ giải pháp này nên chỉ GenAI Fund khôi phục được.",
-      "MATCHING_ALREADY_CANDIDATE": "Giải pháp này đã là ứng viên của use case.",
-      "MATCHING_OWN_SOLUTION": "Giải pháp này thuộc chính tổ chức của use case.",
+      "MATCHING_NO_MODEL": "Chưa thể tìm giải pháp: chưa chọn mô hình AI cho việc này.",
+      "MATCHING_RUN_OPEN": "AI đang tìm giải pháp cho use case này rồi.",
+      "MATCHING_RUN_LIMIT": "Hôm nay bạn đã dùng hết lượt cho use case này. Hãy thử lại vào ngày mai.",
+      "MATCHING_CANDIDATE_REMOVED": "Giải pháp này đã bị loại. Hãy khôi phục trước.",
+      "MATCHING_REMOVED_BY_OPERATOR": "GenAI Fund đã loại giải pháp này nên chỉ GenAI Fund khôi phục được.",
+      "MATCHING_ALREADY_CANDIDATE": "Giải pháp này đã có trong danh sách của use case.",
+      "MATCHING_OWN_SOLUTION": "Giải pháp này thuộc chính tổ chức sở hữu use case.",
       "MATCHING_SETTINGS_CHANGED": "Có người khác vừa đổi các thiết lập này. Hãy tải lại rồi thử lần nữa.",
-      "REQUEST_INVALID": "Yêu cầu chưa hợp lệ. Hãy chọn một lý do, và ghi rõ khi chọn Lý do khác.",
+      "REQUEST_INVALID": "Yêu cầu chưa được chấp nhận. Hãy chọn một lý do rồi thử lại.",
       "unknown": "Chưa thực hiện được. Hãy thử lại."
     }
   }
