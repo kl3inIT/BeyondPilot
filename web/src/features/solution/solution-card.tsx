@@ -76,7 +76,7 @@ function SolutionCard({ solution }: { solution: PublicSolutionSummary }) {
           <CodeList
             labels={solution.focusAreas.map(focusArea)}
             limit={CAPABILITY_LIMIT}
-            more={(count) => t("more", { count })}
+            more={t("more", { count: solution.focusAreas.length - CAPABILITY_LIMIT })}
           />
         </div>
       )}

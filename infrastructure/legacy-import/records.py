@@ -51,6 +51,7 @@ class Organization:
     website: str | None = None
     country: str | None = None
     team_size: str | None = None
+    company_size_label: str | None = None
     industries: list[str] = field(default_factory=list)
     description: str | None = None
     founded_year: int | None = None
@@ -70,12 +71,23 @@ class Solution:
     industries: list[str] = field(default_factory=list)
     maturity: str | None = None
     deployment: list[str] = field(default_factory=list)
+    built_with: list[str] = field(default_factory=list)
+    product_names: list[str] = field(default_factory=list)
+    core_technology: str | None = None
+    infrastructure_used: str | None = None
+    segment_focus: list[str] = field(default_factory=list)
+    notable_paying_customers: str | None = None
+    use_case_industries: list[str] = field(default_factory=list)
+    use_case_descriptions: str | None = None
+    monetization_model: str | None = None
+    company_funding_status: str | None = None
+    company_funding_raised: str | None = None
+    competitors: str | None = None
     website: str | None = None
     best_customer_profile: str | None = None
     traction: str | None = None
     demo_url: str | None = None
     decks: list[File] = field(default_factory=list)
-
 
 @dataclass
 class UseCase:
@@ -114,6 +126,15 @@ def shorten(text: str | None, limit: int) -> str | None:
 def year(value) -> int | None:
     match = re.search(r"\b(1[89]\d\d|20\d\d)\b", str(value or ""))
     return int(match.group(1)) if match else None
+
+
+def list_values(value) -> list[str]:
+    """Split a v1 text list without storing a pointer such as 'See above' as a product or technology."""
+    text = mapping.clean(value)
+    if text is None or text.casefold() in {"see above", "as above", "same as above"}:
+        return []
+    parts = re.split(r"\s*(?:\|\|\||,|\r?\n)\s*", text)
+    return list(dict.fromkeys(part.strip() for part in parts if part.strip()))
 
 
 def https(value) -> str | None:
@@ -167,7 +188,8 @@ def startup(row, out: Records) -> None:
     organization = Organization(
         id=ident("startup-organization", code), name=name, website=website,
         country=mapping.country(row.get("Registration Country"))[0],
-        team_size=mapping.team_size(row.get("Company Size"))[0], industries=industries,
+        team_size=mapping.team_size(row.get("Company Size"))[0],
+        company_size_label=mapping.clean(row.get("Company Size")), industries=industries,
         description=shorten(summary, ORGANIZATION_DESCRIPTION), founded_year=year(row.get("Year Founded")),
         logo=File(mapping.source_url(logo_url), "organization_logo") if mapping.fetchable(logo_url) else None)
     # The customer deck first, the pitch deck when the customer deck cannot be had.
@@ -180,10 +202,21 @@ def startup(row, out: Records) -> None:
         problems_solved=mapping.clean(row.get("Problems Solved")),
         value_proposition=mapping.clean(row.get("Unique Value Proposition")), focus_areas=focus.codes,
         industries=industries, maturity=mapping.maturity(row.get("Product Stage"))[0],
-        deployment=mapping.deployment(row.get("Infrastructure Used")).codes, website=website,
+        deployment=mapping.deployment(row.get("Infrastructure Used")).codes,
+        built_with=list_values(row.get("Models / Tech Stack Used")),
+        product_names=list_values(row.get("Product Names")),
+        core_technology=mapping.clean(row.get("Core Technology")),
+        infrastructure_used=mapping.clean(row.get("Infrastructure Used")),
+        segment_focus=list_values(row.get("Segment Focus")),
+        notable_paying_customers=mapping.clean(row.get("Notable Paying Customers")),
+        use_case_industries=list_values(row.get("Use Case Industries")),
+        use_case_descriptions=mapping.clean(row.get("Use Case Descriptions")),
+        monetization_model=mapping.clean(row.get("Monetization Model")),
+        company_funding_status=mapping.clean(row.get("Funding Status")),
+        company_funding_raised=mapping.clean(row.get("Funding Raised")),
+        competitors=mapping.clean(row.get("Competitors")), website=website,
         best_customer_profile=mapping.clean(row.get("Best Customer Profile")),
-        traction=mapping.clean(row.get("Notable Paying Customers")), demo_url=https(row.get("Product Demo")),
-        decks=decks)
+        traction=mapping.clean(row.get("Key Milestones")), demo_url=https(row.get("Product Demo")), decks=decks)
     out.organizations.append(organization)
     out.solutions.append(solution)
 
