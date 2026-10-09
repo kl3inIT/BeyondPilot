@@ -1,13 +1,8 @@
 package ai.genaifund.beyondpilot.ai.adapter;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +15,8 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Reads a provider's list of models, the part every adapter shares: one request that never follows a redirect, a
- * bounded answer, the same three kinds of failure, and one reading of the fields vendors publish. It follows MemoryOS's
+ * Reads a provider's list of models, the part every adapter shares: one request through {@link OutboundHttp}, the
+ * same three kinds of failure, and one reading of the fields vendors publish. It follows MemoryOS's
  * {@code OpenAiProviderAdapter.reportedModels}.
  */
 final class ModelLists {
@@ -41,44 +36,24 @@ final class ModelLists {
 	 * @param headers what carries the key; the address never does
 	 */
 	static List<ReportedModel> read(String address, Map<String, String> headers, Duration timeout) {
-		// A configured endpoint must not send this key on to another host.
-		try (HttpClient client = HttpClient.newBuilder()
-			.followRedirects(HttpClient.Redirect.NEVER)
-			.connectTimeout(timeout)
-			.build()) {
-			HttpRequest.Builder request = HttpRequest.newBuilder(URI.create(address))
-				.timeout(timeout)
-				.header("Accept", "application/json")
-				.GET();
-			headers.forEach(request::header);
-			HttpResponse<InputStream> response = client.send(request.build(), HttpResponse.BodyHandlers.ofInputStream());
-			int status = response.statusCode();
-			if (status == 401 || status == 403) {
-				throw new ChatProviderException(Failure.CREDENTIAL_REJECTED);
-			}
-			if (status >= 500) {
-				throw new ChatProviderException(Failure.UNREACHABLE);
-			}
-			if (status >= 300) {
-				throw new ChatProviderException(Failure.INCOMPATIBLE);
-			}
-			byte[] body;
-			try (InputStream stream = response.body()) {
-				body = stream.readNBytes(MAX_BYTES + 1);
-			}
-			if (body.length == 0 || body.length > MAX_BYTES) {
-				throw new ChatProviderException(Failure.INCOMPATIBLE);
-			}
-			return parse(body);
+		OutboundHttp.Answer answer;
+		try {
+			answer = OutboundHttp.get(address, headers, new OutboundHttp.Limits(timeout, MAX_BYTES));
 		}
-		catch (InterruptedException interrupted) {
-			Thread.currentThread().interrupt();
+		catch (IOException unreachable) {
 			throw new ChatProviderException(Failure.UNREACHABLE);
 		}
-		catch (IOException | IllegalArgumentException unreachable) {
-			// Refused connection, DNS, timeout, or an address the client cannot use.
+		int status = answer.status();
+		if (status == 401 || status == 403) {
+			throw new ChatProviderException(Failure.CREDENTIAL_REJECTED);
+		}
+		if (status >= 500) {
 			throw new ChatProviderException(Failure.UNREACHABLE);
 		}
+		if (status >= 300 || answer.body().length == 0 || answer.body().length > MAX_BYTES) {
+			throw new ChatProviderException(Failure.INCOMPATIBLE);
+		}
+		return parse(answer.body());
 	}
 
 	static List<ReportedModel> parse(byte[] body) {

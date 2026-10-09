@@ -11,7 +11,10 @@ import jakarta.persistence.Version;
 
 import org.jspecify.annotations.Nullable;
 
-/** The model a task uses and how hard it reasons. One row per task; a task without a model does not run. */
+/**
+ * The model a task uses and how hard it reasons. One row per task; a task without a model does not run. Document
+ * reading may name an OCR provider in place of a model.
+ */
 @Entity
 @Table(name = "ai_task_model")
 public class AiTaskModel {
@@ -22,6 +25,8 @@ public class AiTaskModel {
 	private @Nullable UUID modelId;
 
 	private @Nullable String reasoningEffort;
+
+	private @Nullable UUID ocrProviderId;
 
 	@Version
 	private long version;
@@ -42,6 +47,16 @@ public class AiTaskModel {
 	public void use(@Nullable UUID modelId, @Nullable String reasoningEffort, UUID accountId, String label, Instant at) {
 		this.modelId = modelId;
 		this.reasoningEffort = reasoningEffort;
+		this.ocrProviderId = null;
+		this.updatedBy = accountId;
+		this.updatedByLabel = label;
+		this.updatedAt = at;
+	}
+
+	/** Reads pages with this OCR provider from now on, in place of a model. */
+	public void readWith(UUID ocrProviderId, UUID accountId, String label, Instant at) {
+		this.modelId = null;
+		this.ocrProviderId = ocrProviderId;
 		this.updatedBy = accountId;
 		this.updatedByLabel = label;
 		this.updatedAt = at;
@@ -57,6 +72,10 @@ public class AiTaskModel {
 
 	public @Nullable String getReasoningEffort() {
 		return reasoningEffort;
+	}
+
+	public @Nullable UUID getOcrProviderId() {
+		return ocrProviderId;
 	}
 
 	public long getVersion() {

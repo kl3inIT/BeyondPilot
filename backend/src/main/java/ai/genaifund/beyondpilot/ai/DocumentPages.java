@@ -1,10 +1,19 @@
 package ai.genaifund.beyondpilot.ai;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import ai.genaifund.beyondpilot.ai.adapter.OcrAdapter;
+import ai.genaifund.beyondpilot.ai.adapter.OcrAdapterRegistry;
+import ai.genaifund.beyondpilot.ai.adapter.OcrConnection;
+import ai.genaifund.beyondpilot.ai.adapter.OcrProviderException;
+import ai.genaifund.beyondpilot.ai.persistence.AiTaskModelRepository;
+import ai.genaifund.beyondpilot.ai.persistence.AiUsageRepository;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
@@ -14,9 +23,9 @@ import org.springframework.util.MimeTypeUtils;
 
 /**
  * Reads a PDF page by page, for the modules that keep what a file says: a solution's deck for search, a use case's
- * attachment for matching. A page gives the text the file itself holds; no model is called for that. A page that is
- * only a picture gives an empty text, and the model operators chose for {@link AiTask#DOCUMENT_READING} can copy
- * its text from the picture of the page.
+ * attachment for matching. A page gives the text the file itself holds; nothing is called for that. A page that is
+ * only a picture gives an empty text, and the reader operators chose for {@link AiTask#DOCUMENT_READING} can copy its
+ * text from the picture of the page: a chat model that reads images, or an OCR service.
  */
 @Service
 public class DocumentPages {
@@ -30,8 +39,24 @@ public class DocumentPages {
 
 	private final AiModels models;
 
-	DocumentPages(AiModels models) {
+	private final AiTaskModelRepository tasks;
+
+	private final AiProviders providers;
+
+	private final OcrAdapterRegistry adapters;
+
+	private final AiUsageRepository usage;
+
+	private final AiSettings settings;
+
+	DocumentPages(AiModels models, AiTaskModelRepository tasks, AiProviders providers, OcrAdapterRegistry adapters,
+			AiUsageRepository usage, AiSettings settings) {
 		this.models = models;
+		this.tasks = tasks;
+		this.providers = providers;
+		this.adapters = adapters;
+		this.usage = usage;
+		this.settings = settings;
 	}
 
 	/**
@@ -43,20 +68,35 @@ public class DocumentPages {
 		return PdfPages.text(pdf, maxPages);
 	}
 
-	/** Whether a model is chosen to read pages from their picture, and its provider can be used. */
+	/** Whether a reader is chosen for pages that are only a picture, and it can be used. */
 	public boolean readsPictures() {
-		return models.available(AiTask.DOCUMENT_READING);
+		UUID service = ocrProviderId();
+		return service == null ? models.available(AiTask.DOCUMENT_READING) : ocr(service) != null;
 	}
 
 	/**
-	 * What the model reads on these pages, by page number: each is sent as a picture, one call a page, and each call
-	 * is recorded. A page it finds no text on is an empty string. Reading stops at the first call that fails, such as
-	 * at the provider's limit, and answers what was read until then; the rest is asked for again later.
+	 * What the reader reads on these pages, by page number: each is sent as a picture, one call a page, and each call
+	 * is recorded. A page it finds no text on is an empty string, and so is a page an OCR service will not take.
+	 * Reading stops at the first call that fails otherwise, such as at the provider's limit, and answers what was read
+	 * until then; the rest is asked for again later.
 	 * @param subject what the file belongs to, for the usage record
 	 * @throws IOException when the bytes are not a PDF that can be read
-	 * @throws AiException when no model is chosen for the task
+	 * @throws AiException when no reader is chosen, or the one chosen cannot be used
 	 */
 	public Map<Integer, String> readPictures(InputStreamSource pdf, List<Integer> pages, AiSubject subject)
+			throws IOException {
+		UUID service = ocrProviderId();
+		if (service == null) {
+			return readWithModel(pdf, pages, subject);
+		}
+		Ocr ocr = ocr(service);
+		if (ocr == null) {
+			throw new AiException(AiErrorCode.TASK_NOT_CONFIGURED, "The OCR service chosen to read pages cannot be used");
+		}
+		return readWithOcr(ocr, pdf, pages, subject);
+	}
+
+	private Map<Integer, String> readWithModel(InputStreamSource pdf, List<Integer> pages, AiSubject subject)
 			throws IOException {
 		Map<Integer, byte[]> pictures = PdfPages.pictures(pdf, pages);
 		Map<Integer, String> read = new LinkedHashMap<>();
@@ -83,6 +123,80 @@ public class DocumentPages {
 			}
 		}
 		return read;
+	}
+
+	/** The text is kept as the service returns it; for AI Hay that is Markdown. */
+	private Map<Integer, String> readWithOcr(Ocr ocr, InputStreamSource pdf, List<Integer> pages, AiSubject subject)
+			throws IOException {
+		Map<Integer, byte[]> pictures = PdfPages.jpegs(pdf, pages, ocr.adapter().maxPictureBytes());
+		Map<Integer, String> read = new LinkedHashMap<>();
+		for (Map.Entry<Integer, byte[]> picture : pictures.entrySet()) {
+			if (picture.getValue().length == 0) {
+				// Still over the service's limit at the lowest quality: settled as empty, so it is not drawn again.
+				read.put(picture.getKey(), "");
+				continue;
+			}
+			Instant started = Instant.now();
+			long clock = System.nanoTime();
+			try {
+				String text = ocr.adapter().read(ocr.connectionOf(), picture.getValue(), settings.callTimeout());
+				record(ocr, subject, started, clock, null);
+				read.put(picture.getKey(), text.strip());
+			}
+			catch (OcrProviderException failure) {
+				record(ocr, subject, started, clock, failure.getClass().getName());
+				LOG.atInfo()
+					.addKeyValue("event", "ai.document.page_not_read")
+					.addKeyValue("error_type", failure.getClass().getName())
+					.addKeyValue("error_code", failure.failure().name())
+					.log("An OCR service did not read a page from its picture");
+				if (failure.failure() != OcrProviderException.Failure.PICTURE_REFUSED) {
+					break;
+				}
+				// The service will not take this picture, and asking again would not change that.
+				read.put(picture.getKey(), "");
+			}
+		}
+		return read;
+	}
+
+	/** The OCR provider chosen to read pages; null when a model reads them, or nothing does. */
+	private @Nullable UUID ocrProviderId() {
+		return tasks.findById(AiTask.DOCUMENT_READING.value()).map(row -> row.getOcrProviderId()).orElse(null);
+	}
+
+	/** The service to call; null when it is switched off, has no readable key, or speaks an API nothing here does. */
+	private @Nullable Ocr ocr(UUID providerId) {
+		AiConnection connection = providers.connection(AiProviders.OCR, providerId).orElse(null);
+		if (connection == null || !providers.get(AiProviders.OCR, providerId).enabled()) {
+			return null;
+		}
+		OcrAdapter adapter = adapters.adapter(connection.adapterType()).orElse(null);
+		return adapter == null ? null : new Ocr(adapter, connection);
+	}
+
+	/** One row per page sent, without tokens or a price: a service bills by the call. A failed write fails nothing. */
+	private void record(Ocr ocr, AiSubject subject, Instant started, long clock, @Nullable String errorType) {
+		try {
+			usage.add(new AiUsageRepository.Call(started, AiTask.DOCUMENT_READING.value(), ocr.connection().providerId(),
+					ocr.connection().name(), ocr.adapter().type(), null, null, null, null,
+					(System.nanoTime() - clock) / 1_000_000, errorType, subject.type(), subject.id(), null, null, null));
+		}
+		catch (RuntimeException unwritten) {
+			LOG.atWarn()
+				.addKeyValue("event", "ai.usage.not_recorded")
+				.addKeyValue("error_type", unwritten.getClass().getName())
+				.log("A call to an OCR service was not recorded");
+		}
+	}
+
+	/** An OCR service ready to be called. It holds the key in clear for as long as a file is being read. */
+	private record Ocr(OcrAdapter adapter, AiConnection connection) {
+
+		OcrConnection connectionOf() {
+			return new OcrConnection(connection.baseUrl(), connection.apiKey());
+		}
+
 	}
 
 }

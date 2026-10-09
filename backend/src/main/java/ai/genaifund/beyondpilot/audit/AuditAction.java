@@ -225,9 +225,10 @@ public enum AuditAction {
 
 	/**
 	 * An operator chose the model a task uses. {@code model} is the model's name or {@code none}, {@code reasoning}
-	 * the level: {@code off}, {@code low}, {@code medium} or {@code high}.
+	 * the level: {@code off}, {@code low}, {@code medium} or {@code high}. Where an OCR provider was chosen to read
+	 * document pages in a model's place, {@code ocr} is its name and the other two are absent.
 	 */
-	AI_TASK_MODEL_CHANGE("ai.task_model_change", "model", "reasoning"),
+	AI_TASK_MODEL_CHANGE("ai.task_model_change", "model", "reasoning", "ocr"),
 
 	/** An operator chose the provider and model search embeds with. {@code model} is the model. */
 	SEARCH_MODEL_CHANGE("search.model_change", "model"),
