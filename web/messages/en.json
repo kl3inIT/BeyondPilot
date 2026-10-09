@@ -1405,7 +1405,7 @@
         "organization": "Organization",
         "status": "Status",
         "sentBy": "Sent by",
-        "submitted": "Submitted",
+        "waiting": "Waiting",
         "actions": "Actions"
       },
       "senderUnknown": "Not recorded",
@@ -1536,6 +1536,9 @@
         "hint": "Leave a line empty to take it away.",
         "save": "Save",
         "saved": "Saved for {name}."
+      },
+      "actions": {
+        "organization": "Open the organization"
       }
     },
     "talent": {
@@ -4038,6 +4041,8 @@
       "nothingYet": "Nothing written yet."
     },
     "detail": {
+      "showMore": "Show more",
+      "showLess": "Show less",
       "unknown": "Not listed yet",
       "proof": {
         "title": "Proof",
@@ -5954,7 +5959,9 @@
         },
         {
           "heading": "What we collect",
-          "body": ["We collect only what the platform needs to work:"],
+          "body": [
+            "We collect only what the platform needs to work:"
+          ],
           "items": [
             "Account details: your name and email address, and, when you add them, your phone number, country, job title, LinkedIn profile and photo.",
             "Sign-in with Google: your name, email address and profile picture from your Google account. We do not read your Gmail, contacts or files.",
@@ -6089,7 +6096,9 @@
         },
         {
           "heading": "Acceptable use",
-          "body": ["Do not:"],
+          "body": [
+            "Do not:"
+          ],
           "items": [
             "publish false information or impersonate anyone;",
             "send spam or unsolicited commercial messages through the platform;",

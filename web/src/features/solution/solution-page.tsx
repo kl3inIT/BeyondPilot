@@ -27,6 +27,8 @@ import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
+import { CodeList } from "@/components/composites/code-list";
+import { TextClamp } from "@/components/composites/text-clamp";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -47,6 +49,9 @@ import { CustomerDeploymentCard } from "./customer-deployment-card";
 import { deckAddress, useFileSize } from "./solution-deck";
 import { SolutionGallery } from "./solution-gallery";
 import { SolutionLogo } from "./solution-logo";
+
+/** How many chips a heading group names before the rest waits under "+N more". */
+const CAPABILITY_LIMIT = 3;
 
 const evidenceVariants = cva("flex flex-col items-start gap-2 rounded-xl border p-4", {
   variants: {
@@ -218,7 +223,9 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
             <ArrowRightIcon aria-hidden="true" />
           </TextButton>
           {solution.summary && (
-            <p className="text-base text-muted-foreground md:text-lg">{solution.summary}</p>
+            <TextClamp more={t("showMore")} less={t("showLess")}>
+              <p className="text-base text-muted-foreground md:text-lg">{solution.summary}</p>
+            </TextClamp>
           )}
           {tags.length > 0 && (
             <ul className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-1">
@@ -229,11 +236,13 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                 >
                   {group.icon}
                   <span className="sr-only">{t(`facts.${group.key}`)}</span>
-                  {group.labels.map((label) => (
-                    <Badge key={label} variant="outline">
-                      {label}
-                    </Badge>
-                  ))}
+                  <CodeList
+                    labels={group.labels}
+                    limit={CAPABILITY_LIMIT}
+                    more={directory("more", {
+                      count: group.labels.length - CAPABILITY_LIMIT,
+                    })}
+                  />
                 </li>
               ))}
             </ul>
@@ -258,9 +267,11 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                 <PartHeading icon={<SparklesIcon aria-hidden="true" />}>
                   {view("valueProposition")}
                 </PartHeading>
-                <p className="whitespace-pre-line text-muted-foreground">
-                  {solution.valueProposition}
-                </p>
+                <TextClamp more={t("showMore")} less={t("showLess")}>
+                  <p className="whitespace-pre-line text-muted-foreground">
+                    {solution.valueProposition}
+                  </p>
+                </TextClamp>
               </section>
             )}
 
