@@ -116,7 +116,7 @@ The page head carries the title and the period switch: Today, 7 days, 30 days. T
 **Calls**:
 
 1. Filters in one bar: task, provider, model, outcome (All, Succeeded, Failed).
-2. A table, newest first: time, task, model with its provider under it, tokens in and out, duration, cost, and what the call was about as a link with its kind under it. Only a failed row carries a badge, with its kind of failure in place of the tokens. A cost that is unavailable is a dash. Below 768px, stacked rows.
+2. A table, newest first: time, task, model with its provider under it, tokens in and out, duration, cost, and what the call was about as a link with its kind under it. Only a failed row is marked: a red dot and its kind of failure, with the status, in place of the tokens. (A tinted badge at that size missed the 4.5:1 contrast the tests hold every screen to.) A cost that is unavailable is a dash. Below 768px, stacked rows.
 3. Pages of 50, with "1–50 of n calls".
 
 The chart carries its numbers as text as well: the totals and the table hold the same figures, and the chart has a short description for a screen reader.
