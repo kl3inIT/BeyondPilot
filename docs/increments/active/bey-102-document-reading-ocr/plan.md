@@ -5,9 +5,9 @@ Design: [design.md](design.md). Tracked in Linear as BEY-102.
 | #   | Step                                                                                                                                                                                                                                                                                                                                    | State   |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | 1   | This design and plan                                                                                                                                                                                                                                                                                                                    | Done    |
-| 2   | The layout of the Documents tab at 1440 and 390 with its states, for Đạt's approval                                                                                                                                                                                                                                                     | Waiting |
+| 2   | The layout of the OCR tab at 1440 and 390 with its states, for Đạt's approval                                                                                                                                                                                                                                                           | Waiting |
 | 3   | Backend: the migration (the next free version, checked against `origin/main` right before the merge); the purpose `ocr`; `OcrAdapter`, its registry and `AiHayOcrAdapter`; JPEG pages in `PdfPages`; the reader in `DocumentPages`; usage rows; the commands and their endpoints; the connection test; `openapi.yml` and the web client | Waiting |
-| 4   | Web: the Documents tab with its connections and the Reader block; document reading leaves the Chat tab; messages in English and Vietnamese; end-to-end tests                                                                                                                                                                            | Waiting |
+| 4   | Web: the OCR tab with its connections and the Reader block; document reading leaves the Chat tab; messages in English and Vietnamese; end-to-end tests                                                                                                                                                                                  | Waiting |
 | 5   | `ARCHITECTURE.md`, `docs/specs/ai.md` and `docs/tests/ai.md` brought in line; `verification.md`                                                                                                                                                                                                                                         | Waiting |
 
 One branch and one pull request, made of small commits in the order above.
@@ -20,7 +20,7 @@ One branch and one pull request, made of small commits in the order above.
   - the test names a refused key, an unreachable service and an answer that is not the API's, and never repeats the service's text; a redirect is not followed;
   - with an OCR provider as the reader, a deck's picture-only pages are read through it and each leaves one usage row without tokens;
   - a page is sent as JPEG under the limit; a page that cannot be brought under it, or that the service refuses, is kept as read with no text and the next is still read;
-  - image syntax in the answer is removed and the rest is kept;
+  - the text the service returns is kept as it comes;
   - a refused key stops the reading and leaves the remaining pages to be read later;
   - the reader takes a model or an OCR provider, never both; a model that cannot read images and a provider that is switched off are refused; a stale save is refused;
   - deleting the OCR provider that is the reader unsets the reader;
@@ -30,8 +30,8 @@ One branch and one pull request, made of small commits in the order above.
 
 ## Needed from outside the code
 
-| What                                 | For                                | Where it is managed                                                                |
-| ------------------------------------ | ---------------------------------- | ---------------------------------------------------------------------------------- |
-| The AI Hay key                       | Connecting it on staging           | Typed into Admin › AI by Đạt; sealed in the database, never in Git, Linear or logs |
-| The price of an OCR call             | Recording what a page costs, later | AI Hay's dashboard, Billing › Pricing, behind sign-in                              |
-| Approval of the Documents tab layout | Step 4                             | Đạt                                                                                |
+| What                           | For                                | Where it is managed                                                                |
+| ------------------------------ | ---------------------------------- | ---------------------------------------------------------------------------------- |
+| The AI Hay key                 | Connecting it on staging           | Typed into Admin › AI by Đạt; sealed in the database, never in Git, Linear or logs |
+| The price of an OCR call       | Recording what a page costs, later | AI Hay's dashboard, Billing › Pricing, behind sign-in                              |
+| Approval of the OCR tab layout | Step 4                             | Đạt                                                                                |

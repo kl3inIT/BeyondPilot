@@ -10,7 +10,7 @@ GenAI Fund's tech teams were given early access to the AI Hay Open API Platform 
 
 | Part          | What an operator sees                                                                                  | What the application gets                             |
 | ------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| OCR providers | Admin › AI › Providers, a third tab, **Documents**. Preset: AI Hay                                     | A stored connection: adapter, endpoint, sealed key    |
+| OCR providers | Admin › AI › Providers, a third tab, **OCR**. Preset: AI Hay                                           | A stored connection: adapter, endpoint, sealed key    |
 | Reader        | One choice on that tab: a model that reads images, as today, or a connected OCR service. Saved at once | `DocumentPages` reads a page with whichever is chosen |
 | Chat tab      | Models by task no longer lists document reading                                                        | Nothing                                               |
 | Usage         | Nothing yet                                                                                            | One row per page read by OCR, without tokens          |
@@ -23,7 +23,7 @@ GenAI Fund's tech teams were given early access to the AI Hay Open API Platform 
 
 ## Domain story
 
-1. An operator opens Admin › AI › Providers › Documents, picks the AI Hay preset and gives a key.
+1. An operator opens Admin › AI › Providers › OCR, picks the AI Hay preset and gives a key.
 2. They test the connection. BeyondPilot sends a small picture it carries, with a known line of text, and says whether the service read it and how long it took. This spends one call.
 3. Under Reader they choose AI Hay instead of the model.
 4. Search indexes a deck with slides that are only pictures. Each such page is sent to the service and its text is kept as the page's passage, as a model's would be.
@@ -85,13 +85,13 @@ The reader chosen today, a model, stays chosen after the migration.
 
 - **Pictures go to OCR as JPEG.** AI Hay refuses a body over 2 MB, and most rendered pages exceed that as PNG (see the findings). `PdfPages` renders the page as JPEG at quality 85 and lowers the quality while the picture is over the adapter's limit; a page still over it is answered as empty. A model keeps receiving PNG.
 - **`DocumentPages`** asks which reader is chosen. For a model it does what it does today. For an OCR provider it sends each page through the adapter, one call a page. `readsPictures()` is true when the chosen reader can be used.
-- **What OCR returns is Markdown.** Image syntax (`![…](…)`) is removed before the text is kept, because the service can invent it; the rest is kept as it is.
+- **What OCR returns is kept as it comes**, which for AI Hay is Markdown. Nothing is removed or rewritten for now (Đạt, 9 October). The service can invent image syntax, seen once in the sample below; a filter is added when real readings show it is needed.
 - **The reader is a command of its own**, no longer the task command of the Chat tab. `AiTask.DOCUMENT_READING` stays: it names the usage rows and the model's client.
-- **Endpoints** under the admin AI controller: read the Documents settings (OCR providers, the adapters there are, the reader), connect, change, remove and test an OCR provider, choose the reader. The chat settings stop listing `document_reading`.
+- **Endpoints** under the admin AI controller: read the OCR settings (OCR providers, the adapters there are, the reader), connect, change, remove and test an OCR provider, choose the reader. The chat settings stop listing `document_reading`.
 
 ## Screen
 
-The Documents tab has two blocks, top to bottom as the Chat tab: **Reader**, then **Available connections** with **Add provider**. Connections reuse the connection card and the provider dialog of the Chat tab, without the model list. The Reader block has a choice between a model and an OCR service: for a model, the Model selector limited to models that read images, as today; for a service, a list of the connected OCR providers.
+The OCR tab has two blocks, top to bottom as the Chat tab: **Reader**, then **Available connections** with **Add provider**. Connections reuse the connection card and the provider dialog of the Chat tab, without the model list. The Reader block has a choice between a model and an OCR service: for a model, the Model selector limited to models that read images, as today; for a service, a list of the connected OCR providers.
 
 The layout is new, so it needs Đạt's approval before it is coded.
 
