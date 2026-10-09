@@ -17,6 +17,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -27,6 +28,13 @@ final class PdfPages {
 
 	/** Enough to read a slide's text, and about 1,200 tokens for a model that reads images. */
 	private static final float PICTURE_DPI = 110;
+
+	/**
+	 * The longest side of a picture, in pixels. A slide or an A4 page at 110 DPI stays well under it. A page laid out
+	 * as a poster does not: one of 3,840 by 5,430 points is 49 megapixels at 110 DPI, which AI Hay refused page
+	 * after page (staging, 9 October 2026), and its text was read once drawn at this size.
+	 */
+	private static final float MAX_PICTURE_SIDE = 2200;
 
 	/** Tried in order until a page fits: a slide stays readable down to the last. */
 	private static final float[] JPEG_QUALITIES = { 0.85f, 0.7f, 0.55f, 0.4f };
@@ -97,7 +105,10 @@ final class PdfPages {
 				if (page < 1 || page > document.getNumberOfPages()) {
 					continue;
 				}
-				pictures.put(page, encoding.of(renderer.renderImageWithDPI(page - 1, PICTURE_DPI, ImageType.RGB)));
+				PDRectangle size = document.getPage(page - 1).getCropBox();
+				// A scale of 1 is 72 DPI: the page's own points.
+				float scale = Math.min(PICTURE_DPI / 72, MAX_PICTURE_SIDE / Math.max(size.getWidth(), size.getHeight()));
+				pictures.put(page, encoding.of(renderer.renderImage(page - 1, scale, ImageType.RGB)));
 			}
 			return pictures;
 		}
