@@ -95,7 +95,7 @@ test.describe("solutions directory", () => {
     await expect(shownSolutions(page)).toHaveCount(6);
   });
 
-  test("a solution page keeps its criteria visible and omits fields it has not supplied", async ({
+  test("a solution page shows supplied criteria and omits fields it has not supplied", async ({
     page,
   }) => {
     await page.goto("/solutions");
@@ -104,13 +104,14 @@ test.describe("solutions directory", () => {
     await expect(page).toHaveURL("/solutions/policy-chat");
     await expect(page).toHaveTitle(/Policy Chat/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Policy Chat");
+    await expect(page.getByRole("button", { name: "Show more" })).toHaveCount(0);
     await expect(page.getByText("Policy holders wait days for an answer.")).toBeVisible();
     const fact = (name: string) => page.locator('[data-slot="fact"]').filter({ hasText: name });
     await expect(fact("Industries")).toContainText("Insurance");
     await expect(fact("Deployment")).toContainText("Cloud (SaaS)");
     await expect(page.getByText("In production").first()).toBeVisible();
     await expect(fact("Registered in")).toContainText("Singapore");
-    await expect(fact("Funding (GenAI Fund)")).toContainText("Not listed yet");
+    await expect(fact("Funding (GenAI Fund)")).toHaveCount(0);
     await expect(page.getByText("Key milestones")).toBeVisible();
     await expect(page.getByText("Three production pilots across banking.")).toBeVisible();
     // Product and company-stated fields are separate from the reviewed customer deployments.
@@ -119,8 +120,8 @@ test.describe("solutions directory", () => {
       page.getByText("Insurers with a call centre of fifty seats or more."),
     ).toBeVisible();
     const payingCustomers = page
-      .locator('[data-slot="evidence"]')
-      .filter({ hasText: "Notable paying customers" });
+      .getByRole("heading", { name: "Notable paying customers", exact: true })
+      .locator("..");
     await expect(payingCustomers).toBeVisible();
     await expect(page.getByRole("heading", { name: "Product" })).toBeVisible();
     await expect(page.getByText("Policy Voice", { exact: true })).toBeVisible();
@@ -165,14 +166,14 @@ test.describe("solutions directory", () => {
       "href",
       "/api/solution/solutions/policy-chat/deck",
     );
-    await expect(page.getByText("policy-chat-deck.pdf · 3.1 MB")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Download the deck" })).toContainText("3.1 MB");
     // A listed solution does not say it is hidden.
     await expect(page.getByText("This solution is not in the directory")).toHaveCount(0);
     // Nobody is signed in, so nothing offers to edit it.
     await expect(page.getByRole("link", { name: "Edit this solution" })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
 
-    // Unset values leave criterion labels visible but remove their child fields.
+    // Unset values leave their sections and facts off the page entirely.
     await page.goto("/solutions/clinic-triage");
     for (const label of ["Stage", "Industries", "Deployment"]) {
       const tag = page.locator('[data-slot="solution-tag"]').filter({ hasText: label });
@@ -189,18 +190,17 @@ test.describe("solutions directory", () => {
       "Customer references & case studies",
       "Business model",
       "Alternatives",
-      "The company behind this solution",
     ]) {
-      const heading = page.getByRole("heading", { name: title, exact: true });
-      await expect(heading).toBeVisible();
-      await expect(heading.locator(":scope > svg")).toBeVisible();
+      await expect(page.getByRole("heading", { name: title, exact: true })).toHaveCount(0);
     }
+    await expect(
+      page.getByRole("heading", { name: "The company behind this solution", exact: true }),
+    ).toBeVisible();
+    await expect(fact("Registered in")).toContainText("Vietnam");
     for (const name of ["Backed by", "Languages", "Industries", "Funding (GenAI Fund)"]) {
-      const criterion = fact(name);
-      await expect(criterion).toBeVisible();
-      await expect(criterion.locator("dt > svg")).toBeVisible();
-      await expect(criterion).toContainText("Not listed yet");
+      await expect(fact(name)).toHaveCount(0);
     }
+    await expect(page.getByText("Not listed yet")).toHaveCount(0);
     for (const field of [
       "Product names",
       "Core technology",

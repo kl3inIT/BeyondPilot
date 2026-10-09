@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import { SearchIcon } from "lucide-react";
 
 import { Spinner } from "@/components/ui/spinner";
@@ -9,6 +10,8 @@ type DirectorySearchProps = {
   /** What the field searches, as its accessible name and its placeholder. */
   label: string;
   value: string;
+  /** Additional layout classes for a directory-specific toolbar. */
+  className?: string;
   /** The list is being read again for the search just typed. */
   loading: boolean;
   onChange: (value: string) => void;
@@ -18,9 +21,14 @@ type DirectorySearchProps = {
  * The search of a public directory, 48px tall as the Figma frames draw it, which no size of the
  * registry `input-group` is. The directory owns the value, which is its URL.
  */
-function DirectorySearch({ label, value, loading, onChange }: DirectorySearchProps) {
+function DirectorySearch({ label, value, className, loading, onChange }: DirectorySearchProps) {
   return (
-    <label className="flex h-12 w-full max-w-180 items-center gap-2.5 rounded-xl border border-input bg-background px-3.5 transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
+    <label
+      className={cn(
+        "flex h-12 w-full max-w-180 items-center gap-2.5 rounded-lg border border-input bg-background px-3.5 transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
+        className,
+      )}
+    >
       {loading ? (
         <Spinner className="size-4.5" />
       ) : (
