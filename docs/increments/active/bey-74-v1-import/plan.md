@@ -1,6 +1,6 @@
 # Plan: import from the old platform
 
-Design: [design.md](design.md). Tracked in [BEY-74](https://linear.app/beyondpilot/issue/BEY-74) and [BEY-75](https://linear.app/beyondpilot/issue/BEY-75). Branch `dathip04/bey-74-v1-import`.
+Design: [design.md](design.md). Tracked in [BEY-74](https://linear.app/beyondpilot/issue/BEY-74) and [BEY-75](https://linear.app/beyondpilot/issue/BEY-75). Branch `dathip04/bey-74-solution-detail-fields`.
 
 | Step | What | Done when |
 | --- | --- | --- |
@@ -9,6 +9,7 @@ Design: [design.md](design.md). Tracked in [BEY-74](https://linear.app/beyondpil
 | 3 | Script: the SQL and the files, for one environment's operator account | It loads into a local database cleanly |
 | 4 | Staging: dump, load, rebuild the search index, review in Admin, remove test records and duplicates with kept SQL | The counts are on Linear |
 | 5 | Production: dump, the same load and removals, rebuild the index | The counts match staging |
+| 6 | Imported startup details: schema, refresh SQL, public response, generated web client, detail page, both locales and regressions | Approved solution pages show each v1 field under its correct meaning and attribution; backend and web checks pass |
 
 ## Next
 

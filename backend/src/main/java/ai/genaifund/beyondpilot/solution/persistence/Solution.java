@@ -59,6 +59,35 @@ public class Solution {
 
 	private @Nullable String bestCustomerProfile;
 
+	/** The company's v1 product and market statements, distinct from operator backing and reviewed deployments. */
+	@JdbcTypeCode(SqlTypes.ARRAY)
+	@Column(nullable = false, columnDefinition = "text[]")
+	private String[] productNames = {};
+
+	private @Nullable String coreTechnology;
+
+	private @Nullable String infrastructureUsed;
+
+	@JdbcTypeCode(SqlTypes.ARRAY)
+	@Column(nullable = false, columnDefinition = "text[]")
+	private String[] segmentFocus = {};
+
+	private @Nullable String notablePayingCustomers;
+
+	@JdbcTypeCode(SqlTypes.ARRAY)
+	@Column(nullable = false, columnDefinition = "text[]")
+	private String[] useCaseIndustries = {};
+
+	private @Nullable String useCaseDescriptions;
+
+	private @Nullable String monetizationModel;
+
+	private @Nullable String companyFundingStatus;
+
+	private @Nullable String companyFundingRaised;
+
+	private @Nullable String competitors;
+
 	private @Nullable String channels;
 
 	private @Nullable String backedBy;
@@ -389,6 +418,50 @@ public class Solution {
 
 	public @Nullable String getBestCustomerProfile() {
 		return bestCustomerProfile;
+	}
+
+	public List<String> getProductNames() {
+		return List.of(productNames);
+	}
+
+	public @Nullable String getCoreTechnology() {
+		return coreTechnology;
+	}
+
+	public @Nullable String getInfrastructureUsed() {
+		return infrastructureUsed;
+	}
+
+	public List<String> getSegmentFocus() {
+		return List.of(segmentFocus);
+	}
+
+	public @Nullable String getNotablePayingCustomers() {
+		return notablePayingCustomers;
+	}
+
+	public List<String> getUseCaseIndustries() {
+		return List.of(useCaseIndustries);
+	}
+
+	public @Nullable String getUseCaseDescriptions() {
+		return useCaseDescriptions;
+	}
+
+	public @Nullable String getMonetizationModel() {
+		return monetizationModel;
+	}
+
+	public @Nullable String getCompanyFundingStatus() {
+		return companyFundingStatus;
+	}
+
+	public @Nullable String getCompanyFundingRaised() {
+		return companyFundingRaised;
+	}
+
+	public @Nullable String getCompetitors() {
+		return competitors;
 	}
 
 	public @Nullable String getChannels() {
