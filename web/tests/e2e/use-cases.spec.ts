@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
+import { serveStoredImages } from "./stored-files";
 
 test.describe("use cases", () => {
   test.use({ locale: "en-US" });
@@ -8,6 +9,7 @@ test.describe("use cases", () => {
   test("lists the published use cases with their organization, budget and deadline", async ({
     page,
   }) => {
+    await serveStoredImages(page);
     await page.goto("/use-cases");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Use cases");
@@ -18,10 +20,37 @@ test.describe("use cases", () => {
       "Have a business problem AI could solve?",
     ]);
     const first = page.getByRole("listitem").filter({ hasText: "Pocket Policy" });
+    await expect(first.locator("img")).toHaveCount(1);
+    const withoutLogo = page.getByRole("listitem").filter({ hasText: "Lumen Health" });
+    await expect(withoutLogo.getByText("LH", { exact: true })).toBeVisible();
     await expect(first.getByText("USD 15,000–40,000")).toBeVisible();
     await expect(first.getByText("Apply by Dec 31, 2026")).toBeVisible();
     await expect(first.getByText("23:59 ICT")).toBeVisible();
+    await expect(
+      first.getByRole("link", { name: "Voice assistant for vehicle owners" }),
+    ).toHaveAttribute("href", "/use-cases/0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0001");
     await expect(page.getByText("3 use cases")).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+  });
+
+  test("opens a published use case's complete public brief", async ({ page }) => {
+    await page.goto("/use-cases");
+    await page.getByRole("link", { name: "View use case" }).first().click();
+
+    await expect(page).toHaveURL(/\/use-cases\/0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0001$/);
+    await expect(page).toHaveTitle("Voice assistant for vehicle owners · BeyondPilot");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Voice assistant for vehicle owners",
+    );
+    await expect(page.getByRole("heading", { name: "Problem statement" })).toBeVisible();
+    await expect(
+      page.getByText("The team needs a clear, measurable way to improve this work."),
+    ).toBeVisible();
+    await expect(page.getByText("Open to proposals", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Send a proposal" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -34,29 +63,37 @@ test.describe("use cases", () => {
     await expect(triage.getByText("To be determined")).toBeVisible();
     const forecasting = page.getByRole("listitem").filter({ hasText: "Demand forecasting" });
     await expect(forecasting.getByText("Organization not named")).toBeVisible();
+    await expect(forecasting.getByText("ON", { exact: true })).toBeVisible();
     await expect(forecasting.getByText("Shown to members")).toBeVisible();
   });
 
-  test("an industry and a search narrow the list through the address", async ({ page }) => {
+  test("industries narrow the list through a multi-select field and the address", async ({
+    page,
+  }) => {
     await page.goto("/use-cases");
 
-    await page.getByRole("button", { name: "Insurance" }).click();
-    await expect(page).toHaveURL("/use-cases?industry=insurance");
-    await expect(page.getByRole("button", { name: "Insurance" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
+    const industry = page.getByRole("combobox", { name: "Industry" });
+    await industry.fill("Insurance");
+    await page.getByRole("option", { name: "Insurance" }).click();
+    await industry.click();
+    await industry.fill("Automotive");
+    await page.getByRole("option", { name: "Automotive and mobility" }).click();
+    await expect(page).toHaveURL(/\/use-cases\?industry=insurance,automotive_mobility$/);
+    await expect(page.getByText("2 use cases", { exact: true })).toBeVisible();
+
+    await page.getByRole("searchbox", { name: "Search use cases" }).fill("retail");
+    await expect(page).toHaveURL(
+      /\/use-cases\?(?=.*q=retail)(?=.*industry=insurance,automotive_mobility)/,
     );
-    await expect(page.getByText("1 use case", { exact: true })).toBeVisible();
-
-    await page.getByRole("searchbox", { name: "Search use cases" }).fill("voice");
-    await expect(page).toHaveURL(/\/use-cases\?(?=.*q=voice)(?=.*industry=insurance)/);
     await expect(page.getByText("No use cases match")).toBeVisible();
-
     // The way back is a plain link to the list without filters.
     await expect(page.getByRole("link", { name: "Clear search and filters" })).toHaveAttribute(
       "href",
       "/use-cases",
     );
+
+    await page.getByRole("button", { name: "Clear all" }).click();
+    await expect(page).toHaveURL(/\/use-cases\?q=retail$/);
   });
 
   test("the order follows the address", async ({ page }) => {

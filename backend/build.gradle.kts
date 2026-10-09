@@ -33,6 +33,11 @@ dependencies {
 	implementation(libs.spring.boot.starter.mail)
 	implementation(libs.spring.boot.starter.security)
 	implementation(libs.spring.boot.starter.security.oauth2.client)
+	implementation(libs.spring.boot.starter.security.oauth2.authorization.server)
+	implementation(libs.spring.boot.starter.security.oauth2.resource.server)
+	implementation(libs.mcp.core)
+	implementation(libs.mcp.json.jackson3)
+	implementation(libs.mcp.spring.webmvc)
 	implementation(libs.spring.boot.starter.session.jdbc)
 	implementation(libs.spring.boot.starter.validation)
 	implementation(libs.spring.boot.starter.webmvc)
@@ -40,6 +45,9 @@ dependencies {
 	implementation(libs.spring.modulith.starter.jdbc)
 	// Embeddings for search over an OpenAI-compatible API; the other OpenAI models stay off (application.yaml).
 	implementation(libs.spring.ai.starter.model.openai)
+	implementation(libs.spring.ai.starter.model.anthropic)
+	// The text of a deck page by page, and the picture of a page that has none, for a model to read (BEY-39).
+	implementation(libs.pdfbox)
 	implementation(libs.springdoc.webmvc.api)
 	// The SDK speaks HTTP through the JDK. Its default clients bring Apache HttpClient 5 and Netty onto the classpath,
 	// where Spring would pick HttpClient 5 for every RestClient and wait out a Retry-After before retrying a 429.
@@ -53,6 +61,9 @@ dependencies {
 	}
 	implementation(libs.aws.sdk.url.connection.client)
 	// Email: templates operators edit (logic-less, so a template cannot reach code), their Markdown, and Resend.
+	implementation(libs.bucket4j.core)
+	implementation(libs.caffeine)
+	implementation(libs.httpclient5)
 	implementation(libs.jmustache)
 	implementation(libs.commonmark)
 	implementation(libs.resend.java)

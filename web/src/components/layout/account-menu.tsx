@@ -2,10 +2,12 @@
 
 import {
   BuildingIcon,
+  CableIcon,
   ClipboardCheckIcon,
   FileTextIcon,
   LayoutDashboardIcon,
   LogOutIcon,
+  UserRoundCogIcon,
   UserRoundIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -36,11 +38,16 @@ type AccountMenuProps = {
 };
 
 /**
- * What an account menu holds, wherever it opens from: who is signed in, their own pages, the admin
- * area for an operator, and the way out. Signing
- * out keeps the menu open while the request runs, and says so there when it fails.
+ * What an account menu holds, wherever it opens from: who is signed in, what the place it opens
+ * from offers, and the way out. Signing out keeps the menu open while the request runs, and says
+ * so there when it fails.
  */
-function AccountMenuPanel({ name, email, operator, reviewer = false }: AccountMenuProps) {
+function AccountMenuPanel({
+  name,
+  email,
+  operator,
+  children,
+}: Omit<AccountMenuProps, "reviewer"> & { children: React.ReactNode }) {
   const t = useTranslations("Site.account");
   const router = useRouter();
   const [state, setState] = useState<"idle" | "pending" | "failed">("idle");
@@ -67,6 +74,33 @@ function AccountMenuPanel({ name, email, operator, reviewer = false }: AccountMe
         <span className="truncate text-sm text-muted-foreground">{email}</span>
       </div>
       <DropdownMenuSeparator />
+      {children}
+      <DropdownMenuSeparator />
+      <DropdownMenuItem closeOnClick={false} disabled={state === "pending"} onClick={leave}>
+        {state === "pending" ? <Spinner /> : <LogOutIcon aria-hidden="true" />}
+        {t("signOut")}
+      </DropdownMenuItem>
+      {state === "failed" && (
+        <p role="alert" className="px-1.5 py-1 text-sm text-destructive">
+          {t("signOutFailed")}
+        </p>
+      )}
+    </>
+  );
+}
+
+/** What the site's menu offers: the person's own pages, and the admin area for an operator. */
+function SiteAccountItems({
+  operator,
+  reviewer = false,
+}: {
+  operator: boolean;
+  reviewer?: boolean;
+}) {
+  const t = useTranslations("Site.account");
+
+  return (
+    <>
       <DropdownMenuItem render={<Link href={siteRoutes.myApplications} />}>
         <FileTextIcon aria-hidden="true" />
         {t("applications")}
@@ -79,6 +113,14 @@ function AccountMenuPanel({ name, email, operator, reviewer = false }: AccountMe
         <UserRoundIcon aria-hidden="true" />
         {t("talentProfile")}
       </DropdownMenuItem>
+      <DropdownMenuItem render={<Link href={siteRoutes.account} />}>
+        <UserRoundCogIcon aria-hidden="true" />
+        {t("settings")}
+      </DropdownMenuItem>
+      <DropdownMenuItem render={<Link href={siteRoutes.accountMcp} />}>
+        <CableIcon aria-hidden="true" />
+        {t("mcp")}
+      </DropdownMenuItem>
       {reviewer && (
         <DropdownMenuItem render={<Link href={siteRoutes.reviews} />}>
           <ClipboardCheckIcon aria-hidden="true" />
@@ -90,16 +132,6 @@ function AccountMenuPanel({ name, email, operator, reviewer = false }: AccountMe
           <LayoutDashboardIcon aria-hidden="true" />
           {t("admin")}
         </DropdownMenuItem>
-      )}
-      <DropdownMenuSeparator />
-      <DropdownMenuItem closeOnClick={false} disabled={state === "pending"} onClick={leave}>
-        {state === "pending" ? <Spinner /> : <LogOutIcon aria-hidden="true" />}
-        {t("signOut")}
-      </DropdownMenuItem>
-      {state === "failed" && (
-        <p role="alert" className="px-1.5 py-1 text-sm text-destructive">
-          {t("signOutFailed")}
-        </p>
       )}
     </>
   );
@@ -123,7 +155,9 @@ function AccountMenu({ name, email, operator, reviewer }: AccountMenuProps) {
         {initials(name, email)}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-66">
-        <AccountMenuPanel name={name} email={email} operator={operator} reviewer={reviewer} />
+        <AccountMenuPanel name={name} email={email} operator={operator}>
+          <SiteAccountItems operator={operator} reviewer={reviewer} />
+        </AccountMenuPanel>
       </DropdownMenuContent>
     </DropdownMenu>
   );

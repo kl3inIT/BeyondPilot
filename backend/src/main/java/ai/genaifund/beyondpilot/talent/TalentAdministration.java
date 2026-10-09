@@ -232,4 +232,19 @@ public class TalentAdministration {
 		return new TalentException(TalentErrorCode.NOT_AWAITING_REVIEW,
 				"Decision on talent profile " + profile.getId() + ", which is " + profile.getStatus());
 	}
+
+	/**
+	 * The talent profiles waiting for an operator's review, at most this many, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public TalentAwaitingReview awaitingReview(Actor actor, int limit) {
+		identity.requireOperator(actor);
+		return new TalentAwaitingReview(profileList.adminCount(null, "in_review"),
+				profileList.adminPage(null, "in_review", limit, 0)
+					.stream()
+					.map(row -> new TalentAwaitingReview.Item(row.id(), row.name(), row.headline(), row.submittedAt()))
+					.toList());
+	}
+
 }

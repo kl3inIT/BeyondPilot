@@ -3,8 +3,10 @@
   // Registry primitives are installed ahead of their first screen, and lib/utils.ts is the
   // `utils` alias target in components.json that the shadcn CLI writes into new components.
   // Playwright starts the stub backend as a process, so nothing imports it.
+  // Elements from assistant-ui's registry are kept whole, as the registry ships them.
   "entry": [
     "src/components/ui/**/*.tsx",
+    "src/components/assistant-ui/**/*.tsx",
     "src/lib/utils.ts",
     "scripts/*.mjs",
     "tests/e2e/stub-backend.mjs",

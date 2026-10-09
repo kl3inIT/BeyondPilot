@@ -2,25 +2,34 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
+import { OrganizationMark } from "@/features/organization/organization-mark";
+import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicUseCaseSummary } from "@/lib/api/generated";
+import { useCaseRoute } from "@/lib/site";
 
 import { budgetFigures, budgetText } from "./use-case-budget";
 
 /**
- * One use case of the list. From 768px: a frame for the organization's logo, the brief in short, and a
- * side column with the budget, the timeline and the deadline. On a phone only what decides whether the
- * use case is worth reading stays: title, organization, tags, budget, timeline and deadline. The logo
- * frame stays empty until organizations have a logo to show; the page of one use case is not built yet,
- * so the card does not link to it.
+ * One use case of the list. From 768px: the organization's logo, the brief in short, and a side
+ * column with the budget, the timeline and the deadline. On a phone only what decides whether the
+ * use case is worth reading stays: title, organization, tags, budget, timeline and deadline.
  */
-function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
+function UseCaseCard({
+  useCase,
+  heading: Heading = "h2",
+}: {
+  useCase: PublicUseCaseSummary;
+  /** The level of the title: a list inside a section that has its own heading passes `h3`. */
+  heading?: "h2" | "h3";
+}) {
   const t = useTranslations("UseCases");
   const industryName = useVocabulary("industry");
   const technologyName = useVocabulary("technology");
   const format = useFormatter();
   const locale = useLocale();
-  const deadline = new Date(useCase.closesAt);
+  const organizationName = useCase.organizationName ?? t("anonymous");
+  const deadline = useCase.closesAt ? new Date(useCase.closesAt) : null;
   const technologies = useCase.technologies.map((technology) => technologyName(technology));
   const budget = useCase.budgetToBeDetermined
     ? t("budget.toBeDetermined")
@@ -33,18 +42,22 @@ function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
 
   return (
     <li className="flex flex-wrap gap-3 rounded-2xl border bg-card p-4 text-card-foreground md:flex-nowrap md:gap-4 md:p-5 xl:gap-5">
-      <div
-        aria-hidden="true"
-        className="size-12 shrink-0 rounded-lg border bg-card md:size-24 md:rounded-xl xl:size-34"
+      <OrganizationMark
+        name={organizationName}
+        logoFileId={useCase.organizationLogoFileId}
+        size="card"
       />
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <h2 className="line-clamp-3 text-lg font-semibold tracking-title md:line-clamp-2 xl:text-xl">
-          {useCase.title}
-        </h2>
-        <p className="text-xs text-muted-foreground uppercase md:text-sm">
-          {useCase.organizationName ?? t("anonymous")}
-        </p>
+        <Heading className="line-clamp-3 text-lg font-semibold tracking-title md:line-clamp-2 xl:text-xl">
+          <Link
+            className="hover:underline focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring/50"
+            href={useCaseRoute(useCase.id)}
+          >
+            {useCase.title}
+          </Link>
+        </Heading>
+        <p className="text-xs text-muted-foreground uppercase md:text-sm">{organizationName}</p>
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">{industryName(useCase.industry)}</Badge>
         </div>
@@ -85,31 +98,43 @@ function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
             <dt className="text-sm text-muted-foreground">{t("budget.label")}</dt>
             <dd className="font-semibold xl:text-lg">{budget}</dd>
           </div>
-          <div className="flex flex-col gap-0.5">
-            <dt className="text-sm text-muted-foreground">{t("timeline.label")}</dt>
-            <dd>
-              {t("timeline.range", {
-                min: useCase.timelineMinWeeks,
-                max: useCase.timelineMaxWeeks,
-              })}
-            </dd>
-          </div>
+          {useCase.timelineMinWeeks != null && useCase.timelineMaxWeeks != null && (
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-sm text-muted-foreground">{t("timeline.label")}</dt>
+              <dd>
+                {t("timeline.range", {
+                  min: useCase.timelineMinWeeks,
+                  max: useCase.timelineMaxWeeks,
+                })}
+              </dd>
+            </div>
+          )}
         </dl>
         <p className="text-sm text-muted-foreground">
-          {t("deadline.date", {
-            date: format.dateTime(deadline, { day: "numeric", month: "short", year: "numeric" }),
-          })}
-          <br />
-          {t("deadline.time", {
-            time: format.dateTime(deadline, {
-              hour: "2-digit",
-              minute: "2-digit",
-              hourCycle: "h23",
-              timeZone: "Asia/Ho_Chi_Minh",
-            }),
-          })}
+          {deadline ? (
+            <>
+              {t("deadline.date", {
+                date: format.dateTime(deadline, {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                }),
+              })}
+              <br />
+              {t("deadline.time", {
+                time: format.dateTime(deadline, {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hourCycle: "h23",
+                  timeZone: "Asia/Ho_Chi_Minh",
+                }),
+              })}
+            </>
+          ) : (
+            t("deadline.none")
+          )}
         </p>
-        <Button disabled className="disabled:opacity-100" size="sm" title={t("viewUnavailable")}>
+        <Button href={useCaseRoute(useCase.id)} size="sm">
           {t("view")}
         </Button>
       </div>

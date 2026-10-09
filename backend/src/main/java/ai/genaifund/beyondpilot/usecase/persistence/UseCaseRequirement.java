@@ -8,4 +8,7 @@ import jakarta.persistence.Embeddable;
  */
 @Embeddable
 public record UseCaseRequirement(String statement, String necessity) {
+
+	public static final String REQUIRED = "required";
+
 }

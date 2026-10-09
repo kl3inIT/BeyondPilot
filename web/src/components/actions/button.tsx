@@ -18,6 +18,7 @@ const buttonSizes = cva("", {
       md: "h-9 px-4",
       lg: "h-10 px-8",
       xl: "h-12 px-8 text-base",
+      "2xl": "h-13 px-8 text-base",
     },
   },
   defaultVariants: { size: "md" },
@@ -26,8 +27,8 @@ const buttonSizes = cva("", {
 type ButtonLook = {
   tone?: ActionTone;
   prominence?: ActionProminence;
-  /** `xl` is for the one action a page leads to, such as asking for an introduction. */
-  size?: ActionSize | "xl";
+  /** `xl` is for the one action a page leads to, such as asking for an introduction; `2xl` is the landing's leading action. */
+  size?: ActionSize | "xl" | "2xl";
 };
 
 type ButtonProps = ButtonLook &

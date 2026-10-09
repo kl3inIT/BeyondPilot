@@ -2,15 +2,24 @@ package ai.genaifund.beyondpilot.proposal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.identity.TestAppConnection;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import com.jayway.jsonpath.JsonPath;
+import io.modelcontextprotocol.client.McpClient;
+import io.modelcontextprotocol.client.McpSyncClient;
+import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
+import io.modelcontextprotocol.spec.McpSchema;
+import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
 /**
  * Reviewing a program's applications over real HTTP against PostgreSQL: its criteria, the judges GenAI Fund invites,
@@ -19,6 +28,9 @@ import org.junit.jupiter.api.Test;
 class ReviewTest extends ApplicationsHttpTest {
 
 	private static final String REVIEW = API + "/review/programs/";
+
+	@LocalServerPort
+	private int port;
 
 	@Test
 	void anOperatorSetsTheCriteriaAndInvitesAJudgeWhoSignsInWithThatAddress() {
@@ -139,6 +151,60 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Integer>read(again, "$.version")).isEqualTo(2);
 		assertThat(JsonPath.<List<Integer>>read(again, "$.others[*].version")).containsExactly(1);
 		assertProblem(get(judge, one + "/files/" + UUID.randomUUID()), 404, "PROPOSAL_APPLICATION_NOT_FOUND");
+		assertThat(auditOf(form.programId())).doesNotContain("proposal.file_open");
+
+		// Opening a file of an application is recorded, with who opened which file.
+		String deck = JsonPath.read(again, "$.submitted.deck.fileId");
+		get(judge, one + "/files/" + deck);
+		assertThat(jdbc.sql("""
+				select actor_email || ' ' || (details ->> 'application') || ' ' || (details ->> 'file')
+				from audit_event where action = 'proposal.file_open' and resource_id = ?
+				""").params(form.programId().toString()).query(String.class).list())
+			.containsExactly("scorer@review.test " + first.id() + " " + deck);
+	}
+
+	@Test
+	void anOperatorDownloadsTheApplicationsAndTheDownloadIsRecorded() {
+		Form form = program("exported-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		criteriaOf(form, "Practical impact");
+		String judge = judge(form, "reader@exported.test");
+		Applicant first = applicant(form, "first@exported.test", "First Exporter");
+		Applicant second = applicant(form, "second@exported.test", "Second Exporter");
+		String export = REVIEW + form.programId() + "/applications/export";
+		post(operator, REVIEW + form.programId() + "/decisions", decision(List.of(first.id()), "shortlisted"))
+			.expectStatus()
+			.isOk();
+
+		// Only GenAI Fund takes the applicants' contact details out.
+		post(judge, export, Map.of()).expectStatus().isForbidden();
+		assertThat(auditOf(form.programId())).doesNotContain("proposal.export");
+
+		String all = new String(post(operator, export, Map.of()).expectStatus()
+			.isOk()
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"exported-challenge-applications.csv\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), StandardCharsets.UTF_8);
+		assertThat(all).startsWith("\uFEFFApplication,Organization,Organization type,Solution,First name,Last name,Email,");
+		List<String> rows = all.lines().toList();
+		assertThat(rows).hasSize(3);
+		assertThat(rows.get(1)).startsWith(first.id() + ",First Exporter,")
+			.contains(",Dat,Phan,first@exported.test,+84 912 345 678,VN,")
+			.contains(",shortlisted,no,0,");
+		assertThat(rows.get(2)).startsWith(second.id() + ",Second Exporter,").contains(",under_review,no,0,");
+
+		// The list as it was narrowed is what the download holds.
+		String one = new String(post(operator, export, Map.of("applicationIds", List.of(second.id()))).expectStatus()
+			.isOk()
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), StandardCharsets.UTF_8);
+		assertThat(one.lines().toList()).hasSize(2).last().asString().startsWith(second.id() + ",");
+		assertThat(jdbc.sql("""
+				select details ->> 'count' from audit_event where action = 'proposal.export' and resource_id = ?
+				order by occurred_at
+				""").params(form.programId().toString()).query(String.class).list()).containsExactly("2", "1");
 	}
 
 	@Test
@@ -183,6 +249,16 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<List<String>>read(history, "$.history[*].kind")).containsExactly("submitted", "decided");
 		assertThat(JsonPath.<List<String>>read(history, "$.history[*].reason")).contains("The strongest in Claiming.");
 		assertThat(auditOf(form.programId())).contains("proposal.decide", "proposal.release");
+	}
+
+	@Test
+	void aProgramNobodyAppliedToHasNoOutcomesToRelease() {
+		Form form = program("empty-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		close(form);
+
+		String release = REVIEW + form.programId() + "/release";
+		assertThat(JsonPath.<Boolean>read(body(get(operator, release).expectStatus().isOk()), "$.ready")).isFalse();
+		assertProblem(post(operator, release, emails()), 409, "PROPOSAL_OUTCOMES_NOT_READY");
 	}
 
 	@Test
@@ -244,6 +320,44 @@ class ReviewTest extends ApplicationsHttpTest {
 		resubmit(form, applicant);
 		assertThat(JsonPath.<String>read(body(get(operator, one).expectStatus().isOk()), "$.reviewStatus"))
 			.isEqualTo("not_selected");
+	}
+
+	@Test
+	void anOperatorsAppListsAProgramsApplicationsWithTheirDecisionsAndCounts() {
+		Form form = program("listed-by-mcp", true, Instant.now().plus(Duration.ofDays(10)));
+		applicant(form, "first@mcp-apply.test", "First Builder");
+		applicant(form, "second@mcp-apply.test", "Second Builder");
+
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = McpClient
+			.sync(HttpClientStreamableHttpTransport.builder("http://localhost:" + port)
+				.endpoint("/mcp/operator")
+				.httpRequestCustomizer((builder, method, uri, body, context) -> builder.header("Authorization",
+						"Bearer " + token))
+				.build())
+			.requestTimeout(Duration.ofSeconds(20))
+			.build();
+		app.initialize();
+		assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name)
+			.containsExactly("search", "fetch", "list_applications", "list_pending_reviews");
+
+		CallToolResult result = app.callTool(McpSchema.CallToolRequest.builder("list_applications")
+			.arguments(Map.of("program", "program:listed-by-mcp"))
+			.build());
+		assertThat(result.isError()).isFalse();
+		String listed = ((TextContent) result.content().getFirst()).text();
+		assertThat(JsonPath.<Integer>read(listed, "$.submitted")).isEqualTo(2);
+		assertThat(JsonPath.<List<String>>read(listed, "$.applications[*].solution"))
+			.containsExactly("First Builder Desk", "Second Builder Desk");
+		assertThat(JsonPath.<List<String>>read(listed, "$.applications[*].decision")).containsOnly("under_review");
+		assertThat(JsonPath.<String>read(listed, "$.applications[0].url"))
+			.contains("/admin/programs/" + form.programId() + "/applications/");
+
+		CallToolResult unknown = app.callTool(McpSchema.CallToolRequest.builder("list_applications")
+			.arguments(Map.of("program", "program:no-such-program"))
+			.build());
+		assertThat(unknown.isError()).isTrue();
+		app.closeGracefully();
 	}
 
 	/** Submits an application of the caller, who already belongs to an organization, and answers its identifier. */

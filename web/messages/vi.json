@@ -1,22 +1,23 @@
 {
   "Metadata": {
     "title": "BeyondPilot",
-    "description": "Cùng giải bài toán AI của doanh nghiệp. Khám phá các chương trình của GenAI Fund, ứng tuyển bằng một hồ sơ dùng lại được và theo dõi đề xuất của bạn qua từng vòng duyệt."
+    "description": "BeyondPilot là startup AI được GenAI Fund đầu tư. Trợ lý áp dụng AI của BeyondPilot giúp doanh nghiệp và nhà phát triển AI tìm giải pháp AI, nhân lực AI, bài toán doanh nghiệp, sự kiện và chương trình."
   },
   "Site": {
     "brand": "BeyondPilot",
-    "backedBy": "Được hậu thuẫn bởi",
+    "backedBy": "Được đầu tư bởi",
     "genaiFund": "GenAI Fund",
     "skipToContent": "Chuyển tới nội dung",
     "notifications": "Thông báo",
     "nav": {
       "label": "Điều hướng chính",
-      "programs": "Chương trình",
-      "useCases": "Bài toán",
+      "programs": "Sự kiện & Chương trình",
+      "useCases": "Bài toán & Dự án",
       "solutions": "Giải pháp AI",
       "talent": "Nhân lực AI",
       "signIn": "Đăng nhập",
-      "getStarted": "Bắt đầu"
+      "getStarted": "Bắt đầu",
+      "howItWorks": "Cách hoạt động"
     },
     "account": {
       "open": "Menu tài khoản của {name}",
@@ -27,16 +28,21 @@
       "talentProfile": "Hồ sơ nhân lực",
       "admin": "Quản trị",
       "applications": "Đơn của tôi",
-      "reviews": "Chấm đơn"
+      "reviews": "Chấm đơn",
+      "settings": "Tài khoản",
+      "mcp": "MCP",
+      "backToSite": "Về trang chính",
+      "appearance": "Giao diện"
     },
     "menu": {
       "open": "Mở menu",
       "close": "Đóng menu",
       "title": "Menu",
-      "programsHint": "Thử thách đang mở, build week và sự kiện",
+      "programsHint": "Meetup, workshop, demo day, thử thách và chương trình tăng tốc",
       "useCasesHint": "Bài toán doanh nghiệp muốn giải bằng AI",
-      "solutionsHint": "Sản phẩm của các công ty AI trong khu vực",
-      "talentHint": "Nhà phát triển và đội nhóm để cùng hợp tác"
+      "solutionsHint": "Sản phẩm và nhà cung cấp của các công ty AI trong khu vực",
+      "talentHint": "Chuyên gia và nhà phát triển cho dự án AI của bạn",
+      "howItWorksHint": "Cách trợ lý áp dụng AI giúp bạn tiến lên"
     },
     "language": {
       "label": "Ngôn ngữ",
@@ -53,13 +59,13 @@
       "platform": "Nền tảng",
       "company": "Công ty",
       "about": "Về GenAI Fund",
-      "events": "Sự kiện",
-      "newsletter": "Bản tin",
       "contact": "Liên hệ",
-      "linkedin": "LinkedIn",
-      "facebook": "Facebook",
-      "x": "X",
-      "copyright": "© {year} BeyondPilot"
+      "linkedin": "GenAI Fund trên LinkedIn",
+      "facebook": "GenAI Fund trên Facebook",
+      "x": "GenAI Fund trên X",
+      "copyright": "© {year} BeyondPilot",
+      "privacy": "Quyền riêng tư",
+      "terms": "Điều khoản"
     }
   },
   "Campaign": {
@@ -84,66 +90,212 @@
       "demoDay": "Demo day",
       "demoDayWhen": "14:00–16:00, 22/10",
       "investment": "Có thể được xem xét đầu tư",
-      "investmentValue": "Tối đa 100.000 USD"
+      "investmentValue": "Tối đa 100.000 USD",
+      "notified": "Thông báo kết quả",
+      "notifiedWhen": "16/10"
     }
   },
   "Home": {
     "hero": {
-      "title": "Pilot AI tiếp theo bắt đầu từ đây.",
-      "description": "Bài toán doanh nghiệp, giải pháp AI, nhân lực và chương trình, trong một ô tìm kiếm.",
-      "searchLabel": "Tìm trong danh mục",
-      "searchPlaceholder": "Tìm giải pháp, bài toán, chương trình, nhân lực",
-      "searchPlaceholderShort": "Tìm trong danh mục",
-      "search": "Tìm",
-      "scopesLabel": "Tìm kiếm phổ biến",
+      "eyebrow": "Áp dụng AI, có trợ lý dẫn đường.",
+      "titleStart": "Bước tiếp theo của bạn với",
+      "titleEnd": "AI bắt đầu từ đây.",
+      "description": "BeyondPilot là startup AI được GenAI Fund đầu tư. Trợ lý áp dụng AI của chúng tôi giúp bạn tìm giải pháp AI, tìm chuyên gia, khám phá các bài toán doanh nghiệp thực tế và kết nối với sự kiện, chương trình giúp bạn tiến lên.",
+      "searchLabel": "Tìm giải pháp AI, nhân lực, bài toán, sự kiện và chương trình",
+      "searchPlaceholder": "Bạn muốn đạt được điều gì với AI?",
+      "searchPlaceholderShort": "Mục tiêu AI của bạn",
+      "primaryCta": "Khám phá BeyondPilot",
+      "secondaryCta": "Xem cách hoạt động",
+      "searchSubmit": "Tìm",
+      "promptsLabel": "Ví dụ tìm kiếm",
+      "prompts": {
+        "claims": "Tìm giải pháp AI cho bồi thường bảo hiểm",
+        "talent": "Tìm nhân lực AI cho dự án của tôi",
+        "projects": "Xem dự án doanh nghiệp đang tìm giải pháp",
+        "programs": "Tìm chương trình AI cho startup của tôi"
+      },
+      "preview": {
+        "alt": "Bản xem trước sản phẩm: kết quả tìm “insurance claims” trên BeyondPilot, gồm giải pháp AI, một bài toán và một chương trình",
+        "address": "beyondpilot.ai/search?q=insurance+claims",
+        "tabs": {
+          "all": "Tất cả",
+          "solutions": "Giải pháp AI",
+          "useCases": "Bài toán",
+          "programs": "Chương trình"
+        },
+        "kinds": {
+          "solution": "Giải pháp",
+          "useCase": "Bài toán",
+          "program": "Chương trình"
+        },
+        "papaya": {
+          "title": "Papaya",
+          "summary": "Đọc hồ sơ y tế phức tạp bằng chuỗi nhiều LLM, rồi hỗ trợ giám định viên quyết định các hồ sơ bồi thường thông thường.",
+          "meta": "Ngân hàng & tài chính · Cloud SaaS · Việt Nam"
+        },
+        "infall": {
+          "title": "Infall Insurtech",
+          "summary": "OCR dùng AI cùng bộ máy quyết định và bồi thường, tự động hoá hồ sơ từ tiếp nhận đến chi trả.",
+          "meta": "Y tế · Ngân hàng & tài chính · Việt Nam"
+        },
+        "renewal": {
+          "title": "AI for Insurance: Scaling Compulsory Motor Insurance Renewal",
+          "summary": "Của Tasco. Tìm, tiếp cận và chuyển đổi khách hàng đến hạn tái tục với ít thao tác thủ công hơn.",
+          "meta": "Ô tô & di chuyển"
+        },
+        "challenge": {
+          "title": "AI for Insurance Challenge × Tasco",
+          "summary": "Xây dựng một pilot AI cùng đội kinh doanh của Tasco. Có thể được xem xét đầu tư tối đa 100.000 USD.",
+          "meta": "Thử thách doanh nghiệp · Hạn nộp 15/10"
+        }
+      },
       "scopes": {
         "agentic": "Agentic AI",
         "document": "Document AI",
         "insurance": "Bảo hiểm",
         "retail": "Bán lẻ & thương mại điện tử"
+      }
+    },
+    "ecosystem": {
+      "title": "Kết nối với hệ sinh thái doanh nghiệp của GenAI Fund",
+      "listLabel": "Các tổ chức trong hệ sinh thái doanh nghiệp của GenAI Fund"
+    },
+    "categories": {
+      "eyebrow": "Khám phá",
+      "title": "Năm cách khám phá BeyondPilot",
+      "solutions": {
+        "title": "Giải pháp AI",
+        "description": "Tìm sản phẩm và nhà cung cấp đáp ứng nhu cầu kinh doanh của bạn.",
+        "action": "Khám phá giải pháp",
+        "item1Title": "Papaya",
+        "item1Meta": "Xử lý hồ sơ bồi thường · Việt Nam",
+        "item2Title": "Infall Insurtech",
+        "item2Meta": "Tự động hoá bồi thường toàn trình · Việt Nam"
       },
-      "meetupTime": "16:00–18:00 · Đăng ký tham gia trên Luma"
+      "talent": {
+        "title": "Nhân lực AI",
+        "description": "Tìm chuyên gia và nhà phát triển giúp dự án AI của bạn thành hiện thực.",
+        "action": "Tìm nhân lực",
+        "skillsLabel": "Kỹ năng bạn có thể tìm",
+        "skill1": "Machine learning",
+        "skill2": "Ứng dụng LLM",
+        "skill3": "Thị giác máy tính",
+        "skill4": "Kỹ thuật dữ liệu"
+      },
+      "useCases": {
+        "title": "Bài toán & Dự án",
+        "description": "Khám phá bài toán doanh nghiệp, ứng dụng thực tế và cơ hội hợp tác với doanh nghiệp.",
+        "action": "Khám phá cơ hội",
+        "item1Title": "AI-Powered Claim & Payment Automation",
+        "item1Meta": "Coca-Cola Beverages Vietnam",
+        "item2Title": "AI-Powered In-Store Support Assistant",
+        "item2Meta": "Pharmacity"
+      },
+      "events": {
+        "title": "Sự kiện AI",
+        "description": "Kết nối với hệ sinh thái qua meetup, workshop và demo day.",
+        "action": "Xem sự kiện",
+        "item1Month": "Th10",
+        "item1Day": "13",
+        "item1Title": "GenAI Builders Meetup",
+        "item1Meta": "Chuỗi meetup · tháng 10 đến tháng 12",
+        "item2Month": "Th10",
+        "item2Day": "22",
+        "item2Title": "Demo day · AI for Insurance Challenge",
+        "item2Meta": "Mười đội trình bày trực tiếp"
+      },
+      "programs": {
+        "title": "Chương trình AI",
+        "description": "Tìm thử thách, chương trình tăng tốc và sáng kiến hỗ trợ giai đoạn tiếp theo của bạn.",
+        "action": "Khám phá chương trình",
+        "item1Title": "AI for Insurance Challenge × Tasco",
+        "item1Meta": "Thử thách doanh nghiệp · Hạn nộp 15/10",
+        "item2Title": "Agentic AI Build Week 2026",
+        "item2Meta": "Buildathon · tháng 7/2026"
+      }
     },
-    "events": {
-      "title": "Chương trình và sự kiện",
-      "open": "Đang mở",
-      "coming": "Sắp diễn ra",
-      "done": "Đã diễn ra",
-      "meetupSchedule": "Thứ Ba, 16:00–18:00 ICT · Đăng ký tham gia trên Luma",
-      "meetupDates": "Các buổi sắp tới",
-      "tileMonth": "T{date, date, ::M}"
+    "agentJourney": {
+      "eyebrow": "Cách hoạt động",
+      "title": "Từ khám phá khả năng đến bước đi tiếp theo.",
+      "tell": {
+        "title": "Cho BeyondPilot biết bạn cần gì",
+        "description": "Mô tả bài toán kinh doanh, dự án hoặc cơ hội bạn đang tìm."
+      },
+      "discover": {
+        "title": "Khám phá lựa chọn phù hợp",
+        "description": "Xem giải pháp, nhân lực, bài toán, sự kiện và chương trình phù hợp với mục tiêu của bạn."
+      },
+      "move": {
+        "title": "Tiến lên",
+        "description": "Lập danh sách rút gọn nhà cung cấp, kết nối với nhân lực, gửi đề xuất hoặc tham gia chương trình."
+      },
+      "step": "Bước {number}",
+      "demo": {
+        "title": "Trợ lý BeyondPilot",
+        "need": "Nhu cầu của bạn",
+        "needQuote": "“Chúng tôi muốn tự động hoá xử lý hồ sơ bảo hiểm tại Việt Nam.”",
+        "matters": "Điều quan trọng",
+        "matter1": "Loại tài liệu",
+        "matter2": "Hỗ trợ tiếng Việt",
+        "matter3": "Yêu cầu triển khai",
+        "options": "Lựa chọn phù hợp",
+        "option1Title": "Papaya",
+        "option1Why": "Đọc hồ sơ bồi thường y tế phức tạp bằng chuỗi nhiều LLM. Phát triển tại Việt Nam.",
+        "option2Title": "Infall Insurtech",
+        "option2Why": "OCR cùng bộ máy quyết định và bồi thường, đã có các hãng bảo hiểm Việt Nam là khách hàng.",
+        "next": "Bước tiếp theo",
+        "introduce": "Yêu cầu giới thiệu",
+        "shortlist": "So sánh và lập danh sách rút gọn",
+        "alt": "một hành trình ví dụ. Nhu cầu “tự động hoá xử lý hồ sơ bảo hiểm tại Việt Nam” được làm rõ thành loại tài liệu, hỗ trợ tiếng Việt và yêu cầu triển khai; hai giải pháp phù hợp được gợi ý là Papaya và Infall Insurtech; bước tiếp theo là yêu cầu giới thiệu. So sánh và lập danh sách rút gọn sắp ra mắt."
+      }
     },
-    "directory": {
-      "title": "Khám phá danh mục",
-      "publish": "Đăng bài toán",
-      "tabsLabel": "Danh mục",
-      "programs": "Chương trình & sự kiện",
-      "programsShort": "Chương trình",
-      "useCases": "Bài toán",
-      "solutions": "Giải pháp AI",
-      "talent": "Nhân lực AI",
-      "new": "Mới",
-      "seeAllPrograms": "Xem tất cả {count, number} chương trình",
-      "seeAllUseCases": "Xem tất cả {count, number} bài toán",
-      "seeAllSolutions": "Xem tất cả giải pháp AI",
-      "viewProgram": "Xem chương trình",
-      "viewUseCase": "Xem bài toán",
-      "contactCentreAlt": "Một nhóm cùng xem màn hình laptop tại GenAI Open Innovation Vietnam",
-      "safetyAlt": "Một founder trình bày tại Startups’ Open Pitch, GenAI Open Innovation Vietnam",
-      "shelfAlt": "Một nhóm thảo luận quanh bàn laptop tại GenAI Open Innovation Vietnam",
-      "logoAlt": "Logo {name}",
-      "talentMeta": "Nhân lực AI · Mới",
-      "talentTitle": "Hồ sơ nhân lực mở cùng ngày ra mắt.",
-      "talentLink": "Tạo hồ sơ nhân lực",
-      "talentAlt": "Khán phòng kín chỗ tại Agentic AI Build Week 2026",
-      "closesOn": "Đóng ngày {date, date, ::d MMM}",
-      "useCaseMeta": "Bài toán · {industry}",
-      "solutionMeta": "Giải pháp AI · {country}",
-      "solutionMetaPlain": "Giải pháp AI",
-      "viewSolution": "Xem giải pháp",
-      "seeAllProgramsPlain": "Xem tất cả chương trình",
-      "seeAllUseCasesPlain": "Xem tất cả use case"
+    "challenge": {
+      "eyebrow": "Cơ hội nổi bật",
+      "description": "Tasco và GenAI Fund đang tìm các giải pháp AI cho những bài toán vận hành thực tế của ngành bảo hiểm Việt Nam. Ứng tuyển trực tiếp qua trang thử thách.",
+      "partners": "Cùng Microsoft for Startups và Notion"
     },
+    "team": {
+      "eyebrow": "Đội ngũ",
+      "title": "Đội ngũ xây dựng BeyondPilot",
+      "description": "Chúng tôi xây dựng BeyondPilot để doanh nghiệp và nhà phát triển AI dễ tìm thấy nhau hơn và tiến tới triển khai thực tế.",
+      "role": "Full-stack engineer",
+      "linkedin": "LinkedIn",
+      "linkedinLabel": "{name} trên LinkedIn (mở trong tab mới)",
+      "backing": {
+        "title": "Được GenAI Fund đầu tư",
+        "description": "BeyondPilot là startup AI có sản phẩm riêng, được GenAI Fund đầu tư. Chương trình và hệ sinh thái doanh nghiệp của GenAI Fund là nơi nhiều cơ hội trên BeyondPilot xuất phát. Các founder trong mạng lưới GenAI Fund là một phần của hệ sinh thái đó, không phải đội ngũ vận hành BeyondPilot."
+      },
+      "partnerTitle": "Đối tác phát triển",
+      "partnerDescription": "Đội kỹ sư xây dựng sản phẩm cùng BeyondPilot."
+    },
+    "founders": {
+      "eyebrow": "Trong mạng lưới GenAI Fund",
+      "title": "Các founder đang xây dựng trong hệ sinh thái",
+      "description": "Các founder startup trong mạng lưới GenAI Fund. Họ là đồng nghiệp trong hệ sinh thái, không phải thành viên đội ngũ BeyondPilot."
+    },
+    "faq": {
+      "eyebrow": "Hỏi đáp",
+      "title": "Câu hỏi thường gặp",
+      "whatQ": "BeyondPilot là gì?",
+      "whatA": "BeyondPilot là startup AI được GenAI Fund đầu tư. Trợ lý áp dụng AI của BeyondPilot giúp bạn tìm giải pháp AI, tìm nhân lực AI, khám phá bài toán và dự án của doanh nghiệp, và kết nối với sự kiện, chương trình AI.",
+      "whoQ": "BeyondPilot dành cho ai?",
+      "whoA": "Doanh nghiệp đang tìm giải pháp và nhà phát triển AI, các công ty và startup AI có sản phẩm để giới thiệu, và chuyên gia AI đang tìm dự án.",
+      "findQ": "BeyondPilot giúp tôi tìm giải pháp hoặc nhân lực AI phù hợp như thế nào?",
+      "findA": "Tìm trong giải pháp AI, nhân lực, bài toán, sự kiện và chương trình ngay tại một nơi, rồi mở từng mục để xem chi tiết và bước tiếp theo.",
+      "listQ": "Tôi có thể đăng giải pháp hoặc bày tỏ quan tâm đến một dự án không?",
+      "listA": "Tổ chức có thể tạo hồ sơ và đăng các giải pháp AI của mình. Các bài toán và dự án cho biết cách liên hệ với doanh nghiệp hoặc GenAI Fund. Một số thao tác vẫn đang được xây dựng và được ghi rõ là sắp ra mắt.",
+      "applyQ": "Tôi ứng tuyển thử thách hoặc chương trình như thế nào?",
+      "applyA": "Mở chương trình, đọc đề bài và điều kiện, rồi dùng nút Ứng tuyển. Mỗi chương trình có mốc thời gian và quy định riêng, hãy xem trang của chương trình để biết chi tiết.",
+      "runsQ": "Ai xây dựng BeyondPilot, và GenAI Fund tham gia như thế nào?",
+      "runsA": "BeyondPilot là startup AI có sản phẩm riêng, được GenAI Fund đầu tư, quỹ tập trung vào AI kết nối doanh nghiệp với nhà phát triển AI khắp Đông Nam Á. Sản phẩm được xây dựng cùng một đối tác phát triển, nêu trong phần đội ngũ."
+    },
+    "finalCta": {
+      "title": "Bạn sẽ làm gì tiếp theo với AI?",
+      "description": "Tìm giải pháp, con người và cơ hội để tiến lên cùng BeyondPilot.",
+      "action": "Khám phá BeyondPilot"
+    },
+    "previewLabel": "Bản xem trước sản phẩm",
+    "comingSoon": "Sắp ra mắt",
     "network": {
       "title": "Mạng lưới đứng sau mỗi chương trình",
       "description": "Doanh nghiệp, công ty công nghệ và cơ quan nhà nước đã tham gia các chương trình của GenAI Fund trong năm 2025 và 2026.",
@@ -168,27 +320,6 @@
           "title": "Báo chí"
         }
       }
-    },
-    "founders": {
-      "title": "Đồng hành cùng các founder trong mạng lưới GenAI Fund",
-      "description": "Các đội GenAI Fund đầu tư và hợp tác khắp Đông Nam Á.",
-      "seeAll": "Xem tất cả founder"
-    },
-    "faq": {
-      "title": "Câu hỏi thường gặp",
-      "contact": "Chưa thấy câu trả lời? Viết cho chúng tôi tại <email>general@genaifund.ai</email>.",
-      "whoQ": "Ai có thể ứng tuyển chiến dịch?",
-      "whoA": "Bất kỳ ai có giải pháp: cá nhân, nhóm sinh viên, startup, công ty phần mềm, agency và đội ngũ doanh nghiệp. Mỗi chiến dịch có điều kiện tham gia riêng.",
-      "companyQ": "Tôi có cần thành lập công ty để gửi đề xuất không?",
-      "companyA": "Không. Bạn có thể ứng tuyển với tư cách cá nhân hoặc đội nhóm, và bổ sung hồ sơ tổ chức sau nếu muốn.",
-      "productQ": "Tôi có cần sản phẩm hoàn chỉnh không?",
-      "productA": "Không. Một bản prototype chạy được sẽ có lợi, nhưng một góc nhìn rõ ràng về vấn đề và cách giải là đủ để ứng tuyển.",
-      "reviewQ": "Đề xuất được duyệt và chọn như thế nào?",
-      "reviewA": "GenAI Fund sàng lọc mọi bài nộp và mời các đội được chọn trình bày tại demo day, nơi doanh nghiệp và ban giám khảo chấm điểm trực tiếp. Ai ứng tuyển cũng nhận được phản hồi.",
-      "shortlistQ": "Nếu được chọn thì chuyện gì xảy ra tiếp?",
-      "shortlistA": "Bạn bước vào giai đoạn pilot có phạm vi rõ ràng cùng doanh nghiệp. Các đội được chọn cũng có thể được xem xét đầu tư, tuỳ quyết định của đối tác chương trình.",
-      "runsQ": "Ai đứng sau BeyondPilot?",
-      "runsA": "BeyondPilot được GenAI Fund hậu thuẫn — quỹ tập trung vào AI, kết nối doanh nghiệp với nhà phát triển AI khắp Đông Nam Á."
     }
   },
   "ComingSoon": {
@@ -243,6 +374,122 @@
       }
     }
   },
+  "AppConsent": {
+    "metaTitle": "Kết nối ứng dụng · BeyondPilot",
+    "title": "{app} muốn truy cập BeyondPilot",
+    "as": "Với tài khoản {person}",
+    "ableTo": "{app} sẽ có thể",
+    "user": {
+      "searchSolutions": "Tìm các giải pháp đã đăng",
+      "readSolution": "Đọc một giải pháp đã đăng",
+      "searchPrograms": "Tìm chương trình",
+      "limit": "Không thể thay đổi gì. Thu hồi bất cứ lúc nào."
+    },
+    "operator": {
+      "searchSolutions": "Tìm giải pháp, kể cả chưa đăng",
+      "readUseCases": "Đọc use case",
+      "findCompanies": "Tìm công ty",
+      "limit": "Không thể đăng hay sửa nội dung. Thu hồi bất cứ lúc nào."
+    },
+    "deny": "Từ chối",
+    "allow": "Cho phép",
+    "switchAccount": "Không phải bạn? Đổi tài khoản",
+    "refusedTitle": "{app} không thể kết nối với BeyondPilot",
+    "refusedLead": "Chỉ operator của GenAI Fund mới kết nối được.",
+    "signedInAs": "Đang đăng nhập với {person}",
+    "useUserServer": "Hãy dùng server cho người dùng: server này tìm các giải pháp đã đăng.",
+    "back": "Quay lại {app}",
+    "anotherAccount": "Không phải bạn? Đăng nhập bằng tài khoản khác",
+    "anyLocalApp": "Một ứng dụng trên máy này",
+    "theApp": "ứng dụng",
+    "localWarning": "Chạy trên máy này. Chỉ cho phép nếu bạn vừa tự mở nó.",
+    "from": "Từ",
+    "returnsTo": "Quay về",
+    "thisComputer": "máy này",
+    "notReviewed": "Chưa xem xét",
+    "ableToLocal": "Ứng dụng sẽ có thể"
+  },
+  "Account": {
+    "metaTitle": "Tài khoản · BeyondPilot",
+    "title": "Tài khoản",
+    "lead": "Bạn đăng nhập bằng địa chỉ nào, bạn ở đâu và liên hệ bạn bằng cách nào. Đơn nộp sẽ điền sẵn các thông tin này.",
+    "name": "Họ tên",
+    "email": "Email",
+    "emailHint": "Bạn đăng nhập bằng địa chỉ này nên không đổi được ở đây.",
+    "country": "Quốc gia",
+    "countryPlaceholder": "Chọn quốc gia",
+    "phone": "Số điện thoại",
+    "phoneInvalid": "Nhập số điện thoại kèm mã quốc gia, ví dụ +84 912 345 678.",
+    "save": "Lưu",
+    "saved": "Đã lưu tài khoản.",
+    "failed": "Chưa lưu được tài khoản. Hãy thử lại."
+  },
+  "Mcp": {
+    "metaTitle": "MCP · BeyondPilot",
+    "title": "MCP",
+    "lead": "Tìm kiếm BeyondPilot từ ChatGPT, Claude hoặc Codex.",
+    "tabs": {
+      "label": "MCP",
+      "connect": "Kết nối",
+      "apps": "Ứng dụng đã kết nối"
+    },
+    "connect": {
+      "address": "Địa chỉ server",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép",
+      "copyPrompt": "Sao chép câu lệnh",
+      "appsLabel": "Ứng dụng",
+      "apps": {
+        "chatgpt": {
+          "name": "ChatGPT",
+          "step1": "Settings › Apps and connectors › Create",
+          "step2": "Dán địa chỉ, giữ OAuth",
+          "step3": "Đăng nhập BeyondPilot và chọn Allow"
+        },
+        "claude": {
+          "name": "Claude",
+          "step1": "Settings › Connectors › Add custom connector",
+          "step2": "Dán địa chỉ",
+          "step3": "Đăng nhập BeyondPilot và chọn Allow"
+        },
+        "codex": {
+          "name": "Codex",
+          "step1": "Chạy codex mcp add beyondpilot --url {address}",
+          "step2": "Chạy codex mcp login beyondpilot, đăng nhập và chọn Allow"
+        },
+        "other": {
+          "name": "Ứng dụng khác",
+          "step1": "Thêm server {address} dạng streamable HTTP với OAuth",
+          "step2": "Ứng dụng không có client riêng sẽ đăng nhập dưới tên mcp-local",
+          "step3": "Đăng nhập BeyondPilot và chọn Allow"
+        }
+      },
+      "askTitle": "Hoặc nhờ AI của bạn tự cài",
+      "prompt": "Add the MCP server \"beyondpilot\" at {address} (streamable HTTP, OAuth). Start its login so I can sign in to BeyondPilot and choose Allow, then list its tools to confirm it works.",
+      "askNote": "Chỉ dùng được với Codex, Claude Code và Cursor.",
+      "tryTitle": "Thử hỏi",
+      "try": {
+        "claims": "Tìm giải pháp AI xử lý hồ sơ bồi thường bảo hiểm đã triển khai ở Việt Nam.",
+        "programs": "Chương trình AI nào của GenAI Fund đang nhận hồ sơ?",
+        "compare": "So sánh các voice agent trên BeyondPilot cho tổng đài của ngân hàng."
+      }
+    },
+    "apps": {
+      "none": "Chưa có ứng dụng nào kết nối",
+      "connect": "Kết nối ứng dụng",
+      "allowed": "Cho phép {date}",
+      "used": "dùng {time}"
+    },
+    "revoke": {
+      "open": "Thu hồi",
+      "title": "Thu hồi {name}?",
+      "lead": "Ứng dụng ngừng hoạt động ngay. Kết nối lại nếu muốn dùng tiếp.",
+      "confirm": "Thu hồi",
+      "cancel": "Huỷ",
+      "done": "{name} không còn dùng được BeyondPilot.",
+      "failed": "Không thu hồi được. Hãy thử lại."
+    }
+  },
   "Admin": {
     "metaTitle": "Quản trị · BeyondPilot",
     "title": "Quản trị",
@@ -263,6 +510,7 @@
       "ai": "AI",
       "aiProviders": "Nhà cung cấp",
       "searchIndex": "Chỉ mục tìm kiếm",
+      "mcp": "MCP",
       "email": "Email"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
@@ -400,7 +648,9 @@
             "PROGRAM_EXTERNAL_URL_REQUIRED": "Nhập địa chỉ của trang ở nơi khác.",
             "PROGRAM_COVER_NOT_USABLE": "Ảnh này không dùng làm ảnh bìa được. Hãy tải lên lại.",
             "PROGRAM_KEY_DATE_OUT_OF_ORDER": "Có mốc thời gian kết thúc trước khi bắt đầu.",
-            "PROGRAM_EVENT_OUT_OF_ORDER": "Có sự kiện kết thúc trước khi bắt đầu."
+            "PROGRAM_EVENT_OUT_OF_ORDER": "Có sự kiện kết thúc trước khi bắt đầu.",
+            "PROGRAM_OPENING_FIXED": "Đơn đã mở nên không thể đổi thời điểm mở đơn nữa.",
+            "PROGRAM_PUBLISHED_INCOMPLETE": "Chương trình đang công khai phải giữ tóm tắt, ảnh bìa và ngày diễn ra. Hãy gỡ công khai trước nếu muốn bỏ một mục."
           }
         },
         "cover": {
@@ -711,6 +961,7 @@
           "restore": "Khôi phục giải pháp",
           "deployment_approve": "Duyệt triển khai khách hàng",
           "deployment_reject": "Trả lại triển khai khách hàng",
+          "enrich": "Bổ sung solution từ nguồn công khai",
           "back": "Ghi xác nhận của GenAI Fund về giải pháp"
         },
         "introduction": {
@@ -733,7 +984,9 @@
           "reviewer_invite": "Mời giám khảo",
           "reviewer_remove": "Gỡ giám khảo",
           "decide": "Quyết định một đơn",
-          "release": "Công bố kết quả"
+          "release": "Công bố kết quả",
+          "file_open": "Mở một file của đơn nộp",
+          "export": "Tải danh sách đơn nộp"
         },
         "use_case": {
           "create": "Tạo một use case",
@@ -756,7 +1009,11 @@
         "ai": {
           "provider_create": "Kết nối nhà cung cấp AI",
           "provider_update": "Sửa nhà cung cấp AI",
-          "provider_delete": "Xoá nhà cung cấp AI"
+          "provider_delete": "Xoá nhà cung cấp AI",
+          "model_add": "Bật một model AI",
+          "model_update": "Sửa một model AI",
+          "model_remove": "Gỡ một model AI",
+          "task_model_change": "Chọn model AI cho một tác vụ"
         },
         "search": {
           "model_change": "Đổi model embedding",
@@ -764,6 +1021,17 @@
           "semantic_disable": "Tắt semantic search",
           "index_rebuild": "Dựng lại chỉ mục tìm kiếm",
           "embedding_retry": "Cho embed lại các mục bị từ chối"
+        },
+        "mcp": {
+          "app_revoke": "Thu hồi một ứng dụng AI",
+          "host_add": "Tin cậy một host ứng dụng",
+          "host_remove": "Gỡ một host ứng dụng tin cậy",
+          "other_hosts_allow": "Cho phép ứng dụng từ host khác",
+          "other_hosts_refuse": "Chặn ứng dụng từ host khác",
+          "user_server_enable": "Bật server MCP cho người dùng",
+          "user_server_disable": "Tắt server MCP cho người dùng",
+          "tool_enable": "Bật một công cụ MCP",
+          "tool_disable": "Tắt một công cụ MCP"
         }
       },
       "activity": {
@@ -805,6 +1073,7 @@
           "restore": "Khôi phục giải pháp <resource></resource>",
           "deployment_approve": "Duyệt triển khai khách hàng <resource></resource>",
           "deployment_reject": "Trả lại triển khai khách hàng <resource></resource>",
+          "enrich": "Bổ sung solution <resource></resource> từ nguồn công khai",
           "back": "Ghi xác nhận của GenAI Fund về giải pháp <resource></resource>"
         },
         "introduction": {
@@ -827,7 +1096,9 @@
           "reviewer_invite": "Mời một giám khảo chấm <resource></resource>",
           "reviewer_remove": "Gỡ một giám khảo khỏi <resource></resource>",
           "decide": "Quyết định một đơn nộp vào <resource></resource>",
-          "release": "Công bố kết quả của <resource></resource>"
+          "release": "Công bố kết quả của <resource></resource>",
+          "file_open": "Mở một file của một đơn nộp vào <resource></resource>",
+          "export": "Tải danh sách đơn nộp vào <resource></resource>"
         },
         "use_case": {
           "create": "Đã tạo use case <resource></resource>",
@@ -850,7 +1121,11 @@
         "ai": {
           "provider_create": "Kết nối nhà cung cấp AI <resource></resource>",
           "provider_update": "Sửa nhà cung cấp AI <resource></resource>",
-          "provider_delete": "Xoá nhà cung cấp AI <resource></resource>"
+          "provider_delete": "Xoá nhà cung cấp AI <resource></resource>",
+          "model_add": "Bật model AI <resource></resource>",
+          "model_update": "Sửa model AI <resource></resource>",
+          "model_remove": "Gỡ model AI <resource></resource>",
+          "task_model_change": "Chọn model AI cho tác vụ <resource></resource>"
         },
         "search": {
           "model_change": "Đổi model embedding trong <resource></resource>",
@@ -858,6 +1133,17 @@
           "semantic_disable": "Tắt semantic search trong <resource></resource>",
           "index_rebuild": "Dựng lại <resource></resource>",
           "embedding_retry": "Cho embed lại các mục bị từ chối của <resource></resource>"
+        },
+        "mcp": {
+          "app_revoke": "Thu hồi ứng dụng AI <resource></resource>",
+          "host_add": "Tin cậy host ứng dụng <resource></resource>",
+          "host_remove": "Gỡ host ứng dụng tin cậy <resource></resource>",
+          "other_hosts_allow": "Cho phép <resource></resource>",
+          "other_hosts_refuse": "Chặn <resource></resource>",
+          "user_server_enable": "Bật <resource></resource>",
+          "user_server_disable": "Tắt <resource></resource>",
+          "tool_enable": "Bật công cụ MCP <resource></resource>",
+          "tool_disable": "Tắt công cụ MCP <resource></resource>"
         }
       },
       "columns": {
@@ -1516,28 +1802,21 @@
           "over_24": "Từ 24 tuần trở lên"
         },
         "hideOrganizationName": "Ẩn tên công ty trên use case công khai",
-        "publish": {
-          "title": "Đăng",
-          "when": "Khi lưu",
-          "thisOrganization": "tổ chức",
-          "publish": {
-            "title": "Đăng ngay",
-            "description": "Hiển thị ngay trong danh mục. Nhà cung cấp gửi đề xuất được đến hết ngày dưới đây."
-          },
-          "draft": {
-            "title": "Lưu thành bản nháp",
-            "description": "Chỉ thành viên của {organization} xem được. Họ chỉnh sửa rồi gửi cho GenAI Fund duyệt."
-          }
-        },
+        "thisOrganization": "tổ chức",
         "closes": "Hạn nhận đề xuất",
         "closesTime": "Giờ, theo giờ Việt Nam",
         "closesHint": "Nhà cung cấp không gửi được đề xuất sau thời điểm này (giờ Việt Nam, ICT).",
-        "draftSubmit": "Lưu bản nháp",
         "publishSubmit": "Đăng use case",
+        "review": {
+          "title": "Kiểm tra và đăng",
+          "meta": "Kiểm tra mọi thông tin rồi đăng",
+          "lead": "Kiểm tra từng phần. Khi đăng, use case sẽ hiển thị công khai ngay lập tức."
+        },
+        "publishNote": "Khi đăng, use case sẽ hiển thị ngay dưới dạng cơ hội của {organization}.",
         "cancel": "Hủy",
-        "saved": "Đã lưu “{title}” thành bản nháp.",
         "published": "Đã đăng “{title}”.",
         "errors": {
+          "fix": "Kiểm tra bước này",
           "budgetOutOfOrder": "Mức tối đa thấp hơn mức tối thiểu.",
           "USECASE_ORGANIZATION_NOT_ELIGIBLE": "Tổ chức này không phải doanh nghiệp đã được duyệt.",
           "USECASE_CLOSES_IN_THE_PAST": "Chọn một ngày sau hôm nay.",
@@ -1553,7 +1832,7 @@
           "uploaded": "Tải lên {time}",
           "uploading": "Đang tải lên…",
           "errors": {
-            "type": "Đính kèm tệp PDF, Word, Excel hoặc PowerPoint, hoặc ảnh PNG, JPEG.",
+            "type": "Đính kèm tệp PDF, Word, Excel, PowerPoint, CSV hoặc văn bản, hoặc ảnh PNG, JPEG, WebP.",
             "size": "Mỗi tệp tối đa 25 MB.",
             "failed": "Chưa tải được tệp. Hãy thử lại."
           }
@@ -1643,7 +1922,8 @@
         "noEncryption": {
           "title": "Chưa lưu được key",
           "lead": "Máy chủ chưa có khoá mã hoá cho key của nhà cung cấp. Hãy báo đội kỹ thuật thêm BEYONDPILOT_AI_ENCRYPTION_KEY."
-        }
+        },
+        "chat": "Chat"
       },
       "model": {
         "heading": "Model embedding",
@@ -1762,6 +2042,207 @@
         "SEARCH_SETTINGS_CHANGED": "Có người vừa sửa cấu hình tìm kiếm sau khi bạn mở. Hãy tải lại rồi thử lại.",
         "SEARCH_ENCRYPTION_KEY_MISSING": "Chưa lưu được key: máy chủ chưa có khoá mã hoá. Hãy báo đội kỹ thuật thêm vào.",
         "unknown": "Đã có lỗi. Hãy thử lại sau ít phút."
+      },
+      "chat": {
+        "tasks": {
+          "heading": "Model theo tác vụ",
+          "lead": "Model mỗi tác vụ dùng. Lựa chọn được lưu ngay.",
+          "name": {
+            "matching": "Ghép nối",
+            "document_reading": "Đọc tài liệu"
+          },
+          "about": {
+            "matching": "Xét giải pháp nào hợp với một use case, theo từng nhu cầu, kèm trích dẫn cho mỗi nhu cầu.",
+            "document_reading": "Chép lại chữ của một trang chỉ có ảnh, như một slide của deck. Cần model đọc được ảnh."
+          },
+          "unset": "Chưa chọn model; tác vụ này không chạy cho đến khi chọn.",
+          "unavailable": "Provider của model đang tắt hoặc không có key; tác vụ này không chạy.",
+          "choose": "Chọn model",
+          "pickerLabel": "Model cho {task}",
+          "search": "Tìm model…",
+          "searchLabel": "Tìm model",
+          "noMatch": "Không có model nào khớp.",
+          "reasoning": "Reasoning",
+          "effort": {
+            "off": "Tắt",
+            "low": "Thấp",
+            "medium": "Vừa",
+            "high": "Cao"
+          },
+          "empty": {
+            "title": "Chưa có provider chat",
+            "lead": "Chưa tác vụ nào chạy được. Kết nối một provider bên dưới, rồi chọn model của nó ở đây."
+          },
+          "noModels": {
+            "title": "Chưa có model để chọn",
+            "lead": "Bật một model ở một kết nối bên dưới, rồi chọn nó ở đây."
+          }
+        },
+        "connections": {
+          "heading": "Kết nối hiện có",
+          "lead": "Nơi giữ các key. Key được lưu mã hoá và không bao giờ hiện lại.",
+          "inUse": "Đang dùng",
+          "noKey": "Không có key",
+          "off": "Đang tắt",
+          "count": "{count, plural, =0 {Chưa có model} other {# model}}",
+          "test": "Thử kết nối",
+          "edit": "Sửa",
+          "delete": "Xoá",
+          "more": "Thao tác với {name}",
+          "toggle": "Model của {name}",
+          "testOk": "Kết nối thành công · {ms} ms · {count, plural, other {# model}}",
+          "testFailed": "Kết nối thất bại · {ms} ms",
+          "reason": {
+            "rejected": "Provider từ chối API key. Kiểm tra key đã chép đủ và chưa bị thu hồi.",
+            "unreachable": "Provider không trả lời. Kiểm tra địa chỉ, hoặc thử lại sau ít phút.",
+            "incompatible": "Địa chỉ có trả lời, nhưng không đúng kiểu của API này. Kiểm tra địa chỉ kết thúc đúng chỗ API bắt đầu."
+          },
+          "fetch": "Lấy model từ provider",
+          "addModel": "Thêm model",
+          "noModels": "Chưa bật model nào. Lấy từ provider, hoặc thêm một model theo tên."
+        },
+        "models": {
+          "caption": "Model đã bật trên {name}",
+          "model": "Model",
+          "context": "Context",
+          "maxOutput": "Output tối đa",
+          "input": "Vào / 1M",
+          "output": "Ra / 1M",
+          "actions": "Thao tác",
+          "tools": "Gọi được tool",
+          "vision": "Đọc được ảnh",
+          "reasons": "Có reasoning",
+          "edit": "Sửa {name}",
+          "delete": "Gỡ {name}"
+        },
+        "add": {
+          "heading": "Thêm provider",
+          "lead": "Các provider phổ biến, gateway và mọi endpoint nói được API của OpenAI.",
+          "group": {
+            "vendors": "Nhà cung cấp",
+            "gateways": "Gateway và router",
+            "custom": "Tuỳ chỉnh"
+          },
+          "connect": "Kết nối",
+          "connectLabel": "Kết nối {name}",
+          "preset": {
+            "openai": "Các model GPT của OpenAI.",
+            "claude": "Các model Claude của Anthropic.",
+            "ninerouter": "Một key đi tới nhiều nhà cung cấp.",
+            "openrouter": "Chợ model của nhiều nhà cung cấp, chạy sẵn trên mạng.",
+            "compatible": "Mọi endpoint nói được API của OpenAI, như vLLM hay một gateway."
+          }
+        },
+        "editor": {
+          "connectTitle": "Kết nối {name}",
+          "connectLead": "Thử kết nối, rồi đánh dấu các model BeyondPilot được dùng.",
+          "editTitle": "Sửa {name}",
+          "editLead": "Thay đổi có hiệu lực từ lượt gọi kế tiếp.",
+          "name": "Tên",
+          "endpoint": "Endpoint URL",
+          "endpointHint": {
+            "openai": "Địa chỉ của API, thường kết thúc bằng /v1. Chấp nhận http và địa chỉ nội bộ.",
+            "anthropic": "Địa chỉ API của Anthropic. Chấp nhận http và địa chỉ nội bộ."
+          },
+          "apiKey": "API key",
+          "keyHint": "Được lưu mã hoá và không bao giờ hiện lại.",
+          "keyKeep": "Giữ key đã lưu",
+          "keyReplace": "Thay key",
+          "keyRemove": "Gỡ key",
+          "newKey": "API key mới",
+          "keyMoved": "Key đã lưu chỉ dùng với địa chỉ lúc lưu. Hãy nhập lại key.",
+          "enabled": "Đang bật",
+          "enabledHint": "Khi tắt, provider vẫn giữ key và model, nhưng không tác vụ nào dùng được.",
+          "testTitle": "Thử kết nối",
+          "testHint": "Liệt kê model của provider bằng địa chỉ và key ở trên. Không tốn token.",
+          "cancel": "Huỷ",
+          "save": "Lưu provider"
+        },
+        "modelsField": {
+          "label": "Model",
+          "hint": "Đọc từ provider bằng địa chỉ và key ở trên.",
+          "list": "Liệt kê model",
+          "refresh": "Làm mới",
+          "count": "{shown} trên {total} model · đã chọn {selected}",
+          "search": "Tìm model…",
+          "searchLabel": "Tìm model",
+          "configured": "Đã bật",
+          "select": "Chọn {name}",
+          "none": "Provider không liệt kê model nào.",
+          "noMatch": "Không có model nào khớp."
+        },
+        "fetch": {
+          "title": "Lấy model từ provider",
+          "add": "{count, plural, =0 {Thêm model} other {Thêm # model}}",
+          "cancel": "Huỷ"
+        },
+        "model": {
+          "addTitle": "Thêm model vào {name}",
+          "addLead": "Dành cho model mà provider không liệt kê. Dùng đúng tên API của nó nhận.",
+          "editTitle": "Sửa {name}",
+          "editLead": "Sửa những gì provider hoặc danh mục ghi sai. Giá tính bằng đô la Mỹ trên một triệu token.",
+          "modelName": "Tên model",
+          "displayName": "Tên hiển thị",
+          "contextWindow": "Context window (token)",
+          "maxOutput": "Output tối đa (token)",
+          "maxOutputHint": "Để trống nếu chưa biết. Phải nhỏ hơn context window.",
+          "inputPrice": "Giá input",
+          "outputPrice": "Giá output",
+          "cachedPrice": "Giá input đã cache",
+          "capabilities": "Khả năng",
+          "toolCalling": "Gọi được tool",
+          "vision": "Đọc được ảnh",
+          "reasoning": "Có reasoning, và nhận mức reasoning",
+          "test": "Thử model",
+          "testHint": "Hỏi model đã lưu một câu. Tốn vài token và được ghi lại.",
+          "testButton": "Thử",
+          "testOk": "Model đã trả lời · {ms} ms",
+          "testFailed": "Model không trả lời · {ms} ms",
+          "cancel": "Huỷ",
+          "save": "Lưu model",
+          "add": "Thêm model"
+        },
+        "delete": {
+          "providerTitle": "Xoá {name}?",
+          "providerLead": "Provider, key và các model của nó sẽ bị xoá. Tác vụ nào đang dùng một model trong đó sẽ dừng cho đến khi chọn model khác.",
+          "providerConfirm": "Xoá provider",
+          "modelTitle": "Gỡ {name}?",
+          "modelLead": "Tác vụ nào đang dùng model này sẽ dừng cho đến khi chọn model khác.",
+          "modelConfirm": "Gỡ model",
+          "cancel": "Huỷ"
+        },
+        "done": {
+          "connected": "Đã kết nối {name}",
+          "saved": "Đã lưu {name}",
+          "deleted": "Đã xoá {name}",
+          "modelsAdded": "Đã thêm {count, plural, other {# model}}",
+          "modelSaved": "Đã lưu {name}",
+          "modelRemoved": "Đã gỡ {name}",
+          "taskSet": "{task} dùng {model} từ bây giờ"
+        },
+        "errors": {
+          "AI_PROVIDER_NOT_FOUND": "Provider này không còn nữa. Hãy tải lại trang.",
+          "AI_PROVIDER_NAME_TAKEN": "Đã có provider khác dùng tên này.",
+          "AI_PROVIDER_CHANGED": "Có người đã sửa provider này từ lúc bạn mở. Tải lại rồi thử lại.",
+          "AI_PROVIDER_IN_USE": "Provider này đang được dùng. Hãy chọn provider khác ở nơi đang dùng nó trước.",
+          "AI_PROVIDER_KEY_MISSING": "Hãy nhập API key. Key đã lưu chỉ dùng với địa chỉ lúc lưu.",
+          "AI_ENCRYPTION_KEY_MISSING": "Không lưu được key: máy chủ chưa có khoá mã hoá. Hãy nhờ đội kỹ thuật thêm.",
+          "AI_PROVIDER_ENDPOINT_INVALID": "Địa chỉ phải là URL http hoặc https, không phải link-local, không kèm tài khoản, query hay fragment.",
+          "AI_PROVIDER_ADAPTER_UNKNOWN": "BeyondPilot không nói được API của provider này.",
+          "AI_PROVIDER_CREDENTIAL_REJECTED": "Provider từ chối API key.",
+          "AI_PROVIDER_UNREACHABLE": "Provider không trả lời. Kiểm tra địa chỉ, hoặc thử lại sau ít phút.",
+          "AI_PROVIDER_INCOMPATIBLE": "Địa chỉ có trả lời, nhưng không đúng kiểu của API này.",
+          "AI_MODEL_NOT_FOUND": "Model này không còn nữa. Hãy tải lại trang.",
+          "AI_MODEL_NAME_TAKEN": "Provider này đã có model đó.",
+          "AI_MODEL_CHANGED": "Có người đã sửa model này từ lúc bạn mở. Tải lại rồi thử lại.",
+          "AI_MODEL_INVALID": "Output tối đa phải nhỏ hơn context window.",
+          "AI_MODEL_UNAVAILABLE": "Không dùng được model này: provider của nó đang tắt hoặc không có key.",
+          "AI_MODEL_WITHOUT_VISION": "Tác vụ này cần model đọc được ảnh.",
+          "AI_TASK_UNKNOWN": "Không có tác vụ này. Hãy tải lại trang.",
+          "AI_TASK_CHANGED": "Có người đã đổi model của tác vụ này từ lúc bạn mở. Tải lại rồi thử lại.",
+          "AI_BUSY": "Đang có quá nhiều model được dùng cùng lúc. Thử lại sau ít phút.",
+          "unknown": "Đã có lỗi. Thử lại sau ít phút."
+        }
       }
     },
     "searchIndex": {
@@ -1854,6 +2335,135 @@
         "off": "Đã tắt semantic search",
         "rebuilt": "Đã dựng lại chỉ mục: đọc {saved} mục, xoá {removed}",
         "retried": "{count, plural, =0 {Không có mục nào cần thử lại} other {# mục sẽ được thử lại ở lượt chạy tới}}"
+      }
+    },
+    "mcp": {
+      "metaSetup": "MCP · Quản trị · BeyondPilot",
+      "metaTools": "Công cụ MCP · Quản trị · BeyondPilot",
+      "metaApps": "Ứng dụng đã kết nối · MCP · Quản trị · BeyondPilot",
+      "metaActivity": "Hoạt động · MCP · Quản trị · BeyondPilot",
+      "title": "MCP",
+      "lead": "Các server để ứng dụng AI kết nối với BeyondPilot, và những gì chúng được làm.",
+      "tabs": {
+        "label": "MCP",
+        "setup": "Thiết lập",
+        "tools": "Công cụ",
+        "apps": "Ứng dụng đã kết nối",
+        "activity": "Hoạt động"
+      },
+      "saved": "Đã lưu",
+      "failed": "Chưa lưu được. Hãy thử lại.",
+      "setup": {
+        "address": "Địa chỉ server",
+        "operator": {
+          "title": "Server cho operator",
+          "lead": "Đọc mọi khu vực, kể cả mục chưa niêm yết. Chỉ operator kết nối được, và vai trò được kiểm lại ở mỗi lần gọi."
+        },
+        "user": {
+          "title": "Server cho người dùng",
+          "lead": "Mọi người đã đăng nhập đều kết nối được từ trang MCP của mình. Server này đọc những gì khách xem được.",
+          "on": "Bật: mọi người kết nối được ứng dụng",
+          "off": "Tắt: server trả 404 và các ứng dụng đã kết nối ngừng hoạt động"
+        },
+        "hosts": {
+          "title": "Host ứng dụng tin cậy",
+          "lead": "Ứng dụng từ các host này kết nối mà không mang nhãn Chưa xem xét.",
+          "others": "Cho phép ứng dụng từ host khác",
+          "othersHint": "Chúng kết nối được, mang nhãn Chưa xem xét ở màn hình đồng ý.",
+          "add": "Thêm host",
+          "remove": "Gỡ {host}"
+        }
+      },
+      "tools": {
+        "reads": "Chỉ đọc",
+        "switch": "Bật hoặc tắt {tool}",
+        "operator": {
+          "title": "Server cho operator",
+          "lead": "Khi tắt, công cụ biến khỏi danh sách ứng dụng thấy và lời gọi tới nó bị từ chối.",
+          "search": "Tìm giải pháp đã hoặc chưa niêm yết, chương trình, talent, use case và công ty.",
+          "fetch": "Đọc đầy đủ một mục theo id mà search trả về.",
+          "list_applications": "Liệt kê hồ sơ ứng tuyển của một chương trình, kèm quyết định của GenAI Fund và điểm trung bình của người chấm.",
+          "list_pending_reviews": "Liệt kê những gì đang chờ duyệt: tổ chức, giải pháp, talent, use case và customer deployment."
+        },
+        "user": {
+          "title": "Server cho người dùng",
+          "lead": "Những gì ứng dụng của bất kỳ người đã đăng nhập nào được gọi.",
+          "search": "Tìm giải pháp đã niêm yết và chương trình đã công bố.",
+          "fetch": "Đọc đầy đủ một mục theo id mà search trả về."
+        }
+      },
+      "apps": {
+        "label": "Ứng dụng đã kết nối",
+        "none": "Chưa có ứng dụng nào kết nối",
+        "noneLead": "Ứng dụng xuất hiện ở đây khi có người kết nối nó với một server MCP.",
+        "operator": "Operator",
+        "user": "Người dùng",
+        "used": "dùng {time}",
+        "revoke": {
+          "open": "Thu hồi",
+          "label": "Thu hồi {name} của {person}",
+          "title": "Thu hồi {name} của {person}?",
+          "lead": "Ứng dụng ngừng hoạt động ngay với {person}. Họ có thể kết nối lại.",
+          "confirm": "Thu hồi",
+          "cancel": "Huỷ",
+          "done": "{name} của {person} không còn dùng được BeyondPilot.",
+          "failed": "Không thu hồi được. Hãy thử lại."
+        }
+      },
+      "activity": {
+        "search": "Tìm theo người hoặc email",
+        "period": {
+          "day": "24 giờ qua",
+          "week": "7 ngày qua",
+          "month": "30 ngày qua",
+          "all": "Cả 90 ngày"
+        },
+        "filters": {
+          "periodLabel": "Khoảng thời gian",
+          "app": "Mọi ứng dụng",
+          "appLabel": "Ứng dụng",
+          "tool": "Mọi công cụ",
+          "toolLabel": "Công cụ",
+          "outcome": "Mọi kết quả",
+          "outcomeLabel": "Kết quả"
+        },
+        "outcome": {
+          "ok": "Thành công",
+          "refused": "Bị từ chối",
+          "failed": "Lỗi"
+        },
+        "server": {
+          "user": "Server cho người dùng",
+          "operator": "Server cho operator"
+        },
+        "columns": {
+          "time": "Thời gian",
+          "person": "Người dùng",
+          "app": "Ứng dụng",
+          "tool": "Công cụ",
+          "outcome": "Kết quả"
+        },
+        "today": "Hôm nay, {time}",
+        "dayAndTime": "{day}, {time}",
+        "goneAccount": "Tài khoản đã xoá",
+        "count": "{count} lời gọi",
+        "noMatch": {
+          "title": "Không có lời gọi nào khớp",
+          "description": "Thử tìm khác hoặc bớt bộ lọc.",
+          "clear": "Xoá tìm kiếm và bộ lọc"
+        },
+        "empty": {
+          "title": "Không có lời gọi nào trong khoảng này",
+          "description": "Lời gọi xuất hiện ở đây khi ứng dụng AI dùng các server MCP. Nội dung câu hỏi không bao giờ được lưu."
+        },
+        "pagination": {
+          "label": "Các trang lời gọi",
+          "previous": "Trước",
+          "next": "Sau",
+          "goToPrevious": "Về trang trước",
+          "goToNext": "Sang trang sau",
+          "page": "Trang {page}"
+        }
       }
     },
     "email": {
@@ -2599,12 +3209,17 @@
       "ai_engineer": "Kỹ sư AI",
       "ml_engineer": "Kỹ sư ML",
       "forward_deployed_engineer": "Kỹ sư triển khai tại khách hàng",
+      "software_engineer": "Kỹ sư phần mềm",
+      "solution_architect": "Kiến trúc sư giải pháp",
       "automation_specialist": "Chuyên gia tự động hóa",
       "data_scientist": "Nhà khoa học dữ liệu",
       "data_engineer": "Kỹ sư dữ liệu",
+      "researcher": "Nhà nghiên cứu",
       "ai_product_manager": "Quản lý sản phẩm AI",
       "ai_consultant": "Tư vấn AI",
       "ai_designer": "Nhà thiết kế AI",
+      "founder": "Nhà sáng lập",
+      "student": "Sinh viên",
       "other": "Khác"
     },
     "engagement": {
@@ -4072,21 +4687,24 @@
     "mine": {
       "metaTitle": "Hồ sơ nhân lực · BeyondPilot",
       "title": "Hồ sơ nhân lực của bạn",
-      "lead": "Cách các công ty nhìn thấy bạn trong danh mục nhân lực AI.",
       "leadNew": "Hãy cho các công ty biết bạn làm được gì. GenAI Fund duyệt hồ sơ trước khi đăng.",
       "submitted": {
         "title": "GenAI Fund đang duyệt hồ sơ của bạn",
-        "lead": "Thường mất một đến hai ngày làm việc. Bạn vẫn có thể chỉnh sửa."
+        "lead": "Thường mất một đến hai ngày làm việc. Bạn vẫn có thể chỉnh sửa.",
+        "foot": "Đã gửi ngày {date}. Chúng tôi sẽ email cho bạn khi có quyết định.",
+        "footUndated": "Chúng tôi sẽ email cho bạn khi có quyết định."
       },
       "approved": {
         "listed": "Đã duyệt và hiển thị trong danh mục",
         "unlisted": "Đã duyệt nhưng đang ẩn khỏi danh mục",
         "open": "Mở hồ sơ công khai",
-        "unlistedLead": "Bật “Hiển thị trong danh mục” bên dưới để được đăng."
+        "unlistedLead": "Chỉ bạn thấy. Chọn “Hiển thị trong danh mục” bên dưới để hiển thị lại; không cần duyệt lại.",
+        "listedLead": "Ai cũng có thể tìm thấy bạn trong AI talent và tìm kiếm.",
+        "foot": "Thay đổi bạn lưu hiển thị trên trang ngay, không cần duyệt lại."
       },
       "inbox": {
-        "title": "Lời nhắn",
-        "waiting": "{count} lời nhắn đang chờ bạn trả lời",
+        "title": "Đã nhận",
+        "waiting": "{count} mới",
         "lead": "Chấp nhận để chia sẻ email của bạn với người gửi. Từ chối hoặc báo cáo thì không chia sẻ gì.",
         "someone": "Một người",
         "from": "{name} · {organization}",
@@ -4115,15 +4733,16 @@
           "lead": "GenAI Fund sẽ xem lời nhắn. Người gửi chỉ được báo là bị từ chối, không biết bạn đã báo cáo.",
           "confirm": "Báo cáo",
           "cancel": "Giữ lại"
-        }
+        },
+        "none": "Chưa có lời nhắn nào. Khi có người viết cho bạn qua trang của bạn, lời nhắn sẽ hiện ở đây."
       },
       "sentBack": {
         "title": "Cần sửa: {reason}",
-        "lead": "Hãy chỉnh sửa rồi gửi duyệt lại."
+        "lead": "Sửa bên dưới rồi gửi duyệt lại."
       },
       "takenDown": {
         "title": "Đã gỡ khỏi danh mục: {reason}",
-        "lead": "Hiện không ai khác thấy hồ sơ. Hãy chỉnh sửa rồi gửi duyệt lại."
+        "lead": "Hiện không ai khác thấy hồ sơ. Sửa bên dưới rồi gửi duyệt lại."
       },
       "delete": {
         "action": "Xoá hồ sơ…",
@@ -4131,28 +4750,41 @@
         "lead": "Hồ sơ, các dự án và lời nhắn gửi qua hồ sơ sẽ bị xoá vĩnh viễn. Không ai tìm thấy hồ sơ trong danh mục nữa.",
         "confirm": "Xoá hồ sơ",
         "cancel": "Giữ lại"
+      },
+      "saved": "đã lưu {when}",
+      "seen": {
+        "onlyYou": "chỉ bạn xem được cho đến khi GenAI Fund duyệt",
+        "inReview": "GenAI Fund đang duyệt",
+        "listed": "đang hiển thị trong AI talent",
+        "hidden": "đang ẩn khỏi AI talent"
+      },
+      "preview": {
+        "action": "Xem trước",
+        "note": "Hồ sơ của bạn theo lần lưu gần nhất. Thay đổi chưa lưu không hiển thị."
+      },
+      "tabs": {
+        "label": "Hồ sơ talent của bạn",
+        "profile": "Hồ sơ",
+        "enquiries": "Lời nhắn"
       }
     },
     "form": {
-      "name": "Họ tên",
+      "name": "Tên hiển thị",
       "nameRequired": "Hãy nhập họ tên.",
       "headline": "Giới thiệu ngắn",
       "bio": "Về bạn",
-      "bioHint": "Bạn đã xây dựng gì, cho ai, và muốn làm gì tiếp theo.",
       "roles": "Vai trò",
       "upTo": "Chọn tối đa {count}. Đã chọn {chosen}.",
       "skills": "Kỹ năng",
-      "skillsHint": "Cách nhau bằng dấu phẩy, tối đa {count}. Ví dụ: Python, LangGraph, RAG, MLOps.",
-      "skillsInvalid": "Nêu tối đa {count} kỹ năng, mỗi kỹ năng không quá 40 ký tự.",
+      "skillsHint": "Tối đa {count}, đã thêm {chosen}.",
       "country": "Quốc gia",
       "rate": "Mức phí",
       "notStated": "Chưa nêu",
       "engagement": "Hình thức làm việc",
       "website": "Portfolio hoặc LinkedIn",
-      "websiteHint": "Hiển thị trên hồ sơ. Địa chỉ email của bạn thì không bao giờ.",
       "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
       "projects": {
-        "title": "Dự án tiêu biểu",
+        "title": "Dự án",
         "lead": "Tối đa {count} dự án cho thấy năng lực của bạn.",
         "titleRequired": "Hãy đặt tên cho mỗi dự án, hoặc xóa đi.",
         "name": "Dự án {number}",
@@ -4164,13 +4796,10 @@
         "stage": "Giai đoạn",
         "stageNone": "Không ghi"
       },
-      "listed": "Hiển thị trong danh mục",
-      "listedHint": "Có hiệu lực khi hồ sơ được duyệt.",
       "submit": "Gửi duyệt",
       "resubmit": "Gửi duyệt lại",
       "saveDraft": "Lưu nháp",
       "save": "Lưu thay đổi",
-      "listedHintApproved": "Hồ sơ đã được duyệt, nên lựa chọn này và mọi thay đổi đã lưu hiển thị ngay trong danh mục.",
       "needed": {
         "headline": "Nói bạn làm gì trong một dòng.",
         "bio": "Viết vài câu về công việc của bạn.",
@@ -4184,15 +4813,12 @@
         "count": "{count, plural, other {Còn # mục cần bổ sung trước khi duyệt}}"
       },
       "unsaved": "Có thay đổi chưa lưu",
-      "neededMark": "· cần để duyệt",
       "leave": {
         "title": "Rời trang mà không lưu?",
         "lead": "Các thay đổi của bạn với hồ sơ của bạn chưa được lưu.",
         "leave": "Rời trang, không lưu",
         "stay": "Ở lại"
       },
-      "requiredMark": "· bắt buộc",
-      "headlineHint": "Một dòng về việc bạn làm. Ví dụ: Kỹ sư ML xây AI xử lý tài liệu cho ngân hàng.",
       "photo": {
         "label": "Ảnh đại diện",
         "hint": "Ảnh rõ mặt. PNG, JPEG hoặc WebP, tối đa 2 MB.",
@@ -4209,16 +4835,38 @@
       },
       "city": "Thành phố",
       "worksAt": "Nơi bạn làm việc",
-      "worksAtHint": "Hiển thị đúng như bạn ghi. Để trống nếu bạn làm độc lập.",
       "languages": "Ngôn ngữ làm việc",
       "industries": "Ngành bạn đã làm",
+      "rateHint": "Chỉ bạn và GenAI Fund thấy mức giá.",
+      "title": "Hồ sơ",
+      "lead": "Những gì mọi người thấy trên trang của bạn. Email của bạn không bao giờ hiển thị; lời nhắn đến bạn qua BeyondPilot.",
+      "optional": "Không bắt buộc",
+      "headlinePlaceholder": "Ví dụ: Kỹ sư ML xây dựng AI xử lý tài liệu cho ngân hàng",
+      "skillsPlaceholder": "Thêm kỹ năng",
+      "remove": "Bỏ {label}",
+      "searchPlaceholder": "Gõ để tìm",
+      "noMatch": "Không có kết quả phù hợp.",
       "sections": {
-        "about": "Về bạn",
-        "work": "Bạn làm gì",
-        "place": "Nơi bạn ở và làm việc",
-        "engagement": "Hình thức nhận làm"
+        "basics": "Thông tin cơ bản",
+        "skills": "Kỹ năng và kinh nghiệm",
+        "links": "Liên kết",
+        "visibility": "Ai có thể xem"
       },
-      "rateHint": "Chỉ bạn và GenAI Fund thấy mức giá."
+      "visibility": {
+        "listed": {
+          "title": "Hiển thị trong danh mục",
+          "lead": "Ai cũng có thể tìm thấy bạn trong AI talent và tìm kiếm. Trang của bạn mở sau khi GenAI Fund duyệt.",
+          "leadApproved": "Ai cũng có thể tìm thấy bạn trong AI talent và tìm kiếm."
+        },
+        "hidden": {
+          "title": "Ẩn",
+          "lead": "Chỉ bạn thấy. Hiển thị lại bất cứ lúc nào; không cần duyệt lại."
+        }
+      },
+      "add": "Thêm",
+      "addOne": "Thêm {label}",
+      "skillsSuggested": "Gợi ý:",
+      "worksAtPlaceholder": "Công ty, hoặc để trống nếu làm độc lập"
     }
   },
   "Form": {
@@ -4270,6 +4918,12 @@
       "online": "Trực tuyến",
       "register": "Đăng ký",
       "nothingYet": "Thông tin thêm về chương trình sẽ sớm có.",
+      "useCases": {
+        "title": "Use case trong chương trình này",
+        "lead": "Các bài toán đã đăng cho chương trình này. Mở từng bài để đọc mục tiêu, yêu cầu, ngân sách và thời gian.",
+        "shown": "Đang hiện {shown} trên {total} use case.",
+        "all": "Xem tất cả use case"
+      },
       "draft": {
         "message": "Bản nháp. Chỉ operator thấy trang này; trang chưa có trên danh sách chương trình.",
         "back": "Quay lại cài đặt"
@@ -4344,10 +4998,15 @@
       "who": "Ai được nộp",
       "win": "Bạn nhận được gì",
       "directions": "Hướng gợi ý",
+      "use-cases": "Use case",
       "timeline": "Dòng thời gian",
       "submit": "Cần nộp gì",
       "judges": "Giám khảo",
       "faq": "Hỏi đáp"
+    },
+    "useCases": {
+      "title": "Use case trong thử thách này",
+      "lead": "Các bài toán Tasco đã đăng cho thử thách này. Mở từng bài để đọc mục tiêu, yêu cầu, ngân sách và thời gian."
     },
     "challenge": {
       "title": "Thử thách",
@@ -4640,8 +5299,8 @@
       "country": "Quốc gia",
       "countryPlaceholder": "Chọn quốc gia",
       "countryRequired": "Chọn quốc gia.",
-      "linkedin": "Hồ sơ LinkedIn",
-      "linkedinRequired": "Nhập đầy đủ địa chỉ hồ sơ LinkedIn, bắt đầu bằng https://",
+      "linkedin": "Hồ sơ LinkedIn (không bắt buộc)",
+      "linkedinInvalid": "Nhập đầy đủ địa chỉ hồ sơ LinkedIn, bắt đầu bằng https://, hoặc để trống.",
       "yourTeam": "Nhóm của bạn",
       "teamName": "Tên nhóm",
       "teamNameHint": "Hiện cho giám khảo nếu bạn vào vòng trong.",
@@ -4720,7 +5379,8 @@
         "PROPOSAL_DECK_REQUIRED": "Thêm deck giải pháp ở bước 2.",
         "PROPOSAL_ANSWER_REQUIRED": "Trả lời mọi câu hỏi của chương trình.",
         "PROPOSAL_ANSWER_INVALID": "Có câu trả lời không khớp với câu hỏi.",
-        "ORGANIZATION_ALREADY_MEMBER": "Bạn đã thuộc một tổ chức. Tải lại trang."
+        "ORGANIZATION_ALREADY_MEMBER": "Bạn đã thuộc một tổ chức. Tải lại trang.",
+        "PROPOSAL_WITHDRAWN_FOR_GOOD": "Bạn đã rút đơn này, và chương trình không nhận thay đổi sau khi nộp, nên không thể nộp lại."
       }
     }
   },
@@ -4781,7 +5441,8 @@
       },
       "done": " (đã xong)",
       "ahead": " (sắp tới)"
-    }
+    },
+    "withdrawnForGood": "Đã rút. Chương trình này không nhận thay đổi sau khi nộp, nên không thể nộp lại."
   },
   "Application": {
     "metaTitle": "Đơn nộp",
@@ -4810,7 +5471,8 @@
       "cancel": "Giữ lại",
       "done": "Đã rút đơn của bạn.",
       "closed": "Đợt nhận đơn đã đóng, nên không rút đơn được nữa.",
-      "failed": "Chưa rút được đơn. Thử lại."
+      "failed": "Chưa rút được đơn. Thử lại.",
+      "leadFinal": "Người chấm sẽ không đọc đơn nữa. Chương trình này không nhận thay đổi sau khi nộp, nên bạn sẽ không nộp lại được."
     },
     "receipt": {
       "title": "Đã nộp đơn",
@@ -4924,6 +5586,9 @@
         "description": "Các đơn đã nộp sẽ hiện ở đây. Bản nháp không bao giờ được liệt kê."
       },
       "footer": "{shown} đơn · {drafts} bản nháp chưa nộp · {withdrawn} đơn đã rút",
+      "footerScored": "{scored}/{total} đơn đã có điểm",
+      "download": "Tải về (CSV)",
+      "downloadFailed": "Chưa tải được danh sách đơn. Hãy thử lại.",
       "own": "Của bạn"
     },
     "application": {
@@ -5200,7 +5865,11 @@
     },
     "industry": {
       "label": "Ngành",
-      "all": "Tất cả bài toán"
+      "all": "Tất cả bài toán",
+      "placeholder": "Lọc theo ngành",
+      "empty": "Không có ngành phù hợp.",
+      "remove": "Bỏ {industry}",
+      "clear": "Xóa tất cả"
     },
     "technology": {
       "label": "Công nghệ AI liên quan",
@@ -5220,11 +5889,34 @@
     },
     "deadline": {
       "date": "Hạn nộp {date}",
-      "time": "{time} ICT"
+      "time": "{time} ICT",
+      "none": "Đang mở, không có hạn"
     },
     "posted": "Đăng {when}",
     "view": "Xem bài toán",
-    "viewUnavailable": "Chi tiết bài toán chưa khả dụng.",
+    "detail": {
+      "by": "{organization} · Đăng {when}",
+      "applyBy": "Hạn nộp",
+      "published": "Ngày đăng",
+      "notSpecified": "Chưa nêu",
+      "sections": {
+        "problem": "Vấn đề cần giải quyết",
+        "outcomes": "Kết quả kỳ vọng và chỉ số thành công",
+        "currentProcess": "Quy trình hiện tại",
+        "currentSolutions": "Giải pháp hiện tại",
+        "targetUsers": "Người dùng và đội ngũ bị tác động",
+        "dataReadiness": "Dữ liệu hiện có và mức độ sẵn sàng",
+        "integration": "Tích hợp, triển khai và hạ tầng"
+      },
+      "open": {
+        "status": "Mở nhận đề xuất",
+        "closes": "Đóng {when}",
+        "noDeadline": "Không có hạn chót",
+        "send": "Gửi đề xuất",
+        "save": "Lưu để xem sau",
+        "note": "Đề xuất sẽ dùng lại hồ sơ giải pháp của bạn. Bạn chỉ cần bổ sung phần dành riêng cho bài toán này."
+      }
+    },
     "count": "{count, plural, =0 {Không có bài toán nào} other {# bài toán}}",
     "empty": {
       "title": "Không có bài toán nào khớp",
@@ -5245,5 +5937,271 @@
       "action": "Đăng bài toán"
     },
     "anonymous": "Tổ chức ẩn danh"
+  },
+  "Legal": {
+    "updated": "Cập nhật lần cuối: {date}",
+    "contents": "Trên trang này",
+    "privacy": {
+      "metaTitle": "Chính sách quyền riêng tư",
+      "title": "Chính sách quyền riêng tư",
+      "intro": "Chính sách này giải thích BeyondPilot thu thập dữ liệu cá nhân nào, vì sao, chia sẻ với ai và bạn có những lựa chọn gì. BeyondPilot là nền tảng ứng dụng AI do GenAI Fund hậu thuẫn, kết nối doanh nghiệp với giải pháp AI, nhân tài, use case, sự kiện và chương trình.",
+      "sections": [
+        {
+          "heading": "Chúng tôi là ai",
+          "body": [
+            "BeyondPilot vận hành website và ứng dụng web tại beyondpilot.ai. Mọi câu hỏi hoặc yêu cầu về quyền riêng tư, vui lòng gửi tới team@beyondpilot.ai."
+          ]
+        },
+        {
+          "heading": "Chúng tôi thu thập gì",
+          "body": ["Chúng tôi chỉ thu thập những gì nền tảng cần để hoạt động:"],
+          "items": [
+            "Thông tin tài khoản: họ tên và email, cùng số điện thoại, quốc gia, chức danh, hồ sơ LinkedIn và ảnh khi bạn thêm vào.",
+            "Đăng nhập bằng Google: họ tên, email và ảnh đại diện từ tài khoản Google. Chúng tôi không đọc Gmail, danh bạ hay tệp của bạn.",
+            "Nội dung bạn đăng hoặc gửi: hồ sơ tổ chức, giải pháp AI, use case, proposal, hồ sơ nhân tài, lời hỏi thăm, yêu cầu giới thiệu và các tệp đính kèm như deck.",
+            "Hoạt động cần cho vận hành an toàn: thời điểm đăng nhập, sự kiện bảo mật và nhật ký thao tác quản trị.",
+            "Dữ liệu kỹ thuật: địa chỉ IP và loại trình duyệt trong log máy chủ, lưu để bảo mật và xử lý sự cố."
+          ]
+        },
+        {
+          "heading": "Chúng tôi dùng để làm gì",
+          "items": [
+            "Tạo, bảo vệ tài khoản và cho bạn đăng nhập.",
+            "Hiển thị hồ sơ, giải pháp và use case bạn chọn công khai.",
+            "Giúp doanh nghiệp và nhà cung cấp AI tìm thấy nhau, gồm tìm kiếm và AI hỗ trợ ghép use case với giải pháp.",
+            "Xét hồ sơ ứng tuyển chương trình, cuộc thi và gửi email về tài khoản, bài nộp và kết quả.",
+            "Giữ nền tảng an toàn, ngăn lạm dụng và tuân thủ pháp luật."
+          ]
+        },
+        {
+          "heading": "Tính năng AI",
+          "body": [
+            "Tìm kiếm và ghép nối dùng mô hình AI để đọc nội dung công khai của hồ sơ, giải pháp, deck và use case. Nội dung đó chỉ được gửi tới nhà cung cấp AI (OpenAI, trực tiếp hoặc qua OpenRouter) để tạo kết quả tìm kiếm và giải thích ghép nối. Chúng tôi không dùng dữ liệu của bạn để huấn luyện AI, và điều khoản API của các nhà cung cấp cũng không cho phép việc đó."
+          ]
+        },
+        {
+          "heading": "Những gì được công khai",
+          "body": [
+            "Hồ sơ, giải pháp và use case chỉ công khai sau khi được duyệt và hiển thị. Tổ chức có thể ẩn tên trên use case, và chủ giải pháp có thể ngừng hiển thị bất cứ lúc nào. Proposal, lời hỏi thăm, yêu cầu giới thiệu, thông tin liên hệ và tệp không đánh dấu công khai chỉ bạn, người nhận và operator của GenAI Fund xem được."
+          ]
+        },
+        {
+          "heading": "Chúng tôi chia sẻ với ai",
+          "body": [
+            "Chúng tôi không bán dữ liệu cá nhân. Chúng tôi chỉ chia sẻ với các nhà cung cấp dịch vụ vận hành nền tảng, và họ chỉ được dùng cho mục đích đó:"
+          ],
+          "items": [
+            "Lưu trữ và máy chủ do chúng tôi vận hành.",
+            "Gửi email qua Resend.",
+            "Đăng nhập qua Google.",
+            "Xử lý AI qua OpenAI và OpenRouter."
+          ],
+          "after": [
+            "Chúng tôi cũng có thể cung cấp dữ liệu khi pháp luật yêu cầu, hoặc để bảo vệ quyền và an toàn của người dùng."
+          ]
+        },
+        {
+          "heading": "Cookie",
+          "body": [
+            "Chúng tôi dùng một cookie phiên để giữ bạn đăng nhập và một cookie để nhớ ngôn ngữ. Chúng tôi không dùng cookie quảng cáo hay theo dõi của bên thứ ba."
+          ]
+        },
+        {
+          "heading": "Lưu giữ bao lâu",
+          "body": [
+            "Chúng tôi lưu dữ liệu khi tài khoản còn hoạt động. Khi bạn xoá tài khoản hoặc yêu cầu, chúng tôi xoá hoặc ẩn danh dữ liệu cá nhân trong 30 ngày, trừ phần phải giữ vì lý do pháp lý, bảo mật hoặc kiểm toán. Bài nộp vào chương trình có thể được giữ trong hồ sơ của chương trình đó."
+          ]
+        },
+        {
+          "heading": "Lựa chọn và quyền của bạn",
+          "body": [
+            "Bạn xem và sửa được phần lớn dữ liệu trong tài khoản. Bạn cũng có thể yêu cầu nhận bản sao, sửa, xoá hoặc ngừng xử lý dữ liệu bằng cách gửi email tới team@beyondpilot.ai. Chúng tôi phản hồi trong 30 ngày."
+          ]
+        },
+        {
+          "heading": "Bảo mật",
+          "body": [
+            "Chúng tôi bảo vệ dữ liệu khi truyền bằng HTTPS, mã hoá thông tin đăng nhập và khoá nhà cung cấp, giới hạn quyền truy cập cho operator cần thiết và ghi nhật ký thao tác quản trị. Không hệ thống nào an toàn tuyệt đối; nếu có sự cố ảnh hưởng tới bạn, chúng tôi sẽ thông báo."
+          ]
+        },
+        {
+          "heading": "Xử lý ngoài lãnh thổ",
+          "body": [
+            "Nhà cung cấp của chúng tôi có thể xử lý dữ liệu ngoài quốc gia của bạn. Khi đó, chúng tôi dựa vào các cam kết theo hợp đồng của họ để bảo vệ dữ liệu."
+          ]
+        },
+        {
+          "heading": "Trẻ em",
+          "body": [
+            "BeyondPilot dành cho người đi làm và không hướng tới trẻ em dưới 16 tuổi. Chúng tôi không cố ý thu thập dữ liệu của các em."
+          ]
+        },
+        {
+          "heading": "Thay đổi",
+          "body": [
+            "Chúng tôi sẽ cập nhật trang này khi cách xử lý dữ liệu thay đổi, và báo trước cho người dùng đã đăng nhập về các thay đổi quan trọng."
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "metaTitle": "Điều khoản sử dụng",
+      "title": "Điều khoản sử dụng",
+      "intro": "Các điều khoản này áp dụng khi bạn dùng BeyondPilot tại beyondpilot.ai. Khi tạo tài khoản hoặc sử dụng nền tảng, bạn đồng ý với các điều khoản này.",
+      "sections": [
+        {
+          "heading": "Dịch vụ",
+          "body": [
+            "BeyondPilot giúp doanh nghiệp và nhà cung cấp AI tìm thấy nhau. Nền tảng liệt kê giải pháp AI, nhân tài, use case, sự kiện và chương trình; cho phép bạn đăng nội dung của mình, ứng tuyển chương trình, cuộc thi và yêu cầu giới thiệu. Một số tính năng được ghi là bản xem trước và có thể thay đổi."
+          ]
+        },
+        {
+          "heading": "Tài khoản của bạn",
+          "items": [
+            "Bạn phải cung cấp thông tin chính xác và giữ an toàn việc đăng nhập.",
+            "Bạn chịu trách nhiệm về mọi hoạt động trong tài khoản và về tổ chức bạn đại diện.",
+            "Bạn phải từ 16 tuổi trở lên và có đủ năng lực để đồng ý với các điều khoản này."
+          ]
+        },
+        {
+          "heading": "Nội dung bạn đăng",
+          "body": [
+            "Bạn vẫn sở hữu nội dung bạn đăng hoặc gửi. Bạn cho phép chúng tôi lưu trữ, hiển thị và xử lý nội dung đó để vận hành nền tảng, gồm hiển thị công khai nội dung đã duyệt và dùng cho tìm kiếm, ghép nối. Bạn xác nhận có quyền chia sẻ và nội dung là chính xác, hợp pháp."
+          ]
+        },
+        {
+          "heading": "Duyệt và hiển thị",
+          "body": [
+            "GenAI Fund duyệt tổ chức, giải pháp, use case và hồ sơ nhân tài trước khi hiển thị, và có thể từ chối, ngừng hiển thị hoặc gỡ nội dung sai lệch, gây hiểu nhầm hoặc vi phạm điều khoản. Việc được duyệt không có nghĩa là được bảo chứng."
+          ]
+        },
+        {
+          "heading": "Ứng tuyển, proposal và giới thiệu",
+          "body": [
+            "Khi bạn ứng tuyển chương trình hoặc gửi proposal, ban tổ chức và người chấm có thể đọc nội dung đó. Kết quả chương trình do ban tổ chức quyết định. Điều khoản thương mại, NDA và mọi dự án thí điểm do các bên tự thoả thuận; BeyondPilot không phải một bên trong các thoả thuận đó."
+          ]
+        },
+        {
+          "heading": "Tính năng AI",
+          "body": [
+            "Tìm kiếm và ghép nối có AI hỗ trợ giúp bạn tìm phương án nhanh hơn. Kết quả có thể chưa đầy đủ hoặc chưa đúng. Hãy kiểm tra các nguồn được hiển thị và tự đưa ra quyết định."
+          ]
+        },
+        {
+          "heading": "Sử dụng hợp lệ",
+          "body": ["Không được:"],
+          "items": [
+            "đăng thông tin sai hoặc mạo danh người khác;",
+            "gửi thư rác hoặc tin nhắn thương mại không được yêu cầu qua nền tảng;",
+            "thu thập, sao chép hoặc bán lại dữ liệu danh mục, hay truy cập tự động ngoài các công cụ chúng tôi cung cấp;",
+            "cố phá, làm quá tải hoặc vượt qua cơ chế bảo mật của nền tảng;",
+            "tải lên nội dung trái pháp luật hoặc nội dung bạn không có quyền chia sẻ."
+          ]
+        },
+        {
+          "heading": "Nền tảng của chúng tôi",
+          "body": [
+            "BeyondPilot, phần mềm và thiết kế thuộc về chúng tôi và bên cấp phép. Các điều khoản này không trao cho bạn quyền nào ngoài việc sử dụng nền tảng như được cung cấp."
+          ]
+        },
+        {
+          "heading": "Tạm ngưng và đóng tài khoản",
+          "body": [
+            "Bạn có thể ngừng dùng BeyondPilot và yêu cầu đóng tài khoản bất cứ lúc nào. Chúng tôi có thể tạm ngưng hoặc đóng tài khoản vi phạm điều khoản hoặc gây rủi ro cho người dùng khác, và sẽ cho bạn biết lý do trừ khi pháp luật không cho phép."
+          ]
+        },
+        {
+          "heading": "Miễn trừ và giới hạn trách nhiệm",
+          "body": [
+            "Nền tảng được cung cấp theo hiện trạng. Chúng tôi không bảo đảm mọi thông tin hiển thị là chính xác, mọi ghép nối sẽ dẫn tới hợp tác, hay dịch vụ luôn sẵn sàng. Trong phạm vi pháp luật cho phép, chúng tôi không chịu trách nhiệm về thiệt hại gián tiếp, và tổng trách nhiệm của chúng tôi giới hạn ở số tiền bạn đã trả cho chúng tôi trong 12 tháng gần nhất."
+          ]
+        },
+        {
+          "heading": "Thay đổi và luật áp dụng",
+          "body": [
+            "Chúng tôi có thể cập nhật điều khoản và sẽ báo trước cho người dùng đã đăng nhập về các thay đổi quan trọng. Các điều khoản này chịu sự điều chỉnh của pháp luật Việt Nam. Câu hỏi: team@beyondpilot.ai."
+          ]
+        }
+      ]
+    }
+  },
+  "HowItWorks": {
+    "metaTitle": "Cách hoạt động",
+    "metaDescription": "Nói với BeyondPilot điều bạn cần, xem ai có thể giúp và tiến lên.",
+    "intro": {
+      "eyebrow": "Cách hoạt động",
+      "title": "Từ một câu hỏi đến bước tiếp theo của bạn.",
+      "description": "Nói với BeyondPilot điều bạn cần, xem ai có thể giúp và tiến lên.",
+      "action": "Khám phá BeyondPilot"
+    },
+    "steps": {
+      "eyebrow": "Ba bước",
+      "title": "Mô tả, khám phá, hành động.",
+      "badge": "Xem trước sản phẩm · Minh họa",
+      "tell": {
+        "title": "Nói với BeyondPilot điều bạn cần",
+        "description": "Mô tả một thách thức kinh doanh, một dự án hoặc một cơ hội bạn đang tìm.",
+        "label": "Bạn hỏi",
+        "example": "“Chúng tôi muốn tự động hóa xử lý hồ sơ bảo hiểm tại Việt Nam.”"
+      },
+      "discover": {
+        "title": "Khám phá các lựa chọn phù hợp",
+        "description": "Tìm giải pháp, nhân tài, ca ứng dụng, sự kiện và chương trình phù hợp với mục tiêu của bạn.",
+        "label": "BeyondPilot hiển thị",
+        "example": "Các giải pháp hoặc nhà cung cấp phù hợp, kèm giải thích ngắn về mức độ phù hợp.",
+        "note": "Khớp theo: Loại tài liệu · Hỗ trợ tiếng Việt · Nhu cầu triển khai"
+      },
+      "move": {
+        "title": "Tiến lên",
+        "description": "Lập danh sách rút gọn nhà cung cấp, kết nối nhân tài, gửi đề xuất hoặc tham gia chương trình.",
+        "label": "Bạn quyết định",
+        "example": "So sánh các lựa chọn, lập danh sách rút gọn hoặc yêu cầu đề xuất khi được hỗ trợ."
+      }
+    },
+    "example": {
+      "eyebrow": "Ví dụ thực tế",
+      "title": "Thử thách AI cho Bảo hiểm vận hành trên BeyondPilot như thế nào",
+      "opens": {
+        "title": "Thử thách mở",
+        "description": "GenAI Fund và Tasco công bố bản mô tả."
+      },
+      "discover": {
+        "title": "Nhà cung cấp tìm thấy",
+        "description": "Qua tìm kiếm, danh bạ và trang thử thách."
+      },
+      "apply": {
+        "title": "Đăng ký và nộp hồ sơ",
+        "description": "Một hồ sơ, dùng lại cho mọi đơn ứng tuyển."
+      },
+      "assess": {
+        "title": "Hội đồng đánh giá",
+        "description": "Các thành viên được mời chấm điểm từng đề xuất."
+      },
+      "shortlist": {
+        "title": "Danh sách rút gọn",
+        "description": "Các nhà cung cấp phù hợp được vào ngày demo."
+      },
+      "closes": "Đóng lúc",
+      "closesWhen": "15/10, 23:59 (GMT+7)"
+    },
+    "paths": {
+      "eyebrow": "Chọn hướng đi của bạn",
+      "title": "Dành cho ai",
+      "solution": {
+        "title": "Tôi có một giải pháp AI",
+        "description": "Đăng giải pháp, rồi ứng tuyển chương trình và thử thách bằng một hồ sơ.",
+        "action": "Đăng giải pháp"
+      },
+      "problem": {
+        "title": "Tôi có một bài toán kinh doanh",
+        "description": "Đăng một ca ứng dụng hoặc trao đổi với GenAI Fund.",
+        "action": "Chia sẻ ca ứng dụng"
+      },
+      "talent": {
+        "title": "Tôi là nhân tài AI hoặc một nhóm nhỏ",
+        "description": "Tạo hồ sơ và nhận yêu cầu từ doanh nghiệp.",
+        "action": "Tạo hồ sơ"
+      }
+    }
   }
 }

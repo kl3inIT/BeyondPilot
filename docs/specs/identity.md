@@ -36,6 +36,8 @@ delivered by [BEY-30](../increments/completed/bey-30-identity/design.md), and th
 - **`IdentityService.person(actor)`** returns `Person(accountId, email, displayName)` of an active account, refusing a
   disabled one; `people(accountIds)` returns a map of the people behind those accounts, leaving unknown ones out and
   not filtering by status.
+- **`IdentityService.reachAtIfUnknown(actor, country, phone)`** keeps a country and a phone number the person gave
+  elsewhere where the account has none; what the account holds is left as it is. `proposal` calls it on a submission.
 - **Labels.** `Person.label()` and `Operator.label` are the display name, or the address while there is none.
 
 ## Data
@@ -45,7 +47,8 @@ delivered by [BEY-30](../increments/completed/bey-30-identity/design.md), and th
 - **`identity_account`.** `id`, `email` (stored as written), `display_name` (nullable), `status` (`active` or
   `disabled`, default `active`), `platform_role` (`user` or `operator`, default `user`), `last_login_at`, `version`,
   `created_at`, `updated_at`. The unique index `identity_account_email_key` on `lower(email)` makes an address one
-  account whatever its letter case. Entity `Account`; enum values are stored in lower case by
+  account whatever its letter case. `V56__identity_add_account_contact.sql` adds `country` (ISO 3166-1 alpha-2) and
+  `phone` (up to 40 characters), both nullable. Entity `Account`; enum values are stored in lower case by
   `LowercaseEnumConverters`.
 - **`identity_external_identity`.** `id`, `account_id` (references `identity_account`, `on delete cascade`),
   `provider` (only `google`), `subject`, `created_at`; unique on `(provider, subject)`. The subject is stored exactly
@@ -72,6 +75,9 @@ of the operators' list.
   `on conflict (provider, subject) do nothing`. A Google answer without an address fails with the OAuth error
   `email_missing`.
 - **Name.** A provider's name fills `display_name` only while it is empty; a code sign-in brings no name.
+- **Country and phone.** Both are optional and never asked at sign-in. The person sets or clears them on the Account
+  page (`/account`, `PUT /api/identity/me/contact`); a first submitted application fills the ones still empty. The
+  apply form starts from them where neither the application nor the latest other one holds a value.
 - **Completing a sign-in.** A disabled account is refused (`IDENTITY_ACCOUNT_DISABLED`). An address listed in
   `beyondpilot.identity.operator-emails` that is not yet an operator becomes one, recorded as `operator.grant` with no
   actor and the detail `source: configuration`. `last_login_at` is set, and the log line
@@ -151,7 +157,7 @@ Spring Security's OAuth 2.0 login with the scopes `openid`, `email` and `profile
 - **Return.** `GoogleOidcUserService` signs the Google user in as described under [Accounts](#accounts). Success
   redirects to the remembered path, or to `/`. Failure redirects to `/sign-in?error=google` and logs
   `identity.sign_in.failed` with `method`, `error_type` and `error_code`; the code is logged only when it matches
-  `[a-z_]{1,64}`, otherwise as `other`.
+  `[A-Za-z_]{1,64}` (a provider's lower-case codes and identity's own upper-case ones), otherwise as `other`.
 
 ## Session and roles
 
@@ -210,7 +216,8 @@ requires an operator whose account is not disabled (`IDENTITY_OPERATOR_REQUIRED`
 | `POST /login/ott`                                                         | `204` signed in; `401` wrong code; `410` no code waiting, expired or used; `429` too many wrong codes; `403` account disabled |
 | `GET /oauth2/authorization/google`                                        | A redirect to Google, then to the remembered path or `/`, or to `/sign-in?error=google`                                       |
 | `POST /logout`                                                            | `204`                                                                                                                         |
-| `GET /api/identity/me` (`getMe`)                                          | `Me`: `id`, `email`, `displayName`, `role`; `401` no session; `403` `IDENTITY_ACCOUNT_DISABLED`                               |
+| `GET /api/identity/me` (`getMe`)                                          | `Me`: `id`, `email`, `displayName`, `role`, `country`, `phone`; `401` no session; `403` `IDENTITY_ACCOUNT_DISABLED`           |
+| `PUT /api/identity/me/contact` (`updateMyContact`)                        | `Me` after replacing `country` and `phone` (a part left out is cleared); `400` not written as asked; `401`; `403`             |
 | `GET /api/identity/accounts` (`listAccounts`)                             | `AccountList`; `400` invalid parameter                                                                                        |
 | `POST /api/identity/accounts/{id}/disable` (`disableAccount`)             | `204`; `404`; `409` own account                                                                                               |
 | `POST /api/identity/accounts/{id}/enable` (`enableAccount`)               | `204`; `404`                                                                                                                  |

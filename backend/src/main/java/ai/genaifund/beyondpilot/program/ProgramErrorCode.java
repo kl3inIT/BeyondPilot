@@ -15,6 +15,12 @@ public enum ProgramErrorCode implements ErrorCode {
 	QUESTIONS_FIXED("PROGRAM_QUESTIONS_FIXED", ErrorCategory.CONFLICT,
 			"The applications have opened, so the questions can no longer change."),
 
+	OPENING_FIXED("PROGRAM_OPENING_FIXED", ErrorCategory.CONFLICT,
+			"The applications have opened, so when they open can no longer change."),
+
+	PUBLISHED_INCOMPLETE("PROGRAM_PUBLISHED_INCOMPLETE", ErrorCategory.VALIDATION,
+			"A published program keeps its summary, cover and days. Unpublish it first to remove one."),
+
 	CHOICES_REQUIRED("PROGRAM_CHOICES_REQUIRED", ErrorCategory.VALIDATION,
 			"A question answered by a choice offers two to twenty choices."),
 

@@ -53,6 +53,13 @@ export type AccountSummary = {
 };
 
 /**
+ * The models to enable on a provider, as ticked in its list.
+ */
+export type AddChatModels = {
+    models: Array<SaveChatModel>;
+};
+
+/**
  * An address to stop sending to.
  */
 export type AddEmailSuppression = {
@@ -634,6 +641,42 @@ export type AiVendor = {
     models: Array<string>;
 };
 
+export type AllowOtherHostsRequest = {
+    /**
+     * Whether apps of hosts not reviewed may connect.
+     */
+    allowed: boolean;
+};
+
+export type AppHost = {
+    /**
+     * The apps known to publish their document on this host, then any other of its apps that has signed in.
+     */
+    apps: Array<string>;
+    host: string;
+};
+
+/**
+ * A host whose apps BeyondPilot has reviewed.
+ */
+export type AppHostRequest = {
+    host: string;
+};
+
+/**
+ * Which AI apps may connect to the MCP servers.
+ */
+export type AppHosts = {
+    /**
+     * Whether apps of hosts not in the list may connect, labelled Not reviewed.
+     */
+    allowOtherHosts: boolean;
+    /**
+     * The hosts whose apps BeyondPilot has reviewed, in order of host.
+     */
+    hosts: Array<AppHost>;
+};
+
 /**
  * Who applies, for someone in no organization: themselves on their own, or their team.
  */
@@ -795,7 +838,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -878,6 +921,107 @@ export type ChangeMemberRole = {
 };
 
 /**
+ * A model an operator enabled. Prices are US dollars per million tokens; null is unknown.
+ */
+export type ChatModel = {
+    cachedInputPrice?: number | null;
+    contextWindow: number;
+    displayName: string;
+    id: string;
+    inputPrice?: number | null;
+    maxOutputTokens?: number | null;
+    modelName: string;
+    outputPrice?: number | null;
+    reasoning: boolean;
+    toolCalling: boolean;
+    version: number;
+    vision: boolean;
+};
+
+/**
+ * Whether a model answered a one-line question. The call spent a few tokens and is in the usage record.
+ */
+export type ChatModelTest = {
+    latencyMs: number;
+    ok: boolean;
+};
+
+export type ChatProvider = {
+    adapterType: string;
+    baseUrl: string;
+    enabled: boolean;
+    hasKey: boolean;
+    id: string;
+    /**
+     * Whether a task uses one of its models.
+     */
+    inUse: boolean;
+    models: Array<ChatModel>;
+    name: string;
+    updatedAt: string;
+    /**
+     * Who saved it last, as they were named.
+     */
+    updatedBy: string;
+    /**
+     * Send it back with a change; a change made meanwhile is refused.
+     */
+    version: number;
+};
+
+/**
+ * What listing the provider's models answered. No tokens were spent.
+ */
+export type ChatProviderTest = {
+    latencyMs: number;
+    /**
+     * How many models the provider listed.
+     */
+    modelCount?: number | null;
+    ok: boolean;
+    /**
+     * Why it failed: the key was refused, no answer came, or the answer was not this API's.
+     */
+    reason?: 'rejected' | 'unreachable' | 'incompatible';
+};
+
+/**
+ * Everything the Chat tab of Admin › AI › Providers shows: the chat providers with their models, and the model each task uses. A key is never returned: each provider says only whether it has one.
+ */
+export type ChatSettings = {
+    /**
+     * The APIs BeyondPilot speaks, as a provider's adapterType.
+     */
+    adapters: Array<string>;
+    /**
+     * Whether the server holds the key that encrypts provider keys; without it none can be saved.
+     */
+    keysCanBeStored: boolean;
+    providers: Array<ChatProvider>;
+    tasks: Array<ChatTask>;
+};
+
+/**
+ * A task and the model it uses.
+ */
+export type ChatTask = {
+    /**
+     * Whether the task can run now: a model is chosen and its provider is switched on with a key.
+     */
+    available: boolean;
+    /**
+     * The model; null until an operator chooses one, and after its model is removed.
+     */
+    modelId?: string | null;
+    /**
+     * How hard the task reasons, on a model that does; the task's own default until an operator sets one.
+     */
+    reasoningEffort: 'off' | 'low' | 'medium' | 'high';
+    task: 'matching' | 'document_reading';
+    version: number;
+};
+
+/**
  * The provider and model search embeds with from now on. Every item is embedded again when the model changes.
  */
 export type ChooseEmbeddingModel = {
@@ -887,6 +1031,69 @@ export type ChooseEmbeddingModel = {
      * The version of the search settings it was read at.
      */
     version: number;
+};
+
+/**
+ * An AI app the signed-in person connected to BeyondPilot.
+ */
+export type ConnectedApp = {
+    /**
+     * When the person first allowed it.
+     */
+    allowedAt?: string | null;
+    clientId: string;
+    /**
+     * The host the app's metadata document lives on; null for a client BeyondPilot registered.
+     */
+    host?: string | null;
+    /**
+     * What a revoke names.
+     */
+    id: string;
+    /**
+     * The app's name; its host when BeyondPilot has not reviewed the host.
+     */
+    name: string;
+    /**
+     * Whether BeyondPilot has reviewed the app's host or registered the app.
+     */
+    reviewed: boolean;
+    /**
+     * The servers the app may call: `user` for /mcp, `operator` for /mcp/operator.
+     */
+    servers: Array<'user' | 'operator'>;
+    /**
+     * When it last got a token, which it does only while in use, so within the hour of its last use.
+     */
+    usedAt?: string | null;
+};
+
+/**
+ * An AI app waiting for the signed-in person to allow or deny it.
+ */
+export type ConnectingApp = {
+    /**
+     * Whether it is the client any agent on a person's computer uses, which names no app.
+     */
+    anyLocalApp: boolean;
+    clientId: string;
+    /**
+     * The host the app's metadata document lives on; null for a client BeyondPilot registered.
+     */
+    host?: string | null;
+    /**
+     * Whether the answer goes to this computer, where any program could be listening.
+     */
+    local: boolean;
+    name: string;
+    /**
+     * The host the answer goes to; null when it goes to this computer.
+     */
+    returnsTo?: string | null;
+    /**
+     * Whether BeyondPilot has reviewed the app's host or registered the app.
+     */
+    reviewed: boolean;
 };
 
 /**
@@ -900,6 +1107,20 @@ export type ContactDetails = {
     firstName?: string | null;
     lastName?: string | null;
     linkedin?: string | null;
+    /**
+     * With its country code, such as +84 912 345 678.
+     */
+    phone?: string | null;
+};
+
+/**
+ * Where the person is and the number to reach them on. A part left out is cleared.
+ */
+export type ContactRequest = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
     /**
      * With its country code, such as +84 912 345 678.
      */
@@ -960,13 +1181,13 @@ export type CreateSolution = {
 };
 
 /**
- * A use case an operator writes for an organization. It is saved as a draft the organization's members can edit, or published at once when publishNow is true.
+ * A use case an operator writes for an organization. It is saved as a draft the organization's members can edit, or published at once when publishNow is true. Its title, problem, industry, expected outcomes and budget are required; the rest may be left out when the brief does not say.
  */
 export type CreateUseCase = {
     /**
-     * Files the caller uploaded for a use case, in the order shown.
+     * Files the caller uploaded for a use case, in the order shown; none when absent.
      */
-    attachmentFileIds: Array<string>;
+    attachmentFileIds?: Array<string> | null;
     /**
      * Whole units of currency. Null while the budget is to be determined.
      */
@@ -981,20 +1202,20 @@ export type CreateUseCase = {
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
     /**
-     * When proposals stop. It must be in the future.
+     * When proposals stop, in the future; null for no deadline.
      */
-    closesAt: string;
+    closesAt?: string | null;
     /**
      * The currency of the budget; USD when absent.
      */
     currency?: 'USD' | 'VND';
-    currentProcess: string;
+    currentProcess?: string | null;
     currentSolutions?: string | null;
-    dataReadiness: string;
+    dataReadiness?: string | null;
     expectedOutcomes: string;
     hideOrganizationName: boolean;
     industry: string;
-    integrationRequirements: string;
+    integrationRequirements?: string | null;
     /**
      * An approved organization.
      */
@@ -1009,13 +1230,22 @@ export type CreateUseCase = {
      */
     publishNow: boolean;
     /**
-     * What the solution must do, in the order written.
+     * What the solution must do, in the order written; none when the brief lists none.
      */
-    requirements: Array<UseCaseRequirement>;
-    targetUsers: string;
-    technologies: Array<string>;
-    timelineMaxWeeks: number;
-    timelineMinWeeks: number;
+    requirements?: Array<UseCaseRequirement> | null;
+    targetUsers?: string | null;
+    /**
+     * None when the brief names none.
+     */
+    technologies?: Array<string> | null;
+    /**
+     * Null with timelineMinWeeks when not known.
+     */
+    timelineMaxWeeks?: number | null;
+    /**
+     * Null with timelineMaxWeeks when not known.
+     */
+    timelineMinWeeks?: number | null;
     title: string;
 };
 
@@ -1448,6 +1678,16 @@ export type EmbeddingModelInUse = {
 };
 
 /**
+ * Which of a program's submitted applications to download.
+ */
+export type ExportApplicationsRequest = {
+    /**
+     * Only these applications, as the list was narrowed; left out, every submitted application.
+     */
+    applicationIds?: Array<string> | null;
+};
+
+/**
  * One of the program's own questions, as the form asks it.
  */
 export type FormQuestion = {
@@ -1558,16 +1798,117 @@ export type JoinOutcome = {
     outcome: 'joined' | 'requested';
 };
 
+export type McpCall = {
+    accountId: string;
+    appHost?: string | null;
+    appName: string;
+    calledAt: string;
+    clientId: string;
+    durationMs: number;
+    /**
+     * `ok`; `refused`, the tool answered with an error such as an unknown id; `failed`, it broke.
+     */
+    outcome: 'ok' | 'refused' | 'failed';
+    /**
+     * Null when the account is gone.
+     */
+    personEmail?: string | null;
+    /**
+     * Null until the person gives a name, or when the account is gone.
+     */
+    personName?: string | null;
+    server: 'user' | 'operator';
+    tool: string;
+};
+
+export type McpCallApp = {
+    clientId: string;
+    host?: string | null;
+    name: string;
+};
+
+/**
+ * One page of the calls AI apps made to the MCP servers, newest first.
+ */
+export type McpCallList = {
+    /**
+     * The apps that called in the period, to filter by.
+     */
+    apps: Array<McpCallApp>;
+    items: Array<McpCall>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    /**
+     * How many calls a page holds.
+     */
+    pageSize: number;
+    /**
+     * The tools of the servers, to filter by.
+     */
+    tools: Array<string>;
+    /**
+     * How many calls match, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * The MCP servers, their switches and their tools.
+ */
+export type McpSettings = {
+    /**
+     * The address of the operators' server.
+     */
+    operatorServerAddress: string;
+    /**
+     * Every tool of both servers, the operators' first.
+     */
+    tools: Array<McpToolSwitch>;
+    /**
+     * The address of the server every signed-in person may use.
+     */
+    userServerAddress: string;
+    /**
+     * Whether the user server answers; off, it answers 404.
+     */
+    userServerEnabled: boolean;
+};
+
+export type McpSwitchRequest = {
+    enabled: boolean;
+};
+
+export type McpToolSwitch = {
+    description?: string | null;
+    /**
+     * Whether the server lists it and takes calls to it.
+     */
+    enabled: boolean;
+    name: string;
+    server: 'user' | 'operator';
+    title?: string | null;
+};
+
 /**
  * The signed-in account.
  */
 export type Me = {
+    /**
+     * ISO 3166-1 alpha-2; null until the person says where they are.
+     */
+    country?: string | null;
     /**
      * The name the account shows; null until the person or their provider gives one.
      */
     displayName?: string | null;
     email: string;
     id: string;
+    /**
+     * With its country code; null until the person gives a number.
+     */
+    phone?: string | null;
     /**
      * `operator` is GenAI Fund staff.
      */
@@ -1614,6 +1955,10 @@ export type MergedOrganization = {
  * One of the person's applications, as My applications lists it.
  */
 export type MyApplication = {
+    /**
+     * Whether the program takes changes after submission; where it does not, a withdrawal is final.
+     */
+    allowUpdatesUntilClose: boolean;
     closesAt: string;
     id: string;
     /**
@@ -1961,6 +2306,64 @@ export type OrganizationMembers = {
  */
 export type OrganizationSearch = {
     items: Array<OrganizationMatch>;
+};
+
+/**
+ * An AI app someone connected to BeyondPilot, as operators see it.
+ */
+export type PersonConnectedApp = {
+    accountId: string;
+    /**
+     * When the person first allowed it.
+     */
+    allowedAt?: string | null;
+    clientId: string;
+    /**
+     * The host the app's metadata document lives on; null for a client BeyondPilot registered.
+     */
+    host?: string | null;
+    /**
+     * What a revoke names, with the account.
+     */
+    id: string;
+    /**
+     * The app's name; its host when BeyondPilot has not reviewed the host.
+     */
+    name: string;
+    /**
+     * Whether the person is an operator.
+     */
+    operator: boolean;
+    personEmail: string;
+    /**
+     * Null until the person gives a name.
+     */
+    personName?: string | null;
+    /**
+     * Whether BeyondPilot has reviewed the app's host or registered the app.
+     */
+    reviewed: boolean;
+    /**
+     * The servers the app may call: `user` for /mcp, `operator` for /mcp/operator.
+     */
+    servers: Array<'user' | 'operator'>;
+    /**
+     * When it last got a token, which it does only while in use, so within the hour of its last use.
+     */
+    usedAt?: string | null;
+};
+
+/**
+ * A connection to try or to list the models of, saved or not. Without an apiKey the saved key of providerId is used, while the address is the one it was saved with.
+ */
+export type ProbeChatProvider = {
+    adapterType: string;
+    apiKey?: string | null;
+    baseUrl: string;
+    /**
+     * The saved provider whose key to use when apiKey is empty.
+     */
+    providerId?: string | null;
 };
 
 export type Problem = {
@@ -2490,6 +2893,58 @@ export type PublicTalentSummary = {
 };
 
 /**
+ * A published use case that still accepts proposals.
+ */
+export type PublicUseCase = {
+    budgetMax?: number | null;
+    /**
+     * Whether the organization shows the budget to members only.
+     */
+    budgetMembersOnly: boolean;
+    /**
+     * Whole units of currency; null while the budget is to be determined or is for members only.
+     */
+    budgetMin?: number | null;
+    budgetToBeDetermined: boolean;
+    /**
+     * Proposals close at this instant; null for no deadline.
+     */
+    closesAt?: string | null;
+    /**
+     * The currency of the amounts.
+     */
+    currency: 'USD' | 'VND';
+    currentProcess?: string | null;
+    currentSolutions?: string | null;
+    dataReadiness?: string | null;
+    expectedOutcomes?: string | null;
+    id: string;
+    industry: string;
+    integrationRequirements?: string | null;
+    /**
+     * The organization's logo, read at /api/storage/files/{id}; null when it has none or asked to stay anonymous.
+     */
+    organizationLogoFileId?: string | null;
+    /**
+     * The organization's name; null when it asked to stay anonymous.
+     */
+    organizationName?: string | null;
+    problemStatement?: string | null;
+    publishedAt: string;
+    targetUsers?: string | null;
+    technologies: Array<string>;
+    /**
+     * Null when the brief does not say.
+     */
+    timelineMaxWeeks?: number | null;
+    /**
+     * Null when the brief does not say.
+     */
+    timelineMinWeeks?: number | null;
+    title: string;
+};
+
+/**
  * One page of the public list of use cases.
  */
 export type PublicUseCaseList = {
@@ -2520,9 +2975,9 @@ export type PublicUseCaseSummary = {
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
     /**
-     * Proposals close at this instant.
+     * Proposals close at this instant; null for no deadline.
      */
-    closesAt: string;
+    closesAt?: string | null;
     /**
      * The currency of the amounts.
      */
@@ -2534,13 +2989,23 @@ export type PublicUseCaseSummary = {
     id: string;
     industry: string;
     /**
+     * The organization's logo, read at /api/storage/files/{id}; null when it has none or asked to stay anonymous.
+     */
+    organizationLogoFileId?: string | null;
+    /**
      * The organization's name; null when it asked to stay anonymous.
      */
     organizationName?: string | null;
     publishedAt: string;
     technologies: Array<string>;
-    timelineMaxWeeks: number;
-    timelineMinWeeks: number;
+    /**
+     * Null when the brief does not say.
+     */
+    timelineMaxWeeks?: number | null;
+    /**
+     * Null when the brief does not say.
+     */
+    timelineMinWeeks?: number | null;
     title: string;
 };
 
@@ -2630,6 +3095,36 @@ export type ReleaseItem = {
     organizationName: string;
     organizationType: string;
     solutionName: string;
+};
+
+export type ReportedChatModel = {
+    cachedInputPrice?: number | null;
+    /**
+     * Whether the saved provider already has this model.
+     */
+    configured: boolean;
+    contextWindow: number;
+    /**
+     * US dollars per million tokens.
+     */
+    inputPrice?: number | null;
+    maxOutputTokens?: number | null;
+    modelName: string;
+    outputPrice?: number | null;
+    reasoning: boolean;
+    /**
+     * Where the context window came from; none means a default was assumed.
+     */
+    source: 'provider' | 'catalog' | 'none';
+    toolCalling: boolean;
+    vision: boolean;
+};
+
+/**
+ * The models a provider lists, with what it and the bundled catalog know about each.
+ */
+export type ReportedChatModels = {
+    models: Array<ReportedChatModel>;
 };
 
 /**
@@ -2984,6 +3479,60 @@ export type SaveAssessment = {
     scores: {
         [key: string]: number;
     };
+};
+
+/**
+ * A model to enable or correct. Prices are US dollars per million tokens; null is unknown.
+ */
+export type SaveChatModel = {
+    cachedInputPrice?: number | null;
+    contextWindow: number;
+    /**
+     * The name shown; the model name when empty.
+     */
+    displayName?: string | null;
+    inputPrice?: number | null;
+    maxOutputTokens?: number | null;
+    /**
+     * The name the provider knows it by.
+     */
+    modelName: string;
+    outputPrice?: number | null;
+    reasoning: boolean;
+    toolCalling: boolean;
+    /**
+     * The version the model was read at; 0 for a new one.
+     */
+    version: number;
+    vision: boolean;
+};
+
+/**
+ * A chat provider to connect or change. The address is an http or https URL; a saved key is kept only while it is unchanged.
+ */
+export type SaveChatProvider = {
+    /**
+     * One of the adapters the settings list.
+     */
+    adapterType: string;
+    /**
+     * The new key, with key = replace.
+     */
+    apiKey?: string | null;
+    baseUrl: string;
+    /**
+     * A provider switched off keeps its key and its models; no task can use it.
+     */
+    enabled: boolean;
+    /**
+     * Keep the saved key, replace it with apiKey, or remove it. A new provider takes replace.
+     */
+    key: 'keep' | 'replace' | 'remove';
+    name: string;
+    /**
+     * The version the provider was read at; 0 for a new one.
+     */
+    version: number;
 };
 
 /**
@@ -3612,6 +4161,24 @@ export type SetSemanticSearch = {
 };
 
 /**
+ * The model a task uses from now on.
+ */
+export type SetTaskModel = {
+    /**
+     * The model; null leaves the task without one.
+     */
+    modelId?: string | null;
+    /**
+     * How hard to reason; null returns the task to its own default.
+     */
+    reasoningEffort?: 'off' | 'low' | 'medium' | 'high';
+    /**
+     * The version the task was read at.
+     */
+    version: number;
+};
+
+/**
  * The programs a use case belongs to, replacing those it had.
  */
 export type SetUseCasePrograms = {
@@ -4094,6 +4661,10 @@ export type UseCaseAttachment = {
  */
 export type UseCaseOrganization = {
     id: string;
+    /**
+     * Its logo, read at /api/storage/files/{id}; null for none.
+     */
+    logoFileId?: string | null;
     name: string;
 };
 
@@ -4146,6 +4717,342 @@ export type UseCaseRequirement = {
     statement: string;
 };
 
+export type GetChatSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/ai/admin/chat';
+};
+
+export type GetChatSettingsResponses = {
+    /**
+     * The settings, without keys.
+     */
+    200: ChatSettings;
+};
+
+export type GetChatSettingsResponse = GetChatSettingsResponses[keyof GetChatSettingsResponses];
+
+export type RemoveChatModelData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/models/{id}';
+};
+
+export type RemoveChatModelErrors = {
+    /**
+     * There is no such model.
+     */
+    404: Problem;
+};
+
+export type RemoveChatModelError = RemoveChatModelErrors[keyof RemoveChatModelErrors];
+
+export type RemoveChatModelResponses = {
+    /**
+     * The settings left. A task that used the model is unset.
+     */
+    200: ChatSettings;
+};
+
+export type RemoveChatModelResponse = RemoveChatModelResponses[keyof RemoveChatModelResponses];
+
+export type ChangeChatModelData = {
+    body: SaveChatModel;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/models/{id}';
+};
+
+export type ChangeChatModelErrors = {
+    /**
+     * A member is not valid, or the answer limit does not fit the context window.
+     */
+    400: Problem;
+    /**
+     * There is no such model.
+     */
+    404: Problem;
+    /**
+     * The model changed since it was read.
+     */
+    409: Problem;
+};
+
+export type ChangeChatModelError = ChangeChatModelErrors[keyof ChangeChatModelErrors];
+
+export type ChangeChatModelResponses = {
+    /**
+     * The settings, with the change.
+     */
+    200: ChatSettings;
+};
+
+export type ChangeChatModelResponse = ChangeChatModelResponses[keyof ChangeChatModelResponses];
+
+export type TestChatModelData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/models/{id}/test';
+};
+
+export type TestChatModelErrors = {
+    /**
+     * The model's provider is switched off or has no key.
+     */
+    400: Problem;
+    /**
+     * There is no such model.
+     */
+    404: Problem;
+    /**
+     * Too many models are in use at once.
+     */
+    503: Problem;
+};
+
+export type TestChatModelError = TestChatModelErrors[keyof TestChatModelErrors];
+
+export type TestChatModelResponses = {
+    /**
+     * Whether the model answered and how long it took.
+     */
+    200: ChatModelTest;
+};
+
+export type TestChatModelResponse = TestChatModelResponses[keyof TestChatModelResponses];
+
+export type ConnectChatProviderData = {
+    body: SaveChatProvider;
+    path?: never;
+    query?: never;
+    url: '/api/ai/admin/chat/providers';
+};
+
+export type ConnectChatProviderErrors = {
+    /**
+     * A member is not valid, the adapter is unknown, the address is not an http or https URL, or the key is missing.
+     */
+    400: Problem;
+    /**
+     * Another chat provider has this name.
+     */
+    409: Problem;
+    /**
+     * The server has no key to encrypt provider keys.
+     */
+    503: Problem;
+};
+
+export type ConnectChatProviderError = ConnectChatProviderErrors[keyof ConnectChatProviderErrors];
+
+export type ConnectChatProviderResponses = {
+    /**
+     * The settings, with the new provider.
+     */
+    200: ChatSettings;
+};
+
+export type ConnectChatProviderResponse = ConnectChatProviderResponses[keyof ConnectChatProviderResponses];
+
+export type ListReportedChatModelsData = {
+    body: ProbeChatProvider;
+    path?: never;
+    query?: never;
+    url: '/api/ai/admin/chat/providers/reported-models';
+};
+
+export type ListReportedChatModelsErrors = {
+    /**
+     * The adapter is unknown, the address is not valid, no usable key was given, the key was refused, or the answer was not the API's.
+     */
+    400: Problem;
+    /**
+     * The provider could not be reached.
+     */
+    503: Problem;
+};
+
+export type ListReportedChatModelsError = ListReportedChatModelsErrors[keyof ListReportedChatModelsErrors];
+
+export type ListReportedChatModelsResponses = {
+    /**
+     * The models, by name.
+     */
+    200: ReportedChatModels;
+};
+
+export type ListReportedChatModelsResponse = ListReportedChatModelsResponses[keyof ListReportedChatModelsResponses];
+
+export type TestChatProviderData = {
+    body: ProbeChatProvider;
+    path?: never;
+    query?: never;
+    url: '/api/ai/admin/chat/providers/test';
+};
+
+export type TestChatProviderErrors = {
+    /**
+     * The adapter is unknown, the address is not valid, or no usable key was given.
+     */
+    400: Problem;
+};
+
+export type TestChatProviderError = TestChatProviderErrors[keyof TestChatProviderErrors];
+
+export type TestChatProviderResponses = {
+    /**
+     * Whether the provider answered, how many models it listed and how long it took.
+     */
+    200: ChatProviderTest;
+};
+
+export type TestChatProviderResponse = TestChatProviderResponses[keyof TestChatProviderResponses];
+
+export type RemoveChatProviderData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/providers/{id}';
+};
+
+export type RemoveChatProviderErrors = {
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+};
+
+export type RemoveChatProviderError = RemoveChatProviderErrors[keyof RemoveChatProviderErrors];
+
+export type RemoveChatProviderResponses = {
+    /**
+     * The settings left. A task that used one of its models is unset.
+     */
+    200: ChatSettings;
+};
+
+export type RemoveChatProviderResponse = RemoveChatProviderResponses[keyof RemoveChatProviderResponses];
+
+export type ChangeChatProviderData = {
+    body: SaveChatProvider;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/providers/{id}';
+};
+
+export type ChangeChatProviderErrors = {
+    /**
+     * A member is not valid, the adapter is unknown, the address is not valid, or a key is needed.
+     */
+    400: Problem;
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+    /**
+     * The provider changed since it was read, or another one has this name.
+     */
+    409: Problem;
+    /**
+     * The server has no key to encrypt provider keys.
+     */
+    503: Problem;
+};
+
+export type ChangeChatProviderError = ChangeChatProviderErrors[keyof ChangeChatProviderErrors];
+
+export type ChangeChatProviderResponses = {
+    /**
+     * The settings, with the change.
+     */
+    200: ChatSettings;
+};
+
+export type ChangeChatProviderResponse = ChangeChatProviderResponses[keyof ChangeChatProviderResponses];
+
+export type AddChatModelsData = {
+    body: AddChatModels;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/providers/{id}/models';
+};
+
+export type AddChatModelsErrors = {
+    /**
+     * A member is not valid, or an answer limit does not fit its context window.
+     */
+    400: Problem;
+    /**
+     * There is no such provider.
+     */
+    404: Problem;
+    /**
+     * The provider already has one of the models.
+     */
+    409: Problem;
+};
+
+export type AddChatModelsError = AddChatModelsErrors[keyof AddChatModelsErrors];
+
+export type AddChatModelsResponses = {
+    /**
+     * The settings, with the models.
+     */
+    200: ChatSettings;
+};
+
+export type AddChatModelsResponse = AddChatModelsResponses[keyof AddChatModelsResponses];
+
+export type SetTaskModelData = {
+    body: SetTaskModel;
+    path: {
+        task: string;
+    };
+    query?: never;
+    url: '/api/ai/admin/chat/tasks/{task}';
+};
+
+export type SetTaskModelErrors = {
+    /**
+     * A member is not valid, or the model's provider is switched off or has no key.
+     */
+    400: Problem;
+    /**
+     * There is no such task or model.
+     */
+    404: Problem;
+    /**
+     * The task's model changed since it was read.
+     */
+    409: Problem;
+};
+
+export type SetTaskModelError = SetTaskModelErrors[keyof SetTaskModelErrors];
+
+export type SetTaskModelResponses = {
+    /**
+     * The settings, with the choice.
+     */
+    200: ChatSettings;
+};
+
+export type SetTaskModelResponse = SetTaskModelResponses[keyof SetTaskModelResponses];
+
 export type ListAuditEventsData = {
     body?: never;
     path?: never;
@@ -4157,7 +5064,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -4398,6 +5305,221 @@ export type WithdrawOperatorResponses = {
 
 export type WithdrawOperatorResponse = WithdrawOperatorResponses[keyof WithdrawOperatorResponses];
 
+export type GetAppHostsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/identity/admin/app-hosts';
+};
+
+export type GetAppHostsErrors = {
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetAppHostsError = GetAppHostsErrors[keyof GetAppHostsErrors];
+
+export type GetAppHostsResponses = {
+    /**
+     * The reviewed hosts and whether others may connect.
+     */
+    200: AppHosts;
+};
+
+export type GetAppHostsResponse = GetAppHostsResponses[keyof GetAppHostsResponses];
+
+export type AddAppHostData = {
+    body: AppHostRequest;
+    path?: never;
+    query?: never;
+    url: '/api/identity/admin/app-hosts/add';
+};
+
+export type AddAppHostErrors = {
+    /**
+     * It is not a host name.
+     */
+    400: Problem;
+};
+
+export type AddAppHostError = AddAppHostErrors[keyof AddAppHostErrors];
+
+export type AddAppHostResponses = {
+    /**
+     * The host is in the list.
+     */
+    204: void;
+};
+
+export type AddAppHostResponse = AddAppHostResponses[keyof AddAppHostResponses];
+
+export type AllowOtherAppHostsData = {
+    body: AllowOtherHostsRequest;
+    path?: never;
+    query?: never;
+    url: '/api/identity/admin/app-hosts/other-hosts';
+};
+
+export type AllowOtherAppHostsResponses = {
+    /**
+     * Saved.
+     */
+    204: void;
+};
+
+export type AllowOtherAppHostsResponse = AllowOtherAppHostsResponses[keyof AllowOtherAppHostsResponses];
+
+export type RemoveAppHostData = {
+    body: AppHostRequest;
+    path?: never;
+    query?: never;
+    url: '/api/identity/admin/app-hosts/remove';
+};
+
+export type RemoveAppHostErrors = {
+    /**
+     * The host is not in the list.
+     */
+    404: Problem;
+};
+
+export type RemoveAppHostError = RemoveAppHostErrors[keyof RemoveAppHostErrors];
+
+export type RemoveAppHostResponses = {
+    /**
+     * The host is no longer reviewed.
+     */
+    204: void;
+};
+
+export type RemoveAppHostResponse = RemoveAppHostResponses[keyof RemoveAppHostResponses];
+
+export type ListEveryConnectedAppData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/identity/admin/apps';
+};
+
+export type ListEveryConnectedAppErrors = {
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListEveryConnectedAppError = ListEveryConnectedAppErrors[keyof ListEveryConnectedAppErrors];
+
+export type ListEveryConnectedAppResponses = {
+    /**
+     * The connections, the latest used first.
+     */
+    200: Array<PersonConnectedApp>;
+};
+
+export type ListEveryConnectedAppResponse = ListEveryConnectedAppResponses[keyof ListEveryConnectedAppResponses];
+
+export type RevokePersonsAppData = {
+    body?: never;
+    path: {
+        accountId: string;
+        id: string;
+    };
+    query?: never;
+    url: '/api/identity/admin/apps/{accountId}/{id}/revoke';
+};
+
+export type RevokePersonsAppErrors = {
+    /**
+     * That person has not connected that app.
+     */
+    404: Problem;
+};
+
+export type RevokePersonsAppError = RevokePersonsAppErrors[keyof RevokePersonsAppErrors];
+
+export type RevokePersonsAppResponses = {
+    /**
+     * Revoked.
+     */
+    204: void;
+};
+
+export type RevokePersonsAppResponse = RevokePersonsAppResponses[keyof RevokePersonsAppResponses];
+
+export type ListConnectedAppsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/identity/apps';
+};
+
+export type ListConnectedAppsResponses = {
+    /**
+     * The apps, the latest used first.
+     */
+    200: Array<ConnectedApp>;
+};
+
+export type ListConnectedAppsResponse = ListConnectedAppsResponses[keyof ListConnectedAppsResponses];
+
+export type GetConnectingAppData = {
+    body?: never;
+    path?: never;
+    query: {
+        clientId: string;
+        state: string;
+    };
+    url: '/api/identity/apps/connecting';
+};
+
+export type GetConnectingAppErrors = {
+    /**
+     * No request of the caller's waits with this app and state.
+     */
+    404: Problem;
+};
+
+export type GetConnectingAppError = GetConnectingAppErrors[keyof GetConnectingAppErrors];
+
+export type GetConnectingAppResponses = {
+    /**
+     * The app the consent page shows.
+     */
+    200: ConnectingApp;
+};
+
+export type GetConnectingAppResponse = GetConnectingAppResponses[keyof GetConnectingAppResponses];
+
+export type RevokeConnectedAppData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/identity/apps/{id}/revoke';
+};
+
+export type RevokeConnectedAppErrors = {
+    /**
+     * The caller has not connected this app.
+     */
+    404: Problem;
+};
+
+export type RevokeConnectedAppError = RevokeConnectedAppErrors[keyof RevokeConnectedAppErrors];
+
+export type RevokeConnectedAppResponses = {
+    /**
+     * The app can no longer call BeyondPilot.
+     */
+    204: void;
+};
+
+export type RevokeConnectedAppResponse = RevokeConnectedAppResponses[keyof RevokeConnectedAppResponses];
+
 export type GetMeData = {
     body?: never;
     path?: never;
@@ -4426,6 +5548,39 @@ export type GetMeResponses = {
 };
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type UpdateMyContactData = {
+    body: ContactRequest;
+    path?: never;
+    query?: never;
+    url: '/api/identity/me/contact';
+};
+
+export type UpdateMyContactErrors = {
+    /**
+     * The country or the number is not written as asked.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The account has been disabled.
+     */
+    403: Problem;
+};
+
+export type UpdateMyContactError = UpdateMyContactErrors[keyof UpdateMyContactErrors];
+
+export type UpdateMyContactResponses = {
+    /**
+     * The account as it is now.
+     */
+    200: Me;
+};
+
+export type UpdateMyContactResponse = UpdateMyContactResponses[keyof UpdateMyContactResponses];
 
 export type ListAdminIntroductionsData = {
     body?: never;
@@ -4624,6 +5779,125 @@ export type ReplyToIntroductionResponses = {
 };
 
 export type ReplyToIntroductionResponse = ReplyToIntroductionResponses[keyof ReplyToIntroductionResponses];
+
+export type ListMcpCallsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Only calls made at or after this instant.
+         */
+        from?: string;
+        /**
+         * Only calls of the app with this client id.
+         */
+        app?: string | null;
+        /**
+         * Only calls to this tool.
+         */
+        tool?: string | null;
+        /**
+         * Only calls that ended this way.
+         */
+        outcome?: 'ok' | 'refused' | 'failed';
+        /**
+         * Only calls of people whose name or address contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/mcp/admin/calls';
+};
+
+export type ListMcpCallsErrors = {
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListMcpCallsError = ListMcpCallsErrors[keyof ListMcpCallsErrors];
+
+export type ListMcpCallsResponses = {
+    /**
+     * One page of calls, newest first.
+     */
+    200: McpCallList;
+};
+
+export type ListMcpCallsResponse = ListMcpCallsResponses[keyof ListMcpCallsResponses];
+
+export type GetMcpSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/mcp/admin/settings';
+};
+
+export type GetMcpSettingsErrors = {
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetMcpSettingsError = GetMcpSettingsErrors[keyof GetMcpSettingsErrors];
+
+export type GetMcpSettingsResponses = {
+    /**
+     * The settings.
+     */
+    200: McpSettings;
+};
+
+export type GetMcpSettingsResponse = GetMcpSettingsResponses[keyof GetMcpSettingsResponses];
+
+export type SwitchMcpToolData = {
+    body: McpSwitchRequest;
+    path: {
+        server: string;
+        tool: string;
+    };
+    query?: never;
+    url: '/api/mcp/admin/tools/{server}/{tool}';
+};
+
+export type SwitchMcpToolErrors = {
+    /**
+     * That server has no such tool.
+     */
+    404: Problem;
+};
+
+export type SwitchMcpToolError = SwitchMcpToolErrors[keyof SwitchMcpToolErrors];
+
+export type SwitchMcpToolResponses = {
+    /**
+     * Saved.
+     */
+    204: void;
+};
+
+export type SwitchMcpToolResponse = SwitchMcpToolResponses[keyof SwitchMcpToolResponses];
+
+export type SwitchMcpUserServerData = {
+    body: McpSwitchRequest;
+    path?: never;
+    query?: never;
+    url: '/api/mcp/admin/user-server';
+};
+
+export type SwitchMcpUserServerResponses = {
+    /**
+     * Saved.
+     */
+    204: void;
+};
+
+export type SwitchMcpUserServerResponse = SwitchMcpUserServerResponses[keyof SwitchMcpUserServerResponses];
 
 export type ListEmailMessagesData = {
     body?: never;
@@ -7416,6 +8690,41 @@ export type ListReviewApplicationsResponses = {
 };
 
 export type ListReviewApplicationsResponse = ListReviewApplicationsResponses[keyof ListReviewApplicationsResponses];
+
+export type ExportReviewApplicationsData = {
+    body: ExportApplicationsRequest;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/applications/export';
+};
+
+export type ExportReviewApplicationsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+};
+
+export type ExportReviewApplicationsError = ExportReviewApplicationsErrors[keyof ExportReviewApplicationsErrors];
+
+export type ExportReviewApplicationsResponses = {
+    /**
+     * One row for each application, with its applicant's contact details, decision and scores. The download is recorded.
+     */
+    200: string;
+};
+
+export type ExportReviewApplicationsResponse = ExportReviewApplicationsResponses[keyof ExportReviewApplicationsResponses];
 
 export type GetReviewCriteriaData = {
     body?: never;
@@ -10338,9 +11647,9 @@ export type ListUseCasesData = {
          */
         q?: string | null;
         /**
-         * Only use cases of this industry.
+         * Only use cases of these industries.
          */
-        industry?: string | null;
+        industry?: Array<string> | null;
         /**
          * The order: the most recently published first, the nearest deadline first, or the largest budget first.
          */
@@ -10374,3 +11683,30 @@ export type ListUseCasesResponses = {
 };
 
 export type ListUseCasesResponse = ListUseCasesResponses[keyof ListUseCasesResponses];
+
+export type GetUseCaseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/use-cases/{id}';
+};
+
+export type GetUseCaseErrors = {
+    /**
+     * No published use case has this identifier, or it has closed.
+     */
+    404: Problem;
+};
+
+export type GetUseCaseError = GetUseCaseErrors[keyof GetUseCaseErrors];
+
+export type GetUseCaseResponses = {
+    /**
+     * The use case.
+     */
+    200: PublicUseCase;
+};
+
+export type GetUseCaseResponse = GetUseCaseResponses[keyof GetUseCaseResponses];

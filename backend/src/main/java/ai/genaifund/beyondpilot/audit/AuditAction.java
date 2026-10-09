@@ -98,6 +98,13 @@ public enum AuditAction {
 	SOLUTION_DEPLOYMENT_REJECT("solution.deployment_reject", "reason"),
 
 	/**
+	 * Empty parts of a solution and its organization were filled from public sources: its deck, its website or a web
+	 * search. {@code fields} names the parts filled; {@code evidence} is a JSON object giving, for each, the verbatim
+	 * quote and the source it was found in. Recorded by the one-off enrichment of the old platform's records.
+	 */
+	SOLUTION_ENRICH("solution.enrich", "fields", "evidence"),
+
+	/**
 	 * An operator created a use case for an organization. {@code organization} is that organization's identifier,
 	 * {@code status} is {@code draft} or {@code published}.
 	 */
@@ -158,6 +165,18 @@ public enum AuditAction {
 	/** An operator released a program's outcomes. The counts are how many applicants each group had. */
 	PROPOSAL_RELEASE("proposal.release", "shortlisted", "not_selected"),
 
+	/**
+	 * An operator or a judge opened a file of a submitted application. {@code application} and {@code file} are their
+	 * identifiers.
+	 */
+	PROPOSAL_FILE_OPEN("proposal.file_open", "application", "file"),
+
+	/**
+	 * An operator downloaded a program's applications, with their applicants' contact details. {@code count} is how
+	 * many applications the download holds.
+	 */
+	PROPOSAL_EXPORT("proposal.export", "count"),
+
 	/** An operator changed who delivers email or as whom. {@code provider} is the provider chosen. */
 	EMAIL_SETTINGS_UPDATE("email.settings_update", "provider"),
 
@@ -185,13 +204,30 @@ public enum AuditAction {
 	 */
 	EMAIL_TEST_SEND("email.test_send", "subject"),
 
-	/** An operator connected an AI provider. {@code vendor} is {@code openai} or {@code openrouter}. */
+	/**
+	 * An operator connected an AI provider. {@code vendor} is the vendor of an embedding provider ({@code openai},
+	 * {@code openrouter}) or the adapter of a chat provider ({@code openai}, {@code anthropic}).
+	 */
 	AI_PROVIDER_CREATE("ai.provider_create", "vendor"),
 
 	/** An operator changed an AI provider. {@code key} is {@code kept}, {@code replaced} or {@code removed}. */
 	AI_PROVIDER_UPDATE("ai.provider_update", "vendor", "key"),
 
 	AI_PROVIDER_DELETE("ai.provider_delete"),
+
+	/** An operator enabled a model of a chat provider. {@code provider} is the provider's name. */
+	AI_MODEL_ADD("ai.model_add", "provider"),
+
+	/** An operator corrected a model's limits, capabilities or prices. */
+	AI_MODEL_UPDATE("ai.model_update", "provider"),
+
+	AI_MODEL_REMOVE("ai.model_remove", "provider"),
+
+	/**
+	 * An operator chose the model a task uses. {@code model} is the model's name or {@code none}, {@code reasoning}
+	 * the level: {@code off}, {@code low}, {@code medium} or {@code high}.
+	 */
+	AI_TASK_MODEL_CHANGE("ai.task_model_change", "model", "reasoning"),
 
 	/** An operator chose the provider and model search embeds with. {@code model} is the model. */
 	SEARCH_MODEL_CHANGE("search.model_change", "model"),
@@ -205,7 +241,33 @@ public enum AuditAction {
 	SEARCH_INDEX_REBUILD("search.index_rebuild"),
 
 	/** An operator let held-back items be embedded again at once. {@code count} is how many. */
-	SEARCH_EMBEDDING_RETRY("search.embedding_retry", "count");
+	SEARCH_EMBEDDING_RETRY("search.embedding_retry", "count"),
+
+	/** A person, or an operator for them, ended an AI app's connection to the MCP servers. */
+	MCP_APP_REVOKE("mcp.app_revoke"),
+
+	/** An operator marked a host's apps as reviewed: they connect without a Not reviewed label. */
+	MCP_HOST_ADD("mcp.host_add"),
+
+	MCP_HOST_REMOVE("mcp.host_remove"),
+
+	/** An operator let apps of hosts not reviewed connect, labelled Not reviewed. */
+	MCP_OTHER_HOSTS_ALLOW("mcp.other_hosts_allow"),
+
+	/** An operator stopped apps of hosts not reviewed from connecting. */
+	MCP_OTHER_HOSTS_REFUSE("mcp.other_hosts_refuse"),
+
+	/** An operator turned the user MCP server on. */
+	MCP_USER_SERVER_ENABLE("mcp.user_server_enable"),
+
+	/** An operator turned the user MCP server off: it answers 404. */
+	MCP_USER_SERVER_DISABLE("mcp.user_server_disable"),
+
+	/** An operator turned a tool of an MCP server on; the resource is {@code server.tool}. */
+	MCP_TOOL_ENABLE("mcp.tool_enable"),
+
+	/** An operator turned a tool of an MCP server off; the resource is {@code server.tool}. */
+	MCP_TOOL_DISABLE("mcp.tool_disable");
 
 	private final String value;
 

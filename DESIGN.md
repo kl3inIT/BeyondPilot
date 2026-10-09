@@ -180,6 +180,12 @@ A cool azure system with a sky light, three directory accents and the status rol
 
 - **Success**, **Warning**, **Danger**: Live, Upcoming, Closed and destructive actions; always with a word.
 
+### Logo
+
+- The logo is GenAI Fund's approved kit, used as supplied: a purple tile (`#633ADB`) with a white B and a small GenAI Fund accent, beside a heavy wordmark, charcoal by day (`beyondpilot-logo.svg`) and white at night (`beyondpilot-logo-dark.svg`). Never recoloured, stretched, shadowed or given a gradient; its file carries its own clear space.
+- Wherever the icon is drawn small (the browser tab, the admin sidebar, the consent screen) it is the small-size form without the accent (`beyondpilot-icon.svg`).
+- The logo's purple belongs to the logo. It is not a token and colours nothing else in the interface.
+
 ### Named Rules
 
 **The One Azure Rule.** Each view has one primary (Azure-filled) action; everything else is secondary, tertiary or a link.
@@ -207,13 +213,14 @@ A 1312px column with 64px gutters on desktop, 32px on tablet (1024) and 20px on 
 
 ### Landing structure
 
-1. Header.
-2. Hero: live campaign chip, display headline, lead, search with scope chips; real cards float around it (demo-day photo, next meetup, a founder, a partner logo).
-3. Programs and events: one azure timeline with three stops. **Open now** holds the live campaign card with its countdown, key dates and actions; **Coming up** shows each recurring event once with its next dates as tiles; **Done** shows past programs as cover cards.
-4. Explore the directory: underline tabs with counts and a three-card cover grid; "Publish a use case →" beside the heading.
-5. The network behind every program: one panel per role (enterprises, technology partners, government and institutions, investors and community, the press), each organisation's logo in its own colours straight on the panel. A logo's height follows its shape, so a long wordmark sits lower than a stacked mark. At night the logos turn to one light ink.
-6. Founders: one compact row.
-7. FAQ, then the footer.
+1. Header: five destinations (AI Solutions, AI Talent, Use Cases & Projects, Events & Programs, How It Works), the language menu, Sign in and Get started (the ink-coloured `inverse` action).
+2. Hero: live-challenge pill, eyebrow, display headline whose second line takes the azure-to-violet gradient, lead, one search, the two actions and "Backed by GenAI Fund", beside a real screenshot of the search results, on the aurora (`aurora-*` tokens).
+3. Ecosystem strip: a compact row of enterprise logos from GenAI Fund programs, never labelled as customers.
+4. Five ways to explore: photo cards for solutions, talent, use cases, events and programs.
+5. How it works: three steps on sky, lilac and peach tints.
+6. Featured opportunity: the live challenge card, a deep-to-bright azure panel (`panel-*` tokens) beside its facts and actions.
+7. Core team and GenAI Fund backing, then the ecosystem founders as a separate muted section.
+8. FAQ, the final call to action on the aurora tints, then the footer.
 
 ## Elevation & Depth
 
@@ -271,7 +278,7 @@ Underline tabs with a kind icon and a count; the active tab is ink with a 2px in
 
 ### Don't:
 
-- **Don't** use purple or indigo anywhere.
+- **Don't** use purple or indigo anywhere in the interface; the logo's purple stays inside the logo.
 - **Don't** invent statistics, testimonials, people or notification cards, and don't add "announcement" sparkle pills.
 - **Don't** spread the sky glow beyond the hero, the arc and the live campaign cover.
 - **Don't** fade in a page's main heading from invisible: it rises without fading, because browsers skip an invisible element when they measure the largest paint.

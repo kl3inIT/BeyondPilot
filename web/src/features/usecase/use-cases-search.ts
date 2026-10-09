@@ -1,4 +1,10 @@
-import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import {
+  createLoader,
+  parseAsArrayOf,
+  parseAsInteger,
+  parseAsString,
+  parseAsStringLiteral,
+} from "nuqs/server";
 
 import { useCaseIndustries } from "./admin-use-case-codes";
 
@@ -11,7 +17,7 @@ export const useCaseSorts = ["newest", "deadline", "budget"] as const;
  */
 export const useCasesSearch = {
   q: parseAsString.withDefault(""),
-  industry: parseAsStringLiteral(useCaseIndustries),
+  industry: parseAsArrayOf(parseAsStringLiteral(useCaseIndustries)).withDefault([]),
   sort: parseAsStringLiteral(useCaseSorts).withDefault("newest"),
   page: parseAsInteger.withDefault(1),
 };

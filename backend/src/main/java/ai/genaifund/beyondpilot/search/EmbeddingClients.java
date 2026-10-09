@@ -4,8 +4,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import ai.genaifund.beyondpilot.search.persistence.AiProvider;
-import ai.genaifund.beyondpilot.search.persistence.AiProviderRepository;
+import ai.genaifund.beyondpilot.ai.AiConnection;
+import ai.genaifund.beyondpilot.ai.AiProviders;
 import ai.genaifund.beyondpilot.search.persistence.SearchSettings;
 import ai.genaifund.beyondpilot.search.persistence.SearchSettingsRepository;
 import org.jspecify.annotations.Nullable;
@@ -22,19 +22,15 @@ class EmbeddingClients {
 
 	private final SearchSettingsRepository settings;
 
-	private final AiProviderRepository providers;
-
-	private final ProviderKeys keys;
+	private final AiProviders providers;
 
 	private final OpenAiEmbeddings openAi;
 
 	private volatile @Nullable Snapshot snapshot;
 
-	EmbeddingClients(SearchSettingsRepository settings, AiProviderRepository providers, ProviderKeys keys,
-			OpenAiEmbeddings openAi) {
+	EmbeddingClients(SearchSettingsRepository settings, AiProviders providers, OpenAiEmbeddings openAi) {
 		this.settings = settings;
 		this.providers = providers;
-		this.keys = keys;
 		this.openAi = openAi;
 	}
 
@@ -56,11 +52,10 @@ class EmbeddingClients {
 		String model = row.getModel();
 		Active active = null;
 		if (providerId != null && model != null) {
-			AiProvider provider = providers.findById(providerId).orElse(null);
-			String key = provider == null ? null : keys.open(provider.getApiKey()).orElse(null);
-			if (provider != null && key != null) {
-				active = new Active(provider.getId(), provider.getName(), model,
-						openAi.connect(provider.getBaseUrl(), key, model));
+			AiConnection connection = providers.connection(AiProviders.EMBEDDING, providerId).orElse(null);
+			if (connection != null) {
+				active = new Active(connection.providerId(), connection.name(), model,
+						openAi.connect(connection.baseUrl(), connection.apiKey(), model));
 			}
 		}
 		snapshot = new Snapshot(row.isSemanticEnabled(), active);

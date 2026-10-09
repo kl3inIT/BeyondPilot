@@ -17,6 +17,9 @@ public enum ProposalErrorCode implements ErrorCode {
 	LOCKED("PROPOSAL_LOCKED", ErrorCategory.CONFLICT,
 			"This application was submitted, and this program does not take changes after submission."),
 
+	WITHDRAWN_FOR_GOOD("PROPOSAL_WITHDRAWN_FOR_GOOD", ErrorCategory.CONFLICT,
+			"This application was withdrawn, and this program takes no changes after submission, so it cannot be submitted again."),
+
 	CHANGED_MEANWHILE("PROPOSAL_CHANGED_MEANWHILE", ErrorCategory.CONFLICT,
 			"This application was saved somewhere else in the meantime. Reload it and make your changes again."),
 
@@ -30,7 +33,7 @@ public enum ProposalErrorCode implements ErrorCode {
 			"Someone in your organization has already applied to this program."),
 
 	CONTACT_INCOMPLETE("PROPOSAL_CONTACT_INCOMPLETE", ErrorCategory.VALIDATION,
-			"Add your first and last name, your phone number, your country and your LinkedIn profile."),
+			"Add your first and last name, your phone number and your country."),
 
 	TEAM_BACKGROUND_REQUIRED("PROPOSAL_TEAM_BACKGROUND_REQUIRED", ErrorCategory.VALIDATION,
 			"Describe your team's background."),

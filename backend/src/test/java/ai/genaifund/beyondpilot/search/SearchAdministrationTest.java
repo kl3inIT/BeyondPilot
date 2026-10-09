@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -52,7 +53,7 @@ class SearchAdministrationTest {
 	static void encryptionKey(DynamicPropertyRegistry registry) {
 		byte[] key = new byte[32];
 		new SecureRandom().nextBytes(key);
-		registry.add("beyondpilot.search.embedding.encryption-key", () -> Base64.getEncoder().encodeToString(key));
+		registry.add("beyondpilot.ai.encryption-key", () -> Base64.getEncoder().encodeToString(key));
 	}
 
 	@LocalServerPort
@@ -77,7 +78,7 @@ class SearchAdministrationTest {
 			.update();
 		jdbc.sql("delete from ai_provider").update();
 		clients.reload();
-		client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+		client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory()).baseUrl("http://localhost:" + port).build();
 		operator = TestSignIn.session(client, mail, "operator@ai.test");
 	}
 

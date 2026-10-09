@@ -22,7 +22,7 @@ class ProviderSignInFailureHandler extends SimpleUrlAuthenticationFailureHandler
 
 	private static final Logger LOG = LoggerFactory.getLogger(ProviderSignInFailureHandler.class);
 
-	private static final Pattern ERROR_CODE = Pattern.compile("[a-z_]{1,64}");
+	private static final Pattern ERROR_CODE = Pattern.compile("[A-Za-z_]{1,64}");
 
 	private final String method;
 

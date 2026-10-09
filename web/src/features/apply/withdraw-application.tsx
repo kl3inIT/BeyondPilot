@@ -12,9 +12,18 @@ import { withdrawApplication } from "@/lib/api/generated";
 
 /**
  * Withdraws a submitted application after the applicant confirms. It can be changed and submitted
- * again while the program still takes applications.
+ * again while the program still takes applications, unless the program takes no changes after
+ * submission: then the withdrawal is final, and the question says so.
  */
-function WithdrawApplication({ id, program }: { id: string; program: string }) {
+function WithdrawApplication({
+  id,
+  program,
+  final,
+}: {
+  id: string;
+  program: string;
+  final: boolean;
+}) {
   const t = useTranslations("Application.withdraw");
   const notify = useNotify();
   const router = useRouter();
@@ -49,7 +58,7 @@ function WithdrawApplication({ id, program }: { id: string; program: string }) {
           open
           onOpenChange={(open) => !open && setAsking(false)}
           title={t("title", { program })}
-          description={t("lead")}
+          description={final ? t("leadFinal") : t("lead")}
           confirmLabel={t("confirm")}
           cancelLabel={t("cancel")}
           tone="danger"

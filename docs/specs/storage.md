@@ -48,16 +48,16 @@ Rules on the table:
 `FilePurpose` fixes, for each purpose, the media types accepted, whether only an operator may upload, and whether
 anyone may read the stored file. The largest size is a property of `StorageProperties`.
 
-| Purpose               | Media types                      | Largest size (property, default)     | Who may upload     | Read at the public address |
-| --------------------- | -------------------------------- | ------------------------------------ | ------------------ | -------------------------- |
-| `program_image`       | PNG, JPEG, WebP                  | `program-image-max-size`, 5MB        | An operator        | Yes                        |
-| `talent_photo`        | PNG, JPEG, WebP                  | `talent-photo-max-size`, 2MB         | Any active account | Yes                        |
-| `organization_logo`   | PNG, JPEG, WebP                  | `organization-logo-max-size`, 5MB    | Any active account | Yes                        |
-| `solution_logo`       | PNG, JPEG, WebP                  | `solution-logo-max-size`, 2MB        | Any active account | Yes                        |
-| `solution_image`      | PNG, JPEG, WebP                  | `solution-image-max-size`, 5MB       | Any active account | Yes                        |
-| `application_file`    | PDF                              | `application-file-max-size`, 25MB    | Any active account | No                         |
-| `solution_deck`       | PDF                              | `solution-deck-max-size`, 25MB       | Any active account | No                         |
-| `use_case_attachment` | PDF, PNG, JPEG, DOCX, XLSX, PPTX | `use-case-attachment-max-size`, 25MB | Any active account | No                         |
+| Purpose               | Media types                                                            | Largest size (property, default)     | Who may upload     | Read at the public address |
+| --------------------- | ---------------------------------------------------------------------- | ------------------------------------ | ------------------ | -------------------------- |
+| `program_image`       | PNG, JPEG, WebP                                                        | `program-image-max-size`, 5MB        | An operator        | Yes                        |
+| `talent_photo`        | PNG, JPEG, WebP                                                        | `talent-photo-max-size`, 2MB         | Any active account | Yes                        |
+| `organization_logo`   | PNG, JPEG, WebP                                                        | `organization-logo-max-size`, 5MB    | Any active account | Yes                        |
+| `solution_logo`       | PNG, JPEG, WebP                                                        | `solution-logo-max-size`, 2MB        | Any active account | Yes                        |
+| `solution_image`      | PNG, JPEG, WebP                                                        | `solution-image-max-size`, 5MB       | Any active account | Yes                        |
+| `application_file`    | PDF                                                                    | `application-file-max-size`, 25MB    | Any active account | No                         |
+| `solution_deck`       | PDF                                                                    | `solution-deck-max-size`, 25MB       | Any active account | No                         |
+| `use_case_attachment` | PDF, PNG, JPEG, WebP, DOCX, XLSX, PPTX, DOC, XLS, PPT, CSV, plain text | `use-case-attachment-max-size`, 25MB | Any active account | No                         |
 
 The properties sit under `beyondpilot.storage`. SVG is in no list. Who may attach a file of a purpose to a record
 (an owner of the organization, a member of it) is checked by the module that owns the record, not here.
@@ -117,11 +117,12 @@ answers `404` for a file in S3.
 
 - **Caller.** Only the uploader; anyone else gets `STORAGE_FILE_NOT_FOUND` (`404`).
 - **Nothing sent.** No object under the key: `STORAGE_UPLOAD_MISSING` (`409`).
-- **Content check.** The object's size must equal the announced size, and its first 12 bytes must start as the
-  media type does: `%PDF-` for PDF, and the PNG, JPEG and WebP (`RIFF` … `WEBP`) signatures. Otherwise the object is
+- **Content check.** The object's size must equal the announced size, and its first 512 bytes must be what the
+  media type is: `%PDF-` for PDF; the PNG, JPEG and WebP (`RIFF` … `WEBP`) signatures; the ZIP signature `PK\x03\x04`
+  for DOCX, XLSX and PPTX; the OLE signature `D0 CF 11 E0 A1 B1 1A E1` for DOC, XLS and PPT; and for CSV and plain
+  text, no control character but tab, line feed, form feed and carriage return. `application/vnd.ms-excel` is taken
+  as either an XLS or a CSV, since browsers on Windows announce a CSV file as Excel's. Otherwise the object is
   deleted, the row stays `pending`, and the answer is `STORAGE_CONTENT_MISMATCH` (`400`).
-- **Other types.** `StorageService.startsAs` recognises only those four types. Any other accepted type, which today
-  means the DOCX, XLSX and PPTX of `use_case_attachment`, fails this check, so such a file cannot be confirmed.
 - **Stored.** The row becomes `stored`, `stored_at` is set, the token hash is cleared, and `storage.file.stored` is
   logged with `file_id`, `purpose`, `provider` and `size_bytes`.
 - **Repeat.** Confirming a stored file changes nothing and answers `200` again. Confirm does not look at the
@@ -192,9 +193,11 @@ Under `beyondpilot.storage`:
 
 ## Pending files
 
-No task removes pending files. A file that is reserved and never confirmed keeps its row, and any bytes that were
-sent stay in the store. V3 adds the partial index `storage_file_pending_idx` on `upload_expires_at` for pending rows,
-which no code reads yet.
+`AbandonedUploads` runs every night at 03:45 Vietnam time and removes each file still `pending` a day after its
+`upload_expires_at`: its row, then any bytes that were sent. Each file is removed on its own, so one that fails (a row
+another module still points at, or bytes the store would not delete) is kept, logged as
+`storage.abandoned_upload.kept`, and tried again the next night. A stored file is never touched. The query uses the
+partial index `storage_file_pending_idx` (V3).
 
 ## Failures
 

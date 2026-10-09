@@ -63,6 +63,14 @@
   --peach-foreground: #9a4b0c;
   --rose: #fde3ea;
   --rose-foreground: #a81e47;
+  /* The featured challenge panel (Figma "Challenge photo"): a deep to bright azure. */
+  --panel-deep: #004085;
+  --panel-bright: #0a80e0;
+  --panel-foreground: #ffffff;
+  /* The hero aurora (Figma "Aurora"): three soft lights, azure, sky and peach. */
+  --aurora-azure: #5cc7fa;
+  --aurora-sky: #b3e0fb;
+  --aurora-peach: #ffc29e;
   /* Colour of every shadow (the shadow-* elevations in app/globals.css): ink by day. */
   --elevation: oklch(0.219 0.043 253.881);
 }
@@ -121,5 +129,11 @@
   --peach-foreground: #fdeada;
   --rose: #47162a;
   --rose-foreground: #fde3ea;
+  --panel-deep: #00305f;
+  --panel-bright: #0a62ad;
+  --panel-foreground: #ffffff;
+  --aurora-azure: #1b5f86;
+  --aurora-sky: #17466b;
+  --aurora-peach: #7a4527;
   --elevation: oklch(0.12 0.02 256);
 }

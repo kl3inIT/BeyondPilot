@@ -20,7 +20,9 @@ public record MyApplicationResponse(@Schema(requiredMode = Schema.RequiredMode.R
 		@Schema(types = { "string", "null" }, allowableValues = { "shortlisted", "not_selected" },
 				description = "GenAI Fund's decision, once the program's outcomes are released; null until then.") @Nullable String outcome,
 		@Schema(types = { "object", "null" },
-				description = "The program's first key date after the outcome, such as a demo day; null when it has none.") @Nullable NextStep next) {
+				description = "The program's first key date after the outcome, such as a demo day; null when it has none.") @Nullable NextStep next,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "Whether the program takes changes after submission; where it does not, a withdrawal is final.") boolean allowUpdatesUntilClose) {
 
 	@Schema(name = "ApplicationNextStep")
 	public record NextStep(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String title,

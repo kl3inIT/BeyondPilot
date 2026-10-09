@@ -47,7 +47,7 @@ flock --nonblock 9 || fail "another deployment holds the lock"
 [[ "$(stat --format '%u %a' "$env_file")" == "0 600" ]] || fail "$env_file must be owned by root with mode 0600"
 
 # Compose mounts these into the containers; a missing one would stop the rollout halfway.
-for secret in database-password google-client-secret notification-encryption-key ai-encryption-key; do
+for secret in database-password google-client-secret notification-encryption-key ai-encryption-key mcp-signing-key; do
     [[ -s "$root/secrets/$secret" ]] || fail "secret file $root/secrets/$secret is missing or empty"
 done
 

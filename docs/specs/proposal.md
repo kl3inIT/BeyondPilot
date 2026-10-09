@@ -93,7 +93,7 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 | Check                                                                              | Code                                |
 | ---------------------------------------------------------------------------------- | ----------------------------------- |
 | The caller belongs to an organization                                              | `PROPOSAL_ORGANIZATION_REQUIRED`    |
-| First and last name, phone, country and LinkedIn are filled                        | `PROPOSAL_CONTACT_INCOMPLETE`       |
+| First and last name, phone and country are filled; a LinkedIn profile is optional  | `PROPOSAL_CONTACT_INCOMPLETE`       |
 | A team background, unless the organization is an `independent_builder`             | `PROPOSAL_TEAM_BACKGROUND_REQUIRED` |
 | A solution is chosen                                                               | `PROPOSAL_SOLUTION_REQUIRED`        |
 | It is the organization's                                                           | `PROPOSAL_SOLUTION_NOT_FOUND`       |
@@ -107,6 +107,9 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   website, team background), the solution (id, name, summary, problems solved, maturity), the materials (deck,
   built-with, traction) and each answer with its question's label and kind, and the file for a file answer. A later
   change to a profile leaves the snapshot as it was.
+- **The account keeps the country and the phone number.** A submission passes them to
+  `IdentityService.reachAtIfUnknown`, which fills the ones the account does not hold yet, so the next form starts
+  from them.
 - **Event and email.** It publishes `ProposalSubmitted`; `SubmissionMail` queues the applicant's copy in the same
   transaction, so none leaves for a submission that rolled back. The copy names the close when the program allows
   updates until then.
@@ -117,7 +120,10 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 ### Withdrawing
 
 - **Only a submitted application**, before the close (`PROPOSAL_NOT_SUBMITTED`, `PROPOSAL_CLOSED`). It becomes
-  `withdrawn` and can be saved and submitted again while the window is open.
+  `withdrawn` and can be saved and submitted again while the window is open, when the program sets
+  `allowUpdatesUntilClose`. Otherwise the withdrawal is final: a save or a submission of the withdrawn application is
+  refused with `PROPOSAL_WITHDRAWN_FOR_GOOD`, since withdrawing and submitting again would be a change by another
+  name. My applications carries `allowUpdatesUntilClose` so the applicant is told before and after.
 - **A withdrawal returns the decision to under review.** When `review_status` is not `under_review`, a
   `proposal_review_decision` row is appended from that decision to `under_review`, with the applicant's account and
   the reason "The applicant withdrew the application.", and the status is reset. The history keeps the earlier
@@ -221,8 +227,8 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   their averages, counts the withdrawals, and says whether the release is `ready`: not released, closed, every
   application decided and at least one submitted. Before the release it offers starting emails in the program's
   words; after, the emails that were sent.
-- **Release.** `POST …/release` is refused with `PROPOSAL_OUTCOMES_NOT_READY` before the close or while a submitted
-  application is `under_review`, and with `PROPOSAL_RELEASED` once released. It stores the two subjects (at most 200
+- **Release.** `POST …/release` is refused with `PROPOSAL_OUTCOMES_NOT_READY` before the close, when nothing was
+  submitted, or while a submitted application is `under_review`, and with `PROPOSAL_RELEASED` once released. It stores the two subjects (at most 200
   characters) and messages (at most 5000) once in `proposal_release`.
 - **Emails per applicant.** For each submitted application the group's subject and message are filled in, replacing
   `{organization}` and `{solution}` with the names in the last snapshot. `OutcomesReleased` carries them, and
@@ -232,8 +238,8 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 
 ## Audit
 
-Operator acts are recorded through `AuditTrail` with the operator as actor and the program as resource (type
-`program`); see [ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md).
+Operator acts, and a file opened by an operator or a judge, are recorded through `AuditTrail` with that person as
+actor and the program as resource (type `program`); see [ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md).
 
 | Action                     | When                                       | Details                       |
 | -------------------------- | ------------------------------------------ | ----------------------------- |
@@ -242,6 +248,18 @@ Operator acts are recorded through `AuditTrail` with the operator as actor and t
 | `proposal.reviewer_remove` | A judge removed                            | `email`                       |
 | `proposal.decide`          | One per application whose decision changed | `decision`                    |
 | `proposal.release`         | Outcomes released                          | `shortlisted`, `not_selected` |
+| `proposal.file_open`       | A reviewer opened a file of an application | `application`, `file`         |
+| `proposal.export`          | An operator downloaded the applications    | `count`                       |
+
+### Download
+
+An operator downloads a program's submitted applications as CSV (`ReviewService.export`): one row for each, the
+earliest submitted first, with the organization, the solution, the applicant's name, email, phone, country and
+LinkedIn, the answer to the first one-choice question, the submission time and version, GenAI Fund's decision,
+whether the outcomes are released, and how many judges scored it with their mean. The request may name the
+applications to include, which is how the web sends the list as it is narrowed. The file is UTF-8 with a byte order
+mark, and a cell a spreadsheet would run as a formula is written as text (`CsvRows`). A judge is refused. Each
+download is recorded as `proposal.export`, since it takes contact details out.
 
 Applicants' acts, joining as a judge and assessments are not audited; they are logged as `proposal.submission.accepted`,
 `proposal.withdrawal.accepted`, `proposal.reviewer.joined` and `proposal.assessment.saved`, beside
@@ -277,6 +295,7 @@ Every endpoint needs a session.
 | `POST /api/proposal/review/programs/{programId}/reviewers/{reviewerId}/resend` | Re-send an unused invitation                                      |
 | `DELETE /api/proposal/review/programs/{programId}/reviewers/{reviewerId}`      | Remove a judge                                                    |
 | `GET /api/proposal/review/programs/{programId}/applications`                   | The submitted applications as the caller reviews them             |
+| `POST /api/proposal/review/programs/{programId}/applications/export`           | The submitted applications as CSV, for operators; recorded        |
 | `GET /api/proposal/review/applications/{id}`                                   | One application as submitted last, with assessments and history   |
 | `PUT /api/proposal/review/applications/{id}/assessment`                        | Save the caller's assessment                                      |
 | `GET /api/proposal/review/applications/{id}/files/{fileId}`                    | A file of the last submission                                     |
@@ -287,9 +306,9 @@ Every endpoint needs a session.
 
 `ProposalErrorCode`; the category sets the status (validation 400, not permitted 403, not found 404, conflict 409).
 
-| Status | Codes                                                                                                                                                                                                                                                                                                                                                  |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 400    | `PROPOSAL_ORGANIZATION_REQUIRED`, `PROPOSAL_CONTACT_INCOMPLETE`, `PROPOSAL_TEAM_BACKGROUND_REQUIRED`, `PROPOSAL_SOLUTION_NOT_FOUND`, `PROPOSAL_SOLUTION_REQUIRED`, `PROPOSAL_SOLUTION_INCOMPLETE`, `PROPOSAL_DECK_REQUIRED`, `PROPOSAL_ANSWER_INVALID`, `PROPOSAL_ANSWER_REQUIRED`, `PROPOSAL_CRITERIA_INVALID`, `PROPOSAL_ASSESSMENT_INVALID`         |
-| 403    | `PROPOSAL_OWN_APPLICATION`, `PROPOSAL_REVIEW_NOT_ALLOWED`                                                                                                                                                                                                                                                                                              |
-| 404    | `PROPOSAL_APPLICATION_NOT_FOUND`, `PROPOSAL_REVIEW_PROGRAM_NOT_FOUND`, `PROPOSAL_REVIEWER_NOT_FOUND`                                                                                                                                                                                                                                                   |
-| 409    | `PROPOSAL_NOT_OPEN`, `PROPOSAL_CLOSED`, `PROPOSAL_LOCKED`, `PROPOSAL_CHANGED_MEANWHILE`, `PROPOSAL_ALREADY_IN_ORGANIZATION`, `PROPOSAL_ORGANIZATION_APPLIED`, `PROPOSAL_NOT_SUBMITTED`, `PROPOSAL_CRITERIA_FIXED`, `PROPOSAL_NO_CRITERIA`, `PROPOSAL_REVIEWER_INVITED`, `PROPOSAL_REVIEWER_JOINED`, `PROPOSAL_RELEASED`, `PROPOSAL_OUTCOMES_NOT_READY` |
+| Status | Codes                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | `PROPOSAL_ORGANIZATION_REQUIRED`, `PROPOSAL_CONTACT_INCOMPLETE`, `PROPOSAL_TEAM_BACKGROUND_REQUIRED`, `PROPOSAL_SOLUTION_NOT_FOUND`, `PROPOSAL_SOLUTION_REQUIRED`, `PROPOSAL_SOLUTION_INCOMPLETE`, `PROPOSAL_DECK_REQUIRED`, `PROPOSAL_ANSWER_INVALID`, `PROPOSAL_ANSWER_REQUIRED`, `PROPOSAL_CRITERIA_INVALID`, `PROPOSAL_ASSESSMENT_INVALID`                                        |
+| 403    | `PROPOSAL_OWN_APPLICATION`, `PROPOSAL_REVIEW_NOT_ALLOWED`                                                                                                                                                                                                                                                                                                                             |
+| 404    | `PROPOSAL_APPLICATION_NOT_FOUND`, `PROPOSAL_REVIEW_PROGRAM_NOT_FOUND`, `PROPOSAL_REVIEWER_NOT_FOUND`                                                                                                                                                                                                                                                                                  |
+| 409    | `PROPOSAL_NOT_OPEN`, `PROPOSAL_CLOSED`, `PROPOSAL_LOCKED`, `PROPOSAL_WITHDRAWN_FOR_GOOD`, `PROPOSAL_CHANGED_MEANWHILE`, `PROPOSAL_ALREADY_IN_ORGANIZATION`, `PROPOSAL_ORGANIZATION_APPLIED`, `PROPOSAL_NOT_SUBMITTED`, `PROPOSAL_CRITERIA_FIXED`, `PROPOSAL_NO_CRITERIA`, `PROPOSAL_REVIEWER_INVITED`, `PROPOSAL_REVIEWER_JOINED`, `PROPOSAL_RELEASED`, `PROPOSAL_OUTCOMES_NOT_READY` |

@@ -23,12 +23,17 @@ public enum FilePurpose {
 	/** A deck or a proposal attached to an application. */
 	APPLICATION_FILE("application_file", false, false, Set.of("application/pdf")),
 
-	/** A document or an image that explains a use case: samples of the data, a process, a form. */
+	/**
+	 * A document or an image that explains a use case: samples of the data, a process, a form. Office files of either
+	 * generation, plain text and CSV are taken; HTML, SVG and anything that runs are not, since a browser would render
+	 * or run them.
+	 */
 	USE_CASE_ATTACHMENT("use_case_attachment", false, false,
-			Set.of("application/pdf", "image/png", "image/jpeg",
+			Set.of("application/pdf", "image/png", "image/jpeg", "image/webp",
 					"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-					"application/vnd.openxmlformats-officedocument.presentationml.presentation")),
+					"application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/msword",
+					"application/vnd.ms-excel", "application/vnd.ms-powerpoint", "text/csv", "text/plain")),
 
 	/** The deck of a solution. The solution module decides who reads it. */
 	SOLUTION_DECK("solution_deck", false, false, Set.of("application/pdf")),

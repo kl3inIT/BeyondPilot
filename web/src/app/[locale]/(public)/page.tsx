@@ -1,26 +1,25 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { JsonLd } from "@/components/layout/json-ld";
-import { Directory } from "@/components/sections/directory/directory";
-import { ProgramsEvents } from "@/components/sections/events/programs-events";
+import { AgentJourney } from "@/components/sections/agent-journey/agent-journey";
+import { Categories } from "@/components/sections/categories/categories";
+import { FeaturedChallenge } from "@/components/sections/challenge/featured-challenge";
+import { Ecosystem } from "@/components/sections/ecosystem/ecosystem";
 import { Faq } from "@/components/sections/faq/faq";
+import { FinalCta } from "@/components/sections/final-cta/final-cta";
 import { Founders } from "@/components/sections/founders/founders";
 import { Hero } from "@/components/sections/hero/hero";
 import { PartnerNetwork } from "@/components/sections/logos/partner-network";
-import { readHome } from "@/features/home/home-data";
+import { Team } from "@/components/sections/team/team";
 import { routing } from "@/i18n/routing";
 import { genaiFundLinks, siteOrigin } from "@/lib/site";
-
-/** The programs and the directories change at most every few minutes; the page is built again after five. */
-export const revalidate = 300;
 
 export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [site, metadata, home] = await Promise.all([
+  const [site, metadata] = await Promise.all([
     getTranslations("Site"),
     getTranslations("Metadata"),
-    readHome(),
   ]);
 
   return (
@@ -35,6 +34,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               "@id": `${siteOrigin}/#organization`,
               name: site("brand"),
               url: siteOrigin,
+              logo: `${siteOrigin}/brand/beyondpilot-logo.svg`,
               description: metadata("description"),
               funder: {
                 "@type": "Organization",
@@ -53,12 +53,16 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           ],
         }}
       />
-      <Hero cards={home.heroCards} />
-      <ProgramsEvents data={home.events} />
-      <Directory data={home.directory} />
-      <PartnerNetwork />
+      <Hero />
+      <Ecosystem />
+      <Categories />
+      <AgentJourney />
+      <FeaturedChallenge />
+      <Team />
       <Founders />
+      <PartnerNetwork />
       <Faq />
+      <FinalCta />
     </>
   );
 }

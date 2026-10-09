@@ -48,17 +48,17 @@ Both environments share `hn-fci-k8s-aioffice-application` (`167.254.65.226`, Ubu
 | Compose project, containers | `beyondpilot`, `beyondpilot-{postgres,api,web}`                                                           | `beyondpilot-staging`, `beyondpilot-staging-{postgres,api,web}`                                  |
 | Volumes                     | `beyondpilot_postgres-data`, `beyondpilot_storage`                                                        | `beyondpilot-staging_postgres-data`, `beyondpilot-staging_storage`                               |
 | Environment file            | `.env.production` from [`production.env.example`](../../infrastructure/deployment/production.env.example) | `.env.staging` from [`staging.env.example`](../../infrastructure/deployment/staging.env.example) |
-| Spring profiles             | `production`                                                                                               | `production,staging`                                                                             |
+| Spring profiles             | `production`                                                                                              | `production,staging`                                                                             |
 
 Under each root:
 
-| Path                 | Owner, mode              | Holds                                                                                                                                                   |
-| -------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `incoming`           | `beyondpilot-ci`, `0700` | One directory per uploaded release; `deploy.sh` keeps the current and previous ones                                                                     |
-| `deployments`        | root, `0700`             | `lock`, `current.env`, `previous.env`                                                                                                                   |
-| `backups`            | root, `0700`             | Pre-deployment dumps (five newest), nightly dumps and nightly archives of the uploaded files (14 newest of each)                                        |
-| `secrets`            | root, `0700`             | `database-password`, `google-client-secret`, `notification-encryption-key`, `ai-encryption-key`, each owned by uid 1654 with mode `0400` |
-| `.env.<environment>` | root, `0600`             | The non-secret values of the environment's example                                                                                                      |
+| Path                 | Owner, mode              | Holds                                                                                                                                                       |
+| -------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `incoming`           | `beyondpilot-ci`, `0700` | One directory per uploaded release; `deploy.sh` keeps the current and previous ones                                                                         |
+| `deployments`        | root, `0700`             | `lock`, `current.env`, `previous.env`                                                                                                                       |
+| `backups`            | root, `0700`             | Pre-deployment dumps (five newest), nightly dumps and nightly archives of the uploaded files (14 newest of each)                                            |
+| `secrets`            | root, `0700`             | `database-password`, `google-client-secret`, `notification-encryption-key`, `ai-encryption-key`, `mcp-signing-key`, each owned by uid 1654 with mode `0400` |
+| `.env.<environment>` | root, `0600`             | The non-secret values of the environment's example                                                                                                          |
 
 ### Provision the host once
 
@@ -97,11 +97,12 @@ sudo sh -c 'umask 077; openssl rand -hex 32 > database-password'
 sudo sh -c 'umask 077; cat > google-client-secret'      # paste the client secret, then Ctrl-D
 sudo sh -c 'umask 077; openssl rand -base64 32 > notification-encryption-key'
 sudo sh -c 'umask 077; openssl rand -base64 32 > ai-encryption-key'
-sudo chown 1654:1654 database-password google-client-secret notification-encryption-key ai-encryption-key
-sudo chmod 0400 database-password google-client-secret notification-encryption-key ai-encryption-key
+sudo sh -c 'umask 077; openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out mcp-signing-key'
+sudo chown 1654:1654 database-password google-client-secret notification-encryption-key ai-encryption-key mcp-signing-key
+sudo chmod 0400 database-password google-client-secret notification-encryption-key ai-encryption-key mcp-signing-key
 ```
 
-`ai-encryption-key` encrypts the keys of the AI providers that operators connect in Admin › AI › Providers, where the provider and the model search embeds with are chosen; replacing it makes those keys unreadable, and search goes by keywords until an operator enters them again. `database-password` sets the password when PostgreSQL first creates its data directory; changing the file later does not change the database. `notification-encryption-key` encrypts the email providers' secrets that operators enter in Admin › Email; each environment has its own, and replacing it makes those secrets unreadable until an operator enters them again. Write the environment file from its example with `sudo install -m 0600 /dev/null <root>/.env.<environment>` and an editor under sudo. Both environments use the same Google OAuth client, whose redirect URIs name both addresses.
+`ai-encryption-key` encrypts the keys of the AI providers that operators connect in Admin › AI › Providers, where the provider and the model search embeds with are chosen; replacing it makes those keys unreadable, and search goes by keywords until an operator enters them again. `mcp-signing-key` signs the access tokens of the AI apps people connect to the MCP servers; replacing it ends every connection's current token, and the apps refresh or connect again. `database-password` sets the password when PostgreSQL first creates its data directory; changing the file later does not change the database. `notification-encryption-key` encrypts the email providers' secrets that operators enter in Admin › Email; each environment has its own, and replacing it makes those secrets unreadable until an operator enters them again. Write the environment file from its example with `sudo install -m 0600 /dev/null <root>/.env.<environment>` and an editor under sudo. Both environments use the same Google OAuth client, whose redirect URIs name both addresses.
 
 Install the nightly backup, which saves both environments, production first:
 
@@ -124,16 +125,17 @@ Two proxy hosts in Nginx Proxy Manager, each with a Let's Encrypt certificate, F
 
 GenAI Fund owns `beyondpilot.ai` and keeps its DNS at Namecheap: the `@` and `www` A records point at this host, and the mail records are theirs. The web application opens `robots.txt` to crawlers on `beyondpilot.ai` only and closes it on every other host, so staging is never indexed next to it.
 
-The browser sees one origin, so Spring's paths go to the api in the advanced configuration of each proxy host; staging sets `$beyondpilot_api` to `beyondpilot-staging-api`. The upstream is a variable, so nginx resolves it per request and the host keeps working while the api container is being replaced. A custom location would resolve it at load and disable the host whenever the container is absent:
+The browser sees one origin, so Spring's paths go to the api in the advanced configuration of each proxy host; staging sets `$beyondpilot_api` to `beyondpilot-staging-api`. The upstream is a variable, so nginx resolves it per request and the host keeps working while the api container is being replaced. A custom location would resolve it at load and disable the host whenever the container is absent. The proxy is the edge, so it replaces `X-Forwarded-For` with the address that connected to it and drops `Forwarded`, which Spring would read first: either header as the client wrote it would be taken for the client's address, and limits kept per address would believe it:
 
 ```nginx
-location ~ ^/(api|login|logout|oauth2|ott)(/|$) {
+location ~ ^/(api|login|logout|oauth2|ott|mcp|\.well-known/oauth-authorization-server|\.well-known/oauth-protected-resource)(/|$) {
     set $beyondpilot_api beyondpilot-api;
     proxy_pass http://$beyondpilot_api:8080;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header X-Forwarded-Host $host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header Forwarded "";
     proxy_set_header X-Real-IP $remote_addr;
 }
 ```

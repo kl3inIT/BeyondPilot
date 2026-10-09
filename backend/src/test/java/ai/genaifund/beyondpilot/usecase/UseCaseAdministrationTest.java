@@ -22,6 +22,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -55,7 +56,7 @@ class UseCaseAdministrationTest {
 
 	@BeforeEach
 	void setUp() {
-		client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+		client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory()).baseUrl("http://localhost:" + port).build();
 		operator = TestSignIn.session(client, mail, "operator@usecase.test");
 	}
 
@@ -149,11 +150,47 @@ class UseCaseAdministrationTest {
 	}
 
 	@Test
+	void anOperatorPublishesWhatABriefGivesAndTheRestMayWait() {
+		String tag = UUID.randomUUID().toString().substring(0, 8);
+		UUID organization = organization("Brief Bank " + tag);
+		Map<String, Object> brief = useCase(organization, "Brief only " + tag, true);
+		for (String left : List.of("currentProcess", "targetUsers", "dataReadiness", "integrationRequirements",
+				"timelineMinWeeks", "timelineMaxWeeks", "closesAt")) {
+			brief.put(left, null);
+		}
+		brief.put("technologies", List.of());
+		// A brief that lists no requirement and comes with no file leaves both out.
+		brief.remove("requirements");
+		brief.remove("attachmentFileIds");
+
+		String created = body(post(operator, USE_CASES, brief).expectStatus().isCreated());
+		assertThat(JsonPath.<List<Object>>read(created, "$.requirements")).isEmpty();
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
+		assertThat(JsonPath.<Object>read(created, "$.closesAt")).isNull();
+		assertThat(JsonPath.<Object>read(created, "$.currentProcess")).isNull();
+
+		// With no deadline it stays open in the directory, without a timeline.
+		String listed = body(client.get().uri(DIRECTORY + "?q=" + tag).exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(listed, "$.items[*].title")).containsExactly("Brief only " + tag);
+		assertThat(JsonPath.<Object>read(listed, "$.items[0].closesAt")).isNull();
+		assertThat(JsonPath.<Object>read(listed, "$.items[0].timelineMinWeeks")).isNull();
+
+		// A timeline is both ends or neither.
+		Map<String, Object> halfTimeline = useCase(organization, "Half timeline " + tag, false);
+		halfTimeline.put("timelineMaxWeeks", null);
+		assertProblem(post(operator, USE_CASES, halfTimeline), 400, "USECASE_TIMELINE_OUT_OF_ORDER");
+	}
+
+	@Test
 	void theDirectoryListsPublishedUseCasesToVisitorsAndKeepsAnonymousOrganizationsAnonymous() {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
 		UUID open = organization("Open Bank " + tag);
 		UUID quiet = organization("Quiet Bank " + tag);
-		post(operator, USE_CASES, useCase(open, "Open case " + tag, true)).expectStatus().isCreated();
+		UUID openLogo = file("operator@usecase.test", "organization_logo", "stored");
+		UUID quietLogo = file("operator@usecase.test", "organization_logo", "stored");
+		jdbc.sql("update organization set logo_file_id = ? where id = ?").params(openLogo, open).update();
+		jdbc.sql("update organization set logo_file_id = ? where id = ?").params(quietLogo, quiet).update();
+		String published = body(post(operator, USE_CASES, useCase(open, "Open case " + tag, true)).expectStatus().isCreated());
 		post(operator, USE_CASES, useCase(open, "Draft case " + tag, false)).expectStatus().isCreated();
 		Map<String, Object> hidden = useCase(quiet, "Quiet case " + tag, true);
 		hidden.put("hideOrganizationName", true);
@@ -167,10 +204,25 @@ class UseCaseAdministrationTest {
 		assertThat(JsonPath.<Number>read(all, "$.total").intValue()).isEqualTo(2);
 		assertThat(JsonPath.<List<Object>>read(all, "$.items[?(@.title == 'Quiet case " + tag + "')].organizationName"))
 			.containsExactly((Object) null);
+		// The logo names the organization as surely as its name does.
+		assertThat(JsonPath.<List<Object>>read(all, "$.items[?(@.title == 'Quiet case " + tag + "')].organizationLogoFileId"))
+			.containsExactly((Object) null);
+		assertThat(JsonPath.<List<String>>read(all, "$.items[?(@.title == 'Open case " + tag + "')].organizationLogoFileId"))
+			.containsExactly(openLogo.toString());
 		assertThat(JsonPath.<List<Object>>read(all, "$.items[?(@.title == 'Quiet case " + tag + "')].budgetMax"))
 			.containsExactly((Object) null);
 		assertThat(JsonPath.<List<Integer>>read(all, "$.items[?(@.title == 'Open case " + tag + "')].budgetMax"))
 			.containsExactly(40000);
+		String publicDetail = body(client.get()
+			.uri(DIRECTORY + "/" + JsonPath.<String>read(published, "$.id"))
+			.exchange()
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(publicDetail, "$.organizationName")).isEqualTo("Open Bank " + tag);
+		assertThat(JsonPath.<String>read(publicDetail, "$.organizationLogoFileId")).isEqualTo(openLogo.toString());
+		assertThat(JsonPath.<String>read(publicDetail, "$.problemStatement"))
+			.isEqualTo("Our service team checks documents by hand.");
+		assertThat(JsonPath.<String>read(publicDetail, "$.currentSolutions")).isEqualTo("A basic OCR tool.");
 
 		String byOrganization = body(client.get().uri(DIRECTORY + "?q={q}", "quiet bank " + tag).exchange().expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(byOrganization, "$.items")).isEmpty();
@@ -178,6 +230,14 @@ class UseCaseAdministrationTest {
 		assertThat(JsonPath.<List<String>>read(byOpen, "$.items[*].title")).containsExactly("Open case " + tag);
 		String insurance = body(client.get().uri(DIRECTORY + "?q=" + tag + "&industry=insurance").exchange().expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(insurance, "$.items[*].title")).containsExactly("Quiet case " + tag);
+
+		String selected = body(client.get()
+			.uri(DIRECTORY + "?q=" + tag + "&industry=insurance&industry=automotive_mobility")
+			.exchange()
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<List<String>>read(selected, "$.items[*].title")).containsExactlyInAnyOrder("Open case " + tag,
+				"Quiet case " + tag);
 		client.get().uri(DIRECTORY + "?sort=price").exchange().expectStatus().isBadRequest();
 		client.get().uri(DIRECTORY + "?sort=deadline&page=1").exchange().expectStatus().isOk();
 	}
@@ -319,12 +379,8 @@ class UseCaseAdministrationTest {
 		unknown.put("industry", "space_mining");
 		post(operator, USE_CASES, unknown).expectStatus().isBadRequest();
 
-		Map<String, Object> noRequirement = useCase(organization, "No requirement", false);
-		noRequirement.put("requirements", List.of());
-		post(operator, USE_CASES, noRequirement).expectStatus().isBadRequest();
-
 		assertThat(titles()).doesNotContain("Closes yesterday", "Budget upside down", "Budget half given",
-				"Budget both ways", "Timeline upside down", "Unknown industry", "No requirement");
+				"Budget both ways", "Timeline upside down", "Unknown industry");
 	}
 
 	@Test
@@ -351,6 +407,8 @@ class UseCaseAdministrationTest {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
 		String bank = "Bank" + UUID.randomUUID().toString().substring(0, 8);
 		UUID organization = organization("Listed " + bank);
+		UUID logo = organizationLogo();
+		jdbc.sql("update organization set logo_file_id = ? where id = ?").params(logo, organization).update();
 		post(operator, USE_CASES, useCase(organization, "Earlier " + tag, false)).expectStatus().isCreated();
 		post(operator, USE_CASES, useCase(organization, "Later " + tag, true)).expectStatus().isCreated();
 
@@ -372,7 +430,9 @@ class UseCaseAdministrationTest {
 			.jsonPath("$.inReview")
 			.isNumber()
 			.jsonPath("$.items[0].organization.id")
-			.isEqualTo(organization.toString()));
+			.isEqualTo(organization.toString())
+			.jsonPath("$.items[0].organization.logoFileId")
+			.isEqualTo(logo.toString()));
 		assertThat(JsonPath.<List<String>>read(page, "$.items[*].organization.name")).allSatisfy(
 				name -> assertThat(name).startsWith("Listed "));
 		get(operator, USE_CASES + "?status=sleeping").expectStatus().isBadRequest();
@@ -437,6 +497,18 @@ class UseCaseAdministrationTest {
 				select ?, 'local', ?, ?, false, 'samples.pdf', 'application/pdf', 2048, ?, id, now()
 				from identity_account where email = ?
 				""").params(id, "test/" + id, purpose, status, uploader).update();
+		return id;
+	}
+
+	/** A public organization logo as storage keeps it. */
+	private UUID organizationLogo() {
+		UUID id = UUID.randomUUID();
+		jdbc.sql("""
+				insert into storage_file (id, provider, object_key, purpose, public_read, file_name, media_type,
+				                          size_bytes, status, uploaded_by_account_id, upload_expires_at)
+				select ?, 'local', ?, 'organization_logo', true, 'logo.png', 'image/png', 2048, 'stored', id, now()
+				from identity_account where email = 'operator@usecase.test'
+				""").params(id, "test/" + id).update();
 		return id;
 	}
 

@@ -62,6 +62,34 @@ public class SearchService {
 				items, page, PAGE_SIZE, kind == null ? all : counts.getOrDefault(kind, 0L));
 	}
 
+	/**
+	 * What a visitor would find for {@code query} among these kinds, the best first within each, for a caller that
+	 * needs only what each item is and where it is: the MCP server's {@code search}.
+	 * @param kinds among {@code program}, {@code solution}, {@code talent} and {@code use_case}
+	 */
+	@Transactional(readOnly = true)
+	public List<Found> find(String query, List<String> kinds) {
+		return find(query, kinds, true);
+	}
+
+	/**
+	 * What an operator would find for {@code query} among these kinds: what a visitor finds, and what only matching
+	 * may use, such as a solution its owners left unlisted. For the operators' MCP server's {@code search}.
+	 */
+	@Transactional(readOnly = true)
+	public List<Found> findForOperators(String query, List<String> kinds) {
+		return find(query, kinds, false);
+	}
+
+	private List<Found> find(String query, List<String> kinds, boolean listedOnly) {
+		String trimmed = query.strip();
+		Meaning meaning = embeddings.of(trimmed).orElse(null);
+		return kinds.stream()
+			.flatMap(kind -> index.page(trimmed, meaning, kind, listedOnly, PAGE_SIZE, 0).stream())
+			.map(hit -> new Found(hit.kind(), hit.slug(), hit.title()))
+			.toList();
+	}
+
 	private static SearchItem item(Hit hit, Instant now) {
 		Map<String, Object> facets = hit.facets();
 		String phase = SearchDocumentRepository.PROGRAM.equals(hit.kind())

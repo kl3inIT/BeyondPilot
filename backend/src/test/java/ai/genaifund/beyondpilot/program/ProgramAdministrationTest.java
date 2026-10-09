@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -50,7 +51,7 @@ class ProgramAdministrationTest {
 
 	@BeforeEach
 	void setUp() {
-		client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+		client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory()).baseUrl("http://localhost:" + port).build();
 		operator = TestSignIn.session(client, mail, "operator@program.test");
 	}
 
@@ -185,6 +186,12 @@ class ProgramAdministrationTest {
 
 		command(operator, one, "publish").expectStatus().isNoContent();
 		command(operator, one, "publish").expectStatus().isNoContent();
+
+		// While it is public, a save keeps what publishing asked for.
+		Map<String, Object> bare = new LinkedHashMap<>(program);
+		bare.put("version", JsonPath.<Integer>read(body(get(operator, one).expectStatus().isOk()), "$.version"));
+		bare.put("coverFileId", null);
+		assertProblem(save(operator, one, bare), 400, "PROGRAM_PUBLISHED_INCOMPLETE");
 		get(operator, one).expectBody()
 			.jsonPath("$.status")
 			.isEqualTo("published")
@@ -299,7 +306,7 @@ class ProgramAdministrationTest {
 	void aSaveReplacesTheListsAndTheWindowAsSent() {
 		String one = created("Replaced", "replaced");
 		Map<String, Object> program = program(0, "Replaced", "replaced");
-		program.put("applications", applications("2026-10-01T02:00:00Z", "2026-11-15T16:59:00Z", null));
+		program.put("applications", applications("2099-10-01T02:00:00Z", "2099-11-15T16:59:00Z", null));
 		program.put("keyDates",
 				List.of(keyDate("First", "2026-10-09T07:00:00Z", null, false),
 						keyDate("Second", "2026-10-10T07:00:00Z", null, false),
@@ -493,6 +500,15 @@ class ProgramAdministrationTest {
 		assertThat(JsonPath.<Boolean>read(body(get(operator, questions).expectStatus().isOk()), "$.fixed")).isTrue();
 		assertProblem(save(operator, questions, Map.of("version", version, "questions", List.of())), 409,
 				"PROGRAM_QUESTIONS_FIXED");
+
+		// Nor can the questions be freed by making the program look unopened again; when it closes still moves.
+		Map<String, Object> later = program(version, "Asks", "asks");
+		later.put("applications", applications("2099-01-01T00:00:00Z", "2099-02-01T00:00:00Z", "2099-02-10"));
+		assertProblem(save(operator, uri, later), 409, "PROGRAM_OPENING_FIXED");
+		assertProblem(save(operator, uri, program(version, "Asks", "asks")), 409, "PROGRAM_OPENING_FIXED");
+		Map<String, Object> extended = program(version, "Asks", "asks");
+		extended.put("applications", applications("2026-01-01T00:00:00Z", "2099-03-01T00:00:00Z", "2099-03-10"));
+		save(operator, uri, extended).expectStatus().isOk();
 	}
 
 	private static Map<String, Object> question(String kind, String label, List<String> options) {

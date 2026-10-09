@@ -12,8 +12,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,6 +35,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -60,6 +65,9 @@ class LocalStorageTest {
 	@Autowired
 	private StorageService storage;
 
+	@Autowired
+	private AbandonedUploads abandoned;
+
 	private RestTestClient client;
 
 	@DynamicPropertySource
@@ -69,7 +77,7 @@ class LocalStorageTest {
 
 	@BeforeEach
 	void setUp() {
-		client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+		client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory()).baseUrl("http://localhost:" + port).build();
 	}
 
 	@Test
@@ -160,6 +168,65 @@ class LocalStorageTest {
 		problem(confirm(client, applicant, disguised.get("id")), 400, "STORAGE_CONTENT_MISMATCH");
 		assertThat(DIRECTORY.resolve(objectKey(disguised))).as("a refused upload is removed").doesNotExist();
 		assertThat(status(disguised)).isEqualTo("pending");
+	}
+
+	@Test
+	void aUseCaseAttachmentIsTakenByWhatItsBytesAre() {
+		String member = signIn("applicant@storage.test");
+		byte[] zip = startingWith(new byte[] { 'P', 'K', 3, 4 }, 900);
+		byte[] ole = startingWith(new byte[] { (byte) 0xD0, (byte) 0xCF, 0x11, (byte) 0xE0, (byte) 0xA1, (byte) 0xB1,
+				0x1A, (byte) 0xE1 }, 900);
+		byte[] csv = "region,claims\nHanoi,120\nDa Nang,45\n".getBytes(StandardCharsets.UTF_8);
+
+		for (Object[] file : new Object[][] {
+				{ "brief.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", zip },
+				{ "claims.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", zip },
+				{ "process.pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation", zip },
+				{ "old.doc", "application/msword", ole }, { "old.xls", "application/vnd.ms-excel", ole },
+				{ "claims.csv", "text/csv", csv }, { "windows.csv", "application/vnd.ms-excel", csv }, { "notes.txt", "text/plain", csv } }) {
+			byte[] content = (byte[]) file[2];
+			Map<String, Object> ticket = ticket(client, member, "use_case_attachment", (String) file[0],
+					(String) file[1], content.length);
+			send(member, ticket, content).expectStatus().isNoContent();
+			confirm(client, member, ticket.get("id")).expectStatus().isOk();
+		}
+
+		// A file is refused when its bytes are not what it says: a picture named a Word file, a binary named text.
+		Map<String, Object> disguised = ticket(client, member, "use_case_attachment", "brief.docx",
+				"application/vnd.openxmlformats-officedocument.wordprocessingml.document", 900);
+		send(member, disguised, png(900)).expectStatus().isNoContent();
+		problem(confirm(client, member, disguised.get("id")), 400, "STORAGE_CONTENT_MISMATCH");
+		Map<String, Object> binary = ticket(client, member, "use_case_attachment", "claims.csv", "text/csv", 900);
+		send(member, binary, ole).expectStatus().isNoContent();
+		problem(confirm(client, member, binary.get("id")), 400, "STORAGE_CONTENT_MISMATCH");
+		problem(reserve(client, member, "use_case_attachment", "page.html", "text/html", 900), 400,
+				"STORAGE_MEDIA_TYPE_NOT_ALLOWED");
+	}
+
+	@Test
+	void anUploadNeverConfirmedIsRemovedADayAfterItsTimeRanOut() throws IOException {
+		String member = signIn("applicant@storage.test");
+		byte[] deck = pdf(700);
+		Map<String, Object> left = ticket(client, member, "application_file", "left.pdf", "application/pdf", 700);
+		send(member, left, deck).expectStatus().isNoContent();
+		Map<String, Object> recent = ticket(client, member, "application_file", "recent.pdf", "application/pdf", 700);
+		Map<String, Object> kept = ticket(client, member, "application_file", "kept.pdf", "application/pdf", 700);
+		send(member, kept, deck).expectStatus().isNoContent();
+		confirm(client, member, kept.get("id")).expectStatus().isOk();
+		jdbc.sql("update storage_file set upload_expires_at = now() - interval '25 hours' where id in (:ids)")
+			.param("ids", List.of(UUID.fromString((String) left.get("id")), UUID.fromString((String) kept.get("id"))))
+			.update();
+		String leftKey = objectKey(left);
+
+		abandoned.remove(Instant.now());
+
+		assertThat(jdbc.sql("select count(*) from storage_file where id = :id")
+			.param("id", UUID.fromString((String) left.get("id")))
+			.query(Integer.class)
+			.single()).isZero();
+		assertThat(DIRECTORY.resolve(leftKey)).doesNotExist();
+		assertThat(status(recent)).as("an upload whose time has not long run out stays").isEqualTo("pending");
+		assertThat(status(kept)).as("a stored file is never touched").isEqualTo("stored");
 	}
 
 	@Test
@@ -277,6 +344,12 @@ class LocalStorageTest {
 			.param("id", UUID.fromString((String) ticket.get("id")))
 			.query(String.class)
 			.single();
+	}
+
+	private static byte[] startingWith(byte[] signature, int length) {
+		byte[] content = Arrays.copyOf(signature, length);
+		Arrays.fill(content, signature.length, length, (byte) 'x');
+		return content;
 	}
 
 	private static Path temporaryDirectory() {

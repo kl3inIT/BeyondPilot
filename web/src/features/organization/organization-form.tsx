@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
 import { ChoiceSelect } from "@/components/composites/choice-select";
+import { RequiredMark } from "@/components/composites/required-mark";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -188,12 +189,6 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
 
   // The form's title is the page's on the create page; on the profile it sits under the organization's name.
   const Title = organization ? "h2" : "h1";
-  // A field that is not marked may stay empty.
-  const required = (
-    <span aria-hidden="true" className="text-destructive">
-      *
-    </span>
-  );
 
   return (
     <form
@@ -212,7 +207,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
           <Field data-invalid={bad("name")}>
             <FieldLabel htmlFor="organization-name">
-              {t("name")} {required}
+              {t("name")} <RequiredMark />
             </FieldLabel>
             <Input
               id="organization-name"
@@ -227,7 +222,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
           </Field>
           <Field data-invalid={bad("website")}>
             <FieldLabel htmlFor="organization-website">
-              {t("website")} {required}
+              {t("website")} <RequiredMark />
             </FieldLabel>
             <Input
               id="organization-website"
@@ -267,7 +262,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
           <Field>
             <FieldLabel htmlFor="organization-type">
-              {t("type")} {required}
+              {t("type")} <RequiredMark />
             </FieldLabel>
             <ChoiceSelect
               id="organization-type"
@@ -278,7 +273,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
           </Field>
           <Field data-invalid={bad("teamSize")}>
             <FieldLabel htmlFor="organization-team-size">
-              {t("teamSize")} {required}
+              {t("teamSize")} <RequiredMark />
             </FieldLabel>
             <ChoiceSelect
               id="organization-team-size"
@@ -296,7 +291,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
       <OrganizationProfileSection icon={FileTextIcon} title={t("about")} lead={t("aboutLead")}>
         <Field data-invalid={bad("industries")}>
           <FieldLabel htmlFor="organization-industries">
-            {t("industries")} {type === "company" && required}
+            {t("industries")} {type === "company" && <RequiredMark />}
           </FieldLabel>
           <ChoiceCombobox
             id="organization-industries"
@@ -319,7 +314,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
           <Field data-invalid={bad("country")}>
             <FieldLabel htmlFor="organization-country">
-              {t("country")} {required}
+              {t("country")} <RequiredMark />
             </FieldLabel>
             <ChoiceSelect
               id="organization-country"
@@ -333,7 +328,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
           </Field>
           <Field data-invalid={bad("foundedYear")}>
             <FieldLabel htmlFor="organization-founded-year">
-              {t("foundedYear")} {required}
+              {t("foundedYear")} <RequiredMark />
             </FieldLabel>
             <Input
               id="organization-founded-year"
@@ -355,7 +350,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
         <div className="flex flex-col gap-x-6 gap-y-6 sm:flex-row">
           <Field data-invalid={bad("description")} className="sm:flex-1">
             <FieldLabel htmlFor="organization-description">
-              {t("description")} {required}
+              {t("description")} <RequiredMark />
             </FieldLabel>
             <Textarea
               id="organization-description"

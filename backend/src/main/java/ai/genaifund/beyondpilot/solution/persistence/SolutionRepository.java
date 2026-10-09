@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.solution.SolutionDeckFile;
+
 import jakarta.persistence.LockModeType;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,6 +23,13 @@ public interface SolutionRepository extends JpaRepository<Solution, UUID> {
 	Optional<Solution> findForUpdate(UUID id);
 
 	List<Solution> findByStatusAndSuspendedAtIsNull(String status);
+
+	/** The deck of every solution of a status that is not taken down, without loading the solutions. */
+	@Query("""
+			select new ai.genaifund.beyondpilot.solution.SolutionDeckFile(s.id, s.deckFileId) from Solution s
+			where s.status = :status and s.suspendedAt is null and s.deckFileId is not null
+			""")
+	List<SolutionDeckFile> findDecksByStatus(String status);
 
 	boolean existsBySlug(String slug);
 

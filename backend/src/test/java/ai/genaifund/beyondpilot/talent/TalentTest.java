@@ -22,6 +22,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -59,7 +60,7 @@ class TalentTest {
 
 	@BeforeEach
 	void setUp() {
-		client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+		client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory()).baseUrl("http://localhost:" + port).build();
 		operator = signIn("operator@genaifund.test");
 	}
 
@@ -435,6 +436,8 @@ class TalentTest {
 		post(sender, DIRECTORY + "/koala-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "project", "message", "Still there?"))
 			.expectStatus()
 			.isNoContent();
+		// The message's own email leaves first; sent together, the two may arrive in either order.
+		assertThat(mail.latestSubjectTo("koala@profile.test")).isNotEqualTo("A message waits for your answer on BeyondPilot");
 		Instant now = Instant.now();
 
 		assertThat(clock.remind(now.plus(Duration.ofDays(8)))).isPositive();

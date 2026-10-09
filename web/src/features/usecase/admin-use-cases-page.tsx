@@ -7,7 +7,6 @@ import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { ReviewStatus } from "@/components/composites/review-status";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,8 +17,8 @@ import {
 import { Link } from "@/i18n/navigation";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { AdminUseCaseList, UseCaseOrganization } from "@/lib/api/generated";
-import { initials } from "@/lib/initials";
 import { siteRoutes } from "@/lib/site";
+import { OrganizationMark } from "@/features/organization/organization-mark";
 
 import { adminUseCasesSearch, type AdminUseCasesSearch } from "./admin-use-cases-search";
 import { AdminUseCasesToolbar } from "./admin-use-cases-toolbar";
@@ -49,9 +48,11 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
     id: useCase.id,
     title: (
       <div className="flex min-w-0 items-center gap-3">
-        <Avatar>
-          <AvatarFallback>{initials(useCase.organization.name, "")}</AvatarFallback>
-        </Avatar>
+        <OrganizationMark
+          name={useCase.organization.name}
+          logoFileId={useCase.organization.logoFileId}
+          size="sm"
+        />
         <div className="grid min-w-0 text-sm">
           <Link
             href={`${siteRoutes.adminUseCases}/${useCase.id}`}

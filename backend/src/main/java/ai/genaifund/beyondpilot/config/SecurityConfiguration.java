@@ -7,6 +7,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.CredentialsExpiredException;
@@ -29,9 +30,9 @@ import org.springframework.security.web.authentication.ott.OneTimeTokenGeneratio
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 /**
- * The one security filter chain. The web application is the only client and shares this origin, so the endpoints
- * answer with a status and never with a page: 204 for a sent code, an accepted code and a sign-out; a problem for every
- * refusal. Only the Google round trip redirects, because the browser itself travels it.
+ * The application's security filter chain, after identity's authorization server chain and mcp's chain for AI apps. The web
+ * application is the only client and shares this origin, so the endpoints answer with a status and never with a
+ * page: 204 for a sent code, an accepted code and a sign-out; a problem for every refusal. Only the Google round trip redirects, because the browser itself travels it.
  */
 @Configuration(proxyBeanMethods = false)
 class SecurityConfiguration {
@@ -40,6 +41,7 @@ class SecurityConfiguration {
 	private static final String SIGN_IN_PAGE = "/sign-in";
 
 	@Bean
+	@Order(3)
 	SecurityFilterChain securityFilterChain(HttpSecurity http,
 			OneTimeTokenGenerationSuccessHandler signInCodeSender,
 			ObjectProvider<GenerateOneTimeTokenRequestResolver> signInCodeRequest,
@@ -65,7 +67,8 @@ class SecurityConfiguration {
 				// is not approved, for those who may read it.
 				.requestMatchers(HttpMethod.GET, "/api/solution/solutions", "/api/solution/solutions/*",
 						"/api/solution/solutions/*/deck", "/api/solution/deployments", "/api/usecase/use-cases",
-						"/api/talent/profiles", "/api/talent/profiles/*", "/api/organization/organizations/*")
+						"/api/usecase/use-cases/*", "/api/talent/profiles", "/api/talent/profiles/*",
+						"/api/organization/organizations/*")
 				.permitAll()
 				// An email provider reports what became of sent email; each report is accepted only by its signature.
 				.requestMatchers(HttpMethod.POST, CsrfHeaderFilter.PROVIDER_REPORTS + "*")

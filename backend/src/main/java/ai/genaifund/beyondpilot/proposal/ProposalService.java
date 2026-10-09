@@ -170,7 +170,8 @@ public class ProposalService {
 					organizationId == null ? null
 							: organizations.profile(organizationId).map(OrganizationProfile::name).orElse(null),
 					solutionId == null ? null : solutions.offered(solutionId).map(OfferedSolution::name).orElse(null),
-					proposal.getSubmittedAt(), proposal.getUpdatedAt(), outcome(proposal), nextStep(form)));
+					proposal.getSubmittedAt(), proposal.getUpdatedAt(), outcome(proposal), nextStep(form),
+					form.allowUpdatesUntilClose()));
 		}
 		return new MyApplicationsResponse(items);
 	}
@@ -265,7 +266,7 @@ public class ProposalService {
 			.orElseThrow(() -> refused(ProposalErrorCode.ORGANIZATION_REQUIRED, id));
 		ContactDetails contact = json.readValue(proposal.getContact(), ContactDetails.class);
 		if (blank(contact.firstName()) || blank(contact.lastName()) || blank(contact.phone())
-				|| blank(contact.country()) || blank(contact.linkedin())) {
+				|| blank(contact.country())) {
 			throw refused(ProposalErrorCode.CONTACT_INCOMPLETE, id);
 		}
 		boolean alone = "independent_builder".equals(organization.type());
@@ -297,6 +298,7 @@ public class ProposalService {
 		Instant now = Instant.now();
 		proposal.belongTo(organization.id());
 		int number = proposal.submit(now);
+		identity.reachAtIfUnknown(actor, contact.country(), contact.phone());
 		versions.save(new ProposalVersion(proposal.getId(), number, now,
 				json.writeValueAsString(snapshot(person, contact, organization, solution, proposal, form, answers))));
 		proposals.flush();
@@ -550,10 +552,21 @@ public class ProposalService {
 		}
 	}
 
+	/**
+	 * Where a program takes no changes after submission, a submitted application stays as it is, and a withdrawn one
+	 * stays withdrawn: withdrawing and submitting again would be a change by another name.
+	 */
 	private static void requireChangeable(ApplicationForm form, Proposal proposal) {
-		if (proposal.isSubmitted() && !form.allowUpdatesUntilClose()) {
+		if (form.allowUpdatesUntilClose()) {
+			return;
+		}
+		if (proposal.isSubmitted()) {
 			throw new ProposalException(ProposalErrorCode.LOCKED,
 					"Change of submitted application " + proposal.getId() + " to " + form.slug());
+		}
+		if (Proposal.WITHDRAWN.equals(proposal.getStatus())) {
+			throw new ProposalException(ProposalErrorCode.WITHDRAWN_FOR_GOOD,
+					"Change of withdrawn application " + proposal.getId() + " to " + form.slug());
 		}
 	}
 

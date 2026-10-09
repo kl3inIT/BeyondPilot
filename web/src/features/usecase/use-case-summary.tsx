@@ -1,5 +1,6 @@
 import { PencilIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { isValidElement } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
 import { useVocabulary } from "@/i18n/vocabulary";
@@ -34,13 +35,18 @@ type UseCaseSummaryProps = {
   onEdit?: (step: Step) => void;
   /** What the link of a section says when it only shows the step and does not edit it. */
   viewLabel?: string;
+  /**
+   * Leaves out what was never written instead of marking it missing: an approved use case may lack a
+   * part its brief did not give, and only a draft is asked to complete it.
+   */
+  hideEmpty?: boolean;
 };
 
 /**
  * What a use case says, section by section, as the review step of the wizard and the page of a use case
  * that can no longer be changed show it. A section that lacks something says so rather than staying blank.
  */
-function UseCaseSummary({ values, onEdit, viewLabel }: UseCaseSummaryProps) {
+function UseCaseSummary({ values, onEdit, viewLabel, hideEmpty = false }: UseCaseSummaryProps) {
   const t = useTranslations("Organization.useCases.wizard");
   const r = useTranslations("Organization.useCases.review");
   const industryName = useVocabulary("industry");
@@ -180,12 +186,14 @@ function UseCaseSummary({ values, onEdit, viewLabel }: UseCaseSummaryProps) {
             )}
           </div>
           <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
-            {block.rows.map((row) => (
-              <div key={row.key} className="contents">
-                <dt className="text-muted-foreground">{r(`field.${row.key}`)}</dt>
-                <dd className="break-words whitespace-pre-line sm:col-span-2">{row.value}</dd>
-              </div>
-            ))}
+            {block.rows
+              .filter((row) => !hideEmpty || !isMissing(row.value))
+              .map((row) => (
+                <div key={row.key} className="contents">
+                  <dt className="text-muted-foreground">{r(`field.${row.key}`)}</dt>
+                  <dd className="break-words whitespace-pre-line sm:col-span-2">{row.value}</dd>
+                </div>
+              ))}
           </dl>
         </section>
       ))}
@@ -196,6 +204,10 @@ function UseCaseSummary({ values, onEdit, viewLabel }: UseCaseSummaryProps) {
 function Missing() {
   const r = useTranslations("Organization.useCases.review");
   return <span className="text-muted-foreground italic">{r("missing")}</span>;
+}
+
+function isMissing(value: React.ReactNode) {
+  return isValidElement(value) && value.type === Missing;
 }
 
 export { UseCaseSummary };

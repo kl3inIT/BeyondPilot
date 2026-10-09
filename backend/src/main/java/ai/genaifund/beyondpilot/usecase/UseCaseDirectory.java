@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.usecase;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -11,12 +12,16 @@ import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.program.ProgramName;
 import ai.genaifund.beyondpilot.program.ProgramService;
+import ai.genaifund.beyondpilot.storage.StorageService;
+import ai.genaifund.beyondpilot.storage.StoredFile;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseListResponse;
+import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseResponse;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseSummaryResponse;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCase;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseQueryRepository;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRepository;
+import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRequirement;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,8 +48,12 @@ public class UseCaseDirectory {
 
 	private final UseCaseProperties properties;
 
+	private final StorageService storage;
+
 	UseCaseDirectory(UseCaseQueryRepository useCaseList, UseCaseRepository useCases,
-			OrganizationDirectory organizations, ProgramService programs, UseCaseProperties properties) {
+			OrganizationDirectory organizations, ProgramService programs, UseCaseProperties properties,
+			StorageService storage) {
+		this.storage = storage;
 		this.useCaseList = useCaseList;
 		this.useCases = useCases;
 		this.organizations = organizations;
@@ -61,6 +70,40 @@ public class UseCaseDirectory {
 		return useCases.findById(useCaseId)
 			.filter(useCase -> UseCase.APPROVED.equals(useCase.getStatus()) && useCase.getTitle() != null)
 			.flatMap(useCase -> indexed(List.of(useCase)).stream().findFirst());
+	}
+
+	/**
+	 * Everything a published use case says, with its attached files, for matching; empty for a use case that is not
+	 * published, or whose organization is not approved or is taken down. One past its close date is still returned:
+	 * its candidates stay readable.
+	 */
+	@Transactional(readOnly = true)
+	public Optional<UseCaseBrief> brief(UUID useCaseId) {
+		return useCases.findById(useCaseId)
+			.filter(useCase -> UseCase.APPROVED.equals(useCase.getStatus()) && useCase.getTitle() != null)
+			.filter(useCase -> organizations.approvedNames(List.of(useCase.getOrganizationId()))
+				.containsKey(useCase.getOrganizationId()))
+			.map(useCase -> {
+				Map<UUID, StoredFile> files = storage.describe(useCase.getAttachmentFileIds());
+				List<UseCaseBrief.Attachment> attachments = useCase.getAttachmentFileIds()
+					.stream()
+					.map(files::get)
+					.filter(Objects::nonNull)
+					.map(file -> new UseCaseBrief.Attachment(file.id(), file.fileName(), file.mediaType(),
+							storage.content(file.id())))
+					.toList();
+				List<UseCaseBrief.Stated> stated = useCase.getRequirements()
+					.stream()
+					.map(requirement -> new UseCaseBrief.Stated(requirement.statement(),
+							UseCaseRequirement.REQUIRED.equals(requirement.necessity())))
+					.toList();
+				return new UseCaseBrief(useCase.getId(), useCase.getOrganizationId(),
+						Objects.requireNonNull(useCase.getTitle()), useCase.getIndustry(),
+						List.copyOf(useCase.getTechnologies()), useCase.getProblemStatement(),
+						useCase.getExpectedOutcomes(), useCase.getCurrentProcess(), useCase.getCurrentSolutions(),
+						useCase.getTargetUsers(), useCase.getDataReadiness(), useCase.getIntegrationRequirements(),
+						stated, attachments);
+			});
 	}
 
 	/** Every published use case as search indexes it, for a rebuild of the index. */
@@ -141,13 +184,50 @@ public class UseCaseDirectory {
 				useCaseList.publicCount(text, matching, request.industry(), program, now));
 	}
 
+	/**
+	 * One published use case that is still open, as a visitor reads the whole brief.
+	 * @throws UseCaseException when the identifier is unknown, no longer open, or its organization is not public
+	 */
+	@Transactional(readOnly = true)
+	public PublicUseCaseResponse get(UUID id) {
+		Instant now = Instant.now();
+		UseCase useCase = useCases.findById(id)
+			.filter(found -> UseCase.APPROVED.equals(found.getStatus()) && !UseCase.CLOSED.equals(found.statusAt(now)))
+			.orElseThrow(() -> notFound(id));
+		String title = useCase.getTitle();
+		String industry = useCase.getIndustry();
+		Instant publishedAt = useCase.getPublishedAt();
+		if (title == null || industry == null || publishedAt == null) {
+			throw notFound(id);
+		}
+		OrganizationName organization = organizations.approvedNames(List.of(useCase.getOrganizationId()))
+			.get(useCase.getOrganizationId());
+		if (organization == null) {
+			throw notFound(id);
+		}
+		boolean anonymous = useCase.isHideOrganizationName();
+		boolean hiddenBudget = useCase.isBudgetMembersOnly();
+		return new PublicUseCaseResponse(useCase.getId(), title, anonymous ? null : organization.name(),
+				anonymous ? null : organization.logoFileId(), industry, useCase.getProblemStatement(),
+				useCase.getTechnologies(), useCase.getExpectedOutcomes(), useCase.getCurrentProcess(),
+				useCase.getCurrentSolutions(), useCase.getTargetUsers(), useCase.getDataReadiness(),
+				useCase.getIntegrationRequirements(), hiddenBudget ? null : useCase.getBudgetMin(),
+				hiddenBudget ? null : useCase.getBudgetMax(), useCase.getCurrency(), useCase.isBudgetToBeDetermined(),
+				hiddenBudget, useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(), useCase.getClosesAt(),
+				publishedAt);
+	}
+
 	private static PublicUseCaseSummaryResponse summary(UseCaseQueryRepository.PublicRow row,
 			Map<UUID, OrganizationName> names) {
 		OrganizationName organization = row.hideOrganizationName() ? null : names.get(row.organizationId());
 		boolean hidden = row.budgetMembersOnly();
 		return new PublicUseCaseSummaryResponse(row.id(), row.title(), organization == null ? null : organization.name(),
-				row.industry(), row.goal(), row.technologies(), hidden ? null : row.budgetMin(),
+				organization == null ? null : organization.logoFileId(), row.industry(), row.goal(), row.technologies(), hidden ? null : row.budgetMin(),
 				hidden ? null : row.budgetMax(), row.currency(), row.budgetToBeDetermined(), row.budgetMembersOnly(),
 				row.timelineMinWeeks(), row.timelineMaxWeeks(), row.closesAt(), row.publishedAt());
+	}
+
+	private static UseCaseException notFound(UUID id) {
+		return new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No published use case " + id);
 	}
 }

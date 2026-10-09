@@ -3,16 +3,33 @@ export const talentRoles = [
   "ai_engineer",
   "ml_engineer",
   "forward_deployed_engineer",
+  "software_engineer",
+  "solution_architect",
   "automation_specialist",
   "data_scientist",
   "data_engineer",
+  "researcher",
   "ai_product_manager",
   "ai_consultant",
   "ai_designer",
+  "founder",
+  "student",
   "other",
 ] as const;
 
 export const engagements = ["full_time", "part_time", "contract", "advisory"] as const;
+
+/** Skills offered under the skills box, each added with one click; anything else can be typed. */
+export const suggestedSkills = [
+  "Python",
+  "LLM evaluation",
+  "RAG",
+  "Voice agents",
+  "LangGraph",
+  "Prompt engineering",
+  "MLOps",
+  "Computer vision",
+] as const;
 
 export const rateBands = ["under_25", "25_50", "50_100", "100_150", "150_plus"] as const;
 

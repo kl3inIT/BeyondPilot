@@ -82,6 +82,8 @@ const refusals = [
   "PROGRAM_COVER_NOT_USABLE",
   "PROGRAM_KEY_DATE_OUT_OF_ORDER",
   "PROGRAM_EVENT_OUT_OF_ORDER",
+  "PROGRAM_OPENING_FIXED",
+  "PROGRAM_PUBLISHED_INCOMPLETE",
 ] as const;
 
 function isRefusal(code: string): code is (typeof refusals)[number] {

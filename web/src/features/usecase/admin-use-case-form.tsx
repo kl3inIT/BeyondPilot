@@ -1,51 +1,37 @@
 "use client";
 
-import { revalidateLogic } from "@tanstack/react-form";
-import { PlusIcon } from "lucide-react";
+import { CheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useId, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import { TextButton } from "@/components/actions/text-button";
-import { setServerErrors, useAppForm } from "@/components/form/app-form";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useNotify } from "@/hooks/use-notify";
 import { useRouter } from "@/i18n/navigation";
-import { useVocabulary } from "@/i18n/vocabulary";
 import { ApiError } from "@/lib/api/client";
 import { createAdminUseCase, type UseCaseOrganization } from "@/lib/api/generated";
 import { fieldOfPointer } from "@/lib/api/problem-fields";
 import { siteRoutes } from "@/lib/site";
 import { instantInVietnam } from "@/lib/vietnam-time";
+import { cn } from "@/lib/utils";
 
+import { adminUseCaseSchema } from "./admin-use-case-schema";
 import {
-  necessities,
-  publishChoices,
-  timelineCodes,
-  timelinePresets,
-  useCaseIndustries,
-  useCaseTechnologies,
-} from "./admin-use-case-codes";
-import { AttachmentsField } from "./admin-use-case-attachments";
-import { adminUseCaseSchema, MAX_TEXT, type AdminUseCaseValues } from "./admin-use-case-schema";
-import { currencies } from "./use-case-budget";
+  defaultClosesTime,
+  incompleteSteps,
+  steps,
+  timelineOf,
+  type DraftValues,
+  type Step,
+} from "./use-case-draft";
+import { UseCaseStepFields } from "./use-case-step-fields";
+import { UseCaseSummary } from "./use-case-summary";
+import { Choice } from "./wizard-fields";
 
-const blank: AdminUseCaseValues = {
-  organizationId: "",
+const blank: DraftValues = {
   title: "",
   problemStatement: "",
-  industry: "" as AdminUseCaseValues["industry"],
+  industry: "",
   technologies: [],
   expectedOutcomes: "",
   currentProcess: "",
@@ -64,189 +50,146 @@ const blank: AdminUseCaseValues = {
   budgetMax: "",
   budgetToBeDetermined: false,
   budgetMembersOnly: false,
-  timeline: "" as AdminUseCaseValues["timeline"],
-  hideOrganizationName: false,
-  publish: "draft",
+  timelineMinWeeks: null,
+  timelineMaxWeeks: null,
   closesDay: "",
-  closesTime: "23:59",
+  closesTime: defaultClosesTime,
+  hideOrganizationName: false,
 };
 
-/** What a refusal by the backend says about the form, by the field it concerns. */
-const refusals = {
-  USECASE_ORGANIZATION_NOT_ELIGIBLE: "organizationId",
-  USECASE_CLOSES_IN_THE_PAST: "closesDay",
-  USECASE_BUDGET_INCOMPLETE: "budgetMin",
-  USECASE_BUDGET_OUT_OF_ORDER: "budgetMax",
-  USECASE_ATTACHMENT_NOT_USABLE: "attachments",
-} as const;
+const refusalSteps = {
+  USECASE_ORGANIZATION_NOT_ELIGIBLE: "challenge",
+  USECASE_CLOSES_IN_THE_PAST: "budget",
+  USECASE_BUDGET_INCOMPLETE: "budget",
+  USECASE_BUDGET_OUT_OF_ORDER: "budget",
+  USECASE_ATTACHMENT_NOT_USABLE: "requirements",
+} as const satisfies Record<string, Step>;
 
-function refusalOf(code: string | undefined) {
-  return Object.entries(refusals).find(([known]) => known === code);
-}
+type RefusalCode = keyof typeof refusalSteps;
 
-/** The cards that start closed, and the fields each holds, so a refused save can open the right one. */
-const sections = {
-  outcomes: ["expectedOutcomes", "currentProcess", "currentSolutions", "targetUsers"],
-  requirements: ["requirements", "dataReadiness", "integrationRequirements", "attachments"],
-  budget: ["currency", "budgetMin", "budgetMax", "timeline", "hideOrganizationName"],
-} as const;
-
-type SectionName = keyof typeof sections;
-
-function sectionOf(field: string): SectionName | undefined {
-  return (Object.keys(sections) as SectionName[]).find((name) =>
-    sections[name].some((member) => field === member || field.startsWith(`${member}[`)),
-  );
-}
-
-type OpenSectionProps = {
-  title: string;
-  description: string;
-  open: boolean;
-  onToggle: () => void;
-  children: ReactNode;
-};
-
-/** A card that shows its title and what it holds, and opens to the fields themselves. */
-function OpenSection({ title, description, open, onToggle, children }: OpenSectionProps) {
-  const t = useTranslations("Admin.useCases.form");
-  const bodyId = useId();
-
-  return (
-    <Card size="lg">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-        <CardAction>
-          <TextButton aria-expanded={open} aria-controls={bodyId} onClick={onToggle}>
-            {open ? t("close") : t("open")}
-          </TextButton>
-        </CardAction>
-      </CardHeader>
-      {/* Kept in the page while closed, so what was typed is sent and its errors can open it. */}
-      <CardContent id={bodyId} hidden={!open}>
-        <FieldGroup>{children}</FieldGroup>
-      </CardContent>
-    </Card>
-  );
+function stepOfField(field: string): Step {
+  if (["organizationId", "title", "problemStatement", "industry", "technologies"].includes(field)) {
+    return "challenge";
+  }
+  if (["expectedOutcomes", "currentProcess", "currentSolutions", "targetUsers"].includes(field)) {
+    return "outcomes";
+  }
+  if (
+    field === "requirements" ||
+    field.startsWith("requirements[") ||
+    ["dataReadiness", "integrationRequirements", "attachments"].includes(field)
+  ) {
+    return "requirements";
+  }
+  return "budget";
 }
 
 /**
- * Admin › Create a use case: an operator writes a use case on behalf of an approved organization.
- * The right-hand panel decides what saving does: keep a draft the organization edits and sends for
- * review, or publish at once, the operator being the reviewer.
+ * Admin creation uses the organization's five content steps, inside the Admin shell. The operator is
+ * the reviewer, so the final action publishes immediately instead of creating another review cycle.
  */
 function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganization[] }) {
   const t = useTranslations("Admin.useCases.form");
+  const w = useTranslations("Organization.useCases.wizard");
   const say = useTranslations("Form.errors");
-  const industryName = useVocabulary("industry");
-  const technologyName = useVocabulary("technology");
   const notify = useNotify();
   const router = useRouter();
-  const [open, setOpen] = useState<Record<SectionName, boolean>>({
-    outcomes: false,
-    requirements: false,
-    budget: false,
-  });
+  const [organizationId, setOrganizationId] = useState("");
+  const [values, setValues] = useState<DraftValues>(blank);
+  const [step, setStep] = useState<Step>("challenge");
+  const [problem, setProblem] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState(false);
 
-  const form = useAppForm({
-    defaultValues: blank,
-    validationLogic: revalidateLogic(),
-    validators: {
-      onDynamic: adminUseCaseSchema((key, values) =>
-        key === "budgetOutOfOrder" ? t("errors.budgetOutOfOrder") : say(key, values),
+  const stepIndex = steps.indexOf(step);
+  const missing = incompleteSteps(values);
+  const organization = organizations.find(({ id }) => id === organizationId);
+  const schema = useMemo(
+    () =>
+      adminUseCaseSchema((key, parameters) =>
+        key === "budgetOutOfOrder" ? t("errors.budgetOutOfOrder") : say(key, parameters),
       ),
-    },
-    onSubmitInvalid: ({ formApi }) => {
-      // A closed card that holds a wrong field opens, so the error can be seen.
-      const wrong = Object.entries(formApi.state.fieldMeta)
-        .filter(([, meta]) => (meta?.errors.length ?? 0) > 0)
-        .map(([name]) => sectionOf(name))
-        .filter((name) => name !== undefined);
-      if (wrong.length > 0) {
-        setOpen((current) => {
-          const next = { ...current };
-          for (const name of wrong) {
-            next[name] = true;
-          }
-          return next;
-        });
-      }
-    },
-    onSubmit: async ({ value, formApi }) => {
-      const number = (text: string) => (text === "" ? null : Number(text));
-      const weeks = timelinePresets[value.timeline as keyof typeof timelinePresets];
-      const publishNow = value.publish === "publish";
-      try {
-        await createAdminUseCase({
-          body: {
-            organizationId: value.organizationId,
-            title: value.title.trim(),
-            problemStatement: value.problemStatement,
-            industry: value.industry,
-            technologies: value.technologies,
-            expectedOutcomes: value.expectedOutcomes,
-            currentProcess: value.currentProcess,
-            currentSolutions: value.currentSolutions.trim() || null,
-            targetUsers: value.targetUsers,
-            requirements: value.requirements,
-            dataReadiness: value.dataReadiness,
-            integrationRequirements: value.integrationRequirements,
-            attachmentFileIds: value.attachments.map((file) => file.id),
-            currency: value.currency,
-            budgetMin: value.budgetToBeDetermined ? null : number(value.budgetMin),
-            budgetMax: value.budgetToBeDetermined ? null : number(value.budgetMax),
-            budgetToBeDetermined: value.budgetToBeDetermined,
-            budgetMembersOnly: value.budgetMembersOnly,
-            timelineMinWeeks: weeks.min,
-            timelineMaxWeeks: weeks.max,
-            closesAt: instantInVietnam(value.closesDay, value.closesTime),
-            hideOrganizationName: value.hideOrganizationName,
-            publishNow,
-          },
-        });
-        notify.success(publishNow ? "Admin.useCases.form.published" : "Admin.useCases.form.saved", {
-          title: value.title.trim(),
-        });
-        router.push(siteRoutes.adminUseCases);
-      } catch (error) {
-        const code = error instanceof ApiError ? error.code : undefined;
-        const refusal = refusalOf(code);
-        if (refusal) {
-          const [known, field] = refusal;
-          setServerErrors(formApi, {
-            fields: { [field]: { message: t(`errors.${known as keyof typeof refusals}`) } },
-          });
-          const section = sectionOf(field);
-          if (section) {
-            setOpen((current) => ({ ...current, [section]: true }));
-          }
-        } else if (error instanceof ApiError && error.violations.length > 0) {
-          setServerErrors(formApi, {
-            fields: Object.fromEntries(
-              error.violations.map((violation) => [
-                fieldOfPointer(violation.pointer),
-                { message: say("invalid") },
-              ]),
-            ),
-          });
-        } else {
-          notify.error("Admin.useCases.form.errors.unknown");
-        }
-      }
-    },
-  });
+    [say, t],
+  );
 
-  const toggle = (name: SectionName) => () =>
-    setOpen((current) => ({ ...current, [name]: !current[name] }));
+  function go(target: Step) {
+    setProblem(null);
+    setStep(target);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function publish() {
+    const timeline = timelineOf(values);
+    const result = schema.safeParse({
+      ...values,
+      organizationId,
+      timeline,
+    });
+    if (!result.success) {
+      const issue = result.error.issues[0];
+      go(stepOfField(String(issue.path[0] ?? "organizationId")));
+      setProblem(issue.message);
+      return;
+    }
+
+    setPublishing(true);
+    setProblem(null);
+    try {
+      const amount = (text: string) => (values.budgetToBeDetermined ? null : Number(text));
+      await createAdminUseCase({
+        body: {
+          organizationId,
+          title: values.title.trim(),
+          problemStatement: values.problemStatement.trim(),
+          industry: values.industry,
+          technologies: values.technologies,
+          expectedOutcomes: values.expectedOutcomes.trim(),
+          currentProcess: values.currentProcess.trim(),
+          currentSolutions: values.currentSolutions.trim() || null,
+          targetUsers: values.targetUsers.trim(),
+          requirements: values.requirements
+            .filter(({ statement }) => statement.trim() !== "")
+            .map((requirement) => ({ ...requirement, statement: requirement.statement.trim() })),
+          dataReadiness: values.dataReadiness.trim(),
+          integrationRequirements: values.integrationRequirements.trim(),
+          attachmentFileIds: values.attachments.map(({ id }) => id),
+          currency: values.currency,
+          budgetMin: amount(values.budgetMin),
+          budgetMax: amount(values.budgetMax),
+          budgetToBeDetermined: values.budgetToBeDetermined,
+          budgetMembersOnly: values.budgetMembersOnly,
+          timelineMinWeeks: values.timelineMinWeeks!,
+          timelineMaxWeeks: values.timelineMaxWeeks!,
+          closesAt: instantInVietnam(values.closesDay, values.closesTime),
+          hideOrganizationName: values.hideOrganizationName,
+          publishNow: true,
+        },
+      });
+      notify.success("Admin.useCases.form.published", { title: values.title.trim() });
+      router.push(siteRoutes.adminUseCases);
+    } catch (error) {
+      const code = error instanceof ApiError ? error.code : undefined;
+      if (code && code in refusalSteps) {
+        const refusal = code as RefusalCode;
+        go(refusalSteps[refusal]);
+        setProblem(t(`errors.${refusal}`));
+      } else if (error instanceof ApiError && error.violations.length > 0) {
+        go(stepOfField(fieldOfPointer(error.violations[0].pointer)));
+        setProblem(t("errors.unknown"));
+      } else {
+        notify.error("Admin.useCases.form.errors.unknown");
+      }
+    } finally {
+      setPublishing(false);
+    }
+  }
 
   return (
     <form
       noValidate
-      className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8"
+      className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8"
       onSubmit={(event) => {
         event.preventDefault();
-        void form.handleSubmit();
+        if (step === "review") void publish();
       }}
     >
       <div className="flex flex-col gap-1">
@@ -254,392 +197,143 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
         <p className="text-sm text-muted-foreground">{t("lead")}</p>
       </div>
 
-      <div className="grid items-start gap-6 lg:grid-cols-3">
-        <div className="flex flex-col gap-4 lg:col-span-2">
-          <Card size="lg">
-            <CardHeader>
-              <CardTitle>{t("sections.organization")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form.AppField name="organizationId">
-                {(field) => (
-                  <field.SelectField
-                    label={t("organization")}
-                    placeholder={t("organizationPlaceholder")}
-                    description={t("organizationHint")}
-                    options={organizations.map(({ id, name }) => ({ value: id, label: name }))}
-                  />
-                )}
-              </form.AppField>
-            </CardContent>
-          </Card>
+      <div className="grid items-start gap-8 xl:grid-cols-3">
+        <main className="flex min-w-0 flex-col gap-5 rounded-3xl border bg-background p-6 md:p-10 xl:col-span-2">
+          {problem && (
+            <Alert variant="destructive">
+              <AlertTitle>{t("errors.fix")}</AlertTitle>
+              <AlertDescription>{problem}</AlertDescription>
+            </Alert>
+          )}
 
-          <Card size="lg">
-            <CardHeader>
-              <CardTitle>{t("sections.challenge")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FieldGroup>
-                <form.AppField name="title">
-                  {(field) => (
-                    <field.TextField
-                      label={t("useCaseTitle")}
-                      description={t("useCaseTitleHint")}
-                      maxLength={200}
-                    />
-                  )}
-                </form.AppField>
-                <form.AppField name="problemStatement">
-                  {(field) => (
-                    <field.TextareaField
-                      label={t("problemStatement")}
-                      description={t("problemStatementHint")}
-                      maxLength={MAX_TEXT}
-                      rows={4}
-                      showCount
-                    />
-                  )}
-                </form.AppField>
-                <form.AppField name="industry">
-                  {(field) => (
-                    <field.SelectField
-                      label={t("industry")}
-                      placeholder={t("choose")}
-                      options={useCaseIndustries.map((value) => ({
-                        value,
-                        label: industryName(value),
-                      }))}
-                    />
-                  )}
-                </form.AppField>
-                <form.Field name="technologies">
-                  {(field) => {
-                    const invalid =
-                      field.state.meta.isTouched && field.state.meta.errors.length > 0;
-                    return (
-                      <Field data-invalid={invalid || undefined}>
-                        <FieldLabel>{t("technologies")}</FieldLabel>
-                        <div className="grid gap-x-6 gap-y-3 sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-5">
-                          {useCaseTechnologies.map((value) => (
-                            <label key={value} className="flex items-center gap-2 text-sm">
-                              <Checkbox
-                                checked={field.state.value.includes(value)}
-                                onCheckedChange={(checked) =>
-                                  field.handleChange(
-                                    checked === true
-                                      ? [...field.state.value, value]
-                                      : field.state.value.filter((chosen) => chosen !== value),
-                                  )
-                                }
-                              />
-                              {technologyName(value)}
-                            </label>
-                          ))}
-                        </div>
-                        {invalid && <FieldError>{say("required")}</FieldError>}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-              </FieldGroup>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col gap-3">
+            <h2 className="text-3xl font-semibold tracking-tight">
+              {step === "review" ? t("review.title") : w(`steps.${step}.title`)}
+            </h2>
+            <p className="text-base text-muted-foreground">
+              {step === "review" ? t("review.lead") : w(`steps.${step}.lead`)}
+            </p>
+            {step !== "review" && (
+              <p className="text-sm text-muted-foreground">{w("allRequired")}</p>
+            )}
+          </div>
 
-          <OpenSection
-            title={t("sections.outcomes.title")}
-            description={t("sections.outcomes.description")}
-            open={open.outcomes}
-            onToggle={toggle("outcomes")}
-          >
-            <form.AppField name="expectedOutcomes">
-              {(field) => (
-                <field.TextareaField
-                  label={t("expectedOutcomes")}
-                  description={t("expectedOutcomesHint")}
-                  maxLength={MAX_TEXT}
-                  rows={4}
-                  showCount
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="currentProcess">
-              {(field) => (
-                <field.TextareaField
-                  label={t("currentProcess")}
-                  description={t("currentProcessHint")}
-                  maxLength={MAX_TEXT}
-                  rows={4}
-                  showCount
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="currentSolutions">
-              {(field) => (
-                <field.TextareaField
-                  label={t("currentSolutions")}
-                  description={t("currentSolutionsHint")}
-                  maxLength={MAX_TEXT}
-                  rows={4}
-                  showCount
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="targetUsers">
-              {(field) => (
-                <field.TextareaField
-                  label={t("targetUsers")}
-                  description={t("targetUsersHint")}
-                  maxLength={MAX_TEXT}
-                  rows={4}
-                  showCount
-                />
-              )}
-            </form.AppField>
-          </OpenSection>
+          {step === "challenge" && (
+            <Choice
+              label={t("organization")}
+              placeholder={t("organizationPlaceholder")}
+              hint={t("organizationHint")}
+              options={organizations.map(({ id, name }) => ({ value: id, label: name }))}
+              value={organizationId}
+              onValueChange={setOrganizationId}
+            />
+          )}
 
-          <OpenSection
-            title={t("sections.requirements.title")}
-            description={t("sections.requirements.description")}
-            open={open.requirements}
-            onToggle={toggle("requirements")}
-          >
-            <form.Field name="requirements" mode="array">
-              {(requirements) => (
-                <div className="flex flex-col gap-4">
-                  {requirements.state.value.map((_, index) => (
-                    <div key={index} className="grid gap-3 sm:grid-cols-4">
-                      <div className="sm:col-span-3">
-                        <form.AppField name={`requirements[${index}].statement`}>
-                          {(field) => (
-                            <field.TextField
-                              label={t("requirement", { number: index + 1 })}
-                              maxLength={300}
-                            />
-                          )}
-                        </form.AppField>
-                      </div>
-                      <form.AppField name={`requirements[${index}].necessity`}>
-                        {(field) => (
-                          <field.SelectField
-                            label={t("necessity.label")}
-                            options={necessities.map((value) => ({
-                              value,
-                              label: t(`necessity.${value}`),
-                            }))}
-                          />
+          {step !== "review" && (
+            <UseCaseStepFields
+              step={step}
+              values={values}
+              onChange={(patch) => {
+                setProblem(null);
+                setValues((current) => ({ ...current, ...patch }));
+              }}
+            />
+          )}
+
+          {step === "review" && <UseCaseSummary values={values} onEdit={go} />}
+
+          <div className="flex items-center justify-between gap-3 border-t pt-6">
+            {stepIndex === 0 ? (
+              <Button prominence="tertiary" href={siteRoutes.adminUseCases}>
+                {t("cancel")}
+              </Button>
+            ) : (
+              <Button prominence="tertiary" type="button" onClick={() => go(steps[stepIndex - 1])}>
+                {w("back")}
+              </Button>
+            )}
+            {step === "review" ? (
+              <Button
+                key="publish"
+                type="submit"
+                pending={publishing}
+                disabled={publishing || missing.length > 0 || !organizationId}
+              >
+                {t("publishSubmit")}
+              </Button>
+            ) : (
+              <Button
+                key={`continue-${step}`}
+                type="button"
+                onClick={() => go(steps[stepIndex + 1])}
+              >
+                {w("continue")}
+              </Button>
+            )}
+          </div>
+        </main>
+
+        <aside className="flex flex-col gap-6 xl:sticky xl:top-4">
+          <nav aria-label={w("stepsLabel")}>
+            <p className="mb-3 text-xs font-medium text-muted-foreground">{w("yourUseCase")}</p>
+            <ol className="flex flex-col">
+              {steps.map((name, index) => {
+                const done = name !== "review" && !missing.includes(name);
+                const current = name === step;
+                return (
+                  <li key={name} className="flex gap-3">
+                    <div className="flex flex-col items-center">
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          "flex size-6 shrink-0 items-center justify-center rounded-full border-2 text-xs font-semibold",
+                          current
+                            ? "border-primary bg-background text-primary"
+                            : done
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border text-muted-foreground",
                         )}
-                      </form.AppField>
+                      >
+                        {done ? <CheckIcon className="size-3.5" /> : index + 1}
+                      </span>
+                      {index < steps.length - 1 && (
+                        <span
+                          className={cn("my-1 w-0.5 flex-1", done ? "bg-primary" : "bg-border")}
+                        />
+                      )}
                     </div>
-                  ))}
-                  <TextButton
-                    className="self-start"
-                    onClick={() => requirements.pushValue({ statement: "", necessity: "required" })}
-                  >
-                    <PlusIcon aria-hidden="true" />
-                    {t("addRequirement")}
-                  </TextButton>
-                </div>
-              )}
-            </form.Field>
-            <form.AppField name="dataReadiness">
-              {(field) => (
-                <field.TextareaField
-                  label={t("dataReadiness")}
-                  description={t("dataReadinessHint")}
-                  maxLength={MAX_TEXT}
-                  rows={4}
-                  showCount
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="integrationRequirements">
-              {(field) => (
-                <field.TextareaField
-                  label={t("integrationRequirements")}
-                  description={t("integrationRequirementsHint")}
-                  maxLength={MAX_TEXT}
-                  rows={4}
-                  showCount
-                />
-              )}
-            </form.AppField>
-            <form.Field name="attachments">
-              {(field) => (
-                <AttachmentsField
-                  id="attachments"
-                  value={field.state.value}
-                  onChange={field.handleChange}
-                />
-              )}
-            </form.Field>
-          </OpenSection>
-
-          <OpenSection
-            title={t("sections.budget.title")}
-            description={t("sections.budget.description")}
-            open={open.budget}
-            onToggle={toggle("budget")}
-          >
-            <form.AppField name="currency">
-              {(field) => (
-                <field.SelectField
-                  label={t("currency")}
-                  placeholder={t("choose")}
-                  options={currencies.map((value) => ({ value, label: t(`currencies.${value}`) }))}
-                />
-              )}
-            </form.AppField>
-            <form.Subscribe
-              selector={(state) =>
-                [state.values.budgetToBeDetermined, state.values.currency] as const
-              }
-            >
-              {([undecided, currency]) => (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <form.AppField name="budgetMin">
-                    {(field) => (
-                      <field.TextField
-                        label={t("budgetMin", { currency })}
-                        inputMode="numeric"
-                        disabled={undecided}
-                        maxLength={13}
-                      />
-                    )}
-                  </form.AppField>
-                  <form.AppField name="budgetMax">
-                    {(field) => (
-                      <field.TextField
-                        label={t("budgetMax", { currency })}
-                        inputMode="numeric"
-                        disabled={undecided}
-                        maxLength={13}
-                      />
-                    )}
-                  </form.AppField>
-                </div>
-              )}
-            </form.Subscribe>
-            <form.AppField name="budgetToBeDetermined">
-              {(field) => <field.CheckboxField label={t("budgetToBeDetermined")} />}
-            </form.AppField>
-            <form.AppField name="budgetMembersOnly">
-              {(field) => <field.CheckboxField label={t("budgetMembersOnly")} />}
-            </form.AppField>
-            <form.AppField name="timeline">
-              {(field) => (
-                <field.SelectField
-                  label={t("timeline.label")}
-                  placeholder={t("choose")}
-                  options={timelineCodes.map((value) => ({
-                    value,
-                    label: t(`timeline.${value}`),
-                  }))}
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="hideOrganizationName">
-              {(field) => <field.CheckboxField label={t("hideOrganizationName")} />}
-            </form.AppField>
-          </OpenSection>
-        </div>
-
-        <Card size="lg" className="lg:sticky lg:top-4">
-          <CardHeader>
-            <CardTitle>{t("publish.title")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <FieldGroup>
-              <form.Field name="publish">
-                {(field) => (
-                  <Field>
-                    <FieldLabel id="publish-label">{t("publish.when")}</FieldLabel>
-                    <RadioGroup
-                      aria-labelledby="publish-label"
-                      value={field.state.value}
-                      onValueChange={(value) =>
-                        field.handleChange(value as typeof field.state.value)
-                      }
+                    <button
+                      type="button"
+                      aria-current={current ? "step" : undefined}
+                      onClick={() => go(name)}
+                      className={cn(
+                        "-mx-2 -mt-1 mb-4 flex flex-col items-start rounded-md px-2 py-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                        current && "bg-primary/10",
+                      )}
                     >
-                      {publishChoices.map((choice) => (
-                        <label
-                          key={choice}
-                          className="relative flex cursor-pointer flex-col gap-1 rounded-lg border p-4 pr-10 text-sm has-data-checked:border-primary has-data-checked:bg-primary/10"
-                        >
-                          <RadioGroupItem value={choice} className="absolute top-4 right-4" />
-                          <span className="font-medium">{t(`publish.${choice}.title`)}</span>
-                          <form.Subscribe selector={(state) => state.values.organizationId}>
-                            {(id) => (
-                              <span className="text-muted-foreground">
-                                {t(`publish.${choice}.description`, {
-                                  organization:
-                                    organizations.find((organization) => organization.id === id)
-                                      ?.name ?? t("publish.thisOrganization"),
-                                })}
-                              </span>
-                            )}
-                          </form.Subscribe>
-                        </label>
-                      ))}
-                    </RadioGroup>
-                  </Field>
-                )}
-              </form.Field>
-
-              <Field>
-                <FieldLabel htmlFor="closesDay">{t("closes")}</FieldLabel>
-                <div className="grid grid-cols-2 gap-2">
-                  <form.Field name="closesDay">
-                    {(field) => (
-                      <Input
-                        id="closesDay"
-                        type="date"
-                        value={field.state.value}
-                        aria-invalid={field.state.meta.errors.length > 0 || undefined}
-                        onBlur={field.handleBlur}
-                        onChange={(event) => field.handleChange(event.target.value)}
-                      />
-                    )}
-                  </form.Field>
-                  <form.Field name="closesTime">
-                    {(field) => (
-                      <Input
-                        type="time"
-                        aria-label={t("closesTime")}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(event) => field.handleChange(event.target.value)}
-                      />
-                    )}
-                  </form.Field>
-                </div>
-                <form.Subscribe selector={(state) => state.fieldMeta.closesDay?.errors ?? []}>
-                  {(errors) =>
-                    errors.length > 0 ? (
-                      <FieldError errors={errors} />
-                    ) : (
-                      <FieldDescription>{t("closesHint")}</FieldDescription>
-                    )
-                  }
-                </form.Subscribe>
-              </Field>
-
-              <form.AppForm>
-                <div className="flex flex-col gap-3">
-                  <form.Subscribe selector={(state) => state.values.publish}>
-                    {(publish) => (
-                      <form.SubmitButton className="w-full">
-                        {t(publish === "publish" ? "publishSubmit" : "draftSubmit")}
-                      </form.SubmitButton>
-                    )}
-                  </form.Subscribe>
-                  <Button prominence="secondary" className="w-full" href={siteRoutes.adminUseCases}>
-                    {t("cancel")}
-                  </Button>
-                </div>
-              </form.AppForm>
-            </FieldGroup>
-          </CardContent>
-        </Card>
+                      <span
+                        className={cn(
+                          "text-sm font-medium",
+                          current ? "font-semibold text-foreground" : "text-muted-foreground",
+                        )}
+                      >
+                        {name === "review" ? t("review.title") : w(`steps.${name}.title`)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {name === "review" ? t("review.meta") : w(`steps.${name}.meta`)}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
+          <p className="rounded-lg border bg-background p-3 text-xs text-muted-foreground">
+            {t("publishNote", {
+              organization: organization?.name ?? t("thisOrganization"),
+            })}
+          </p>
+        </aside>
       </div>
     </form>
   );
