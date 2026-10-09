@@ -12792,6 +12792,9 @@ components:
           - industry
           - technology
           - none
+        country:
+          type: string
+          description: The two-letter code of the country its organization is in.
         decision:
           type: string
           description: What people last decided.
@@ -12819,6 +12822,13 @@ components:
           type: boolean
           description: "False when its owners keep it out of the directory: it has\
             \ no public page."
+        logoFileId:
+          type: string
+          format: uuid
+          description: "Its logo, read at the public address of stored files."
+        maturity:
+          type: string
+          description: "How far it is, as the solution directory codes it."
         organizationName:
           type: string
         origin:
@@ -12948,6 +12958,10 @@ components:
           enum:
           - capability
           - constraint
+        label:
+          type: string
+          description: Two or three words it is shown by in a list; empty for one
+            read before labels were kept.
         necessity:
           type: string
           enum:
@@ -12964,6 +12978,7 @@ components:
           type: string
       required:
       - kind
+      - label
       - necessity
       - position
       - quote
