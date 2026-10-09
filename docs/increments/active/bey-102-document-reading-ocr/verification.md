@@ -19,7 +19,7 @@ Design: [design.md](design.md). Plan: [plan.md](plan.md). Tracked in Linear as B
 
 ## The price of an OCR call, added after the first merge
 
-The OCR provider keeps what 1,000 calls cost in US dollars and each usage row copies it (`V63`). Commands run on 9 October 2026, on a machine short of memory, so the whole gate was left to CI:
+The OCR provider keeps what 1,000 calls cost in US dollars and each usage row copies it (`V64`; it was `V63` until matching took that number on main the same day). Commands run on 9 October 2026, on a machine short of memory, so the whole gate was left to CI:
 
 | Command                                                                                                                        | Outcome                                               |
 | ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
