@@ -15,6 +15,7 @@ Design: [design.md](design.md). Tracked in Linear as BEY-39. Nothing is coded be
 | 9 | **Web: the candidates.** The Candidates tab of a use case in the workspace and in Admin › Use cases, as approved in Figma on 7 October: the three buckets, a status per requirement, the reasons with their quotes, the run as it goes, Shortlist, Remove and the Removed tab | Done. Left out, as decided: the Applied strip and the invitations to apply, Introduce us, the History tab, How the AI judged (step 11), and a quote opened in its source (step 10) |
 | 10 | **Web: the deck inside BeyondPilot.** Drawn in Figma first and approved; then a view on `react-pdf`, as MemoryOS shows PDFs, opened at the page of a quote | After its screen is approved |
 | 11 | **Web: how a run worked, for operators.** The steps of a run as connected nodes with their counts, model, tokens, cost and time. Drawn in Figma first and approved | After step 9 |
+| 12 | **A run seen while it works.** The server tells an open page that something changed for a use case (`GET /api/matching/use-cases/{id}/events`, server-sent events); the page reads the state again and shows the stages of the run by name, each solution found as a row that settles into its group when it is read, and what was just added. The reload every five seconds stays for a page whose stream is closed. Design: [live.md](live.md) | Approved by Đạt on 9 October |
 
 Steps 2 to 8 are one pull request, steps 9 to 11 another, each made of small commits in this order.
 

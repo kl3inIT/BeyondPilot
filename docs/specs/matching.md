@@ -22,6 +22,27 @@ A run is a row of `matching_run` that a worker takes, one run at a time, every `
 - **The group.** Direct: every required capability is met. Industry: the industry is met and at least one required capability is shown. Technology: the technology is met with a required capability shown, or half of the required capabilities are met. Otherwise none. A constraint is reported and never decides the group.
 - **What is kept** for a candidate: the group, how many required capabilities are met, each finding with its quote, source, reason and where the quote stands, whether the product is made for the problem (for people to read; it decides nothing), the model's one sentence, which of deck and website held no text, and the fingerprint of what was judged. A candidate whose fingerprint is unchanged is not judged again.
 - **Steps.** `matching_run_step` keeps, for `requirements`, `candidates` and `judgment`, how many went in and came out, the calls, the tokens and the time. Every call is also recorded in `ai_usage` under the subject `matching_run`.
+- **Stage.** A running run says what it is doing, `brief`, `search` or `reading`, from the steps it has kept: a step is kept when it ends, so the run is at the first one it has not kept. A run that continues after a wait has kept them all and says `reading` from the start.
+
+## Changes told to an open page
+
+Designed in [a run seen while it works](../increments/active/bey-39-matching/live.md).
+
+- **The stream.** `GET /api/matching/use-cases/{id}/events` is a stream of server-sent events from Spring MVC, for whoever may read the use case's matching; the right is checked once, when the stream opens. It answers with `Cache-Control: no-store` and `X-Accel-Buffering: no`, sends a comment line when it opens and every 20 seconds, and has no end of its own.
+- **An event says that something changed, not what the state is.** Its name is the kind of change and its body is `{}`; the page reads `GET /api/matching/use-cases/{id}` again. Nothing is replayed: every change is in the database when it is told, so a page that lost its stream reads the state once when the stream is back.
+
+  | Event | Told when |
+  | --- | --- |
+  | `run` | A run is queued, has its start moved or brought forward, is taken by the worker, has to wait, ends or fails |
+  | `brief` | The requirements are read |
+  | `found` | The candidates are found and kept |
+  | `reading` | The judgment of one solution starts; the body is `{"solutionId": "…"}` |
+  | `read` | The judgment of one solution ended: it was kept, was not needed because nothing changed, or failed; the body is `{"solutionId": "…"}` |
+  | `decision` | A person shortlisted, removed or restored a candidate, or an operator added one by hand |
+
+- **Which solutions are being read now is not stored**; `reading` and `read` are the only place it is said, which is why they carry the solution.
+- **One sink inside the application** (`MatchingChanges`), which the stream of each use case filters. A change made in a transaction is told after the commit, and not at all when the transaction is rolled back. Telling never waits for a listener: each has a buffer of 256 changes and loses the oldest past that, and a run tells into an empty room at no cost. The backend is one instance; with a second, a page on the other instance would hear nothing and stay current by the reload below.
+- **Spring Security** lets the async dispatch that ends a stream through without asking for the session again: only the application starts one, for a request the chain already let in.
 
 ## What people decide
 
@@ -38,7 +59,13 @@ For the members of the use case's approved organization and for operators; anyon
 One page, Matched solutions, beside the brief of a published use case: for the members of its organization at `/workspace/organization/use-cases/{id}/candidates`, for operators at `/admin/use-cases/{id}/candidates`. A row of two tabs, Brief and Matched solutions, links the two pages. Both sides read the same page, in the same words, written for a member of an innovation team who is not an AI specialist; the answer of `GET /api/matching/use-cases/{id}` says what the caller may do.
 
 - **Words.** The page says "solution", never "candidate". A requirement is "what you asked for"; a finding is Shown, Partly shown or No evidence found; a required capability is tagged Must have. The groups Direct, Industry and Technology are named Strong fit, Experience in your industry, and Right technology, less proof.
-- **The run.** While a run is queued, running or waiting, the page says how many solutions are read and reads itself again every five seconds; a run that waits says it continues by itself; a failed run says why by its code. Without a model the page says it cannot look for solutions, and sends operators to Admin › AI. A finished run reads "Updated" with its date; operators also read how many solutions the AI read and the model.
+- **The run.** A run that is queued says so, and when it starts if it waits for the brief to stay unchanged; a run that waits says how many solutions are read and that it continues by itself; a failed run says why by its code. Without a model the page says it cannot look for solutions, and sends operators to Admin › AI. A finished run reads "Updated" with its date; operators also read how many solutions the AI read and the model.
+- **A run at work.** The page keeps the stream of changes open for as long as it is open, during a run or not, and reads the state again when a change arrives, once for the changes that arrive within 150 ms. While a run is running it shows:
+  - **the stages by name**, as an ordered list: Reading your brief, Searching the solutions, Reading each solution with "16 of 40" and a bar, Done. The stages behind are ticked, the one at work is the current step. A page that watched a run to its end keeps the stages, all ticked, above "Updated";
+  - **every solution found as a row at once**: what is not read yet stands in a group named Being read (the face of Not reviewed yet while a run works or waits for the AI service), each row saying Reading now or Waiting. A row the AI reads again says Reading now in its own group. When a solution is read its row enters its group, fading in over 200 ms with a highlight that fades in two seconds; one that fits no group leaves the list. Nothing moves for a reader who asked for reduced motion;
+  - **a line of what just happened** under the stages, a polite live region: "Added fileAI to Strong fit", or "3 more read, 1 added" when several were read together. A solution that fits no group is not spoken of;
+  - **the last group open with every row**, so that rows are seen arriving, until the person closes it. It stays so after a run the page watched; a page opened later finds it folded.
+- **Without the stream.** While the stream is not open, before it opens or when a proxy refuses it, and a run is queued, running or waiting, the page reads itself again every five seconds, as it did before the stream. A stream the browser gave up on is asked for again after 5 seconds, then at growing intervals up to a minute.
 - **Head actions.** One visible action, Look for new solutions (Find solutions before the first run). A member reads how many runs the day still allows and is asked to confirm, in a dialog that says the run uses one of them; an operator is not asked. Operators have a More menu with Add one by hand, a search over the approved solutions, and Re-review every solution, behind a confirmation.
 - **The top of the list.** A use case that asks for one capability, as most do, reads one sentence, how many solutions match and how many do exactly what was asked for, with the capability's statement in full under it ("You asked for: …"). A use case that asks for two or more reads how many of them the solutions cover together, one line for each that no solution shows, and a chip for each that narrows the list to the solutions that show it or part of it; the first chip, Any, clears the filter. Neither case draws a bar. One line under it says the AI read each vendor's public material and that the reader should check.
 - **Tabs.** Matches, Shortlist and Removed, each with its count.
@@ -67,6 +94,7 @@ Not on the screen: the proposals received and the invitation to apply, Introduce
 | Request | Who | Answer |
 | --- | --- | --- |
 | `GET /api/matching/use-cases/{id}` | Member, operator | The requirements, the last run, the candidates with their findings and decisions |
+| `GET /api/matching/use-cases/{id}/events` | Member, operator | The stream of changes, as server-sent events; 404 for anyone else |
 | `POST /api/matching/use-cases/{id}/runs` | Member, operator | Starts a run; 409 while one works, 429 past a member's limit, 503 without a model |
 | `POST /api/matching/use-cases/{id}/candidates` | Operator | Adds a solution by hand |
 | `POST /api/matching/candidates/{id}/shortlist`, `/remove`, `/restore` | Member, operator | Records the decision |

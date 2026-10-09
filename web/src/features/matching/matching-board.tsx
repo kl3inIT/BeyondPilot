@@ -2,7 +2,7 @@
 
 import { ChevronDownIcon, ChevronUpIcon, CircleAlertIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useId, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 
 import { IconButton } from "@/components/actions/icon-button";
 import { TextButton } from "@/components/actions/text-button";
@@ -24,6 +24,7 @@ import {
 } from "@/lib/api/generated";
 
 import { MatchingAdd } from "./matching-add";
+import { useMatchingChanges } from "./matching-changes";
 import { describeMatchingError } from "./matching-errors";
 import { MatchingPanel } from "./matching-panel";
 import { MatchingRemove } from "./matching-remove";
@@ -31,6 +32,7 @@ import { MatchingRemoved } from "./matching-removed";
 import { MatchingRow } from "./matching-row";
 import { MatchingRun } from "./matching-run";
 import {
+  changesBetween,
   constraintsOf,
   coverageOf,
   grouped,
@@ -40,6 +42,7 @@ import {
   needsOf,
   tabsOf,
   withNeed,
+  type Activity,
   type Section,
 } from "./matching-view";
 
@@ -54,6 +57,22 @@ function subscribeToWidth(onChange: () => void) {
 
 const tabNames = ["matches", "shortlist", "removed"] as const;
 type TabName = (typeof tabNames)[number];
+
+/** How long a row that entered a group stays marked, in milliseconds: its highlight has faded by then. */
+const MARKED = 2500;
+
+/** What the screen made of the state it last drew, to say what the next one changes. */
+type Seen = {
+  state: Matching;
+  /** What just happened to the solutions; kept until something else happens or another run starts. */
+  said: Activity | null;
+  /** The rows the last change put in a group. */
+  arrived: string[];
+  /** The rows that entered a group a moment ago. */
+  fresh: string[];
+  /** The run this screen saw at work. */
+  watched: string | null;
+};
 
 /** Every part of the list, in the order it is drawn. */
 const sectionNames = [...groups, "waiting", "kept"] as const satisfies Section[];
@@ -132,7 +151,9 @@ function GroupCard({ title, about, count, fold, children }: GroupCardProps) {
  * The solutions matched to a use case and what people decide on them: the run and its action, one
  * sentence on what was found, the list by group under three tabs, and one solution read in full, beside
  * the list on a wide screen and in a sheet below that. Every request answers with the whole state,
- * which the screen shows at once; a newer read of the page replaces it.
+ * which the screen shows at once; a newer read of the page replaces it. While the screen is open it
+ * listens to what changes, a run's work and other people's decisions, and reads the state again: a
+ * solution the AI has read moves from "Being read" into its group, and a line says so.
  */
 function MatchingBoard({ matching: read }: { matching: Matching }) {
   const t = useTranslations("Matching");
@@ -151,15 +172,80 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
-  /** The folding group, once a person opened it. */
-  const [opened, setOpened] = useState<Section[]>([]);
-  /** The groups a person asked to see every row of. */
-  const [expanded, setExpanded] = useState<Section[]>([]);
+  /** Whether the folding group is open, once a person opened or closed it. */
+  const [opened, setOpened] = useState<Partial<Record<Section, boolean>>>({});
+  /** Whether a group shows every row, once a person asked for all of them or for fewer. */
+  const [expanded, setExpanded] = useState<Partial<Record<Section, boolean>>>({});
   const [pending, setPending] = useState<string | null>(null);
 
   // What a request answered stands until the page is read again.
   const matching = held.over === read ? held.state : read;
   const { useCaseId, operator } = matching;
+  const stream = useMatchingChanges(useCaseId, (state) => setHeld({ over: read, state }));
+  const running = matching.run?.state === "running";
+  // A run that waits for the AI service goes on by itself: what it has not read is still to be read.
+  const reads = running || matching.run?.state === "waiting";
+
+  const [seen, setSeen] = useState<Seen>({
+    state: matching,
+    said: null,
+    arrived: [],
+    fresh: [],
+    watched: running ? (matching.run?.id ?? null) : null,
+  });
+  // Each new state is compared with the one drawn before it, however it came: from the stream, from a
+  // request's answer or from the page read again.
+  if (seen.state !== matching) {
+    const same = seen.state.useCaseId === matching.useCaseId;
+    const sameRun = same && seen.state.run?.id === matching.run?.id;
+    const change = same
+      ? changesBetween(seen.state.candidates, matching.candidates)
+      : { activity: undefined, arrived: [] };
+    setSeen({
+      state: matching,
+      said: change.activity ?? (sameRun ? seen.said : null),
+      arrived: change.arrived,
+      fresh: same ? [...seen.fresh, ...change.arrived] : [],
+      watched: running ? (matching.run?.id ?? null) : sameRun ? seen.watched : null,
+    });
+  }
+  // A row stops being marked once its highlight has faded, so that it does not come in again when the
+  // list is drawn anew, as on another tab.
+  const marks = useRef(new Set<number>());
+  const { arrived } = seen;
+  useEffect(() => {
+    if (arrived.length === 0) {
+      return;
+    }
+    const timers = marks.current;
+    const timer = window.setTimeout(() => {
+      timers.delete(timer);
+      setSeen((current) => ({
+        ...current,
+        fresh: current.fresh.filter((id) => !arrived.includes(id)),
+      }));
+    }, MARKED);
+    timers.add(timer);
+  }, [arrived]);
+  useEffect(() => {
+    const timers = marks.current;
+    return () => {
+      for (const timer of timers) {
+        window.clearTimeout(timer);
+      }
+    };
+  }, []);
+  // While a run works, and after one this screen watched to its end, the last group is open with every
+  // row, so that the rows are seen arriving; a person can still close it.
+  const atWork = running || (matching.run?.state === "done" && seen.watched === matching.run.id);
+  const said = !seen.said
+    ? null
+    : seen.said.kind === "added"
+      ? t("activity.added", {
+          name: seen.said.name,
+          group: t(`groups.${seen.said.group}.title`),
+        })
+      : t("activity.several", { read: seen.said.read, added: seen.said.added });
   const needs = needsOf(matching.requirements);
   const constraints = constraintsOf(matching.requirements);
   const tabs = tabsOf(matching.candidates);
@@ -178,8 +264,8 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
       section,
       groupView(section, sections[section].length, {
         folds,
-        opened: opened.includes(section),
-        all: expanded.includes(section),
+        opened: opened[section] ?? atWork,
+        all: expanded[section] ?? atWork,
       }),
     ]),
   ) as Record<Section, ReturnType<typeof groupView>>;
@@ -200,6 +286,8 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
     setPending(key);
     try {
       const { data } = await request();
+      // A read the stream asked for before this answer would show an older state.
+      stream.supersede();
       setHeld({ over: read, state: data });
       done?.();
       return true;
@@ -267,14 +355,9 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
     setSheetOpen(true);
   }
 
-  const toggle = (list: Section[], section: Section, on: boolean) =>
-    on
-      ? [...list.filter((one) => one !== section), section]
-      : list.filter((one) => one !== section);
-
   const rows = (section: Section) => {
     const view = views[section];
-    const all = expanded.includes(section);
+    const all = expanded[section] ?? atWork;
     return (
       <>
         <ul className="flex flex-col">
@@ -295,6 +378,14 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
                 needs={needs}
                 selected={chosen?.id === candidate.id && (wide || sheetOpen)}
                 pending={pending === candidate.id}
+                reading={
+                  running && stream.reading.includes(candidate.solutionId)
+                    ? "now"
+                    : reads && section === "waiting"
+                      ? "waiting"
+                      : undefined
+                }
+                arrived={seen.fresh.includes(candidate.id)}
                 onSelect={() => select(candidate)}
                 onShortlist={() => void shortlist(candidate)}
                 onRemove={() => askWhy(candidate)}
@@ -306,7 +397,7 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
           <div className="px-3 pt-1">
             <TextButton
               aria-expanded={all}
-              onClick={() => setExpanded((current) => toggle(current, section, !all))}
+              onClick={() => setExpanded((current) => ({ ...current, [section]: !all }))}
             >
               {all ? t("groups.fewer") : t("groups.more", { count: view.more })}
               {all ? <ChevronUpIcon aria-hidden="true" /> : <ChevronDownIcon aria-hidden="true" />}
@@ -340,17 +431,20 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
           return null;
         }
         const view = views[section];
+        // While a run works, what is not read yet is what the AI is reading.
+        const name = section === "waiting" && reads ? "reading" : section;
         return (
           <GroupCard
             key={section}
-            title={t(`groups.${section}.title`)}
-            about={t(`groups.${section}.about`)}
+            title={t(`groups.${name}.title`)}
+            about={t(`groups.${name}.about`)}
             count={sections[section].length}
             fold={
               view.folds
                 ? {
                     open: view.open,
-                    onOpenChange: (next) => setOpened((current) => toggle(current, section, next)),
+                    onOpenChange: (next) =>
+                      setOpened((current) => ({ ...current, [section]: next })),
                   }
                 : undefined
             }
@@ -408,6 +502,9 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
     <div className="flex flex-col gap-6">
       <MatchingRun
         matching={matching}
+        live={stream.open}
+        watched={matching.run?.id !== undefined && seen.watched === matching.run.id}
+        said={said}
         pending={pending === "run" || pending === "judgeAll" ? pending : null}
         onStart={start}
         onAddByHand={() => setAdding(true)}

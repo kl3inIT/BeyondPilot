@@ -5,9 +5,15 @@
 //   GenAI Fund removed and one the AI has not read yet.
 // - "Invoice capture" asks for one thing, as most use cases do, with a condition of delivery: one
 //   solution in each of the first two groups and six in the last, which folds.
+// And a family of use cases named "Document intake", each with a run at work: one solution read and
+// three that wait. A test takes one of them for itself, replaces what the stub answers for it and
+// pushes events into the stream of its changes, as a run does (see `serveMatchingLive`).
 
 const matchedUseCaseId = "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0011";
 const oneNeedUseCaseId = "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0021";
+
+// Every identifier that starts like this, with three digits after it, is a "Document intake".
+const runningUseCaseIds = /^0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a1\d{3}$/;
 
 const person = (name, more = {}) => ({ name, genaiFund: false, you: false, ...more });
 
@@ -272,14 +278,113 @@ const oneNeedCandidates = [
   ),
 ];
 
+// "Document intake": the search found four solutions; the AI has read the first and reads the others.
+const runningCandidates = [
+  oneNeedCandidates[0],
+  ...oneNeedCandidates
+    .slice(1, 4)
+    .map((one) => ({ ...one, judged: false, bucket: "none", findings: [], summary: null })),
+];
+
+const runningRun = {
+  id: "7a1d0000-0000-4000-8000-000000000002",
+  origin: "member",
+  state: "running",
+  stage: "reading",
+  createdAt: "2026-10-09T03:00:00Z",
+  startedAt: "2026-10-09T03:00:05Z",
+  judged: 1,
+  total: 4,
+};
+
 const useCases = {
-  [matchedUseCaseId]: { title: "Claims triage", requirements, candidates },
+  [matchedUseCaseId]: { title: "Claims triage", requirements, candidates, run },
   [oneNeedUseCaseId]: {
     title: "Invoice capture",
     requirements: oneNeedRequirements,
     candidates: oneNeedCandidates,
+    run,
   },
 };
+
+const runningUseCase = {
+  title: "Document intake",
+  requirements: oneNeedRequirements,
+  candidates: runningCandidates,
+  run: runningRun,
+};
+
+/** What a test put in the place of the stub's answer for one "Document intake", by its identifier. */
+const replaced = new Map();
+
+/** The open streams of changes, by use case. */
+const streams = new Map();
+
+const findUseCase = (id) =>
+  useCases[id] ?? (runningUseCaseIds.test(id) ? runningUseCase : undefined);
+
+async function bodyOf(request) {
+  let text = "";
+  for await (const chunk of request) {
+    text += chunk;
+  }
+  return text ? JSON.parse(text) : null;
+}
+
+/**
+ * The stream of a use case's changes, and what a test does to it. Answers the request and returns true
+ * when the path is one of these, false otherwise:
+ * - `GET /api/matching/use-cases/{id}/events` is the stream itself, as the backend sends it: a comment
+ *   at once, then whatever a test pushes, for as long as the browser listens.
+ * - `PUT /test/matching/use-cases/{id}` replaces what the stub answers for the use case with the body;
+ *   `null` puts the stub's own answer back.
+ * - `POST /test/matching/use-cases/{id}/events` pushes `{ event, data }` to every open stream of it.
+ * - `GET /test/matching/use-cases/{id}/events` says how many streams of it are open.
+ */
+export function serveMatchingLive(request, response, url, account) {
+  const stream = /^\/api\/matching\/use-cases\/([0-9a-f-]{36})\/events$/.exec(url.pathname);
+  if (stream) {
+    const [, id] = stream;
+    if (!account || !findUseCase(id)) {
+      response.writeHead(account ? 404 : 401).end();
+      return true;
+    }
+    response.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-store",
+      "X-Accel-Buffering": "no",
+    });
+    response.write(":open\n\n");
+    const open = streams.get(id) ?? new Set();
+    streams.set(id, open.add(response));
+    request.on("close", () => open.delete(response));
+    return true;
+  }
+  const test = /^\/test\/matching\/use-cases\/([0-9a-f-]{36})(\/events)?$/.exec(url.pathname);
+  if (!test) {
+    return false;
+  }
+  const [, id, events] = test;
+  const open = streams.get(id) ?? new Set();
+  if (events && request.method === "GET") {
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ open: open.size }));
+    return true;
+  }
+  void bodyOf(request).then((body) => {
+    if (events) {
+      for (const one of open) {
+        one.write(`event:${body.event}\ndata:${JSON.stringify(body.data ?? {})}\n\n`);
+      }
+    } else if (body === null) {
+      replaced.delete(id);
+    } else {
+      replaced.set(id, body);
+    }
+    response.writeHead(204).end();
+  });
+  return true;
+}
 
 /**
  * The reads of the Matched solutions page, as `[status, body]`; nothing for another path. An operator reads
@@ -287,8 +392,9 @@ const useCases = {
  */
 export function answerMatching(url, account) {
   const { pathname } = url;
-  const id = Object.keys(useCases).find((one) => pathname.endsWith(`/${one}`));
-  if (!id) {
+  const id = /\/([0-9a-f-]{36})$/.exec(pathname)?.[1];
+  const useCase = id ? findUseCase(id) : undefined;
+  if (!useCase) {
     return undefined;
   }
   const paths = {
@@ -303,12 +409,14 @@ export function answerMatching(url, account) {
     return [401, {}];
   }
   const operator = account.role === "operator";
-  const useCase = useCases[id];
   if (pathname === paths.mine) {
     return [200, { ...mine, id, title: useCase.title }];
   }
   if (pathname === paths.administered) {
     return operator ? [200, { ...administered, id, title: useCase.title }] : [403, {}];
+  }
+  if (replaced.has(id)) {
+    return [200, replaced.get(id)];
   }
   return [
     200,
@@ -318,7 +426,7 @@ export function answerMatching(url, account) {
       modelChosen: true,
       requirements: useCase.requirements,
       candidates: useCase.candidates,
-      run: operator ? { ...run, modelName: "claude-sonnet-4-5" } : run,
+      run: operator ? { ...useCase.run, modelName: "claude-sonnet-4-5" } : useCase.run,
       steps: operator
         ? [
             {

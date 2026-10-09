@@ -2120,6 +2120,16 @@ export type MatchingCandidate = {
 };
 
 /**
+ * The body of one event of a use case's stream of changes. The name of the event says what changed; the state itself is read again with `getMatching`.
+ */
+export type MatchingChange = {
+    /**
+     * The solution whose judgment starts (`reading`) or ended (`read`); absent on every other event.
+     */
+    solutionId?: string;
+};
+
+/**
  * What the solution's own material shows, with the words that show it.
  */
 export type MatchingFinding = {
@@ -2197,6 +2207,10 @@ export type MatchingRun = {
      * When it goes on, while it waits for the AI provider.
      */
     resumesAt?: string;
+    /**
+     * What a running run is doing: reading the brief, searching the solutions, or reading each solution found. Absent when the run is not running.
+     */
+    stage?: 'brief' | 'search' | 'reading';
     startedAt?: string;
     /**
      * When it starts, while it waits for the use case to stay unchanged.
@@ -6952,6 +6966,37 @@ export type AddMatchingCandidateResponses = {
 };
 
 export type AddMatchingCandidateResponse = AddMatchingCandidateResponses[keyof AddMatchingCandidateResponses];
+
+export type StreamMatchingChangesData = {
+    body?: never;
+    path: {
+        useCaseId: string;
+    };
+    query?: never;
+    url: '/api/matching/use-cases/{useCaseId}/events';
+};
+
+export type StreamMatchingChangesErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * No published use case has the identifier, or the caller is neither an operator nor a member of its organization.
+     */
+    404: Problem;
+};
+
+export type StreamMatchingChangesError = StreamMatchingChangesErrors[keyof StreamMatchingChangesErrors];
+
+export type StreamMatchingChangesResponses = {
+    /**
+     * The stream; the schema is the body of each event.
+     */
+    200: MatchingChange;
+};
+
+export type StreamMatchingChangesResponse = StreamMatchingChangesResponses[keyof StreamMatchingChangesResponses];
 
 export type StartMatchingRunData = {
     body: StartMatchingRun;

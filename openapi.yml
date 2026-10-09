@@ -2038,6 +2038,50 @@ paths:
       summary: Put a solution among the candidates by hand
       tags:
       - Matching
+  /api/matching/use-cases/{useCaseId}/events:
+    get:
+      description: "Server-sent events. The name of an event says what changed: `run`\
+        \ (a run was queued, started, has to wait, ended or failed), `brief` (the\
+        \ requirements are read), `found` (the solutions are found), `reading` (the\
+        \ judgment of one solution starts), `read` (the judgment of one solution ended)\
+        \ and `decision` (a person shortlisted, removed, restored or added a solution).\
+        \ An event carries no state: read `getMatching` again. Nothing is replayed,\
+        \ so read it once whenever the connection opens. A comment line is sent when\
+        \ the stream opens and every 20 seconds."
+      operationId: streamMatchingChanges
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/MatchingChange"
+          description: The stream; the schema is the body of each event.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "No published use case has the identifier, or the caller is\
+            \ neither an operator nor a member of its organization."
+      security:
+      - session: []
+      summary: "Hear that what matching holds for a use case changed, for as long\
+        \ as the connection stays open"
+      tags:
+      - Matching
   /api/matching/use-cases/{useCaseId}/runs:
     post:
       operationId: startMatchingRun
@@ -13393,6 +13437,16 @@ components:
       - solutionName
       - solutionSlug
       - unread
+    MatchingChange:
+      type: object
+      description: The body of one event of a use case's stream of changes. The name
+        of the event says what changed; the state itself is read again with `getMatching`.
+      properties:
+        solutionId:
+          type: string
+          format: uuid
+          description: The solution whose judgment starts (`reading`) or ended (`read`);
+            absent on every other event.
     MatchingFinding:
       type: object
       description: "What the solution's own material shows, with the words that show\
@@ -13508,6 +13562,15 @@ components:
           type: string
           format: date-time
           description: "When it goes on, while it waits for the AI provider."
+        stage:
+          type: string
+          description: "What a running run is doing: reading the brief, searching\
+            \ the solutions, or reading each solution found. Absent when the run is\
+            \ not running."
+          enum:
+          - brief
+          - search
+          - reading
         startedAt:
           type: string
           format: date-time

@@ -1,4 +1,4 @@
-import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page, type TestInfo } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
@@ -27,6 +27,49 @@ async function matchingAs(request: APIRequestContext, account: "owner" | "operat
     headers: { Cookie: `BEYONDPILOT_SESSION=${account}` },
   });
   return (await answer.json()) as Matching;
+}
+
+/**
+ * A use case with a run at work, "Document intake", for one test alone: the stub answers every
+ * identifier of this shape with it, so the desktop run and the phone run of a test, which share the
+ * stub, each change and listen to their own.
+ */
+function runningUseCase(testInfo: TestInfo, number: number) {
+  const id = `0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a1${testInfo.project.name === "mobile" ? 2 : 1}0${number}`;
+  const state = `${stubOrigin}/api/matching/use-cases/${id}`;
+  const test = `${stubOrigin}/test/matching/use-cases/${id}`;
+  const member = { Cookie: "BEYONDPILOT_SESSION=owner" };
+  return {
+    id,
+    path: `/workspace/organization/use-cases/${id}/candidates`,
+    /** What the stub answers a member now. */
+    read: async (request: APIRequestContext) =>
+      (await (await request.get(state, { headers: member })).json()) as Matching,
+    /** Replaces what the stub answers, as the backend's state changes; `null` puts its own back. */
+    put: async (request: APIRequestContext, next: Matching | null) => {
+      expect((await request.put(test, { data: JSON.stringify(next) })).status()).toBe(204);
+    },
+    /** Sends one event to the pages that listen, as the backend does once a change is kept. */
+    push: async (request: APIRequestContext, event: string, data: Record<string, unknown> = {}) => {
+      expect((await request.post(`${test}/events`, { data: { event, data } })).status()).toBe(204);
+    },
+    /** How many pages listen to the stream now. */
+    listeners: async (request: APIRequestContext) =>
+      ((await (await request.get(`${test}/events`)).json()) as { open: number }).open,
+    /**
+     * Lets the browser reach the stub for the state and for the stream, as it reaches the backend
+     * through the reverse proxy. The stream is a real one: the request goes on to the stub, which
+     * keeps it open.
+     */
+    connect: async (page: Page) => {
+      await page.route(`**/api/matching/use-cases/${id}`, (route) =>
+        route.continue({ url: state }),
+      );
+      await page.route(`**/api/matching/use-cases/${id}/events`, (route) =>
+        route.continue({ url: `${state}/events` }),
+      );
+    },
+  };
 }
 
 /** The state with one solution changed. */
@@ -486,5 +529,155 @@ test.describe("solutions matched to a use case", () => {
       .getByRole("listitem")
       .filter({ hasText: "Fintelite" });
     await expect(fintelite.getByRole("button", { name: "Restore" })).toBeVisible();
+  });
+
+  test("a run at work shows its stages, and each solution moves to its group as it is read", async ({
+    page,
+    context,
+    baseURL,
+    request,
+  }, testInfo) => {
+    const useCase = runningUseCase(testInfo, 1);
+    await useCase.put(request, null);
+    const state = await useCase.read(request);
+    const sentosa = state.candidates.find((one) => one.solutionName === "Sentosa Finance")!;
+    await signInAs(context, "owner", baseURL!);
+    await useCase.connect(page);
+    await page.goto(useCase.path);
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Document intake");
+    // The stages by name: those behind are finished, the one at work is the current step.
+    const stages = page.getByRole("list", { name: "Progress of the search" }).getByRole("listitem");
+    await expect(stages).toHaveText([
+      "Reading your brief, finished",
+      "Searching the solutions, finished",
+      /^Reading each solution\s*1 of 4$/,
+      "Done",
+    ]);
+    await expect(stages.nth(2)).toHaveAttribute("aria-current", "step");
+    await expect(page.getByRole("progressbar", { name: "Reading each solution" })).toHaveAttribute(
+      "aria-valuenow",
+      "25",
+    );
+
+    // Every solution found is a row at once: what is not read yet is being read, in a group of its own.
+    const beingRead = group(page, "Being read");
+    await expect(
+      beingRead.getByText(
+        "Found for this use case. Each one moves to its group when the AI has read it.",
+      ),
+    ).toBeVisible();
+    await expect(beingRead.getByRole("listitem")).toHaveCount(3);
+    await expect(row(page, "Sentosa Finance").getByText("Waiting", { exact: true })).toBeVisible();
+    await expect(group(page, "Not reviewed yet")).toHaveCount(0);
+    await expect(group(page, "Strong fit").getByRole("listitem")).toHaveCount(1);
+    await expectNoSeriousA11yViolations(page);
+
+    // The stream is open. The judgment of one solution starts: its row says so.
+    await expect.poll(() => useCase.listeners(request)).toBe(1);
+    await useCase.push(request, "reading", { solutionId: sentosa.solutionId });
+    await expect(row(page, "Sentosa Finance").getByText("Reading now")).toBeVisible();
+    await expect(row(page, "Docbase").getByText("Waiting", { exact: true })).toBeVisible();
+
+    // It is read: the row enters its group, the count moves and a line says what happened.
+    const second = {
+      ...withCandidate(state, "Sentosa Finance", {
+        judged: true,
+        bucket: "industry",
+        summary: "An insurer uses it for invoices.",
+      }),
+      run: { ...(state.run as object), judged: 2 },
+    };
+    await useCase.put(request, second);
+    await useCase.push(request, "read", { solutionId: sentosa.solutionId });
+    await expect(
+      group(page, "Experience in your industry").getByRole("button", {
+        name: "Sentosa Finance",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(beingRead.getByRole("listitem")).toHaveCount(2);
+    await expect(
+      page.getByText("Added Sentosa Finance to Experience in your industry"),
+    ).toBeVisible();
+    await expect(stages.nth(2)).toHaveText(/2 of 4$/);
+    await expect(row(page, "Sentosa Finance").getByText("Reading now")).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+
+    // The run ends with the two others read together, one of them in no group: the stages are all
+    // finished, the line counts them, and the last group is open so that its row is seen.
+    const ended = {
+      ...withCandidate(
+        withCandidate(second, "Docbase", { judged: true, bucket: "technology" }),
+        "Paperline",
+        { judged: true, bucket: "none" },
+      ),
+      run: {
+        ...(state.run as object),
+        state: "done",
+        stage: null,
+        judged: 4,
+        endedAt: "2026-10-09T03:04:00Z",
+      },
+    };
+    await useCase.put(request, ended);
+    await useCase.push(request, "run");
+    await expect(stages).toHaveText([
+      "Reading your brief, finished",
+      "Searching the solutions, finished",
+      "Reading each solution, finished",
+      "Done, finished",
+    ]);
+    await expect(page.getByText("2 more read, 1 added")).toBeVisible();
+    await expect(page.getByText(/^Updated /)).toBeVisible();
+    await expect(beingRead).toHaveCount(0);
+    await expect(
+      group(page, "Right technology, less proof").getByRole("button", {
+        name: "Docbase",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(rowName(page, "Paperline")).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+  });
+
+  test("a page whose stream is refused still becomes current, by reading itself again", async ({
+    page,
+    context,
+    baseURL,
+    request,
+  }, testInfo) => {
+    const useCase = runningUseCase(testInfo, 2);
+    await useCase.put(request, null);
+    const state = await useCase.read(request);
+    await signInAs(context, "owner", baseURL!);
+    // A proxy that will not carry the stream. The browser reaches nothing else of the backend here.
+    let refused = 0;
+    await page.route(`**/api/matching/use-cases/${useCase.id}/events`, async (route) => {
+      refused += 1;
+      await route.fulfill({ status: 503 });
+    });
+    await page.goto(useCase.path);
+
+    const beingRead = group(page, "Being read");
+    await expect(beingRead.getByRole("listitem")).toHaveCount(3);
+    await expect.poll(() => refused).toBeGreaterThan(0);
+    expect(await useCase.listeners(request)).toBe(0);
+
+    await useCase.put(request, {
+      ...withCandidate(state, "Sentosa Finance", { judged: true, bucket: "industry" }),
+      run: { ...(state.run as object), judged: 2 },
+    });
+    // The page reads itself again every five seconds while a run is open and no stream is.
+    await expect(
+      group(page, "Experience in your industry").getByRole("button", {
+        name: "Sentosa Finance",
+        exact: true,
+      }),
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(beingRead.getByRole("listitem")).toHaveCount(2);
+    await expect(
+      page.getByText("Added Sentosa Finance to Experience in your industry"),
+    ).toBeVisible();
   });
 });

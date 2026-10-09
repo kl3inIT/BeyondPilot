@@ -4,16 +4,27 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ai.genaifund.beyondpilot.TestMailbox;
@@ -42,6 +53,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.client.RestTestClient;
+import reactor.core.Disposable;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -81,6 +93,9 @@ class MatchingRunTest {
 
 	@Autowired
 	private MatchingRuns runs;
+
+	@Autowired
+	private MatchingChanges changes;
 
 	@Autowired
 	private MatchingRepository matching;
@@ -159,7 +174,7 @@ class MatchingRunTest {
 			"It reads Vietnamese claim forms and gives a first assessment.");
 
 	@Test
-	void aPublishedUseCaseIsMatchedOnceAndARunThatMeetsTheProvidersLimitWaitsAndGoesOn() {
+	void aPublishedUseCaseIsMatchedOnceAndARunThatMeetsTheProvidersLimitWaitsAndGoesOn() throws Exception {
 		String word = "zq" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
 		matchingOn("http://127.0.0.1:" + provider.getAddress().getPort() + "/v1");
 		String owner = TestSignIn.session(client, mail, "owner-" + word + "@matching.test");
@@ -189,8 +204,21 @@ class MatchingRunTest {
 			.is2xxSuccessful()), "$.id"));
 		await().atMost(WAIT).until(() -> runsOf(useCase).equals(List.of("queued approved")));
 
+		// A page open on the use case hears each thing the run does, and reads the stage the run is at when it hears it.
+		String path = "/api/matching/use-cases/" + useCase;
+		List<String> heard = new CopyOnWriteArrayList<>();
+		Disposable listening = changes.of(useCase).subscribe(change -> {
+			String state = body(call("GET", operator, path, null).expectStatus().isOk());
+			heard.add(change.kind() + " " + JsonPath.<String>read(state, "$.run.state") + " "
+					+ JsonPath.<Object>read(state, "$.run.stage")
+					+ (change.solutionId() == null ? "" : solution.equals(change.solutionId()) ? " the solution" : " another"));
+		});
+
 		runs.work();
 
+		listening.dispose();
+		assertThat(heard).containsExactly("RUN running brief", "BRIEF running search", "FOUND running reading",
+				"READING running reading the solution", "READ running reading the solution", "RUN done null");
 		assertThat(runsOf(useCase)).containsExactly("done approved");
 		// The requirement whose quote the brief does not hold is the model's own and is not kept; capabilities first.
 		assertThat(matching.requirements(useCase)).extracting(Requirement::kind, Requirement::statement)
@@ -237,7 +265,6 @@ class MatchingRunTest {
 		assertThat(asked).containsExactly("requirements", "judgment", "judgment");
 
 		// A member of the use case's organization reads the candidates with their reasons, and nothing of the cost.
-		String path = "/api/matching/use-cases/" + useCase;
 		String read = body(call("GET", buyer, path, null).expectStatus().isOk());
 		assertThat(JsonPath.<Boolean>read(read, "$.operator")).isFalse();
 		assertThat(JsonPath.<Integer>read(read, "$.runsLeftToday")).isEqualTo(2);
@@ -261,6 +288,13 @@ class MatchingRunTest {
 		String candidate = JsonPath.read(read, "$.candidates[0].id");
 		// The vendor's own member, and anyone else, is told there is no such use case.
 		assertProblem(call("GET", owner, path, null), 404, "MATCHING_USE_CASE_NOT_FOUND");
+		// So is whoever asks to hear its changes, in the words a browser asks with; and nobody hears without a session.
+		assertProblem(client.get()
+			.uri(path + "/events")
+			.accept(MediaType.TEXT_EVENT_STREAM)
+			.cookie(TestSignIn.SESSION_COOKIE, owner)
+			.exchange(), 404, "MATCHING_USE_CASE_NOT_FOUND");
+		client.get().uri(path + "/events").accept(MediaType.TEXT_EVENT_STREAM).exchange().expectStatus().isUnauthorized();
 		// A candidate that is not theirs reads as one that does not exist, so no identifier can be probed.
 		assertProblem(call("POST", owner, "/api/matching/candidates/" + candidate + "/shortlist", null), 404,
 				"MATCHING_CANDIDATE_NOT_FOUND");
@@ -275,7 +309,27 @@ class MatchingRunTest {
 
 		// The member shortlists, removes with a reason and restores; a run never undoes it.
 		String decide = "/api/matching/candidates/" + candidate;
-		assertThat(decision(call("POST", buyer, decide + "/shortlist", null))).isEqualTo("shortlisted");
+		// The member's page keeps a stream open, as a browser does: it is told at once that it is open, in a response
+		// no proxy may hold back, and then of the decision, once it is kept.
+		try (HttpClient browser = HttpClient.newHttpClient()) {
+			HttpResponse<InputStream> stream = browser.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + path + "/events"))
+				.header("Accept", MediaType.TEXT_EVENT_STREAM_VALUE)
+				.header("Cookie", TestSignIn.SESSION_COOKIE + "=" + buyer)
+				.build(), HttpResponse.BodyHandlers.ofInputStream());
+			try (BufferedReader lines = new BufferedReader(new InputStreamReader(stream.body(), UTF_8))) {
+				assertThat(stream.statusCode()).isEqualTo(200);
+				assertThat(stream.headers().firstValue("Content-Type").orElseThrow()).startsWith(MediaType.TEXT_EVENT_STREAM_VALUE);
+				assertThat(stream.headers().allValues("Cache-Control")).containsExactly("no-store");
+				assertThat(stream.headers().firstValue("X-Accel-Buffering")).contains("no");
+				assertThat(line(lines)).startsWith(":");
+				assertThat(decision(call("POST", buyer, decide + "/shortlist", null))).isEqualTo("shortlisted");
+				assertThat(event(lines)).isEqualTo("event:decision data:{}");
+			}
+			finally {
+				// The stream has no end of its own; the client is closed without waiting for one.
+				browser.shutdownNow();
+			}
+		}
 		assertProblem(call("POST", buyer, decide + "/remove", Map.of("reason", "too_small")), 400, "REQUEST_INVALID");
 		String removed = body(call("POST", buyer, decide + "/remove", Map.of("reason", "duplicate", "note", " Same as Claims Desk. "))
 			.expectStatus()
@@ -362,6 +416,27 @@ class MatchingRunTest {
 		assertProblem(call("PUT", operator, limits, change), 409, "MATCHING_SETTINGS_CHANGED");
 		change.put("candidates", 2);
 		assertProblem(call("PUT", operator, limits, change), 400, "REQUEST_INVALID");
+	}
+
+	/** The next line of a stream of events; a stream that says nothing in time fails the test. */
+	private static String line(BufferedReader lines) throws Exception {
+		return Objects.requireNonNull(CompletableFuture.supplyAsync(() -> {
+			try {
+				return lines.readLine();
+			}
+			catch (IOException closed) {
+				throw new UncheckedIOException(closed);
+			}
+		}).get(WAIT.toSeconds(), TimeUnit.SECONDS), "The stream ended");
+	}
+
+	/** The next event of a stream, as its name and its body on one line; comments and empty lines are passed over. */
+	private static String event(BufferedReader lines) throws Exception {
+		String name = line(lines);
+		while (!name.startsWith("event:")) {
+			name = line(lines);
+		}
+		return name + " " + line(lines);
 	}
 
 	private static String decision(RestTestClient.ResponseSpec response) {

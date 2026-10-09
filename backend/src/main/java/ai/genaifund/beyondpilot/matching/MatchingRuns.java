@@ -19,6 +19,7 @@ import ai.genaifund.beyondpilot.ai.AiChat;
 import ai.genaifund.beyondpilot.ai.AiModels;
 import ai.genaifund.beyondpilot.ai.AiSubject;
 import ai.genaifund.beyondpilot.ai.AiTask;
+import ai.genaifund.beyondpilot.matching.dto.MatchingChange.Kind;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Judged;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Requirement;
@@ -42,7 +43,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * The runs of matching. A run is queued and a worker takes it: it reads the use case's requirements, finds the
  * candidates, and has the model judge each one, a few at a time. A run is not a transaction: each judged candidate is
  * kept when its judgment ends, so a run that stops continues with those not judged yet. When the provider refuses,
- * the run waits and goes on; a run that keeps stopping without judging anything ends as failed.
+ * the run waits and goes on; a run that keeps stopping without judging anything ends as failed. Each thing a run
+ * does is told to the pages open on its use case once it is stored ({@link MatchingChanges}).
  */
 @Service
 @EnableConfigurationProperties(MatchingSettings.class)
@@ -78,6 +80,8 @@ class MatchingRuns {
 
 	private final TransactionTemplate transactions;
 
+	private final MatchingChanges changes;
+
 	/** Whether the runs a stopped application left running were queued again. */
 	private volatile boolean recovered;
 
@@ -86,7 +90,7 @@ class MatchingRuns {
 
 	MatchingRuns(MatchingRepository matching, Requirements requirements, UseCaseDirectory useCases,
 			SolutionDirectory solutions, SolutionEvidence evidence, AiModels models, MatchingSettings settings,
-			TransactionTemplate transactions) {
+			TransactionTemplate transactions, MatchingChanges changes) {
 		this.matching = matching;
 		this.requirements = requirements;
 		this.useCases = useCases;
@@ -95,6 +99,7 @@ class MatchingRuns {
 		this.models = models;
 		this.settings = settings;
 		this.transactions = transactions;
+		this.changes = changes;
 	}
 
 	/**
@@ -115,6 +120,7 @@ class MatchingRuns {
 		Instant notBefore = limits.settleMinutes() == 0 ? null
 				: Instant.now().plus(Duration.ofMinutes(limits.settleMinutes()));
 		if (notBefore != null && matching.postpone(useCaseId, notBefore)) {
+			changes.tell(useCaseId, Kind.RUN);
 			return;
 		}
 		if (matching.queuedToday(useCaseId, MatchingRepository.BY_APPROVAL) >= limits.editRunsPerDay()) {
@@ -125,11 +131,14 @@ class MatchingRuns {
 			return;
 		}
 		matching.queue(useCaseId, MatchingRepository.BY_APPROVAL, null, Prompts.VERSION, notBefore, false)
-			.ifPresent(runId -> LOG.atInfo()
-				.addKeyValue("event", "matching.run.queued")
-				.addKeyValue("runId", runId)
-				.addKeyValue("useCaseId", useCaseId)
-				.log("A run of matching was queued for a use case"));
+			.ifPresent(runId -> {
+				changes.tell(useCaseId, Kind.RUN);
+				LOG.atInfo()
+					.addKeyValue("event", "matching.run.queued")
+					.addKeyValue("runId", runId)
+					.addKeyValue("useCaseId", useCaseId)
+					.log("A run of matching was queued for a use case");
+			});
 	}
 
 	/**
@@ -176,20 +185,22 @@ class MatchingRuns {
 	}
 
 	private void work(Run run) {
+		changes.tell(run.useCaseId(), Kind.RUN);
 		UseCaseBrief brief = useCases.brief(run.useCaseId()).orElse(null);
 		if (brief == null) {
-			matching.fail(run.id(), NO_USE_CASE);
+			fail(run, NO_USE_CASE);
 			return;
 		}
 		if (!models.available(AiTask.MATCHING)) {
-			matching.fail(run.id(), NO_MODEL);
+			fail(run, NO_MODEL);
 			return;
 		}
 		Requirements.Read read = requirements.of(brief, run.id());
+		changes.tell(run.useCaseId(), Kind.BRIEF);
 		List<String> queries = new ArrayList<>(List.of(brief.title()));
 		read.requirements().stream().filter(Requirement::isCapability).map(Requirement::statement).forEach(queries::add);
 		if (queries.size() == 1) {
-			matching.fail(run.id(), NO_CAPABILITY);
+			fail(run, NO_CAPABILITY);
 			return;
 		}
 		long searching = System.nanoTime();
@@ -207,6 +218,7 @@ class MatchingRuns {
 		transactions.executeWithoutResult(status -> matching.found(run.useCaseId(), found));
 		matching.addToStep(run.id(), new Step(MatchingRepository.CANDIDATES, queries.size(), found.size(), 0, 0, 0,
 				(System.nanoTime() - searching) / 1_000_000));
+		changes.tell(run.useCaseId(), Kind.FOUND);
 		// What an operator added by hand is judged with what the run found.
 		List<UUID> candidates = new ArrayList<>(found);
 		for (UUID solutionId : matching.addedSolutions(run.useCaseId())) {
@@ -241,8 +253,10 @@ class MatchingRuns {
 						String fingerprint = Quotes.fingerprint(Integer.toString(Prompts.VERSION), read.sourceHash(),
 								sources.fingerprint());
 						if (fingerprint.equals(judgedBefore.get(solutionId))) {
+							changes.tell(run.useCaseId(), Kind.READ, solutionId);
 							return;
 						}
+						changes.tell(run.useCaseId(), Kind.READING, solutionId);
 						Asking.Answer<Judgment> answer = Asking.ask(chat, Prompts.JUDGMENT,
 								Prompts.candidate(brief, read.requirements(), sources.texts()), Judgment.class);
 						calls.addAndGet(answer.calls());
@@ -251,9 +265,12 @@ class MatchingRuns {
 						Judged settled = Buckets.settle(answer.value(), read.requirements(), sources, fingerprint);
 						matching.judged(run.useCaseId(), solutionId, run.id(), settled);
 						judged.incrementAndGet();
+						changes.tell(run.useCaseId(), Kind.READ, solutionId);
 					}
 					catch (RuntimeException | LinkageError failure) {
 						refusal.compareAndSet(null, failure.getClass().getName());
+						// The page stops showing it as being read; the run says why it stopped when it ends.
+						changes.tell(run.useCaseId(), Kind.READ, solutionId);
 					}
 					finally {
 						room.release();
@@ -266,6 +283,7 @@ class MatchingRuns {
 		String refused = refusal.get();
 		if (refused == null) {
 			matching.finish(run.id());
+			changes.tell(run.useCaseId(), Kind.RUN);
 			// A brief that changed while the run worked asks for another.
 			changed(run.useCaseId());
 			LOG.atInfo()
@@ -278,6 +296,12 @@ class MatchingRuns {
 		else {
 			stop(run, judged.get(), refused);
 		}
+	}
+
+	/** A run ends without finishing, for one of matching's own reasons. */
+	private void fail(Run run, String reason) {
+		matching.fail(run.id(), reason);
+		changes.tell(run.useCaseId(), Kind.RUN);
 	}
 
 	/**
@@ -294,6 +318,7 @@ class MatchingRuns {
 		else {
 			matching.waitUntil(run.id(), Instant.now().plus(settings.pause()), stalls, failure);
 		}
+		changes.tell(run.useCaseId(), Kind.RUN);
 		LOG.atWarn()
 			.addKeyValue("event", stalls > settings.maxStalls() ? "matching.run.failed" : "matching.run.waiting")
 			.addKeyValue("runId", run.id())

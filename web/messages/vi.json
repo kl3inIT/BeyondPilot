@@ -6517,14 +6517,21 @@
       "left": "{count, plural, =0 {Hôm nay đã hết lượt} other {Hôm nay còn # lượt}}",
       "queued": "Đang chờ đến lượt, sẽ bắt đầu ngay.",
       "startsAt": "Sẽ bắt đầu lúc {time}, khi đề bài không còn thay đổi.",
-      "preparing": "Đang đọc đề bài và tìm giải pháp",
-      "running": "Đang đọc các giải pháp: xong {judged}/{total}",
       "waiting": "Tạm dừng vì dịch vụ AI đang bận. Đã xong {judged}/{total}.",
       "resumes": "Hệ thống sẽ tự chạy tiếp, bạn không cần bấm lại.",
       "resumesAt": "Hệ thống sẽ tự chạy tiếp vào khoảng {time}, bạn không cần bấm lại.",
       "done": "Cập nhật {date} · AI đọc kỹ {judged} giải pháp",
       "doneModel": "Cập nhật {date} · AI đọc kỹ {judged} giải pháp · mô hình {model}",
       "doneWhen": "Cập nhật {date}",
+      "stages": {
+        "label": "Tiến trình tìm giải pháp",
+        "brief": "Đọc đề bài của bạn",
+        "search": "Tìm trong các giải pháp",
+        "reading": "Đọc từng giải pháp",
+        "done": "Xong",
+        "count": "{judged}/{total}",
+        "passed": ", đã xong"
+      },
       "never": {
         "title": "Tìm giải pháp cho use case này",
         "lead": "AI đọc đề bài của bạn, rà các giải pháp trên BeyondPilot rồi liệt kê những giải pháp phù hợp, kèm dẫn chứng trích từ chính tài liệu của nhà cung cấp."
@@ -6591,6 +6598,10 @@
         "title": "Chưa được xem xét",
         "about": "GenAI Fund thêm thủ công. AI sẽ đọc các giải pháp này ở lượt tìm tới."
       },
+      "reading": {
+        "title": "Đang đọc",
+        "about": "Đã tìm thấy cho use case này. Mỗi giải pháp sẽ chuyển vào nhóm của nó khi AI đọc xong."
+      },
       "kept": {
         "title": "Trong danh sách rút gọn, AI không còn gợi ý",
         "about": "Sau lượt tìm gần nhất, AI không còn gợi ý các giải pháp này. Chúng vẫn ở đây cho tới khi có người bỏ khỏi danh sách rút gọn."
@@ -6617,6 +6628,10 @@
       "open": "Xem hồ sơ giải pháp",
       "menu": "Thao tác khác với {name}",
       "added": "GenAI Fund thêm",
+      "reading": {
+        "now": "Đang đọc",
+        "waiting": "Đang chờ"
+      },
       "unread": {
         "deck": "Không đọc được deck",
         "website": "Không đọc được website",
@@ -6676,6 +6691,10 @@
       "add": "Thêm",
       "addNamed": "Thêm {name}",
       "close": "Đóng"
+    },
+    "activity": {
+      "added": "Vừa thêm {name} vào {group}",
+      "several": "Đọc thêm {read} giải pháp, {added, plural, =0 {chưa thêm giải pháp nào} other {thêm # vào danh sách}}"
     },
     "empty": {
       "none": "AI chưa tìm thấy giải pháp nào trên BeyondPilot phù hợp với use case này.",

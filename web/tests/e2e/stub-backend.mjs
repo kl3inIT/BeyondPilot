@@ -9,7 +9,7 @@ import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
 import { answerEmail } from "./stub-email.mjs";
 import { answerJudging } from "./stub-judging.mjs";
-import { answerMatching } from "./stub-matching.mjs";
+import { answerMatching, serveMatchingLive } from "./stub-matching.mjs";
 import { answerMcp } from "./stub-mcp.mjs";
 import { answerReview } from "./stub-reviews.mjs";
 import { answerSearch, answerSearchAdmin } from "./stub-search.mjs";
@@ -350,6 +350,10 @@ createServer((request, response) => {
   const url = new URL(request.url, "http://stub");
   const session = /BEYONDPILOT_SESSION=([a-z]+)/.exec(request.headers.cookie ?? "")?.[1];
   const account = session ? accounts[session] : undefined;
+  // The one answer that is not a record: a stream that stays open, and what a test does to it.
+  if (serveMatchingLive(request, response, url, account)) {
+    return;
+  }
 
   if (url.pathname === "/api/identity/me") {
     return json(response, account ? 200 : 401, account ?? {});

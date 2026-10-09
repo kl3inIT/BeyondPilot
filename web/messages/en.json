@@ -6517,14 +6517,21 @@
       "left": "{count, plural, =0 {No runs left today} one {# run left today} other {# runs left today}}",
       "queued": "Waiting in line. It starts in a moment.",
       "startsAt": "Starts at {time}, once the brief has stopped changing.",
-      "preparing": "Reading the brief and looking for solutions",
-      "running": "Reading solutions: {judged} of {total} done",
       "waiting": "Paused: the AI service is busy. {judged} of {total} done so far.",
       "resumes": "It continues by itself. You don't need to start it again.",
       "resumesAt": "It continues by itself at about {time}. You don't need to start it again.",
       "done": "Updated {date} · AI read {judged, plural, one {# solution} other {# solutions}} closely",
       "doneModel": "Updated {date} · AI read {judged, plural, one {# solution} other {# solutions}} closely · model {model}",
       "doneWhen": "Updated {date}",
+      "stages": {
+        "label": "Progress of the search",
+        "brief": "Reading your brief",
+        "search": "Searching the solutions",
+        "reading": "Reading each solution",
+        "done": "Done",
+        "count": "{judged} of {total}",
+        "passed": ", finished"
+      },
       "never": {
         "title": "Find solutions for this use case",
         "lead": "AI reads your brief, goes through the solutions on BeyondPilot and lists the ones that fit, each with the vendor's own words as evidence."
@@ -6591,6 +6598,10 @@
         "title": "Not reviewed yet",
         "about": "GenAI Fund added these by hand. AI reads them in the next run."
       },
+      "reading": {
+        "title": "Being read",
+        "about": "Found for this use case. Each one moves to its group when the AI has read it."
+      },
       "kept": {
         "title": "On your shortlist, no longer suggested",
         "about": "AI no longer suggests these after the latest run. They stay until someone takes them off the shortlist."
@@ -6617,6 +6628,10 @@
       "open": "View solution profile",
       "menu": "More for {name}",
       "added": "Added by GenAI Fund",
+      "reading": {
+        "now": "Reading now",
+        "waiting": "Waiting"
+      },
       "unread": {
         "deck": "Deck could not be read",
         "website": "Website could not be read",
@@ -6676,6 +6691,10 @@
       "add": "Add",
       "addNamed": "Add {name}",
       "close": "Close"
+    },
+    "activity": {
+      "added": "Added {name} to {group}",
+      "several": "{read} more read, {added, plural, =0 {none added} other {# added}}"
     },
     "empty": {
       "none": "AI found no solution on BeyondPilot that fits this use case.",
