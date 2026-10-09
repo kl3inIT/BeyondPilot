@@ -550,7 +550,7 @@ test.describe("workspace organization", () => {
     await expect(
       page.getByRole("heading", { name: "People with an @pocketpolicy.example email ask to join" }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Turn on" }).click();
+    await page.getByRole("switch", { name: "Join without asking" }).click();
     await expect(
       page.getByText("Colleagues on your verified domain now join without asking."),
     ).toBeVisible();
@@ -602,7 +602,7 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("button", { name: "Invite people" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Approve" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Actions for Minh Trần" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Turn on" })).toHaveCount(0);
+    await expect(page.getByRole("switch", { name: "Join without asking" })).toHaveCount(0);
 
     await page.getByRole("button", { name: "Actions for Siti Rahma" }).click();
     await expect(page.getByRole("menuitem")).toHaveText(["Edit job title", "Leave organization"]);

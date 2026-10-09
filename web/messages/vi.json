@@ -3695,17 +3695,14 @@
       "access": {
         "title": "Ai được tham gia",
         "domain": "Tên miền do GenAI Fund xác minh: {domain}",
+        "toggle": "Tham gia không cần xin phép",
         "on": {
           "title": "Ai có email @{domain} đều tham gia với tư cách thành viên",
-          "lead": "Họ tham gia khi đăng nhập bằng email công ty đã xác minh. Tắt đi nếu bạn muốn tự chấp nhận từng yêu cầu.",
-          "badge": "Bật",
-          "action": "Tắt"
+          "lead": "Họ tham gia khi đăng nhập bằng email công ty đã xác minh. Tắt đi nếu bạn muốn tự chấp nhận từng yêu cầu."
         },
         "off": {
           "title": "Người có email @{domain} phải xin tham gia",
-          "lead": "Bạn chấp nhận từng yêu cầu. Bật lên để họ tham gia ngay với tư cách thành viên.",
-          "badge": "Tắt",
-          "action": "Bật"
+          "lead": "Bạn chấp nhận từng yêu cầu. Bật lên để họ tham gia ngay với tư cách thành viên."
         },
         "none": {
           "title": "Mọi người xin tham gia, hoặc bạn mời họ",

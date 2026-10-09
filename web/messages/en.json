@@ -3695,17 +3695,14 @@
       "access": {
         "title": "Who can join",
         "domain": "Domain verified by GenAI Fund: {domain}",
+        "toggle": "Join without asking",
         "on": {
           "title": "Anyone with an @{domain} email joins as a member",
-          "lead": "They join when they sign in with a verified company email. Turn this off to approve each request yourself.",
-          "badge": "On",
-          "action": "Turn off"
+          "lead": "They join when they sign in with a verified company email. Turn this off to approve each request yourself."
         },
         "off": {
           "title": "People with an @{domain} email ask to join",
-          "lead": "You approve each request. Turn this on to let them join at once as members.",
-          "badge": "Off",
-          "action": "Turn on"
+          "lead": "You approve each request. Turn this on to let them join at once as members."
         },
         "none": {
           "title": "People ask to join, or you invite them",

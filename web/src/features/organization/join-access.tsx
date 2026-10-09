@@ -2,10 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useId, useState } from "react";
 
-import { Button } from "@/components/actions/button";
-import { Status } from "@/components/composites/status";
+import { Switch } from "@/components/ui/switch";
 import { useNotify } from "@/hooks/use-notify";
 import { changeOrganizationAutoJoin } from "@/lib/api/generated";
 
@@ -20,13 +19,14 @@ type JoinAccessProps = {
 };
 
 /**
- * Who can join by email domain, as an owner sets it: at once as a member, or by asking first. Without
- * a verified domain there is nothing to set, and the card says so.
+ * Who can join by email domain, as an owner sets it with one switch: at once as a member, or by
+ * asking first. Without a verified domain there is nothing to set, and the card says so.
  */
 function JoinAccess({ emailDomain, autoJoin }: JoinAccessProps) {
   const t = useTranslations("Organization.members.access");
   const notify = useNotify();
   const router = useRouter();
+  const titleId = useId();
   const [pending, setPending] = useState(false);
   const state = autoJoin ? "on" : "off";
 
@@ -55,22 +55,22 @@ function JoinAccess({ emailDomain, autoJoin }: JoinAccessProps) {
   }
 
   return (
-    <NoticeCard
-      titleAs="h3"
-      title={t(`${state}.title`, { domain: emailDomain })}
-      description={<p>{t(`${state}.lead`)}</p>}
-      badge={
-        <Status appearance="pill" tone={autoJoin ? "success" : "neutral"}>
-          {t(`${state}.badge`)}
-        </Status>
-      }
-      foot={t("domain", { domain: emailDomain })}
-      actions={
-        <Button prominence="secondary" pending={pending} onClick={toggle}>
-          {t(`${state}.action`)}
-        </Button>
-      }
-    />
+    <div className="flex items-center justify-between gap-4 rounded-2xl border bg-card p-5">
+      <div className="flex min-w-0 flex-col gap-1">
+        <h3 id={titleId} className="text-base font-semibold break-words">
+          {t(`${state}.title`, { domain: emailDomain })}
+        </h3>
+        <p className="text-sm text-muted-foreground">{t(`${state}.lead`)}</p>
+        <p className="text-xs text-muted-foreground">{t("domain", { domain: emailDomain })}</p>
+      </div>
+      <Switch
+        aria-label={t("toggle")}
+        aria-describedby={titleId}
+        checked={autoJoin}
+        disabled={pending}
+        onCheckedChange={toggle}
+      />
+    </div>
   );
 }
 
