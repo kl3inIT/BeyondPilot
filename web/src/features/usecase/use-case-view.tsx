@@ -13,6 +13,7 @@ import { siteRoutes } from "@/lib/site";
 import { describeUseCaseError } from "./my-use-case-errors";
 import { draftValuesOf } from "./use-case-draft";
 import { UseCaseSummary } from "./use-case-summary";
+import { UseCaseTabs } from "./use-case-tabs";
 import { WizardShell } from "./wizard-shell";
 import { LiveRefresh } from "./live-refresh";
 
@@ -69,6 +70,7 @@ function UseCaseView({ useCase }: { useCase: MyUseCase }) {
       notes={[inReview ? t("inReview.note") : t("closed.note")]}
     >
       <LiveRefresh />
+      {useCase.publishedAt && <UseCaseTabs area="workspace" id={useCase.id} current="brief" />}
       <div className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">
           {inReview ? t("inReview.title") : t("closed.title")}
