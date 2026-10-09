@@ -432,17 +432,6 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
               )}
             </section>
 
-            {solution.bestCustomerProfile && (
-              <section className="flex flex-col gap-2">
-                <PartHeading icon={<TargetIcon aria-hidden="true" />}>
-                  {view("bestCustomerProfile")}
-                </PartHeading>
-                <p className="whitespace-pre-line text-muted-foreground">
-                  {solution.bestCustomerProfile}
-                </p>
-              </section>
-            )}
-
             <section className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <PartHeading tone="proof" icon={<BadgeCheckIcon aria-hidden="true" />}>
