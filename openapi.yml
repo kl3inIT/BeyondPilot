@@ -13768,6 +13768,11 @@ components:
           description: Whether it is the reader.
         name:
           type: string
+        pricePerThousandCalls:
+          type:
+          - number
+          - "null"
+          description: "What 1,000 calls cost, in US dollars; null is unknown."
         updatedAt:
           type: string
           format: date-time
@@ -17035,6 +17040,14 @@ components:
           type: string
           maxLength: 60
           minLength: 0
+        pricePerThousandCalls:
+          type:
+          - number
+          - "null"
+          description: "What 1,000 calls cost, in US dollars; null when it is not\
+            \ known."
+          maximum: 100000
+          minimum: 0
         version:
           type: integer
           format: int64

@@ -63,11 +63,11 @@ No event crosses a module boundary.
 
 `ai` owns these tables and stays their only writer.
 
-| Table           | Change                                                                                                                                                                                   |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ai_provider`   | The purpose may be `ocr`; such a row has no vendor and names its adapter, as a chat row does                                                                                             |
-| `ai_task_model` | Gains `ocr_provider_id` (to `ai_provider`, set to null when the provider is deleted). Checks: only `document_reading` may have one, and a row has a model or an OCR provider, never both |
-| `ai_usage`      | No change. An OCR call is a row with the task `document_reading`, the provider, the adapter's type where a model's name would be, no tokens and no price                                 |
+| Table           | Change                                                                                                                                                                                                     |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ai_provider`   | The purpose may be `ocr`; such a row has no vendor and names its adapter, as a chat row does. It gains `price_per_1k_calls`, US dollars per 1,000 calls, for an OCR provider only                          |
+| `ai_task_model` | Gains `ocr_provider_id` (to `ai_provider`, set to null when the provider is deleted). Checks: only `document_reading` may have one, and a row has a model or an OCR provider, never both                   |
+| `ai_usage`      | Gains `price_per_1k_calls`. An OCR call is a row with the task `document_reading`, the provider, the adapter's type where a model's name would be, no tokens, and what 1,000 calls cost then in US dollars |
 
 The reader chosen today, a model, stays chosen after the migration.
 
@@ -135,7 +135,6 @@ Made with the early-access key, which is recorded nowhere in the repository or i
 ## Left out
 
 - A fallback reader: BEY-101.
-- The price of an OCR call. It is shown only in AI Hay's dashboard, behind sign-in, and is in VND; rows are recorded without a price until it is known.
 - Reading a whole PDF in one call, and OCR of anything but page pictures.
 - A screen for usage.
 

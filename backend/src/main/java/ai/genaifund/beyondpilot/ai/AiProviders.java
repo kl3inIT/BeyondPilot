@@ -80,6 +80,7 @@ public class AiProviders {
 		AiProvider provider = new AiProvider(purpose, operator.accountId(), operator.label(), Instant.now());
 		provider.connectWith(change.vendor(), change.adapterType(), name, change.baseUrl(),
 				keys.seal(Objects.requireNonNull(change.apiKey()).strip()), change.enabled());
+		provider.price(change.pricePerThousandCalls());
 		try {
 			providers.saveAndFlush(provider);
 		}
@@ -124,6 +125,7 @@ public class AiProviders {
 			}
 		};
 		provider.connectWith(change.vendor(), change.adapterType(), name, change.baseUrl(), key, change.enabled());
+		provider.price(change.pricePerThousandCalls());
 		provider.changedBy(operator.accountId(), operator.label(), Instant.now());
 		try {
 			providers.saveAndFlush(provider);
@@ -214,7 +216,8 @@ public class AiProviders {
 	private static AiProviderView view(AiProvider provider) {
 		return new AiProviderView(provider.getId(), provider.getVendor(), provider.getAdapterType(),
 				provider.getName(), provider.getBaseUrl(), provider.isEnabled(), provider.getApiKey() != null,
-				provider.getUpdatedByLabel(), provider.getUpdatedAt(), provider.getVersion());
+				provider.getUpdatedByLabel(), provider.getUpdatedAt(), provider.getVersion(),
+				provider.getPricePerThousandCalls());
 	}
 
 	/** What the audit record names the provider's kind by: its vendor, or its adapter where it has none. */

@@ -124,6 +124,11 @@ function OcrConnectionCard({ provider }: { provider: OcrProvider }) {
           </div>
           <span className="truncate text-xs text-muted-foreground">{provider.baseUrl}</span>
         </div>
+        {provider.pricePerThousandCalls != null && (
+          <span className="hidden text-xs text-muted-foreground md:inline">
+            {t("price", { price: provider.pricePerThousandCalls })}
+          </span>
+        )}
         <div className="hidden items-center md:flex">
           <button
             type="button"

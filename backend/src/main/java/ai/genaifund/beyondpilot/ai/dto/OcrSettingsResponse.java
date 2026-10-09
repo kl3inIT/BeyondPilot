@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.ai.dto;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +24,7 @@ public record OcrSettingsResponse(
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean enabled,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean hasKey,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Whether it is the reader.") boolean inUse,
+			@Schema(types = { "number", "null" }, description = "What 1,000 calls cost, in US dollars; null is unknown.") @Nullable BigDecimal pricePerThousandCalls,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Who saved it last, as they were named.") String updatedBy,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Send it back with a change; a change made meanwhile is refused.") long version) {
