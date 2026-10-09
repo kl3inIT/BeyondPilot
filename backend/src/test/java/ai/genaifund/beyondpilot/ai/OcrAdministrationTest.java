@@ -282,6 +282,9 @@ class OcrAdministrationTest {
 		assertThat(read).containsExactly(Map.entry(1, ""), Map.entry(2, "Second page"));
 		assertThat(jdbc.sql("select outcome from ai_usage order by occurred_at").query(String.class).list())
 			.containsExactly("failed", "ok");
+		// The failed call keeps the status the service answered with, and the call that answered keeps none.
+		assertThat(jdbc.sql("select error_status from ai_usage order by occurred_at").query(Integer.class).list())
+			.containsExactly(400, null);
 		assertThat(jdbc.sql("select * from ai_usage").query().listOfRows().toString()).doesNotContain(PROVIDER_TEXT);
 	}
 
@@ -296,6 +299,7 @@ class OcrAdministrationTest {
 		// Neither page is settled, and the second was not sent.
 		assertThat(read).isEmpty();
 		assertThat(jdbc.sql("select outcome from ai_usage").query(String.class).list()).containsExactly("failed");
+		assertThat(jdbc.sql("select error_status from ai_usage").query(Integer.class).list()).containsExactly(503);
 	}
 
 	@Test

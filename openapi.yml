@@ -695,6 +695,150 @@ paths:
         \ images, or an OCR provider"
       tags:
       - AI administration
+  /api/ai/admin/usage/calls:
+    get:
+      operationId: listAiUsageCalls
+      parameters:
+      - description: "Today, or the last 7 or 30 days with today, in Asia/Ho_Chi_Minh."
+        in: query
+        name: period
+        required: false
+        schema:
+          type: string
+          default: today
+          enum:
+          - today
+          - 7d
+          - 30d
+          pattern: today|7d|30d
+      - description: "Only calls made for this task, as the call named it."
+        in: query
+        name: task
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only calls to the provider with this name.
+        in: query
+        name: provider
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 200
+          minLength: 0
+      - description: Only calls to the model with this name.
+        in: query
+        name: model
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 200
+          minLength: 0
+      - description: Only calls that ended this way.
+        in: query
+        name: outcome
+        required: false
+        schema:
+          type: string
+          enum:
+          - ok
+          - failed
+          pattern: ok|failed
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiUsageCallList"
+          description: "One page of calls, newest first."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The period, the outcome or the page is not valid."
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: The calls made to models and OCR services
+      tags:
+      - AI administration
+  /api/ai/admin/usage/overview:
+    get:
+      operationId: getAiUsageOverview
+      parameters:
+      - description: "Today, or the last 7 or 30 days with today, in Asia/Ho_Chi_Minh."
+        in: query
+        name: period
+        required: false
+        schema:
+          type: string
+          default: today
+          enum:
+          - today
+          - 7d
+          - 30d
+          pattern: today|7d|30d
+      - description: "What the breakdown groups by. By model, a row is a model on\
+          \ a provider for a task."
+        in: query
+        name: by
+        required: false
+        schema:
+          type: string
+          default: model
+          enum:
+          - model
+          - task
+          - provider
+          pattern: model|task|provider
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiUsageOverview"
+          description: "The totals, what is failing, the calls over time and where\
+            \ they went."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The period or the grouping is not one of those offered.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "What the calls to models and OCR services came to in a period, and\
+        \ what is failing"
+      tags:
+      - AI administration
   /api/audit/events:
     get:
       operationId: listAuditEvents
@@ -10409,6 +10553,335 @@ components:
       - providers
       - settingsVersion
       - vendors
+    AiUsageBucket:
+      type: object
+      properties:
+        failed:
+          type: integer
+          format: int64
+        start:
+          type: string
+          format: date-time
+          description: When the hour or the day starts.
+        succeeded:
+          type: integer
+          format: int64
+      required:
+      - failed
+      - start
+      - succeeded
+    AiUsageCall:
+      type: object
+      properties:
+        cacheReadTokens:
+          type:
+          - integer
+          - "null"
+          format: int64
+        durationMs:
+          type: integer
+          format: int64
+        errorStatus:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: The HTTP status the provider answered a failed call with; null
+            when it gave none.
+        estimatedCost:
+          type:
+          - number
+          - "null"
+          description: The estimated cost in US dollars; null for a failed call and
+            for one without a known price.
+        failure:
+          type:
+          - string
+          - "null"
+          description: What a failed call was; null for a call that answered.
+          enum:
+          - key_refused
+          - rate_limited
+          - too_large
+          - request_refused
+          - provider_failed
+          - no_answer
+          - failed
+        id:
+          type: string
+          format: uuid
+        inputTokens:
+          type:
+          - integer
+          - "null"
+          format: int64
+          description: "Input tokens, those read from a cache included; null for a\
+            \ failed call and for an OCR service."
+        modelName:
+          type: string
+          description: "The model, or the API of an OCR service."
+        occurredAt:
+          type: string
+          format: date-time
+        outcome:
+          type: string
+          enum:
+          - ok
+          - failed
+        outputTokens:
+          type:
+          - integer
+          - "null"
+          format: int64
+        providerName:
+          type: string
+          description: As the provider was named when the call was made.
+        subjectId:
+          type:
+          - string
+          - "null"
+        subjectType:
+          type:
+          - string
+          - "null"
+          description: "The kind of thing the call was about, as its caller named\
+            \ it."
+          example: solution_deck
+        task:
+          type: string
+          description: "What the call was made for: a task, or `model_test` for a\
+            \ model tried by an operator."
+          example: matching
+      required:
+      - durationMs
+      - id
+      - modelName
+      - occurredAt
+      - outcome
+      - providerName
+      - task
+    AiUsageCallList:
+      type: object
+      description: "One page of the calls BeyondPilot made to chat models and OCR\
+        \ services, newest first. No prompt, no answer and nothing a provider wrote\
+        \ is kept, so none is returned."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AiUsageCall"
+        models:
+          type: array
+          description: "The models called in the period, by name, to filter by."
+          items:
+            type: string
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+          description: How many calls a page holds.
+        providers:
+          type: array
+          description: "The providers called in the period, by name, to filter by."
+          items:
+            type: string
+        tasks:
+          type: array
+          description: "The tasks called in the period, to filter by."
+          items:
+            type: string
+        total:
+          type: integer
+          format: int64
+          description: "How many calls match, over all pages."
+      required:
+      - items
+      - models
+      - page
+      - pageSize
+      - providers
+      - tasks
+      - total
+    AiUsageFailing:
+      type: object
+      properties:
+        calls:
+          type: integer
+          format: int64
+        failed:
+          type: integer
+          format: int64
+        lastFailedAt:
+          type: string
+          format: date-time
+        lastFailure:
+          type: string
+          enum:
+          - key_refused
+          - rate_limited
+          - too_large
+          - request_refused
+          - provider_failed
+          - no_answer
+          - failed
+        modelName:
+          type: string
+        providerName:
+          type: string
+        task:
+          type: string
+          example: document_reading
+      required:
+      - calls
+      - failed
+      - lastFailedAt
+      - lastFailure
+      - modelName
+      - providerName
+      - task
+    AiUsageGroup:
+      type: object
+      description: The calls of one group. The names the grouping does not hold are
+        null.
+      properties:
+        averageDurationMs:
+          type: integer
+          format: int64
+          description: "How long a call took on average, in milliseconds."
+        calls:
+          type: integer
+          format: int64
+        estimatedCost:
+          type:
+          - number
+          - "null"
+          description: Null when no call of the group has a known price.
+        failed:
+          type: integer
+          format: int64
+        inputTokens:
+          type: integer
+          format: int64
+        modelName:
+          type:
+          - string
+          - "null"
+        outputTokens:
+          type: integer
+          format: int64
+        providerName:
+          type:
+          - string
+          - "null"
+        task:
+          type:
+          - string
+          - "null"
+      required:
+      - averageDurationMs
+      - calls
+      - failed
+      - inputTokens
+      - outputTokens
+    AiUsageOverview:
+      type: object
+      description: "The Overview of Admin › AI › Usage: what is failing, what the\
+        \ calls of a period came to, the calls over time and where they went. Costs\
+        \ are estimates in US dollars from the usage providers report and the prices\
+        \ kept with each call, not invoices."
+      properties:
+        breakdown:
+          type: array
+          description: "Where the calls went, the group with the most calls first."
+          items:
+            $ref: "#/components/schemas/AiUsageGroup"
+        by:
+          type: string
+          enum:
+          - model
+          - task
+          - provider
+        failing:
+          type: array
+          description: "The tasks failing on a model in the last 24 hours, whatever\
+            \ the period: at least 5 failed calls that are at least 10% of its calls.\
+            \ The one with the most failures first."
+          items:
+            $ref: "#/components/schemas/AiUsageFailing"
+        period:
+          type: string
+          enum:
+          - today
+          - 7d
+          - 30d
+        series:
+          type: array
+          description: "The calls by hour or by day, oldest first, those without calls\
+            \ included."
+          items:
+            $ref: "#/components/schemas/AiUsageBucket"
+        seriesStep:
+          type: string
+          description: "What one entry of the series covers: an hour for today, a\
+            \ day otherwise."
+          enum:
+          - hour
+          - day
+        totals:
+          $ref: "#/components/schemas/AiUsageTotals"
+      required:
+      - breakdown
+      - by
+      - failing
+      - period
+      - series
+      - seriesStep
+      - totals
+    AiUsageTotals:
+      type: object
+      properties:
+        calls:
+          type: integer
+          format: int64
+        estimatedCost:
+          type:
+          - number
+          - "null"
+          description: The estimated cost of the calls with a known price; null when
+            none has one.
+        failed:
+          type: integer
+          format: int64
+        inputTokens:
+          type: integer
+          format: int64
+          description: "Input tokens, those read from a cache included."
+        outputTokens:
+          type: integer
+          format: int64
+        pricedCalls:
+          type: integer
+          format: int64
+          description: How many calls the cost is computed from.
+        succeeded:
+          type: integer
+          format: int64
+        unpricedCalls:
+          type: integer
+          format: int64
+          description: How many calls answered without a known price. They add nothing
+            to the cost.
+      required:
+      - calls
+      - failed
+      - inputTokens
+      - outputTokens
+      - pricedCalls
+      - succeeded
+      - unpricedCalls
     AiVendor:
       type: object
       properties:
