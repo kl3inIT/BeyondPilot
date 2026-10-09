@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -74,6 +75,9 @@ class MatchingRuns {
 	/** Whether the runs a stopped application left running were queued again. */
 	private volatile boolean recovered;
 
+	/** Whether a run is being worked on; the worker takes one at a time. */
+	private final AtomicBoolean working = new AtomicBoolean();
+
 	MatchingRuns(MatchingRepository matching, Requirements requirements, UseCaseDirectory useCases,
 			SolutionDirectory solutions, SolutionEvidence evidence, AiModels models, MatchingSettings settings,
 			TransactionTemplate transactions) {
@@ -108,9 +112,32 @@ class MatchingRuns {
 				.log("A run of matching was queued for a use case"));
 	}
 
-	/** Takes the run that waited longest and works on it until it ends or has to wait. One run at a time. */
+	/**
+	 * Wakes the worker, unless it is at work. The work is done on a thread of its own: scheduled work shares one
+	 * thread, a run takes minutes, and the mail, the index and the decks must not wait for it.
+	 */
 	@Scheduled(fixedDelayString = "${beyondpilot.matching.interval}",
 			initialDelayString = "${beyondpilot.matching.interval}")
+	void wake() {
+		if (working.compareAndSet(false, true)) {
+			Thread.ofVirtual().name("matching-run").start(() -> {
+				try {
+					work();
+				}
+				catch (RuntimeException | LinkageError failure) {
+					LOG.atError()
+						.addKeyValue("event", "matching.worker.failed")
+						.addKeyValue("error_type", failure.getClass().getName())
+						.log("The worker of matching could not take a run");
+				}
+				finally {
+					working.set(false);
+				}
+			});
+		}
+	}
+
+	/** Takes the run that waited longest and works on it until it ends or has to wait. */
 	void work() {
 		if (!recovered) {
 			matching.requeueInterrupted();
