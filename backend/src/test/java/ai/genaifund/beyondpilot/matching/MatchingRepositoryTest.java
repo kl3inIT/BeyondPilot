@@ -189,14 +189,16 @@ class MatchingRepositoryTest {
 		assertThat(matching.requirementsSource(useCase)).isEmpty();
 
 		matching.replaceRequirements(useCase, "hash-1",
-				List.of(new Requirement(1, "capability", "required", "Answers calls.", "answer calls"),
-						new Requirement(2, "constraint", "optional", "Runs on premises.", "our data centre")));
+				List.of(new Requirement(1, "capability", "required", "Answers calls.", "answer calls", ""),
+						new Requirement(2, "constraint", "optional", "Runs on premises.", "our data centre", "")));
 		matching.replaceRequirements(useCase, "hash-2",
-				List.of(new Requirement(1, "capability", "required", "Answers calls at night.", "calls at night")));
+				List.of(new Requirement(1, "capability", "required", "Answers calls at night.", "calls at night",
+						"Answer calls")));
 
 		assertThat(matching.requirementsSource(useCase)).contains("hash-2");
 		assertThat(matching.requirements(useCase))
-			.containsExactly(new Requirement(1, "capability", "required", "Answers calls at night.", "calls at night"));
+			.containsExactly(new Requirement(1, "capability", "required", "Answers calls at night.", "calls at night",
+					"Answer calls"));
 	}
 
 	@Test

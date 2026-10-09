@@ -139,7 +139,8 @@ class MatchingRunTest {
 			Map.of("kind", "constraint", "necessity", "optional", "statement", "Integrates with the claims system.",
 					"quote", "Our claims system's API."),
 			Map.of("kind", "capability", "necessity", "required", "statement",
-					"Reads printed and handwritten forms in Vietnamese.", "quote", "Reads Vietnamese forms"),
+					"Reads printed and handwritten forms in Vietnamese.", "quote", "Reads Vietnamese forms", "label",
+					"Read forms"),
 			Map.of("kind", "capability", "necessity", "required", "statement", "Gives a first assessment of a claim.",
 					"quote", "A first assessment within an hour."),
 			Map.of("kind", "capability", "necessity", "optional", "statement", "Detects fraud.", "quote",
@@ -245,6 +246,11 @@ class MatchingRunTest {
 		assertThat(JsonPath.<List<Object>>read(read, "$.steps")).isEmpty();
 		assertThat(JsonPath.<List<String>>read(read, "$.requirements[*].kind"))
 			.containsExactly("capability", "capability", "constraint");
+		// A requirement is named by its label in a list; one the model gave none has an empty one.
+		assertThat(JsonPath.<List<String>>read(read, "$.requirements[*].label")).containsExactly("Read forms", "", "");
+		assertThat(JsonPath.<String>read(read, "$.candidates[0].maturity")).isEqualTo("pilot");
+		assertThat(JsonPath.<String>read(read, "$.candidates[0].country")).isEqualTo("VN");
+		assertThat(JsonPath.<String>read(read, "$.candidates[0].logoFileId")).isNotBlank();
 		assertThat(JsonPath.<List<String>>read(read, "$.candidates[*].solutionName")).containsExactly("Claims Desk " + word);
 		assertThat(JsonPath.<String>read(read, "$.candidates[0].bucket")).isEqualTo("direct");
 		assertThat(JsonPath.<String>read(read, "$.candidates[0].organizationName")).isEqualTo("Claims Lab " + word);

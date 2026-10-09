@@ -52,8 +52,12 @@ public class SolutionEvidence {
 	/**
 	 * A solution as a candidate is shown.
 	 * @param listed false when its owners keep it out of the directory, so it has no public page
+	 * @param logoFileId its logo, or its organization's, read at the public address of stored files
+	 * @param country the two-letter code of where its organization is
+	 * @param maturity how far it is, as the solution module codes it
 	 */
-	public record Shown(String slug, String name, @Nullable String organizationName, boolean listed) {
+	public record Shown(String slug, String name, @Nullable String organizationName, boolean listed,
+			@Nullable UUID logoFileId, @Nullable String country, @Nullable String maturity) {
 	}
 
 	/** How these solutions are shown, by identifier; one that is no longer in the index is left out. */
@@ -62,7 +66,10 @@ public class SolutionEvidence {
 		Map<UUID, Shown> shown = new LinkedHashMap<>();
 		index.named(SearchDocumentRepository.SOLUTION, solutionIds)
 			.forEach((id, named) -> shown.put(id,
-					new Shown(named.slug(), named.title(), named.subtitle(), named.listed())));
+					new Shown(named.slug(), named.title(), named.subtitle(), named.listed(),
+							named.facets().get(Cards.PHOTO) instanceof String logo ? UUID.fromString(logo) : null,
+							named.facets().get(Cards.COUNTRY) instanceof String country ? country : null,
+							named.facets().get(Cards.MATURITY) instanceof String maturity ? maturity : null)));
 		return shown;
 	}
 

@@ -261,7 +261,8 @@ public class MatchingService {
 			boolean removed = MatchingRepository.REMOVED.equals(candidate.decision());
 			Person remover = removed && candidate.decidedBy() != null ? people.get(candidate.decidedBy()) : null;
 			candidates.add(new MatchingResponse.Candidate(candidate.id(), candidate.solutionId(), solution.slug(),
-					solution.name(), solution.organizationName(), solution.listed(), candidate.origin(),
+					solution.name(), solution.organizationName(), solution.logoFileId(), solution.country(),
+					solution.maturity(), solution.listed(), candidate.origin(),
 					candidate.bucket(), candidate.requiredMet(), candidate.requiredTotal(), candidate.decision(),
 					candidate.reason(), candidate.note(), remover == null ? null : remover.label(),
 					removed ? candidate.decidedByOperator() : null, removed ? candidate.decidedAt() : null,
@@ -285,7 +286,7 @@ public class MatchingService {
 		List<MatchingResponse.Requirement> requirements = matching.requirements(useCaseId)
 			.stream()
 			.map(requirement -> new MatchingResponse.Requirement(requirement.position(), requirement.kind(),
-					requirement.necessity(), requirement.statement(), requirement.quote()))
+					requirement.necessity(), requirement.label(), requirement.statement(), requirement.quote()))
 			.toList();
 		return new MatchingResponse(useCaseId, operator, models.available(AiTask.MATCHING),
 				operator ? null : runsLeft(useCaseId), run, requirements, candidates, steps);
