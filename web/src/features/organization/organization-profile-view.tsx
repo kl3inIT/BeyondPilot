@@ -1,4 +1,4 @@
-import { Building2Icon, FileTextIcon } from "lucide-react";
+import { ArrowUpRightIcon, Building2Icon, FileTextIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
@@ -32,8 +32,9 @@ function Facts({ facts }: { facts: Fact[] }) {
           <dt className="text-sm font-semibold">{fact.label}</dt>
           <dd className="text-sm break-words whitespace-pre-line text-muted-foreground">
             {fact.value && fact.href ? (
-              <TextButton href={fact.href} target="_blank" rel="noreferrer">
+              <TextButton href={fact.href} target="_blank" rel="noreferrer" className="font-medium">
                 {fact.value}
+                <ArrowUpRightIcon aria-hidden="true" />
               </TextButton>
             ) : (
               fact.value || t("notStated")

@@ -1,3 +1,4 @@
+import { ArrowUpRightIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
@@ -100,8 +101,14 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
             {host && organization.website && (
               <>
                 {kind.length > 0 && " · "}
-                <TextButton href={organization.website} target="_blank" rel="noreferrer">
+                <TextButton
+                  href={organization.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium"
+                >
                   {host}
+                  <ArrowUpRightIcon aria-hidden="true" />
                 </TextButton>
               </>
             )}
