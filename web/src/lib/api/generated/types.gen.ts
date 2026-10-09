@@ -1920,7 +1920,7 @@ export type MatchingCandidate = {
     problem?: MatchingFinding;
     removedAt?: string;
     /**
-     * Who removed it, by the name they are shown by.
+     * Who removed it, by the name they are shown by; absent for a member when GenAI Fund removed it.
      */
     removedBy?: string;
     /**
@@ -2012,7 +2012,7 @@ export type MatchingRun = {
     createdAt: string;
     endedAt?: string;
     /**
-     * Why it failed or waits, as a code; never the provider's words.
+     * Why it failed or waits, as a code; never the provider's words. A caller who is not an operator reads `provider` for anything that happened at the AI provider.
      */
     failure?: string;
     id: string;

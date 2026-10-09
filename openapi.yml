@@ -12855,7 +12855,8 @@ components:
           format: date-time
         removedBy:
           type: string
-          description: "Who removed it, by the name they are shown by."
+          description: "Who removed it, by the name they are shown by; absent for\
+            \ a member when GenAI Fund removed it."
         removedByOperator:
           type: boolean
           description: Whether GenAI Fund removed it; a member restores only what
@@ -13005,7 +13006,9 @@ components:
           format: date-time
         failure:
           type: string
-          description: "Why it failed or waits, as a code; never the provider's words."
+          description: "Why it failed or waits, as a code; never the provider's words.\
+            \ A caller who is not an operator reads `provider` for anything that happened\
+            \ at the AI provider."
         id:
           type: string
           format: uuid
