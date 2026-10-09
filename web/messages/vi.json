@@ -1420,7 +1420,7 @@
         "organization": "Tổ chức",
         "status": "Trạng thái",
         "sentBy": "Người gửi",
-        "submitted": "Ngày gửi",
+        "waiting": "Đang chờ",
         "actions": "Thao tác"
       },
       "senderUnknown": "Chưa ghi nhận",
@@ -1551,6 +1551,9 @@
         "hint": "Để trống một dòng để gỡ nó.",
         "save": "Lưu",
         "saved": "Đã lưu cho {name}."
+      },
+      "actions": {
+        "organization": "Mở tổ chức"
       }
     },
     "talent": {
@@ -4140,17 +4143,47 @@
       "nothingYet": "Chưa có nội dung."
     },
     "detail": {
+      "showMore": "Xem thêm",
+      "showLess": "Thu gọn",
       "unknown": "Chưa có thông tin",
+      "product": {
+        "title": "Sản phẩm",
+        "names": "Tên sản phẩm",
+        "coreTechnology": "Công nghệ lõi",
+        "builtWith": "Xây dựng bằng",
+        "hosting": "Hạ tầng lưu trữ"
+      },
+      "audience": {
+        "title": "Dành cho ai",
+        "bestCustomerProfile": "Khách hàng phù hợp nhất",
+        "segmentFocus": "Phân khúc khách hàng",
+        "notablePayingCustomers": "Khách hàng tiêu biểu đang trả phí"
+      },
+      "useCases": {
+        "title": "Use case",
+        "lead": "Use case do công ty cung cấp, tách biệt với các triển khai khách hàng đã được duyệt.",
+        "industries": "Ngành",
+        "descriptions": "Ví dụ use case"
+      },
+      "business": {
+        "title": "Mô hình kinh doanh",
+        "monetizationModel": "Mô hình doanh thu",
+        "fundingStatus": "Tình trạng gọi vốn",
+        "fundingRaised": "Số vốn đã huy động"
+      },
+      "alternatives": {
+        "title": "Đối thủ và lựa chọn thay thế"
+      },
       "proof": {
         "title": "Bằng chứng",
-        "lead": "Mỗi nhận định đều ghi rõ loại bằng chứng và nguồn. Điều chưa biết được ghi là chưa biết.",
+        "lead": "Mỗi nhận định nêu loại bằng chứng và bên đứng ra xác nhận.",
         "customerCase": "Trường hợp khách hàng",
-        "noCase": "Chưa công bố trường hợp khách hàng nào.",
         "programme": "Được chọn vào chương trình",
         "selected": "Được chọn vào {program}.",
         "byGenAiFund": "GenAI Fund xác nhận · {date}",
         "stated": "Công ty tự công bố",
         "byCompany": "Do {name} công bố",
+        "milestones": "Cột mốc chính",
         "cases": "{count} triển khai khách hàng đã được GenAI Fund duyệt, liệt kê bên dưới."
       },
       "company": {
@@ -4158,14 +4191,16 @@
         "view": "Xem công ty",
         "solutions": "Giải pháp",
         "noSolutions": "Chưa có giải pháp nào được đăng.",
-        "listedBelow": "{count} triển khai khách hàng, liệt kê bên dưới",
+        "listedBelow": "{count} triển khai khách hàng được liệt kê bên dưới",
         "explore": "Xem giải pháp",
         "deployments": "Triển khai khách hàng",
         "noDeployments": "Chưa công bố triển khai khách hàng nào.",
         "type": "Loại hình",
         "country": "Quốc gia",
         "website": "Website",
-        "industries": "Ngành"
+        "industries": "Ngành",
+        "founded": "Thành lập năm {year}",
+        "teamSize": "Quy mô đội ngũ: {size}"
       },
       "unlisted": "Giải pháp này không có trong danh mục. Bạn đang xem nó qua địa chỉ của riêng nó.",
       "contact": {
@@ -4173,6 +4208,8 @@
         "website": "Mở website",
         "demo": "Xem demo",
         "deck": "Tải tài liệu giới thiệu",
+        "registeredIn": "Đăng ký tại",
+        "deckSize": "Tải tài liệu giới thiệu ({size})",
         "basedIn": "Trụ sở tại",
         "lead": "GenAI Fund đứng ra giới thiệu. Email của bạn được giữ kín cho đến khi bạn trả lời."
       },
@@ -4183,11 +4220,10 @@
         "deployment": "Triển khai",
         "languages": "Ngôn ngữ",
         "builtWith": "Công nghệ lõi",
-        "bestCustomerProfile": "Khách hàng phù hợp nhất",
         "backedBy": "Được hậu thuẫn bởi",
         "program": "Chương trình",
         "channels": "Kênh",
-        "funding": "Vốn đầu tư"
+        "funding": "Vốn đầu tư (GenAI Fund)"
       },
       "gallery": {
         "open": "Mở ảnh {position} trên {count}",

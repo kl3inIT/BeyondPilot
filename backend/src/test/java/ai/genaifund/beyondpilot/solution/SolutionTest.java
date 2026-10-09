@@ -544,6 +544,64 @@ class SolutionTest {
 	}
 
 	@Test
+	void importedV1DetailsStaySeparateFromOperatorBackingAndReviewedCustomerDeployments() {
+		String founder = approvedOwner("founder@v1-details.test", "V1 Details Co");
+		UUID id = approved(founder, "V1 Detail Desk");
+		jdbc.sql("""
+				update solution
+				set product_names = array['Revve AI']::text[],
+				    core_technology = ?,
+				    infrastructure_used = ?,
+				    segment_focus = array['B2B', 'B2B2C']::text[],
+				    notable_paying_customers = ?,
+				    use_case_industries = array['Banking', 'FnB']::text[],
+				    use_case_descriptions = ?,
+				    monetization_model = ?,
+				    company_funding_status = ?,
+				    company_funding_raised = null,
+				    competitors = ?,
+				    built_with = array['OpenAI', 'Claude']::text[],
+				    traction = ?,
+				    funding = ?,
+				    backing_updated_at = now()
+				where id = ?
+				""")
+			.params("OpenAI and Claude with a proprietary agent framework.", "AWS, Google Cloud",
+					"VIB, EagleView", "Banking: voice automation", "Subscription (e.g., SaaS)",
+					"Bootstrapped", "11x, Bland", "US enterprise customers; Vietnam bank proof of concept.",
+					"Seed (GenAI Fund)", id)
+			.update();
+		jdbc.sql("""
+				update organization
+				set founded_year = 2024, team_size = null, company_size_label = '1–19 employees'
+				where id = (select organization_id from solution where id = ?)
+				""")
+			.param(id)
+			.update();
+
+		String page = body(client.get().uri(DIRECTORY + "/v1-detail-desk").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(page, "$.productNames")).containsExactly("Revve AI");
+		assertThat(JsonPath.<String>read(page, "$.coreTechnology"))
+			.isEqualTo("OpenAI and Claude with a proprietary agent framework.");
+		assertThat(JsonPath.<String>read(page, "$.infrastructureUsed")).isEqualTo("AWS, Google Cloud");
+		assertThat(JsonPath.<List<String>>read(page, "$.segmentFocus")).containsExactly("B2B", "B2B2C");
+		assertThat(JsonPath.<String>read(page, "$.notablePayingCustomers")).isEqualTo("VIB, EagleView");
+		assertThat(JsonPath.<List<String>>read(page, "$.useCaseIndustries")).containsExactly("Banking", "FnB");
+		assertThat(JsonPath.<String>read(page, "$.useCaseDescriptions")).isEqualTo("Banking: voice automation");
+		assertThat(JsonPath.<String>read(page, "$.monetizationModel")).isEqualTo("Subscription (e.g., SaaS)");
+		assertThat(JsonPath.<String>read(page, "$.companyFundingStatus")).isEqualTo("Bootstrapped");
+		assertThat(JsonPath.<Object>read(page, "$.companyFundingRaised")).isNull();
+		assertThat(JsonPath.<String>read(page, "$.competitors")).isEqualTo("11x, Bland");
+		assertThat(JsonPath.<String>read(page, "$.traction"))
+			.isEqualTo("US enterprise customers; Vietnam bank proof of concept.");
+		assertThat(JsonPath.<Integer>read(page, "$.organizationFoundedYear")).isEqualTo(2024);
+		assertThat(JsonPath.<String>read(page, "$.organizationCompanySizeLabel")).isEqualTo("1–19 employees");
+		assertThat(JsonPath.<Object>read(page, "$.organizationTeamSize")).isNull();
+		assertThat(JsonPath.<String>read(page, "$.backing.funding")).isEqualTo("Seed (GenAI Fund)");
+		assertThat(JsonPath.<List<Object>>read(page, "$.customerDeployments")).isEmpty();
+	}
+
+	@Test
 	void aDeckIsAPdfOfTheCallerNamedByOneSolutionAndRemovedWhenItIsReplaced() {
 		String founder = approvedOwner("founder@decks.test", "Decks Co");
 		UUID id = create(founder, "Bilby Desk");

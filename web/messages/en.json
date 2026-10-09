@@ -1420,7 +1420,7 @@
         "organization": "Organization",
         "status": "Status",
         "sentBy": "Sent by",
-        "submitted": "Submitted",
+        "waiting": "Waiting",
         "actions": "Actions"
       },
       "senderUnknown": "Not recorded",
@@ -1551,6 +1551,9 @@
         "hint": "Leave a line empty to take it away.",
         "save": "Save",
         "saved": "Saved for {name}."
+      },
+      "actions": {
+        "organization": "Open the organization"
       }
     },
     "talent": {
@@ -4140,17 +4143,47 @@
       "nothingYet": "Nothing written yet."
     },
     "detail": {
+      "showMore": "Show more",
+      "showLess": "Show less",
       "unknown": "Not listed yet",
+      "product": {
+        "title": "Product",
+        "names": "Product names",
+        "coreTechnology": "Core technology",
+        "builtWith": "Built with",
+        "hosting": "Hosting"
+      },
+      "audience": {
+        "title": "Who it is for",
+        "bestCustomerProfile": "Best customer profile",
+        "segmentFocus": "Segment focus",
+        "notablePayingCustomers": "Notable paying customers"
+      },
+      "useCases": {
+        "title": "Use cases",
+        "lead": "Company-stated use cases, separate from reviewed customer deployments.",
+        "industries": "Industries",
+        "descriptions": "Use-case examples"
+      },
+      "business": {
+        "title": "Business model",
+        "monetizationModel": "Monetization model",
+        "fundingStatus": "Funding status",
+        "fundingRaised": "Funding raised"
+      },
+      "alternatives": {
+        "title": "Alternatives"
+      },
       "proof": {
         "title": "Proof",
-        "lead": "Every claim shows its kind of evidence and where it comes from. What isn't known is shown as unknown.",
+        "lead": "Claims identify their kind of evidence and who stands behind them.",
         "customerCase": "Customer case",
-        "noCase": "No customer case published.",
         "programme": "Programme selection",
         "selected": "Selected for {program}.",
         "byGenAiFund": "Confirmed by GenAI Fund · {date}",
         "stated": "Stated by the company",
         "byCompany": "Stated by {name}",
+        "milestones": "Key milestones",
         "cases": "{count, plural, one {One customer deployment reviewed by GenAI Fund, shown below.} other {# customer deployments reviewed by GenAI Fund, shown below.}}"
       },
       "company": {
@@ -4165,7 +4198,9 @@
         "type": "Type",
         "country": "Country",
         "website": "Website",
-        "industries": "Industries"
+        "industries": "Industries",
+        "founded": "Founded {year}",
+        "teamSize": "Team size: {size}"
       },
       "unlisted": "This solution is not in the directory. You are reading it through its address.",
       "contact": {
@@ -4173,6 +4208,8 @@
         "website": "Visit website",
         "demo": "Watch the demo",
         "deck": "Download the deck",
+        "registeredIn": "Registered in",
+        "deckSize": "Download the deck ({size})",
         "basedIn": "Based in",
         "lead": "Get introduced by GenAI Fund. Your email stays private until you reply."
       },
@@ -4183,11 +4220,10 @@
         "deployment": "Deployment",
         "languages": "Languages",
         "builtWith": "Core technology",
-        "bestCustomerProfile": "Best customer profile",
         "backedBy": "Backed by",
         "program": "Program",
         "channels": "Channels",
-        "funding": "Funding"
+        "funding": "Funding (GenAI Fund)"
       },
       "gallery": {
         "open": "Open image {position} of {count}",

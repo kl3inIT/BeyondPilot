@@ -15,9 +15,9 @@ const approvedDeployment = "be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f02";
 
 const decisionsPath = "**/api/solution/admin/**";
 
-/** The link that opens each solution shown, whichever layout the viewport has. */
+/** The ⋯ trigger of each solution shown, whichever layout the viewport has. */
 function shownSolutions(page: Page) {
-  return page.getByRole("link", { name: /^Open / });
+  return page.getByRole("button", { name: /^Open / });
 }
 
 /** The card of one customer deployment on a solution's record. */
@@ -50,12 +50,11 @@ test.describe("admin solutions", () => {
     await page.goto("/admin/solutions");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Solutions");
-    // A record that waits is opened to review it; so is one whose customer deployment waits.
-    await expect(shownSolutions(page)).toHaveText(["Review", "Review", "Review", "Open", "Open"]);
-    await expect(page.getByRole("link", { name: "Open Claims Copilot" })).toHaveAttribute(
-      "href",
-      `/admin/solutions/${claimsCopilot}`,
-    );
+    // Each record opens from its row's ⋯ menu; the name itself is the link.
+    await expect(shownSolutions(page)).toHaveCount(5);
+    await expect(
+      page.getByRole("link", { name: "Claims Copilot" }).and(page.locator(":visible")),
+    ).toHaveAttribute("href", `/admin/solutions/${claimsCopilot}`);
     await expect(page.getByText("Sent 3 hours ago").and(page.locator(":visible"))).toHaveCount(1);
     await expect(page.getByText("1 deployment waits").and(page.locator(":visible"))).toHaveCount(1);
     await expect(page.getByText("5 solutions")).toBeVisible();

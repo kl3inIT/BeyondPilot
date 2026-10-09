@@ -1,5 +1,8 @@
+"use client";
+
 import { cn } from "cn";
 import Image from "next/image";
+import { useState } from "react";
 
 import { initials } from "@/lib/initials";
 import { publicFileUrl } from "@/lib/storage/upload";
@@ -14,14 +17,19 @@ type OrganizationMarkProps = {
   size?: keyof typeof sides;
 };
 
-/** An organization's logo as uploaded, or its initials in a rounded square where it has none. */
+/**
+ * An organization's logo as uploaded, or its initials in a rounded square where it has none. A
+ * file that fails to load falls back to the initials, never the broken-image glyph.
+ */
 function OrganizationMark({ name, logoFileId, size = "default" }: OrganizationMarkProps) {
   const box =
     size === "sm" ? "size-8" : size === "card" ? "size-12 md:size-24 xl:size-34" : "size-11";
   const letters = initials(name, name);
   const fallback =
     letters.length > 1 ? letters : Array.from(name.trim()).slice(0, 2).join("").toLocaleUpperCase();
-  if (logoFileId) {
+  const [broken, setBroken] = useState(false);
+
+  if (logoFileId && !broken) {
     return (
       <Image
         src={publicFileUrl(logoFileId)}
@@ -30,6 +38,7 @@ function OrganizationMark({ name, logoFileId, size = "default" }: OrganizationMa
         height={sides[size]}
         unoptimized
         className={cn(box, "shrink-0 rounded-lg object-contain")}
+        onError={() => setBroken(true)}
       />
     );
   }

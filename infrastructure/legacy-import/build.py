@@ -90,6 +90,42 @@ create temp table legacy_ids (id uuid primary key) on commit drop;
 """
 
 
+def v1_details_sql(data: records.Records) -> str:
+    """Refresh only the v1 detail fields on deterministic startup rows an older load already created."""
+    organizations = {organization.id: organization for organization in data.organizations}
+    statements = [
+        "-- Refresh v1 startup detail fields after V60 and V61, without repeating the one-off load.",
+        "-- This changes only the imported company-size label and solution detail columns.",
+        "begin;",
+    ]
+    refreshed_organizations = set()
+    for solution in data.solutions:
+        organization = organizations[solution.organization_id]
+        if organization.id not in refreshed_organizations:
+            statements.append(
+                f"update organization set company_size_label = {lit(organization.company_size_label)} "
+                f"where id = {lit(str(organization.id))};")
+            refreshed_organizations.add(organization.id)
+        statements.append(
+            "update solution set "
+            f"traction = {lit(solution.traction)}, "
+            f"product_names = {array(solution.product_names)}, "
+            f"core_technology = {lit(solution.core_technology)}, "
+            f"infrastructure_used = {lit(solution.infrastructure_used)}, "
+            f"segment_focus = {array(solution.segment_focus)}, "
+            f"notable_paying_customers = {lit(solution.notable_paying_customers)}, "
+            f"use_case_industries = {array(solution.use_case_industries)}, "
+            f"use_case_descriptions = {lit(solution.use_case_descriptions)}, "
+            f"monetization_model = {lit(solution.monetization_model)}, "
+            f"company_funding_status = {lit(solution.company_funding_status)}, "
+            f"company_funding_raised = {lit(solution.company_funding_raised)}, "
+            f"competitors = {lit(solution.competitors)}, "
+            f"built_with = {array(solution.built_with)} "
+            f"where id = {lit(str(solution.id))};")
+    statements.append("commit;")
+    return "\n".join(statements)
+
+
 def build(workbook_path: Path, out: Path, cache: Path) -> dict:
     data = records.read(openpyxl.load_workbook(workbook_path, read_only=True))
     files_dir = out / "files"
@@ -162,13 +198,13 @@ end $$;
     for i, organization in enumerate(data.organizations, 1):
         logo = claim(store(organization.logo))
         sql.append(
-            "insert into organization (id, slug, name, type, website, country, team_size, description, auto_join, "
-            "status, created_by_account_id, industries, founded_year, logo_file_id) values ("
+            "insert into organization (id, slug, name, type, website, country, team_size, company_size_label, "
+            "description, auto_join, status, created_by_account_id, industries, founded_year, logo_file_id) values ("
             f"{lit(str(organization.id))}, pg_temp.free_slug('organization', {lit(slug(organization.name, 'organization'))}), "
             f"{lit(organization.name)}, 'company', {lit(organization.website)}, {lit(organization.country)}, "
-            f"{lit(organization.team_size)}, {lit(organization.description)}, false, 'in_review', "
-            f"current_setting('legacy.operator')::uuid, {array(organization.industries)}, {lit(organization.founded_year)}, "
-            f"{lit(str(logo['id'])) if logo else 'null'});")
+            f"{lit(organization.team_size)}, {lit(organization.company_size_label)}, {lit(organization.description)}, "
+            f"false, 'in_review', current_setting('legacy.operator')::uuid, {array(organization.industries)}, "
+            f"{lit(organization.founded_year)}, {lit(str(logo['id'])) if logo else 'null'});")
         if i % 200 == 0:
             print(f"organizations {i}/{len(data.organizations)}", flush=True)
 
@@ -178,15 +214,22 @@ end $$;
         sql.append(
             "insert into solution (id, organization_id, slug, name, summary, problems_solved, value_proposition, "
             "focus_areas, industries, maturity, deployment, website, status, listed, created_by_account_id, "
-            "submitted_at, best_customer_profile, traction, demo_url, deck_file_id, deck_file_name, deck_size_bytes, "
-            "deck_attached_at) values ("
+            "submitted_at, best_customer_profile, traction, product_names, core_technology, infrastructure_used, "
+            "segment_focus, notable_paying_customers, use_case_industries, use_case_descriptions, monetization_model, "
+            "company_funding_status, company_funding_raised, competitors, built_with, demo_url, deck_file_id, "
+            "deck_file_name, deck_size_bytes, deck_attached_at) values ("
             f"{lit(str(solution.id))}, {lit(str(solution.organization_id))}, "
             f"pg_temp.free_slug('solution', {lit(slug(solution.name, 'solution'))}), {lit(solution.name)}, "
             f"{lit(solution.summary)}, {lit(solution.problems_solved)}, {lit(solution.value_proposition)}, "
             f"{array(solution.focus_areas)}, {array(solution.industries)}, {lit(solution.maturity)}, "
             f"{array(solution.deployment)}, {lit(solution.website)}, {lit(solution.status)}, false, "
             f"current_setting('legacy.operator')::uuid, {submitted}, {lit(solution.best_customer_profile)}, "
-            f"{lit(solution.traction)}, {lit(solution.demo_url)}, "
+            f"{lit(solution.traction)}, {array(solution.product_names)}, {lit(solution.core_technology)}, "
+            f"{lit(solution.infrastructure_used)}, {array(solution.segment_focus)}, "
+            f"{lit(solution.notable_paying_customers)}, {array(solution.use_case_industries)}, "
+            f"{lit(solution.use_case_descriptions)}, {lit(solution.monetization_model)}, "
+            f"{lit(solution.company_funding_status)}, {lit(solution.company_funding_raised)}, "
+            f"{lit(solution.competitors)}, {array(solution.built_with)}, {lit(solution.demo_url)}, "
             + (f"{lit(str(deck['id']))}, {lit(deck['name'])}, {deck['size']}, now());" if deck
                else "null, null, null, null);"))
         if i % 200 == 0:
@@ -245,6 +288,7 @@ commit;
 """)
     out.mkdir(parents=True, exist_ok=True)
     (out / "load.sql").write_text("\n".join(sql), encoding="utf-8")
+    (out / "v1-details.sql").write_text(v1_details_sql(data), encoding="utf-8")
     result = {
         "organizations": len(data.organizations), "solutions": len(data.solutions), "use_cases": len(data.use_cases),
         "programs_named": programs, "program_links": links, "files_stored": dict(tally),

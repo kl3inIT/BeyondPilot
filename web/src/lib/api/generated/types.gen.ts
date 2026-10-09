@@ -399,8 +399,13 @@ export type AdminSolutionSummary = {
     id: string;
     industries: Array<string>;
     listed: boolean;
+    /**
+     * The stored logo, or nothing for the initials' slot.
+     */
+    logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
+    organizationId: string;
     organizationName: string;
     slug: string;
     status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
@@ -3045,6 +3050,16 @@ export type PublicSolution = {
     builtWith: Array<string>;
     channels?: string | null;
     /**
+     * The amount the company stated it raised, including its original wording and currency.
+     */
+    companyFundingRaised?: string | null;
+    /**
+     * The company's stated funding status, distinct from GenAI Fund's backing.
+     */
+    companyFundingStatus?: string | null;
+    competitors?: string | null;
+    coreTechnology?: string | null;
+    /**
      * ISO 3166-1 alpha-2.
      */
     country?: string | null;
@@ -3068,6 +3083,7 @@ export type PublicSolution = {
      */
     imageFileIds: Array<string>;
     industries: Array<string>;
+    infrastructureUsed?: string | null;
     languages: Array<string>;
     /**
      * Whether the directory lists it. False is approved but shared by its address only.
@@ -3078,16 +3094,43 @@ export type PublicSolution = {
      */
     logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
+    monetizationModel?: string | null;
     name: string;
+    /**
+     * Customers named by the company; these are not reviewed customer deployments.
+     */
+    notablePayingCustomers?: string | null;
+    /**
+     * Its exact imported company-size label; null for an organization that has not supplied one.
+     */
+    organizationCompanySizeLabel?: string | null;
+    /**
+     * The year the organization started.
+     */
+    organizationFoundedYear?: number | null;
     organizationName: string;
     /**
      * The address of the organization's public page.
      */
     organizationSlug: string;
+    /**
+     * The organization's team-size vocabulary code, when one is known.
+     */
+    organizationTeamSize?: string | null;
     problemsSolved?: string | null;
+    /**
+     * Product names the company listed in the v1 export.
+     */
+    productNames: Array<string>;
+    segmentFocus: Array<string>;
     slug: string;
     summary?: string | null;
     traction?: string | null;
+    /**
+     * Use-case descriptions stated by the company, separate from reviewed customer deployments.
+     */
+    useCaseDescriptions?: string | null;
+    useCaseIndustries: Array<string>;
     valueProposition?: string | null;
     website?: string | null;
 };
