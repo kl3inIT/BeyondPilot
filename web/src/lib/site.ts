@@ -62,6 +62,16 @@ export function useCaseRoute(id: string) {
   return `${siteRoutes.useCases}/${id}`;
 }
 
+/** The solutions matched to a use case, as its organization reads them. */
+export function workspaceUseCaseCandidatesRoute(id: string) {
+  return `${siteRoutes.workspaceUseCases}/${id}/candidates`;
+}
+
+/** The solutions matched to a use case, as GenAI Fund reads them. */
+export function adminUseCaseCandidatesRoute(id: string) {
+  return `${siteRoutes.adminUseCases}/${id}/candidates`;
+}
+
 /**
  * Where a program takes applications, while the application form of BeyondPilot is being built
  * (BEY-37): the Tasco challenge still takes them on its interim page. A program without one shows

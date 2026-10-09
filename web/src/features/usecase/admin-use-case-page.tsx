@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { AdminUseCaseDecision } from "./admin-use-case-decision";
 import { AdminUseCaseReview } from "./admin-use-case-review";
 import { LiveRefresh } from "./live-refresh";
+import { UseCaseTabs } from "./use-case-tabs";
 
 type AdminUseCasePageProps = {
   useCase: AdminUseCase;
@@ -105,6 +106,8 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
           </ReviewStatus>
         </div>
       </div>
+
+      {useCase.publishedAt && <UseCaseTabs area="admin" id={useCase.id} current="brief" />}
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-4 lg:col-span-2">
