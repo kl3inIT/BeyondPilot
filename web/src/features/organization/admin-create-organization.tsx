@@ -255,21 +255,25 @@ function AdminCreateOrganization() {
                   max={MAX_INDUSTRIES}
                 />
               </Field>
-              <Field data-invalid={bad("description")}>
-                <FieldLabel htmlFor="admin-organization-description">{f("description")}</FieldLabel>
-                <Textarea
-                  id="admin-organization-description"
-                  rows={3}
-                  maxLength={MAX_DESCRIPTION}
-                  value={text.description}
-                  onChange={(event) => set("description")(event.target.value)}
-                  aria-invalid={bad("description")}
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="organization-logo">{f("logo.label")}</FieldLabel>
-                <OrganizationLogoUpload value={text.logoFileId} onChange={set("logoFileId")} />
-              </Field>
+              <div className="flex flex-col gap-6 sm:flex-row sm:gap-3">
+                <Field data-invalid={bad("description")} className="sm:flex-1">
+                  <FieldLabel htmlFor="admin-organization-description">
+                    {f("description")}
+                  </FieldLabel>
+                  <Textarea
+                    id="admin-organization-description"
+                    rows={3}
+                    maxLength={MAX_DESCRIPTION}
+                    value={text.description}
+                    onChange={(event) => set("description")(event.target.value)}
+                    aria-invalid={bad("description")}
+                  />
+                </Field>
+                <Field className="sm:w-auto">
+                  <FieldLabel htmlFor="organization-logo">{f("logo.label")}</FieldLabel>
+                  <OrganizationLogoUpload value={text.logoFileId} onChange={set("logoFileId")} />
+                </Field>
+              </div>
             </FieldGroup>
             <DialogFooter variant="plain">
               <Button
