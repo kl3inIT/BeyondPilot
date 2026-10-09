@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.usecase;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -11,6 +12,8 @@ import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.program.ProgramName;
 import ai.genaifund.beyondpilot.program.ProgramService;
+import ai.genaifund.beyondpilot.storage.StorageService;
+import ai.genaifund.beyondpilot.storage.StoredFile;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseListResponse;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseResponse;
@@ -18,6 +21,7 @@ import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseSummaryResponse;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCase;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseQueryRepository;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRepository;
+import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRequirement;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,8 +48,12 @@ public class UseCaseDirectory {
 
 	private final UseCaseProperties properties;
 
+	private final StorageService storage;
+
 	UseCaseDirectory(UseCaseQueryRepository useCaseList, UseCaseRepository useCases,
-			OrganizationDirectory organizations, ProgramService programs, UseCaseProperties properties) {
+			OrganizationDirectory organizations, ProgramService programs, UseCaseProperties properties,
+			StorageService storage) {
+		this.storage = storage;
 		this.useCaseList = useCaseList;
 		this.useCases = useCases;
 		this.organizations = organizations;
@@ -62,6 +70,37 @@ public class UseCaseDirectory {
 		return useCases.findById(useCaseId)
 			.filter(useCase -> UseCase.APPROVED.equals(useCase.getStatus()) && useCase.getTitle() != null)
 			.flatMap(useCase -> indexed(List.of(useCase)).stream().findFirst());
+	}
+
+	/**
+	 * Everything a published use case says, with its attached files, for matching; empty for a use case that is not
+	 * published. One past its close date is still returned: its candidates stay readable.
+	 */
+	@Transactional(readOnly = true)
+	public Optional<UseCaseBrief> brief(UUID useCaseId) {
+		return useCases.findById(useCaseId)
+			.filter(useCase -> UseCase.APPROVED.equals(useCase.getStatus()) && useCase.getTitle() != null)
+			.map(useCase -> {
+				Map<UUID, StoredFile> files = storage.describe(useCase.getAttachmentFileIds());
+				List<UseCaseBrief.Attachment> attachments = useCase.getAttachmentFileIds()
+					.stream()
+					.map(files::get)
+					.filter(Objects::nonNull)
+					.map(file -> new UseCaseBrief.Attachment(file.id(), file.fileName(), file.mediaType(),
+							storage.content(file.id())))
+					.toList();
+				List<UseCaseBrief.Stated> stated = useCase.getRequirements()
+					.stream()
+					.map(requirement -> new UseCaseBrief.Stated(requirement.statement(),
+							UseCaseRequirement.REQUIRED.equals(requirement.necessity())))
+					.toList();
+				return new UseCaseBrief(useCase.getId(), useCase.getOrganizationId(),
+						Objects.requireNonNull(useCase.getTitle()), useCase.getIndustry(),
+						List.copyOf(useCase.getTechnologies()), useCase.getProblemStatement(),
+						useCase.getExpectedOutcomes(), useCase.getCurrentProcess(), useCase.getCurrentSolutions(),
+						useCase.getTargetUsers(), useCase.getDataReadiness(), useCase.getIntegrationRequirements(),
+						stated, attachments);
+			});
 	}
 
 	/** Every published use case as search indexes it, for a rebuild of the index. */
