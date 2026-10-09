@@ -12,7 +12,9 @@ type TextClampProps = {
   /** The action that collapses it again, set by the caller's locale. */
   less: string;
   /** The single element holding the text, such as a paragraph or a list. */
-  children: React.ReactElement<{ className?: string }>;
+  children: React.ReactElement<
+    { className?: string; style?: React.CSSProperties } & React.RefAttributes<HTMLElement>
+  >;
 };
 
 /**
