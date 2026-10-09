@@ -621,15 +621,21 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                   ),
               )}
               {solution.deck && (
-                <Button
-                  prominence="secondary"
-                  size="lg"
-                  className="w-full"
-                  href={deckAddress(solution.slug)}
-                >
-                  <DownloadIcon aria-hidden="true" />
-                  {t("contact.deckSize", { size: size(solution.deck.sizeBytes) })}
-                </Button>
+                <>
+                  <Button
+                    prominence="secondary"
+                    size="lg"
+                    className="w-full"
+                    href={deckAddress(solution.slug)}
+                    aria-describedby="solution-deck-file"
+                  >
+                    <DownloadIcon aria-hidden="true" />
+                    {t("contact.deck")}
+                  </Button>
+                  <p id="solution-deck-file" className="text-center text-xs text-muted-foreground">
+                    {solution.deck.fileName} · {size(solution.deck.sizeBytes)}
+                  </p>
+                </>
               )}
             </div>
           )}
