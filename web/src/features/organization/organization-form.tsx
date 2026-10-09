@@ -396,12 +396,12 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
         {/* Unsaved changes to a saved profile are kept or dropped on leaving, where LeaveGuard asks. */}
         {!organization && (
-          <Button prominence="tertiary" size="lg" href={siteRoutes.workspaceOrganization}>
+          <Button prominence="secondary" size="lg" href={siteRoutes.workspaceOrganization}>
             {t("cancel")}
           </Button>
         )}
         {onCancel && (
-          <Button prominence="tertiary" size="lg" disabled={pending} onClick={onCancel}>
+          <Button prominence="secondary" size="lg" disabled={pending} onClick={onCancel}>
             {t("cancel")}
           </Button>
         )}
