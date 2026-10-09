@@ -67,6 +67,16 @@ export type AddEmailSuppression = {
 };
 
 /**
+ * A solution an operator puts among the candidates by hand.
+ */
+export type AddMatchingCandidate = {
+    /**
+     * An approved solution that is not a candidate yet.
+     */
+    solutionId: string;
+};
+
+/**
  * An organization an operator creates for a company that is not here yet. It is approved from the start and has no member until someone accepts the invitation to own it, or claims it.
  */
 export type AdminCreateOrganization = {
@@ -838,7 +848,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -1819,6 +1829,241 @@ export type JoinOutcome = {
      * `joined`: the caller is a member. `requested`: its owners, or GenAI Fund when nobody owns it, decide.
      */
     outcome: 'joined' | 'requested';
+};
+
+/**
+ * The solutions matched to a use case: what it asks for, its last run and its candidates.
+ */
+export type Matching = {
+    /**
+     * The candidates, in the order the last run found them.
+     */
+    candidates: Array<MatchingCandidate>;
+    /**
+     * Whether an AI model is set for matching; without one no run starts.
+     */
+    modelChosen: boolean;
+    /**
+     * Whether the caller is an operator: operators add candidates, judge all again and see the steps.
+     */
+    operator: boolean;
+    /**
+     * What the use case asks for, as the last run read it, capabilities first.
+     */
+    requirements: Array<MatchingRequirement>;
+    /**
+     * The last run; absent when the use case was never matched.
+     */
+    run?: MatchingRun;
+    /**
+     * How many more runs the caller may start today; absent for operators, who have no limit.
+     */
+    runsLeftToday?: number;
+    /**
+     * What the last run did in each step; empty for a caller who is not an operator.
+     */
+    steps: Array<MatchingStep>;
+    useCaseId: string;
+};
+
+/**
+ * One solution for the use case, with what was found and decided.
+ */
+export type MatchingCandidate = {
+    bucket: 'direct' | 'industry' | 'technology' | 'none';
+    /**
+     * What people last decided.
+     */
+    decision: 'none' | 'shortlisted' | 'removed';
+    /**
+     * One finding per requirement, in their order.
+     */
+    findings: Array<MatchingFinding>;
+    id: string;
+    /**
+     * Whether the vendor delivered a similar workflow in the use case's industry.
+     */
+    industry?: MatchingFinding;
+    /**
+     * Whether a run judged it; one added by hand waits for the next run.
+     */
+    judged: boolean;
+    /**
+     * False when its owners keep it out of the directory: it has no public page.
+     */
+    listed: boolean;
+    organizationName?: string;
+    /**
+     * Found by a run, or added by GenAI Fund.
+     */
+    origin: 'recommended' | 'added';
+    /**
+     * Whether the product is made for the problem.
+     */
+    problem?: MatchingFinding;
+    removedAt?: string;
+    /**
+     * Who removed it, by the name they are shown by.
+     */
+    removedBy?: string;
+    /**
+     * Whether GenAI Fund removed it; a member restores only what members removed.
+     */
+    removedByOperator?: boolean;
+    removedNote?: string;
+    /**
+     * Why it was removed.
+     */
+    removedReason?: 'does_not_solve' | 'wrong_industry_or_size' | 'closed_or_wrong_website' | 'duplicate' | 'other';
+    requiredMet: number;
+    requiredTotal: number;
+    solutionId: string;
+    solutionName: string;
+    /**
+     * The address of the solution in the directory.
+     */
+    solutionSlug: string;
+    /**
+     * The model's one sentence: the strongest reason, or what is missing.
+     */
+    summary?: string;
+    /**
+     * Whether the product is built on the technologies the use case names.
+     */
+    technology?: MatchingFinding;
+    /**
+     * Which of its sources held no text to read.
+     */
+    unread: 'deck' | 'website';
+};
+
+/**
+ * What the solution's own material shows, with the words that show it.
+ */
+export type MatchingFinding = {
+    /**
+     * Words copied from the solution's material; empty when nothing shows it.
+     */
+    quote: string;
+    /**
+     * Where code found the quote.
+     */
+    quoteState: 'exact' | 'other_source' | 'close' | 'not_found' | 'none';
+    /**
+     * The model's one sentence on what the quote shows.
+     */
+    reason: string;
+    /**
+     * The place of the requirement it answers; absent for the problem, industry and technology.
+     */
+    requirement?: number;
+    /**
+     * Where the quote is: profile, customer case 1, deck p.3, website 2.
+     */
+    source: string;
+    status: 'met' | 'partly' | 'not_shown';
+};
+
+/**
+ * One thing the use case asks for.
+ */
+export type MatchingRequirement = {
+    /**
+     * A capability is what the product does; a constraint is a condition of delivery.
+     */
+    kind: 'capability' | 'constraint';
+    necessity: 'required' | 'optional';
+    /**
+     * Its place in the list, from 1; a finding names it by this.
+     */
+    position: number;
+    /**
+     * The words of the brief it comes from.
+     */
+    quote: string;
+    statement: string;
+};
+
+/**
+ * One pass of matching for a use case.
+ */
+export type MatchingRun = {
+    createdAt: string;
+    endedAt?: string;
+    /**
+     * Why it failed or waits, as a code; never the provider's words.
+     */
+    failure?: string;
+    id: string;
+    /**
+     * How many candidates are judged.
+     */
+    judged: number;
+    /**
+     * The model that judged; absent for a caller who is not an operator.
+     */
+    modelName?: string;
+    /**
+     * What started it: a change of the use case, an operator or a member.
+     */
+    origin: 'approved' | 'operator' | 'member';
+    /**
+     * When it goes on, while it waits for the AI provider.
+     */
+    resumesAt?: string;
+    startedAt?: string;
+    /**
+     * When it starts, while it waits for the use case to stay unchanged.
+     */
+    startsAt?: string;
+    state: 'queued' | 'running' | 'waiting' | 'done' | 'failed';
+    /**
+     * How many candidates there are.
+     */
+    total: number;
+};
+
+/**
+ * The limits of matching, as operators set them.
+ */
+export type MatchingSettings = {
+    /**
+     * How many solutions a run judges.
+     */
+    candidates: number;
+    /**
+     * How many runs a day the changes of one use case may start.
+     */
+    editRunsPerDay: number;
+    /**
+     * How many runs a day the members of its organization may start for one use case.
+     */
+    memberRunsPerDay: number;
+    /**
+     * How many runs a day start in all; absent for no limit.
+     */
+    runsPerDay?: number;
+    /**
+     * How many minutes a use case must stay unchanged before the run its change asked for starts.
+     */
+    settleMinutes: number;
+    /**
+     * Sent back with a change, so that two operators do not overwrite each other.
+     */
+    version: number;
+};
+
+/**
+ * What a run did in one step.
+ */
+export type MatchingStep = {
+    calls: number;
+    givenOut: number;
+    inputTokens: number;
+    millis: number;
+    name: 'requirements' | 'candidates' | 'judgment';
+    outputTokens: number;
+    takenIn: number;
 };
 
 export type McpCall = {
@@ -3186,6 +3431,17 @@ export type ReleaseItem = {
     solutionName: string;
 };
 
+/**
+ * Why a candidate is taken off the list.
+ */
+export type RemoveMatchingCandidate = {
+    /**
+     * A few words more, if the person wants.
+     */
+    note?: string;
+    reason: 'does_not_solve' | 'wrong_industry_or_size' | 'closed_or_wrong_website' | 'duplicate' | 'other';
+};
+
 export type ReportedChatModel = {
     cachedInputPrice?: number | null;
     /**
@@ -3727,6 +3983,24 @@ export type SaveEmailTemplate = {
      * The version read; null when the default was in use.
      */
     version?: number | null;
+};
+
+/**
+ * The limits of matching an operator sets.
+ */
+export type SaveMatchingSettings = {
+    candidates: number;
+    editRunsPerDay: number;
+    memberRunsPerDay: number;
+    /**
+     * Absent for no limit.
+     */
+    runsPerDay?: number;
+    settleMinutes: number;
+    /**
+     * The version the operator read.
+     */
+    version: number;
 };
 
 /**
@@ -4522,6 +4796,16 @@ export type SolutionSummary = {
      */
     suspensionReason?: 'misleading_information' | 'not_an_ai_solution' | 'unverifiable' | 'breaks_the_rules' | 'other';
     updatedAt: string;
+};
+
+/**
+ * A run of matching a person starts.
+ */
+export type StartMatchingRun = {
+    /**
+     * Whether every candidate is judged again, whatever was judged before; only an operator may ask.
+     */
+    judgeAll: boolean;
 };
 
 /**
@@ -5376,7 +5660,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -6091,6 +6375,298 @@ export type ReplyToIntroductionResponses = {
 };
 
 export type ReplyToIntroductionResponse = ReplyToIntroductionResponses[keyof ReplyToIntroductionResponses];
+
+export type GetMatchingSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/matching/admin/settings';
+};
+
+export type GetMatchingSettingsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetMatchingSettingsError = GetMatchingSettingsErrors[keyof GetMatchingSettingsErrors];
+
+export type GetMatchingSettingsResponses = {
+    /**
+     * The limits as they are set.
+     */
+    200: MatchingSettings;
+};
+
+export type GetMatchingSettingsResponse = GetMatchingSettingsResponses[keyof GetMatchingSettingsResponses];
+
+export type SaveMatchingSettingsData = {
+    body: SaveMatchingSettings;
+    path?: never;
+    query?: never;
+    url: '/api/matching/admin/settings';
+};
+
+export type SaveMatchingSettingsErrors = {
+    /**
+     * A limit is outside what is allowed.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * Someone else changed the limits meanwhile.
+     */
+    409: Problem;
+};
+
+export type SaveMatchingSettingsError = SaveMatchingSettingsErrors[keyof SaveMatchingSettingsErrors];
+
+export type SaveMatchingSettingsResponses = {
+    /**
+     * The limits were kept.
+     */
+    200: MatchingSettings;
+};
+
+export type SaveMatchingSettingsResponse = SaveMatchingSettingsResponses[keyof SaveMatchingSettingsResponses];
+
+export type RemoveMatchingCandidateData = {
+    body: RemoveMatchingCandidate;
+    path: {
+        candidateId: string;
+    };
+    query?: never;
+    url: '/api/matching/candidates/{candidateId}/remove';
+};
+
+export type RemoveMatchingCandidateErrors = {
+    /**
+     * The reason is not valid, or is other and nothing says what.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The candidate is unknown to the caller.
+     */
+    404: Problem;
+};
+
+export type RemoveMatchingCandidateError = RemoveMatchingCandidateErrors[keyof RemoveMatchingCandidateErrors];
+
+export type RemoveMatchingCandidateResponses = {
+    /**
+     * The candidate is removed, and off the shortlist.
+     */
+    200: Matching;
+};
+
+export type RemoveMatchingCandidateResponse = RemoveMatchingCandidateResponses[keyof RemoveMatchingCandidateResponses];
+
+export type RestoreMatchingCandidateData = {
+    body?: never;
+    path: {
+        candidateId: string;
+    };
+    query?: never;
+    url: '/api/matching/candidates/{candidateId}/restore';
+};
+
+export type RestoreMatchingCandidateErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * GenAI Fund removed the candidate and the caller is a member.
+     */
+    403: Problem;
+    /**
+     * The candidate is unknown to the caller.
+     */
+    404: Problem;
+};
+
+export type RestoreMatchingCandidateError = RestoreMatchingCandidateErrors[keyof RestoreMatchingCandidateErrors];
+
+export type RestoreMatchingCandidateResponses = {
+    /**
+     * Nothing is decided on the candidate.
+     */
+    200: Matching;
+};
+
+export type RestoreMatchingCandidateResponse = RestoreMatchingCandidateResponses[keyof RestoreMatchingCandidateResponses];
+
+export type ShortlistMatchingCandidateData = {
+    body?: never;
+    path: {
+        candidateId: string;
+    };
+    query?: never;
+    url: '/api/matching/candidates/{candidateId}/shortlist';
+};
+
+export type ShortlistMatchingCandidateErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The candidate is unknown to the caller.
+     */
+    404: Problem;
+    /**
+     * The candidate was removed.
+     */
+    409: Problem;
+};
+
+export type ShortlistMatchingCandidateError = ShortlistMatchingCandidateErrors[keyof ShortlistMatchingCandidateErrors];
+
+export type ShortlistMatchingCandidateResponses = {
+    /**
+     * The candidate is on the shortlist.
+     */
+    200: Matching;
+};
+
+export type ShortlistMatchingCandidateResponse = ShortlistMatchingCandidateResponses[keyof ShortlistMatchingCandidateResponses];
+
+export type GetMatchingData = {
+    body?: never;
+    path: {
+        useCaseId: string;
+    };
+    query?: never;
+    url: '/api/matching/use-cases/{useCaseId}';
+};
+
+export type GetMatchingErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * No published use case has the identifier, or the caller is neither an operator nor a member of its organization.
+     */
+    404: Problem;
+};
+
+export type GetMatchingError = GetMatchingErrors[keyof GetMatchingErrors];
+
+export type GetMatchingResponses = {
+    /**
+     * What matching holds for the use case.
+     */
+    200: Matching;
+};
+
+export type GetMatchingResponse = GetMatchingResponses[keyof GetMatchingResponses];
+
+export type AddMatchingCandidateData = {
+    body: AddMatchingCandidate;
+    path: {
+        useCaseId: string;
+    };
+    query?: never;
+    url: '/api/matching/use-cases/{useCaseId}/candidates';
+};
+
+export type AddMatchingCandidateErrors = {
+    /**
+     * The request is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The use case or the approved solution is unknown.
+     */
+    404: Problem;
+    /**
+     * The solution is a candidate already, or belongs to the organization of the use case.
+     */
+    409: Problem;
+};
+
+export type AddMatchingCandidateError = AddMatchingCandidateErrors[keyof AddMatchingCandidateErrors];
+
+export type AddMatchingCandidateResponses = {
+    /**
+     * The solution is a candidate; the next run judges it.
+     */
+    200: Matching;
+};
+
+export type AddMatchingCandidateResponse = AddMatchingCandidateResponses[keyof AddMatchingCandidateResponses];
+
+export type StartMatchingRunData = {
+    body: StartMatchingRun;
+    path: {
+        useCaseId: string;
+    };
+    query?: never;
+    url: '/api/matching/use-cases/{useCaseId}/runs';
+};
+
+export type StartMatchingRunErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * Only an operator has every candidate judged again.
+     */
+    403: Problem;
+    /**
+     * The use case is unknown to the caller.
+     */
+    404: Problem;
+    /**
+     * A run is at work for the use case.
+     */
+    409: Problem;
+    /**
+     * Members started as many runs as a day allows.
+     */
+    429: Problem;
+    /**
+     * No AI model is set for matching.
+     */
+    503: Problem;
+};
+
+export type StartMatchingRunError = StartMatchingRunErrors[keyof StartMatchingRunErrors];
+
+export type StartMatchingRunResponses = {
+    /**
+     * The run is queued, or the run that waited starts now.
+     */
+    200: Matching;
+};
+
+export type StartMatchingRunResponse = StartMatchingRunResponses[keyof StartMatchingRunResponses];
 
 export type ListMcpCallsData = {
     body?: never;

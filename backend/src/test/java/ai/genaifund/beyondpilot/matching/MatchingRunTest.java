@@ -106,6 +106,11 @@ class MatchingRunTest {
 		jdbc.sql("delete from matching_run").update();
 		jdbc.sql("delete from matching_requirement").update();
 		jdbc.sql("update ai_task_model set model_id = null, reasoning_effort = null, version = 0").update();
+		// A run starts as soon as the use case is published; the wait after a change has its own test.
+		jdbc.sql("""
+				update matching_settings set settle_minutes = 0, edit_runs_per_day = 3, member_runs_per_day = 2,
+				    runs_per_day = 200, candidates = 40, version = 0
+				""").update();
 		jdbc.sql("delete from ai_provider where purpose = 'chat'").update();
 		jdbc.sql("delete from ai_usage").update();
 		client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory()).baseUrl("http://localhost:" + port).build();
@@ -159,6 +164,9 @@ class MatchingRunTest {
 		String owner = TestSignIn.session(client, mail, "owner-" + word + "@matching.test");
 		UUID vendor = organization(owner, "Claims Lab " + word);
 		post(operator, "/api/organization/admin/organizations/" + vendor + "/approve", Map.of());
+		String buyer = TestSignIn.session(client, mail, "buyer-" + word + "@matching.test");
+		UUID bank = organization(buyer, "Lotus Bank " + word);
+		post(operator, "/api/organization/admin/organizations/" + bank + "/approve", Map.of());
 		UUID solution = submittedSolution(owner, "Claims Desk " + word);
 		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
 		await().atMost(WAIT)
@@ -174,7 +182,7 @@ class MatchingRunTest {
 			.header(TestSignIn.CSRF_HEADER, "1")
 			.cookie(TestSignIn.SESSION_COOKIE, operator)
 			.contentType(MediaType.APPLICATION_JSON)
-			.body(useCase("Claims triage " + word, vendor))
+			.body(useCase("Claims triage " + word, bank))
 			.exchange()
 			.expectStatus()
 			.is2xxSuccessful()), "$.id"));
@@ -203,7 +211,7 @@ class MatchingRunTest {
 			.single()).isEqualTo("gpt-5-mini");
 
 		// A second run of the same brief and the same material asks the model nothing.
-		matching.queue(useCase, MatchingRepository.BY_OPERATOR, null, Prompts.VERSION).orElseThrow();
+		matching.queue(useCase, MatchingRepository.BY_OPERATOR, null, Prompts.VERSION, null, false).orElseThrow();
 		runs.work();
 		assertThat(runsOf(useCase)).containsExactly("done approved", "done operator");
 		assertThat(asked).hasSize(2);
@@ -211,7 +219,8 @@ class MatchingRunTest {
 		// The deck changes and the provider says its limit is reached: the run waits, and what was judged stays.
 		deck(solution, "Claims Desk reads Vietnamese claim forms in seconds.");
 		refusing.set(true);
-		UUID third = matching.queue(useCase, MatchingRepository.BY_OPERATOR, null, Prompts.VERSION).orElseThrow();
+		UUID third = matching.queue(useCase, MatchingRepository.BY_OPERATOR, null, Prompts.VERSION, null, false)
+			.orElseThrow();
 		runs.work();
 		assertThat(jdbc.sql("select state || ' ' || stalls || ' ' || (failure is not null) from matching_run where id = ?")
 			.param(third)
@@ -225,6 +234,141 @@ class MatchingRunTest {
 		runs.work();
 		assertThat(runsOf(useCase)).containsExactly("done approved", "done operator", "done operator");
 		assertThat(asked).containsExactly("requirements", "judgment", "judgment");
+
+		// A member of the use case's organization reads the candidates with their reasons, and nothing of the cost.
+		String path = "/api/matching/use-cases/" + useCase;
+		String read = body(call("GET", buyer, path, null).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(read, "$.operator")).isFalse();
+		assertThat(JsonPath.<Integer>read(read, "$.runsLeftToday")).isEqualTo(2);
+		assertThat(JsonPath.<String>read(read, "$.run.state")).isEqualTo("done");
+		assertThat(JsonPath.<Object>read(read, "$.run.modelName")).isNull();
+		assertThat(JsonPath.<List<Object>>read(read, "$.steps")).isEmpty();
+		assertThat(JsonPath.<List<String>>read(read, "$.requirements[*].kind"))
+			.containsExactly("capability", "capability", "constraint");
+		assertThat(JsonPath.<List<String>>read(read, "$.candidates[*].solutionName")).containsExactly("Claims Desk " + word);
+		assertThat(JsonPath.<String>read(read, "$.candidates[0].bucket")).isEqualTo("direct");
+		assertThat(JsonPath.<String>read(read, "$.candidates[0].organizationName")).isEqualTo("Claims Lab " + word);
+		assertThat(JsonPath.<String>read(read, "$.candidates[0].findings[0].quote")).isEqualTo("reads Vietnamese claim forms");
+		assertThat(JsonPath.<String>read(read, "$.candidates[0].findings[0].source")).isEqualTo("deck p.1");
+		assertThat(JsonPath.<String>read(read, "$.candidates[0].findings[2].status")).isEqualTo("not_shown");
+		assertThat(JsonPath.<String>read(read, "$.candidates[0].industry.status")).isEqualTo("met");
+		String candidate = JsonPath.read(read, "$.candidates[0].id");
+		// The vendor's own member, and anyone else, is told there is no such use case.
+		assertProblem(call("GET", owner, path, null), 404, "MATCHING_USE_CASE_NOT_FOUND");
+		assertProblem(call("POST", owner, "/api/matching/candidates/" + candidate + "/shortlist", null), 404,
+				"MATCHING_USE_CASE_NOT_FOUND");
+		// An operator sees how the run worked.
+		String asOperator = body(call("GET", operator, path, null).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(asOperator, "$.steps[*].name"))
+			.containsExactly("requirements", "candidates", "judgment");
+		assertThat(JsonPath.<String>read(asOperator, "$.run.modelName")).isEqualTo("gpt-5-mini");
+		assertThat(JsonPath.<Object>read(asOperator, "$.runsLeftToday")).isNull();
+
+		// The member shortlists, removes with a reason and restores; a run never undoes it.
+		String decide = "/api/matching/candidates/" + candidate;
+		assertThat(decision(call("POST", buyer, decide + "/shortlist", null))).isEqualTo("shortlisted");
+		assertProblem(call("POST", buyer, decide + "/remove", Map.of("reason", "too_small")), 400, "REQUEST_INVALID");
+		String removed = body(call("POST", buyer, decide + "/remove", Map.of("reason", "duplicate", "note", " Same as Claims Desk. "))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(removed, "$.candidates[0].decision")).isEqualTo("removed");
+		assertThat(JsonPath.<String>read(removed, "$.candidates[0].removedReason")).isEqualTo("duplicate");
+		assertThat(JsonPath.<String>read(removed, "$.candidates[0].removedNote")).isEqualTo("Same as Claims Desk.");
+		// Both sides see who removed it and when.
+		assertThat(JsonPath.<String>read(removed, "$.candidates[0].removedBy")).isEqualTo("buyer-" + word + "@matching.test");
+		assertThat(JsonPath.<Boolean>read(removed, "$.candidates[0].removedByOperator")).isFalse();
+		assertThat(JsonPath.<String>read(removed, "$.candidates[0].removedAt")).isNotBlank();
+		assertProblem(call("POST", buyer, decide + "/shortlist", null), 409, "MATCHING_CANDIDATE_REMOVED");
+		assertThat(decision(call("POST", buyer, decide + "/restore", null))).isEqualTo("none");
+		// What GenAI Fund removed, only GenAI Fund restores.
+		assertThat(decision(call("POST", operator, decide + "/remove", Map.of("reason", "does_not_solve"))))
+			.isEqualTo("removed");
+		assertProblem(call("POST", buyer, decide + "/restore", null), 403, "MATCHING_REMOVED_BY_OPERATOR");
+		assertThat(decision(call("POST", operator, decide + "/restore", null))).isEqualTo("none");
+
+		// An operator adds a solution by hand; a member may not, and a solution is a candidate once.
+		UUID second = submittedSolution(owner, "Forms Reader " + word);
+		post(operator, "/api/solution/admin/solutions/" + second + "/approve", null);
+		await().atMost(WAIT)
+			.until(() -> jdbc.sql("select count(*) from search_document where item_id = ?")
+				.param(second)
+				.query(Long.class)
+				.single() == 1);
+		assertProblem(call("POST", buyer, path + "/candidates", Map.of("solutionId", second)), 403,
+				"MATCHING_OPERATORS_ONLY");
+		assertProblem(call("POST", operator, path + "/candidates", Map.of("solutionId", UUID.randomUUID())), 404,
+				"MATCHING_SOLUTION_NOT_FOUND");
+		assertProblem(call("POST", operator, path + "/candidates", Map.of("solutionId", solution)), 409,
+				"MATCHING_ALREADY_CANDIDATE");
+		String added = body(call("POST", operator, path + "/candidates", Map.of("solutionId", second)).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(added, "$.candidates[*].origin")).containsExactly("recommended", "added");
+		assertThat(JsonPath.<List<Boolean>>read(added, "$.candidates[?(@.origin == 'added')].judged")).containsExactly(false);
+		// Adding it queued a run, so a second start is refused; only an operator has all judged again.
+		assertThat(JsonPath.<String>read(added, "$.run.state")).isEqualTo("queued");
+		assertProblem(call("POST", buyer, path + "/runs", Map.of("judgeAll", true)), 403, "MATCHING_OPERATORS_ONLY");
+		assertProblem(call("POST", buyer, path + "/runs", Map.of("judgeAll", false)), 409, "MATCHING_RUN_OPEN");
+		runs.work();
+		String judged = body(call("GET", buyer, path, null).expectStatus().isOk());
+		// The added solution is judged on its own material, which does not hold the quotes the model gave.
+		assertThat(JsonPath.<List<Boolean>>read(judged, "$.candidates[*].judged")).containsExactly(true, true);
+		assertThat(JsonPath.<List<String>>read(judged, "$.candidates[?(@.origin == 'added')].bucket")).containsExactly("none");
+		assertThat(asked).hasSize(4);
+
+		// A member starts as many runs as a day allows, and no more.
+		assertThat(JsonPath.<String>read(body(call("POST", buyer, path + "/runs", Map.of("judgeAll", false)).expectStatus()
+			.isOk()), "$.run.origin")).isEqualTo("member");
+		runs.work();
+		String last = body(call("POST", buyer, path + "/runs", Map.of("judgeAll", false)).expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(last, "$.runsLeftToday")).isZero();
+		runs.work();
+		assertProblem(call("POST", buyer, path + "/runs", Map.of("judgeAll", false)), 429, "MATCHING_RUN_LIMIT");
+		// Nothing changed, so those runs asked the model nothing; an operator has every candidate judged again.
+		assertThat(asked).hasSize(4);
+		call("POST", operator, path + "/runs", Map.of("judgeAll", true)).expectStatus().isOk();
+		runs.work();
+		assertThat(asked).hasSize(6);
+
+		assertThat(jdbc.sql("select action from audit_event where action like 'matching.%' order by occurred_at")
+			.query(String.class)
+			.list()).contains("matching.candidate_shortlist", "matching.candidate_remove", "matching.candidate_restore",
+					"matching.candidate_add", "matching.run_start");
+
+		// The limits are the operators' to set, one at a time.
+		String limits = "/api/matching/admin/settings";
+		assertProblem(call("GET", buyer, limits, null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		String set = body(call("GET", operator, limits, null).expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(set, "$.memberRunsPerDay")).isEqualTo(2);
+		Map<String, Object> change = new HashMap<>(Map.of("settleMinutes", 15, "editRunsPerDay", 4, "memberRunsPerDay",
+				5, "candidates", 60, "version", JsonPath.<Integer>read(set, "$.version")));
+		change.put("runsPerDay", null);
+		String kept = body(call("PUT", operator, limits, change).expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(kept, "$.candidates")).isEqualTo(60);
+		assertThat(JsonPath.<Object>read(kept, "$.runsPerDay")).isNull();
+		assertProblem(call("PUT", operator, limits, change), 409, "MATCHING_SETTINGS_CHANGED");
+		change.put("candidates", 2);
+		assertProblem(call("PUT", operator, limits, change), 400, "REQUEST_INVALID");
+	}
+
+	private static String decision(RestTestClient.ResponseSpec response) {
+		return JsonPath.read(body(response.expectStatus().isOk()), "$.candidates[0].decision");
+	}
+
+	private RestTestClient.ResponseSpec call(String method, String session, String path, @Nullable Object body) {
+		RestTestClient.RequestBodySpec request = client.method(org.springframework.http.HttpMethod.valueOf(method))
+			.uri(path)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, session);
+		return (body == null ? request : request.contentType(MediaType.APPLICATION_JSON).body(body)).exchange();
+	}
+
+	private static void assertProblem(RestTestClient.ResponseSpec response, int status, String code) {
+		response.expectStatus()
+			.isEqualTo(status)
+			.expectHeader()
+			.contentType(MediaType.APPLICATION_PROBLEM_JSON)
+			.expectBody()
+			.jsonPath("$.code")
+			.isEqualTo(code);
 	}
 
 	private void deck(UUID solution, String firstPage) {

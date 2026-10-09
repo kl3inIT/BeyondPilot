@@ -1032,6 +1032,14 @@
           "user_server_disable": "Tắt server MCP cho người dùng",
           "tool_enable": "Bật một công cụ MCP",
           "tool_disable": "Tắt một công cụ MCP"
+        },
+        "matching": {
+          "run_start": "Chạy matching cho một use case",
+          "candidate_add": "Thêm ứng viên bằng tay",
+          "candidate_shortlist": "Đưa ứng viên vào shortlist",
+          "candidate_remove": "Loại một ứng viên",
+          "candidate_restore": "Khôi phục một ứng viên",
+          "settings_change": "Đổi giới hạn của matching"
         }
       },
       "activity": {
@@ -1144,6 +1152,14 @@
           "user_server_disable": "Tắt <resource></resource>",
           "tool_enable": "Bật công cụ MCP <resource></resource>",
           "tool_disable": "Tắt công cụ MCP <resource></resource>"
+        },
+        "matching": {
+          "run_start": "Chạy matching cho use case <resource></resource>",
+          "candidate_add": "Thêm ứng viên bằng tay cho use case <resource></resource>",
+          "candidate_shortlist": "Đưa một ứng viên của use case <resource></resource> vào shortlist",
+          "candidate_remove": "Loại một ứng viên của use case <resource></resource>",
+          "candidate_restore": "Khôi phục một ứng viên của use case <resource></resource>",
+          "settings_change": "Đổi giới hạn của matching"
         }
       },
       "columns": {
