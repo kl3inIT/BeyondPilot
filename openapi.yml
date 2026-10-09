@@ -9268,6 +9268,12 @@ components:
             type: string
         listed:
           type: boolean
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The stored logo, or nothing for the initials' slot."
         maturity:
           type:
           - string
@@ -9280,6 +9286,9 @@ components:
           - scaled
         name:
           type: string
+        organizationId:
+          type: string
+          format: uuid
         organizationName:
           type: string
         slug:
@@ -9322,6 +9331,7 @@ components:
       - industries
       - listed
       - name
+      - organizationId
       - organizationName
       - slug
       - status

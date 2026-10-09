@@ -389,8 +389,13 @@ export type AdminSolutionSummary = {
     id: string;
     industries: Array<string>;
     listed: boolean;
+    /**
+     * The stored logo, or nothing for the initials' slot.
+     */
+    logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
+    organizationId: string;
     organizationName: string;
     slug: string;
     status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
