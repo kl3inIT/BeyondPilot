@@ -1032,6 +1032,14 @@
           "user_server_disable": "Turned the user MCP server off",
           "tool_enable": "Turned an MCP tool on",
           "tool_disable": "Turned an MCP tool off"
+        },
+        "matching": {
+          "run_start": "Started matching for a use case",
+          "candidate_add": "Added a candidate by hand",
+          "candidate_shortlist": "Shortlisted a candidate",
+          "candidate_remove": "Removed a candidate",
+          "candidate_restore": "Restored a candidate",
+          "settings_change": "Changed the limits of matching"
         }
       },
       "activity": {
@@ -1144,6 +1152,14 @@
           "user_server_disable": "Turned off the <resource></resource>",
           "tool_enable": "Turned on the MCP tool <resource></resource>",
           "tool_disable": "Turned off the MCP tool <resource></resource>"
+        },
+        "matching": {
+          "run_start": "Started matching for the use case <resource></resource>",
+          "candidate_add": "Added a candidate by hand to the use case <resource></resource>",
+          "candidate_shortlist": "Shortlisted a candidate of the use case <resource></resource>",
+          "candidate_remove": "Removed a candidate of the use case <resource></resource>",
+          "candidate_restore": "Restored a candidate of the use case <resource></resource>",
+          "settings_change": "Changed the limits of matching"
         }
       },
       "columns": {

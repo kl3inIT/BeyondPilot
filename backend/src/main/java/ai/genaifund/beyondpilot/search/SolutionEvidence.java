@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.search;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -11,6 +12,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Meaning;
 import ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository;
 import org.jspecify.annotations.Nullable;
@@ -39,9 +41,29 @@ public class SolutionEvidence {
 
 	private final SearchEmbeddings embeddings;
 
-	SolutionEvidence(SearchPassageRepository passages, SearchEmbeddings embeddings) {
+	private final SearchDocumentRepository index;
+
+	SolutionEvidence(SearchPassageRepository passages, SearchEmbeddings embeddings, SearchDocumentRepository index) {
 		this.passages = passages;
 		this.embeddings = embeddings;
+		this.index = index;
+	}
+
+	/**
+	 * A solution as a candidate is shown.
+	 * @param listed false when its owners keep it out of the directory, so it has no public page
+	 */
+	public record Shown(String slug, String name, @Nullable String organizationName, boolean listed) {
+	}
+
+	/** How these solutions are shown, by identifier; one that is no longer in the index is left out. */
+	@Transactional(readOnly = true)
+	public Map<UUID, Shown> shown(Collection<UUID> solutionIds) {
+		Map<UUID, Shown> shown = new LinkedHashMap<>();
+		index.named(SearchDocumentRepository.SOLUTION, solutionIds)
+			.forEach((id, named) -> shown.put(id,
+					new Shown(named.slug(), named.title(), named.subtitle(), named.listed())));
+		return shown;
 	}
 
 	/**

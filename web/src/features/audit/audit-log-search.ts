@@ -89,6 +89,12 @@ export const auditActions = [
   "mcp.user_server_disable",
   "mcp.tool_enable",
   "mcp.tool_disable",
+  "matching.run_start",
+  "matching.candidate_add",
+  "matching.candidate_shortlist",
+  "matching.candidate_remove",
+  "matching.candidate_restore",
+  "matching.settings_change",
 ] as const;
 
 /**

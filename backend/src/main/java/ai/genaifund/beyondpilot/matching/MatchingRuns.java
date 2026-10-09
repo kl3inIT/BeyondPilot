@@ -1,7 +1,9 @@
 package ai.genaifund.beyondpilot.matching;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,6 +23,7 @@ import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Judged;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Requirement;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Run;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Settings;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Step;
 import ai.genaifund.beyondpilot.search.SolutionEvidence;
 import ai.genaifund.beyondpilot.solution.IndexedSolution;
@@ -55,6 +58,9 @@ class MatchingRuns {
 
 	/** The brief gave no capability a product could be judged on. */
 	static final String NO_CAPABILITY = "no_capability";
+
+	/** How many more solutions are asked of the search, to make up for the organization's own. */
+	private static final int OWN_SOLUTIONS = 10;
 
 	private final MatchingRepository matching;
 
@@ -104,7 +110,21 @@ class MatchingRuns {
 		if (read && matching.hasFinishedRun(useCaseId)) {
 			return;
 		}
-		matching.queue(useCaseId, MatchingRepository.BY_APPROVAL, null, Prompts.VERSION)
+		Settings limits = matching.settings();
+		// The run waits until the use case has stayed unchanged for a while: people save a brief several times.
+		Instant notBefore = limits.settleMinutes() == 0 ? null
+				: Instant.now().plus(Duration.ofMinutes(limits.settleMinutes()));
+		if (notBefore != null && matching.postpone(useCaseId, notBefore)) {
+			return;
+		}
+		if (matching.queuedToday(useCaseId, MatchingRepository.BY_APPROVAL) >= limits.editRunsPerDay()) {
+			LOG.atInfo()
+				.addKeyValue("event", "matching.run.not_queued")
+				.addKeyValue("useCaseId", useCaseId)
+				.log("A use case changed again; its changes started as many runs as a day allows");
+			return;
+		}
+		matching.queue(useCaseId, MatchingRepository.BY_APPROVAL, null, Prompts.VERSION, notBefore, false)
 			.ifPresent(runId -> LOG.atInfo()
 				.addKeyValue("event", "matching.run.queued")
 				.addKeyValue("runId", runId)
@@ -143,7 +163,7 @@ class MatchingRuns {
 			matching.requeueInterrupted();
 			recovered = true;
 		}
-		Run run = matching.claim().orElse(null);
+		Run run = matching.claim(matching.settings().runsPerDay()).orElse(null);
 		if (run == null) {
 			return;
 		}
@@ -173,12 +193,31 @@ class MatchingRuns {
 			return;
 		}
 		long searching = System.nanoTime();
-		List<UUID> candidates = evidence.solutionsFor(queries, settings.candidates());
-		transactions.executeWithoutResult(status -> matching.found(run.useCaseId(), candidates));
-		matching.addToStep(run.id(), new Step(MatchingRepository.CANDIDATES, queries.size(), candidates.size(), 0, 0, 0,
+		int wanted = matching.settings().candidates();
+		Map<UUID, IndexedSolution> shown = new LinkedHashMap<>();
+		List<UUID> found = new ArrayList<>();
+		for (UUID solutionId : evidence.solutionsFor(queries, wanted + OWN_SOLUTIONS)) {
+			IndexedSolution solution = solutions.indexed(solutionId).orElse(null);
+			// An organization is never recommended its own solutions.
+			if (solution != null && !solution.organizationId().equals(brief.organizationId()) && found.size() < wanted) {
+				shown.put(solutionId, solution);
+				found.add(solutionId);
+			}
+		}
+		transactions.executeWithoutResult(status -> matching.found(run.useCaseId(), found));
+		matching.addToStep(run.id(), new Step(MatchingRepository.CANDIDATES, queries.size(), found.size(), 0, 0, 0,
 				(System.nanoTime() - searching) / 1_000_000));
+		// What an operator added by hand is judged with what the run found.
+		List<UUID> candidates = new ArrayList<>(found);
+		for (UUID solutionId : matching.addedSolutions(run.useCaseId())) {
+			IndexedSolution solution = shown.containsKey(solutionId) ? null : solutions.indexed(solutionId).orElse(null);
+			if (solution != null) {
+				shown.put(solutionId, solution);
+				candidates.add(solutionId);
+			}
+		}
 
-		Map<UUID, String> judgedBefore = matching.fingerprints(run.useCaseId());
+		Map<UUID, String> judgedBefore = run.judgeAll() ? Map.of() : matching.fingerprints(run.useCaseId());
 		AtomicInteger judged = new AtomicInteger();
 		AtomicInteger calls = new AtomicInteger();
 		AtomicLong input = new AtomicLong();
@@ -197,10 +236,7 @@ class MatchingRuns {
 						if (refusal.get() != null) {
 							return;
 						}
-						IndexedSolution solution = solutions.indexed(solutionId).orElse(null);
-						if (solution == null) {
-							return;
-						}
+						IndexedSolution solution = shown.get(solutionId);
 						Sources sources = Sources.of(solution, evidence.passagesOf(solutionId));
 						String fingerprint = Quotes.fingerprint(Integer.toString(Prompts.VERSION), read.sourceHash(),
 								sources.fingerprint());
@@ -230,6 +266,8 @@ class MatchingRuns {
 		String refused = refusal.get();
 		if (refused == null) {
 			matching.finish(run.id());
+			// A brief that changed while the run worked asks for another.
+			changed(run.useCaseId());
 			LOG.atInfo()
 				.addKeyValue("event", "matching.run.done")
 				.addKeyValue("runId", run.id())
