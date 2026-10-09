@@ -123,11 +123,12 @@ public class MatchingRepository {
 	 * A candidate with what people last decided on it.
 	 * @param decision {@link #SHORTLISTED}, {@link #REMOVED} or {@link #UNDECIDED}
 	 * @param decidedByOperator whether the last decision was an operator's
+	 * @param decidedBy who decided last; null when nobody decided
 	 */
 	public record Candidate(UUID id, UUID useCaseId, UUID solutionId, String origin, @Nullable Integer foundAt,
 			String bucket, int requiredMet, int requiredTotal, Map<String, Object> findings, @Nullable String summary,
 			List<String> unread, boolean judged, String decision, @Nullable String reason, @Nullable String note,
-			boolean decidedByOperator) {
+			boolean decidedByOperator, @Nullable UUID decidedBy, @Nullable Instant decidedAt) {
 	}
 
 	/**
@@ -492,9 +493,10 @@ public class MatchingRepository {
 	private static final String CANDIDATE = """
 			select c.id, c.use_case_id, c.solution_id, c.origin, c.found_at, c.bucket, c.required_met, c.required_total,
 			       cast(c.findings as text) as findings, c.summary, array_to_string(c.unread, ',') as unread,
-			       c.judged_at is not null as judged, d.kind, d.reason, d.note, coalesce(d.by_operator, false) as by_operator
+			       c.judged_at is not null as judged, d.kind, d.reason, d.note, coalesce(d.by_operator, false) as by_operator,
+			       d.account_id, d.created_at as decided_at
 			from matching_candidate c
-			left join lateral (select kind, reason, note, by_operator from matching_decision
+			left join lateral (select kind, reason, note, by_operator, account_id, created_at from matching_decision
 			                   where candidate_id = c.id
 			                   order by created_at desc, id
 			                   limit 1) d on true
@@ -524,7 +526,8 @@ public class MatchingRepository {
 				}), row.getString("summary"), unread == null || unread.isEmpty() ? List.of() : List.of(unread.split(",")),
 				row.getBoolean("judged"), SHORTLISTED.equals(kind) || removed ? kind : UNDECIDED,
 				removed ? row.getString("reason") : null, removed ? row.getString("note") : null,
-				row.getBoolean("by_operator"));
+				row.getBoolean("by_operator"), row.getObject("account_id", UUID.class),
+				instant(row.getTimestamp("decided_at")));
 	}
 
 	/** The solutions an operator put among the candidates of a use case by hand. */

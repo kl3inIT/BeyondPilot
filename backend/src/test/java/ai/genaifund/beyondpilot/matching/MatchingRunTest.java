@@ -267,17 +267,21 @@ class MatchingRunTest {
 		// The member shortlists, removes with a reason and restores; a run never undoes it.
 		String decide = "/api/matching/candidates/" + candidate;
 		assertThat(decision(call("POST", buyer, decide + "/shortlist", null))).isEqualTo("shortlisted");
-		assertProblem(call("POST", buyer, decide + "/remove", Map.of("reason", "other")), 400, "MATCHING_NOTE_REQUIRED");
 		assertProblem(call("POST", buyer, decide + "/remove", Map.of("reason", "too_small")), 400, "REQUEST_INVALID");
-		String removed = body(call("POST", buyer, decide + "/remove", Map.of("reason", "already_known", "note", " "))
+		String removed = body(call("POST", buyer, decide + "/remove", Map.of("reason", "duplicate", "note", " Same as Claims Desk. "))
 			.expectStatus()
 			.isOk());
 		assertThat(JsonPath.<String>read(removed, "$.candidates[0].decision")).isEqualTo("removed");
-		assertThat(JsonPath.<String>read(removed, "$.candidates[0].removedReason")).isEqualTo("already_known");
+		assertThat(JsonPath.<String>read(removed, "$.candidates[0].removedReason")).isEqualTo("duplicate");
+		assertThat(JsonPath.<String>read(removed, "$.candidates[0].removedNote")).isEqualTo("Same as Claims Desk.");
+		// Both sides see who removed it and when.
+		assertThat(JsonPath.<String>read(removed, "$.candidates[0].removedBy")).isEqualTo("buyer-" + word + "@matching.test");
+		assertThat(JsonPath.<Boolean>read(removed, "$.candidates[0].removedByOperator")).isFalse();
+		assertThat(JsonPath.<String>read(removed, "$.candidates[0].removedAt")).isNotBlank();
 		assertProblem(call("POST", buyer, decide + "/shortlist", null), 409, "MATCHING_CANDIDATE_REMOVED");
 		assertThat(decision(call("POST", buyer, decide + "/restore", null))).isEqualTo("none");
 		// What GenAI Fund removed, only GenAI Fund restores.
-		assertThat(decision(call("POST", operator, decide + "/remove", Map.of("reason", "not_credible"))))
+		assertThat(decision(call("POST", operator, decide + "/remove", Map.of("reason", "does_not_solve"))))
 			.isEqualTo("removed");
 		assertProblem(call("POST", buyer, decide + "/restore", null), 403, "MATCHING_REMOVED_BY_OPERATOR");
 		assertThat(decision(call("POST", operator, decide + "/restore", null))).isEqualTo("none");

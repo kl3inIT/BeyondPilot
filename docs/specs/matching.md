@@ -27,7 +27,7 @@ A run is a row of `matching_run` that a worker takes, one run at a time, every `
 
 For the members of the use case's approved organization and for operators; anyone else is told there is no such use case. Every answer is the whole state after the request.
 
-- **Shortlist, remove, restore.** A candidate is undecided, shortlisted or removed: the last decision is its state, and decisions are only added. Removing takes a reason (`not_relevant`, `already_known`, `not_credible`, `other`, the last with a note) and takes the candidate off the shortlist. Restoring puts it back as undecided. What an operator removed, only an operator restores.
+- **Shortlist, remove, restore.** A candidate is undecided, shortlisted or removed: the last decision is its state, and decisions are only added. Removing takes a reason, those of the screen approved on 7 October (`does_not_solve`, `wrong_industry_or_size`, `closed_or_wrong_website`, `duplicate`, `other`), and a note if the person wants; who removed it and when is shown to both sides. It takes the candidate off the shortlist. Restoring puts it back as undecided. What an operator removed, only an operator restores.
 - **Add by hand.** An operator adds an approved solution that is not a candidate and is not the organization's own; a run is queued to judge it.
 - **No run changes a decision**, and a candidate with a decision stays when a run no longer finds it.
 - **What a member does not see:** the steps of a run with their tokens, and the model.

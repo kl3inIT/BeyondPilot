@@ -3,7 +3,9 @@ package ai.genaifund.beyondpilot.matching;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import ai.genaifund.beyondpilot.ai.AiModels;
 import ai.genaifund.beyondpilot.ai.AiTask;
@@ -42,8 +44,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class MatchingService {
 
 	private static final String USE_CASE = "use_case";
-
-	private static final String OTHER = "other";
 
 	private final MatchingRepository matching;
 
@@ -164,17 +164,13 @@ public class MatchingService {
 
 	/**
 	 * Takes a candidate off the list, with the reason; it leaves the shortlist too.
-	 * @throws MatchingException when the candidate is unknown to the caller, or the reason is other and nothing says
-	 * what
+	 * @throws MatchingException when the candidate is unknown to the caller
 	 */
 	@Transactional
 	public MatchingResponse remove(Actor actor, UUID candidateId, RemoveCandidateRequest request) {
 		Candidate candidate = candidate(candidateId);
 		Access access = access(actor, candidate.useCaseId());
 		String note = request.note() == null || request.note().isBlank() ? null : request.note().strip();
-		if (OTHER.equals(request.reason()) && note == null) {
-			throw new MatchingException(MatchingErrorCode.NOTE_REQUIRED, "A candidate removed for another reason, unsaid");
-		}
 		if (!MatchingRepository.REMOVED.equals(candidate.decision())) {
 			decide(actor, access, candidate, MatchingRepository.REMOVED, request.reason(), note,
 					AuditAction.MATCHING_CANDIDATE_REMOVE);
@@ -247,6 +243,12 @@ public class MatchingService {
 		boolean operator = access.operator();
 		List<Candidate> kept = matching.candidates(useCaseId);
 		Map<UUID, Shown> shown = evidence.shown(kept.stream().map(Candidate::solutionId).toList());
+		// Who removed what is shown to both sides, by the name each person has now.
+		Map<UUID, Person> people = identity.people(kept.stream()
+			.filter(candidate -> MatchingRepository.REMOVED.equals(candidate.decision()))
+			.map(Candidate::decidedBy)
+			.filter(Objects::nonNull)
+			.collect(Collectors.toSet()));
 		// A candidate whose solution is no longer shown anywhere is hidden; it comes back with its solution.
 		List<MatchingResponse.Candidate> candidates = new ArrayList<>();
 		int judged = 0;
@@ -256,10 +258,14 @@ public class MatchingService {
 				continue;
 			}
 			judged += candidate.judged() ? 1 : 0;
+			boolean removed = MatchingRepository.REMOVED.equals(candidate.decision());
+			Person remover = removed && candidate.decidedBy() != null ? people.get(candidate.decidedBy()) : null;
 			candidates.add(new MatchingResponse.Candidate(candidate.id(), candidate.solutionId(), solution.slug(),
 					solution.name(), solution.organizationName(), solution.listed(), candidate.origin(),
 					candidate.bucket(), candidate.requiredMet(), candidate.requiredTotal(), candidate.decision(),
-					candidate.reason(), candidate.note(), candidate.judged(), candidate.summary(), candidate.unread(),
+					candidate.reason(), candidate.note(), remover == null ? null : remover.label(),
+					removed ? candidate.decidedByOperator() : null, removed ? candidate.decidedAt() : null,
+					candidate.judged(), candidate.summary(), candidate.unread(),
 					findings(candidate.findings().get("requirements")), finding(candidate.findings().get("problem")),
 					finding(candidate.findings().get("industry")), finding(candidate.findings().get("technology"))));
 		}

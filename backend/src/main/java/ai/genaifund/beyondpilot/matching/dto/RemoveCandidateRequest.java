@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 @Schema(name = "RemoveMatchingCandidate", description = "Why a candidate is taken off the list.")
 public record RemoveCandidateRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				allowableValues = { "not_relevant", "already_known", "not_credible", "other" }) @NotNull @Pattern(
-						regexp = "not_relevant|already_known|not_credible|other") String reason,
-		@Schema(description = "A few words more; needed when the reason is other.") @Nullable @Size(max = 500) String note) {
+				allowableValues = { "does_not_solve", "wrong_industry_or_size", "closed_or_wrong_website", "duplicate", "other" }) @NotNull @Pattern(
+						regexp = "does_not_solve|wrong_industry_or_size|closed_or_wrong_website|duplicate|other") String reason,
+		@Schema(description = "A few words more, if the person wants.") @Nullable @Size(max = 500) String note) {
 }

@@ -38,7 +38,9 @@ alter table matching_run add column judge_all boolean not null default false;
 -- Who put a candidate there by hand.
 alter table matching_candidate add column added_by_account_id uuid;
 
--- Whether the person who decided was an operator then: a member restores only what members removed.
+-- Whether the person who decided was an operator then: a member restores only what members removed. The reasons
+-- for removing are those of the screen approved on 7 October.
 alter table matching_decision add column by_operator boolean not null default false;
 alter table matching_decision add constraint matching_decision_reason
-    check (reason is null or reason in ('not_relevant', 'already_known', 'not_credible', 'other'));
+    check (reason is null
+        or reason in ('does_not_solve', 'wrong_industry_or_size', 'closed_or_wrong_website', 'duplicate', 'other'));

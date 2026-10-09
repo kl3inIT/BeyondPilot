@@ -152,6 +152,8 @@ class MatchingRepositoryTest {
 		assertThat(removed.reason()).isEqualTo("other");
 		assertThat(removed.note()).isEqualTo("Met them last year.");
 		assertThat(removed.decidedByOperator()).isTrue();
+		assertThat(removed.decidedBy()).isEqualTo(person);
+		assertThat(removed.decidedAt()).isNotNull();
 		jdbc.sql("update matching_decision set created_at = created_at - interval '2 minutes'").update();
 		matching.decide(added, MatchingRepository.RESTORED, null, null, person, false);
 		assertThat(matching.candidate(added).orElseThrow()).extracting(Candidate::decision, Candidate::reason)

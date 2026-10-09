@@ -22,7 +22,6 @@ public enum MatchingErrorCode implements ErrorCode {
 			"This solution is already a candidate for this use case."),
 	OWN_SOLUTION("MATCHING_OWN_SOLUTION", ErrorCategory.CONFLICT,
 			"This solution belongs to the organization of the use case."),
-	NOTE_REQUIRED("MATCHING_NOTE_REQUIRED", ErrorCategory.VALIDATION, "Say why in a few words."),
 	SETTINGS_CHANGED("MATCHING_SETTINGS_CHANGED", ErrorCategory.CONFLICT,
 			"Someone else changed these settings. Reload and try again.");
 
