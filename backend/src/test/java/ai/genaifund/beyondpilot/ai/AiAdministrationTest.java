@@ -466,6 +466,7 @@ class AiAdministrationTest {
 		Map<String, Object> row = jdbc.sql("select * from ai_usage").query().singleRow();
 		assertThat(row).containsEntry("outcome", "failed");
 		assertThat((String) row.get("error_type")).isNotBlank();
+		assertThat(row).containsEntry("error_status", 500);
 		assertThat(row.get("input_tokens")).isNull();
 		assertThat(row.toString()).doesNotContain(PROVIDER_TEXT);
 	}

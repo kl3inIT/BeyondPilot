@@ -3,6 +3,8 @@ package ai.genaifund.beyondpilot.ai;
 import java.time.Instant;
 
 import ai.genaifund.beyondpilot.ai.persistence.AiUsageRepository;
+import com.anthropic.errors.AnthropicServiceException;
+import com.openai.errors.OpenAIServiceException;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,10 @@ import org.springframework.core.Ordered;
  * Records every call a task's chat client makes: its tokens as Spring AI's {@link Usage} reports them, how long it
  * took, whether it answered, and the model's prices then. It wraps the whole chain, so callers record nothing
  * themselves. No prompt and no answer is kept, and a record that cannot be written never fails the call.
+ *
+ * <p>
+ * The input recorded is the whole input. OpenAI counts the part read from a cache inside its prompt tokens; Anthropic
+ * reports it, and the part written to a cache, beside them, so they are added here.
  */
 final class UsageRecorder implements CallAdvisor {
 
@@ -56,23 +62,25 @@ final class UsageRecorder implements CallAdvisor {
 		try {
 			ChatClientResponse response = chain.nextCall(request);
 			ChatResponse answer = response.chatResponse();
-			record(started, clock, answer == null ? null : answer.getMetadata().getUsage(), null);
+			record(started, clock, answer == null ? null : answer.getMetadata().getUsage(), null, null);
 			return response;
 		}
 		catch (RuntimeException failure) {
-			record(started, clock, null, failure.getClass().getName());
+			record(started, clock, null, failure.getClass().getName(), status(failure));
 			throw failure;
 		}
 	}
 
-	private void record(Instant started, long clock, @Nullable Usage tokens, @Nullable String errorType) {
+	private void record(Instant started, long clock, @Nullable Usage tokens, @Nullable String errorType,
+			@Nullable Integer errorStatus) {
 		try {
 			usage.add(new AiUsageRepository.Call(started, task, used.providerId(), used.providerName(),
-					used.modelName(), tokens == null ? null : count(tokens.getPromptTokens()),
+					used.modelName(), tokens == null ? null : input(tokens),
 					tokens == null ? null : count(tokens.getCompletionTokens()),
 					tokens == null ? null : tokens.getCacheReadInputTokens(),
 					tokens == null ? null : tokens.getCacheWriteInputTokens(), (System.nanoTime() - clock) / 1_000_000,
-					errorType, subject == null ? null : subject.type(), subject == null ? null : subject.id(),
+					errorType, errorStatus, subject == null ? null : subject.type(),
+					subject == null ? null : subject.id(),
 					used.inputPrice(), used.outputPrice(), used.cachedInputPrice(), null));
 		}
 		catch (RuntimeException unwritten) {
@@ -81,6 +89,33 @@ final class UsageRecorder implements CallAdvisor {
 				.addKeyValue("error_type", unwritten.getClass().getName())
 				.log("A call to a chat model was not recorded");
 		}
+	}
+
+	/** The status the provider answered with, from whichever exception in the chain carries one. */
+	private static @Nullable Integer status(Throwable failure) {
+		Throwable cause = failure;
+		for (int depth = 0; cause != null && depth < 10; depth++) {
+			if (cause instanceof OpenAIServiceException refused) {
+				return refused.statusCode();
+			}
+			if (cause instanceof AnthropicServiceException refused) {
+				return refused.statusCode();
+			}
+			cause = cause.getCause();
+		}
+		return null;
+	}
+
+	private static @Nullable Long input(Usage tokens) {
+		Long prompt = count(tokens.getPromptTokens());
+		if (prompt == null || !(tokens.getNativeUsage() instanceof com.anthropic.models.messages.Usage)) {
+			return prompt;
+		}
+		return prompt + orZero(tokens.getCacheReadInputTokens()) + orZero(tokens.getCacheWriteInputTokens());
+	}
+
+	private static long orZero(@Nullable Long tokens) {
+		return tokens == null ? 0 : tokens;
 	}
 
 	private static @Nullable Long count(@Nullable Integer tokens) {

@@ -53,15 +53,18 @@ class AiHayOcrAdapter implements OcrAdapter {
 		}
 		int status = answer.status();
 		if (status == 401 || status == 403) {
-			throw new OcrProviderException(Failure.CREDENTIAL_REJECTED);
+			throw new OcrProviderException(Failure.CREDENTIAL_REJECTED, status);
 		}
 		if (status == 400 || status == 413) {
-			throw new OcrProviderException(Failure.PICTURE_REFUSED);
+			throw new OcrProviderException(Failure.PICTURE_REFUSED, status);
 		}
 		if (status == 429 || status >= 500) {
-			throw new OcrProviderException(Failure.UNREACHABLE);
+			throw new OcrProviderException(Failure.UNREACHABLE, status);
 		}
-		if (status != 200 || answer.body().length == 0 || answer.body().length > MAX_ANSWER_BYTES) {
+		if (status != 200) {
+			throw new OcrProviderException(Failure.INCOMPATIBLE, status);
+		}
+		if (answer.body().length == 0 || answer.body().length > MAX_ANSWER_BYTES) {
 			throw new OcrProviderException(Failure.INCOMPATIBLE);
 		}
 		return text(answer.body());

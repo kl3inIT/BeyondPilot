@@ -156,11 +156,11 @@ public class DocumentPages {
 			long clock = System.nanoTime();
 			try {
 				String text = ocr.adapter().read(ocr.connectionOf(), picture.getValue(), settings.callTimeout());
-				record(ocr, subject, started, clock, null);
+				record(ocr, subject, started, clock, null, null);
 				read.put(picture.getKey(), text.strip());
 			}
 			catch (OcrProviderException failure) {
-				record(ocr, subject, started, clock, failure.getClass().getName());
+				record(ocr, subject, started, clock, failure.getClass().getName(), failure.status());
 				LOG.atInfo()
 					.addKeyValue("event", "ai.document.page_not_read")
 					.addKeyValue("error_type", failure.getClass().getName())
@@ -198,11 +198,13 @@ public class DocumentPages {
 	 * One row per page sent, without tokens: a service bills by the call, and the row keeps what 1,000 calls cost
 	 * then. A failed write fails nothing.
 	 */
-	private void record(Ocr ocr, AiSubject subject, Instant started, long clock, @Nullable String errorType) {
+	private void record(Ocr ocr, AiSubject subject, Instant started, long clock, @Nullable String errorType,
+			@Nullable Integer errorStatus) {
 		try {
 			usage.add(new AiUsageRepository.Call(started, AiTask.DOCUMENT_READING.value(), ocr.connection().providerId(),
 					ocr.connection().name(), ocr.adapter().type(), null, null, null, null,
-					(System.nanoTime() - clock) / 1_000_000, errorType, subject.type(), subject.id(), null, null, null,
+					(System.nanoTime() - clock) / 1_000_000, errorType, errorStatus, subject.type(), subject.id(), null,
+					null, null,
 					ocr.pricePerThousandCalls()));
 		}
 		catch (RuntimeException unwritten) {

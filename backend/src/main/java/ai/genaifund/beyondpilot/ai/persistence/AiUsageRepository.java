@@ -31,10 +31,11 @@ public class AiUsageRepository {
 		jdbc.sql("""
 				insert into ai_usage (id, occurred_at, task, provider_id, provider_name, model_name, input_tokens,
 				    output_tokens, cache_read_tokens, cache_write_tokens, duration_ms, outcome, error_type,
-				    subject_type, subject_id, input_price, output_price, cached_input_price, price_per_1k_calls)
+				    error_status, subject_type, subject_id, input_price, output_price, cached_input_price,
+				    price_per_1k_calls)
 				values (:id, :occurredAt, :task, :providerId, :providerName, :modelName, :inputTokens, :outputTokens,
-				    :cacheReadTokens, :cacheWriteTokens, :durationMs, :outcome, :errorType, :subjectType, :subjectId,
-				    :inputPrice, :outputPrice, :cachedInputPrice, :pricePerThousandCalls)
+				    :cacheReadTokens, :cacheWriteTokens, :durationMs, :outcome, :errorType, :errorStatus, :subjectType,
+				    :subjectId, :inputPrice, :outputPrice, :cachedInputPrice, :pricePerThousandCalls)
 				""")
 			.param("id", UUID.randomUUID())
 			.param("occurredAt", Timestamp.from(call.occurredAt()))
@@ -49,6 +50,7 @@ public class AiUsageRepository {
 			.param("durationMs", call.durationMs())
 			.param("outcome", call.errorType() == null ? "ok" : "failed")
 			.param("errorType", call.errorType())
+			.param("errorStatus", call.errorStatus())
 			.param("subjectType", call.subjectType())
 			.param("subjectId", call.subjectId())
 			.param("inputPrice", call.inputPrice())
@@ -60,14 +62,17 @@ public class AiUsageRepository {
 
 	/**
 	 * One call to a chat model or an OCR service.
+	 * @param inputTokens the whole input, the part read from or written to a cache included
 	 * @param errorType the class of what went wrong; null for a call that answered
+	 * @param errorStatus the HTTP status the provider answered a failed call with; null when it gave none
 	 * @param pricePerThousandCalls what 1,000 calls cost in US dollars; null for a call billed by its tokens
 	 */
 	public record Call(Instant occurredAt, String task, UUID providerId, String providerName, String modelName,
 			@Nullable Long inputTokens, @Nullable Long outputTokens, @Nullable Long cacheReadTokens,
-			@Nullable Long cacheWriteTokens, long durationMs, @Nullable String errorType, @Nullable String subjectType,
-			@Nullable String subjectId, @Nullable BigDecimal inputPrice, @Nullable BigDecimal outputPrice,
-			@Nullable BigDecimal cachedInputPrice, @Nullable BigDecimal pricePerThousandCalls) {
+			@Nullable Long cacheWriteTokens, long durationMs, @Nullable String errorType, @Nullable Integer errorStatus,
+			@Nullable String subjectType, @Nullable String subjectId, @Nullable BigDecimal inputPrice,
+			@Nullable BigDecimal outputPrice, @Nullable BigDecimal cachedInputPrice,
+			@Nullable BigDecimal pricePerThousandCalls) {
 	}
 
 }
