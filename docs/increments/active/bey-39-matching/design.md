@@ -50,9 +50,9 @@ A **candidate** is not an **applicant**. A proposal a provider sent goes through
 
 | Command | Who | Fact | Consistency |
 | --- | --- | --- | --- |
-| Start a run | The system when a use case is approved; an operator | A run exists for the use case | One run per use case at a time; a second start while one runs is refused |
+| Start a run | The system when a use case is published or changed, after it has stayed unchanged for a while; an operator; a member of the use case's organization, a few times a day | A run exists for the use case | One run per use case at a time; a second start while one works is refused |
 | Add a solution by hand | An operator | A candidate with the source "added by GenAI Fund" | An approved solution not already a candidate |
-| Shortlist, remove with a reason, restore | An operator; a member of the use case's organization (restore only what they removed) | A decision, recorded with who and when; audited | A removed candidate leaves the shortlist |
+| Shortlist, remove with a reason, restore | An operator; a member of the use case's organization (who restores only what members removed) | A decision, recorded with who and when; audited | A removed candidate leaves the shortlist; restoring leaves it undecided |
 | Load the saved text of imported solutions | An operator, once per environment | Passages for those solutions, kept by `search` | A second load of the same text changes nothing |
 
 Reactions, after commit and idempotent:
@@ -123,6 +123,9 @@ HTTP, under `/api/matching`: the candidates of a use case with its run and requi
 | The text of an attached file is read when the requirements are extracted and is not kept | It is needed once, to extract and to check the quotes. The fingerprint names the files, so a brief that did not change reads no file again |
 | An answer that does not fit its shape is asked for once more by matching's own code, not by Spring AI's `StructuredOutputValidationAdvisor` | The advisor repeats the call below the advisor that records usage, so a repeated call would cost tokens that no record shows |
 | What a person decided is outside what a run may change | candisift; the old platform could neither add nor remove a match (kickoff) |
+| Members start runs too, within limits operators set: a wait after the last change, runs a day per use case for changes and for members, runs a day in all, and the candidates a run judges | Decided by Đạt on 9 October. A run of an unchanged brief asks the model only about what is new, so a member's run is cheap; the limits are for the brief edited again and again, and for many use cases changing at once |
+| A solution of the use case's own organization is never its candidate | An organization that both buys and sells would be recommended to itself |
+| A member sees the groups and the reasons, and not the steps, the tokens or the model | The cost is GenAI Fund's to read |
 | The website text of imported solutions comes by a one-off load, the way BEY-74 loaded records: a script writes SQL, run on staging then production | That text exists only on a team machine until BEY-99 reads websites; the records are written once |
 | A deck's text is read by the application from the stored file, in the background, a few decks a minute, with PDFBox | No model is needed for a page that has text: `pdftotext` made the deck texts the probe used. PDFBox is what Spring AI's own PDF reader and MemoryOS's built-in reader are made of, and it also draws the picture of a page, which reading a page without text needs. The imported decks are read the same way as new ones, from the 735 files already stored, so no deck text is loaded from a team machine |
 | A page of a deck that has no text is read by a model from its picture, in the same background work, and marked `model` | Decided by Đạt on 9 October. 61 of the 734 imported decks have no text on at least half their pages (779 pages), and 451 more such pages are spread over the other decks. The 9Router route was checked: `cx/gpt-6.1-sol` copied the text of a picture sent as Spring AI sends one. MemoryOS reads scans with a vision model too |
@@ -148,7 +151,6 @@ HTTP, under `/api/matching`: the candidates of a use case with its run and requi
 
 - GenAI Fund's own longlists, to measure the buckets against (BEY-41).
 - Whether a required capability that is only partly shown may still count for Direct (BEY-41, with the longlists).
-- Whether a member of the use case's organization may start a run again, or only operators. Proposed: operators only, to keep the cost in one place.
 - The screens: the candidate list is approved (7 October). The deck view and the operators' view of a run are not drawn yet and need approval before they are coded.
 
 ## References read

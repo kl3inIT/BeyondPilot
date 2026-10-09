@@ -20,6 +20,9 @@ tags:
   name: Organization administration
 - description: Requests for an introduction to the organization behind a solution.
   name: Introductions
+- description: "The solutions that fit a use case, with the reasons, and what people\
+    \ decide on them."
+  name: Matching
 - description: The programs operators create and edit.
   name: Program administration
 - description: A person's applications to programs.
@@ -48,6 +51,8 @@ tags:
   name: Solutions
 - description: The requests for an introduction operators read.
   name: Introduction administration
+- description: The limits of matching that operators set.
+  name: Matching administration
 - description: The organization the caller belongs to.
   name: My organization
 - description: Who is signed in.
@@ -587,6 +592,12 @@ paths:
           - mcp.user_server_disable
           - mcp.tool_enable
           - mcp.tool_disable
+          - matching.run_start
+          - matching.candidate_add
+          - matching.candidate_shortlist
+          - matching.candidate_remove
+          - matching.candidate_restore
+          - matching.settings_change
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
         in: query
@@ -1382,6 +1393,362 @@ paths:
       summary: "Accept a request: both sides learn each other's address"
       tags:
       - Introductions
+  /api/matching/admin/settings:
+    get:
+      operationId: getMatchingSettings
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchingSettings"
+          description: The limits as they are set.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: The limits of matching
+      tags:
+      - Matching administration
+    put:
+      operationId: saveMatchingSettings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveMatchingSettings"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchingSettings"
+          description: The limits were kept.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A limit is outside what is allowed.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Someone else changed the limits meanwhile.
+      security:
+      - session: []
+      summary: Set the limits of matching
+      tags:
+      - Matching administration
+  /api/matching/candidates/{candidateId}/remove:
+    post:
+      operationId: removeMatchingCandidate
+      parameters:
+      - in: path
+        name: candidateId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RemoveMatchingCandidate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matching"
+          description: "The candidate is removed, and off the shortlist."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The reason is not valid, or is other and nothing says what."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The candidate is unknown to the caller.
+      security:
+      - session: []
+      summary: "Take a candidate off the list, with the reason"
+      tags:
+      - Matching
+  /api/matching/candidates/{candidateId}/restore:
+    post:
+      operationId: restoreMatchingCandidate
+      parameters:
+      - in: path
+        name: candidateId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matching"
+          description: Nothing is decided on the candidate.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: GenAI Fund removed the candidate and the caller is a member.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The candidate is unknown to the caller.
+      security:
+      - session: []
+      summary: "Put a candidate back as nobody had decided on it: off the shortlist,\
+        \ or back on the list"
+      tags:
+      - Matching
+  /api/matching/candidates/{candidateId}/shortlist:
+    post:
+      operationId: shortlistMatchingCandidate
+      parameters:
+      - in: path
+        name: candidateId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matching"
+          description: The candidate is on the shortlist.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The candidate is unknown to the caller.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The candidate was removed.
+      security:
+      - session: []
+      summary: Put a candidate on the shortlist
+      tags:
+      - Matching
+  /api/matching/use-cases/{useCaseId}:
+    get:
+      operationId: getMatching
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matching"
+          description: What matching holds for the use case.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "No published use case has the identifier, or the caller is\
+            \ neither an operator nor a member of its organization."
+      security:
+      - session: []
+      summary: "The candidates of a use case, with its requirements and its last run"
+      tags:
+      - Matching
+  /api/matching/use-cases/{useCaseId}/candidates:
+    post:
+      operationId: addMatchingCandidate
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddMatchingCandidate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matching"
+          description: The solution is a candidate; the next run judges it.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The request is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The use case or the approved solution is unknown.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The solution is a candidate already, or belongs to the organization\
+            \ of the use case."
+      security:
+      - session: []
+      summary: Put a solution among the candidates by hand
+      tags:
+      - Matching
+  /api/matching/use-cases/{useCaseId}/runs:
+    post:
+      operationId: startMatchingRun
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartMatchingRun"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matching"
+          description: "The run is queued, or the run that waited starts now."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Only an operator has every candidate judged again.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The use case is unknown to the caller.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A run is at work for the use case.
+        "429":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Members started as many runs as a day allows.
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No AI model is set for matching.
+      security:
+      - session: []
+      summary: Start a run of matching for a use case
+      tags:
+      - Matching
   /api/mcp/admin/calls:
     get:
       operationId: listMcpCalls
@@ -8656,6 +9023,16 @@ components:
           minLength: 0
       required:
       - address
+    AddMatchingCandidate:
+      type: object
+      description: A solution an operator puts among the candidates by hand.
+      properties:
+        solutionId:
+          type: string
+          format: uuid
+          description: An approved solution that is not a candidate yet.
+      required:
+      - solutionId
     AdminCreateOrganization:
       type: object
       description: "An organization an operator creates for a company that is not\
@@ -10241,6 +10618,12 @@ components:
           - mcp.user_server_disable
           - mcp.tool_enable
           - mcp.tool_disable
+          - matching.run_start
+          - matching.candidate_add
+          - matching.candidate_shortlist
+          - matching.candidate_remove
+          - matching.candidate_restore
+          - matching.settings_change
         actor:
           type:
           - object
@@ -12104,6 +12487,364 @@ components:
           - requested
       required:
       - outcome
+    Matching:
+      type: object
+      description: "The solutions matched to a use case: what it asks for, its last\
+        \ run and its candidates."
+      properties:
+        candidates:
+          type: array
+          description: "The candidates, in the order the last run found them."
+          items:
+            $ref: "#/components/schemas/MatchingCandidate"
+        modelChosen:
+          type: boolean
+          description: Whether an AI model is set for matching; without one no run
+            starts.
+        operator:
+          type: boolean
+          description: "Whether the caller is an operator: operators add candidates,\
+            \ judge all again and see the steps."
+        requirements:
+          type: array
+          description: "What the use case asks for, as the last run read it, capabilities\
+            \ first."
+          items:
+            $ref: "#/components/schemas/MatchingRequirement"
+        run:
+          $ref: "#/components/schemas/MatchingRun"
+          description: The last run; absent when the use case was never matched.
+        runsLeftToday:
+          type: integer
+          format: int32
+          description: "How many more runs the caller may start today; absent for\
+            \ operators, who have no limit."
+        steps:
+          type: array
+          description: What the last run did in each step; empty for a caller who
+            is not an operator.
+          items:
+            $ref: "#/components/schemas/MatchingStep"
+        useCaseId:
+          type: string
+          format: uuid
+      required:
+      - candidates
+      - modelChosen
+      - operator
+      - requirements
+      - steps
+      - useCaseId
+    MatchingCandidate:
+      type: object
+      description: "One solution for the use case, with what was found and decided."
+      properties:
+        bucket:
+          type: string
+          enum:
+          - direct
+          - industry
+          - technology
+          - none
+        decision:
+          type: string
+          description: What people last decided.
+          enum:
+          - none
+          - shortlisted
+          - removed
+        findings:
+          type: array
+          description: "One finding per requirement, in their order."
+          items:
+            $ref: "#/components/schemas/MatchingFinding"
+        id:
+          type: string
+          format: uuid
+        industry:
+          $ref: "#/components/schemas/MatchingFinding"
+          description: Whether the vendor delivered a similar workflow in the use
+            case's industry.
+        judged:
+          type: boolean
+          description: Whether a run judged it; one added by hand waits for the next
+            run.
+        listed:
+          type: boolean
+          description: "False when its owners keep it out of the directory: it has\
+            \ no public page."
+        organizationName:
+          type: string
+        origin:
+          type: string
+          description: "Found by a run, or added by GenAI Fund."
+          enum:
+          - recommended
+          - added
+        problem:
+          $ref: "#/components/schemas/MatchingFinding"
+          description: Whether the product is made for the problem.
+        removedNote:
+          type: string
+        removedReason:
+          type: string
+          description: Why it was removed.
+          enum:
+          - not_relevant
+          - already_known
+          - not_credible
+          - other
+        requiredMet:
+          type: integer
+          format: int32
+        requiredTotal:
+          type: integer
+          format: int32
+        solutionId:
+          type: string
+          format: uuid
+        solutionName:
+          type: string
+        solutionSlug:
+          type: string
+          description: The address of the solution in the directory.
+        summary:
+          type: string
+          description: "The model's one sentence: the strongest reason, or what is\
+            \ missing."
+        technology:
+          $ref: "#/components/schemas/MatchingFinding"
+          description: Whether the product is built on the technologies the use case
+            names.
+        unread:
+          type: array
+          description: Which of its sources held no text to read.
+          enum:
+          - deck
+          - website
+          items:
+            type: string
+      required:
+      - bucket
+      - decision
+      - findings
+      - id
+      - judged
+      - listed
+      - origin
+      - requiredMet
+      - requiredTotal
+      - solutionId
+      - solutionName
+      - solutionSlug
+      - unread
+    MatchingFinding:
+      type: object
+      description: "What the solution's own material shows, with the words that show\
+        \ it."
+      properties:
+        quote:
+          type: string
+          description: Words copied from the solution's material; empty when nothing
+            shows it.
+        quoteState:
+          type: string
+          description: Where code found the quote.
+          enum:
+          - exact
+          - other_source
+          - close
+          - not_found
+          - none
+        reason:
+          type: string
+          description: The model's one sentence on what the quote shows.
+        requirement:
+          type: integer
+          format: int32
+          description: "The place of the requirement it answers; absent for the problem,\
+            \ industry and technology."
+        source:
+          type: string
+          description: "Where the quote is: profile, customer case 1, deck p.3, website\
+            \ 2."
+        status:
+          type: string
+          enum:
+          - met
+          - partly
+          - not_shown
+      required:
+      - quote
+      - quoteState
+      - reason
+      - source
+      - status
+    MatchingRequirement:
+      type: object
+      description: One thing the use case asks for.
+      properties:
+        kind:
+          type: string
+          description: A capability is what the product does; a constraint is a condition
+            of delivery.
+          enum:
+          - capability
+          - constraint
+        necessity:
+          type: string
+          enum:
+          - required
+          - optional
+        position:
+          type: integer
+          format: int32
+          description: "Its place in the list, from 1; a finding names it by this."
+        quote:
+          type: string
+          description: The words of the brief it comes from.
+        statement:
+          type: string
+      required:
+      - kind
+      - necessity
+      - position
+      - quote
+      - statement
+    MatchingRun:
+      type: object
+      description: One pass of matching for a use case.
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+        failure:
+          type: string
+          description: "Why it failed or waits, as a code; never the provider's words."
+        id:
+          type: string
+          format: uuid
+        judged:
+          type: integer
+          format: int32
+          description: How many candidates are judged.
+        modelName:
+          type: string
+          description: The model that judged; absent for a caller who is not an operator.
+        origin:
+          type: string
+          description: "What started it: a change of the use case, an operator or\
+            \ a member."
+          enum:
+          - approved
+          - operator
+          - member
+        resumesAt:
+          type: string
+          format: date-time
+          description: "When it goes on, while it waits for the AI provider."
+        startedAt:
+          type: string
+          format: date-time
+        startsAt:
+          type: string
+          format: date-time
+          description: "When it starts, while it waits for the use case to stay unchanged."
+        state:
+          type: string
+          enum:
+          - queued
+          - running
+          - waiting
+          - done
+          - failed
+        total:
+          type: integer
+          format: int32
+          description: How many candidates there are.
+      required:
+      - createdAt
+      - id
+      - judged
+      - origin
+      - state
+      - total
+    MatchingSettings:
+      type: object
+      description: "The limits of matching, as operators set them."
+      properties:
+        candidates:
+          type: integer
+          format: int32
+          description: How many solutions a run judges.
+        editRunsPerDay:
+          type: integer
+          format: int32
+          description: How many runs a day the changes of one use case may start.
+        memberRunsPerDay:
+          type: integer
+          format: int32
+          description: How many runs a day the members of its organization may start
+            for one use case.
+        runsPerDay:
+          type: integer
+          format: int32
+          description: How many runs a day start in all; absent for no limit.
+        settleMinutes:
+          type: integer
+          format: int32
+          description: How many minutes a use case must stay unchanged before the
+            run its change asked for starts.
+        version:
+          type: integer
+          format: int64
+          description: "Sent back with a change, so that two operators do not overwrite\
+            \ each other."
+      required:
+      - candidates
+      - editRunsPerDay
+      - memberRunsPerDay
+      - settleMinutes
+      - version
+    MatchingStep:
+      type: object
+      description: What a run did in one step.
+      properties:
+        calls:
+          type: integer
+          format: int32
+        givenOut:
+          type: integer
+          format: int32
+        inputTokens:
+          type: integer
+          format: int64
+        millis:
+          type: integer
+          format: int64
+        name:
+          type: string
+          enum:
+          - requirements
+          - candidates
+          - judgment
+        outputTokens:
+          type: integer
+          format: int64
+        takenIn:
+          type: integer
+          format: int32
+      required:
+      - calls
+      - givenOut
+      - inputTokens
+      - millis
+      - name
+      - outputTokens
+      - takenIn
     McpCall:
       type: object
       properties:
@@ -14595,6 +15336,25 @@ components:
       - organizationName
       - organizationType
       - solutionName
+    RemoveMatchingCandidate:
+      type: object
+      description: Why a candidate is taken off the list.
+      properties:
+        note:
+          type: string
+          description: A few words more; needed when the reason is other.
+          maxLength: 500
+          minLength: 0
+        reason:
+          type: string
+          enum:
+          - not_relevant
+          - already_known
+          - not_credible
+          - other
+          pattern: not_relevant|already_known|not_credible|other
+      required:
+      - reason
     ReportedChatModel:
       type: object
       properties:
@@ -15654,6 +16414,46 @@ components:
       required:
       - body
       - subject
+    SaveMatchingSettings:
+      type: object
+      description: The limits of matching an operator sets.
+      properties:
+        candidates:
+          type: integer
+          format: int32
+          maximum: 200
+          minimum: 5
+        editRunsPerDay:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 0
+        memberRunsPerDay:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 0
+        runsPerDay:
+          type: integer
+          format: int32
+          description: Absent for no limit.
+          maximum: 100000
+          minimum: 1
+        settleMinutes:
+          type: integer
+          format: int32
+          maximum: 1440
+          minimum: 0
+        version:
+          type: integer
+          format: int64
+          description: The version the operator read.
+      required:
+      - candidates
+      - editRunsPerDay
+      - memberRunsPerDay
+      - settleMinutes
+      - version
     SaveMyUseCase:
       type: object
       description: What the members have written of a use case so far; any part may
@@ -17215,6 +18015,16 @@ components:
       - slug
       - status
       - updatedAt
+    StartMatchingRun:
+      type: object
+      description: A run of matching a person starts.
+      properties:
+        judgeAll:
+          type: boolean
+          description: "Whether every candidate is judged again, whatever was judged\
+            \ before; only an operator may ask."
+      required:
+      - judgeAll
     StoredFile:
       type: object
       description: A file whose upload is confirmed.
