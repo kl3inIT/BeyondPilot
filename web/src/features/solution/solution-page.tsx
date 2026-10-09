@@ -295,6 +295,17 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
               </section>
             )}
 
+            {solution.bestCustomerProfile && (
+              <section className="flex flex-col gap-2">
+                <PartHeading icon={<TargetIcon aria-hidden="true" />}>
+                  {view("bestCustomerProfile")}
+                </PartHeading>
+                <p className="whitespace-pre-line text-muted-foreground">
+                  {solution.bestCustomerProfile}
+                </p>
+              </section>
+            )}
+
             <section className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <PartHeading tone="proof" icon={<BadgeCheckIcon aria-hidden="true" />}>
@@ -392,7 +403,7 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
           </div>
           {introduction}
           {(solution.website || solution.demoUrl || solution.deck) && (
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col gap-2">
               {(
                 [
                   ["website", solution.website],
@@ -403,7 +414,9 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                   href && (
                     <Button
                       key={key}
-                      prominence="tertiary"
+                      prominence="secondary"
+                      size="lg"
+                      className="w-full"
                       href={href}
                       target="_blank"
                       rel="noreferrer"
@@ -414,19 +427,15 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                   ),
               )}
               {solution.deck && (
-                <>
-                  <Button
-                    prominence="tertiary"
-                    href={deckAddress(solution.slug)}
-                    aria-describedby="solution-deck-file"
-                  >
-                    <DownloadIcon aria-hidden="true" />
-                    {t("contact.deck")}
-                  </Button>
-                  <p id="solution-deck-file" className="text-center text-xs text-muted-foreground">
-                    {solution.deck.fileName} · {size(solution.deck.sizeBytes)}
-                  </p>
-                </>
+                <Button
+                  prominence="secondary"
+                  size="lg"
+                  className="w-full"
+                  href={deckAddress(solution.slug)}
+                >
+                  <DownloadIcon aria-hidden="true" />
+                  {t("contact.deckSize", { size: size(solution.deck.sizeBytes) })}
+                </Button>
               )}
             </div>
           )}
@@ -484,12 +493,6 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
               icon={<ZapIcon aria-hidden="true" />}
               name={t("facts.builtWith")}
               value={solution.builtWith.join(", ")}
-              unknown={unknown}
-            />
-            <Fact
-              icon={<TargetIcon aria-hidden="true" />}
-              name={t("facts.bestCustomerProfile")}
-              value={solution.bestCustomerProfile ?? undefined}
               unknown={unknown}
             />
             <Fact

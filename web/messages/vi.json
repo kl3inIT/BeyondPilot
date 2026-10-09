@@ -4075,7 +4075,7 @@
         "title": "Làm việc với {name}",
         "website": "Mở website",
         "demo": "Xem demo",
-        "deck": "Tải tài liệu giới thiệu",
+        "deckSize": "Tải tài liệu giới thiệu ({size})",
         "basedIn": "Trụ sở tại",
         "lead": "GenAI Fund đứng ra giới thiệu. Email của bạn được giữ kín cho đến khi bạn trả lời."
       },
@@ -4086,7 +4086,6 @@
         "deployment": "Triển khai",
         "languages": "Ngôn ngữ",
         "builtWith": "Công nghệ lõi",
-        "bestCustomerProfile": "Khách hàng phù hợp nhất",
         "backedBy": "Được hậu thuẫn bởi",
         "program": "Chương trình",
         "channels": "Kênh",

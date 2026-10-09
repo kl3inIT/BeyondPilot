@@ -4075,7 +4075,7 @@
         "title": "Work with {name}",
         "website": "Visit website",
         "demo": "Watch the demo",
-        "deck": "Download the deck",
+        "deckSize": "Download the deck ({size})",
         "basedIn": "Based in",
         "lead": "Get introduced by GenAI Fund. Your email stays private until you reply."
       },
@@ -4086,7 +4086,6 @@
         "deployment": "Deployment",
         "languages": "Languages",
         "builtWith": "Core technology",
-        "bestCustomerProfile": "Best customer profile",
         "backedBy": "Backed by",
         "program": "Program",
         "channels": "Channels",
