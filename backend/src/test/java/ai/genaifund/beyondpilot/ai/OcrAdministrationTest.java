@@ -360,7 +360,7 @@ class OcrAdministrationTest {
 
 		assertThat(read).containsExactly(Map.entry(2, "OK"));
 		String sent = asked.stream().filter(line -> line.startsWith("POST /v1/chat/completions")).findFirst().orElseThrow();
-		assertThat(sent).contains("\"model\":\"gpt-5\"", "image_url", "data:image/png;base64,");
+		assertThat(sent).contains("\"model\":\"gpt-5\"", "image_url", "data:image/jpeg;base64,");
 		assertThat(jdbc.sql("select task || ' ' || subject_type from ai_usage").query(String.class).single())
 			.isEqualTo("document_reading solution_deck");
 	}
