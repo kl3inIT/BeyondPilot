@@ -946,6 +946,7 @@
           "claim_decline": "Declined a claim",
           "member_role": "Changed a member's role",
           "member_remove": "Removed a member",
+          "merge": "Merged into another organization",
           "suspend": "Took an organization down",
           "restore": "Restored an organization",
           "update": "Saved an organization's profile",
@@ -1057,6 +1058,7 @@
           "claim_decline": "Declined a claim to own <resource></resource>",
           "member_role": "Changed a member's role in <resource></resource>",
           "member_remove": "Removed a member from <resource></resource>",
+          "merge": "Merged <resource></resource> into another organization",
           "suspend": "Took down the organization <resource></resource>",
           "restore": "Restored the organization <resource></resource>",
           "update": "Saved the profile of <resource></resource>",
@@ -1189,7 +1191,8 @@
         "needs_changes": "Sent back",
         "approved": "Approved",
         "rejected": "Not approved",
-        "suspended": "Taken down"
+        "suspended": "Taken down",
+        "merged": "Merged"
       },
       "columns": {
         "organization": "Organisation",
@@ -1205,6 +1208,7 @@
         "none": "—"
       },
       "unowned": "No owner",
+      "mergedInto": "Merged into {name}",
       "actions": {
         "open": "Actions for {name}",
         "review": "Review",
@@ -1254,6 +1258,12 @@
           "title": "Taken down on {day}",
           "reason": "Reason: {reason}.",
           "foot": "Its public page and its solutions are hidden. Its {members, plural, one {# member keeps} other {# members keep}} their workspace and read this reason there."
+        },
+        "merged": {
+          "title": "Merged into {kept} on {day} by {name}",
+          "lead": "This record is kept for the audit log and can no longer be changed. Its members, open invitations, solutions and use cases moved to {kept}.",
+          "address": "{address} now leads to the page of {kept}.",
+          "open": "Open {kept}"
         },
         "review": "Review"
       },
@@ -1313,6 +1323,22 @@
         "restoreTitle": "Restore {name}?",
         "restoreLead": "Its public page, its solutions and its approved deployments are shown again, and its owners can invite people and publish.",
         "restoreNote": "The owners are told by email. The take-down and its reason stay in the audit log."
+      },
+      "merge": {
+        "menu": "Merge into another…",
+        "title": "Merge {name}",
+        "lead": "Its members and solutions move to the one you keep.",
+        "keep": "Keep",
+        "keepPlaceholder": "Search organizations",
+        "noMatch": "No organization matches.",
+        "moves": "{members, plural, one {# member} other {# members}} and {invitations, plural, one {# open invitation} other {# open invitations}} move with it, and so do its solutions and use cases.",
+        "cancel": "Cancel",
+        "continue": "Continue",
+        "confirmTitle": "Merge into {kept}?",
+        "confirmLabel": "Type {name} to confirm",
+        "cannotUndo": "This cannot be undone.",
+        "back": "Back",
+        "merge": "Merge"
       },
       "people": {
         "title": "Members",
@@ -1379,7 +1405,7 @@
         "organization": "Organization",
         "status": "Status",
         "sentBy": "Sent by",
-        "submitted": "Submitted",
+        "waiting": "Waiting",
         "actions": "Actions"
       },
       "senderUnknown": "Not recorded",
@@ -1510,6 +1536,9 @@
         "hint": "Leave a line empty to take it away.",
         "save": "Save",
         "saved": "Saved for {name}."
+      },
+      "actions": {
+        "organization": "Open the organization"
       }
     },
     "talent": {
@@ -2502,6 +2531,10 @@
           "name": "Organization restored",
           "description": "Tells the owners their organization is back."
         },
+        "organization_merged": {
+          "name": "Organization merged",
+          "description": "Tells the members of a duplicate organization which one they belong to now."
+        },
         "application_received": {
           "name": "Application received",
           "description": "Confirms an application to a program was submitted."
@@ -3311,7 +3344,8 @@
       "needs_changes": "Changes needed",
       "approved": "Approved",
       "rejected": "Not approved",
-      "suspended": "Taken down"
+      "suspended": "Taken down",
+      "merged": "Merged"
     },
     "inReview": {
       "title": "GenAI Fund is reviewing your organization",
@@ -3346,6 +3380,8 @@
       "ORGANIZATION_CHANGED_MEANWHILE": "Someone else changed this profile. Reload the page and try again.",
       "ORGANIZATION_NOT_AWAITING_REVIEW": "This organization has already been reviewed.",
       "ORGANIZATION_DOMAIN_TAKEN": "Another organization already uses this email domain.",
+      "ORGANIZATION_MERGED": "This organization was merged into another and can no longer be changed.",
+      "ORGANIZATION_CANNOT_MERGE": "An organization merges only into another one that is approved and shown.",
       "REQUEST_INVALID": "Check the marked fields and try again.",
       "unknown": "That did not work. Try again.",
       "ORGANIZATION_DOMAIN_NOT_VERIFIED": "People join at once only on a domain GenAI Fund verified for an approved organization.",
@@ -3380,7 +3416,8 @@
       "autoJoinOff": "Colleagues on your verified domain now ask to join.",
       "askedAgain": "Request sent.",
       "takenDown": "{name} was taken down. Its owners were told.",
-      "restored": "{name} is back. Its owners were told."
+      "restored": "{name} is back. Its owners were told.",
+      "merged": "{name} was merged into {kept}. Its members were told."
     },
     "form": {
       "metaTitle": "Create an organization · BeyondPilot",
@@ -3633,6 +3670,13 @@
       "title": "GenAI Fund took {name} down",
       "reason": "Reason: {reason}.",
       "foot": "Its public page and solutions are hidden. You keep your workspace; write to GenAI Fund to have it restored."
+    },
+    "merged": {
+      "title": "{name} is now part of {kept}",
+      "lead": "GenAI Fund merged the two records of the same company. You are a member of {kept}; its owners can make you an owner. Its solutions and use cases moved with it.",
+      "badge": "Merged",
+      "foot": "Merged on {day}. The old address {slug} leads to the new page.",
+      "dismiss": "Got it"
     },
     "useCases": {
       "metaTitle": "Use cases · BeyondPilot",
@@ -3997,6 +4041,8 @@
       "nothingYet": "Nothing written yet."
     },
     "detail": {
+      "showMore": "Show more",
+      "showLess": "Show less",
       "unknown": "Not listed yet",
       "product": {
         "title": "Product",
@@ -4061,6 +4107,8 @@
         "demo": "Watch the demo",
         "deck": "Download the deck",
         "registeredIn": "Registered in",
+        "deckSize": "Download the deck ({size})",
+        "basedIn": "Based in",
         "lead": "Get introduced by GenAI Fund. Your email stays private until you reply."
       },
       "facts": {
@@ -4069,6 +4117,7 @@
         "capabilities": "AI capabilities",
         "deployment": "Deployment",
         "languages": "Languages",
+        "builtWith": "Core technology",
         "backedBy": "Backed by",
         "program": "Program",
         "channels": "Channels",
@@ -5941,7 +5990,9 @@
         },
         {
           "heading": "What we collect",
-          "body": ["We collect only what the platform needs to work:"],
+          "body": [
+            "We collect only what the platform needs to work:"
+          ],
           "items": [
             "Account details: your name and email address, and, when you add them, your phone number, country, job title, LinkedIn profile and photo.",
             "Sign-in with Google: your name, email address and profile picture from your Google account. We do not read your Gmail, contacts or files.",
@@ -6076,7 +6127,9 @@
         },
         {
           "heading": "Acceptable use",
-          "body": ["Do not:"],
+          "body": [
+            "Do not:"
+          ],
           "items": [
             "publish false information or impersonate anyone;",
             "send spam or unsolicited commercial messages through the platform;",

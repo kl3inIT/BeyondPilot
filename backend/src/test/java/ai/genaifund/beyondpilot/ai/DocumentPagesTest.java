@@ -39,6 +39,12 @@ class DocumentPagesTest {
 	}
 
 	@Test
+	void aPagesTextKeepsItsLinesAndLosesTheCharactersADatabaseRefuses() {
+		// A font without a mapping gives the null character for each glyph.
+		assertThat(PdfPages.clean("  Claims\u0000 desk\r\n\u0007reads\tforms\n ")).isEqualTo("Claims desk\nreads\tforms");
+	}
+
+	@Test
 	void bytesThatAreNotAPdfAreRefused() {
 		byte[] picture = { (byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A };
 

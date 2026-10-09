@@ -26,6 +26,13 @@ public class TalentDetailRepository {
 		this.jdbc = jdbc;
 	}
 
+	/** Gives the enquiries sent for a merged organization to the one kept. */
+	public void moveToOrganization(UUID from, UUID into) {
+		jdbc.sql("update talent_enquiry set sender_organization_id = ? where sender_organization_id = ?")
+			.params(into, from)
+			.update();
+	}
+
 	/** One project a profile shows. */
 	public record Project(String title, @Nullable String summary, @Nullable String url, @Nullable Integer year,
 			@Nullable String stage) {

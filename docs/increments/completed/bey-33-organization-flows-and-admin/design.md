@@ -38,7 +38,13 @@ An operator may leave an organization without an owner: that is how a page is ha
 5. **Limits are counted, not stored.** The daily limit counts the invitations an organization's owners created in the last 24 hours, revoked ones included, so revoking does not give the count back. The open limit counts invitations still pending. Both are constants of the module; there is no setting for them.
 6. **Approving takes a body.** `approve` for an organization and for a claim accept `{ "emailDomain": string | null }`. A domain another organization holds answers `409 ORGANIZATION_DOMAIN_TAKEN` and nothing is decided.
 7. **Take-down is a status, not a rejection** (slice 2). `suspended` keeps the approval facts and adds a reason from a closed list and a note; restoring returns to `approved`. Other modules ask `Membership.approved`, which is false while suspended, so `solution` needs no new rule to stop writes; its public reads filter on the organization being approved.
-8. **A merge keeps the record** (slice 3). The duplicate becomes `merged` with `merged_into`; its slug answers with the kept organization's slug so the web redirects. `organization` publishes `OrganizationMerged`; `solution` moves its rows in a listener within the same transaction. No dependency edge is added.
+8. **A merge keeps the record** (slice 3). The duplicate becomes `merged` with `merged_into_id`, when and by whom; it can no longer be changed, and the operators' list shows it only under the Merged filter. In the same transaction:
+   - its members move to the kept organization as members, each marked with where they came from until they dismiss the notice in their workspace, and each is emailed;
+   - its open invitations and requests move, except an invitation to an address the kept organization already invited, which is revoked; a claim becomes a request when the kept organization has an owner;
+   - its verified domain moves when the kept organization has none, and is cleared otherwise;
+   - `organization` publishes `OrganizationMerged(from, into)`. `solution`, `usecase`, `proposal`, `introduction` and `talent` move the rows they hold for the duplicate in a synchronous listener, so the merge commits whole or not at all. Each already depends on `organization`: no dependency edge is added.
+
+   The public page of the duplicate's address answers with the kept organization, whose own address the web redirects to. The kept organization must not be merged itself, so an address leads one step at most. What moves is counted in the dialog for members and open invitations only: `organization` does not count another module's rows.
 9. **Shortcuts live in search only.** `/` focuses the search field of a list, as `FilterToolbar` already does; a dialog has no shortcut. The A, S and N keys of the solution and talent review pages are outside this increment.
 10. **Pastel status colours are tokens.** Five tints (`lemon`, `sky`, `mint`, `peach`, `rose`) with their foregrounds join `tokens.css`. `Status` gains a `pill` appearance that the organization lists use; the owner and member roles and the avatar initials take a tint. Other screens keep their look until they are redrawn.
 
@@ -55,7 +61,7 @@ An operator may leave an organization without an owner: that is how a page is ha
 
 `V28__organization_drop_roles.sql` (slice 1): drops `organization.roles` and its check constraint.
 
-Slice 2 adds `suspended` to the status check with `suspension_reason`, `suspension_message` and `suspended_at` in `V30`. Slice 3 adds `merged` and `merged_into_id` in `V14`.
+Slice 2 adds `suspended` to the status check with `suspension_reason`, `suspension_message` and `suspended_at` in `V30`. Slice 3 adds `merged` to the status check, with `merged_into_id`, `merged_at` and `merged_by_account_id`, and `organization_member.merged_from_id` for the notice of a moved member, in `V61`.
 
 ## HTTP
 
@@ -90,4 +96,3 @@ The exact contract is `openapi.yml`, refreshed with each slice.
 - The logo is an uploaded image. The workspace and the public page of the organization draw it; the operators' list and the search results draw initials, as their frames do. A year in the future is accepted up to 2100.
 - What the mockup's "Complete your account" step asks (first and last name, phone, country, LinkedIn, photo) belongs to `identity` and is not in this increment.
 - The Use cases tab of an enterprise waits for the use case module (BEY-35). When it exists, an owner drafts and submits and members read.
-- The daily limit is a rolling 24 hours, while the screen says "today".

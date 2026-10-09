@@ -26,6 +26,8 @@ import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
+import { CodeList } from "@/components/composites/code-list";
+import { TextClamp } from "@/components/composites/text-clamp";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -48,16 +50,26 @@ import { deckAddress, useFileSize } from "./solution-deck";
 import { SolutionGallery } from "./solution-gallery";
 import { SolutionLogo } from "./solution-logo";
 
-function Evidence({ className, ...props }: React.ComponentProps<"div">) {
+/** How many chips a heading group names before the rest waits under "+N more". */
+const CAPABILITY_LIMIT = 3;
+
+const evidenceVariants = cva("flex flex-col items-start gap-2 rounded-xl border p-4", {
+  variants: {
+    state: {
+      known: "bg-background",
+      unknown: "border-dashed bg-muted text-muted-foreground",
+    },
+  },
+});
+
+/** One piece of evidence about a solution; dashed when what it would state is not known. */
+function Evidence({
+  state,
+  className,
+  ...props
+}: React.ComponentProps<"div"> & Required<VariantProps<typeof evidenceVariants>>) {
   return (
-    <div
-      data-slot="evidence"
-      className={cn(
-        "flex flex-col items-start gap-2 rounded-xl border bg-background p-4",
-        className,
-      )}
-      {...props}
-    />
+    <div data-slot="evidence" className={evidenceVariants({ state, className })} {...props} />
   );
 }
 
@@ -93,19 +105,25 @@ function PartHeading({ icon, tone, children }: PartHeadingProps) {
 type FactProps = {
   icon: React.ReactNode;
   name: string;
-  /** A missing value leaves the named criterion visible without a placeholder. */
+  /** A missing value reads as unknown beside the criterion's name. */
   value: string | undefined;
+  /** What shows where the value would be when there is none. */
+  unknown: string;
 };
 
-/** A named solution fact, shown with its icon even when its value is absent. */
-function Fact({ icon, name, value }: FactProps) {
+/** A named fact of a solution in the list beside the page. */
+function Fact({ icon, name, value, unknown }: FactProps) {
   return (
     <div data-slot="fact" className="flex flex-col gap-0.5">
       <dt className="flex items-center gap-1.5 text-xs text-muted-foreground [&_svg]:size-3.5 [&_svg]:shrink-0">
         {icon}
         {name}
       </dt>
-      {value && <dd className="text-sm font-medium">{value}</dd>}
+      {value ? (
+        <dd className="text-sm font-medium">{value}</dd>
+      ) : (
+        <dd className="text-sm font-medium text-muted-foreground">{unknown}</dd>
+      )}
     </div>
   );
 }
@@ -146,6 +164,7 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
   const size = useFileSize();
   const format = useFormatter();
 
+  const unknown = t("unknown");
   const company = `${siteRoutes.organizations}/${solution.organizationSlug}`;
   const country = solution.country ? countryName(solution.country) : undefined;
   // What the owners wrote as a list, one problem to a line, reads as a list.
@@ -223,27 +242,31 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
             <ArrowRightIcon aria-hidden="true" />
           </TextButton>
           {solution.summary && (
-            <p className="text-base text-muted-foreground md:text-lg">{solution.summary}</p>
+            <TextClamp more={t("showMore")} less={t("showLess")}>
+              <p className="text-base text-muted-foreground md:text-lg">{solution.summary}</p>
+            </TextClamp>
           )}
-          <ul className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-1">
-            {tags.map((group) => (
-              <li
-                data-slot="solution-tag"
-                key={group.key}
-                className="flex flex-wrap items-center gap-1.5 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground"
-              >
-                {group.icon}
-                <span className="text-xs font-medium text-muted-foreground">
-                  {t(`facts.${group.key}`)}
-                </span>
-                {group.labels.map((label) => (
-                  <Badge key={label} variant="outline">
-                    {label}
-                  </Badge>
-                ))}
-              </li>
-            ))}
-          </ul>
+          {tags.length > 0 && (
+            <ul className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-1">
+              {tags.map((group) => (
+                <li
+                  data-slot="solution-tag"
+                  key={group.key}
+                  className="flex flex-wrap items-center gap-1.5 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground"
+                >
+                  {group.icon}
+                  <span className="sr-only">{t(`facts.${group.key}`)}</span>
+                  <CodeList
+                    labels={group.labels}
+                    limit={CAPABILITY_LIMIT}
+                    more={directory("more", {
+                      count: group.labels.length - CAPABILITY_LIMIT,
+                    })}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </header>
 
@@ -259,16 +282,18 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
           </div>
 
           <div className="order-3 flex min-w-0 flex-col gap-7 lg:order-none lg:gap-9">
-            <section className="flex flex-col gap-2">
-              <PartHeading icon={<SparklesIcon aria-hidden="true" />}>
-                {view("valueProposition")}
-              </PartHeading>
-              {solution.valueProposition && (
-                <p className="whitespace-pre-line text-muted-foreground">
-                  {solution.valueProposition}
-                </p>
-              )}
-            </section>
+            {solution.valueProposition && (
+              <section className="flex flex-col gap-2">
+                <PartHeading icon={<SparklesIcon aria-hidden="true" />}>
+                  {view("valueProposition")}
+                </PartHeading>
+                <TextClamp more={t("showMore")} less={t("showLess")}>
+                  <p className="whitespace-pre-line text-muted-foreground">
+                    {solution.valueProposition}
+                  </p>
+                </TextClamp>
+              </section>
+            )}
 
             <section className="flex flex-col gap-2">
               <PartHeading icon={<CircleAlertIcon aria-hidden="true" />}>
@@ -409,6 +434,17 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                 </div>
               )}
             </section>
+
+            {solution.bestCustomerProfile && (
+              <section className="flex flex-col gap-2">
+                <PartHeading icon={<TargetIcon aria-hidden="true" />}>
+                  {view("bestCustomerProfile")}
+                </PartHeading>
+                <p className="whitespace-pre-line text-muted-foreground">
+                  {solution.bestCustomerProfile}
+                </p>
+              </section>
+            )}
 
             <section className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
@@ -575,7 +611,7 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
           </div>
           {introduction}
           {(solution.website || solution.demoUrl || solution.deck) && (
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col gap-2">
               {(
                 [
                   ["website", solution.website],
@@ -586,7 +622,9 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                   href && (
                     <Button
                       key={key}
-                      prominence="tertiary"
+                      prominence="secondary"
+                      size="lg"
+                      className="w-full"
                       href={href}
                       target="_blank"
                       rel="noreferrer"
@@ -597,19 +635,15 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                   ),
               )}
               {solution.deck && (
-                <>
-                  <Button
-                    prominence="tertiary"
-                    href={deckAddress(solution.slug)}
-                    aria-describedby="solution-deck-file"
-                  >
-                    <DownloadIcon aria-hidden="true" />
-                    {t("contact.deck")}
-                  </Button>
-                  <p id="solution-deck-file" className="text-center text-xs text-muted-foreground">
-                    {solution.deck.fileName} · {size(solution.deck.sizeBytes)}
-                  </p>
-                </>
+                <Button
+                  prominence="secondary"
+                  size="lg"
+                  className="w-full"
+                  href={deckAddress(solution.slug)}
+                >
+                  <DownloadIcon aria-hidden="true" />
+                  {t("contact.deckSize", { size: size(solution.deck.sizeBytes) })}
+                </Button>
               )}
             </div>
           )}
@@ -619,46 +653,55 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
               icon={<MapPinIcon aria-hidden="true" />}
               name={t("contact.registeredIn")}
               value={country}
+              unknown={unknown}
             />
             <Fact
               icon={<ShieldCheckIcon aria-hidden="true" />}
               name={t("facts.backedBy")}
               value={solution.backing?.backedBy ?? undefined}
+              unknown={unknown}
             />
             <Fact
               icon={<FlagIcon aria-hidden="true" />}
               name={t("facts.program")}
               value={solution.backing?.program ?? undefined}
+              unknown={unknown}
             />
             <Fact
               icon={<LayersIcon aria-hidden="true" />}
               name={t("facts.industries")}
               value={solution.industries.map(industry).join(", ")}
+              unknown={unknown}
             />
             <Fact
               icon={<CpuIcon aria-hidden="true" />}
               name={t("facts.capabilities")}
               value={solution.focusAreas.map(focusArea).join(", ")}
+              unknown={unknown}
             />
             <Fact
               icon={<MessageCircleIcon aria-hidden="true" />}
               name={t("facts.channels")}
               value={solution.channels ?? undefined}
+              unknown={unknown}
             />
             <Fact
               icon={<CloudIcon aria-hidden="true" />}
               name={t("facts.deployment")}
               value={solution.deployment.map(deployment).join(", ")}
+              unknown={unknown}
             />
             <Fact
               icon={<LanguagesIcon aria-hidden="true" />}
               name={t("facts.languages")}
               value={solution.languages.map(language).join(", ")}
+              unknown={unknown}
             />
             <Fact
               icon={<CircleDollarSignIcon aria-hidden="true" />}
               name={t("facts.funding")}
               value={solution.backing?.funding ?? undefined}
+              unknown={unknown}
             />
           </dl>
         </aside>

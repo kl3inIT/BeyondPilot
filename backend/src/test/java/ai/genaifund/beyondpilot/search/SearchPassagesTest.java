@@ -79,6 +79,9 @@ class SearchPassagesTest {
 	@Autowired
 	private SolutionPassages solutionPassages;
 
+	@Autowired
+	private SolutionEvidence evidence;
+
 	/** Nothing indexed, and OpenAI's large model set the way an operator sets it, with semantic search on. */
 	@BeforeEach
 	void emptyIndex() {
@@ -253,6 +256,43 @@ class SearchPassagesTest {
 
 		assertThat(search.search(new SearchRequest("insurance", SOLUTION, 1)).items()).isEmpty();
 		assertThat(search.search(new SearchRequest("bảo hiểm", SOLUTION, 1)).items()).isEmpty();
+	}
+
+	@Test
+	void matchingFindsASolutionByItsProfileOrByWhatItsPassagesSayListedOrNot() {
+		UUID byProfile = UUID.randomUUID();
+		UUID byDeck = UUID.randomUUID();
+		UUID unrelated = UUID.randomUUID();
+		UUID gone = UUID.randomUUID();
+		index.save(new Document(SOLUTION, byProfile, "claims-desk", "Claims Desk", "Nhanh",
+				"Underwriting for insurance carriers.", "", "Claims Desk\nUnderwriting for insurance carriers.", Map.of(),
+				true, null, null));
+		// Its owners keep it out of the directory, and only its deck says what it does.
+		index.save(new Document(SOLUTION, byDeck, "hotline-assist", "Hotline Assist", "Nhanh", "Answers calls.", "",
+				"Hotline Assist\nAnswers calls.", Map.of(), false, null, null));
+		index.save(new Document(SOLUTION, unrelated, "shelf-planner", "Shelf Planner", "Nhanh",
+				"Demand forecasting for retail stores.", "", "Shelf Planner\nDemand forecasting for retail stores.",
+				Map.of(), true, null, null));
+		passages.replace(byDeck, DECK, "file-1", List.of(new Passage(DECK, 1, 0, null, "Hotline Assist, deck page 1",
+				"An underwriting assistant for insurance carriers.", READ_AS_TEXT)));
+		// Text that was loaded stays when its solution leaves the index; it is never a candidate.
+		passages.replace(gone, WEBSITE, "load", List.of(new Passage(WEBSITE, 1, 0, "https://gone.test/",
+				"Gone, gone.test", "Insurance underwriting.", READ_AS_TEXT)));
+		embeddings.embedPending();
+
+		List<UUID> found = evidence.solutionsFor(List.of("Supports the underwriting of insurance policies"), 10);
+
+		assertThat(found).doesNotContain(gone);
+		assertThat(found.subList(0, 2)).containsExactlyInAnyOrder(byProfile, byDeck);
+		assertThat(evidence.solutionsFor(List.of("Supports the underwriting of insurance policies"), 1)).hasSize(1);
+		// A query of words every text holds asks nothing.
+		assertThat(evidence.solutionsFor(List.of("the of and"), 10)).isEmpty();
+		assertThat(SolutionEvidence.terms("Answers the customer's calls in real-time"))
+			.isEqualTo("answers | customer | calls | real | time");
+		assertThat(evidence.passagesOf(byDeck)).extracting(SolutionEvidence.Passage::source,
+				SolutionEvidence.Passage::page, SolutionEvidence.Passage::text, SolutionEvidence.Passage::byModel)
+			.containsExactly(org.assertj.core.groups.Tuple.tuple(DECK, 1,
+					"An underwriting assistant for insurance carriers.", false));
 	}
 
 }

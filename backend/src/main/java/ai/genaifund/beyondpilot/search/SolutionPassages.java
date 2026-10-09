@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,6 +56,9 @@ class SolutionPassages {
 
 	/** A page with less text than this is a picture, a logo or a page number; it waits for a model to read it. */
 	private static final int READABLE_CHARACTERS = 20;
+
+	/** Whether pages are being read from their pictures now; one deck at a time. */
+	private final AtomicBoolean readingPictures = new AtomicBoolean();
 
 	private final SolutionDirectory solutions;
 
@@ -126,8 +130,22 @@ class SolutionPassages {
 			.limit(DECKS_PER_RUN)
 			.toList();
 		for (SolutionDeckFile file : waiting) {
-			solutions.deck(file.solutionId())
-				.ifPresent(deck -> deck(file.solutionId(), names.get(file.solutionId()), deck));
+			try {
+				solutions.deck(file.solutionId())
+					.ifPresent(deck -> deck(file.solutionId(), names.get(file.solutionId()), deck));
+			}
+			catch (RuntimeException unwritten) {
+				// One deck that cannot be kept must not hold back those after it: it is marked as tried.
+				LOG.atWarn()
+					.addKeyValue("event", "search.deck.not_kept")
+					.addKeyValue("error_type", unwritten.getClass().getName())
+					.addKeyValue("solution_id", file.solutionId())
+					.log("A deck's pages could not be kept; its solution is found by its profile");
+				List<Passage> tried = List.of(new Passage(DECK, 1, 0, null,
+						names.get(file.solutionId()) + ", deck page 1", "", UNREAD));
+				transactions.executeWithoutResult(
+						status -> passages.replace(file.solutionId(), DECK, file.fileId().toString(), tried));
+			}
 		}
 	}
 
@@ -137,10 +155,24 @@ class SolutionPassages {
 	 */
 	@Scheduled(fixedDelayString = "${beyondpilot.search.passages.interval}", initialDelay = 90_000)
 	void readPictures() {
-		if (!documents.readsPictures()) {
+		if (!documents.readsPictures() || !readingPictures.compareAndSet(false, true)) {
 			return;
 		}
-		passages.unreadDeck().ifPresent(this::readPictures);
+		// On a thread of its own: scheduled work shares one thread, and a model takes its time over each page.
+		Thread.ofVirtual().name("deck-pictures").start(() -> {
+			try {
+				passages.unreadDeck().ifPresent(this::readPictures);
+			}
+			catch (RuntimeException | LinkageError failure) {
+				LOG.atWarn()
+					.addKeyValue("event", "search.deck.pictures_not_read")
+					.addKeyValue("error_type", failure.getClass().getName())
+					.log("The pages of a deck were not read from their pictures; they are asked for again");
+			}
+			finally {
+				readingPictures.set(false);
+			}
+		});
 	}
 
 	void readPictures(UnreadDeck unread) {

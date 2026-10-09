@@ -524,6 +524,7 @@ paths:
           - organization.claim_decline
           - organization.member_role
           - organization.member_remove
+          - organization.merge
           - solution.approve
           - solution.send_back
           - solution.reject
@@ -2521,7 +2522,8 @@ paths:
           minLength: 0
       - description: "Only organizations of this review status; `in_review` also selects\
           \ an approved one with an open claim, `approved` leaves out those taken\
-          \ down, and `suspended` selects those taken down."
+          \ down, and `suspended` selects those taken down. Merged organizations are\
+          \ listed only under `merged`."
         in: query
         name: status
         required: false
@@ -2533,7 +2535,8 @@ paths:
           - approved
           - rejected
           - suspended
-          pattern: in_review|needs_changes|approved|rejected|suspended
+          - merged
+          pattern: in_review|needs_changes|approved|rejected|suspended|merged
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -2708,8 +2711,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "The organization changed since it was read, or another organization\
-            \ has the domain."
+          description: "The organization was merged or changed since it was read,\
+            \ or another organization has the domain."
       security:
       - session: []
       summary: Save the profile and the verified domain of an organization
@@ -2819,7 +2822,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The address belongs to the organization or holds an open invitation.
+          description: "The organization was merged, or the address belongs to it\
+            \ or holds an open invitation."
       security:
       - session: []
       summary: Ask an address to own or join an organization
@@ -2966,6 +2970,62 @@ paths:
       summary: "Make a member of an organization an owner, or an owner a member"
       tags:
       - Organization administration
+  /api/organization/admin/organizations/{id}/merge:
+    post:
+      operationId: mergeOrganization
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MergeOrganization"
+        required: true
+      responses:
+        "204":
+          description: The duplicate is merged and only says where it went.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: One of the two organizations does not exist.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The organizations are the same, the duplicate was merged,\
+            \ or the one to keep is not approved and shown."
+      security:
+      - session: []
+      summary: "Merge a duplicate organization into the one to keep, with its people\
+        \ and records"
+      tags:
+      - Organization administration
   /api/organization/admin/organizations/{id}/refuse:
     post:
       operationId: refuseOrganization
@@ -3056,7 +3116,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The organization is not taken down.
+          description: "The organization is not taken down, or was merged."
       security:
       - session: []
       summary: Return a taken-down organization to the directories
@@ -3621,6 +3681,30 @@ paths:
       security:
       - session: []
       summary: "Make a member an owner, or an owner a member"
+      tags:
+      - My organization
+  /api/organization/mine/merge-notice/dismiss:
+    post:
+      operationId: dismissMyOrganizationMergeNotice
+      responses:
+        "204":
+          description: The notice is gone.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller belongs to no organization.
+      security:
+      - session: []
+      summary: Stop showing that the caller's former organization was merged into
+        this one
       tags:
       - My organization
   /api/organization/mine/requests/{id}/approve:
@@ -8761,6 +8845,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/OrganizationMember"
+        merged:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/MergedOrganization"
+          description: Where it went when it was merged into another; null unless
+            it was.
         organization:
           $ref: "#/components/schemas/Organization"
         suggestedDomain:
@@ -8837,6 +8928,12 @@ components:
         members:
           type: integer
           format: int32
+        mergedInto:
+          type:
+          - string
+          - "null"
+          description: The name of the organization it was merged into; null unless
+            it was.
         name:
           type: string
         owned:
@@ -8868,6 +8965,7 @@ components:
           - needs_changes
           - approved
           - rejected
+          - merged
         suspendedAt:
           type:
           - string
@@ -9170,6 +9268,12 @@ components:
             type: string
         listed:
           type: boolean
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The stored logo, or nothing for the initials' slot."
         maturity:
           type:
           - string
@@ -9182,6 +9286,9 @@ components:
           - scaled
         name:
           type: string
+        organizationId:
+          type: string
+          format: uuid
         organizationName:
           type: string
         slug:
@@ -9224,6 +9331,7 @@ components:
       - industries
       - listed
       - name
+      - organizationId
       - organizationName
       - slug
       - status
@@ -10080,6 +10188,7 @@ components:
           - organization.claim_decline
           - organization.member_role
           - organization.member_remove
+          - organization.merge
           - solution.approve
           - solution.send_back
           - solution.reject
@@ -12202,6 +12311,57 @@ components:
       - email
       - id
       - role
+    MergeNotice:
+      type: object
+      description: "The organization GenAI Fund merged into the caller's, which they\
+        \ see until they dismiss it."
+      properties:
+        mergedAt:
+          type: string
+          format: date-time
+        name:
+          type: string
+        slug:
+          type: string
+          description: "Its former address, which now leads to the caller's organization."
+      required:
+      - mergedAt
+      - name
+      - slug
+    MergeOrganization:
+      type: object
+      description: The organization a duplicate is merged into.
+      properties:
+        intoId:
+          type: string
+          format: uuid
+          description: "The organization kept, approved and shown; it receives the\
+            \ duplicate's people and records."
+      required:
+      - intoId
+    MergedOrganization:
+      type: object
+      description: "The organization a duplicate was merged into, when and by whom."
+      properties:
+        intoId:
+          type: string
+          format: uuid
+        intoName:
+          type: string
+        intoSlug:
+          type: string
+        mergedAt:
+          type: string
+          format: date-time
+        mergedBy:
+          type: string
+          description: "The operator who merged it, as they are shown."
+      required:
+      - intoId
+      - intoName
+      - intoSlug
+      - mergedAt
+      - mergedBy
     MyApplication:
       type: object
       description: "One of the person's applications, as My applications lists it."
@@ -12302,6 +12462,13 @@ components:
           type:
           - string
           - "null"
+        mergedFrom:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/MergeNotice"
+          description: "The organization GenAI Fund merged into the caller's, until\
+            \ they dismiss the notice."
         organization:
           type:
           - object
@@ -12648,13 +12815,15 @@ components:
           type: string
         status:
           type: string
-          description: GenAI Fund's review of the organization. One taken down stays
-            `approved`; `suspendedAt` says it is down.
+          description: "GenAI Fund's review of the organization. One taken down stays\
+            \ `approved`; `suspendedAt` says it is down. `merged` is a duplicate merged\
+            \ into another, which nobody changes."
           enum:
           - in_review
           - needs_changes
           - approved
           - rejected
+          - merged
         suspendedAt:
           type:
           - string

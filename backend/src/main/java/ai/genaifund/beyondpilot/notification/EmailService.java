@@ -147,6 +147,16 @@ public class EmailService {
 	}
 
 	/**
+	 * Tells a member of an organization GenAI Fund merged into another that they are a member of that one now.
+	 * @param keptName the organization kept, which the member belongs to from now on
+	 */
+	@Transactional
+	public void sendOrganizationMerged(String recipient, String organizationName, String keptName) {
+		queue(EmailKind.ORGANIZATION_MERGED, recipient,
+				values("organizationName", organizationName, "keptName", keptName));
+	}
+
+	/**
 	 * Tells a person the answer to their request to get into an organization.
 	 * @param claim whether they asked to own an organization nobody owned, which GenAI Fund decides; otherwise they
 	 * asked its owners to join

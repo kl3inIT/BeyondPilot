@@ -1,6 +1,5 @@
 "use client";
 
-import { EllipsisIcon, EyeOffIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -8,13 +7,6 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { ReasonDialog } from "@/components/composites/reason-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
 import { useVocabulary } from "@/i18n/vocabulary";
 import {
@@ -32,22 +24,23 @@ type TakeDownProps = {
 };
 
 /**
- * What an operator does to an approved organization from its record, in a menu: take it down with a
- * reason its owners read. The page and its solutions leave the directories at once; the people keep
- * their workspace.
+ * Takes an approved organization down with a reason its owners read. The page and its solutions
+ * leave the directories at once; the people keep their workspace. It stays open while the decision
+ * is sent; whoever opened it closes it.
  */
-function TakeDownMenu({
+function TakeDownDialog({
   organization,
   members,
+  onClose,
 }: TakeDownProps & {
   /** How many people keep their workspace. */
   members: number;
+  onClose: () => void;
 }) {
   const t = useTranslations("Admin.organizations.takeDown");
   const reasonName = useVocabulary("organizationTakeDown");
   const notify = useNotify();
   const router = useRouter();
-  const [asking, setAsking] = useState(false);
   const [pending, setPending] = useState(false);
 
   async function takeDown(reason: string, message: string) {
@@ -58,7 +51,7 @@ function TakeDownMenu({
         body: { reason: reason as TakeDownOrganization["reason"], message: message.trim() || null },
       });
       notify.success("Organization.done.takenDown", { name: organization.name });
-      setAsking(false);
+      onClose();
       router.refresh();
     } catch (error) {
       notify.error(organizationError(error));
@@ -68,46 +61,21 @@ function TakeDownMenu({
   }
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <button
-              type="button"
-              aria-label={t("open", { name: organization.name })}
-              className="hit-area flex size-9 shrink-0 items-center justify-center rounded-md border outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted"
-            />
-          }
-        >
-          <EllipsisIcon className="size-4" aria-hidden="true" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuGroup>
-            <DropdownMenuItem variant="destructive" onClick={() => setAsking(true)}>
-              <EyeOffIcon aria-hidden="true" />
-              {t("menu")}
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {asking && (
-        <ReasonDialog
-          open
-          onOpenChange={(open) => !open && !pending && setAsking(false)}
-          title={t("title", { name: organization.name })}
-          description={t("lead", { members })}
-          reasonLabel={t("reason")}
-          reasonPlaceholder={t("reasonPlaceholder")}
-          reasons={takeDownReasons.map((value) => ({ value, label: reasonName(value) }))}
-          messageLabel={t("message")}
-          messageHint={t("messageHint")}
-          confirmLabel={t("confirm")}
-          cancelLabel={t("cancel")}
-          pending={pending}
-          onConfirm={takeDown}
-        />
-      )}
-    </>
+    <ReasonDialog
+      open
+      onOpenChange={(open) => !open && !pending && onClose()}
+      title={t("title", { name: organization.name })}
+      description={t("lead", { members })}
+      reasonLabel={t("reason")}
+      reasonPlaceholder={t("reasonPlaceholder")}
+      reasons={takeDownReasons.map((value) => ({ value, label: reasonName(value) }))}
+      messageLabel={t("message")}
+      messageHint={t("messageHint")}
+      confirmLabel={t("confirm")}
+      cancelLabel={t("cancel")}
+      pending={pending}
+      onConfirm={takeDown}
+    />
   );
 }
 
@@ -157,4 +125,4 @@ function RestoreButton({ organization, reason }: TakeDownProps & { reason: strin
   );
 }
 
-export { RestoreButton, TakeDownMenu };
+export { RestoreButton, TakeDownDialog };

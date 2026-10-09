@@ -25,6 +25,7 @@ export const emailKinds = [
   "organization_request_declined",
   "organization_taken_down",
   "organization_restored",
+  "organization_merged",
   "application_received",
   "reviewer_invitation",
   "application_outcome",

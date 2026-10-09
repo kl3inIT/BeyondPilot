@@ -1,0 +1,20 @@
+# Matching: verification matrix
+
+Boundaries follow [conventions › Testing](../conventions.md#testing). What code makes of a model's answer is plain code and is tested without a model or a database. What is kept is PostgreSQL's work and is tested through the repository. A whole run is tested against PostgreSQL with the organization, the solution and the use case made over HTTP the way people make them, and the model played by the JDK's `HttpServer`; no test calls a real provider.
+
+| Contract | Regression it catches | Test |
+| --- | --- | --- |
+| A quote is found whatever its spacing and case, traced to another source when the model misnames it, accepted when most of its words are there, and refused when it is nowhere | A real quote refused for a line break; an invented quote accepted | `JudgmentRulesTest.aQuoteIsFoundWhateverItsSpacingAndCaseAndIsTracedToAnotherSourceWhenTheModelMisnamesIt` |
+| Every required capability met is Direct; an invented quote lowers its finding and the group with it, and its reason is dropped; a constraint and an optional capability never count; what the product is made for is kept and decides nothing | A candidate recommended on words its material does not hold; a reason shown for a finding code refused | `JudgmentRulesTest.everyRequiredCapabilityMetIsDirectAndAnInventedQuoteLowersItsFinding` |
+| Technology needs a capability shown or half of them met; the technology alone is no group | A solution recommended only for the tool it is built with | `JudgmentRulesTest.theTechnologyGroupNeedsACapabilityShownOrHalfOfThemMetAndNothingShownIsNoGroup` |
+| A requirement is kept only with a known kind and a quote the brief holds, capabilities first | A requirement the model made up; a finding that names the wrong requirement | `JudgmentRulesTest.aRequirementIsKeptOnlyWithAKnownKindAndAQuoteTheBriefHoldsCapabilitiesFirst` |
+| A solution without deck or website text says which is missing | "Not shown" reported for lack of text without saying so | `JudgmentRulesTest.aSolutionWithoutDeckOrWebsiteTextSaysWhichIsMissing` |
+| A use case has one open run; the worker takes runs oldest first, a waiting run only when its time has come; what a stopped application left running is queued again | Two runs of one use case judging at once; a run lost at a restart | `MatchingRepositoryTest.aUseCaseHasOneOpenRunAndTheWorkerTakesRunsInTheOrderTheyWereQueued` |
+| A step adds what each pass judged and keeps what the last pass of the others gave | The cost of a run that continued counted once | `MatchingRepositoryTest.aStepAddsWhatEachPassJudgedAndKeepsWhatTheLastPassOfTheOthersGave` |
+| Requirements are replaced together with what they were read from | Requirements of two briefs mixed | `MatchingRepositoryTest.requirementsAreReplacedTogetherWithWhatTheyWereReadFrom` |
+| A later run takes out the candidates it no longer finds and keeps those a person decided on | A shortlisted candidate removed by a run | `MatchingRepositoryTest.aLaterRunReplacesTheCandidatesItNoLongerFindsAndKeepsThoseAPersonDecidedOn` |
+| Publishing a use case queues its run; the run keeps the requirements whose quote the brief holds, judges the candidate, lowers the invented finding and records each call; a second run of the same brief and material asks nothing; a run that meets the provider's limit waits, keeps what was judged, and then judges only what changed | A run that nobody started; a model's invention shown as a reason; a rerun that pays for the same answers; a run lost at the provider's limit | `MatchingRunTest.aPublishedUseCaseIsMatchedOnceAndARunThatMeetsTheProvidersLimitWaitsAndGoesOn` |
+
+The search that finds the candidates is in the [search matrix](search.md).
+
+Not covered by a test: reading the pages of a file attached to a use case (the page reader is covered in the [AI matrix](ai.md)); the worker's schedule itself, since the test takes each run; four judgments at a time; the quality of the wording itself, which no test with a played model can show: it is measured on real use cases through the real provider ([prompt research](../research/2026-10-09-matching-judge-prompts.md)).

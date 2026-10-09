@@ -1,4 +1,4 @@
-import { BoxesIcon, SearchXIcon } from "lucide-react";
+import { BoxesIcon, EllipsisIcon, SearchXIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
@@ -8,11 +8,20 @@ import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminSolutionList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { SolutionLogo } from "./solution-logo";
 import { adminSolutionsSearch, type AdminSolutionsSearch } from "./solutions-search";
 import { SolutionsToolbar } from "./solutions-toolbar";
 
@@ -35,8 +44,10 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
 
   const rows = solutions.items.map((solution) => ({
     id: solution.id,
+    organizationId: solution.organizationId,
     href: `${siteRoutes.adminSolutions}/${solution.id}`,
     name: solution.name,
+    logoFileId: solution.logoFileId,
     summary: solution.summary,
     organization: solution.organizationName,
     // A solution sent before the sender was recorded says so, rather than showing nothing.
@@ -92,16 +103,6 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
         description={t("empty.description")}
       />
     );
-  const open = (row: (typeof rows)[number]) => (
-    <Button
-      prominence={row.waiting ? "secondary" : "tertiary"}
-      size="sm"
-      href={row.href}
-      aria-label={t("openNamed", { name: row.name })}
-    >
-      {t(row.waiting ? "review.open" : "open")}
-    </Button>
-  );
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
@@ -132,7 +133,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
             <TableHead className="hidden lg:table-cell">{t("columns.organization")}</TableHead>
             <TableHead>{t("columns.status")}</TableHead>
             <TableHead className="hidden xl:table-cell">{t("columns.sentBy")}</TableHead>
-            <TableHead>{t("columns.submitted")}</TableHead>
+            <TableHead>{t("columns.waiting")}</TableHead>
             <TableHead>
               <span className="sr-only">{t("columns.actions")}</span>
             </TableHead>
@@ -143,16 +144,24 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
             <TableRow key={row.id}>
               {/* The one column that gives its width up: a long name or summary is cut, not wrapped. */}
               <TableCell className="w-full max-w-0">
-                <div className="flex min-w-0 flex-col">
-                  <span className="truncate font-medium">{row.name}</span>
-                  <span className="truncate text-muted-foreground lg:hidden">
-                    {row.organization}
-                  </span>
-                  {row.summary && (
-                    <span className="hidden truncate text-muted-foreground lg:block">
-                      {row.summary}
+                <div className="flex min-w-0 items-center gap-3">
+                  <SolutionLogo name={row.name} fileId={row.logoFileId} size="row" />
+                  <div className="flex min-w-0 flex-col">
+                    <Link
+                      href={row.href}
+                      className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                    >
+                      {row.name}
+                    </Link>
+                    <span className="truncate text-muted-foreground lg:hidden">
+                      {row.organization}
                     </span>
-                  )}
+                    {row.summary && (
+                      <span className="hidden truncate text-muted-foreground lg:block">
+                        {row.summary}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </TableCell>
               <TableCell className="hidden lg:table-cell">{row.organization}</TableCell>
@@ -162,7 +171,9 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
                 <span className="text-muted-foreground">{row.submitted}</span>
               </TableCell>
               <TableCell>
-                <div className="flex justify-end">{open(row)}</div>
+                <div className="flex justify-end">
+                  <RowMenu id={row.id} name={row.name} organizationId={row.organizationId} />
+                </div>
               </TableCell>
             </TableRow>
           ))}
@@ -179,11 +190,21 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
         {rows.map((row) => (
           <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
             <div className="flex items-start justify-between gap-3">
-              <div className="flex min-w-0 flex-col">
-                <span className="truncate text-sm font-medium">{row.name}</span>
-                <span className="truncate text-sm text-muted-foreground">{row.organization}</span>
+              <div className="flex min-w-0 items-center gap-3">
+                <SolutionLogo name={row.name} fileId={row.logoFileId} size="row" />
+                <div className="flex min-w-0 flex-col">
+                  <Link
+                    href={row.href}
+                    className="truncate rounded-sm text-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                  >
+                    {row.name}
+                  </Link>
+                  <span className="truncate text-sm text-muted-foreground">
+                    {row.organization}
+                  </span>
+                </div>
               </div>
-              {open(row)}
+              <RowMenu id={row.id} name={row.name} organizationId={row.organizationId} />
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               {row.status}
@@ -202,6 +223,38 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
         href={(page) => address(siteRoutes.adminSolutions, { ...search, page })}
       />
     </div>
+  );
+}
+
+/** What the ⋯ menu of one row offers: the review page, and the organization's own page. */
+function RowMenu({ id, name, organizationId }: { id: string; name: string; organizationId: string }) {
+  const t = useTranslations("Admin.solutions");
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <button
+            type="button"
+            aria-label={t("openNamed", { name })}
+            className="hit-area flex size-8 shrink-0 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted"
+          />
+        }
+      >
+        <EllipsisIcon className="size-4" aria-hidden="true" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuGroup>
+          <DropdownMenuItem render={<Link href={`${siteRoutes.adminSolutions}/${id}`} />}>
+            {t("review.open")}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            render={<Link href={`${siteRoutes.adminOrganizations}/${organizationId}`} />}
+          >
+            {t("actions.organization")}
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

@@ -32,6 +32,9 @@ public class Organization {
 
 	public static final String REJECTED = "rejected";
 
+	/** Merged into another organization by an operator: a record of where it went, which nobody changes. */
+	public static final String MERGED = "merged";
+
 	@Id
 	private UUID id;
 
@@ -80,6 +83,12 @@ public class Organization {
 	private @Nullable String suspensionMessage;
 
 	private @Nullable Instant suspendedAt;
+
+	private @Nullable UUID mergedIntoId;
+
+	private @Nullable Instant mergedAt;
+
+	private @Nullable UUID mergedByAccountId;
 
 	@Column(nullable = false, updatable = false)
 	private UUID createdByAccountId;
@@ -184,6 +193,22 @@ public class Organization {
 		suspendedAt = null;
 	}
 
+	/**
+	 * Records that an operator merged this organization into another. It keeps no domain, so nobody is pointed to it
+	 * any more.
+	 */
+	public void mergeInto(UUID organizationId, UUID operatorAccountId, Instant at) {
+		status = MERGED;
+		mergedIntoId = organizationId;
+		mergedByAccountId = operatorAccountId;
+		mergedAt = at;
+		verifyDomain(null);
+	}
+
+	public boolean isMerged() {
+		return MERGED.equals(status);
+	}
+
 	public boolean isSuspended() {
 		return suspendedAt != null;
 	}
@@ -279,6 +304,18 @@ public class Organization {
 
 	public @Nullable Instant getSuspendedAt() {
 		return suspendedAt;
+	}
+
+	public @Nullable UUID getMergedIntoId() {
+		return mergedIntoId;
+	}
+
+	public @Nullable Instant getMergedAt() {
+		return mergedAt;
+	}
+
+	public @Nullable UUID getMergedByAccountId() {
+		return mergedByAccountId;
 	}
 
 	public UUID getCreatedByAccountId() {

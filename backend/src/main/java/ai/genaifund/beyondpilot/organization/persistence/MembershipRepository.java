@@ -246,6 +246,64 @@ public class MembershipRepository {
 				""").param(organizationId).update();
 	}
 
+	/**
+	 * Moves the people of a merged organization to the one kept, each as a member who sees once where they came from.
+	 */
+	public void moveMembers(UUID from, UUID into) {
+		jdbc.sql("""
+				update organization_member set organization_id = :into, role = 'member', merged_from_id = :from
+				where organization_id = :from
+				""").param("from", from).param("into", into).update();
+	}
+
+	/** The organization merged into the person's own, while they have not dismissed the notice of it. */
+	public Optional<UUID> mergedFromOf(UUID accountId) {
+		return jdbc.sql("""
+				select merged_from_id from organization_member where account_id = ? and merged_from_id is not null
+				""").param(accountId)
+			.query(UUID.class)
+			.optional();
+	}
+
+	/** Takes the notice of a merge away from the person; nothing happens when there is none. */
+	public void dismissMergeNotice(UUID accountId) {
+		jdbc.sql("update organization_member set merged_from_id = null where account_id = ?").param(accountId).update();
+	}
+
+	/**
+	 * Moves the open invitations of a merged organization to the one kept, each to join as a member: the duplicate's
+	 * owners never decide who owns the kept organization. An address the kept organization already invited keeps that
+	 * invitation, and the merged one is revoked; a lapsed one is closed.
+	 */
+	public void moveOpenInvitations(UUID from, UUID into) {
+		jdbc.sql("""
+				update organization_invitation set status = 'expired', decided_at = now()
+				where organization_id = ? and status = 'pending' and expires_at <= now()
+				""").param(from).update();
+		jdbc.sql("""
+				update organization_invitation moved set status = 'revoked', decided_at = now()
+				where moved.organization_id = :from and moved.status = 'pending'
+				  and exists (select 1 from organization_invitation kept
+				              where kept.organization_id = :into and kept.status = 'pending'
+				                and lower(kept.email) = lower(moved.email))
+				""").param("from", from).param("into", into).update();
+		jdbc.sql("""
+				update organization_invitation set organization_id = ?, role = 'member'
+				where organization_id = ? and status = 'pending'
+				""").params(into, from).update();
+	}
+
+	/**
+	 * Moves the open requests to a merged organization to the one kept.
+	 * @param claim whether the kept organization has no owner, so GenAI Fund decides them; else its owners do
+	 */
+	public void moveOpenRequests(UUID from, UUID into, boolean claim) {
+		jdbc.sql("""
+				update organization_join_request set organization_id = :into, claim = :claim
+				where organization_id = :from and status = 'pending'
+				""").param("from", from).param("into", into).param("claim", claim).update();
+	}
+
 	public Optional<JoinRequest> openRequest(UUID id) {
 		return jdbc.sql(REQUESTS + "where id = ? and status = 'pending'")
 			.param(id)

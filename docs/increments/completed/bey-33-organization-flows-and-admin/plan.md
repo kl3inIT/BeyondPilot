@@ -36,7 +36,7 @@ Step 8: the admin home counts a claim as an organization that waits. The way bac
 
 | #   | Step                                                                                                          | State |
 | --- | ------------------------------------------------------------------------------------------------------------- | ----- |
-| 17  | `V14`: the `merged` status and `merged_into_id`; the merge in one transaction; `OrganizationMerged`           | Open  |
-| 18  | `solution` moves its solutions on `OrganizationMerged`; the public address answers with the kept organization | Open  |
-| 19  | Web: the merge dialog, the merged record, the Merged filter, the notice to a moved member, the redirect       | Open  |
-| 20  | Tests, gates, catalogs, the verification matrix; move both organization increments to `completed`             | Open  |
+| 17  | `V61`: the `merged` status, `merged_into_id`, when and by whom, `organization_member.merged_from_id`; the merge in one transaction; `OrganizationMerged`; a merged record refuses changes | Done  |
+| 18  | `solution`, `usecase`, `proposal`, `introduction` and `talent` move their rows on `OrganizationMerged`; the public address answers with the kept organization; the `organization_merged` email | Done  |
+| 19  | Web: the merge dialog, the merged record, the Merged filter, the notice to a moved member, the redirect       | Done  |
+| 20  | Tests, gates, catalogs, the verification matrix; move both organization increments to `completed`             | Done  |

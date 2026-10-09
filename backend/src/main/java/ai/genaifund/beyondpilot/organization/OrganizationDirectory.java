@@ -112,13 +112,16 @@ public class OrganizationDirectory {
 	}
 
 	/**
-	 * The public page of an approved organization.
+	 * The public page of an approved organization. The address of a merged one answers with the organization it was
+	 * merged into, whose own address the page then shows.
 	 * @throws OrganizationException when no approved organization has the address; one that waits for review or
 	 * was refused answers the same, so the address does not reveal that it exists
 	 */
 	@Transactional(readOnly = true)
 	public PublicOrganizationResponse publicPage(String slug) {
 		Organization organization = organizations.findBySlug(slug)
+			.flatMap(found -> found.isMerged()
+					? Optional.ofNullable(found.getMergedIntoId()).flatMap(organizations::findById) : Optional.of(found))
 			.filter(Organization::isApproved)
 			.orElseThrow(() -> new OrganizationException(OrganizationErrorCode.ORGANIZATION_NOT_FOUND,
 					"No approved organization at " + slug));

@@ -45,6 +45,16 @@ public class IntroductionRepository {
 		this.jdbc = jdbc;
 	}
 
+	/** Gives the requests to and from a merged organization to the one kept. */
+	public void moveToOrganization(UUID from, UUID into) {
+		jdbc.sql("update introduction_request set provider_organization_id = ? where provider_organization_id = ?")
+			.params(into, from)
+			.update();
+		jdbc.sql("update introduction_request set sender_organization_id = ? where sender_organization_id = ?")
+			.params(into, from)
+			.update();
+	}
+
 	/** One request for an introduction. */
 	public record Request(UUID id, UUID solutionId, String solutionName, UUID providerOrganizationId,
 			UUID senderAccountId, UUID senderOrganizationId, String message, String status, Instant createdAt,

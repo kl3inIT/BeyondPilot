@@ -946,6 +946,7 @@
           "claim_decline": "Từ chối yêu cầu nhận tổ chức",
           "member_role": "Đổi vai trò thành viên",
           "member_remove": "Xóa thành viên",
+          "merge": "Đã gộp vào tổ chức khác",
           "suspend": "Gỡ một tổ chức xuống",
           "restore": "Khôi phục một tổ chức",
           "update": "Lưu hồ sơ tổ chức",
@@ -1057,6 +1058,7 @@
           "claim_decline": "Từ chối yêu cầu nhận <resource></resource>",
           "member_role": "Đổi vai trò một thành viên của <resource></resource>",
           "member_remove": "Xóa một thành viên khỏi <resource></resource>",
+          "merge": "Đã gộp <resource></resource> vào tổ chức khác",
           "suspend": "Gỡ tổ chức <resource></resource> xuống",
           "restore": "Khôi phục tổ chức <resource></resource>",
           "update": "Lưu hồ sơ của <resource></resource>",
@@ -1189,7 +1191,8 @@
         "needs_changes": "Đã trả lại",
         "approved": "Đã duyệt",
         "rejected": "Không được duyệt",
-        "suspended": "Đã gỡ xuống"
+        "suspended": "Đã gỡ xuống",
+        "merged": "Đã gộp"
       },
       "columns": {
         "organization": "Tổ chức",
@@ -1205,6 +1208,7 @@
         "none": "—"
       },
       "unowned": "Chưa có chủ",
+      "mergedInto": "Đã gộp vào {name}",
       "actions": {
         "open": "Thao tác với {name}",
         "review": "Xem xét",
@@ -1254,6 +1258,12 @@
           "title": "Đã gỡ xuống ngày {day}",
           "reason": "Lý do: {reason}.",
           "foot": "Trang công khai và các giải pháp của tổ chức đang bị ẩn. {members} thành viên vẫn giữ workspace và đọc lý do này ở đó."
+        },
+        "merged": {
+          "title": "Đã gộp vào {kept} ngày {day} bởi {name}",
+          "lead": "Hồ sơ này được giữ lại cho nhật ký kiểm toán và không thể thay đổi nữa. Thành viên, lời mời đang mở, giải pháp và bài toán của nó đã chuyển sang {kept}.",
+          "address": "{address} giờ dẫn đến trang của {kept}.",
+          "open": "Mở {kept}"
         },
         "review": "Xem xét"
       },
@@ -1313,6 +1323,22 @@
         "restoreTitle": "Khôi phục {name}?",
         "restoreLead": "Trang công khai, các giải pháp và các triển khai đã duyệt được hiện lại, và chủ tổ chức có thể mời người và đăng bài.",
         "restoreNote": "Chủ tổ chức được báo qua email. Việc gỡ và lý do vẫn nằm trong nhật ký kiểm toán."
+      },
+      "merge": {
+        "menu": "Gộp vào tổ chức khác…",
+        "title": "Gộp {name}",
+        "lead": "Thành viên và giải pháp của nó chuyển sang tổ chức bạn giữ lại.",
+        "keep": "Giữ lại",
+        "keepPlaceholder": "Tìm tổ chức",
+        "noMatch": "Không có tổ chức nào khớp.",
+        "moves": "{members, plural, other {# thành viên}} và {invitations, plural, other {# lời mời đang mở}} chuyển theo, cùng với giải pháp và bài toán của nó.",
+        "cancel": "Huỷ",
+        "continue": "Tiếp tục",
+        "confirmTitle": "Gộp vào {kept}?",
+        "confirmLabel": "Gõ {name} để xác nhận",
+        "cannotUndo": "Không thể hoàn tác.",
+        "back": "Quay lại",
+        "merge": "Gộp"
       },
       "people": {
         "title": "Thành viên",
@@ -1379,7 +1405,7 @@
         "organization": "Tổ chức",
         "status": "Trạng thái",
         "sentBy": "Người gửi",
-        "submitted": "Ngày gửi",
+        "waiting": "Đang chờ",
         "actions": "Thao tác"
       },
       "senderUnknown": "Chưa ghi nhận",
@@ -1510,6 +1536,9 @@
         "hint": "Để trống một dòng để gỡ nó.",
         "save": "Lưu",
         "saved": "Đã lưu cho {name}."
+      },
+      "actions": {
+        "organization": "Mở tổ chức"
       }
     },
     "talent": {
@@ -2502,6 +2531,10 @@
           "name": "Tổ chức được khôi phục",
           "description": "Báo chủ sở hữu rằng tổ chức đã hiển thị lại."
         },
+        "organization_merged": {
+          "name": "Tổ chức đã được gộp",
+          "description": "Báo cho thành viên của tổ chức trùng lặp biết họ thuộc tổ chức nào từ nay."
+        },
         "application_received": {
           "name": "Đã nhận đơn",
           "description": "Xác nhận đơn vào một chương trình đã được nộp."
@@ -3311,7 +3344,8 @@
       "needs_changes": "Cần sửa",
       "approved": "Đã duyệt",
       "rejected": "Không được duyệt",
-      "suspended": "Đã gỡ xuống"
+      "suspended": "Đã gỡ xuống",
+      "merged": "Đã gộp"
     },
     "inReview": {
       "title": "GenAI Fund đang duyệt tổ chức của bạn",
@@ -3346,6 +3380,8 @@
       "ORGANIZATION_CHANGED_MEANWHILE": "Có người vừa sửa hồ sơ này. Hãy tải lại trang rồi thử lại.",
       "ORGANIZATION_NOT_AWAITING_REVIEW": "Tổ chức này đã được duyệt xong.",
       "ORGANIZATION_DOMAIN_TAKEN": "Một tổ chức khác đã dùng tên miền email này.",
+      "ORGANIZATION_MERGED": "Tổ chức này đã được gộp vào tổ chức khác và không thể thay đổi nữa.",
+      "ORGANIZATION_CANNOT_MERGE": "Chỉ có thể gộp vào một tổ chức khác đã được duyệt và đang hiển thị.",
       "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
       "unknown": "Chưa thực hiện được. Hãy thử lại.",
       "ORGANIZATION_DOMAIN_NOT_VERIFIED": "Chỉ tham gia ngay được trên tên miền mà GenAI Fund đã xác minh cho một tổ chức đã duyệt.",
@@ -3380,7 +3416,8 @@
       "autoJoinOff": "Đồng nghiệp trên tên miền đã xác minh giờ phải xin tham gia.",
       "askedAgain": "Đã gửi yêu cầu.",
       "takenDown": "Đã gỡ {name} xuống. Chủ tổ chức đã được báo.",
-      "restored": "{name} đã được khôi phục. Chủ tổ chức đã được báo."
+      "restored": "{name} đã được khôi phục. Chủ tổ chức đã được báo.",
+      "merged": "Đã gộp {name} vào {kept}. Các thành viên đã được báo."
     },
     "form": {
       "metaTitle": "Tạo tổ chức · BeyondPilot",
@@ -3633,6 +3670,13 @@
       "title": "GenAI Fund đã gỡ {name} xuống",
       "reason": "Lý do: {reason}.",
       "foot": "Trang công khai và các giải pháp đang bị ẩn. Bạn vẫn giữ workspace; hãy liên hệ GenAI Fund để được khôi phục."
+    },
+    "merged": {
+      "title": "{name} giờ là một phần của {kept}",
+      "lead": "GenAI Fund đã gộp hai hồ sơ của cùng một công ty. Bạn là thành viên của {kept}; chủ sở hữu có thể đặt bạn làm chủ sở hữu. Giải pháp và bài toán của nó đã chuyển theo.",
+      "badge": "Đã gộp",
+      "foot": "Gộp ngày {day}. Địa chỉ cũ {slug} dẫn đến trang mới.",
+      "dismiss": "Đã hiểu"
     },
     "useCases": {
       "metaTitle": "Use case · BeyondPilot",
@@ -3997,6 +4041,8 @@
       "nothingYet": "Chưa có nội dung."
     },
     "detail": {
+      "showMore": "Xem thêm",
+      "showLess": "Thu gọn",
       "unknown": "Chưa có thông tin",
       "product": {
         "title": "Sản phẩm",
@@ -4061,6 +4107,8 @@
         "demo": "Xem demo",
         "deck": "Tải tài liệu giới thiệu",
         "registeredIn": "Đăng ký tại",
+        "deckSize": "Tải tài liệu giới thiệu ({size})",
+        "basedIn": "Trụ sở tại",
         "lead": "GenAI Fund đứng ra giới thiệu. Email của bạn được giữ kín cho đến khi bạn trả lời."
       },
       "facts": {
@@ -4069,6 +4117,7 @@
         "capabilities": "Năng lực AI",
         "deployment": "Triển khai",
         "languages": "Ngôn ngữ",
+        "builtWith": "Công nghệ lõi",
         "backedBy": "Được hậu thuẫn bởi",
         "program": "Chương trình",
         "channels": "Kênh",
@@ -5941,7 +5990,9 @@
         },
         {
           "heading": "Chúng tôi thu thập gì",
-          "body": ["Chúng tôi chỉ thu thập những gì nền tảng cần để hoạt động:"],
+          "body": [
+            "Chúng tôi chỉ thu thập những gì nền tảng cần để hoạt động:"
+          ],
           "items": [
             "Thông tin tài khoản: họ tên và email, cùng số điện thoại, quốc gia, chức danh, hồ sơ LinkedIn và ảnh khi bạn thêm vào.",
             "Đăng nhập bằng Google: họ tên, email và ảnh đại diện từ tài khoản Google. Chúng tôi không đọc Gmail, danh bạ hay tệp của bạn.",
@@ -6076,7 +6127,9 @@
         },
         {
           "heading": "Sử dụng hợp lệ",
-          "body": ["Không được:"],
+          "body": [
+            "Không được:"
+          ],
           "items": [
             "đăng thông tin sai hoặc mạo danh người khác;",
             "gửi thư rác hoặc tin nhắn thương mại không được yêu cầu qua nền tảng;",

@@ -10,6 +10,7 @@ const pocketPolicy = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03";
 const firstcall = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04";
 const quietMill = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c06";
 const harborBank = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c07";
+const pocketPolicyLtd = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c08";
 const firstTeller = "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a30";
 const secondTeller = "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a31";
 const thirdTeller = "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a32";
@@ -373,9 +374,12 @@ test.describe("admin organizations", () => {
     await expect(page.getByText("Taken down on Oct 6, 2026")).toBeVisible();
     await expect(page.getByText("Reason: Misleading or false information.")).toBeVisible();
     await expect(page.getByText("Send us the contract or remove the customer.")).toBeVisible();
-    // Taking down is for an approved organization; this one is back only by a restore.
-    await expect(page.getByRole("button", { name: "Actions for Quiet Mill" })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
+    // Taking down is for an approved organization; this one is back only by a restore.
+    await page.getByRole("button", { name: "Actions for Quiet Mill" }).click();
+    await expect(page.getByRole("menuitem", { name: "Merge into another…" })).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: "Take down" })).toHaveCount(0);
+    await page.keyboard.press("Escape");
 
     await page.getByRole("button", { name: "Restore" }).click();
     await page.getByRole("alertdialog").getByRole("button", { name: "Restore" }).click();
@@ -417,6 +421,108 @@ test.describe("admin organizations", () => {
         },
       },
     ]);
+  });
+
+  test("a duplicate is merged into the organization kept, once its name is typed", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    // The browser asks for the organizations to keep as the name is typed; the duplicate is among them.
+    const searches: string[] = [];
+    await page.route(
+      (url) => url.pathname === "/api/organization/admin/organizations",
+      (route) => {
+        searches.push(new URL(route.request().url()).search);
+        return route.fulfill({
+          json: {
+            items: [
+              { id: harborBank, name: "Harbor Bank" },
+              { id: pocketPolicy, name: "Pocket Policy" },
+            ],
+            page: 1,
+            pageSize: 25,
+            total: 2,
+          },
+        });
+      },
+    );
+    await page.goto(`/admin/organizations/${harborBank}`);
+
+    await page.getByRole("button", { name: "Actions for Harbor Bank" }).click();
+    await page.getByRole("menuitem", { name: "Merge into another…" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("heading", { name: "Merge Harbor Bank" })).toBeVisible();
+    await expect(
+      dialog.getByText(
+        "12 members and 1 open invitation move with it, and so do its solutions and use cases.",
+      ),
+    ).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Continue" })).toBeDisabled();
+    await dialog.getByRole("combobox", { name: "Keep" }).fill("Pocket");
+    // Only an approved organization is asked for, and the duplicate itself is never offered.
+    await expect(page.getByRole("option")).toHaveText(["Pocket Policy"]);
+    await expect.poll(() => searches).toContain("?q=Pocket&status=approved");
+    await page.getByRole("option", { name: "Pocket Policy" }).click();
+    await expectNoSeriousA11yViolations(page);
+    await dialog.getByRole("button", { name: "Continue" }).click();
+
+    await expect(dialog.getByRole("heading", { name: "Merge into Pocket Policy?" })).toBeVisible();
+    await expect(dialog.getByText("This cannot be undone.")).toBeVisible();
+    const merge = dialog.getByRole("button", { name: "Merge" });
+    await expect(merge).toBeDisabled();
+    await dialog.getByLabel("Type Harbor Bank to confirm").fill("Harbor");
+    await expect(merge).toBeDisabled();
+    await dialog.getByLabel("Type Harbor Bank to confirm").fill("Harbor Bank");
+    await merge.click();
+
+    await expect(
+      page.getByText("Harbor Bank was merged into Pocket Policy. Its members were told."),
+    ).toBeVisible();
+    expect(decisions).toEqual([
+      {
+        call: `POST /api/organization/admin/organizations/${harborBank}/merge`,
+        body: { intoId: pocketPolicy },
+      },
+    ]);
+  });
+
+  test("a merged organization only says where it went, and is listed only under merged", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto(`/admin/organizations/${pocketPolicyLtd}`);
+
+    await expect(
+      page.getByRole("heading", { name: "Merged into Pocket Policy on Oct 7, 2026 by Young Xv" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        "beyondpilot.genaifund.ai/organizations/pocket-policy-ltd now leads to the page of Pocket Policy.",
+      ),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open Pocket Policy" })).toHaveAttribute(
+      "href",
+      `/admin/organizations/${pocketPolicy}`,
+    );
+    // Nothing on it can be changed any more.
+    await expect(page.getByRole("button", { name: "Actions for Pocket Policy Ltd" })).toHaveCount(
+      0,
+    );
+    await expect(page.getByRole("textbox")).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+
+    await page.goto("/admin/organizations?q=pocket");
+    await expect(shownOrganizations(page)).toHaveText(["Pocket Policy"]);
+    await page.goto("/admin/organizations?status=merged");
+    await expect(shownOrganizations(page)).toHaveText(["Pocket Policy Ltd"]);
+    await expect(
+      page.getByText("Merged into Pocket Policy", { exact: true }).and(page.locator(":visible")),
+    ).toBeVisible();
   });
 
   test("an operator saves the profile with the verified domain", async ({

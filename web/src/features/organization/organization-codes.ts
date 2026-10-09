@@ -59,11 +59,15 @@ export const takeDownReasons = [
   "other",
 ] as const;
 
-/** What the operators' list filters by: each review status, and `suspended` for those taken down. */
+/**
+ * What the operators' list filters by: each review status, `suspended` for those taken down, and
+ * `merged` for duplicates, which no other filter lists.
+ */
 export const organizationStatuses = [
   "in_review",
   "needs_changes",
   "approved",
   "rejected",
   "suspended",
+  "merged",
 ] as const;

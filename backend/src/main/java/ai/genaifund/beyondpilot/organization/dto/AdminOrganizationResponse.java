@@ -16,5 +16,7 @@ public record AdminOrganizationResponse(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<MemberResponse> members,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<InvitationResponse> invitations,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The open requests to own it; empty for an owned organization.") List<JoinRequestResponse> claims) {
+				description = "The open requests to own it; empty for an owned organization.") List<JoinRequestResponse> claims,
+		@Schema(types = { "object", "null" },
+				description = "Where it went when it was merged into another; null unless it was.") @Nullable MergedOrganizationResponse merged) {
 }

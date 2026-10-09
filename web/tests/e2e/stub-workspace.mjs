@@ -115,6 +115,14 @@ const standing = {
   asked: { request },
   declined: { declined },
   waiting: { role: "owner", organization: newCo },
+  moved: {
+    role: "member",
+    mergedFrom: {
+      name: "Pocket Policy Ltd",
+      slug: "pocket-policy-ltd",
+      mergedAt: "2026-10-07T03:00:00Z",
+    },
+  },
 };
 
 function deployment(id, title, status, more) {
@@ -392,6 +400,7 @@ export function answerWorkspace(url, session) {
     invitations = [],
     request: asked = null,
     declined: refusedRequest = null,
+    mergedFrom = null,
   } = standing[session] ?? {};
 
   if (pathname === "/api/organization/mine") {
@@ -405,6 +414,7 @@ export function answerWorkspace(url, session) {
         invitations,
         request: asked,
         declined: refusedRequest,
+        mergedFrom,
       },
     ];
   }

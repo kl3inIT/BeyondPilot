@@ -12,6 +12,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { TextClamp } from "@/components/composites/text-clamp";
 import { Badge } from "@/components/ui/badge";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 import { Link } from "@/i18n/navigation";
@@ -40,6 +41,7 @@ const CAPABILITY_LIMIT = 3;
  */
 function CompanySolution({ solution }: { solution: PublicSolutionSummary }) {
   const t = useTranslations("Solution.detail.company");
+  const detail = useTranslations("Solution.detail");
   const directory = useTranslations("Solution.directory");
   const focusArea = useVocabulary("focusArea");
   const industry = useVocabulary("industry");
@@ -65,7 +67,13 @@ function CompanySolution({ solution }: { solution: PublicSolutionSummary }) {
           )}
         </div>
       </div>
-      {solution.summary && <p className="text-sm text-muted-foreground">{solution.summary}</p>}
+      {solution.summary && (
+        <div className="relative z-10">
+          <TextClamp lines={3} more={detail("showMore")} less={detail("showLess")}>
+            <p className="text-sm text-muted-foreground">{solution.summary}</p>
+          </TextClamp>
+        </div>
+      )}
       {solution.focusAreas.length > 0 && (
         <ul className="flex flex-wrap items-center gap-x-2 gap-y-1.5 pt-1">
           {solution.focusAreas.slice(0, CAPABILITY_LIMIT).map((code) => (
