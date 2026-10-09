@@ -279,18 +279,18 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
           </div>
 
           <div className="order-3 flex min-w-0 flex-col gap-7 lg:order-none lg:gap-9">
-            {solution.valueProposition && (
-              <section className="flex flex-col gap-2">
-                <PartHeading icon={<SparklesIcon aria-hidden="true" />}>
-                  {view("valueProposition")}
-                </PartHeading>
+            <section className="flex flex-col gap-2">
+              <PartHeading icon={<SparklesIcon aria-hidden="true" />}>
+                {view("valueProposition")}
+              </PartHeading>
+              {solution.valueProposition && (
                 <TextClamp more={t("showMore")} less={t("showLess")}>
                   <p className="whitespace-pre-line text-muted-foreground">
                     {solution.valueProposition}
                   </p>
                 </TextClamp>
-              </section>
-            )}
+              )}
+            </section>
 
             <section className="flex flex-col gap-2">
               <PartHeading icon={<CircleAlertIcon aria-hidden="true" />}>

@@ -195,19 +195,17 @@ test.describe("solutions directory", () => {
       await expect(heading).toBeVisible();
       await expect(heading.locator(":scope > svg")).toBeVisible();
     }
-    const missingBacking = fact("Backed by");
-    await expect(missingBacking).toBeVisible();
-    await expect(missingBacking.locator("dt > svg")).toBeVisible();
-    await expect(missingBacking.locator("dd")).toHaveCount(0);
-    const missingLanguages = fact("Languages");
-    await expect(missingLanguages).toBeVisible();
-    await expect(missingLanguages.locator("dd")).toHaveCount(0);
-    const missingIndustries = fact("Industries");
-    await expect(missingIndustries).toBeVisible();
-    await expect(missingIndustries.locator("dd")).toHaveCount(0);
-    const missingFunding = fact("Funding (GenAI Fund)");
-    await expect(missingFunding).toBeVisible();
-    await expect(missingFunding.locator("dd")).toHaveCount(0);
+    for (const name of [
+      "Backed by",
+      "Languages",
+      "Industries",
+      "Funding (GenAI Fund)",
+    ]) {
+      const criterion = fact(name);
+      await expect(criterion).toBeVisible();
+      await expect(criterion.locator("dt > svg")).toBeVisible();
+      await expect(criterion).toContainText("Not listed yet");
+    }
     for (const field of [
       "Product names",
       "Core technology",
@@ -221,13 +219,11 @@ test.describe("solutions directory", () => {
       "Funding raised",
       "Customer case",
       "No customer case published.",
-      "Not listed yet",
       "An answer in seconds, in Vietnamese and English.",
       "Policy holders wait days for an answer.",
     ]) {
       await expect(page.getByText(field, { exact: true })).toHaveCount(0);
     }
-    await expect(page.getByRole("heading", { name: "Industries", exact: true })).toHaveCount(0);
     await expect(page.locator('[data-slot="solution-gallery"]')).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
 
