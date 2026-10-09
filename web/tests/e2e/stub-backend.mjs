@@ -9,6 +9,7 @@ import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
 import { answerEmail } from "./stub-email.mjs";
 import { answerJudging } from "./stub-judging.mjs";
+import { answerMatching } from "./stub-matching.mjs";
 import { answerMcp } from "./stub-mcp.mjs";
 import { answerReview } from "./stub-reviews.mjs";
 import { answerSearch, answerSearchAdmin } from "./stub-search.mjs";
@@ -468,6 +469,7 @@ createServer((request, response) => {
     });
   }
   const record =
+    answerMatching(url, account) ??
     answerMcp(url, account ? session : undefined) ??
     answerJudging(url, account) ??
     answerApplication(url, account ? session : undefined, account?.email) ??

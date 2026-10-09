@@ -40,6 +40,7 @@ import {
   recommendedOf,
   tabsOf,
   withNeed,
+  type Group,
 } from "./matching-view";
 
 /** How many candidates a group shows before "Show more". */
@@ -57,7 +58,7 @@ function subscribeToWidth(onChange: () => void) {
 const tabNames = ["all", "shortlist", "removed"] as const;
 type TabName = (typeof tabNames)[number];
 
-type Section = (typeof groups)[number] | "waiting";
+type Section = Group | "waiting";
 
 type GroupCardProps = {
   title: string;
@@ -381,8 +382,7 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
                 </ToggleGroupItem>
                 {coverage.map((one) => (
                   <ToggleGroupItem key={one.position} value={String(one.position)}>
-                    {one.name}
-                    <span className="text-muted-foreground">{one.count}</span>
+                    {one.name} <span className="text-muted-foreground">{one.count}</span>
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
@@ -398,7 +398,7 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
               <TabsList variant="line" aria-label={t("tabs.label")}>
                 {tabNames.map((name) => (
                   <TabsTrigger key={name} value={name}>
-                    {t(`tabs.${name}`)}
+                    {t(`tabs.${name}`)}{" "}
                     <span className="text-xs text-muted-foreground">
                       {withNeed(tabs[name], need).length}
                     </span>
