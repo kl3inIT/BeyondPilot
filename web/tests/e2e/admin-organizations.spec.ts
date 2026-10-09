@@ -464,7 +464,7 @@ test.describe("admin organizations", () => {
     await dialog.getByRole("combobox", { name: "Keep" }).fill("Pocket");
     // Only an approved organization is asked for, and the duplicate itself is never offered.
     await expect(page.getByRole("option")).toHaveText(["Pocket Policy"]);
-    expect(searches).toContain("?q=Pocket&status=approved");
+    await expect.poll(() => searches).toContain("?q=Pocket&status=approved");
     await page.getByRole("option", { name: "Pocket Policy" }).click();
     await expectNoSeriousA11yViolations(page);
     await dialog.getByRole("button", { name: "Continue" }).click();
