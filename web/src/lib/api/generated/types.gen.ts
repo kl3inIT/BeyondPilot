@@ -1953,9 +1953,9 @@ export type MatchingCandidate = {
      */
     technology?: MatchingFinding;
     /**
-     * Which of its sources held no text to read.
+     * Which of its sources held no text to read: deck, website.
      */
-    unread: 'deck' | 'website';
+    unread: Array<string>;
 };
 
 /**
