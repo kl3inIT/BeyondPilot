@@ -510,6 +510,7 @@
       "ai": "AI",
       "aiProviders": "Providers",
       "searchIndex": "Search index",
+      "aiUsage": "Usage",
       "mcp": "MCP",
       "email": "Email"
     },
@@ -2443,6 +2444,159 @@
         "off": "Semantic search is off",
         "rebuilt": "Index rebuilt: {saved} items read, {removed} removed",
         "retried": "{count, plural, =0 {Nothing to try again} one {# item is tried again at the next run} other {# items are tried again at the next run}}"
+      }
+    },
+    "aiUsage": {
+      "metaOverview": "AI usage · Admin · BeyondPilot",
+      "metaCalls": "Calls · AI usage · Admin · BeyondPilot",
+      "title": "AI usage",
+      "lead": "Every call BeyondPilot makes to a model or an OCR service: what succeeded, what failed and what it cost.",
+      "period": {
+        "label": "Period",
+        "today": "Today",
+        "7d": "7 days",
+        "30d": "30 days"
+      },
+      "tabs": {
+        "label": "AI usage",
+        "overview": "Overview",
+        "calls": "Calls"
+      },
+      "task": {
+        "matching": "Matching",
+        "document_reading": "Reading documents",
+        "model_test": "Model test"
+      },
+      "seconds": "{seconds} s",
+      "unknown": "Unknown",
+      "failing": {
+        "title": "{task} is failing on {model}",
+        "description": "{failed, number} of its {calls, number} calls to {provider} failed in the last 24 hours, the last at {time}.",
+        "kind": {
+          "key_refused": "The provider refused the key.",
+          "rate_limited": "The provider is limiting calls.",
+          "too_large": "The request was too large for the provider.",
+          "request_refused": "The provider refused the request.",
+          "provider_failed": "The provider answered with an error of its own.",
+          "no_answer": "The provider did not answer in time.",
+          "failed": "The call failed without a status from the provider."
+        },
+        "others": "{count, plural, one {# other task is failing too.} other {# other tasks are failing too.}}",
+        "see": "See the failed calls"
+      },
+      "empty": {
+        "title": {
+          "today": "No calls today",
+          "7d": "No calls in the last 7 days",
+          "30d": "No calls in the last 30 days"
+        },
+        "description": "A call appears here as soon as matching runs or a page is read. Choose a longer period to look back."
+      },
+      "totals": {
+        "calls": "Calls",
+        "callsOf": "{succeeded} succeeded · {failed} failed",
+        "failureRate": "Failure rate",
+        "failureRateOf": "{failed} of {calls} calls",
+        "tokens": "Tokens",
+        "tokensOf": "{input} in · {output} out",
+        "cost": "Estimated cost",
+        "costOf": "{count, plural, =0 {No call has a known price} one {From the # call with a known price} other {From the # calls with a known price}}",
+        "unpriced": "Prices unavailable",
+        "prices": "Model prices"
+      },
+      "chart": {
+        "byHour": "Calls by hour",
+        "byDay": "Calls by day",
+        "mostAtHour": "Most at {when}, {count, plural, one {# call} other {# calls}}",
+        "mostOnDay": "Most on {when}, {count, plural, one {# call} other {# calls}}",
+        "succeeded": "Succeeded",
+        "failed": "Failed"
+      },
+      "breakdown": {
+        "title": "Where the calls went",
+        "lead": "Sorted by calls. A row opens its calls in the log.",
+        "byLabel": "Group by",
+        "by": {
+          "model": "Model",
+          "task": "Task",
+          "provider": "Provider"
+        },
+        "share": "Share of calls",
+        "shareOf": "Share of calls of {name}",
+        "calls": "Calls",
+        "failed": "Failed",
+        "failureRate": "Failure rate",
+        "tokens": "Tokens",
+        "time": "Avg. time",
+        "cost": "Est. cost",
+        "callsLine": "{calls} calls · {failed} failed ({rate})",
+        "timeLine": "{time} on average",
+        "costLine": "{cost} estimated",
+        "noPrice": "no known price"
+      },
+      "estimate": "Costs are estimates from the usage providers report and from list prices, not invoices. A gateway on a subscription, such as 9Router, is not billed by the token.",
+      "calls": {
+        "filters": {
+          "task": "All tasks",
+          "taskLabel": "Task",
+          "provider": "All providers",
+          "providerLabel": "Provider",
+          "model": "All models",
+          "modelLabel": "Model",
+          "outcome": "All outcomes",
+          "outcomeLabel": "Outcome"
+        },
+        "outcome": {
+          "ok": "Succeeded",
+          "failed": "Failed"
+        },
+        "columns": {
+          "time": "Time",
+          "task": "Task",
+          "model": "Model",
+          "tokens": "Tokens",
+          "duration": "Duration",
+          "cost": "Cost",
+          "subject": "About"
+        },
+        "failure": {
+          "key_refused": "Key refused",
+          "rate_limited": "Rate limited",
+          "too_large": "Request too large",
+          "request_refused": "Request refused",
+          "provider_failed": "Provider error",
+          "no_answer": "No answer",
+          "failed": "Failed"
+        },
+        "status": "HTTP {status}",
+        "tokens": "{input} in · {output} out",
+        "seconds": "{seconds} s",
+        "unknown": "Unknown",
+        "subject": {
+          "solution_deck": "Solution deck",
+          "matching_run": "Matching run"
+        },
+        "today": "Today, {time}",
+        "dayAndTime": "{day}, {time}",
+        "count": "{count, plural, one {# call} other {# calls}}",
+        "range": "{from}–{to} of {count, plural, one {# call} other {# calls}}",
+        "noMatch": {
+          "title": "No call matches",
+          "description": "Try fewer filters or a longer period.",
+          "clear": "Clear filters"
+        },
+        "empty": {
+          "title": "No call in this period",
+          "description": "Calls appear here as matching runs and pages are read. What was asked and answered is never kept."
+        },
+        "pagination": {
+          "label": "Pages of calls",
+          "previous": "Previous",
+          "next": "Next",
+          "goToPrevious": "Go to the previous page",
+          "goToNext": "Go to the next page",
+          "page": "Page {page}"
+        }
       }
     },
     "mcp": {

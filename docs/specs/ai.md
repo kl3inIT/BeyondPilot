@@ -13,19 +13,19 @@ The AI providers BeyondPilot calls, the chat models operators enabled, the model
   - `AiTask`, `AiSubject`, `AiChat`, `ReasoningEffort`, `AiException` and `AiErrorCode`.
 - **Adapters.** `ai.adapter` holds `ChatAdapter`, one implementation per API, and `ChatAdapterRegistry`, an open family keyed by the adapter's type: two beans with one type stop the application from starting. `OcrAdapter` and `OcrAdapterRegistry` are the same for OCR services, with `aihay` as the first.
 - **Outbound HTTP.** What an adapter asks outside its vendor's SDK, listing models and reading a picture, goes through `ai.adapter.OutboundHttp`, a `RestClient` kept to MemoryOS's rules (its ADR 0025): no redirect is followed, an exchange ends at its deadline, an answer is read up to a bound, and the status comes back with the bytes whatever it is, so a provider's text reaches no exception and no log. Plain `http` stays on HTTP/1.1, which self-hosted gateways speak. Chat and embedding calls go through the vendors' SDKs.
-- **Persistence.** `ai.persistence`: `AiProvider`, `AiModel`, `AiTaskModel` with their Spring Data repositories, and `AiUsageRepository`, which adds usage rows with `JdbcClient`.
+- **Persistence.** `ai.persistence`: `AiProvider`, `AiModel`, `AiTaskModel` with their Spring Data repositories, and `AiUsageRepository`, which adds usage rows and reads them for Admin › AI › Usage with `JdbcClient`.
 - **Dependencies.** `audit` and `identity`. The module knows no caller: `search` depends on it for its embedding provider.
 
 ## Data
 
 `V42` created `ai_provider` under `search`; `V57` extended it and added the rest.
 
-| Table           | Holds                                                                                                                                                                                                                                                                                                                                                             |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ai_provider`   | One connection: `purpose` (`embedding`, `chat` or `ocr`), `adapter_type`, `base_url`, the sealed `api_key`, `enabled`, `version`, and for an OCR provider `price_per_1k_calls`. `vendor` is set for an embedding provider only. A name is unique within a purpose                                                                                                 |
-| `ai_model`      | A model an operator enabled on a chat provider: `model_name`, `display_name`, `context_window`, `max_output_tokens`, `tool_calling`, `vision`, `reasoning`, and `input_price`, `output_price`, `cached_input_price` in US dollars per million tokens. Unique on provider and model name; removed with its provider                                                |
-| `ai_task_model` | One row per `AiTask`: `model_id` and `reasoning_effort`. Seeded unset; `model_id` becomes null when the model is removed. The row of `document_reading` may name `ocr_provider_id` in place of a model, never both; it becomes null when that provider is removed                                                                                                 |
-| `ai_usage`      | One row per call: when, `task` (or `model_test`), the provider and model by name, tokens in, out, cache read and cache write, `duration_ms`, `outcome`, `error_type`, what it was about (`subject_type`, `subject_id`), and the three prices as they were then. Rows are only added, and none references a provider or model, so removing either keeps the record |
+| Table           | Holds                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ai_provider`   | One connection: `purpose` (`embedding`, `chat` or `ocr`), `adapter_type`, `base_url`, the sealed `api_key`, `enabled`, `version`, and for an OCR provider `price_per_1k_calls`. `vendor` is set for an embedding provider only. A name is unique within a purpose                                                                                                                                                                                             |
+| `ai_model`      | A model an operator enabled on a chat provider: `model_name`, `display_name`, `context_window`, `max_output_tokens`, `tool_calling`, `vision`, `reasoning`, and `input_price`, `output_price`, `cached_input_price` in US dollars per million tokens. Unique on provider and model name; removed with its provider                                                                                                                                            |
+| `ai_task_model` | One row per `AiTask`: `model_id` and `reasoning_effort`. Seeded unset; `model_id` becomes null when the model is removed. The row of `document_reading` may name `ocr_provider_id` in place of a model, never both; it becomes null when that provider is removed                                                                                                                                                                                             |
+| `ai_usage`      | One row per call: when, `task` (or `model_test`), the provider and model by name, tokens in, out, cache read and cache write, `duration_ms`, `outcome`, `error_type`, `error_status` (the HTTP status a provider answered a failed call with, where it gave one), what it was about (`subject_type`, `subject_id`), and the three prices as they were then. Rows are only added, and none references a provider or model, so removing either keeps the record |
 
 ## Providers and keys
 
@@ -75,6 +75,16 @@ The AI providers BeyondPilot calls, the chat models operators enabled, the model
 - **`ai/known-services.json` is kept by hand.** `known-models.json` is regenerated from LiteLLM's list by `backend/scripts/sync-known-models.mjs` and holds models billed by the token. An entry keeps the price in dollars, the price as the service lists it, the rate used and the day it was read: AI Hay's OCR is 1.50, its listed 40,500 VND per 1,000 calls at the 27,000 VND to the dollar its own price list uses (9 October 2026). Nothing here converts currencies.
 - **An OCR connection test** sends the small picture the application carries (`ai/ocr-test.jpg`) and looks for its line of text in the answer. It spends one call at the service and is not recorded.
 
+## Usage
+
+`AiUsageReports` reads `ai_usage` for Admin › AI › Usage. It writes nothing.
+
+- **What a call costs** is computed when read, from what the row keeps. A model: `(input − cache read) × input price + cache read × cached price + output × output price`, per million tokens; without a cached price, cached input costs the input price. `input_tokens` is the whole input for every provider: OpenAI counts cached input inside its prompt tokens, and Anthropic reports it beside them, so `UsageRecorder` adds it. An OCR service: its price per 1,000 calls divided by 1,000. A failed call costs nothing. A call that answered without a price has no cost and is counted apart as "price unavailable", never as free, so the cost shown is a lower bound and says how many calls it is computed from.
+- **Failing.** A task on a model is failing when, in the last 24 hours, at least 5 of its calls failed and they are at least 10% of its calls. It is judged on the last day whatever period is shown.
+- **What a failed call was** is read from `error_status`: 401 or 403 the key was refused, 429 the provider limited calls, 413 the request was too large, another 4xx the request was refused, 5xx the provider failed. Without a status, the class of a timeout or of an I/O failure reads as no answer, and anything else, which is every failed row written before the status was kept, as failed. The exception's message is never stored.
+- **The status** comes from the SDK's exception (`OpenAIServiceException`, `AnthropicServiceException`) found in the chain of causes, and from `OcrProviderException` for an OCR call.
+- **No rollup.** The rows are counted directly, in a period of at most 30 days; staging wrote 1,576 rows on 9 October 2026.
+
 ## Calling a model
 
 - **`AiModels.chat(task, subject)`** answers an `AiChat` holding a Spring AI `ChatClient`. The caller closes it when its work is done.
@@ -99,6 +109,13 @@ Every endpoint is for operators and is under `/api/ai/admin/chat`. Each change a
 
 The embedding providers keep their endpoints under `/api/search/admin` ([search](search.md)).
 
+The usage is read under `/api/ai/admin/usage`, by operators only. Both endpoints take `period`: `today`, `7d` or `30d`, the last two with today, in `Asia/Ho_Chi_Minh`.
+
+| Endpoint        | Does                                                                                                                                                      |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /overview` | Takes `by` (`model`, `task`, `provider`). The totals of the period, what is failing, the calls by hour (today) or by day, and where the calls went        |
+| `GET /calls`    | Takes `task`, `provider`, `model`, `outcome` and `page`. Fifty calls a page, newest first, with the total and what was called in the period, to filter by |
+
 ## Screen
 
 Admin › AI › Providers (`/admin/ai/providers`) has a tab per purpose, each an address of its own: Chat first, Embedding at `?tab=embedding` ([search](search.md)) and OCR at `?tab=ocr`. The Chat tab is `web/src/features/ai`:
@@ -113,6 +130,11 @@ The OCR tab, in the same folder:
 - **Reader.** One row for reading documents, with a choice between a model and an OCR service. A model is picked with the same Model selector, limited to models that read images, which come from the Chat tab; a service is picked among the OCR providers that are switched on and have a key. Switching between the two saves nothing; picking one saves at once.
 - **Available connections.** One card per OCR provider: test, edit, delete, and whether it reads documents.
 - **Add provider.** One preset, AI Hay, with its address.
+
+Admin › AI › Usage (`/admin/ai/usage`, and `/admin/ai/usage/calls` for its log) is in the same folder. The period, the grouping, the filters and the page are in the address.
+
+- **Overview.** An alert for the task that is failing, with the way to its failed calls; the totals (calls, failure rate, tokens, estimated cost, and prices unavailable when there are any); one chart of calls by hour or by day, succeeded and failed stacked, drawn with Recharts through the shadcn `chart` primitive; and a table of where the calls went, by model, task or provider, whose rows open their calls in the log.
+- **Calls.** The log, newest first, with filters by task, provider, model and outcome. A failed call shows what kind of failure it was and the status, in place of its tokens. No prompt and no answer is shown, since none is kept.
 
 ## Errors
 
@@ -131,6 +153,6 @@ Beside the provider actions: `ai.model_add`, `ai.model_update` and `ai.model_rem
 
 ## Not done
 
-- No screen shows usage or cost yet; `ai_usage` is read by a later cost module.
+- Usage is not kept by person, has no spending limit and no notification when a task starts failing, and embedding calls are not in `ai_usage`.
 - No budget or limit on calls.
 - No streaming advisor yet: the recorder covers `call()`, which is what matching uses.

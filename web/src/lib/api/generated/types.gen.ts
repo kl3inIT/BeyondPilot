@@ -650,6 +650,167 @@ export type AiProviders = {
     vendors: Array<AiVendor>;
 };
 
+export type AiUsageBucket = {
+    failed: number;
+    /**
+     * When the hour or the day starts.
+     */
+    start: string;
+    succeeded: number;
+};
+
+export type AiUsageCall = {
+    cacheReadTokens?: number | null;
+    durationMs: number;
+    /**
+     * The HTTP status the provider answered a failed call with; null when it gave none.
+     */
+    errorStatus?: number | null;
+    /**
+     * The estimated cost in US dollars; null for a failed call and for one without a known price.
+     */
+    estimatedCost?: number | null;
+    /**
+     * What a failed call was; null for a call that answered.
+     */
+    failure?: 'key_refused' | 'rate_limited' | 'too_large' | 'request_refused' | 'provider_failed' | 'no_answer' | 'failed';
+    id: string;
+    /**
+     * Input tokens, those read from a cache included; null for a failed call and for an OCR service.
+     */
+    inputTokens?: number | null;
+    /**
+     * The model, or the API of an OCR service.
+     */
+    modelName: string;
+    occurredAt: string;
+    outcome: 'ok' | 'failed';
+    outputTokens?: number | null;
+    /**
+     * As the provider was named when the call was made.
+     */
+    providerName: string;
+    subjectId?: string | null;
+    /**
+     * The kind of thing the call was about, as its caller named it.
+     */
+    subjectType?: string | null;
+    /**
+     * What the call was made for: a task, or `model_test` for a model tried by an operator.
+     */
+    task: string;
+};
+
+/**
+ * One page of the calls BeyondPilot made to chat models and OCR services, newest first. No prompt, no answer and nothing a provider wrote is kept, so none is returned.
+ */
+export type AiUsageCallList = {
+    items: Array<AiUsageCall>;
+    /**
+     * The models called in the period, by name, to filter by.
+     */
+    models: Array<string>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    /**
+     * How many calls a page holds.
+     */
+    pageSize: number;
+    /**
+     * The providers called in the period, by name, to filter by.
+     */
+    providers: Array<string>;
+    /**
+     * The tasks called in the period, to filter by.
+     */
+    tasks: Array<string>;
+    /**
+     * How many calls match, over all pages.
+     */
+    total: number;
+};
+
+export type AiUsageFailing = {
+    calls: number;
+    failed: number;
+    lastFailedAt: string;
+    lastFailure: 'key_refused' | 'rate_limited' | 'too_large' | 'request_refused' | 'provider_failed' | 'no_answer' | 'failed';
+    modelName: string;
+    providerName: string;
+    task: string;
+};
+
+/**
+ * The calls of one group. The names the grouping does not hold are null.
+ */
+export type AiUsageGroup = {
+    /**
+     * How long a call took on average, in milliseconds.
+     */
+    averageDurationMs: number;
+    calls: number;
+    /**
+     * Null when no call of the group has a known price.
+     */
+    estimatedCost?: number | null;
+    failed: number;
+    inputTokens: number;
+    modelName?: string | null;
+    outputTokens: number;
+    providerName?: string | null;
+    task?: string | null;
+};
+
+/**
+ * The Overview of Admin › AI › Usage: what is failing, what the calls of a period came to, the calls over time and where they went. Costs are estimates in US dollars from the usage providers report and the prices kept with each call, not invoices.
+ */
+export type AiUsageOverview = {
+    /**
+     * Where the calls went, the group with the most calls first.
+     */
+    breakdown: Array<AiUsageGroup>;
+    by: 'model' | 'task' | 'provider';
+    /**
+     * The tasks failing on a model in the last 24 hours, whatever the period: at least 5 failed calls that are at least 10% of its calls. The one with the most failures first.
+     */
+    failing: Array<AiUsageFailing>;
+    period: 'today' | '7d' | '30d';
+    /**
+     * The calls by hour or by day, oldest first, those without calls included.
+     */
+    series: Array<AiUsageBucket>;
+    /**
+     * What one entry of the series covers: an hour for today, a day otherwise.
+     */
+    seriesStep: 'hour' | 'day';
+    totals: AiUsageTotals;
+};
+
+export type AiUsageTotals = {
+    calls: number;
+    /**
+     * The estimated cost of the calls with a known price; null when none has one.
+     */
+    estimatedCost?: number | null;
+    failed: number;
+    /**
+     * Input tokens, those read from a cache included.
+     */
+    inputTokens: number;
+    outputTokens: number;
+    /**
+     * How many calls the cost is computed from.
+     */
+    pricedCalls: number;
+    succeeded: number;
+    /**
+     * How many calls answered without a known price. They add nothing to the cost.
+     */
+    unpricedCalls: number;
+};
+
 export type AiVendor = {
     baseUrl: string;
     id: 'openai' | 'openrouter';
@@ -5727,6 +5888,98 @@ export type SetDocumentReaderResponses = {
 };
 
 export type SetDocumentReaderResponse = SetDocumentReaderResponses[keyof SetDocumentReaderResponses];
+
+export type ListAiUsageCallsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Today, or the last 7 or 30 days with today, in Asia/Ho_Chi_Minh.
+         */
+        period?: 'today' | '7d' | '30d';
+        /**
+         * Only calls made for this task, as the call named it.
+         */
+        task?: string | null;
+        /**
+         * Only calls to the provider with this name.
+         */
+        provider?: string | null;
+        /**
+         * Only calls to the model with this name.
+         */
+        model?: string | null;
+        /**
+         * Only calls that ended this way.
+         */
+        outcome?: 'ok' | 'failed';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/ai/admin/usage/calls';
+};
+
+export type ListAiUsageCallsErrors = {
+    /**
+     * The period, the outcome or the page is not valid.
+     */
+    400: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAiUsageCallsError = ListAiUsageCallsErrors[keyof ListAiUsageCallsErrors];
+
+export type ListAiUsageCallsResponses = {
+    /**
+     * One page of calls, newest first.
+     */
+    200: AiUsageCallList;
+};
+
+export type ListAiUsageCallsResponse = ListAiUsageCallsResponses[keyof ListAiUsageCallsResponses];
+
+export type GetAiUsageOverviewData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Today, or the last 7 or 30 days with today, in Asia/Ho_Chi_Minh.
+         */
+        period?: 'today' | '7d' | '30d';
+        /**
+         * What the breakdown groups by. By model, a row is a model on a provider for a task.
+         */
+        by?: 'model' | 'task' | 'provider';
+    };
+    url: '/api/ai/admin/usage/overview';
+};
+
+export type GetAiUsageOverviewErrors = {
+    /**
+     * The period or the grouping is not one of those offered.
+     */
+    400: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetAiUsageOverviewError = GetAiUsageOverviewErrors[keyof GetAiUsageOverviewErrors];
+
+export type GetAiUsageOverviewResponses = {
+    /**
+     * The totals, what is failing, the calls over time and where they went.
+     */
+    200: AiUsageOverview;
+};
+
+export type GetAiUsageOverviewResponse = GetAiUsageOverviewResponses[keyof GetAiUsageOverviewResponses];
 
 export type ListAuditEventsData = {
     body?: never;
