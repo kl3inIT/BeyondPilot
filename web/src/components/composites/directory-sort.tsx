@@ -15,13 +15,15 @@ import { directorySorts, type DirectorySort } from "@/lib/directory-sort";
 type DirectorySortSelectProps = {
   value: DirectorySort;
   onChange: (value: DirectorySort) => void;
+  /** Optional layout classes for a directory-specific toolbar. */
+  className?: string;
 };
 
 /**
  * The order of a public directory, beside its count. The directory owns the value, which is its
  * URL. The select sits on a white ground because a directory's floor may be tinted.
  */
-function DirectorySortSelect({ value, onChange }: DirectorySortSelectProps) {
+function DirectorySortSelect({ value, onChange, className }: DirectorySortSelectProps) {
   const t = useTranslations("Lists.sort");
   const items = directorySorts.map((sort) => ({ value: sort, label: t(sort) }));
 
@@ -32,7 +34,7 @@ function DirectorySortSelect({ value, onChange }: DirectorySortSelectProps) {
         value={value}
         onValueChange={(next) => onChange(directorySorts.find((sort) => sort === next) ?? value)}
       >
-        <SelectTrigger aria-label={t("label")}>
+        <SelectTrigger aria-label={t("label")} className={className}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent align="end">

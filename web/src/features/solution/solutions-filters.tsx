@@ -45,7 +45,10 @@ function FacetSelect({ label, all, options, value, onChange }: FacetSelectProps)
 
   return (
     <Select items={items} value={value} onValueChange={onChange}>
-      <SelectTrigger aria-label={label} className="w-full md:w-47.5">
+      <SelectTrigger
+        aria-label={label}
+        className="h-11 w-full data-[size=default]:h-11 md:w-42 xl:shrink-0"
+      >
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -67,9 +70,9 @@ type SolutionsFiltersProps = {
 };
 
 /**
- * The search and the facets above the directory of solutions. They are the URL: a change writes it
- * and the server reads the list again, from page 1 (docs/conventions.md › Lists). On a phone the
- * facets fold behind one button.
+ * The search, facets, count and order above the directory of solutions. They are the URL: a change
+ * writes it and the server reads the list again, from page 1 (docs/conventions.md › Lists). On a
+ * phone the facets fold behind one button; on a wide screen they share one toolbar row.
  */
 function SolutionsFilters({ count }: SolutionsFiltersProps) {
   const t = useTranslations("Solution.filters");
@@ -87,8 +90,9 @@ function SolutionsFilters({ count }: SolutionsFiltersProps) {
   const facets = useId();
 
   return (
-    <>
+    <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-4">
       <DirectorySearch
+        className="h-11 xl:max-w-none xl:min-w-56 xl:flex-1"
         label={t("search")}
         value={search.q}
         loading={loading}
@@ -100,12 +104,12 @@ function SolutionsFilters({ count }: SolutionsFiltersProps) {
         }
       />
 
-      <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between xl:shrink-0 xl:flex-nowrap xl:justify-end">
         <button
           type="button"
           aria-expanded={open}
           aria-controls={facets}
-          className="flex h-10 items-center justify-center gap-2 rounded-lg border border-input bg-background px-3.5 text-sm font-medium transition-colors outline-none hover:bg-accent focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
+          className="flex h-11 items-center justify-center gap-2 rounded-lg border border-input bg-background px-3.5 text-sm font-medium transition-colors outline-none hover:bg-accent focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
           onClick={() => setOpen(!open)}
         >
           <SlidersHorizontalIcon className="size-4" aria-hidden="true" />
@@ -115,7 +119,7 @@ function SolutionsFilters({ count }: SolutionsFiltersProps) {
           id={facets}
           className={cn(
             open ? "flex" : "hidden",
-            "flex-col gap-2 md:flex md:flex-row md:flex-wrap md:items-center",
+            "flex-col gap-2 md:flex md:flex-row md:flex-wrap md:items-center xl:flex-nowrap",
           )}
         >
           <FacetSelect
@@ -154,14 +158,19 @@ function SolutionsFilters({ count }: SolutionsFiltersProps) {
           )}
         </div>
         <div className="flex items-center justify-between gap-3 md:justify-end">
-          {count && <p className="text-sm text-muted-foreground">{count}</p>}
+          {count && (
+            <p className="flex h-11 items-center text-sm whitespace-nowrap text-muted-foreground">
+              {count}
+            </p>
+          )}
           <DirectorySortSelect
+            className="h-11 data-[size=default]:h-11"
             value={search.sort}
             onChange={(sort) => setSearch({ sort, page: null })}
           />
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

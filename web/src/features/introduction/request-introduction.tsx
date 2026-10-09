@@ -100,7 +100,7 @@ function RequestIntroduction({
           <span className="truncate text-sm font-semibold">{name}</span>
           <span className="truncate text-xs text-muted-foreground">{t("by", { provider })}</span>
         </div>
-        <Button size="lg" {...opens}>
+        <Button size="xl" {...opens}>
           {t("open")}
         </Button>
       </div>

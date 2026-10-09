@@ -1,6 +1,7 @@
 import { cn } from "cn";
 
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type CodeListProps = {
   /** The words for each code, already translated, in the order to show them. */
@@ -14,8 +15,8 @@ type CodeListProps = {
 /**
  * A few values of a vocabulary as outline chips, such as the industries of a solution. A limit
  * holds them to one line: what fits is shown and the rest waits under the "+N more" chip, which
- * reveals a dropdown on hover or keyboard focus. Without a limit every chip shows and the line
- * wraps.
+ * reveals a positioned popover on hover, keyboard focus, or press. Long labels there stay on one
+ * line and truncate. Without a limit every chip shows and the line wraps.
  */
 function CodeList({ labels, limit, more }: CodeListProps) {
   const shown = limit === undefined ? labels : labels.slice(0, limit);
@@ -39,23 +40,32 @@ function CodeList({ labels, limit, more }: CodeListProps) {
         ))}
       </ul>
       {hidden.length > 0 && more && (
-        <div className="group relative">
-          <button
-            type="button"
-            className="peer group/badge inline-flex h-6 w-fit shrink-0 cursor-pointer items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent bg-secondary px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-secondary-foreground transition-all hover:bg-secondary/80 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        <Popover>
+          <PopoverTrigger
+            openOnHover
+            delay={0}
+            closeDelay={120}
+            render={<Badge variant="secondary" render={<button type="button" />} />}
           >
             {more}
-          </button>
-          <div className="invisible absolute top-full right-0 z-50 mt-1.5 rounded-lg bg-popover p-2 text-sm text-popover-foreground opacity-0 shadow-md ring-1 ring-foreground/10 transition-opacity duration-150 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
-            <ul className="flex w-max max-w-72 flex-wrap gap-1.5">
+          </PopoverTrigger>
+          <PopoverContent side="top" align="end" sideOffset={6}>
+            <ul className="flex w-full min-w-0 flex-wrap gap-1.5">
               {hidden.map((label) => (
-                <li key={label}>
-                  <Badge variant="outline">{label}</Badge>
+                <li key={label} className="max-w-full min-w-0">
+                  <Badge
+                    variant="outline"
+                    className="max-w-full min-w-0 shrink overflow-hidden whitespace-nowrap"
+                  >
+                    <span className="block min-w-0 truncate" title={label}>
+                      {label}
+                    </span>
+                  </Badge>
                 </li>
               ))}
             </ul>
-          </div>
-        </div>
+          </PopoverContent>
+        </Popover>
       )}
     </div>
   );
