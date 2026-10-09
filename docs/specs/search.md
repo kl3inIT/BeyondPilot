@@ -241,6 +241,7 @@ What a solution's own material says, for matching ([design](../increments/active
 - **Websites** of imported solutions are loaded once by `infrastructure/legacy-import/passages.py`; a new solution's website waits for BEY-99.
 - **Embedding.** The job that embeds the index embeds passages too, `passage-batch-size` (64) a run, under the passage's heading ("Zetamotion, deck page 3"). A new embedding model embeds them again, as it does the index.
 - **A solution that is no longer shown** loses its deck and customer case passages; what was loaded for it stays.
+- **`SolutionEvidence`** is what [matching](matching.md) reads. `solutionsFor` answers the solutions in the index for a set of queries, unlisted included: each query is searched by its words (any of them, without the words every text holds) and by its meaning, over the profiles and over the passages, where a solution stands at the place of its best passage; the four rankings are fused by reciprocal rank and the queries by adding their scores. `passagesOf` answers what one solution's customer cases, deck and website say.
 
 ## Audit
 
