@@ -5,7 +5,7 @@ Design: [design.md](design.md). Tracked in Linear as BEY-39. Nothing is coded be
 | # | Step | State |
 | --- | --- | --- |
 | 1 | The research note, this design and this plan | Done; waiting for approval |
-| 2 | **Source text.** The table of source pages with its full-text index; the one-off load of the imported decks' and websites' text (a script that writes SQL, run on staging), with lines repeated on every page of one website left out; extraction of a new deck's pages after its upload, in the background | Not started |
+| 2 | **Source text.** The table of source pages with its full-text index; the one-off load of the imported decks' and websites' text (a script that writes SQL, run on staging), with lines repeated on every page of one website left out; extraction of a new deck's pages after its upload, in the background; a page without text read by a model from its picture, waiting when the provider's limit is reached; the imported decks' pages without text read the same way, started by an operator so the calls are spent when chosen | Not started |
 | 3 | **Requirements.** The model lists a use case's capabilities and constraints, each with the passage it comes from; prompt version 1 is the probe's, with one function per capability in neutral words | Not started |
 | 4 | **Candidates.** A read in `search` that answers solutions for a query up to a limit, unlisted included; the keyword search over source pages; the two fused by rank; the 40 first | Not started |
 | 5 | **Judgment.** One call per candidate through `AiModels.chat`, typed answer with a retry when it does not fit; the check of each quote and the buckets in plain code, tested with the probe's saved answers | Not started |
@@ -29,7 +29,7 @@ If 16 October is at risk, what goes first is step 11, then step 10 (a quote then
   - a run waits out a provider's limit and continues; a stopped run does not judge again what it had judged;
   - a removed candidate is not recommended again, and a rerun keeps the shortlist;
   - only the use case's organization and operators read its candidates; only operators start a run or add a solution;
-  - a new deck's pages are extracted after its upload, and replaced when the deck is.
+  - a new deck's pages are extracted after its upload, and replaced when the deck is; a page without text is read by the model and marked so, and stays empty when the model is not chosen or fails.
 - `pnpm --dir web check` and the end-to-end tests of the Candidates tab at desktop and mobile widths, with axe.
 - On staging: the load of the imported text; then the two use cases of the probe run through the real code with `cx/gpt-6.1-sol`, and their buckets, quotes and cost compared with the probe's; the `ai_usage` rows of the run read.
 - When GenAI Fund's longlists arrive: how many of the vendors they name are among the candidates, and in which bucket.
@@ -40,6 +40,7 @@ If 16 October is at risk, what goes first is step 11, then step 10 (a quote then
 | --- | --- | --- |
 | A read of a solution's customer cases and deck file in `solution`, and of a use case's full text in `usecase` | Steps 4 and 5 | Small and read-only; to agree with Việt and Nhật, who own those modules |
 | The text of the imported decks and websites | Step 2 | On a team machine (`BeyondPilot-bey74/.tmp/enrich/full/sources`); never committed |
-| A model chosen for Matching in Admin › AI | Every run | Set on staging: `cx/gpt-6.1-sol` through 9Router. Production has no provider and no encryption key yet |
+| A model chosen for Matching, and one that reads images for Reading documents, in Admin › AI | Every run; every page without text | Matching is set on staging: `cx/gpt-6.1-sol` through 9Router, which reads images too. Production has no provider and no encryption key yet |
+| The calls to read the imported pages without text | Step 2 | About 1,230 pages, or 779 if only the decks that are mostly pictures are read; about 1,200 tokens in per page. Started by an operator, since the route allows about 330 calls an hour |
 | GenAI Fund's own longlists | Measuring the buckets | Asked in BEY-41 |
 | The screens of the deck view and of the operators' view of a run | Steps 10 and 11 | Not drawn |

@@ -22,7 +22,8 @@ Failure and recovery:
 
 - **The model's provider refuses or says its usage limit is reached:** the run waits for the time the provider names and continues; candidates already judged are kept. A run that cannot continue ends as failed with the kind of failure, and can be started again from where it stopped.
 - **No model is chosen for matching:** no run starts; the screen says so to operators.
-- **A solution has no readable deck or website text:** it is judged on its profile and customer cases, and the candidate says which source could not be read. It is never reported as "not shown" for lack of text alone.
+- **A page of a deck has no text, only a picture:** a model reads the page from its picture, and the page is marked as read that way. A page nothing could read stays empty and is counted.
+- **A solution has no readable deck or website text at all:** it is judged on its profile and customer cases, and the candidate says which source could not be read. It is never reported as "not shown" for lack of text alone.
 - **Nothing fits:** the buckets are empty and the screen says which capability nobody shows. An empty Direct bucket is a result, not an error.
 - **The use case or a solution changes after a run:** the next run judges again only what changed.
 
@@ -35,7 +36,7 @@ Failure and recovery:
 | Capability | One function the product itself performs, in words that fit any industry |
 | Constraint | A condition on how the solution is delivered or bought. Shown as "to confirm"; it never decides the bucket |
 | Source | A part of a solution's own material: its profile, a customer case, a page of its deck, a page of its website |
-| Source page | The text of one page of a deck or of a website, as extracted, with its page number or address |
+| Source page | The text of one page of a deck or of a website, with its page number or address, and how it was read: taken from the file's own text, or read by a model from the picture of the page |
 | Candidate | One solution for one use case, with how it got there (recommended, or added by an operator) |
 | Finding | The answer for one requirement of one candidate: met, partly or not shown, with a quote and its source |
 | Quote | A sentence copied word for word from a source. Code confirms it is there |
@@ -66,7 +67,7 @@ A new module, `matching`, owns six tables. No other module reads them.
 
 | Table | Holds | Invariant |
 | --- | --- | --- |
-| `matching_source_page` | One page of a solution's deck or website: the solution, the source (`deck` or `website`), the page number or the address, the text, when it was extracted and the hash of what it was extracted from; a full-text index over the text | The pages of one source of one solution are replaced together |
+| `matching_source_page` | One page of a solution's deck or website: the solution, the source (`deck` or `website`), the page number or the address, the text, how it was read (`text` or `model`), when it was extracted and what it was extracted from; a full-text index over the text | The pages of one source of one solution are replaced together |
 | `matching_requirement` | The requirements of a use case as last extracted: kind, necessity, statement, quote, and the hash of the text they came from | Replaced together when the use case's text changes |
 | `matching_run` | A run: use case, state, who started it, the prompt version, the models used, when it started and ended, the kind of failure | At most one running per use case |
 | `matching_run_step` | One step of a run: its name and order, how many it took in and gave out, the calls, the tokens and the time | Written by the run only |
@@ -109,7 +110,10 @@ HTTP, under `/api/matching`: the candidates of a use case with its run and requi
 | A run waits when the provider says its limit is reached | The probe met the limit of the 9Router route after about 330 calls |
 | What a person decided is outside what a run may change | candisift; the old platform could neither add nor remove a match (kickoff) |
 | Imported solutions get their text by a one-off load, the way BEY-74 loaded records: a script writes SQL, run on staging then production | The text exists on a team machine; the records are written once |
-| A new deck's text is extracted after the upload, in the background, with Spring AI's PDF reader | No model is needed for a PDF that has text; a deck of pictures gives no text and is marked unreadable |
+| A new deck's text is extracted after the upload, in the background, with Spring AI's PDF reader | No model is needed for a page that has text: `pdftotext` made the deck texts that exist |
+| A page of a deck that has no text is read by a model from its picture, in the same background work, and marked `model` | Decided by Đạt on 9 October. 61 of the 734 imported decks have no text on at least half their pages (779 pages), and 451 more such pages are spread over the other decks. The 9Router route was checked: `cx/gpt-6.1-sol` copied the text of a picture sent as Spring AI sends one. MemoryOS reads scans with a vision model too |
+| Reading pictures is its own task in Admin › AI ("Reading documents"), which takes only a model that reads images | Its cost is recorded apart from matching runs, it needs no reasoning, and the same model can be chosen for both. Proposed; to confirm |
+| A quote from a page a model read is shown as such | The words are the model's copy of the slide, not the file's own text; code still checks the quote against that copy |
 | A deck opens inside BeyondPilot at the page of a quote, on `react-pdf` as MemoryOS shows PDFs | Asked for by Đạt as a needed feature; the browser's own viewer does not open at a page on phones |
 | The steps of each run are stored with their counts, calls, tokens and time | The operators' view of how a run worked reads them; it is drawn after the list |
 | Everything the model reads and answers is in English | Decided on 9 October; all 230 use cases are in English |
@@ -117,7 +121,6 @@ HTTP, under `/api/matching`: the candidates of a use case with its run and requi
 ## Left out
 
 - **Reading the website of a newly registered solution** (BEY-99, through Firecrawl as MemoryOS does). Until then a new solution is judged on its profile, customer cases and deck.
-- **Decks made of pictures.** 53 of the 734 imported decks have almost no text. Reading them needs a model that sees the pages.
 - **Judging the proposals a provider sent** against the use case. Proposals belong to programs today.
 - **Queries written by the model**, a **second model that checks the first**, and **embeddings of the document text**: each waits for a measure that shows the need.
 - **Research on the open web**, outreach, and the operators' MCP tools for candidates (BEY-78).
