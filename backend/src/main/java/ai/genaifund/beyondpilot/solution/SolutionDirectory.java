@@ -11,6 +11,7 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
+import ai.genaifund.beyondpilot.organization.OrganizationProfile;
 import ai.genaifund.beyondpilot.solution.dto.PublicCustomerDeploymentListRequest;
 import ai.genaifund.beyondpilot.solution.dto.PublicCustomerDeploymentListResponse;
 import ai.genaifund.beyondpilot.solution.dto.PublicSolutionListRequest;
@@ -85,7 +86,7 @@ public class SolutionDirectory {
 			OrganizationName organization = names.get(row.organizationId());
 			return new PublicSolutionSummaryResponse(row.slug(), row.name(), organization.name(), organization.slug(),
 					organization.country(), row.summary(), row.maturity(), row.focusAreas(), row.industries(),
-					shownLogo(row.logoFileId(), organization), row.coverFileId(), row.backing(), row.deployments());
+					shownLogo(row.logoFileId(), organization.logoFileId()), row.coverFileId(), row.backing(), row.deployments());
 		}).toList(), page, PAGE_SIZE, solutionList.publicCount(text, request.industry(), request.focusArea(),
 				request.maturity(), organizationId));
 	}
@@ -101,19 +102,21 @@ public class SolutionDirectory {
 		Solution solution = solutions.findBySlug(slug)
 			.filter(Solution::isApproved)
 			.orElseThrow(() -> notFound(slug));
-		OrganizationName organization = organizations.approvedNames(List.of(solution.getOrganizationId()))
-			.get(solution.getOrganizationId());
-		if (organization == null) {
-			throw notFound(slug);
-		}
+		OrganizationProfile organization = organizations.profile(solution.getOrganizationId())
+			.filter(OrganizationProfile::approved)
+			.orElseThrow(() -> notFound(slug));
 		return new PublicSolutionResponse(solution.getSlug(), solution.getName(), organization.name(),
-				organization.slug(), organization.country(), solution.getSummary(), solution.getProblemsSolved(),
-				solution.getValueProposition(), solution.getMaturity(), solution.getTraction(), solution.getBuiltWith(),
-				solution.getIndustries(), solution.getFocusAreas(), solution.getLanguages(), solution.getDeployment(),
-				solution.getChannels(), solution.getBestCustomerProfile(), SolutionViews.backing(solution),
-				solution.getWebsite(), solution.getDemoUrl(),
-				SolutionViews.publicDeck(solution), shownLogo(solution.getLogoFileId(), organization),
-				solution.getCoverFileId(),
+				organization.slug(), organization.country(), organization.foundedYear(), organization.teamSize(),
+				organization.companySizeLabel(), solution.getSummary(), solution.getProblemsSolved(),
+				solution.getValueProposition(), solution.getMaturity(), solution.getTraction(), solution.getProductNames(),
+				solution.getCoreTechnology(), solution.getInfrastructureUsed(), solution.getSegmentFocus(),
+				solution.getNotablePayingCustomers(), solution.getUseCaseIndustries(), solution.getUseCaseDescriptions(),
+				solution.getMonetizationModel(), solution.getCompanyFundingStatus(), solution.getCompanyFundingRaised(),
+				solution.getCompetitors(), solution.getBuiltWith(), solution.getIndustries(), solution.getFocusAreas(),
+				solution.getLanguages(), solution.getDeployment(), solution.getChannels(),
+				solution.getBestCustomerProfile(), SolutionViews.backing(solution), solution.getWebsite(),
+				solution.getDemoUrl(), SolutionViews.publicDeck(solution),
+				shownLogo(solution.getLogoFileId(), organization.logoFileId()), solution.getCoverFileId(),
 				solution.getImageFileIds(), solution.isListed(),
 				deployments.findBySolutionIdAndStatusOrderByDecidedAtDesc(solution.getId(), CustomerDeployment.APPROVED)
 					.stream()
@@ -239,8 +242,8 @@ public class SolutionDirectory {
 	 * The logo a solution shows to the public: its own, or its organization's when it has none, so a provider that
 	 * set one logo on its organization shows it on every solution. The owners' editor keeps the solution's own field.
 	 */
-	private static @Nullable UUID shownLogo(@Nullable UUID own, OrganizationName organization) {
-		return own != null ? own : organization.logoFileId();
+	private static @Nullable UUID shownLogo(@Nullable UUID own, @Nullable UUID organizationLogo) {
+		return own != null ? own : organizationLogo;
 	}
 
 	/** Those of these approved solutions whose organization is approved and not taken down. */
@@ -254,7 +257,7 @@ public class SolutionDirectory {
 					solution.getSummary(), solution.getProblemsSolved(), solution.getValueProposition(),
 					solution.getTraction(), solution.getBestCustomerProfile(), solution.getBuiltWith(),
 					solution.getFocusAreas(), solution.getIndustries(), solution.getMaturity(),
-					solution.getDeployment(), shownLogo(solution.getLogoFileId(), organization),
+					solution.getDeployment(), shownLogo(solution.getLogoFileId(), organization.logoFileId()),
 					deployments.countBySolutionIdAndStatus(solution.getId(), CustomerDeployment.APPROVED),
 					solution.isListed());
 		}).toList();

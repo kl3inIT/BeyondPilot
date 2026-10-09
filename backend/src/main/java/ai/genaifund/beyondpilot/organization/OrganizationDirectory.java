@@ -58,7 +58,8 @@ public class OrganizationDirectory {
 		return organizations.findById(organizationId)
 			.map(organization -> new OrganizationProfile(organization.getId(), organization.getSlug(),
 					organization.getName(), organization.getType(), organization.getCountry(),
-					organization.getTeamSize(), organization.getWebsite(), organization.isApproved()));
+					organization.getTeamSize(), organization.getWebsite(), organization.getFoundedYear(),
+					organization.getCompanySizeLabel(), organization.getLogoFileId(), organization.isApproved()));
 	}
 
 	/** Whether GenAI Fund has approved this organization, read now. */
