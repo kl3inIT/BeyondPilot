@@ -1,6 +1,6 @@
 # AI models: document reading with OCR providers
 
-Status: proposed on 9 October 2026 ([plan](plan.md)). Tracked in Linear as BEY-102. It changes the `ai` module and its screen only and adds no module and no dependency between modules, so there is no boundary discovery.
+Status: accepted on 9 October 2026 and built the same day ([plan](plan.md), [verification](verification.md)). Tracked in Linear as BEY-102. It changes the `ai` module and its screen only and adds no module and no dependency between modules, so there is no boundary discovery.
 
 ## What it does
 
@@ -74,7 +74,7 @@ The reader chosen today, a model, stays chosen after the migration.
 ## How it is built
 
 - **`OcrAdapter` behind `OcrAdapterRegistry`** in `ai.adapter`, the [interchangeable-implementations pattern](../../../conventions.md#interchangeable-implementations-strategy-behind-a-registry) as for chat: one page picture in, its text out; two beans with one type fail startup.
-- **`AiHayOcrAdapter`** (`aihay`) posts the picture as base64 to `/v1/ocr` under the provider's endpoint, with a client that never follows a redirect, as `ModelLists` does. It reads the kind of a failure from the HTTP status and AI Hay's numeric `err` code, never its message:
+- **`AiHayOcrAdapter`** (`aihay`) posts the picture as base64 to `/v1/ocr` under the provider's endpoint, through `OutboundHttp`, the one client of the adapters for what they ask outside a vendor's SDK. It is a `RestClient` kept to MemoryOS's rules for outbound HTTP (its ADR 0025): no redirect followed, a deadline for the whole exchange, a bounded answer, and the status handed back with the bytes so that no provider's text reaches an exception. `ModelLists` moves onto it in this change. It reads the kind of a failure from the HTTP status, never from what the service wrote:
 
   | AI Hay answers                             | Kind                    |
   | ------------------------------------------ | ----------------------- |
@@ -93,7 +93,7 @@ The reader chosen today, a model, stays chosen after the migration.
 
 The OCR tab has two blocks, top to bottom as the Chat tab: **Reader**, then **Available connections** with **Add provider**. Connections reuse the connection card and the provider dialog of the Chat tab, without the model list. The Reader block has a choice between a model and an OCR service: for a model, the Model selector limited to models that read images, as today; for a service, a list of the connected OCR providers.
 
-The layout is new, so it needs Đạt's approval before it is coded.
+Đạt agreed this layout from a description in words on 9 October, without a mock-up.
 
 ## Decisions
 
