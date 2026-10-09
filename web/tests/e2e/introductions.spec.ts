@@ -170,6 +170,8 @@ test.describe("workspace introductions", () => {
     await signInAs(context, "owner", baseURL!);
     await page.goto("/workspace/organization/introductions");
 
+    // The tab stands inside the site's header, as the other tabs of the organization do.
+    await expect(page.getByRole("banner")).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "Introductions" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Introductions" })).toHaveAttribute(
       "aria-current",
