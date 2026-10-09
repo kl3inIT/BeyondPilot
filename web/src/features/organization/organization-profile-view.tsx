@@ -1,6 +1,7 @@
 import { Building2Icon, FileTextIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { TextButton } from "@/components/actions/text-button";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { Organization } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
@@ -13,7 +14,13 @@ type OrganizationProfileViewProps = {
   action?: React.ReactNode;
 };
 
-type Fact = { label: string; value: string | null | undefined; wide?: boolean };
+type Fact = {
+  label: string;
+  value: string | null | undefined;
+  wide?: boolean;
+  /** Where the value leads when it is an address outside BeyondPilot. */
+  href?: string | null;
+};
 
 /** Facts laid out as the form lays out their fields; a fact never given says so. */
 function Facts({ facts }: { facts: Fact[] }) {
@@ -24,7 +31,13 @@ function Facts({ facts }: { facts: Fact[] }) {
         <div key={fact.label} className={cn("flex flex-col gap-1.5", fact.wide && "sm:col-span-2")}>
           <dt className="text-sm font-semibold">{fact.label}</dt>
           <dd className="text-sm break-words whitespace-pre-line text-muted-foreground">
-            {fact.value || t("notStated")}
+            {fact.value && fact.href ? (
+              <TextButton href={fact.href} target="_blank" rel="noreferrer">
+                {fact.value}
+              </TextButton>
+            ) : (
+              fact.value || t("notStated")
+            )}
           </dd>
         </div>
       ))}
@@ -51,7 +64,7 @@ function OrganizationProfileView({ organization, action }: OrganizationProfileVi
           <Facts
             facts={[
               { label: t("name"), value: organization.name },
-              { label: t("website"), value: organization.website },
+              { label: t("website"), value: organization.website, href: organization.website },
               { label: t("emailDomain"), value: organization.emailDomain, wide: true },
               { label: t("type"), value: typeName(organization.type) },
               {

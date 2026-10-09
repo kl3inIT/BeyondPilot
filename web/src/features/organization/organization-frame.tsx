@@ -1,6 +1,7 @@
 import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
+import { TextButton } from "@/components/actions/text-button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
@@ -75,10 +76,11 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
           },
         ]),
   ];
+  const host = websiteHost(organization.website);
   const kind = [
     typeName(organization.type),
     organization.country && countryName(organization.country),
-    websiteHost(organization.website) ?? organization.emailDomain,
+    host ? null : organization.emailDomain,
   ].filter(Boolean);
   // The way to the profile is offered from the other tabs, to the people who can change it.
   const toProfile = owner && current !== "profile";
@@ -93,7 +95,17 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
               {organization.name}
             </h1>
           </div>
-          <p className="text-sm text-muted-foreground">{kind.join(" · ")}</p>
+          <p className="text-sm text-muted-foreground">
+            {kind.join(" · ")}
+            {host && organization.website && (
+              <>
+                {kind.length > 0 && " · "}
+                <TextButton href={organization.website} target="_blank" rel="noreferrer">
+                  {host}
+                </TextButton>
+              </>
+            )}
+          </p>
         </div>
 
         {organization.status === "in_review" && (
