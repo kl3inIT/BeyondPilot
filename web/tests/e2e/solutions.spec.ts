@@ -110,8 +110,7 @@ test.describe("solutions directory", () => {
     await expect(fact("Deployment")).toContainText("Cloud (SaaS)");
     await expect(page.getByText("In production").first()).toBeVisible();
     await expect(fact("Registered in")).toContainText("Singapore");
-    await expect(fact("Funding (GenAI Fund)")).toBeVisible();
-    await expect(fact("Funding (GenAI Fund)").locator("dd")).toHaveCount(0);
+    await expect(fact("Funding (GenAI Fund)")).toContainText("Not listed yet");
     await expect(page.getByText("Key milestones")).toBeVisible();
     await expect(page.getByText("Three production pilots across banking.")).toBeVisible();
     // Product and company-stated fields are separate from the reviewed customer deployments.
