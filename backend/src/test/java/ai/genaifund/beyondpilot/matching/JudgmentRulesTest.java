@@ -62,11 +62,13 @@ class JudgmentRulesTest {
 	@Test
 	void everyRequiredCapabilityMetIsDirectAndAnInventedQuoteLowersItsFinding() {
 		Judgment honest = new Judgment(
-				List.of(new Finding("R1", "answers every inbound customer call", "deck p.3", "met"),
-						new Finding("R2", "it writes a summary for the agent", "deck p.4", "met"),
-						new Finding("R3", "", "", "not_shown"), new Finding("R4", "", "", "not_shown")),
-				new Fit("a voice agent for the hotline", "customer case 1", "met"), new Fit("", "", "not_shown"),
-				"It answers and summarises calls.");
+				List.of(new Finding("R1", "answers every inbound customer call", "deck p.3", "It answers them.", "met"),
+						new Finding("R2", "it writes a summary for the agent", "deck p.4", "It writes one.", "met"),
+						new Finding("R3", "", "", "Nothing shows it.", "not_shown"),
+						new Finding("R4", "", "", "Nothing shows it.", "not_shown")),
+				new Fit("a voice agent for the hotline", "customer case 1", "It is sold for hotlines.", "met"),
+				new Fit("a voice agent for the hotline", "customer case 1", "A bank uses it.", "met"),
+				new Fit("", "", "Nothing shows it.", "not_shown"), "It answers and summarises calls.");
 		Judged direct = Buckets.settle(honest, REQUIREMENTS, SOURCES, "f1");
 
 		assertThat(direct.bucket()).isEqualTo(Buckets.DIRECT);
@@ -74,11 +76,16 @@ class JudgmentRulesTest {
 		// The constraint and the optional capability are reported and do not count.
 		assertThat(direct.requiredTotal()).isEqualTo(2);
 		assertThat(direct.summary()).isEqualTo("It answers and summarises calls.");
+		// What the product is made for is kept for people to read, with the model's reason, and decides nothing.
+		assertThat(direct.findings().get("problem")).isEqualTo(Map.of("status", "met", "quote",
+				"a voice agent for the hotline", "source", "customer case 1", "reason", "It is sold for hotlines.",
+				"quoteState", Quotes.EXACT));
 
 		Judgment invented = new Judgment(
-				List.of(new Finding("R1", "answers every inbound customer call", "deck p.3", "met"),
-						new Finding("R2", "It summarises calls with a large language model", "deck p.4", "met")),
-				new Fit("a voice agent for the hotline", "customer case 1", "met"), null, null);
+				List.of(new Finding("R1", "answers every inbound customer call", "deck p.3", "It answers them.", "met"),
+						new Finding("R2", "It summarises calls with a large language model", "deck p.4",
+								"It summarises them.", "met")),
+				null, new Fit("a voice agent for the hotline", "customer case 1", "A bank uses it.", "met"), null, null);
 		Judged lowered = Buckets.settle(invented, REQUIREMENTS, SOURCES, "f2");
 
 		// One of two required capabilities stands; the industry is shown, so the candidate is in Industry.
@@ -86,22 +93,27 @@ class JudgmentRulesTest {
 		assertThat(lowered.requiredMet()).isEqualTo(1);
 		assertThat(statuses(lowered)).containsExactly("met", "not_shown", "not_shown", "not_shown");
 		assertThat(states(lowered)).containsExactly(Quotes.EXACT, Quotes.NOT_FOUND, Quotes.NONE, Quotes.NONE);
+		// The reason of the finding code refused is dropped with it: it argued for what the deck does not say.
+		assertThat(findings(lowered)).extracting(finding -> finding.get("reason"))
+			.containsExactly("It answers them.", "", "", "");
 	}
 
 	@Test
 	void theTechnologyGroupNeedsACapabilityShownOrHalfOfThemMetAndNothingShownIsNoGroup() {
-		Judgment half = new Judgment(List.of(new Finding("R1", "answers every inbound customer call", "deck p.3", "met")),
-				null, null, null);
+		Judgment half = new Judgment(
+				List.of(new Finding("R1", "answers every inbound customer call", "deck p.3", "It answers them.", "met")),
+				null, null, null, null);
 		assertThat(Buckets.settle(half, REQUIREMENTS, SOURCES, "f").bucket()).isEqualTo(Buckets.TECHNOLOGY);
 
-		Judgment technologyOnly = new Judgment(List.of(), null,
-				new Fit("Built on speech recognition.", "website 1", "met"), null);
+		Judgment technologyOnly = new Judgment(List.of(), null, null,
+				new Fit("Built on speech recognition.", "website 1", "It is built on it.", "met"), null);
 		// The technology alone, with no capability shown, is not a reason to recommend.
 		assertThat(Buckets.settle(technologyOnly, REQUIREMENTS, SOURCES, "f").bucket()).isEqualTo(Buckets.NONE);
 
 		Judgment partly = new Judgment(
-				List.of(new Finding("R2", "it writes a summary for the agent", "deck p.4", "partly")), null,
-				new Fit("Built on speech recognition.", "website 1", "met"), null);
+				List.of(new Finding("R2", "it writes a summary for the agent", "deck p.4", "Only for the agent.",
+						"partly")),
+				null, null, new Fit("Built on speech recognition.", "website 1", "It is built on it.", "met"), null);
 		assertThat(Buckets.settle(partly, REQUIREMENTS, SOURCES, "f").bucket()).isEqualTo(Buckets.TECHNOLOGY);
 	}
 

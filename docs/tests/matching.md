@@ -5,7 +5,7 @@ Boundaries follow [conventions › Testing](../conventions.md#testing). What cod
 | Contract | Regression it catches | Test |
 | --- | --- | --- |
 | A quote is found whatever its spacing and case, traced to another source when the model misnames it, accepted when most of its words are there, and refused when it is nowhere | A real quote refused for a line break; an invented quote accepted | `JudgmentRulesTest.aQuoteIsFoundWhateverItsSpacingAndCaseAndIsTracedToAnotherSourceWhenTheModelMisnamesIt` |
-| Every required capability met is Direct; an invented quote lowers its finding and the group with it; a constraint and an optional capability never count | A candidate recommended on words its material does not hold | `JudgmentRulesTest.everyRequiredCapabilityMetIsDirectAndAnInventedQuoteLowersItsFinding` |
+| Every required capability met is Direct; an invented quote lowers its finding and the group with it, and its reason is dropped; a constraint and an optional capability never count; what the product is made for is kept and decides nothing | A candidate recommended on words its material does not hold; a reason shown for a finding code refused | `JudgmentRulesTest.everyRequiredCapabilityMetIsDirectAndAnInventedQuoteLowersItsFinding` |
 | Technology needs a capability shown or half of them met; the technology alone is no group | A solution recommended only for the tool it is built with | `JudgmentRulesTest.theTechnologyGroupNeedsACapabilityShownOrHalfOfThemMetAndNothingShownIsNoGroup` |
 | A requirement is kept only with a known kind and a quote the brief holds, capabilities first | A requirement the model made up; a finding that names the wrong requirement | `JudgmentRulesTest.aRequirementIsKeptOnlyWithAKnownKindAndAQuoteTheBriefHoldsCapabilitiesFirst` |
 | A solution without deck or website text says which is missing | "Not shown" reported for lack of text without saying so | `JudgmentRulesTest.aSolutionWithoutDeckOrWebsiteTextSaysWhichIsMissing` |
@@ -17,4 +17,4 @@ Boundaries follow [conventions › Testing](../conventions.md#testing). What cod
 
 The search that finds the candidates is in the [search matrix](search.md).
 
-Not covered by a test: reading the pages of a file attached to a use case (the page reader is covered in the [AI matrix](ai.md)); the worker's schedule itself, since the test takes each run; four judgments at a time.
+Not covered by a test: reading the pages of a file attached to a use case (the page reader is covered in the [AI matrix](ai.md)); the worker's schedule itself, since the test takes each run; four judgments at a time; the quality of the wording itself, which no test with a played model can show: it is measured on real use cases through the real provider ([prompt research](../research/2026-10-09-matching-judge-prompts.md)).
