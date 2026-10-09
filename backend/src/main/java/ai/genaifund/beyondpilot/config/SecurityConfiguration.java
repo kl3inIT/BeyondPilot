@@ -56,6 +56,11 @@ class SecurityConfiguration {
 			// A path under /api is closed unless a line here opens it; the web application serves every other path.
 			.authorizeHttpRequests(requests -> requests.dispatcherTypeMatchers(DispatcherType.ERROR)
 				.permitAll()
+				// A stream of events ends in an async dispatch, which only the application starts and only for a
+				// request this chain let in. Asked again then, a session that ended while the stream was open would
+				// be refused on a response already sent, which can only fail.
+				.dispatcherTypeMatchers(DispatcherType.ASYNC)
+				.permitAll()
 				// A public file, such as an image of a program, is read without a session.
 				.requestMatchers(HttpMethod.GET, "/api/storage/files/*")
 				.permitAll()
