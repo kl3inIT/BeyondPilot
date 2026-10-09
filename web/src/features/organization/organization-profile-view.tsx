@@ -22,7 +22,7 @@ function Facts({ facts }: { facts: Fact[] }) {
     <dl className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
       {facts.map((fact) => (
         <div key={fact.label} className={cn("flex flex-col gap-1.5", fact.wide && "sm:col-span-2")}>
-          <dt className="text-sm text-muted-foreground">{fact.label}</dt>
+          <dt className="text-sm font-medium text-muted-foreground">{fact.label}</dt>
           <dd className="text-sm break-words whitespace-pre-line">
             {fact.value || t("notStated")}
           </dd>
