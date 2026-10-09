@@ -12830,15 +12830,26 @@ components:
         problem:
           $ref: "#/components/schemas/MatchingFinding"
           description: Whether the product is made for the problem.
+        removedAt:
+          type: string
+          format: date-time
+        removedBy:
+          type: string
+          description: "Who removed it, by the name they are shown by."
+        removedByOperator:
+          type: boolean
+          description: Whether GenAI Fund removed it; a member restores only what
+            members removed.
         removedNote:
           type: string
         removedReason:
           type: string
           description: Why it was removed.
           enum:
-          - not_relevant
-          - already_known
-          - not_credible
+          - does_not_solve
+          - wrong_industry_or_size
+          - closed_or_wrong_website
+          - duplicate
           - other
         requiredMet:
           type: integer
@@ -15712,17 +15723,18 @@ components:
       properties:
         note:
           type: string
-          description: A few words more; needed when the reason is other.
+          description: "A few words more, if the person wants."
           maxLength: 500
           minLength: 0
         reason:
           type: string
           enum:
-          - not_relevant
-          - already_known
-          - not_credible
+          - does_not_solve
+          - wrong_industry_or_size
+          - closed_or_wrong_website
+          - duplicate
           - other
-          pattern: not_relevant|already_known|not_credible|other
+          pattern: does_not_solve|wrong_industry_or_size|closed_or_wrong_website|duplicate|other
       required:
       - reason
     ReportedChatModel:

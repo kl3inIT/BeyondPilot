@@ -1901,11 +1901,20 @@ export type MatchingCandidate = {
      * Whether the product is made for the problem.
      */
     problem?: MatchingFinding;
+    removedAt?: string;
+    /**
+     * Who removed it, by the name they are shown by.
+     */
+    removedBy?: string;
+    /**
+     * Whether GenAI Fund removed it; a member restores only what members removed.
+     */
+    removedByOperator?: boolean;
     removedNote?: string;
     /**
      * Why it was removed.
      */
-    removedReason?: 'not_relevant' | 'already_known' | 'not_credible' | 'other';
+    removedReason?: 'does_not_solve' | 'wrong_industry_or_size' | 'closed_or_wrong_website' | 'duplicate' | 'other';
     requiredMet: number;
     requiredTotal: number;
     solutionId: string;
@@ -3427,10 +3436,10 @@ export type ReleaseItem = {
  */
 export type RemoveMatchingCandidate = {
     /**
-     * A few words more; needed when the reason is other.
+     * A few words more, if the person wants.
      */
     note?: string;
-    reason: 'not_relevant' | 'already_known' | 'not_credible' | 'other';
+    reason: 'does_not_solve' | 'wrong_industry_or_size' | 'closed_or_wrong_website' | 'duplicate' | 'other';
 };
 
 export type ReportedChatModel = {
