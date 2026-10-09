@@ -179,6 +179,15 @@ public class SearchDocumentRepository {
 			.update();
 	}
 
+	/** The title of every item of a kind the index holds, by its identifier. */
+	public Map<UUID, String> titles(String kind) {
+		Map<UUID, String> titles = new LinkedHashMap<>();
+		jdbc.sql("select item_id, title from search_document where kind = :kind").param("kind", kind).query(row -> {
+			titles.put(row.getObject("item_id", UUID.class), row.getString("title"));
+		});
+		return titles;
+	}
+
 	/** Takes the item out of the index; nothing happens when it is not there. */
 	public void remove(String kind, UUID itemId) {
 		jdbc.sql("delete from search_document where kind = ? and item_id = ?").params(kind, itemId).update();

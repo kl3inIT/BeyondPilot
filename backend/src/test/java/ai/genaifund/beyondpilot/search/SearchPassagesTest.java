@@ -1,18 +1,21 @@
 package ai.genaifund.beyondpilot.search;
 
 import static ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.SOLUTION;
+import static ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository.CUSTOMER_CASE;
 import static ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository.DECK;
 import static ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository.READ_AS_TEXT;
 import static ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository.UNREAD;
 import static ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository.WEBSITE;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.ByteArrayInputStream;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.TestPdf;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.ai.AiProviderChange;
 import ai.genaifund.beyondpilot.ai.AiProviders;
@@ -22,6 +25,8 @@ import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Document;
 import ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository;
 import ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository.Passage;
+import ai.genaifund.beyondpilot.solution.CustomerCase;
+import ai.genaifund.beyondpilot.solution.SolutionDeck;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +75,9 @@ class SearchPassagesTest {
 
 	@Autowired
 	private EmbeddingClients clients;
+
+	@Autowired
+	private SolutionPassages solutionPassages;
 
 	/** Nothing indexed, and OpenAI's large model set the way an operator sets it, with semantic search on. */
 	@BeforeEach
@@ -153,6 +161,59 @@ class SearchPassagesTest {
 			.list()).containsExactly("1 true 0", "2 false 1");
 		// Held back, so the next run does not send it again at once.
 		assertThat(passages.pendingEmbeddings(MODEL, 10)).isEmpty();
+	}
+
+	@Test
+	void aDecksPagesBecomePassagesAndAPageWithoutTextWaitsUnread() {
+		UUID solution = UUID.randomUUID();
+		UUID file = UUID.randomUUID();
+		byte[] pdf = TestPdf.of("Answers inbound customer calls in Vietnamese.", "",
+				"Demand forecasting for retail stores.");
+
+		solutionPassages.deck(solution, "Hotline Assist",
+				new SolutionDeck(file, "deck.pdf", () -> new ByteArrayInputStream(pdf)));
+
+		assertThat(passages.origins(DECK)).containsEntry(solution, file.toString());
+		assertThat(passages.of(solution)).extracting(Passage::heading, Passage::text, Passage::reading)
+			.containsExactly(
+					org.assertj.core.groups.Tuple.tuple("Hotline Assist, deck page 1",
+							"Answers inbound customer calls in Vietnamese.", READ_AS_TEXT),
+					org.assertj.core.groups.Tuple.tuple("Hotline Assist, deck page 2", "", UNREAD),
+					org.assertj.core.groups.Tuple.tuple("Hotline Assist, deck page 3",
+							"Demand forecasting for retail stores.", READ_AS_TEXT));
+	}
+
+	@Test
+	void aDeckThatCannotBeReadLeavesOneUnreadPageAndIsNotTriedAgain() {
+		UUID solution = UUID.randomUUID();
+		UUID file = UUID.randomUUID();
+
+		solutionPassages.deck(solution, "Hotline Assist",
+				new SolutionDeck(file, "deck.pdf", () -> new ByteArrayInputStream("not a PDF".getBytes())));
+
+		assertThat(passages.of(solution)).extracting(Passage::reading).containsExactly(UNREAD);
+		// The job compares this with the solution's deck file: the same file is not read again.
+		assertThat(passages.origins(DECK)).containsEntry(solution, file.toString());
+	}
+
+	@Test
+	void customerCasesArePassagesAndTheSameCasesKeepTheirVectors() {
+		UUID solution = UUID.randomUUID();
+		List<CustomerCase> cases = List.of(new CustomerCase(UUID.randomUUID(), "Viet Bank", "Call centre",
+				"Long waits on the hotline.", "Answers inbound customer calls.", null));
+
+		solutionPassages.cases(solution, "Hotline Assist", cases);
+		embeddings.embedPending();
+		solutionPassages.cases(solution, "Hotline Assist", cases);
+
+		assertThat(passages.of(solution)).extracting(Passage::source, Passage::heading)
+			.containsExactly(org.assertj.core.groups.Tuple.tuple(CUSTOMER_CASE, "Hotline Assist, customer case 1"));
+		assertThat(passages.of(solution).getFirst().text()).contains("Customer: Viet Bank", "Delivered: Answers")
+			.doesNotContain("Result:");
+		assertThat(passages.pendingEmbeddings(MODEL, 10)).as("written once, so still embedded").isEmpty();
+
+		solutionPassages.cases(solution, "Hotline Assist", List.of());
+		assertThat(passages.of(solution)).isEmpty();
 	}
 
 	@Test

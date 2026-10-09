@@ -1,7 +1,9 @@
 package ai.genaifund.beyondpilot.search.persistence;
 
 import java.sql.Types;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -90,6 +92,25 @@ public class SearchPassageRepository {
 			.param("source", source)
 			.query(String.class)
 			.optional();
+	}
+
+	/** What the passages of one source were made from, for every solution that has some. */
+	public Map<UUID, String> origins(String source) {
+		Map<UUID, String> origins = new LinkedHashMap<>();
+		jdbc.sql("select distinct solution_id, origin from search_passage where source = :source")
+			.param("source", source)
+			.query(row -> {
+				origins.put(row.getObject("solution_id", UUID.class), row.getString("origin"));
+			});
+		return origins;
+	}
+
+	/** Takes out the passages of one source of a solution; nothing happens when none is kept. */
+	public void remove(UUID solutionId, String source) {
+		jdbc.sql("delete from search_passage where solution_id = :solutionId and source = :source")
+			.param("solutionId", solutionId)
+			.param("source", source)
+			.update();
 	}
 
 	/** The passages of a solution, in the order a person would read them. */
