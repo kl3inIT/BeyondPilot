@@ -6341,5 +6341,204 @@
         "action": "Create a profile"
       }
     }
+  },
+  "Matching": {
+    "metaTitle": "Candidates",
+    "pageTabs": {
+      "label": "Pages of this use case",
+      "brief": "Brief",
+      "candidates": "Candidates"
+    },
+    "head": {
+      "back": "{organization} · Use cases",
+      "untitled": "Untitled use case"
+    },
+    "run": {
+      "start": "Find solutions",
+      "again": "Run again",
+      "startNow": "Start now",
+      "judgeAll": "Judge all again",
+      "left": "{count, plural, =0 {No runs left today} one {# run left today} other {# runs left today}}",
+      "queued": "In the queue. It starts in a moment.",
+      "startsAt": "Starts at {time}, once the brief has stayed unchanged.",
+      "preparing": "Reading the brief and looking for solutions",
+      "running": "Reading the solutions: judged {judged} of {total}",
+      "waiting": "Paused: the AI provider is busy. Judged {judged} of {total} so far.",
+      "resumes": "It goes on by itself. You do not need to start it again.",
+      "resumesAt": "It goes on by itself at about {time}. You do not need to start it again.",
+      "done": "Last run {date} · {judged, plural, one {# solution} other {# solutions}} judged",
+      "never": {
+        "title": "No solutions matched yet",
+        "lead": "The AI reads this use case, looks through the solutions on BeyondPilot and shows the ones that fit, with the words that show it."
+      },
+      "noModel": {
+        "title": "Matching cannot run yet",
+        "member": "GenAI Fund has not set it up yet. The candidates will appear here once it runs.",
+        "operator": "No AI model is chosen for matching.",
+        "link": "Choose one in Admin › AI"
+      },
+      "failed": {
+        "title": "The last run did not finish",
+        "no_model": "No AI model was chosen for matching when it ran.",
+        "use_case_not_published": "This use case is not published any more, so it is not matched.",
+        "no_capability": "The AI could not read from the brief what the solution has to do. Say it more plainly in the brief, then run again.",
+        "provider": "The AI service could not finish this run. It can be started again.",
+        "unknown": "The AI provider did not answer. The candidates judged so far are kept; run again to continue."
+      },
+      "judgeAllConfirm": {
+        "title": "Judge every candidate again?",
+        "description": "Every candidate is read and judged again, including those whose material did not change. Use it after choosing another model.",
+        "note": "It calls the model once for each candidate. Shortlists and removals stay as they are.",
+        "confirm": "Judge all again",
+        "cancel": "Cancel"
+      }
+    },
+    "coverage": {
+      "recommended": "{count, plural, =0 {Nothing recommended yet} other {# recommended}}",
+      "covered": "{total, plural, one {they cover {covered} of # need} other {they cover {covered} of # needs}}",
+      "gap": "Nobody on BeyondPilot shows {need}"
+    },
+    "filter": {
+      "label": "Narrow by need",
+      "all": "All {count}"
+    },
+    "tabs": {
+      "label": "Candidates by decision",
+      "all": "All",
+      "shortlist": "Shortlist",
+      "removed": "Removed"
+    },
+    "groups": {
+      "direct": {
+        "title": "Direct relevance",
+        "about": "Its own material shows every need this use case cannot do without."
+      },
+      "industry": {
+        "title": "Industry relevance",
+        "about": "It has done similar work in this industry and shows at least one of the required needs."
+      },
+      "technology": {
+        "title": "Technology capability",
+        "about": "It is built on the technology this use case names and shows part of what is needed."
+      },
+      "waiting": {
+        "title": "Waiting to be judged",
+        "about": "Added by GenAI Fund. The next run reads it and puts it in a group."
+      },
+      "kept": {
+        "title": "Kept by a person",
+        "about": "Shortlisted by a person. The last run found no reason to recommend it, and it stays until someone takes it off."
+      },
+      "aboutLabel": "What “{group}” means",
+      "emptyDirect": "{count, plural, =0 {No one covers every need.} one {No one covers the required need.} other {No one covers all # required needs.}}",
+      "more": "Show {count} more",
+      "fewer": "Show fewer"
+    },
+    "status": {
+      "met": "Met",
+      "partly": "Partly",
+      "not_shown": "Not shown"
+    },
+    "source": {
+      "profile": "Profile",
+      "customerCase": "Customer case {number}",
+      "deck": "Deck, page {page}",
+      "website": "Website"
+    },
+    "row": {
+      "shortlist": "Shortlist",
+      "shortlisted": "Shortlisted",
+      "remove": "Remove…",
+      "open": "Open",
+      "menu": "More for {name}",
+      "need": "{need}: {status}",
+      "added": "Added by GenAI Fund",
+      "waiting": "Not judged yet. The next run reads it."
+    },
+    "panel": {
+      "label": "The chosen solution",
+      "empty": "Choose a solution to read why it was matched.",
+      "previous": "Previous solution",
+      "next": "Next solution",
+      "close": "Close",
+      "waiting": "Not judged yet. The next run reads its material and says what it shows.",
+      "needs": "What its material shows",
+      "required": "Required",
+      "constraints": "To confirm with the vendor",
+      "constraintsLead": "Conditions of delivery. What is written here comes from the solution's own material; ask the vendor before relying on it.",
+      "unread": {
+        "deck": "Its deck held no text the AI could read, so it was judged without it.",
+        "website": "Its website held no text the AI could read, so it was judged without it.",
+        "both": "Its deck and its website held no text the AI could read, so it was judged on its profile alone."
+      }
+    },
+    "remove": {
+      "title": "Why is {name} not a fit?",
+      "cancel": "Cancel",
+      "note": "Add a note (optional)",
+      "foot": "It stays on BeyondPilot and in other matches. This use case will not suggest it again.",
+      "confirm": "Remove",
+      "reasons": {
+        "does_not_solve": "Does not solve this problem",
+        "wrong_industry_or_size": "Wrong industry or size",
+        "closed_or_wrong_website": "Closed, pivoted or wrong website",
+        "duplicate": "Duplicate",
+        "other": "Other"
+      }
+    },
+    "removed": {
+      "by": "Removed by {name} · {when}",
+      "byOnly": "Removed by {name}",
+      "genaiFund": "GenAI Fund",
+      "someone": "a member",
+      "restore": "Restore",
+      "locked": "GenAI Fund removed it, so only GenAI Fund can restore it.",
+      "empty": "Nothing was removed."
+    },
+    "add": {
+      "open": "Add a solution",
+      "title": "Add a solution",
+      "description": "For a solution the run did not find. It is read and judged like the others in the run that follows.",
+      "search": "Search approved solutions by name or organization",
+      "searching": "Searching…",
+      "empty": "No approved solution matches.",
+      "failed": "The solutions could not be read. Try again.",
+      "already": "Already a candidate",
+      "add": "Add",
+      "addNamed": "Add {name}",
+      "close": "Close"
+    },
+    "empty": {
+      "none": "The run found no solution on BeyondPilot that fits this use case.",
+      "shortlist": "Nothing is on the shortlist yet. Shortlist a solution from the All tab.",
+      "need": "No solution here shows {need}.",
+      "clear": "Show all"
+    },
+    "done": {
+      "started": "Matching started.",
+      "judgingAll": "Every candidate is being judged again.",
+      "added": "{name} added. The run that follows judges it.",
+      "shortlisted": "{name} is on the shortlist.",
+      "unshortlisted": "{name} is off the shortlist.",
+      "removed": "{name} removed · {reason}",
+      "restored": "{name} restored.",
+      "undo": "Undo"
+    },
+    "errors": {
+      "MATCHING_USE_CASE_NOT_FOUND": "This use case does not exist any more.",
+      "MATCHING_CANDIDATE_NOT_FOUND": "This solution is not a candidate any more. Reload the page.",
+      "MATCHING_SOLUTION_NOT_FOUND": "This solution is not approved any more, so it cannot be added.",
+      "MATCHING_OPERATORS_ONLY": "Only GenAI Fund can do this.",
+      "MATCHING_NO_MODEL": "Matching cannot run now: no AI model is chosen for it.",
+      "MATCHING_RUN_OPEN": "Matching is already running for this use case.",
+      "MATCHING_RUN_LIMIT": "Matching was run as often as a day allows for this use case. Try again tomorrow.",
+      "MATCHING_CANDIDATE_REMOVED": "This solution was removed. Restore it first.",
+      "MATCHING_REMOVED_BY_OPERATOR": "GenAI Fund removed this solution, so only GenAI Fund can restore it.",
+      "MATCHING_ALREADY_CANDIDATE": "This solution is already a candidate for this use case.",
+      "MATCHING_OWN_SOLUTION": "This solution belongs to the organization of the use case.",
+      "MATCHING_SETTINGS_CHANGED": "Someone else changed these settings. Reload and try again.",
+      "REQUEST_INVALID": "The request was not accepted. Choose a reason, and say why when it is Other.",
+      "unknown": "That did not work. Try again."
+    }
   }
 }

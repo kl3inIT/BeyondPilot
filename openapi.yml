@@ -12896,10 +12896,7 @@ components:
             names.
         unread:
           type: array
-          description: Which of its sources held no text to read.
-          enum:
-          - deck
-          - website
+          description: "Which of its sources held no text to read: deck, website."
           items:
             type: string
       required:

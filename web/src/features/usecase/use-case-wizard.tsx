@@ -24,6 +24,7 @@ import {
 } from "./use-case-draft";
 import { UseCaseStepFields } from "./use-case-step-fields";
 import { UseCaseSummary } from "./use-case-summary";
+import { UseCaseTabs } from "./use-case-tabs";
 import { Tick } from "./wizard-fields";
 import { WizardShell } from "./wizard-shell";
 
@@ -201,6 +202,7 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
       onStep={(name) => void go(name)}
       notes={[t("saveNote", { name: useCase.organizationName }), t("reviewNote")]}
     >
+      {useCase.publishedAt && <UseCaseTabs area="workspace" id={useCase.id} current="brief" />}
       {problem === "changed" && (
         <Alert variant="destructive">
           <AlertTitle>{e("USECASE_CHANGED_MEANWHILE")}</AlertTitle>
