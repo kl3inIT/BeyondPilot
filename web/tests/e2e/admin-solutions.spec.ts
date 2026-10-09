@@ -221,11 +221,14 @@ test.describe("admin solutions", () => {
 
     // It does not wait, so it has no place in the queue; the queue's first record is still offered.
     await expect(page.getByText(/of 2 waiting/)).toHaveCount(0);
-    await expect(page.getByText("Key: S take down")).toBeVisible();
+    await expect(page.getByText("Key: S take down")).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Open the public page" })).toHaveAttribute(
       "href",
       "/solutions/policy-chat",
     );
+    await page.waitForTimeout(1100);
+    await page.keyboard.press("s");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
     // The solution's own decision stands before those of its customer deployments.
     await page.getByRole("button", { name: "Take down…" }).first().click();
     const dialog = page.getByRole("dialog");
