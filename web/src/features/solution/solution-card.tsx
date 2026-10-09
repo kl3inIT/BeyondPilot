@@ -71,7 +71,7 @@ function SolutionCard({ solution }: { solution: PublicSolutionSummary }) {
         <p className="line-clamp-2 text-sm text-muted-foreground">{solution.summary}</p>
       )}
       {solution.focusAreas.length > 0 && (
-        <div className="flex items-start gap-2">
+        <div className="relative z-10 flex items-start gap-2">
           <LayersIcon className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           <CodeList
             labels={solution.focusAreas.map(focusArea)}

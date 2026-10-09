@@ -48,6 +48,7 @@ import { CustomerDeploymentCard } from "./customer-deployment-card";
 import { deckAddress, useFileSize } from "./solution-deck";
 import { SolutionGallery } from "./solution-gallery";
 import { SolutionLogo } from "./solution-logo";
+import { SolutionSection } from "./solution-section";
 
 /** How many chips a heading group names before the rest waits under "+N more". */
 const CAPABILITY_LIMIT = 3;
@@ -102,25 +103,22 @@ function PartHeading({ icon, tone, children }: PartHeadingProps) {
 type FactProps = {
   icon: React.ReactNode;
   name: string;
-  /** A missing value reads as unknown beside the criterion's name. */
+  /** A missing value leaves the named criterion off the page. */
   value: string | undefined;
-  /** What shows where the value would be when there is none. */
-  unknown: string;
 };
 
-/** A named fact of a solution in the list beside the page. */
-function Fact({ icon, name, value, unknown }: FactProps) {
+/** A named fact of a solution in the list beside the page, absent when it has nothing to say. */
+function Fact({ icon, name, value }: FactProps) {
+  if (!value) {
+    return null;
+  }
   return (
     <div data-slot="fact" className="flex flex-col gap-0.5">
       <dt className="flex items-center gap-1.5 text-xs text-muted-foreground [&_svg]:size-3.5 [&_svg]:shrink-0">
         {icon}
         {name}
       </dt>
-      {value ? (
-        <dd className="text-sm font-medium">{value}</dd>
-      ) : (
-        <dd className="text-sm font-medium text-muted-foreground">{unknown}</dd>
-      )}
+      <dd className="text-sm font-medium">{value}</dd>
     </div>
   );
 }
@@ -148,8 +146,9 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
   const deployment = useVocabulary("deployment");
   const language = useVocabulary("language");
   const teamSize = useVocabulary("teamSize");
-  const productNames = solution.productNames;
-  const segmentFocus = solution.segmentFocus;
+  const productNames = solution.productNames ?? [];
+  const segmentFocus = solution.segmentFocus ?? [];
+  const useCaseIndustries = solution.useCaseIndustries ?? [];
   const useCaseDescriptions = (solution.useCaseDescriptions ?? "")
     .split(/\r?\n/)
     .map((line) => line.replace(/^[-•*]\s*/, "").trim())
@@ -161,7 +160,6 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
   const size = useFileSize();
   const format = useFormatter();
 
-  const unknown = t("unknown");
   const company = `${siteRoutes.organizations}/${solution.organizationSlug}`;
   const country = solution.country ? countryName(solution.country) : undefined;
   // What the owners wrote as a list, one problem to a line, reads as a list.
@@ -169,8 +167,28 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
     .split("\n")
     .map((line) => line.replace(/^[-•*]\s*/, "").trim())
     .filter(Boolean);
+  const bestCustomerProfile = solution.bestCustomerProfile?.trim();
+  const bestCustomerProfileItems = (bestCustomerProfile ?? "")
+    .split(/\r?\n|•/)
+    .map((line) =>
+      line
+        .replace(/^\s*[-*]\s*/, "")
+        .trim()
+        .replace(/,\s*$/, ""),
+    )
+    .filter(Boolean);
+  const bestCustomerProfileIsList = /(?:\r?\n|•)/.test(bestCustomerProfile ?? "");
   const cases = solution.customerDeployments.length;
-  const hasUseCaseDetails = solution.useCaseIndustries.length > 0 || useCaseDescriptions.length > 0;
+  const hasUseCaseDetails = useCaseIndustries.length > 0 || useCaseDescriptions.length > 0;
+  const hasProduct = Boolean(
+    productNames.length > 0 ||
+    solution.coreTechnology ||
+    solution.builtWith.length > 0 ||
+    solution.infrastructureUsed,
+  );
+  const hasAudience = Boolean(
+    bestCustomerProfile || segmentFocus.length > 0 || solution.notablePayingCustomers,
+  );
   const hasBusinessDetails = Boolean(
     solution.monetizationModel || solution.companyFundingStatus || solution.companyFundingRaised,
   );
@@ -279,25 +297,26 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
           </div>
 
           <div className="order-3 flex min-w-0 flex-col gap-7 lg:order-none lg:gap-9">
-            <section className="flex flex-col gap-2">
-              <PartHeading icon={<SparklesIcon aria-hidden="true" />}>
-                {view("valueProposition")}
-              </PartHeading>
-              {solution.valueProposition && (
+            {solution.valueProposition && (
+              <section className="flex flex-col gap-2">
+                <PartHeading icon={<SparklesIcon aria-hidden="true" />}>
+                  {view("valueProposition")}
+                </PartHeading>
                 <TextClamp more={t("showMore")} less={t("showLess")}>
                   <p className="whitespace-pre-line text-muted-foreground">
                     {solution.valueProposition}
                   </p>
                 </TextClamp>
-              )}
-            </section>
+              </section>
+            )}
 
-            <section className="flex flex-col gap-2">
-              <PartHeading icon={<CircleAlertIcon aria-hidden="true" />}>
-                {view("problemsSolved")}
-              </PartHeading>
-              {problems.length > 0 &&
-                (problems.length > 1 ? (
+            {problems.length > 0 && (
+              <SolutionSection
+                title={view("problemsSolved")}
+                icon={<CircleAlertIcon aria-hidden="true" />}
+                contentClassName="gap-2"
+              >
+                {problems.length > 1 ? (
                   <ul className="flex flex-col gap-2 text-muted-foreground">
                     {problems.map((problem) => (
                       <li key={problem} className="flex items-start gap-2.5">
@@ -308,182 +327,204 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                   </ul>
                 ) : (
                   <p className="text-muted-foreground">{problems[0]}</p>
-                ))}
-            </section>
-            <section className="flex flex-col gap-3">
-              <PartHeading icon={<CpuIcon aria-hidden="true" />}>{t("product.title")}</PartHeading>
-              {(productNames.length > 0 ||
-                solution.coreTechnology ||
-                solution.builtWith.length > 0 ||
-                solution.infrastructureUsed) && (
-                <dl className="grid gap-4 rounded-xl border bg-card p-4 md:grid-cols-2">
+                )}
+              </SolutionSection>
+            )}
+            {hasProduct && (
+              <SolutionSection title={t("product.title")} icon={<CpuIcon aria-hidden="true" />}>
+                <dl className="flex flex-col gap-3">
                   {productNames.length > 0 && (
-                    <div className="flex flex-col gap-1">
-                      <dt className="text-sm font-medium">{t("product.names")}</dt>
-                      <dd className="text-sm text-muted-foreground">{productNames.join(", ")}</dd>
+                    <div className="flex flex-col gap-0.5">
+                      <dt className="flex items-start gap-2 text-sm font-medium">
+                        <span
+                          aria-hidden="true"
+                          className="mt-2 size-1.5 shrink-0 rounded-full bg-muted-foreground"
+                        />
+                        {t("product.names")}
+                      </dt>
+                      <dd className="pl-3.5 text-sm text-muted-foreground">
+                        {productNames.join(", ")}
+                      </dd>
                     </div>
                   )}
                   {solution.coreTechnology && (
-                    <div className="flex flex-col gap-1">
-                      <dt className="text-sm font-medium">{t("product.coreTechnology")}</dt>
-                      <dd className="text-sm whitespace-pre-line text-muted-foreground">
+                    <div className="flex flex-col gap-0.5">
+                      <dt className="flex items-start gap-2 text-sm font-medium">
+                        <span
+                          aria-hidden="true"
+                          className="mt-2 size-1.5 shrink-0 rounded-full bg-muted-foreground"
+                        />
+                        {t("product.coreTechnology")}
+                      </dt>
+                      <dd className="pl-3.5 text-sm whitespace-pre-line text-muted-foreground">
                         {solution.coreTechnology}
                       </dd>
                     </div>
                   )}
                   {solution.builtWith.length > 0 && (
-                    <div className="flex flex-col gap-1">
-                      <dt className="text-sm font-medium">{t("product.builtWith")}</dt>
-                      <dd className="text-sm text-muted-foreground">
+                    <div className="flex flex-col gap-0.5">
+                      <dt className="flex items-start gap-2 text-sm font-medium">
+                        <span
+                          aria-hidden="true"
+                          className="mt-2 size-1.5 shrink-0 rounded-full bg-muted-foreground"
+                        />
+                        {t("product.builtWith")}
+                      </dt>
+                      <dd className="pl-3.5 text-sm text-muted-foreground">
                         {solution.builtWith.join(", ")}
                       </dd>
                     </div>
                   )}
                   {solution.infrastructureUsed && (
-                    <div className="flex flex-col gap-1">
-                      <dt className="text-sm font-medium">{t("product.hosting")}</dt>
-                      <dd className="text-sm whitespace-pre-line text-muted-foreground">
+                    <div className="flex flex-col gap-0.5">
+                      <dt className="flex items-start gap-2 text-sm font-medium">
+                        <span
+                          aria-hidden="true"
+                          className="mt-2 size-1.5 shrink-0 rounded-full bg-muted-foreground"
+                        />
+                        {t("product.hosting")}
+                      </dt>
+                      <dd className="pl-3.5 text-sm whitespace-pre-line text-muted-foreground">
                         {solution.infrastructureUsed}
                       </dd>
                     </div>
                   )}
                 </dl>
-              )}
-            </section>
+              </SolutionSection>
+            )}
 
-            <section className="flex flex-col gap-3">
-              <PartHeading icon={<TargetIcon aria-hidden="true" />}>
-                {t("audience.title")}
-              </PartHeading>
-              {(solution.bestCustomerProfile ||
-                segmentFocus.length > 0 ||
-                solution.notablePayingCustomers) && (
-                <div className="grid gap-3 md:grid-cols-2">
-                  {solution.bestCustomerProfile && (
-                    <div className="flex flex-col gap-1 rounded-xl border bg-card p-4">
+            {hasAudience && (
+              <SolutionSection title={t("audience.title")} icon={<TargetIcon aria-hidden="true" />}>
+                <div className="flex flex-col gap-3">
+                  {bestCustomerProfile && (
+                    <div className="flex flex-col gap-1">
                       <h3 className="text-sm font-medium">{t("audience.bestCustomerProfile")}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {solution.bestCustomerProfile}
-                      </p>
+                      {bestCustomerProfileIsList ? (
+                        <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                          {bestCustomerProfileItems.map((item, index) => (
+                            <li key={`${index}-${item}`}>{item}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">{bestCustomerProfile}</p>
+                      )}
                     </div>
                   )}
                   {segmentFocus.length > 0 && (
-                    <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+                    <div className="flex flex-col gap-1">
                       <h3 className="text-sm font-medium">{t("audience.segmentFocus")}</h3>
-                      <ul className="flex flex-wrap gap-2">
+                      <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
                         {segmentFocus.map((segment) => (
-                          <li key={segment}>
-                            <Badge variant="outline">{segment}</Badge>
-                          </li>
+                          <li key={segment}>{segment}</li>
                         ))}
                       </ul>
                     </div>
                   )}
                   {solution.notablePayingCustomers && (
-                    <Evidence state="known" className="md:col-span-2">
+                    <div className="flex flex-col gap-1">
                       <h3 className="text-sm font-medium">
                         {t("audience.notablePayingCustomers")}
                       </h3>
-                      <p className="text-sm whitespace-pre-line">
-                        {solution.notablePayingCustomers}
-                      </p>
+                      <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                        <li className="whitespace-pre-line">{solution.notablePayingCustomers}</li>
+                      </ul>
                       <p className="text-xs text-muted-foreground">
                         {t("proof.byCompany", { name: solution.organizationName })}
                       </p>
-                    </Evidence>
+                    </div>
                   )}
                 </div>
-              )}
-            </section>
+              </SolutionSection>
+            )}
 
-            <section className="flex flex-col gap-3">
-              <div className="flex flex-col gap-1">
-                <PartHeading icon={<LayersIcon aria-hidden="true" />}>
-                  {t("useCases.title")}
-                </PartHeading>
-                {hasUseCaseDetails && (
-                  <p className="text-sm text-muted-foreground">{t("useCases.lead")}</p>
+            {hasUseCaseDetails && (
+              <SolutionSection
+                title={t("useCases.title")}
+                icon={<LayersIcon aria-hidden="true" />}
+                description={<p className="text-sm text-muted-foreground">{t("useCases.lead")}</p>}
+              >
+                {useCaseIndustries.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-sm font-medium">{t("useCases.industries")}</h3>
+                    <ul className="flex flex-wrap gap-2">
+                      {useCaseIndustries.map((item) => (
+                        <li key={item}>
+                          <Badge variant="outline">{item}</Badge>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
-              </div>
-              {solution.useCaseIndustries.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-sm font-medium">{t("useCases.industries")}</h3>
-                  <ul className="flex flex-wrap gap-2">
-                    {solution.useCaseIndustries.map((item) => (
-                      <li key={item}>
-                        <Badge variant="outline">{item}</Badge>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {useCaseDescriptions.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-sm font-medium">{t("useCases.descriptions")}</h3>
-                  <ul className="flex flex-col gap-2 text-muted-foreground">
-                    {useCaseDescriptions.map((item, index) => (
-                      <li key={`${index}-${item}`} className="flex items-start gap-2.5">
-                        <CircleCheckIcon className="mt-1 size-4 shrink-0" aria-hidden="true" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </section>
+                {useCaseDescriptions.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-sm font-medium">{t("useCases.descriptions")}</h3>
+                    <ul className="flex flex-col gap-2 text-muted-foreground">
+                      {useCaseDescriptions.map((item, index) => (
+                        <li key={`${index}-${item}`} className="flex items-start gap-2.5">
+                          <CircleCheckIcon className="mt-1 size-4 shrink-0" aria-hidden="true" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </SolutionSection>
+            )}
 
-            <section className="flex flex-col gap-3">
-              <div className="flex flex-col gap-1">
-                <PartHeading tone="proof" icon={<BadgeCheckIcon aria-hidden="true" />}>
-                  {t("proof.title")}
-                </PartHeading>
-                {hasProof && <p className="text-sm text-muted-foreground">{t("proof.lead")}</p>}
-              </div>
-              {/* Each claim under its kind, with who stands behind it. */}
-              {solution.backing?.program && (
-                <Evidence state="known">
-                  <Badge variant="outline">{t("proof.programme")}</Badge>
-                  <p className="text-sm">
-                    {t("proof.selected", { program: solution.backing.program })}
-                  </p>
-                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <BadgeCheckIcon className="size-3.5 shrink-0 text-success" aria-hidden="true" />
-                    {t("proof.byGenAiFund", {
-                      date: format.dateTime(new Date(solution.backing.updatedAt), {
-                        dateStyle: "medium",
-                      }),
-                    })}
-                  </p>
-                </Evidence>
-              )}
-              {solution.traction && (
-                <Evidence state="known">
-                  <Badge variant="outline">{t("proof.milestones")}</Badge>
-                  <p className="text-sm whitespace-pre-line">{solution.traction}</p>
-                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <LinkIcon className="size-3.5 shrink-0" aria-hidden="true" />
-                    {t("proof.byCompany", { name: solution.organizationName })}
-                  </p>
-                </Evidence>
-              )}
-              {cases > 0 && (
-                <Evidence state="known">
-                  <Badge variant="outline">{t("proof.customerCase")}</Badge>
-                  <p className="text-sm">{t("proof.cases", { count: cases })}</p>
-                </Evidence>
-              )}
-            </section>
-
-            <section className="flex flex-col gap-3">
-              <div className="flex flex-col gap-1">
-                <PartHeading icon={<UsersIcon aria-hidden="true" />}>
-                  {t("references.title")}
-                </PartHeading>
+            {hasProof && (
+              <SolutionSection
+                title={t("proof.title")}
+                icon={<BadgeCheckIcon aria-hidden="true" />}
+                tone="proof"
+                description={<p className="text-sm text-muted-foreground">{t("proof.lead")}</p>}
+              >
+                {/* Each claim under its kind, with who stands behind it. */}
+                {solution.backing?.program && (
+                  <Evidence state="known">
+                    <Badge variant="outline">{t("proof.programme")}</Badge>
+                    <p className="text-sm">
+                      {t("proof.selected", { program: solution.backing.program })}
+                    </p>
+                    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <BadgeCheckIcon
+                        className="size-3.5 shrink-0 text-success"
+                        aria-hidden="true"
+                      />
+                      {t("proof.byGenAiFund", {
+                        date: format.dateTime(new Date(solution.backing.updatedAt), {
+                          dateStyle: "medium",
+                        }),
+                      })}
+                    </p>
+                  </Evidence>
+                )}
+                {solution.traction && (
+                  <Evidence state="known">
+                    <Badge variant="outline">{t("proof.milestones")}</Badge>
+                    <p className="text-sm whitespace-pre-line">{solution.traction}</p>
+                    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <LinkIcon className="size-3.5 shrink-0" aria-hidden="true" />
+                      {t("proof.byCompany", { name: solution.organizationName })}
+                    </p>
+                  </Evidence>
+                )}
                 {cases > 0 && (
-                  <p className="text-sm text-muted-foreground">{t("references.lead")}</p>
+                  <Evidence state="known">
+                    <Badge variant="outline">{t("proof.customerCase")}</Badge>
+                    <p className="text-sm">{t("proof.cases", { count: cases })}</p>
+                  </Evidence>
                 )}
-              </div>
-              {cases > 0 && (
+              </SolutionSection>
+            )}
+
+            {cases > 0 && (
+              <SolutionSection
+                title={t("references.title")}
+                icon={<UsersIcon aria-hidden="true" />}
+                description={
+                  <p className="text-sm text-muted-foreground">{t("references.lead")}</p>
+                }
+              >
                 <ul className="flex flex-col gap-3">
                   {solution.customerDeployments.map((item) => (
                     <li key={item.id}>
@@ -497,71 +538,64 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                     </li>
                   ))}
                 </ul>
-              )}
-            </section>
+              </SolutionSection>
+            )}
 
-            <section className="flex flex-col gap-3">
-              <PartHeading icon={<CircleDollarSignIcon aria-hidden="true" />}>
-                {t("business.title")}
-              </PartHeading>
-              {hasBusinessDetails && (
-                <>
-                  <dl className="grid gap-4 rounded-xl border bg-card p-4 md:grid-cols-2">
-                    {solution.monetizationModel && (
-                      <div className="flex flex-col gap-1">
-                        <dt className="text-sm font-medium">{t("business.monetizationModel")}</dt>
-                        <dd className="text-sm text-muted-foreground">
-                          {solution.monetizationModel}
-                        </dd>
-                      </div>
-                    )}
-                    {solution.companyFundingStatus && (
-                      <div className="flex flex-col gap-1">
-                        <dt className="text-sm font-medium">{t("business.fundingStatus")}</dt>
-                        <dd className="text-sm text-muted-foreground">
-                          {solution.companyFundingStatus}
-                        </dd>
-                      </div>
-                    )}
-                    {solution.companyFundingRaised && (
-                      <div className="flex flex-col gap-1">
-                        <dt className="text-sm font-medium">{t("business.fundingRaised")}</dt>
-                        <dd className="text-sm text-muted-foreground">
-                          {solution.companyFundingRaised}
-                        </dd>
-                      </div>
-                    )}
-                  </dl>
-                  <p className="text-xs text-muted-foreground">
-                    {t("proof.byCompany", { name: solution.organizationName })}
-                  </p>
-                </>
-              )}
-            </section>
+            {hasBusinessDetails && (
+              <SolutionSection
+                title={t("business.title")}
+                icon={<CircleDollarSignIcon aria-hidden="true" />}
+              >
+                <dl className="grid gap-4 rounded-xl border bg-card p-4 md:grid-cols-2">
+                  {solution.monetizationModel && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-sm font-medium">{t("business.monetizationModel")}</dt>
+                      <dd className="text-sm text-muted-foreground">
+                        {solution.monetizationModel}
+                      </dd>
+                    </div>
+                  )}
+                  {solution.companyFundingStatus && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-sm font-medium">{t("business.fundingStatus")}</dt>
+                      <dd className="text-sm text-muted-foreground">
+                        {solution.companyFundingStatus}
+                      </dd>
+                    </div>
+                  )}
+                  {solution.companyFundingRaised && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-sm font-medium">{t("business.fundingRaised")}</dt>
+                      <dd className="text-sm text-muted-foreground">
+                        {solution.companyFundingRaised}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+                <p className="text-xs text-muted-foreground">
+                  {t("proof.byCompany", { name: solution.organizationName })}
+                </p>
+              </SolutionSection>
+            )}
 
-            <section className="flex flex-col gap-2">
-              <PartHeading icon={<ArrowRightIcon aria-hidden="true" />}>
-                {t("alternatives.title")}
-              </PartHeading>
-              {solution.competitors && (
-                <>
-                  <p className="whitespace-pre-line text-muted-foreground">
-                    {solution.competitors}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("proof.byCompany", { name: solution.organizationName })}
-                  </p>
-                </>
-              )}
-            </section>
+            {solution.competitors && (
+              <SolutionSection
+                title={t("alternatives.title")}
+                icon={<ArrowRightIcon aria-hidden="true" />}
+                contentClassName="gap-2"
+              >
+                <p className="whitespace-pre-line text-muted-foreground">{solution.competitors}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("proof.byCompany", { name: solution.organizationName })}
+                </p>
+              </SolutionSection>
+            )}
 
-            <section className="flex flex-col gap-3">
-              <div className="flex flex-col gap-1">
-                <PartHeading icon={<Building2Icon aria-hidden="true" />}>
-                  {t("company.title")}
-                </PartHeading>
-                {backing && <p className="text-sm text-muted-foreground">{backing}</p>}
-              </div>
+            <SolutionSection
+              title={t("company.title")}
+              icon={<Building2Icon aria-hidden="true" />}
+              description={backing && <p className="text-sm text-muted-foreground">{backing}</p>}
+            >
               <Evidence state="known">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm">{solution.organizationName}</p>
@@ -583,7 +617,7 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                   <ArrowRightIcon aria-hidden="true" />
                 </TextButton>
               </Evidence>
-            </section>
+            </SolutionSection>
           </div>
         </div>
 
@@ -595,9 +629,9 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
             </h2>
             {introduction && <p className="text-xs text-muted-foreground">{t("contact.lead")}</p>}
           </div>
-          {introduction}
-          {(solution.website || solution.demoUrl || solution.deck) && (
+          {(introduction || solution.website || solution.demoUrl || solution.deck) && (
             <div className="flex flex-col gap-2">
+              {introduction}
               {(
                 [
                   ["website", solution.website],
@@ -609,7 +643,7 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                     <Button
                       key={key}
                       prominence="secondary"
-                      size="lg"
+                      size="xl"
                       className="w-full"
                       href={href}
                       target="_blank"
@@ -621,21 +655,15 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                   ),
               )}
               {solution.deck && (
-                <>
-                  <Button
-                    prominence="secondary"
-                    size="lg"
-                    className="w-full"
-                    href={deckAddress(solution.slug)}
-                    aria-describedby="solution-deck-file"
-                  >
-                    <DownloadIcon aria-hidden="true" />
-                    {t("contact.deck")}
-                  </Button>
-                  <p id="solution-deck-file" className="text-center text-xs text-muted-foreground">
-                    {solution.deck.fileName} · {size(solution.deck.sizeBytes)}
-                  </p>
-                </>
+                <Button
+                  prominence="secondary"
+                  size="xl"
+                  className="w-full"
+                  href={deckAddress(solution.slug)}
+                >
+                  <DownloadIcon aria-hidden="true" />
+                  {t("contact.deckSize", { size: size(solution.deck.sizeBytes) })}
+                </Button>
               )}
             </div>
           )}
@@ -645,55 +673,46 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
               icon={<MapPinIcon aria-hidden="true" />}
               name={t("contact.registeredIn")}
               value={country}
-              unknown={unknown}
             />
             <Fact
               icon={<ShieldCheckIcon aria-hidden="true" />}
               name={t("facts.backedBy")}
               value={solution.backing?.backedBy ?? undefined}
-              unknown={unknown}
             />
             <Fact
               icon={<FlagIcon aria-hidden="true" />}
               name={t("facts.program")}
               value={solution.backing?.program ?? undefined}
-              unknown={unknown}
             />
             <Fact
               icon={<LayersIcon aria-hidden="true" />}
               name={t("facts.industries")}
               value={solution.industries.map(industry).join(", ")}
-              unknown={unknown}
             />
             <Fact
               icon={<CpuIcon aria-hidden="true" />}
               name={t("facts.capabilities")}
               value={solution.focusAreas.map(focusArea).join(", ")}
-              unknown={unknown}
             />
             <Fact
               icon={<MessageCircleIcon aria-hidden="true" />}
               name={t("facts.channels")}
               value={solution.channels ?? undefined}
-              unknown={unknown}
             />
             <Fact
               icon={<CloudIcon aria-hidden="true" />}
               name={t("facts.deployment")}
               value={solution.deployment.map(deployment).join(", ")}
-              unknown={unknown}
             />
             <Fact
               icon={<LanguagesIcon aria-hidden="true" />}
               name={t("facts.languages")}
               value={solution.languages.map(language).join(", ")}
-              unknown={unknown}
             />
             <Fact
               icon={<CircleDollarSignIcon aria-hidden="true" />}
               name={t("facts.funding")}
               value={solution.backing?.funding ?? undefined}
-              unknown={unknown}
             />
           </dl>
         </aside>
