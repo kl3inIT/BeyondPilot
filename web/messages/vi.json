@@ -6367,6 +6367,7 @@
       "resumes": "Hệ thống sẽ tự chạy tiếp, bạn không cần bấm lại.",
       "resumesAt": "Hệ thống sẽ tự chạy tiếp vào khoảng {time}, bạn không cần bấm lại.",
       "done": "Lần chạy gần nhất: {date} · đã đánh giá {judged} giải pháp",
+      "doneWhen": "Lần chạy gần nhất: {date}",
       "never": {
         "title": "Chưa có giải pháp nào được ghép",
         "lead": "AI đọc use case này, rà các giải pháp trên BeyondPilot và đưa ra những giải pháp phù hợp, kèm chính câu chữ chứng minh điều đó."

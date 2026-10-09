@@ -164,7 +164,9 @@ function MatchingRun({ matching, pending, onStart, children }: MatchingRunProps)
             )}
             {run.state === "done" && (
               <p className="text-muted-foreground">
-                {t("done", {
+                {/* A member reads when it ran. How many were judged counts those put in no group, which
+                    the list does not show them; that number and the model are the operators'. */}
+                {t(operator ? "done" : "doneWhen", {
                   date: format.dateTime(new Date(run.endedAt ?? run.createdAt), {
                     dateStyle: "medium",
                     timeStyle: "short",
