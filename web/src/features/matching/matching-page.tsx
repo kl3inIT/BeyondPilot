@@ -23,7 +23,7 @@ type MatchingPageProps = {
 };
 
 /**
- * The Candidates page of a use case: the solutions matched to it, why each fits, and what people
+ * The Matched solutions page of a use case: the solutions matched to it, why each fits, and what people
  * decide on them. The organization's members and GenAI Fund read the same page; the answer of the
  * backend says what each may do.
  */

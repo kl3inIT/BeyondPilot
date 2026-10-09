@@ -29,8 +29,8 @@ type MatchingRemoveProps = {
 };
 
 /**
- * Asks why a candidate is not a fit, in the place of its row: one reason out of five and a note if the
- * person wants.
+ * Asks why a solution is not a fit, in the place of its row: one reason out of five and a note if the
+ * person wants one. The note is optional whatever the reason.
  */
 function MatchingRemove({ candidate, pending, onCancel, onRemove }: MatchingRemoveProps) {
   const t = useTranslations("Matching.remove");
@@ -50,9 +50,9 @@ function MatchingRemove({ candidate, pending, onCancel, onRemove }: MatchingRemo
           size="card"
           className="size-7 rounded-md text-xs"
         />
-        <h4 id={titleId} className="min-w-0 flex-1 text-sm font-semibold">
+        <h3 id={titleId} className="min-w-0 flex-1 text-sm font-semibold">
           {t("title", { name: candidate.solutionName })}
-        </h4>
+        </h3>
         <Button prominence="tertiary" size="sm" disabled={pending} onClick={onCancel}>
           {t("cancel")}
         </Button>
@@ -69,7 +69,7 @@ function MatchingRemove({ candidate, pending, onCancel, onRemove }: MatchingRemo
         }
       >
         {reasons.map((value) => (
-          <ToggleGroupItem key={value} value={value}>
+          <ToggleGroupItem key={value} value={value} className="pointer-coarse:min-h-11">
             {reason === value && <CheckIcon aria-hidden="true" />}
             {t(`reasons.${value}`)}
           </ToggleGroupItem>
@@ -84,7 +84,7 @@ function MatchingRemove({ candidate, pending, onCancel, onRemove }: MatchingRemo
         onChange={(event) => setNote(event.target.value)}
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <p className="flex-1 text-xs text-muted-foreground">{t("foot")}</p>
+        <p className="flex-1 text-sm text-muted-foreground">{t("foot")}</p>
         <Button
           size="sm"
           pending={pending}

@@ -1,13 +1,28 @@
 "use client";
 
-import { CircleAlertIcon, Loader2Icon, RotateCwIcon, SparklesIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  CircleAlertIcon,
+  Loader2Icon,
+  PlusIcon,
+  RotateCwIcon,
+  ScanSearchIcon,
+  SparklesIcon,
+} from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Empty,
   EmptyContent,
@@ -27,22 +42,23 @@ type MatchingRunProps = {
   matching: Matching;
   /** Which start is on its way. */
   pending: "run" | "judgeAll" | null;
-  /** Starts a run; with `judgeAll` every candidate is judged again, which only an operator asks. */
+  /** Starts a run; with `judgeAll` the AI reads every solution again, which only an operator asks. */
   onStart: (judgeAll: boolean) => Promise<void>;
-  /** The operators' way to add a solution by hand, beside the run's actions. */
-  children?: ReactNode;
+  /** Opens the operators' dialog that adds a solution by hand. */
+  onAddByHand: () => void;
 };
 
 /**
- * Where the matching of a use case stands and how it is started: the run as it goes, with how many
- * candidates are judged, a run that waits and goes on by itself, one that failed and why, and the
- * actions to run it again. While a run is open the page is read again every few seconds.
+ * Where the search for solutions stands and how it is started: the run as it goes, one that waits and
+ * continues by itself, one that failed and why, and one visible action that looks again. A member is
+ * asked first, since a run is one of the few the day allows. Operators find their own two actions
+ * under "More". While a run is open the page is read again every few seconds.
  */
-function MatchingRun({ matching, pending, onStart, children }: MatchingRunProps) {
+function MatchingRun({ matching, pending, onStart, onAddByHand }: MatchingRunProps) {
   const t = useTranslations("Matching.run");
   const say = useTranslations();
   const format = useFormatter();
-  const [confirming, setConfirming] = useState(false);
+  const [asking, setAsking] = useState<"run" | "judgeAll" | null>(null);
   const { run, operator, modelChosen, runsLeftToday } = matching;
 
   const time = (instant: string) =>
@@ -56,31 +72,56 @@ function MatchingRun({ matching, pending, onStart, children }: MatchingRunProps)
   const startable = !open || (run?.state === "queued" && Boolean(run.startsAt));
   // The backend sends null where a value is absent: an operator has no limit, and reads no count.
   const limited = typeof runsLeftToday === "number";
-  const noneLeft = limited && runsLeftToday <= 0;
-  const blocked = !modelChosen || !startable || noneLeft || pending !== null;
+  const left = limited ? Math.max(0, runsLeftToday) : 0;
+  const blocked = !modelChosen || !startable || (limited && left === 0) || pending !== null;
+  const startLabel = t(
+    !run ? "start" : run.state === "queued" && run.startsAt ? "startNow" : "again",
+  );
 
   const actions = (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
       {limited && (
-        <span className="text-xs text-muted-foreground">
-          {t("left", { count: Math.max(0, runsLeftToday) })}
-        </span>
-      )}
-      {children}
-      {operator && run && (
-        <Button prominence="secondary" disabled={blocked} onClick={() => setConfirming(true)}>
-          {t("judgeAll")}
-        </Button>
+        <span className="text-sm text-muted-foreground">{t("left", { count: left })}</span>
       )}
       <Button
         prominence={run ? "secondary" : "primary"}
         pending={pending === "run"}
         disabled={blocked}
-        onClick={() => void onStart(false)}
+        onClick={() => (limited ? setAsking("run") : void onStart(false))}
       >
         {pending !== "run" && run && <RotateCwIcon aria-hidden="true" />}
-        {t(!run ? "start" : run.state === "queued" && run.startsAt ? "startNow" : "again")}
+        {startLabel}
       </Button>
+      {operator && (
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button prominence="tertiary" />}>
+            {t("more")}
+            <ChevronDownIcon aria-hidden="true" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                className="pointer-coarse:min-h-11"
+                disabled={pending !== null}
+                onClick={onAddByHand}
+              >
+                <PlusIcon aria-hidden="true" />
+                {t("addByHand")}
+              </DropdownMenuItem>
+              {run && (
+                <DropdownMenuItem
+                  className="pointer-coarse:min-h-11"
+                  disabled={blocked}
+                  onClick={() => setAsking("judgeAll")}
+                >
+                  <ScanSearchIcon aria-hidden="true" />
+                  {t("reviewAll")}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 
@@ -164,17 +205,18 @@ function MatchingRun({ matching, pending, onStart, children }: MatchingRunProps)
             )}
             {run.state === "done" && (
               <p className="text-muted-foreground">
-                {/* A member reads when it ran. How many were judged counts those put in no group, which
-                    the list does not show them; that number and the model are the operators'. */}
-                {t(operator ? "done" : "doneWhen", {
+                {/* A member reads when the list was last updated. How many solutions the AI read counts
+                    those it put in no group, which the list does not show; that number and the model
+                    are the operators'. */}
+                {t(!operator ? "doneWhen" : run.modelName ? "doneModel" : "done", {
                   date: format.dateTime(new Date(run.endedAt ?? run.createdAt), {
                     dateStyle: "medium",
                     timeStyle: "short",
                     timeZone: "Asia/Ho_Chi_Minh",
                   }),
                   judged: run.judged,
+                  model: run.modelName ?? "",
                 })}
-                {run.modelName && ` · ${run.modelName}`}
               </p>
             )}
           </div>
@@ -184,15 +226,26 @@ function MatchingRun({ matching, pending, onStart, children }: MatchingRunProps)
       )}
 
       <ConfirmDialog
-        open={confirming}
-        onOpenChange={setConfirming}
-        title={t("judgeAllConfirm.title")}
-        description={t("judgeAllConfirm.description")}
-        note={t("judgeAllConfirm.note")}
-        confirmLabel={t("judgeAllConfirm.confirm")}
-        cancelLabel={t("judgeAllConfirm.cancel")}
+        open={asking === "run"}
+        onOpenChange={(next) => setAsking(next ? "run" : null)}
+        title={t("runConfirm.title")}
+        description={t("runConfirm.description")}
+        note={t("runConfirm.note", { count: left })}
+        confirmLabel={startLabel}
+        cancelLabel={t("runConfirm.cancel")}
+        pending={pending === "run"}
+        onConfirm={() => void onStart(false).then(() => setAsking(null))}
+      />
+      <ConfirmDialog
+        open={asking === "judgeAll"}
+        onOpenChange={(next) => setAsking(next ? "judgeAll" : null)}
+        title={t("reviewAllConfirm.title")}
+        description={t("reviewAllConfirm.description")}
+        note={t("reviewAllConfirm.note")}
+        confirmLabel={t("reviewAllConfirm.confirm")}
+        cancelLabel={t("reviewAllConfirm.cancel")}
         pending={pending === "judgeAll"}
-        onConfirm={() => void onStart(true).then(() => setConfirming(false))}
+        onConfirm={() => void onStart(true).then(() => setAsking(null))}
       />
     </div>
   );

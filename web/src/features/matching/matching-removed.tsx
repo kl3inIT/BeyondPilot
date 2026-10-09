@@ -63,10 +63,10 @@ function MatchingRemoved({ candidates, operator, pendingId, onRestore }: Matchin
                   {candidate.removedReason && candidate.removedNote && " · "}
                   {candidate.removedNote}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-sm text-muted-foreground">
                   {when ? t("by", { name: who, when }) : t("byOnly", { name: who })}
                 </span>
-                {locked && <span className="text-xs text-muted-foreground">{t("locked")}</span>}
+                {locked && <span className="text-sm text-muted-foreground">{t("locked")}</span>}
               </div>
             </div>
             {!locked && (
