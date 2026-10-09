@@ -57,10 +57,15 @@ The AI providers BeyondPilot calls, the chat models operators enabled, the model
 
 ## Models by task
 
-- **A task is named in code** (`AiTask`): `matching` first. Each has a model and a reasoning level (`off`, `low`, `medium`, `high`); the task's own default applies until an operator sets one.
+- **A task is named in code** (`AiTask`): `matching` and `document_reading`. Each has a model and a reasoning level (`off`, `low`, `medium`, `high`); the task's own default applies until an operator sets one.
 - **A model can be chosen** only while its provider is switched on and has a key.
 - **A task is available** when a model is chosen, its provider is switched on and its key can be read. Otherwise `AiModels.chat` refuses with `AI_TASK_NOT_CONFIGURED`. No model is used that nobody chose.
 - **The level is sent only to a model that reasons**, the way its API asks for it: `reasoning_effort` for the OpenAI API, with off as `none`; a thinking budget of 2,048, 8,192 or 24,576 tokens for Claude, and thinking disabled for off.
+
+## Reading documents
+
+- **A second task, `document_reading`,** copies the text of a page that is only a picture. It takes only a model that reads images; another is refused with `AI_MODEL_WITHOUT_VISION`. Its default reasoning level is `low`.
+- **`DocumentPages`** reads a PDF for the modules that keep what a file says. `text` gives the text each page holds, with PDFBox and no model; a page without text is an empty string. `readPictures` draws the pages asked for as pictures (110 DPI) and has the task's model copy the text of each, one call a page, each recorded in `ai_usage`. It stops at the first call that fails and answers what it read until then.
 
 ## Calling a model
 
@@ -101,7 +106,7 @@ Admin › AI › Providers (`/admin/ai/providers`) has a tab per purpose, each a
 
 | Status | Codes |
 | --- | --- |
-| 400 | `AI_PROVIDER_ENDPOINT_INVALID`, `AI_PROVIDER_ADAPTER_UNKNOWN`, `AI_PROVIDER_KEY_MISSING`, `AI_PROVIDER_CREDENTIAL_REJECTED`, `AI_PROVIDER_INCOMPATIBLE`, `AI_MODEL_INVALID`, `AI_MODEL_UNAVAILABLE` |
+| 400 | `AI_MODEL_WITHOUT_VISION`, `AI_PROVIDER_ENDPOINT_INVALID`, `AI_PROVIDER_ADAPTER_UNKNOWN`, `AI_PROVIDER_KEY_MISSING`, `AI_PROVIDER_CREDENTIAL_REJECTED`, `AI_PROVIDER_INCOMPATIBLE`, `AI_MODEL_INVALID`, `AI_MODEL_UNAVAILABLE` |
 | 404 | `AI_PROVIDER_NOT_FOUND`, `AI_MODEL_NOT_FOUND`, `AI_TASK_UNKNOWN` |
 | 409 | `AI_PROVIDER_NAME_TAKEN`, `AI_PROVIDER_CHANGED`, `AI_PROVIDER_IN_USE`, `AI_MODEL_NAME_TAKEN`, `AI_MODEL_CHANGED`, `AI_TASK_CHANGED` |
 | 503 | `AI_ENCRYPTION_KEY_MISSING`, `AI_PROVIDER_UNREACHABLE`, `AI_TASK_NOT_CONFIGURED`, `AI_BUSY` |

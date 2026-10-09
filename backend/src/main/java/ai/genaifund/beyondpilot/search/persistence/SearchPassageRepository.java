@@ -1,6 +1,8 @@
 package ai.genaifund.beyondpilot.search.persistence;
 
+import java.sql.Array;
 import java.sql.Types;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +46,10 @@ public class SearchPassageRepository {
 	 */
 	public record Passage(String source, int page, int part, @Nullable String locator, String heading, String text,
 			String reading) {
+	}
+
+	/** A deck with pages nothing has read, and those pages. */
+	public record UnreadDeck(UUID solutionId, String origin, List<Integer> pages) {
 	}
 
 	/** A passage whose vector is missing, stale or of another model. */
@@ -111,6 +117,32 @@ public class SearchPassageRepository {
 			.param("solutionId", solutionId)
 			.param("source", source)
 			.update();
+	}
+
+	/** The deck with the most pages nothing has read, so that a deck of pictures comes before a stray logo page. */
+	public Optional<UnreadDeck> unreadDeck() {
+		return jdbc.sql("""
+				select solution_id, origin, array_agg(page order by page) as pages from search_passage
+				where source = 'deck' and reading = 'unread'
+				group by solution_id, origin
+				order by count(*) desc, solution_id
+				limit 1
+				""").query((row, number) -> {
+			Array pages = row.getArray("pages");
+			return new UnreadDeck(row.getObject("solution_id", UUID.class), row.getString("origin"),
+					Arrays.asList((Integer[]) pages.getArray()));
+		}).optional();
+	}
+
+	/**
+	 * Keeps what a model read on a page of a deck that had no text. An empty text means it looked and found none, so
+	 * the page is not asked for again.
+	 */
+	public void saveReading(UUID solutionId, int page, String text) {
+		jdbc.sql("""
+				update search_passage set text = :text, reading = 'model', indexed_at = now()
+				where solution_id = :solutionId and source = 'deck' and page = :page and reading = 'unread'
+				""").param("text", text).param("solutionId", solutionId).param("page", page).update();
 	}
 
 	/** The passages of a solution, in the order a person would read them. */

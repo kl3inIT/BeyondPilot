@@ -15,10 +15,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ai.genaifund.beyondpilot.ai.AiException;
+import ai.genaifund.beyondpilot.ai.AiSubject;
 import ai.genaifund.beyondpilot.ai.DocumentPages;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository;
 import ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository;
 import ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository.Passage;
+import ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository.UnreadDeck;
 import ai.genaifund.beyondpilot.solution.CustomerCase;
 import ai.genaifund.beyondpilot.solution.SolutionDeck;
 import ai.genaifund.beyondpilot.solution.SolutionDeckFile;
@@ -46,6 +49,9 @@ class SolutionPassages {
 
 	/** How many decks one run reads; a run a minute reads the 735 imported decks in about two and a half hours. */
 	private static final int DECKS_PER_RUN = 5;
+
+	/** How many pages one run has a model read: five a minute stays under the limit a provider sets on calls. */
+	private static final int PICTURES_PER_RUN = 5;
 
 	/** A page with less text than this is a picture, a logo or a page number; it waits for a model to read it. */
 	private static final int READABLE_CHARACTERS = 20;
@@ -123,6 +129,52 @@ class SolutionPassages {
 			solutions.deck(file.solutionId())
 				.ifPresent(deck -> deck(file.solutionId(), names.get(file.solutionId()), deck));
 		}
+	}
+
+	/**
+	 * Has a model read the next pages that hold no text, of the deck that has most of them. It runs only while
+	 * operators have chosen a model for reading documents, so choosing one starts it and taking it away stops it.
+	 */
+	@Scheduled(fixedDelayString = "${beyondpilot.search.passages.interval}", initialDelay = 90_000)
+	void readPictures() {
+		if (!documents.readsPictures()) {
+			return;
+		}
+		passages.unreadDeck().ifPresent(this::readPictures);
+	}
+
+	void readPictures(UnreadDeck unread) {
+		UUID solutionId = unread.solutionId();
+		List<Integer> pages = unread.pages().stream().limit(PICTURES_PER_RUN).toList();
+		SolutionDeck deck = solutions.deck(solutionId).orElse(null);
+		if (deck != null && !deck.fileId().toString().equals(unread.origin())) {
+			// Another file is the deck now; the job that reads decks writes its pages first.
+			return;
+		}
+		Map<Integer, String> read = Map.of();
+		boolean gone = deck == null;
+		if (deck != null) {
+			try {
+				read = documents.readPictures(deck.content(), pages, new AiSubject("solution_deck", solutionId.toString()));
+			}
+			catch (AiException unavailable) {
+				// The model was taken away, or every client is in use: the pages keep waiting.
+				return;
+			}
+			catch (IOException | RuntimeException | LinkageError unreadable) {
+				LOG.atWarn()
+					.addKeyValue("event", "search.deck.pictures_unreadable")
+					.addKeyValue("error_type", unreadable.getClass().getName())
+					.addKeyValue("solution_id", solutionId)
+					.log("The pages of a deck could not be drawn for a model to read");
+				gone = true;
+			}
+		}
+		Map<Integer, String> kept = read;
+		// A deck that is gone or cannot be drawn is not asked for every minute: its pages are kept as read, empty.
+		List<Integer> settled = gone ? pages : List.copyOf(kept.keySet());
+		transactions.executeWithoutResult(status -> settled.forEach(page -> passages.saveReading(solutionId, page,
+				Passages.cut(kept.getOrDefault(page, "")).stream().findFirst().orElse(""))));
 	}
 
 	/**

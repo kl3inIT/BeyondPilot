@@ -49,6 +49,9 @@ public enum AiErrorCode implements ErrorCode {
 	MODEL_UNAVAILABLE("AI_MODEL_UNAVAILABLE", ErrorCategory.VALIDATION,
 			"This model cannot be used: its provider is switched off or has no key."),
 
+	MODEL_WITHOUT_VISION("AI_MODEL_WITHOUT_VISION", ErrorCategory.VALIDATION,
+			"This task needs a model that reads images."),
+
 	TASK_UNKNOWN("AI_TASK_UNKNOWN", ErrorCategory.NOT_FOUND, "There is no such task."),
 
 	TASK_CHANGED("AI_TASK_CHANGED", ErrorCategory.CONFLICT,

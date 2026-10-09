@@ -197,6 +197,32 @@ class SearchPassagesTest {
 	}
 
 	@Test
+	void whatAModelReadsOnAnUnreadPageIsKeptAndThePageIsNotAskedForAgain() {
+		UUID solution = UUID.randomUUID();
+		passages.replace(solution, DECK, "file-1",
+				List.of(new Passage(DECK, 1, 0, null, "Hotline Assist, deck page 1", "", UNREAD),
+						new Passage(DECK, 2, 0, null, "Hotline Assist, deck page 2", "", UNREAD),
+						new Passage(DECK, 3, 0, null, "Hotline Assist, deck page 3", "Has text.", READ_AS_TEXT)));
+		assertThat(passages.unreadDeck()).hasValueSatisfying(unread -> {
+			assertThat(unread.solutionId()).isEqualTo(solution);
+			assertThat(unread.origin()).isEqualTo("file-1");
+			assertThat(unread.pages()).containsExactly(1, 2);
+		});
+
+		passages.saveReading(solution, 1, "Answers customer calls.");
+		// The model looked at page 2 and found no text.
+		passages.saveReading(solution, 2, "");
+
+		assertThat(passages.unreadDeck()).isEmpty();
+		assertThat(passages.of(solution)).extracting(Passage::text, Passage::reading)
+			.containsExactly(org.assertj.core.groups.Tuple.tuple("Answers customer calls.", "model"),
+					org.assertj.core.groups.Tuple.tuple("", "model"),
+					org.assertj.core.groups.Tuple.tuple("Has text.", READ_AS_TEXT));
+		// Only the page that now has text waits for a vector, beside the one that always had.
+		assertThat(passages.pendingEmbeddings(MODEL, 10)).hasSize(2);
+	}
+
+	@Test
 	void customerCasesArePassagesAndTheSameCasesKeepTheirVectors() {
 		UUID solution = UUID.randomUUID();
 		List<CustomerCase> cases = List.of(new CustomerCase(UUID.randomUUID(), "Viet Bank", "Call centre",

@@ -45,10 +45,16 @@ function TaskModel({ task, providers }: { task: ChatTask; providers: ChatProvide
   const name = t(`name.${task.task}`);
   const efforts = levels.map((level) => ({ id: level, name: t(`effort.${level}`) }));
   const groups = providers
-    .filter((provider) => provider.enabled && provider.hasKey && provider.models.length > 0)
+    .filter((provider) => provider.enabled && provider.hasKey)
     .map((provider) => ({
       provider,
-      options: provider.models.map((model): ModelOption => ({
+      // A task that sends pictures takes only a model that reads them.
+      models: provider.models.filter((model) => task.task !== "document_reading" || model.vision),
+    }))
+    .filter((group) => group.models.length > 0)
+    .map(({ provider, models }) => ({
+      provider,
+      options: models.map((model): ModelOption => ({
         id: model.id,
         name: model.displayName,
         description: model.modelName !== model.displayName ? model.modelName : undefined,

@@ -1009,7 +1009,7 @@ export type ChatTask = {
      * How hard the task reasons, on a model that does; the task's own default until an operator sets one.
      */
     reasoningEffort: 'off' | 'low' | 'medium' | 'high';
-    task: 'matching';
+    task: 'matching' | 'document_reading';
     version: number;
 };
 

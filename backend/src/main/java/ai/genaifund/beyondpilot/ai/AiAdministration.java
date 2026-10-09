@@ -318,6 +318,10 @@ public class AiAdministration {
 				throw new AiException(AiErrorCode.MODEL_UNAVAILABLE,
 						"Provider " + provider.id() + " of model " + model.getId() + " is off or has no key");
 			}
+			if (named.readsImages() && !model.isVision()) {
+				throw new AiException(AiErrorCode.MODEL_WITHOUT_VISION,
+						"Task " + task + " sends pictures and model " + model.getId() + " does not read them");
+			}
 			modelName = model.getModelName();
 		}
 		row.use(request.modelId(), request.reasoningEffort(), operator.accountId(), operator.label(), Instant.now());
