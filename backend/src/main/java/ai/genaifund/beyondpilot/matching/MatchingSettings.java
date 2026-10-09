@@ -10,9 +10,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param candidates how many solutions a run judges
  * @param parallel how many candidates are judged at the same time
  * @param interval how often the worker looks for a run to take
- * @param wait how long a run stops after the provider refused a call
+ * @param pause how long a run stops after the provider refused a call
  * @param maxStalls how many times in a row a run may stop without judging anything before it fails
  */
 @ConfigurationProperties("beyondpilot.matching")
-record MatchingSettings(int candidates, int parallel, Duration interval, Duration wait, int maxStalls) {
+record MatchingSettings(int candidates, int parallel, Duration interval, Duration pause, int maxStalls) {
 }

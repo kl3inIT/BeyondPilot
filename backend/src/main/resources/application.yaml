@@ -141,7 +141,7 @@ beyondpilot:
     interval: 10s
     # How long a run stops after the provider refused a call. The 9Router route let calls through again two minutes
     # after its limit was reached.
-    wait: 2m
+    pause: 2m
     # A run that stops this many times in a row without judging anything ends as failed.
     max-stalls: 5
 

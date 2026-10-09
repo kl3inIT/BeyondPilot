@@ -227,7 +227,7 @@ class MatchingRuns {
 			matching.fail(run.id(), failure);
 		}
 		else {
-			matching.waitUntil(run.id(), Instant.now().plus(settings.wait()), stalls, failure);
+			matching.waitUntil(run.id(), Instant.now().plus(settings.pause()), stalls, failure);
 		}
 		LOG.atWarn()
 			.addKeyValue("event", stalls > settings.maxStalls() ? "matching.run.failed" : "matching.run.waiting")

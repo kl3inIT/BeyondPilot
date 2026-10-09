@@ -265,16 +265,13 @@ class SearchPassagesTest {
 		UUID unrelated = UUID.randomUUID();
 		UUID gone = UUID.randomUUID();
 		index.save(new Document(SOLUTION, byProfile, "claims-desk", "Claims Desk", "Nhanh",
-				"Underwriting for insurance carriers.", "", "Claims Desk
-Underwriting for insurance carriers.", Map.of(),
+				"Underwriting for insurance carriers.", "", "Claims Desk\nUnderwriting for insurance carriers.", Map.of(),
 				true, null, null));
 		// Its owners keep it out of the directory, and only its deck says what it does.
 		index.save(new Document(SOLUTION, byDeck, "hotline-assist", "Hotline Assist", "Nhanh", "Answers calls.", "",
-				"Hotline Assist
-Answers calls.", Map.of(), false, null, null));
+				"Hotline Assist\nAnswers calls.", Map.of(), false, null, null));
 		index.save(new Document(SOLUTION, unrelated, "shelf-planner", "Shelf Planner", "Nhanh",
-				"Demand forecasting for retail stores.", "", "Shelf Planner
-Demand forecasting for retail stores.",
+				"Demand forecasting for retail stores.", "", "Shelf Planner\nDemand forecasting for retail stores.",
 				Map.of(), true, null, null));
 		passages.replace(byDeck, DECK, "file-1", List.of(new Passage(DECK, 1, 0, null, "Hotline Assist, deck page 1",
 				"An underwriting assistant for insurance carriers.", READ_AS_TEXT)));
