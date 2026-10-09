@@ -67,7 +67,7 @@ Throwaway scripts (`probe4.py`, `probe5.py`, git-ignored), the same provider and
 - The Direct candidates of the inspection use case are all visual inspection products for manufacturers (Zetamotion, Seewise, VIACT, Alphatok, Datature, Hutzper and others).
 - A separate judgment, whether the product is made for the job the problem describes, changed no candidate's group in any run once the capability was specific. It is kept in the answer for people to read and is not part of the rule.
 
-Not measured: the exact wording of version 4 on the inspection use case (the run was stopped by the machine running out of memory; the wording one step before it is the row above); whether the vendor's name moves a verdict; the same checks on more than two use cases. There is no reference list to say how many Direct candidates are right: GenAI Fund's own longlists are asked for in BEY-41.
+Not measured: a use case whose organization listed its own requirements (neither of the two has such a list; the wording for them, more than four capabilities when the list names more functions and "required" kept as the organization marked it, was added in review); the exact wording of version 4 on the inspection use case (the run was stopped by the machine running out of memory; the wording one step before it is the row above); whether the vendor's name moves a verdict; the same checks on more than two use cases. There is no reference list to say how many Direct candidates are right: GenAI Fund's own longlists are asked for in BEY-41.
 
 ## What version 4 says, and why
 

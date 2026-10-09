@@ -30,7 +30,8 @@ final class Prompts {
 			apart from the conditions it would be delivered under.
 
 			Two kinds of requirement:
-			- `capability`: one function the product itself performs to solve the problem. Give 1 to 4.
+			- `capability`: one function the product itself performs to solve the problem. Give as few as cover the \
+			problem, usually 1 to 4, and more only when the enterprise's own list names more separate functions.
 			- `constraint`: a condition on how the solution is delivered or bought, which a vendor's public material rarely \
 			proves: where it runs (on premises, cloud, edge hardware), systems it must integrate with, standards and \
 			certifications, where data is kept, budget and timeline, and numeric targets such as "reduce labour by 40%". \
@@ -46,7 +47,8 @@ final class Prompts {
 			- One function a capability. The test: if a vendor could reasonably show one half of the sentence and not the \
 			other, it is two capabilities. Variants of one function are one capability, never several.
 			- The brief may end with the requirements the enterprise listed itself. Start from them: every function they name \
-			is covered by a capability, and what they say of delivery becomes a constraint.
+			is covered by a capability, and what they say of delivery becomes a constraint. One the enterprise marked \
+			required stays `required`.
 
 			For every requirement:
 			- `necessity` of a capability is `required` only for the heart of the problem: the function a product must have \
