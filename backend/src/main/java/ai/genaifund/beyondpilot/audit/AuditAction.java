@@ -267,7 +267,23 @@ public enum AuditAction {
 	MCP_TOOL_ENABLE("mcp.tool_enable"),
 
 	/** An operator turned a tool of an MCP server off; the resource is {@code server.tool}. */
-	MCP_TOOL_DISABLE("mcp.tool_disable");
+	MCP_TOOL_DISABLE("mcp.tool_disable"),
+
+	/** Someone started a run of matching for a use case. {@code origin} is {@code operator} or {@code member}. */
+	MATCHING_RUN_START("matching.run_start", "origin"),
+
+	/** An operator put a solution among the candidates of a use case by hand. {@code solution} is its name. */
+	MATCHING_CANDIDATE_ADD("matching.candidate_add", "solution"),
+
+	MATCHING_CANDIDATE_SHORTLIST("matching.candidate_shortlist", "solution"),
+
+	/** {@code reason} is the code of the reason given. */
+	MATCHING_CANDIDATE_REMOVE("matching.candidate_remove", "solution", "reason"),
+
+	MATCHING_CANDIDATE_RESTORE("matching.candidate_restore", "solution"),
+
+	/** An operator changed the limits of matching. */
+	MATCHING_SETTINGS_CHANGE("matching.settings_change");
 
 	private final String value;
 
