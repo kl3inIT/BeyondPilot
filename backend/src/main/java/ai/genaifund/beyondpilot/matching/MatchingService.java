@@ -17,12 +17,15 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.matching.dto.AddCandidateRequest;
+import ai.genaifund.beyondpilot.matching.dto.MatchingChange;
+import ai.genaifund.beyondpilot.matching.dto.MatchingChange.Kind;
 import ai.genaifund.beyondpilot.matching.dto.MatchingResponse;
 import ai.genaifund.beyondpilot.matching.dto.RemoveCandidateRequest;
 import ai.genaifund.beyondpilot.matching.dto.StartRunRequest;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Candidate;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.RunState;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Step;
 import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.search.SolutionEvidence;
@@ -34,12 +37,13 @@ import ai.genaifund.beyondpilot.usecase.UseCaseDirectory;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 
 /**
  * Matching as people use it: the members of the organization a use case belongs to, and GenAI Fund's operators. They
  * read the candidates with the reasons, start a run, and shortlist, remove and restore candidates; an operator also
  * adds a solution by hand. Anyone else is told there is no such use case. What a person decides is recorded with who
- * and when, and no run changes it.
+ * and when, and no run changes it. A page that stays open hears that something changed and reads again.
  */
 @Service
 public class MatchingService {
@@ -52,6 +56,13 @@ public class MatchingService {
 	/** The reasons of matching's own that a member may read. */
 	private static final Set<String> MEMBER_REASONS = Set.of(MatchingRuns.NO_USE_CASE, MatchingRuns.NO_MODEL,
 			MatchingRuns.NO_CAPABILITY);
+
+	/** What a running run is doing, as the page names it. */
+	private static final String READING_BRIEF = "brief";
+
+	private static final String SEARCHING = "search";
+
+	private static final String READING_SOLUTIONS = "reading";
 
 	private final MatchingRepository matching;
 
@@ -69,9 +80,11 @@ public class MatchingService {
 
 	private final AuditTrail audit;
 
+	private final MatchingChanges changes;
+
 	MatchingService(MatchingRepository matching, UseCaseDirectory useCases, SolutionDirectory solutions,
 			SolutionEvidence evidence, OrganizationDirectory organizations, IdentityService identity, AiModels models,
-			AuditTrail audit) {
+			AuditTrail audit, MatchingChanges changes) {
 		this.matching = matching;
 		this.useCases = useCases;
 		this.solutions = solutions;
@@ -80,6 +93,7 @@ public class MatchingService {
 		this.identity = identity;
 		this.models = models;
 		this.audit = audit;
+		this.changes = changes;
 	}
 
 	/** The caller's right to a use case: its brief, and whether they act as an operator. */
@@ -94,6 +108,20 @@ public class MatchingService {
 	@Transactional(readOnly = true)
 	public MatchingResponse get(Actor actor, UUID useCaseId) {
 		return view(actor, access(actor, useCaseId));
+	}
+
+	/**
+	 * The changes of what matching holds for a use case, from now on and for as long as the caller listens: that a run
+	 * moved, that the brief is read, that solutions are found, that one is being read or is read, that a person
+	 * decided. A change carries no state; the caller reads {@link #get} again. Who may listen is decided once, when
+	 * the stream opens, by the rule of {@link #get}.
+	 * @throws MatchingException when the use case is not published, or the caller is neither an operator nor a member
+	 * of its organization
+	 */
+	@Transactional(readOnly = true)
+	public Flux<MatchingChange> changes(Actor actor, UUID useCaseId) {
+		access(actor, useCaseId);
+		return changes.of(useCaseId);
 	}
 
 	/**
@@ -121,6 +149,7 @@ public class MatchingService {
 			throw new MatchingException(MatchingErrorCode.RUN_OPEN, "A run of use case " + useCaseId + " is at work");
 		}
 		record(AuditAction.MATCHING_RUN_START, actor, access.brief(), Map.of("origin", origin));
+		changes.tell(useCaseId, Kind.RUN);
 		return view(actor, access);
 	}
 
@@ -149,6 +178,7 @@ public class MatchingService {
 		if (models.available(AiTask.MATCHING)) {
 			matching.queue(useCaseId, MatchingRepository.BY_OPERATOR, actor.accountId(), Prompts.VERSION, null, false);
 		}
+		changes.tell(useCaseId, Kind.DECISION);
 		return view(actor, access);
 	}
 
@@ -215,6 +245,7 @@ public class MatchingService {
 	private void decide(Actor actor, Access access, Candidate candidate, String kind, @Nullable String reason,
 			@Nullable String note, AuditAction action) {
 		matching.decide(candidate.id(), kind, reason, note, actor.accountId(), access.operator());
+		changes.tell(candidate.useCaseId(), Kind.DECISION);
 		Shown shown = evidence.shown(List.of(candidate.solutionId())).get(candidate.solutionId());
 		String solution = shown == null ? candidate.solutionId().toString() : shown.name();
 		record(action, actor, access.brief(),
@@ -297,13 +328,15 @@ public class MatchingService {
 		RunState last = matching.lastRun(useCaseId).orElse(null);
 		int total = candidates.size();
 		int done = judged;
+		boolean running = last != null && MatchingRepository.RUNNING.equals(last.state());
+		// The steps say how far a run is, for everyone; what each cost is the operators' to read.
+		List<Step> worked = last != null && (operator || running) ? matching.steps(last.id()) : List.of();
 		MatchingResponse.Run run = last == null ? null
-				: new MatchingResponse.Run(last.id(), last.state(), last.origin(), last.createdAt(), last.notBefore(),
-						last.startedAt(), last.endedAt(), last.resumeAt(), failure(last.failure(), operator), done, total,
-						operator ? last.modelName() : null);
-		List<MatchingResponse.Step> steps = !operator || last == null ? List.of()
-				: matching.steps(last.id())
-					.stream()
+				: new MatchingResponse.Run(last.id(), last.state(), running ? stage(worked) : null, last.origin(),
+						last.createdAt(), last.notBefore(), last.startedAt(), last.endedAt(), last.resumeAt(),
+						failure(last.failure(), operator), done, total, operator ? last.modelName() : null);
+		List<MatchingResponse.Step> steps = !operator ? List.of()
+				: worked.stream()
 					.map(step -> new MatchingResponse.Step(step.name(), step.takenIn(), step.givenOut(), step.calls(),
 							step.inputTokens(), step.outputTokens(), step.millis()))
 					.toList();
@@ -314,6 +347,19 @@ public class MatchingService {
 			.toList();
 		return new MatchingResponse(useCaseId, operator, models.available(AiTask.MATCHING),
 				operator ? null : runsLeft(useCaseId), run, requirements, candidates, steps);
+	}
+
+	/**
+	 * What a run that is at work is doing, from the steps it has kept: a step is kept when it ends, so the run is at
+	 * the first one it has not kept. A run that continues after a wait has kept them all and is reading solutions,
+	 * which is where its time goes: the brief is not read twice, and the search takes a moment.
+	 */
+	private static String stage(List<Step> kept) {
+		List<String> names = kept.stream().map(Step::name).toList();
+		if (!names.contains(MatchingRepository.REQUIREMENTS)) {
+			return READING_BRIEF;
+		}
+		return names.contains(MatchingRepository.CANDIDATES) ? READING_SOLUTIONS : SEARCHING;
 	}
 
 	/**

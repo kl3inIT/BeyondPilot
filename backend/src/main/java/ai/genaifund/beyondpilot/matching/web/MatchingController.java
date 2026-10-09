@@ -1,11 +1,14 @@
 package ai.genaifund.beyondpilot.matching.web;
 
+import java.time.Duration;
+import java.util.Locale;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
 import ai.genaifund.beyondpilot.matching.MatchingService;
 import ai.genaifund.beyondpilot.matching.dto.AddCandidateRequest;
+import ai.genaifund.beyondpilot.matching.dto.MatchingChange;
 import ai.genaifund.beyondpilot.matching.dto.MatchingResponse;
 import ai.genaifund.beyondpilot.matching.dto.RemoveCandidateRequest;
 import ai.genaifund.beyondpilot.matching.dto.StartRunRequest;
@@ -16,17 +19,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 
 /**
  * The solutions matched to a use case, for the members of its organization and for operators. Every answer is the
- * whole state after the request, so a screen shows what was kept.
+ * whole state after the request, so a screen shows what was kept. A screen that stays open listens to the stream of
+ * changes and reads the state again when one arrives.
  */
 @RestController
 @RequestMapping("/api/matching")
@@ -37,6 +45,9 @@ import org.springframework.web.bind.annotation.RestController;
 class MatchingController {
 
 	static final String PROBLEM = "#/components/schemas/Problem";
+
+	/** A line the browser ignores, sent this often so that no proxy on the way closes a stream that says nothing. */
+	private static final Duration HEARTBEAT = Duration.ofSeconds(20);
 
 	private final MatchingService matching;
 
@@ -53,6 +64,38 @@ class MatchingController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	MatchingResponse get(@CurrentActor Actor actor, @PathVariable UUID useCaseId) {
 		return matching.get(actor, useCaseId);
+	}
+
+	@GetMapping(path = "/use-cases/{useCaseId}/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	@Operation(operationId = "streamMatchingChanges",
+			summary = "Hear that what matching holds for a use case changed, for as long as the connection stays open",
+			description = "Server-sent events. The name of an event says what changed: `run` (a run was queued, started, has to wait, ended or failed), "
+					+ "`brief` (the requirements are read), `found` (the solutions are found), `reading` (the judgment of one solution starts), "
+					+ "`read` (the judgment of one solution ended) and `decision` (a person shortlisted, removed, restored or added a solution). "
+					+ "An event carries no state: read `getMatching` again. Nothing is replayed, so read it once whenever the connection opens. "
+					+ "A comment line is sent when the stream opens and every 20 seconds.",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The stream; the schema is the body of each event.",
+			content = @Content(mediaType = MediaType.TEXT_EVENT_STREAM_VALUE,
+					schema = @Schema(implementation = MatchingChange.class)))
+	@ApiResponse(responseCode = "404",
+			description = "No published use case has the identifier, or the caller is neither an operator nor a member of its organization.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<Flux<ServerSentEvent<MatchingChange>>> changes(@CurrentActor Actor actor,
+			@PathVariable UUID useCaseId) {
+		Flux<ServerSentEvent<MatchingChange>> changes = matching.changes(actor, useCaseId)
+			.map(change -> ServerSentEvent.builder(change)
+				.event(change.kind().name().toLowerCase(Locale.ROOT))
+				.build());
+		// The first comment leaves at once, after the changes are listened to: the browser then knows the stream is
+		// open, and what it reads next misses nothing.
+		Flux<ServerSentEvent<MatchingChange>> alive = Flux.interval(Duration.ZERO, HEARTBEAT)
+			.map(tick -> ServerSentEvent.<MatchingChange>builder().comment("alive").build());
+		return ResponseEntity.ok()
+			// The reverse proxy is nginx, which holds a response back until it is told not to.
+			.header(HttpHeaders.CACHE_CONTROL, "no-store")
+			.header("X-Accel-Buffering", "no")
+			.body(changes.mergeWith(alive));
 	}
 
 	@PostMapping(path = "/use-cases/{useCaseId}/runs", consumes = MediaType.APPLICATION_JSON_VALUE,

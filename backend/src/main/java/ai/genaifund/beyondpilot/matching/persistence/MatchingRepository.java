@@ -56,6 +56,9 @@ public class MatchingRepository {
 	/** A candidate an operator put there by hand. */
 	public static final String ADDED = "added";
 
+	/** The state of a run the worker took and has not ended or put to wait. */
+	public static final String RUNNING = "running";
+
 	public static final String REQUIREMENTS = "requirements";
 
 	public static final String CANDIDATES = "candidates";
