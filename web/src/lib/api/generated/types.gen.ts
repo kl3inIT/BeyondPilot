@@ -1877,6 +1877,10 @@ export type Matching = {
 export type MatchingCandidate = {
     bucket: 'direct' | 'industry' | 'technology' | 'none';
     /**
+     * The two-letter code of the country its organization is in.
+     */
+    country?: string;
+    /**
      * What people last decided.
      */
     decision: 'none' | 'shortlisted' | 'removed';
@@ -1897,6 +1901,14 @@ export type MatchingCandidate = {
      * False when its owners keep it out of the directory: it has no public page.
      */
     listed: boolean;
+    /**
+     * Its logo, read at the public address of stored files.
+     */
+    logoFileId?: string;
+    /**
+     * How far it is, as the solution directory codes it.
+     */
+    maturity?: string;
     organizationName?: string;
     /**
      * Found by a run, or added by GenAI Fund.
@@ -1908,7 +1920,7 @@ export type MatchingCandidate = {
     problem?: MatchingFinding;
     removedAt?: string;
     /**
-     * Who removed it, by the name they are shown by.
+     * Who removed it, by the name they are shown by; absent for a member when GenAI Fund removed it.
      */
     removedBy?: string;
     /**
@@ -1977,6 +1989,10 @@ export type MatchingRequirement = {
      * A capability is what the product does; a constraint is a condition of delivery.
      */
     kind: 'capability' | 'constraint';
+    /**
+     * Two or three words it is shown by in a list; empty for one read before labels were kept.
+     */
+    label: string;
     necessity: 'required' | 'optional';
     /**
      * Its place in the list, from 1; a finding names it by this.
@@ -1996,7 +2012,7 @@ export type MatchingRun = {
     createdAt: string;
     endedAt?: string;
     /**
-     * Why it failed or waits, as a code; never the provider's words.
+     * Why it failed or waits, as a code; never the provider's words. A caller who is not an operator reads `provider` for anything that happened at the AI provider.
      */
     failure?: string;
     id: string;

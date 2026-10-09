@@ -139,7 +139,8 @@ class MatchingRunTest {
 			Map.of("kind", "constraint", "necessity", "optional", "statement", "Integrates with the claims system.",
 					"quote", "Our claims system's API."),
 			Map.of("kind", "capability", "necessity", "required", "statement",
-					"Reads printed and handwritten forms in Vietnamese.", "quote", "Reads Vietnamese forms"),
+					"Reads printed and handwritten forms in Vietnamese.", "quote", "Reads Vietnamese forms", "label",
+					"Read forms"),
 			Map.of("kind", "capability", "necessity", "required", "statement", "Gives a first assessment of a claim.",
 					"quote", "A first assessment within an hour."),
 			Map.of("kind", "capability", "necessity", "optional", "statement", "Detects fraud.", "quote",
@@ -245,6 +246,11 @@ class MatchingRunTest {
 		assertThat(JsonPath.<List<Object>>read(read, "$.steps")).isEmpty();
 		assertThat(JsonPath.<List<String>>read(read, "$.requirements[*].kind"))
 			.containsExactly("capability", "capability", "constraint");
+		// A requirement is named by its label in a list; one the model gave none has an empty one.
+		assertThat(JsonPath.<List<String>>read(read, "$.requirements[*].label")).containsExactly("Read forms", "", "");
+		assertThat(JsonPath.<String>read(read, "$.candidates[0].maturity")).isEqualTo("pilot");
+		assertThat(JsonPath.<String>read(read, "$.candidates[0].country")).isEqualTo("VN");
+		assertThat(JsonPath.<String>read(read, "$.candidates[0].logoFileId")).isNotBlank();
 		assertThat(JsonPath.<List<String>>read(read, "$.candidates[*].solutionName")).containsExactly("Claims Desk " + word);
 		assertThat(JsonPath.<String>read(read, "$.candidates[0].bucket")).isEqualTo("direct");
 		assertThat(JsonPath.<String>read(read, "$.candidates[0].organizationName")).isEqualTo("Claims Lab " + word);
@@ -255,8 +261,11 @@ class MatchingRunTest {
 		String candidate = JsonPath.read(read, "$.candidates[0].id");
 		// The vendor's own member, and anyone else, is told there is no such use case.
 		assertProblem(call("GET", owner, path, null), 404, "MATCHING_USE_CASE_NOT_FOUND");
+		// A candidate that is not theirs reads as one that does not exist, so no identifier can be probed.
 		assertProblem(call("POST", owner, "/api/matching/candidates/" + candidate + "/shortlist", null), 404,
-				"MATCHING_USE_CASE_NOT_FOUND");
+				"MATCHING_CANDIDATE_NOT_FOUND");
+		assertProblem(call("POST", owner, "/api/matching/candidates/" + UUID.randomUUID() + "/shortlist", null), 404,
+				"MATCHING_CANDIDATE_NOT_FOUND");
 		// An operator sees how the run worked.
 		String asOperator = body(call("GET", operator, path, null).expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(asOperator, "$.steps[*].name"))
@@ -284,6 +293,12 @@ class MatchingRunTest {
 		assertThat(decision(call("POST", operator, decide + "/remove", Map.of("reason", "does_not_solve"))))
 			.isEqualTo("removed");
 		assertProblem(call("POST", buyer, decide + "/restore", null), 403, "MATCHING_REMOVED_BY_OPERATOR");
+		// The member reads that GenAI Fund removed it, and not which operator; the operator reads who.
+		String hidden = body(call("GET", buyer, path, null).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(hidden, "$.candidates[0].removedByOperator")).isTrue();
+		assertThat(JsonPath.<Object>read(hidden, "$.candidates[0].removedBy")).isNull();
+		assertThat(JsonPath.<String>read(body(call("GET", operator, path, null).expectStatus().isOk()),
+				"$.candidates[0].removedBy")).isEqualTo("operator@matching.test");
 		assertThat(decision(call("POST", operator, decide + "/restore", null))).isEqualTo("none");
 
 		// An operator adds a solution by hand; a member may not, and a solution is a candidate once.
