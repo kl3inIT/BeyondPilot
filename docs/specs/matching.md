@@ -1,6 +1,6 @@
 # Matching
 
-For one published use case, the solutions on BeyondPilot that fit it, each with the reasons a person can check, and what people then decide on them. Designed in [BEY-39](../increments/active/bey-39-matching/design.md) and decided in [ADR 0007](../decisions/0007-a-matching-module-that-reads-through-search.md). This page says what exists; the screens are not built yet.
+For one published use case, the solutions on BeyondPilot that fit it, each with the reasons a person can check, and what people then decide on them. Designed in [BEY-39](../increments/active/bey-39-matching/design.md) and decided in [ADR 0007](../decisions/0007-a-matching-module-that-reads-through-search.md). This page says what exists.
 
 ## Module
 
@@ -32,6 +32,18 @@ For the members of the use case's approved organization and for operators; anyon
 - **No run changes a decision**, and a candidate with a decision stays when a run no longer finds it.
 - **What a member does not see:** the steps of a run with their tokens, and the model.
 - **Recorded** in the audit log: `matching.run_start`, `matching.candidate_add`, `matching.candidate_shortlist`, `matching.candidate_remove`, `matching.candidate_restore`, `matching.settings_change`.
+
+## Screens
+
+One page, Candidates, beside the brief of a published use case: for the members of its organization at `/workspace/organization/use-cases/{id}/candidates`, for operators at `/admin/use-cases/{id}/candidates`. A row of two tabs, Brief and Candidates, links the two pages. Both sides read the same page; the answer of `GET /api/matching/use-cases/{id}` says what the caller may do.
+
+- **The run.** While a run is queued, running or waiting, the page says how many candidates are judged and reads itself again every five seconds; a run that waits says it goes on by itself; a failed run says why by its code. Without a model the page says matching cannot run, and sends operators to Admin › AI. Run again starts a run; a member reads how many runs the day still allows. Operators also have Judge all again, behind a confirmation, and Add a solution, a search over the approved solutions.
+- **Needs** are the capabilities, named by their label. A need is covered when a recommended candidate meets it; the coverage line counts them, and names each need nobody shows. A chip per need narrows the list to the candidates that meet it or come near.
+- **The list.** Direct relevance, Industry relevance and Technology capability, five rows each before Show more, and Waiting to be judged for what an operator added. A candidate judged into no group is not shown and not counted. A row has a mark per need, the country and maturity, and the best quote with its source as text.
+- **One candidate** is read beside the list, or in a sheet below 1024px: the group and the model's sentence, each need with Met, Partly or Not shown, its quote, source and reason, then the constraints under To confirm with the vendor, and a note when the deck or the website held no text.
+- **Decisions.** Shortlist on a row, and again to take it off; Remove opens the reasons in the place of the row, with a note that Other requires, and the toast offers Undo. The Removed tab says who removed a candidate (GenAI Fund for an operator), why and when, with Restore; a member reads why what GenAI Fund removed cannot be restored.
+
+Not on the screen: the proposals received and the invitation to apply, Introduce us, the history of runs, how the AI judged, a run's steps, and a quote opened in its source.
 
 ## Limits
 
