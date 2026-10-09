@@ -1037,7 +1037,7 @@
         "matching": {
           "run_start": "Started matching for a use case",
           "candidate_add": "Added a candidate by hand",
-          "candidate_shortlist": "Shortlisted a candidate",
+          "candidate_shortlist": "Saved a candidate",
           "candidate_remove": "Removed a candidate",
           "candidate_restore": "Restored a candidate",
           "settings_change": "Changed the limits of matching"
@@ -1157,7 +1157,7 @@
         "matching": {
           "run_start": "Started matching for the use case <resource></resource>",
           "candidate_add": "Added a candidate by hand to the use case <resource></resource>",
-          "candidate_shortlist": "Shortlisted a candidate of the use case <resource></resource>",
+          "candidate_shortlist": "Saved a candidate of the use case <resource></resource>",
           "candidate_remove": "Removed a candidate of the use case <resource></resource>",
           "candidate_restore": "Restored a candidate of the use case <resource></resource>",
           "settings_change": "Changed the limits of matching"
@@ -6552,14 +6552,14 @@
       },
       "runConfirm": {
         "title": "Look for solutions now?",
-        "description": "AI reads the brief again and goes through the solutions on BeyondPilot. Your shortlist and the solutions you removed stay as they are.",
+        "description": "AI reads the brief again and goes through the solutions on BeyondPilot. The solutions you saved and the ones you removed stay as they are.",
         "note": "{count, plural, =1 {This uses your last run today.} other {This uses 1 of your # runs left today.}}",
         "cancel": "Cancel"
       },
       "reviewAllConfirm": {
         "title": "Re-review every solution?",
         "description": "AI reads every solution again, including those whose documents did not change. Use this after choosing another model.",
-        "note": "It calls the model once for each solution. Shortlists and removals stay as they are.",
+        "note": "It calls the model once for each solution. Saved and removed solutions stay as they are.",
         "confirm": "Re-review every solution",
         "cancel": "Cancel"
       }
@@ -6578,7 +6578,7 @@
     "tabs": {
       "label": "Solutions by what you decided",
       "matches": "Matches",
-      "shortlist": "Shortlist",
+      "shortlist": "Saved",
       "removed": "Removed"
     },
     "groups": {
@@ -6603,8 +6603,8 @@
         "about": "Found for this use case. Each one moves to its group when the AI has read it."
       },
       "kept": {
-        "title": "On your shortlist, no longer suggested",
-        "about": "AI no longer suggests these after the latest run. They stay until someone takes them off the shortlist."
+        "title": "Saved, no longer suggested",
+        "about": "AI no longer suggests these after the latest run. They stay until someone unsaves them."
       },
       "emptyDirect": "No solution shows yet that it does what you asked for.",
       "more": "Show {count} more",
@@ -6622,8 +6622,8 @@
       "website": "From their website"
     },
     "row": {
-      "shortlist": "Add to shortlist",
-      "shortlisted": "On shortlist",
+      "shortlist": "Save",
+      "shortlisted": "Saved",
       "remove": "Not a fit…",
       "open": "View solution profile",
       "menu": "More for {name}",
@@ -6698,7 +6698,7 @@
     },
     "empty": {
       "none": "AI found no solution on BeyondPilot that fits this use case.",
-      "shortlist": "Your shortlist is empty. Add the solutions you want to talk to.",
+      "shortlist": "Nothing saved yet. Save the solutions you want to talk to.",
       "need": "No solution here shows it can do: {need}",
       "clear": "Show all solutions"
     },
@@ -6706,8 +6706,8 @@
       "started": "Looking for solutions.",
       "reviewingAll": "AI is reading every solution again.",
       "added": "{name} added. AI reads it in the next run.",
-      "shortlisted": "{name} is on your shortlist.",
-      "unshortlisted": "{name} is off your shortlist.",
+      "shortlisted": "{name} is saved.",
+      "unshortlisted": "{name} is no longer saved.",
       "removed": "{name} removed · {reason}",
       "restored": "{name} restored.",
       "undo": "Undo"
