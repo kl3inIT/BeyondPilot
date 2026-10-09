@@ -70,17 +70,8 @@ final class PdfPages {
 		return kept.toString().strip();
 	}
 
-	/** The pictures of these pages as PNG, by page number from 1; a page the file does not have is left out. */
-	static Map<Integer, byte[]> pictures(InputStreamSource pdf, List<Integer> pages) throws IOException {
-		return drawn(pdf, pages, image -> {
-			ByteArrayOutputStream png = new ByteArrayOutputStream();
-			ImageIO.write(image, "png", png);
-			return png.toByteArray();
-		});
-	}
-
 	/**
-	 * The pictures of these pages as JPEG no larger than a limit, for a service that takes no more: by page number
+	 * The pictures of these pages as JPEG no larger than a limit, for a model or a service that takes no more: by page number
 	 * from 1, a page the file does not have left out. A page that stays over the limit at the lowest quality is an
 	 * empty array, so the caller knows it was drawn and cannot be sent.
 	 */

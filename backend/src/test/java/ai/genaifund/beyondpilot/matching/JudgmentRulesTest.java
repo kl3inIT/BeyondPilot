@@ -24,13 +24,13 @@ class JudgmentRulesTest {
 
 	private static final List<Requirement> REQUIREMENTS = List.of(
 			new Requirement(1, MatchingRepository.CAPABILITY, MatchingRepository.REQUIRED, "Answers customer calls.",
-					"answer inbound calls"),
+					"answer inbound calls", ""),
 			new Requirement(2, MatchingRepository.CAPABILITY, MatchingRepository.REQUIRED, "Summarises each call.",
-					"a summary of every call"),
+					"a summary of every call", ""),
 			new Requirement(3, MatchingRepository.CAPABILITY, MatchingRepository.OPTIONAL, "Detects the caller's mood.",
-					"how the caller feels"),
+					"how the caller feels", ""),
 			new Requirement(4, MatchingRepository.CONSTRAINT, MatchingRepository.REQUIRED, "Runs on premises.",
-					"must run in our data centre"));
+					"must run in our data centre", ""));
 
 	private static final Sources SOURCES = Sources.of(solution(),
 			List.of(new Passage("customer_case", 1, 0, null, "Customer: Lotus Bank\nDelivered: a voice agent for the hotline.",
@@ -121,17 +121,19 @@ class JudgmentRulesTest {
 	void aRequirementIsKeptOnlyWithAKnownKindAndAQuoteTheBriefHoldsCapabilitiesFirst() {
 		String brief = "Problem:\nOur agents cannot answer inbound calls at night. It must run in our data centre.";
 		Extracted answered = new Extracted(List.of(
-				new Extracted.Item("constraint", "required", "Runs on premises.", "must run in our data centre"),
-				new Extracted.Item("capability", "required", " Answers customer calls. ", "answer inbound calls at night"),
-				new Extracted.Item("capability", "optional", "Speaks twelve languages.", "supports twelve languages"),
-				new Extracted.Item("wish", "required", "Is cheap.", "Our agents"),
-				new Extracted.Item("capability", "required", " ", "Our agents")));
+				new Extracted.Item("constraint", "required", "Runs on premises.", "must run in our data centre", null),
+				new Extracted.Item("capability", "required", " Answers customer calls. ", "answer inbound calls at night",
+						" Answer calls at night, whoever is calling the hotline of the bank "),
+				new Extracted.Item("capability", "optional", "Speaks twelve languages.", "supports twelve languages", null),
+				new Extracted.Item("wish", "required", "Is cheap.", "Our agents", null),
+				new Extracted.Item("capability", "required", " ", "Our agents", null)));
 
 		List<Requirement> kept = Requirements.checked(answered, brief);
 
 		assertThat(kept).containsExactly(
-				new Requirement(1, "capability", "required", "Answers customer calls.", "answer inbound calls at night"),
-				new Requirement(2, "constraint", "required", "Runs on premises.", "must run in our data centre"));
+				new Requirement(1, "capability", "required", "Answers customer calls.", "answer inbound calls at night",
+						"Answer calls at night, whoever is"),
+				new Requirement(2, "constraint", "required", "Runs on premises.", "must run in our data centre", ""));
 		assertThat(kept.get(0).name()).isEqualTo("R1");
 		assertThat(Requirements.checked(new Extracted(null), brief)).isEmpty();
 	}

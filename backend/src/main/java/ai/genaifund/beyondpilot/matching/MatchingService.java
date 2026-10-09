@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,6 +45,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class MatchingService {
 
 	private static final String USE_CASE = "use_case";
+
+	/** What a member is told when a run stopped for a reason that is the AI provider's. */
+	private static final String PROVIDER = "provider";
+
+	/** The reasons of matching's own that a member may read. */
+	private static final Set<String> MEMBER_REASONS = Set.of(MatchingRuns.NO_USE_CASE, MatchingRuns.NO_MODEL,
+			MatchingRuns.NO_CAPABILITY);
 
 	private final MatchingRepository matching;
 
@@ -151,7 +159,7 @@ public class MatchingService {
 	@Transactional
 	public MatchingResponse shortlist(Actor actor, UUID candidateId) {
 		Candidate candidate = candidate(candidateId);
-		Access access = access(actor, candidate.useCaseId());
+		Access access = access(actor, candidate);
 		if (MatchingRepository.REMOVED.equals(candidate.decision())) {
 			throw new MatchingException(MatchingErrorCode.CANDIDATE_REMOVED, "Candidate " + candidateId + " is removed");
 		}
@@ -169,7 +177,7 @@ public class MatchingService {
 	@Transactional
 	public MatchingResponse remove(Actor actor, UUID candidateId, RemoveCandidateRequest request) {
 		Candidate candidate = candidate(candidateId);
-		Access access = access(actor, candidate.useCaseId());
+		Access access = access(actor, candidate);
 		String note = request.note() == null || request.note().isBlank() ? null : request.note().strip();
 		if (!MatchingRepository.REMOVED.equals(candidate.decision())) {
 			decide(actor, access, candidate, MatchingRepository.REMOVED, request.reason(), note,
@@ -186,7 +194,7 @@ public class MatchingService {
 	@Transactional
 	public MatchingResponse restore(Actor actor, UUID candidateId) {
 		Candidate candidate = candidate(candidateId);
-		Access access = access(actor, candidate.useCaseId());
+		Access access = access(actor, candidate);
 		if (MatchingRepository.REMOVED.equals(candidate.decision()) && candidate.decidedByOperator()
 				&& !access.operator()) {
 			throw new MatchingException(MatchingErrorCode.REMOVED_BY_OPERATOR,
@@ -229,6 +237,20 @@ public class MatchingService {
 		return new Access(brief, operator);
 	}
 
+	/**
+	 * The caller's right to the use case of a candidate. A caller without it is told what a caller is told of a
+	 * candidate that does not exist, so that nobody learns which identifiers are candidates.
+	 */
+	private Access access(Actor actor, Candidate candidate) {
+		try {
+			return access(actor, candidate.useCaseId());
+		}
+		catch (MatchingException hidden) {
+			throw new MatchingException(MatchingErrorCode.CANDIDATE_NOT_FOUND,
+					"Candidate " + candidate.id() + " is not this caller's to see");
+		}
+	}
+
 	private static MatchingException notFound(UUID useCaseId) {
 		return new MatchingException(MatchingErrorCode.USE_CASE_NOT_FOUND, "No use case " + useCaseId + " for this caller");
 	}
@@ -259,9 +281,12 @@ public class MatchingService {
 			}
 			judged += candidate.judged() ? 1 : 0;
 			boolean removed = MatchingRepository.REMOVED.equals(candidate.decision());
-			Person remover = removed && candidate.decidedBy() != null ? people.get(candidate.decidedBy()) : null;
+			// A member is not told which operator removed a candidate, only that GenAI Fund did.
+			Person remover = removed && candidate.decidedBy() != null && (operator || !candidate.decidedByOperator())
+					? people.get(candidate.decidedBy()) : null;
 			candidates.add(new MatchingResponse.Candidate(candidate.id(), candidate.solutionId(), solution.slug(),
-					solution.name(), solution.organizationName(), solution.listed(), candidate.origin(),
+					solution.name(), solution.organizationName(), solution.logoFileId(), solution.country(),
+					solution.maturity(), solution.listed(), candidate.origin(),
 					candidate.bucket(), candidate.requiredMet(), candidate.requiredTotal(), candidate.decision(),
 					candidate.reason(), candidate.note(), remover == null ? null : remover.label(),
 					removed ? candidate.decidedByOperator() : null, removed ? candidate.decidedAt() : null,
@@ -274,7 +299,7 @@ public class MatchingService {
 		int done = judged;
 		MatchingResponse.Run run = last == null ? null
 				: new MatchingResponse.Run(last.id(), last.state(), last.origin(), last.createdAt(), last.notBefore(),
-						last.startedAt(), last.endedAt(), last.resumeAt(), last.failure(), done, total,
+						last.startedAt(), last.endedAt(), last.resumeAt(), failure(last.failure(), operator), done, total,
 						operator ? last.modelName() : null);
 		List<MatchingResponse.Step> steps = !operator || last == null ? List.of()
 				: matching.steps(last.id())
@@ -285,10 +310,21 @@ public class MatchingService {
 		List<MatchingResponse.Requirement> requirements = matching.requirements(useCaseId)
 			.stream()
 			.map(requirement -> new MatchingResponse.Requirement(requirement.position(), requirement.kind(),
-					requirement.necessity(), requirement.statement(), requirement.quote()))
+					requirement.necessity(), requirement.label(), requirement.statement(), requirement.quote()))
 			.toList();
 		return new MatchingResponse(useCaseId, operator, models.available(AiTask.MATCHING),
 				operator ? null : runsLeft(useCaseId), run, requirements, candidates, steps);
+	}
+
+	/**
+	 * Why a run failed or waits, as the caller may know it. An operator reads the kind of failure the run kept; a
+	 * member reads only one of matching's own reasons, and "provider" for anything that happened at the AI provider.
+	 */
+	private static @Nullable String failure(@Nullable String kept, boolean operator) {
+		if (kept == null || operator || MEMBER_REASONS.contains(kept)) {
+			return kept;
+		}
+		return PROVIDER;
 	}
 
 	private static List<MatchingResponse.Finding> findings(@Nullable Object kept) {

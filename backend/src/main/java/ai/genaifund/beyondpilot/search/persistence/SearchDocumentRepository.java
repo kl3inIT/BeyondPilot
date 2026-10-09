@@ -188,8 +188,12 @@ public class SearchDocumentRepository {
 		return titles;
 	}
 
-	/** How an item of the index is named: its address, its title, what stands under it, and whether it is listed. */
-	public record Named(String slug, String title, @Nullable String subtitle, boolean listed) {
+	/**
+	 * How an item of the index is named: its address, its title, what stands under it, whether it is listed, and the
+	 * facets its card shows.
+	 */
+	public record Named(String slug, String title, @Nullable String subtitle, boolean listed,
+			Map<String, Object> facets) {
 	}
 
 	/** How these items of a kind are named, by identifier; one the index does not hold is left out. */
@@ -199,11 +203,11 @@ public class SearchDocumentRepository {
 			return named;
 		}
 		jdbc.sql("""
-				select item_id, slug, title, subtitle, listed from search_document
+				select item_id, slug, title, subtitle, listed, facets from search_document
 				where kind = :kind and item_id in (:itemIds)
 				""").param("kind", kind).param("itemIds", itemIds).query(row -> {
 			named.put(row.getObject("item_id", UUID.class), new Named(row.getString("slug"), row.getString("title"),
-					row.getString("subtitle"), row.getBoolean("listed")));
+					row.getString("subtitle"), row.getBoolean("listed"), facets(row.getString("facets"))));
 		});
 		return named;
 	}

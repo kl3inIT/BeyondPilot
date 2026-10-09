@@ -35,17 +35,6 @@ class DocumentPagesTest {
 	}
 
 	@Test
-	void aPageIsDrawnAsAPictureAndAPageTheFileLacksIsLeftOut() throws IOException {
-		byte[] pdf = TestPdf.of("One", "");
-
-		var pictures = PdfPages.pictures(() -> new ByteArrayInputStream(pdf), java.util.List.of(2, 7));
-
-		assertThat(pictures).containsOnlyKeys(2);
-		// A PNG starts with these bytes.
-		assertThat(pictures.get(2)).startsWith((byte) 0x89, (byte) 'P', (byte) 'N', (byte) 'G');
-	}
-
-	@Test
 	void aPageIsDrawnAsAJpegUnderALimitAndAsNothingWhenItCannotFit() throws IOException {
 		byte[] pdf = TestPdf.of("One", "");
 
@@ -70,7 +59,7 @@ class DocumentPagesTest {
 			pdf = out.toByteArray();
 		}
 
-		var pictures = PdfPages.pictures(() -> new ByteArrayInputStream(pdf), java.util.List.of(1, 2));
+		var pictures = PdfPages.jpegs(() -> new ByteArrayInputStream(pdf), java.util.List.of(1, 2), 1_400_000);
 		BufferedImage poster = ImageIO.read(new ByteArrayInputStream(pictures.get(1)));
 		BufferedImage letter = ImageIO.read(new ByteArrayInputStream(pictures.get(2)));
 

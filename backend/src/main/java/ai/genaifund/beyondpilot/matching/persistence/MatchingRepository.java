@@ -80,8 +80,10 @@ public class MatchingRepository {
 	 * @param kind {@link #CAPABILITY} or {@link #CONSTRAINT}
 	 * @param necessity {@link #REQUIRED} or {@link #OPTIONAL}
 	 * @param quote the words of the brief it comes from
+	 * @param label two or three words it is shown by in a list; empty for one read before labels were kept
 	 */
-	public record Requirement(int position, String kind, String necessity, String statement, String quote) {
+	public record Requirement(int position, String kind, String necessity, String statement, String quote,
+			String label) {
 
 		public boolean isCapability() {
 			return CAPABILITY.equals(kind);
@@ -153,13 +155,14 @@ public class MatchingRepository {
 	/** The requirements kept for a use case, in their order; none when it was never read. */
 	public List<Requirement> requirements(UUID useCaseId) {
 		return jdbc.sql("""
-				select position, kind, necessity, statement, quote from matching_requirement
+				select position, kind, necessity, statement, quote, label from matching_requirement
 				where use_case_id = :useCaseId
 				order by position
 				""")
 			.param("useCaseId", useCaseId)
 			.query((row, number) -> new Requirement(row.getInt("position"), row.getString("kind"),
-					row.getString("necessity"), row.getString("statement"), row.getString("quote")))
+					row.getString("necessity"), row.getString("statement"), row.getString("quote"),
+					row.getString("label")))
 			.list();
 	}
 
@@ -178,8 +181,9 @@ public class MatchingRepository {
 			.update();
 		for (Requirement requirement : requirements) {
 			jdbc.sql("""
-					insert into matching_requirement (use_case_id, position, kind, necessity, statement, quote, source_hash)
-					values (:useCaseId, :position, :kind, :necessity, :statement, :quote, :sourceHash)
+					insert into matching_requirement (use_case_id, position, kind, necessity, statement, quote, label,
+					    source_hash)
+					values (:useCaseId, :position, :kind, :necessity, :statement, :quote, :label, :sourceHash)
 					""")
 				.param("useCaseId", useCaseId)
 				.param("position", requirement.position())
@@ -187,6 +191,7 @@ public class MatchingRepository {
 				.param("necessity", requirement.necessity())
 				.param("statement", requirement.statement())
 				.param("quote", requirement.quote())
+				.param("label", requirement.label())
 				.param("sourceHash", sourceHash)
 				.update();
 		}
