@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import type { MyOrganization, Organization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { NoticeCard } from "./notice-card";
+import { OrganizationAction } from "./organization-action";
 import { websiteHost } from "./organization-format";
 import { OrganizationMark } from "./organization-mark";
 
@@ -36,7 +37,8 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
   const reasonName = useVocabulary("organizationRefusal");
   const takeDownReasonName = useVocabulary("organizationTakeDown");
   const countryName = useCountryName();
-  const { organization } = mine;
+  const format = useFormatter();
+  const { organization, mergedFrom } = mine;
   const owner = mine.role === "owner";
 
   const tabs: { key: OrganizationTab; href: string; label: string; count?: number }[] = [
@@ -169,6 +171,27 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
             }
             badge={<Badge variant="info">{t("status.suspended")}</Badge>}
             foot={t("suspended.foot")}
+          />
+        )}
+
+        {mergedFrom && (
+          <NoticeCard
+            titleAs="h2"
+            title={t("merged.title", { name: mergedFrom.name, kept: organization.name })}
+            description={<p>{t("merged.lead", { kept: organization.name })}</p>}
+            badge={<Badge variant="info">{t("merged.badge")}</Badge>}
+            foot={t("merged.foot", {
+              day: format.dateTime(new Date(mergedFrom.mergedAt), {
+                day: "numeric",
+                month: "short",
+              }),
+              slug: mergedFrom.slug,
+            })}
+            actions={
+              <OrganizationAction action="dismissMergeNotice" prominence="secondary">
+                {t("merged.dismiss")}
+              </OrganizationAction>
+            }
           />
         )}
 

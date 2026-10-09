@@ -6,12 +6,13 @@ test.describe("home page", () => {
   test.use({ locale: "en-US" });
 
   test("shows the live challenge, the sections and the footer", async ({ page }) => {
+    // The challenge bar goes once submissions close, so the test stands before the deadline.
+    await page.clock.setFixedTime(new Date("2026-10-10T09:00:00+07:00"));
     await page.goto("/");
 
-    await expect(page.getByRole("link", { name: /Live challenge/ })).toHaveAttribute(
-      "href",
-      "https://beyondpilot.genaifund.ai/insurance-ai-tasco",
-    );
+    await expect(
+      page.getByRole("link", { name: /AI for Insurance Challenge × Tasco.*Apply/ }),
+    ).toHaveAttribute("href", "https://beyondpilot.genaifund.ai/insurance-ai-tasco");
     await expect(
       page.getByRole("heading", { level: 1, name: /Your next step in\s+AI starts here/ }),
     ).toBeVisible();
@@ -27,9 +28,31 @@ test.describe("home page", () => {
     await expect(
       page.getByRole("heading", { name: "Founders building across the ecosystem" }),
     ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "The network behind every program" }),
+    ).toBeVisible();
     await expect(page.getByRole("heading", { name: "Frequently asked questions" })).toBeVisible();
     await expect(page.getByRole("contentinfo")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
+  });
+
+  test("the challenge bar goes once submissions have closed", async ({ page }) => {
+    await page.clock.setFixedTime(new Date("2026-10-16T09:00:00+07:00"));
+    await page.goto("/");
+
+    await expect(
+      page.getByRole("heading", { level: 1, name: /Your next step in\s+AI starts here/ }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /AI for Insurance Challenge × Tasco.*Apply/ }),
+    ).toHaveCount(0);
+  });
+
+  test("an example prompt runs the search", async ({ page }) => {
+    await page.goto("/");
+
+    await page.getByRole("link", { name: "Find an AI solution for insurance claims" }).click();
+    await expect(page).toHaveURL(/\/search\?q=Find/);
   });
 
   test("the five categories lead to their directories", async ({ page }) => {

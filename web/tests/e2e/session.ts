@@ -15,7 +15,8 @@ export async function signInAs(
     | "invited"
     | "asked"
     | "declined"
-    | "waiting",
+    | "waiting"
+    | "moved",
   baseURL: string,
 ) {
   await context.addCookies([{ name: "BEYONDPILOT_SESSION", value: account, url: baseURL }]);

@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.organization;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,6 +23,7 @@ import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.JoinOutcomeResponse;
 import ai.genaifund.beyondpilot.organization.dto.JoinRequestResponse;
 import ai.genaifund.beyondpilot.organization.dto.MemberListRequest;
+import ai.genaifund.beyondpilot.organization.dto.MergeNoticeResponse;
 import ai.genaifund.beyondpilot.organization.dto.MembersResponse;
 import ai.genaifund.beyondpilot.organization.dto.MyOrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationMatchResponse;
@@ -111,8 +113,13 @@ public class OrganizationService {
 		Member member = memberships.memberOf(person.accountId()).orElse(null);
 		if (member != null) {
 			Organization organization = organizations.findById(member.organizationId()).orElseThrow();
+			MergeNoticeResponse mergedFrom = memberships.mergedFromOf(person.accountId())
+				.flatMap(organizations::findById)
+				.flatMap(merged -> Optional.ofNullable(merged.getMergedAt())
+					.map(at -> new MergeNoticeResponse(merged.getName(), merged.getSlug(), at)))
+				.orElse(null);
 			return new MyOrganizationResponse(OrganizationViews.organization(organization), member.role(),
-					member.jobTitle(), invitations, null, null, null);
+					member.jobTitle(), invitations, null, null, null, mergedFrom);
 		}
 		JoinRequestResponse request = memberships.openRequestOf(person.accountId())
 			.map(open -> OrganizationViews.joinRequest(open,
@@ -132,7 +139,7 @@ public class OrganizationService {
 							organization.getType(), organization.getCountry(), organization.getEmailDomain(),
 							organization.getLogoFileId(), organization.isAutoJoin(), memberships.owners(organization.getId()) > 0), domain))
 					.orElse(null);
-		return new MyOrganizationResponse(null, null, null, invitations, request, declined, suggestion);
+		return new MyOrganizationResponse(null, null, null, invitations, request, declined, suggestion, null);
 	}
 
 	/** The approved organizations whose name contains the text, with what asking to get in does for the caller. */
@@ -497,6 +504,12 @@ public class OrganizationService {
 	public void changeJobTitle(Actor actor, @Nullable String jobTitle) {
 		Member caller = member(actor);
 		memberships.changeJobTitle(caller.accountId(), OrganizationViews.text(jobTitle));
+	}
+
+	/** Takes away the notice that the caller's former organization was merged into this one. */
+	@Transactional
+	public void dismissMergeNotice(Actor actor) {
+		memberships.dismissMergeNotice(member(actor).accountId());
 	}
 
 	/**

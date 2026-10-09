@@ -111,19 +111,37 @@ beyondpilot:
       bucket: ${BEYONDPILOT_STORAGE_S3_BUCKET:}
       region: ${BEYONDPILOT_STORAGE_S3_REGION:}
       endpoint: ${BEYONDPILOT_STORAGE_S3_ENDPOINT:}
+  ai:
+    # 32 bytes in Base64 that encrypt the AI providers' keys in the database. Without it no key can be saved, and
+    # search goes by keywords alone.
+    encryption-key: ${BEYONDPILOT_AI_ENCRYPTION_KEY:}
   search:
     embedding:
-      # 32 bytes in Base64 that encrypt the AI providers' keys in the database. Without it no key can be saved, and
-      # search goes by keywords alone.
-      encryption-key: ${BEYONDPILOT_AI_ENCRYPTION_KEY:}
       # How many rows one request embeds, and how often the job looks for rows to embed.
       batch-size: 32
+      # Passages are many more than items: a solution has one row and dozens of passages. 64 a minute embeds
+      # the 23,000 of the imported solutions in about six hours. 256 a minute was tried on 9 October: the
+      # account's rate limit refused it, and a refusal pauses search by meaning for visitors too.
+      passage-batch-size: 64
       interval: 1m
       # The vector branch keeps what is at least this similar to the query (cosine). Measured on 6 October with
       # text-embedding-3-large at 1,536 dimensions: relevant items 0.38 to 0.64, nonsense 0.18 to 0.22.
       min-similarity: 0.35
       # The nearest the vector branch takes before ranking; an approximate index returns only its nearest.
       pool: 48
+    passages:
+      # How often the job looks for decks attached or replaced since their pages were read; it reads five a run.
+      interval: 1m
+  matching:
+    # How many candidates are judged at the same time.
+    parallel: 4
+    # How often the worker looks for a run to take; it works on one at a time.
+    interval: 10s
+    # How long a run stops after the provider refused a call. The 9Router route let calls through again two minutes
+    # after its limit was reached.
+    pause: 2m
+    # A run that stops this many times in a row without judging anything ends as failed.
+    max-stalls: 5
 
 springdoc:
   # OpenApiContractTest generates openapi.yml; no runtime profile serves the contract.

@@ -179,6 +179,35 @@ public class SearchDocumentRepository {
 			.update();
 	}
 
+	/** The title of every item of a kind the index holds, by its identifier. */
+	public Map<UUID, String> titles(String kind) {
+		Map<UUID, String> titles = new LinkedHashMap<>();
+		jdbc.sql("select item_id, title from search_document where kind = :kind").param("kind", kind).query(row -> {
+			titles.put(row.getObject("item_id", UUID.class), row.getString("title"));
+		});
+		return titles;
+	}
+
+	/** How an item of the index is named: its address, its title, what stands under it, and whether it is listed. */
+	public record Named(String slug, String title, @Nullable String subtitle, boolean listed) {
+	}
+
+	/** How these items of a kind are named, by identifier; one the index does not hold is left out. */
+	public Map<UUID, Named> named(String kind, Collection<UUID> itemIds) {
+		Map<UUID, Named> named = new LinkedHashMap<>();
+		if (itemIds.isEmpty()) {
+			return named;
+		}
+		jdbc.sql("""
+				select item_id, slug, title, subtitle, listed from search_document
+				where kind = :kind and item_id in (:itemIds)
+				""").param("kind", kind).param("itemIds", itemIds).query(row -> {
+			named.put(row.getObject("item_id", UUID.class), new Named(row.getString("slug"), row.getString("title"),
+					row.getString("subtitle"), row.getBoolean("listed")));
+		});
+		return named;
+	}
+
 	/** Takes the item out of the index; nothing happens when it is not there. */
 	public void remove(String kind, UUID itemId) {
 		jdbc.sql("delete from search_document where kind = ? and item_id = ?").params(kind, itemId).update();
@@ -315,7 +344,7 @@ public class SearchDocumentRepository {
 	}
 
 	/** pgvector's text form of a vector: "[0.1,0.2]". */
-	private static String vector(float[] values) {
+	static String vector(float[] values) {
 		StringBuilder text = new StringBuilder(values.length * 12).append('[');
 		for (int i = 0; i < values.length; i++) {
 			if (i > 0) {

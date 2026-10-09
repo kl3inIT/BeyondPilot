@@ -2,6 +2,7 @@ import type {
   ApplicationView,
   AttachedFile,
   ContactDetails,
+  Me,
   SaveApplication,
 } from "@/lib/api/generated";
 
@@ -16,8 +17,14 @@ export type ApplyDraft = {
   answers: Record<string, string>;
 };
 
-/** The draft a form starts from: the application as saved, or what the latest other one held. */
-export function draftOf(view: ApplicationView): ApplyDraft {
+/**
+ * The draft a form starts from: the application as saved, or what the latest other one held. A
+ * country or a phone number neither of them holds comes from the account.
+ */
+export function draftOf(
+  view: ApplicationView,
+  account?: Pick<Me, "country" | "phone">,
+): ApplyDraft {
   const application = view.application;
   const start = application ?? view.previous ?? null;
   const contact = start?.contact ?? {};
@@ -25,8 +32,8 @@ export function draftOf(view: ApplicationView): ApplyDraft {
     contact: {
       firstName: contact.firstName ?? "",
       lastName: contact.lastName ?? "",
-      phone: contact.phone ?? "",
-      country: contact.country ?? "",
+      phone: contact.phone ?? account?.phone ?? "",
+      country: contact.country ?? account?.country ?? "",
       linkedin: contact.linkedin ?? "",
     },
     teamBackground: application?.teamBackground ?? "",

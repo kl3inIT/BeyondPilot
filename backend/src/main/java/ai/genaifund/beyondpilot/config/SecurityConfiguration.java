@@ -67,7 +67,8 @@ class SecurityConfiguration {
 				// is not approved, for those who may read it.
 				.requestMatchers(HttpMethod.GET, "/api/solution/solutions", "/api/solution/solutions/*",
 						"/api/solution/solutions/*/deck", "/api/solution/deployments", "/api/usecase/use-cases",
-						"/api/talent/profiles", "/api/talent/profiles/*", "/api/organization/organizations/*")
+						"/api/usecase/use-cases/*", "/api/talent/profiles", "/api/talent/profiles/*",
+						"/api/organization/organizations/*")
 				.permitAll()
 				// An email provider reports what became of sent email; each report is accepted only by its signature.
 				.requestMatchers(HttpMethod.POST, CsrfHeaderFilter.PROVIDER_REPORTS + "*")

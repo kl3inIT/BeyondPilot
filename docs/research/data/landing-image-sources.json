@@ -954,5 +954,42 @@
       "source_page_url": "https://beyondpilot.genaifund.ai/insurance-ai-tasco",
       "from": "the approved Figma program page (87:9138)"
     }
-  ]
+  ],
+  "brand": {
+    "used_in": "Header, footer, menu, sign-in, the editors, the admin sidebar, the consent screen and the browser tab (web/public/brand/, web/src/app/icon.svg)",
+    "source": "BeyondPilot logo kit shared by GenAI Fund on Google Drive (folder \"Logos\"), received 9 October 2026",
+    "rules": "From the kit's README: keep the aspect ratio; no recolouring, stretching, shadows or gradients; the small-size icon, without the GenAI Fund accent, for favicons and other tiny placements. Colours: purple #633ADB, charcoal #23232E, white #FFFFFF, black #000000.",
+    "files": [
+      {
+        "file": "beyondpilot-logo.svg",
+        "from": "primary-light/beyondpilot-primary-light.svg",
+        "processing": "none"
+      },
+      {
+        "file": "beyondpilot-logo-dark.svg",
+        "from": "primary-dark/beyondpilot-primary-dark.svg",
+        "processing": "none"
+      },
+      {
+        "file": "beyondpilot-icon.svg",
+        "from": "standalone-icon/beyondpilot-standalone-icon.svg",
+        "processing": "The GenAI Fund accent is taken out, which is the kit's small-size icon; nothing else is changed. web/src/app/icon.svg is the same file."
+      }
+    ],
+    "not_in_the_folder": [
+      {
+        "name": "small-size-icon",
+        "why": "named in the README and shown on the review sheet, but the folder holds no file for it"
+      },
+      {
+        "name": "favicon (SVG, ICO, PNGs, Apple touch icon)",
+        "why": "named in the README, but the folder holds no such folder"
+      }
+    ],
+    "not_used": [
+      "all-white",
+      "all-black",
+      "the PNG exports"
+    ]
+  }
 }

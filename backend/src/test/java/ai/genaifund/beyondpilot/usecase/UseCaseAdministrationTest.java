@@ -190,7 +190,7 @@ class UseCaseAdministrationTest {
 		UUID quietLogo = file("operator@usecase.test", "organization_logo", "stored");
 		jdbc.sql("update organization set logo_file_id = ? where id = ?").params(openLogo, open).update();
 		jdbc.sql("update organization set logo_file_id = ? where id = ?").params(quietLogo, quiet).update();
-		post(operator, USE_CASES, useCase(open, "Open case " + tag, true)).expectStatus().isCreated();
+		String published = body(post(operator, USE_CASES, useCase(open, "Open case " + tag, true)).expectStatus().isCreated());
 		post(operator, USE_CASES, useCase(open, "Draft case " + tag, false)).expectStatus().isCreated();
 		Map<String, Object> hidden = useCase(quiet, "Quiet case " + tag, true);
 		hidden.put("hideOrganizationName", true);
@@ -213,6 +213,16 @@ class UseCaseAdministrationTest {
 			.containsExactly((Object) null);
 		assertThat(JsonPath.<List<Integer>>read(all, "$.items[?(@.title == 'Open case " + tag + "')].budgetMax"))
 			.containsExactly(40000);
+		String publicDetail = body(client.get()
+			.uri(DIRECTORY + "/" + JsonPath.<String>read(published, "$.id"))
+			.exchange()
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(publicDetail, "$.organizationName")).isEqualTo("Open Bank " + tag);
+		assertThat(JsonPath.<String>read(publicDetail, "$.organizationLogoFileId")).isEqualTo(openLogo.toString());
+		assertThat(JsonPath.<String>read(publicDetail, "$.problemStatement"))
+			.isEqualTo("Our service team checks documents by hand.");
+		assertThat(JsonPath.<String>read(publicDetail, "$.currentSolutions")).isEqualTo("A basic OCR tool.");
 
 		String byOrganization = body(client.get().uri(DIRECTORY + "?q={q}", "quiet bank " + tag).exchange().expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(byOrganization, "$.items")).isEmpty();

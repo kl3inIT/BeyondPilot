@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
 import { CompanyPage } from "@/features/solution/company-page";
@@ -9,7 +9,8 @@ import {
   readCompanySolutions,
 } from "@/features/solution/solution-queries";
 import { loadCompanySearch } from "@/features/solution/solutions-search";
-import { titleSuffix } from "@/lib/site";
+import { getPathname } from "@/i18n/navigation";
+import { siteRoutes, titleSuffix } from "@/lib/site";
 
 export async function generateMetadata({
   params,
@@ -34,6 +35,12 @@ export default async function OrganizationRoute({
   const organization = await readCompany(slug);
   if (!organization) {
     notFound();
+  }
+  // The address of an organization merged into another answers with that one, under its own address.
+  if (organization.slug !== slug) {
+    permanentRedirect(
+      getPathname({ href: `${siteRoutes.organizations}/${organization.slug}`, locale }),
+    );
   }
 
   const { more } = await loadCompanySearch(searchParams);

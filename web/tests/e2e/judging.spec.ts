@@ -57,6 +57,16 @@ test.describe("judging applications", () => {
     await expect(page).toHaveURL(/tab=undecided/);
     await expect(page.getByText("Claim Copilot")).toHaveCount(0);
 
+    // The download holds the applications the list shows now, and says of all of them how many are scored.
+    await expect(page.getByText("2 of 3 scored")).toBeVisible();
+    const download = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Download (CSV)" }).click();
+    expect((await download).suggestedFilename()).toBe("insurance-ai-tasco-applications.csv");
+    expect(calls).toHaveLength(1);
+    expect(calls[0].url).toContain(`/programs/${judgedProgramId}/applications/export`);
+    expect((calls[0].body as { applicationIds: string[] }).applicationIds).toHaveLength(1);
+    calls.length = 0;
+
     if (!isMobile) {
       await page.goto(`${admin}/applications`);
       await page.getByRole("checkbox", { name: "Select Plain Cover" }).click();

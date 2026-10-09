@@ -3,8 +3,10 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
 import { OrganizationMark } from "@/features/organization/organization-mark";
+import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicUseCaseSummary } from "@/lib/api/generated";
+import { useCaseRoute } from "@/lib/site";
 
 import { budgetFigures, budgetText } from "./use-case-budget";
 
@@ -13,7 +15,14 @@ import { budgetFigures, budgetText } from "./use-case-budget";
  * column with the budget, the timeline and the deadline. On a phone only what decides whether the
  * use case is worth reading stays: title, organization, tags, budget, timeline and deadline.
  */
-function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
+function UseCaseCard({
+  useCase,
+  heading: Heading = "h2",
+}: {
+  useCase: PublicUseCaseSummary;
+  /** The level of the title: a list inside a section that has its own heading passes `h3`. */
+  heading?: "h2" | "h3";
+}) {
   const t = useTranslations("UseCases");
   const industryName = useVocabulary("industry");
   const technologyName = useVocabulary("technology");
@@ -40,9 +49,14 @@ function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
       />
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <h2 className="line-clamp-3 text-lg font-semibold tracking-title md:line-clamp-2 xl:text-xl">
-          {useCase.title}
-        </h2>
+        <Heading className="line-clamp-3 text-lg font-semibold tracking-title md:line-clamp-2 xl:text-xl">
+          <Link
+            className="hover:underline focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring/50"
+            href={useCaseRoute(useCase.id)}
+          >
+            {useCase.title}
+          </Link>
+        </Heading>
         <p className="text-xs text-muted-foreground uppercase md:text-sm">{organizationName}</p>
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">{industryName(useCase.industry)}</Badge>
@@ -120,7 +134,7 @@ function UseCaseCard({ useCase }: { useCase: PublicUseCaseSummary }) {
             t("deadline.none")
           )}
         </p>
-        <Button disabled className="disabled:opacity-100" size="sm" title={t("viewUnavailable")}>
+        <Button href={useCaseRoute(useCase.id)} size="sm">
           {t("view")}
         </Button>
       </div>

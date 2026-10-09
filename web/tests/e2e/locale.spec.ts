@@ -1,6 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
+
+/** Opens the header's language menu, named by the language it shows, and picks another. */
+async function chooseLanguage(page: Page, current: string, language: string) {
+  await page.getByRole("banner").getByRole("button", { name: current }).click();
+  await page.getByRole("menu").getByRole("menuitemradio", { name: language }).click();
+}
 
 test.describe("locale routing", () => {
   test.use({ locale: "en-US" });
@@ -67,12 +73,70 @@ test.describe("Spring-owned paths", () => {
   });
 });
 
-test.describe("first visit from a Vietnamese browser", () => {
+test.describe("a Vietnamese browser", () => {
   test.use({ locale: "vi-VN" });
 
-  test("is sent to the Vietnamese site", async ({ page }) => {
+  test("stays on the English site", async ({ page }) => {
+    const home = await page.goto("/");
+
+    expect(home?.request().redirectedFrom()).toBeNull();
+    await expect(page).toHaveURL("/");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Your next step in AI starts here.",
+    );
+
+    const inner = await page.goto("/how-it-works");
+
+    expect(inner?.request().redirectedFrom()).toBeNull();
+    await expect(page).toHaveURL("/how-it-works");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  });
+
+  test("reaches the Vietnamese site through the language menu, and English again", async ({
+    page,
+  }) => {
     await page.goto("/");
 
+    await chooseLanguage(page, "Language: EN", "Tiếng Việt");
+    await expect(page).toHaveURL("/vi");
+    await expect(page.locator("html")).toHaveAttribute("lang", "vi");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Bước tiếp theo của bạn với AI bắt đầu từ đây.",
+    );
+
+    await chooseLanguage(page, "Ngôn ngữ: VI", "English");
+    await expect(page).toHaveURL("/");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  });
+});
+
+// An English browser, so that only the person's own choice can explain a Vietnamese page.
+test.describe("the chosen language", () => {
+  test.use({ locale: "en-US" });
+
+  test("is kept at an address without a prefix, in both directions", async ({ page }) => {
+    await page.goto("/");
+    await chooseLanguage(page, "Language: EN", "Tiếng Việt");
+    await expect(page).toHaveURL("/vi");
+
+    await page.goto("/how-it-works");
+    await expect(page).toHaveURL("/vi/how-it-works");
+    await expect(page.locator("html")).toHaveAttribute("lang", "vi");
+
+    await chooseLanguage(page, "Ngôn ngữ: VI", "English");
+    await expect(page).toHaveURL("/how-it-works");
+
+    await page.goto("/");
+    await expect(page).toHaveURL("/");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  });
+
+  test("is kept after a /vi address was opened", async ({ page }) => {
+    await page.goto("/vi/how-it-works");
+    await expect(page.locator("html")).toHaveAttribute("lang", "vi");
+
+    await page.goto("/");
     await expect(page).toHaveURL("/vi");
     await expect(page.locator("html")).toHaveAttribute("lang", "vi");
   });

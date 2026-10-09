@@ -12,6 +12,9 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
+import ai.genaifund.beyondpilot.ai.AiProviderChange;
+import ai.genaifund.beyondpilot.ai.AiProviders;
+import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.search.dto.SearchItem;
 import ai.genaifund.beyondpilot.search.dto.SearchRequest;
@@ -50,7 +53,7 @@ class SearchMeaningTest {
 	static void encryptionKey(DynamicPropertyRegistry registry) {
 		byte[] key = new byte[32];
 		new SecureRandom().nextBytes(key);
-		registry.add("beyondpilot.search.embedding.encryption-key", () -> Base64.getEncoder().encodeToString(key));
+		registry.add("beyondpilot.ai.encryption-key", () -> Base64.getEncoder().encodeToString(key));
 	}
 
 	@Autowired
@@ -69,7 +72,7 @@ class SearchMeaningTest {
 	private JdbcClient jdbc;
 
 	@Autowired
-	private ProviderKeys keys;
+	private AiProviders providers;
 
 	@Autowired
 	private EmbeddingClients clients;
@@ -80,11 +83,12 @@ class SearchMeaningTest {
 		jdbc.sql("delete from search_document").update();
 		jdbc.sql("update search_settings set provider_id = null, model = null, semantic_enabled = true").update();
 		jdbc.sql("delete from ai_provider").update();
-		UUID provider = UUID.randomUUID();
-		jdbc.sql("""
-				insert into ai_provider (id, purpose, vendor, name, base_url, api_key, updated_by, updated_by_label)
-				values (?, 'embedding', 'openai', 'OpenAI', 'https://api.openai.com/v1', ?, ?, 'Test')
-				""").params(provider, keys.seal("sk-test"), UUID.randomUUID()).update();
+		UUID provider = providers
+			.connect(new Operator(UUID.randomUUID(), "Test", "test@search.test"), AiProviders.EMBEDDING,
+					new AiProviderChange("openai", "openai", "OpenAI", "https://api.openai.com/v1", true,
+							AiProviderChange.Key.REPLACE,
+							"sk-test", 0))
+			.id();
 		jdbc.sql("update search_settings set provider_id = ?, model = 'text-embedding-3-large', model_since = now()")
 			.param(provider)
 			.update();

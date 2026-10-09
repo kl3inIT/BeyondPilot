@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcceptOrganizationInvitationData, AcceptOrganizationInvitationErrors, AcceptOrganizationInvitationResponses, AcceptTalentEnquiryData, AcceptTalentEnquiryErrors, AcceptTalentEnquiryResponses, AddAppHostData, AddAppHostErrors, AddAppHostResponses, AddCustomerDeploymentData, AddCustomerDeploymentErrors, AddCustomerDeploymentResponses, AddEmailSuppressionData, AddEmailSuppressionErrors, AddEmailSuppressionResponses, AllowOtherAppHostsData, AllowOtherAppHostsResponses, ApproveAdminUseCaseData, ApproveAdminUseCaseErrors, ApproveAdminUseCaseResponses, ApproveCustomerDeploymentData, ApproveCustomerDeploymentErrors, ApproveCustomerDeploymentResponses, ApproveJoinRequestData, ApproveJoinRequestErrors, ApproveJoinRequestResponses, ApproveOrganizationClaimData, ApproveOrganizationClaimErrors, ApproveOrganizationClaimResponses, ApproveOrganizationData, ApproveOrganizationErrors, ApproveOrganizationResponses, ApproveSolutionData, ApproveSolutionErrors, ApproveSolutionResponses, ApproveTalentData, ApproveTalentErrors, ApproveTalentResponses, BackSolutionData, BackSolutionErrors, BackSolutionResponses, ChangeAdminOrganizationMemberRoleData, ChangeAdminOrganizationMemberRoleErrors, ChangeAdminOrganizationMemberRoleResponses, ChangeMyJobTitleData, ChangeMyJobTitleErrors, ChangeMyJobTitleResponses, ChangeOrganizationAutoJoinData, ChangeOrganizationAutoJoinErrors, ChangeOrganizationAutoJoinResponses, ChangeOrganizationMemberRoleData, ChangeOrganizationMemberRoleErrors, ChangeOrganizationMemberRoleResponses, CheckEmailSetupData, CheckEmailSetupErrors, CheckEmailSetupResponses, ChooseEmbeddingModelData, ChooseEmbeddingModelErrors, ChooseEmbeddingModelResponses, ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, CreateAdminOrganizationData, CreateAdminOrganizationErrors, CreateAdminOrganizationResponses, CreateAdminUseCaseData, CreateAdminUseCaseErrors, CreateAdminUseCaseResponses, CreateAiProviderData, CreateAiProviderErrors, CreateAiProviderResponses, CreateMyUseCaseData, CreateMyUseCaseErrors, CreateMyUseCaseResponses, CreateOrganizationData, CreateOrganizationErrors, CreateOrganizationResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, CreateSolutionData, CreateSolutionErrors, CreateSolutionResponses, DecideApplicationsData, DecideApplicationsErrors, DecideApplicationsResponses, DeclineIntroductionData, DeclineIntroductionErrors, DeclineIntroductionResponses, DeclineJoinRequestData, DeclineJoinRequestErrors, DeclineJoinRequestResponses, DeclineOrganizationClaimData, DeclineOrganizationClaimErrors, DeclineOrganizationClaimResponses, DeclineOrganizationInvitationData, DeclineOrganizationInvitationErrors, DeclineOrganizationInvitationResponses, DeclineTalentEnquiryData, DeclineTalentEnquiryErrors, DeclineTalentEnquiryResponses, DeleteAiProviderData, DeleteAiProviderErrors, DeleteAiProviderResponses, DeleteCustomerDeploymentData, DeleteCustomerDeploymentErrors, DeleteCustomerDeploymentResponses, DeleteMyTalentProfileData, DeleteMyTalentProfileErrors, DeleteMyTalentProfileResponses, DeleteSolutionDraftData, DeleteSolutionDraftErrors, DeleteSolutionDraftResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, GetAdminOrganizationData, GetAdminOrganizationErrors, GetAdminOrganizationResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetAdminSolutionData, GetAdminSolutionErrors, GetAdminSolutionResponses, GetAdminTalentData, GetAdminTalentErrors, GetAdminTalentResponses, GetAdminUseCaseData, GetAdminUseCaseErrors, GetAdminUseCaseResponses, GetAppHostsData, GetAppHostsErrors, GetAppHostsResponses, GetApplicationFormData, GetApplicationFormErrors, GetApplicationFormResponses, GetConnectingAppData, GetConnectingAppErrors, GetConnectingAppResponses, GetEmailMessageData, GetEmailMessageErrors, GetEmailMessageResponses, GetEmailSettingsData, GetEmailSettingsErrors, GetEmailSettingsResponses, GetEmailTemplateData, GetEmailTemplateErrors, GetEmailTemplateResponses, GetMcpSettingsData, GetMcpSettingsErrors, GetMcpSettingsResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyApplicationData, GetMyApplicationErrors, GetMyApplicationResponses, GetMyOrganizationData, GetMyOrganizationErrors, GetMyOrganizationResponses, GetMySolutionData, GetMySolutionErrors, GetMySolutionResponses, GetMyTalentProfileData, GetMyTalentProfileErrors, GetMyTalentProfileResponses, GetMyUseCaseData, GetMyUseCaseErrors, GetMyUseCaseResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetProgramData, GetProgramErrors, GetProgramQuestionsData, GetProgramQuestionsErrors, GetProgramQuestionsResponses, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GetReceivedIntroductionsData, GetReceivedIntroductionsErrors, GetReceivedIntroductionsResponses, GetReleaseData, GetReleaseErrors, GetReleaseResponses, GetReviewApplicationData, GetReviewApplicationErrors, GetReviewApplicationResponses, GetReviewCriteriaData, GetReviewCriteriaErrors, GetReviewCriteriaResponses, GetReviewFileData, GetReviewFileErrors, GetReviewFileResponses, GetSearchIndexData, GetSearchIndexErrors, GetSearchIndexResponses, GetSolutionData, GetSolutionDeckData, GetSolutionDeckErrors, GetSolutionDeckResponses, GetSolutionErrors, GetSolutionResponses, GetTalentData, GetTalentErrors, GetTalentResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, InviteAdminOrganizationMemberData, InviteAdminOrganizationMemberErrors, InviteAdminOrganizationMemberResponses, InviteOrganizationMemberData, InviteOrganizationMemberErrors, InviteOrganizationMemberResponses, InviteReviewerData, InviteReviewerErrors, InviteReviewerResponses, JoinOrganizationData, JoinOrganizationErrors, JoinOrganizationResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminIntroductionsData, ListAdminIntroductionsErrors, ListAdminIntroductionsResponses, ListAdminOrganizationsData, ListAdminOrganizationsErrors, ListAdminOrganizationsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAdminSolutionsData, ListAdminSolutionsErrors, ListAdminSolutionsResponses, ListAdminTalentData, ListAdminTalentErrors, ListAdminTalentResponses, ListAdminUseCasesData, ListAdminUseCasesErrors, ListAdminUseCasesResponses, ListAiProvidersData, ListAiProvidersErrors, ListAiProvidersResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListConnectedAppsData, ListConnectedAppsResponses, ListCustomerDeploymentsData, ListCustomerDeploymentsErrors, ListCustomerDeploymentsResponses, ListEmailMessagesData, ListEmailMessagesErrors, ListEmailMessagesResponses, ListEmailSuppressionsData, ListEmailSuppressionsErrors, ListEmailSuppressionsResponses, ListEmailTemplatesData, ListEmailTemplatesErrors, ListEmailTemplatesResponses, ListEveryConnectedAppData, ListEveryConnectedAppErrors, ListEveryConnectedAppResponses, ListMcpCallsData, ListMcpCallsErrors, ListMcpCallsResponses, ListMyApplicationsData, ListMyApplicationsErrors, ListMyApplicationsResponses, ListMyOrganizationMembersData, ListMyOrganizationMembersErrors, ListMyOrganizationMembersResponses, ListMySolutionsData, ListMySolutionsErrors, ListMySolutionsResponses, ListMyUseCasesData, ListMyUseCasesErrors, ListMyUseCasesResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, ListReportedTalentEnquiriesData, ListReportedTalentEnquiriesErrors, ListReportedTalentEnquiriesResponses, ListReviewApplicationsData, ListReviewApplicationsErrors, ListReviewApplicationsResponses, ListReviewersData, ListReviewersErrors, ListReviewersResponses, ListReviewProgramsData, ListReviewProgramsErrors, ListReviewProgramsResponses, ListSolutionsData, ListSolutionsErrors, ListSolutionsResponses, ListTalentData, ListTalentErrors, ListTalentResponses, ListUseCaseOrganizationsData, ListUseCaseOrganizationsErrors, ListUseCaseOrganizationsResponses, ListUseCasesData, ListUseCasesErrors, ListUseCasesResponses, MoveMyUseCaseToDraftData, MoveMyUseCaseToDraftErrors, MoveMyUseCaseToDraftResponses, OrganizeApplicantData, OrganizeApplicantErrors, OrganizeApplicantResponses, PreviewEmailTemplateData, PreviewEmailTemplateErrors, PreviewEmailTemplateResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, RebuildSearchIndexData, RebuildSearchIndexErrors, RebuildSearchIndexResponses, ReceiveResendEventData, ReceiveResendEventErrors, ReceiveResendEventResponses, ReceiveSesEventData, ReceiveSesEventErrors, ReceiveSesEventResponses, RefuseOrganizationData, RefuseOrganizationErrors, RefuseOrganizationResponses, RejectCustomerDeploymentData, RejectCustomerDeploymentErrors, RejectCustomerDeploymentResponses, RejectSolutionData, RejectSolutionErrors, RejectSolutionResponses, ReleaseOutcomesData, ReleaseOutcomesErrors, ReleaseOutcomesResponses, RemoveAdminOrganizationMemberData, RemoveAdminOrganizationMemberErrors, RemoveAdminOrganizationMemberResponses, RemoveAppHostData, RemoveAppHostErrors, RemoveAppHostResponses, RemoveEmailSuppressionData, RemoveEmailSuppressionErrors, RemoveEmailSuppressionResponses, RemoveOrganizationMemberData, RemoveOrganizationMemberErrors, RemoveOrganizationMemberResponses, RemoveReviewerData, RemoveReviewerErrors, RemoveReviewerResponses, ReplyToIntroductionData, ReplyToIntroductionErrors, ReplyToIntroductionResponses, ReportTalentEnquiryData, ReportTalentEnquiryErrors, ReportTalentEnquiryResponses, RequestIntroductionData, RequestIntroductionErrors, RequestIntroductionResponses, ResendEmailMessageData, ResendEmailMessageErrors, ResendEmailMessageResponses, ResendReviewerInvitationData, ResendReviewerInvitationErrors, ResendReviewerInvitationResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, ResetEmailTemplateData, ResetEmailTemplateErrors, ResetEmailTemplateResponses, RestoreOrganizationData, RestoreOrganizationErrors, RestoreOrganizationResponses, RestoreSolutionData, RestoreSolutionErrors, RestoreSolutionResponses, RestoreTalentData, RestoreTalentErrors, RestoreTalentResponses, RetrySearchEmbeddingsData, RetrySearchEmbeddingsErrors, RetrySearchEmbeddingsResponses, RevokeAdminOrganizationInvitationData, RevokeAdminOrganizationInvitationErrors, RevokeAdminOrganizationInvitationResponses, RevokeConnectedAppData, RevokeConnectedAppErrors, RevokeConnectedAppResponses, RevokeOrganizationInvitationData, RevokeOrganizationInvitationErrors, RevokeOrganizationInvitationResponses, RevokePersonsAppData, RevokePersonsAppErrors, RevokePersonsAppResponses, SaveAdminOrganizationData, SaveAdminOrganizationErrors, SaveAdminOrganizationResponses, SaveApplicationData, SaveApplicationErrors, SaveApplicationResponses, SaveAssessmentData, SaveAssessmentErrors, SaveAssessmentResponses, SaveCustomerDeploymentData, SaveCustomerDeploymentErrors, SaveCustomerDeploymentResponses, SaveEmailAppearanceData, SaveEmailAppearanceErrors, SaveEmailAppearanceResponses, SaveEmailSettingsData, SaveEmailSettingsErrors, SaveEmailSettingsResponses, SaveEmailTemplateData, SaveEmailTemplateErrors, SaveEmailTemplateResponses, SaveMyOrganizationData, SaveMyOrganizationErrors, SaveMyOrganizationResponses, SaveMyTalentProfileData, SaveMyTalentProfileErrors, SaveMyTalentProfileResponses, SaveMyUseCaseData, SaveMyUseCaseErrors, SaveMyUseCaseResponses, SaveProgramData, SaveProgramErrors, SaveProgramQuestionsData, SaveProgramQuestionsErrors, SaveProgramQuestionsResponses, SaveProgramResponses, SaveReviewCriteriaData, SaveReviewCriteriaErrors, SaveReviewCriteriaResponses, SaveSolutionData, SaveSolutionErrors, SaveSolutionResponses, SearchData, SearchErrors, SearchOrganizationsData, SearchOrganizationsErrors, SearchOrganizationsResponses, SearchResponses, SendBackAdminUseCaseData, SendBackAdminUseCaseErrors, SendBackAdminUseCaseResponses, SendBackOrganizationData, SendBackOrganizationErrors, SendBackOrganizationResponses, SendBackSolutionData, SendBackSolutionErrors, SendBackSolutionResponses, SendBackTalentData, SendBackTalentErrors, SendBackTalentResponses, SendTalentEnquiryData, SendTalentEnquiryErrors, SendTalentEnquiryResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, SetAdminUseCaseProgramsData, SetAdminUseCaseProgramsErrors, SetAdminUseCaseProgramsResponses, SetSemanticSearchData, SetSemanticSearchErrors, SetSemanticSearchResponses, SubmitApplicationData, SubmitApplicationErrors, SubmitApplicationResponses, SubmitMyTalentProfileData, SubmitMyTalentProfileErrors, SubmitMyTalentProfileResponses, SubmitMyUseCaseData, SubmitMyUseCaseErrors, SubmitMyUseCaseResponses, SubmitSolutionData, SubmitSolutionErrors, SubmitSolutionResponses, SwitchMcpToolData, SwitchMcpToolErrors, SwitchMcpToolResponses, SwitchMcpUserServerData, SwitchMcpUserServerResponses, TakeDownOrganizationData, TakeDownOrganizationErrors, TakeDownOrganizationResponses, TakeDownSolutionData, TakeDownSolutionErrors, TakeDownSolutionResponses, TakeDownTalentData, TakeDownTalentErrors, TakeDownTalentResponses, TestAiProviderData, TestAiProviderErrors, TestAiProviderResponses, TestEmailSettingsData, TestEmailSettingsErrors, TestEmailSettingsResponses, TestEmailTemplateData, TestEmailTemplateErrors, TestEmailTemplateResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, UpdateAiProviderData, UpdateAiProviderErrors, UpdateAiProviderResponses, WithdrawApplicationData, WithdrawApplicationErrors, WithdrawApplicationResponses, WithdrawJoinRequestData, WithdrawJoinRequestErrors, WithdrawJoinRequestResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
+import type { AcceptOrganizationInvitationData, AcceptOrganizationInvitationErrors, AcceptOrganizationInvitationResponses, AcceptTalentEnquiryData, AcceptTalentEnquiryErrors, AcceptTalentEnquiryResponses, AddAppHostData, AddAppHostErrors, AddAppHostResponses, AddChatModelsData, AddChatModelsErrors, AddChatModelsResponses, AddCustomerDeploymentData, AddCustomerDeploymentErrors, AddCustomerDeploymentResponses, AddEmailSuppressionData, AddEmailSuppressionErrors, AddEmailSuppressionResponses, AddMatchingCandidateData, AddMatchingCandidateErrors, AddMatchingCandidateResponses, AllowOtherAppHostsData, AllowOtherAppHostsResponses, ApproveAdminUseCaseData, ApproveAdminUseCaseErrors, ApproveAdminUseCaseResponses, ApproveCustomerDeploymentData, ApproveCustomerDeploymentErrors, ApproveCustomerDeploymentResponses, ApproveJoinRequestData, ApproveJoinRequestErrors, ApproveJoinRequestResponses, ApproveOrganizationClaimData, ApproveOrganizationClaimErrors, ApproveOrganizationClaimResponses, ApproveOrganizationData, ApproveOrganizationErrors, ApproveOrganizationResponses, ApproveSolutionData, ApproveSolutionErrors, ApproveSolutionResponses, ApproveTalentData, ApproveTalentErrors, ApproveTalentResponses, BackSolutionData, BackSolutionErrors, BackSolutionResponses, ChangeAdminOrganizationMemberRoleData, ChangeAdminOrganizationMemberRoleErrors, ChangeAdminOrganizationMemberRoleResponses, ChangeChatModelData, ChangeChatModelErrors, ChangeChatModelResponses, ChangeChatProviderData, ChangeChatProviderErrors, ChangeChatProviderResponses, ChangeMyJobTitleData, ChangeMyJobTitleErrors, ChangeMyJobTitleResponses, ChangeOcrProviderData, ChangeOcrProviderErrors, ChangeOcrProviderResponses, ChangeOrganizationAutoJoinData, ChangeOrganizationAutoJoinErrors, ChangeOrganizationAutoJoinResponses, ChangeOrganizationMemberRoleData, ChangeOrganizationMemberRoleErrors, ChangeOrganizationMemberRoleResponses, CheckEmailSetupData, CheckEmailSetupErrors, CheckEmailSetupResponses, ChooseEmbeddingModelData, ChooseEmbeddingModelErrors, ChooseEmbeddingModelResponses, ConfirmUploadData, ConfirmUploadErrors, ConfirmUploadResponses, ConnectChatProviderData, ConnectChatProviderErrors, ConnectChatProviderResponses, ConnectOcrProviderData, ConnectOcrProviderErrors, ConnectOcrProviderResponses, CreateAdminOrganizationData, CreateAdminOrganizationErrors, CreateAdminOrganizationResponses, CreateAdminUseCaseData, CreateAdminUseCaseErrors, CreateAdminUseCaseResponses, CreateAiProviderData, CreateAiProviderErrors, CreateAiProviderResponses, CreateMyUseCaseData, CreateMyUseCaseErrors, CreateMyUseCaseResponses, CreateOrganizationData, CreateOrganizationErrors, CreateOrganizationResponses, CreateProgramData, CreateProgramErrors, CreateProgramResponses, CreateSolutionData, CreateSolutionErrors, CreateSolutionResponses, DecideApplicationsData, DecideApplicationsErrors, DecideApplicationsResponses, DeclineIntroductionData, DeclineIntroductionErrors, DeclineIntroductionResponses, DeclineJoinRequestData, DeclineJoinRequestErrors, DeclineJoinRequestResponses, DeclineOrganizationClaimData, DeclineOrganizationClaimErrors, DeclineOrganizationClaimResponses, DeclineOrganizationInvitationData, DeclineOrganizationInvitationErrors, DeclineOrganizationInvitationResponses, DeclineTalentEnquiryData, DeclineTalentEnquiryErrors, DeclineTalentEnquiryResponses, DeleteAiProviderData, DeleteAiProviderErrors, DeleteAiProviderResponses, DeleteCustomerDeploymentData, DeleteCustomerDeploymentErrors, DeleteCustomerDeploymentResponses, DeleteMyTalentProfileData, DeleteMyTalentProfileErrors, DeleteMyTalentProfileResponses, DeleteSolutionDraftData, DeleteSolutionDraftErrors, DeleteSolutionDraftResponses, DisableAccountData, DisableAccountErrors, DisableAccountResponses, DismissMyOrganizationMergeNoticeData, DismissMyOrganizationMergeNoticeErrors, DismissMyOrganizationMergeNoticeResponses, EnableAccountData, EnableAccountErrors, EnableAccountResponses, ExportReviewApplicationsData, ExportReviewApplicationsErrors, ExportReviewApplicationsResponses, GetAdminOrganizationData, GetAdminOrganizationErrors, GetAdminOrganizationResponses, GetAdminProgramData, GetAdminProgramErrors, GetAdminProgramResponses, GetAdminSolutionData, GetAdminSolutionErrors, GetAdminSolutionResponses, GetAdminTalentData, GetAdminTalentErrors, GetAdminTalentResponses, GetAdminUseCaseData, GetAdminUseCaseErrors, GetAdminUseCaseResponses, GetAppHostsData, GetAppHostsErrors, GetAppHostsResponses, GetApplicationFormData, GetApplicationFormErrors, GetApplicationFormResponses, GetChatSettingsData, GetChatSettingsResponses, GetConnectingAppData, GetConnectingAppErrors, GetConnectingAppResponses, GetEmailMessageData, GetEmailMessageErrors, GetEmailMessageResponses, GetEmailSettingsData, GetEmailSettingsErrors, GetEmailSettingsResponses, GetEmailTemplateData, GetEmailTemplateErrors, GetEmailTemplateResponses, GetMatchingData, GetMatchingErrors, GetMatchingResponses, GetMatchingSettingsData, GetMatchingSettingsErrors, GetMatchingSettingsResponses, GetMcpSettingsData, GetMcpSettingsErrors, GetMcpSettingsResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyApplicationData, GetMyApplicationErrors, GetMyApplicationResponses, GetMyOrganizationData, GetMyOrganizationErrors, GetMyOrganizationResponses, GetMySolutionData, GetMySolutionErrors, GetMySolutionResponses, GetMyTalentProfileData, GetMyTalentProfileErrors, GetMyTalentProfileResponses, GetMyUseCaseData, GetMyUseCaseErrors, GetMyUseCaseResponses, GetOcrSettingsData, GetOcrSettingsResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetProgramData, GetProgramErrors, GetProgramQuestionsData, GetProgramQuestionsErrors, GetProgramQuestionsResponses, GetProgramResponses, GetPublicFileData, GetPublicFileErrors, GetPublicFileResponses, GetReceivedIntroductionsData, GetReceivedIntroductionsErrors, GetReceivedIntroductionsResponses, GetReleaseData, GetReleaseErrors, GetReleaseResponses, GetReviewApplicationData, GetReviewApplicationErrors, GetReviewApplicationResponses, GetReviewCriteriaData, GetReviewCriteriaErrors, GetReviewCriteriaResponses, GetReviewFileData, GetReviewFileErrors, GetReviewFileResponses, GetSearchIndexData, GetSearchIndexErrors, GetSearchIndexResponses, GetSolutionData, GetSolutionDeckData, GetSolutionDeckErrors, GetSolutionDeckResponses, GetSolutionErrors, GetSolutionResponses, GetTalentData, GetTalentErrors, GetTalentResponses, GetUseCaseData, GetUseCaseErrors, GetUseCaseResponses, GrantOperatorData, GrantOperatorErrors, GrantOperatorResponses, InviteAdminOrganizationMemberData, InviteAdminOrganizationMemberErrors, InviteAdminOrganizationMemberResponses, InviteOrganizationMemberData, InviteOrganizationMemberErrors, InviteOrganizationMemberResponses, InviteReviewerData, InviteReviewerErrors, InviteReviewerResponses, JoinOrganizationData, JoinOrganizationErrors, JoinOrganizationResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListAdminIntroductionsData, ListAdminIntroductionsErrors, ListAdminIntroductionsResponses, ListAdminOrganizationsData, ListAdminOrganizationsErrors, ListAdminOrganizationsResponses, ListAdminProgramsData, ListAdminProgramsErrors, ListAdminProgramsResponses, ListAdminSolutionsData, ListAdminSolutionsErrors, ListAdminSolutionsResponses, ListAdminTalentData, ListAdminTalentErrors, ListAdminTalentResponses, ListAdminUseCasesData, ListAdminUseCasesErrors, ListAdminUseCasesResponses, ListAiProvidersData, ListAiProvidersErrors, ListAiProvidersResponses, ListAuditEventsData, ListAuditEventsErrors, ListAuditEventsResponses, ListConnectedAppsData, ListConnectedAppsResponses, ListCustomerDeploymentsData, ListCustomerDeploymentsErrors, ListCustomerDeploymentsResponses, ListEmailMessagesData, ListEmailMessagesErrors, ListEmailMessagesResponses, ListEmailSuppressionsData, ListEmailSuppressionsErrors, ListEmailSuppressionsResponses, ListEmailTemplatesData, ListEmailTemplatesErrors, ListEmailTemplatesResponses, ListEveryConnectedAppData, ListEveryConnectedAppErrors, ListEveryConnectedAppResponses, ListMcpCallsData, ListMcpCallsErrors, ListMcpCallsResponses, ListMyApplicationsData, ListMyApplicationsErrors, ListMyApplicationsResponses, ListMyOrganizationMembersData, ListMyOrganizationMembersErrors, ListMyOrganizationMembersResponses, ListMySolutionsData, ListMySolutionsErrors, ListMySolutionsResponses, ListMyUseCasesData, ListMyUseCasesErrors, ListMyUseCasesResponses, ListProgramsData, ListProgramsErrors, ListProgramsResponses, ListReportedChatModelsData, ListReportedChatModelsErrors, ListReportedChatModelsResponses, ListReportedTalentEnquiriesData, ListReportedTalentEnquiriesErrors, ListReportedTalentEnquiriesResponses, ListReviewApplicationsData, ListReviewApplicationsErrors, ListReviewApplicationsResponses, ListReviewersData, ListReviewersErrors, ListReviewersResponses, ListReviewProgramsData, ListReviewProgramsErrors, ListReviewProgramsResponses, ListSolutionsData, ListSolutionsErrors, ListSolutionsResponses, ListTalentData, ListTalentErrors, ListTalentResponses, ListUseCaseOrganizationsData, ListUseCaseOrganizationsErrors, ListUseCaseOrganizationsResponses, ListUseCasesData, ListUseCasesErrors, ListUseCasesResponses, MergeOrganizationData, MergeOrganizationErrors, MergeOrganizationResponses, MoveMyUseCaseToDraftData, MoveMyUseCaseToDraftErrors, MoveMyUseCaseToDraftResponses, OrganizeApplicantData, OrganizeApplicantErrors, OrganizeApplicantResponses, PreviewEmailTemplateData, PreviewEmailTemplateErrors, PreviewEmailTemplateResponses, PublishProgramData, PublishProgramErrors, PublishProgramResponses, RebuildSearchIndexData, RebuildSearchIndexErrors, RebuildSearchIndexResponses, ReceiveResendEventData, ReceiveResendEventErrors, ReceiveResendEventResponses, ReceiveSesEventData, ReceiveSesEventErrors, ReceiveSesEventResponses, RefuseOrganizationData, RefuseOrganizationErrors, RefuseOrganizationResponses, RejectCustomerDeploymentData, RejectCustomerDeploymentErrors, RejectCustomerDeploymentResponses, RejectSolutionData, RejectSolutionErrors, RejectSolutionResponses, ReleaseOutcomesData, ReleaseOutcomesErrors, ReleaseOutcomesResponses, RemoveAdminOrganizationMemberData, RemoveAdminOrganizationMemberErrors, RemoveAdminOrganizationMemberResponses, RemoveAppHostData, RemoveAppHostErrors, RemoveAppHostResponses, RemoveChatModelData, RemoveChatModelErrors, RemoveChatModelResponses, RemoveChatProviderData, RemoveChatProviderErrors, RemoveChatProviderResponses, RemoveEmailSuppressionData, RemoveEmailSuppressionErrors, RemoveEmailSuppressionResponses, RemoveMatchingCandidateData, RemoveMatchingCandidateErrors, RemoveMatchingCandidateResponses, RemoveOcrProviderData, RemoveOcrProviderErrors, RemoveOcrProviderResponses, RemoveOrganizationMemberData, RemoveOrganizationMemberErrors, RemoveOrganizationMemberResponses, RemoveReviewerData, RemoveReviewerErrors, RemoveReviewerResponses, ReplyToIntroductionData, ReplyToIntroductionErrors, ReplyToIntroductionResponses, ReportTalentEnquiryData, ReportTalentEnquiryErrors, ReportTalentEnquiryResponses, RequestIntroductionData, RequestIntroductionErrors, RequestIntroductionResponses, ResendEmailMessageData, ResendEmailMessageErrors, ResendEmailMessageResponses, ResendReviewerInvitationData, ResendReviewerInvitationErrors, ResendReviewerInvitationResponses, ReserveUploadData, ReserveUploadErrors, ReserveUploadResponses, ResetEmailTemplateData, ResetEmailTemplateErrors, ResetEmailTemplateResponses, RestoreMatchingCandidateData, RestoreMatchingCandidateErrors, RestoreMatchingCandidateResponses, RestoreOrganizationData, RestoreOrganizationErrors, RestoreOrganizationResponses, RestoreSolutionData, RestoreSolutionErrors, RestoreSolutionResponses, RestoreTalentData, RestoreTalentErrors, RestoreTalentResponses, RetrySearchEmbeddingsData, RetrySearchEmbeddingsErrors, RetrySearchEmbeddingsResponses, RevokeAdminOrganizationInvitationData, RevokeAdminOrganizationInvitationErrors, RevokeAdminOrganizationInvitationResponses, RevokeConnectedAppData, RevokeConnectedAppErrors, RevokeConnectedAppResponses, RevokeOrganizationInvitationData, RevokeOrganizationInvitationErrors, RevokeOrganizationInvitationResponses, RevokePersonsAppData, RevokePersonsAppErrors, RevokePersonsAppResponses, SaveAdminOrganizationData, SaveAdminOrganizationErrors, SaveAdminOrganizationResponses, SaveApplicationData, SaveApplicationErrors, SaveApplicationResponses, SaveAssessmentData, SaveAssessmentErrors, SaveAssessmentResponses, SaveCustomerDeploymentData, SaveCustomerDeploymentErrors, SaveCustomerDeploymentResponses, SaveEmailAppearanceData, SaveEmailAppearanceErrors, SaveEmailAppearanceResponses, SaveEmailSettingsData, SaveEmailSettingsErrors, SaveEmailSettingsResponses, SaveEmailTemplateData, SaveEmailTemplateErrors, SaveEmailTemplateResponses, SaveMatchingSettingsData, SaveMatchingSettingsErrors, SaveMatchingSettingsResponses, SaveMyOrganizationData, SaveMyOrganizationErrors, SaveMyOrganizationResponses, SaveMyTalentProfileData, SaveMyTalentProfileErrors, SaveMyTalentProfileResponses, SaveMyUseCaseData, SaveMyUseCaseErrors, SaveMyUseCaseResponses, SaveProgramData, SaveProgramErrors, SaveProgramQuestionsData, SaveProgramQuestionsErrors, SaveProgramQuestionsResponses, SaveProgramResponses, SaveReviewCriteriaData, SaveReviewCriteriaErrors, SaveReviewCriteriaResponses, SaveSolutionData, SaveSolutionErrors, SaveSolutionResponses, SearchData, SearchErrors, SearchOrganizationsData, SearchOrganizationsErrors, SearchOrganizationsResponses, SearchResponses, SendBackAdminUseCaseData, SendBackAdminUseCaseErrors, SendBackAdminUseCaseResponses, SendBackOrganizationData, SendBackOrganizationErrors, SendBackOrganizationResponses, SendBackSolutionData, SendBackSolutionErrors, SendBackSolutionResponses, SendBackTalentData, SendBackTalentErrors, SendBackTalentResponses, SendTalentEnquiryData, SendTalentEnquiryErrors, SendTalentEnquiryResponses, SendUploadContentData, SendUploadContentErrors, SendUploadContentResponses, SetAdminUseCaseProgramsData, SetAdminUseCaseProgramsErrors, SetAdminUseCaseProgramsResponses, SetDocumentReaderData, SetDocumentReaderErrors, SetDocumentReaderResponses, SetSemanticSearchData, SetSemanticSearchErrors, SetSemanticSearchResponses, SetTaskModelData, SetTaskModelErrors, SetTaskModelResponses, ShortlistMatchingCandidateData, ShortlistMatchingCandidateErrors, ShortlistMatchingCandidateResponses, StartMatchingRunData, StartMatchingRunErrors, StartMatchingRunResponses, SubmitApplicationData, SubmitApplicationErrors, SubmitApplicationResponses, SubmitMyTalentProfileData, SubmitMyTalentProfileErrors, SubmitMyTalentProfileResponses, SubmitMyUseCaseData, SubmitMyUseCaseErrors, SubmitMyUseCaseResponses, SubmitSolutionData, SubmitSolutionErrors, SubmitSolutionResponses, SwitchMcpToolData, SwitchMcpToolErrors, SwitchMcpToolResponses, SwitchMcpUserServerData, SwitchMcpUserServerResponses, TakeDownOrganizationData, TakeDownOrganizationErrors, TakeDownOrganizationResponses, TakeDownSolutionData, TakeDownSolutionErrors, TakeDownSolutionResponses, TakeDownTalentData, TakeDownTalentErrors, TakeDownTalentResponses, TestAiProviderData, TestAiProviderErrors, TestAiProviderResponses, TestChatModelData, TestChatModelErrors, TestChatModelResponses, TestChatProviderData, TestChatProviderErrors, TestChatProviderResponses, TestEmailSettingsData, TestEmailSettingsErrors, TestEmailSettingsResponses, TestEmailTemplateData, TestEmailTemplateErrors, TestEmailTemplateResponses, TestOcrProviderData, TestOcrProviderErrors, TestOcrProviderResponses, UnpublishProgramData, UnpublishProgramErrors, UnpublishProgramResponses, UpdateAiProviderData, UpdateAiProviderErrors, UpdateAiProviderResponses, UpdateMyContactData, UpdateMyContactErrors, UpdateMyContactResponses, WithdrawApplicationData, WithdrawApplicationErrors, WithdrawApplicationResponses, WithdrawJoinRequestData, WithdrawJoinRequestErrors, WithdrawJoinRequestResponses, WithdrawOperatorData, WithdrawOperatorErrors, WithdrawOperatorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -17,6 +17,271 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
      */
     meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
+
+/**
+ * The chat providers with their models, and the model each task uses
+ */
+export const getChatSettings = <ThrowOnError extends boolean = true>(options?: Options<GetChatSettingsData, ThrowOnError>): RequestResult<GetChatSettingsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetChatSettingsResponses, unknown, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/chat',
+    ...options
+});
+
+/**
+ * Remove a model from its provider
+ */
+export const removeChatModel = <ThrowOnError extends boolean = true>(options: Options<RemoveChatModelData, ThrowOnError>): RequestResult<RemoveChatModelResponses, RemoveChatModelErrors, ThrowOnError> => (options.client ?? client).delete<RemoveChatModelResponses, RemoveChatModelErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/chat/models/{id}',
+    ...options
+});
+
+/**
+ * Correct a model's limits, capabilities or prices
+ */
+export const changeChatModel = <ThrowOnError extends boolean = true>(options: Options<ChangeChatModelData, ThrowOnError>): RequestResult<ChangeChatModelResponses, ChangeChatModelErrors, ThrowOnError> => (options.client ?? client).put<ChangeChatModelResponses, ChangeChatModelErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/chat/models/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Ask an enabled model one line to prove it answers; the call spends a few tokens and is recorded
+ */
+export const testChatModel = <ThrowOnError extends boolean = true>(options: Options<TestChatModelData, ThrowOnError>): RequestResult<TestChatModelResponses, TestChatModelErrors, ThrowOnError> => (options.client ?? client).post<TestChatModelResponses, TestChatModelErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/chat/models/{id}/test',
+    ...options
+});
+
+/**
+ * Connect a chat provider
+ */
+export const connectChatProvider = <ThrowOnError extends boolean = true>(options: Options<ConnectChatProviderData, ThrowOnError>): RequestResult<ConnectChatProviderResponses, ConnectChatProviderErrors, ThrowOnError> => (options.client ?? client).post<ConnectChatProviderResponses, ConnectChatProviderErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/chat/providers',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The models a provider lists, saved or not, with their limits, capabilities and prices
+ */
+export const listReportedChatModels = <ThrowOnError extends boolean = true>(options: Options<ListReportedChatModelsData, ThrowOnError>): RequestResult<ListReportedChatModelsResponses, ListReportedChatModelsErrors, ThrowOnError> => (options.client ?? client).post<ListReportedChatModelsResponses, ListReportedChatModelsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/chat/providers/reported-models',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Try a connection, saved or not, by listing the provider's models; no tokens are spent
+ */
+export const testChatProvider = <ThrowOnError extends boolean = true>(options: Options<TestChatProviderData, ThrowOnError>): RequestResult<TestChatProviderResponses, TestChatProviderErrors, ThrowOnError> => (options.client ?? client).post<TestChatProviderResponses, TestChatProviderErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/chat/providers/test',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove a chat provider with its key and its models
+ */
+export const removeChatProvider = <ThrowOnError extends boolean = true>(options: Options<RemoveChatProviderData, ThrowOnError>): RequestResult<RemoveChatProviderResponses, RemoveChatProviderErrors, ThrowOnError> => (options.client ?? client).delete<RemoveChatProviderResponses, RemoveChatProviderErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/chat/providers/{id}',
+    ...options
+});
+
+/**
+ * Change a chat provider: its name, address or key, or switch it on or off
+ */
+export const changeChatProvider = <ThrowOnError extends boolean = true>(options: Options<ChangeChatProviderData, ThrowOnError>): RequestResult<ChangeChatProviderResponses, ChangeChatProviderErrors, ThrowOnError> => (options.client ?? client).put<ChangeChatProviderResponses, ChangeChatProviderErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/chat/providers/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Enable models on a chat provider
+ */
+export const addChatModels = <ThrowOnError extends boolean = true>(options: Options<AddChatModelsData, ThrowOnError>): RequestResult<AddChatModelsResponses, AddChatModelsErrors, ThrowOnError> => (options.client ?? client).post<AddChatModelsResponses, AddChatModelsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/chat/providers/{id}/models',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Choose the model a task uses, and how hard it reasons
+ */
+export const setTaskModel = <ThrowOnError extends boolean = true>(options: Options<SetTaskModelData, ThrowOnError>): RequestResult<SetTaskModelResponses, SetTaskModelErrors, ThrowOnError> => (options.client ?? client).put<SetTaskModelResponses, SetTaskModelErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/chat/tasks/{task}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The OCR providers, and what reads a page that is only a picture
+ */
+export const getOcrSettings = <ThrowOnError extends boolean = true>(options?: Options<GetOcrSettingsData, ThrowOnError>): RequestResult<GetOcrSettingsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetOcrSettingsResponses, unknown, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/ocr',
+    ...options
+});
+
+/**
+ * Connect an OCR provider
+ */
+export const connectOcrProvider = <ThrowOnError extends boolean = true>(options: Options<ConnectOcrProviderData, ThrowOnError>): RequestResult<ConnectOcrProviderResponses, ConnectOcrProviderErrors, ThrowOnError> => (options.client ?? client).post<ConnectOcrProviderResponses, ConnectOcrProviderErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/ocr/providers',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Try a connection, saved or not, by sending one small picture; the test spends one call
+ */
+export const testOcrProvider = <ThrowOnError extends boolean = true>(options: Options<TestOcrProviderData, ThrowOnError>): RequestResult<TestOcrProviderResponses, TestOcrProviderErrors, ThrowOnError> => (options.client ?? client).post<TestOcrProviderResponses, TestOcrProviderErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/ocr/providers/test',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove an OCR provider with its key
+ */
+export const removeOcrProvider = <ThrowOnError extends boolean = true>(options: Options<RemoveOcrProviderData, ThrowOnError>): RequestResult<RemoveOcrProviderResponses, RemoveOcrProviderErrors, ThrowOnError> => (options.client ?? client).delete<RemoveOcrProviderResponses, RemoveOcrProviderErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/ocr/providers/{id}',
+    ...options
+});
+
+/**
+ * Change an OCR provider: its name, address or key, or switch it on or off
+ */
+export const changeOcrProvider = <ThrowOnError extends boolean = true>(options: Options<ChangeOcrProviderData, ThrowOnError>): RequestResult<ChangeOcrProviderResponses, ChangeOcrProviderErrors, ThrowOnError> => (options.client ?? client).put<ChangeOcrProviderResponses, ChangeOcrProviderErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/ocr/providers/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Choose what reads a page that is only a picture: a model that reads images, or an OCR provider
+ */
+export const setDocumentReader = <ThrowOnError extends boolean = true>(options: Options<SetDocumentReaderData, ThrowOnError>): RequestResult<SetDocumentReaderResponses, SetDocumentReaderErrors, ThrowOnError> => (options.client ?? client).put<SetDocumentReaderResponses, SetDocumentReaderErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/ai/admin/ocr/reader',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * The audit events, newest first
@@ -239,6 +504,23 @@ export const getMe = <ThrowOnError extends boolean = true>(options?: Options<Get
 });
 
 /**
+ * Change the account's country and phone number
+ */
+export const updateMyContact = <ThrowOnError extends boolean = true>(options: Options<UpdateMyContactData, ThrowOnError>): RequestResult<UpdateMyContactResponses, UpdateMyContactErrors, ThrowOnError> => (options.client ?? client).put<UpdateMyContactResponses, UpdateMyContactErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/identity/me/contact',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * The requests for an introduction, those that wait first and the longest wait on top
  */
 export const listAdminIntroductions = <ThrowOnError extends boolean = true>(options?: Options<ListAdminIntroductionsData, ThrowOnError>): RequestResult<ListAdminIntroductionsResponses, ListAdminIntroductionsErrors, ThrowOnError> => (options?.client ?? client).get<ListAdminIntroductionsResponses, ListAdminIntroductionsErrors, ThrowOnError>({
@@ -305,6 +587,126 @@ export const replyToIntroduction = <ThrowOnError extends boolean = true>(options
         }],
     url: '/api/introduction/mine/received/{id}/reply',
     ...options
+});
+
+/**
+ * The limits of matching
+ */
+export const getMatchingSettings = <ThrowOnError extends boolean = true>(options?: Options<GetMatchingSettingsData, ThrowOnError>): RequestResult<GetMatchingSettingsResponses, GetMatchingSettingsErrors, ThrowOnError> => (options?.client ?? client).get<GetMatchingSettingsResponses, GetMatchingSettingsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/matching/admin/settings',
+    ...options
+});
+
+/**
+ * Set the limits of matching
+ */
+export const saveMatchingSettings = <ThrowOnError extends boolean = true>(options: Options<SaveMatchingSettingsData, ThrowOnError>): RequestResult<SaveMatchingSettingsResponses, SaveMatchingSettingsErrors, ThrowOnError> => (options.client ?? client).put<SaveMatchingSettingsResponses, SaveMatchingSettingsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/matching/admin/settings',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Take a candidate off the list, with the reason
+ */
+export const removeMatchingCandidate = <ThrowOnError extends boolean = true>(options: Options<RemoveMatchingCandidateData, ThrowOnError>): RequestResult<RemoveMatchingCandidateResponses, RemoveMatchingCandidateErrors, ThrowOnError> => (options.client ?? client).post<RemoveMatchingCandidateResponses, RemoveMatchingCandidateErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/matching/candidates/{candidateId}/remove',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Put a candidate back as nobody had decided on it: off the shortlist, or back on the list
+ */
+export const restoreMatchingCandidate = <ThrowOnError extends boolean = true>(options: Options<RestoreMatchingCandidateData, ThrowOnError>): RequestResult<RestoreMatchingCandidateResponses, RestoreMatchingCandidateErrors, ThrowOnError> => (options.client ?? client).post<RestoreMatchingCandidateResponses, RestoreMatchingCandidateErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/matching/candidates/{candidateId}/restore',
+    ...options
+});
+
+/**
+ * Put a candidate on the shortlist
+ */
+export const shortlistMatchingCandidate = <ThrowOnError extends boolean = true>(options: Options<ShortlistMatchingCandidateData, ThrowOnError>): RequestResult<ShortlistMatchingCandidateResponses, ShortlistMatchingCandidateErrors, ThrowOnError> => (options.client ?? client).post<ShortlistMatchingCandidateResponses, ShortlistMatchingCandidateErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/matching/candidates/{candidateId}/shortlist',
+    ...options
+});
+
+/**
+ * The candidates of a use case, with its requirements and its last run
+ */
+export const getMatching = <ThrowOnError extends boolean = true>(options: Options<GetMatchingData, ThrowOnError>): RequestResult<GetMatchingResponses, GetMatchingErrors, ThrowOnError> => (options.client ?? client).get<GetMatchingResponses, GetMatchingErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/matching/use-cases/{useCaseId}',
+    ...options
+});
+
+/**
+ * Put a solution among the candidates by hand
+ */
+export const addMatchingCandidate = <ThrowOnError extends boolean = true>(options: Options<AddMatchingCandidateData, ThrowOnError>): RequestResult<AddMatchingCandidateResponses, AddMatchingCandidateErrors, ThrowOnError> => (options.client ?? client).post<AddMatchingCandidateResponses, AddMatchingCandidateErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/matching/use-cases/{useCaseId}/candidates',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Start a run of matching for a use case
+ */
+export const startMatchingRun = <ThrowOnError extends boolean = true>(options: Options<StartMatchingRunData, ThrowOnError>): RequestResult<StartMatchingRunResponses, StartMatchingRunErrors, ThrowOnError> => (options.client ?? client).post<StartMatchingRunResponses, StartMatchingRunErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/matching/use-cases/{useCaseId}/runs',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -808,6 +1210,23 @@ export const changeAdminOrganizationMemberRole = <ThrowOnError extends boolean =
 });
 
 /**
+ * Merge a duplicate organization into the one to keep, with its people and records
+ */
+export const mergeOrganization = <ThrowOnError extends boolean = true>(options: Options<MergeOrganizationData, ThrowOnError>): RequestResult<MergeOrganizationResponses, MergeOrganizationErrors, ThrowOnError> => (options.client ?? client).post<MergeOrganizationResponses, MergeOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/admin/organizations/{id}/merge',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Refuse an organization that waits for review for good
  */
 export const refuseOrganization = <ThrowOnError extends boolean = true>(options: Options<RefuseOrganizationData, ThrowOnError>): RequestResult<RefuseOrganizationResponses, RefuseOrganizationErrors, ThrowOnError> => (options.client ?? client).post<RefuseOrganizationResponses, RefuseOrganizationErrors, ThrowOnError>({
@@ -1045,6 +1464,19 @@ export const changeOrganizationMemberRole = <ThrowOnError extends boolean = true
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Stop showing that the caller's former organization was merged into this one
+ */
+export const dismissMyOrganizationMergeNotice = <ThrowOnError extends boolean = true>(options?: Options<DismissMyOrganizationMergeNoticeData, ThrowOnError>): RequestResult<DismissMyOrganizationMergeNoticeResponses, DismissMyOrganizationMergeNoticeErrors, ThrowOnError> => (options?.client ?? client).post<DismissMyOrganizationMergeNoticeResponses, DismissMyOrganizationMergeNoticeErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/organization/mine/merge-notice/dismiss',
+    ...options
 });
 
 /**
@@ -1419,6 +1851,23 @@ export const listReviewApplications = <ThrowOnError extends boolean = true>(opti
         }],
     url: '/api/proposal/review/programs/{programId}/applications',
     ...options
+});
+
+/**
+ * Download a program's submitted applications as a spreadsheet
+ */
+export const exportReviewApplications = <ThrowOnError extends boolean = true>(options: Options<ExportReviewApplicationsData, ThrowOnError>): RequestResult<ExportReviewApplicationsResponses, ExportReviewApplicationsErrors, ThrowOnError> => (options.client ?? client).post<ExportReviewApplicationsResponses, ExportReviewApplicationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'BEYONDPILOT_SESSION',
+            type: 'apiKey'
+        }],
+    url: '/api/proposal/review/programs/{programId}/applications/export',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -2486,3 +2935,8 @@ export const submitMyUseCase = <ThrowOnError extends boolean = true>(options: Op
  * The published use cases that still accept proposals
  */
 export const listUseCases = <ThrowOnError extends boolean = true>(options?: Options<ListUseCasesData, ThrowOnError>): RequestResult<ListUseCasesResponses, ListUseCasesErrors, ThrowOnError> => (options?.client ?? client).get<ListUseCasesResponses, ListUseCasesErrors, ThrowOnError>({ url: '/api/usecase/use-cases', ...options });
+
+/**
+ * One published use case that still accepts proposals
+ */
+export const getUseCase = <ThrowOnError extends boolean = true>(options: Options<GetUseCaseData, ThrowOnError>): RequestResult<GetUseCaseResponses, GetUseCaseErrors, ThrowOnError> => (options.client ?? client).get<GetUseCaseResponses, GetUseCaseErrors, ThrowOnError>({ url: '/api/usecase/use-cases/{id}', ...options });

@@ -11,11 +11,12 @@ model is set. It was delivered by [BEY-65](../increments/completed/bey-65-search
 
 - **Published API.** The package root: `SearchService` (the public search), `SearchAdministration` (Admin › AI),
   `SearchErrorCode` and `SearchException`. Everything else at the root is package-private: the four indexing
-  listeners, `IndexRepair`, `SearchEmbeddings`, `EmbeddingClients`, `OpenAiEmbeddings`, `ProviderKeys`,
+  listeners, `IndexRepair`, `SearchEmbeddings`, `EmbeddingClients`, `OpenAiEmbeddings`,
   `EmbeddingVendor`, `EmbeddingSettings`, `Cards` and `Rebuilt`.
 - **Persistence.** `search.persistence` holds `SearchDocumentRepository` (`JdbcClient`: the index rows, the ranked
-  query and the embedding queue) and the JPA entities `AiProvider` and `SearchSettings` with their repositories.
-- **Dependencies.** A closed module that may use `audit`, `identity`, `organization`, `program`, `solution`, `talent`
+  query and the embedding queue) and the JPA entity `SearchSettings` with its repository. The providers and their keys
+  are the [`ai` module](ai.md)'s; search reads its embedding provider through `AiProviders`.
+- **Dependencies.** A closed module that may use `ai`, `audit`, `identity`, `organization`, `program`, `solution`, `talent`
   and `usecase`. The owning modules stay the source of truth; the index is a projection that can always be rebuilt
   from them. No other module reads its tables. The module's place in the whole is in
   [ARCHITECTURE.md](../../ARCHITECTURE.md).
@@ -152,7 +153,6 @@ Configuration, `beyondpilot.search.embedding` in `application.yaml`:
 | `interval`       | `1m`                            | Delay between runs of the job, which first runs 30 seconds after start        |
 | `min-similarity` | `0.35`                          | Least cosine similarity for a match by meaning                                |
 | `pool`           | `48`                            | Nearest rows the meaning branch takes before ranking                          |
-| `encryption-key` | `BEYONDPILOT_AI_ENCRYPTION_KEY` | 32 bytes in Base64 that seal provider keys; managed on the host, never in Git |
 
 Behavior:
 
@@ -175,7 +175,7 @@ Behavior:
 
 ## Administration
 
-Admin › AI has two screens, `/admin/ai/providers` and `/admin/ai/search-index`, served by `SearchAdminController` at
+Admin › AI has two screens of search, the Embedding tab of `/admin/ai/providers` (`?tab=embedding`; the Chat tab is the [`ai` module](ai.md#screen)'s) and `/admin/ai/search-index`, served by `SearchAdminController` at
 `/api/search/admin`. Every call requires an operator (`IdentityService.requireOperator`).
 
 | Method and path          | Contract                                                                                                                                                                                                                            |
@@ -197,17 +197,17 @@ Rules:
   `openrouter` at `https://openrouter.ai/api/v1` with `openai/text-embedding-3-large` and
   `openai/text-embedding-3-small`. The address must be the vendor's own (a trailing slash is ignored), so the server
   never sends a key to, or calls, another host.
-- **Keys.** Sealed with AES-256-GCM (`ProviderKeys`, Spring Security's `AesGcmBytesEncryptor`) in
-  `ai_provider.api_key`. Without the encryption key no key can be saved and none can be read, so search goes by
-  words. A saved key is kept on a change only while the address is unchanged, and a test uses it only for the address
+- **Keys.** Sealed by the [`ai` module](ai.md#providers-and-keys) in `ai_provider.api_key` under
+  `BEYONDPILOT_AI_ENCRYPTION_KEY`. Without the encryption key no key can be saved and none can be read, so search
+  goes by words. A saved key is kept on a change only while the address is unchanged, and a test uses it only for the address
   it was saved with.
 - **Names** are unique per purpose, ignoring case.
 - **A model is chosen only after the provider embeds a test sentence** with it and returns 1,536 dimensions. A test
   reports `rejected`, `model_refused`, `unreachable` or `wrong_dimensions`.
 - **Concurrent changes.** Provider and settings changes carry the version read; a stale one is refused.
 
-`ai_provider` (V42) holds the providers: `purpose` (only `embedding`), `vendor` (`openai` or `openrouter`), `name`,
-`base_url`, `api_key`, `version` and who changed it last. `search_settings` (V42) is one row (`id = 1`):
+`ai_provider` (V42, kept by the `ai` module since V57) holds the providers; search uses the rows whose `purpose` is
+`embedding`, with `vendor` `openai` or `openrouter`. `search_settings` (V42) is one row (`id = 1`):
 `semantic_enabled` (default true), `provider_id` and `model` (both set or both null), `model_since`, `version` and who
 changed it last.
 
@@ -229,9 +229,24 @@ Expected failures are `SearchException` with a `SearchErrorCode`, turned into pr
 | `SEARCH_SETTINGS_CHANGED`                                       | Conflict            |
 | `SEARCH_ENCRYPTION_KEY_MISSING`                                 | Service unavailable |
 
+## Passages
+
+What a solution's own material says, for matching ([design](../increments/active/bey-39-matching/design.md)). The public search never reads it.
+
+- **`search_passage` (V58)** holds one passage a row: the solution, the source (`deck`, `website` or `customer_case`), the page and the place on the page, the address of a web page, the text, how it was read (`text`, `model` or `unread`), what the source was made from, and the same full-text vector and embedding columns as `search_document`.
+- **A passage** is one slide of a deck, one customer case, or a part of a web page: `Passages` cuts a page at line ends into passages of at most 2,000 characters and reads a page to 20,000. Text is never reworded.
+- **Customer cases** are written when a solution changes and at a rebuild, and only when they differ from what is kept, so their vectors stay.
+- **Decks** are read by a job every `beyondpilot.search.passages.interval` (1 minute), five at a time, for the solutions in the index whose deck file is not the one their passages were made from. PDFBox gives the text of each page, to 80 pages. A page with fewer than 20 characters is kept `unread`; a file that cannot be read, or whose pages cannot be kept, leaves one unread page, so it is not tried again and does not hold back the decks after it.
+- **Unread pages** are read by the model operators chose for the task `document_reading` ([AI](ai.md#reading-documents)), five pages a run, the deck with the most first, on a thread of its own so that the other scheduled work does not wait for the model. What it copies is kept with `model`; an empty answer too, so a page is asked for once. Without a model for the task nothing is read.
+- **Websites** of imported solutions are loaded once by `infrastructure/legacy-import/passages.py`; a new solution's website waits for BEY-99.
+- **Embedding.** The job that embeds the index embeds passages too, `passage-batch-size` (64) a run, under the passage's heading ("Zetamotion, deck page 3"). A new embedding model embeds them again, as it does the index.
+- **A solution that is no longer shown** loses its deck and customer case passages; what was loaded for it stays.
+- **`SolutionEvidence`** is what [matching](matching.md) reads. `solutionsFor` answers the solutions in the index for a set of queries, unlisted included: each query is searched by its words (any of them, without the words every text holds) and by its meaning, over the profiles and over the passages, where a solution stands at the place of its best passage; the four rankings are fused by reciprocal rank and the queries by adding their scores. `passagesOf` answers what one solution's customer cases, deck and website say.
+
 ## Audit
 
-`SearchAdministration` records each operator change through `AuditTrail`
+The provider actions are recorded by the `ai` module, which keeps the providers; `SearchAdministration` records the
+rest. Each goes through `AuditTrail`
 ([ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md)). No key is ever a detail.
 
 | Action                                              | Resource          | Details                                                  |

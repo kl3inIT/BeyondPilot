@@ -181,6 +181,18 @@ class MyOrganizationController {
 		organizations.remove(actor, accountId);
 	}
 
+	@PostMapping("/merge-notice/dismiss")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "dismissMyOrganizationMergeNotice",
+			summary = "Stop showing that the caller's former organization was merged into this one",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The notice is gone.", content = @Content)
+	@ApiResponse(responseCode = "403", description = "The caller belongs to no organization.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void dismissMergeNotice(@CurrentActor Actor actor) {
+		organizations.dismissMergeNotice(actor);
+	}
+
 	@PutMapping(path = "/job-title", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(operationId = "changeMyJobTitle", summary = "Set what the caller does in their organization",

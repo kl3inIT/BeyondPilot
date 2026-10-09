@@ -4,6 +4,7 @@
 // sign-out) is answered by the test itself, with page.route.
 import { createServer } from "node:http";
 
+import { answerAiAdmin } from "./stub-ai.mjs";
 import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
 import { answerEmail } from "./stub-email.mjs";
@@ -83,6 +84,13 @@ const accounts = {
     id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a16",
     email: "lan.pham@newco.example",
     displayName: "Lan Phạm",
+    role: "user",
+  },
+  // A member moved into the organization when GenAI Fund merged a duplicate into it (stub-workspace.mjs).
+  moved: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a17",
+    email: "khoa.bui@pocketpolicy.example",
+    displayName: "Khoa Bùi",
     role: "user",
   },
 };
@@ -473,6 +481,10 @@ createServer((request, response) => {
   const administered = answerSearchAdmin(url, account);
   if (administered) {
     return json(response, ...administered);
+  }
+  const chat = answerAiAdmin(url, account);
+  if (chat) {
+    return json(response, ...chat);
   }
   const searched = answerSearch(url);
   if (searched) {

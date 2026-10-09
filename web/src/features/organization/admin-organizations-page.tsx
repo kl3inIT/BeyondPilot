@@ -32,6 +32,7 @@ const tones = {
   approved: "success",
   rejected: "destructive",
   suspended: "destructive",
+  merged: "neutral",
 } as const;
 
 /** The tone of what waits for the operator: a first review, or a claim to own an organization. */
@@ -67,13 +68,15 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
             {organization.name}
           </Link>
           <span className="truncate text-muted-foreground">
-            {[
-              typeName(organization.type),
-              organization.country && countryName(organization.country),
-              organization.owned ? t("members", { count: organization.members }) : t("unowned"),
-            ]
-              .filter(Boolean)
-              .join(" · ")}
+            {organization.mergedInto
+              ? t("mergedInto", { name: organization.mergedInto })
+              : [
+                  typeName(organization.type),
+                  organization.country && countryName(organization.country),
+                  organization.owned ? t("members", { count: organization.members }) : t("unowned"),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
           </span>
         </div>
       </div>

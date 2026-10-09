@@ -24,6 +24,8 @@ import ai.genaifund.beyondpilot.organization.dto.AdminOrganizationSummaryRespons
 import ai.genaifund.beyondpilot.organization.dto.AdminSaveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.ApproveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
+import ai.genaifund.beyondpilot.organization.dto.MergedOrganizationResponse;
+import ai.genaifund.beyondpilot.organization.dto.MergeOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.SaveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.SendBackOrganizationRequest;
@@ -211,13 +213,13 @@ public class OrganizationAdministration {
 	 * Saves the profile and the verified domain of an organization, whatever its status. An organization may be left
 	 * without a domain, which also turns off joining at once.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws OrganizationException when the organization does not exist or changed since it was read, or another
-	 * organization has the domain
+	 * @throws OrganizationException when the organization does not exist, was merged or changed since it was read, or
+	 * another organization has the domain
 	 */
 	@Transactional
 	public AdminOrganizationResponse save(Actor actor, UUID id, AdminSaveOrganizationRequest request) {
 		Operator operator = identity.requireOperator(actor);
-		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		Organization organization = changeable(id);
 		SaveOrganizationRequest profile = request.profile();
 		if (organization.getVersion() != profile.version()) {
 			throw new OrganizationException(OrganizationErrorCode.CHANGED_MEANWHILE,
@@ -284,13 +286,13 @@ public class OrganizationAdministration {
 	 * Asks an address to own or join an organization and tells it by email. An operator's invitations stay out of the
 	 * organization's daily and open limits.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws OrganizationException when the organization does not exist, the address already belongs to it, or it
-	 * already holds an open invitation
+	 * @throws OrganizationException when the organization does not exist or was merged, the address already belongs
+	 * to it, or it already holds an open invitation
 	 */
 	@Transactional
 	public void invite(Actor actor, UUID id, InviteMemberRequest request) {
 		Operator operator = identity.requireOperator(actor);
-		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		Organization organization = changeable(id);
 		String address = request.email().strip();
 		List<UUID> accounts = memberships.members(id).stream().map(Member::accountId).toList();
 		if (identity.people(accounts).values().stream().anyMatch(person -> person.email().equalsIgnoreCase(address))) {
@@ -348,12 +350,12 @@ public class OrganizationAdministration {
 	/**
 	 * Returns a taken-down organization to the directories, and tells its owners.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws OrganizationException when the organization does not exist or is not taken down
+	 * @throws OrganizationException when the organization does not exist, was merged or is not taken down
 	 */
 	@Transactional
 	public void restore(Actor actor, UUID id) {
 		Operator operator = identity.requireOperator(actor);
-		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		Organization organization = changeable(id);
 		if (!organization.isSuspended()) {
 			throw new OrganizationException(OrganizationErrorCode.NOT_TAKEN_DOWN,
 					"Restore of organization " + id + ", which is " + organization.getStatus());
@@ -362,6 +364,52 @@ public class OrganizationAdministration {
 		record(AuditAction.ORGANIZATION_RESTORE, operator, organization, Map.of());
 		events.publishEvent(new OrganizationChanged(organization.getId()));
 		tellOwnersOfSuspension(organization, false);
+	}
+
+	/**
+	 * Merges a duplicate organization into the one to keep, in one transaction. Its people move as members and are
+	 * told by email, its open invitations move as invitations to join as a member, its requests move, and the modules
+	 * that keep records of organizations move theirs. The kept organization takes the duplicate's domain when it has
+	 * none. The duplicate stays as a record of where it went, which nobody changes.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when either organization does not exist, they are the same, the duplicate was
+	 * merged, or the one to keep is not approved and shown
+	 */
+	@Transactional
+	public void merge(Actor actor, UUID id, MergeOrganizationRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		UUID intoId = request.intoId();
+		if (id.equals(intoId)) {
+			throw new OrganizationException(OrganizationErrorCode.CANNOT_MERGE,
+					"Merge of organization " + id + " into itself");
+		}
+		boolean duplicateFirst = id.compareTo(intoId) < 0;
+		Organization first = organizations.findForUpdate(duplicateFirst ? id : intoId)
+			.orElseThrow(() -> notFound(duplicateFirst ? id : intoId));
+		Organization second = organizations.findForUpdate(duplicateFirst ? intoId : id)
+			.orElseThrow(() -> notFound(duplicateFirst ? intoId : id));
+		Organization duplicate = duplicateFirst ? first : second;
+		Organization kept = duplicateFirst ? second : first;
+		if (duplicate.isMerged() || !kept.isApproved()) {
+			throw new OrganizationException(OrganizationErrorCode.CANNOT_MERGE, "Merge of organization " + id + " into "
+					+ intoId + ", which is " + kept.getStatus() + (kept.isSuspended() ? " and down" : ""));
+		}
+		Collection<Person> people = identity.people(memberships.members(id).stream().map(Member::accountId).toList())
+			.values();
+		memberships.moveMembers(id, intoId);
+		memberships.moveOpenInvitations(id, intoId);
+		memberships.moveOpenRequests(id, intoId, memberships.owners(intoId) == 0);
+		String domain = duplicate.getEmailDomain();
+		duplicate.mergeInto(intoId, operator.accountId(), Instant.now());
+		organizations.flush();
+		if (domain != null && kept.getEmailDomain() == null) {
+			kept.verifyDomain(domain);
+		}
+		record(AuditAction.ORGANIZATION_MERGE, operator, duplicate, Map.of("into", intoId.toString()));
+		events.publishEvent(new OrganizationMerged(id, intoId));
+		events.publishEvent(new OrganizationChanged(id));
+		events.publishEvent(new OrganizationChanged(intoId));
+		people.forEach(person -> email.sendOrganizationMerged(person.email(), duplicate.getName(), kept.getName()));
 	}
 
 	/**
@@ -435,6 +483,16 @@ public class OrganizationAdministration {
 					"Account " + accountId + " is not in organization " + organization.getId()));
 	}
 
+	/** An organization an operator may still change: one that was not merged into another. */
+	private Organization changeable(UUID id) {
+		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		if (organization.isMerged()) {
+			throw new OrganizationException(OrganizationErrorCode.MERGED,
+					"Change of organization " + id + ", which was merged into " + organization.getMergedIntoId());
+		}
+		return organization;
+	}
+
 	private Organization awaitingReview(UUID id) {
 		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
 		if (!organization.isInReview()) {
@@ -472,7 +530,8 @@ public class OrganizationAdministration {
 			.toList();
 		Map<UUID, Person> people = identity.people(Stream
 			.of(members.stream().map(Member::accountId), OrganizationViews.accounts(invitations, claims).stream(),
-					Stream.of(organization.getCreatedByAccountId()))
+					Stream.of(organization.getCreatedByAccountId()),
+					Stream.ofNullable(organization.getMergedByAccountId()))
 			.flatMap(accounts -> accounts)
 			.distinct()
 			.toList());
@@ -486,7 +545,22 @@ public class OrganizationAdministration {
 				claims.stream()
 					.filter(claim -> people.containsKey(claim.accountId()))
 					.map(claim -> OrganizationViews.joinRequest(claim, organization, people.get(claim.accountId())))
-					.toList());
+					.toList(),
+				merged(organization, people));
+	}
+
+	/** Where a merged organization went, when and by whom; null for one that was not merged. */
+	private @Nullable MergedOrganizationResponse merged(Organization organization, Map<UUID, Person> people) {
+		UUID intoId = organization.getMergedIntoId();
+		Instant mergedAt = organization.getMergedAt();
+		UUID mergedBy = organization.getMergedByAccountId();
+		if (intoId == null || mergedAt == null || mergedBy == null) {
+			return null;
+		}
+		Organization into = organizations.findById(intoId).orElseThrow();
+		Person operator = people.get(mergedBy);
+		return new MergedOrganizationResponse(intoId, into.getSlug(), into.getName(), mergedAt,
+				operator == null ? "" : operator.label());
 	}
 
 	/**
@@ -526,7 +600,7 @@ public class OrganizationAdministration {
 				row.country(), row.status(), row.suspendedAt(), row.members(), row.owned(), request, row.claimId(),
 				asker == null ? null : asker.label(), row.claimedAt() != null ? row.claimedAt()
 						: request == null ? null : row.createdAt(),
-				row.createdAt());
+				row.createdAt(), row.mergedIntoName());
 	}
 
 	private void record(AuditAction action, Operator operator, Organization organization,

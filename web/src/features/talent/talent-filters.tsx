@@ -20,6 +20,7 @@ const chipRoles = [
   "forward_deployed_engineer",
   "ai_engineer",
   "ml_engineer",
+  "software_engineer",
   "automation_specialist",
   "data_engineer",
   "data_scientist",

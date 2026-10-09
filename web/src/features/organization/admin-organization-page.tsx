@@ -13,10 +13,11 @@ import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/compon
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganization } from "@/lib/api/generated";
-import { siteRoutes } from "@/lib/site";
+import { publicSiteHost, siteRoutes } from "@/lib/site";
 
 import { AdminInvite } from "./admin-invite";
 import { AdminInvitationActions, AdminMemberActions } from "./admin-member-actions";
+import { AdminOrganizationMenu } from "./admin-organization-menu";
 import {
   adminOrganizationSearch,
   adminOrganizationTabs,
@@ -27,8 +28,9 @@ import { MemberRole } from "./member-role";
 import { NoticeCard } from "./notice-card";
 import { OrganizationMark } from "./organization-mark";
 import { OrganizationProfileEditor } from "./organization-profile-editor";
+import { OrganizationProfileView } from "./organization-profile-view";
 import { OrganizationReviewButton } from "./organization-review";
-import { RestoreButton, TakeDownMenu } from "./organization-take-down";
+import { RestoreButton } from "./organization-take-down";
 
 /** How many members a page of the Members tab holds. */
 const MEMBERS_PAGE_SIZE = 10;
@@ -45,7 +47,8 @@ type AdminOrganizationPageProps = {
 /**
  * Admin › Organisations › one organization: its profile and verified domain, which an operator
  * changes as its owners do, and its people. An operator also decides what waits (the review of a new
- * organization, a claim on one nobody owns) and takes an approved organization down or restores it.
+ * organization, a claim on one nobody owns), takes an approved organization down or restores it, and
+ * merges a duplicate into the one to keep. A merged one only says where it went.
  */
 function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps) {
   const t = useTranslations("Admin.organizations.detail");
@@ -61,6 +64,7 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
   const day = (at: string) => format.dateTime(new Date(at), { dateStyle: "medium" });
   const state = reviewState(organization);
   const suspended = state === "suspended";
+  const { merged } = detail;
 
   const tabs = adminOrganizationTabs.map((key) => ({
     key,
@@ -98,17 +102,22 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
         </div>
         <div className="flex items-center gap-2">
           {state === "approved" && (
-            <>
-              <Button
-                prominence="secondary"
-                href={`${siteRoutes.organizations}/${organization.slug}`}
-              >
-                {t("viewPage")}
-              </Button>
-              <TakeDownMenu organization={organization} members={detail.members.length} />
-            </>
+            <Button
+              prominence="secondary"
+              href={`${siteRoutes.organizations}/${organization.slug}`}
+            >
+              {t("viewPage")}
+            </Button>
           )}
           {state === "in_review" && <OrganizationReviewButton organization={organization} />}
+          {!merged && (
+            <AdminOrganizationMenu
+              organization={organization}
+              canTakeDown={state === "approved"}
+              members={detail.members.length}
+              invitations={detail.invitations.length}
+            />
+          )}
         </div>
       </div>
 
@@ -153,6 +162,30 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
         />
       )}
 
+      {merged && (
+        <NoticeCard
+          titleAs="h2"
+          title={t("merged.title", {
+            kept: merged.intoName,
+            day: day(merged.mergedAt),
+            name: merged.mergedBy,
+          })}
+          description={<p>{t("merged.lead", { kept: merged.intoName })}</p>}
+          foot={t("merged.address", {
+            address: `${publicSiteHost}${siteRoutes.organizations}/${organization.slug}`,
+            kept: merged.intoName,
+          })}
+          actions={
+            <Button
+              prominence="secondary"
+              href={`${siteRoutes.adminOrganizations}/${merged.intoId}`}
+            >
+              {t("merged.open", { kept: merged.intoName })}
+            </Button>
+          }
+        />
+      )}
+
       {detail.claims.length > 0 && (
         <section aria-labelledby="organization-claims" className="flex flex-col gap-3">
           <h2 id="organization-claims" className="text-sm font-semibold">
@@ -188,7 +221,9 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
         ))}
       </nav>
 
-      {tab === "profile" ? (
+      {tab === "profile" && merged ? (
+        <OrganizationProfileView organization={organization} />
+      ) : tab === "profile" ? (
         // The key gives a saved organization a fresh editor, reading the new version.
         <OrganizationProfileEditor key={organization.version} organization={organization} admin />
       ) : (
@@ -265,7 +300,7 @@ function AdminMembers({
           </h2>
           <p className="text-sm text-muted-foreground">{summary}</p>
         </div>
-        <AdminInvite organization={organization} />
+        {!detail.merged && <AdminInvite organization={organization} />}
       </div>
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("empty")}</p>

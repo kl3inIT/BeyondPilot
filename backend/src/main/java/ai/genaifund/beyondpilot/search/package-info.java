@@ -4,7 +4,7 @@
  * Admin › AI. The index is a projection of the owning modules, which stay the source of truth.
  */
 @ApplicationModule(displayName = "Search", type = ApplicationModule.Type.CLOSED,
-		allowedDependencies = { "audit", "identity", "organization", "program", "solution", "talent", "usecase" })
+		allowedDependencies = { "ai", "audit", "identity", "organization", "program", "solution", "talent", "usecase" })
 @NullMarked
 package ai.genaifund.beyondpilot.search;
 

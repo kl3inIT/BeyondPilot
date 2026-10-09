@@ -13,6 +13,14 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
 
+	/**
+	 * Gives the applications of a merged organization to the one kept. Each version moves on, so a save read before
+	 * the merge is refused instead of writing the former organization back.
+	 */
+	@Modifying(flushAutomatically = true)
+	@Query("update Proposal p set p.organizationId = :into, p.version = p.version + 1 where p.organizationId = :from")
+	void moveToOrganization(UUID from, UUID into);
+
 	Optional<Proposal> findByProgramIdAndAccountId(UUID programId, UUID accountId);
 
 	/** The application, locked until the transaction ends, so two tabs saving it act one after the other. */
