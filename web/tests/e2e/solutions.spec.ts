@@ -95,7 +95,7 @@ test.describe("solutions directory", () => {
     await expect(shownSolutions(page)).toHaveCount(6);
   });
 
-  test("a solution's page says what it does, where it fits and what is not known", async ({
+  test("a solution page keeps its criteria visible and omits fields it has not supplied", async ({
     page,
   }) => {
     await page.goto("/solutions");
@@ -109,10 +109,41 @@ test.describe("solutions directory", () => {
     await expect(fact("Industries")).toContainText("Insurance");
     await expect(fact("Deployment")).toContainText("Cloud (SaaS)");
     await expect(page.getByText("In production").first()).toBeVisible();
-    // What its owners added in the editor's steps is read here too.
+    await expect(fact("Registered in")).toContainText("Singapore");
+    await expect(fact("Funding (GenAI Fund)")).toBeVisible();
+    await expect(fact("Funding (GenAI Fund)").locator("dd")).toHaveCount(0);
+    await expect(page.getByText("Key milestones")).toBeVisible();
+    await expect(page.getByText("Three production pilots across banking.")).toBeVisible();
+    // Product and company-stated fields are separate from the reviewed customer deployments.
     await expect(fact("Languages")).toContainText("Vietnamese, English");
-    await expect(fact("Core technology")).toContainText("Python, PostgreSQL");
-    await expect(fact("Best customer profile")).toContainText("Insurers with a call centre");
+    await expect(
+      page.getByText("Insurers with a call centre of fifty seats or more."),
+    ).toBeVisible();
+    const payingCustomers = page
+      .locator('[data-slot="evidence"]')
+      .filter({ hasText: "Notable paying customers" });
+    await expect(payingCustomers).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Product" })).toBeVisible();
+    await expect(page.getByText("Policy Voice", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("A voice agent with retrieval over policy documents."),
+    ).toBeVisible();
+    await expect(page.getByText("Python, PostgreSQL")).toBeVisible();
+    await expect(page.getByText("AWS and Google Cloud")).toBeVisible();
+    await expect(page.getByText("B2B2C", { exact: true })).toBeVisible();
+    await expect(payingCustomers).toContainText("Mekong Life, Lotus Bank");
+    await expect(payingCustomers.getByText("Stated by Pocket Policy")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Use cases" })).toBeVisible();
+    await expect(page.getByText("Use-case examples")).toBeVisible();
+    await expect(page.getByText("Claims intake: voice and chat for policyholders.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Business model" })).toBeVisible();
+    await expect(page.getByText("Bootstrapped")).toBeVisible();
+    await expect(page.getByText("USD 500,000")).toBeVisible();
+    await expect(page.getByText("Funding status")).toBeVisible();
+    await expect(page.getByText("Funding raised")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Alternatives" })).toBeVisible();
+    await expect(page.getByText("ClaimLens, Manual claim queues")).toBeVisible();
+    await expect(page.getByText("Founded 2018 · Team size: 20–99 employees")).toBeVisible();
     // Its cover and the two images under it; any of them opens large, with the others a step away.
     await expect(page.getByRole("img", { name: "The cover image of Policy Chat" })).toBeVisible();
     await expect(page.getByRole("button", { name: /^Open image \d of 3$/ })).toHaveCount(3);
@@ -142,12 +173,64 @@ test.describe("solutions directory", () => {
     await expect(page.getByRole("link", { name: "Edit this solution" })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
 
-    // What a solution's organization has not said is shown as unknown, never left out; a solution
-    // without images shows no place for one.
+    // Unset values leave criterion labels visible but remove their child fields.
     await page.goto("/solutions/clinic-triage");
-    await expect(fact("Core technology")).toContainText("Not listed yet");
-    await expect(fact("Backed by")).toContainText("Not listed yet");
+    for (const label of ["Stage", "Industries", "Deployment"]) {
+      const tag = page.locator('[data-slot="solution-tag"]').filter({ hasText: label });
+      await expect(tag.locator(":scope > svg")).toBeVisible();
+      await expect(tag.locator("span")).toHaveCount(1);
+    }
+    for (const title of [
+      "Why it is worth it",
+      "Problem it solves",
+      "Product",
+      "Who it is for",
+      "Use cases",
+      "Proof",
+      "Customer references & case studies",
+      "Business model",
+      "Alternatives",
+      "The company behind this solution",
+    ]) {
+      const heading = page.getByRole("heading", { name: title, exact: true });
+      await expect(heading).toBeVisible();
+      await expect(heading.locator(":scope > svg")).toBeVisible();
+    }
+    const missingBacking = fact("Backed by");
+    await expect(missingBacking).toBeVisible();
+    await expect(missingBacking.locator("dt > svg")).toBeVisible();
+    await expect(missingBacking.locator("dd")).toHaveCount(0);
+    const missingLanguages = fact("Languages");
+    await expect(missingLanguages).toBeVisible();
+    await expect(missingLanguages.locator("dd")).toHaveCount(0);
+    const missingIndustries = fact("Industries");
+    await expect(missingIndustries).toBeVisible();
+    await expect(missingIndustries.locator("dd")).toHaveCount(0);
+    const missingFunding = fact("Funding (GenAI Fund)");
+    await expect(missingFunding).toBeVisible();
+    await expect(missingFunding.locator("dd")).toHaveCount(0);
+    for (const field of [
+      "Product names",
+      "Core technology",
+      "Built with",
+      "Hosting",
+      "Best customer profile",
+      "Segment focus",
+      "Notable paying customers",
+      "Use-case examples",
+      "Funding status",
+      "Funding raised",
+      "Customer case",
+      "No customer case published.",
+      "Not listed yet",
+      "An answer in seconds, in Vietnamese and English.",
+      "Policy holders wait days for an answer.",
+    ]) {
+      await expect(page.getByText(field, { exact: true })).toHaveCount(0);
+    }
+    await expect(page.getByRole("heading", { name: "Industries", exact: true })).toHaveCount(0);
     await expect(page.locator('[data-slot="solution-gallery"]')).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
 
     expect((await page.goto("/solutions/no-such-solution"))?.status()).toBe(404);
   });
