@@ -88,8 +88,8 @@ class MatchingRuns {
 	}
 
 	/**
-	 * A use case changed: a run is queued when it is published, a model is chosen, and its brief is not the one its
-	 * requirements were last read from. A change that leaves the brief as it was queues nothing.
+	 * A use case changed: a run is queued when it is published, a model is chosen, and its brief is not the one a
+	 * finished run read. A change that leaves the brief as it was queues nothing, unless its last run failed.
 	 */
 	void changed(UUID useCaseId) {
 		UseCaseBrief brief = useCases.brief(useCaseId).orElse(null);
@@ -97,7 +97,7 @@ class MatchingRuns {
 			return;
 		}
 		boolean read = Requirements.fingerprint(brief).equals(matching.requirementsSource(useCaseId).orElse(null));
-		if (read && matching.hasRun(useCaseId)) {
+		if (read && matching.hasFinishedRun(useCaseId)) {
 			return;
 		}
 		matching.queue(useCaseId, MatchingRepository.BY_APPROVAL, null, Prompts.VERSION)

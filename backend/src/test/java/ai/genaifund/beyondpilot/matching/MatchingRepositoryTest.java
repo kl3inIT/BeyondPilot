@@ -46,14 +46,14 @@ class MatchingRepositoryTest {
 	void aUseCaseHasOneOpenRunAndTheWorkerTakesRunsInTheOrderTheyWereQueued() {
 		UUID first = UUID.randomUUID();
 		UUID second = UUID.randomUUID();
-		assertThat(matching.hasRun(first)).isFalse();
+		assertThat(matching.hasFinishedRun(first)).isFalse();
 
 		UUID run = matching.queue(first, MatchingRepository.BY_APPROVAL, null, 1).orElseThrow();
 		// A second start while one is open is refused, whoever asks.
 		assertThat(matching.queue(first, MatchingRepository.BY_OPERATOR, UUID.randomUUID(), 1)).isEmpty();
 		jdbc.sql("update matching_run set created_at = now() - interval '1 minute' where id = ?").param(run).update();
 		UUID later = matching.queue(second, MatchingRepository.BY_OPERATOR, UUID.randomUUID(), 1).orElseThrow();
-		assertThat(matching.hasRun(first)).isTrue();
+		assertThat(matching.hasFinishedRun(first)).isFalse();
 
 		Run taken = matching.claim().orElseThrow();
 		assertThat(taken).isEqualTo(new Run(run, first, 0));
@@ -73,6 +73,9 @@ class MatchingRepositoryTest {
 		matching.finish(run);
 		matching.fail(later, MatchingRuns.NO_MODEL);
 		assertThat(states()).containsExactlyInAnyOrder("done", "failed");
+		// Only a run that judged everything counts as finished; a failed one leaves the use case to be matched.
+		assertThat(matching.hasFinishedRun(first)).isTrue();
+		assertThat(matching.hasFinishedRun(second)).isFalse();
 		// Once its run has ended, a use case can have another.
 		assertThat(matching.queue(first, MatchingRepository.BY_OPERATOR, null, 1)).isPresent();
 	}

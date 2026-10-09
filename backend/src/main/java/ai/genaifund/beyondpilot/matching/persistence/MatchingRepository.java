@@ -161,9 +161,9 @@ public class MatchingRepository {
 			.optional();
 	}
 
-	/** Whether the use case ever had a run. */
-	public boolean hasRun(UUID useCaseId) {
-		return jdbc.sql("select exists (select 1 from matching_run where use_case_id = :useCaseId)")
+	/** Whether a run of the use case ended with everything judged. A failed run does not count: it left work undone. */
+	public boolean hasFinishedRun(UUID useCaseId) {
+		return jdbc.sql("select exists (select 1 from matching_run where use_case_id = :useCaseId and state = 'done')")
 			.param("useCaseId", useCaseId)
 			.query(Boolean.class)
 			.single();

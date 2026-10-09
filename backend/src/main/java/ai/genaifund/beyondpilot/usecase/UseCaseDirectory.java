@@ -74,12 +74,15 @@ public class UseCaseDirectory {
 
 	/**
 	 * Everything a published use case says, with its attached files, for matching; empty for a use case that is not
-	 * published. One past its close date is still returned: its candidates stay readable.
+	 * published, or whose organization is not approved or is taken down. One past its close date is still returned:
+	 * its candidates stay readable.
 	 */
 	@Transactional(readOnly = true)
 	public Optional<UseCaseBrief> brief(UUID useCaseId) {
 		return useCases.findById(useCaseId)
 			.filter(useCase -> UseCase.APPROVED.equals(useCase.getStatus()) && useCase.getTitle() != null)
+			.filter(useCase -> organizations.approvedNames(List.of(useCase.getOrganizationId()))
+				.containsKey(useCase.getOrganizationId()))
 			.map(useCase -> {
 				Map<UUID, StoredFile> files = storage.describe(useCase.getAttachmentFileIds());
 				List<UseCaseBrief.Attachment> attachments = useCase.getAttachmentFileIds()
