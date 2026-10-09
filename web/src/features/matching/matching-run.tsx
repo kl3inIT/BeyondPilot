@@ -1,8 +1,11 @@
 "use client";
 
 import {
+  CheckIcon,
   ChevronDownIcon,
+  ChevronRightIcon,
   CircleAlertIcon,
+  CircleIcon,
   Loader2Icon,
   PlusIcon,
   RotateCwIcon,
@@ -31,15 +34,79 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Progress, ProgressLabel } from "@/components/ui/progress";
+import { Progress } from "@/components/ui/progress";
 import { LiveRefresh } from "@/features/usecase/live-refresh";
 import type { Matching } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { describeRunFailure } from "./matching-errors";
+import { runStages, stageOf, stageState, type RunStage } from "./matching-view";
+
+type RunStagesProps = {
+  /** The stage the run is at; `done` once it ended. */
+  at: RunStage;
+  judged: number;
+  total: number;
+};
+
+/**
+ * What a run goes through, by name and in order: the stages behind it are ticked, the one at work
+ * turns, and the last one is its end. While solutions are read the stage says how many are done.
+ */
+function RunStages({ at, judged, total }: RunStagesProps) {
+  const t = useTranslations("Matching.run.stages");
+
+  return (
+    <ol
+      aria-label={t("label")}
+      className="flex flex-col gap-x-2 gap-y-1.5 sm:flex-row sm:flex-wrap sm:items-center"
+    >
+      {runStages.map((stage, index) => {
+        const state = stageState(stage, at);
+        return (
+          <li
+            key={stage}
+            data-state={state}
+            aria-current={state === "current" ? "step" : undefined}
+            className="flex items-center gap-2 text-muted-foreground data-[state=current]:font-medium data-[state=current]:text-foreground data-[state=passed]:text-foreground"
+          >
+            {index > 0 && (
+              <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0 max-sm:hidden" />
+            )}
+            {state === "passed" && (
+              <CheckIcon aria-hidden="true" className="size-4 shrink-0 text-success" />
+            )}
+            {state === "current" && (
+              <Loader2Icon
+                aria-hidden="true"
+                className="size-4 shrink-0 animate-spin text-primary motion-reduce:animate-none"
+              />
+            )}
+            {state === "ahead" && <CircleIcon aria-hidden="true" className="size-4 shrink-0" />}
+            <span>
+              {t(stage)}
+              {state === "passed" && <span className="sr-only">{t("passed")}</span>}
+            </span>
+            {stage === "reading" && state === "current" && total > 0 && (
+              <span className="font-normal text-muted-foreground tabular-nums">
+                {t("count", { judged, total })}
+              </span>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 type MatchingRunProps = {
   matching: Matching;
+  /** Whether the stream of changes is open; while it is not, the page is read again on a timer. */
+  live: boolean;
+  /** Whether this screen saw the last run at work: its stages stay, ticked, once it ended. */
+  watched: boolean;
+  /** What just happened to the solutions, in a sentence; nothing before the first one is read. */
+  said: string | null;
   /** Which start is on its way. */
   pending: "run" | "judgeAll" | null;
   /** Starts a run; with `judgeAll` the AI reads every solution again, which only an operator asks. */
@@ -49,12 +116,21 @@ type MatchingRunProps = {
 };
 
 /**
- * Where the search for solutions stands and how it is started: the run as it goes, one that waits and
- * continues by itself, one that failed and why, and one visible action that looks again. A member is
- * asked first, since a run is one of the few the day allows. Operators find their own two actions
- * under "More". While a run is open the page is read again every few seconds.
+ * Where the search for solutions stands and how it is started: the run as it goes, by its stages and
+ * with a line on what just happened, one that waits and continues by itself, one that failed and why,
+ * and one visible action that looks again. A member is asked first, since a run is one of the few the
+ * day allows. Operators find their own two actions under "More". While a run is open and the stream
+ * of changes is not, the page is read again every few seconds.
  */
-function MatchingRun({ matching, pending, onStart, onAddByHand }: MatchingRunProps) {
+function MatchingRun({
+  matching,
+  live,
+  watched,
+  said,
+  pending,
+  onStart,
+  onAddByHand,
+}: MatchingRunProps) {
   const t = useTranslations("Matching.run");
   const say = useTranslations();
   const format = useFormatter();
@@ -68,6 +144,8 @@ function MatchingRun({ matching, pending, onStart, onAddByHand }: MatchingRunPro
       timeZone: "Asia/Ho_Chi_Minh",
     });
   const open = run?.state === "queued" || run?.state === "running" || run?.state === "waiting";
+  // The stages of a run at work, and of one this screen watched until its end.
+  const at = run?.state === "running" || watched ? stageOf(run) : undefined;
   // A run that waits for the brief to stay unchanged starts at once when a person asks.
   const startable = !open || (run?.state === "queued" && Boolean(run.startsAt));
   // The backend sends null where a value is absent: an operator has no limit, and reads no count.
@@ -127,7 +205,7 @@ function MatchingRun({ matching, pending, onStart, onAddByHand }: MatchingRunPro
 
   return (
     <div className="flex flex-col gap-4">
-      {open && <LiveRefresh />}
+      {open && !live && <LiveRefresh />}
 
       {!modelChosen && (
         <Alert>
@@ -170,55 +248,64 @@ function MatchingRun({ matching, pending, onStart, onAddByHand }: MatchingRunPro
       )}
 
       {run && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 flex-1 flex-col gap-1 text-sm" aria-live="polite">
-            {run.state === "queued" && (
-              <p className="flex items-center gap-2">
-                <Loader2Icon
-                  aria-hidden="true"
-                  className="size-4 shrink-0 animate-spin text-primary"
-                />
-                {run.startsAt ? t("startsAt", { time: time(run.startsAt) }) : t("queued")}
-              </p>
-            )}
-            {run.state === "running" && (
-              <Progress
-                value={run.total > 0 ? Math.round((run.judged / run.total) * 100) : null}
-                className="max-w-md"
-              >
-                <ProgressLabel>
-                  {run.total > 0
-                    ? t("running", { judged: run.judged, total: run.total })
-                    : t("preparing")}
-                </ProgressLabel>
-              </Progress>
-            )}
-            {run.state === "waiting" && (
+        <div
+          data-staged={at !== undefined}
+          className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:data-[staged=true]:items-start"
+        >
+          <div className="flex min-w-0 flex-1 flex-col gap-2 text-sm">
+            {at && (
               <>
-                <p className="font-medium">
-                  {t("waiting", { judged: run.judged, total: run.total })}
-                </p>
-                <p className="text-muted-foreground">
-                  {run.resumesAt ? t("resumesAt", { time: time(run.resumesAt) }) : t("resumes")}
+                <RunStages at={at} judged={run.judged} total={run.total} />
+                {at === "reading" && run.total > 0 && (
+                  <Progress
+                    aria-label={t("stages.reading")}
+                    value={Math.round((run.judged / run.total) * 100)}
+                    className="max-w-md"
+                  />
+                )}
+                {/* Always there while the stages are, so that what is written into it is announced. */}
+                <p role="status" className="min-h-5 text-muted-foreground">
+                  {said}
                 </p>
               </>
             )}
-            {run.state === "done" && (
-              <p className="text-muted-foreground">
-                {/* A member reads when the list was last updated. How many solutions the AI read counts
+            <div className="flex flex-col gap-1" aria-live="polite">
+              {run.state === "queued" && (
+                <p className="flex items-center gap-2">
+                  <Loader2Icon
+                    aria-hidden="true"
+                    className="size-4 shrink-0 animate-spin text-primary"
+                  />
+                  {run.startsAt ? t("startsAt", { time: time(run.startsAt) }) : t("queued")}
+                </p>
+              )}
+              {run.state === "waiting" && (
+                <>
+                  <p className="font-medium">
+                    {t("waiting", { judged: run.judged, total: run.total })}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {run.resumesAt ? t("resumesAt", { time: time(run.resumesAt) }) : t("resumes")}
+                  </p>
+                </>
+              )}
+              {run.state === "done" && (
+                <p className="text-muted-foreground">
+                  {/* A member reads when the list was last updated. How many solutions the AI read counts
                     those it put in no group, which the list does not show; that number and the model
                     are the operators'. */}
-                {t(!operator ? "doneWhen" : run.modelName ? "doneModel" : "done", {
-                  date: format.dateTime(new Date(run.endedAt ?? run.createdAt), {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                    timeZone: "Asia/Ho_Chi_Minh",
-                  }),
-                  judged: run.judged,
-                  model: run.modelName ?? "",
-                })}
-              </p>
-            )}
+                  {t(!operator ? "doneWhen" : run.modelName ? "doneModel" : "done", {
+                    date: format.dateTime(new Date(run.endedAt ?? run.createdAt), {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                      timeZone: "Asia/Ho_Chi_Minh",
+                    }),
+                    judged: run.judged,
+                    model: run.modelName ?? "",
+                  })}
+                </p>
+              )}
+            </div>
           </div>
 
           {actions}

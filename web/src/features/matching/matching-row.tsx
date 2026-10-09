@@ -3,9 +3,11 @@
 import {
   BookmarkPlusIcon,
   CheckIcon,
+  CircleDashedIcon,
   EllipsisIcon,
   ExternalLinkIcon,
   FileQuestionIcon,
+  Loader2Icon,
   Trash2Icon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -26,6 +28,7 @@ import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { MatchingCandidate } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
 import { StatusChip } from "./matching-marks";
 import { rowVerdict, unreadOf, type Need } from "./matching-view";
@@ -37,6 +40,10 @@ type MatchingRowProps = {
   selected: boolean;
   /** True while a request about this solution is on its way. */
   pending: boolean;
+  /** While a run works: whether the AI is reading this solution now, or it waits for its turn. */
+  reading?: "now" | "waiting";
+  /** Whether the row entered its group a moment ago: it comes in, and is marked for a moment. */
+  arrived?: boolean;
   onSelect: () => void;
   /** Puts it on the shortlist, or takes it off when it is there. */
   onShortlist: () => void;
@@ -67,6 +74,8 @@ function MatchingRow({
   needs,
   selected,
   pending,
+  reading,
+  arrived = false,
   onSelect,
   onShortlist,
   onRemove,
@@ -81,8 +90,20 @@ function MatchingRow({
   return (
     <li
       data-selected={selected}
-      className="relative flex items-start gap-3 rounded-xl border border-transparent p-3 hover:bg-muted/50 data-[selected=true]:border-primary data-[selected=true]:bg-primary/5"
+      data-reading={reading}
+      className={cn(
+        "relative flex items-start gap-3 rounded-xl border border-transparent p-3 hover:bg-muted/50 data-[selected=true]:border-primary data-[selected=true]:bg-primary/5",
+        // Opacity and a short slide only: the rows under it take their place at once.
+        arrived &&
+          "animate-in ease-entrance animation-duration-200 fade-in slide-in-from-top-2 motion-reduce:animate-none",
+      )}
     >
+      {arrived && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 animate-out rounded-xl bg-primary/10 ease-out animation-duration-2000 fill-mode-forwards fade-out motion-reduce:hidden"
+        />
+      )}
       <SolutionLogo
         name={candidate.solutionName}
         fileId={candidate.logoFileId}
@@ -157,6 +178,19 @@ function MatchingRow({
             </DropdownMenu>
           </div>
         </div>
+        {reading && (
+          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            {reading === "now" ? (
+              <Loader2Icon
+                aria-hidden="true"
+                className="size-4 shrink-0 animate-spin text-primary motion-reduce:animate-none"
+              />
+            ) : (
+              <CircleDashedIcon aria-hidden="true" className="size-4 shrink-0" />
+            )}
+            {t(`reading.${reading}`)}
+          </p>
+        )}
         {(verdict || unread) && (
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
             {verdict && <StatusChip status={verdict} />}
