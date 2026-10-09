@@ -1,4 +1,10 @@
-import { ArrowUpRightIcon } from "lucide-react";
+import {
+  ArrowUpRightIcon,
+  Building2Icon,
+  GlobeIcon,
+  MapPinIcon,
+  type LucideIcon,
+} from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
@@ -78,11 +84,7 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
         ]),
   ];
   const host = websiteHost(organization.website);
-  const kind = [
-    typeName(organization.type),
-    organization.country && countryName(organization.country),
-    host ? null : organization.emailDomain,
-  ].filter(Boolean);
+  const country = organization.country && countryName(organization.country);
   // The way to the profile is offered from the other tabs, to the people who can change it.
   const toProfile = owner && current !== "profile";
 
@@ -96,23 +98,20 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
               {organization.name}
             </h1>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {kind.join(" · ")}
-            {host && organization.website && (
-              <>
-                {kind.length > 0 && " · "}
-                <TextButton
-                  href={organization.website}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium"
-                >
+          <ul aria-label={t("facts")} className="flex flex-wrap gap-2">
+            <Fact icon={Building2Icon}>{typeName(organization.type)}</Fact>
+            {country && <Fact icon={MapPinIcon}>{country}</Fact>}
+            {host && organization.website ? (
+              <Fact icon={GlobeIcon}>
+                <TextButton href={organization.website} target="_blank" rel="noreferrer">
                   {host}
                   <ArrowUpRightIcon aria-hidden="true" />
                 </TextButton>
-              </>
+              </Fact>
+            ) : (
+              organization.emailDomain && <Fact icon={GlobeIcon}>{organization.emailDomain}</Fact>
             )}
-          </p>
+          </ul>
         </div>
 
         {organization.status === "in_review" && (
@@ -233,6 +232,16 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
         {children}
       </div>
     </div>
+  );
+}
+
+/** One thing the organization is, as a chip under its name: its kind, its country, its website. */
+function Fact({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
+  return (
+    <li className="flex h-8 items-center gap-1.5 rounded-full border bg-card px-3 text-sm font-medium">
+      <Icon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+      {children}
+    </li>
   );
 }
 

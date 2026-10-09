@@ -3433,6 +3433,7 @@
     }
   },
   "Organization": {
+    "facts": "Thông tin về tổ chức này",
     "metaTitle": "Tổ chức của tôi · BeyondPilot",
     "tabs": {
       "label": "Các phần của tổ chức",
