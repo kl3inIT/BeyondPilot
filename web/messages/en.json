@@ -1462,8 +1462,7 @@
         "messageHint": "They read this word for word.",
         "cancel": "Cancel",
         "back": "Back",
-        "keys": "Keys: A approve · S send back",
-        "keysApproved": "Key: S take down"
+        "keys": "Keys: A approve · S send back"
       },
       "detail": {
         "back": "All solutions",

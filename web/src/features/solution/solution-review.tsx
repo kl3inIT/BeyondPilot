@@ -109,12 +109,7 @@ function SolutionReview({ solution, nextHref }: SolutionReviewProps) {
   const idle = pending === null;
   useShortcuts({
     a: waiting && idle ? approve : undefined,
-    s:
-      idle && waiting
-        ? () => setOpen("sendBack")
-        : idle && state === "approved"
-          ? () => setOpen("takeDown")
-          : undefined,
+    s: idle && waiting ? () => setOpen("sendBack") : undefined,
   });
 
   const dialogs = (
@@ -252,7 +247,6 @@ function SolutionReview({ solution, nextHref }: SolutionReviewProps) {
           {t("takeDown")}
         </Button>
         {dialogs}
-        <p className="text-xs text-muted-foreground">{t("keysApproved")}</p>
       </div>
     );
   }
