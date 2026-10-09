@@ -84,8 +84,8 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
   const toProfile = owner && current !== "profile";
 
   return (
-    <div className="flex flex-1 justify-center bg-muted px-5 pt-10 pb-16 md:px-8 md:pt-14 md:pb-24 lg:px-16">
-      <div className="flex w-full max-w-220 flex-col gap-6">
+    <div className="flex flex-1 flex-col bg-muted pt-10 pb-16 md:pt-14 md:pb-24">
+      <div className="mx-auto flex w-full max-w-360 flex-col gap-6 px-5 md:px-8 xl:px-16 desktop:px-20">
         <div className="flex flex-col gap-4">
           <div className="flex min-w-0 items-center gap-3.5">
             <OrganizationMark name={organization.name} logoFileId={organization.logoFileId} />
