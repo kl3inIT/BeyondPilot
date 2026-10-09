@@ -30,4 +30,4 @@ A run is a row of `matching_run` that a worker takes, one run at a time, every `
 
 ## Prompts
 
-`Prompts` holds the wording. Version 1 was measured on two real use cases on 9 October 2026 ([research](../research/2026-10-09-matching-references-and-probe.md)); version 2 says what one function is, after the first run on staging made five required capabilities of one. The version is part of every fingerprint, so a new wording reads the requirements and judges every candidate again. Everything the model reads and answers is in English.
+`Prompts` holds the wording. Version 1 was measured on two real use cases on 9 October 2026 ([research](../research/2026-10-09-matching-references-and-probe.md)); version 2 says what one function is, after the first run on staging made five required capabilities of one; version 3 keeps the brief's examples out of a capability and has the judge look for the function, after no candidate of forty met a capability that listed five kinds of offer. The version is part of every fingerprint, so a new wording reads the requirements and judges every candidate again. Everything the model reads and answers is in English.
