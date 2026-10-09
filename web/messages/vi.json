@@ -510,6 +510,7 @@
       "ai": "AI",
       "aiProviders": "Nhà cung cấp",
       "searchIndex": "Chỉ mục tìm kiếm",
+      "aiUsage": "Sử dụng",
       "mcp": "MCP",
       "email": "Email"
     },
@@ -2443,6 +2444,159 @@
         "off": "Đã tắt semantic search",
         "rebuilt": "Đã dựng lại chỉ mục: đọc {saved} mục, xoá {removed}",
         "retried": "{count, plural, =0 {Không có mục nào cần thử lại} other {# mục sẽ được thử lại ở lượt chạy tới}}"
+      }
+    },
+    "aiUsage": {
+      "metaOverview": "Sử dụng AI · Quản trị · BeyondPilot",
+      "metaCalls": "Lượt gọi · Sử dụng AI · Quản trị · BeyondPilot",
+      "title": "Sử dụng AI",
+      "lead": "Mọi lượt BeyondPilot gọi tới một model hoặc dịch vụ OCR: lượt nào thành công, lượt nào lỗi và tốn bao nhiêu.",
+      "period": {
+        "label": "Kỳ",
+        "today": "Hôm nay",
+        "7d": "7 ngày",
+        "30d": "30 ngày"
+      },
+      "tabs": {
+        "label": "Sử dụng AI",
+        "overview": "Tổng quan",
+        "calls": "Lượt gọi"
+      },
+      "task": {
+        "matching": "Ghép nối",
+        "document_reading": "Đọc tài liệu",
+        "model_test": "Thử model"
+      },
+      "seconds": "{seconds} giây",
+      "unknown": "Chưa biết",
+      "failing": {
+        "title": "{task} đang lỗi trên {model}",
+        "description": "{failed, number} trong {calls, number} lượt gọi tới {provider} đã lỗi trong 24 giờ qua, lượt gần nhất lúc {time}.",
+        "kind": {
+          "key_refused": "Nhà cung cấp từ chối khóa.",
+          "rate_limited": "Nhà cung cấp đang giới hạn số lượt gọi.",
+          "too_large": "Yêu cầu quá lớn đối với nhà cung cấp.",
+          "request_refused": "Nhà cung cấp từ chối yêu cầu.",
+          "provider_failed": "Nhà cung cấp trả về lỗi của chính họ.",
+          "no_answer": "Nhà cung cấp không trả lời kịp.",
+          "failed": "Lượt gọi lỗi mà nhà cung cấp không trả mã trạng thái."
+        },
+        "others": "{count, plural, other {# tác vụ khác cũng đang lỗi.}}",
+        "see": "Xem các lượt lỗi"
+      },
+      "empty": {
+        "title": {
+          "today": "Hôm nay chưa có lượt gọi",
+          "7d": "Không có lượt gọi trong 7 ngày qua",
+          "30d": "Không có lượt gọi trong 30 ngày qua"
+        },
+        "description": "Lượt gọi xuất hiện ở đây ngay khi ghép nối chạy hoặc một trang được đọc. Chọn kỳ dài hơn để xem lại."
+      },
+      "totals": {
+        "calls": "Lượt gọi",
+        "callsOf": "{succeeded} thành công · {failed} lỗi",
+        "failureRate": "Tỷ lệ lỗi",
+        "failureRateOf": "{failed} trong {calls} lượt",
+        "tokens": "Token",
+        "tokensOf": "{input} vào · {output} ra",
+        "cost": "Chi phí ước tính",
+        "costOf": "{count, plural, =0 {Chưa lượt nào có giá} other {Từ # lượt có giá}}",
+        "unpriced": "Chưa có giá",
+        "prices": "Giá model"
+      },
+      "chart": {
+        "byHour": "Lượt gọi theo giờ",
+        "byDay": "Lượt gọi theo ngày",
+        "mostAtHour": "Nhiều nhất lúc {when}, {count, plural, other {# lượt}}",
+        "mostOnDay": "Nhiều nhất ngày {when}, {count, plural, other {# lượt}}",
+        "succeeded": "Thành công",
+        "failed": "Lỗi"
+      },
+      "breakdown": {
+        "title": "Lượt gọi đi đâu",
+        "lead": "Xếp theo số lượt. Bấm một dòng để mở các lượt của nó trong nhật ký.",
+        "byLabel": "Nhóm theo",
+        "by": {
+          "model": "Model",
+          "task": "Tác vụ",
+          "provider": "Nhà cung cấp"
+        },
+        "share": "Tỷ trọng",
+        "shareOf": "Tỷ trọng lượt gọi của {name}",
+        "calls": "Lượt gọi",
+        "failed": "Lỗi",
+        "failureRate": "Tỷ lệ lỗi",
+        "tokens": "Token",
+        "time": "Thời gian TB",
+        "cost": "Chi phí ƯT",
+        "callsLine": "{calls} lượt · {failed} lỗi ({rate})",
+        "timeLine": "trung bình {time}",
+        "costLine": "ước tính {cost}",
+        "noPrice": "chưa có giá"
+      },
+      "estimate": "Chi phí là ước tính từ lượng sử dụng nhà cung cấp báo và giá niêm yết, không phải hóa đơn. Gateway trả theo gói, như 9Router, không tính tiền theo token.",
+      "calls": {
+        "filters": {
+          "task": "Mọi tác vụ",
+          "taskLabel": "Tác vụ",
+          "provider": "Mọi nhà cung cấp",
+          "providerLabel": "Nhà cung cấp",
+          "model": "Mọi model",
+          "modelLabel": "Model",
+          "outcome": "Mọi kết quả",
+          "outcomeLabel": "Kết quả"
+        },
+        "outcome": {
+          "ok": "Thành công",
+          "failed": "Lỗi"
+        },
+        "columns": {
+          "time": "Thời gian",
+          "task": "Tác vụ",
+          "model": "Model",
+          "tokens": "Token",
+          "duration": "Thời lượng",
+          "cost": "Chi phí",
+          "subject": "Về"
+        },
+        "failure": {
+          "key_refused": "Khóa bị từ chối",
+          "rate_limited": "Bị giới hạn",
+          "too_large": "Yêu cầu quá lớn",
+          "request_refused": "Yêu cầu bị từ chối",
+          "provider_failed": "Lỗi nhà cung cấp",
+          "no_answer": "Không trả lời",
+          "failed": "Lỗi"
+        },
+        "status": "HTTP {status}",
+        "tokens": "{input} vào · {output} ra",
+        "seconds": "{seconds} giây",
+        "unknown": "Chưa biết",
+        "subject": {
+          "solution_deck": "Deck giải pháp",
+          "matching_run": "Lượt ghép nối"
+        },
+        "today": "Hôm nay, {time}",
+        "dayAndTime": "{day}, {time}",
+        "count": "{count, plural, other {# lượt gọi}}",
+        "range": "{from}–{to} trong {count, plural, other {# lượt gọi}}",
+        "noMatch": {
+          "title": "Không có lượt gọi nào khớp",
+          "description": "Thử bớt bộ lọc hoặc chọn kỳ dài hơn.",
+          "clear": "Xóa bộ lọc"
+        },
+        "empty": {
+          "title": "Không có lượt gọi trong kỳ này",
+          "description": "Lượt gọi xuất hiện ở đây khi ghép nối chạy và các trang được đọc. Nội dung hỏi và trả lời không bao giờ được lưu."
+        },
+        "pagination": {
+          "label": "Các trang lượt gọi",
+          "previous": "Trước",
+          "next": "Sau",
+          "goToPrevious": "Về trang trước",
+          "goToNext": "Sang trang sau",
+          "page": "Trang {page}"
+        }
       }
     },
     "mcp": {
