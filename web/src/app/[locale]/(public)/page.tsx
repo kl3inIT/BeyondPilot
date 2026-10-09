@@ -34,6 +34,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               "@id": `${siteOrigin}/#organization`,
               name: site("brand"),
               url: siteOrigin,
+              logo: `${siteOrigin}/brand/beyondpilot-logo.svg`,
               description: metadata("description"),
               funder: {
                 "@type": "Organization",
