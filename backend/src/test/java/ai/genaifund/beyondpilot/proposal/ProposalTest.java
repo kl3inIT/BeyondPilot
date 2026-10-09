@@ -78,6 +78,10 @@ class ProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Integer>read(submitted, "$.application.submissions")).isEqualTo(1);
 		assertThat(mail.latestSubjectTo(email)).isEqualTo("Application submitted: Claims challenge");
 		assertThat(snapshotName(id, 1)).isEqualTo("Dat Phan");
+		// The account keeps the country and the number of a first submission, for the next form to start from.
+		String me = body(get(applicant, "/api/identity/me").expectStatus().isOk());
+		assertThat(JsonPath.<String>read(me, "$.country")).isEqualTo("VN");
+		assertThat(JsonPath.<String>read(me, "$.phone")).isEqualTo("+84 912 345 678");
 
 		// It can change until the close; each submission is a version, and the earlier one stays as it was.
 		Map<String, String> changed = answers(form, email);
@@ -157,8 +161,17 @@ class ProposalTest extends ApplicationsHttpTest {
 		Map<String, Object> bareSolution = application(contact(), UUID.fromString(JsonPath.read(bare, "$.id")),
 				answers(form, email), versionOf(partial));
 		bareSolution.put("teamBackground", "Two engineers from an insurer.");
-		put(applicant, form.path(), bareSolution).expectStatus().isOk();
+		String incomplete = body(put(applicant, form.path(), bareSolution).expectStatus().isOk());
 		assertProblem(post(applicant, submit, null), 400, "PROPOSAL_SOLUTION_INCOMPLETE");
+
+		// A LinkedIn profile is the one contact detail a submission may leave out.
+		Map<String, Object> noLinkedin = withDeck(application(Map.of("firstName", "Dat", "lastName", "Phan", "phone",
+				"+84 912 345 678", "country", "VN"), solution, answers(form, email), versionOf(incomplete)), email);
+		noLinkedin.put("teamBackground", "Two engineers from an insurer.");
+		put(applicant, form.path(), noLinkedin).expectStatus().isOk();
+		assertThat(JsonPath.<String>read(body(post(applicant, submit, null).expectStatus().isOk()),
+				"$.application.status"))
+			.isEqualTo("submitted");
 	}
 
 	@Test

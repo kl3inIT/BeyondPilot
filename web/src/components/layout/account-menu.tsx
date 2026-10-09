@@ -7,6 +7,7 @@ import {
   FileTextIcon,
   LayoutDashboardIcon,
   LogOutIcon,
+  UserRoundCogIcon,
   UserRoundIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -111,6 +112,10 @@ function SiteAccountItems({
       <DropdownMenuItem render={<Link href={siteRoutes.talentProfile} />}>
         <UserRoundIcon aria-hidden="true" />
         {t("talentProfile")}
+      </DropdownMenuItem>
+      <DropdownMenuItem render={<Link href={siteRoutes.account} />}>
+        <UserRoundCogIcon aria-hidden="true" />
+        {t("settings")}
       </DropdownMenuItem>
       <DropdownMenuItem render={<Link href={siteRoutes.accountMcp} />}>
         <CableIcon aria-hidden="true" />

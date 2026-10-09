@@ -13,6 +13,7 @@ import ai.genaifund.beyondpilot.program.ProgramName;
 import ai.genaifund.beyondpilot.program.ProgramService;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseListResponse;
+import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseResponse;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseSummaryResponse;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCase;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseQueryRepository;
@@ -141,6 +142,39 @@ public class UseCaseDirectory {
 				useCaseList.publicCount(text, matching, request.industry(), program, now));
 	}
 
+	/**
+	 * One published use case that is still open, as a visitor reads the whole brief.
+	 * @throws UseCaseException when the identifier is unknown, no longer open, or its organization is not public
+	 */
+	@Transactional(readOnly = true)
+	public PublicUseCaseResponse get(UUID id) {
+		Instant now = Instant.now();
+		UseCase useCase = useCases.findById(id)
+			.filter(found -> UseCase.APPROVED.equals(found.getStatus()) && !UseCase.CLOSED.equals(found.statusAt(now)))
+			.orElseThrow(() -> notFound(id));
+		String title = useCase.getTitle();
+		String industry = useCase.getIndustry();
+		Instant publishedAt = useCase.getPublishedAt();
+		if (title == null || industry == null || publishedAt == null) {
+			throw notFound(id);
+		}
+		OrganizationName organization = organizations.approvedNames(List.of(useCase.getOrganizationId()))
+			.get(useCase.getOrganizationId());
+		if (organization == null) {
+			throw notFound(id);
+		}
+		boolean anonymous = useCase.isHideOrganizationName();
+		boolean hiddenBudget = useCase.isBudgetMembersOnly();
+		return new PublicUseCaseResponse(useCase.getId(), title, anonymous ? null : organization.name(),
+				anonymous ? null : organization.logoFileId(), industry, useCase.getProblemStatement(),
+				useCase.getTechnologies(), useCase.getExpectedOutcomes(), useCase.getCurrentProcess(),
+				useCase.getCurrentSolutions(), useCase.getTargetUsers(), useCase.getDataReadiness(),
+				useCase.getIntegrationRequirements(), hiddenBudget ? null : useCase.getBudgetMin(),
+				hiddenBudget ? null : useCase.getBudgetMax(), useCase.getCurrency(), useCase.isBudgetToBeDetermined(),
+				hiddenBudget, useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(), useCase.getClosesAt(),
+				publishedAt);
+	}
+
 	private static PublicUseCaseSummaryResponse summary(UseCaseQueryRepository.PublicRow row,
 			Map<UUID, OrganizationName> names) {
 		OrganizationName organization = row.hideOrganizationName() ? null : names.get(row.organizationId());
@@ -149,5 +183,9 @@ public class UseCaseDirectory {
 				organization == null ? null : organization.logoFileId(), row.industry(), row.goal(), row.technologies(), hidden ? null : row.budgetMin(),
 				hidden ? null : row.budgetMax(), row.currency(), row.budgetToBeDetermined(), row.budgetMembersOnly(),
 				row.timelineMinWeeks(), row.timelineMaxWeeks(), row.closesAt(), row.publishedAt());
+	}
+
+	private static UseCaseException notFound(UUID id) {
+		return new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No published use case " + id);
 	}
 }

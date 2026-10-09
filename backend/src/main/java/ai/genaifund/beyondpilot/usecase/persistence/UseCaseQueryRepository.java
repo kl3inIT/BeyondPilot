@@ -68,7 +68,7 @@ public class UseCaseQueryRepository {
 			+ "  and (cast(:pattern as text) is null or lower(title) like :pattern escape '\\'\n"
 			+ "       or lower(expected_outcomes) like :pattern escape '\\'\n"
 			+ "       or (not hide_organization_name and organization_id::text = any(:matching)))\n"
-			+ "  and (cast(:industry as text) is null or industry = :industry)\n"
+			+ "  and (cast(:industries as text[]) is null or industry = any(:industries))\n"
 			+ "  and (cast(:program as text) is null or exists (select 1 from use_case_program p\n"
 			+ "       where p.use_case_id = use_case.id and p.program_id::text = :program))\n";
 
@@ -83,7 +83,7 @@ public class UseCaseQueryRepository {
 	 * One page of the public list; {@code sort} is newest, deadline or budget. A budget in đồng orders as its value in
 	 * US dollars at {@code vndPerUsd}, which no reader sees.
 	 */
-	public List<PublicRow> publicPage(@Nullable String text, List<UUID> matching, @Nullable String industry,
+	public List<PublicRow> publicPage(@Nullable String text, List<UUID> matching, @Nullable List<String> industries,
 			@Nullable UUID program, String sort, long vndPerUsd, Instant now, int limit, long offset) {
 		String order = switch (sort) {
 			case "deadline" -> "closes_at nulls last, id";
@@ -95,7 +95,7 @@ public class UseCaseQueryRepository {
 		return publicFiltered("select id, organization_id, hide_organization_name, title, industry, expected_outcomes, "
 				+ "technologies, budget_min, budget_max, currency, budget_to_be_determined, budget_members_only, "
 				+ "timeline_min_weeks, timeline_max_weeks, closes_at, published_at from use_case\n" + PUBLIC_FILTER
-				+ "order by " + order + " limit :limit offset :offset", text, matching, industry, program, now)
+				+ "order by " + order + " limit :limit offset :offset", text, matching, industries, program, now)
 			.param("vndPerUsd", vndPerUsd)
 			.param("limit", limit)
 			.param("offset", offset)
@@ -111,19 +111,19 @@ public class UseCaseQueryRepository {
 	}
 
 	/** How many use cases the public list holds for these parameters, over all pages. */
-	public long publicCount(@Nullable String text, List<UUID> matching, @Nullable String industry,
+	public long publicCount(@Nullable String text, List<UUID> matching, @Nullable List<String> industries,
 			@Nullable UUID program, Instant now) {
-		return publicFiltered("select count(*) from use_case\n" + PUBLIC_FILTER, text, matching, industry, program, now)
+		return publicFiltered("select count(*) from use_case\n" + PUBLIC_FILTER, text, matching, industries, program, now)
 			.query(Long.class)
 			.single();
 	}
 
 	private JdbcClient.StatementSpec publicFiltered(String sql, @Nullable String text, List<UUID> matching,
-			@Nullable String industry, @Nullable UUID program, Instant now) {
+			@Nullable List<String> industries, @Nullable UUID program, Instant now) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
 			.param("matching", matching.stream().map(UUID::toString).toArray(String[]::new))
-			.param("industry", industry, Types.VARCHAR)
+			.param("industries", industries == null || industries.isEmpty() ? null : industries.toArray(String[]::new))
 			.param("program", program == null ? null : program.toString(), Types.VARCHAR)
 			.param("now", Timestamp.from(now));
 	}

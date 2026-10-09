@@ -4,6 +4,7 @@
 // sign-out) is answered by the test itself, with page.route.
 import { createServer } from "node:http";
 
+import { answerAiAdmin } from "./stub-ai.mjs";
 import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
 import { answerEmail } from "./stub-email.mjs";
@@ -345,6 +346,62 @@ createServer((request, response) => {
   if (url.pathname === "/api/identity/me") {
     return json(response, account ? 200 : 401, account ?? {});
   }
+  if (url.pathname === "/api/usecase/admin/organizations") {
+    if (account?.role !== "operator") {
+      return json(response, account ? 403 : 401, {});
+    }
+    return json(response, 200, {
+      items: [
+        {
+          id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+          name: "Pocket Policy",
+          logoFileId: "0b6f2f0e-5d0e-4c57-9a55-6f6f3c1d2a10",
+        },
+        {
+          id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04",
+          name: "Tasco",
+          logoFileId: null,
+        },
+      ],
+    });
+  }
+  if (url.pathname === "/api/usecase/admin/use-cases") {
+    if (account?.role !== "operator") {
+      return json(response, account ? 403 : 401, {});
+    }
+    return json(response, 200, {
+      items: [
+        {
+          id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0011",
+          organization: {
+            id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+            name: "Pocket Policy",
+            logoFileId: "0b6f2f0e-5d0e-4c57-9a55-6f6f3c1d2a10",
+          },
+          title: "Claims triage",
+          status: "approved",
+          closesAt: "2026-12-31T16:59:00Z",
+          updatedAt: "2026-10-07T03:00:00Z",
+        },
+        {
+          id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0012",
+          organization: {
+            id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04",
+            name: "Tasco",
+            logoFileId: null,
+          },
+          title: "Inventory counting",
+          status: "draft",
+          closesAt: null,
+          updatedAt: "2026-10-06T03:00:00Z",
+        },
+      ],
+      page: 1,
+      pageSize: 25,
+      total: 2,
+      inReview: 0,
+    });
+  }
   if (url.pathname === "/api/identity/accounts") {
     if (account?.role !== "operator") {
       return json(response, account ? 403 : 401, {});
@@ -417,6 +474,10 @@ createServer((request, response) => {
   const administered = answerSearchAdmin(url, account);
   if (administered) {
     return json(response, ...administered);
+  }
+  const chat = answerAiAdmin(url, account);
+  if (chat) {
+    return json(response, ...chat);
   }
   const searched = answerSearch(url);
   if (searched) {

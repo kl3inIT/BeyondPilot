@@ -12,6 +12,7 @@ import java.util.Optional;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Meaning;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Pending;
+import ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository;
 import com.openai.errors.BadRequestException;
 import com.openai.errors.UnprocessableEntityException;
 import org.jspecify.annotations.Nullable;
@@ -48,6 +49,8 @@ class SearchEmbeddings {
 
 	private final SearchDocumentRepository index;
 
+	private final SearchPassageRepository passages;
+
 	private final EmbeddingSettings settings;
 
 	/** The vectors of the latest queries, the least recently asked dropped first. */
@@ -68,9 +71,11 @@ class SearchEmbeddings {
 
 	private volatile @Nullable Instant lastBatchAt;
 
-	SearchEmbeddings(EmbeddingClients clients, SearchDocumentRepository index, EmbeddingSettings settings) {
+	SearchEmbeddings(EmbeddingClients clients, SearchDocumentRepository index, SearchPassageRepository passages,
+			EmbeddingSettings settings) {
 		this.clients = clients;
 		this.index = index;
+		this.passages = passages;
 		this.settings = settings;
 	}
 
@@ -109,7 +114,7 @@ class SearchEmbeddings {
 		return Optional.of(new Meaning(active.model(), vector, settings.minSimilarity(), settings.pool()));
 	}
 
-	/** Embeds the next batch of items whose vector is missing, stale or of another model. */
+	/** Embeds the next batch of items, then of passages, whose vector is missing, stale or of another model. */
 	@Scheduled(fixedDelayString = "${beyondpilot.search.embedding.interval}", initialDelay = 30_000)
 	void embedPending() {
 		EmbeddingClients.Active active = available();
@@ -118,6 +123,14 @@ class SearchEmbeddings {
 		}
 		EmbeddingModel embeddings = active.client();
 		String model = active.model();
+		embedItems(embeddings, model);
+		// A provider that failed just now is paused; the passages wait with the items.
+		if (available() != null) {
+			embedPassages(embeddings, model);
+		}
+	}
+
+	private void embedItems(EmbeddingModel embeddings, String model) {
 		List<Pending> batch = index.pendingEmbeddings(model, settings.batchSize());
 		if (batch.isEmpty()) {
 			return;
@@ -165,6 +178,47 @@ class SearchEmbeddings {
 		}
 		succeeded();
 		lastBatchAt = Instant.now();
+	}
+
+	/**
+	 * The passages of decks, websites and customer cases, embedded the way items are: a batch at once, each alone when
+	 * the provider refuses the batch for what it holds, and one it refuses again held back.
+	 */
+	private void embedPassages(EmbeddingModel embeddings, String model) {
+		List<SearchPassageRepository.Pending> batch = passages.pendingEmbeddings(model, settings.passageBatchSize());
+		if (batch.isEmpty()) {
+			return;
+		}
+		try {
+			List<float[]> vectors = embeddings.embed(batch.stream().map(SearchEmbeddings::text).toList());
+			for (int i = 0; i < batch.size(); i++) {
+				passages.saveEmbedding(batch.get(i), model, vectors.get(i));
+			}
+		}
+		catch (RuntimeException failure) {
+			if (!refused(failure)) {
+				failed("search.embedding.provider_failed", failure);
+				return;
+			}
+			for (SearchPassageRepository.Pending passage : batch) {
+				try {
+					passages.saveEmbedding(passage, model, embeddings.embed(text(passage)));
+				}
+				catch (RuntimeException alone) {
+					if (!refused(alone)) {
+						failed("search.embedding.provider_failed", alone);
+						return;
+					}
+					passages.deferEmbedding(passage, alone.getClass().getSimpleName());
+				}
+			}
+		}
+		succeeded();
+		lastBatchAt = Instant.now();
+		LOG.atInfo()
+			.addKeyValue("event", "search.embedding.passages_embedded")
+			.addKeyValue("items", batch.size())
+			.log("A batch of passages was embedded");
 	}
 
 	/**
@@ -221,6 +275,12 @@ class SearchEmbeddings {
 			.addKeyValue("error_type", failure.getClass().getName())
 			.addKeyValue("pause_seconds", pause.toSeconds())
 			.log("The embedding provider failed; search goes by keywords until it answers");
+	}
+
+	/** A passage is embedded under what it is of, so a slide that says "Our customers" is still someone's. */
+	private static String text(SearchPassageRepository.Pending passage) {
+		String text = passage.heading() + "\n" + passage.text();
+		return text.length() <= MAX_CHARACTERS ? text : text.substring(0, MAX_CHARACTERS);
 	}
 
 	private static String text(Pending item) {

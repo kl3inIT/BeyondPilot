@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.solution;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -209,6 +210,35 @@ public class SolutionDirectory {
 		return solutions.findBySlug(slug)
 			.filter(Solution::isApproved)
 			.flatMap(solution -> indexed(List.of(solution)).stream().findFirst());
+	}
+
+	/**
+	 * The deck of an approved solution with its bytes, for search to read its pages; empty when the solution is not
+	 * approved, is taken down or has no deck.
+	 */
+	@Transactional(readOnly = true)
+	public Optional<SolutionDeck> deck(UUID solutionId) {
+		return solutions.findById(solutionId)
+			.filter(solution -> solution.isApproved() && solution.getDeckFileId() != null)
+			.map(solution -> new SolutionDeck(Objects.requireNonNull(solution.getDeckFileId()),
+					Objects.requireNonNullElse(solution.getDeckFileName(), "deck.pdf"),
+					storage.content(Objects.requireNonNull(solution.getDeckFileId()))));
+	}
+
+	/** Which file is the deck of each approved solution not taken down, so search finds the decks it has not read. */
+	@Transactional(readOnly = true)
+	public List<SolutionDeckFile> decks() {
+		return solutions.findDecksByStatus(Solution.APPROVED);
+	}
+
+	/** The customer deployments of a solution that GenAI Fund approved, the latest decided first. */
+	@Transactional(readOnly = true)
+	public List<CustomerCase> customerCases(UUID solutionId) {
+		return deployments.findBySolutionIdAndStatusOrderByDecidedAtDesc(solutionId, CustomerDeployment.APPROVED)
+			.stream()
+			.map(deployment -> new CustomerCase(deployment.getId(), deployment.getCustomer(), deployment.getTitle(),
+					deployment.getProblem(), deployment.getDelivered(), deployment.getResult()))
+			.toList();
 	}
 
 	/** Every approved solution not taken down as search indexes it, for a rebuild of the index. */

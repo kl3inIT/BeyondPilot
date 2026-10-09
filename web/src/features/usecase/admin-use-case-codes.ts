@@ -67,9 +67,6 @@ export const timelineCodes = Object.keys(timelinePresets) as [
   ...(keyof typeof timelinePresets)[],
 ];
 
-/** What saving does: keep a draft for the organization, or publish at once. */
-export const publishChoices = ["draft", "publish"] as const;
-
 export const necessities = [
   "required",
   "optional",

@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.proposal;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,14 +15,18 @@ import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
+import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.program.ApplicationForm;
 import ai.genaifund.beyondpilot.proposal.ReviewAccess.Reviewing;
+import ai.genaifund.beyondpilot.proposal.dto.ApplicationsCsv;
 import ai.genaifund.beyondpilot.proposal.dto.AttachedFileResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ContactDetails;
 import ai.genaifund.beyondpilot.proposal.dto.CriterionResponse;
+import ai.genaifund.beyondpilot.proposal.dto.ExportApplicationsRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewHeadResponse;
@@ -140,6 +145,59 @@ public class ReviewService {
 	}
 
 	/**
+	 * A program's submitted applications as a spreadsheet reads them, the earliest submitted first, for GenAI Fund to
+	 * work with outside BeyondPilot. The download is recorded, since it takes applicants' contact details out.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the program takes no applications
+	 */
+	@Transactional
+	public ApplicationsCsv export(Actor actor, UUID programId, ExportApplicationsRequest request) {
+		Operator operator = access.operator(actor);
+		ApplicationForm form = setup.form(programId);
+		ReviewHeadResponse head = head(form, access.of(actor, programId));
+		List<UUID> asked = request.applicationIds();
+		Set<UUID> only = asked == null ? null : Set.copyOf(asked);
+		List<Proposal> submitted = proposals.findByProgramIdAndStatusOrderBySubmittedAt(programId, Proposal.SUBMITTED)
+			.stream()
+			.filter(proposal -> only == null || only.contains(proposal.getId()))
+			.toList();
+		Map<UUID, List<ProposalAssessment>> byProposal = new HashMap<>();
+		for (ProposalAssessment assessment : assessments
+			.findByProposalIdIn(submitted.stream().map(Proposal::getId).toList())) {
+			byProposal.computeIfAbsent(assessment.getProposalId(), id -> new ArrayList<>()).add(assessment);
+		}
+		Map<VersionKey, Snapshot> snapshots = snapshots(submitted);
+		ReviewHeadResponse.ChoiceQuestion choice = head.choice();
+		CsvRows rows = new CsvRows();
+		rows.add(Arrays.asList("Application", "Organization", "Organization type", "Solution", "First name",
+				"Last name", "Email", "Phone", "Country", "LinkedIn", choice == null ? "Choice" : choice.label(),
+				"Submitted at (UTC)", "Version", "Review status", "Outcome released", "Scores", "Average score"));
+		int count = 0;
+		for (Proposal proposal : submitted) {
+			Snapshot snapshot = snapshots.get(new VersionKey(proposal.getId(), proposal.getSubmissions()));
+			if (snapshot == null) {
+				continue;
+			}
+			List<ProposalAssessment> all = byProposal.getOrDefault(proposal.getId(), List.of());
+			ContactDetails contact = snapshot.applicant().contact();
+			rows.add(Arrays.asList(proposal.getId(), snapshot.organization().name(), snapshot.organization().type(),
+					snapshot.solution().name(), contact.firstName(), contact.lastName(), snapshot.applicant().email(),
+					contact.phone(), contact.country(), contact.linkedin(),
+					choice == null ? null : choiceOf(snapshot, choice.id()), proposal.getSubmittedAt(),
+					proposal.getSubmissions(), proposal.getReviewStatus(), head.releasedAt() == null ? "no" : "yes",
+					all.stream().filter(assessment -> !assessment.isConflict()).count(), average(all)));
+			count++;
+		}
+		setup.record(AuditAction.PROPOSAL_EXPORT, operator, form, Map.of("count", String.valueOf(count)));
+		LOG.atInfo()
+			.addKeyValue("event", "proposal.applications.exported")
+			.addKeyValue("program_id", programId)
+			.addKeyValue("count", count)
+			.log("Applications exported");
+		return new ApplicationsCsv(form.slug() + "-applications.csv", rows.toString());
+	}
+
+	/**
 	 * A program's submitted applications as an operator reviews them, for the MCP server.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws ProposalException when the program takes no applications
@@ -218,14 +276,14 @@ public class ReviewService {
 	}
 
 	/**
-	 * A file of an application's last submission, its deck or a file it answered with.
+	 * A file of an application's last submission, its deck or a file it answered with. Opening it is recorded.
 	 * @throws ProposalException when there is no such submitted application, the caller does not review its program, or
 	 * the file is not one the submission holds
 	 */
 	@Transactional
 	public FileDownload file(Actor actor, UUID id, UUID fileId) {
 		Proposal proposal = submitted(id);
-		access.of(actor, proposal.getProgramId());
+		Reviewing reviewing = access.of(actor, proposal.getProgramId());
 		Snapshot snapshot = snapshot(proposal);
 		boolean held = (snapshot.materials().deck() != null
 				&& Objects.requireNonNull(snapshot.materials().deck()).fileId().equals(fileId))
@@ -237,6 +295,7 @@ public class ReviewService {
 			throw new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
 					"File " + fileId + " is not of application " + id);
 		}
+		setup.opened(reviewing.person(), setup.form(proposal.getProgramId()), id, fileId);
 		return storage.download(fileId);
 	}
 

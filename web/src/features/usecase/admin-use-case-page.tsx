@@ -1,6 +1,7 @@
 import { CheckIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
+import { ReviewStatus } from "@/components/composites/review-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AdminUseCase } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ type AdminUseCasePageProps = {
  */
 function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
   const t = useTranslations("Admin.useCases.detail");
+  const statusLabel = useTranslations("Admin.useCases.status");
   const d = useTranslations("Admin.useCases.decision");
   const format = useFormatter();
   const locale = useLocale();
@@ -94,9 +96,14 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <LiveRefresh />
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1.5">
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        <p className="text-sm text-muted-foreground">{t(`subtitle.${status}`, { organization })}</p>
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted-foreground">{organization}</span>
+          <ReviewStatus appearance="pill" state={status}>
+            {statusLabel(status)}
+          </ReviewStatus>
+        </div>
       </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-3">

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditRecord;
 import ai.genaifund.beyondpilot.audit.AuditTrail;
+import ai.genaifund.beyondpilot.identity.dto.ContactRequest;
 import ai.genaifund.beyondpilot.identity.dto.MeResponse;
 import ai.genaifund.beyondpilot.identity.persistence.Account;
 import ai.genaifund.beyondpilot.identity.persistence.AccountRepository;
@@ -84,9 +85,32 @@ public class IdentityService {
 	 */
 	@Transactional(readOnly = true)
 	public MeResponse me(Actor actor) {
+		return me(active(actor));
+	}
+
+	/**
+	 * Replaces where the caller is and the number to reach them on.
+	 * @throws IdentityException when the account is disabled
+	 */
+	@Transactional
+	public MeResponse reachAt(Actor actor, ContactRequest request) {
 		Account account = active(actor);
-		return new MeResponse(account.getId(), account.getEmail(), account.getDisplayName(),
-				account.getPlatformRole().name().toLowerCase(Locale.ROOT));
+		account.reachAt(request.country(), request.phone());
+		LOG.atInfo()
+			.addKeyValue("event", "identity.contact.changed")
+			.addKeyValue("account_id", account.getId())
+			.log("Account contact changed");
+		return me(account);
+	}
+
+	/**
+	 * Keeps the country and the number a person gave elsewhere, an application for one, where the account has none
+	 * yet. What the account already holds is left as it is.
+	 * @throws IdentityException when the account is disabled
+	 */
+	@Transactional
+	public void reachAtIfUnknown(Actor actor, @Nullable String country, @Nullable String phone) {
+		active(actor).reachAtIfUnknown(country, phone);
 	}
 
 	/**
@@ -135,6 +159,11 @@ public class IdentityService {
 		return accounts.findAllById(accountIds)
 			.stream()
 			.collect(Collectors.toMap(Account::getId, IdentityService::person));
+	}
+
+	private static MeResponse me(Account account) {
+		return new MeResponse(account.getId(), account.getEmail(), account.getDisplayName(),
+				account.getPlatformRole().name().toLowerCase(Locale.ROOT), account.getCountry(), account.getPhone());
 	}
 
 	private static Person person(Account account) {

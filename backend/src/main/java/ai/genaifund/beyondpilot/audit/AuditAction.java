@@ -160,6 +160,18 @@ public enum AuditAction {
 	/** An operator released a program's outcomes. The counts are how many applicants each group had. */
 	PROPOSAL_RELEASE("proposal.release", "shortlisted", "not_selected"),
 
+	/**
+	 * An operator or a judge opened a file of a submitted application. {@code application} and {@code file} are their
+	 * identifiers.
+	 */
+	PROPOSAL_FILE_OPEN("proposal.file_open", "application", "file"),
+
+	/**
+	 * An operator downloaded a program's applications, with their applicants' contact details. {@code count} is how
+	 * many applications the download holds.
+	 */
+	PROPOSAL_EXPORT("proposal.export", "count"),
+
 	/** An operator changed who delivers email or as whom. {@code provider} is the provider chosen. */
 	EMAIL_SETTINGS_UPDATE("email.settings_update", "provider"),
 
@@ -187,13 +199,30 @@ public enum AuditAction {
 	 */
 	EMAIL_TEST_SEND("email.test_send", "subject"),
 
-	/** An operator connected an AI provider. {@code vendor} is {@code openai} or {@code openrouter}. */
+	/**
+	 * An operator connected an AI provider. {@code vendor} is the vendor of an embedding provider ({@code openai},
+	 * {@code openrouter}) or the adapter of a chat provider ({@code openai}, {@code anthropic}).
+	 */
 	AI_PROVIDER_CREATE("ai.provider_create", "vendor"),
 
 	/** An operator changed an AI provider. {@code key} is {@code kept}, {@code replaced} or {@code removed}. */
 	AI_PROVIDER_UPDATE("ai.provider_update", "vendor", "key"),
 
 	AI_PROVIDER_DELETE("ai.provider_delete"),
+
+	/** An operator enabled a model of a chat provider. {@code provider} is the provider's name. */
+	AI_MODEL_ADD("ai.model_add", "provider"),
+
+	/** An operator corrected a model's limits, capabilities or prices. */
+	AI_MODEL_UPDATE("ai.model_update", "provider"),
+
+	AI_MODEL_REMOVE("ai.model_remove", "provider"),
+
+	/**
+	 * An operator chose the model a task uses. {@code model} is the model's name or {@code none}, {@code reasoning}
+	 * the level: {@code off}, {@code low}, {@code medium} or {@code high}.
+	 */
+	AI_TASK_MODEL_CHANGE("ai.task_model_change", "model", "reasoning"),
 
 	/** An operator chose the provider and model search embeds with. {@code model} is the model. */
 	SEARCH_MODEL_CHANGE("search.model_change", "model"),

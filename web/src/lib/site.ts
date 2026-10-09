@@ -11,6 +11,7 @@ export const siteRoutes = {
   getStarted: "/get-started",
   publishUseCase: "/use-cases/new",
   talentProfile: "/workspace/talent",
+  account: "/account",
   accountMcp: "/account/mcp",
   founders: "/founders",
   search: "/search",
@@ -54,6 +55,11 @@ export const publicSiteHost = "beyondpilot.genaifund.ai";
 /** A program's public page. */
 export function programRoute(slug: string) {
   return `${siteRoutes.programs}/${slug}`;
+}
+
+/** One use case's public brief. */
+export function useCaseRoute(id: string) {
+  return `${siteRoutes.useCases}/${id}`;
 }
 
 /**
@@ -123,6 +129,9 @@ export const liveCampaignUrl = "https://beyondpilot.genaifund.ai/insurance-ai-ta
 
 /** Submissions to the live campaign close at 23:59 Vietnam time (ICT) on 15 October 2026. */
 export const liveCampaignDeadline = "2026-10-15T23:59:00+07:00";
+
+/** Where BeyondPilot itself is reached; the fund's own address stays with its links below. */
+export const contactEmail = "team@beyondpilot.ai";
 
 export const genaiFundLinks = {
   site: "https://genaifund.ai",

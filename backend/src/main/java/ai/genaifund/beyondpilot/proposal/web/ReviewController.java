@@ -10,7 +10,9 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
 import ai.genaifund.beyondpilot.proposal.OutcomeService;
 import ai.genaifund.beyondpilot.proposal.ReviewService;
+import ai.genaifund.beyondpilot.proposal.dto.ApplicationsCsv;
 import ai.genaifund.beyondpilot.proposal.dto.DecideRequest;
+import ai.genaifund.beyondpilot.proposal.dto.ExportApplicationsRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseEmails;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationResponse;
@@ -69,6 +71,28 @@ class ReviewController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ReviewApplicationsResponse applications(@CurrentActor Actor actor, @PathVariable UUID programId) {
 		return review.applications(actor, programId);
+	}
+
+	@PostMapping(path = "/programs/{programId}/applications/export", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = "text/csv")
+	@Operation(operationId = "exportReviewApplications",
+			summary = "Download a program's submitted applications as a spreadsheet",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "One row for each application, with its applicant's contact details, decision and scores. The download is recorded.",
+			content = @Content(mediaType = "text/csv", schema = @Schema(type = "string")))
+	@ApiResponse(responseCode = "404", description = "There is no such program taking applications.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<byte[]> export(@CurrentActor Actor actor, @PathVariable UUID programId,
+			@Valid @RequestBody ExportApplicationsRequest request) {
+		ApplicationsCsv csv = review.export(actor, programId, request);
+		// The byte order mark tells Excel the file is UTF-8, so names keep their accents.
+		return ResponseEntity.ok()
+			.contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
+			.cacheControl(CacheControl.noStore())
+			.header(HttpHeaders.CONTENT_DISPOSITION,
+					ContentDisposition.attachment().filename(csv.fileName(), StandardCharsets.UTF_8).build().toString())
+			.body(("\uFEFF" + csv.content()).getBytes(StandardCharsets.UTF_8));
 	}
 
 	@GetMapping(path = "/applications/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -226,6 +226,7 @@ const useCases = [
     id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0001",
     title: "Voice assistant for vehicle owners",
     organizationName: "Pocket Policy",
+    organizationLogoFileId: pocketPolicy.logoFileId,
     industry: "automotive_mobility",
     goal: "Cut hotline calls by 40%.",
     technologies: ["voice_ai", "conversational_ai"],
@@ -243,6 +244,7 @@ const useCases = [
     id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0002",
     title: "Claims triage with document intelligence",
     organizationName: "Lumen Health",
+    organizationLogoFileId: lumenHealth.logoFileId,
     industry: "insurance",
     goal: "Route claims to the right team on arrival.",
     technologies: ["document_intelligence"],
@@ -260,6 +262,7 @@ const useCases = [
     id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0003",
     title: "Demand forecasting for a retail chain",
     organizationName: null,
+    organizationLogoFileId: null,
     industry: "retail_ecommerce",
     goal: "Forecast weekly demand per store.",
     technologies: ["predictive_analytics", "anomaly_detection", "recommendation"],
@@ -275,15 +278,32 @@ const useCases = [
   },
 ];
 
+const useCaseDetails = useCases.map((item) => ({
+  ...item,
+  problemStatement: `${item.goal} The team needs a clear, measurable way to improve this work.`,
+  expectedOutcomes: "Improve the outcome, reduce manual effort and make progress measurable.",
+  currentProcess: "The team coordinates this work manually across separate systems.",
+  currentSolutions: "The current tools do not solve the full problem.",
+  targetUsers: "The operating team and the people it serves.",
+  dataReadiness: "Relevant operational data is available and refreshed regularly.",
+  integrationRequirements: "The solution must work with the organization's existing systems.",
+}));
+
 /** The public list of use cases: the search looks in the title, the goal and the organization's name. */
 function pageOfUseCases(url) {
   const { searchParams: query } = url;
   const sort = query.get("sort") ?? "newest";
+  const industries = query
+    .getAll("industry")
+    .flatMap((industry) => industry.split(","))
+    .filter(Boolean);
+  const program = query.get("program");
   const items = useCases
     .filter(
       (item) =>
+        (!program || (programUseCases[program] ?? []).includes(item.title)) &&
         has(query.get("q"), item.title, item.goal, item.organizationName) &&
-        (!query.get("industry") || item.industry === query.get("industry")),
+        (industries.length === 0 || industries.includes(item.industry)),
     )
     .toSorted((one, other) =>
       sort === "deadline"
@@ -295,6 +315,14 @@ function pageOfUseCases(url) {
   return { items, page: 1, pageSize: 10, total: items.length };
 }
 
+/** The use cases an operator attached to a program, by the program's address. */
+const programUseCases = {
+  "insurance-ai-tasco": [
+    "Voice assistant for vehicle owners",
+    "Claims triage with document intelligence",
+  ],
+};
+
 const missing = [404, { status: 404, code: "NOT_FOUND" }];
 
 /** The answer to a read of the public directories, as `[status, body]`; nothing for another path. */
@@ -303,8 +331,12 @@ export function answerDirectory(url) {
   if (pathname === "/api/usecase/use-cases") {
     return [200, pageOfUseCases(url)];
   }
+  const useCaseId = /^\/api\/usecase\/use-cases\/([^/]+)$/.exec(pathname)?.[1];
+  if (useCaseId) {
+    const found = useCaseDetails.find((item) => item.id === useCaseId);
+    return found ? [200, found] : missing;
+  }
   const [, area, list, slug] = /^\/api\/(\w+)\/(\w+)(?:\/([^/]+))?$/.exec(pathname) ?? [];
-
   if (area === "solution" && list === "solutions") {
     if (slug) {
       const found = [...solutions, unlisted].find((item) => item.slug === slug);

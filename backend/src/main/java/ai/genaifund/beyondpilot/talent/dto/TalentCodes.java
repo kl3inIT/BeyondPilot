@@ -3,8 +3,9 @@ package ai.genaifund.beyondpilot.talent.dto;
 /** The codes the request records accept, as the patterns their members are checked against. */
 final class TalentCodes {
 
-	static final String ROLE = "ai_engineer|ml_engineer|forward_deployed_engineer|automation_specialist"
-			+ "|data_scientist|data_engineer|ai_product_manager|ai_consultant|ai_designer|other";
+	static final String ROLE = "ai_engineer|ml_engineer|forward_deployed_engineer|software_engineer"
+			+ "|solution_architect|automation_specialist|data_scientist|data_engineer|researcher"
+			+ "|ai_product_manager|ai_consultant|ai_designer|founder|student|other";
 
 	static final String SORT = "name|newest";
 

@@ -4,18 +4,21 @@ import { Button } from "@/components/actions/button";
 import { Section } from "@/components/ui/section";
 import { siteRoutes } from "@/lib/site";
 
-/** The last invitation, on the same wash of azure, violet and peach as the hero. */
+/**
+ * The last invitation, on the ink of the challenge bar (Figma "Landing v2 / FinalCTA"); at night
+ * the panel turns light with the rest of the inverse surfaces.
+ */
 function FinalCta() {
   const t = useTranslations("Home.finalCta");
 
   return (
     <Section>
-      <div className="mb-14 flex flex-col items-start rounded-3xl bg-linear-90 from-wash-azure via-wash-violet via-55% to-wash-peach p-8 md:p-15 lg:mb-25 lg:min-h-75 lg:pt-17.5">
-        <h2 className="max-w-3xl text-4xl font-semibold text-foreground md:text-5xl lg:text-cta lg:tracking-display">
+      <div className="mb-14 flex flex-col items-center rounded-3xl bg-foreground px-6 py-14 text-center text-background md:p-15 lg:mb-25 lg:py-20">
+        <h2 className="max-w-3xl text-4xl font-semibold md:text-5xl lg:text-cta lg:tracking-display">
           {t("title")}
         </h2>
-        <p className="mt-4 text-base text-muted-foreground lg:text-lg">{t("description")}</p>
-        <Button size="2xl" prominence="inverse" href={siteRoutes.solutions} className="mt-9.5">
+        <p className="mt-4 max-w-xl text-base text-background/75 lg:text-lg">{t("description")}</p>
+        <Button size="2xl" href={siteRoutes.solutions} className="mt-9">
           {t("action")}
         </Button>
       </div>

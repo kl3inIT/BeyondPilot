@@ -16,6 +16,7 @@ A one-off load of GenAI Fund's v1 export (startups and use cases) into BeyondPil
 | `enrich_apply.py` | Writes `update.sql` (empty parts filled, customers added) and `audit.sql` (one `solution.enrich` event per solution, with each value's quote and source) |
 | `enrich_images.py` | Writes the found logos and covers into the object store's layout and `images.sql` |
 | `usecase_extract.py`, `usecase_check.py` | Fill the imported use cases' empty fields from their v1 briefs, and approve them |
+| `passages.py` | Writes `passages.sql`: the saved website text of each imported solution as the passages search keeps for matching, without the lines every page of a site repeats |
 
 ## Run
 
@@ -65,3 +66,11 @@ After the load, empty parts of the imported records are filled from public sourc
 5. Rebuild the search index.
 
 The work folders hold the companies' pages and decks: they stay under `.tmp/` and are never committed.
+
+## Passages for matching
+
+Matching reads what a solution's own material says ([design](../../docs/increments/active/bey-39-matching/design.md)). The website text the enrichment saved is loaded once; the application reads decks and customer cases itself.
+
+1. `python -I infrastructure/legacy-import/passages.py <work> <out>` writes `passages.sql` and `passages.json` (the counts). On the export of 4 October 2026: 11,957 passages from 4,210 pages of 1,903 solutions, a fifth of the text left out as menus and footers.
+2. On the host, after a dump: `docker compose exec -T postgres psql -U beyondpilot -d beyondpilot -v ON_ERROR_STOP=1 -f - < passages.sql`. It runs in one transaction, keeps only the passages of solutions that exist, and ends with a notice of what it kept. Running it again replaces what it loaded before.
+3. The passages are embedded by the job that embeds the index, 64 a minute by default (`beyondpilot.search.embedding.passage-batch-size`).

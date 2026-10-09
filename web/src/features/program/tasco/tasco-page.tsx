@@ -19,6 +19,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { readProgramUseCases } from "@/features/usecase/use-cases-queries";
 import type { Program } from "@/lib/api/generated";
 import { genaiFundLinks, liveCampaignUrl, programApplyUrl } from "@/lib/site";
 
@@ -26,6 +27,7 @@ import { ProgramCountdown } from "../program-countdown";
 import { deadlineText, programFormatter, renderedAt } from "../program-format";
 import { ProgramBreadcrumb } from "../program-page";
 import { ApplyCard, DraftBanner, Timeline, timelineOf } from "../program-parts";
+import { ProgramUseCases } from "../program-use-cases";
 
 const pains = [
   ["paper", FileTextIcon],
@@ -97,6 +99,7 @@ const sections = [
   "who",
   "win",
   "directions",
+  "use-cases",
   "timeline",
   "submit",
   "judges",
@@ -139,10 +142,11 @@ async function ApplyRail({
  * campaign and lives in both catalogs; its dates, events and application window are the program's.
  */
 async function TascoPage({ program }: { program: Program }) {
-  const [t, page, locale] = await Promise.all([
+  const [t, page, locale, useCases] = await Promise.all([
     getTranslations("Tasco"),
     getTranslations("Program.page"),
     getLocale(),
+    readProgramUseCases(program.slug),
   ]);
   const format = programFormatter(locale);
   const now = renderedAt();
@@ -210,16 +214,18 @@ async function TascoPage({ program }: { program: Program }) {
 
         <nav aria-label={t("nav.label")} className="overflow-x-auto border-b">
           <ul className="flex gap-6 text-sm whitespace-nowrap">
-            {sections.map((section) => (
-              <li key={section}>
-                <a
-                  href={`#${section}`}
-                  className="inline-flex min-h-11 items-center text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground focus-visible:underline"
-                >
-                  {t(`nav.${section}`)}
-                </a>
-              </li>
-            ))}
+            {sections
+              .filter((section) => section !== "use-cases" || useCases.items.length > 0)
+              .map((section) => (
+                <li key={section}>
+                  <a
+                    href={`#${section}`}
+                    className="inline-flex min-h-11 items-center text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground focus-visible:underline"
+                  >
+                    {t(`nav.${section}`)}
+                  </a>
+                </li>
+              ))}
           </ul>
         </nav>
 
@@ -311,6 +317,14 @@ async function TascoPage({ program }: { program: Program }) {
                 </div>
               ))}
             </section>
+
+            {useCases.items.length > 0 && (
+              <ProgramUseCases
+                useCases={useCases}
+                title={t("useCases.title")}
+                lead={t("useCases.lead")}
+              />
+            )}
 
             <section id="timeline" className="flex scroll-mt-6 flex-col gap-5">
               <SectionHead title={t("timeline.title")} lead={t("timeline.lead")} />

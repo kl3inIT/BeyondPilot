@@ -23,7 +23,7 @@ const members: Member[] = [
   {
     id: "viet",
     name: "Nhữ Xuân Việt",
-    tint: "bg-lilac text-lilac-foreground",
+    tint: "bg-sky text-sky-foreground",
     linkedin: "https://www.linkedin.com/in/nhuxuanviet/",
   },
   {
@@ -41,7 +41,7 @@ const members: Member[] = [
   },
 ];
 
-/** The core team and how GenAI Fund stands behind it. */
+/** The development partner's engineers and how GenAI Fund stands behind BeyondPilot. */
 function Team() {
   const t = useTranslations("Home.team");
   const s = useTranslations("Site");
@@ -56,7 +56,12 @@ function Team() {
         <p className="mt-3 max-w-175 text-base text-muted-foreground lg:text-lg">
           {t("description")}
         </p>
-        <ul className="mt-9 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+        {/* BeyondPilot's own leads join here, above the partner, once their profiles are agreed. */}
+        <h3 className="mt-9 text-xs font-semibold tracking-wide text-primary uppercase">
+          {t("partnerTitle")}
+        </h3>
+        <p className="mt-1 text-sm text-muted-foreground">{t("partnerDescription")}</p>
+        <ul className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
           {members.map(({ id, name, tint, linkedin }) => (
             <li key={id} className="flex flex-col rounded-2xl border bg-card p-2 shadow-tile">
               <div
@@ -68,7 +73,7 @@ function Team() {
                 <UserRoundIcon className="size-3/4 fill-current opacity-60" aria-hidden="true" />
               </div>
               <div className="flex min-h-26 flex-col px-3 pt-4 pb-5">
-                <h3 className="text-lg font-semibold">{name}</h3>
+                <h4 className="text-lg font-semibold">{name}</h4>
                 <p className="mt-1 text-sm text-primary">{t("role")}</p>
                 {linkedin && (
                   <TextButton

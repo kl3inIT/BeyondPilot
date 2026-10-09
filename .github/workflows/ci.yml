@@ -30,7 +30,11 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      # actionlint asks for a newer Go than the runner's, and Go then fetches the latest toolchain it is told of;
+      # a release announced before its files are served fails the job. The toolchain is named instead.
       - name: Lint workflows
+        env:
+          GOTOOLCHAIN: go1.26.8
         run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 
       - name: Check deployment scripts
@@ -198,8 +202,22 @@ jobs:
         run: |
           compose=(docker compose -f infrastructure/deployment/compose.base.yaml -f infrastructure/deployment/compose.local.yaml)
           "${compose[@]}" up --no-build --wait --wait-timeout 240
-          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8000/)" = 200
-          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8000/api/identity/me)" = 401
+          # A container reported healthy may not take a connection through the proxy yet, so a path is asked
+          # again for a while before its answer counts as wrong.
+          answers() {
+            local code=000
+            for _ in 1 2 3 4 5 6 7 8 9 10; do
+              code=$(curl --silent --output /dev/null --write-out '%{http_code}' "http://127.0.0.1:8000$1" || true)
+              if [ "$code" = "$2" ]; then
+                return 0
+              fi
+              sleep 3
+            done
+            echo "$1 answered $code, not $2" >&2
+            return 1
+          }
+          answers / 200
+          answers /api/identity/me 401
           for image in beyondpilot-api:local beyondpilot-web:local; do
             test "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$image")" = "$GITHUB_SHA"
           done

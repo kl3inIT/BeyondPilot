@@ -377,6 +377,8 @@ test.describe("workspace organization", () => {
 
     await pages.getByRole("link", { name: "Go to the next page" }).click();
     await expect(page).toHaveURL("/workspace/organization/members?page=2");
+    // Metadata updates after the client-side page change; Axe requires the settled title.
+    await expect(page).toHaveTitle("Members · BeyondPilot");
     await expect(shownPeople(page)).toHaveText(["Member 11", "Member 12", "hoa.le@example.com"]);
     await expect(pages.getByRole("link", { name: "Go to the next page" })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);

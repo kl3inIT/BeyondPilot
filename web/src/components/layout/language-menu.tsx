@@ -22,7 +22,7 @@ function Flag({ locale }: { locale: string }) {
       alt=""
       width={20}
       height={20}
-      className="size-5 rounded-full ring-1 ring-border"
+      className="size-5 shrink-0 rounded-full ring-1 ring-border"
     />
   );
 }

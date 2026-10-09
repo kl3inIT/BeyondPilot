@@ -33,7 +33,7 @@ public enum ProposalErrorCode implements ErrorCode {
 			"Someone in your organization has already applied to this program."),
 
 	CONTACT_INCOMPLETE("PROPOSAL_CONTACT_INCOMPLETE", ErrorCategory.VALIDATION,
-			"Add your first and last name, your phone number, your country and your LinkedIn profile."),
+			"Add your first and last name, your phone number and your country."),
 
 	TEAM_BACKGROUND_REQUIRED("PROPOSAL_TEAM_BACKGROUND_REQUIRED", ErrorCategory.VALIDATION,
 			"Describe your team's background."),
