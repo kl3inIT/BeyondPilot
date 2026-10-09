@@ -11,7 +11,7 @@ This is the brief's "early recommendations" and the catalogue half of "formal ev
 ## Domain story
 
 1. A use case is approved. BeyondPilot starts a **run** for it; an operator can start one again later.
-2. The run lists the use case's **requirements** from its text: the **capabilities** a product must have, and the **constraints** it would be delivered under (where it runs, what it integrates with, standards, where data is kept, targets). Each names the passage of the brief it comes from.
+2. The run lists the use case's **requirements** from its text and from the files attached to it: the **capabilities** a product must have, and the **constraints** it would be delivered under (where it runs, what it integrates with, standards, where data is kept, targets). Each names the passage it comes from.
 3. The run finds about 40 **candidates**: approved solutions, listed or not, found by the existing search over profiles and by a search over the **passages** of decks and websites, by keywords and by meaning.
 4. For each candidate the model reads its **sources** and answers per requirement: met, partly, or not shown, with a **quote** and the source it is in.
 5. Code checks each quote against the sources. A quote that is not there lowers its finding to "not shown". Code then places the candidate in a **bucket** (Direct, Industry, Technology, or none) and orders the bucket.
@@ -37,7 +37,7 @@ Failure and recovery:
 | Constraint | A condition on how the solution is delivered or bought. Shown as "to confirm"; it never decides the bucket |
 | Source | A part of a solution's own material: its profile, a customer case, a page of its deck, a page of its website |
 | Source page | The text of one page of a deck or of a website, with its page number or address, and how it was read: taken from the file's own text, or read by a model from the picture of the page |
-| Passage | A piece of a source page short enough to be searched and embedded: one slide of a deck, or a part of a web page of about 2,000 characters. It keeps the page number or the address it comes from |
+| Passage | A piece of a solution's material short enough to be searched and embedded: one slide of a deck, a part of a web page of about 2,000 characters, or one customer case. It keeps the page number, the address or the case it comes from |
 | Candidate | One solution for one use case, with how it got there (recommended, or added by an operator) |
 | Finding | The answer for one requirement of one candidate: met, partly or not shown, with a quote and its source |
 | Quote | A sentence copied word for word from a source. Code confirms it is there |
@@ -96,11 +96,12 @@ The use case's own `use_case_requirement` rows stay with `usecase`. Where an org
 | An approved solution's profile | `solution` | `SolutionDirectory.indexed(id)`, as search reads it |
 | A solution's customer cases | `solution` | **A new read in `solution`'s published API** |
 | A solution's deck file, for `search` to extract its pages | `solution` | **A new read in `solution`'s published API**, used by `search` |
-| A use case's full text, problem statement included | `usecase` | **A new read in `usecase`'s published API**: `indexed` leaves the problem statement out on purpose |
+| A use case's full text, problem statement included, and its attached files | `usecase` | **A new read in `usecase`'s published API**: `indexed` leaves the problem statement out on purpose |
+| The pages of a file: its own text, or a model's reading of a page without text | `ai` | A new service in `ai`, used by `search` and `matching` |
 | Who belongs to the use case's organization | `organization` | `Membership` |
 | The record of a decision | `audit` | `AuditTrail` |
 
-The two new reads are in modules Việt and Nhật own; they are small and read-only, and are agreed with them before they are written.
+The new reads are in modules Việt and Nhật own. They are small and read-only, and Đạt decided on 9 October that they are added with this work.
 
 HTTP, under `/api/matching`: the candidates of a use case with its run and requirements (members of its organization and operators); start a run and add a solution (operators); shortlist, remove, restore; the steps of a run (operators).
 
@@ -122,6 +123,9 @@ HTTP, under `/api/matching`: the candidates of a use case with its run and requi
 | Imported solutions get their text by a one-off load, the way BEY-74 loaded records: a script writes SQL, run on staging then production | The text exists on a team machine; the records are written once |
 | A new deck's text is extracted after the upload, in the background, with Spring AI's PDF reader | No model is needed for a page that has text: `pdftotext` made the deck texts that exist |
 | A page of a deck that has no text is read by a model from its picture, in the same background work, and marked `model` | Decided by Đạt on 9 October. 61 of the 734 imported decks have no text on at least half their pages (779 pages), and 451 more such pages are spread over the other decks. The 9Router route was checked: `cx/gpt-6.1-sol` copied the text of a picture sent as Spring AI sends one. MemoryOS reads scans with a vision model too |
+| A customer case is a passage too | The 1,046 customer cases are text in the database, with a median of 170 characters, and they are what shows a deployment in an industry; the index counts them today and does not search what they say |
+| The files attached to a use case are read for its requirements, and are not embedded | 35 of the 230 use cases have one: 30 PDFs and 5 pictures. They are part of what the enterprise asks, the side that is searched with, not the side that is searched in |
+| Reading a file page by page, with a model for a page without text, is one service in `ai` | Two modules need it: `search` for decks, `matching` for a use case's attachments. `ai` already keeps the task and its model |
 | Reading pictures is its own task in Admin › AI ("Reading documents"), which takes only a model that reads images | Its cost is recorded apart from matching runs, it needs no reasoning, and the same model can be chosen for both. Proposed; to confirm |
 | A quote from a page a model read is shown as such | The words are the model's copy of the slide, not the file's own text; code still checks the quote against that copy |
 | A deck opens inside BeyondPilot at the page of a quote, on `react-pdf` as MemoryOS shows PDFs | Asked for by Đạt as a needed feature; the browser's own viewer does not open at a page on phones |
