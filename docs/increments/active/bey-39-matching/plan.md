@@ -5,9 +5,9 @@ Design: [design.md](design.md). Tracked in Linear as BEY-39. Nothing is coded be
 | # | Step | State |
 | --- | --- | --- |
 | 1 | The research note, this design and this plan | Done; waiting for approval |
-| 2 | **Source text.** The table of source pages with its full-text index; the one-off load of the imported decks' and websites' text (a script that writes SQL, run on staging), with lines repeated on every page of one website left out; extraction of a new deck's pages after its upload, in the background; a page without text read by a model from its picture, waiting when the provider's limit is reached; the imported decks' pages without text read the same way, started by an operator so the calls are spent when chosen | Not started |
+| 2 | **Source text, in `search`.** The table of passages with its full-text vector and its embedding; the one-off load of the imported decks' and websites' text (a script that writes SQL, run on staging), with lines repeated on every page of one website left out and web pages cut into passages; the embedding of passages by the queue `search` already runs; extraction of a new deck's pages after its upload, in the background; a page without text read by a model from its picture, waiting when the provider's limit is reached; the imported decks' pages without text read the same way, started by an operator so the calls are spent when chosen | Not started |
 | 3 | **Requirements.** The model lists a use case's capabilities and constraints, each with the passage it comes from; prompt version 1 is the probe's, with one function per capability in neutral words | Not started |
-| 4 | **Candidates.** A read in `search` that answers solutions for a query up to a limit, unlisted included; the keyword search over source pages; the two fused by rank; the 40 first | Not started |
+| 4 | **Candidates.** A read in `search` that answers the solutions for a set of queries, unlisted included: the search over profiles and the search over passages, each by keywords and by meaning, fused by rank; the 40 first | Not started |
 | 5 | **Judgment.** One call per candidate through `AiModels.chat`, typed answer with a retry when it does not fit; the check of each quote and the buckets in plain code, tested with the probe's saved answers | Not started |
 | 6 | **The run.** Started when a use case is approved and by an operator; four judgments at a time; waits when the provider's limit is reached; each step's counts, calls, tokens and time stored; a stopped run continues | Not started |
 | 7 | **People's decisions.** Shortlist, remove with a reason, restore, add a solution by hand; audited; never changed by a run | Not started |
@@ -40,6 +40,7 @@ If 16 October is at risk, what goes first is step 11, then step 10 (a quote then
 | --- | --- | --- |
 | A read of a solution's customer cases and deck file in `solution`, and of a use case's full text in `usecase` | Steps 4 and 5 | Small and read-only; to agree with Việt and Nhật, who own those modules |
 | The text of the imported decks and websites | Step 2 | On a team machine (`BeyondPilot-bey74/.tmp/enrich/full/sources`); never committed |
+| The embedding of about 22,000 passages | Step 2 | Through the embedding provider set on staging; about 7 million tokens, about a dollar at the model's list price |
 | A model chosen for Matching, and one that reads images for Reading documents, in Admin › AI | Every run; every page without text | Matching is set on staging: `cx/gpt-6.1-sol` through 9Router, which reads images too. Production has no provider and no encryption key yet |
 | The calls to read the imported pages without text | Step 2 | About 1,230 pages, or 779 if only the decks that are mostly pictures are read; about 1,200 tokens in per page. Started by an operator, since the route allows about 330 calls an hour |
 | GenAI Fund's own longlists | Measuring the buckets | Asked in BEY-41 |

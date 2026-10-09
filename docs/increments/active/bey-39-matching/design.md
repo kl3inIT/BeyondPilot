@@ -12,7 +12,7 @@ This is the brief's "early recommendations" and the catalogue half of "formal ev
 
 1. A use case is approved. BeyondPilot starts a **run** for it; an operator can start one again later.
 2. The run lists the use case's **requirements** from its text: the **capabilities** a product must have, and the **constraints** it would be delivered under (where it runs, what it integrates with, standards, where data is kept, targets). Each names the passage of the brief it comes from.
-3. The run finds about 40 **candidates**: approved solutions, listed or not, found by the existing search and by a keyword search over the text of decks and websites.
+3. The run finds about 40 **candidates**: approved solutions, listed or not, found by the existing search over profiles and by a search over the **passages** of decks and websites, by keywords and by meaning.
 4. For each candidate the model reads its **sources** and answers per requirement: met, partly, or not shown, with a **quote** and the source it is in.
 5. Code checks each quote against the sources. A quote that is not there lowers its finding to "not shown". Code then places the candidate in a **bucket** (Direct, Industry, Technology, or none) and orders the bucket.
 6. The use case's organization and the operators see the candidates appear while the run goes on, each with its findings. A quote from a deck opens the deck at that page.
@@ -37,6 +37,7 @@ Failure and recovery:
 | Constraint | A condition on how the solution is delivered or bought. Shown as "to confirm"; it never decides the bucket |
 | Source | A part of a solution's own material: its profile, a customer case, a page of its deck, a page of its website |
 | Source page | The text of one page of a deck or of a website, with its page number or address, and how it was read: taken from the file's own text, or read by a model from the picture of the page |
+| Passage | A piece of a source page short enough to be searched and embedded: one slide of a deck, or a part of a web page of about 2,000 characters. It keeps the page number or the address it comes from |
 | Candidate | One solution for one use case, with how it got there (recommended, or added by an operator) |
 | Finding | The answer for one requirement of one candidate: met, partly or not shown, with a quote and its source |
 | Quote | A sentence copied word for word from a source. Code confirms it is there |
@@ -52,43 +53,51 @@ A **candidate** is not an **applicant**. A proposal a provider sent goes through
 | Start a run | The system when a use case is approved; an operator | A run exists for the use case | One run per use case at a time; a second start while one runs is refused |
 | Add a solution by hand | An operator | A candidate with the source "added by GenAI Fund" | An approved solution not already a candidate |
 | Shortlist, remove with a reason, restore | An operator; a member of the use case's organization (restore only what they removed) | A decision, recorded with who and when; audited | A removed candidate leaves the shortlist |
-| Load the saved text of imported solutions | An operator, once per environment | Source pages for those solutions | A second load of the same text changes nothing |
+| Load the saved text of imported solutions | An operator, once per environment | Passages for those solutions, kept by `search` | A second load of the same text changes nothing |
 
 Reactions, after commit and idempotent:
 
 - `UseCaseChanged`: when the use case is approved, or its text changed since the last run, a run is queued.
-- `SolutionChanged`: when the deck file changed, its pages are extracted again; when the solution is no longer approved, its candidates are hidden.
+- `SolutionChanged`: `search` extracts the deck again when its file changed, and replaces its passages; `matching` hides the candidates of a solution that is no longer approved.
 
 A run is not a transaction. Each step saves what it produced, and each judged candidate is saved when its judgment ends, so a stop loses at most the judgments in flight.
 
 ## Data and invariant owner
 
-A new module, `matching`, owns six tables. No other module reads them.
+A new module, `matching`, owns five tables. No other module reads them.
 
 | Table | Holds | Invariant |
 | --- | --- | --- |
-| `matching_source_page` | One page of a solution's deck or website: the solution, the source (`deck` or `website`), the page number or the address, the text, how it was read (`text` or `model`), when it was extracted and what it was extracted from; a full-text index over the text | The pages of one source of one solution are replaced together |
 | `matching_requirement` | The requirements of a use case as last extracted: kind, necessity, statement, quote, and the hash of the text they came from | Replaced together when the use case's text changes |
 | `matching_run` | A run: use case, state, who started it, the prompt version, the models used, when it started and ended, the kind of failure | At most one running per use case |
 | `matching_run_step` | One step of a run: its name and order, how many it took in and gave out, the calls, the tokens and the time | Written by the run only |
 | `matching_candidate` | One solution for one use case: its origin, its bucket, how many required capabilities are met, the findings with their quotes and the state of each quote, the model's one-line reason, and the fingerprint of what was judged | Unique per use case and solution |
 | `matching_decision` | Each decision on a candidate: shortlisted, removed (reason, note), restored; who and when | Append-only; a candidate's current state is its last decision |
 
+The text of decks and websites is kept by `search`, in one new table, because it is searched and embedded with the index `search` already keeps and must be embedded again when operators change the embedding model:
+
+| Table | Holds | Invariant |
+| --- | --- | --- |
+| `search_passage` | One passage of a solution's deck or website: the solution, the source (`deck` or `website`), the page number or the address, its place on the page, the text, how it was read (`text` or `model`), what it was extracted from, its full-text vector and its embedding with the queue columns `search_document` has | The passages of one source of one solution are replaced together. The public search never reads this table |
+
+A deck's passages can be made again from its file. The website passages of imported solutions are loaded once and cannot be made again until BEY-99 reads websites, so the nightly rebuild of the index leaves passages alone.
+
 The use case's own `use_case_requirement` rows stay with `usecase`. Where an organization wrote them, matching starts from them; it never writes them.
 
 ## Context map
 
-`matching` is a closed Spring Modulith module. It depends on `ai`, `search`, `solution`, `usecase`, `organization`, `storage`, `identity` and `audit`; nothing depends on it.
+`matching` is a closed Spring Modulith module. It depends on `ai`, `search`, `solution`, `usecase`, `organization`, `identity` and `audit`; nothing depends on it. `search` gains no new dependency: it already depends on `ai` and `solution`.
 
 | Needs | From | How |
 | --- | --- | --- |
 | A chat client for a task, every call recorded | `ai` | `AiModels.chat(task, subject)`; the subject is the run |
-| Solutions that match a query, unlisted included, more than one page | `search` | A new read beside `findForOperators`, answering identifiers up to a limit |
+| The solutions that match a set of queries, unlisted included, from profiles and from passages, up to a limit | `search` | A new read beside `findForOperators` |
+| The passages of a solution, to give the model and to check quotes against | `search` | A new read |
 | An approved solution's profile | `solution` | `SolutionDirectory.indexed(id)`, as search reads it |
-| A solution's customer cases and its deck file | `solution` | **New reads in `solution`'s published API** |
+| A solution's customer cases | `solution` | **A new read in `solution`'s published API** |
+| A solution's deck file, for `search` to extract its pages | `solution` | **A new read in `solution`'s published API**, used by `search` |
 | A use case's full text, problem statement included | `usecase` | **A new read in `usecase`'s published API**: `indexed` leaves the problem statement out on purpose |
 | Who belongs to the use case's organization | `organization` | `Membership` |
-| The bytes of a deck | `storage` | Through the read `solution` publishes |
 | The record of a decision | `audit` | `AuditTrail` |
 
 The two new reads are in modules Việt and Nhật own; they are small and read-only, and are agreed with them before they are written.
@@ -100,9 +109,10 @@ HTTP, under `/api/matching`: the candidates of a use case with its run and requi
 | Decision | Why |
 | --- | --- |
 | Requirements in two kinds, capability and constraint; a capability is one function in neutral words | The probe: with targets, hardware and standards among the required items nobody reached Direct; with compound or industry-bound capabilities the right vendors were only "partly" |
-| Candidates from the existing search joined with a keyword search over deck and website text, fused by rank; about 40 are judged | The probe: for a general business need the best candidates were not among the 100 nearest to the brief, and the document text found them. Seven in ten judgments of a wider pool were wasted |
-| The text of decks and websites is kept page by page in `matching`, as plain text exactly as extracted; no model cleans or rewrites it | A quote must be the vendor's own words, and code checks it against this text. `pdftotext` made the 734 deck texts that exist, and the model quoted from them word for word |
-| That text is searched by keywords in Postgres; it is not embedded yet | What the probe measured is a keyword search. Embedding it means chunks, a vector column and a queue; it is added if a measure shows keywords miss |
+| Candidates from the existing search over profiles joined with a search over the passages of decks and websites, fused by rank; about 40 are judged | The probe: for a general business need the best candidates were not among the 100 nearest to the brief, and the document text found them. Seven in ten judgments of a wider pool were wasted |
+| The text of decks and websites is kept as passages in `search`, as plain text exactly as extracted; no model cleans or rewrites it | A quote must be the vendor's own words, and code checks it against this text. `pdftotext` made the 734 deck texts that exist, and the model quoted from them word for word. `search` keeps them because it owns the index, the embedding queue and the rule that a new embedding model embeds everything again |
+| Passages are searched by keywords and by meaning, with the embedding model `search` already uses, and fused by rank with the search over profiles | Corrected on 9 October after Đạt asked why nothing was embedded. The probe found the missing candidates with a keyword search fed by queries the model wrote; with the requirements themselves as the query, keywords alone would miss a vendor who says the same thing in other words. Meaning covers that without a model call per run, the index is already hybrid for the same reason, and embedding all passages costs about a dollar. Not measured yet: the probe had no embedding key |
+| A slide is one passage; a web page is cut into passages of about 2,000 characters at line ends | A slide has a median of 550 characters. A web page has a median of 3,300 and up to 130,000, too long for one vector to mean one thing |
 | The model judges one candidate per call and answers per requirement with a quote and its source, the quote before the status | candisift, fire-enrich, Exa Websets: evidence first, and nothing to hide behind a score |
 | Code decides the bucket and the order; it only lowers what the model said | candisift's guard. The hand method's rules are short enough to be code, and code can be tested and changed in one place |
 | Direct: every required capability is met. Industry: a similar workflow delivered in the use case's industry and at least one capability shown. Technology: the named technology or a capability met. Inside a bucket, more capabilities met comes first | The hand method ("an unverified essential capability disqualifies Direct"; "an empty Direct is acceptable"). This is the first version of the rule: it is confirmed or changed when GenAI Fund's own longlists arrive (BEY-41) |
@@ -122,7 +132,7 @@ HTTP, under `/api/matching`: the candidates of a use case with its run and requi
 
 - **Reading the website of a newly registered solution** (BEY-99, through Firecrawl as MemoryOS does). Until then a new solution is judged on its profile, customer cases and deck.
 - **Judging the proposals a provider sent** against the use case. Proposals belong to programs today.
-- **Queries written by the model**, a **second model that checks the first**, and **embeddings of the document text**: each waits for a measure that shows the need.
+- **Queries written by the model** and a **second model that checks the first**: each waits for a measure that shows the need.
 - **Research on the open web**, outreach, and the operators' MCP tools for candidates (BEY-78).
 - **A score.**
 
