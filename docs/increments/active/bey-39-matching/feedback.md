@@ -33,7 +33,7 @@ Nobody knows whether matching judges well. Measured on 9 October: the same answe
 | A member reads their own answer; operators read all | It is a measure for GenAI Fund. A colleague's view shown on the row would read as a second verdict beside the AI's |
 | "Not a fit" stays a decision of its own and is not counted as feedback | Removing has reasons that say nothing about the AI ("listed twice", "company closed") |
 | Kept in `matching`, in a table of its own, not audited | It decides nothing and changes no state another module reads. The table is the record |
-| The summary is on Admin › AI › Matching, under the settings | That screen exists and is where an operator tunes matching; a screen of its own would be an empty shell for now |
+| The summary is in a tab of its own on Admin › AI › Matching | A form that is saved and a list that is read are two tasks |
 
 ## Data
 
@@ -55,7 +55,7 @@ A candidate that is not the caller's reads as `MATCHING_CANDIDATE_NOT_FOUND`, as
 
 - **Panel**, under the evidence and above the two decisions: "Is this the right group?" with **Yes** and **No**. After Yes: "You agreed." with **Change**. After No, in place: the four groups as choices (the AI's own left out), "Which requirement did the AI get wrong?" as optional checkboxes when the use case has more than one requirement, a note (optional, 500), **Send** and **Cancel**. After sending: "You said: Strong fit." with **Change**. English and Vietnamese; 44px targets on touch; nothing here moves the row.
 - **Operator's panel** adds one line when others answered: "3 answers, 1 disagrees".
-- **Admin › AI › Matching**, a second section "What people said about the AI's groups": answers and agreement over 30 days, then the disagreements as a table that becomes cards on a phone, each linking to the use case's matched solutions with that solution open. Empty state: "Nobody has answered yet."
+- **Admin › AI › Matching**, a second tab, Feedback, beside Limits: answers and agreement over 30 days, then the disagreements as a table that becomes cards on a phone, each linking to the use case's matched solutions with that solution open. Empty state: "Nobody has answered yet."
 
 ## Left out
 
@@ -71,7 +71,7 @@ A candidate that is not the caller's reads as `MATCHING_CANDIDATE_NOT_FOUND`, as
 | 2 | Migration, repository, `MatchingService.feedback`, the two reads; tests at the repository and over HTTP (member, stranger, operator, not judged, same group refused, a new judgment asks again) |
 | 3 | `openapi.yml` and the generated web client |
 | 4 | The panel's question, with the stub and browser tests (answer Yes, answer No with a group, change, axe on desktop and phone) |
-| 5 | The section on Admin › AI › Matching, with its browser test |
+| 5 | The Feedback tab of Admin › AI › Matching, with its browser test |
 
 ## Verification
 
