@@ -302,6 +302,18 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 - Dates and times are formatted through next-intl in `Asia/Ho_Chi_Minh`. Deadlines always show their time zone.
 - Backend failures are shown by translating the problem `code`; backend text is never displayed.
 
+### Help text
+
+The words that explain a screen: the line under a title, the hint under a field, a note beside an action. What each rule rests on is in the [research note](research/2026-10-10-help-text.md).
+
+- Text that repeats its label or title is removed, not moved. Help text answers a question the reader has at that point.
+- What most people need to act correctly is shown where they act: the format a field takes, a limit, a deadline.
+- Help text that is shown is one short sentence without a link.
+- What an action leads to is shown beside the action: that it cannot be changed afterwards, who reads what is written, who is emailed.
+- What only some people need, such as what a term means, is behind a control that opens on a click or a tap: a disclosure or a popover.
+- A tooltip that opens on hover holds no information. It names a control that is only an icon, and nothing else.
+- A placeholder is not a hint or an example: it leaves when typing starts, and it reads as a value already there.
+
 ### Errors, loading and empty states
 
 - `src/app/global-error.tsx` and an `error.tsx` per area show safe copy, Next's `digest` as a reference, and a retry action. Each area has a `not-found.tsx`; unknown paths under a locale render the localized not-found page through `[...rest]`.
