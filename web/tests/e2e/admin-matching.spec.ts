@@ -105,6 +105,17 @@ test.describe("admin matching settings", () => {
       "After an edit",
       "Runs per day",
     ]);
+    // Two tabs, each a page of its own; this one is Limits.
+    const tabs = page.getByRole("main").getByRole("navigation", { name: "Matching" });
+    await expect(tabs.getByRole("link")).toHaveText(["Limits", "Feedback"]);
+    await expect(tabs.getByRole("link", { name: "Limits" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(tabs.getByRole("link", { name: "Feedback" })).toHaveAttribute(
+      "href",
+      "/admin/ai/matching/feedback",
+    );
     const limit = (name: string) => page.getByRole("textbox", { name, exact: true });
     const atOnce = limit("Solutions read at once");
     await expect(atOnce).toHaveValue("8");
@@ -205,5 +216,148 @@ test.describe("admin matching settings", () => {
       [3, 16, 40],
       [4, 16, 60],
     ]);
+  });
+
+  test("nobody but an operator gets the feedback", async ({ page, context, baseURL }) => {
+    const visitor = await page.request.get("/admin/ai/matching/feedback", { maxRedirects: 0 });
+    expect(visitor.status()).toBe(307);
+
+    await signInAs(context, "unnamed", baseURL!);
+    expect((await page.goto("/admin/ai/matching/feedback"))?.status()).toBe(404);
+  });
+
+  test("switching tab with a limit unsaved asks first", async ({ page, context, baseURL }) => {
+    await signInAs(context, "operator", baseURL!);
+    await answerSettings(page, kept);
+    await openSettings(page);
+    const tabs = page.getByRole("main").getByRole("navigation", { name: "Matching" });
+
+    await page.getByRole("textbox", { name: "Solutions read at once", exact: true }).fill("12");
+    await tabs.getByRole("link", { name: "Feedback" }).click();
+    const asking = page.getByRole("alertdialog", { name: "Leave without saving?" });
+    await expect(asking).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+    // Staying keeps the page and the number that was typed.
+    await asking.getByRole("button", { name: "Stay" }).click();
+    await expect(asking).toHaveCount(0);
+    await expect(page).toHaveURL(/\/admin\/ai\/matching$/);
+    await expect(
+      page.getByRole("textbox", { name: "Solutions read at once", exact: true }),
+    ).toHaveValue("12");
+
+    // Leaving opens the other tab.
+    await tabs.getByRole("link", { name: "Feedback" }).click();
+    await asking.getByRole("button", { name: "Leave" }).click();
+    await expect(page).toHaveURL(/\/admin\/ai\/matching\/feedback$/);
+    await expect(
+      page
+        .getByRole("main")
+        .getByRole("navigation", { name: "Matching" })
+        .getByRole("link", { name: "Feedback" }),
+    ).toHaveAttribute("aria-current", "page");
+  });
+
+  test("an operator reads how often people agreed with the AI's groups, and each disagreement", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    // With nothing unsaved, the tab opens at once.
+    await openSettings(page);
+    await page
+      .getByRole("main")
+      .getByRole("navigation", { name: "Matching" })
+      .getByRole("link", { name: "Feedback" })
+      .click();
+    await expect(page).toHaveURL(/\/admin\/ai\/matching\/feedback$/);
+    await expect(page.getByRole("alertdialog")).toHaveCount(0);
+
+    const said = page.getByRole("main");
+    await expect(said.getByRole("heading", { level: 1 })).toHaveText("Matching");
+    const tabs = said.getByRole("navigation", { name: "Matching" });
+    await expect(tabs.getByRole("link", { name: "Feedback" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(tabs.getByRole("link", { name: "Limits" })).toHaveAttribute(
+      "href",
+      "/admin/ai/matching",
+    );
+    if (!isMobile) {
+      // The sidebar has one entry for both tabs.
+      await expect(
+        page
+          .getByRole("navigation", { name: "Admin navigation" })
+          .getByRole("link", { name: "Matching" }),
+      ).toHaveAttribute("aria-current", "page");
+    }
+    await expect(said.getByText("3 of 5 answers agreed in the last 30 days")).toBeVisible();
+    await expect(said.getByText("2 disagreements")).toBeVisible();
+    // A table from 768px, one stacked row an answer below that.
+    const rows = isMobile
+      ? said.getByRole("list").getByRole("listitem")
+      : said
+          .getByRole("table")
+          .getByRole("row")
+          .filter({ has: page.getByRole("cell") });
+    await expect(rows).toHaveCount(2);
+    if (!isMobile) {
+      await expect(said.getByRole("columnheader")).toHaveText([
+        "Solution",
+        "AI's group",
+        "Their group",
+        "Requirements the AI got wrong",
+        "Note",
+        "Who and when",
+      ]);
+    }
+    // A disagreement says the two groups, the requirements by name, the note, who and when. A
+    // requirement of an earlier judgment is named by its place.
+    const docbase = rows.filter({ hasText: "Docbase" });
+    await expect(docbase.getByText("Claims triage")).toBeVisible();
+    await expect(docbase.getByText("Right technology, less proof")).toBeVisible();
+    await expect(docbase.getByText("Strong fit")).toBeVisible();
+    await expect(docbase.getByText("Read documents, Requirement 2")).toBeVisible();
+    await expect(docbase.getByText("They read claim forms for two insurers.")).toBeVisible();
+    await expect(docbase.getByText("Minh Trần")).toBeVisible();
+    await expect(docbase.locator("time")).toHaveAttribute("datetime", "2026-10-09T04:00:00Z");
+    // One about a use case that is no longer published has nowhere to open.
+    const peakflo = rows.filter({ hasText: "Peakflo" });
+    await expect(peakflo.getByText("Not a fit")).toBeVisible();
+    await expect(peakflo.getByRole("link")).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+
+    // It links to the solutions matched to the use case, with that solution open, even where its group
+    // would fold it away.
+    const link = docbase.getByRole("link", { name: "Docbase" });
+    await expect(link).toHaveAttribute(
+      "href",
+      "/admin/use-cases/0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0011/candidates?solution=c4d1d47e-0000-4000-8000-000000000003",
+    );
+    await link.click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Claims triage");
+    const panel = isMobile
+      ? page.getByRole("dialog")
+      : page.getByRole("complementary", { name: "The solution you picked" });
+    await expect(panel.getByRole("heading", { level: 2, name: "Docbase" })).toBeVisible();
+  });
+
+  test("where nobody has answered, the feedback tab says so and lists nothing", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    // The operator of another deployment (tests/e2e/stub-matching.mjs).
+    await signInAs(context, "emailer", baseURL!);
+    await page.goto("/admin/ai/matching/feedback");
+
+    const said = page.getByRole("main");
+    await expect(said.getByText("Nobody has answered yet.")).toBeVisible();
+    await expect(said.getByText(/answers agreed/)).toHaveCount(0);
+    await expect(said.getByRole("table")).toHaveCount(0);
+    await expect(said.getByRole("list")).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
   });
 });

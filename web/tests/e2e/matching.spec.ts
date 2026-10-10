@@ -109,6 +109,13 @@ const counts = (page: Page, name: string) =>
 const row = (page: Page, name: string) => page.getByRole("listitem").filter({ hasText: name });
 const rowName = (page: Page, name: string) => page.getByRole("button", { name, exact: true });
 const group = (page: Page, name: string) => page.getByRole("region", { name, exact: true });
+/** The one line of the vendor's words on a row, and the chip that says where they come from. */
+const rowQuote = (page: Page, name: string) =>
+  row(page, name).locator('[data-slot="matching-row-quote"]');
+const rowSource = (page: Page, name: string) =>
+  row(page, name).locator('[data-slot="matching-source"]');
+/** The tick that says code found a quote in its source word for word. */
+const foundTick = '[data-slot="matching-found"]';
 /** The header of the last group, which folds: its name and how many it holds. */
 const lastGroupHeader = (page: Page) =>
   page.getByRole("button", { name: /^Right technology, less proof\s*\d+$/ });
@@ -159,7 +166,7 @@ test.describe("solutions matched to a use case", () => {
         "Similar work in your industry; part of the requirement shown.",
       ],
       ["Right technology, less proof", "Right technology; part of the requirement shown."],
-      ["Not reviewed yet", "GenAI Fund added these by hand. AI reads them in the next run."],
+      ["Not reviewed yet", "AI reads these in the next run."],
     ]) {
       await expect(group(page, name).getByRole("heading", { level: 2 })).toContainText(name);
       await expect(group(page, name).getByText(about)).toBeVisible();
@@ -171,15 +178,23 @@ test.describe("solutions matched to a use case", () => {
     await expect(page.getByRole("button", { name: "More", exact: true })).toHaveCount(0);
 
     // A row counts, over the three capabilities asked for, what the solution meets, meets in part and
-    // has no evidence for; then the AI's sentence and where the solution is from. The vendor's words
-    // are in the panel.
+    // has no evidence for; then one line of the vendor's words for the must-have, with where they come
+    // from, and where the solution is from. The AI's sentence is in the panel.
     const staple = row(page, "Staple AI");
     await expect(counts(page, "Staple AI")).toHaveText("1 met · 1 partly · 1 no evidence");
     await expect(counts(page, "Sentosa Finance")).toHaveText("1 met · 1 partly · 1 no evidence");
-    await expect(staple.getByText("It reads claim documents in production today.")).toBeVisible();
+    await expect(rowQuote(page, "Staple AI").locator("q")).toHaveText(
+      "extracts and verifies the content",
+    );
+    // A web page is named by its host, a customer case by its number; the chip is not a control.
+    await expect(rowSource(page, "Staple AI")).toHaveText("staple.ai");
+    await expect(rowSource(page, "Sentosa Finance")).toHaveText("Customer case 1");
+    await expect(staple.getByRole("link")).toHaveCount(0);
+    await expect(staple.locator("img[src^='http']")).toHaveCount(0);
+    await expect(staple.getByText("It reads claim documents in production today.")).toHaveCount(0);
     await expect(staple.getByText("Singapore · In production")).toBeVisible();
     await expect(staple.getByText("Website could not be read")).toBeVisible();
-    await expect(staple.getByText("extracts and verifies the content")).toHaveCount(0);
+    await expect(rowQuote(page, "Kira Claims")).toHaveCount(0);
     await expect(staple.getByRole("button", { name: "Save", exact: true })).toBeVisible();
     // A solution an operator added by hand carries no mark of its own: every solution here is on BeyondPilot.
     await expect(row(page, "Kira Claims").getByText("Added by GenAI Fund")).toHaveCount(0);
@@ -188,6 +203,21 @@ test.describe("solutions matched to a use case", () => {
     await expect(row(page, "Sentosa Finance").getByText(/could not be read/)).toHaveCount(0);
     await picture(page, testInfo, "list");
 
+    // What the run did stays behind one line: its stages, each with a number the member is answered,
+    // and neither the model nor how long a stage took.
+    await expect(page.getByRole("list", { name: "How AI found these" })).toHaveCount(0);
+    await page.getByRole("button", { name: "How AI found these" }).click();
+    await expect(
+      page.getByRole("list", { name: "How AI found these" }).getByRole("listitem"),
+    ).toHaveText([
+      "Read the brief: 3 requirements",
+      "Searched the solutions on BeyondPilot",
+      "Read 6 solutions closely",
+      "3 match",
+    ]);
+    await expectNoSeriousA11yViolations(page);
+    await picture(page, testInfo, "how-ai-found");
+
     // The last group shows its header alone until it is opened.
     await expect(rowName(page, "Docbase")).toHaveCount(0);
     await expect(lastGroupHeader(page)).toHaveAttribute("aria-expanded", "false");
@@ -195,6 +225,8 @@ test.describe("solutions matched to a use case", () => {
     await expect(rowName(page, "Docbase")).toBeVisible();
     // A count of zero is left out.
     await expect(counts(page, "Docbase")).toHaveText("1 partly · 2 no evidence");
+    // A web page whose address is not kept is named as the website.
+    await expect(rowSource(page, "Docbase")).toHaveText("Website");
 
     // Beside the list from 1280px; in a sheet that opens when a row is chosen below that.
     if (isMobile) {
@@ -228,8 +260,13 @@ test.describe("solutions matched to a use case", () => {
     await expect(panel.getByText("It flags, it does not check rules.")).toBeVisible();
     await expect(panel.getByText("flags unusual invoices")).toBeVisible();
     // Where the words come from is something to open: the deck in the app, the web page at its address.
-    await expect(panel.getByRole("button", { name: "From their deck, page 2" })).toBeVisible();
-    await expect(panel.getByRole("link", { name: "From their website · staple.ai" })).toBeVisible();
+    // Words code found there word for word say so, with a tick: that they are in the vendor's material.
+    const inDeck = panel.getByRole("button", { name: "Found in their deck, page 2" });
+    await expect(inDeck.locator(foundTick)).toHaveCount(1);
+    await expect(
+      panel.getByRole("link", { name: "Found on their website · staple.ai" }).locator(foundTick),
+    ).toHaveCount(1);
+    await expect(panel.getByText(/^From their (deck|website)/)).toHaveCount(0);
     // On a phone the panel is a sheet over the window.
     await picture(page, testInfo, "panel", !isMobile);
 
@@ -242,9 +279,11 @@ test.describe("solutions matched to a use case", () => {
     await expect(panel.getByText("SAP connector available")).toBeVisible();
     // The one line at the top of the list says the AI read the vendors' own material; it is not said again.
     await expect(panel.getByText(/nobody has checked it/)).toHaveCount(0);
-    await expect(
-      panel.getByRole("link", { name: "From their BeyondPilot profile" }),
-    ).toHaveAttribute("href", "/solutions/staple-ai");
+    // Words code did not find carry no mark: the line says where the AI read them, as before.
+    const profile = panel.getByRole("link", { name: "From their BeyondPilot profile" });
+    await expect(profile).toHaveAttribute("href", "/solutions/staple-ai");
+    await expect(profile.locator(foundTick)).toHaveCount(0);
+    await expect(panel.getByText("Found in their profile")).toHaveCount(0);
     await expect(panel.getByRole("button", { name: "Save", exact: true })).toBeVisible();
     await expect(panel.getByRole("button", { name: "Not a fit…" })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
@@ -255,6 +294,246 @@ test.describe("solutions matched to a use case", () => {
     await expect(panel.getByText("Indonesia · At scale")).toBeVisible();
     await expect(panel.getByText("An insurer uses it for invoices.")).toBeVisible();
     await expect(panel.getByText("Experience in your industry", { exact: true })).toHaveCount(0);
+    // Words that are only close to the vendor's say so, before the source the AI named.
+    await expect(panel.getByText("Close to their words")).toHaveCount(1);
+    const nearly = panel.getByRole("button", { name: "From their deck, page 3" });
+    await expect(nearly.locator(foundTick)).toHaveCount(0);
+    await expect(
+      panel.getByRole("link", { name: "Found in their customer case 1" }).locator(foundTick),
+    ).toHaveCount(1);
+    await expectNoSeriousA11yViolations(page);
+    await picture(page, testInfo, "found-and-close", !isMobile);
+  });
+
+  test("a member says whether the AI put a solution in the right group", async ({
+    page,
+    context,
+    baseURL,
+    request,
+    isMobile,
+  }, testInfo) => {
+    await signInAs(context, "owner", baseURL!);
+    const state = await matchingAs(request, "owner");
+    const sent: Record<string, unknown>[] = [];
+    await page.route("**/api/matching/candidates/*/feedback", async (route) => {
+      expect(route.request().headers()["x-beyondpilot-csrf"]).toBe("1");
+      expect(new URL(route.request().url()).pathname).toBe(
+        `/api/matching/candidates/${candidateId(1)}/feedback`,
+      );
+      const body = route.request().postDataJSON() as Record<string, unknown>;
+      sent.push(body);
+      // The backend answers the whole state, with the reader's answer on the solution.
+      await route.fulfill({
+        json: withCandidate(state, "Staple AI", {
+          feedback: {
+            agrees: body.agrees,
+            expectedBucket: body.expectedBucket ?? null,
+            requirements: body.requirements ?? [],
+            note: body.note ?? null,
+            createdAt: "2026-10-10T03:00:00Z",
+          },
+        }),
+      });
+    });
+    await page.goto(memberPath);
+    if (isMobile) {
+      await rowName(page, "Staple AI").click();
+    }
+    const panel = isMobile
+      ? page.getByRole("dialog")
+      : page.getByRole("complementary", { name: "The solution you picked" });
+    await expect(panel.getByRole("heading", { level: 2, name: "Staple AI" })).toBeVisible();
+
+    // One question, with two answers. Yes is one press, and the panel says it back.
+    const question = panel.getByRole("region", { name: "Is this the right group?" });
+    await expect(question.getByText("Is this the right group?")).toBeVisible();
+    await question.getByRole("button", { name: "Yes", exact: true }).click();
+    await expect(question.getByText("You agreed.")).toBeVisible();
+    expect(sent).toEqual([{ agrees: true }]);
+    await expect(question.getByRole("button", { name: "Yes", exact: true })).toHaveCount(0);
+    // A member reads their own answer and no count of anyone else's.
+    await expect(question.getByText(/answers?,/)).toHaveCount(0);
+
+    // Change asks again. No opens the groups it may belong in, the AI's own left out, and what the AI
+    // got wrong; nothing is sent without a group.
+    await question.getByRole("button", { name: "Change" }).click();
+    await question.getByRole("button", { name: "No", exact: true }).click();
+    const where = question.getByRole("group", { name: "Where does it belong?" });
+    await expect(where.getByRole("button")).toHaveText([
+      "Experience in your industry",
+      "Right technology, less proof",
+      "Not a fit",
+    ]);
+    const send = question.getByRole("button", { name: "Send" });
+    await expect(send).toBeDisabled();
+    await where.getByRole("button", { name: "Experience in your industry" }).click();
+    const which = question.getByRole("group", {
+      name: "Which requirement did the AI get wrong? (optional)",
+    });
+    await expect(which.getByRole("checkbox")).toHaveCount(3);
+    await which.getByRole("checkbox", { name: "Check rules" }).click();
+    await question.getByRole("textbox", { name: "Note (optional)" }).fill("Invoices only, so far.");
+    await expectNoSeriousA11yViolations(page);
+    await picture(page, testInfo, "feedback", !isMobile);
+    await send.click();
+
+    await expect(question.getByText("You said: Experience in your industry.")).toBeVisible();
+    expect(sent[1]).toEqual({
+      agrees: false,
+      expectedBucket: "industry",
+      requirements: [2],
+      note: "Invoices only, so far.",
+    });
+    // Nothing moved: the solution is where the AI put it. (On a phone the sheet covers the list.)
+    if (!isMobile) {
+      await expect(
+        group(page, "Strong fit").getByRole("button", { name: "Staple AI", exact: true }),
+      ).toHaveCount(1);
+    }
+    await expectNoSeriousA11yViolations(page);
+
+    // Cancel leaves the answer as it was.
+    await question.getByRole("button", { name: "Change" }).click();
+    await question.getByRole("button", { name: "No", exact: true }).click();
+    await question.getByRole("button", { name: "Cancel" }).click();
+    await expect(question.getByText("You said: Experience in your industry.")).toBeVisible();
+    expect(sent).toHaveLength(2);
+
+    // What the AI has not read has no group to ask about.
+    if (isMobile) {
+      await panel.getByRole("button", { name: "Close" }).click();
+    }
+    await rowName(page, "Kira Claims").click();
+    await expect(panel.getByRole("heading", { level: 2, name: "Kira Claims" })).toBeVisible();
+    await expect(panel.getByRole("region", { name: "Is this the right group?" })).toHaveCount(0);
+  });
+
+  test("the keys of an open solution step, save and ask why, and stand back under the deck", async ({
+    page,
+    context,
+    baseURL,
+    request,
+    isMobile,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await serveDecks(page);
+    const state = await matchingAs(request, "owner");
+    const asked: string[] = [];
+    await page.route("**/api/matching/candidates/**", async (route) => {
+      asked.push(new URL(route.request().url()).pathname.split("/").at(-1)!);
+      await route.fulfill({ json: withCandidate(state, "Staple AI", { decision: "shortlisted" }) });
+    });
+    await page.goto(memberPath);
+    if (isMobile) {
+      await rowName(page, "Staple AI").click();
+    }
+    const panel = isMobile
+      ? page.getByRole("dialog").filter({ hasNotText: /Deck, page \d/ })
+      : page.getByRole("complementary", { name: "The solution you picked" });
+    const open = (name: string) => panel.getByRole("heading", { level: 2, name });
+    await expect(open("Staple AI")).toBeVisible();
+
+    // The keys are said where the controls are: in their tooltip and to assistive technology.
+    const next = panel.getByRole("button", { name: "Next solution" });
+    await expect(next).toHaveAttribute("title", "Next solution (→)");
+    await expect(next).toHaveAttribute("aria-keyshortcuts", "ArrowRight");
+    await expect(panel.getByRole("button", { name: "Previous solution" })).toHaveAttribute(
+      "aria-keyshortcuts",
+      "ArrowLeft",
+    );
+    const save = panel.getByRole("button", { name: "Save", exact: true });
+    await expect(save).toHaveAttribute("title", "Save (S)");
+    await expect(save).toHaveAttribute("aria-keyshortcuts", "S");
+    await expect(panel.getByRole("button", { name: "Not a fit…" })).toHaveAttribute(
+      "aria-keyshortcuts",
+      "N",
+    );
+
+    // The arrows step through the solutions on the screen.
+    await page.keyboard.press("ArrowRight");
+    await expect(open("Sentosa Finance")).toBeVisible();
+    await page.keyboard.press("ArrowLeft");
+    await expect(open("Staple AI")).toBeVisible();
+    // At the first solution there is none before it.
+    await page.keyboard.press("ArrowLeft");
+    await expect(open("Staple AI")).toBeVisible();
+
+    // A key held with a modifier is the browser's or the reader's own.
+    await page.keyboard.press("Shift+S");
+    await page.keyboard.press("Alt+n");
+    expect(asked).toEqual([]);
+    // S saves.
+    await page.keyboard.press("s");
+    await expect(page.getByText("Staple AI is saved.")).toBeVisible();
+    expect(asked).toEqual(["shortlist"]);
+
+    // Under the deck's sheet the keys do nothing to the solution.
+    await panel.getByRole("button", { name: "Found in their deck, page 2" }).click();
+    const deck = deckSheet(page);
+    await expect(deck.getByText("Deck, page 2 of 3")).toBeVisible();
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("s");
+    await page.keyboard.press("n");
+    await expect(deck.getByText("Deck, page 2 of 3")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(deck).toHaveCount(0);
+    await expect(open("Staple AI")).toBeVisible();
+    await expect(page.getByRole("region", { name: "Why is Staple AI not a fit?" })).toHaveCount(0);
+    expect(asked).toEqual(["shortlist"]);
+
+    // A letter typed in a field is a letter.
+    const question = panel.getByRole("region", { name: "Is this the right group?" });
+    await question.getByRole("button", { name: "No", exact: true }).click();
+    const note = question.getByRole("textbox", { name: "Note (optional)" });
+    await note.pressSequentially("sn");
+    await expect(note).toHaveValue("sn");
+    await note.press("ArrowLeft");
+    await expect(open("Staple AI")).toBeVisible();
+    expect(asked).toEqual(["shortlist"]);
+    await question.getByRole("button", { name: "Cancel" }).click();
+
+    // N asks why the solution is not a fit, in the place of its row.
+    await page.keyboard.press("n");
+    await expect(page.getByRole("region", { name: "Why is Staple AI not a fit?" })).toBeVisible();
+  });
+
+  test("an operator reads how many people answered about a group", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto(adminPath);
+    if (isMobile) {
+      await rowName(page, "Staple AI").click();
+    }
+    const panel = isMobile
+      ? page.getByRole("dialog")
+      : page.getByRole("complementary", { name: "The solution you picked" });
+    await expect(panel.getByRole("heading", { level: 2, name: "Staple AI" })).toBeVisible();
+    const question = panel.getByRole("region", { name: "Is this the right group?" });
+    await expect(question.getByText("3 answers, 1 disagrees")).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+    // Nobody answered about the next one, so nothing is counted there.
+    await panel.getByRole("button", { name: "Next solution" }).click();
+    await expect(panel.getByRole("heading", { level: 2, name: "Sentosa Finance" })).toBeVisible();
+    await expect(question.getByText("Is this the right group?")).toBeVisible();
+    await expect(question.getByText(/answers?,/)).toHaveCount(0);
+
+    // An operator reads, behind the same line as a member, how long each stage took and the model.
+    if (isMobile) {
+      await panel.getByRole("button", { name: "Close" }).click();
+    }
+    await page.getByRole("button", { name: "How AI found these" }).click();
+    await expect(
+      page.getByRole("list", { name: "How AI found these" }).getByRole("listitem"),
+    ).toHaveText([
+      /^Read the brief: 3 requirements\s*4 sec$/,
+      /^Searched the solutions on BeyondPilot\s*1 sec$/,
+      /^Read 6 solutions closely\s*claude-sonnet-4-5 · 3\.2 min$/,
+      "3 match",
+    ]);
   });
 
   test("a quote opens where it stands: the deck at its page, the website at its address", async ({
@@ -275,14 +554,14 @@ test.describe("solutions matched to a use case", () => {
     await expect(panel.getByRole("heading", { level: 2, name: "Staple AI" })).toBeVisible();
 
     // The page of the website the words come from, in a new tab, named by its host.
-    const website = panel.getByRole("link", { name: "From their website · staple.ai" });
+    const website = panel.getByRole("link", { name: "Found on their website · staple.ai" });
     await expect(website).toHaveAttribute("href", "https://www.staple.ai/platform");
     await expect(website).toHaveAttribute("target", "_blank");
     await expect(website).toHaveAttribute("rel", "noopener noreferrer");
 
     // The deck opens inside the app, at the page, with the words highlighted in the page's own text:
     // they run over a line end there, so two runs of text are marked.
-    const opener = panel.getByRole("button", { name: "From their deck, page 2" });
+    const opener = panel.getByRole("button", { name: "Found in their deck, page 2" });
     await opener.click();
     const deck = deckSheet(page);
     await expect(deck.getByRole("heading", { name: "Staple AI" })).toBeVisible();
@@ -328,10 +607,9 @@ test.describe("solutions matched to a use case", () => {
     await panel.getByRole("button", { name: "Next solution" }).click();
     await expect(panel.getByRole("heading", { level: 2, name: "Sentosa Finance" })).toBeVisible();
     // A customer case is read on the solution's page.
-    await expect(panel.getByRole("link", { name: "From customer case 1" })).toHaveAttribute(
-      "href",
-      "/solutions/sentosa-finance",
-    );
+    await expect(
+      panel.getByRole("link", { name: "Found in their customer case 1" }),
+    ).toHaveAttribute("href", "/solutions/sentosa-finance");
     await panel.getByRole("button", { name: "From their deck, page 3" }).click();
     await expect(deck.getByRole("heading", { name: "Sentosa Finance" })).toBeVisible();
     await expect(deck.getByText("Deck, page 3 of 3")).toBeVisible();
@@ -353,9 +631,9 @@ test.describe("solutions matched to a use case", () => {
     await lastGroupHeader(page).click();
     await rowName(page, "Docbase").click();
     await expect(panel.getByRole("heading", { level: 2, name: "Docbase" })).toBeVisible();
-    await expect(panel.getByText("From their website", { exact: true })).toBeVisible();
+    await expect(panel.getByText("Found on their website", { exact: true })).toBeVisible();
     await expect(panel.getByRole("link")).toHaveCount(0);
-    await expect(panel.getByRole("button", { name: /^From their/ })).toHaveCount(0);
+    await expect(panel.getByRole("button", { name: /their (deck|website)/ })).toHaveCount(0);
   });
 
   test("a deck that was not read is there to open, and one that cannot be opened says so", async ({
@@ -432,7 +710,10 @@ test.describe("solutions matched to a use case", () => {
     await expect(group(page, "Strong fit").getByRole("listitem")).toHaveCount(1);
     await expect(group(page, "Experience in your industry").getByRole("listitem")).toHaveCount(1);
     const staple = row(page, "Staple AI");
-    await expect(staple.getByText("It reads invoices in production today.")).toBeVisible();
+    await expect(rowQuote(page, "Staple AI").locator("q")).toHaveText(
+      "extracts and verifies the content",
+    );
+    await expect(staple.getByText("It reads invoices in production today.")).toHaveCount(0);
     await expect(staple.getByText("Deck could not be read")).toBeVisible();
     // With one capability the row says its status in words, in every group.
     await expect(staple.getByText("Met", { exact: true })).toBeVisible();
@@ -454,6 +735,13 @@ test.describe("solutions matched to a use case", () => {
     await last.getByRole("button", { name: "Show 1 more" }).click();
     await expect(last.getByRole("listitem")).toHaveCount(6);
     await expect(last.getByRole("button", { name: "Show fewer" })).toBeVisible();
+    // A solution with no quote shows the AI's sentence, as before, and no source.
+    await expect(row(page, "Inkstone").getByText("Built on document intelligence.")).toBeVisible();
+    await expect(rowQuote(page, "Inkstone")).toHaveCount(0);
+    await expect(rowSource(page, "Inkstone")).toHaveCount(0);
+    await expect(rowQuote(page, "Ledgerly").locator("q")).toHaveText(
+      "extracting data from PDFs and images",
+    );
     await expectNoSeriousA11yViolations(page);
   });
 
