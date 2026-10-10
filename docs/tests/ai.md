@@ -47,4 +47,4 @@ Boundaries follow [conventions › Testing](../conventions.md#testing). What the
 
 The OCR tab shows the reader, the services connected and the one that can be added, at desktop and mobile widths, with axe: `web/tests/e2e/admin-ai.spec.ts`.
 
-Not covered by a test, and checked by hand on staging: a call to the real AI Hay OCR API; a call to the real OpenAI, Anthropic and 9Router APIs, which is what proves the reasoning level and the thinking budget are accepted by the models chosen.
+Not covered by a test, and checked by hand on staging: a call to the real AI Hay OCR API; a call to the real OpenAI, Anthropic and 9Router APIs, which is what proves the reasoning level and the effort are accepted by the models (what is sent to Claude is checked against a played API in `AnthropicChatAdapterTest`: adaptive thinking, the effort, the answer limit, and an answer read past its thinking block) chosen.

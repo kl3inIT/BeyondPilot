@@ -4,20 +4,32 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
-import ai.genaifund.beyondpilot.ai.ReasoningEffort;
+import com.anthropic.models.messages.OutputConfig;
 import org.springframework.ai.anthropic.AnthropicChatModel;
 import org.springframework.ai.anthropic.AnthropicChatOptions;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.stereotype.Component;
 
-/** Claude through Anthropic's own API, with Spring AI's Anthropic module. */
+/**
+ * Claude through Anthropic's own API, with Spring AI's Anthropic module.
+ *
+ * <p>
+ * Thinking is always asked for as adaptive, and how hard the model works as an effort level. It is the one pair every
+ * model from Claude 4.6 on accepts: those from 4.7 on refuse a thinking budget ({@code enabled}) with a 400, and
+ * several of them refuse {@code disabled} too (Sonnet 5.5, Opus 5.5, Fable). Models before 4.6, which know a budget
+ * only, are not served (platform.claude.com/docs/en/build-with-claude/thinking-troubleshooting, read on 10 October
+ * 2026).
+ */
 @Component
 class AnthropicChatAdapter implements ChatAdapter {
 
 	static final String TYPE = "anthropic";
 
-	/** The API requires an answer limit; Spring AI's default of 4,096 truncates a judged list. */
-	private static final int ANSWER_TOKENS = 8192;
+	/**
+	 * The limit of one answer, thinking included: the API requires one, and what the model thinks counts in it. It
+	 * stays under the size from which the client refuses a call that is not streamed.
+	 */
+	private static final int OUTPUT_TOKENS = 20_000;
 
 	private static final String API_VERSION = "2023-06-01";
 
@@ -34,32 +46,31 @@ class AnthropicChatAdapter implements ChatAdapter {
 
 	@Override
 	public ChatModel connect(ChatConnection connection, String model, ChatModelOptions options) {
-		long thinking = options.reasons() ? budget(options.effort()) : 0;
-		int answer = options.maxOutputTokens() == null ? ANSWER_TOKENS : Math.min(ANSWER_TOKENS, options.maxOutputTokens());
+		int limit = options.maxOutputTokens() == null ? OUTPUT_TOKENS : Math.min(OUTPUT_TOKENS, options.maxOutputTokens());
 		AnthropicChatOptions.Builder chat = AnthropicChatOptions.builder()
 			.baseUrl(root(connection.baseUrl()))
 			.apiKey(connection.apiKey())
 			.model(model)
 			.timeout(options.timeout())
 			.maxRetries(1)
-			// The limit covers the thinking and the answer together.
-			.maxTokens((int) Math.min(Integer.MAX_VALUE, thinking + answer));
-		if (thinking > 0) {
-			chat.thinkingEnabled(thinking);
-		}
-		else {
-			chat.thinkingDisabled();
-		}
+			.maxTokens(limit);
+		chat.thinkingAdaptive();
+		chat.effort(effort(options));
 		return AnthropicChatModel.builder().options(chat.build()).build();
 	}
 
-	/** How many tokens the model may think with at each level, as Embabel budgets Claude's thinking. */
-	private static long budget(ReasoningEffort effort) {
-		return switch (effort) {
-			case OFF -> 0;
-			case LOW -> 2048;
-			case MEDIUM -> 8192;
-			case HIGH -> 24576;
+	/**
+	 * The effort asked of the model. Off is the lowest level: thinking cannot be turned off on every model, and at
+	 * low effort a model thinks only where it must.
+	 */
+	private static OutputConfig.Effort effort(ChatModelOptions options) {
+		if (!options.reasons()) {
+			return OutputConfig.Effort.LOW;
+		}
+		return switch (options.effort()) {
+			case OFF, LOW -> OutputConfig.Effort.LOW;
+			case MEDIUM -> OutputConfig.Effort.MEDIUM;
+			case HIGH -> OutputConfig.Effort.HIGH;
 		};
 	}
 

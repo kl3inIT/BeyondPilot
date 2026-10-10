@@ -63,7 +63,7 @@ The AI providers BeyondPilot calls, the chat models operators enabled, the model
 - **A task is named in code** (`AiTask`): `matching` and `document_reading`. Each has a model and a reasoning level (`off`, `low`, `medium`, `high`); the task's own default applies until an operator sets one.
 - **A model can be chosen** only while its provider is switched on and has a key.
 - **A task is available** when a model is chosen, its provider is switched on and its key can be read. Otherwise `AiModels.chat` refuses with `AI_TASK_NOT_CONFIGURED`. No model is used that nobody chose.
-- **The level is sent only to a model that reasons**, the way its API asks for it: `reasoning_effort` for the OpenAI API, with off as `none`; a thinking budget of 2,048, 8,192 or 24,576 tokens for Claude, and thinking disabled for off.
+- **The level is sent only to a model that reasons**, the way its API asks for it: `reasoning_effort` for the OpenAI API, with off as `none`. Claude is always asked for adaptive thinking and an effort (`output_config.effort`: low, medium or high), and off is the low effort: Claude from 4.7 on refuses a thinking budget with a 400, and Sonnet 5.5, Opus 5.5 and Fable refuse thinking turned off too, so this is the one request every model from 4.6 on accepts. Claude 4.5 and earlier, which know a budget only, are not served. An answer is at most 20,000 tokens, thinking included.
 
 ## Reading documents
 
