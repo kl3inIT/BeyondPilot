@@ -202,9 +202,14 @@ test.describe("apply", () => {
 
     // Step 1: what is missing is said beside each field, and the first one takes the focus.
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("You and your team");
-    await expect(page.getByRole("radio", { name: /Individual/ })).toBeChecked();
+    // Who applies is kept with the account, so nobody is chosen for the person.
+    await expect(page.getByRole("radio", { name: /Individual/ })).not.toBeChecked();
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByText("Choose who is applying.")).toBeVisible();
+    await page.getByRole("radio", { name: /Individual/ }).check();
     await page.getByRole("button", { name: "Continue" }).click();
     await expect(page.getByLabel("First name")).toBeFocused();
+    await expect(page.getByLabel("First name")).toBeInViewport();
     await expect(page.getByText("Enter a phone number with its country code.")).toBeVisible();
     await settled(page);
     await shot(page, `apply-1-errors-${label}`);
@@ -222,14 +227,28 @@ test.describe("apply", () => {
 
     // Step 2: the solution, its deck uploaded at once.
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your solution");
-    expect(calls[0]).toEqual({
+    // The step was saved before who applies was kept, so a refused save leaves no organization.
+    const organized = calls.findIndex((call) => call.call.endsWith("/application/organization"));
+    expect(calls[organized]).toEqual({
       call: "POST /api/proposal/programs/insurance-ai-tasco/application/organization",
       body: { kind: "individual", name: "An Tran", country: "VN" },
     });
+    expect(calls.findIndex((call) => call.call.startsWith("PUT /api/proposal/"))).toBeLessThan(
+      organized,
+    );
     await page.getByLabel("Solution name").fill("Claim Copilot");
     await page
       .getByLabel("What it does")
       .fill("A chat assistant that tells a driver what is covered.");
+    // What is typed about the solution is saved without Continue, before there is a deck.
+    await expect(page.getByRole("banner").getByText("Not saved yet")).toBeVisible();
+    await expect
+      .poll(() => calls.findLast((call) => call.call.startsWith("PUT /api/solution/mine"))?.body)
+      .toMatchObject({
+        name: "Claim Copilot",
+        summary: "A chat assistant that tells a driver what is covered.",
+      });
+    await expect(page.getByRole("banner").getByText(/^Saved /)).toBeVisible();
     await page
       .getByLabel("Problem it solves")
       .fill("Drivers wait on a hotline after a minor accident.");
