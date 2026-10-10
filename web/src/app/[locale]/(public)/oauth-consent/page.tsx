@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { AppConsent } from "@/features/identity/app-consent";
+import { AppConsent, AppConsentExpired } from "@/features/identity/app-consent";
 import { getConnectingApp } from "@/lib/api/generated";
 import { requireAccount, sessionRequest } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
@@ -28,7 +27,7 @@ export default async function AppConsentRoute({
   setRequestLocale(locale);
   const { client_id: clientId, scope, state } = await searchParams;
   if (typeof clientId !== "string" || typeof scope !== "string" || typeof state !== "string") {
-    notFound();
+    return <AppConsentExpired />;
   }
   // The server sends only a signed-in person here. A session that has ended since cannot resume
   // the request, so the person signs in and connects again from the app.
@@ -38,8 +37,9 @@ export default async function AppConsentRoute({
     query: { clientId, state },
     throwOnError: false,
   });
+  // The request has expired or was answered already; only the app can start another.
   if (!app) {
-    notFound();
+    return <AppConsentExpired />;
   }
 
   return (

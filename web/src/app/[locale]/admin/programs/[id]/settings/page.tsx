@@ -29,7 +29,7 @@ export default async function ProgramSettingsRoute({
     <ProgramSettings
       key={program.version}
       program={program}
-      tabs={<ProgramTabs id={id} current="settings" />}
+      tabs={<ProgramTabs id={id} current="settings" applications={Boolean(program.applications)} />}
     />
   );
 }

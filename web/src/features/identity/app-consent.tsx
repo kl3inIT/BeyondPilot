@@ -15,6 +15,7 @@ import {
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
+import { siteRoutes } from "@/lib/site";
 import { BrandMark } from "@/components/layout/brand-mark";
 import { Badge } from "@/components/ui/badge";
 import { AppMark } from "@/features/identity/app-mark";
@@ -151,22 +152,46 @@ function Fact({
   );
 }
 
-function Frame({ app, children }: { app: ConnectingApp; children: React.ReactNode }) {
+/** The frame of the consent screen; without an app it shows BeyondPilot alone. */
+function Frame({ app, children }: { app?: ConnectingApp; children: React.ReactNode }) {
   return (
     <div className="mx-auto flex w-full max-w-110 flex-col items-center gap-6 px-5 pt-12 pb-16 md:px-0 md:pt-18 md:pb-30">
       <div className="flex items-center gap-3" aria-hidden="true">
-        <AppMark host={app.host} clientId={app.clientId} />
-        <span className="flex items-center gap-1 text-muted-foreground">
-          <Dots />
-          <ArrowLeftRightIcon className="size-4" />
-          <Dots />
-        </span>
+        {app && (
+          <>
+            <AppMark host={app.host} clientId={app.clientId} />
+            <span className="flex items-center gap-1 text-muted-foreground">
+              <Dots />
+              <ArrowLeftRightIcon className="size-4" />
+              <Dots />
+            </span>
+          </>
+        )}
         <span className="flex size-12 items-center justify-center rounded-md border bg-background">
           <BrandMark size={26} className="size-6.5" />
         </span>
       </div>
       {children}
     </div>
+  );
+}
+
+/**
+ * What the consent address shows when its request cannot go on: it has expired, was already
+ * answered, or names no app. The request lives in the app, so the way on is to connect again there.
+ */
+function AppConsentExpired() {
+  const t = useTranslations("AppConsent.expired");
+  return (
+    <Frame>
+      <Head title={t("title")}>
+        <p>{t("lead")}</p>
+        <p>{t("next")}</p>
+      </Head>
+      <Button href={siteRoutes.home} prominence="secondary" size="lg" className="w-full">
+        {t("home")}
+      </Button>
+    </Frame>
   );
 }
 
@@ -219,4 +244,4 @@ function Answer({ clientId, state, scopes, className, children }: AnswerProps) {
   );
 }
 
-export { AppConsent };
+export { AppConsent, AppConsentExpired };

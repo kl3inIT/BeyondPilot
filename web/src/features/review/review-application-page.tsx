@@ -5,28 +5,35 @@ import { TextButton } from "@/components/actions/text-button";
 import { QueueNext } from "@/components/composites/queue-next";
 import { Badge } from "@/components/ui/badge";
 import { applyFormatter } from "@/features/apply/apply-format";
-import type { ReviewApplication } from "@/lib/api/generated";
+import type { ReviewApplication, ReviewApplicationItem } from "@/lib/api/generated";
 
 import { AssessmentPanel } from "./assessment-panel";
 import { DecisionPanel } from "./decision-panel";
+import { judgeQueue } from "./review-queue";
 import { SubmittedRecord } from "./submitted-record";
 
 type ReviewApplicationPageProps = {
   review: ReviewApplication;
   /** The list this application belongs to; the others open under it. */
   base: string;
+  /** The program's applications in the order of that list, as the caller reviews them. */
+  queue: ReviewApplicationItem[];
 };
 
 /**
  * One application under review: what its applicant submitted last, beside the caller's assessment.
  * An operator also reads every judge's score and the history, and decides.
  */
-async function ReviewApplicationPage({ review, base }: ReviewApplicationPageProps) {
+async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationPageProps) {
   const [t, locale] = await Promise.all([getTranslations("Review.application"), getLocale()]);
   const format = applyFormatter(locale);
   const { head, submitted } = review;
   const released = Boolean(head.releasedAt);
-  const nextHref = review.nextId ? `${base}/${review.nextId}` : null;
+  // A judge goes on to the next application they have yet to score; an operator, who reads them
+  // all to decide, to the next in the list.
+  const judging = head.operator ? null : judgeQueue(queue, review.id);
+  const nextId = judging ? judging.nextId : review.nextId;
+  const nextHref = nextId ? `${base}/${nextId}` : null;
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
@@ -36,8 +43,22 @@ async function ReviewApplicationPage({ review, base }: ReviewApplicationPageProp
           {t("back", { program: head.name })}
         </TextButton>
         <QueueNext
-          position={t("position", { place: review.position, total: review.total })}
-          next={nextHref ? { href: nextHref, label: t("next") } : null}
+          position={
+            judging
+              ? t("positionLeft", {
+                  place: review.position,
+                  total: review.total,
+                  left: judging.left,
+                })
+              : t("position", { place: review.position, total: review.total })
+          }
+          previous={
+            review.previousId
+              ? { href: `${base}/${review.previousId}`, label: t("previous") }
+              : null
+          }
+          next={nextHref ? { href: nextHref, label: t(judging ? "nextToScore" : "next") } : null}
+          done={judging?.left === 0 ? t("allScored") : undefined}
         />
       </div>
       <div className="flex flex-col gap-1">
