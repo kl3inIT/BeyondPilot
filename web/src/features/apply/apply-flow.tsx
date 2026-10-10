@@ -523,7 +523,6 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
                     >
                       {t(`steps.${key}.title`)}
                     </span>
-                    <span className="text-xs text-muted-foreground">{t(`steps.${key}.what`)}</span>
                   </div>
                 </li>
               );
@@ -737,7 +736,9 @@ function StepYou({
                 .join(" · ")}
             </span>
           </div>
-          <p className="text-xs text-muted-foreground">{t("applyingForHint")}</p>
+          {!organization.approved && (
+            <p className="text-xs text-muted-foreground">{t("applyingForHint")}</p>
+          )}
         </section>
       ) : (
         <Field data-invalid={bad("who")}>
@@ -822,11 +823,12 @@ function StepYou({
             autoComplete="tel"
             inputMode="tel"
             maxLength={40}
-            placeholder="+84 912 345 678"
             value={contact.phone}
             onChange={(event) => writeContact("phone", event.target.value)}
             aria-invalid={bad("phone")}
+            aria-describedby="phone-hint"
           />
+          <FieldDescription id="phone-hint">{t("phoneHint")}</FieldDescription>
           <Required show={bad("phone")}>{t("phoneRequired")}</Required>
         </Field>
         <div className="grid gap-5 sm:grid-cols-2">
@@ -855,11 +857,12 @@ function StepYou({
               type="url"
               inputMode="url"
               maxLength={300}
-              placeholder="https://www.linkedin.com/in/…"
               value={contact.linkedin}
               onChange={(event) => writeContact("linkedin", event.target.value)}
               aria-invalid={bad("linkedin")}
+              aria-describedby="linkedin-hint"
             />
+            <FieldDescription id="linkedin-hint">{t("addressHint")}</FieldDescription>
             <Required show={bad("linkedin")}>{t("linkedinInvalid")}</Required>
           </Field>
         </div>
@@ -907,10 +910,11 @@ function StepYou({
                 type="url"
                 inputMode="url"
                 maxLength={300}
-                placeholder="https://"
                 value={team.website}
                 onChange={(event) => setTeam({ ...team, website: event.target.value })}
+                aria-describedby="website-hint"
               />
+              <FieldDescription id="website-hint">{t("addressHint")}</FieldDescription>
             </Field>
           </div>
         </section>
@@ -1050,10 +1054,11 @@ function StepSolution({
         <Textarea
           id="traction"
           maxLength={600}
-          placeholder={t("tractionPlaceholder")}
           value={draft.traction}
           onChange={(event) => change((current) => ({ ...current, traction: event.target.value }))}
+          aria-describedby="traction-hint"
         />
+        <FieldDescription id="traction-hint">{t("tractionHint")}</FieldDescription>
       </Field>
       <Field>
         <FieldLabel htmlFor="builtWith">
@@ -1065,10 +1070,11 @@ function StepSolution({
           label={t("builtWith")}
           value={draft.builtWith}
           onChange={(value) => change((current) => ({ ...current, builtWith: value }))}
-          placeholder={t("builtWithPlaceholder")}
+          describedBy="builtWith-hint"
           max={10}
           maxLength={60}
         />
+        <FieldDescription id="builtWith-hint">{t("builtWithHint")}</FieldDescription>
       </Field>
       <Field data-invalid={bad("deck")}>
         <FieldLabel htmlFor="deck">{t("deck")}</FieldLabel>
@@ -1095,7 +1101,6 @@ function StepSolution({
           type="url"
           inputMode="url"
           maxLength={300}
-          placeholder="https://"
           value={solution.demoUrl}
           onChange={(event) => edit("demoUrl", event.target.value)}
           aria-describedby="demoUrl-hint"

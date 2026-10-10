@@ -263,7 +263,7 @@ test.describe("apply", () => {
     await page.getByRole("button", { name: "Continue" }).click();
 
     // Step 3: the program's own questions.
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("For this program");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Questions from this program");
     await page.getByLabel("Direction").selectOption("Claiming");
     await page
       .getByLabel("How does your solution address the challenge?")

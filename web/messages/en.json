@@ -5653,29 +5653,25 @@
     "steps": {
       "you": {
         "title": "You and your team",
-        "what": "Contact details and who is applying",
-        "lead": "Judges look at the solution, not the size of the company behind it. These details stay with you, so your next application starts filled in."
+        "lead": "Judges look at the solution, not the size of the company behind it."
       },
       "solution": {
         "title": "Your solution",
-        "what": "What it does, its stage and deck",
-        "lead": "The product or prototype you're bringing. It stays on your organization's profile for your next application."
+        "lead": "It is kept on your organization's profile, for your next application too."
       },
       "questions": {
-        "title": "For this program",
-        "what": "The program's own questions",
+        "title": "Questions from this program",
         "lead": "These answers go only to {program}."
       },
       "review": {
         "title": "Review and submit",
-        "what": "Check everything, then send",
         "lead": "You can change your application until {when}, even after you submit."
       }
     },
     "you": {
       "applyingFor": "Applying for",
       "notListedYet": "Not in the directory yet",
-      "applyingForHint": "GenAI Fund checks a new organization before it is listed in the directory. That doesn't hold up your application.",
+      "applyingForHint": "GenAI Fund checks a new organization before listing it; your application is not held up.",
       "applyingAs": "Applying as",
       "applyingAsHint": "This is kept with your account when you continue, and it cannot be changed here afterwards.",
       "whoRequired": "Choose who is applying.",
@@ -5693,7 +5689,7 @@
           "what": "Find your company on BeyondPilot and join it, or add it."
         }
       },
-      "individualHint": "Judges see you as {name} · Individual. If you join a company later, what you submitted stays under your name.",
+      "individualHint": "Judges see you as {name} · Individual.",
       "yourCompany": "Your company",
       "companyRequired": "Join your company, or add it, before you continue.",
       "aboutYou": "About you",
@@ -5715,12 +5711,14 @@
       "website": "Website",
       "teamBackground": "Team background",
       "teamBackgroundHint": "The experience that matters for this problem.",
-      "required": "Fill this in."
+      "required": "Fill this in.",
+      "phoneHint": "With its country code, such as +84 912 345 678.",
+      "addressHint": "The full address, starting with https://."
     },
     "solution": {
       "choice": "Solution",
       "newSolution": "New solution",
-      "choiceHint": "One your organization already has fills this step; changes here update it.",
+      "choiceHint": "Choosing one fills this step, and changes here update it.",
       "name": "Solution name",
       "nameToSave": "Name the solution so that this step can be saved.",
       "summary": "What it does",
@@ -5731,15 +5729,15 @@
       "maturityPlaceholder": "Select a stage",
       "maturityRequired": "Select a stage.",
       "traction": "Milestones and traction",
-      "tractionPlaceholder": "Customers, pilots, users or revenue so far.",
       "builtWith": "Built with",
-      "builtWithPlaceholder": "Add a model, tool or framework",
       "deck": "Solution deck",
-      "deckHint": "A PDF only the program's reviewers read. It is kept as you submit it.",
+      "deckHint": "Only the program's reviewers read it.",
       "deckRequired": "Add the solution's deck, a PDF.",
       "demoUrl": "Demo link",
-      "demoUrlHint": "A video, a prototype or a live demo. Check it opens without signing in.",
-      "required": "Fill this in."
+      "demoUrlHint": "A video, prototype or live demo that opens without signing in.",
+      "required": "Fill this in.",
+      "tractionHint": "Customers, pilots, users or revenue so far.",
+      "builtWithHint": "A model, tool or framework; press Enter to add each."
     },
     "questions": {
       "choose": "Choose one",
@@ -5751,7 +5749,7 @@
       "blocks": {
         "you": "You and your team",
         "solution": "Your solution",
-        "questions": "For this program"
+        "questions": "Questions from this program"
       },
       "edit": "Edit",
       "editNamed": "Edit {section}",
@@ -5869,7 +5867,7 @@
     "outcome": "You hear back",
     "continue": "Continue application",
     "edit": "Edit application",
-    "editHint": "You can change it until {when}. Reviewers read the latest version you submit.",
+    "editHint": "You can change it until {when}; reviewers read the latest version.",
     "locked": "This program takes no changes after submission.",
     "closed": "Applications have closed, so this application can no longer change.",
     "withdraw": {
