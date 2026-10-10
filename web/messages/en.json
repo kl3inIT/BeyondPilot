@@ -737,7 +737,12 @@
         "preview": "Preview",
         "viewPage": "View page",
         "notSaved": "Not saved yet",
-        "leave": "Some changes are not saved. Leave this page and lose them?"
+        "leave": {
+          "title": "Leave without saving?",
+          "lead": "Your changes to this program are not saved and will be lost.",
+          "leave": "Leave",
+          "stay": "Stay"
+        }
       },
       "noDays": "Days not set",
       "search": "Search programs by name",
@@ -6003,6 +6008,13 @@
       "note": "Private note",
       "readByJudge": "Only you and GenAI Fund read this.",
       "readByOperator": "Only GenAI Fund reads this.",
+      "unsaved": "Not saved yet",
+      "leave": {
+        "title": "Leave without saving?",
+        "lead": "Your scores and your note for this application are not saved and will be lost.",
+        "leave": "Leave",
+        "stay": "Stay"
+      },
       "skip": "Skip",
       "saveAndNext": "Save and next",
       "save": "Save assessment",

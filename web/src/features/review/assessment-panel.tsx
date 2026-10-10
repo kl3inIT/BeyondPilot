@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { LeaveGuard, onGuardEntry } from "@/components/composites/leave-guard";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -53,6 +54,13 @@ function AssessmentPanel({
   );
   const [note, setNote] = useState(mine?.note ?? "");
   const [pending, setPending] = useState<"save" | "conflict" | null>(null);
+  // What is typed here is only kept by a save, so leaving with a change asks first.
+  const unsaved =
+    !released &&
+    (note !== (mine?.note ?? "") ||
+      criteria.some(
+        (criterion) => (scores[criterion.id] ?? "") !== String(mine?.scores?.[criterion.id] ?? ""),
+      ));
   const complete = criteria.every((criterion) => scores[criterion.id]);
   const scored = criteria
     .filter((criterion) => scores[criterion.id])
@@ -77,7 +85,13 @@ function AssessmentPanel({
       });
       notify.success(conflict ? "Review.assessment.conflictSaved" : "Review.assessment.saved");
       if (nextHref && !conflict) {
-        router.push(getPathname({ href: nextHref, locale }));
+        const next = getPathname({ href: nextHref, locale });
+        // The entry the guard added to catch Back gives way to the next application.
+        if (onGuardEntry()) {
+          router.replace(next);
+        } else {
+          router.push(next);
+        }
       } else {
         router.refresh();
       }
@@ -169,6 +183,11 @@ function AssessmentPanel({
 
       {!released && (
         <div className="flex flex-col gap-2">
+          {unsaved && (
+            <p role="status" className="text-xs text-muted-foreground">
+              {t("unsaved")}
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             {nextHref && (
               <Button prominence="tertiary" href={nextHref}>
@@ -199,6 +218,14 @@ function AssessmentPanel({
           )}
         </div>
       )}
+      <LeaveGuard
+        active={unsaved && pending === null}
+        back
+        title={t("leave.title")}
+        description={t("leave.lead")}
+        leaveLabel={t("leave.leave")}
+        stayLabel={t("leave.stay")}
+      />
     </section>
   );
 }
