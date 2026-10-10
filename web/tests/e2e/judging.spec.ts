@@ -159,9 +159,13 @@ test.describe("judging applications", () => {
     await expect(page.getByText("Only you and GenAI Fund read this.")).toBeVisible();
     await expect(page.getByRole("region", { name: "Judges' scores" })).toHaveCount(0);
     await expect(page.getByRole("region", { name: "Decision" })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Skip", exact: true })).toHaveAttribute(
+    // The judge has scored one and declared a conflict on another, so the one on show is the last
+    // one left: nothing is next, and the way back is the application before it.
+    await expect(page.getByText("2 of 3 · 1 left to score")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Skip", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Previous", exact: true })).toHaveAttribute(
       "href",
-      /a0000000-0000-4000-8000-000000000003$/,
+      /a0000000-0000-4000-8000-000000000001$/,
     );
     await expect(
       page.getByRole("button", { name: "I have a conflict with this applicant" }),
