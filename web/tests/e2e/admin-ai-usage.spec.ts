@@ -63,6 +63,8 @@ test.describe("admin AI usage", () => {
 
     await page.getByRole("button", { name: "30 days" }).click();
     await expect(page.getByText("No calls in the last 30 days")).toBeVisible();
+    // The title of the period just chosen streams in after its content; the check below reads it.
+    await expect(page).toHaveTitle("AI usage · Admin · BeyondPilot");
     await expectNoSeriousA11yViolations(page);
   });
 
