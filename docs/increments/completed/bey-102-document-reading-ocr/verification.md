@@ -26,7 +26,14 @@ The OCR provider keeps what 1,000 calls cost in US dollars and each usage row co
 | `./gradlew :backend:test` for the `ai` tests, `SearchAdministrationTest`, `OpenApiContractTest` and `ModulithArchitectureTest` | Passed: 7 suites, 42 tests, no failure                |
 | `pnpm --dir web` `check:api`, `typecheck`, `lint`, `check:messages`, `format:check`                                            | Each passed; the message catalogs match at 4,493 keys |
 
-## Not yet done
+## On staging, 9 October 2026
 
-- The end-to-end tests of Admin › AI (`pnpm --dir web test:e2e`), which build the application; the new case for the OCR tab is in `web/tests/e2e/admin-ai.spec.ts` and runs in CI.
-- The check on staging: connect AI Hay, test it, choose it as the reader, index a deck that has picture-only pages, read its passages and usage rows, then choose the model again.
+Pull request #150 was merged with every check green, the end-to-end tests of Admin › AI among them.
+
+| Check                                                                                                       | Result                                                                                                                     |
+| ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| AI Hay connected, tested and chosen as the reader in Admin › AI › Providers › OCR                           | Done by Đạt; the test read the picture                                                                                     |
+| Deck pages that are only a picture, read by the service                                                     | 957 calls in `ai_usage` under `aihay`, 9 of them failed; no deck page is left unread                                       |
+| A deck laid out as a poster (`mapping-intelligence-technology-pte-ltd`), whose pages were too large to send | Read after its pages were capped at 2,200 pixels on the long side (pull request #156) and its 10 pages marked unread again |
+
+The model was not chosen again as the reader afterwards: AI Hay stays the reader on staging.
