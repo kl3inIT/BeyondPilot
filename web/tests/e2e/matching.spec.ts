@@ -181,7 +181,8 @@ test.describe("solutions matched to a use case", () => {
     await expect(staple.getByText("Website could not be read")).toBeVisible();
     await expect(staple.getByText("extracts and verifies the content")).toHaveCount(0);
     await expect(staple.getByRole("button", { name: "Save", exact: true })).toBeVisible();
-    await expect(row(page, "Kira Claims").getByText("Added by GenAI Fund")).toBeVisible();
+    // A solution an operator added by hand carries no mark of its own: every solution here is on BeyondPilot.
+    await expect(row(page, "Kira Claims").getByText("Added by GenAI Fund")).toHaveCount(0);
     // What the AI has not read counts nothing, and a solution whose sources were all read has no note.
     await expect(counts(page, "Kira Claims")).toHaveCount(0);
     await expect(row(page, "Sentosa Finance").getByText(/could not be read/)).toHaveCount(0);

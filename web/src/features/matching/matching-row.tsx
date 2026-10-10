@@ -14,7 +14,6 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -204,12 +203,7 @@ function MatchingRow({
           </p>
         )}
         {summary && <p className="line-clamp-2 text-sm">{summary}</p>}
-        {(meta || candidate.origin === "added") && (
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-            {meta}
-            {candidate.origin === "added" && <Badge variant="secondary">{t("added")}</Badge>}
-          </p>
-        )}
+        {meta && <p className="text-xs text-muted-foreground">{meta}</p>}
       </div>
     </li>
   );
