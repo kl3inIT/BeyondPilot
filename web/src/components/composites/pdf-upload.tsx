@@ -76,7 +76,8 @@ function PdfUpload({ id, value, onChange, invalid, describedBy }: PdfUploadProps
         type="file"
         accept="application/pdf"
         className="sr-only"
-        aria-invalid={invalid || undefined}
+        // The buttons below open it; on its own it would be a stop in the tab order nobody can see.
+        tabIndex={-1}
         aria-describedby={describedBy}
         onChange={(event) => {
           const file = event.target.files?.[0];

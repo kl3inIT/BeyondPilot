@@ -1,6 +1,13 @@
 "use client";
 
-import { CheckIcon, Clock3Icon, CloudCheckIcon, PencilIcon, XIcon } from "lucide-react";
+import {
+  CheckIcon,
+  Clock3Icon,
+  CloudCheckIcon,
+  CloudUploadIcon,
+  PencilIcon,
+  XIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { parseAsInteger, useQueryState } from "nuqs";
@@ -43,7 +50,7 @@ import {
 import { focusField } from "@/lib/focus-field";
 import { myApplicationRoute, programRoute, siteRoutes } from "@/lib/site";
 
-import { draftOf, saveBodyOf, type ApplyDraft } from "./apply-draft";
+import { draftOf, invalidContact, savable, saveBodyOf, type ApplyDraft } from "./apply-draft";
 import { applyFormatter } from "./apply-format";
 
 /** The sizes a team names; one person applies as an individual, a larger company as a company. */
@@ -92,7 +99,8 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   const [solution, setSolution] = useState<SolutionDraft>(() =>
     solutionDraftOf(initial, draftOf(initial, account).solutionId),
   );
-  const [who, setWho] = useState<Who>("individual");
+  // Nobody is chosen for the person: who applies is kept with the account once step 1 is left.
+  const [who, setWho] = useState<Who | null>(null);
   const [team, setTeam] = useState({ name: "", size: "2_9" as string, website: "" });
   const [missing, setMissing] = useState<Set<string>>(new Set());
   const [savedAt, setSavedAt] = useState<string | null>(
@@ -101,6 +109,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   const [pending, setPending] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
+  const [unsaved, setUnsaved] = useState(false);
 
   const program = view.program;
   const hasQuestions = program.questions.length > 0;
@@ -115,6 +124,48 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   const version = useRef<number | null>(initial.application?.version ?? null);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   const changed = useRef(false);
+  // The solution of step 2 is a record of its own: whether it waits to be saved, the identifier it
+  // was saved under, and the one the application already names.
+  const solutionChanged = useRef(false);
+  const solutionId = useRef(solution.id);
+  const linked = useRef(draft.solutionId);
+
+  const errorText = useCallback(
+    (error: unknown) => {
+      const code = error instanceof ApiError ? error.code : undefined;
+      const known = [
+        "PROPOSAL_CLOSED",
+        "PROPOSAL_LOCKED",
+        "PROPOSAL_WITHDRAWN_FOR_GOOD",
+        "PROPOSAL_CHANGED_MEANWHILE",
+        "PROPOSAL_ORGANIZATION_REQUIRED",
+        "PROPOSAL_ORGANIZATION_APPLIED",
+        "PROPOSAL_CONTACT_INCOMPLETE",
+        "PROPOSAL_TEAM_BACKGROUND_REQUIRED",
+        "PROPOSAL_SOLUTION_REQUIRED",
+        "PROPOSAL_SOLUTION_INCOMPLETE",
+        "PROPOSAL_DECK_REQUIRED",
+        "PROPOSAL_ANSWER_REQUIRED",
+        "PROPOSAL_ANSWER_INVALID",
+        "ORGANIZATION_ALREADY_MEMBER",
+      ] as const;
+      return code && (known as readonly string[]).includes(code)
+        ? t(`errors.codes.${code as (typeof known)[number]}`)
+        : t("errors.unknown");
+    },
+    [t],
+  );
+
+  /** Why a save made while the person types failed: no answer at all, a refused value, or a rule. */
+  const saveProblem = useCallback(
+    (error: unknown) => {
+      if (!(error instanceof ApiError) || error.status === undefined) {
+        return t("errors.saveFailed");
+      }
+      return error.violations.length > 0 ? t("errors.saveInvalid") : errorText(error);
+    },
+    [t, errorText],
+  );
 
   const save = useCallback(
     (next: ApplyDraft) => {
@@ -127,12 +178,63 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
         version.current = data.application?.version ?? null;
         setView(data);
         setSavedAt(new Date().toISOString());
+        setUnsaved(changed.current || solutionChanged.current);
         return data;
       });
       queue.current = run.catch(() => undefined);
       return run;
     },
-    [program.slug],
+    [program.slug, setUnsaved],
+  );
+
+  /** Saves the solution step 2 edits, making it first when it is new; answers its identifier. */
+  const keepSolution = useCallback(
+    (next: SolutionDraft) => {
+      solutionChanged.current = false;
+      const run = queue.current.then(async () => {
+        let id = solutionId.current;
+        if (!id) {
+          const { data } = await createSolution({ body: { name: next.name.trim() } });
+          id = data.id;
+          solutionId.current = id;
+        }
+        const { data: found } = await getMySolution({ path: { id } });
+        const { data: saved } = await saveSolution({
+          path: { id },
+          body: {
+            name: next.name.trim(),
+            summary: next.summary.trim() || null,
+            problemsSolved: next.problemsSolved.trim() || null,
+            valueProposition: found.valueProposition ?? null,
+            focusAreas: found.focusAreas,
+            industries: found.industries,
+            maturity: (next.maturity || undefined) as (typeof maturities)[number] | undefined,
+            deployment: found.deployment,
+            website: found.website ?? null,
+            demoUrl: next.demoUrl.trim() || found.demoUrl || null,
+            traction: found.traction ?? null,
+            builtWith: found.builtWith,
+            languages: found.languages,
+            bestCustomerProfile: found.bestCustomerProfile ?? null,
+            deckFileId: found.deck?.fileId ?? null,
+            logoFileId: found.logo?.fileId ?? null,
+            coverFileId: found.cover?.fileId ?? null,
+            imageFileIds: found.images.map((image) => image.fileId),
+            listed: found.listed,
+            version: found.version,
+          },
+        });
+        setSolution((current) =>
+          current.id === saved.id ? current : { ...current, id: saved.id },
+        );
+        setSavedAt(new Date().toISOString());
+        setUnsaved(changed.current || solutionChanged.current);
+        return saved.id;
+      });
+      queue.current = run.catch(() => undefined);
+      return run;
+    },
+    [setSolution, setUnsaved],
   );
 
   useEffect(() => {
@@ -140,13 +242,47 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
       return;
     }
     const timer = setTimeout(() => {
-      save(draft).catch(() => setProblem(t("errors.saveFailed")));
+      // A value the backend would refuse is said beside its field and left out of this save.
+      const invalid = invalidContact(draft);
+      if (invalid.length > 0) {
+        setMissing((current) => new Set([...current, ...invalid]));
+      }
+      save(savable(draft))
+        .then(() => setProblem(null))
+        .catch((error: unknown) => {
+          changed.current = true;
+          setProblem(saveProblem(error));
+        });
     }, SAVE_AFTER_MS);
     return () => clearTimeout(timer);
-  }, [draft, save, t]);
+  }, [draft, save, saveProblem]);
+
+  // The solution saves as it is typed too, from the moment it has the name a solution is made with.
+  useEffect(() => {
+    if (!solutionChanged.current || solution.name.trim() === "") {
+      return;
+    }
+    const timer = setTimeout(() => {
+      keepSolution(solution)
+        .then((id) => {
+          setProblem(null);
+          if (linked.current !== id) {
+            linked.current = id;
+            changed.current = true;
+            setDraft((current) => ({ ...current, solutionId: id }));
+          }
+        })
+        .catch((error: unknown) => {
+          solutionChanged.current = true;
+          setProblem(saveProblem(error));
+        });
+    }, SAVE_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, [solution, keepSolution, saveProblem]);
 
   function change(update: (current: ApplyDraft) => ApplyDraft) {
     changed.current = true;
+    setUnsaved(true);
     setDraft((current) => update(current));
   }
 
@@ -177,16 +313,16 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
     const blank = (value: string) => value.trim() === "";
     if (key === "you") {
       const contact = draft.contact;
+      const invalid = invalidContact(draft);
       const fields = [
+        !view.organization && who === null ? "who" : null,
         !view.organization && who === "team" && blank(team.name) ? "teamName" : null,
         !view.organization && who === "company" ? "company" : null,
         blank(contact.firstName) ? "firstName" : null,
         blank(contact.lastName) ? "lastName" : null,
-        blank(contact.phone) ? "phone" : null,
+        blank(contact.phone) || invalid.includes("phone") ? "phone" : null,
         blank(contact.country) ? "country" : null,
-        !blank(contact.linkedin) && !/^https:\/\/\S+$/.test(contact.linkedin.trim())
-          ? "linkedin"
-          : null,
+        invalid.includes("linkedin") ? "linkedin" : null,
         alone() ? null : blank(draft.teamBackground) ? "teamBackground" : null,
       ];
       return fields.filter((field): field is string => field !== null);
@@ -212,7 +348,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   function alone() {
     return view.organization
       ? view.organization.type === "independent_builder"
-      : who === "individual";
+      : who !== "team" && who !== "company";
   }
 
   async function next() {
@@ -225,7 +361,16 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
     setPending(true);
     setProblem(null);
     try {
-      if (step === "you" && !view.organization) {
+      let current = draft;
+      if (step === "solution") {
+        const id = await keepSolution(solution);
+        linked.current = id;
+        current = { ...draft, solutionId: id };
+        setDraft(current);
+      }
+      // The step is saved before who applies is kept: a refused save then leaves nothing behind.
+      await save(current);
+      if (step === "you" && !view.organization && who !== null) {
         const contact = draft.contact;
         const { data } = await organizeApplicant({
           path: { slug: program.slug },
@@ -247,56 +392,12 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
         setView(data);
         version.current = data.application?.version ?? version.current;
       }
-      let current = draft;
-      if (step === "solution") {
-        const id = await keepSolution();
-        current = { ...draft, solutionId: id };
-        setDraft(current);
-      }
-      await save(current);
       goTo(index + 1);
     } catch (error) {
       setProblem(errorText(error));
     } finally {
       setPending(false);
     }
-  }
-
-  /** Saves the solution step 2 edits, making it first when it is new; answers its identifier. */
-  async function keepSolution(): Promise<string> {
-    let id = solution.id;
-    if (!id) {
-      const { data } = await createSolution({ body: { name: solution.name.trim() } });
-      id = data.id;
-    }
-    const { data: found } = await getMySolution({ path: { id } });
-    const { data: saved } = await saveSolution({
-      path: { id },
-      body: {
-        name: solution.name.trim(),
-        summary: solution.summary.trim() || null,
-        problemsSolved: solution.problemsSolved.trim() || null,
-        valueProposition: found.valueProposition ?? null,
-        focusAreas: found.focusAreas,
-        industries: found.industries,
-        maturity: (solution.maturity || undefined) as (typeof maturities)[number] | undefined,
-        deployment: found.deployment,
-        website: found.website ?? null,
-        demoUrl: solution.demoUrl.trim() || found.demoUrl || null,
-        traction: found.traction ?? null,
-        builtWith: found.builtWith,
-        languages: found.languages,
-        bestCustomerProfile: found.bestCustomerProfile ?? null,
-        deckFileId: found.deck?.fileId ?? null,
-        logoFileId: found.logo?.fileId ?? null,
-        coverFileId: found.cover?.fileId ?? null,
-        imageFileIds: found.images.map((image) => image.fileId),
-        listed: found.listed,
-        version: found.version,
-      },
-    });
-    setSolution((current) => ({ ...current, id: saved.id }));
-    return saved.id;
   }
 
   async function submit() {
@@ -321,32 +422,26 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
     }
   }
 
-  function errorText(error: unknown) {
-    const code = error instanceof ApiError ? error.code : undefined;
-    const known = [
-      "PROPOSAL_CLOSED",
-      "PROPOSAL_LOCKED",
-      "PROPOSAL_WITHDRAWN_FOR_GOOD",
-      "PROPOSAL_CHANGED_MEANWHILE",
-      "PROPOSAL_ORGANIZATION_REQUIRED",
-      "PROPOSAL_ORGANIZATION_APPLIED",
-      "PROPOSAL_CONTACT_INCOMPLETE",
-      "PROPOSAL_TEAM_BACKGROUND_REQUIRED",
-      "PROPOSAL_SOLUTION_REQUIRED",
-      "PROPOSAL_SOLUTION_INCOMPLETE",
-      "PROPOSAL_DECK_REQUIRED",
-      "PROPOSAL_ANSWER_REQUIRED",
-      "PROPOSAL_ANSWER_INVALID",
-      "ORGANIZATION_ALREADY_MEMBER",
-    ] as const;
-    return code && (known as readonly string[]).includes(code)
-      ? t(`errors.codes.${code as (typeof known)[number]}`)
-      : t("errors.unknown");
-  }
-
   async function saveAndExit() {
-    if (changed.current) {
-      await save(draft).catch(() => undefined);
+    let current = savable(draft);
+    // A save that fails keeps the person on the page, where what they typed still is.
+    try {
+      if (solutionChanged.current && solution.name.trim() !== "") {
+        const id = await keepSolution(solution);
+        if (id !== linked.current) {
+          linked.current = id;
+          changed.current = true;
+          current = { ...current, solutionId: id };
+        }
+      }
+      if (changed.current) {
+        await save(current);
+      }
+    } catch (error) {
+      solutionChanged.current = solutionChanged.current || solution.id === null;
+      changed.current = true;
+      setProblem(saveProblem(error));
+      return;
     }
     router.push(getPathname({ href: siteRoutes.myApplications, locale }));
   }
@@ -366,13 +461,17 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
             {program.name}
           </span>
           <div className="ml-auto flex items-center gap-3">
-            {savedAt && (
+            {(unsaved || savedAt) && (
               <span
                 className="flex items-center gap-1.5 text-xs text-muted-foreground"
                 role="status"
               >
-                <CloudCheckIcon className="size-4 text-success" aria-hidden="true" />
-                {t("saved", { time: format.time(savedAt) })}
+                {unsaved ? (
+                  <CloudUploadIcon className="size-4" aria-hidden="true" />
+                ) : (
+                  <CloudCheckIcon className="size-4 text-success" aria-hidden="true" />
+                )}
+                {unsaved || !savedAt ? t("unsaved") : t("saved", { time: format.time(savedAt) })}
               </span>
             )}
             <span className="hidden items-center gap-1.5 rounded-full border bg-muted px-3 py-1.5 text-xs font-medium md:flex">
@@ -477,7 +576,10 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
               view={view}
               draft={draft}
               who={who}
-              setWho={setWho}
+              setWho={(value) => {
+                setWho(value);
+                settle("who");
+              }}
               team={team}
               setTeam={setTeam}
               writeContact={writeContact}
@@ -495,10 +597,15 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
               draft={draft}
               solution={solution}
               choose={(id) => {
+                solutionChanged.current = false;
+                solutionId.current = id;
+                linked.current = id;
                 setSolution(solutionDraftOf(view, id));
                 change((current) => ({ ...current, solutionId: id }));
               }}
               edit={(field, value) => {
+                solutionChanged.current = true;
+                setUnsaved(true);
                 setSolution((current) => ({ ...current, [field]: value }));
                 settle(field === "name" ? "solutionName" : field);
               }}
@@ -535,31 +642,33 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
             />
           )}
 
-          {problem && (
-            <p role="alert" className="text-sm text-destructive">
-              {problem}
-            </p>
-          )}
-
-          <div className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-3 border-t bg-background px-4 pt-3 pb-6 md:static md:border-t md:bg-transparent md:px-0 md:pt-6 md:pb-0">
-            {index === 0 ? (
-              <Button prominence="tertiary" href={programRoute(program.slug)}>
-                {t("backToProgram")}
-              </Button>
-            ) : (
-              <Button prominence="tertiary" disabled={pending} onClick={() => goTo(index - 1)}>
-                {t("back")}
-              </Button>
+          <div className="fixed inset-x-0 bottom-0 z-10 flex flex-col gap-3 border-t bg-background px-4 pt-3 pb-6 md:static md:border-t md:bg-transparent md:px-0 md:pt-6 md:pb-0">
+            {/* With the actions, so on a phone it is not under the bar they are fixed in. */}
+            {problem && (
+              <p role="alert" className="text-sm text-destructive">
+                {problem}
+              </p>
             )}
-            {step === "review" ? (
-              <Button pending={pending} disabled={!program.open} onClick={() => void submit()}>
-                {view.application?.status === "submitted" ? t("submitAgain") : t("submit")}
-              </Button>
-            ) : (
-              <Button pending={pending} disabled={!program.open} onClick={() => void next()}>
-                {t("continue")}
-              </Button>
-            )}
+            <div className="flex items-center justify-between gap-3">
+              {index === 0 ? (
+                <Button prominence="tertiary" href={programRoute(program.slug)}>
+                  {t("backToProgram")}
+                </Button>
+              ) : (
+                <Button prominence="tertiary" disabled={pending} onClick={() => goTo(index - 1)}>
+                  {t("back")}
+                </Button>
+              )}
+              {step === "review" ? (
+                <Button pending={pending} disabled={!program.open} onClick={() => void submit()}>
+                  {view.application?.status === "submitted" ? t("submitAgain") : t("submit")}
+                </Button>
+              ) : (
+                <Button pending={pending} disabled={!program.open} onClick={() => void next()}>
+                  {t("continue")}
+                </Button>
+              )}
+            </div>
           </div>
         </main>
       </div>
@@ -592,7 +701,7 @@ function StepYou({
 }: {
   view: ApplicationView;
   draft: ApplyDraft;
-  who: Who;
+  who: Who | null;
   setWho: (who: Who) => void;
   team: { name: string; size: string; website: string };
   setTeam: (team: { name: string; size: string; website: string }) => void;
@@ -631,12 +740,14 @@ function StepYou({
           <p className="text-xs text-muted-foreground">{t("applyingForHint")}</p>
         </section>
       ) : (
-        <Field>
+        <Field data-invalid={bad("who")}>
           <FieldLabel>{t("applyingAs")}</FieldLabel>
           <RadioGroup
-            value={who}
+            id="who"
+            value={who ?? ""}
             onValueChange={(value) => setWho(value as Who)}
             aria-label={t("applyingAs")}
+            aria-invalid={bad("who")}
           >
             {(["individual", "team", "company"] as const).map((kind) => (
               <FieldLabel key={kind} htmlFor={`who-${kind}`}>
@@ -650,6 +761,8 @@ function StepYou({
               </FieldLabel>
             ))}
           </RadioGroup>
+          <FieldDescription>{t("applyingAsHint")}</FieldDescription>
+          <Required show={bad("who")}>{t("whoRequired")}</Required>
           {who === "individual" && contact.firstName.trim() && (
             <FieldDescription>
               {t("individualHint", {
@@ -843,6 +956,12 @@ function StepSolution({
 }) {
   const t = useTranslations("Apply.solution");
   const maturity = useVocabulary("maturity");
+  // The rest of the step can only be kept once the solution has the name it is made with.
+  const unnamed =
+    solution.name.trim() === "" &&
+    [solution.summary, solution.problemsSolved, solution.maturity, solution.demoUrl].some(
+      (value) => value.trim() !== "",
+    );
 
   return (
     <>
@@ -874,7 +993,9 @@ function StepSolution({
           value={solution.name}
           onChange={(event) => edit("name", event.target.value)}
           aria-invalid={bad("solutionName")}
+          aria-describedby={unnamed ? "solutionName-hint" : undefined}
         />
+        {unnamed && <FieldDescription id="solutionName-hint">{t("nameToSave")}</FieldDescription>}
         <Required show={bad("solutionName")}>{t("required")}</Required>
       </Field>
       <Field data-invalid={bad("summary")}>

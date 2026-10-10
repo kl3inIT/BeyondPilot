@@ -47,6 +47,36 @@ export function draftOf(
   };
 }
 
+/** What the backend accepts as a phone number and as a LinkedIn address (proposal › ContactDetails). */
+const phoneShape = /^\+?[0-9 ().-]*$/;
+const linkedinShape = /^https:\/\/\S+$/;
+
+/** The contact fields whose text the backend would refuse; an empty field is not one of them. */
+export function invalidContact(draft: ApplyDraft): ("phone" | "linkedin")[] {
+  const phone = draft.contact.phone.trim();
+  const linkedin = draft.contact.linkedin.trim();
+  return [
+    phone !== "" && !phoneShape.test(phone) ? ("phone" as const) : null,
+    linkedin !== "" && !linkedinShape.test(linkedin) ? ("linkedin" as const) : null,
+  ].filter((field) => field !== null);
+}
+
+/**
+ * The draft a save made while the person types may send: a field the backend would refuse is left
+ * out, so one of them does not keep everything else from being saved.
+ */
+export function savable(draft: ApplyDraft): ApplyDraft {
+  const invalid = invalidContact(draft);
+  if (invalid.length === 0) {
+    return draft;
+  }
+  const contact = { ...draft.contact };
+  for (const field of invalid) {
+    contact[field] = "";
+  }
+  return { ...draft, contact };
+}
+
 /** What a save sends: empty text is sent as nothing, so a draft holds only what was typed. */
 export function saveBodyOf(draft: ApplyDraft, version: number | null): SaveApplication {
   const text = (value: string) => value.trim() || null;
