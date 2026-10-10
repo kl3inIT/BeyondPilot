@@ -13614,6 +13614,10 @@ components:
           format: int32
           description: How many runs a day the members of its organization may start
             for one use case.
+        parallel:
+          type: integer
+          format: int32
+          description: How many solutions a run judges at the same time.
         runsPerDay:
           type: integer
           format: int32
@@ -13632,6 +13636,7 @@ components:
       - candidates
       - editRunsPerDay
       - memberRunsPerDay
+      - parallel
       - settleMinutes
       - version
     MatchingStep:
@@ -17475,6 +17480,11 @@ components:
           format: int32
           maximum: 100
           minimum: 0
+        parallel:
+          type: integer
+          format: int32
+          maximum: 16
+          minimum: 1
         runsPerDay:
           type: integer
           format: int32
@@ -17494,6 +17504,7 @@ components:
       - candidates
       - editRunsPerDay
       - memberRunsPerDay
+      - parallel
       - settleMinutes
       - version
     SaveMyUseCase:
