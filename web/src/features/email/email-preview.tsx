@@ -15,12 +15,15 @@ function EmailPreview({
   subject,
   html,
   title,
+  behind,
   className,
 }: {
   subject: string;
   html: string;
   /** What the preview shows, for the frame's accessible name. */
   title: string;
+  /** Why the preview is not what is being typed, when it is not; it is then shown dimmed. */
+  behind?: string;
   className?: string;
 }) {
   const t = useTranslations("Admin.email.preview");
@@ -71,11 +74,26 @@ function EmailPreview({
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
-      <p className="truncate rounded-md border bg-background px-3 py-2 text-xs">
+      {behind && (
+        <p role="status" className="rounded-md border bg-background px-3 py-2 text-xs font-medium">
+          {behind}
+        </p>
+      )}
+      <p
+        className={cn(
+          "truncate rounded-md border bg-background px-3 py-2 text-xs",
+          behind && "opacity-60",
+        )}
+      >
         <span className="text-muted-foreground">{t("subject")} </span>
         <span className="font-medium">{subject}</span>
       </p>
-      <div className="flex justify-center overflow-hidden rounded-md border bg-background">
+      <div
+        className={cn(
+          "flex justify-center overflow-hidden rounded-md border bg-background",
+          behind && "opacity-60",
+        )}
+      >
         <iframe
           ref={frame}
           title={title}

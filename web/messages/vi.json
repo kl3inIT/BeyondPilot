@@ -2578,7 +2578,7 @@
       "unknown": "Chưa biết",
       "failing": {
         "title": "{task} đang lỗi trên {model}",
-        "description": "{failed, number} trong {calls, number} lượt gọi tới {provider} đã lỗi trong 24 giờ qua, lượt gần nhất lúc {time}.",
+        "description": "{failed, number} trong {calls, number} lượt gọi tới {provider} đã lỗi trong 24 giờ qua, lượt gần nhất vào {time} ICT.",
         "kind": {
           "key_refused": "Nhà cung cấp từ chối khóa.",
           "rate_limited": "Nhà cung cấp đang giới hạn số lượt gọi.",
@@ -3055,6 +3055,9 @@
           "syntax": "Có thẻ chưa đóng hoặc không được phép. Dùng '{{tên}}', '{{#tên}}…{{/tên}}' hoặc '{{^tên}}…{{/tên}}'."
         },
         "unsaved": "Có thay đổi chưa lưu",
+        "fixToSave": "{count, plural, other {Sửa # lỗi được đánh dấu bên dưới để lưu}}",
+        "previewBehind": "{count, plural, other {Đây là bản chạy được gần nhất. Sửa # lỗi để thấy bản của bạn.}}",
+        "testAfterFix": "Gửi thử được khi nội dung không còn lỗi.",
         "discard": "Bỏ thay đổi",
         "save": "Lưu",
         "edited": "Đã sửa",
@@ -3091,6 +3094,8 @@
         "colorPicker": "Chọn màu",
         "colorHint": "Liên kết và nút bấm. Chọn màu đậm: chữ trắng nằm trên nó.",
         "colorInvalid": "Viết màu theo dạng # và sáu chữ số hệ 16.",
+        "colorFaint": "Chữ trắng trên màu này khó đọc. Màu đậm hơn sẽ dễ đọc hơn.",
+        "sampleLink": "Một liên kết theo màu của bạn",
         "footer": "Ghi chú cuối email",
         "footerHint": "Nằm dưới dải GenAI Fund của mọi email.",
         "save": "Lưu giao diện",

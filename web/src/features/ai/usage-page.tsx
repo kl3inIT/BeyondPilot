@@ -202,7 +202,13 @@ async function UsageOverviewPage({
               {t("failing.description", {
                 failed: worst.failed,
                 calls: worst.calls,
-                time: clock(new Date(worst.lastFailedAt)),
+                time: format.dateTime(new Date(worst.lastFailedAt), {
+                  day: "numeric",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hourCycle: "h23",
+                }),
                 provider: worst.providerName,
               })}{" "}
               {t(`failing.kind.${worst.lastFailure}`)}

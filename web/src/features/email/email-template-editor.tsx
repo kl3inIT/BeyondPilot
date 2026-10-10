@@ -211,11 +211,14 @@ function EmailTemplateEditor({
           className="sticky top-2 z-10 flex items-center gap-3 rounded-lg bg-foreground py-2 pr-2 pl-4 text-background"
         >
           <CircleDotIcon aria-hidden="true" className="size-4" />
-          <p className="flex-1 text-sm font-medium">{t("unsaved")}</p>
+          <p className="flex-1 text-sm font-medium">
+            {problems.length > 0 ? t("fixToSave", { count: problems.length }) : t("unsaved")}
+          </p>
           <Button prominence="secondary" size="sm" onClick={() => form.reset()}>
             {t("discard")}
           </Button>
-          <Button type="submit" size="sm" pending={submitting}>
+          {/* Wording with a problem is refused by the backend, so it is not offered for saving. */}
+          <Button type="submit" size="sm" pending={submitting} disabled={problems.length > 0}>
             {t("save")}
           </Button>
         </div>
@@ -266,6 +269,9 @@ function EmailTemplateEditor({
             disabled={problems.length > 0}
             onSend={(to) => void test(to)}
           />
+          {problems.length > 0 && (
+            <p className="w-full text-xs text-muted-foreground">{t("testAfterFix")}</p>
+          )}
         </div>
       </div>
 
@@ -344,6 +350,9 @@ function EmailTemplateEditor({
             subject={preview.subject}
             html={preview.html}
             title={t("previewTitle", { name })}
+            behind={
+              problems.length > 0 ? t("previewBehind", { count: problems.length }) : undefined
+            }
             className="lg:w-140 lg:shrink-0"
           />
         )}

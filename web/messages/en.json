@@ -2578,7 +2578,7 @@
       "unknown": "Unknown",
       "failing": {
         "title": "{task} is failing on {model}",
-        "description": "{failed, number} of its {calls, number} calls to {provider} failed in the last 24 hours, the last at {time}.",
+        "description": "{failed, number} of its {calls, number} calls to {provider} failed in the last 24 hours, the last on {time} ICT.",
         "kind": {
           "key_refused": "The provider refused the key.",
           "rate_limited": "The provider is limiting calls.",
@@ -3055,6 +3055,9 @@
           "syntax": "A tag is not closed or not allowed. Use '{{name}}', '{{#name}}…{{/name}}' or '{{^name}}…{{/name}}'."
         },
         "unsaved": "You have unsaved changes",
+        "fixToSave": "{count, plural, one {Fix the problem marked below to save} other {Fix the # problems marked below to save}}",
+        "previewBehind": "{count, plural, one {This is the last version that worked. Fix the problem to see yours.} other {This is the last version that worked. Fix the # problems to see yours.}}",
+        "testAfterFix": "A test can be sent once the wording has no problems.",
         "discard": "Discard",
         "save": "Save",
         "edited": "Edited",
@@ -3091,6 +3094,8 @@
         "colorPicker": "Pick a colour",
         "colorHint": "Links and buttons. Choose a dark colour: white text sits on it.",
         "colorInvalid": "Write a colour as # and six hexadecimal digits.",
+        "colorFaint": "White text on this colour is hard to read. A darker colour reads better.",
+        "sampleLink": "A link in your colour",
         "footer": "Footer note",
         "footerHint": "Under the GenAI Fund band of every email.",
         "save": "Save appearance",
