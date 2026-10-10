@@ -48,7 +48,9 @@ function LeaveGuard({ active, back, title, description, leaveLabel, stayLabel }:
         return;
       }
       const url = new URL(link.href);
-      if (url.protocol !== location.protocol || url.href === location.href) {
+      // A link to another part of this page leaves nothing behind.
+      const here = url.origin === location.origin && url.pathname === location.pathname;
+      if (url.protocol !== location.protocol || (here && url.search === location.search)) {
         return;
       }
       event.preventDefault();

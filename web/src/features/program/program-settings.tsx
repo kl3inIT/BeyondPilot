@@ -565,11 +565,10 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
       <div
         className={
           dirty
-            ? "fixed inset-x-0 bottom-0 z-10 flex flex-col gap-2 border-t bg-background px-4 pt-3 pb-6 md:sticky md:inset-x-auto md:-mx-6 md:flex-row md:items-center md:justify-between md:px-6 md:py-3 lg:-mx-8 lg:px-8"
+            ? "fixed inset-x-0 bottom-0 z-10 flex flex-col gap-2 border-t bg-background px-4 pt-3 pb-6 md:sticky md:inset-x-auto md:-mx-6 md:flex-row md:items-center md:justify-end md:px-6 md:py-3 lg:-mx-8 lg:px-8"
             : "fixed inset-x-0 bottom-0 z-10 flex flex-col gap-2 border-t bg-background px-4 pt-3 pb-6 md:hidden"
         }
       >
-        <p className="hidden text-sm text-muted-foreground md:block">{t("unsaved")}</p>
         {draft && (
           <form.Subscribe selector={(formState) => missingToPublish(formState.values).length}>
             {(missing) =>
