@@ -28,8 +28,9 @@ test.describe("admin AI usage", () => {
     // Next's route announcer is an alert too.
     const alert = page.getByRole("alert").filter({ hasText: "is failing" });
     await expect(alert).toContainText("Reading documents is failing on cx/gpt-6-luna");
+    // The time carries its day and its zone: the alert covers 24 hours, so "14:24" alone could be yesterday's.
     await expect(alert).toContainText(
-      "93 of its 412 calls to 9Router failed in the last 24 hours, the last at 14:24.",
+      /93 of its 412 calls to 9Router failed in the last 24 hours, the last on (Oct 9|9 Oct), 14:24 ICT\./,
     );
     await expect(alert).toContainText("The request was too large for the provider.");
 

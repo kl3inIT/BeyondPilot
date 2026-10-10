@@ -22,6 +22,7 @@ import {
 } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { contrastWithWhite, READABLE_CONTRAST } from "./accent-contrast";
 import { EmailPreview } from "./email-preview";
 
 const HEX = /^#[0-9A-Fa-f]{6}$/;
@@ -89,7 +90,12 @@ function EmailAppearanceForm({
     const timer = window.setTimeout(() => {
       previewEmailTemplate({
         path: { kind: SAMPLE },
-        body: { ...sample, appearance: { accentColor: draft.accentColor, footer: draft.footer } },
+        body: {
+          subject: sample.subject,
+          // A link is added under the sample's own words, so the colour being chosen shows.
+          body: `${sample.body}\n\n[${t("sampleLink")}](https://beyondpilot.ai)`,
+          appearance: { accentColor: draft.accentColor, footer: draft.footer },
+        },
       })
         .then(({ data }) => {
           if (!stale) {
@@ -102,7 +108,7 @@ function EmailAppearanceForm({
       stale = true;
       window.clearTimeout(timer);
     };
-  }, [draft.accentColor, draft.footer, sample]);
+  }, [draft.accentColor, draft.footer, sample, t]);
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8">
@@ -130,9 +136,18 @@ function EmailAppearanceForm({
           <form.AppForm>
             <form.FormError />
           </form.AppForm>
-          <form.Field name="accentColor">
+          <form.Field
+            name="accentColor"
+            validators={{
+              // Said on leaving the field, not only when the form is saved.
+              onBlur: ({ value }) => (HEX.test(value) ? undefined : { message: t("colorInvalid") }),
+            }}
+          >
             {(field) => {
               const invalid = field.state.meta.isTouched && !field.state.meta.isValid;
+              const faint =
+                HEX.test(field.state.value) &&
+                contrastWithWhite(field.state.value) < READABLE_CONTRAST;
               return (
                 <Field data-invalid={invalid || undefined}>
                   <FieldLabel htmlFor="accent-color">{t("color")}</FieldLabel>
@@ -140,7 +155,8 @@ function EmailAppearanceForm({
                     <input
                       type="color"
                       aria-label={t("colorPicker")}
-                      value={HEX.test(field.state.value) ? field.state.value : "#000000"}
+                      // While the text is not a colour yet, the swatch keeps the saved one.
+                      value={HEX.test(field.state.value) ? field.state.value : settings.accentColor}
                       onChange={(event) => field.handleChange(event.target.value.toUpperCase())}
                       className="size-9 shrink-0 cursor-pointer rounded-md border bg-transparent p-1"
                     />
@@ -156,6 +172,8 @@ function EmailAppearanceForm({
                   </div>
                   {invalid ? (
                     <FieldError errors={field.state.meta.errors} />
+                  ) : faint ? (
+                    <FieldDescription role="status">{t("colorFaint")}</FieldDescription>
                   ) : (
                     <FieldDescription>{t("colorHint")}</FieldDescription>
                   )}
