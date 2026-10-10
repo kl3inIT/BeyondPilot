@@ -172,7 +172,8 @@ test.describe("admin programs", () => {
     // The list follows the form: the summary is ticked before it is saved.
     await expect(page.getByRole("link", { name: "Add a summary" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Add a cover image" })).toBeVisible();
-    await expect(shown(page, "Save and publish")).toBeEnabled();
+    // Publishing is not offered while the list still names something.
+    await expect(shown(page, "Save and publish")).toBeDisabled();
   });
 
   test("a save sends the whole program with its times in Vietnam", async ({
@@ -374,6 +375,51 @@ test.describe("admin programs", () => {
     await page
       .getByRole("textbox", { name: "Summary" })
       .fill("Builders meet once a month in Hanoi.");
+    // Publishing waits for the dates in their order and for the cover, which is uploaded at once.
+    await page.getByLabel("Starts", { exact: true }).fill("2026-11-02");
+    await page.getByLabel("Ends", { exact: true }).fill("2026-11-01");
+    await expect(shown(page, "Save and publish")).toBeDisabled();
+    await page.getByLabel("Ends", { exact: true }).fill("2026-11-02");
+    await page.route("**/api/storage/uploads**", async (route) => {
+      const request = route.request();
+      const path = new URL(request.url()).pathname;
+      const json = (body: unknown) => ({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(body),
+      });
+      if (path.endsWith("/confirm")) {
+        return route.fulfill(
+          json({
+            id: ready.coverFileId,
+            fileName: "cover.png",
+            mediaType: "image/png",
+            sizeBytes: 68,
+          }),
+        );
+      }
+      if (request.method() === "POST") {
+        return route.fulfill(
+          json({
+            id: ready.coverFileId,
+            method: "PUT",
+            url: `/api/storage/uploads/${ready.coverFileId}/content`,
+            headers: {},
+            expiresAt: new Date(Date.now() + 900_000).toISOString(),
+          }),
+        );
+      }
+      return route.fulfill({ status: 204 });
+    });
+    await page.locator("#coverFileId").setInputFiles({
+      name: "cover.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+        "base64",
+      ),
+    });
+    await expect(page.getByRole("button", { name: "Replace" })).toBeVisible();
     await shown(page, "Save and publish").click();
     const confirm = page.getByRole("alertdialog");
     await expect(confirm).toContainText("From now on its address is fixed");

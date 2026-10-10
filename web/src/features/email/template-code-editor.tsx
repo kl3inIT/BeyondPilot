@@ -252,6 +252,8 @@ function TemplateCodeEditor({
       onBlur={onBlur}
       extensions={extensions}
       theme="none"
+      // Tab moves on to the next control, as in any other field, instead of indenting.
+      indentWithTab={false}
       basicSetup={{
         lineNumbers: false,
         foldGutter: false,

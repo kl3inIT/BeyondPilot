@@ -83,7 +83,7 @@ function CoverUpload({ id, value, onChange, invalid, describedBy }: CoverUploadP
         }}
       />
       {value ? (
-        <div className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:flex-wrap sm:items-center">
           <Image
             src={publicFileUrl(value)}
             alt={t("alt")}

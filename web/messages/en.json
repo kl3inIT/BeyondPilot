@@ -3710,7 +3710,7 @@
     },
     "inReview": {
       "title": "GenAI Fund is reviewing your organization",
-      "lead": "Until it is approved, {name} does not appear in the directories and cannot list a solution publicly. You can complete the profile and invite people now.",
+      "lead": "Until it is approved, {name} does not appear in the directories and cannot list a solution publicly. You can complete the profile now; inviting people opens once it is approved.",
       "foot": "We email the owners when it is decided.",
       "edit": "Edit profile"
     },

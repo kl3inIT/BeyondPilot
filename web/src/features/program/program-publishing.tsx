@@ -57,7 +57,8 @@ function missingToPublish(
       ? !values.summary.trim()
       : issue === "cover"
         ? !values.coverFileId
-        : !values.startsOn || !values.endsOn,
+        : // Dates out of order are no dates to publish: both are ISO days, which compare as text.
+          !values.startsOn || !values.endsOn || values.endsOn < values.startsOn,
   );
 }
 
@@ -118,6 +119,8 @@ type PublishButtonProps = {
   program: AdminProgram;
   /** True while Settings holds changes that are not saved. */
   dirty: boolean;
+  /** Whether the form as it stands still lacks something a published program needs. */
+  blocked: boolean;
   /** Saves Settings and answers the program as saved, or null when the save was refused. */
   save: () => Promise<AdminProgram | null>;
   className?: string;
@@ -128,7 +131,7 @@ type PublishButtonProps = {
  * fixes the address. A draft that still lacks something cannot be published; with unsaved changes
  * the button stays open, since the changes may be what was missing.
  */
-function PublishButton({ program, dirty, save, className }: PublishButtonProps) {
+function PublishButton({ program, dirty, blocked, save, className }: PublishButtonProps) {
   const t = useTranslations("Admin.programs.settings.publish");
   const notify = useNotify();
   const router = useRouter();
@@ -163,11 +166,7 @@ function PublishButton({ program, dirty, save, className }: PublishButtonProps) 
 
   return (
     <>
-      <Button
-        className={className}
-        disabled={!dirty && program.publishIssues.length > 0}
-        onClick={() => setAsking(true)}
-      >
+      <Button className={className} disabled={blocked} onClick={() => setAsking(true)}>
         {dirty ? t("saveAndPublish") : t("button")}
       </Button>
       {asking && (
