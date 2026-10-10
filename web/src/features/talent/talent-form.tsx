@@ -360,7 +360,6 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
             id="talent-works-at"
             autoComplete="organization"
             maxLength={120}
-            placeholder={t("worksAtPlaceholder")}
             value={text.worksAt}
             onChange={write("worksAt")}
           />
@@ -373,15 +372,15 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
         </FieldLabel>
         <Input
           id="talent-headline"
-          aria-describedby="talent-headline-error"
+          aria-describedby={about("talent-headline")}
           maxLength={160}
-          placeholder={t("headlinePlaceholder")}
           value={text.headline}
           onChange={write("headline")}
           aria-required
           aria-invalid={bad("headline")}
         />
         {needed("headline")}
+        <FieldDescription id="talent-headline-hint">{t("headlineHint")}</FieldDescription>
       </Field>
       <div className="grid gap-x-3 gap-y-7 sm:grid-cols-2">
         <Field>
@@ -663,11 +662,14 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
                     id={`project-url-${project.key}`}
                     type="url"
                     inputMode="url"
-                    placeholder="https://"
                     maxLength={300}
                     value={project.url}
                     onChange={(event) => changeProject(project.key, "url", event.target.value)}
+                    aria-describedby={`project-url-${project.key}-hint`}
                   />
+                  <FieldDescription id={`project-url-${project.key}-hint`}>
+                    {t("urlHint")}
+                  </FieldDescription>
                 </Field>
               </div>
             </li>
@@ -692,14 +694,18 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
           type="url"
           inputMode="url"
           autoComplete="url"
-          placeholder="https://"
           maxLength={300}
           value={text.website}
           onChange={write("website")}
           aria-invalid={bad("website")}
-          aria-describedby="talent-website-error"
+          aria-describedby={about("talent-website")}
         />
-        {bad("website") && <FieldError id="talent-website-error">{t("websiteInvalid")}</FieldError>}
+        {/* A refused address replaces the hint: the two say the same. */}
+        {bad("website") ? (
+          <FieldError id="talent-website-error">{t("websiteInvalid")}</FieldError>
+        ) : (
+          <FieldDescription id="talent-website-hint">{t("urlHint")}</FieldDescription>
+        )}
       </Field>
 
       <h3 id="talent-visibility" className={group}>
@@ -722,15 +728,7 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
               <Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
               <FieldContent>
                 <FieldTitle>{t(`visibility.${choice}.title`)}</FieldTitle>
-                <FieldDescription>
-                  {choice === "hidden"
-                    ? t("visibility.hidden.lead")
-                    : t(
-                        profile?.status === "approved"
-                          ? "visibility.listed.leadApproved"
-                          : "visibility.listed.lead",
-                      )}
-                </FieldDescription>
+                <FieldDescription>{t(`visibility.${choice}.lead`)}</FieldDescription>
               </FieldContent>
               <RadioGroupItem value={choice} id={`talent-${choice}`} />
             </Field>

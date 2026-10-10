@@ -42,16 +42,13 @@ function JoinRequestCard({ request, asked, onDomain }: JoinRequestCardProps) {
           </blockquote>
         </figure>
       )}
-      <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">{t("foot")}</p>
-        <div className="flex shrink-0 flex-wrap gap-2">
-          <OrganizationAction action="declineRequest" id={request.id} prominence="secondary">
-            {t("decline")}
-          </OrganizationAction>
-          <OrganizationAction action="approveRequest" id={request.id} tone="success">
-            {t("approve")}
-          </OrganizationAction>
-        </div>
+      <div className="flex flex-wrap justify-end gap-2 border-t pt-4">
+        <OrganizationAction action="declineRequest" id={request.id} prominence="secondary">
+          {t("decline")}
+        </OrganizationAction>
+        <OrganizationAction action="approveRequest" id={request.id} tone="success">
+          {t("approve")}
+        </OrganizationAction>
       </div>
     </div>
   );

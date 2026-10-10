@@ -210,9 +210,13 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
             <h2 className="text-3xl font-semibold tracking-tight">
               {step === "review" ? t("review.title") : w(`steps.${step}.title`)}
             </h2>
-            <p className="text-base text-muted-foreground">
-              {step === "review" ? t("review.lead") : w(`steps.${step}.lead`)}
-            </p>
+            {step === "review" ? (
+              <p className="text-base text-muted-foreground">{t("review.lead")}</p>
+            ) : (
+              (step === "challenge" || step === "requirements") && (
+                <p className="text-base text-muted-foreground">{w(`steps.${step}.lead`)}</p>
+              )
+            )}
             {step !== "review" && (
               <p className="text-sm text-muted-foreground">{w("allRequired")}</p>
             )}
@@ -319,9 +323,6 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
                       >
                         {name === "review" ? t("review.title") : w(`steps.${name}.title`)}
                       </span>
-                      <span className="text-xs text-muted-foreground">
-                        {name === "review" ? t("review.meta") : w(`steps.${name}.meta`)}
-                      </span>
                     </button>
                   </li>
                 );
@@ -329,9 +330,11 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
             </ol>
           </nav>
           <p className="rounded-lg border bg-background p-3 text-xs text-muted-foreground">
-            {t("publishNote", {
-              organization: organization?.name ?? t("thisOrganization"),
-            })}
+            {values.hideOrganizationName
+              ? t("publishNoteUnnamed")
+              : t("publishNote", {
+                  organization: organization?.name ?? t("thisOrganization"),
+                })}
           </p>
         </aside>
       </div>

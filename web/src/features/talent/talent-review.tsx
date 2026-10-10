@@ -8,6 +8,7 @@ import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { ReasonDialog } from "@/components/composites/reason-dialog";
 import { reviewState } from "@/components/composites/review-status";
+import { Kbd } from "@/components/ui/kbd";
 import { useNotify } from "@/hooks/use-notify";
 import { useShortcuts } from "@/hooks/use-shortcuts";
 import { getPathname } from "@/i18n/navigation";
@@ -122,19 +123,15 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
         prominence="secondary"
         tone={approved ? "danger" : "default"}
         aria-keyshortcuts="S"
-        title={t("keyS")}
         onClick={() => setRejecting(true)}
       >
         {t(approved ? "takeDown" : "reject")}
+        <Kbd aria-hidden="true">S</Kbd>
       </Button>
       {waiting && (
-        <Button
-          pending={pending === "approve"}
-          aria-keyshortcuts="A"
-          title={t("keyA")}
-          onClick={approve}
-        >
+        <Button pending={pending === "approve"} aria-keyshortcuts="A" onClick={approve}>
           {t("approve")}
+          <Kbd aria-hidden="true">A</Kbd>
         </Button>
       )}
       {rejecting && (

@@ -41,11 +41,7 @@ function TalentDirectoryPage({ talent, search, hasProfile }: TalentDirectoryPage
       </header>
 
       {talent.total === 0 && !filtered ? (
-        <DataTableEmpty
-          icon={<UserSearchIcon aria-hidden="true" />}
-          title={t("empty.title")}
-          description={t("empty.description")}
-        >
+        <DataTableEmpty icon={<UserSearchIcon aria-hidden="true" />} title={t("empty.title")}>
           <Button prominence="secondary" size="sm" href={siteRoutes.talentProfile}>
             {t(hasProfile ? "edit" : "create")}
           </Button>
@@ -62,11 +58,7 @@ function TalentDirectoryPage({ talent, search, hasProfile }: TalentDirectoryPage
               ))}
             </ul>
           ) : (
-            <DataTableEmpty
-              icon={<SearchXIcon aria-hidden="true" />}
-              title={t("noMatch.title")}
-              description={t("noMatch.description")}
-            >
+            <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
               <Button prominence="secondary" size="sm" href={siteRoutes.talent}>
                 {t("noMatch.clear")}
               </Button>

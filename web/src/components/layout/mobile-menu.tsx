@@ -13,7 +13,7 @@ import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
 /**
- * Full-screen menu below 768px: one hint line per destination, then the ways in and the language.
+ * Full-screen menu below 768px: the destinations, then the ways in and the language.
  * A signed-in person has their account menu beside the menu button, so the ways in are left out.
  */
 function MobileMenu({ signedIn = false }: { signedIn?: boolean }) {
@@ -22,11 +22,11 @@ function MobileMenu({ signedIn = false }: { signedIn?: boolean }) {
   const close = () => setOpen(false);
 
   const links = [
-    { href: siteRoutes.solutions, label: t("nav.solutions"), hint: t("menu.solutionsHint") },
-    { href: siteRoutes.talent, label: t("nav.talent"), hint: t("menu.talentHint") },
-    { href: siteRoutes.useCases, label: t("nav.useCases"), hint: t("menu.useCasesHint") },
-    { href: siteRoutes.programs, label: t("nav.programs"), hint: t("menu.programsHint") },
-    { href: siteRoutes.howItWorks, label: t("nav.howItWorks"), hint: t("menu.howItWorksHint") },
+    { href: siteRoutes.solutions, label: t("nav.solutions") },
+    { href: siteRoutes.talent, label: t("nav.talent") },
+    { href: siteRoutes.useCases, label: t("nav.useCases") },
+    { href: siteRoutes.programs, label: t("nav.programs") },
+    { href: siteRoutes.howItWorks, label: t("nav.howItWorks") },
   ];
 
   return (
@@ -55,10 +55,9 @@ function MobileMenu({ signedIn = false }: { signedIn?: boolean }) {
                 key={link.href}
                 href={link.href}
                 onClick={close}
-                className="flex flex-col gap-1 border-b py-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="border-b py-4 text-lg font-semibold outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
               >
-                <span className="text-lg font-semibold">{link.label}</span>
-                <span className="text-sm text-muted-foreground">{link.hint}</span>
+                {link.label}
               </Link>
             ))}
           </nav>

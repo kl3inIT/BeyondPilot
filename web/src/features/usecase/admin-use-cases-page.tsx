@@ -60,9 +60,13 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
           >
             {useCase.title ?? t("untitled")}
           </Link>
-          <span className="truncate text-muted-foreground">
-            {t(`note.${useCase.status}`, { organization: useCase.organization.name })}
-          </span>
+          {useCase.status === "draft" ? (
+            <span className="truncate text-muted-foreground">
+              {t("note.draft", { organization: useCase.organization.name })}
+            </span>
+          ) : useCase.status === "approved" || useCase.status === "closed" ? (
+            <span className="truncate text-muted-foreground">{t(`note.${useCase.status}`)}</span>
+          ) : null}
         </div>
       </div>
     ),
@@ -102,31 +106,20 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
   const filtered = search.q.trim() !== "" || search.status !== null || search.organization !== null;
   const empty =
     rows.length > 0 ? null : filtered ? (
-      <DataTableEmpty
-        icon={<SearchXIcon aria-hidden="true" />}
-        title={t("noMatch.title")}
-        description={t("noMatch.description")}
-      >
+      <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.adminUseCases}>
           {t("noMatch.clear")}
         </Button>
       </DataTableEmpty>
     ) : (
-      <DataTableEmpty
-        icon={<FileTextIcon aria-hidden="true" />}
-        title={t("empty.title")}
-        description={t("empty.description")}
-      />
+      <DataTableEmpty icon={<FileTextIcon aria-hidden="true" />} title={t("empty.title")} />
     );
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <LiveRefresh />
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <AdminPageTitle destination="useCases">{t("title")}</AdminPageTitle>
-          <p className="text-sm text-muted-foreground">{t("lead")}</p>
-        </div>
+        <AdminPageTitle destination="useCases">{t("title")}</AdminPageTitle>
         <Button href={siteRoutes.adminUseCasesNew}>{t("create")}</Button>
       </div>
       <AdminUseCasesToolbar organizations={organizations} />

@@ -241,27 +241,18 @@ function MatchingSettingsPage({ settings }: { settings: MatchingSettings }) {
           <form.FormError />
         </form.AppForm>
 
-        <SettingsBlock
-          id="matching-run"
-          title={t("blocks.run.title")}
-          lead={t("blocks.run.lead")}
-          first
-        >
+        <SettingsBlock id="matching-run" title={t("blocks.run.title")} first>
           <FieldGroup className="max-w-xl">
             {limit("parallel")}
             {limit("candidates")}
           </FieldGroup>
         </SettingsBlock>
 
-        <SettingsBlock
-          id="matching-start"
-          title={t("blocks.start.title")}
-          lead={t("blocks.start.lead")}
-        >
+        <SettingsBlock id="matching-start" title={t("blocks.start.title")}>
           <FieldGroup className="max-w-xl">{limit("settleMinutes")}</FieldGroup>
         </SettingsBlock>
 
-        <SettingsBlock id="matching-day" title={t("blocks.day.title")} lead={t("blocks.day.lead")}>
+        <SettingsBlock id="matching-day" title={t("blocks.day.title")}>
           <FieldGroup className="max-w-xl">
             {limit("editRunsPerDay")}
             {limit("memberRunsPerDay")}

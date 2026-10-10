@@ -5,7 +5,7 @@ import {
   MapPinIcon,
   type LucideIcon,
 } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
@@ -45,7 +45,6 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
   const reasonName = useVocabulary("organizationRefusal");
   const takeDownReasonName = useVocabulary("organizationTakeDown");
   const countryName = useCountryName();
-  const format = useFormatter();
   const { organization, mergedFrom } = mine;
   const owner = mine.role === "owner";
 
@@ -198,13 +197,7 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
             title={t("merged.title", { name: mergedFrom.name, kept: organization.name })}
             description={<p>{t("merged.lead", { kept: organization.name })}</p>}
             badge={<Badge variant="info">{t("merged.badge")}</Badge>}
-            foot={t("merged.foot", {
-              day: format.dateTime(new Date(mergedFrom.mergedAt), {
-                day: "numeric",
-                month: "short",
-              }),
-              slug: mergedFrom.slug,
-            })}
+            foot={t("merged.foot", { slug: mergedFrom.slug })}
             actions={
               <OrganizationAction action="dismissMergeNotice" prominence="secondary">
                 {t("merged.dismiss")}

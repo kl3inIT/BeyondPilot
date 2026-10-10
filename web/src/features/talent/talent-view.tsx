@@ -70,9 +70,9 @@ function TalentView({ profile }: { profile: TalentContent }) {
           <h2 id="talent-projects" className="text-xl font-semibold">
             {t("projects")}
           </h2>
-          <p className="text-sm text-muted-foreground">
-            {profile.projects.length > 0 ? t("projectsLead") : t("noProject")}
-          </p>
+          {profile.projects.length === 0 && (
+            <p className="text-sm text-muted-foreground">{t("noProject")}</p>
+          )}
         </div>
         {profile.projects.length > 0 && (
           <ul className="flex flex-col gap-3">

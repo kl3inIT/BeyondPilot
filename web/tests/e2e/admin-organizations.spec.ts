@@ -597,11 +597,13 @@ test.describe("admin organizations", () => {
     await page.getByRole("menuitem", { name: "Make owner" }).click();
     await expect(page.getByText("Teller 02 is now an owner.")).toBeVisible();
 
-    // The only owner is made a member only after being told the organization will have none.
+    // The only owner is made a member only after being told what nobody can do without one.
     await actions("Teller 01").click();
     await page.getByRole("menuitem", { name: "Make member" }).click();
     const demote = page.getByRole("alertdialog", { name: "Make the only owner a member?" });
-    await expect(demote.getByText("The organization will have no owner.")).toBeVisible();
+    await expect(
+      demote.getByText("Nobody can invite people or change its profile until you invite an owner."),
+    ).toBeVisible();
     await demote.getByRole("button", { name: "Make member" }).click();
     await expect(page.getByText("Teller 01 is now a member.")).toBeVisible();
 

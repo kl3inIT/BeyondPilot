@@ -144,9 +144,10 @@ function AddHost() {
   const t = useTranslations("Admin.mcp.setup.hosts");
   const change = useChange();
   const [host, setHost] = useState("");
+  const id = useId();
   return (
     <form
-      className="flex gap-2"
+      className="flex flex-col gap-2"
       onSubmit={(event) => {
         event.preventDefault();
         if (host.trim()) {
@@ -157,16 +158,21 @@ function AddHost() {
         }
       }}
     >
-      <Input
-        aria-label={t("add")}
-        placeholder="app.example.com"
-        value={host}
-        onChange={(event) => setHost(event.target.value)}
-        className="flex-1"
-      />
-      <Button type="submit" prominence="secondary" pending={change.pending}>
-        {t("add")}
-      </Button>
+      <div className="flex gap-2">
+        <Input
+          aria-label={t("add")}
+          aria-describedby={`${id}-hint`}
+          value={host}
+          onChange={(event) => setHost(event.target.value)}
+          className="flex-1"
+        />
+        <Button type="submit" prominence="secondary" pending={change.pending}>
+          {t("add")}
+        </Button>
+      </div>
+      <p id={`${id}-hint`} className="text-sm text-muted-foreground">
+        {t("addHint")}
+      </p>
     </form>
   );
 }

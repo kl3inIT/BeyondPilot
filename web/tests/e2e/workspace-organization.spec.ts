@@ -100,11 +100,7 @@ test.describe("workspace organization", () => {
     await page.goto("/workspace/organization");
 
     await page.getByRole("searchbox", { name: "Company or team name" }).fill("Sài Gòn Logistics");
-    await expect(
-      page.getByText(
-        "No organization matches “Sài Gòn Logistics”. Check the spelling, or create it.",
-      ),
-    ).toBeVisible();
+    await expect(page.getByText("No organization matches “Sài Gòn Logistics”.")).toBeVisible();
     await page.getByRole("link", { name: "Create a new organization" }).click();
 
     await expect(page).toHaveURL("/workspace/organization/new");
@@ -178,7 +174,9 @@ test.describe("workspace organization", () => {
     );
     await expect(page.getByText("Invited by Minh Trần on Oct 1, 2026")).toBeVisible();
     await expect(
-      page.getByText("Minh Trần invited hoa.le@example.com to join as a member."),
+      page.getByText(
+        "As a member you are shown on Pocket Policy's team; only owners edit its profile and solutions.",
+      ),
     ).toBeVisible();
     await expectNoSeriousA11yViolations(page);
 
@@ -228,7 +226,7 @@ test.describe("workspace organization", () => {
       page.getByRole("heading", { name: "Pocket Policy Ltd is now part of Pocket Policy" }),
     ).toBeVisible();
     await expect(
-      page.getByText("Merged on Oct 7. The old address pocket-policy-ltd leads to the new page."),
+      page.getByText("The old address pocket-policy-ltd leads to the new page."),
     ).toBeVisible();
     await expectNoSeriousA11yViolations(page);
 
@@ -253,7 +251,9 @@ test.describe("workspace organization", () => {
     );
     await expect(page.getByText("Company · Singapore · declined on Oct 1, 2026")).toBeVisible();
     await expect(
-      page.getByText("An owner of Pocket Policy declined the request.", { exact: false }),
+      page.getByText(
+        "Ask an owner of Pocket Policy directly if this is a mistake, or create your own organization.",
+      ),
     ).toBeVisible();
     await expectNoSeriousA11yViolations(page);
 
@@ -474,7 +474,7 @@ test.describe("workspace organization", () => {
     await expectNoSeriousA11yViolations(page);
 
     await dialog.getByLabel("Email addresses").fill("an@pocketpolicy.example, binh@example.com");
-    await dialog.getByLabel("Role").selectOption({ label: "Owner" });
+    await dialog.getByRole("combobox", { name: "Role" }).selectOption({ label: "Owner" });
     await dialog.getByRole("button", { name: "Send invitations" }).click();
 
     await expect(page.getByText("2 invitations sent.")).toBeVisible();

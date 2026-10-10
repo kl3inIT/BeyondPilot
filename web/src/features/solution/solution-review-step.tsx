@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { TextButton } from "@/components/actions/text-button";
 import { ReviewReadiness } from "@/components/composites/review-readiness";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { CustomerDeployment } from "@/lib/api/generated";
 
@@ -200,10 +200,16 @@ function ReviewStep({
           id={fieldId("listed")}
           checked={draft.listed}
           onCheckedChange={(checked) => change({ listed: checked === true })}
+          aria-describedby={`${fieldId("listed")}-hint`}
         />
-        <FieldLabel htmlFor={fieldId("listed")}>
-          <span className="font-normal">{t("review.listed")}</span>
-        </FieldLabel>
+        <FieldContent>
+          <FieldLabel htmlFor={fieldId("listed")}>
+            <span className="font-normal">{t("review.listed")}</span>
+          </FieldLabel>
+          <FieldDescription id={`${fieldId("listed")}-hint`}>
+            {t("review.listedHint")}
+          </FieldDescription>
+        </FieldContent>
       </Field>
     </>
   );

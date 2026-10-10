@@ -48,11 +48,7 @@ async function UseCasesPage({ useCases, search }: UseCasesPageProps) {
           </ul>
         ) : (
           <div className="rounded-2xl border bg-card">
-            <DataTableEmpty
-              icon={<SearchXIcon aria-hidden="true" />}
-              title={t("empty.title")}
-              description={t("empty.description")}
-            >
+            <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("empty.title")}>
               <Button prominence="secondary" size="sm" href={siteRoutes.useCases}>
                 {t("empty.clear")}
               </Button>

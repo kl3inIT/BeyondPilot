@@ -91,11 +91,12 @@ function AccountContactForm({ account }: { account: Me }) {
             autoComplete="tel"
             inputMode="tel"
             maxLength={40}
-            placeholder="+84 912 345 678"
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
             aria-invalid={badPhone || undefined}
+            aria-describedby="account-phone-hint"
           />
+          <FieldDescription id="account-phone-hint">{t("phoneHint")}</FieldDescription>
           {badPhone && <FieldError>{t("phoneInvalid")}</FieldError>}
         </Field>
       </div>

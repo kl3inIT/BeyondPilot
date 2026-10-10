@@ -136,7 +136,6 @@ async function ProgramsPage({ groups }: { groups: ReturnType<typeof groupProgram
         {empty && (
           <div className="flex flex-col items-start gap-3 rounded-2xl border bg-card p-6">
             <p className="font-medium">{t("empty.title")}</p>
-            <p className="text-sm text-muted-foreground">{t("empty.description")}</p>
             <Button prominence="secondary" size="sm" href={siteRoutes.programs}>
               {t("empty.clear")}
             </Button>

@@ -185,7 +185,6 @@ function AppConsentExpired() {
   return (
     <Frame>
       <Head title={t("title")}>
-        <p>{t("lead")}</p>
         <p>{t("next")}</p>
       </Head>
       <Button href={siteRoutes.home} prominence="secondary" size="lg" className="w-full">

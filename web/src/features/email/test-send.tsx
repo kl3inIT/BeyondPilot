@@ -2,8 +2,9 @@
 
 import { SendIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useId, useState } from "react";
 
+import { FieldError } from "@/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
@@ -36,6 +37,7 @@ function TestSend({
   const t = useTranslations("Admin.email.testSend");
   const [to, setTo] = useState(defaultTo);
   const [invalid, setInvalid] = useState(false);
+  const errorId = useId();
 
   function send() {
     const address = to.trim();
@@ -47,35 +49,38 @@ function TestSend({
   }
 
   return (
-    <InputGroup className={cn("w-full sm:w-80", className)} data-invalid={invalid || undefined}>
-      <InputGroupInput
-        type="email"
-        inputMode="email"
-        autoCapitalize="none"
-        spellCheck={false}
-        maxLength={254}
-        aria-label={t("to")}
-        aria-invalid={invalid || undefined}
-        title={invalid ? t("invalid") : undefined}
-        value={to}
-        onChange={(event) => {
-          setTo(event.target.value);
-          setInvalid(false);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            send();
-          }
-        }}
-      />
-      <InputGroupAddon align="inline-end">
-        <InputGroupButton size="sm" disabled={pending || disabled} onClick={send}>
-          {pending ? <Spinner /> : <SendIcon aria-hidden="true" />}
-          {t("send")}
-        </InputGroupButton>
-      </InputGroupAddon>
-    </InputGroup>
+    <div className={cn("flex w-full flex-col gap-1 sm:w-80", className)}>
+      <InputGroup data-invalid={invalid || undefined}>
+        <InputGroupInput
+          type="email"
+          inputMode="email"
+          autoCapitalize="none"
+          spellCheck={false}
+          maxLength={254}
+          aria-label={t("to")}
+          aria-invalid={invalid || undefined}
+          aria-describedby={invalid ? errorId : undefined}
+          value={to}
+          onChange={(event) => {
+            setTo(event.target.value);
+            setInvalid(false);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              send();
+            }
+          }}
+        />
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton size="sm" disabled={pending || disabled} onClick={send}>
+            {pending ? <Spinner /> : <SendIcon aria-hidden="true" />}
+            {t("send")}
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+      {invalid && <FieldError id={errorId}>{t("invalid")}</FieldError>}
+    </div>
   );
 }
 

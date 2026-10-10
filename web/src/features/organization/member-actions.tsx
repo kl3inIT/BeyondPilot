@@ -191,7 +191,6 @@ function MemberActions({ member, owner }: MemberActionsProps) {
                   id="member-job-title"
                   autoComplete="organization-title"
                   maxLength={120}
-                  placeholder={t("jobTitle.placeholder")}
                   value={jobTitle}
                   onChange={(event) => setJobTitle(event.target.value)}
                 />

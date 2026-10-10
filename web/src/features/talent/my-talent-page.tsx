@@ -42,7 +42,8 @@ function MyTalentPage({ mine, accountName }: MyTalentPageProps) {
         timeStyle: "short",
       }),
     }),
-    t(`seen.${seenBy(profile)}`),
+    // The decision card below says who sees a profile in review or approved.
+    ...(profile.status === "approved" || profile.status === "in_review" ? [] : [t("seen.onlyYou")]),
   ];
 
   return (
@@ -86,17 +87,14 @@ function MyTalentPage({ mine, accountName }: MyTalentPageProps) {
           </TabsContent>
           <TabsContent value="enquiries">
             <div className="mt-4 flex flex-col gap-3">
-              <div className="flex flex-col gap-1">
-                <h2 className="text-lg font-semibold">
-                  {t("inbox.title")}
-                  {waiting > 0 && (
-                    <span className="ml-2 text-sm font-medium text-primary">
-                      {t("inbox.waiting", { count: waiting })}
-                    </span>
-                  )}
-                </h2>
-                <p className="text-sm text-muted-foreground">{t("inbox.lead")}</p>
-              </div>
+              <h2 className="text-lg font-semibold">
+                {t("inbox.title")}
+                {waiting > 0 && (
+                  <span className="ml-2 text-sm font-medium text-primary">
+                    {t("inbox.waiting", { count: waiting })}
+                  </span>
+                )}
+              </h2>
               {mine.enquiries.length > 0 ? (
                 <ul className="overflow-hidden rounded-2xl border bg-card">
                   {mine.enquiries.map((enquiry) => (
@@ -114,14 +112,6 @@ function MyTalentPage({ mine, accountName }: MyTalentPageProps) {
       </div>
     </div>
   );
-}
-
-/** Who can open the profile now, which the line under the title says after its status. */
-function seenBy(profile: TalentProfile) {
-  if (profile.status === "approved") {
-    return profile.listed && !profile.suspendedAt ? "listed" : "hidden";
-  }
-  return profile.status === "in_review" ? "inReview" : "onlyYou";
 }
 
 /**
@@ -158,7 +148,7 @@ function Decision({ profile }: { profile: TalentProfile }) {
       <NoticeCard
         titleAs="h2"
         title={t(profile.listed ? "approved.listed" : "approved.unlisted")}
-        description={<p>{t(profile.listed ? "approved.listedLead" : "approved.unlistedLead")}</p>}
+        description={!profile.listed && <p>{t("approved.unlistedLead")}</p>}
         badge={badge}
         foot={t("approved.foot")}
         actions={

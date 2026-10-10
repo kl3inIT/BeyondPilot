@@ -11,7 +11,7 @@ import { ChoiceSelect } from "@/components/composites/choice-select";
 import { RequiredMark } from "@/components/composites/required-mark";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
@@ -163,12 +163,15 @@ function AdminCreateOrganization() {
                     id="admin-organization-website"
                     type="url"
                     inputMode="url"
-                    placeholder="https://"
                     maxLength={300}
                     value={text.website}
                     onChange={write("website")}
                     aria-invalid={bad("website")}
+                    aria-describedby="admin-organization-website-hint"
                   />
+                  <FieldDescription id="admin-organization-website-hint">
+                    {t("websiteHint")}
+                  </FieldDescription>
                   {bad("website") && <FieldError>{t("websiteInvalid")}</FieldError>}
                 </Field>
                 <Field data-invalid={bad("ownerEmail")}>
@@ -195,11 +198,14 @@ function AdminCreateOrganization() {
                     autoComplete="off"
                     spellCheck={false}
                     maxLength={253}
-                    placeholder="example.com"
                     value={domain.text}
                     aria-invalid={domain.problem !== null || undefined}
+                    aria-describedby="admin-organization-domain-hint"
                     onChange={(event) => domain.change(event.target.value)}
                   />
+                  <FieldDescription id="admin-organization-domain-hint">
+                    {t("emailDomainHint")}
+                  </FieldDescription>
                   {domain.problem && <FieldError>{f(`domain.${domain.problem}`)}</FieldError>}
                 </Field>
                 <Field data-invalid={bad("country")}>
@@ -232,7 +238,6 @@ function AdminCreateOrganization() {
                     id="admin-organization-founded-year"
                     inputMode="numeric"
                     maxLength={4}
-                    placeholder="2021"
                     value={text.foundedYear}
                     onChange={write("foundedYear")}
                     aria-invalid={bad("foundedYear")}

@@ -93,11 +93,7 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
   const narrowed = Boolean(search.state || search.q.trim());
   const empty =
     rows.length > 0 ? null : narrowed ? (
-      <DataTableEmpty
-        icon={<SearchXIcon aria-hidden="true" />}
-        title={t("noMatch.title")}
-        description={t("noMatch.description")}
-      >
+      <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.adminPrograms}>
           {t("noMatch.clear")}
         </Button>
@@ -113,10 +109,7 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <AdminPageTitle destination="programs">{t("title")}</AdminPageTitle>
-          <p className="hidden text-sm text-muted-foreground md:block">{t("lead")}</p>
-        </div>
+        <AdminPageTitle destination="programs">{t("title")}</AdminPageTitle>
         <NewProgramDialog locale={locale} />
       </div>
       <ProgramsToolbar counts={list.counts} total={list.total} />

@@ -68,7 +68,6 @@ function AdminInvite({ organization }: { organization: { id: string; name: strin
               tone="info"
               icon={MailPlusIcon}
               title={t("title", { name: organization.name })}
-              description={t("lead")}
             />
             <FieldGroup>
               <Field data-invalid={invalid || undefined}>
@@ -100,7 +99,6 @@ function AdminInvite({ organization }: { organization: { id: string; name: strin
                 </NativeSelect>
               </Field>
             </FieldGroup>
-            <p className="text-sm text-muted-foreground">{t("note")}</p>
             <DialogFooter variant="plain">
               <Button
                 size="lg"

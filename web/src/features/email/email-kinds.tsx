@@ -65,6 +65,25 @@ function isEmailKind(kind: string): kind is EmailKind {
   return kind in kindIcons;
 }
 
+/** The kinds with a line of description: those whose name does not say who receives the email or what it holds. */
+const describedKinds = [
+  "organization_merged",
+  "application_outcome",
+  "introduction_request",
+  "introduction_declined",
+  "solution_rejected",
+  "talent_enquiry",
+  "talent_introduction",
+  "talent_enquiry_declined",
+  "talent_enquiry_closed",
+] as const satisfies readonly EmailKind[];
+
+type DescribedKind = (typeof describedKinds)[number];
+
+function hasKindDescription(kind: string): kind is DescribedKind {
+  return describedKinds.some((described) => described === kind);
+}
+
 /** The icon of a kind; an envelope for one this version of the screen does not know. */
 function KindIcon({ kind, className }: { kind: string; className?: string }) {
   const Icon = isEmailKind(kind) ? kindIcons[kind] : MailIcon;
@@ -73,4 +92,4 @@ function KindIcon({ kind, className }: { kind: string; className?: string }) {
   );
 }
 
-export { isEmailKind, KindIcon };
+export { hasKindDescription, isEmailKind, KindIcon };

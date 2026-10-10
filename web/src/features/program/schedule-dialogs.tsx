@@ -207,7 +207,6 @@ function EventDialog({ value, onSave, onDelete, onClose }: DialogProps<EventValu
                 label={t("registrationUrl")}
                 type="url"
                 optional
-                placeholder="https://luma.com/…"
                 description={t("registrationUrlHint")}
               />
             )}

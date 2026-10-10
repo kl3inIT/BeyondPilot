@@ -116,18 +116,18 @@ function EmailSetupChecklist() {
               </span>
             )}
           </h2>
-          <p className="text-sm text-muted-foreground">
-            {setup
-              ? t("lead", {
-                  domain: setup.domain,
-                  when: format.dateTime(new Date(setup.checkedAt), {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hourCycle: "h23",
-                  }),
-                })
-              : t("leadChecking")}
-          </p>
+          {setup && (
+            <p className="text-sm text-muted-foreground">
+              {t("lead", {
+                domain: setup.domain,
+                when: format.dateTime(new Date(setup.checkedAt), {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hourCycle: "h23",
+                }),
+              })}
+            </p>
+          )}
         </div>
         <Button prominence="secondary" size="sm" pending={checking} onClick={check}>
           <RefreshCwIcon aria-hidden="true" />

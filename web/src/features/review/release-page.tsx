@@ -79,7 +79,6 @@ async function ReleasePage({ release }: { release: Release }) {
       {head.releasedAt ? (
         <Alert>
           <AlertTitle>{t("released", { at: format.moment(head.releasedAt) })}</AlertTitle>
-          <AlertDescription>{t("releasedNote")}</AlertDescription>
         </Alert>
       ) : (
         blocked && (

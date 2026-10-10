@@ -48,25 +48,19 @@ test.describe("admin audit log", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
-  test("the short time carries the full date and time", async ({
+  test("the time of an event is shown to the second, with its year", async ({
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
-    test.skip(isMobile, "a phone has no pointer to hover with");
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/audit-log");
 
-    const time = page.getByRole("table").locator("time").first();
-    const tooltip = page.locator('[data-slot="tooltip-content"]');
-    // A hover before the page has hydrated finds no handler, so it is repeated until the tooltip shows.
-    await expect(async () => {
-      await page.mouse.move(0, 0);
-      await time.hover();
-      await expect(tooltip).toBeVisible({ timeout: 1000 });
-    }).toPass();
-    await expect(tooltip).toHaveText(/^\w+, \w+ \d{1,2}, \d{4} at \d{2}:\d{2}:\d{2}$/);
+    // The table and the stacked rows both carry it; only one of them shows at a width.
+    await expect(page.locator("time:visible").first()).toHaveText(
+      /^(Today|\w+ \d{1,2}, \d{4}), \d{2}:\d{2}:\d{2}$/,
+    );
+    await expect(page.locator('[data-slot="tooltip-content"]')).toHaveCount(0);
   });
 
   test("period, action and search are the address, and the server answers them", async ({

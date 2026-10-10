@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify, type MessageKey } from "@/hooks/use-notify";
 import { useRouter } from "@/i18n/navigation";
@@ -124,7 +124,6 @@ function AdminUseCaseDecision({
               value={reason}
               onChange={(event) => setReason(event.target.value)}
             />
-            <FieldDescription>{t("dialog.hint", { organization })}</FieldDescription>
           </Field>
           <DialogFooter>
             <Button

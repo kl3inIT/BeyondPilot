@@ -10,7 +10,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -152,7 +151,7 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
       <Input
         id={`${id}-${key}`}
         inputMode="decimal"
-        placeholder="—"
+        aria-describedby={`${id}-prices-hint`}
         value={value}
         onChange={(event) => set(event.target.value)}
       />
@@ -179,7 +178,6 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
                 ? t("editTitle", { name: model.modelName })
                 : t("addTitle", { name: provider.name })}
             </DialogTitle>
-            <DialogDescription>{editing ? t("editLead") : t("addLead")}</DialogDescription>
           </DialogHeader>
           <FieldGroup>
             <Field>
@@ -190,19 +188,24 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
                 maxLength={200}
                 required
                 readOnly={editing}
+                aria-describedby={editing ? undefined : `${id}-model-hint`}
                 value={modelName}
                 onChange={(event) => setModelName(event.target.value)}
               />
+              {!editing && (
+                <FieldDescription id={`${id}-model-hint`}>{t("modelNameHint")}</FieldDescription>
+              )}
             </Field>
             <Field>
               <FieldLabel htmlFor={`${id}-display`}>{t("displayName")}</FieldLabel>
               <Input
                 id={`${id}-display`}
                 maxLength={200}
-                placeholder={modelName}
+                aria-describedby={`${id}-display-hint`}
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
               />
+              <FieldDescription id={`${id}-display-hint`}>{t("displayNameHint")}</FieldDescription>
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field>
@@ -220,7 +223,6 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
                 <Input
                   id={`${id}-output`}
                   inputMode="numeric"
-                  placeholder="—"
                   aria-invalid={outputTooLarge || undefined}
                   aria-describedby={`${id}-output-hint`}
                   value={maxOutput}
@@ -234,7 +236,7 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
               {amount("outputPrice", outputPrice, setOutputPrice)}
               {amount("cachedPrice", cachedPrice, setCachedPrice)}
             </div>
-            <FieldDescription>
+            <FieldDescription id={`${id}-prices-hint`}>
               {model && !model.priceFromCatalog ? t("pricesOwn") : t("pricesFromCatalog")}
             </FieldDescription>
             <FieldSet>

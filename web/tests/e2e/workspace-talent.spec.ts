@@ -28,9 +28,7 @@ test.describe("workspace talent profile", () => {
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your talent profile");
     await expect(
-      page.getByText(
-        "Tell companies what you build. GenAI Fund reviews the profile before it is listed.",
-      ),
+      page.getByText("GenAI Fund reviews the profile before it is listed."),
     ).toBeVisible();
     await expect(page.getByLabel("Name shown")).toHaveValue("Minh Trần");
     const readiness = page.getByRole("note").filter({ hasText: "Before you send it for review" });

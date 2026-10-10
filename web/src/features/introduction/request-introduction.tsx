@@ -122,7 +122,9 @@ function RequestIntroduction({
             <div className="flex flex-col gap-4">
               <DialogHeader>
                 <DialogTitle>{t(`blocked.${blocked}.title`)}</DialogTitle>
-                <DialogDescription>{t(`blocked.${blocked}.lead`)}</DialogDescription>
+                {blocked === "organization" && (
+                  <DialogDescription>{t("blocked.organization.lead")}</DialogDescription>
+                )}
               </DialogHeader>
               <DialogFooter>
                 <Button prominence="secondary" onClick={() => close(false)}>
@@ -151,15 +153,17 @@ function RequestIntroduction({
                   id="introduction-message"
                   rows={5}
                   maxLength={2000}
-                  placeholder={t("placeholder")}
                   value={message}
+                  aria-describedby={invalid ? undefined : "introduction-message-hint"}
                   onChange={(event) => setMessage(event.target.value)}
                   aria-invalid={invalid || undefined}
                 />
                 {invalid ? (
                   <FieldError>{t("required")}</FieldError>
                 ) : (
-                  <FieldDescription>{t("hint", { provider })}</FieldDescription>
+                  <FieldDescription id="introduction-message-hint">
+                    {t("hint", { provider })}
+                  </FieldDescription>
                 )}
               </Field>
               <DialogFooter>

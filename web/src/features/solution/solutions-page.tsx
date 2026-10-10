@@ -54,11 +54,7 @@ function SolutionsPage({ solutions, search }: SolutionsPageProps) {
           ))}
         </ul>
       ) : filtered ? (
-        <DataTableEmpty
-          icon={<SearchXIcon aria-hidden="true" />}
-          title={t("noMatch.title")}
-          description={t("noMatch.description")}
-        >
+        <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
           <Button prominence="secondary" size="sm" href={siteRoutes.solutions}>
             {t("noMatch.clear")}
           </Button>

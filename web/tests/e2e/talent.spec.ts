@@ -73,9 +73,7 @@ test.describe("talent directory", () => {
     await expect(page).toHaveURL("/talent/linh-nguyen");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Linh Nguyễn");
     await expect(page.getByText("Claims assistant for an insurer")).toBeVisible();
-    await expect(
-      page.getByText("Each project shows how far it went, as the person states it."),
-    ).toBeVisible();
+    await expect(page.getByText("Stages are as the person states them.")).toBeVisible();
     await expect(page.getByText("Contract, Advisory")).toBeVisible();
     await expect(page.getByText("In production", { exact: true })).toBeVisible();
     await expect(page.getByText("project on the profile")).toBeVisible();
@@ -119,9 +117,7 @@ test.describe("talent directory", () => {
 
     await contact(page, "Arif Hidayat").click();
     const dialog = page.getByRole("dialog", { name: "Contact Arif Hidayat" });
-    await expect(
-      dialog.getByText("Neither email address is shared unless they accept."),
-    ).toBeVisible();
+    await expect(dialog.getByText("Your email address stays hidden.")).toBeVisible();
     await dialog.getByRole("button", { name: "Send message" }).click();
     await expect(dialog.getByText("Write a message first.")).toBeVisible();
     // An account without a name signs the message with one; an address is never shown in its place.
@@ -175,7 +171,6 @@ test.describe("talent directory", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/talent/dat-phan");
 
-    await expect(page.getByText("This is your profile, as others see it.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Edit your profile" })).toHaveAttribute(
       "href",
       "/workspace/talent",

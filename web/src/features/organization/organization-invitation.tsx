@@ -85,7 +85,6 @@ function OrganizationInvitation({ invitation }: { invitation: Invitation }) {
             id="invitation-job-title"
             autoComplete="organization-title"
             maxLength={120}
-            placeholder={t(owner ? "jobTitlePlaceholderOwner" : "jobTitlePlaceholder")}
             value={jobTitle}
             onChange={(event) => setJobTitle(event.target.value)}
           />
@@ -111,11 +110,7 @@ function OrganizationInvitation({ invitation }: { invitation: Invitation }) {
         </Button>
       </form>
       <p className="text-xs text-muted-foreground">
-        {t(owner ? "noteOwner" : "noteMember", {
-          inviter: invitation.invitedBy,
-          email: invitation.email,
-          name: invitation.organizationName,
-        })}
+        {t(owner ? "noteOwner" : "noteMember", { name: invitation.organizationName })}
       </p>
     </div>
   );

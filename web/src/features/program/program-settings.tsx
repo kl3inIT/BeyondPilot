@@ -51,21 +51,24 @@ import {
 } from "./program-values";
 import { EventDialog, KeyDateDialog } from "./schedule-dialogs";
 
-/** One part of Settings: its title and what it is for beside its fields, ruled from the part above. */
+/**
+ * One part of Settings: its title beside its fields, with what the title alone does not say, ruled
+ * from the part above.
+ */
 function SettingsSection({
   title,
   what,
   children,
 }: {
   title: string;
-  what: string;
+  what?: string;
   children: React.ReactNode;
 }) {
   return (
     <section className="flex flex-col gap-x-12 gap-y-4 border-t pt-8 first:border-t-0 first:pt-0 lg:flex-row">
       <div className="flex flex-col gap-1 lg:w-72 lg:shrink-0">
         <h2 className="text-base font-medium">{title}</h2>
-        <p className="text-sm text-muted-foreground">{what}</p>
+        {what && <p className="text-sm text-muted-foreground">{what}</p>}
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-5 md:max-w-2xl">{children}</div>
     </section>
@@ -253,7 +256,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
       {tabs}
 
       <div className="flex flex-col gap-8">
-        <SettingsSection title={t("basics.title")} what={t("basics.what")}>
+        <SettingsSection title={t("basics.title")}>
           <form.AppField name="name">
             {(field) => <field.TextField label={t("basics.name")} maxLength={120} />}
           </form.AppField>
@@ -289,7 +292,6 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
               {(field) => <field.TextField label={t("basics.endsOn")} type="date" />}
             </form.AppField>
           </div>
-          <p className="-mt-3 text-sm text-muted-foreground">{t("basics.daysHint")}</p>
           <form.AppField name="summary">
             {(field) => (
               <field.TextareaField
@@ -325,11 +327,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
                     value={field.state.value}
                     onChange={field.handleChange}
                     invalid={errors.length > 0}
-                    describedBy={`${field.name}-hint`}
                   />
-                  <FieldDescription id={`${field.name}-hint`}>
-                    {t("basics.coverHint")}
-                  </FieldDescription>
                   <FieldError errors={errors} />
                 </Field>
               );
@@ -337,7 +335,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
           </form.Field>
         </SettingsSection>
 
-        <SettingsSection title={t("page.title")} what={t("page.what")}>
+        <SettingsSection title={t("page.title")}>
           <form.Field name="pageKind">
             {(field) => (
               <RadioGroup
@@ -367,7 +365,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
                     <field.TextField
                       label={t("page.externalUrl")}
                       type="url"
-                      placeholder="https://"
+                      description={t("page.externalUrlHint")}
                     />
                   )}
                 </form.AppField>

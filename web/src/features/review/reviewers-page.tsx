@@ -39,11 +39,7 @@ function ReviewersPage({ programId, programName, reviewers, criteria }: Reviewer
           <InviteReviewer programId={programId} programName={programName} />
         </div>
         {reviewers.items.length === 0 ? (
-          <DataTableEmpty
-            icon={<UsersIcon aria-hidden="true" />}
-            title={t("empty.title")}
-            description={t("empty.description")}
-          />
+          <DataTableEmpty icon={<UsersIcon aria-hidden="true" />} title={t("empty.title")} />
         ) : (
           <DataTable>
             <TableHeader>

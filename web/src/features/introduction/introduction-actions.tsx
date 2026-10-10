@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
@@ -22,6 +22,7 @@ function IntroductionActions({ id, solutionName }: IntroductionActionsProps) {
   const t = useTranslations("Introduction.received.actions");
   const notify = useNotify();
   const router = useRouter();
+  const replyHintId = useId();
   const [pending, setPending] = useState<"reply" | "decline" | null>(null);
   const [declining, setDeclining] = useState(false);
 
@@ -43,11 +44,16 @@ function IntroductionActions({ id, solutionName }: IntroductionActionsProps) {
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap items-center gap-2">
+      {/* A reply asks nothing first, so what it shares is said beside it. */}
+      <span id={replyHintId} className="text-xs">
+        {t("replyHint")}
+      </span>
       <Button
         size="sm"
         pending={pending === "reply"}
         disabled={pending !== null}
+        aria-describedby={replyHintId}
         onClick={() => answer("reply")}
       >
         {t("reply")}

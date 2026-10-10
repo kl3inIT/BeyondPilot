@@ -80,6 +80,7 @@ function OrganizationLogoUpload({ value, onChange }: OrganizationLogoUploadProps
           type="button"
           disabled={uploading}
           aria-label={t(value ? "change" : "upload")}
+          aria-describedby="organization-logo-hint"
           onClick={() => input.current?.click()}
           onDragOver={(event) => {
             event.preventDefault();
@@ -133,6 +134,9 @@ function OrganizationLogoUpload({ value, onChange }: OrganizationLogoUploadProps
           }}
         />
       </div>
+      <p id="organization-logo-hint" className="text-xs text-muted-foreground">
+        {t("hint")}
+      </p>
       {problem && (
         <p role="alert" className="text-xs text-destructive">
           {problem}

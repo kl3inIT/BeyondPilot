@@ -55,21 +55,13 @@ async function EmailActivityPage({
   const filtered = search.q.trim() !== "" || search.kind !== null || search.status !== null;
   const empty =
     messages.items.length > 0 ? null : filtered ? (
-      <DataTableEmpty
-        icon={<SearchXIcon aria-hidden="true" />}
-        title={t("activity.noMatch.title")}
-        description={t("activity.noMatch.description")}
-      >
+      <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("activity.noMatch.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.adminEmailActivity}>
           {t("activity.noMatch.clear")}
         </Button>
       </DataTableEmpty>
     ) : (
-      <DataTableEmpty
-        icon={<MailIcon aria-hidden="true" />}
-        title={t("activity.empty.title")}
-        description={t("activity.empty.description")}
-      />
+      <DataTableEmpty icon={<MailIcon aria-hidden="true" />} title={t("activity.empty.title")} />
     );
 
   return (

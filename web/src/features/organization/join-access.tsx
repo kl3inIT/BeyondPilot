@@ -27,6 +27,7 @@ function JoinAccess({ emailDomain, autoJoin }: JoinAccessProps) {
   const notify = useNotify();
   const router = useRouter();
   const titleId = useId();
+  const toggleId = useId();
   const [pending, setPending] = useState(false);
   const state = autoJoin ? "on" : "off";
 
@@ -44,14 +45,7 @@ function JoinAccess({ emailDomain, autoJoin }: JoinAccessProps) {
   }
 
   if (!emailDomain) {
-    return (
-      <NoticeCard
-        titleAs="h3"
-        title={t("none.title")}
-        description={<p>{t("none.lead")}</p>}
-        foot={t("none.foot")}
-      />
-    );
+    return <NoticeCard titleAs="h3" title={t("none.title")} foot={t("none.foot")} />;
   }
 
   return (
@@ -63,9 +57,11 @@ function JoinAccess({ emailDomain, autoJoin }: JoinAccessProps) {
         <p className="text-sm text-muted-foreground">{t(`${state}.lead`)}</p>
       </div>
       <div className="flex shrink-0 items-center justify-between gap-8">
-        <p className="text-sm font-medium">{t("domain", { domain: emailDomain })}</p>
+        <span id={toggleId} className="text-sm font-medium">
+          {t("toggle")}
+        </span>
         <Switch
-          aria-label={t("toggle")}
+          aria-labelledby={toggleId}
           aria-describedby={titleId}
           checked={autoJoin}
           disabled={pending}

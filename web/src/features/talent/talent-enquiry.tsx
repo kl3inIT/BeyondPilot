@@ -26,6 +26,7 @@ import { talentError } from "./talent-errors";
 type EnquiryTopic = SendTalentEnquiry["topic"];
 
 const topics: readonly EnquiryTopic[] = ["project", "role", "other"];
+const MAX_MESSAGE = 2000;
 
 type TalentEnquiryProps = {
   slug: string;
@@ -154,8 +155,7 @@ function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnq
               <Textarea
                 id="talent-enquiry"
                 rows={5}
-                maxLength={2000}
-                placeholder={t("placeholder")}
+                maxLength={MAX_MESSAGE}
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
                 aria-invalid={invalid || undefined}
@@ -164,14 +164,25 @@ function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnq
               {invalid ? (
                 <FieldError id="talent-enquiry-hint">{t("required")}</FieldError>
               ) : (
-                <FieldDescription id="talent-enquiry-hint">{t("hint")}</FieldDescription>
+                <FieldDescription id="talent-enquiry-hint">{t("messageHint")}</FieldDescription>
               )}
+              <span className="text-right text-xs text-muted-foreground tabular-nums">
+                {message.length} / {MAX_MESSAGE}
+              </span>
             </Field>
+            <p id="talent-enquiry-send-note" className="text-sm text-muted-foreground">
+              {t("hint")}
+            </p>
             <DialogFooter>
               <Button prominence="secondary" disabled={pending} onClick={() => close(false)}>
                 {t("cancel")}
               </Button>
-              <Button type="submit" size="lg" pending={pending}>
+              <Button
+                type="submit"
+                size="lg"
+                pending={pending}
+                aria-describedby="talent-enquiry-send-note"
+              >
                 {t("send")}
               </Button>
             </DialogFooter>

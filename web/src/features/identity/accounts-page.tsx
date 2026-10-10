@@ -86,11 +86,7 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
   const pageHref = (number: number) =>
     address(siteRoutes.adminAccounts, { ...search, page: number });
   const empty = rows.length === 0 && (
-    <DataTableEmpty
-      icon={<SearchXIcon aria-hidden="true" />}
-      title={t("empty.title")}
-      description={t("empty.description")}
-    >
+    <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("empty.title")}>
       <Button prominence="secondary" size="sm" href={siteRoutes.adminAccounts}>
         {t("empty.clear")}
       </Button>
@@ -99,10 +95,7 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-col gap-1">
-        <AdminPageTitle destination="accounts">{t("title")}</AdminPageTitle>
-        <p className="text-sm text-muted-foreground">{t("lead")}</p>
-      </div>
+      <AdminPageTitle destination="accounts">{t("title")}</AdminPageTitle>
       <AccountsToolbar />
 
       {/* From 768px: a table. The Created column gives way first. */}

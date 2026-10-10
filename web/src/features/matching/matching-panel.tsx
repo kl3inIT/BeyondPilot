@@ -15,6 +15,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
 import { TextButton } from "@/components/actions/text-button";
+import { HelpPopover } from "@/components/composites/help-popover";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SolutionLogo } from "@/features/solution/solution-logo";
@@ -179,7 +180,7 @@ type MatchingPanelProps = {
  * group is the right one, and the two decisions. A use case with one requirement says it at the top of the page, so the panel does not say
  * it again, and leaves out the summary when the reason for that one requirement is there. The steps to
  * the solutions around it and the two decisions each have a key, which the board listens for and the
- * controls name in their tooltip.
+ * "?" beside the steps lists.
  */
 function MatchingPanel({
   candidate,
@@ -197,8 +198,13 @@ function MatchingPanel({
   const meta = useCandidateMeta()(candidate);
   const unread = unreadOf(candidate);
   const shortlisted = candidate.decision === "shortlisted";
-  /** What a control does and the key that does it too, as its tooltip. */
-  const hint = (label: string, key: string) => t("panel.shortcut", { label, key });
+  /** What each key does, in the order the panel shows its controls. */
+  const shortcuts = [
+    { key: "←", label: t("panel.previous") },
+    { key: "→", label: t("panel.next") },
+    { key: "S", label: t("row.shortlist") },
+    { key: "N", label: t("row.remove") },
+  ];
   const [onlyNeed] = needs.length === 1 ? needs : [];
   // With one requirement, its reason says what the summary would say.
   const reasoned = onlyNeed && Boolean(findingOf(candidate, onlyNeed.position)?.reason.trim());
@@ -217,10 +223,17 @@ function MatchingPanel({
             className="size-10 rounded-lg text-xs"
           />
           <div className="flex shrink-0 items-center gap-1">
+            <HelpPopover label={t("panel.shortcuts")}>
+              <ul className="flex flex-col gap-1">
+                {shortcuts.map((shortcut) => (
+                  <li key={shortcut.key}>{t("panel.shortcut", shortcut)}</li>
+                ))}
+              </ul>
+            </HelpPopover>
             <IconButton
               size="sm"
               aria-label={t("panel.previous")}
-              title={hint(t("panel.previous"), "←")}
+              title={t("panel.previous")}
               aria-keyshortcuts="ArrowLeft"
               disabled={!onPrevious}
               onClick={onPrevious}
@@ -230,7 +243,7 @@ function MatchingPanel({
             <IconButton
               size="sm"
               aria-label={t("panel.next")}
-              title={hint(t("panel.next"), "→")}
+              title={t("panel.next")}
               aria-keyshortcuts="ArrowRight"
               disabled={!onNext}
               onClick={onNext}
@@ -345,7 +358,6 @@ function MatchingPanel({
         <Button
           prominence={shortlisted ? "secondary" : "primary"}
           aria-pressed={shortlisted}
-          title={hint(t(shortlisted ? "row.shortlisted" : "row.shortlist"), "S")}
           aria-keyshortcuts="S"
           pending={pending}
           onClick={onShortlist}
@@ -353,13 +365,7 @@ function MatchingPanel({
           {shortlisted && !pending && <CheckIcon aria-hidden="true" />}
           {t(shortlisted ? "row.shortlisted" : "row.shortlist")}
         </Button>
-        <Button
-          prominence="secondary"
-          title={hint(t("row.remove"), "N")}
-          aria-keyshortcuts="N"
-          disabled={pending}
-          onClick={onRemove}
-        >
+        <Button prominence="secondary" aria-keyshortcuts="N" disabled={pending} onClick={onRemove}>
           {t("row.remove")}
         </Button>
       </div>

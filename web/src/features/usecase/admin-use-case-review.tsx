@@ -43,7 +43,11 @@ function AdminUseCaseReview({ useCase }: { useCase: AdminUseCase }) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-3">
             <h2 className="text-3xl font-semibold tracking-tight">{t("review.title")}</h2>
-            <p className="text-base text-muted-foreground">{t("review.lead", { organization })}</p>
+            {(useCase.status === "in_review" || useCase.status === "approved") && (
+              <p className="text-base text-muted-foreground">
+                {t("review.lead", { organization })}
+              </p>
+            )}
           </div>
           {status}
         </div>
@@ -66,7 +70,9 @@ function AdminUseCaseReview({ useCase }: { useCase: AdminUseCase }) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-3">
           <h2 className="text-3xl font-semibold tracking-tight">{w(`steps.${view}.title`)}</h2>
-          <p className="text-base text-muted-foreground">{w(`steps.${view}.lead`)}</p>
+          {(view === "challenge" || view === "requirements") && (
+            <p className="text-base text-muted-foreground">{w(`steps.${view}.lead`)}</p>
+          )}
           <p className="text-sm text-muted-foreground">{t("readOnly", { organization })}</p>
         </div>
         {status}

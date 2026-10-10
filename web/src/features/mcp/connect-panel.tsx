@@ -6,6 +6,7 @@ import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
+import { HelpPopover } from "@/components/composites/help-popover";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppMark } from "@/features/identity/app-mark";
@@ -21,7 +22,7 @@ const apps = {
     steps: ["apps.claude.step1", "apps.claude.step2", "apps.claude.step3"],
   },
   codex: { host: "chatgpt.com", steps: ["apps.codex.step1", "apps.codex.step2"] },
-  other: { host: null, steps: ["apps.other.step1", "apps.other.step2", "apps.other.step3"] },
+  other: { host: null, steps: ["apps.other.step1", "apps.other.step3"] },
 } as const;
 
 type AppKey = keyof typeof apps;
@@ -93,6 +94,15 @@ function AppSteps({ address, keys }: { address: string; keys: readonly AppKey[] 
                 </li>
               ))}
             </ol>
+            {/* Not a step: what only the person whose app names no client needs to know. */}
+            {key === "other" && (
+              <p className="mt-3 flex items-center gap-1 text-sm text-muted-foreground">
+                {t("apps.other.clientHelp")}
+                <HelpPopover label={t("apps.other.clientHelp")}>
+                  <p>{t("apps.other.step2")}</p>
+                </HelpPopover>
+              </p>
+            )}
           </TabsContent>
         ))}
       </Tabs>

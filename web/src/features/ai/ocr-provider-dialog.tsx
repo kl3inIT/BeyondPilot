@@ -204,14 +204,14 @@ function OcrProviderDialog({ open, onOpenChange, preset, provider }: OcrProvider
                 spellCheck={false}
                 maxLength={2048}
                 required
-                placeholder={preset.baseUrl}
+                aria-describedby={`${id}-endpoint-hint`}
                 value={baseUrl}
                 onChange={(event) => {
                   setBaseUrl(event.target.value);
                   setResult(null);
                 }}
               />
-              <FieldDescription>{t("endpointHint")}</FieldDescription>
+              <FieldDescription id={`${id}-endpoint-hint`}>{t("endpointHint")}</FieldDescription>
             </Field>
             <Field>
               <FieldLabel htmlFor={editing ? `${id}-key-action` : `${id}-key`}>

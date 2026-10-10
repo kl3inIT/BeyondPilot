@@ -1,14 +1,11 @@
 "use client";
 
 import {
-  BrainIcon,
   ChevronDownIcon,
   EllipsisIcon,
-  EyeIcon,
   PlugZapIcon,
   Settings2Icon,
   Trash2Icon,
-  WrenchIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -16,6 +13,7 @@ import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
+import { HelpPopover } from "@/components/composites/help-popover";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -282,7 +280,14 @@ function ConnectionCard({ provider, startOpen }: { provider: ChatProvider; start
                 </TableCaption>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{tm("model")}</TableHead>
+                    <TableHead>
+                      <span className="flex items-center gap-1">
+                        {tm("model")}
+                        <HelpPopover label={tm("columnsHelp")}>
+                          <p>{tm("columnsAbout")}</p>
+                        </HelpPopover>
+                      </span>
+                    </TableHead>
                     <TableHead className="text-right">{tm("context")}</TableHead>
                     <TableHead className="hidden text-right md:table-cell">
                       {tm("maxOutput")}
@@ -303,13 +308,10 @@ function ConnectionCard({ provider, startOpen }: { provider: ChatProvider; start
                         <span className="flex flex-wrap items-center gap-2">
                           <ModelLogo modelName={model.modelName} />
                           <span className="font-medium break-all">{model.displayName}</span>
-                          <span className="hidden items-center gap-1.5 text-muted-foreground md:flex [&>svg]:size-3.5">
-                            {model.toolCalling && (
-                              <WrenchIcon role="img" aria-label={tm("tools")} />
-                            )}
-                            {model.vision && <EyeIcon role="img" aria-label={tm("vision")} />}
-                            {model.reasoning && <BrainIcon role="img" aria-label={tm("reasons")} />}
-                          </span>
+                          {/* What the model can do, in words at every width: a task is chosen by it. */}
+                          {model.toolCalling && <Badge variant="outline">{tm("tools")}</Badge>}
+                          {model.vision && <Badge variant="outline">{tm("vision")}</Badge>}
+                          {model.reasoning && <Badge variant="outline">{tm("reasons")}</Badge>}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">{tokens(model.contextWindow)}</TableCell>

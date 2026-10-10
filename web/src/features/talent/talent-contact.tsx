@@ -63,17 +63,14 @@ function TalentContact({
         </h2>
         {intro}
         {own && (
-          <div className="flex flex-col gap-2">
-            <p className="text-sm text-muted-foreground">{t("ownLead")}</p>
-            <Button
-              prominence="secondary"
-              size="lg"
-              className="w-full"
-              href={siteRoutes.talentProfile}
-            >
-              {t("ownEdit")}
-            </Button>
-          </div>
+          <Button
+            prominence="secondary"
+            size="lg"
+            className="w-full"
+            href={siteRoutes.talentProfile}
+          >
+            {t("ownEdit")}
+          </Button>
         )}
         {waiting && waitingSince && (
           <Alert>

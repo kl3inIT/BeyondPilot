@@ -2,7 +2,7 @@ type NoticeCardProps = {
   /** The level of the title, so the card keeps the page's outline. */
   titleAs: "h2" | "h3";
   title: React.ReactNode;
-  description: React.ReactNode;
+  description?: React.ReactNode;
   /** The state the card is about, at the end of its head: "In review", "On". */
   badge?: React.ReactNode;
   /** What happens next, in one line. */
@@ -20,7 +20,9 @@ function NoticeCard({ titleAs: Title, title, description, badge, foot, actions }
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
           <Title className="text-base font-semibold break-words">{title}</Title>
-          <div className="flex flex-col gap-1 text-sm text-muted-foreground">{description}</div>
+          {description && (
+            <div className="flex flex-col gap-1 text-sm text-muted-foreground">{description}</div>
+          )}
         </div>
         {badge}
       </div>

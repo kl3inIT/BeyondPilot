@@ -8,13 +8,7 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { Badge } from "@/components/ui/badge";
-import {
-  Empty,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-  EmptyDescription,
-} from "@/components/ui/empty";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { AppMark } from "@/features/identity/app-mark";
 import { useNotify } from "@/hooks/use-notify";
 import { revokePersonsApp, type PersonConnectedApp } from "@/lib/api/generated";
@@ -32,7 +26,6 @@ function EveryConnectedApp({ apps }: { apps: PersonConnectedApp[] }) {
               <CableIcon aria-hidden="true" />
             </EmptyMedia>
             <EmptyTitle>{t("none")}</EmptyTitle>
-            <EmptyDescription>{t("noneLead")}</EmptyDescription>
           </EmptyHeader>
         </Empty>
       </div>

@@ -73,21 +73,18 @@ function WizardShell({
                 const finished = done(name);
                 const isCurrent = name === current;
                 const text = (
-                  <>
-                    <span
-                      className={cn(
-                        "text-sm font-medium",
-                        isCurrent
-                          ? "font-semibold text-foreground"
-                          : finished
-                            ? "text-foreground"
-                            : "text-muted-foreground",
-                      )}
-                    >
-                      {t(`steps.${name}.title`)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{t(`steps.${name}.meta`)}</span>
-                  </>
+                  <span
+                    className={cn(
+                      "text-sm font-medium",
+                      isCurrent
+                        ? "font-semibold text-foreground"
+                        : finished
+                          ? "text-foreground"
+                          : "text-muted-foreground",
+                    )}
+                  >
+                    {t(`steps.${name}.title`)}
+                  </span>
                 );
                 return (
                   <li key={name} className="flex gap-3">

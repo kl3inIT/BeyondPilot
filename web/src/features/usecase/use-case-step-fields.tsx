@@ -105,7 +105,6 @@ function UseCaseStepFields({ step, values, onChange, readOnly = false }: UseCase
           />
           <TextArea
             label={t("currentProcess")}
-            hint={t("currentProcessHint")}
             maxLength={MAX_TEXT}
             value={values.currentProcess}
             onValueChange={(currentProcess) => onChange({ currentProcess })}
@@ -119,7 +118,6 @@ function UseCaseStepFields({ step, values, onChange, readOnly = false }: UseCase
           />
           <TextArea
             label={t("targetUsers")}
-            hint={t("targetUsersHint")}
             maxLength={MAX_TEXT}
             value={values.targetUsers}
             onValueChange={(targetUsers) => onChange({ targetUsers })}

@@ -16,7 +16,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -95,7 +94,6 @@ function MergeDialog({ organization, members, invitations, onClose }: MergeDialo
               <Input
                 id={confirmId}
                 autoComplete="off"
-                placeholder={organization.name}
                 value={typed}
                 onChange={(event) => setTyped(event.target.value)}
               />
@@ -123,7 +121,6 @@ function MergeDialog({ organization, members, invitations, onClose }: MergeDialo
           <>
             <DialogHeader>
               <DialogTitle size="lg">{t("title", { name: organization.name })}</DialogTitle>
-              <DialogDescription>{t("lead")}</DialogDescription>
             </DialogHeader>
             <Field>
               <FieldLabel htmlFor={keepId}>{t("keep")}</FieldLabel>

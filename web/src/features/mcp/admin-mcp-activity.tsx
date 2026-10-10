@@ -5,7 +5,7 @@ import { createSerializer } from "nuqs/server";
 import { Button } from "@/components/actions/button";
 import { DataTable, DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AppMark } from "@/features/identity/app-mark";
 import type { McpCall, McpCallList, PersonConnectedApp } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -105,11 +105,7 @@ async function McpActivityPage({
     search.outcome !== null;
   const empty =
     rows.length > 0 ? null : filtered ? (
-      <DataTableEmpty
-        icon={<SearchXIcon aria-hidden="true" />}
-        title={t("noMatch.title")}
-        description={t("noMatch.description")}
-      >
+      <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.adminMcpActivity}>
           {t("noMatch.clear")}
         </Button>
@@ -127,7 +123,7 @@ async function McpActivityPage({
       <McpAdminHeader current="activity" counts={counts} />
       <McpActivityToolbar apps={calls.apps} tools={calls.tools} />
 
-      {/* From 768px: a table. The full date and time, to the second, is behind the short one. */}
+      {/* From 768px: a table. A click on the short time opens the full date and time, to the second. */}
       <DataTable className="hidden md:block">
         <TableHeader>
           <TableRow>
@@ -142,16 +138,21 @@ async function McpActivityPage({
           {rows.map((row) => (
             <TableRow key={row.key}>
               <TableCell>
-                <Tooltip>
-                  <TooltipTrigger
-                    render={<time dateTime={row.at} className="text-muted-foreground" />}
+                <Popover>
+                  <PopoverTrigger
+                    render={
+                      <button
+                        type="button"
+                        className="text-muted-foreground outline-none hover:underline focus-visible:underline"
+                      />
+                    }
                   >
-                    {row.time}
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" align="start">
+                    <time dateTime={row.at}>{row.time}</time>
+                  </PopoverTrigger>
+                  <PopoverContent side="bottom" align="start">
                     {row.fullTime}
-                  </TooltipContent>
-                </Tooltip>
+                  </PopoverContent>
+                </Popover>
               </TableCell>
               <TableCell>{row.person}</TableCell>
               <TableCell>{row.app}</TableCell>
