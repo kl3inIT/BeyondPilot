@@ -150,15 +150,15 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
       </div>
       <AdminOrganizationsToolbar />
 
-      {/* From 768px: a table. The Received column gives way first, then who asked. */}
+      {/* From 768px: a table. Who asked and when give way first, so the name keeps its room. */}
       <DataTable className="hidden md:block">
         <TableHeader>
           <TableRow>
             <TableHead>{t("columns.organization")}</TableHead>
             <TableHead className="w-36">{t("columns.request")}</TableHead>
             <TableHead className="w-36">{t("columns.status")}</TableHead>
-            <TableHead className="hidden w-56 lg:table-cell">{t("columns.askedBy")}</TableHead>
-            <TableHead className="hidden w-32 xl:table-cell">{t("columns.received")}</TableHead>
+            <TableHead className="hidden w-56 xl:table-cell">{t("columns.askedBy")}</TableHead>
+            <TableHead className="hidden w-32 2xl:table-cell">{t("columns.received")}</TableHead>
             <TableHead className="w-12">
               <span className="sr-only">{t("columns.actions")}</span>
             </TableHead>
@@ -170,8 +170,8 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
               <TableCell className="max-w-0">{row.organization}</TableCell>
               <TableCell>{row.request}</TableCell>
               <TableCell>{row.status}</TableCell>
-              <TableCell className="hidden max-w-0 lg:table-cell">{row.askedBy}</TableCell>
-              <TableCell className="hidden xl:table-cell">{row.received}</TableCell>
+              <TableCell className="hidden max-w-0 xl:table-cell">{row.askedBy}</TableCell>
+              <TableCell className="hidden 2xl:table-cell">{row.received}</TableCell>
               <TableCell>
                 <div className="flex justify-end">{row.actions}</div>
               </TableCell>

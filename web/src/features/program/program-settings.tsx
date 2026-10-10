@@ -62,8 +62,8 @@ function SettingsSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-x-12 gap-y-4 border-t pt-8 first:border-t-0 first:pt-0 md:flex-row">
-      <div className="flex flex-col gap-1 md:w-72 md:shrink-0">
+    <section className="flex flex-col gap-x-12 gap-y-4 border-t pt-8 first:border-t-0 first:pt-0 lg:flex-row">
+      <div className="flex flex-col gap-1 lg:w-72 lg:shrink-0">
         <h2 className="text-base font-medium">{title}</h2>
         <p className="text-sm text-muted-foreground">{what}</p>
       </div>
@@ -182,6 +182,10 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
   }
 
   const dirty = useStore(form.store, (formState) => formState.isDirty);
+  const blocked = useStore(
+    form.store,
+    (formState) => missingToPublish(formState.values).length > 0,
+  );
 
   const draft = program.status === "draft";
   const state = programState({ status: program.status, phase: "upcoming" });
@@ -195,7 +199,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
         void form.handleSubmit();
       }}
     >
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <h1 className="text-2xl font-semibold tracking-tight">{program.name}</h1>
@@ -219,7 +223,9 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
                 {t("save")}
               </form.SubmitButton>
             </form.AppForm>
-            {draft && <PublishButton program={program} dirty={dirty} save={save} />}
+            {draft && (
+              <PublishButton program={program} dirty={dirty} blocked={blocked} save={save} />
+            )}
           </div>
           <Button prominence="secondary" href={programRoute(program.slug)}>
             {t(draft ? "preview" : "viewPage")}
@@ -590,7 +596,13 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
             </form.SubmitButton>
           </form.AppForm>
           {draft && (
-            <PublishButton className="flex-1" program={program} dirty={dirty} save={save} />
+            <PublishButton
+              className="flex-1"
+              program={program}
+              dirty={dirty}
+              blocked={blocked}
+              save={save}
+            />
           )}
         </div>
       </div>

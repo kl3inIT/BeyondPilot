@@ -450,24 +450,24 @@
           "name": "ChatGPT",
           "step1": "Settings › Apps and connectors › Create",
           "step2": "Dán địa chỉ, giữ OAuth",
-          "step3": "Đăng nhập BeyondPilot và chọn Allow"
+          "step3": "Đăng nhập BeyondPilot và chọn Cho phép"
         },
         "claude": {
           "name": "Claude",
           "step1": "Settings › Connectors › Add custom connector",
           "step2": "Dán địa chỉ",
-          "step3": "Đăng nhập BeyondPilot và chọn Allow"
+          "step3": "Đăng nhập BeyondPilot và chọn Cho phép"
         },
         "codex": {
           "name": "Codex",
           "step1": "Chạy codex mcp add beyondpilot --url {address}",
-          "step2": "Chạy codex mcp login beyondpilot, đăng nhập và chọn Allow"
+          "step2": "Chạy codex mcp login beyondpilot, đăng nhập và chọn Cho phép"
         },
         "other": {
           "name": "Ứng dụng khác",
           "step1": "Thêm server {address} dạng streamable HTTP với OAuth",
           "step2": "Ứng dụng không có client riêng sẽ đăng nhập dưới tên mcp-local",
-          "step3": "Đăng nhập BeyondPilot và chọn Allow"
+          "step3": "Đăng nhập BeyondPilot và chọn Cho phép"
         }
       },
       "askTitle": "Hoặc nhờ AI của bạn tự cài",
@@ -3716,7 +3716,7 @@
     },
     "inReview": {
       "title": "GenAI Fund đang duyệt tổ chức của bạn",
-      "lead": "Cho tới khi được duyệt, {name} chưa xuất hiện trong các danh mục và chưa thể đăng giải pháp công khai. Bạn có thể hoàn thiện hồ sơ và mời mọi người ngay bây giờ.",
+      "lead": "Cho tới khi được duyệt, {name} chưa xuất hiện trong các danh mục và chưa thể đăng giải pháp công khai. Bạn có thể hoàn thiện hồ sơ ngay bây giờ; việc mời mọi người mở khi tổ chức được duyệt.",
       "foot": "Chúng tôi gửi email cho các chủ sở hữu khi có quyết định.",
       "edit": "Sửa hồ sơ"
     },
