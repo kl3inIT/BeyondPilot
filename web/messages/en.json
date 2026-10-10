@@ -2169,7 +2169,7 @@
             "ocr": "OCR service"
           },
           "modelLabel": "Model for Reading documents",
-          "modelsFrom": "Only models that read images are listed.",
+          "modelsFrom": "Models come from the <chat>Chat tab</chat>; only those that read images are listed.",
           "noModels": "No model that reads images can be used yet. Enable one in the <chat>Chat tab</chat>.",
           "serviceLabel": "OCR service for Reading documents",
           "chooseService": "Choose an OCR service",

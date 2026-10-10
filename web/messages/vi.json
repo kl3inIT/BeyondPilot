@@ -2169,7 +2169,7 @@
             "ocr": "Dịch vụ OCR"
           },
           "modelLabel": "Model cho Đọc tài liệu",
-          "modelsFrom": "Chỉ liệt kê model đọc được ảnh.",
+          "modelsFrom": "Model lấy từ <chat>tab Chat</chat>; chỉ liệt kê model đọc được ảnh.",
           "noModels": "Chưa có model đọc được ảnh nào dùng được. Bật một model ở <chat>tab Chat</chat>.",
           "serviceLabel": "Dịch vụ OCR cho Đọc tài liệu",
           "chooseService": "Chọn dịch vụ OCR",

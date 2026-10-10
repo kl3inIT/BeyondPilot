@@ -135,18 +135,16 @@ function OcrReader({
             onChange={chooseModel}
           />
           <p className="text-xs text-muted-foreground">
-            {readsImages
-              ? t("modelsFrom")
-              : t.rich("noModels", {
-                  chat: (chunks) => (
-                    <Link
-                      href={siteRoutes.adminAiProviders}
-                      className="font-medium text-foreground underline underline-offset-4"
-                    >
-                      {chunks}
-                    </Link>
-                  ),
-                })}
+            {t.rich(readsImages ? "modelsFrom" : "noModels", {
+              chat: (chunks) => (
+                <Link
+                  href={siteRoutes.adminAiProviders}
+                  className="font-medium text-foreground underline underline-offset-4"
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
           </p>
         </>
       ) : (
