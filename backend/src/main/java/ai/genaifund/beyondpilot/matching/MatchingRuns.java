@@ -185,6 +185,8 @@ class MatchingRuns {
 	}
 
 	private void work(Run run) {
+		// The limits are read once, as the run starts: a change made while it works applies to the next run.
+		Settings limits = matching.settings();
 		changes.tell(run.useCaseId(), Kind.RUN);
 		UseCaseBrief brief = useCases.brief(run.useCaseId()).orElse(null);
 		if (brief == null) {
@@ -204,7 +206,7 @@ class MatchingRuns {
 			return;
 		}
 		long searching = System.nanoTime();
-		int wanted = matching.settings().candidates();
+		int wanted = limits.candidates();
 		Map<UUID, IndexedSolution> shown = new LinkedHashMap<>();
 		List<UUID> found = new ArrayList<>();
 		for (UUID solutionId : evidence.solutionsFor(queries, wanted + OWN_SOLUTIONS)) {
@@ -236,7 +238,7 @@ class MatchingRuns {
 		AtomicLong output = new AtomicLong();
 		AtomicReference<@Nullable String> refusal = new AtomicReference<>();
 		long judging = System.nanoTime();
-		Semaphore room = new Semaphore(Math.max(1, settings.parallel()));
+		Semaphore room = new Semaphore(limits.parallel());
 		try (AiChat chat = models.chat(AiTask.MATCHING, new AiSubject("matching_run", run.id().toString()));
 				ExecutorService workers = Executors.newVirtualThreadPerTaskExecutor()) {
 			matching.judgedWith(run.id(), chat.modelName());

@@ -24,8 +24,12 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
@@ -115,6 +119,14 @@ class MatchingRunTest {
 	/** Whether the provider says its limit is reached. */
 	private final AtomicBoolean refusing = new AtomicBoolean();
 
+	/** How many judgments the provider holds unanswered now, and the most it held at the same time. */
+	private final AtomicInteger answering = new AtomicInteger();
+
+	private final AtomicInteger mostAtOnce = new AtomicInteger();
+
+	/** When set, a judgment is answered only once as many as it counts are being asked at the same time. */
+	private final AtomicReference<@Nullable CountDownLatch> together = new AtomicReference<>();
+
 	@BeforeEach
 	void setUp() throws IOException {
 		jdbc.sql("delete from matching_candidate").update();
@@ -124,7 +136,7 @@ class MatchingRunTest {
 		// A run starts as soon as the use case is published; the wait after a change has its own test.
 		jdbc.sql("""
 				update matching_settings set settle_minutes = 0, edit_runs_per_day = 3, member_runs_per_day = 2,
-				    runs_per_day = 200, candidates = 40, version = 0
+				    runs_per_day = 200, candidates = 40, parallel = 8, version = 0
 				""").update();
 		jdbc.sql("delete from ai_provider where purpose = 'chat'").update();
 		jdbc.sql("delete from ai_usage").update();
@@ -139,8 +151,22 @@ class MatchingRunTest {
 				return;
 			}
 			asked.add(requirements ? "requirements" : "judgment");
-			answer(exchange, 200, completion(requirements ? REQUIREMENTS : JUDGMENT));
+			if (requirements) {
+				answer(exchange, 200, completion(REQUIREMENTS));
+				return;
+			}
+			mostAtOnce.accumulateAndGet(answering.incrementAndGet(), Math::max);
+			CountDownLatch others = together.get();
+			if (others != null) {
+				others.countDown();
+				awaitOthers(others);
+			}
+			// The call is counted out before its answer leaves, so the next one the run sends never meets it.
+			answering.decrementAndGet();
+			answer(exchange, 200, completion(JUDGMENT));
 		});
+		// The provider answers several calls at once, as a real one does.
+		provider.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
 		provider.start();
 	}
 
@@ -393,9 +419,22 @@ class MatchingRunTest {
 		assertProblem(call("POST", buyer, path + "/runs", Map.of("judgeAll", false)), 429, "MATCHING_RUN_LIMIT");
 		// Nothing changed, so those runs asked the model nothing; an operator has every candidate judged again.
 		assertThat(asked).hasSize(4);
+		// With one read at a time, the provider is never asked for two judgments at once.
+		jdbc.sql("update matching_settings set parallel = 1").update();
+		mostAtOnce.set(0);
 		call("POST", operator, path + "/runs", Map.of("judgeAll", true)).expectStatus().isOk();
 		runs.work();
 		assertThat(asked).hasSize(6);
+		assertThat(mostAtOnce).hasValue(1);
+		// With two, both candidates are asked together: the provider answers neither until it holds both calls.
+		jdbc.sql("update matching_settings set parallel = 2").update();
+		together.set(new CountDownLatch(2));
+		call("POST", operator, path + "/runs", Map.of("judgeAll", true)).expectStatus().isOk();
+		runs.work();
+		together.set(null);
+		assertThat(asked).hasSize(8);
+		assertThat(mostAtOnce).hasValue(2);
+		assertThat(runsOf(useCase)).doesNotContain("waiting operator", "failed operator");
 
 		assertThat(jdbc.sql("select action from audit_event where action like 'matching.%' order by occurred_at")
 			.query(String.class)
@@ -407,15 +446,26 @@ class MatchingRunTest {
 		assertProblem(call("GET", buyer, limits, null), 403, "IDENTITY_OPERATOR_REQUIRED");
 		String set = body(call("GET", operator, limits, null).expectStatus().isOk());
 		assertThat(JsonPath.<Integer>read(set, "$.memberRunsPerDay")).isEqualTo(2);
+		assertThat(JsonPath.<Integer>read(set, "$.parallel")).isEqualTo(2);
 		Map<String, Object> change = new HashMap<>(Map.of("settleMinutes", 15, "editRunsPerDay", 4, "memberRunsPerDay",
-				5, "candidates", 60, "version", JsonPath.<Integer>read(set, "$.version")));
+				5, "candidates", 60, "parallel", 16, "version", JsonPath.<Integer>read(set, "$.version")));
 		change.put("runsPerDay", null);
 		String kept = body(call("PUT", operator, limits, change).expectStatus().isOk());
 		assertThat(JsonPath.<Integer>read(kept, "$.candidates")).isEqualTo(60);
+		assertThat(JsonPath.<Integer>read(kept, "$.parallel")).isEqualTo(16);
 		assertThat(JsonPath.<Object>read(kept, "$.runsPerDay")).isNull();
 		assertProblem(call("PUT", operator, limits, change), 409, "MATCHING_SETTINGS_CHANGED");
 		change.put("candidates", 2);
 		assertProblem(call("PUT", operator, limits, change), 400, "REQUEST_INVALID");
+		// No more than sixteen are read at once, and never none; a refused change keeps nothing.
+		change.put("candidates", 60);
+		change.put("version", JsonPath.<Integer>read(kept, "$.version"));
+		change.put("parallel", 17);
+		assertProblem(call("PUT", operator, limits, change), 400, "REQUEST_INVALID");
+		change.put("parallel", 0);
+		assertProblem(call("PUT", operator, limits, change), 400, "REQUEST_INVALID");
+		assertThat(JsonPath.<Integer>read(body(call("GET", operator, limits, null).expectStatus().isOk()), "$.parallel"))
+			.isEqualTo(16);
 	}
 
 	/** The next line of a stream of events; a stream that says nothing in time fails the test. */
@@ -553,6 +603,16 @@ class MatchingRunTest {
 				List.of(Map.of("index", 0, "message",
 						Map.of("role", "assistant", "content", json.writeValueAsString(content)), "finish_reason", "stop")),
 				"usage", Map.of("prompt_tokens", 1200, "completion_tokens", 300, "total_tokens", 1500)));
+	}
+
+	/** Waits until the calls counted are all held; a run that never sends them together is answered after the wait. */
+	private static void awaitOthers(CountDownLatch others) {
+		try {
+			others.await(WAIT.toSeconds(), TimeUnit.SECONDS);
+		}
+		catch (InterruptedException interrupted) {
+			Thread.currentThread().interrupt();
+		}
 	}
 
 	private static void answer(HttpExchange exchange, int status, String body) throws IOException {

@@ -14,5 +14,7 @@ public record MatchingSettingsResponse(
 		@Schema(description = "How many runs a day start in all; absent for no limit.") @Nullable Integer runsPerDay,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "How many solutions a run judges.") int candidates,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "How many solutions a run judges at the same time.") int parallel,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Sent back with a change, so that two operators do not overwrite each other.") long version) {
 }

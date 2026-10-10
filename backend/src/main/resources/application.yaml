@@ -133,8 +133,6 @@ beyondpilot:
       # How often the job looks for decks attached or replaced since their pages were read; it reads five a run.
       interval: 1m
   matching:
-    # How many candidates are judged at the same time.
-    parallel: 4
     # How often the worker looks for a run to take; it works on one at a time.
     interval: 10s
     # How long a run stops after the provider refused a call. The 9Router route let calls through again two minutes
