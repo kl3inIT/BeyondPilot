@@ -56,7 +56,7 @@ class AnthropicChatAdapter implements ChatAdapter {
 			.maxTokens(limit);
 		chat.thinkingAdaptive();
 		chat.effort(effort(options));
-		return AnthropicChatModel.builder().options(chat.build()).build();
+		return new AnswerWithoutThinking(AnthropicChatModel.builder().options(chat.build()).build());
 	}
 
 	/**
