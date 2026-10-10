@@ -90,13 +90,14 @@ async function serveDecks(page: Page) {
 }
 
 /**
- * Keeps the member's page as a picture, whole, attached to the test: the product owner reads these
- * instead of a member's session (CI uploads them as `matching-pictures-*`).
+ * Keeps the member's page as a picture attached to the test: the product owner reads these instead of
+ * a member's session (CI uploads them as `matching-pictures-*`). The whole page, or what the window
+ * shows when a sheet or a dialog lies over it: an overlay covers the window, not the page.
  */
-async function picture(page: Page, testInfo: TestInfo, name: string) {
+async function picture(page: Page, testInfo: TestInfo, name: string, whole = true) {
   const file = `member-${name}-${testInfo.project.name}.png`;
   const path = testInfo.outputPath(file);
-  await page.screenshot({ path, fullPage: true });
+  await page.screenshot({ path, fullPage: whole });
   await testInfo.attach(file, { path, contentType: "image/png" });
 }
 
@@ -228,7 +229,8 @@ test.describe("solutions matched to a use case", () => {
     // Where the words come from is something to open: the deck in the app, the web page at its address.
     await expect(panel.getByRole("button", { name: "From their deck, page 2" })).toBeVisible();
     await expect(panel.getByRole("link", { name: "From their website · staple.ai" })).toBeVisible();
-    await picture(page, testInfo, "panel");
+    // On a phone the panel is a sheet over the window.
+    await picture(page, testInfo, "panel", !isMobile);
 
     // The conditions of delivery wait behind a disclosure that says how many there are.
     await expect(
@@ -302,7 +304,7 @@ test.describe("solutions matched to a use case", () => {
     await expect(file).toHaveAttribute("rel", "noopener noreferrer");
     await expect(deck.getByRole("button", { name: "Previous page" })).toBeEnabled();
     await expectNoSeriousA11yViolations(page);
-    await picture(page, testInfo, "deck");
+    await picture(page, testInfo, "deck", false);
 
     // The pages around it, and the way back to the quote.
     await deck.getByRole("button", { name: "Next page" }).click();
@@ -338,7 +340,7 @@ test.describe("solutions matched to a use case", () => {
     await expect(marks).toHaveCount(0);
     await expect(deck.getByText("The quote is highlighted on this page")).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
-    await picture(page, testInfo, "deck-picture-page");
+    await picture(page, testInfo, "deck-picture-page", false);
     await deck.getByRole("button", { name: "Close" }).click();
     await expect(deck).toHaveCount(0);
 
@@ -613,7 +615,7 @@ test.describe("solutions matched to a use case", () => {
     const asking = page.getByRole("alertdialog", { name: "Look for solutions now?" });
     await expect(asking.getByText("This uses 1 of your 2 runs left today.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
-    await picture(page, testInfo, "run-confirmation");
+    await picture(page, testInfo, "run-confirmation", false);
     expect(sent).toEqual([]);
 
     await asking.getByRole("button", { name: "Look for new solutions" }).click();
