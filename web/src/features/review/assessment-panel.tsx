@@ -118,7 +118,7 @@ function AssessmentPanel({
       {criteria.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("noCriteria")}</p>
       ) : (
-        <fieldset className="flex flex-col gap-2.5" disabled={released}>
+        <fieldset className="flex min-w-0 flex-col gap-2.5" disabled={released}>
           <legend className="mb-1 flex w-full items-center justify-between gap-3 text-sm font-medium">
             <span>{t("criteria")}</span>
             <span className="text-primary tabular-nums">
@@ -126,8 +126,12 @@ function AssessmentPanel({
             </span>
           </legend>
           {criteria.map((criterion) => (
-            <div key={criterion.id} className="flex items-center justify-between gap-3">
-              <span className="text-sm" title={criterion.description ?? undefined}>
+            // In a narrow panel the scale goes under the name of its criterion.
+            <div
+              key={criterion.id}
+              className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5"
+            >
+              <span className="min-w-0 text-sm" title={criterion.description ?? undefined}>
                 {criterion.name}
               </span>
               <ToggleGroup
@@ -165,7 +169,7 @@ function AssessmentPanel({
 
       {!released && (
         <div className="flex flex-col gap-2">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {nextHref && (
               <Button prominence="tertiary" href={nextHref}>
                 {t("skip")}
@@ -183,6 +187,7 @@ function AssessmentPanel({
           </div>
           {!mine?.conflict && (
             <Button
+              className="h-auto min-h-8 py-1 whitespace-normal"
               prominence="tertiary"
               size="sm"
               pending={pending === "conflict"}

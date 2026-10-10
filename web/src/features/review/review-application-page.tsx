@@ -67,7 +67,7 @@ async function ReviewApplicationPage({ review, base }: ReviewApplicationPageProp
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
-        <div className="flex flex-col gap-4 lg:sticky lg:top-4 lg:order-2">
+        <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-4 lg:order-2">
           {review.own ? (
             <p className="rounded-lg border bg-muted p-4 text-sm">{t("own")}</p>
           ) : (

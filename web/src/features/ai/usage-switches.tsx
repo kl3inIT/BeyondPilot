@@ -154,7 +154,7 @@ function UsageCallsToolbar({
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-2 md:flex">
+    <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap">
       {filters.map((filter) => (
         <Select
           key={filter.key}
