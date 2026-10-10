@@ -119,6 +119,9 @@ class MatchingRunTest {
 	/** Whether the provider says its limit is reached. */
 	private final AtomicBoolean refusing = new AtomicBoolean();
 
+	/** Whether the provider refuses the request itself, as it does a parameter the model does not take. */
+	private final AtomicBoolean rejecting = new AtomicBoolean();
+
 	/** How many judgments the provider holds unanswered now, and the most it held at the same time. */
 	private final AtomicInteger answering = new AtomicInteger();
 
@@ -148,6 +151,10 @@ class MatchingRunTest {
 			boolean requirements = sent.contains("use case brief and list");
 			if (refusing.get()) {
 				answer(exchange, 429, "{\"error\":{\"message\":\"limit reached\"}}");
+				return;
+			}
+			if (rejecting.get()) {
+				answer(exchange, 400, "{\"error\":{\"message\":\"not supported\",\"type\":\"invalid_request_error\"}}");
 				return;
 			}
 			asked.add(requirements ? "requirements" : "judgment");
@@ -607,6 +614,21 @@ class MatchingRunTest {
 		assertThat(JsonPath.<List<Boolean>>read(anew, mine + ".feedback.agrees")).containsExactly(true);
 		assertThat(JsonPath.<Integer>read(body(call("GET", operator, "/api/matching/admin/feedback", null).expectStatus()
 			.isOk()), "$.answers")).isEqualTo(3);
+
+		// A request the provider refuses as such ends the run at once: asked again it would be refused again, so the
+		// run does not wait. The operator reads what to look at; a member only that it stopped at the provider.
+		rejecting.set(true);
+		call("POST", operator, path + "/runs", Map.of("judgeAll", true)).expectStatus().isOk();
+		runs.work();
+		rejecting.set(false);
+		assertThat(jdbc.sql("select state || ' ' || failure from matching_run where use_case_id = ? order by created_at desc limit 1")
+			.param(useCase)
+			.query(String.class)
+			.single()).isEqualTo("failed request_refused");
+		assertThat(JsonPath.<String>read(body(call("GET", operator, path, null).expectStatus().isOk()), "$.run.failure"))
+			.isEqualTo("request_refused");
+		assertThat(JsonPath.<String>read(body(call("GET", buyer, path, null).expectStatus().isOk()), "$.run.failure"))
+			.isEqualTo("provider");
 	}
 
 	/** Keeps one page of the solution's website, as the loaded passages are kept, at this address. */

@@ -136,6 +136,7 @@ Why 8 at once: measured on 10 October 2026 through the provider route staging us
 ## Failure and recovery
 
 - **A call is refused or fails:** nothing more is asked in that pass. The run waits `pause` (2 minutes) and continues with the candidates not judged yet. After `max-stalls` (5) passes in a row that judged nothing, it ends as `failed` with the kind of failure.
+- **The provider refuses the request itself** (400, 401, 403, 404 or 422: what was sent, the key or the model): the run ends at once as `failed` with `request_refused`, and what was judged before is kept. Asked again the request is refused again, so nothing waits. An operator reads that the model chosen for matching is to be checked; a member reads `provider`.
 - **An answer does not fit its shape:** it is asked for once more; a second unreadable answer counts as a failed call.
 - **The application stops during a run:** the run is queued again when the worker next wakes, and judges only what is not judged.
 - **No model, a use case no longer published, or a brief with no capability:** the run ends as `failed` with `no_model`, `use_case_not_published` or `no_capability`.

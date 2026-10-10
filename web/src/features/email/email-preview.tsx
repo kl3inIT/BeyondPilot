@@ -2,7 +2,7 @@
 
 import { MonitorIcon, SmartphoneIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
@@ -30,13 +30,24 @@ function EmailPreview({
   const [width, setWidth] = useState<"desktop" | "phone">("desktop");
   const frame = useRef<HTMLIFrameElement>(null);
 
-  /** Sizes the frame to its content once the email has been laid out. */
-  function fit() {
-    const document = frame.current?.contentDocument;
-    if (frame.current && document) {
-      frame.current.style.height = `${document.documentElement.scrollHeight}px`;
+  // Sizes the frame to its content once the email has been laid out. A frame the server rendered
+  // may have loaded before this runs, so it is sized at once as well as on load, and again when
+  // the width chosen changes how the email wraps.
+  useEffect(() => {
+    const element = frame.current;
+    if (!element) {
+      return;
     }
-  }
+    const fit = () => {
+      const root = element.contentDocument?.documentElement;
+      if (root) {
+        element.style.height = `${root.scrollHeight}px`;
+      }
+    };
+    fit();
+    element.addEventListener("load", fit);
+    return () => element.removeEventListener("load", fit);
+  }, [html, width]);
 
   return (
     <div className={cn("flex flex-col gap-3 rounded-xl border bg-muted/40 p-3 md:p-4", className)}>
@@ -88,7 +99,6 @@ function EmailPreview({
           title={title}
           srcDoc={html}
           sandbox="allow-same-origin"
-          onLoad={fit}
           className={cn("min-h-96 w-full border-0", width === "phone" && "max-w-sm")}
         />
       </div>
