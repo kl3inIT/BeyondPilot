@@ -2448,6 +2448,7 @@
       "unknown": "Unknown",
       "failing": {
         "title": "{task} is failing on {model}",
+        "replacedTitle": "{task} was failing on {model}, which it no longer uses",
         "description": "{failed, number} of its {calls, number} calls to {provider} failed in the last 24 hours, the last on {time} ICT.",
         "kind": {
           "key_refused": "The provider refused the key.",

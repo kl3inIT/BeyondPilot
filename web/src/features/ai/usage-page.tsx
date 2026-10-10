@@ -1,4 +1,10 @@
-import { ActivityIcon, ChevronRightIcon, CircleAlertIcon, TriangleAlertIcon } from "lucide-react";
+import {
+  ActivityIcon,
+  ChevronRightIcon,
+  CircleAlertIcon,
+  InfoIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
@@ -144,7 +150,9 @@ async function UsageOverviewPage({
       ? clock(new Date(start))
       : format.dateTime(new Date(start), { day: "numeric", month: "short" });
 
-  const worst = failing[0];
+  // What a task still runs on comes first: failures of what it used before are no longer an alarm.
+  const worst = failing.find((item) => item.assigned) ?? failing[0];
+  const alsoFailing = failing.filter((item) => item.assigned && item !== worst).length;
   const busiest = series.reduce<(typeof series)[number] | null>(
     (most, bucket) =>
       bucket.succeeded + bucket.failed > (most ? most.succeeded + most.failed : 0) ? bucket : most,
@@ -190,10 +198,17 @@ async function UsageOverviewPage({
 
       {worst && (
         <div className="flex flex-col items-start gap-3">
-          <Alert variant="destructive">
-            <CircleAlertIcon aria-hidden="true" />
+          <Alert variant={worst.assigned ? "destructive" : "default"}>
+            {worst.assigned ? (
+              <CircleAlertIcon aria-hidden="true" />
+            ) : (
+              <InfoIcon aria-hidden="true" />
+            )}
             <AlertTitle>
-              {t("failing.title", { task: taskName(worst.task), model: worst.modelName })}
+              {t(worst.assigned ? "failing.title" : "failing.replacedTitle", {
+                task: taskName(worst.task),
+                model: worst.modelName,
+              })}
             </AlertTitle>
             <AlertDescription>
               {t("failing.description", {
@@ -209,7 +224,7 @@ async function UsageOverviewPage({
                 provider: worst.providerName,
               })}{" "}
               {t(`failing.kind.${worst.lastFailure}`)}
-              {failing.length > 1 && ` ${t("failing.others", { count: failing.length - 1 })}`}
+              {alsoFailing > 0 && ` ${t("failing.others", { count: alsoFailing })}`}
             </AlertDescription>
           </Alert>
           <Button

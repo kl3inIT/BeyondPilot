@@ -10813,6 +10813,11 @@ components:
     AiUsageFailing:
       type: object
       properties:
+        assigned:
+          type: boolean
+          description: "Whether the task still runs on this model or service. False\
+            \ once an operator gave the task another, so the failures are of what\
+            \ it used before."
         calls:
           type: integer
           format: int64
@@ -10840,6 +10845,7 @@ components:
           type: string
           example: document_reading
       required:
+      - assigned
       - calls
       - failed
       - lastFailedAt

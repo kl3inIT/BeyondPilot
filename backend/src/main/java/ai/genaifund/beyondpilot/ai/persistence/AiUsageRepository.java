@@ -102,22 +102,32 @@ public class AiUsageRepository {
 	}
 
 	/**
-	 * The tasks that failed on a model in a period, the one with the most failures first, each with its last failure.
+	 * The tasks that failed on a model in a period, the one with the most failures first, each with its last failure
+	 * and whether the task still runs on that model or service.
 	 * @param minFailed how many failed calls make a task failing
 	 * @param minPercent and what part of its calls they must be, in percent
 	 */
 	public List<Failing> failing(Instant from, Instant to, int minFailed, int minPercent) {
 		return period("""
-				select task, provider_name, model_name, count(*) as calls,
-				    count(*) filter (where outcome = 'failed') as failed,
-				    max(occurred_at) filter (where outcome = 'failed') as last_failed_at,
-				    (array_agg(error_status order by occurred_at desc) filter (where outcome = 'failed'))[1] as error_status,
-				    (array_agg(error_type order by occurred_at desc) filter (where outcome = 'failed'))[1] as error_type
-				from ai_usage
-				where occurred_at >= :from and occurred_at < :to
-				group by task, provider_name, model_name
-				having count(*) filter (where outcome = 'failed') >= :minFailed
-				    and count(*) filter (where outcome = 'failed') * 100 >= count(*) * :minPercent
+				select u.task, u.provider_name, u.model_name, count(*) as calls,
+				    count(*) filter (where u.outcome = 'failed') as failed,
+				    max(u.occurred_at) filter (where u.outcome = 'failed') as last_failed_at,
+				    (array_agg(u.error_status order by u.occurred_at desc) filter (where u.outcome = 'failed'))[1]
+				        as error_status,
+				    (array_agg(u.error_type order by u.occurred_at desc) filter (where u.outcome = 'failed'))[1]
+				        as error_type,
+				    coalesce(bool_or(t.task is not null), false) as assigned
+				from ai_usage u
+				    -- The task's reader today: its OCR provider, or the provider and the name of its model.
+				    left join ai_task_model t on t.task = u.task
+				        and (t.ocr_provider_id = u.provider_id
+				            or exists (select 1 from ai_model m
+				                where m.id = t.model_id and m.provider_id = u.provider_id
+				                    and m.model_name = u.model_name))
+				where u.occurred_at >= :from and u.occurred_at < :to
+				group by u.task, u.provider_name, u.model_name
+				having count(*) filter (where u.outcome = 'failed') >= :minFailed
+				    and count(*) filter (where u.outcome = 'failed') * 100 >= count(*) * :minPercent
 				order by failed desc, last_failed_at desc
 				""", from, to)
 			.param("minFailed", minFailed)
@@ -125,7 +135,8 @@ public class AiUsageRepository {
 			.query((row, number) -> new Failing(row.getString("task"), row.getString("provider_name"),
 					row.getString("model_name"), row.getLong("calls"), row.getLong("failed"),
 					row.getObject("last_failed_at", OffsetDateTime.class).toInstant(),
-					row.getObject("error_status", Integer.class), row.getString("error_type")))
+					row.getObject("error_status", Integer.class), row.getString("error_type"),
+					row.getBoolean("assigned")))
 			.list();
 	}
 
@@ -266,9 +277,12 @@ public class AiUsageRepository {
 			long priced, long unpriced) {
 	}
 
-	/** A task that failed on a model, with the status and the class of its last failure. */
+	/**
+	 * A task that failed on a model, with the status and the class of its last failure.
+	 * @param assigned whether the task still runs on that model or service
+	 */
 	public record Failing(String task, String providerName, String modelName, long calls, long failed,
-			Instant lastFailedAt, @Nullable Integer errorStatus, @Nullable String errorType) {
+			Instant lastFailedAt, @Nullable Integer errorStatus, @Nullable String errorType, boolean assigned) {
 	}
 
 	/** The calls that started in one hour or one day. */

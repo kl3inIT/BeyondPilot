@@ -733,6 +733,10 @@ export type AiUsageCallList = {
 };
 
 export type AiUsageFailing = {
+    /**
+     * Whether the task still runs on this model or service. False once an operator gave the task another, so the failures are of what it used before.
+     */
+    assigned: boolean;
     calls: number;
     failed: number;
     lastFailedAt: string;

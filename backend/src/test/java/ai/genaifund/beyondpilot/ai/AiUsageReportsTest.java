@@ -59,6 +59,9 @@ class AiUsageReportsTest {
 	@BeforeEach
 	void setUp() {
 		jdbc.sql("delete from ai_usage").update();
+		jdbc.sql("update ai_task_model set model_id = null, ocr_provider_id = null, reasoning_effort = null, version = 0")
+			.update();
+		jdbc.sql("delete from ai_provider where purpose in ('chat', 'ocr')").update();
 		client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory()).baseUrl("http://localhost:" + port).build();
 		operator = TestSignIn.session(client, mail, "operator@usage.test");
 	}
@@ -139,7 +142,51 @@ class AiUsageReportsTest {
 			assertThat(JsonPath.<Integer>read(overview, "$.failing[0].calls")).isEqualTo(20);
 			assertThat(JsonPath.<Integer>read(overview, "$.failing[0].failed")).isEqualTo(5);
 			assertThat(JsonPath.<String>read(overview, "$.failing[0].lastFailure")).isEqualTo("too_large");
+			// No task runs on it: these calls carry a provider nothing is connected as.
+			assertThat(JsonPath.<Boolean>read(overview, "$.failing[0].assigned")).isFalse();
 		}
+	}
+
+	@Test
+	void aFailingTaskSaysWhetherItStillRunsOnThatModel() {
+		Instant now = Instant.now();
+		UUID router = provider("chat", "9Router");
+		UUID luna = UUID.randomUUID();
+		jdbc.sql("""
+				insert into ai_model (id, provider_id, model_name, display_name, context_window, tool_calling, vision,
+				    reasoning, updated_by, updated_by_label)
+				values (:id, :provider, 'luna', 'Luna', 200000, true, true, false, :by, 'operator@usage.test')
+				""")
+			.param("id", luna)
+			.param("provider", router)
+			.param("by", UUID.randomUUID())
+			.update();
+		for (int index = 0; index < 6; index++) {
+			row(router, now.minusSeconds(60 + index), "document_reading", "9Router", "luna", "failed", 500, null, null,
+					null, null, null, null, null);
+		}
+
+		// The task reads with that model: what fails is what runs now.
+		jdbc.sql("update ai_task_model set model_id = :model where task = 'document_reading'").param("model", luna).update();
+		assertThat(JsonPath.<Boolean>read(body(get(operator, "/overview").expectStatus().isOk()), "$.failing[0].assigned"))
+			.isTrue();
+
+		// An operator gave the task an OCR service: the failures are of what it used before.
+		UUID service = provider("ocr", "AI Hay");
+		jdbc.sql("update ai_task_model set model_id = null, ocr_provider_id = :ocr where task = 'document_reading'")
+			.param("ocr", service)
+			.update();
+		assertThat(JsonPath.<Boolean>read(body(get(operator, "/overview").expectStatus().isOk()), "$.failing[0].assigned"))
+			.isFalse();
+
+		// And once the service fails in its turn, it is the one that runs.
+		for (int index = 0; index < 7; index++) {
+			row(service, now.minusSeconds(index), "document_reading", "AI Hay", "aihay", "failed", 500, null, null,
+					null, null, null, null, null);
+		}
+		String both = body(get(operator, "/overview").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(both, "$.failing[*].modelName")).containsExactly("aihay", "luna");
+		assertThat(JsonPath.<List<Boolean>>read(both, "$.failing[*].assigned")).containsExactly(true, false);
 	}
 
 	@Test
@@ -266,16 +313,31 @@ class AiUsageReportsTest {
 	private void model(Instant at, String task, String model, String outcome, @Nullable Integer status,
 			@Nullable Long input, @Nullable Long output, @Nullable Long cacheRead, @Nullable String inputPrice,
 			@Nullable String outputPrice, @Nullable String cachedPrice) {
-		row(at, task, "9Router", model, outcome, status, input, output, cacheRead, inputPrice, outputPrice, cachedPrice,
+		row(UUID.randomUUID(), at, task, "9Router", model, outcome, status, input, output, cacheRead, inputPrice, outputPrice, cachedPrice,
 				null);
 	}
 
 	private void ocr(Instant at, String outcome, @Nullable Integer status, @Nullable String pricePerThousandCalls) {
-		row(at, "document_reading", "AI Hay", "aihay", outcome, status, null, null, null, null, null, null,
+		row(UUID.randomUUID(), at, "document_reading", "AI Hay", "aihay", outcome, status, null, null, null, null, null, null,
 				pricePerThousandCalls);
 	}
 
-	private void row(Instant at, String task, String provider, String model, String outcome, @Nullable Integer status,
+	/** A provider connected for chat or for OCR, as the Providers screen keeps one. */
+	private UUID provider(String purpose, String name) {
+		UUID id = UUID.randomUUID();
+		jdbc.sql("""
+				insert into ai_provider (id, purpose, name, base_url, adapter_type, updated_by, updated_by_label)
+				values (:id, :purpose, :name, 'https://provider.test', 'openai', :by, 'operator@usage.test')
+				""")
+			.param("id", id)
+			.param("purpose", purpose)
+			.param("name", name)
+			.param("by", UUID.randomUUID())
+			.update();
+		return id;
+	}
+
+	private void row(UUID providerId, Instant at, String task, String provider, String model, String outcome, @Nullable Integer status,
 			@Nullable Long input, @Nullable Long output, @Nullable Long cacheRead, @Nullable String inputPrice,
 			@Nullable String outputPrice, @Nullable String cachedPrice, @Nullable String pricePerThousandCalls) {
 		jdbc.sql("""
@@ -288,7 +350,7 @@ class AiUsageReportsTest {
 			.param("id", UUID.randomUUID())
 			.param("at", OffsetDateTime.ofInstant(at, ZoneOffset.UTC))
 			.param("task", task)
-			.param("providerId", UUID.randomUUID())
+			.param("providerId", providerId)
 			.param("provider", provider)
 			.param("model", model)
 			.param("input", input)

@@ -2448,6 +2448,7 @@
       "unknown": "Chưa biết",
       "failing": {
         "title": "{task} đang lỗi trên {model}",
+        "replacedTitle": "{task} từng lỗi trên {model}, nay không còn dùng",
         "description": "{failed, number} trong {calls, number} lượt gọi tới {provider} đã lỗi trong 24 giờ qua, lượt gần nhất vào {time} ICT.",
         "kind": {
           "key_refused": "Nhà cung cấp từ chối khóa.",

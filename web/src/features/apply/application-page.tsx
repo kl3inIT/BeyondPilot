@@ -5,7 +5,7 @@ import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import type { ApplicationView } from "@/lib/api/generated";
-import { programApplyUrl, siteRoutes } from "@/lib/site";
+import { programApplyRoute, siteRoutes } from "@/lib/site";
 
 import { applyFormatter } from "./apply-format";
 import { ApplicationSummary } from "./application-summary";
@@ -94,7 +94,7 @@ async function ApplicationPage({ view }: { view: ApplicationView }) {
           </dl>
           {changeable ? (
             <div className="flex flex-col gap-2 border-t pt-4">
-              <Button prominence="secondary" href={programApplyUrl(program.slug)}>
+              <Button prominence="secondary" href={programApplyRoute(program.slug)}>
                 {application.status === "draft" ? t("continue") : t("edit")}
               </Button>
               <p className="text-xs text-muted-foreground">
