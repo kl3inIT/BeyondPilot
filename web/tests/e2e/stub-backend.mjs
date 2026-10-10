@@ -9,7 +9,7 @@ import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
 import { answerEmail } from "./stub-email.mjs";
 import { answerJudging } from "./stub-judging.mjs";
-import { answerMatching, serveMatchingLive } from "./stub-matching.mjs";
+import { answerMatching, serveMatchingDeck, serveMatchingLive } from "./stub-matching.mjs";
 import { answerMcp } from "./stub-mcp.mjs";
 import { answerReview } from "./stub-reviews.mjs";
 import { answerSearch, answerSearchAdmin } from "./stub-search.mjs";
@@ -352,6 +352,10 @@ createServer((request, response) => {
   const account = session ? accounts[session] : undefined;
   // The one answer that is not a record: a stream that stays open, and what a test does to it.
   if (serveMatchingLive(request, response, url, account)) {
+    return;
+  }
+  // And one that is a file: the deck of a matched solution, which the deck viewer reads in the browser.
+  if (serveMatchingDeck(response, url)) {
     return;
   }
 
