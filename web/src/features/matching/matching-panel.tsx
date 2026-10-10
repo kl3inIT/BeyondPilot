@@ -7,6 +7,7 @@ import {
   ChevronRightIcon,
   ExternalLinkIcon,
   FileQuestionIcon,
+  FileTextIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -19,43 +20,104 @@ import { SolutionLogo } from "@/features/solution/solution-logo";
 import type { MatchingCandidate, MatchingFinding, MatchingRequirement } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { MatchingDeck } from "./matching-deck";
 import { StatusChip, useSourceLine } from "./matching-marks";
 import { useCandidateMeta } from "./matching-row";
-import { findingOf, unreadOf, type Need } from "./matching-view";
+import { findingOf, openingOf, unreadOf, type Need } from "./matching-view";
+
+/** What of a solution a quote's source opens: its name, its page in the directory, whether it has one. */
+type Quoted = Pick<MatchingCandidate, "solutionName" | "solutionSlug" | "listed">;
+
+/**
+ * Where a vendor's words come from, as something a reader can open: a page of the deck inside the app
+ * with the words highlighted, the page of the website in a new tab, the solution's page for its profile
+ * and its customer cases. A source that cannot be opened stays plain text.
+ */
+function SourceLine({ finding, solution }: { finding: MatchingFinding; solution: Quoted }) {
+  const t = useTranslations("Matching.source");
+  const text = useSourceLine()(finding.source);
+  if (!text) {
+    return null;
+  }
+  const opening = openingOf(finding, solution.listed);
+
+  if (opening?.how === "deck") {
+    return (
+      <MatchingDeck
+        solutionName={solution.solutionName}
+        solutionSlug={solution.solutionSlug}
+        page={opening.page}
+        quote={finding.quote}
+      >
+        <FileTextIcon aria-hidden="true" />
+        {text}
+      </MatchingDeck>
+    );
+  }
+  if (opening?.how === "website") {
+    return (
+      <TextButton
+        size="sm"
+        href={opening.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="max-w-full"
+      >
+        <span className="truncate">{t("websiteAt", { host: opening.host })}</span>
+        <ExternalLinkIcon aria-hidden="true" />
+      </TextButton>
+    );
+  }
+  if (opening?.how === "profile") {
+    return (
+      <TextButton
+        size="sm"
+        href={`${siteRoutes.solutions}/${solution.solutionSlug}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {text}
+        <ExternalLinkIcon aria-hidden="true" />
+      </TextButton>
+    );
+  }
+  return <span className="text-xs text-muted-foreground">{text}</span>;
+}
 
 type FindingItemProps = {
-  /** The thing asked for, in full. */
-  statement: string;
-  /** Said under the statement of a thing the use case cannot do without. */
+  /** The requirement in full; absent when the page says it already, as for the one a use case has. */
+  statement?: string;
+  /** Said beside the verdict of a requirement the use case cannot do without. */
   tag?: string;
   finding: MatchingFinding | undefined;
+  solution: Quoted;
 };
 
 /**
- * One thing asked for and what the solution shows of it: the statement in full, the verdict in words,
- * the AI's reason as body text, then the vendor's own words set apart as a quotation with where they
- * come from under it.
+ * One requirement and what the solution shows of it: the statement in full, the verdict in words, the
+ * AI's reason as body text, then the vendor's own words set apart as a quotation with where they come
+ * from under it, to open.
  */
-function FindingItem({ statement, tag, finding }: FindingItemProps) {
-  const sourceLine = useSourceLine();
+function FindingItem({ statement, tag, finding, solution }: FindingItemProps) {
   const quote = finding?.quote.trim();
   const reason = finding?.reason.trim();
-  const source = finding && quote ? sourceLine(finding.source) : undefined;
 
   return (
     <li className="flex flex-col gap-2">
-      <p className="text-sm font-semibold wrap-break-word">{statement}</p>
+      {statement && <p className="text-sm font-semibold wrap-break-word">{statement}</p>}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <StatusChip status={finding?.status ?? "not_shown"} />
         {tag && <Badge variant="secondary">{tag}</Badge>}
       </div>
       {reason && <p className="text-sm">{reason}</p>}
-      {quote && (
-        <figure className="flex flex-col gap-1 border-l-2 pl-3">
+      {finding && quote && (
+        <figure className="flex flex-col items-start gap-1 border-l-2 pl-3">
           <blockquote className="text-sm wrap-break-word">
             <q>{quote}</q>
           </blockquote>
-          {source && <figcaption className="text-xs text-muted-foreground">{source}</figcaption>}
+          <figcaption className="flex max-w-full">
+            <SourceLine finding={finding} solution={solution} />
+          </figcaption>
         </figure>
       )}
     </li>
@@ -75,8 +137,10 @@ type MatchingPanelProps = {
 };
 
 /**
- * One solution read in full, top to bottom: who it is, the AI's verdict and summary, each thing asked
- * for with the vendor's words, the conditions of delivery behind a disclosure, and the two decisions.
+ * One solution read in full, top to bottom: who it is, the AI's summary, each requirement with the
+ * vendor's words and where they come from, the conditions of delivery behind a disclosure, and the two
+ * decisions. A use case with one requirement says it at the top of the page, so the panel does not say
+ * it again, and leaves out the summary when the reason for that one requirement is there.
  */
 function MatchingPanel({
   candidate,
@@ -92,7 +156,12 @@ function MatchingPanel({
   const meta = useCandidateMeta()(candidate);
   const unread = unreadOf(candidate);
   const shortlisted = candidate.decision === "shortlisted";
-  const summary = candidate.summary?.trim();
+  const [onlyNeed] = needs.length === 1 ? needs : [];
+  // With one requirement, its reason says what the summary would say.
+  const reasoned = onlyNeed && Boolean(findingOf(candidate, onlyNeed.position)?.reason.trim());
+  const summary = reasoned ? undefined : candidate.summary?.trim();
+  // The deck is there to open only where anyone may read it: at the public address of a listed solution.
+  const deckToOpen = candidate.listed && (unread === "deck" || unread === "both");
 
   return (
     <div className="flex flex-col gap-6">
@@ -132,11 +201,8 @@ function MatchingPanel({
       </div>
 
       {candidate.judged ? (
-        (candidate.bucket !== "none" || summary || unread) && (
+        (summary || unread) && (
           <div className="flex flex-col gap-2 border-t pt-5">
-            {candidate.bucket !== "none" && (
-              <p className="text-base font-semibold">{t(`groups.${candidate.bucket}.title`)}</p>
-            )}
             {summary && (
               <div className="flex flex-col gap-1">
                 <p className="text-xs font-medium text-muted-foreground">{t("panel.aiSummary")}</p>
@@ -144,10 +210,21 @@ function MatchingPanel({
               </div>
             )}
             {unread && (
-              <p className="flex items-start gap-2 text-sm text-muted-foreground">
-                <FileQuestionIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-                {t(`panel.unread.${unread}`)}
-              </p>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                <p className="flex items-center gap-2">
+                  <FileQuestionIcon aria-hidden="true" className="size-4 shrink-0" />
+                  {t(`row.unread.${unread}`)}
+                </p>
+                {deckToOpen && (
+                  <MatchingDeck
+                    solutionName={candidate.solutionName}
+                    solutionSlug={candidate.solutionSlug}
+                    page={1}
+                  >
+                    {t("panel.openDeck")}
+                  </MatchingDeck>
+                )}
+              </div>
             )}
           </div>
         )
@@ -162,9 +239,10 @@ function MatchingPanel({
             {needs.map((need) => (
               <FindingItem
                 key={need.position}
-                statement={need.statement}
+                statement={onlyNeed ? undefined : need.statement}
                 tag={need.required ? t("panel.required") : undefined}
                 finding={findingOf(candidate, need.position)}
+                solution={candidate}
               />
             ))}
           </ul>
@@ -186,18 +264,16 @@ function MatchingPanel({
             </span>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="flex flex-col gap-4 pt-1">
-              <p className="text-sm text-muted-foreground">{t("panel.constraintsLead")}</p>
-              <ul className="flex flex-col gap-6">
-                {constraints.map((constraint) => (
-                  <FindingItem
-                    key={constraint.position}
-                    statement={constraint.statement.trim()}
-                    finding={findingOf(candidate, constraint.position)}
-                  />
-                ))}
-              </ul>
-            </div>
+            <ul className="flex flex-col gap-6 pt-1">
+              {constraints.map((constraint) => (
+                <FindingItem
+                  key={constraint.position}
+                  statement={constraint.statement.trim()}
+                  finding={findingOf(candidate, constraint.position)}
+                  solution={candidate}
+                />
+              ))}
+            </ul>
           </CollapsibleContent>
         </Collapsible>
       )}

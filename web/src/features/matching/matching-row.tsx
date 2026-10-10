@@ -14,7 +14,6 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,8 +29,8 @@ import type { MatchingCandidate } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
-import { StatusChip } from "./matching-marks";
-import { rowVerdict, unreadOf, type Need } from "./matching-view";
+import { StatusCounts } from "./matching-marks";
+import { statusCounts, unreadOf, type Need } from "./matching-view";
 
 type MatchingRowProps = {
   candidate: MatchingCandidate;
@@ -66,8 +65,9 @@ function useCandidateMeta() {
 
 /**
  * One solution in a group. Its logo, its name and the shortlist action share the first line at every
- * width; under them come what the group does not say already, the AI's sentence in two lines at most,
- * and where the solution is from. The vendor's own words are read in the panel, which the row opens.
+ * width; under them come how many of the capabilities asked for it meets, meets in part and shows no
+ * evidence for, the AI's sentence in two lines at most, and where the solution is from. The vendor's
+ * own words are read in the panel, which the row opens.
  */
 function MatchingRow({
   candidate,
@@ -82,7 +82,7 @@ function MatchingRow({
 }: MatchingRowProps) {
   const t = useTranslations("Matching.row");
   const meta = useCandidateMeta()(candidate);
-  const verdict = rowVerdict(candidate, needs);
+  const counts = statusCounts(candidate, needs);
   const unread = candidate.judged ? unreadOf(candidate) : undefined;
   const summary = candidate.judged ? candidate.summary?.trim() : undefined;
   const shortlisted = candidate.decision === "shortlisted";
@@ -191,9 +191,9 @@ function MatchingRow({
             {t(`reading.${reading}`)}
           </p>
         )}
-        {(verdict || unread) && (
+        {(counts || unread) && (
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-            {verdict && <StatusChip status={verdict} />}
+            {counts && <StatusCounts counts={counts} />}
             {unread && (
               <span className="inline-flex items-center gap-1.5 text-muted-foreground">
                 <FileQuestionIcon aria-hidden="true" className="size-4 shrink-0" />
@@ -203,12 +203,7 @@ function MatchingRow({
           </p>
         )}
         {summary && <p className="line-clamp-2 text-sm">{summary}</p>}
-        {(meta || candidate.origin === "added") && (
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-            {meta}
-            {candidate.origin === "added" && <Badge variant="secondary">{t("added")}</Badge>}
-          </p>
-        )}
+        {meta && <p className="text-xs text-muted-foreground">{meta}</p>}
       </div>
     </li>
   );

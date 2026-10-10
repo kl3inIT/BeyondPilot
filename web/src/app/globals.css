@@ -75,6 +75,8 @@
   --color-aurora-azure: var(--aurora-azure);
   --color-aurora-sky: var(--aurora-sky);
   --color-aurora-peach: var(--aurora-peach);
+  --color-highlight: var(--highlight);
+  --color-highlight-line: var(--highlight-line);
   /* Elevations of the landing (DESIGN.md › Elevation & Depth), all in the --elevation colour. */
   --shadow-card: 0 4px 16px -4px color-mix(in oklch, var(--elevation) 5%, transparent);
   --shadow-tile:
@@ -190,6 +192,20 @@
   }
   :where([data-slot="sidebar-menu-button"][data-active]) > svg.lucide {
     color: inherit;
+  }
+}
+
+/*
+ * A vendor's quoted words on a page of their deck (features/matching/matching-deck-pages.tsx). PDF.js lays the
+ * page's text over its picture in transparent letters, and the runs the quote covers are wrapped in `mark`. The
+ * marker is translucent, so the letters of the picture read through it; the line under it says the same without
+ * colour.
+ */
+@layer components {
+  .textLayer mark[data-slot="deck-quote"] {
+    color: transparent;
+    background-color: color-mix(in oklch, var(--highlight) 55%, transparent);
+    box-shadow: 0 2px 0 0 var(--highlight-line);
   }
 }
 

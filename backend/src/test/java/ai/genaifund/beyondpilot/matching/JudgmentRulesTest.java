@@ -139,12 +139,44 @@ class JudgmentRulesTest {
 	}
 
 	@Test
-	void aSolutionWithoutDeckOrWebsiteTextSaysWhichIsMissing() {
+	void aSourceIsUnreadOnlyWhenTheSolutionHasItAndNothingOfItWasRead() {
 		Sources profileOnly = Sources.of(solution(), List.of());
 
 		assertThat(profileOnly.texts().keySet()).containsExactly("profile");
 		assertThat(profileOnly.texts().get("profile")).contains("Name: Hotline Assist", "Summary: A voice agent.");
+		// What is kept is which sources held no text; a solution without a deck holds no deck text either.
 		assertThat(profileOnly.unread()).containsExactly("deck", "website");
+		// A reader is told of the material the solution has, and of nothing else.
+		assertThat(Sources.unread(profileOnly.unread(), false, false)).isEmpty();
+		assertThat(Sources.unread(profileOnly.unread(), true, false)).containsExactly("deck");
+		assertThat(Sources.unread(profileOnly.unread(), false, true)).containsExactly("website");
+		assertThat(Sources.unread(profileOnly.unread(), true, true)).containsExactly("deck", "website");
+		// A source that was read is not unread, whatever the solution has.
+		assertThat(Sources.unread(SOURCES.unread(), true, true)).isEmpty();
+		assertThat(Sources.unread(List.of("website"), true, true)).containsExactly("website");
+	}
+
+	@Test
+	void aQuoteFromAWebPageOpensAtThatPagesAddressAndOnlyAtAWebAddress() {
+		Map<Integer, String> pages = Map.of(1, "https://hotline.test/", 2, " http://hotline.test/pricing?plan=1 ", 3,
+				"javascript:alert(1)", 4, "ftp://hotline.test/deck.pdf", 5, "hotline.test/about", 6, "https:///nowhere",
+				7, "not an address");
+
+		assertThat(Sources.webPage("website 1", pages)).isEqualTo("https://hotline.test/");
+		assertThat(Sources.webPage(" Website 2 ", pages)).isEqualTo("http://hotline.test/pricing?plan=1");
+		// Anything that is not a page of the website has no address.
+		assertThat(Sources.webPage("deck p.1", pages)).isNull();
+		assertThat(Sources.webPage("profile", pages)).isNull();
+		assertThat(Sources.webPage("customer case 1", pages)).isNull();
+		assertThat(Sources.webPage("website", pages)).isNull();
+		assertThat(Sources.webPage("", pages)).isNull();
+		// A page that is no longer kept, and an address a browser would not open as a web page, are not answered.
+		assertThat(Sources.webPage("website 9", pages)).isNull();
+		assertThat(Sources.webPage("website 3", pages)).isNull();
+		assertThat(Sources.webPage("website 4", pages)).isNull();
+		assertThat(Sources.webPage("website 5", pages)).isNull();
+		assertThat(Sources.webPage("website 6", pages)).isNull();
+		assertThat(Sources.webPage("website 7", pages)).isNull();
 	}
 
 	private static List<Object> statuses(Judged judged) {

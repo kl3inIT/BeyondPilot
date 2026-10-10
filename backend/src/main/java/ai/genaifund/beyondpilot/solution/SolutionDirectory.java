@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.solution;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -229,6 +230,20 @@ public class SolutionDirectory {
 	@Transactional(readOnly = true)
 	public List<SolutionDeckFile> decks() {
 		return solutions.findDecksByStatus(Solution.APPROVED);
+	}
+
+	/**
+	 * Which of these solutions have a deck and which name a website, by identifier, as they are now; one that does
+	 * not exist is left out. For the module that says which of a solution's material could not be read.
+	 */
+	@Transactional(readOnly = true)
+	public Map<UUID, SolutionMaterial> materials(Collection<UUID> solutionIds) {
+		if (solutionIds.isEmpty()) {
+			return Map.of();
+		}
+		return solutions.findMaterialByIdIn(solutionIds)
+			.stream()
+			.collect(Collectors.toMap(SolutionMaterial::solutionId, Function.identity()));
 	}
 
 	/** The customer deployments of a solution that GenAI Fund approved, the latest decided first. */

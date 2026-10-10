@@ -8,6 +8,10 @@
 // And a family of use cases named "Document intake", each with a run at work: one solution read and
 // three that wait. A test takes one of them for itself, replaces what the stub answers for it and
 // pushes events into the stream of its changes, as a run does (see `serveMatchingLive`).
+// And the deck of Staple AI and of Sentosa Finance, a real PDF of three slides (fixtures/deck.pdf): a
+// title, a page of text that holds "flags unusual invoices" over a line end, and a page that is only
+// shapes, as a slide that is a picture (see `serveMatchingDeck`).
+import { readFileSync } from "node:fs";
 
 const matchedUseCaseId = "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0011";
 const oneNeedUseCaseId = "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0021";
@@ -118,11 +122,13 @@ const requirements = [
   },
 ];
 
-const finding = (requirement, status, quote = "", source = "", reason = "") => ({
+// As Spring answers: the address of a quote's web page is null when there is none, not left out.
+const finding = (requirement, status, quote = "", source = "", reason = "", sourceUrl = null) => ({
   requirement,
   status,
   quote,
   source,
+  sourceUrl,
   reason,
   quoteState: quote ? "exact" : "none",
 });
@@ -159,12 +165,13 @@ const candidates = [
         "extracts and verifies the content",
         "website 2",
         "It reads documents and takes out their fields.",
+        "https://www.staple.ai/platform",
       ),
       finding(
         2,
         "partly",
         "flags unusual invoices",
-        "deck p.6",
+        "deck p.2",
         "It flags, it does not check rules.",
       ),
       finding(3, "not_shown"),
@@ -178,7 +185,7 @@ const candidates = [
     "industry",
     [
       finding(1, "partly", "More than 1K invoices per month", "customer case 1", "Invoices only."),
-      finding(2, "met", "Double payment and missing invoices", "profile", "It checks payments."),
+      finding(2, "met", "Double payment and missing invoices", "deck p.3", "It checks payments."),
       finding(3, "not_shown"),
       finding(4, "not_shown"),
     ],
@@ -254,6 +261,7 @@ const oneNeedCandidates = [
         "extracts and verifies the content",
         "website 2",
         "It reads documents and takes out their fields.",
+        "https://www.staple.ai/platform",
       ),
       finding(2, "met", "SAP connector available", "profile", "The profile names a SAP connector."),
     ],
@@ -394,6 +402,26 @@ export function serveMatchingLive(request, response, url, account) {
     }
     response.writeHead(204).end();
   });
+  return true;
+}
+
+const deck = readFileSync(new URL("./fixtures/deck.pdf", import.meta.url));
+
+/**
+ * The deck of a matched solution, as the backend serves it at the address of the solution followed by
+ * `/deck`: the bytes of a PDF, saved under its name. Answers the request and returns true for the two
+ * solutions that have one, false otherwise.
+ */
+export function serveMatchingDeck(response, url) {
+  if (!/^\/api\/solution\/solutions\/(staple-ai|sentosa-finance)\/deck$/.test(url.pathname)) {
+    return false;
+  }
+  response.writeHead(200, {
+    "Content-Type": "application/pdf",
+    "Content-Length": deck.length,
+    "Content-Disposition": 'attachment; filename="deck.pdf"',
+  });
+  response.end(deck);
   return true;
 }
 

@@ -151,6 +151,18 @@ jobs:
           path: web/playwright-report/
           retention-days: 7
 
+      # The member's Matched solutions page as pictures (web/tests/e2e/matching.spec.ts), kept when the tests pass
+      # too: nobody but a member of the use case's organization sees that page on a deployment. A shard holds the
+      # pictures of the tests it ran, and none when it ran none of them.
+      - name: Upload the pictures of the Matched solutions page
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: matching-pictures-${{ matrix.shard }}
+          path: web/test-results/*/member-*.png
+          if-no-files-found: ignore
+          retention-days: 14
+
   images:
     name: Images
     runs-on: ubuntu-24.04

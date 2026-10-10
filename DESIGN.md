@@ -180,6 +180,10 @@ A cool azure system with a sky light, three directory accents and the status rol
 
 - **Success**, **Warning**, **Danger**: Live, Upcoming, Closed and destructive actions; always with a word.
 
+### Highlight
+
+- **Highlight** (token `highlight`) and **Highlight Line** (token `highlight-line`): the marker over a vendor's quoted words on a page of their deck, and the line under them. A deck page is a white sheet by day and at night, so both are the same in the two themes. The marker is translucent, never alone: the line under it, or a sentence, says the same. Not yet a variable in Figma.
+
 ### Logo
 
 - The logo is GenAI Fund's approved kit, used as supplied: a purple tile (`#633ADB`) with a white B and a small GenAI Fund accent, beside a heavy wordmark, charcoal by day (`beyondpilot-logo.svg`) and white at night (`beyondpilot-logo-dark.svg`). Never recoloured, stretched, shadowed or given a gradient; its file carries its own clear space.

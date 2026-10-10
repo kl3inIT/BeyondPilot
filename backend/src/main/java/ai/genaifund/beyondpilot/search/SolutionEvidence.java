@@ -122,6 +122,15 @@ public class SolutionEvidence {
 			.toList();
 	}
 
+	/**
+	 * The address of each web page kept for these solutions, by solution and by the page's place among the site's, so
+	 * that a quote from a page can be opened where it stands. A solution with no page kept is left out.
+	 */
+	@Transactional(readOnly = true)
+	public Map<UUID, Map<Integer, String>> webPages(Collection<UUID> solutionIds) {
+		return passages.webPages(solutionIds);
+	}
+
 	/** The words of a query that tell passages apart, joined so that a passage with some of them matches. */
 	static String terms(String query) {
 		Set<String> words = new LinkedHashSet<>();

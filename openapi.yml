@@ -13420,7 +13420,8 @@ components:
             names.
         unread:
           type: array
-          description: "Which of its sources held no text to read: deck, website."
+          description: "Which of the sources it has could not be read at all: deck,\
+            \ website. A solution without a deck never says deck."
           items:
             type: string
       required:
@@ -13477,6 +13478,11 @@ components:
           type: string
           description: "Where the quote is: profile, customer case 1, deck p.3, website\
             \ 2."
+        sourceUrl:
+          type: string
+          description: "The address of the web page the quote comes from, always http\
+            \ or https; absent for a source that is not a page of the website and\
+            \ for a page that is no longer kept."
         status:
           type: string
           enum:

@@ -1,10 +1,12 @@
 package ai.genaifund.beyondpilot.solution.persistence;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.solution.SolutionDeckFile;
+import ai.genaifund.beyondpilot.solution.SolutionMaterial;
 
 import jakarta.persistence.LockModeType;
 
@@ -30,6 +32,15 @@ public interface SolutionRepository extends JpaRepository<Solution, UUID> {
 			where s.status = :status and s.suspendedAt is null and s.deckFileId is not null
 			""")
 	List<SolutionDeckFile> findDecksByStatus(String status);
+
+	/** Whether each of these solutions has a deck and names a website, without loading the solutions. */
+	@Query("""
+			select new ai.genaifund.beyondpilot.solution.SolutionMaterial(s.id,
+			    case when s.deckFileId is null then false else true end,
+			    case when s.website is null or trim(s.website) = '' then false else true end)
+			from Solution s where s.id in :ids
+			""")
+	List<SolutionMaterial> findMaterialByIdIn(Collection<UUID> ids);
 
 	boolean existsBySlug(String slug);
 

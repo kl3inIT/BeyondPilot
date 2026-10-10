@@ -7,3 +7,6 @@
 *.cmd text eol=crlf
 
 *.jar binary
+
+# A deck read by the browser tests; its bytes are never converted.
+*.pdf binary
