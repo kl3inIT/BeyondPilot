@@ -9,15 +9,17 @@ import {
   FOLDED_ROWS,
   grouped,
   groupView,
+  hostOf,
   matchesOf,
   needsOf,
+  openingOf,
   recommendedOf,
   requirementName,
-  rowVerdict,
   runStages,
   sourceOf,
   stageOf,
   stageState,
+  statusCounts,
   statusOf,
   tabsOf,
   unreadOf,
@@ -312,29 +314,31 @@ describe("a group in the list", () => {
   });
 });
 
-describe("what a row says beyond its group", () => {
+describe("what a row says under the name", () => {
   const one = needs.slice(0, 1);
 
-  it("is nothing when the group says it already", () => {
-    expect(rowVerdict(direct, one)).toBeUndefined();
-    expect(rowVerdict(industry, one)).toBeUndefined();
-    expect(rowVerdict(technology, one)).toBeUndefined();
+  it("counts, over the capabilities asked for, what is met, met in part and without evidence", () => {
+    expect(statusCounts(direct, needs)).toEqual({ met: 1, partly: 1, not_shown: 1 });
+    // A capability without a finding has no evidence; a condition of delivery is not counted.
+    expect(statusCounts(industry, needs)).toEqual({ met: 1, partly: 1, not_shown: 1 });
+    expect(statusCounts(technology, needs)).toEqual({ met: 0, partly: 1, not_shown: 2 });
   });
 
-  it("is the status of the one thing asked for when the group does not say it", () => {
-    const shownInIndustry = candidate("Shown", "industry", [finding(1, "met", "reads claims")]);
-    const nothingInTechnology = candidate("Bare", "technology", []);
-    expect(rowVerdict(shownInIndustry, one)).toBe("met");
-    expect(rowVerdict(nothingInTechnology, one)).toBe("not_shown");
-    // A solution a person keeps is in no group, so the row says what it shows.
-    expect(rowVerdict(none, one)).toBe("met");
+  it("is the one status when the use case asks for one capability, whatever the group", () => {
+    expect(statusCounts(direct, one)).toEqual({ met: 1, partly: 0, not_shown: 0 });
+    expect(statusCounts(industry, one)).toEqual({ met: 0, partly: 1, not_shown: 0 });
+    expect(statusCounts(candidate("Bare", "technology", []), one)).toEqual({
+      met: 0,
+      partly: 0,
+      not_shown: 1,
+    });
+    // A solution a person keeps is in no group, and still says what it shows.
+    expect(statusCounts(none, one)).toEqual({ met: 1, partly: 0, not_shown: 0 });
   });
 
-  it("is nothing for a solution not read yet, and with several things asked for", () => {
-    expect(rowVerdict(waiting, one)).toBeUndefined();
-    expect(rowVerdict(candidate("Shown", "industry", [finding(1, "met", "x")]), needs)).toBe(
-      undefined,
-    );
+  it("is nothing for a solution not read yet, and for a use case with no capability read", () => {
+    expect(statusCounts(waiting, needs)).toBeUndefined();
+    expect(statusCounts(direct, [])).toBeUndefined();
   });
 
   it("names which of the deck and the website could not be read", () => {
@@ -447,5 +451,57 @@ describe("sources", () => {
     expect(sourceOf("website")).toEqual({ kind: "website" });
     expect(sourceOf("")).toBeUndefined();
     expect(sourceOf("brochure")).toBeUndefined();
+  });
+
+  it("name the host of a web page, and nothing for what is not a web address", () => {
+    expect(hostOf("https://www.perxtech.com/platform?x=1")).toBe("perxtech.com");
+    expect(hostOf("http://docs.staple.ai")).toBe("docs.staple.ai");
+    expect(hostOf("javascript:alert(1)")).toBeUndefined();
+    expect(hostOf("mailto:hello@staple.ai")).toBeUndefined();
+    expect(hostOf("staple.ai/platform")).toBeUndefined();
+    expect(hostOf("")).toBeUndefined();
+    expect(hostOf(null)).toBeUndefined();
+    expect(hostOf(undefined)).toBeUndefined();
+  });
+
+  it("open a deck page in the app and the profile at its page, for a listed solution only", () => {
+    const deck = finding(2, "partly", "flags unusual invoices", "deck p.6");
+    expect(openingOf(deck, true)).toEqual({ how: "deck", page: 6 });
+    expect(openingOf(deck, false)).toBeUndefined();
+    expect(openingOf(finding(4, "met", "SAP connector", "profile"), true)).toEqual({
+      how: "profile",
+    });
+    expect(openingOf(finding(1, "partly", "1K invoices", "customer case 1"), true)).toEqual({
+      how: "profile",
+    });
+    expect(openingOf(finding(4, "met", "SAP connector", "profile"), false)).toBeUndefined();
+    expect(openingOf(finding(1, "not_shown"), true)).toBeUndefined();
+  });
+
+  it("do not open a deck page that does not hold the quote", () => {
+    const elsewhere = {
+      ...finding(2, "met", "flags invoices", "deck p.6"),
+      quoteState: "other_source" as const,
+    };
+    expect(openingOf(elsewhere, true)).toBeUndefined();
+    const close = {
+      ...finding(2, "met", "flags invoices", "deck p.6"),
+      quoteState: "close" as const,
+    };
+    expect(openingOf(close, true)).toEqual({ how: "deck", page: 6 });
+  });
+
+  it("open a web page at its address, listed or not, and only at a web address", () => {
+    const page = {
+      ...finding(1, "met", "extracts the content", "website 2"),
+      sourceUrl: "https://www.staple.ai/platform",
+    };
+    expect(openingOf(page, false)).toEqual({
+      how: "website",
+      href: "https://www.staple.ai/platform",
+      host: "staple.ai",
+    });
+    expect(openingOf(finding(1, "met", "extracts the content", "website 2"), true)).toBeUndefined();
+    expect(openingOf({ ...page, sourceUrl: "javascript:alert(1)" }, true)).toBeUndefined();
   });
 });

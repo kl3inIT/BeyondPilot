@@ -6635,14 +6635,14 @@
       }
     },
     "summary": {
-      "matches": "{matches, plural, =0 {No solution matches yet.} one {# solution matches. {strong, plural, =0 {It does only part of what you asked for.} other {It does exactly what you asked for.}}} other {# solutions match. {strong, plural, =0 {None does exactly what you asked for.} one {# does exactly what you asked for.} other {# do exactly what you asked for.}}}}",
-      "asked": "You asked for: {need}",
-      "covered": "Together they cover {covered} of the {total} things you asked for",
-      "gap": "No solution on BeyondPilot shows it can do: {need}",
+      "matches": "{matches, plural, =0 {No solution matches yet.} one {# solution matches. {strong, plural, =0 {It meets only part of the key requirement.} other {It meets the key requirement.}}} other {# solutions match. {strong, plural, =0 {None meets the key requirement.} one {# meets the key requirement.} other {# meet the key requirement.}}}}",
+      "asked": "Key requirement: {need}",
+      "covered": "Together they meet {covered} of the {total} requirements",
+      "gap": "No solution on BeyondPilot shows evidence for: {need}",
       "ai": "AI read each vendor's public material and picked these. Check before you decide."
     },
     "filter": {
-      "label": "Filter by what you asked for",
+      "label": "Filter by requirement",
       "any": "Any"
     },
     "tabs": {
@@ -6654,15 +6654,15 @@
     "groups": {
       "direct": {
         "title": "Strong fit",
-        "about": "They show they do what you asked for."
+        "about": "They show they do it."
       },
       "industry": {
         "title": "Experience in your industry",
-        "about": "They have done similar work in your industry, but show only part of what you asked for."
+        "about": "Similar work in your industry; part of the requirement shown."
       },
       "technology": {
         "title": "Right technology, less proof",
-        "about": "They use the technology you named, but show only part of what you asked for."
+        "about": "Right technology; part of the requirement shown."
       },
       "waiting": {
         "title": "Not reviewed yet",
@@ -6676,20 +6676,21 @@
         "title": "Saved, no longer suggested",
         "about": "AI no longer suggests these after the latest run. They stay until someone unsaves them."
       },
-      "emptyDirect": "No solution shows yet that it does what you asked for.",
+      "emptyDirect": "No solution meets the key requirement yet.",
       "more": "Show {count} more",
       "fewer": "Show fewer"
     },
     "status": {
-      "met": "Shown",
-      "partly": "Partly shown",
-      "not_shown": "No evidence found"
+      "met": "Met",
+      "partly": "Partly met",
+      "not_shown": "No evidence"
     },
     "source": {
       "profile": "From their BeyondPilot profile",
       "customerCase": "From customer case {number}",
       "deck": "From their deck, page {page}",
-      "website": "From their website"
+      "website": "From their website",
+      "websiteAt": "From their website · {host}"
     },
     "row": {
       "shortlist": "Save",
@@ -6706,6 +6707,11 @@
         "deck": "Deck could not be read",
         "website": "Website could not be read",
         "both": "Deck and website could not be read"
+      },
+      "counts": {
+        "met": "{count} met",
+        "partly": "{count} partly",
+        "not_shown": "{count} no evidence"
       }
     },
     "panel": {
@@ -6716,16 +6722,27 @@
       "close": "Close",
       "waiting": "AI has not read this solution yet. It will in the next run.",
       "aiSummary": "AI summary",
-      "needs": "What you asked for, and what they show",
+      "needs": "Evidence",
       "required": "Must have",
       "constraints": "Ask the vendor about these",
       "constraintsCount": "{count, plural, one {# delivery condition to ask about} other {# delivery conditions to ask about}}",
-      "constraintsLead": "This comes from the vendor's own documents and nobody has checked it. Confirm each point with them.",
-      "unread": {
-        "deck": "AI could not read their deck, so it went by their other documents.",
-        "website": "AI could not read their website, so it went by their other documents.",
-        "both": "AI could not read their deck or their website, so it went by their profile alone."
-      }
+      "openDeck": "Open the deck"
+    },
+    "deck": {
+      "page": "Deck, page {page}",
+      "pageOf": "Deck, page {page} of {total}",
+      "pageLabel": "Page {page}",
+      "previous": "Previous page",
+      "next": "Next page",
+      "close": "Close",
+      "file": "Open the file",
+      "loading": "Opening the deck…",
+      "failed": "The deck could not be opened",
+      "highlighted": "The quote is highlighted on this page",
+      "onPage": "The quote is on this page",
+      "back": "Back to the quote, page {page}",
+      "before": "Start of the quote: ",
+      "after": " End of the quote."
     },
     "remove": {
       "title": "Why is {name} not a fit?",
@@ -6769,7 +6786,7 @@
     "empty": {
       "none": "AI found no solution on BeyondPilot that fits this use case.",
       "shortlist": "Nothing saved yet. Save the solutions you want to talk to.",
-      "need": "No solution here shows it can do: {need}",
+      "need": "No solution here shows evidence for: {need}",
       "clear": "Show all solutions"
     },
     "done": {

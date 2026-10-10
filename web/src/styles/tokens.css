@@ -73,6 +73,13 @@
   --aurora-peach: #ffc29e;
   /* Colour of every shadow (the shadow-* elevations in app/globals.css): ink by day. */
   --elevation: oklch(0.219 0.043 253.881);
+  /*
+   * The marker over a vendor's quoted words on a page of their deck, and the line under them. A deck
+   * page is a white sheet in both themes, so the two are the same in both; always with the line or a
+   * sentence, never the colour alone.
+   */
+  --highlight: oklch(0.905 0.166 98.111);
+  --highlight-line: oklch(0.554 0.135 66.442);
 }
 
 .dark {

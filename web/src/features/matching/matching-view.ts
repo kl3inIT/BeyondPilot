@@ -184,22 +184,25 @@ export function groupView(
   return { folds, open, shown, more: open ? total - shown : 0 };
 }
 
+/** The statuses, strongest first, as a row counts them. */
+export const statuses = ["met", "partly", "not_shown"] as const satisfies NeedStatus[];
+
 /**
- * What a row says of a candidate beyond its group, when the use case asks for one thing: whether that
- * thing is shown, unless the group says so already. The first group says it is shown, the two after it
- * that it is partly shown. With several needs the row says nothing, and the panel says each.
+ * What a row says under a solution's name: over the capabilities the use case asks for, how many the
+ * solution meets, meets in part and shows no evidence for. A solution not read yet says nothing.
  */
-export function rowVerdict(
-  candidate: Pick<MatchingCandidate, "judged" | "bucket" | "findings">,
+export function statusCounts(
+  candidate: Pick<MatchingCandidate, "judged" | "findings">,
   needs: Need[],
-): NeedStatus | undefined {
-  if (!candidate.judged || needs.length !== 1) {
+): Record<NeedStatus, number> | undefined {
+  if (!candidate.judged || needs.length === 0) {
     return undefined;
   }
-  const status = statusOf(candidate, needs[0].position);
-  const said =
-    candidate.bucket === "direct" ? "met" : candidate.bucket === "none" ? null : "partly";
-  return status === said ? undefined : status;
+  const counts: Record<NeedStatus, number> = { met: 0, partly: 0, not_shown: 0 };
+  for (const need of needs) {
+    counts[statusOf(candidate, need.position)] += 1;
+  }
+  return counts;
 }
 
 /**
@@ -265,6 +268,54 @@ export function unreadOf(
   const deck = candidate.unread.includes("deck");
   const website = candidate.unread.includes("website");
   return deck && website ? "both" : deck ? "deck" : website ? "website" : undefined;
+}
+
+/**
+ * The host of a web page as a reader names it, without "www."; nothing for an address that is not a
+ * web address, which this screen never makes a link of.
+ */
+export function hostOf(address: string | null | undefined): string | undefined {
+  if (!address || !URL.canParse(address)) {
+    return undefined;
+  }
+  const url = new URL(address);
+  if ((url.protocol !== "http:" && url.protocol !== "https:") || !url.hostname) {
+    return undefined;
+  }
+  return url.hostname.replace(/^www\./, "");
+}
+
+/** How a reader opens the place a quote comes from. */
+export type Opening =
+  | { how: "deck"; page: number }
+  | { how: "website"; href: string; host: string }
+  | { how: "profile" };
+
+/**
+ * How the place a finding's quote comes from opens, or nothing when it stays plain text. A page of the
+ * deck opens inside the app, for a solution whose deck anyone may read at its public address; a page of
+ * the website opens at the address kept for it; the profile and a customer case open the solution's
+ * page. A quote the check found in another source than the one named is not opened as a deck page: the
+ * page named does not hold it.
+ */
+export function openingOf(
+  finding: Pick<MatchingFinding, "source" | "sourceUrl" | "quoteState">,
+  listed: boolean,
+): Opening | undefined {
+  const source = sourceOf(finding.source);
+  if (source?.kind === "website") {
+    const host = hostOf(finding.sourceUrl);
+    return host && finding.sourceUrl
+      ? { how: "website", href: finding.sourceUrl, host }
+      : undefined;
+  }
+  if (!source || !listed) {
+    return undefined;
+  }
+  if (source.kind === "deck") {
+    return finding.quoteState === "other_source" ? undefined : { how: "deck", page: source.page };
+  }
+  return { how: "profile" };
 }
 
 /** Reads the backend's label of a source; a label this screen does not know gives nothing. */

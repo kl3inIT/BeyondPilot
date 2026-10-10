@@ -6635,14 +6635,14 @@
       }
     },
     "summary": {
-      "matches": "{matches, plural, =0 {Chưa có giải pháp nào phù hợp.} other {{strong, plural, =0 {{matches} giải pháp phù hợp, nhưng chưa giải pháp nào làm đúng điều bạn cần.} other {{matches} giải pháp phù hợp, trong đó {strong} làm đúng điều bạn cần.}}}}",
-      "asked": "Bạn cần: {need}",
-      "covered": "Gộp lại, các giải pháp đáp ứng {covered} trong {total} điều bạn cần",
-      "gap": "Chưa giải pháp nào trên BeyondPilot có dẫn chứng làm được: {need}",
+      "matches": "{matches, plural, =0 {Chưa có giải pháp nào phù hợp.} other {{strong, plural, =0 {{matches} giải pháp phù hợp, nhưng chưa giải pháp nào đáp ứng yêu cầu chính.} other {{matches} giải pháp phù hợp, trong đó {strong} đáp ứng yêu cầu chính.}}}}",
+      "asked": "Yêu cầu chính: {need}",
+      "covered": "Gộp lại, các giải pháp đáp ứng {covered} trong {total} yêu cầu",
+      "gap": "Chưa giải pháp nào trên BeyondPilot có dẫn chứng cho: {need}",
       "ai": "AI đọc tài liệu công khai của từng nhà cung cấp và chọn ra các giải pháp này. Hãy kiểm tra lại trước khi quyết định."
     },
     "filter": {
-      "label": "Lọc theo điều bạn cần",
+      "label": "Lọc theo yêu cầu",
       "any": "Bất kỳ"
     },
     "tabs": {
@@ -6654,15 +6654,15 @@
     "groups": {
       "direct": {
         "title": "Phù hợp nhất",
-        "about": "Có dẫn chứng là làm được đúng điều bạn cần."
+        "about": "Có dẫn chứng là làm được."
       },
       "industry": {
         "title": "Có kinh nghiệm trong ngành của bạn",
-        "about": "Đã làm việc tương tự trong ngành của bạn, nhưng mới có dẫn chứng cho một phần điều bạn cần."
+        "about": "Đã làm việc tương tự trong ngành; có dẫn chứng một phần."
       },
       "technology": {
         "title": "Đúng công nghệ, ít dẫn chứng hơn",
-        "about": "Dùng đúng công nghệ bạn nêu, nhưng mới có dẫn chứng cho một phần điều bạn cần."
+        "about": "Đúng công nghệ; có dẫn chứng một phần."
       },
       "waiting": {
         "title": "Chưa được xem xét",
@@ -6676,20 +6676,21 @@
         "title": "Đã lưu, AI không còn gợi ý",
         "about": "Sau lượt tìm gần nhất, AI không còn gợi ý các giải pháp này. Chúng vẫn ở đây cho tới khi có người bỏ lưu."
       },
-      "emptyDirect": "Chưa giải pháp nào có dẫn chứng là làm được đúng điều bạn cần.",
+      "emptyDirect": "Chưa giải pháp nào đáp ứng yêu cầu chính.",
       "more": "Xem thêm {count}",
       "fewer": "Thu gọn"
     },
     "status": {
-      "met": "Có dẫn chứng",
-      "partly": "Có một phần",
-      "not_shown": "Chưa thấy dẫn chứng"
+      "met": "Đáp ứng",
+      "partly": "Đáp ứng một phần",
+      "not_shown": "Chưa có dẫn chứng"
     },
     "source": {
       "profile": "Trích từ hồ sơ trên BeyondPilot",
       "customerCase": "Trích từ dự án khách hàng {number}",
       "deck": "Trích từ deck, trang {page}",
-      "website": "Trích từ website"
+      "website": "Trích từ website",
+      "websiteAt": "Trích từ website · {host}"
     },
     "row": {
       "shortlist": "Lưu lại",
@@ -6706,6 +6707,11 @@
         "deck": "Không đọc được deck",
         "website": "Không đọc được website",
         "both": "Không đọc được deck và website"
+      },
+      "counts": {
+        "met": "{count} đáp ứng",
+        "partly": "{count} một phần",
+        "not_shown": "{count} chưa có dẫn chứng"
       }
     },
     "panel": {
@@ -6716,16 +6722,27 @@
       "close": "Đóng",
       "waiting": "AI chưa đọc giải pháp này. Lượt tìm tới AI sẽ đọc.",
       "aiSummary": "Tóm tắt của AI",
-      "needs": "Điều bạn cần và dẫn chứng của họ",
+      "needs": "Dẫn chứng",
       "required": "Bắt buộc",
       "constraints": "Cần hỏi lại nhà cung cấp",
       "constraintsCount": "{count} điều kiện triển khai cần hỏi lại",
-      "constraintsLead": "Thông tin dưới đây lấy từ tài liệu của chính nhà cung cấp và chưa ai kiểm chứng. Hãy xác nhận lại từng điểm với họ.",
-      "unread": {
-        "deck": "AI không đọc được deck của họ nên chỉ dựa vào các tài liệu còn lại.",
-        "website": "AI không đọc được website của họ nên chỉ dựa vào các tài liệu còn lại.",
-        "both": "AI không đọc được cả deck lẫn website của họ nên chỉ dựa vào hồ sơ."
-      }
+      "openDeck": "Mở deck"
+    },
+    "deck": {
+      "page": "Deck, trang {page}",
+      "pageOf": "Deck, trang {page} trên {total}",
+      "pageLabel": "Trang {page}",
+      "previous": "Trang trước",
+      "next": "Trang sau",
+      "close": "Đóng",
+      "file": "Mở tệp",
+      "loading": "Đang mở deck…",
+      "failed": "Không mở được deck",
+      "highlighted": "Câu trích được tô sáng ở trang này",
+      "onPage": "Câu trích nằm ở trang này",
+      "back": "Về câu trích, trang {page}",
+      "before": "Bắt đầu câu trích: ",
+      "after": " Hết câu trích."
     },
     "remove": {
       "title": "Vì sao {name} không phù hợp?",
@@ -6769,7 +6786,7 @@
     "empty": {
       "none": "AI chưa tìm thấy giải pháp nào trên BeyondPilot phù hợp với use case này.",
       "shortlist": "Chưa lưu giải pháp nào. Hãy lưu những giải pháp bạn muốn trao đổi.",
-      "need": "Ở đây chưa giải pháp nào có dẫn chứng làm được: {need}",
+      "need": "Ở đây chưa giải pháp nào có dẫn chứng cho: {need}",
       "clear": "Xem tất cả giải pháp"
     },
     "done": {
