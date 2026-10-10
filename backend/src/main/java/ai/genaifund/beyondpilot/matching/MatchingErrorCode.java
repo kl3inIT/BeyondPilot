@@ -23,7 +23,13 @@ public enum MatchingErrorCode implements ErrorCode {
 	OWN_SOLUTION("MATCHING_OWN_SOLUTION", ErrorCategory.CONFLICT,
 			"This solution belongs to the organization of the use case."),
 	SETTINGS_CHANGED("MATCHING_SETTINGS_CHANGED", ErrorCategory.CONFLICT,
-			"Someone else changed these settings. Reload and try again.");
+			"Someone else changed these settings. Reload and try again."),
+	FEEDBACK_NOT_JUDGED("MATCHING_FEEDBACK_NOT_JUDGED", ErrorCategory.CONFLICT,
+			"The AI has not read this candidate yet, so it has no group to answer about."),
+	FEEDBACK_GROUP_INVALID("MATCHING_FEEDBACK_GROUP_INVALID", ErrorCategory.VALIDATION,
+			"Agree with the group, or say which other group the candidate belongs in."),
+	FEEDBACK_REQUIREMENT_UNKNOWN("MATCHING_FEEDBACK_REQUIREMENT_UNKNOWN", ErrorCategory.VALIDATION,
+			"This use case has no such requirement.");
 
 	private final String code;
 
