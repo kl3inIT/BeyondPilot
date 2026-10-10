@@ -297,7 +297,7 @@ test.describe("admin matching settings", () => {
     await expect(said.getByText("2 disagreements")).toBeVisible();
     // A table from 768px, one stacked row an answer below that.
     const rows = isMobile
-      ? said.getByRole("list").getByRole("listitem")
+      ? said.locator('[data-slot="matching-disagreements"]').getByRole("listitem")
       : said
           .getByRole("table")
           .getByRole("row")
@@ -357,7 +357,7 @@ test.describe("admin matching settings", () => {
     await expect(said.getByText("Nobody has answered yet.")).toBeVisible();
     await expect(said.getByText(/answers agreed/)).toHaveCount(0);
     await expect(said.getByRole("table")).toHaveCount(0);
-    await expect(said.getByRole("list")).toHaveCount(0);
+    await expect(said.locator('[data-slot="matching-disagreements"]')).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
   });
 });

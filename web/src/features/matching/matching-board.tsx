@@ -435,8 +435,9 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
       return;
     }
     const listen = (event: KeyboardEvent) => onKey(event);
-    window.addEventListener("keydown", listen);
-    return () => window.removeEventListener("keydown", listen);
+    // Heard on the way down: a sheet keeps the arrows pressed inside it from going any further up.
+    window.addEventListener("keydown", listen, true);
+    return () => window.removeEventListener("keydown", listen, true);
   }, [panelOpen]);
 
   const rows = (section: Section) => {

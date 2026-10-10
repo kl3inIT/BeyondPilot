@@ -115,7 +115,10 @@ async function MatchingFeedbackPage({ feedback }: { feedback: MatchingFeedbackLi
             </TableBody>
           </DataTable>
 
-          <ul className="overflow-hidden rounded-lg border md:hidden">
+          <ul
+            data-slot="matching-disagreements"
+            className="overflow-hidden rounded-lg border md:hidden"
+          >
             {rows.map((row) => (
               <li
                 key={row.key}
