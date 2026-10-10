@@ -147,9 +147,7 @@ function OrganizationSolutionsPage({
               icon={<BoxesIcon aria-hidden="true" />}
               title={t("empty.title")}
               description={
-                solutions.editable
-                  ? t("empty.owner", { name: mine.organization.name })
-                  : t(waiting ? "afterApproval" : "empty.member")
+                solutions.editable ? undefined : t(waiting ? "afterApproval" : "empty.member")
               }
             >
               {solutions.editable && <CreateSolution />}

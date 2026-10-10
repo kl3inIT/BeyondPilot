@@ -8,7 +8,8 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { HelpPopover } from "@/components/composites/help-popover";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useNotify } from "@/hooks/use-notify";
@@ -146,15 +147,22 @@ function InvitePeople({ organizationName, allowance }: InvitePeopleProps) {
                     autoCapitalize="none"
                     autoComplete="off"
                     spellCheck={false}
-                    placeholder={t("emailsPlaceholder")}
                     value={emails}
+                    aria-describedby={invalid ? undefined : "invite-emails-hint"}
                     onChange={(event) => setEmails(event.target.value)}
                     aria-invalid={invalid || undefined}
                   />
-                  {invalid && <FieldError>{t("emailsInvalid")}</FieldError>}
+                  {invalid ? (
+                    <FieldError>{t("emailsInvalid")}</FieldError>
+                  ) : (
+                    <FieldDescription id="invite-emails-hint">{t("emailsHint")}</FieldDescription>
+                  )}
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="invite-role">{t("role")}</FieldLabel>
+                  <div className="flex items-center gap-1">
+                    <FieldLabel htmlFor="invite-role">{t("role")}</FieldLabel>
+                    <HelpPopover label={t("roleHelp")}>{t("note")}</HelpPopover>
+                  </div>
                   <NativeSelect
                     id="invite-role"
                     className="w-full"
@@ -166,7 +174,6 @@ function InvitePeople({ organizationName, allowance }: InvitePeopleProps) {
                   </NativeSelect>
                 </Field>
               </FieldGroup>
-              <p className="text-sm text-muted-foreground">{t("note")}</p>
               <DialogFooter variant="plain">
                 <Button
                   size="lg"

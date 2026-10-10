@@ -20,7 +20,6 @@ type CoverUploadProps = {
   value: string;
   onChange: (fileId: string) => void;
   invalid?: boolean;
-  describedBy?: string;
 };
 
 /**
@@ -28,7 +27,7 @@ type CoverUploadProps = {
  * is uploaded at once; the program names it when Settings is saved, and the backend removes a cover
  * the program no longer names.
  */
-function CoverUpload({ id, value, onChange, invalid, describedBy }: CoverUploadProps) {
+function CoverUpload({ id, value, onChange, invalid }: CoverUploadProps) {
   const t = useTranslations("Admin.programs.settings.cover");
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -74,7 +73,7 @@ function CoverUpload({ id, value, onChange, invalid, describedBy }: CoverUploadP
         accept={accepted.join(",")}
         className="sr-only"
         aria-invalid={invalid || undefined}
-        aria-describedby={describedBy}
+        aria-describedby={value ? undefined : `${id}-limits`}
         onChange={(event) => {
           const file = event.target.files?.[0];
           if (file) {
@@ -117,7 +116,6 @@ function CoverUpload({ id, value, onChange, invalid, describedBy }: CoverUploadP
           type="button"
           disabled={uploading}
           onClick={() => input.current?.click()}
-          aria-describedby={describedBy}
           className={
             invalid
               ? "flex w-full items-center gap-3 rounded-lg border border-dashed border-destructive p-4 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-wait"
@@ -133,7 +131,9 @@ function CoverUpload({ id, value, onChange, invalid, describedBy }: CoverUploadP
           )}
           <span className="flex flex-col">
             <span className="text-sm font-medium">{uploading ? t("uploading") : t("empty")}</span>
-            <span className="text-xs text-muted-foreground">{t("limits")}</span>
+            <span id={`${id}-limits`} className="text-xs text-muted-foreground">
+              {t("limits")}
+            </span>
           </span>
         </button>
       )}

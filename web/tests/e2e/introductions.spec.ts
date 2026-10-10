@@ -91,9 +91,7 @@ test.describe("asking for an introduction", () => {
       dialog.getByRole("heading", { name: "Request an introduction to Lumen Health" }),
     ).toBeVisible();
     await expect(
-      dialog.getByText(
-        "Introductions go through GenAI Fund. Neither email address is shown until Lumen Health replies.",
-      ),
+      dialog.getByText("Neither email address is shown until Lumen Health replies."),
     ).toBeVisible();
     await expect(dialog.getByText("Pocket Policy", { exact: true })).toBeVisible();
 
@@ -199,6 +197,10 @@ test.describe("workspace introductions", () => {
     const answered = await answerDecisions(page, answerPath, 204);
     await page.goto("/workspace/organization/introductions");
 
+    // A reply asks nothing first, so what it shares is said beside the button.
+    await expect(
+      page.getByText("Replying sends you both an email with the other's address."),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Reply" }).click();
 
     await expect(

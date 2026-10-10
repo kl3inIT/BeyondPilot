@@ -43,7 +43,7 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
   const closes = useCase.closesAt ? when(useCase.closesAt) : "";
 
   /** What happened to the use case, oldest first, and where it waits now. */
-  const history: { key: string; title: string; meta: string; current?: boolean }[] = [
+  const history: { key: string; title: string; meta?: string; current?: boolean }[] = [
     {
       key: "created",
       title: t("history.created", { name: useCase.createdBy.name }),
@@ -89,7 +89,7 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
     history.push({
       key: status,
       title: t(`history.now.${status}.title`),
-      meta: t(`history.now.${status}.meta`, { organization }),
+      meta: status === "in_review" ? undefined : t(`history.now.${status}.meta`, { organization }),
       current: true,
     });
   }
@@ -124,7 +124,7 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
               <CardContent>
                 <div className="flex flex-col gap-4">
                   <p className="text-sm text-muted-foreground">
-                    {d(status === "approved" ? "leadPublished" : "lead", { organization })}
+                    {status === "approved" ? d("leadPublished") : d("lead", { organization })}
                   </p>
                   <AdminUseCaseDecision
                     id={useCase.id}
@@ -163,7 +163,9 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
                     </div>
                     <div className="mb-5 flex min-w-0 flex-col">
                       <span className="text-sm font-medium">{item.title}</span>
-                      <span className="text-xs text-muted-foreground">{item.meta}</span>
+                      {item.meta && (
+                        <span className="text-xs text-muted-foreground">{item.meta}</span>
+                      )}
                     </div>
                   </li>
                 ))}

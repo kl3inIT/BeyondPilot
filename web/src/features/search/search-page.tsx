@@ -67,7 +67,7 @@ function SearchPage({ params, results }: SearchPageProps) {
         </div>
 
         {!results ? (
-          <Prompt title={t("start.title")} description={t("start.description")} />
+          <Prompt title={t("start.title")} />
         ) : results.counts.all === 0 ? (
           <Prompt
             title={t("none.title", { q })}
@@ -288,7 +288,7 @@ function Prompt({
   icon,
 }: {
   title: string;
-  description: string;
+  description?: string;
   icon?: React.ReactNode;
 }) {
   const t = useTranslations("Search");
@@ -299,7 +299,7 @@ function Prompt({
       <div className="flex flex-col gap-1.5">
         {icon}
         <h1 className="text-lg font-semibold">{title}</h1>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
       <div className="flex flex-col gap-2.5">
         <h2 className="text-xs font-medium text-muted-foreground">{t("try")}</h2>

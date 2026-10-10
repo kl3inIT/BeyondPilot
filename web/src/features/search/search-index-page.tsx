@@ -13,6 +13,7 @@ import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { DataTable } from "@/components/composites/data-table";
+import { HelpPopover } from "@/components/composites/help-popover";
 import { Status } from "@/components/composites/status";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -128,14 +129,19 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
     },
   ];
 
+  // When the index repairs itself: beside each Rebuild button, for the few who ask.
+  const rebuildHelp = (
+    <HelpPopover label={t("repair.help")}>
+      <p>{t("repair.never")}</p>
+    </HelpPopover>
+  );
+
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <div className="flex items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <AdminPageTitle destination="searchIndex">{t("title")}</AdminPageTitle>
-          <p className="text-sm text-muted-foreground">{t("lead")}</p>
-        </div>
-        <div className="hidden md:block">
+        <AdminPageTitle destination="searchIndex">{t("title")}</AdminPageTitle>
+        <div className="hidden items-center gap-1 md:flex">
+          {rebuildHelp}
           <RebuildIndex />
         </div>
       </div>
@@ -185,9 +191,14 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
       </dl>
 
       <section aria-labelledby="by-kind" className="flex flex-col gap-2.5">
-        <h2 id="by-kind" className="text-base font-medium">
-          {t("kinds.heading")}
-        </h2>
+        <div className="flex items-center gap-1">
+          <h2 id="by-kind" className="text-base font-medium">
+            {t("kinds.heading")}
+          </h2>
+          <HelpPopover label={t("kinds.noteHelp")}>
+            <p>{t("kinds.note")}</p>
+          </HelpPopover>
+        </div>
         <DataTable className="hidden md:block">
           <TableHeader>
             <TableRow>
@@ -255,7 +266,6 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
             </li>
           ))}
         </ul>
-        <p className="text-xs text-muted-foreground">{t("kinds.note")}</p>
       </section>
 
       {data.heldBack.length > 0 && (
@@ -347,18 +357,21 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
         </section>
       )}
 
-      <p className="flex items-start gap-2 text-xs text-muted-foreground">
-        <HistoryIcon className="mt-px size-3.5 shrink-0" aria-hidden="true" />
-        {data.lastRebuild
-          ? t("repair.last", {
-              when: dayAndTime(data.lastRebuild.at),
-              saved: data.lastRebuild.saved,
-              removed: data.lastRebuild.removed,
-            })
-          : t("repair.never")}
-      </p>
-      <div className="md:hidden">
-        <RebuildIndex wide />
+      {data.lastRebuild && (
+        <p className="flex items-start gap-2 text-xs text-muted-foreground">
+          <HistoryIcon className="mt-px size-3.5 shrink-0" aria-hidden="true" />
+          {t("repair.last", {
+            when: dayAndTime(data.lastRebuild.at),
+            saved: data.lastRebuild.saved,
+            removed: data.lastRebuild.removed,
+          })}
+        </p>
+      )}
+      <div className="flex items-center gap-1 md:hidden">
+        <div className="flex-1">
+          <RebuildIndex wide />
+        </div>
+        {rebuildHelp}
       </div>
     </div>
   );

@@ -77,9 +77,7 @@ function PublishChecklist({ missing }: { missing: PublishIssue[] }) {
         <h2 id="publish-checklist" className="text-sm font-semibold">
           {t("title")}
         </h2>
-        <p className="text-sm text-muted-foreground">
-          {missing.length > 0 ? t("lead") : t("ready")}
-        </p>
+        {missing.length === 0 && <p className="text-sm text-muted-foreground">{t("ready")}</p>}
       </div>
       <ul className="flex flex-col gap-1.5">
         {publishIssues.map((issue) =>

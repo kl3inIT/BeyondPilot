@@ -127,7 +127,7 @@ test.describe("admin matching settings", () => {
     // A limit says what it may be and what it does to whoever hears the page instead of seeing it.
     await expect(atOnce).toHaveAccessibleDescription(/^1 to 16 More at once is faster/);
     await expect(limit("Runs per day, whole platform")).toHaveAccessibleDescription(
-      /^1 to 100,000 A ceiling on cost.*Leave it empty for no ceiling\.$/,
+      /^1 to 100,000 Once it is reached.*leave it empty for no ceiling\.$/,
     );
 
     // Nothing changed, nothing to save.

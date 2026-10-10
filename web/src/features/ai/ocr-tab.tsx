@@ -53,11 +53,7 @@ async function OcrTab({ data, chat }: { data: OcrSettings; chat: ChatSettings })
           </div>
         </SettingsBlock>
         {data.providers.length > 0 && (
-          <SettingsBlock
-            id="ocr-connections"
-            title={t("ocr.connections.heading")}
-            lead={t("ocr.connections.lead")}
-          >
+          <SettingsBlock id="ocr-connections" title={t("ocr.connections.heading")}>
             <ul className="flex flex-col gap-2">
               {data.providers.map((provider) => (
                 // A saved provider is read again in full, so its card starts again with it.
@@ -66,7 +62,7 @@ async function OcrTab({ data, chat }: { data: OcrSettings; chat: ChatSettings })
             </ul>
           </SettingsBlock>
         )}
-        <SettingsBlock id="add-ocr-provider" title={t("ocr.add.heading")} lead={t("ocr.add.lead")}>
+        <SettingsBlock id="add-ocr-provider" title={t("ocr.add.heading")}>
           <ul className="grid gap-2 md:grid-cols-2">
             {ocrPresets.map((preset) => (
               <li
@@ -74,12 +70,7 @@ async function OcrTab({ data, chat }: { data: OcrSettings; chat: ChatSettings })
                 className="flex items-center gap-3 rounded-lg border bg-background px-4 py-3"
               >
                 <OcrLogo />
-                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="text-sm font-medium">{preset.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {t(`ocr.add.preset.${preset.id}`)}
-                  </span>
-                </div>
+                <span className="min-w-0 flex-1 text-sm font-medium">{preset.name}</span>
                 <ConnectOcrPreset preset={preset} />
               </li>
             ))}

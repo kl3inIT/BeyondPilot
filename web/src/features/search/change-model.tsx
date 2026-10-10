@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useNotify } from "@/hooks/use-notify";
 import {
@@ -164,7 +164,6 @@ function ChangeModel({ providers, vendors, current, items, settingsVersion }: Ch
                     </NativeSelectOption>
                   ))}
                 </NativeSelect>
-                <FieldDescription>{t("dimensionsHint")}</FieldDescription>
               </Field>
             </FieldGroup>
 

@@ -182,7 +182,9 @@ function DeploymentForm({ solutionId, deployment, onClose }: DeploymentFormProps
                     value={text[field]}
                     onChange={write(field)}
                   />
-                  <FieldDescription>{t(`${field}Hint`)}</FieldDescription>
+                  {field !== "languages" && (
+                    <FieldDescription>{t(`${field}Hint`)}</FieldDescription>
+                  )}
                 </Field>
               ))}
             </div>
@@ -243,11 +245,15 @@ function CustomerDeploymentsEditor({ solutionId, deployments }: CustomerDeployme
           <h2 className="text-sm font-medium">{t("title")}</h2>
           <p className="text-sm text-muted-foreground">{t("lead")}</p>
         </div>
-        {deployments.length < MAX_DEPLOYMENTS && (
+        {deployments.length < MAX_DEPLOYMENTS ? (
           <Button prominence="secondary" size="sm" onClick={() => setEditing(null)}>
             <PlusIcon aria-hidden="true" />
             {t("add")}
           </Button>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            {t("limitReached", { max: MAX_DEPLOYMENTS })}
+          </p>
         )}
       </div>
       {deployments.length === 0 ? (

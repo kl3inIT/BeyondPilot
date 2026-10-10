@@ -70,7 +70,8 @@ function EmailTemplateEditor({
 }: {
   template: EmailTemplate;
   name: string;
-  description: string;
+  /** What the name does not say about the email; most kinds have none. */
+  description?: string;
   /** Where a test goes unless another address is written. */
   operatorEmail: string;
 }) {
@@ -238,7 +239,7 @@ function EmailTemplateEditor({
             <h1 className="text-2xl font-semibold tracking-tight">{name}</h1>
             {current.edited && <Badge variant="outline">{t("edited")}</Badge>}
           </div>
-          <p className="text-sm text-muted-foreground">{description}</p>
+          {description && <p className="text-sm text-muted-foreground">{description}</p>}
           {current.edited && current.updatedBy && current.updatedAt && (
             <p className="text-xs text-muted-foreground">
               {t("lastEdited", {
@@ -350,9 +351,7 @@ function EmailTemplateEditor({
             subject={preview.subject}
             html={preview.html}
             title={t("previewTitle", { name })}
-            behind={
-              problems.length > 0 ? t("previewBehind", { count: problems.length }) : undefined
-            }
+            behind={problems.length > 0 ? t("previewBehind") : undefined}
             className="lg:w-140 lg:shrink-0"
           />
         )}
@@ -369,8 +368,7 @@ function EmailTemplateEditor({
         open={resetting !== null}
         onOpenChange={(open) => !open && setResetting(null)}
         title={t("resetConfirm.title")}
-        description={t("resetConfirm.lead", { name })}
-        note={t("resetConfirm.note")}
+        description={t("resetConfirm.note")}
         confirmLabel={t("resetConfirm.confirm")}
         cancelLabel={t("resetConfirm.cancel")}
         tone="danger"

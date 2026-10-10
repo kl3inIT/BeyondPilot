@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/actions/button";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
@@ -116,6 +116,8 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
   const results = typed ? found : suggestion ? [suggestion] : null;
   const nothing = typed && found !== null && found.length === 0 && !searching;
   const only = results?.length === 1 ? results[0] : null;
+  // Joining by domain opens no dialog, so what is asked is a request or a claim.
+  const askingWay = asking?.way === "claim" ? "claim" : "request";
 
   return (
     <div
@@ -186,15 +188,13 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
         </div>
       )}
 
-      {!nothing && (
+      {!nothing && only?.way !== "claim" && (
         <p className="text-xs text-muted-foreground">
-          {only?.way === "claim"
-            ? t("note.claim")
-            : only?.way === "request"
-              ? only.emailDomain
-                ? t("note.requestDomain", { domain: only.emailDomain, name: only.name })
-                : t("note.request", { name: only.name })
-              : t("note.create")}
+          {only?.way === "request"
+            ? only.emailDomain
+              ? t("note.requestDomain", { domain: only.emailDomain, name: only.name })
+              : t("note.request", { name: only.name })
+            : t("note.create")}
         </p>
       )}
 
@@ -204,8 +204,8 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
             <DecisionDialogHeader
               tone="info"
               icon={SendIcon}
-              title={t(`ask.${asking.way}.title`, { name: asking.name })}
-              description={asking.way !== "request" ? t(`ask.${asking.way}.lead`) : undefined}
+              title={t(`ask.${askingWay}.title`, { name: asking.name })}
+              description={askingWay === "claim" ? t("ask.claim.lead") : undefined}
             />
             <Field>
               <FieldLabel htmlFor="join-message">{t("ask.message")}</FieldLabel>
@@ -214,8 +214,14 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
                 rows={4}
                 maxLength={500}
                 value={message}
+                aria-describedby="join-message-hint"
                 onChange={(event) => setMessage(event.target.value)}
               />
+              <FieldDescription id="join-message-hint">
+                {askingWay === "claim"
+                  ? t("ask.claim.messageHint")
+                  : t("ask.request.messageHint", { name: asking.name })}
+              </FieldDescription>
             </Field>
             <DialogFooter variant="plain">
               <Button
@@ -227,7 +233,7 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
                 {t("ask.cancel")}
               </Button>
               <Button size="lg" pending={pending !== null} onClick={() => join(asking, message)}>
-                {t(`action.${asking.way}`)}
+                {t(`action.${askingWay}`)}
               </Button>
             </DialogFooter>
           </DialogContent>

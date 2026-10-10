@@ -203,7 +203,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
         {!organization && <p className="text-muted-foreground">{t("createLead")}</p>}
       </div>
 
-      <OrganizationProfileSection icon={Building2Icon} title={t("basics")} lead={t("basicsLead")}>
+      <OrganizationProfileSection icon={Building2Icon} title={t("basics")}>
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
           <Field data-invalid={bad("name")}>
             <FieldLabel htmlFor="organization-name">
@@ -230,7 +230,6 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
               type="url"
               inputMode="url"
               autoComplete="url"
-              placeholder="https://"
               maxLength={300}
               value={website}
               aria-describedby="organization-website-hint"
@@ -239,7 +238,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
             />
             {bad("website") && <FieldError>{t("websiteInvalid")}</FieldError>}
             <p id="organization-website-hint" className="text-xs text-muted-foreground">
-              {t("websiteHint")}
+              {t(type === "independent_builder" ? "websiteHint" : "websiteFormatHint")}
             </p>
           </Field>
         </div>
@@ -288,7 +287,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
         </div>
       </OrganizationProfileSection>
 
-      <OrganizationProfileSection icon={FileTextIcon} title={t("about")} lead={t("aboutLead")}>
+      <OrganizationProfileSection icon={FileTextIcon} title={t("about")}>
         <Field data-invalid={bad("industries")}>
           <FieldLabel htmlFor="organization-industries">
             {t("industries")} {type === "company" && <RequiredMark />}
@@ -335,7 +334,6 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
               name="foundedYear"
               inputMode="numeric"
               maxLength={4}
-              placeholder="2021"
               value={foundedYear}
               aria-describedby="organization-founded-year-hint"
               onChange={(event) => setFoundedYear(event.target.value)}
@@ -343,7 +341,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
             />
             {bad("foundedYear") && <FieldError>{t("foundedYearInvalid")}</FieldError>}
             <p id="organization-founded-year-hint" className="text-xs text-muted-foreground">
-              {t("foundedYearHint")}
+              {t(type === "independent_builder" ? "foundedYearHint" : "foundedYearFormatHint")}
             </p>
           </Field>
         </div>

@@ -37,12 +37,7 @@
     "menu": {
       "open": "Open menu",
       "close": "Close menu",
-      "title": "Menu",
-      "programsHint": "Meetups, workshops, demo days, challenges and accelerators",
-      "useCasesHint": "Business challenges enterprises want solved with AI",
-      "solutionsHint": "Products and providers from AI companies across the region",
-      "talentHint": "Specialists and builders for your AI project",
-      "howItWorksHint": "How the AI adoption agent helps you move forward"
+      "title": "Menu"
     },
     "language": {
       "label": "Language",
@@ -324,17 +319,16 @@
   },
   "ComingSoon": {
     "title": "Coming soon",
-    "description": "This part of BeyondPilot is being built. In the meantime, the AI for Insurance Challenge × Tasco is open for applications.",
+    "description": "The AI for Insurance Challenge × Tasco is open for applications.",
     "back": "Back to home"
   },
   "NotFound": {
     "title": "Page not found",
-    "description": "The page you are looking for does not exist or has moved.",
     "home": "Back to home"
   },
   "Error": {
     "title": "Something went wrong",
-    "description": "We could not load this page. Please try again.",
+    "description": "We could not load this page.",
     "retry": "Try again",
     "reference": "Reference: {digest}"
   },
@@ -345,7 +339,6 @@
     "google": "Continue with Google",
     "or": "or",
     "emailLabel": "Email",
-    "emailPlaceholder": "you@company.com",
     "submit": "Email me a sign-in code",
     "invalidEmail": "Enter an email address like name@company.com.",
     "sendFailedTitle": "We couldn't send the email",
@@ -396,7 +389,6 @@
     "switchAccount": "Not you? Switch account",
     "expired": {
       "title": "This connection request has ended",
-      "lead": "It has expired, or it was already answered.",
       "next": "Go back to your AI app and connect to BeyondPilot again.",
       "home": "Go to BeyondPilot"
     },
@@ -418,7 +410,7 @@
   "Account": {
     "metaTitle": "Account · BeyondPilot",
     "title": "Account",
-    "lead": "Who you sign in as, and where and how to reach you. An application starts from these details.",
+    "lead": "An application starts from these details.",
     "name": "Name",
     "email": "Email",
     "emailHint": "You sign in with this address, so it can't be changed here.",
@@ -428,7 +420,8 @@
     "phoneInvalid": "Enter a phone number with its country code, such as +84 912 345 678.",
     "save": "Save",
     "saved": "Your account is saved.",
-    "failed": "We could not save your account. Try again."
+    "failed": "We could not save your account. Try again.",
+    "phoneHint": "With its country code, such as +84 912 345 678."
   },
   "Mcp": {
     "metaTitle": "MCP · BeyondPilot",
@@ -467,7 +460,8 @@
           "name": "Other apps",
           "step1": "Add the server {address} as streamable HTTP with OAuth",
           "step2": "An app that names no client of its own signs in as mcp-local",
-          "step3": "Sign in to BeyondPilot and choose Allow"
+          "step3": "Sign in to BeyondPilot and choose Allow",
+          "clientHelp": "How an app without a client name signs in"
         }
       },
       "askTitle": "Or ask your AI to set it up",
@@ -489,7 +483,7 @@
     "revoke": {
       "open": "Revoke",
       "title": "Revoke {name}?",
-      "lead": "It stops working at once. Connect it again to use it.",
+      "lead": "It stops working at once.",
       "confirm": "Revoke",
       "cancel": "Cancel",
       "done": "{name} can no longer use BeyondPilot.",
@@ -525,7 +519,6 @@
     "programs": {
       "metaTitle": "Programs · BeyondPilot",
       "title": "Programs",
-      "lead": "Every program GenAI Fund runs, in any status. Open one to edit its page and its dates, and to publish it.",
       "columns": {
         "program": "Program",
         "status": "Status",
@@ -553,7 +546,7 @@
         "lead": "It starts as a draft that only operators can see.",
         "name": "Name",
         "slug": "Address",
-        "slugHint": "{address}. Made from the name; you can change it until the program is first published.",
+        "slugHint": "{address}. You can change it until the program is first published.",
         "type": "Type",
         "cancel": "Cancel",
         "submit": "Create program",
@@ -577,7 +570,6 @@
         "saved": "Saved.",
         "basics": {
           "title": "Basics",
-          "what": "What the program is called and where it lives.",
           "name": "Name",
           "slug": "Address",
           "slugHint": "{address}. You can change it until the program is first published.",
@@ -586,17 +578,14 @@
           "partner": "Partner",
           "startsOn": "Starts",
           "endsOn": "Ends",
-          "daysHint": "The programs list moves a program to Done after its last day.",
           "summary": "Summary",
           "summaryHint": "Shown on the programs list and at the top of the page.",
           "about": "About",
-          "aboutHint": "The introduction on a standard page. A page made for the program writes its own.",
-          "cover": "Cover image",
-          "coverHint": "Shown on the programs list and at the top of the page."
+          "aboutHint": "The introduction on a standard page.",
+          "cover": "Cover image"
         },
         "page": {
           "title": "Page",
-          "what": "How the public page of this program is made.",
           "standard": {
             "title": "Standard page",
             "what": "Built from what is entered here: the summary, the About text, the key dates and the events."
@@ -607,18 +596,19 @@
           },
           "external": {
             "title": "A page somewhere else",
-            "what": "The programs list links to an outside address. Applying still happens on BeyondPilot."
+            "what": "The programs list links to an outside address."
           },
-          "externalUrl": "Address of the page"
+          "externalUrl": "Address of the page",
+          "externalUrlHint": "A full address, starting with https://."
         },
         "applications": {
           "title": "Applications",
-          "what": "When applications are taken and how many teams go through. A program that takes them here gets its Applications and Reviewers screens.",
+          "what": "A program that takes applications here gets its Applications and Reviewers screens.",
           "takes": "Applications are taken on BeyondPilot",
           "opens": "Opens",
           "closes": "Closes",
           "time": "Time",
-          "ict": "Times are in Vietnam time (ICT). The form closes by itself at the closing time.",
+          "ict": "Times are in Vietnam time (ICT).",
           "shortlist": "Demo-day places",
           "outcomes": "Outcomes due",
           "updates": "Applicants can edit a submitted application until the closing time."
@@ -632,11 +622,11 @@
           "fromWindow": "From the application window",
           "locked": "Edited under Applications",
           "add": "Add a date",
-          "hint": "Times are in Vietnam time (ICT). The locked dates follow the Applications section above."
+          "hint": "Times are in Vietnam time (ICT)."
         },
         "events": {
           "title": "Events",
-          "what": "Sessions of this program that people register for; they also show under Coming up on the programs list.",
+          "what": "Events show under Coming up on the programs list.",
           "online": "Online",
           "add": "Add an event"
         },
@@ -701,7 +691,7 @@
           "city": "City",
           "country": "Country",
           "registrationUrl": "Registration link",
-          "registrationUrlHint": "Where people sign up, for example the event's Luma page. The program's page links to it.",
+          "registrationUrlHint": "Where people sign up, for example the event's Luma page.",
           "add": "Add event",
           "update": "Update"
         },
@@ -713,13 +703,12 @@
           "saveAndPublish": "Save and publish",
           "checklist": {
             "title": "Before you can publish",
-            "lead": "Publishing puts the program on the programs list. These are still missing:",
             "issues": {
               "summary": "Add a summary",
               "cover": "Add a cover image",
               "dates": "Set when the program starts and ends"
             },
-            "ready": "Everything is in place. Publish to save it and put the program on the list.",
+            "ready": "Everything is in place.",
             "done": "Done"
           },
           "confirm": {
@@ -745,7 +734,7 @@
         "notSaved": "Not saved yet",
         "leave": {
           "title": "Leave without saving?",
-          "lead": "Your changes to this program are not saved and will be lost.",
+          "lead": "Your changes will be lost.",
           "leave": "Leave",
           "stay": "Stay"
         }
@@ -763,7 +752,6 @@
       },
       "noMatch": {
         "title": "No programs match",
-        "description": "Try another name, or look at every state.",
         "clear": "Show all programs"
       },
       "countOf": "{count, plural, one {# program} other {# programs}} of {total}",
@@ -777,8 +765,8 @@
       "questions": {
         "metaTitle": "Questions",
         "title": "What the application form asks",
-        "lead": "After the applicant, their team and their solution, the form asks these, in this order. A program with no questions skips that step.",
-        "fixed": "Applications opened on {opened}, so the questions can no longer change: an answer may already name one.",
+        "lead": "After the applicant, their team and their solution, the form asks these, in this order.",
+        "fixed": "Applications opened on {opened}, so the questions can no longer change.",
         "none": "No questions yet. Applicants go straight from their solution to review and submit.",
         "kinds": {
           "short_text": "Short answer",
@@ -810,7 +798,7 @@
         "optionsHint": "Press Enter after each one. Two to {count}.",
         "choicesRequired": "Add at least two choices.",
         "maxLength": "Longest answer",
-        "maxLengthHint": "In characters. Leave empty for the default.",
+        "maxLengthHint": "In characters.",
         "required": "An answer is required",
         "delete": "Delete",
         "cancel": "Cancel",
@@ -826,7 +814,6 @@
     "accounts": {
       "metaTitle": "Accounts · BeyondPilot",
       "title": "Accounts",
-      "lead": "Everyone who has signed in to BeyondPilot. Operators are GenAI Fund staff and can open this area.",
       "search": "Search by name or email",
       "filters": {
         "status": {
@@ -879,19 +866,16 @@
         "cancel": "Cancel",
         "disable": {
           "title": "Disable this account?",
-          "lead": "You are about to disable:",
-          "note": "They are signed out at once and cannot sign in again. Nothing they submitted is removed, and you can enable the account at any time.",
+          "note": "They are signed out at once and cannot sign in until you enable the account.",
           "confirm": "Disable account"
         },
         "makeOperator": {
           "title": "Make {name} an operator?",
-          "lead": "You are about to give the operator role to:",
-          "note": "Operators can open the admin area: they run programs, review applications and manage accounts. You can withdraw the role at any time.",
+          "note": "Operators can open the admin area: they run programs, review applications and manage accounts.",
           "confirm": "Make operator"
         },
         "withdrawOperator": {
           "title": "Withdraw the operator role?",
-          "lead": "You are about to withdraw the operator role from:",
           "note": "They keep their account and what they submitted, and lose the admin area at once.",
           "confirm": "Withdraw role"
         }
@@ -911,14 +895,12 @@
       },
       "empty": {
         "title": "No account matches",
-        "description": "No account matches this search and these filters.",
         "clear": "Clear search and filters"
       }
     },
     "auditLog": {
       "metaTitle": "Audit log · BeyondPilot",
       "title": "Audit log",
-      "lead": "What operators and the server configuration changed or decided: accounts, roles, programs, organizations, solutions and talent profiles. Newest first.",
       "search": "Search people or accounts",
       "filters": {
         "period": {
@@ -1195,7 +1177,6 @@
       },
       "empty": {
         "title": "{period, select, day {No events in the last 24 hours} week {No events in the last 7 days} month {No events in the last 30 days} other {No events yet}}",
-        "description": "Changes and decisions appear here.",
         "showAll": "Show all time"
       },
       "noMatch": {
@@ -1207,7 +1188,6 @@
     "organizations": {
       "metaTitle": "Organisations · BeyondPilot",
       "title": "Organisations",
-      "lead": "Companies and teams on BeyondPilot. A new organization, and a claim to own one, wait here for a decision.",
       "search": "Search by name or email domain",
       "filters": {
         "status": {
@@ -1246,12 +1226,10 @@
       },
       "needReview": "{count, plural, one {# needs review} other {# need review}}",
       "empty": {
-        "title": "No organizations yet",
-        "description": "Organizations appear here when people create them, or when you add one."
+        "title": "No organizations yet"
       },
       "noMatch": {
         "title": "No organization matches",
-        "description": "Nothing matches this search and this filter.",
         "clear": "Clear search and filter"
       },
       "count": "{count, plural, one {# organisation} other {# organisations}}",
@@ -1269,7 +1247,9 @@
         "website": "Website",
         "websiteInvalid": "Enter a full address that starts with https://",
         "cancel": "Cancel",
-        "confirm": "Add organization"
+        "confirm": "Add organization",
+        "websiteHint": "A full address that starts with https://.",
+        "emailDomainHint": "A domain such as example.com."
       },
       "detail": {
         "back": "All organizations",
@@ -1286,11 +1266,11 @@
         "takenDown": {
           "title": "Taken down on {day}",
           "reason": "Reason: {reason}.",
-          "foot": "Its public page and its solutions are hidden. Its {members, plural, one {# member keeps} other {# members keep}} their workspace and read this reason there."
+          "foot": "Its {members, plural, one {# member reads} other {# members read}} this reason in their workspace."
         },
         "merged": {
           "title": "Merged into {kept} on {day} by {name}",
-          "lead": "This record is kept for the audit log and can no longer be changed. Its members, open invitations, solutions and use cases moved to {kept}.",
+          "lead": "Its members, open invitations, solutions and use cases moved to {kept}.",
           "address": "{address} now leads to the page of {kept}.",
           "open": "Open {kept}"
         },
@@ -1303,11 +1283,11 @@
         "approve": "Approve",
         "refuse": "Refuse",
         "refuseTitle": "Refuse {name}",
-        "refuseLead": "The owners see the reason. A refusal is final; to ask for changes, send the organization back instead.",
+        "refuseLead": "The owners see the reason, and a refusal is final.",
         "refuseConfirm": "Send decision",
         "sendBack": "Send back",
         "sendBackTitle": "Send {name} back",
-        "sendBackLead": "The owners read what to change. Once they correct the organization and save it, it waits for review again.",
+        "sendBackLead": "Once the owners correct the organization and save it, it waits for review again.",
         "sendBackLabel": "What should the owners change?",
         "sendBackConfirm": "Send back",
         "reason": "Reason",
@@ -1315,22 +1295,20 @@
         "back": "Back",
         "reasonPlaceholder": "Choose a reason",
         "domain": "Email domain to verify (optional)",
-        "domainHint": "Only the company's own domain. Colleagues on it can then join at once.",
+        "domainHint": "Only the company's own domain, since colleagues on it can then join at once.",
         "domainInvalid": "Enter a domain such as example.com, or leave it empty.",
         "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate."
       },
       "clear": "Clear filters",
       "queueEmpty": {
         "title": "Nothing waits for review",
-        "description": "Every new organization has a decision.",
         "home": "Back to Admin home"
       },
       "claim": {
         "title": "Decide the claim for {name}",
-        "lead": "Nobody owns it yet. Asked on {day}.",
-        "leadUnknown": "Nobody owns it yet.",
+        "lead": "Asked on {day}.",
         "domain": "Email domain to verify (optional)",
-        "domainHint": "Only the company's own domain. Colleagues on it can then join at once.",
+        "domainHint": "Only the company's own domain, since colleagues on it can then join at once.",
         "domainInvalid": "Enter a domain such as example.com, or leave it empty.",
         "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate.",
         "decline": "Decline",
@@ -1340,22 +1318,21 @@
         "open": "Actions for {name}",
         "menu": "Take down",
         "title": "Take down {name}",
-        "lead": "Its public page and its solutions leave the directories at once. Its {members, plural, one {# member keeps} other {# members keep}} their workspace and read the reason there.",
+        "lead": "Its public page and its solutions leave the directories at once, and its {members, plural, one {# member reads} other {# members read}} the reason in their workspace.",
         "reason": "Reason",
         "reasonPlaceholder": "Choose a reason",
         "message": "Message to the owners",
-        "messageHint": "The owners are told by email. You can restore the organization at any time; both are recorded in the audit log.",
+        "messageHint": "The owners are told by email, and you can restore the organization at any time.",
         "confirm": "Take down",
         "cancel": "Cancel",
         "restore": "Restore",
         "restoreTitle": "Restore {name}?",
         "restoreLead": "Its public page, its solutions and its approved deployments are shown again, and its owners can invite people and publish.",
-        "restoreNote": "The owners are told by email. The take-down and its reason stay in the audit log."
+        "restoreNote": "The owners are told by email."
       },
       "merge": {
         "menu": "Merge into another…",
         "title": "Merge {name}",
-        "lead": "Its members and solutions move to the one you keep.",
         "keep": "Keep",
         "keepPlaceholder": "Search organizations",
         "noMatch": "No organization matches.",
@@ -1374,7 +1351,7 @@
           "members": "{count, plural, =0 {No members} one {# member} other {# members}}",
           "invitations": "{count, plural, one {# invitation open} other {# invitations open}}"
         },
-        "empty": "Nobody belongs to this organization yet. Invite its first owner.",
+        "empty": "Invite its first owner.",
         "invited": "Invited {day} · expires {expires}",
         "invitePending": "Invited",
         "columns": {
@@ -1391,33 +1368,31 @@
         },
         "demote": {
           "title": "Make the only owner a member?",
-          "lead": "The organization will have no owner. Nobody can invite people or change its profile until you invite one.",
+          "lead": "Nobody can invite people or change its profile until you invite an owner.",
           "confirm": "Make member"
         },
         "remove": {
           "title": "Remove this member?",
           "lead": "They lose access to the organization's profile, members and solutions.",
-          "lastOwnerLead": "They are the only owner. The organization will have none until you invite one.",
+          "lastOwnerLead": "They are the only owner, so the organization will have none until you invite one.",
           "confirm": "Remove member"
         },
         "confirm": {
-          "note": "What the organization published stays. They can be invited again at any time.",
+          "note": "They can be invited again at any time.",
           "cancel": "Cancel"
         },
         "revoke": {
           "open": "Withdraw the invitation to {email}",
           "title": "Withdraw this invitation?",
-          "lead": "The link in the email stops working. You can invite them again.",
+          "lead": "The link in the email stops working.",
           "confirm": "Withdraw invitation"
         },
         "invite": {
           "open": "Invite a person",
           "title": "Invite someone to {name}",
-          "lead": "Your invitations do not count against the organization's limits.",
           "email": "Email address",
           "emailInvalid": "Enter one email address.",
           "role": "Role",
-          "note": "The invitation is recorded in the audit log.",
           "cancel": "Cancel",
           "send": "Send invitation"
         }
@@ -1427,7 +1402,7 @@
     "solutions": {
       "metaTitle": "Solutions · BeyondPilot",
       "title": "Solutions",
-      "lead": "Every solution providers sent for review. Those still waiting come first, the longest wait on top.",
+      "lead": "Every solution providers sent for review.",
       "columns": {
         "solution": "Solution",
         "organization": "Organization",
@@ -1445,7 +1420,6 @@
       },
       "noMatch": {
         "title": "No solution matches",
-        "description": "Nothing matches this search and this filter.",
         "clear": "Clear search and filter"
       },
       "count": "{count, plural, one {# solution} other {# solutions}}",
@@ -1458,14 +1432,14 @@
         "takeDown": "Take down…",
         "restore": "Restore",
         "sendBackTitle": "Send {name} back?",
-        "sendBackLead": "It goes back to its organization to correct. The owners read what you write and send it again.",
+        "sendBackLead": "The owners read what you write and send it again. They are emailed.",
         "sendBackLabel": "What to change",
         "sendBackConfirm": "Send back",
         "rejectTitle": "Reject {name} for good?",
-        "rejectLead": "Its owners cannot send it again. If something is only missing, send it back instead.",
+        "rejectLead": "Its owners cannot send it again. If something is only missing, send it back instead. They are emailed.",
         "rejectConfirm": "Reject",
         "takeDownTitle": "Take {name} down?",
-        "takeDownLead": "It leaves the directory and matching at once, but stays approved. The owners read your reason; you can restore it.",
+        "takeDownLead": "It leaves the directory and matching at once, but stays approved. The owners read your reason; you can restore it. They are emailed.",
         "takeDownConfirm": "Take down",
         "restoreTitle": "Put {name} back?",
         "restoreLead": "It returns to the directory and matching without a new review, listed as its owners chose. They are emailed.",
@@ -1530,7 +1504,6 @@
       },
       "queueEmpty": {
         "title": "Nothing waits for review",
-        "description": "Every solution sent for review has a decision.",
         "home": "Back to Admin home"
       },
       "waitingSince": "Sent {time}",
@@ -1549,20 +1522,20 @@
       "deploymentsWaiting": "{count, plural, one {# deployment waits} other {# deployments wait}}",
       "backing": {
         "title": "What GenAI Fund says",
-        "lead": "Shown on the solution's card and page, marked as GenAI Fund's. Its owners cannot change it.",
+        "lead": "Shown on the solution's card and page, marked as GenAI Fund's.",
         "fields": {
           "backedBy": "Backed by",
           "program": "Program",
           "funding": "Funding"
         },
-        "placeholders": {
-          "backedBy": "GenAI Fund portfolio",
-          "program": "FastTrack AI Accelerator, Cohort 1",
-          "funding": "Seed"
-        },
         "hint": "Leave a line empty to take it away.",
         "save": "Save",
-        "saved": "Saved for {name}."
+        "saved": "Saved for {name}.",
+        "hints": {
+          "backedBy": "Such as GenAI Fund portfolio.",
+          "program": "Such as FastTrack AI Accelerator, Cohort 1.",
+          "funding": "Such as Seed."
+        }
       },
       "actions": {
         "organization": "Open the organization"
@@ -1571,7 +1544,7 @@
     "talent": {
       "metaTitle": "Talent · BeyondPilot",
       "title": "Talent",
-      "lead": "Every profile people sent for review. Those still waiting come first, the longest wait on top.",
+      "lead": "Every profile people sent for review.",
       "columns": {
         "person": "Person",
         "headline": "Headline",
@@ -1581,12 +1554,10 @@
       },
       "openNamed": "Open {name}",
       "empty": {
-        "title": "Nothing to review",
-        "description": "Profiles appear here when someone sends theirs for review."
+        "title": "Nothing to review"
       },
       "noMatch": {
         "title": "No profile matches",
-        "description": "Nothing matches this search and this filter.",
         "clear": "Clear search and filter"
       },
       "count": "{count, plural, one {# profile} other {# profiles}}",
@@ -1597,21 +1568,19 @@
         "reject": "Send back…",
         "takeDown": "Take down…",
         "rejectTitle": "Send {name} back?",
-        "rejectLead": "The profile goes back to its person to correct. They read your reason.",
-        "takeDownLead": "The profile leaves the directory at once and stays approved. Its person is emailed and reads your reason; they can correct it and send it again, or you restore it.",
+        "rejectLead": "They are emailed and read your reason.",
+        "takeDownLead": "The profile leaves the directory at once, and its person is emailed and reads your reason.",
         "reason": "Reason",
         "message": "Note (optional)",
-        "messageHint": "They read this word for word. Say what to change.",
+        "messageHint": "They read this word for word.",
         "cancel": "Cancel",
         "rejectConfirm": "Send back",
         "takeDownConfirm": "Take down",
         "reasonPlaceholder": "Choose a reason",
         "takeDownTitle": "Take {name} down?",
-        "keyA": "Key: A",
-        "keyS": "Key: S",
         "restore": "Restore",
         "restoreTitle": "Put {name} back in the directory?",
-        "restoreLead": "The profile is public again while its person keeps it listed, without a new review. They are emailed."
+        "restoreLead": "The profile is public again and its person is emailed."
       },
       "detail": {
         "back": "All talent",
@@ -1626,30 +1595,26 @@
         "decision": {
           "draft": {
             "title": "Not sent for review yet",
-            "lead": "The person is still writing the profile. Nobody sees it until it is approved."
+            "lead": "Nobody sees it until it is approved."
           },
           "in_review": {
             "title": "Asks to be listed in the directory",
-            "lead": "Check that the page is about professional work, names no customer without permission, and says what the person did in each project. Approving opens the page and lists it."
+            "lead": "Check that the page is about professional work, names no customer without permission, and says what the person did in each project."
           },
           "approved": {
             "title": "Approved",
-            "lead": "The page is public while its person keeps it listed. Taking it down removes it from the directory at once and tells them why."
+            "lead": "The page is public while its person keeps it listed."
           },
           "needs_changes": {
-            "title": "Sent back",
-            "lead": "The profile is back with its person. It returns here when they send it again."
+            "title": "Sent back"
           },
           "suspended": {
-            "title": "Taken down from the directory",
-            "lead": "The page is not public; the profile stays approved. Restore puts it back, and it returns here if its person sends it again."
+            "title": "Taken down from the directory"
           }
-        },
-        "audited": "The decision is recorded in the audit log."
+        }
       },
       "queueEmpty": {
         "title": "Nothing waits for review",
-        "description": "Every profile sent for review has a decision.",
         "home": "Back to Admin home"
       },
       "waitingSince": "Sent {time}",
@@ -1657,15 +1622,14 @@
         "link": "Reported messages",
         "metaTitle": "Reported messages · BeyondPilot",
         "title": "Reported messages",
-        "lead": "Messages people behind talent profiles reported as unwanted. The sender was told the message was declined.",
+        "lead": "The sender was told the message was declined.",
         "back": "All talent",
         "from": "From {sender}",
         "to": "To {name}",
         "sent": "Sent {date}",
         "reportedAt": "Reported {date}",
         "empty": {
-          "title": "Nothing reported",
-          "description": "A message shows here when the person it was sent to reports it."
+          "title": "Nothing reported"
         },
         "count": "{count, plural, one {# message} other {# messages}}"
       }
@@ -1682,7 +1646,7 @@
     "introductions": {
       "metaTitle": "Introductions · BeyondPilot",
       "title": "Introductions",
-      "lead": "Requests for an introduction to the organization behind a solution. The owners of that organization answer; you read, and see which ones wait too long.",
+      "lead": "The owners of each organization answer; you read, and see which requests wait too long.",
       "overdueNotice": "{count, plural, one {# request has} other {# requests have}} waited more than 3 days for an answer.",
       "overdue": "Waiting over 3 days",
       "search": "Search by solution",
@@ -1704,19 +1668,16 @@
       "answered": "Answered {date}",
       "count": "{count, plural, one {# request} other {# requests}}",
       "empty": {
-        "title": "No requests yet",
-        "description": "When someone asks for an introduction to a solution, it appears here."
+        "title": "No requests yet"
       },
       "noMatch": {
         "title": "No request matches",
-        "description": "Try another solution name, or another state.",
         "clear": "Clear search and filters"
       }
     },
     "useCases": {
       "metaTitle": "Use cases · BeyondPilot",
       "title": "Use cases",
-      "lead": "Use cases of every organisation. Review the ones sent to you, or create one for an organisation.",
       "create": "Create use case",
       "search": "Search by title or organisation",
       "clear": "Clear search",
@@ -1739,10 +1700,8 @@
       },
       "note": {
         "draft": "Only {organization} can see it",
-        "in_review": "Waiting for GenAI Fund",
-        "needs_changes": "Sent back to {organization}",
         "approved": "Visible in the directory",
-        "closed": "Deadline passed · locked, nobody can change it"
+        "closed": "Locked, nobody can change it"
       },
       "columns": {
         "useCase": "Use case",
@@ -1755,92 +1714,24 @@
       "count": "{count, plural, one {# use case} other {# use cases}}",
       "inReview": "{count} in review",
       "empty": {
-        "title": "No use cases yet",
-        "description": "Use cases appear here when organisations write them, or when you create one for an organisation."
+        "title": "No use cases yet"
       },
       "noMatch": {
         "title": "No use case matches",
-        "description": "Nothing matches this search and these filters.",
         "clear": "Clear search and filters"
       },
       "form": {
         "metaTitle": "Create a use case · BeyondPilot",
         "title": "Create a use case",
-        "lead": "Write it for an organisation. The audit log records it as created by GenAI Fund.",
-        "sections": {
-          "organization": "Organisation",
-          "challenge": "The challenge",
-          "outcomes": {
-            "title": "Outcomes and users",
-            "description": "Expected outcomes, current process, current solutions, target users"
-          },
-          "requirements": {
-            "title": "Requirements and data",
-            "description": "Requirements (required or optional), data readiness, integration, attachments"
-          },
-          "budget": {
-            "title": "Budget and timeline",
-            "description": "Budget range, preferred timeline, show or hide the company name"
-          }
-        },
-        "open": "Open",
-        "close": "Close",
+        "lead": "The audit log records it as created by GenAI Fund.",
         "organization": "Create this use case for",
         "organizationPlaceholder": "Choose an organisation",
         "organizationHint": "Only approved organisations are listed.",
-        "choose": "Choose",
-        "useCaseTitle": "Use case title",
-        "useCaseTitleHint": "Name the outcome you want, not a technology.",
-        "problemStatement": "Problem statement",
-        "problemStatementHint": "What happens today, who it affects and what it costs.",
-        "industry": "Industry",
-        "technologies": "Relevant AI technologies",
-        "expectedOutcomes": "Expected outcomes and success metrics",
-        "expectedOutcomesHint": "Use numbers where you can.",
-        "currentProcess": "Current process",
-        "currentProcessHint": "How the work is done today.",
-        "currentSolutions": "Current solutions",
-        "currentSolutionsHint": "Optional. Tools or vendors you use or have tried.",
-        "targetUsers": "Target users and impacted teams",
-        "targetUsersHint": "Who uses the solution, and who is affected by it.",
-        "requirement": "Requirement {number}",
-        "addRequirement": "Add a requirement",
-        "necessity": {
-          "label": "Type",
-          "required": "Required",
-          "optional": "Optional"
-        },
-        "dataReadiness": "Data availability and readiness",
-        "dataReadinessHint": "What data exists, in what format, and how providers can access it.",
-        "integrationRequirements": "Integration, deployment and infrastructure",
-        "integrationRequirementsHint": "Systems to connect to, where it runs, security and data residency.",
-        "budgetMin": "Minimum budget ({currency})",
-        "budgetMax": "Maximum budget ({currency})",
-        "currency": "Currency",
-        "currencies": {
-          "USD": "USD — US dollar",
-          "VND": "VND — Vietnamese đồng"
-        },
-        "budgetToBeDetermined": "Budget to be determined",
-        "budgetMembersOnly": "Show the budget to signed-in members only",
-        "timeline": {
-          "label": "Preferred timeline",
-          "under_4": "Under 4 weeks",
-          "4_8": "4–8 weeks",
-          "8_12": "8–12 weeks",
-          "12_24": "12–24 weeks",
-          "over_24": "24 weeks or more"
-        },
-        "hideOrganizationName": "Hide the company name on the public use case",
         "thisOrganization": "the organisation",
-        "closes": "Proposals close",
-        "closesTime": "Time, Vietnam time",
-        "closesHint": "Providers cannot send proposals after this time (Vietnam time, ICT).",
         "publishSubmit": "Publish use case",
         "review": {
           "title": "Review and publish",
-          "meta": "Check everything, then publish",
-          "lead": "Check each section. Publishing makes this use case visible immediately."
+          "lead": "Publishing makes this use case visible immediately."
         },
         "publishNote": "Publishing makes this use case visible immediately as an opportunity from {organization}.",
         "cancel": "Cancel",
@@ -1865,8 +1756,10 @@
             "type": "Attach a PDF, Word, Excel, PowerPoint, CSV or text file, or a PNG, JPEG or WebP image.",
             "size": "Keep each file to 25 MB.",
             "failed": "The file was not uploaded. Try again."
-          }
-        }
+          },
+          "hint": "PDF, Word, Excel, PowerPoint, CSV or text files, or PNG, JPEG or WebP images: up to {count} files, {size} each."
+        },
+        "publishNoteUnnamed": "Publishing makes this use case visible immediately, without the organisation’s name."
       },
       "untitled": "Untitled use case",
       "actions": {
@@ -1882,31 +1775,23 @@
       },
       "decision": {
         "title": "Decision",
-        "lead": "Approving publishes it at once and emails {organization}’s members. Sending it back needs a reason they can read.",
+        "lead": "Approving publishes it at once and emails {organization}’s members.",
         "approve": "Approve and publish",
         "sendBack": "Send back…",
         "approved": "“{name}” is published.",
         "sentBack": "“{name}” was sent back to {organization}.",
         "dialog": {
           "title": "Send back to {organization}",
-          "description": "{organization}’s members get your reason by email and see it when they open the use case. They edit it and send it again.",
+          "description": "{organization}’s members get your reason by email and see it when they open the use case.",
           "label": "What should {organization} change?",
-          "hint": "Your reason is kept with the use case. {organization}’s members see it until they send the use case again.",
           "cancel": "Cancel",
           "confirm": "Send back"
         },
-        "leadPublished": "It is public now. Sending it back takes it out of the directory and gives {organization}’s members a reason they can read; they edit it and send it again."
+        "leadPublished": "Sending it back takes it out of the directory."
       },
       "detail": {
         "metaTitle": "Use case · BeyondPilot",
         "untitled": "Untitled use case",
-        "subtitle": {
-          "in_review": "{organization} · waiting for GenAI Fund",
-          "needs_changes": "{organization} · sent back, waiting for its members",
-          "draft": "{organization} · only its members can see it",
-          "approved": "{organization} · in the directory",
-          "closed": "{organization} · closed"
-        },
         "history": {
           "title": "Status history",
           "created": "Created by {name}",
@@ -1919,8 +1804,7 @@
           "closedMeta": "{date}. Automatic: the deadline passed.",
           "now": {
             "in_review": {
-              "title": "In review",
-              "meta": "Waiting for GenAI Fund to approve it or send it back."
+              "title": "In review"
             },
             "needs_changes": {
               "title": "Needs changes",
@@ -1935,9 +1819,9 @@
         },
         "review": {
           "title": "Review the use case",
-          "lead": "Check each section as {organization} wrote it. You cannot edit it: approve it, or send it back with what to change."
+          "lead": "You cannot edit what {organization} wrote."
         },
-        "readOnly": "Read only: this is what {organization} wrote. You cannot edit it.",
+        "readOnly": "Read only: this is what {organization} wrote.",
         "viewDetails": "View details",
         "backToReview": "Back to review"
       }
@@ -1946,7 +1830,6 @@
       "providers": {
         "metaTitle": "AI providers",
         "title": "AI providers",
-        "lead": "The AI services BeyondPilot calls, and the model each feature uses.",
         "tabs": "Purposes",
         "embedding": "Embedding",
         "noEncryption": {
@@ -1970,7 +1853,7 @@
         "openIndex": "Open search index",
         "none": {
           "title": "No embedding provider yet",
-          "lead": "Search matches keywords only. Connect a provider below to turn on semantic search."
+          "lead": "Connect a provider below to turn on semantic search."
         },
         "notChosen": {
           "title": "No model chosen yet",
@@ -1982,28 +1865,27 @@
         "lead": "Search keeps working while the items are embedded again.",
         "provider": "Provider",
         "model": "Model",
-        "dimensionsHint": "Known models give 1,536 dimensions, the size the index stores.",
         "test": "Test connection",
         "testHint": "Embeds one sentence with the model above.",
         "testButton": "Test",
-        "warning": "All {count, plural, one {# item is} other {# items are}} embedded again, about {minutes, plural, one {# minute} other {# minutes}} at 32 a minute. Until then an item is found by keyword search only. Each item is billed once by the provider.",
+        "warning": "All {count, plural, one {# item is} other {# items are}} embedded again, about {minutes, plural, one {# minute} other {# minutes}}, and each is billed once by the provider.",
         "cancel": "Cancel",
         "embedAgain": "Embed again",
-        "use": "Use this model"
+        "use": "Use this model",
+        "headingHelp": "What is an embedding model?",
+        "dimensionsHelp": "What dimensions are",
+        "dimensionsAbout": "The size of the vectors the model gives, which is the size the index stores."
       },
       "connected": {
         "heading": "Connected providers",
-        "lead": "Where the key is kept. A key is stored encrypted and never shown again, not even in part.",
         "inUse": "In use",
         "keySaved": "Key saved",
         "noKey": "No key",
         "meta": "{address} · saved by {name} on {date}",
-        "inUseNote": "Search embeds with it. Change the model to another provider before deleting it."
+        "inUseNote": "Change the model to another provider before deleting it."
       },
       "add": {
         "heading": "Add provider",
-        "lead": "Both speak the OpenAI API; only the address and the bill differ.",
-        "openai": "Embedding models from OpenAI, billed by OpenAI.",
         "openrouter": "One key for models from many vendors, billed by OpenRouter."
       },
       "editor": {
@@ -2015,25 +1897,25 @@
         "connect": "Connect",
         "connectLabel": "Connect {name}",
         "connectTitle": "Connect {name}",
-        "connectLead": "Saved providers can be picked under Change model. Test the key before you save it.",
+        "connectLead": "Saved providers can be picked under Change model.",
         "editTitle": "Edit {name}",
         "editLead": "Changes take effect for every search once you save.",
         "name": "Name",
         "address": "Base URL",
-        "addressHint": "The provider's own API address. The key is only ever sent there.",
+        "addressHint": "The key is only ever sent there.",
         "apiKey": "API key",
         "keyKeep": "Keep the saved key",
         "keyReplace": "Replace the key",
         "keyRemove": "Remove the key",
         "newKey": "New API key",
         "keyHint": {
-          "openai": "Create one at platform.openai.com/api-keys. It is stored encrypted and never shown again.",
-          "openrouter": "Create one at openrouter.ai/keys with a monthly limit. It is stored encrypted and never shown again."
+          "openai": "Stored encrypted and never shown again.",
+          "openrouter": "Stored encrypted and never shown again."
         },
         "test": "Test connection",
         "model": "Model to test",
         "testButton": "Test",
-        "testHint": "Embeds one sentence with this key and model, saved or not. Nothing is stored.",
+        "testHint": "Embeds one sentence with this key and model, saved or not.",
         "cancel": "Cancel",
         "save": "Save provider"
       },
@@ -2050,7 +1932,7 @@
       "delete": {
         "open": "Delete",
         "title": "Delete {name}?",
-        "lead": "The provider and its saved key are deleted. Connect it again to use it.",
+        "lead": "The provider and its saved key are deleted.",
         "confirm": "Delete provider",
         "cancel": "Cancel"
       },
@@ -2077,7 +1959,7 @@
       "chat": {
         "tasks": {
           "heading": "Models by task",
-          "lead": "The model each task uses. A choice is saved at once.",
+          "lead": "A choice is saved at once.",
           "name": {
             "matching": "Matching"
           },
@@ -2100,7 +1982,7 @@
           },
           "empty": {
             "title": "No chat provider yet",
-            "lead": "No task can run. Connect a provider below, then choose its model here."
+            "lead": "Connect a provider below, then choose its model here."
           },
           "noModels": {
             "title": "No model to choose yet",
@@ -2109,7 +1991,6 @@
         },
         "connections": {
           "heading": "Available connections",
-          "lead": "Where the keys are kept. A key is stored encrypted and never shown again.",
           "inUse": "In use",
           "noKey": "No key",
           "off": "Switched off",
@@ -2128,7 +2009,7 @@
           },
           "fetch": "Fetch models from the provider",
           "addModel": "Add model",
-          "noModels": "No model enabled yet. Fetch them from the provider, or add one by name."
+          "noModels": "No model enabled yet."
         },
         "models": {
           "caption": "Models enabled on {name}",
@@ -2142,11 +2023,12 @@
           "vision": "Reads images",
           "reasons": "Reasons",
           "edit": "Edit {name}",
-          "delete": "Remove {name}"
+          "delete": "Remove {name}",
+          "columnsHelp": "What the columns mean",
+          "columnsAbout": "Context and Max output are counted in tokens. In / 1M and Out / 1M are the input and output prices, in US dollars per million tokens."
         },
         "add": {
           "heading": "Add provider",
-          "lead": "Popular providers, gateways and any endpoint that speaks the OpenAI API.",
           "group": {
             "vendors": "Vendors",
             "gateways": "Gateways and routers",
@@ -2155,8 +2037,6 @@
           "connect": "Connect",
           "connectLabel": "Connect {name}",
           "preset": {
-            "openai": "GPT models from OpenAI.",
-            "claude": "Claude models from Anthropic.",
             "ninerouter": "One key routed to several vendors.",
             "openrouter": "Hosted marketplace of models from many vendors.",
             "compatible": "Any endpoint that speaks the OpenAI API, such as vLLM or a gateway."
@@ -2170,8 +2050,7 @@
           "name": "Name",
           "endpoint": "Endpoint URL",
           "endpointHint": {
-            "openai": "The address of the API, usually ending in /v1. http and private addresses are accepted.",
-            "anthropic": "The address of the Anthropic API. http and private addresses are accepted."
+            "openai": "The address of the API, usually ending in /v1."
           },
           "apiKey": "API key",
           "keyHint": "Stored encrypted and never shown again.",
@@ -2183,13 +2062,12 @@
           "enabled": "Switched on",
           "enabledHint": "Switched off, the provider keeps its key and its models, and no task can use it.",
           "testTitle": "Test connection",
-          "testHint": "Lists the provider's models with the address and key above. No tokens are spent.",
+          "testHint": "Lists the provider's models without spending tokens.",
           "cancel": "Cancel",
           "save": "Save provider"
         },
         "modelsField": {
           "label": "Models",
-          "hint": "Read from the provider with the address and key above.",
           "list": "List models",
           "refresh": "Refresh",
           "count": "{shown} of {total} models · {selected} selected",
@@ -2207,31 +2085,31 @@
         },
         "model": {
           "addTitle": "Add a model to {name}",
-          "addLead": "For a model the provider does not list. Use the name its API expects.",
           "editTitle": "Edit {name}",
-          "editLead": "Correct what the provider or the catalog got wrong. Prices are in US dollars per million tokens.",
           "modelName": "Model name",
           "displayName": "Display name",
           "contextWindow": "Context window (tokens)",
           "maxOutput": "Max output (tokens)",
-          "maxOutputHint": "Leave empty when unknown. It must be smaller than the context window.",
+          "maxOutputHint": "Smaller than the context window, or empty when unknown.",
           "inputPrice": "Input price",
           "outputPrice": "Output price",
           "cachedPrice": "Cached input price",
-          "pricesFromCatalog": "US dollars per million tokens. Left as they are, or empty, the prices follow BeyondPilot's catalog of list prices and change with it. Type other prices to set your own, for a gateway that charges differently.",
-          "pricesOwn": "US dollars per million tokens. These prices are your own and do not change with the catalog. Clear all three to follow the catalog again.",
+          "pricesFromCatalog": "US dollars per million tokens; left empty, the prices follow BeyondPilot's catalog.",
+          "pricesOwn": "US dollars per million tokens; clear all three to follow the catalog again.",
           "capabilities": "Capabilities",
           "toolCalling": "Calls tools",
           "vision": "Reads images",
           "reasoning": "Reasons, and takes a reasoning level",
           "test": "Test model",
-          "testHint": "Asks the saved model one line. It spends a few tokens and is recorded.",
+          "testHint": "Asks the saved model one line and spends a few tokens.",
           "testButton": "Test",
           "testOk": "The model answered · {ms} ms",
           "testFailed": "The model did not answer · {ms} ms",
           "cancel": "Cancel",
           "save": "Save model",
-          "add": "Add model"
+          "add": "Add model",
+          "modelNameHint": "Use the name the provider's API expects.",
+          "displayNameHint": "Left empty, the model name is shown."
         },
         "delete": {
           "providerTitle": "Delete {name}?",
@@ -2280,9 +2158,9 @@
       "ocr": {
         "reader": {
           "heading": "Reader",
-          "lead": "What reads a page that is only a picture, such as a slide of a deck. A choice is saved at once.",
+          "lead": "A choice is saved at once.",
           "name": "Reading documents",
-          "about": "Copies the text of a page that is only a picture. A model that reads images does it, or an OCR service.",
+          "about": "Copies the text of a page that is only a picture.",
           "unset": "No reader chosen; pages that are only a picture stay unread until one is.",
           "unavailable": "The reader chosen is switched off or has no key; pages that are only a picture stay unread.",
           "kindLabel": "Read with",
@@ -2291,7 +2169,7 @@
             "ocr": "OCR service"
           },
           "modelLabel": "Model for Reading documents",
-          "modelsFrom": "Models come from the <chat>Chat tab</chat>; only those that read images are listed.",
+          "modelsFrom": "Only models that read images are listed.",
           "noModels": "No model that reads images can be used yet. Enable one in the <chat>Chat tab</chat>.",
           "serviceLabel": "OCR service for Reading documents",
           "chooseService": "Choose an OCR service",
@@ -2299,7 +2177,6 @@
         },
         "connections": {
           "heading": "Available connections",
-          "lead": "The OCR services BeyondPilot may send the picture of a page to. A key is stored encrypted and never shown again.",
           "inUse": "Reads documents",
           "noKey": "No key",
           "off": "Switched off",
@@ -2320,21 +2197,17 @@
         },
         "add": {
           "heading": "Add provider",
-          "lead": "OCR services BeyondPilot speaks to.",
           "connect": "Connect",
-          "connectLabel": "Connect {name}",
-          "preset": {
-            "aihay": "OCR of the AI Hay platform: one picture in, its text out as Markdown."
-          }
+          "connectLabel": "Connect {name}"
         },
         "editor": {
           "connectTitle": "Connect {name}",
-          "connectLead": "Test the connection before you save. When this service is the reader, the picture of a page is sent to it.",
+          "connectLead": "When this service is the reader, the picture of a page is sent to it.",
           "editTitle": "Edit {name}",
           "editLead": "A change takes effect from the next page read.",
           "name": "Name",
           "endpoint": "Endpoint URL",
-          "endpointHint": "The address of the service, without a path. http and private addresses are accepted.",
+          "endpointHint": "The address of the service, without a path.",
           "apiKey": "API key",
           "keyHint": "Stored encrypted and never shown again.",
           "keyKeep": "Keep the saved key",
@@ -2343,12 +2216,12 @@
           "newKey": "New API key",
           "keyMoved": "A saved key is only used with the address it was saved for. Enter the key again.",
           "price": "Price per 1,000 pages (USD)",
-          "priceHint": "What the service charges for 1,000 calls, in US dollars. Left as it is, or empty, the price follows BeyondPilot's catalog and changes with it. Type another price to set your own.",
-          "priceOwn": "This price is your own and does not change with the catalog. Clear it to follow the catalog again.",
+          "priceHint": "Left as it is, or empty, the price follows BeyondPilot's catalog.",
+          "priceOwn": "Clear it to follow the catalog again.",
           "enabled": "Switched on",
           "enabledHint": "Switched off, the service keeps its key and reads no page.",
           "testTitle": "Test connection",
-          "testHint": "Sends one small picture with the address and key above. It spends one call at the service.",
+          "testHint": "Sends one small picture and spends one call at the service.",
           "cancel": "Cancel",
           "save": "Save provider"
         },
@@ -2369,7 +2242,6 @@
     "searchIndex": {
       "metaTitle": "Search index",
       "title": "Search index",
-      "lead": "What search can find by keyword, and how much of it is embedded for semantic search.",
       "rebuild": "Rebuild index",
       "semantic": {
         "label": "Semantic search",
@@ -2377,12 +2249,12 @@
         "openProviders": "Open providers",
         "on": {
           "title": "Semantic search is on",
-          "lead": "Keyword and semantic results are ranked together. {provider} · {model} · last batch {last}.",
+          "lead": "{provider} · {model} · last batch {last}.",
           "noBatch": "none since the last start"
         },
         "off": {
           "title": "Semantic search is off",
-          "lead": "Search matches keywords only and nothing is sent to the provider. Turned on again, it first embeds what changed meanwhile."
+          "lead": "Search matches keywords only and nothing is sent to the provider."
         },
         "paused": {
           "title": "Semantic search paused until {until}",
@@ -2394,7 +2266,7 @@
         },
         "noProvider": {
           "title": "Semantic search is off",
-          "lead": "No embedding provider is connected, so search matches keywords only. Connect one under Providers to turn it on."
+          "lead": "No embedding provider is connected, so search matches keywords only."
         }
       },
       "stats": {
@@ -2426,11 +2298,12 @@
         "embeddedOf": "{embedded} of {total} embedded",
         "mobileFacts": "{listed} in public results · {waiting} waiting",
         "heldBackCount": "{count} failed",
-        "note": "Unlisted solutions and talent stay in the index for operators matching use cases, never in public results."
+        "note": "Unlisted solutions and talent stay in the index for operators matching use cases, never in public results.",
+        "noteHelp": "Why the two counts differ"
       },
       "heldBack": {
         "heading": "Not embedded",
-        "lead": "Found by keyword search until they are embedded. The job tries again on its own, waiting longer each time.",
+        "lead": "The job tries again on its own, waiting longer each time.",
         "retryAll": "Try all again",
         "retry": "Try again",
         "retryOne": "Try {title} again",
@@ -2448,8 +2321,9 @@
         }
       },
       "repair": {
-        "last": "Rebuilt from the sources at every start and every night at 03:30. Last rebuilt {when}: {saved} items read, {removed} removed.",
-        "never": "Rebuilt from the sources at every start and every night at 03:30."
+        "last": "Last rebuilt {when}: {saved} items read, {removed} removed.",
+        "never": "Rebuilt from the sources at every start and every night at 03:30.",
+        "help": "When is the index rebuilt?"
       },
       "done": {
         "on": "Semantic search is on",
@@ -2461,45 +2335,42 @@
     "matching": {
       "metaTitle": "Matching",
       "title": "Matching",
-      "lead": "The limits a matching run works within. A run is one search for solutions for one use case: AI reads the brief, then the solutions that fit it best.",
+      "lead": "A run is one search for solutions for one use case.",
       "blocks": {
         "run": {
-          "title": "One run",
-          "lead": "How many solutions AI reads for a use case, and how fast."
+          "title": "One run"
         },
         "start": {
-          "title": "After an edit",
-          "lead": "When a brief that changed is matched again."
+          "title": "After an edit"
         },
         "day": {
-          "title": "Runs per day",
-          "lead": "How many runs may start in a day."
+          "title": "Runs per day"
         }
       },
       "fields": {
         "parallel": {
           "label": "Solutions read at once",
-          "hint": "More at once is faster: 40 solutions take about 3 minutes at 8, about 6 minutes at 4. If the AI provider refuses calls because too many arrive, the run pauses for 2 minutes, then continues."
+          "hint": "More at once is faster: 40 solutions take about 3 minutes at 8, about 6 minutes at 4."
         },
         "candidates": {
           "label": "Solutions per run",
-          "hint": "How many of the best matches AI reads closely. Each is one call to the AI model; a solution that has not changed since the last run is not read again."
+          "hint": "How many of the best matches AI reads closely; each is one call to the AI model."
         },
         "settleMinutes": {
           "label": "Wait after the last edit",
-          "hint": "A brief is often saved several times. The run starts once the brief has stayed unchanged for this long. With 0 it starts at once."
+          "hint": "The run starts once the brief has stayed unchanged for this long; with 0 it starts at once."
         },
         "editRunsPerDay": {
           "label": "Runs started by edits, per use case per day",
-          "hint": "Publishing a use case or editing its brief starts a run by itself. Past this number an edit is still saved, and the matched solutions stay as they are until someone starts a run."
+          "hint": "Past this number an edit is still saved, and the matched solutions stay as they are until someone starts a run."
         },
         "memberRunsPerDay": {
           "label": "Runs a member may start, per use case per day",
-          "hint": "Counted for all members of the organisation together. Operators are not limited by it."
+          "hint": "Counted for all members of the organisation together."
         },
         "runsPerDay": {
           "label": "Runs per day, whole platform",
-          "hint": "A ceiling on cost, counting every run whoever started it. Once it is reached, new runs wait in line until the next day. Leave it empty for no ceiling."
+          "hint": "Once it is reached, new runs wait in line until the next day; leave it empty for no ceiling."
         }
       },
       "units": {
@@ -2513,7 +2384,7 @@
       "save": "Save changes",
       "saved": "Matching settings saved.",
       "unsaved": "You have unsaved changes.",
-      "applies": "A change applies from the next run. A run already at work keeps the numbers it started with.",
+      "applies": "A change applies from the next run.",
       "errors": {
         "changed": "Someone else changed these settings while you were editing. The numbers below are theirs now. Make your change again, then save.",
         "changedReload": "Someone else changed these settings while you were editing. Reload the page to see their numbers, then make your change again.",
@@ -2557,7 +2428,6 @@
       "metaOverview": "AI usage · Admin · BeyondPilot",
       "metaCalls": "Calls · AI usage · Admin · BeyondPilot",
       "title": "AI usage",
-      "lead": "Every call BeyondPilot makes to a model or an OCR service: what succeeded, what failed and what it cost.",
       "period": {
         "label": "Period",
         "today": "Today",
@@ -2597,7 +2467,7 @@
           "7d": "No calls in the last 7 days",
           "30d": "No calls in the last 30 days"
         },
-        "description": "A call appears here as soon as matching runs or a page is read. Choose a longer period to look back."
+        "description": "A call appears here as soon as matching runs or a page is read."
       },
       "totals": {
         "calls": "Calls",
@@ -2621,7 +2491,7 @@
       },
       "breakdown": {
         "title": "Where the calls went",
-        "lead": "Sorted by calls. A row opens its calls in the log.",
+        "lead": "A row opens its calls in the log.",
         "byLabel": "Group by",
         "by": {
           "model": "Model",
@@ -2641,7 +2511,7 @@
         "costLine": "{cost} estimated",
         "noPrice": "no known price"
       },
-      "estimate": "Costs are estimates from the usage providers report and from list prices, not invoices. A gateway on a subscription, such as 9Router, is not billed by the token.",
+      "estimate": "Costs are estimates from the usage providers report and from list prices, not invoices.",
       "calls": {
         "filters": {
           "task": "All tasks",
@@ -2689,12 +2559,11 @@
         "range": "{from}–{to} of {count, plural, one {# call} other {# calls}}",
         "noMatch": {
           "title": "No call matches",
-          "description": "Try fewer filters or a longer period.",
           "clear": "Clear filters"
         },
         "empty": {
           "title": "No call in this period",
-          "description": "Calls appear here as matching runs and pages are read. What was asked and answered is never kept."
+          "description": "What was asked and answered is never kept."
         },
         "pagination": {
           "label": "Pages of calls",
@@ -2726,11 +2595,11 @@
         "address": "Server address",
         "operator": {
           "title": "Operators' server",
-          "lead": "Reads every area, listed or not. Only operators connect, and the role is checked on every call."
+          "lead": "Only operators connect, and it reads every area, listed or not."
         },
         "user": {
           "title": "User server",
-          "lead": "Every signed-in person may connect to it from their MCP page. It reads what visitors see.",
+          "lead": "Every signed-in person may connect to it, and it reads what visitors see.",
           "on": "On: people can connect apps",
           "off": "Off: it answers 404 and connected apps stop"
         },
@@ -2740,7 +2609,8 @@
           "others": "Allow apps from other hosts",
           "othersHint": "They can connect, labelled Not reviewed on the consent screen.",
           "add": "Add host",
-          "remove": "Remove {host}"
+          "remove": "Remove {host}",
+          "addHint": "A host name, such as app.example.com."
         }
       },
       "tools": {
@@ -2756,7 +2626,6 @@
         },
         "user": {
           "title": "User server",
-          "lead": "What any signed-in person's app may call.",
           "search": "Finds listed solutions and published programs.",
           "fetch": "Reads one of them in full by the id search returned."
         }
@@ -2764,7 +2633,6 @@
       "apps": {
         "label": "Connected apps",
         "none": "No app is connected",
-        "noneLead": "An app appears here once someone connects it to an MCP server.",
         "operator": "Operator",
         "user": "User",
         "used": "used {time}",
@@ -2772,7 +2640,7 @@
           "open": "Revoke",
           "label": "Revoke {name} of {person}",
           "title": "Revoke {name} of {person}?",
-          "lead": "It stops working at once for {person}. They can connect it again.",
+          "lead": "It stops working at once for {person}.",
           "confirm": "Revoke",
           "cancel": "Cancel",
           "done": "{name} of {person} can no longer use BeyondPilot.",
@@ -2818,12 +2686,11 @@
         "count": "{count, plural, one {# call} other {# calls}}",
         "noMatch": {
           "title": "No call matches",
-          "description": "Try another search or fewer filters.",
           "clear": "Clear search and filters"
         },
         "empty": {
           "title": "No call in this period",
-          "description": "Calls appear here as AI apps use the MCP servers. What was asked is never kept."
+          "description": "What was asked is never kept."
         },
         "pagination": {
           "label": "Pages of calls",
@@ -2838,10 +2705,9 @@
     "email": {
       "metaTitle": "Email",
       "title": "Email",
-      "lead": "What BeyondPilot sends, how it reads, and whether it arrived.",
       "notReady": {
         "title": "No email can leave yet",
-        "description": "Choose a provider and a sender in Settings. Until then, emails wait in Activity and expire after a day.",
+        "description": "Until a provider and a sender are set, emails wait in Activity and expire after a day.",
         "action": "Open Settings"
       },
       "tabs": {
@@ -2862,52 +2728,41 @@
       },
       "kinds": {
         "sign_in_code": {
-          "name": "Sign-in code",
-          "description": "The six-digit code a person types to sign in."
+          "name": "Sign-in code"
         },
         "organization_invitation": {
-          "name": "Organization invitation",
-          "description": "Asks someone to join or own an organization."
+          "name": "Organization invitation"
         },
         "organization_approved": {
-          "name": "Organization approved",
-          "description": "Tells the owners their organization is listed."
+          "name": "Organization approved"
         },
         "organization_refused": {
-          "name": "Organization not approved",
-          "description": "Tells the owners their organization was refused, and why."
+          "name": "Organization not approved"
         },
         "organization_sent_back": {
-          "name": "Organization sent back",
-          "description": "Tells the owners what to change before it is approved."
+          "name": "Organization sent back"
         },
         "organization_request_approved": {
-          "name": "Request to join approved",
-          "description": "Tells a person their claim or request to join was accepted."
+          "name": "Request to join approved"
         },
         "organization_request_declined": {
-          "name": "Request to join declined",
-          "description": "Tells a person their claim or request to join was declined."
+          "name": "Request to join declined"
         },
         "organization_taken_down": {
-          "name": "Organization taken down",
-          "description": "Tells the owners GenAI Fund took their organization down."
+          "name": "Organization taken down"
         },
         "organization_restored": {
-          "name": "Organization restored",
-          "description": "Tells the owners their organization is back."
+          "name": "Organization restored"
         },
         "organization_merged": {
           "name": "Organization merged",
           "description": "Tells the members of a duplicate organization which one they belong to now."
         },
         "application_received": {
-          "name": "Application received",
-          "description": "Confirms an application to a program was submitted."
+          "name": "Application received"
         },
         "reviewer_invitation": {
-          "name": "Judge invitation",
-          "description": "Asks someone to judge the applications to a program."
+          "name": "Judge invitation"
         },
         "application_outcome": {
           "name": "Application outcome",
@@ -2918,64 +2773,52 @@
           "description": "Tells a solution's provider that someone asked to meet them."
         },
         "introduction_made": {
-          "name": "Introduction made",
-          "description": "Introduces the two sides to each other by email."
+          "name": "Introduction made"
         },
         "introduction_declined": {
           "name": "Introduction declined",
           "description": "Tells the person who asked that the provider declined."
         },
         "solution_approved": {
-          "name": "Solution approved",
-          "description": "Tells an organization's members their solution is approved."
+          "name": "Solution approved"
         },
         "solution_sent_back": {
-          "name": "Solution sent back",
-          "description": "Tells an organization's members what to change before their solution is approved."
+          "name": "Solution sent back"
         },
         "solution_rejected": {
           "name": "Solution not approved",
           "description": "Tells an organization's members their solution was refused for good."
         },
         "solution_taken_down": {
-          "name": "Solution taken down",
-          "description": "Tells an organization's members GenAI Fund took their solution down."
+          "name": "Solution taken down"
         },
         "solution_restored": {
-          "name": "Solution restored",
-          "description": "Tells an organization's members their solution is back."
+          "name": "Solution restored"
         },
         "use_case_approved": {
-          "name": "Use case published",
-          "description": "Tells an organization's members their use case is approved and published."
+          "name": "Use case published"
         },
         "use_case_sent_back": {
-          "name": "Use case sent back",
-          "description": "Tells an organization's members what to change before their use case is published."
+          "name": "Use case sent back"
         },
         "talent_approved": {
-          "name": "Talent profile approved",
-          "description": "Tells a person their profile is in the directory."
+          "name": "Talent profile approved"
         },
         "talent_changes_requested": {
-          "name": "Talent profile sent back",
-          "description": "Tells a person what to change before their profile is listed."
+          "name": "Talent profile sent back"
         },
         "talent_removed": {
-          "name": "Talent profile taken down",
-          "description": "Tells a person their profile left the directory."
+          "name": "Talent profile taken down"
         },
         "talent_restored": {
-          "name": "Talent profile restored",
-          "description": "Tells a person their profile is back in the directory."
+          "name": "Talent profile restored"
         },
         "talent_enquiry": {
           "name": "Message to a talent",
           "description": "Tells a person someone wrote to them through their profile."
         },
         "talent_enquiry_reminder": {
-          "name": "Message reminder",
-          "description": "Reminds a person a message waits for their answer."
+          "name": "Message reminder"
         },
         "talent_introduction": {
           "name": "Talent introduction",
@@ -3056,7 +2899,7 @@
         },
         "unsaved": "You have unsaved changes",
         "fixToSave": "{count, plural, one {Fix the problem marked below to save} other {Fix the # problems marked below to save}}",
-        "previewBehind": "{count, plural, one {This is the last version that worked. Fix the problem to see yours.} other {This is the last version that worked. Fix the # problems to see yours.}}",
+        "previewBehind": "This is the last version that worked.",
         "testAfterFix": "A test can be sent once the wording has no problems.",
         "discard": "Discard",
         "save": "Save",
@@ -3066,9 +2909,9 @@
         "reset": "Restore default",
         "subject": "Subject",
         "body": "Body",
-        "bodyHint": "Markdown: # heading, **bold**, [link](https://…). Type '{{' to add a variable.",
+        "bodyHint": "Markdown: # heading, **bold**, [link](https://…).",
         "variables": "Variables",
-        "variablesHint": "Click one to add it where the cursor is. Those with * must appear.",
+        "variablesHint": "Those with * must appear.",
         "previewTitle": "Preview of {name}",
         "leave": {
           "title": "Leave without saving?",
@@ -3078,8 +2921,7 @@
         },
         "resetConfirm": {
           "title": "Restore the default wording?",
-          "lead": "{name} goes back to the wording BeyondPilot ships with.",
-          "note": "Your wording is removed. New emails use the default from now; emails already sent stay as they were.",
+          "note": "Your wording is removed.",
           "confirm": "Restore default",
           "cancel": "Cancel"
         },
@@ -3089,15 +2931,14 @@
         "metaTitle": "Email appearance",
         "back": "Templates",
         "title": "Appearance",
-        "lead": "What every email shares. The preview shows a sample email in the colour and footer you are editing.",
+        "lead": "What every email shares.",
         "color": "Accent colour",
         "colorPicker": "Pick a colour",
-        "colorHint": "Links and buttons. Choose a dark colour: white text sits on it.",
+        "colorHint": "The colour of links and buttons.",
         "colorInvalid": "Write a colour as # and six hexadecimal digits.",
         "colorFaint": "White text on this colour is hard to read. A darker colour reads better.",
         "sampleLink": "A link in your colour",
         "footer": "Footer note",
-        "footerHint": "Under the GenAI Fund band of every email.",
         "save": "Save appearance",
         "saved": "Appearance saved. The preview shows it.",
         "changed": "Someone changed the email settings meanwhile. Reload the page and save again.",
@@ -3148,12 +2989,10 @@
         },
         "noMatch": {
           "title": "No email matches",
-          "description": "Change the search or the filters.",
           "clear": "Clear filters"
         },
         "empty": {
-          "title": "No email in this period",
-          "description": "Emails appear here as BeyondPilot sends them."
+          "title": "No email in this period"
         },
         "pagination": {
           "label": "Pages of emails",
@@ -3211,7 +3050,6 @@
           "action": "Send again",
           "title": "Send this email again?",
           "lead": "The same content goes to {email} as a new email.",
-          "note": "It appears in Activity on its own.",
           "confirm": "Send again",
           "cancel": "Cancel",
           "done": "Sent again to {email}.",
@@ -3250,7 +3088,6 @@
         "count": "{count, plural, one {# address} other {# addresses}}",
         "noMatch": {
           "title": "No address matches",
-          "description": "Change the search or the reason.",
           "clear": "Clear filters"
         },
         "empty": {
@@ -3262,7 +3099,6 @@
           "title": "Stop email to an address",
           "lead": "BeyondPilot sends nothing more to it, sign-in codes included, until you remove it.",
           "address": "Email address",
-          "hint": "As when its reader asks to receive no more email.",
           "invalid": "Write one email address.",
           "exists": "This address already receives no email.",
           "cancel": "Cancel",
@@ -3274,7 +3110,7 @@
           "title": "Let email reach this address again?",
           "lead": "BeyondPilot writes to {email} again from now.",
           "noteManual": "Emails already given up are not sent again.",
-          "noteProvider": "Mail to it bounced or was reported as spam. If it happens again, the provider counts it against your sending.",
+          "noteProvider": "If mail to it bounces or is reported as spam again, the provider counts it against your sending.",
           "confirm": "Remove",
           "cancel": "Cancel",
           "done": "{email} receives email again."
@@ -3286,7 +3122,7 @@
       "settings": {
         "metaTitle": "Email settings",
         "copy": "Copy",
-        "secretKept": "Saved. Leave it empty to keep it.",
+        "secretKept": "Leave it empty to keep the saved one.",
         "saved": "Settings saved.",
         "testSent": "Test email sent to {email}. Check that it arrived.",
         "errors": {
@@ -3307,25 +3143,26 @@
         },
         "sender": {
           "title": "Sender",
-          "what": "Who every email comes from. The address must be on a domain your provider verified.",
           "fromName": "Name",
           "fromAddress": "Address",
           "replyTo": "Reply-to",
-          "replyToHint": "Where answers go. Without one, they go to the sender's address."
+          "replyToHint": "Without one, answers go to the sender's address.",
+          "fromAddressHint": "The address must be on a domain your provider verified."
         },
         "provider": {
           "title": "Provider",
-          "what": "The service that delivers the email. Only one is used at a time."
+          "what": "The service that delivers the email."
         },
         "ses": {
           "region": "Region",
           "accessKeyId": "Access key ID",
           "secretAccessKey": "Secret access key",
-          "secretHint": "Of an IAM user allowed ses:SendEmail. Changing the region or the key ID asks for it again."
+          "secretHint": "Of an IAM user allowed ses:SendEmail.",
+          "regionHint": "The region's code, such as ap-southeast-1."
         },
         "resend": {
           "apiKey": "API key",
-          "apiKeyHint": "A key with sending access, from resend.com › API Keys."
+          "apiKeyHint": "A key with sending access, starting with re_, from resend.com › API Keys."
         },
         "smtp": {
           "host": "Server",
@@ -3338,19 +3175,20 @@
           },
           "username": "Username",
           "password": "Password",
-          "passwordHint": "Changing the server, the port or the username asks for it again."
+          "passwordHint": "Changing the server, the port or the username asks for it again.",
+          "hostHint": "The server's host name, such as smtp.example.com."
         },
         "reports": {
           "title": "Delivery reports",
-          "what": "The provider tells BeyondPilot what became of each email: delivered, bounced or reported as spam. A bounce or a report stops email to that address.",
+          "what": "The provider tells BeyondPilot what became of each email: delivered, bounced or reported as spam.",
           "smtp": "SMTP reports nothing after sending, so Activity shows emails as sent, never delivered.",
           "endpoint": "Address for the provider",
           "resendEndpointHint": "In Resend › Webhooks, add this address with the events email.delivered, email.bounced and email.complained.",
           "resendSecret": "Signing secret",
-          "resendSecretHint": "The webhook's secret, starting with whsec_. Without it, reports are refused.",
+          "resendSecretHint": "Without the webhook's secret, reports are refused.",
           "configurationSet": "Configuration set",
           "configurationSetHint": "The SES configuration set that sends its events to the SNS topic below.",
-          "sesEndpointHint": "Subscribe this address to the SNS topic over HTTPS; BeyondPilot confirms the subscription.",
+          "sesEndpointHint": "Subscribe this address to the SNS topic over HTTPS.",
           "topicArn": "SNS topic ARN",
           "topicArnHint": "Only reports from this topic are accepted."
         },
@@ -3369,11 +3207,10 @@
         "title": "Setup",
         "done": "{done} of {total} done",
         "lead": "What the provider says about sending from {domain}, checked at {when}.",
-        "leadChecking": "Asking the provider whether email can leave.",
         "again": "Check again",
         "checking": "Asking the provider…",
         "failed": "The provider could not be asked. Try again in a minute.",
-        "smtp": "An SMTP server has no API to ask. Send yourself a test from the form below: if it arrives, email leaves.",
+        "smtp": "An SMTP server has no API to ask, so send yourself a test from the form below.",
         "limits": {
           "permission_missing": {
             "ses": "This IAM user may send but not read the account or the domain. Add ses:GetAccount and ses:GetEmailIdentity to its policy to see the checks.",
@@ -3436,7 +3273,7 @@
             "pending": "Sending is being enabled",
             "failed": "AWS paused sending for this account",
             "unknown": "Sending could not be checked",
-            "next": "Read why in the SES console › Account dashboard; bounces or complaints ran high."
+            "next": "Read why in the SES console › Account dashboard."
           }
         },
         "records": {
@@ -3446,7 +3283,7 @@
           "host": "Host",
           "value": "Value",
           "copy": "Copy {what}",
-          "dmarc": "Recommended. Gmail and Yahoo expect DMARC from anyone who sends in bulk; the provider does not check it.",
+          "dmarc": "Recommended, but the provider does not check it.",
           "states": {
             "ok": "Found",
             "pending": "Waiting",
@@ -3721,7 +3558,7 @@
     },
     "inReview": {
       "title": "GenAI Fund is reviewing your organization",
-      "lead": "Until it is approved, {name} does not appear in the directories and cannot list a solution publicly. You can complete the profile now; inviting people opens once it is approved.",
+      "lead": "Until it is approved, {name} does not appear in the directories and cannot list a solution publicly.",
       "foot": "We email the owners when it is decided.",
       "edit": "Edit profile"
     },
@@ -3794,7 +3631,7 @@
     "form": {
       "metaTitle": "Create an organization · BeyondPilot",
       "createTitle": "Create your organization",
-      "createLead": "Everyone belongs to one organization. Independent builders can create a practice or team.",
+      "createLead": "Independent builders can create a practice or team.",
       "profileTitle": "Organization profile",
       "edit": "Edit profile",
       "basics": "Basics",
@@ -3810,13 +3647,13 @@
       "website": "Website",
       "websiteInvalid": "Enter a full address that starts with https://",
       "description": "Short description",
-      "descriptionHint": "What the organization does and for whom, in at most 280 characters.",
+      "descriptionHint": "What the organization does and for whom.",
       "counter": "{count} / {max}",
       "save": "Save changes",
       "create": "Submit for approval",
       "cancel": "Cancel",
       "emailDomain": "Verified email domain",
-      "emailDomainHint": "The domain of the organization's work email. Who can join with it is set in Members.",
+      "emailDomainHint": "Who can join with it is set in Members.",
       "leave": {
         "title": "Leave without saving?",
         "lead": "Your changes to the organization's profile are not saved yet.",
@@ -3825,7 +3662,7 @@
       },
       "industries": "Industries",
       "industriesRequired": "Choose at least one industry.",
-      "industriesHint": "The industries it works in or serves. Choose up to {count}. {chosen} chosen.",
+      "industriesHint": "{chosen} of {count} chosen.",
       "countryRequired": "Select a country.",
       "teamSizeRequired": "Select a team size.",
       "websiteHint": "Independent builders can use their portfolio website.",
@@ -3843,26 +3680,27 @@
           "type": "Use a PNG, JPEG or WebP image.",
           "size": "Use an image of 5 MB or less.",
           "failed": "The logo did not upload. Try again."
-        }
+        },
+        "hint": "PNG, JPEG or WebP, 5 MB or less."
       },
-      "basicsLead": "Who you are and where to find you.",
-      "aboutLead": "What you do, who you serve and how long you have been doing it.",
       "industriesPlaceholder": "Type to find an industry",
       "industriesEmpty": "No industry matches.",
       "industriesRemove": "Remove {industry}",
       "domain": {
         "title": "Email domain",
-        "lead": "Verified by GenAI Fund. A person who signs in with an address on it is pointed to this organization.",
+        "lead": "A person who signs in with an address on it is pointed to this organization.",
         "label": "Verified domain",
-        "hint": "Leave it empty when the organization has no domain of its own, such as a team on Gmail. Joining without asking is off; the owners turn it on from their Members page.",
+        "hint": "A domain such as example.com; leave it empty when the organization has none of its own.",
         "invalid": "Enter a domain such as example.com, or leave it empty.",
         "taken": "Another organization already has this domain."
-      }
+      },
+      "websiteFormatHint": "A full address that starts with https://.",
+      "foundedYearFormatHint": "A four-digit year, such as 2021."
     },
     "find": {
       "title": "Find your organization",
       "search": "Company or team name",
-      "nothing": "No organization matches “{query}”. Check the spelling, or create it.",
+      "nothing": "No organization matches “{query}”.",
       "way": {
         "join": "You can join at once",
         "joinDomain": "Your email is on {domain}, so you join at once",
@@ -3876,22 +3714,19 @@
       "or": "or",
       "create": "Create a new organization",
       "note": {
-        "create": "Working alone? Create an organization for just you. You can add people later.",
-        "claim": "GenAI Fund reviews every claim before it makes you the owner. We email you the result.",
+        "create": "If you work alone, create an organization for just you.",
         "request": "An owner of {name} decides.",
         "requestDomain": "Your email is not on {domain}, so an owner of {name} decides."
       },
       "ask": {
         "request": {
-          "title": "Ask to join {name}?"
+          "title": "Ask to join {name}?",
+          "messageHint": "The owners of {name} read this message."
         },
         "claim": {
           "title": "Claim {name}?",
-          "lead": "Nobody owns this organization yet. GenAI Fund checks that you represent it, then makes you its owner."
-        },
-        "join": {
-          "title": "Join {name}?",
-          "lead": "Your email is on its verified domain, so you join at once."
+          "lead": "GenAI Fund checks that you represent it, then makes you its owner.",
+          "messageHint": "GenAI Fund reads this message."
         },
         "message": "Message (optional)",
         "cancel": "Cancel"
@@ -3903,13 +3738,11 @@
         "title": "Join {name} on BeyondPilot",
         "invitedOn": "Invited by {name} on {day}",
         "jobTitle": "Your job title",
-        "jobTitlePlaceholder": "e.g. Solutions engineer",
-        "jobTitlePlaceholderOwner": "e.g. Head of digital transformation",
         "accept": "Accept and join",
         "acceptOwner": "Accept and become owner",
         "decline": "Decline",
-        "noteMember": "{inviter} invited {email} to join as a member. Members are shown on {name}'s team; only owners edit its profile and solutions.",
-        "noteOwner": "{inviter} invited {email} to join as an owner. As owner you can edit the profile, invite colleagues and manage its solutions."
+        "noteMember": "As a member you are shown on {name}'s team; only owners edit its profile and solutions.",
+        "noteOwner": "As owner you can edit the profile, invite colleagues and manage its solutions."
       },
       "request": {
         "claimTitle": "Your claim for {name} is with GenAI Fund",
@@ -3917,9 +3750,8 @@
         "claimSent": "claim sent on {day}",
         "joinSent": "asked on {day}",
         "withdraw": "Withdraw the request",
-        "claimNote": "GenAI Fund checks every claim by hand, whatever address you signed in with. We email you the result. Until then the page stays without an owner.",
-        "joinNote": "An owner decides. We email you the answer. You can withdraw the request and look for another organization.",
-        "joinNoteDomain": "Joining at once is off for {domain}, or your email is not on it, so an owner decides. We email you the answer. You can withdraw the request and look for another organization."
+        "claimNote": "We email you the result.",
+        "joinNote": "We email you the answer."
       },
       "declined": {
         "claimTitle": "Your claim for {name} was declined",
@@ -3928,8 +3760,8 @@
         "claimAgain": "Claim again",
         "joinAgain": "Ask again",
         "findAnother": "Find another organization",
-        "claimNote": "GenAI Fund could not confirm that you act for {name}. Sign in with a company address and claim again, or ask an owner to invite you.",
-        "joinNote": "An owner of {name} declined the request. Ask them directly if this is a mistake, or create your own organization."
+        "claimNote": "Sign in with a company address and claim again, or ask an owner to invite you.",
+        "joinNote": "Ask an owner of {name} directly if this is a mistake, or create your own organization."
       }
     },
     "members": {
@@ -3957,26 +3789,23 @@
         "asked": "Asked on {day}",
         "onDomain": "On {domain}",
         "message": "Their message",
-        "foot": "Approving adds them as a member.",
         "approve": "Approve",
         "decline": "Decline"
       },
       "access": {
         "title": "Who can join",
-        "domain": "Domain verified by GenAI Fund: {domain}",
         "toggle": "Join without asking",
         "on": {
           "title": "Anyone with an @{domain} email joins as a member",
-          "lead": "They join when they sign in with a verified company email. Turn this off to approve each request yourself."
+          "lead": "Turn this off to approve each request yourself."
         },
         "off": {
           "title": "People with an @{domain} email ask to join",
-          "lead": "You approve each request. Turn this on to let them join at once as members."
+          "lead": "Turn this on to let them join at once as members."
         },
         "none": {
           "title": "People ask to join, or you invite them",
-          "lead": "GenAI Fund has not verified an email domain for this organization, so nobody joins by their address alone.",
-          "foot": "No verified domain. Write to GenAI Fund to have one verified."
+          "foot": "No email domain is verified; write to GenAI Fund to have one verified."
         }
       },
       "actions": {
@@ -3992,7 +3821,6 @@
       "jobTitle": {
         "title": "Your job title",
         "label": "Job title",
-        "placeholder": "e.g. Solutions engineer",
         "save": "Save",
         "cancel": "Cancel"
       },
@@ -4007,7 +3835,7 @@
           "lead": "They lose access to the organization's profile, members and solutions.",
           "confirm": "Remove member"
         },
-        "note": "What the organization published stays. They can be invited again at any time.",
+        "note": "What the organization published stays.",
         "cancel": "Cancel"
       },
       "invite": {
@@ -4015,7 +3843,6 @@
         "title": "Invite people to {name}",
         "lead": "{leftToday} of {dailyLimit} invitations left in 24 hours; {leftOpen} of {openLimit} can be open at once.",
         "emails": "Email addresses",
-        "emailsPlaceholder": "name@company.com, name@company.com",
         "emailsInvalid": "Enter full email addresses, separated by commas.",
         "role": "Role",
         "note": "Members are shown on the team and can edit their own job title. Only owners edit the profile and the solutions, invite people and remove members.",
@@ -4023,27 +3850,29 @@
         "send": "Send invitations",
         "limit": {
           "daily": {
-            "lead": "{name} has sent {limit} invitations in the last 24 hours, the most an organization can send. You can invite more people once the earliest of them is 24 hours old.",
-            "note": "Revoking an invitation nobody answered does not give its turn back. Write to GenAI Fund if you are bringing a larger team."
+            "lead": "{name} has sent {limit} invitations in the last 24 hours, the most an organization can send.",
+            "note": "Write to GenAI Fund if you are bringing a larger team."
           },
           "open": {
-            "lead": "{name} has {limit} invitations that nobody has answered yet, the most an organization can keep open. Revoke the ones you no longer need, or wait for people to answer.",
-            "note": "An invitation is open until the person answers, you revoke it, or it lapses seven days after it was sent. Write to GenAI Fund if you are bringing a larger team."
+            "lead": "{name} has {limit} unanswered invitations, the most it can keep open; revoke some, or wait for people to answer.",
+            "note": "Write to GenAI Fund if you are bringing a larger team."
           },
           "close": "Close"
-        }
+        },
+        "emailsHint": "Full email addresses, separated by commas.",
+        "roleHelp": "What each role can do"
       }
     },
     "suspended": {
       "title": "GenAI Fund took {name} down",
       "reason": "Reason: {reason}.",
-      "foot": "Its public page and solutions are hidden. You keep your workspace; write to GenAI Fund to have it restored."
+      "foot": "Its public page and solutions are hidden; write to GenAI Fund to have it restored."
     },
     "merged": {
       "title": "{name} is now part of {kept}",
-      "lead": "GenAI Fund merged the two records of the same company. You are a member of {kept}; its owners can make you an owner. Its solutions and use cases moved with it.",
+      "lead": "You are a member of {kept}; its owners can make you an owner.",
       "badge": "Merged",
-      "foot": "Merged on {day}. The old address {slug} leads to the new page.",
+      "foot": "The old address {slug} leads to the new page.",
       "dismiss": "Got it"
     },
     "useCases": {
@@ -4070,10 +3899,10 @@
         "closed": "Closed"
       },
       "note": {
-        "in_review": "Sent {date} · GenAI Fund is reviewing it",
+        "in_review": "Sent {date}",
         "approved": "In the directory · closes {date}",
-        "needs_changes": "GenAI Fund asked for changes · open it to see what",
-        "draft": "Not submitted · visible to your organisation only",
+        "needs_changes": "Open it to see what GenAI Fund asked for",
+        "draft": "Visible to your organisation only",
         "closed": "Closed {date}"
       },
       "columns": {
@@ -4085,7 +3914,7 @@
       },
       "empty": {
         "title": "No use cases yet",
-        "description": "Describe a problem you want solved with AI. Providers read it and send proposals once GenAI Fund has published it."
+        "description": "Providers read a use case and send proposals once GenAI Fund has published it."
       },
       "actions": {
         "open": "Actions for {name}",
@@ -4096,13 +3925,12 @@
       },
       "editPublished": {
         "title": "Edit a published use case?",
-        "description": "When you save your changes, GenAI Fund reviews them again. The use case leaves the directory until they approve it.",
-        "note": "Prefer not to send it again yet? Move it back to Draft instead: it leaves the directory and nobody reviews it until you submit it.",
+        "description": "The use case leaves the directory until GenAI Fund approves your changes.",
         "confirm": "Edit use case"
       },
       "moveToDraft": {
         "title": "Move “{name}” back to Draft?",
-        "description": "It leaves the directory and nobody reviews it until you submit it again. Your members can edit it meanwhile.",
+        "description": "It leaves the directory and nobody reviews it until you submit it again.",
         "confirm": "Move back to Draft"
       },
       "done": {
@@ -4137,32 +3965,24 @@
         "steps": {
           "challenge": {
             "title": "The challenge",
-            "meta": "Problem, industry and technologies",
-            "lead": "Describe the business problem you want solved. Providers read this first to decide whether to send a proposal."
+            "lead": "Providers read this first to decide whether to send a proposal."
           },
           "outcomes": {
-            "title": "Outcomes and users",
-            "meta": "Goals, current solution, who benefits",
-            "lead": "Say what success looks like and who the solution is for."
+            "title": "Outcomes and users"
           },
           "requirements": {
             "title": "Requirements and data",
-            "meta": "What it must do, data and integration",
-            "lead": "List what the solution must do and mark each item required or optional. Then describe your data and systems."
+            "lead": "List what the solution must do, and mark each item required or optional."
           },
           "budget": {
-            "title": "Budget and timeline",
-            "meta": "Budget, duration and deadline",
-            "lead": "Set the budget, how long the work should take and when proposals close."
+            "title": "Budget and timeline"
           },
           "review": {
             "title": "Review and submit",
-            "meta": "Check everything, then send for approval",
-            "lead": "Check each section. After you submit, GenAI Fund reviews the use case before it is published."
+            "lead": "After you submit, GenAI Fund reviews the use case before it is published."
           }
         },
-        "saveNote": "Your draft saves as you type. Only people at {name} can see it.",
-        "reviewNote": "GenAI Fund reviews every use case before it is published. A clear, measurable problem is approved faster.",
+        "saveNote": "Only people at {name} can see your draft.",
         "reload": "Reload",
         "backToList": "Back to use cases",
         "back": "Back",
@@ -4170,13 +3990,13 @@
         "submit": "Submit for approval",
         "sentBack": {
           "title": "GenAI Fund asked for changes",
-          "note": "“{note}” Make the changes, then submit the use case again."
+          "note": "“{note}”"
         },
         "editingPublished": {
           "title": "You are editing a published use case",
-          "description": "Your first change takes it out of the directory. It comes back when you submit it again and GenAI Fund approves it."
+          "description": "Your first change takes it out of the directory until GenAI Fund approves it again."
         },
-        "allRequired": "All fields are required unless marked Optional.",
+        "allRequired": "All fields are required except Current solutions and Attachments.",
         "title": "Use case title",
         "titleHint": "Name the outcome you want, not a technology.",
         "problemStatement": "Problem statement",
@@ -4187,11 +4007,9 @@
         "expectedOutcomes": "Expected outcomes and success metrics",
         "expectedOutcomesHint": "Use numbers where you can.",
         "currentProcess": "Current process",
-        "currentProcessHint": "How the work is done today.",
         "currentSolutions": "Current solutions",
-        "currentSolutionsHint": "Optional. Tools or vendors you use or have tried.",
+        "currentSolutionsHint": "Tools or vendors you use or have tried.",
         "targetUsers": "Target users and impacted teams",
-        "targetUsersHint": "Who uses the solution, and who is affected by it.",
         "requirement": "Requirement {number}",
         "necessity": {
           "label": "Type",
@@ -4263,12 +4081,12 @@
       "view": {
         "inReview": {
           "title": "Waiting for GenAI Fund",
-          "lead": "You sent this on {date} ICT. We'll email you when GenAI Fund has decided. To change something first, pull it back to Draft.",
-          "note": "It is read-only while GenAI Fund reviews it. Pulling it back to Draft lets you edit it again."
+          "lead": "We'll email you when GenAI Fund has decided.",
+          "note": "Pulling it back to Draft lets you edit it again."
         },
         "closed": {
           "title": "Closed",
-          "lead": "The deadline passed on {date}. Nobody can change this use case now.",
+          "lead": "The deadline passed on {date}, so it can no longer be changed.",
           "note": "A closed use case stays in the directory as a record."
         },
         "pullBack": "Pull back to draft"
@@ -4276,7 +4094,6 @@
       "sent": {
         "metaTitle": "Sent for approval · BeyondPilot",
         "title": "Sent for approval",
-        "lead": "GenAI Fund reviews every use case before it is published. We'll email you the result.",
         "rows": {
           "useCase": "Use case",
           "organization": "Organisation",
@@ -4345,7 +4162,7 @@
     "directory": {
       "metaTitle": "AI solutions · BeyondPilot",
       "title": "AI solutions",
-      "lead": "AI products and services, each with the proof behind it: who built it, where it runs and what it has delivered.",
+      "lead": "AI products and services, each with the proof behind it.",
       "showing": "Showing {shown} of {total}",
       "noCase": "No customer case published",
       "strip": {
@@ -4358,11 +4175,10 @@
       "by": "By {name}",
       "empty": {
         "title": "No solutions listed yet",
-        "description": "Approved solutions appear here. Providers can list theirs from their organization."
+        "description": "Approved solutions appear here."
       },
       "noMatch": {
         "title": "No solution matches",
-        "description": "Nothing matches this search and these filters.",
         "clear": "Clear search and filters"
       },
       "ownLead": "This is your organization's solution, as others see it.",
@@ -4442,7 +4258,6 @@
       },
       "proof": {
         "title": "Proof",
-        "lead": "Claims identify their kind of evidence and who stands behind them.",
         "customerCase": "Customer case",
         "programme": "Programme selection",
         "selected": "Selected for {program}.",
@@ -4468,7 +4283,7 @@
         "founded": "Founded {year}",
         "teamSize": "Team size: {size}"
       },
-      "unlisted": "This solution is not in the directory. You are reading it through its address.",
+      "unlisted": "This solution is not in the directory.",
       "contact": {
         "title": "Work with {name}",
         "website": "Visit website",
@@ -4477,7 +4292,7 @@
         "registeredIn": "Registered in",
         "deckSize": "Download the deck ({size})",
         "basedIn": "Based in",
-        "lead": "Get introduced by GenAI Fund. Your email stays private until you reply."
+        "lead": "Your email stays private until you reply."
       },
       "facts": {
         "stage": "Stage",
@@ -4501,8 +4316,7 @@
         "next": "Next image"
       },
       "references": {
-        "title": "Customer references & case studies",
-        "lead": "How enterprises have used this solution."
+        "title": "Customer references & case studies"
       }
     },
     "mine": {
@@ -4524,8 +4338,6 @@
         "filled": "{filled} of {total} required fields filled",
         "delete": "Delete draft…",
         "viewSent": "View what was sent",
-        "editLive": "Changes are saved when you ask",
-        "inReview": "GenAI Fund is reviewing it",
         "fix": "Read the reason and fix",
         "sendAgain": "Send again",
         "openByLink": "Open by its link",
@@ -4535,20 +4347,19 @@
         "cancel": "Cancel",
         "confirmDelete": {
           "title": "Delete {name}?",
-          "lead": "The draft, its images and its deck are removed. This cannot be undone.",
+          "lead": "This cannot be undone.",
           "confirm": "Delete draft"
         },
         "confirmHide": {
           "title": "Hide from the directory?",
-          "lead": "People with the link can still open it. It leaves the directory and search at once.",
+          "lead": "People with the link can still open it.",
           "confirm": "Hide"
         },
-        "view": "Open",
-        "takenDown": "Taken down by GenAI Fund"
+        "view": "Open"
       },
       "create": {
         "title": "Add a solution",
-        "lead": "Start with its name. It stays a draft until you send it for review.",
+        "lead": "It stays a draft until you send it for review.",
         "name": "Solution name",
         "nameRequired": "Enter the solution's name.",
         "cancel": "Cancel",
@@ -4557,7 +4368,6 @@
       "afterApproval": "You can add solutions once GenAI Fund approves your organization.",
       "empty": {
         "title": "No solutions yet",
-        "owner": "Add a solution to show what {name} offers. It stays a draft until you send it for review.",
         "member": "An owner of the organization adds its solutions."
       },
       "listing": {
@@ -4613,31 +4423,24 @@
         "complete": "Complete",
         "basics": {
           "title": "Basics",
-          "meta": "What it is, its stage and what it is built with",
-          "lead": "What the solution is. This is the first thing a visitor reads on its public page once GenAI Fund approves it."
+          "lead": "This is the first thing a visitor reads on its public page once GenAI Fund approves it."
         },
         "fit": {
           "title": "Who it is for",
-          "meta": "Industries, capabilities and where it runs",
-          "lead": "Who should find this solution, and where it can run. Visitors filter the directory by these answers."
+          "lead": "Visitors filter the directory by these answers."
         },
         "evidence": {
           "title": "Evidence",
-          "meta": "Deck, demo and customer cases",
-          "lead": "Proof that the solution works. Show what you know; what you leave out appears as not published yet.",
+          "lead": "What you leave out appears as not published yet.",
           "toAdd": "{missing, select, both {Logo and cover image to add} logo {Logo to add} other {Cover image to add}}"
         },
         "review": {
           "title": "Review and submit",
           "titleLive": "Review",
-          "meta": "Check everything, then ask for review",
-          "metaLive": "Check what visitors read",
-          "lead": "Check what visitors will read. GenAI Fund reviews the solution before it appears in the directory.",
-          "leadLive": "This is what visitors read. A saved change to an approved solution shows at once."
+          "leadLive": "A saved change to an approved solution shows at once."
         }
       },
-      "note": "Changes save as you type. A draft is visible to your organization only.",
-      "noteLive": "Changes are kept when you choose Save changes. On an approved solution they show at once.",
+      "noteLive": "Changes to an approved solution show at once.",
       "required": "All fields are required unless marked Optional.",
       "optional": "Optional",
       "counter": "{count} / {max}",
@@ -4654,10 +4457,9 @@
         "maturity": "Stage",
         "maturityPlaceholder": "Select a stage",
         "traction": "Milestones and traction",
-        "tractionPlaceholder": "Customers, pilots, users or revenue so far.",
         "builtWith": "Built with",
         "builtWithPlaceholder": "Add a model, tool or framework",
-        "builtWithHint": "Press Enter after each one. Up to {max}.",
+        "builtWithHint": "Press Enter after each one, up to {max}.",
         "removeTag": "Remove {name}",
         "industries": "Industries",
         "industriesPlaceholder": "Add an industry",
@@ -4669,18 +4471,19 @@
         "noMatch": "Nothing matches.",
         "deployment": "Where it runs",
         "bestCustomerProfile": "Best customer profile",
-        "bestCustomerProfilePlaceholder": "Who gets the most from it, in a sentence.",
         "deck": "Solution deck",
         "demoUrl": "Product demo",
-        "demoUrlHint": "A video, a Figma prototype or a live demo. Check it opens without signing in.",
+        "demoUrlHint": "Check it opens without signing in.",
         "website": "Product page",
-        "websiteHint": "Where a visitor reads more about it.",
+        "websiteHint": "A full address that starts with https://.",
         "linkInvalid": "Enter a full address that starts with https://",
         "logo": "Logo",
         "cover": "Cover image",
         "images": "More images",
         "channels": "Channels",
-        "channelsPlaceholder": "Voice, chat, email…"
+        "tractionHint": "Customers, pilots, users or revenue so far.",
+        "channelsHint": "Such as voice, chat or email.",
+        "bestCustomerProfileHint": "Who gets the most from it, in a sentence."
       },
       "needed": {
         "name": "Enter the solution's name.",
@@ -4716,28 +4519,29 @@
         "deploymentsWaiting": "{count} waiting for review",
         "deploymentsSentBack": "{count} sent back",
         "customerDeployments": "Customer deployments",
-        "listed": "List this solution in the public directory. Turn it off to keep it approved but unlisted: anyone with the link can open it.",
+        "listed": "List this solution in the public directory.",
         "readiness": {
           "missing": "Before you send it for review, add:",
           "ready": "Ready to send for review",
-          "note": "GenAI Fund checks that the solution is real, that the summary says what it does, and that your organization offers it. This usually takes one or two working days, and the decision shows on this page."
+          "note": "Review usually takes one or two working days, and the decision shows on this page."
         },
         "submit": "Send for review",
         "resubmit": "Send for review again",
         "confirm": {
           "title": "Send this solution for review?",
-          "lead": "GenAI Fund reads it before it appears in the directory. You can keep editing while it waits, and the decision shows on this page.",
+          "lead": "GenAI Fund reads it before it appears in the directory. You can keep editing while it waits.",
           "confirm": "Send for review",
           "cancel": "Keep editing"
         },
         "delete": "Delete draft…",
         "confirmDelete": {
           "title": "Delete {name}?",
-          "lead": "The draft is removed for everyone in your organization. This cannot be undone.",
+          "lead": "This cannot be undone.",
           "confirm": "Delete draft",
           "cancel": "Cancel"
         },
-        "images": "{count, plural, one {# image} other {# images}}"
+        "images": "{count, plural, one {# image} other {# images}}",
+        "listedHint": "Turned off, anyone with the link can still open it."
       },
       "leave": {
         "title": "Leave without saving?",
@@ -4749,7 +4553,7 @@
         "listed": "Approved and listed in the directory",
         "unlisted": "Approved, but not listed in the directory",
         "open": "Open the public page",
-        "unlistedLead": "Anyone with its link can open it. Turn on the listing in the last step to show it in the directory."
+        "unlistedLead": "Anyone with its link can open it."
       },
       "in_review": {
         "title": "GenAI Fund is reviewing this solution",
@@ -4761,13 +4565,13 @@
       },
       "rejected": {
         "title": "Not approved: {reason}",
-        "lead": "GenAI Fund will not list this solution. It cannot be sent for review again."
+        "lead": "It cannot be sent for review again."
       },
       "suspended": {
         "title": "Taken down: {reason}",
-        "lead": "It is out of the directory and matching while GenAI Fund keeps it down. Write to GenAI Fund if you think this is a mistake."
+        "lead": "It is out of the directory and matching while GenAI Fund keeps it down."
       },
-      "imagesRequired": "A logo and a cover image are needed for review. Everything else on this step is optional.",
+      "imagesRequired": "A logo and a cover image are needed for review.",
       "images": {
         "uploading": "Uploading…",
         "details": "{size} · {dimensions}",
@@ -4783,12 +4587,12 @@
         "cover": {
           "add": "Add a cover image",
           "alt": "The cover image",
-          "hint": "PNG, JPG or WebP, 16:9, up to 5 MB. Shown on your card in the directory and at the top of the solution page."
+          "hint": "PNG, JPG or WebP, 16:9, up to 5 MB."
         },
         "more": {
           "add": "Add image",
           "alt": "Image {position} of {count}",
-          "hint": "PNG, JPG or WebP, up to 5 MB each, 4 at most. Shown under the cover. Drag to reorder, or use the arrows on an image.",
+          "hint": "PNG, JPG or WebP, up to 5 MB each, 4 at most.",
           "earlier": "Move image {position} earlier",
           "later": "Move image {position} later",
           "remove": "Remove image {position}",
@@ -4809,7 +4613,7 @@
       "open": "Open the deployment to read the problem, what was deployed and the result.",
       "eyebrow": "Customer deployment",
       "line": "{solution} · {customer}",
-      "lead": "{solution}, deployed by {organization}. {stage}; reviewed by GenAI Fund on {day}.",
+      "lead": "{stage}; reviewed by GenAI Fund on {day}.",
       "problem": "The business problem",
       "delivered": "What was deployed",
       "scope": "Scope and result",
@@ -4826,9 +4630,9 @@
     },
     "deployments": {
       "title": "Customer deployments",
-      "lead": "Projects in which a customer put this solution to work. GenAI Fund reviews each one before it is shown, and again after every change.",
+      "lead": "GenAI Fund reviews each one before it is shown, and again after every change.",
       "add": "Add a deployment",
-      "none": "No customer deployment yet. One reviewed deployment says more than any claim.",
+      "none": "No customer deployment yet.",
       "edit": "Edit",
       "remove": "Remove",
       "rejected": "Sent back: {reason}.",
@@ -4839,7 +4643,7 @@
       "form": {
         "addTitle": "Add a customer deployment",
         "editTitle": "Edit the customer deployment",
-        "lead": "Write only what the customer agreed to publish. Saving sends it to GenAI Fund for review.",
+        "lead": "Write only what the customer agreed to publish.",
         "title": "Title",
         "titleHint": "What was put to work, such as \"Voice agent for card and loan enquiries\".",
         "customer": "Customer",
@@ -4850,14 +4654,14 @@
         "channels": "Channels (optional)",
         "channelsHint": "Such as chat and voice.",
         "languages": "Languages (optional)",
-        "languagesHint": "Such as Vietnamese, English.",
         "period": "Period (optional)",
         "periodHint": "Such as since March 2026.",
         "result": "Result (optional)",
         "resultHint": "A number the customer stands behind.",
         "cancel": "Cancel",
         "save": "Send for review"
-      }
+      },
+      "limitReached": "The limit of {max} customer deployments is reached."
     }
   },
   "Introduction": {
@@ -4878,17 +4682,16 @@
       "open": "Request an introduction",
       "by": "By {provider}",
       "title": "Request an introduction to {provider}",
-      "lead": "Introductions go through GenAI Fund. Neither email address is shown until {provider} replies.",
+      "lead": "Neither email address is shown until {provider} replies.",
       "organization": "Your organization",
       "message": "What do you need?",
-      "placeholder": "What you are working on, and what you would like from them.",
       "hint": "{provider} reads your name, your organization and this message before it answers.",
       "required": "Write a message first.",
       "send": "Send request",
       "cancel": "Cancel",
       "sent": {
         "title": "Your request is with {provider}",
-        "lead": "We told them. When they reply, you both get an email with the other's name and address.",
+        "lead": "When they reply, you both get an email with the other's name and address.",
         "done": "Done"
       },
       "blocked": {
@@ -4898,8 +4701,7 @@
           "action": "Set up your organization"
         },
         "approval": {
-          "title": "Your organization is not approved yet",
-          "lead": "You can ask for an introduction as soon as GenAI Fund approves your organization."
+          "title": "Your organization is not approved yet"
         }
       }
     },
@@ -4920,18 +4722,18 @@
         "declined": "Declined"
       },
       "empty": {
-        "title": "No introductions yet",
-        "description": "When someone asks for an introduction to one of your solutions, it appears here."
+        "title": "No introductions yet"
       },
       "actions": {
         "reply": "Reply",
         "decline": "Decline",
         "confirmDecline": {
           "title": "Decline the request about {name}?",
-          "lead": "The sender is told you will not take it further. No address is shared.",
+          "lead": "The sender is told you will not take it further, and no address is shared.",
           "confirm": "Decline",
           "cancel": "Keep it"
-        }
+        },
+        "replyHint": "Replying sends you both an email with the other's address."
       },
       "done": {
         "reply": "Introduced. Both of you got an email with the other's address.",
@@ -4971,7 +4773,7 @@
     "directory": {
       "metaTitle": "AI talent · BeyondPilot",
       "title": "AI talent",
-      "lead": "Engineers and builders who deploy AI for businesses, shown with the work they have delivered.",
+      "lead": "Engineers and builders who deploy AI for businesses.",
       "create": "Create a talent profile",
       "count": "Showing {shown} of {total}",
       "total": "{count, plural, one {# person} other {# people}}",
@@ -4979,15 +4781,13 @@
       "allSkills": "Show all {count} skills",
       "strip": {
         "title": "Do you deploy AI for businesses?",
-        "body": "Create a profile with your skills and the projects you have delivered. Enquiries reach you without showing your email address."
+        "body": "Enquiries reach you without showing your email address."
       },
       "empty": {
-        "title": "Talent profiles open with the launch",
-        "description": "AI engineers, forward-deployed engineers and automation specialists will be listed here, with their skills and projects."
+        "title": "Talent profiles open with the launch"
       },
       "noMatch": {
         "title": "No profile matches",
-        "description": "Nothing matches this search and these filters.",
         "clear": "Clear search and filters"
       },
       "edit": "Edit your profile",
@@ -5020,7 +4820,6 @@
       "languages": "Languages",
       "industries": "Industries",
       "about": "About",
-      "projectsLead": "Each project shows how far it went, as the person states it.",
       "noProject": "No deployed project yet.",
       "facts": "Skills and industries",
       "place": "Based in",
@@ -5031,7 +4830,7 @@
       "about": "About",
       "projects": {
         "title": "Deployed projects",
-        "lead": "Each project shows how far it went, as the person states it.",
+        "lead": "Stages are as the person states them.",
         "open": "View the project",
         "empty": "No deployed project published yet."
       },
@@ -5043,7 +4842,7 @@
         "languages": "Languages"
       },
       "notListed": "Not stated",
-      "note": "Messages go through BeyondPilot. {name} reads your name and organization; neither email address is shared unless they accept.",
+      "note": "Neither email address is shared unless {name} accepts.",
       "photoAlt": "Photo of {name}",
       "stats": {
         "projects": "{count, plural, one {project on the profile} other {projects on the profile}}",
@@ -5063,7 +4862,7 @@
       "open": "Contact {name}",
       "openShort": "Contact",
       "dialogTitle": "Contact {name}",
-      "dialogLead": "{name} reads your message, your name and your organization if GenAI Fund approved it. Neither email address is shared unless they accept.",
+      "dialogLead": "{name} reads your message, your name and your organization.",
       "topic": "What it is about",
       "topics": {
         "project": "A project",
@@ -5071,30 +4870,29 @@
         "other": "Something else"
       },
       "message": "Your message",
-      "placeholder": "What you are building or hiring for, and what you need from them.",
-      "hint": "Up to 2,000 characters. They have 14 days to answer.",
+      "hint": "They have 14 days to answer.",
       "required": "Write a message first.",
       "send": "Send message",
       "cancel": "Cancel",
       "sentTitle": "Your message is on its way to {name}",
-      "sentLead": "You get an email when they answer. Until then, neither email address is shown.",
+      "sentLead": "You get an email when they answer.",
       "done": "Done",
       "waitingTitle": "Your message waits for {name}",
       "waitingLead": "Sent {date}. You can write again once they answer or the message closes.",
       "signInLead": "Sign in to write to {name}.",
-      "ownLead": "This is your profile, as others see it.",
       "ownEdit": "Edit your profile",
       "senderName": "Your name",
-      "senderNameHint": "{name} reads this name. Your email address stays hidden.",
-      "senderNameRequired": "Say who is writing."
+      "senderNameHint": "Your email address stays hidden.",
+      "senderNameRequired": "Say who is writing.",
+      "messageHint": "What you are building or hiring for, and what you need from them."
     },
     "mine": {
       "metaTitle": "Talent profile · BeyondPilot",
       "title": "Your talent profile",
-      "leadNew": "Tell companies what you build. GenAI Fund reviews the profile before it is listed.",
+      "leadNew": "GenAI Fund reviews the profile before it is listed.",
       "submitted": {
         "title": "GenAI Fund is reviewing your profile",
-        "lead": "This usually takes one or two working days. You can still correct it.",
+        "lead": "This usually takes one or two working days.",
         "foot": "Sent on {date}. We email you when it is decided.",
         "footUndated": "We email you when it is decided."
       },
@@ -5102,14 +4900,13 @@
         "listed": "Approved and listed in the directory",
         "unlisted": "Approved, but hidden from the directory",
         "open": "Open your public profile",
-        "unlistedLead": "Only you see it. Choose “Listed in the directory” below to show it again; no new review.",
-        "listedLead": "Anyone can find you in AI talent and search.",
+        "unlistedLead": "Choose “Listed in the directory” below to show it again; no new review.",
         "foot": "A change you save shows on your page at once, without a new review."
       },
       "inbox": {
         "title": "Received",
         "waiting": "{count} new",
-        "lead": "Accept to share your email address with the sender. Decline or report shares nothing.",
+        "lead": "Accept to share your email address with the sender.",
         "someone": "Someone",
         "from": "{name} · {organization}",
         "status": {
@@ -5138,7 +4935,7 @@
           "confirm": "Report",
           "cancel": "Keep it"
         },
-        "none": "No enquiries yet. When someone writes to you through your page, it shows here."
+        "none": "No enquiries yet."
       },
       "sentBack": {
         "title": "Sent back: {reason}",
@@ -5151,20 +4948,17 @@
       "delete": {
         "action": "Delete profile…",
         "title": "Delete your talent profile?",
-        "lead": "Your profile, its projects and the messages sent through it are deleted for good. Nobody can find it in the directory.",
+        "lead": "Your profile, its projects and the messages sent through it are deleted for good.",
         "confirm": "Delete profile",
         "cancel": "Keep it"
       },
       "saved": "saved {when}",
       "seen": {
-        "onlyYou": "only you can see it until GenAI Fund approves it",
-        "inReview": "GenAI Fund is reviewing it",
-        "listed": "listed in AI talent",
-        "hidden": "hidden from AI talent"
+        "onlyYou": "only you can see it until GenAI Fund approves it"
       },
       "preview": {
         "action": "Preview",
-        "note": "Your profile as last saved. Changes you have not saved are not shown."
+        "note": "Changes you have not saved are not shown."
       },
       "tabs": {
         "label": "Your talent profile",
@@ -5189,7 +4983,7 @@
       "websiteInvalid": "Enter a full address that starts with https://",
       "projects": {
         "title": "Projects",
-        "lead": "Up to {count} projects that show what you can do.",
+        "lead": "Up to {count} projects.",
         "titleRequired": "Give every project a title, or remove it.",
         "name": "Project {number}",
         "year": "Year",
@@ -5213,7 +5007,7 @@
       "readiness": {
         "missing": "Before you send it for review, add:",
         "ready": "Ready to send for review",
-        "note": "GenAI Fund checks that the profile is a real person's and says what you do. This usually takes one or two working days, and the decision shows on this page.",
+        "note": "The review usually takes one or two working days.",
         "count": "{count, plural, one {# field to add before review} other {# fields to add before review}}"
       },
       "unsaved": "Unsaved changes",
@@ -5225,7 +5019,7 @@
       },
       "photo": {
         "label": "Photo",
-        "hint": "A clear photo of your face. PNG, JPEG or WebP, up to 2 MB.",
+        "hint": "PNG, JPEG or WebP, up to 2 MB.",
         "choose": "Upload a photo",
         "change": "Change photo",
         "remove": "Remove photo",
@@ -5243,9 +5037,8 @@
       "industries": "Industries you have worked in",
       "rateHint": "Only you and GenAI Fund see the rate.",
       "title": "Profile",
-      "lead": "What people see on your page. Your email address is never shown; enquiries reach you through BeyondPilot.",
+      "lead": "Your email address is never shown; enquiries reach you through BeyondPilot.",
       "optional": "Optional",
-      "headlinePlaceholder": "For example: ML engineer building document AI for banks",
       "skillsPlaceholder": "Add a skill",
       "remove": "Remove {label}",
       "searchPlaceholder": "Type to search",
@@ -5259,18 +5052,18 @@
       "visibility": {
         "listed": {
           "title": "Listed in the directory",
-          "lead": "Anyone can find you in AI talent and search. Your page opens once GenAI Fund approves it.",
-          "leadApproved": "Anyone can find you in AI talent and search."
+          "lead": "Anyone can find you in AI talent and search."
         },
         "hidden": {
           "title": "Hidden",
-          "lead": "Only you see it. Show it again whenever you like; no new review."
+          "lead": "Only you see it."
         }
       },
       "add": "Add",
       "addOne": "Add {label}",
       "skillsSuggested": "Suggested:",
-      "worksAtPlaceholder": "Company, or leave empty if independent"
+      "headlineHint": "For example: ML engineer building document AI for banks.",
+      "urlHint": "A full address that starts with https://."
     }
   },
   "Form": {
@@ -5324,12 +5117,12 @@
       "nothingYet": "More about this program is coming soon.",
       "useCases": {
         "title": "Use cases in this program",
-        "lead": "The business problems published for this program. Open one to read its goal, requirements, budget and timeline.",
+        "lead": "The business problems published for this program.",
         "shown": "Showing {shown} of {total} use cases.",
         "all": "See all use cases"
       },
       "draft": {
-        "message": "Draft. Only operators can see this page; it is not on the programs list yet.",
+        "message": "Draft. Only operators can see this page.",
         "back": "Back to settings"
       },
       "applyCard": "Applying"
@@ -5371,7 +5164,6 @@
     "readPage": "See the program",
     "empty": {
       "title": "No programs here yet",
-      "description": "Try another type, or look at every program.",
       "clear": "Show all programs"
     }
   },
@@ -5819,8 +5611,8 @@
       "withdrawn": "Withdrawn"
     },
     "nothingYet": "Who applies and with what is not filled in yet",
-    "draftUntil": "Not submitted yet. Submit before {when}.",
-    "withdrawnUntil": "Withdrawn. You can submit it again until {when}.",
+    "draftUntil": "Submit before {when}.",
+    "withdrawnUntil": "You can submit it again until {when}.",
     "hearBack": "You hear back on {day}, by email.",
     "editUntil": "You can change it until {when}.",
     "closedOn": "Applications closed on {when}.",
@@ -5832,8 +5624,8 @@
       "not_selected": "Not selected"
     },
     "resultLead": {
-      "shortlisted": "You're shortlisted. GenAI Fund's email has what comes next.",
-      "not_selected": "Not selected this time. GenAI Fund's email has the details."
+      "shortlisted": "GenAI Fund's email has what comes next.",
+      "not_selected": "GenAI Fund's email has the details."
     },
     "tracker": {
       "label": "Where your application stands",
@@ -5849,7 +5641,7 @@
       "done": " (done)",
       "ahead": " (to come)"
     },
-    "withdrawnForGood": "Withdrawn. This program takes no changes after submission, so it cannot be submitted again."
+    "withdrawnForGood": "This program takes no changes after submission, so it cannot be submitted again."
   },
   "Application": {
     "metaTitle": "Application",
@@ -5873,13 +5665,13 @@
     "withdraw": {
       "button": "Withdraw application",
       "title": "Withdraw your application to {program}?",
-      "lead": "Reviewers will no longer read it. You can submit it again while the program takes applications.",
+      "lead": "Reviewers will no longer read it, but you can submit it again while the program takes applications.",
       "confirm": "Withdraw",
       "cancel": "Keep it",
       "done": "Your application was withdrawn.",
       "closed": "Applications have closed, so it can no longer be withdrawn.",
       "failed": "It could not be withdrawn. Try again.",
-      "leadFinal": "Reviewers will no longer read it. This program takes no changes after submission, so you cannot submit it again."
+      "leadFinal": "Reviewers will no longer read it, and you cannot submit it again."
     },
     "receipt": {
       "title": "Application submitted",
@@ -5891,7 +5683,7 @@
       "submitted": "Submitted",
       "editUntil": "You can edit until",
       "next": "What happens next",
-      "nextOutcome": "GenAI Fund reads every application. You hear back on {day}, by email, whatever the outcome.",
+      "nextOutcome": "You hear back on {day}, by email, whatever the outcome.",
       "nextReview": "GenAI Fund reads every application and tells you the outcome by email.",
       "view": "View my application",
       "programs": "Back to programs"
@@ -5901,8 +5693,8 @@
       "not_selected": "Not selected"
     },
     "resultLead": {
-      "shortlisted": "You're shortlisted. GenAI Fund's email has what comes next.",
-      "not_selected": "Not selected this time. GenAI Fund's email has the details."
+      "shortlisted": "GenAI Fund's email has what comes next.",
+      "not_selected": "GenAI Fund's email has the details."
     }
   },
   "Review": {
@@ -5972,25 +5764,24 @@
       "scoredAverage": "{count, plural, one {# score} other {# scores}} · average {value}",
       "lead": {
         "released": "Outcomes released on {day}.",
-        "open": "Applications close {closes}. Judges can score what has been submitted.",
+        "open": "Applications close {closes}.",
         "closed": "Applications have closed. Every applicant hears back on {day}.",
         "closedNoDay": "Applications have closed."
       },
-      "judgeLead": "You score each application on {count, plural, one {# criterion} other {# criteria}}. GenAI Fund decides and tells every applicant.",
+      "judgeLead": "You score each application on {count, plural, one {# criterion} other {# criteria}}.",
       "seeRelease": "See the release",
       "release": "Release outcomes",
       "noCriteria": {
         "operator": "This program has no judging criteria yet. Set them under Reviewers before anyone scores.",
-        "judge": "GenAI Fund has not set the judging criteria yet. You can read the applications meanwhile."
+        "judge": "GenAI Fund has not set the judging criteria yet."
       },
       "noMatch": {
         "title": "No application matches",
-        "description": "Try other words, or clear the search and the filters.",
         "clear": "Clear search and filters"
       },
       "empty": {
         "title": "No applications yet",
-        "description": "Submitted applications appear here. Drafts are never listed."
+        "description": "Drafts are never listed."
       },
       "footer": "{shown, plural, one {# application} other {# applications}} · {drafts, plural, one {# draft was} other {# drafts were}} not submitted · {withdrawn} withdrawn",
       "footerScored": "{scored} of {total} scored",
@@ -6033,14 +5824,14 @@
           "not_selected": "Not selected"
         }
       },
-      "own": "This application is yours or your organization's, so you don't score or decide it. Other judges and GenAI Fund do."
+      "own": "This application is yours or your organization's, so you don't score or decide it."
     },
     "assessment": {
       "title": "Your assessment · version {version}",
       "earlierVersion": "You scored version {version}. The applicant has submitted again since; check what changed and save again.",
       "conflictDeclared": "You declared a conflict with this applicant, so your score is left out. Score it below to take that back.",
       "noCriteria": "Scoring opens once GenAI Fund sets the judging criteria.",
-      "criteria": "Criteria, 1 to 5",
+      "criteria": "Criteria, 1 (lowest) to 5 (highest)",
       "notScored": "Not scored",
       "average": "Average {value}",
       "score": "{score} out of 5",
@@ -6050,7 +5841,7 @@
       "unsaved": "Not saved yet",
       "leave": {
         "title": "Leave without saving?",
-        "lead": "Your scores and your note for this application are not saved and will be lost.",
+        "lead": "Your scores and your note will be lost.",
         "leave": "Leave",
         "stay": "Stay"
       },
@@ -6076,7 +5867,7 @@
       "notSelectedAndNext": "Not selected and next",
       "notSelected": "Not selected",
       "changeToNotSelected": "Change to not selected",
-      "private": "Decisions and reasons stay private. The applicant sees only the outcome you release.",
+      "private": "The applicant sees only the outcome you release.",
       "done": {
         "shortlisted": "Shortlisted.",
         "not_selected": "Marked not selected."
@@ -6112,13 +5903,12 @@
       "metaTitle": "Release outcomes",
       "back": "Applications",
       "title": "Release outcomes",
-      "lead": "Every applicant to {program} sees their result on My applications and gets the email of their group. Scores, notes and reasons stay private.",
+      "lead": "Every applicant to {program} sees their result on My applications and gets the email of their group.",
       "released": "Outcomes released {at}",
-      "releasedNote": "Every applicant has their result. A release is final.",
       "blocked": {
         "open": "Opens after {closes}",
         "undecided": "{count, plural, one {# application still has no decision} other {# applications still have no decision}}",
-        "why": "Outcomes are released once applications have closed and every application has a decision, so every applicant hears back on the same day."
+        "why": "Outcomes are released once applications have closed and every application has a decision."
       },
       "groups": {
         "undecided": "Under review",
@@ -6144,10 +5934,9 @@
     "reviewers": {
       "metaTitle": "Reviewers",
       "title": "Reviewers",
-      "lead": "They score this program's applications and see nothing else in the admin area. GenAI Fund makes the decisions and releases the outcomes.",
+      "lead": "They score this program's applications and see nothing else in the admin area.",
       "empty": {
-        "title": "No judges yet",
-        "description": "Invite the people who score this program's applications."
+        "title": "No judges yet"
       },
       "columns": {
         "reviewer": "Reviewer",
@@ -6166,14 +5955,13 @@
         "lapsed": "Lapsed"
       },
       "assessed": "{done} of {total}",
-      "note": "An invitation lasts 7 days. Removing a judge keeps the scores they gave. Judges never see each other's scores.",
+      "note": "An invitation lasts 7 days. Judges never see each other's scores.",
       "invite": {
         "open": "Invite a judge",
         "title": "Invite a judge to {program}",
-        "description": "They get an email from BeyondPilot. Once they sign in with this address, they see this program's applications only.",
+        "description": "They get an email from BeyondPilot and sign in with this address.",
         "email": "Email address",
         "invalid": "Enter an email address, such as name@company.com.",
-        "note": "The email holds no link that acts; they sign in as anyone does.",
         "cancel": "Cancel",
         "send": "Send invitation",
         "sent": "Invitation sent to {email}."
@@ -6196,26 +5984,26 @@
     "criteria": {
       "title": "Judging criteria",
       "fixed": "Applications have been scored on these, so they no longer change.",
-      "lead": "Each judge scores every criterion from 1 to 5; an application's score is the average. They are fixed once the first score is saved.",
+      "lead": "They are fixed once the first score is saved.",
       "none": "No criteria yet. Judges can read the applications but not score them.",
       "edit": "Edit criteria",
       "add": "Add criteria",
       "dialogTitle": "Judging criteria",
-      "dialogDescription": "In the order judges score them. Each is scored from 1 to 5.",
-      "name": "Criterion {number}",
-      "namePlaceholder": "Practical impact",
-      "description": "What criterion {number} looks for",
-      "descriptionPlaceholder": "What a judge looks for (optional)",
+      "dialogDescription": "Each is scored from 1 to 5.",
       "remove": "Remove criterion {number}",
       "addOne": "Add a criterion",
       "cancel": "Cancel",
       "save": "Save criteria",
-      "saved": "Criteria saved."
+      "saved": "Criteria saved.",
+      "nameLabel": "Name",
+      "nameHint": "Such as Practical impact.",
+      "descriptionLabel": "Description",
+      "descriptionHint": "What a judge looks for."
     },
     "programs": {
       "metaTitle": "Reviews",
       "title": "Reviews",
-      "lead": "The programs you were invited to judge. You score; GenAI Fund decides and tells every applicant.",
+      "lead": "You score; GenAI Fund decides and tells every applicant.",
       "empty": {
         "title": "Nothing to review",
         "description": "When GenAI Fund invites you to judge a program, it appears here."
@@ -6260,8 +6048,7 @@
     "by": "By {name}",
     "customerCases": "{count, plural, =0 {No customer case yet} one {# customer case} other {# customer cases}}",
     "start": {
-      "title": "Search BeyondPilot",
-      "description": "Find programs, AI solutions and AI talent by what they do."
+      "title": "Search BeyondPilot"
     },
     "none": {
       "title": "Nothing matches “{q}”",
@@ -6273,7 +6060,7 @@
   "UseCases": {
     "metaTitle": "Use cases · BeyondPilot",
     "title": "Use cases",
-    "lead": "Business problems that enterprises want solved with AI. Read the brief, then send a proposal.",
+    "lead": "Business problems that enterprises want solved with AI.",
     "search": "Search use cases",
     "sort": {
       "label": "Sort by",
@@ -6332,13 +6119,12 @@
         "noDeadline": "No closing date",
         "send": "Send a proposal",
         "save": "Save for later",
-        "note": "A proposal reuses your solution profile. You only add what's specific to this use case."
+        "note": "A proposal reuses your solution profile."
       }
     },
     "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
     "empty": {
       "title": "No use cases match",
-      "description": "No use case matches this search and industry.",
       "clear": "Clear search and filters"
     },
     "pagination": {
@@ -6351,7 +6137,7 @@
     },
     "publish": {
       "title": "Have a business problem AI could solve?",
-      "description": "Publish a use case, review proposals in one place and pick providers for a pilot.",
+      "description": "Review proposals in one place and pick providers for a pilot.",
       "action": "Publish a use case"
     },
     "anonymous": "Organization not named"
@@ -6644,8 +6430,8 @@
       "queued": "Waiting in line. It starts in a moment.",
       "startsAt": "Starts at {time}, once the brief has stopped changing.",
       "waiting": "Paused: the AI service is busy. {judged} of {total} done so far.",
-      "resumes": "It continues by itself. You don't need to start it again.",
-      "resumesAt": "It continues by itself at about {time}. You don't need to start it again.",
+      "resumes": "It continues by itself.",
+      "resumesAt": "It continues by itself at about {time}.",
       "done": "Updated {date} · AI read {judged, plural, one {# solution} other {# solutions}} closely",
       "doneModel": "Updated {date} · AI read {judged, plural, one {# solution} other {# solutions}} closely · model {model}",
       "doneWhen": "Updated {date}",
@@ -6660,7 +6446,7 @@
       },
       "never": {
         "title": "Find solutions for this use case",
-        "lead": "AI reads your brief, goes through the solutions on BeyondPilot and lists the ones that fit, each with the vendor's own words as evidence."
+        "lead": "AI reads your brief and lists the solutions that fit, each with the vendor's own words as evidence."
       },
       "noModel": {
         "title": "We can't look for solutions yet",
@@ -6679,14 +6465,14 @@
       },
       "runConfirm": {
         "title": "Look for solutions now?",
-        "description": "AI reads the brief again and goes through the solutions on BeyondPilot. The solutions you saved and the ones you removed stay as they are.",
+        "description": "The solutions you saved and the ones you removed stay as they are.",
         "note": "{count, plural, =1 {This uses your last run today.} other {This uses 1 of your # runs left today.}}",
         "cancel": "Cancel"
       },
       "reviewAllConfirm": {
         "title": "Re-review every solution?",
-        "description": "AI reads every solution again, including those whose documents did not change. Use this after choosing another model.",
-        "note": "It calls the model once for each solution. Saved and removed solutions stay as they are.",
+        "description": "AI reads every solution again, including those whose documents did not change.",
+        "note": "It calls the model once for each solution.",
         "confirm": "Re-review every solution",
         "cancel": "Cancel"
       },
@@ -6704,7 +6490,7 @@
       "asked": "Key requirement: {need}",
       "covered": "Together they meet {covered} of the {total} requirements",
       "gap": "No solution on BeyondPilot shows evidence for: {need}",
-      "ai": "AI read each vendor's public material and picked these. Check before you decide."
+      "ai": "AI picked these from each vendor's public material; check before you decide."
     },
     "filter": {
       "label": "Filter by requirement",
@@ -6735,11 +6521,11 @@
       },
       "reading": {
         "title": "Being read",
-        "about": "Found for this use case. Each one moves to its group when the AI has read it."
+        "about": "Each one moves to its group when the AI has read it."
       },
       "kept": {
         "title": "Saved, no longer suggested",
-        "about": "AI no longer suggests these after the latest run. They stay until someone unsaves them."
+        "about": "They stay until someone unsaves them."
       },
       "emptyDirect": "No solution meets the key requirement yet.",
       "more": "Show {count} more",
@@ -6798,14 +6584,15 @@
       "previous": "Previous solution",
       "next": "Next solution",
       "close": "Close",
-      "waiting": "AI has not read this solution yet. It will in the next run.",
+      "waiting": "AI reads this solution in the next run.",
       "aiSummary": "AI summary",
       "needs": "Evidence",
       "required": "Must have",
       "constraints": "Ask the vendor about these",
       "constraintsCount": "{count, plural, one {# delivery condition to ask about} other {# delivery conditions to ask about}}",
       "openDeck": "Open the deck",
-      "shortcut": "{label} ({key})"
+      "shortcut": "{label} ({key})",
+      "shortcuts": "Keyboard shortcuts"
     },
     "deck": {
       "page": "Deck, page {page}",
@@ -6827,7 +6614,7 @@
       "title": "Why is {name} not a fit?",
       "cancel": "Cancel",
       "note": "Add a note (optional)",
-      "foot": "We won't suggest it for this use case again. It stays on BeyondPilot.",
+      "foot": "We won't suggest it for this use case again.",
       "confirm": "Remove",
       "reasons": {
         "does_not_solve": "Does not solve this problem",
@@ -6844,11 +6631,11 @@
       "someone": "a member",
       "restore": "Restore",
       "locked": "GenAI Fund removed it, so only GenAI Fund can restore it.",
-      "empty": "Nothing removed. Removed solutions are listed here with the reason and can be restored."
+      "empty": "Nothing removed."
     },
     "add": {
       "title": "Add a solution by hand",
-      "description": "For a solution AI did not find. AI reads it in the next run, like the others.",
+      "description": "AI reads it in the next run, like the others.",
       "search": "Search approved solutions by name or organization",
       "searching": "Searching…",
       "empty": "No approved solution matches your search.",
@@ -6864,7 +6651,7 @@
     },
     "empty": {
       "none": "AI found no solution on BeyondPilot that fits this use case.",
-      "shortlist": "Nothing saved yet. Save the solutions you want to talk to.",
+      "shortlist": "Save the solutions you want to talk to.",
       "need": "No solution here shows evidence for: {need}",
       "clear": "Show all solutions"
     },

@@ -139,21 +139,13 @@ function AdminIntroductionsPage({ introductions, search }: AdminIntroductionsPag
           ))}
         </ul>
       ) : filtered ? (
-        <DataTableEmpty
-          icon={<SearchXIcon aria-hidden="true" />}
-          title={t("noMatch.title")}
-          description={t("noMatch.description")}
-        >
+        <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
           <Button prominence="secondary" size="sm" href={siteRoutes.adminIntroductions}>
             {t("noMatch.clear")}
           </Button>
         </DataTableEmpty>
       ) : (
-        <DataTableEmpty
-          icon={<HandshakeIcon aria-hidden="true" />}
-          title={t("empty.title")}
-          description={t("empty.description")}
-        />
+        <DataTableEmpty icon={<HandshakeIcon aria-hidden="true" />} title={t("empty.title")} />
       )}
 
       <ListFooter

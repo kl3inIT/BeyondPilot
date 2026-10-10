@@ -98,11 +98,7 @@ function IntroductionsPage({
       >
         {introductions.items.length === 0 ? (
           <div className="rounded-lg border bg-background">
-            <DataTableEmpty
-              icon={<InboxIcon aria-hidden="true" />}
-              title={t("empty.title")}
-              description={t("empty.description")}
-            />
+            <DataTableEmpty icon={<InboxIcon aria-hidden="true" />} title={t("empty.title")} />
           </div>
         ) : (
           <ul className="overflow-hidden rounded-lg border bg-background">

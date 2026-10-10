@@ -5,7 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
 import { ApiError } from "@/lib/api/client";
 import { uploadFile } from "@/lib/storage/upload";
@@ -122,6 +122,7 @@ function AttachmentsField({ id, value, onChange, readOnly = false }: Attachments
         id={id}
         type="file"
         accept={accepted.join(",")}
+        aria-describedby={readOnly ? undefined : `${id}-hint`}
         className="sr-only"
         onChange={(event) => {
           const file = event.target.files?.[0];
@@ -170,6 +171,11 @@ function AttachmentsField({ id, value, onChange, readOnly = false }: Attachments
           </TextButton>
         )}
       </div>
+      {!readOnly && (
+        <FieldDescription id={`${id}-hint`}>
+          {t("hint", { count: maxAttachments, size: size(maxBytes) })}
+        </FieldDescription>
+      )}
       {problem && <FieldError>{problem}</FieldError>}
     </Field>
   );

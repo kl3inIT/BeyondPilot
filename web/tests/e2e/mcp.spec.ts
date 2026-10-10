@@ -79,7 +79,15 @@ test.describe("MCP", () => {
       "https://beyondpilot.test/mcp/operator",
     );
     await page.getByRole("tab", { name: "Other apps" }).click();
+    // What only an app without a client name needs is behind a click.
+    const clientHelp = page.getByRole("button", {
+      name: "How an app without a client name signs in",
+    });
+    await expect(page.getByText(/signs in as mcp-local/)).toHaveCount(0);
+    await clientHelp.click();
     await expect(page.getByText(/signs in as mcp-local/)).toBeVisible();
+    await clientHelp.click();
+    await expect(page.getByText(/signs in as mcp-local/)).toHaveCount(0);
     const trusted = page.getByRole("region", { name: "Trusted app hosts" });
     await expect(trusted.getByText("zed.dev")).toBeVisible();
     await expectNoSeriousA11yViolations(page);

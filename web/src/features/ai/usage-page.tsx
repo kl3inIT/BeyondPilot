@@ -46,10 +46,7 @@ async function UsageHeader({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="flex flex-col gap-1">
-          <AdminPageTitle destination="aiUsage">{t("title")}</AdminPageTitle>
-          <p className="text-sm text-muted-foreground">{t("lead")}</p>
-        </div>
+        <AdminPageTitle destination="aiUsage">{t("title")}</AdminPageTitle>
         <UsagePeriodSwitch />
       </div>
       <nav aria-label={t("tabs.label")} className="border-b">

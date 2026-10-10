@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useNotify } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
@@ -96,11 +96,7 @@ function AddSuppressionButton() {
                 }}
                 aria-invalid={problem !== null || undefined}
               />
-              {problem ? (
-                <FieldError>{t(problem)}</FieldError>
-              ) : (
-                <FieldDescription>{t("hint")}</FieldDescription>
-              )}
+              {problem && <FieldError>{t(problem)}</FieldError>}
             </Field>
             <DialogFooter>
               <Button prominence="secondary" disabled={pending} onClick={() => setOpen(false)}>

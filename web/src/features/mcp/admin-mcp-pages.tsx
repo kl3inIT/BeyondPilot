@@ -70,7 +70,7 @@ function SettingsSection({
   children,
 }: {
   title: string;
-  lead: string;
+  lead?: string;
   first?: boolean;
   children: React.ReactNode;
 }) {
@@ -81,7 +81,7 @@ function SettingsSection({
     >
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-medium">{title}</h2>
-        <p className="text-sm text-muted-foreground">{lead}</p>
+        {lead && <p className="text-sm text-muted-foreground">{lead}</p>}
       </div>
       <div className="flex flex-col gap-5 md:col-span-2">{children}</div>
     </section>
@@ -155,7 +155,7 @@ async function McpToolsPage({ settings, counts }: { settings: McpSettings; count
         <SettingsSection
           key={server}
           title={t(`${server}.title`)}
-          lead={t(`${server}.lead`)}
+          lead={server === "operator" ? t("operator.lead") : undefined}
           first={index === 0}
         >
           <ul className="overflow-hidden rounded-lg border bg-background">

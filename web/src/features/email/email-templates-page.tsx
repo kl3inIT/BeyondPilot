@@ -8,7 +8,7 @@ import type { EmailTemplateList } from "@/lib/api/generated";
 import { adminEmailTemplateRoute, siteRoutes } from "@/lib/site";
 
 import { EmailHeader } from "./email-header";
-import { isEmailKind, KindIcon } from "./email-kinds";
+import { hasKindDescription, isEmailKind, KindIcon } from "./email-kinds";
 
 const groups = [
   "sign_in",
@@ -76,11 +76,15 @@ async function EmailTemplatesPage({
                         </span>
                         {item.edited && <Badge variant="outline">{t("templates.edited")}</Badge>}
                       </span>
-                      <span className="text-sm text-muted-foreground">
-                        {isEmailKind(item.kind)
-                          ? t(`kinds.${item.kind}.description`)
-                          : item.subject}
-                      </span>
+                      {hasKindDescription(item.kind) ? (
+                        <span className="text-sm text-muted-foreground">
+                          {t(`kinds.${item.kind}.description`)}
+                        </span>
+                      ) : (
+                        !isEmailKind(item.kind) && (
+                          <span className="text-sm text-muted-foreground">{item.subject}</span>
+                        )
+                      )}
                     </span>
                     {item.edited && item.updatedBy && item.updatedAt && (
                       <span className="hidden text-xs text-muted-foreground md:block">

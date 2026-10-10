@@ -117,7 +117,7 @@ function ModelsField({ reported, probe }: ModelsFieldProps) {
           <p className="text-xs text-muted-foreground" aria-live="polite">
             {models
               ? t("count", { shown: shown.length, total: models.length, selected: selected.size })
-              : t("hint")}
+              : null}
           </p>
         </div>
         <Button

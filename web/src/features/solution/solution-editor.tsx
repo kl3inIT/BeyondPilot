@@ -357,9 +357,9 @@ function SolutionEditor({ solution }: { solution: Solution }) {
   const live = !autosaves;
   const stepTitle = (id: EditorStep) =>
     id === "review" && live ? t("steps.review.titleLive") : t(`steps.${id}.title`);
-  const stepMeta = (id: EditorStep) =>
-    id === "review" && live ? t("steps.review.metaLive") : t(`steps.${id}.meta`);
-  const stepLead = step === "review" && live ? t("steps.review.leadLive") : t(`steps.${step}.lead`);
+  // The review of a draft has no line under its title: the box below it says what happens next.
+  const stepLead =
+    step !== "review" ? t(`steps.${step}.lead`) : live ? t("steps.review.leadLive") : undefined;
   const savedAt = savedNow
     ? format.dateTime(savedNow, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
     : format.dateTime(new Date(server.updatedAt), {
@@ -545,7 +545,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
                   key={id}
                   number={position + 1}
                   title={stepTitle(id)}
-                  meta={problem ?? stepMeta(id)}
+                  meta={problem}
                   tone={problem ? "danger" : "default"}
                   state={
                     position === index
@@ -561,10 +561,12 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               );
             })}
           </ol>
-          <p className="flex gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground">
-            <InfoIcon className="mt-px size-3.5 shrink-0" aria-hidden="true" />
-            {t(autosaves ? "note" : "noteLive")}
-          </p>
+          {live && (
+            <p className="flex gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground">
+              <InfoIcon className="mt-px size-3.5 shrink-0" aria-hidden="true" />
+              {t("noteLive")}
+            </p>
+          )}
         </nav>
 
         <div className="flex w-full max-w-170 min-w-0 flex-col gap-4">
@@ -638,7 +640,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
               >
                 {stepTitle(step)}
               </h1>
-              <p className="text-muted-foreground">{stepLead}</p>
+              {stepLead && <p className="text-muted-foreground">{stepLead}</p>}
               {step !== "review" && (
                 <p className="text-sm text-muted-foreground">
                   {t(step === "evidence" ? "imagesRequired" : "required")}
@@ -677,6 +679,11 @@ function SolutionEditor({ solution }: { solution: Solution }) {
                 )}
               </FieldGroup>
             </fieldset>
+
+            {/* Below 1024px the steps and their note are not drawn; the review's own lead says it. */}
+            {live && !finallyRefused && step !== "review" && (
+              <p className="text-xs text-muted-foreground lg:hidden">{t("noteLive")}</p>
+            )}
 
             <div className="sticky bottom-0 z-10 flex items-center justify-between gap-3 border-t bg-background py-4 max-md:-mx-5 max-md:px-5 md:static md:bg-transparent md:pb-0">
               {index === 0 ? (

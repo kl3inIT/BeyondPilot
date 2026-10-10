@@ -135,7 +135,7 @@ function AdminMemberActions({ organizationId, member, onlyOwner }: AdminMemberAc
               ? t("demote.lead")
               : t(onlyOwner ? "remove.lastOwnerLead" : "remove.lead")
           }
-          note={t("confirm.note")}
+          note={asking === "remove" ? t("confirm.note") : undefined}
           confirmLabel={t(asking === "demote" ? "demote.confirm" : "remove.confirm")}
           cancelLabel={t("confirm.cancel")}
           tone="danger"

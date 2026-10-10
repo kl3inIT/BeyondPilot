@@ -7,7 +7,6 @@ import { DataTable, DataTableEmpty, DataTablePager } from "@/components/composit
 import { Person } from "@/components/composites/person";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { AuditEvent, AuditEventList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -34,12 +33,20 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
   ]);
   const today = format.dateTime(new Date(), { dateStyle: "short" });
 
-  /** "Today, 09:41" for an event of today in Vietnam time, "3 Oct, 14:32" before that. */
-  function shortTime(at: Date) {
-    const time = format.dateTime(at, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  /** "Today, 09:41:07" for an event of today in Vietnam time, "3 Oct 2026, 14:32:07" before that. */
+  function exactTime(at: Date) {
+    const time = format.dateTime(at, {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    });
     return format.dateTime(at, { dateStyle: "short" }) === today
       ? t("today", { time })
-      : t("dayAndTime", { day: format.dateTime(at, { day: "numeric", month: "short" }), time });
+      : t("dayAndTime", {
+          day: format.dateTime(at, { day: "numeric", month: "short", year: "numeric" }),
+          time,
+        });
   }
 
   /** The sentence of an action, ending in what it was done to. */
@@ -53,8 +60,7 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
     return {
       id: event.id,
       at: event.occurredAt,
-      time: shortTime(at),
-      fullTime: format.dateTime(at, { dateStyle: "full", timeStyle: "medium", hourCycle: "h23" }),
+      time: exactTime(at),
       person: event.actor ? (
         <Person name={event.actor.label} email={event.actor.email} />
       ) : (
@@ -88,7 +94,6 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
       <DataTableEmpty
         icon={<ScrollTextIcon aria-hidden="true" />}
         title={t("empty.title", { period: search.period })}
-        description={t("empty.description")}
       >
         {search.period !== "all" && (
           <Button
@@ -104,13 +109,10 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-col gap-1">
-        <AdminPageTitle destination="auditLog">{t("title")}</AdminPageTitle>
-        <p className="text-sm text-muted-foreground">{t("lead")}</p>
-      </div>
+      <AdminPageTitle destination="auditLog">{t("title")}</AdminPageTitle>
       <AuditLogToolbar />
 
-      {/* From 768px: a table. The full date and time, to the second, is behind the short one. */}
+      {/* From 768px: a table. The time is exact to the second, with its year, on every width. */}
       <DataTable className="hidden md:block">
         <TableHeader>
           <TableRow>
@@ -123,16 +125,9 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
           {rows.map((row) => (
             <TableRow key={row.id}>
               <TableCell>
-                <Tooltip>
-                  <TooltipTrigger
-                    render={<time dateTime={row.at} className="text-muted-foreground" />}
-                  >
-                    {row.time}
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" align="start">
-                    {row.fullTime}
-                  </TooltipContent>
-                </Tooltip>
+                <time dateTime={row.at} className="text-muted-foreground">
+                  {row.time}
+                </time>
               </TableCell>
               <TableCell>{row.person}</TableCell>
               <TableCell>{row.activity}</TableCell>

@@ -102,7 +102,7 @@ function ClaimDecision({ organization, claimId, onClose }: ClaimDecisionProps) {
               ? t("lead", {
                   day: format.dateTime(new Date(claim.createdAt), { dateStyle: "medium" }),
                 })
-              : t("leadUnknown")
+              : undefined
           }
         />
         {claim && (

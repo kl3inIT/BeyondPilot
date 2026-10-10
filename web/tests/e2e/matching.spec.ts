@@ -152,7 +152,7 @@ test.describe("solutions matched to a use case", () => {
     ).toBeVisible();
     await expect(
       page.getByText(
-        "AI read each vendor's public material and picked these. Check before you decide.",
+        "AI picked these from each vendor's public material; check before you decide.",
       ),
     ).toHaveCount(1);
     // What the AI put in no group is not shown.
@@ -433,16 +433,22 @@ test.describe("solutions matched to a use case", () => {
     const open = (name: string) => panel.getByRole("heading", { level: 2, name });
     await expect(open("Staple AI")).toBeVisible();
 
-    // The keys are said where the controls are: in their tooltip and to assistive technology.
+    // The keys are said behind a click, never in a tooltip, and to assistive technology.
+    const shortcuts = panel.getByRole("button", { name: "Keyboard shortcuts" });
+    await shortcuts.click();
+    await expect(page.getByText("Next solution (→)")).toBeVisible();
+    await expect(page.getByText("Save (S)")).toBeVisible();
+    await shortcuts.click();
+    await expect(page.getByText("Save (S)")).toHaveCount(0);
     const next = panel.getByRole("button", { name: "Next solution" });
-    await expect(next).toHaveAttribute("title", "Next solution (→)");
+    await expect(next).toHaveAttribute("title", "Next solution");
     await expect(next).toHaveAttribute("aria-keyshortcuts", "ArrowRight");
     await expect(panel.getByRole("button", { name: "Previous solution" })).toHaveAttribute(
       "aria-keyshortcuts",
       "ArrowLeft",
     );
     const save = panel.getByRole("button", { name: "Save", exact: true });
-    await expect(save).toHaveAttribute("title", "Save (S)");
+    await expect(save).not.toHaveAttribute("title");
     await expect(save).toHaveAttribute("aria-keyshortcuts", "S");
     await expect(panel.getByRole("button", { name: "Not a fit…" })).toHaveAttribute(
       "aria-keyshortcuts",
@@ -786,9 +792,7 @@ test.describe("solutions matched to a use case", () => {
     await page.goto(memberPath);
 
     await page.getByRole("tab", { name: "Saved 0" }).click();
-    await expect(
-      page.getByText("Nothing saved yet. Save the solutions you want to talk to."),
-    ).toBeVisible();
+    await expect(page.getByText("Save the solutions you want to talk to.")).toBeVisible();
     await page.getByRole("tab", { name: "Matches 4" }).click();
 
     const staple = row(page, "Staple AI");
@@ -843,9 +847,7 @@ test.describe("solutions matched to a use case", () => {
     await expect(confirm).toBeDisabled();
     await picker.getByRole("button", { name: "Wrong industry or company size" }).click();
     await expect(confirm).toBeEnabled();
-    await expect(
-      picker.getByText("We won't suggest it for this use case again. It stays on BeyondPilot."),
-    ).toBeVisible();
+    await expect(picker.getByText("We won't suggest it for this use case again.")).toBeVisible();
     await picker.getByRole("textbox", { name: "Add a note (optional)" }).fill("too small for us");
     await expectNoSeriousA11yViolations(page);
     await picture(page, testInfo, "reasons");
@@ -1042,9 +1044,7 @@ test.describe("solutions matched to a use case", () => {
     // Every solution found is a row at once: what is not read yet is being read, in a group of its own.
     const beingRead = group(page, "Being read");
     await expect(
-      beingRead.getByText(
-        "Found for this use case. Each one moves to its group when the AI has read it.",
-      ),
+      beingRead.getByText("Each one moves to its group when the AI has read it."),
     ).toBeVisible();
     await expect(beingRead.getByRole("listitem")).toHaveCount(3);
     await expect(row(page, "Sentosa Finance").getByText("Waiting", { exact: true })).toBeVisible();

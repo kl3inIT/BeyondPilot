@@ -52,13 +52,6 @@ function UseCaseView({ useCase }: { useCase: MyUseCase }) {
         timeZone: "Asia/Ho_Chi_Minh",
       })
     : "";
-  const sent = useCase.submittedAt
-    ? format.dateTime(new Date(useCase.submittedAt), {
-        dateStyle: "medium",
-        timeStyle: "short",
-        timeZone: "Asia/Ho_Chi_Minh",
-      })
-    : "";
 
   return (
     <WizardShell
@@ -76,7 +69,7 @@ function UseCaseView({ useCase }: { useCase: MyUseCase }) {
           {inReview ? t("inReview.title") : t("closed.title")}
         </h1>
         <p className="text-base text-muted-foreground">
-          {inReview ? t("inReview.lead", { date: sent }) : t("closed.lead", { date: closes })}
+          {inReview ? t("inReview.lead") : t("closed.lead", { date: closes })}
         </p>
       </div>
       <UseCaseSummary values={values} hideEmpty={useCase.status === "approved"} />

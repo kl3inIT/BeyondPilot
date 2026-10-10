@@ -73,11 +73,14 @@ function SolutionBacking({ solution }: { solution: Pick<Solution, "id" | "name" 
             id={`solution-backing-${field}`}
             maxLength={MAX}
             value={held[field]}
-            placeholder={t(`placeholders.${field}`)}
             onChange={(event) =>
               setHeld((current) => ({ ...current, [field]: event.target.value }))
             }
+            aria-describedby={`solution-backing-${field}-hint`}
           />
+          <FieldDescription id={`solution-backing-${field}-hint`}>
+            {t(`hints.${field}`)}
+          </FieldDescription>
         </Field>
       ))}
       <FieldDescription>{t("hint")}</FieldDescription>

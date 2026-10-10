@@ -145,8 +145,11 @@ function AssessmentPanel({
               key={criterion.id}
               className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5"
             >
-              <span className="min-w-0 text-sm" title={criterion.description ?? undefined}>
-                {criterion.name}
+              <span className="flex min-w-0 flex-col text-sm">
+                <span>{criterion.name}</span>
+                {criterion.description && (
+                  <span className="text-muted-foreground">{criterion.description}</span>
+                )}
               </span>
               <ToggleGroup
                 variant="rating"

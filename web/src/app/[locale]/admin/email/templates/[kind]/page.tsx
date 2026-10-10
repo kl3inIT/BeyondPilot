@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { isEmailKind } from "@/features/email/email-kinds";
+import { hasKindDescription, isEmailKind } from "@/features/email/email-kinds";
 import { readEmailTemplate } from "@/features/email/email-queries";
 import { EmailTemplateEditor } from "@/features/email/email-template-editor";
 import { requireRole } from "@/lib/auth/session";
@@ -40,7 +40,7 @@ export default async function EmailTemplateRoute({
       key={template.version ?? 0}
       template={template}
       name={t(`kinds.${kind}.name`)}
-      description={t(`kinds.${kind}.description`)}
+      description={hasKindDescription(kind) ? t(`kinds.${kind}.description`) : undefined}
       operatorEmail={account.email}
     />
   );

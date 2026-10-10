@@ -60,7 +60,6 @@ function EmailMessageActions({ message }: { message: EmailMessage }) {
         onOpenChange={(open) => !open && setAsking(false)}
         title={t("title")}
         description={t("lead", { email: message.recipient })}
-        note={t("note")}
         confirmLabel={t("confirm")}
         cancelLabel={t("cancel")}
         pending={pending}

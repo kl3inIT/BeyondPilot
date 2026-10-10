@@ -33,10 +33,7 @@ async function EmailHeader({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <AdminPageTitle destination="email">{t("title")}</AdminPageTitle>
-          <p className="text-sm text-muted-foreground">{t("lead")}</p>
-        </div>
+        <AdminPageTitle destination="email">{t("title")}</AdminPageTitle>
         {action}
       </div>
       {ready === false && current !== "settings" && (

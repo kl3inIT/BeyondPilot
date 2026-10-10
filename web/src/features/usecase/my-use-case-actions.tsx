@@ -109,7 +109,6 @@ function MyUseCaseActions({ useCase }: MyUseCaseActionsProps) {
         onOpenChange={(open) => setConfirming(open ? "edit" : null)}
         title={t("editPublished.title")}
         description={t("editPublished.description")}
-        note={t("editPublished.note")}
         confirmLabel={t("editPublished.confirm")}
         cancelLabel={t("cancel")}
         pending={false}

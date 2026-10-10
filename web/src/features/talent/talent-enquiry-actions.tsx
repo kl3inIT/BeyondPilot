@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
@@ -35,6 +35,7 @@ function TalentEnquiryActions({ id }: { id: string }) {
   const t = useTranslations("Talent.mine.inbox");
   const notify = useNotify();
   const router = useRouter();
+  const noteId = useId();
   const [pending, setPending] = useState<Answer | null>(null);
   const [confirming, setConfirming] = useState<"decline" | "report" | null>(null);
 
@@ -53,32 +54,39 @@ function TalentEnquiryActions({ id }: { id: string }) {
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <Button
-        size="sm"
-        pending={pending === "accept"}
-        disabled={pending !== null}
-        onClick={() => answer("accept")}
-      >
-        {t("accept")}
-      </Button>
-      <Button
-        size="sm"
-        prominence="secondary"
-        disabled={pending !== null}
-        onClick={() => setConfirming("decline")}
-      >
-        {t("decline")}
-      </Button>
-      <Button
-        size="sm"
-        prominence="tertiary"
-        tone="danger"
-        disabled={pending !== null}
-        onClick={() => setConfirming("report")}
-      >
-        {t("report")}
-      </Button>
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          pending={pending === "accept"}
+          disabled={pending !== null}
+          aria-describedby={noteId}
+          onClick={() => answer("accept")}
+        >
+          {t("accept")}
+        </Button>
+        <Button
+          size="sm"
+          prominence="secondary"
+          disabled={pending !== null}
+          onClick={() => setConfirming("decline")}
+        >
+          {t("decline")}
+        </Button>
+        <Button
+          size="sm"
+          prominence="tertiary"
+          tone="danger"
+          disabled={pending !== null}
+          onClick={() => setConfirming("report")}
+        >
+          {t("report")}
+        </Button>
+      </div>
+      {/* Accepting does not ask first, so what it shares is said beside it. */}
+      <p id={noteId} className="text-xs text-muted-foreground">
+        {t("lead")}
+      </p>
       {confirming && (
         <ConfirmDialog
           open

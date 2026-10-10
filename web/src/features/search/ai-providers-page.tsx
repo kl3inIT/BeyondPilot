@@ -2,6 +2,7 @@ import { PlugZapIcon, ScanSearchIcon } from "lucide-react";
 import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
+import { HelpPopover } from "@/components/composites/help-popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -46,7 +47,11 @@ async function EmbeddingTab({ data }: { data: AiProviders }) {
         <SettingsBlock
           id="embedding-model"
           title={t("model.heading")}
-          lead={t("model.headingLead")}
+          help={
+            <HelpPopover label={t("model.headingHelp")}>
+              <p>{t("model.headingLead")}</p>
+            </HelpPopover>
+          }
           first
         >
           {embedding ? (
@@ -72,7 +77,12 @@ async function EmbeddingTab({ data }: { data: AiProviders }) {
               </div>
               <dl className="grid grid-cols-3 divide-x">
                 <div className="flex flex-col gap-0.5 px-4 py-3">
-                  <dt className="text-xs text-muted-foreground">{t("model.dimensions")}</dt>
+                  <dt className="flex items-center gap-1 text-xs text-muted-foreground">
+                    {t("model.dimensions")}
+                    <HelpPopover label={t("model.dimensionsHelp")}>
+                      <p>{t("model.dimensionsAbout")}</p>
+                    </HelpPopover>
+                  </dt>
                   <dd className="text-sm font-medium">{format.number(embedding.dimensions)}</dd>
                 </div>
                 <div className="flex flex-col gap-0.5 px-4 py-3">
@@ -136,7 +146,7 @@ async function EmbeddingTab({ data }: { data: AiProviders }) {
         </SettingsBlock>
 
         {data.providers.length > 0 && (
-          <SettingsBlock id="connected" title={t("connected.heading")} lead={t("connected.lead")}>
+          <SettingsBlock id="connected" title={t("connected.heading")}>
             <ul className="overflow-hidden rounded-lg border">
               {data.providers.map((provider) => {
                 const vendor = vendorOf(provider.vendor);
@@ -182,7 +192,7 @@ async function EmbeddingTab({ data }: { data: AiProviders }) {
           </SettingsBlock>
         )}
 
-        <SettingsBlock id="add-provider" title={t("add.heading")} lead={t("add.lead")}>
+        <SettingsBlock id="add-provider" title={t("add.heading")}>
           <ul className="grid gap-2 md:grid-cols-2">
             {data.vendors.map((vendor) => (
               <li
@@ -192,7 +202,9 @@ async function EmbeddingTab({ data }: { data: AiProviders }) {
                 <ProviderLogo vendor={vendor.id} />
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="text-sm font-medium">{t(`editor.vendor.${vendor.id}`)}</span>
-                  <span className="text-xs text-muted-foreground">{t(`add.${vendor.id}`)}</span>
+                  {vendor.id === "openrouter" && (
+                    <span className="text-xs text-muted-foreground">{t("add.openrouter")}</span>
+                  )}
                 </div>
                 <ProviderEditor vendor={vendor} />
               </li>

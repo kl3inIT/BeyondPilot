@@ -183,12 +183,7 @@ function EmailAppearanceForm({
           </form.Field>
           <form.AppField name="footer">
             {(field) => (
-              <field.TextareaField
-                label={t("footer")}
-                maxLength={500}
-                className="min-h-24"
-                description={t("footerHint")}
-              />
+              <field.TextareaField label={t("footer")} maxLength={500} className="min-h-24" />
             )}
           </form.AppField>
           <form.AppForm>

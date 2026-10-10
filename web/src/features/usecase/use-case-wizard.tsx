@@ -200,7 +200,7 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
       current={step}
       done={(name) => name !== "review" && !missing.includes(name)}
       onStep={(name) => void go(name)}
-      notes={[t("saveNote", { name: useCase.organizationName }), t("reviewNote")]}
+      notes={[t("saveNote", { name: useCase.organizationName })]}
     >
       {useCase.publishedAt && <UseCaseTabs area="workspace" id={useCase.id} current="brief" />}
       {problem === "changed" && (
@@ -238,7 +238,9 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
 
       <div className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}.title`)}</h1>
-        <p className="text-base text-muted-foreground">{t(`steps.${step}.lead`)}</p>
+        {(step === "challenge" || step === "requirements" || step === "review") && (
+          <p className="text-base text-muted-foreground">{t(`steps.${step}.lead`)}</p>
+        )}
         {step !== "review" && <p className="text-sm text-muted-foreground">{t("allRequired")}</p>}
       </div>
 

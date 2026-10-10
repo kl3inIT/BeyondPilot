@@ -128,21 +128,21 @@ function bodyOf(values: Values, version: number): SaveEmailSettings {
   };
 }
 
-/** One part of the settings: its title and what it is for beside its fields. */
+/** One part of the settings: its title, and what it is for when the title does not say, beside its fields. */
 function Section({
   title,
   what,
   children,
 }: {
   title: string;
-  what: string;
+  what?: string;
   children: React.ReactNode;
 }) {
   return (
     <section className="flex flex-col gap-x-12 gap-y-4 border-t pt-8 first:border-t-0 first:pt-0 lg:flex-row">
       <div className="flex flex-col gap-1 lg:w-72 lg:shrink-0">
         <h2 className="text-base font-medium">{title}</h2>
-        <p className="text-sm text-muted-foreground">{what}</p>
+        {what && <p className="text-sm text-muted-foreground">{what}</p>}
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-5 md:max-w-2xl">{children}</div>
     </section>
@@ -372,7 +372,7 @@ function EmailSettingsForm({
       </form.AppForm>
 
       <div className="flex flex-col gap-8">
-        <Section title={t("sender.title")} what={t("sender.what")}>
+        <Section title={t("sender.title")}>
           <div className="grid gap-5 sm:grid-cols-2">
             <form.AppField name="fromName">
               {(field) => <field.TextField label={t("sender.fromName")} maxLength={100} />}
@@ -386,7 +386,8 @@ function EmailSettingsForm({
                   autoCapitalize="none"
                   spellCheck={false}
                   maxLength={254}
-                  placeholder="no-reply@beyondpilot.ai"
+                  aria-describedby="from-address-hint"
+                  description={<span id="from-address-hint">{t("sender.fromAddressHint")}</span>}
                 />
               )}
             </form.AppField>
@@ -449,10 +450,11 @@ function EmailSettingsForm({
                   {(field) => (
                     <field.TextField
                       label={t("ses.region")}
-                      placeholder="ap-southeast-1"
                       autoCapitalize="none"
                       spellCheck={false}
                       maxLength={40}
+                      aria-describedby="ses-region-hint"
+                      description={<span id="ses-region-hint">{t("ses.regionHint")}</span>}
                     />
                   )}
                 </form.AppField>
@@ -490,8 +492,13 @@ function EmailSettingsForm({
                   type="password"
                   autoComplete="off"
                   maxLength={500}
-                  placeholder={current.resend.apiKeySet ? "••••••••••••" : "re_…"}
-                  description={secretHint(current.resend.apiKeySet, t("resend.apiKeyHint"))}
+                  placeholder={current.resend.apiKeySet ? "••••••••••••" : undefined}
+                  aria-describedby="resend-api-key-hint"
+                  description={
+                    <span id="resend-api-key-hint">
+                      {secretHint(current.resend.apiKeySet, t("resend.apiKeyHint"))}
+                    </span>
+                  }
                 />
               )}
             </form.AppField>
@@ -505,10 +512,11 @@ function EmailSettingsForm({
                     {(field) => (
                       <field.TextField
                         label={t("smtp.host")}
-                        placeholder="smtp.example.com"
                         autoCapitalize="none"
                         spellCheck={false}
                         maxLength={255}
+                        aria-describedby="smtp-host-hint"
+                        description={<span id="smtp-host-hint">{t("smtp.hostHint")}</span>}
                       />
                     )}
                   </form.AppField>
@@ -581,7 +589,7 @@ function EmailSettingsForm({
                     type="password"
                     autoComplete="off"
                     maxLength={500}
-                    placeholder={current.resend.webhookSecretSet ? "••••••••••••" : "whsec_…"}
+                    placeholder={current.resend.webhookSecretSet ? "••••••••••••" : undefined}
                     description={secretHint(
                       current.resend.webhookSecretSet,
                       t("reports.resendSecretHint"),
@@ -620,7 +628,6 @@ function EmailSettingsForm({
                     spellCheck={false}
                     maxLength={300}
                     className="font-mono"
-                    placeholder="arn:aws:sns:ap-southeast-1:123456789012:beyondpilot-email"
                     description={t("reports.topicArnHint")}
                   />
                 )}

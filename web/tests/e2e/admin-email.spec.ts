@@ -76,9 +76,7 @@ test.describe("admin email", () => {
     // Wording with a problem is not offered for saving, and the preview says it is behind.
     await expect(page.getByText("Fix the problem marked below to save")).toBeVisible();
     await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
-    await expect(
-      page.getByText("This is the last version that worked. Fix the problem to see yours."),
-    ).toBeVisible();
+    await expect(page.getByText("This is the last version that worked.")).toBeVisible();
     await expect(
       page.getByText("A test can be sent once the wording has no problems."),
     ).toBeVisible();

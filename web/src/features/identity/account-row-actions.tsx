@@ -105,20 +105,17 @@ function AccountRowActions({ account }: { account: AccountSummary }) {
   const confirmations = {
     disable: {
       title: t("confirm.disable.title"),
-      description: t("confirm.disable.lead"),
-      note: t("confirm.disable.note"),
+      description: t("confirm.disable.note"),
       confirmLabel: t("confirm.disable.confirm"),
     },
     makeOperator: {
       title: t("confirm.makeOperator.title", { name }),
-      description: t("confirm.makeOperator.lead"),
-      note: t("confirm.makeOperator.note"),
+      description: t("confirm.makeOperator.note"),
       confirmLabel: t("confirm.makeOperator.confirm"),
     },
     withdrawOperator: {
       title: t("confirm.withdrawOperator.title"),
-      description: t("confirm.withdrawOperator.lead"),
-      note: t("confirm.withdrawOperator.note"),
+      description: t("confirm.withdrawOperator.note"),
       confirmLabel: t("confirm.withdrawOperator.confirm"),
     },
   };

@@ -43,7 +43,6 @@ async function EmailSuppressionsPage({
       <DataTableEmpty
         icon={<SearchXIcon aria-hidden="true" />}
         title={t("suppressions.noMatch.title")}
-        description={t("suppressions.noMatch.description")}
       >
         <Button prominence="secondary" size="sm" href={siteRoutes.adminEmailSuppressions}>
           {t("suppressions.noMatch.clear")}

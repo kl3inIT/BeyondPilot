@@ -146,11 +146,7 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
           released={Boolean(head.releasedAt)}
         />
       ) : narrowed && data.items.length > 0 ? (
-        <DataTableEmpty
-          icon={<SearchXIcon aria-hidden="true" />}
-          title={t("noMatch.title")}
-          description={t("noMatch.description")}
-        >
+        <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
           <Button prominence="secondary" size="sm" href={base}>
             {t("noMatch.clear")}
           </Button>

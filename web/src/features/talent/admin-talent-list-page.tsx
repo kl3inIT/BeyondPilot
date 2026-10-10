@@ -53,31 +53,19 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
   const filtered = search.q.trim() !== "" || search.status !== null;
   const empty =
     rows.length > 0 ? null : search.q.trim() === "" && search.status === "in_review" ? (
-      <DataTableEmpty
-        icon={<UsersIcon aria-hidden="true" />}
-        title={t("queueEmpty.title")}
-        description={t("queueEmpty.description")}
-      >
+      <DataTableEmpty icon={<UsersIcon aria-hidden="true" />} title={t("queueEmpty.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.admin}>
           {t("queueEmpty.home")}
         </Button>
       </DataTableEmpty>
     ) : filtered ? (
-      <DataTableEmpty
-        icon={<SearchXIcon aria-hidden="true" />}
-        title={t("noMatch.title")}
-        description={t("noMatch.description")}
-      >
+      <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.adminTalent}>
           {t("noMatch.clear")}
         </Button>
       </DataTableEmpty>
     ) : (
-      <DataTableEmpty
-        icon={<UsersIcon aria-hidden="true" />}
-        title={t("empty.title")}
-        description={t("empty.description")}
-      />
+      <DataTableEmpty icon={<UsersIcon aria-hidden="true" />} title={t("empty.title")} />
     );
   const open = (row: (typeof rows)[number]) => (
     <TextButton href={row.href} aria-label={t("openNamed", { name: row.name })}>

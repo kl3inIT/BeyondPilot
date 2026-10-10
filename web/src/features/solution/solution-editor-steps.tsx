@@ -192,15 +192,16 @@ function BasicsStep({ draft, change, errorOf }: StepProps) {
         field="traction"
         label={t("fields.traction")}
         optional={t("optional")}
+        hint={t("fields.tractionHint")}
         counter={counter(draft.traction, limits.traction)}
       >
         <Textarea
           id={fieldId("traction")}
           rows={3}
           maxLength={limits.traction}
-          placeholder={t("fields.tractionPlaceholder")}
           value={draft.traction}
           onChange={(event) => change({ traction: event.target.value })}
+          aria-describedby={about("traction", undefined, true)}
         />
       </EditorField>
       <EditorField
@@ -298,19 +299,25 @@ function FitStep({ draft, change, errorOf }: StepProps) {
           onValueChange={(next) => change({ deployment: next })}
         />
       </EditorField>
-      <EditorField field="channels" label={t("fields.channels")} optional={t("optional")}>
+      <EditorField
+        field="channels"
+        label={t("fields.channels")}
+        optional={t("optional")}
+        hint={t("fields.channelsHint")}
+      >
         <Input
           id={fieldId("channels")}
           maxLength={limits.channels}
-          placeholder={t("fields.channelsPlaceholder")}
           value={draft.channels}
           onChange={(event) => change({ channels: event.target.value })}
+          aria-describedby={about("channels", undefined, true)}
         />
       </EditorField>
       <EditorField
         field="bestCustomerProfile"
         label={t("fields.bestCustomerProfile")}
         optional={t("optional")}
+        hint={t("fields.bestCustomerProfileHint")}
         counter={t("counter", {
           count: draft.bestCustomerProfile.length,
           max: limits.bestCustomerProfile,
@@ -320,9 +327,9 @@ function FitStep({ draft, change, errorOf }: StepProps) {
           id={fieldId("bestCustomerProfile")}
           rows={3}
           maxLength={limits.bestCustomerProfile}
-          placeholder={t("fields.bestCustomerProfilePlaceholder")}
           value={draft.bestCustomerProfile}
           onChange={(event) => change({ bestCustomerProfile: event.target.value })}
+          aria-describedby={about("bestCustomerProfile", undefined, true)}
         />
       </EditorField>
     </>
@@ -369,7 +376,6 @@ function EvidenceStep({
         type="url"
         inputMode="url"
         autoComplete="off"
-        placeholder="https://"
         maxLength={limits.link}
         value={draft[field]}
         onChange={(event) =>

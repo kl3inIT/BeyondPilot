@@ -112,40 +112,25 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
   const filtered = search.q.trim() !== "" || search.status !== null;
   const empty =
     rows.length > 0 ? null : queue ? (
-      <DataTableEmpty
-        icon={<Building2Icon aria-hidden="true" />}
-        title={t("queueEmpty.title")}
-        description={t("queueEmpty.description")}
-      >
+      <DataTableEmpty icon={<Building2Icon aria-hidden="true" />} title={t("queueEmpty.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.admin}>
           {t("queueEmpty.home")}
         </Button>
       </DataTableEmpty>
     ) : filtered ? (
-      <DataTableEmpty
-        icon={<SearchXIcon aria-hidden="true" />}
-        title={t("noMatch.title")}
-        description={t("noMatch.description")}
-      >
+      <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.adminOrganizations}>
           {t("noMatch.clear")}
         </Button>
       </DataTableEmpty>
     ) : (
-      <DataTableEmpty
-        icon={<Building2Icon aria-hidden="true" />}
-        title={t("empty.title")}
-        description={t("empty.description")}
-      />
+      <DataTableEmpty icon={<Building2Icon aria-hidden="true" />} title={t("empty.title")} />
     );
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <AdminPageTitle destination="organizations">{t("title")}</AdminPageTitle>
-          <p className="text-sm text-muted-foreground">{t("lead")}</p>
-        </div>
+        <AdminPageTitle destination="organizations">{t("title")}</AdminPageTitle>
         <AdminCreateOrganization />
       </div>
       <AdminOrganizationsToolbar />

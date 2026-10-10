@@ -42,7 +42,8 @@ function DataTable({ className, ...props }: React.ComponentProps<typeof Table>) 
 type DataTableEmptyProps = {
   icon: React.ReactNode;
   title: string;
-  description: string;
+  /** A line under the title, only when it says what the title and the action do not. */
+  description?: string;
   /** The one action that leads out of this state, for example clearing the search and filters. */
   children?: React.ReactNode;
 };
@@ -57,7 +58,7 @@ function DataTableEmpty({ icon, title, description, children }: DataTableEmptyPr
       <EmptyHeader>
         <EmptyMedia>{icon}</EmptyMedia>
         <EmptyTitle>{title}</EmptyTitle>
-        <EmptyDescription>{description}</EmptyDescription>
+        {description && <EmptyDescription>{description}</EmptyDescription>}
       </EmptyHeader>
       {children && <EmptyContent>{children}</EmptyContent>}
     </Empty>

@@ -64,9 +64,6 @@ function CustomerDeploymentCard({ deployment, organization }: CustomerDeployment
             <DialogTitle>{deployment.title}</DialogTitle>
             <DialogDescription>
               {t("lead", {
-                solution: deployment.solutionName,
-                organization: organization.name,
-                customer: deployment.customer,
                 stage: stage(deployment.stage),
                 day: format.dateTime(new Date(deployment.approvedAt), { dateStyle: "medium" }),
               })}

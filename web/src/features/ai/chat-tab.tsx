@@ -93,11 +93,7 @@ async function ChatTab({ data }: { data: ChatSettings }) {
         </SettingsBlock>
 
         {data.providers.length > 0 && (
-          <SettingsBlock
-            id="chat-connections"
-            title={t("chat.connections.heading")}
-            lead={t("chat.connections.lead")}
-          >
+          <SettingsBlock id="chat-connections" title={t("chat.connections.heading")}>
             <ul className="flex flex-col gap-2">
               {data.providers.map((provider, index) => (
                 <ConnectionCard
@@ -111,11 +107,7 @@ async function ChatTab({ data }: { data: ChatSettings }) {
           </SettingsBlock>
         )}
 
-        <SettingsBlock
-          id="add-chat-provider"
-          title={t("chat.add.heading")}
-          lead={t("chat.add.lead")}
-        >
+        <SettingsBlock id="add-chat-provider" title={t("chat.add.heading")}>
           <div className="flex flex-col gap-4">
             {presetGroups.map((group) => (
               <div
@@ -143,9 +135,12 @@ async function ChatTab({ data }: { data: ChatSettings }) {
                         <ChatLogo preset={preset.id} />
                         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                           <span className="text-sm font-medium">{preset.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {t(`chat.add.preset.${preset.id}`)}
-                          </span>
+                          {/* A vendor's name says what it is; a gateway's does not. */}
+                          {preset.group !== "vendors" && (
+                            <span className="text-xs text-muted-foreground">
+                              {t(`chat.add.preset.${preset.id}`)}
+                            </span>
+                          )}
                         </div>
                         <ConnectPreset preset={preset} />
                       </li>

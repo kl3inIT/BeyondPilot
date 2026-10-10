@@ -21,7 +21,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -170,25 +169,16 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
             </>
           )}
           {editable && solution.status === "in_review" && (
-            <>
-              <DropdownMenuGroup>
-                <DropdownMenuItem render={<Link href={review} />}>
-                  <EyeIcon aria-hidden="true" />
-                  {t("viewSent")}
-                </DropdownMenuItem>
-                <DropdownMenuItem render={<Link href={editor} />}>
-                  <PencilIcon className="self-start" aria-hidden="true" />
-                  <span className="flex flex-col">
-                    {t("edit")}
-                    <span className="text-xs text-muted-foreground">{t("editLive")}</span>
-                  </span>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>{t("inReview")}</DropdownMenuLabel>
-              </DropdownMenuGroup>
-            </>
+            <DropdownMenuGroup>
+              <DropdownMenuItem render={<Link href={review} />}>
+                <EyeIcon aria-hidden="true" />
+                {t("viewSent")}
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link href={editor} />}>
+                <PencilIcon aria-hidden="true" />
+                {t("edit")}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
           )}
           {editable && solution.status === "needs_changes" && (
             <DropdownMenuGroup>
@@ -211,18 +201,12 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
             </DropdownMenuGroup>
           )}
           {editable && solution.status === "approved" && solution.suspendedAt && (
-            <>
-              <DropdownMenuGroup>
-                <DropdownMenuItem render={<Link href={editor} />}>
-                  <PencilIcon aria-hidden="true" />
-                  {t("edit")}
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>{t("takenDown")}</DropdownMenuLabel>
-              </DropdownMenuGroup>
-            </>
+            <DropdownMenuGroup>
+              <DropdownMenuItem render={<Link href={editor} />}>
+                <PencilIcon aria-hidden="true" />
+                {t("edit")}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
           )}
           {editable && solution.status === "approved" && !solution.suspendedAt && (
             <>

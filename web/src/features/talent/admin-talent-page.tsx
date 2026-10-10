@@ -83,7 +83,10 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
               <h2 id="talent-decision" className="text-lg font-semibold">
                 {t(`decision.${state}.title`)}
               </h2>
-              <p className="text-sm text-muted-foreground">{t(`decision.${state}.lead`)}</p>
+              {/* A profile sent back or taken down says why in the note below. */}
+              {state !== "needs_changes" && state !== "suspended" && (
+                <p className="text-sm text-muted-foreground">{t(`decision.${state}.lead`)}</p>
+              )}
             </div>
             <div className="shrink-0 pt-1">
               <ReviewStatus state={state}>{status(state)}</ReviewStatus>
@@ -109,7 +112,6 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
           <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
             <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
               {sent && <span>{sent}</span>}
-              <span className="text-muted-foreground">{t("audited")}</span>
               {!profile.listed && <span className="text-muted-foreground">{t("unlisted")}</span>}
               {state === "approved" && profile.listed && (
                 <TextButton href={`${siteRoutes.talent}/${profile.slug}`}>{t("public")}</TextButton>

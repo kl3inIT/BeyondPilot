@@ -100,13 +100,7 @@ function OrganizationEntry({ mine, finding }: OrganizationEntryProps) {
             {t("request.withdraw")}
           </OrganizationAction>
         }
-        note={
-          request.claim
-            ? t("request.claimNote")
-            : request.organizationDomain
-              ? t("request.joinNoteDomain", { domain: request.organizationDomain })
-              : t("request.joinNote")
-        }
+        note={t(`request.${kind}Note`)}
       />
     );
   }

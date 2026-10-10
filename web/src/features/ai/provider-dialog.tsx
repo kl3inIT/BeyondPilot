@@ -224,18 +224,18 @@ function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialog
                 spellCheck={false}
                 maxLength={2048}
                 required
-                placeholder={
-                  adapterType === "anthropic" ? "https://api.anthropic.com" : "https://…/v1"
-                }
+                aria-describedby={adapterType !== "anthropic" ? `${id}-endpoint-hint` : undefined}
                 value={baseUrl}
                 onChange={(event) => {
                   setBaseUrl(event.target.value);
                   connectionChanged();
                 }}
               />
-              <FieldDescription>
-                {t(`endpointHint.${adapterType === "anthropic" ? "anthropic" : "openai"}`)}
-              </FieldDescription>
+              {adapterType !== "anthropic" && (
+                <FieldDescription id={`${id}-endpoint-hint`}>
+                  {t("endpointHint.openai")}
+                </FieldDescription>
+              )}
             </Field>
             <Field>
               <FieldLabel htmlFor={editing ? `${id}-key-action` : `${id}-key`}>

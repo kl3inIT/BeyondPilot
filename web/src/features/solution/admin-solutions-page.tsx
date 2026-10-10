@@ -77,21 +77,13 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
     rows.length > 0 ? null : search.q.trim() === "" &&
       search.status === "in_review" &&
       search.industry === null ? (
-      <DataTableEmpty
-        icon={<BoxesIcon aria-hidden="true" />}
-        title={t("queueEmpty.title")}
-        description={t("queueEmpty.description")}
-      >
+      <DataTableEmpty icon={<BoxesIcon aria-hidden="true" />} title={t("queueEmpty.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.admin}>
           {t("queueEmpty.home")}
         </Button>
       </DataTableEmpty>
     ) : filtered ? (
-      <DataTableEmpty
-        icon={<SearchXIcon aria-hidden="true" />}
-        title={t("noMatch.title")}
-        description={t("noMatch.description")}
-      >
+      <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.adminSolutions}>
           {t("noMatch.clear")}
         </Button>

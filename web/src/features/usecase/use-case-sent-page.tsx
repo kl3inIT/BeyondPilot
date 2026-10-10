@@ -39,13 +39,10 @@ function UseCaseSentPage({ useCase }: { useCase: MyUseCase }) {
     <div className="flex flex-1 justify-center bg-muted px-5 py-10 md:py-16">
       <LiveRefresh />
       <div className="flex w-full max-w-2xl flex-col gap-8 rounded-3xl border bg-background p-6 md:p-10">
-        <div className="flex flex-col gap-3">
-          <h1 className="flex items-center gap-3 text-3xl font-semibold tracking-tight">
-            <CircleCheckIcon className="size-8 text-success" aria-hidden="true" />
-            {t("title")}
-          </h1>
-          <p className="text-base text-muted-foreground">{t("lead")}</p>
-        </div>
+        <h1 className="flex items-center gap-3 text-3xl font-semibold tracking-tight">
+          <CircleCheckIcon className="size-8 text-success" aria-hidden="true" />
+          {t("title")}
+        </h1>
 
         <dl className="flex flex-col divide-y border-y text-sm">
           {rows.map((row) => (

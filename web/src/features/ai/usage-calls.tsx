@@ -5,7 +5,7 @@ import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { DataTable, DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { AiUsageCallList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -113,11 +113,7 @@ async function UsageCallsPage({
     search.outcome !== null;
   const empty =
     rows.length > 0 ? null : filtered ? (
-      <DataTableEmpty
-        icon={<SearchXIcon aria-hidden="true" />}
-        title={t("noMatch.title")}
-        description={t("noMatch.description")}
-      >
+      <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
         <Button
           prominence="secondary"
           size="sm"
@@ -144,7 +140,7 @@ async function UsageCallsPage({
         models={calls.models}
       />
 
-      {/* From 768px: a table. The full date and time is behind the short one. */}
+      {/* From 768px: a table. A click on the short time opens the full date and time. */}
       <DataTable className="hidden md:block">
         <TableHeader>
           <TableRow>
@@ -161,16 +157,21 @@ async function UsageCallsPage({
           {rows.map((row) => (
             <TableRow key={row.key}>
               <TableCell>
-                <Tooltip>
-                  <TooltipTrigger
-                    render={<time dateTime={row.at} className="text-muted-foreground" />}
+                <Popover>
+                  <PopoverTrigger
+                    render={
+                      <button
+                        type="button"
+                        className="text-muted-foreground outline-none hover:underline focus-visible:underline"
+                      />
+                    }
                   >
-                    {row.time}
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" align="start">
+                    <time dateTime={row.at}>{row.time}</time>
+                  </PopoverTrigger>
+                  <PopoverContent side="bottom" align="start">
                     {row.fullTime}
-                  </TooltipContent>
-                </Tooltip>
+                  </PopoverContent>
+                </Popover>
               </TableCell>
               <TableCell>{row.task}</TableCell>
               <TableCell>

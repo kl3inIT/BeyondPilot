@@ -476,7 +476,6 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                 title={t("proof.title")}
                 icon={<BadgeCheckIcon aria-hidden="true" />}
                 tone="proof"
-                description={<p className="text-sm text-muted-foreground">{t("proof.lead")}</p>}
               >
                 {/* Each claim under its kind, with who stands behind it. */}
                 {solution.backing?.program && (
@@ -521,9 +520,6 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
               <SolutionSection
                 title={t("references.title")}
                 icon={<UsersIcon aria-hidden="true" />}
-                description={
-                  <p className="text-sm text-muted-foreground">{t("references.lead")}</p>
-                }
               >
                 <ul className="flex flex-col gap-3">
                   {solution.customerDeployments.map((item) => (

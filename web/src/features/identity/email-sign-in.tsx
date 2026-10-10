@@ -74,7 +74,6 @@ function EmailSignIn({ initialEmail = "", disabled, onPendingChange, onSent }: E
           autoComplete="email"
           autoCapitalize="none"
           spellCheck={false}
-          placeholder={t("emailPlaceholder")}
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           aria-invalid={problem === "invalid" || undefined}

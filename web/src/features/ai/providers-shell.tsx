@@ -22,10 +22,7 @@ async function ProvidersShell({ tab, children }: { tab: ProvidersTab; children: 
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-col gap-1">
-        <AdminPageTitle destination="aiProviders">{t("title")}</AdminPageTitle>
-        <p className="text-sm text-muted-foreground">{t("lead")}</p>
-      </div>
+      <AdminPageTitle destination="aiProviders">{t("title")}</AdminPageTitle>
 
       <nav aria-label={t("tabs")} className="flex items-end gap-5 border-b">
         {tabs.map((each) => (

@@ -97,11 +97,7 @@ function InviteReviewer({ programId, programName }: { programId: string; program
                   setInvalid(false);
                 }}
               />
-              {invalid ? (
-                <FieldError>{t("invalid")}</FieldError>
-              ) : (
-                <FieldDescription>{t("note")}</FieldDescription>
-              )}
+              {invalid && <FieldError>{t("invalid")}</FieldError>}
             </Field>
             <DialogFooter>
               <Button prominence="secondary" type="button" onClick={() => setOpen(false)}>
@@ -204,6 +200,7 @@ function CriteriaEditor({
   criteria: ReviewCriterion[];
 }) {
   const t = useTranslations("Review.criteria");
+  const form = useTranslations("Form");
   const notify = useNotify();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -259,36 +256,49 @@ function CriteriaEditor({
           <ol className="flex flex-col gap-3 overflow-y-auto">
             {drafts.map((draft, index) => (
               <li key={index} className="flex items-start gap-2">
-                <span className="mt-2 w-5 text-sm text-muted-foreground tabular-nums">
-                  {index + 1}
-                </span>
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <Input
-                    aria-label={t("name", { number: index + 1 })}
-                    placeholder={t("namePlaceholder")}
-                    value={draft.name}
-                    maxLength={80}
-                    onChange={(event) =>
-                      setDrafts(
-                        drafts.map((item, at) =>
-                          at === index ? { ...item, name: event.target.value } : item,
-                        ),
-                      )
-                    }
-                  />
-                  <Input
-                    aria-label={t("description", { number: index + 1 })}
-                    placeholder={t("descriptionPlaceholder")}
-                    value={draft.description}
-                    maxLength={300}
-                    onChange={(event) =>
-                      setDrafts(
-                        drafts.map((item, at) =>
-                          at === index ? { ...item, description: event.target.value } : item,
-                        ),
-                      )
-                    }
-                  />
+                <span className="w-5 text-sm text-muted-foreground tabular-nums">{index + 1}</span>
+                <div className="flex flex-1 flex-col gap-3">
+                  <Field>
+                    <FieldLabel htmlFor={`criterion-${index}-name`}>{t("nameLabel")}</FieldLabel>
+                    <Input
+                      id={`criterion-${index}-name`}
+                      aria-describedby={`criterion-${index}-name-hint`}
+                      value={draft.name}
+                      maxLength={80}
+                      onChange={(event) =>
+                        setDrafts(
+                          drafts.map((item, at) =>
+                            at === index ? { ...item, name: event.target.value } : item,
+                          ),
+                        )
+                      }
+                    />
+                    <FieldDescription id={`criterion-${index}-name-hint`}>
+                      {t("nameHint")}
+                    </FieldDescription>
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor={`criterion-${index}-description`}>
+                      {t("descriptionLabel")}
+                      <span className="font-normal text-muted-foreground">{form("optional")}</span>
+                    </FieldLabel>
+                    <Input
+                      id={`criterion-${index}-description`}
+                      aria-describedby={`criterion-${index}-description-hint`}
+                      value={draft.description}
+                      maxLength={300}
+                      onChange={(event) =>
+                        setDrafts(
+                          drafts.map((item, at) =>
+                            at === index ? { ...item, description: event.target.value } : item,
+                          ),
+                        )
+                      }
+                    />
+                    <FieldDescription id={`criterion-${index}-description-hint`}>
+                      {t("descriptionHint")}
+                    </FieldDescription>
+                  </Field>
                 </div>
                 <IconButton
                   aria-label={t("remove", { number: index + 1 })}

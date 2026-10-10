@@ -101,16 +101,16 @@ function VerifiedDomainField({
         autoComplete="off"
         spellCheck={false}
         maxLength={253}
-        placeholder="example.com"
         value={domain.text}
         disabled={disabled}
         aria-invalid={invalid || undefined}
+        aria-describedby={invalid ? undefined : `${id}-hint`}
         onChange={(event) => domain.change(event.target.value)}
       />
       {domain.problem ? (
         <FieldError>{problems[domain.problem]}</FieldError>
       ) : (
-        <FieldDescription>{hint}</FieldDescription>
+        <FieldDescription id={`${id}-hint`}>{hint}</FieldDescription>
       )}
     </Field>
   );

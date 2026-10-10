@@ -35,6 +35,7 @@ type MatchingRemoveProps = {
 function MatchingRemove({ candidate, pending, onCancel, onRemove }: MatchingRemoveProps) {
   const t = useTranslations("Matching.remove");
   const titleId = useId();
+  const noteId = useId();
   const [reason, setReason] = useState<RemoveMatchingCandidate["reason"] | null>(null);
   const [note, setNote] = useState("");
 
@@ -75,14 +76,18 @@ function MatchingRemove({ candidate, pending, onCancel, onRemove }: MatchingRemo
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
-      <Input
-        aria-label={t("note")}
-        placeholder={t("note")}
-        maxLength={MAX_NOTE}
-        value={note}
-        disabled={pending}
-        onChange={(event) => setNote(event.target.value)}
-      />
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor={noteId} className="text-sm font-medium">
+          {t("note")}
+        </label>
+        <Input
+          id={noteId}
+          maxLength={MAX_NOTE}
+          value={note}
+          disabled={pending}
+          onChange={(event) => setNote(event.target.value)}
+        />
+      </div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <p className="flex-1 text-sm text-muted-foreground">{t("foot")}</p>
         <Button

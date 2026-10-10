@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { useShortcuts } from "@/hooks/use-shortcuts";
@@ -130,7 +130,6 @@ function SolutionReview({ solution, nextHref }: SolutionReviewProps) {
                 value={sendBackReason}
                 onChange={(event) => setSendBackReason(event.target.value)}
               />
-              <FieldDescription>{t("messageHint")}</FieldDescription>
             </Field>
             <DialogFooter>
               <Button
