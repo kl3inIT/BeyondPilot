@@ -6669,6 +6669,7 @@
         "brief": "Read the brief: {count, plural, one {# requirement} other {# requirements}}",
         "search": "Searched the solutions on BeyondPilot",
         "reading": "Read {total, plural, one {# solution} other {# solutions}} closely",
+        "readingEach": "Read the closest ones in full",
         "matches": "{shown, plural, one {# matches} other {# match}}"
       }
     },

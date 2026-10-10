@@ -6669,6 +6669,7 @@
         "brief": "Đọc đề bài: {count} yêu cầu",
         "search": "Tìm trong các giải pháp trên BeyondPilot",
         "reading": "Đọc kỹ {total} giải pháp",
+        "readingEach": "Đọc kỹ những giải pháp gần nhất",
         "matches": "{shown} giải pháp phù hợp"
       }
     },

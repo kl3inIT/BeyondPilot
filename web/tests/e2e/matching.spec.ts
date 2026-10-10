@@ -203,8 +203,8 @@ test.describe("solutions matched to a use case", () => {
     await expect(row(page, "Sentosa Finance").getByText(/could not be read/)).toHaveCount(0);
     await picture(page, testInfo, "list");
 
-    // What the run did stays behind one line: its stages, each with a number the member is answered,
-    // and neither the model nor how long a stage took.
+    // What the run did stays behind one line: its stages, without how many solutions were read (that
+    // counts those the list does not show a member), the model or how long a stage took.
     await expect(page.getByRole("list", { name: "How AI found these" })).toHaveCount(0);
     await page.getByRole("button", { name: "How AI found these" }).click();
     await expect(
@@ -212,7 +212,7 @@ test.describe("solutions matched to a use case", () => {
     ).toHaveText([
       "Read the brief: 3 requirements",
       "Searched the solutions on BeyondPilot",
-      "Read 6 solutions closely",
+      "Read the closest ones in full",
       "3 match",
     ]);
     await expectNoSeriousA11yViolations(page);

@@ -104,14 +104,15 @@ function RunStages({ at, judged, total }: RunStagesProps) {
 /**
  * What the last run did, behind one quiet line: the stages it went through, each with its number: how
  * many requirements it read in the brief, how many solutions it read closely, and how many of them
- * match. The numbers are those every reader of the page is answered. An operator also reads how long
- * each stage took and which model read the solutions, when the answer holds them.
+ * match. How many solutions were read is the operators': it counts those put in no group, which the
+ * list does not show a member. An operator also reads how long each stage took and which model read
+ * the solutions, when the answer holds them.
  */
 function RunFound({ matching }: { matching: Matching }) {
   const t = useTranslations("Matching.run.found");
   const format = useFormatter();
   const [open, setOpen] = useState(false);
-  const { run, steps, requirements, candidates } = matching;
+  const { run, steps, requirements, candidates, operator } = matching;
 
   /** How long a step of the run took, in seconds, or in minutes once it is more than a minute and a half. */
   const took = (name: MatchingStep["name"]) => {
@@ -137,7 +138,7 @@ function RunFound({ matching }: { matching: Matching }) {
     { name: "search", text: t("search"), more: took("candidates") },
     {
       name: "reading",
-      text: t("reading", { total: run?.total ?? 0 }),
+      text: operator ? t("reading", { total: run?.total ?? 0 }) : t("readingEach"),
       more: [run?.modelName, took("judgment")].filter(Boolean).join(" · "),
     },
     { name: "matches", text: t("matches", { shown: matchesOf(candidates).matches }), more: "" },
