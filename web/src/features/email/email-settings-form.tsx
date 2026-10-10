@@ -139,8 +139,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-x-12 gap-y-4 border-t pt-8 first:border-t-0 first:pt-0 md:flex-row">
-      <div className="flex flex-col gap-1 md:w-72 md:shrink-0">
+    <section className="flex flex-col gap-x-12 gap-y-4 border-t pt-8 first:border-t-0 first:pt-0 lg:flex-row">
+      <div className="flex flex-col gap-1 lg:w-72 lg:shrink-0">
         <h2 className="text-base font-medium">{title}</h2>
         <p className="text-sm text-muted-foreground">{what}</p>
       </div>

@@ -1,4 +1,4 @@
-/** One block of an Admin › AI screen: what it is for on the left from 768px, its content on the right. */
+/** One block of an Admin › AI screen: what it is for on the left from 1024px, its content on the right. */
 function SettingsBlock({
   id,
   title,
@@ -15,9 +15,9 @@ function SettingsBlock({
   return (
     <section
       aria-labelledby={id}
-      className={`flex flex-col gap-4 md:flex-row md:gap-12 ${first ? "" : "border-t pt-8"}`}
+      className={`flex flex-col gap-4 lg:flex-row lg:gap-12 ${first ? "" : "border-t pt-8"}`}
     >
-      <div className="flex flex-col gap-1 md:w-65 md:shrink-0">
+      <div className="flex flex-col gap-1 lg:w-65 lg:shrink-0">
         <h2 id={id} className="text-base font-medium">
           {title}
         </h2>
