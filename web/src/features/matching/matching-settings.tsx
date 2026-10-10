@@ -18,6 +18,7 @@ import {
   InputGroupText,
 } from "@/components/ui/input-group";
 import { SettingsBlock } from "@/features/ai/settings-block";
+import { MatchingAdminTabs } from "@/features/matching/matching-admin-tabs";
 import { useNotify } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -134,7 +135,7 @@ function LimitField({
 }
 
 /**
- * Admin › AI › Matching: the limits every run of matching works within, as one form. Saving sends
+ * Admin › AI › Matching, the Limits tab: the limits every run of matching works within, as one form. Saving sends
  * back the version that was read; when someone else saved meanwhile, the form takes their values
  * and says so, and the operator makes the change again.
  */
@@ -224,10 +225,9 @@ function MatchingSettingsPage({ settings }: { settings: MatchingSettings }) {
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8">
-      <div className="flex flex-col gap-1">
-        <AdminPageTitle destination="aiMatching">{t("title")}</AdminPageTitle>
-        <p className="max-w-prose text-sm text-muted-foreground">{t("lead")}</p>
-      </div>
+      <AdminPageTitle destination="aiMatching">{t("title")}</AdminPageTitle>
+      <MatchingAdminTabs current="limits" />
+      <p className="max-w-prose text-sm text-muted-foreground">{t("lead")}</p>
 
       <form
         noValidate
