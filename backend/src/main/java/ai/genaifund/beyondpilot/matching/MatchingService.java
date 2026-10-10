@@ -32,6 +32,7 @@ import ai.genaifund.beyondpilot.search.SolutionEvidence;
 import ai.genaifund.beyondpilot.search.SolutionEvidence.Shown;
 import ai.genaifund.beyondpilot.solution.IndexedSolution;
 import ai.genaifund.beyondpilot.solution.SolutionDirectory;
+import ai.genaifund.beyondpilot.solution.SolutionMaterial;
 import ai.genaifund.beyondpilot.usecase.UseCaseBrief;
 import ai.genaifund.beyondpilot.usecase.UseCaseDirectory;
 import org.jspecify.annotations.Nullable;
@@ -295,7 +296,11 @@ public class MatchingService {
 		UUID useCaseId = access.brief().id();
 		boolean operator = access.operator();
 		List<Candidate> kept = matching.candidates(useCaseId);
-		Map<UUID, Shown> shown = evidence.shown(kept.stream().map(Candidate::solutionId).toList());
+		List<UUID> solutionIds = kept.stream().map(Candidate::solutionId).toList();
+		Map<UUID, Shown> shown = evidence.shown(solutionIds);
+		// What a solution has now decides which of its sources is said to be unread, and where a web page opens.
+		Map<UUID, SolutionMaterial> materials = solutions.materials(solutionIds);
+		Map<UUID, Map<Integer, String>> webPages = evidence.webPages(solutionIds);
 		// Who removed what is shown to both sides, by the name each person has now.
 		Map<UUID, Person> people = identity.people(kept.stream()
 			.filter(candidate -> MatchingRepository.REMOVED.equals(candidate.decision()))
@@ -315,15 +320,21 @@ public class MatchingService {
 			// A member is not told which operator removed a candidate, only that GenAI Fund did.
 			Person remover = removed && candidate.decidedBy() != null && (operator || !candidate.decidedByOperator())
 					? people.get(candidate.decidedBy()) : null;
+			SolutionMaterial material = materials.get(candidate.solutionId());
+			Map<Integer, String> pages = webPages.getOrDefault(candidate.solutionId(), Map.of());
 			candidates.add(new MatchingResponse.Candidate(candidate.id(), candidate.solutionId(), solution.slug(),
 					solution.name(), solution.organizationName(), solution.logoFileId(), solution.country(),
 					solution.maturity(), solution.listed(), candidate.origin(),
 					candidate.bucket(), candidate.requiredMet(), candidate.requiredTotal(), candidate.decision(),
 					candidate.reason(), candidate.note(), remover == null ? null : remover.label(),
 					removed ? candidate.decidedByOperator() : null, removed ? candidate.decidedAt() : null,
-					candidate.judged(), candidate.summary(), candidate.unread(),
-					findings(candidate.findings().get("requirements")), finding(candidate.findings().get("problem")),
-					finding(candidate.findings().get("industry")), finding(candidate.findings().get("technology"))));
+					candidate.judged(), candidate.summary(),
+					Sources.unread(candidate.unread(), material != null && material.deck(),
+							material != null && material.website()),
+					findings(candidate.findings().get("requirements"), pages),
+					finding(candidate.findings().get("problem"), pages),
+					finding(candidate.findings().get("industry"), pages),
+					finding(candidate.findings().get("technology"), pages)));
 		}
 		RunState last = matching.lastRun(useCaseId).orElse(null);
 		int total = candidates.size();
@@ -373,11 +384,11 @@ public class MatchingService {
 		return PROVIDER;
 	}
 
-	private static List<MatchingResponse.Finding> findings(@Nullable Object kept) {
+	private static List<MatchingResponse.Finding> findings(@Nullable Object kept, Map<Integer, String> webPages) {
 		List<MatchingResponse.Finding> findings = new ArrayList<>();
 		if (kept instanceof List<?> list) {
 			for (Object one : list) {
-				MatchingResponse.Finding finding = finding(one);
+				MatchingResponse.Finding finding = finding(one, webPages);
 				if (finding != null) {
 					findings.add(finding);
 				}
@@ -386,14 +397,20 @@ public class MatchingService {
 		return findings;
 	}
 
-	/** One finding as it was kept; a judgment made before reasons were kept has none. */
-	private static MatchingResponse.@Nullable Finding finding(@Nullable Object kept) {
+	/**
+	 * One finding as it was kept, with the address of the web page it quotes when that page is kept; a judgment made
+	 * before reasons were kept has none.
+	 * @param webPages the address of each web page of the solution, by its place among the site's
+	 */
+	private static MatchingResponse.@Nullable Finding finding(@Nullable Object kept, Map<Integer, String> webPages) {
 		if (!(kept instanceof Map<?, ?> map)) {
 			return null;
 		}
+		String source = text(map.get("source"), "");
 		return new MatchingResponse.Finding(map.get("requirement") instanceof Number place ? place.intValue() : null,
-				text(map.get("status"), Judgment.NOT_SHOWN), text(map.get("quote"), ""), text(map.get("source"), ""),
-				text(map.get("reason"), ""), text(map.get("quoteState"), Quotes.NONE));
+				text(map.get("status"), Judgment.NOT_SHOWN), text(map.get("quote"), ""), source,
+				Sources.webPage(source, webPages), text(map.get("reason"), ""),
+				text(map.get("quoteState"), Quotes.NONE));
 	}
 
 	private static String text(@Nullable Object value, String otherwise) {

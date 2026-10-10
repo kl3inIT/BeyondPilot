@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.search.persistence;
 import java.sql.Array;
 import java.sql.Types;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -157,6 +158,23 @@ public class SearchPassageRepository {
 					row.getString("locator"), row.getString("heading"), row.getString("text"),
 					row.getString("reading")))
 			.list();
+	}
+
+	/** The address of each web page kept for these solutions, by solution and by the page's place among the site's. */
+	public Map<UUID, Map<Integer, String>> webPages(Collection<UUID> solutionIds) {
+		Map<UUID, Map<Integer, String>> pages = new LinkedHashMap<>();
+		if (solutionIds.isEmpty()) {
+			return pages;
+		}
+		jdbc.sql("""
+				select distinct solution_id, page, locator from search_passage
+				where source = 'website' and locator is not null and solution_id in (:solutionIds)
+				order by solution_id, page, locator
+				""").param("solutionIds", solutionIds).query(row -> {
+			pages.computeIfAbsent(row.getObject("solution_id", UUID.class), solution -> new LinkedHashMap<>())
+				.putIfAbsent(row.getInt("page"), row.getString("locator"));
+		});
+		return pages;
 	}
 
 	/** Reciprocal rank fusion's constant, as the index fuses its rankings. */

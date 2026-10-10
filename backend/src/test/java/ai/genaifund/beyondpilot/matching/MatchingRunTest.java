@@ -466,6 +466,37 @@ class MatchingRunTest {
 		assertProblem(call("PUT", operator, limits, change), 400, "REQUEST_INVALID");
 		assertThat(JsonPath.<Integer>read(body(call("GET", operator, limits, null).expectStatus().isOk()), "$.parallel"))
 			.isEqualTo(16);
+
+		// A reader is told that a source could not be read only when the solution has it. This one names a website
+		// nothing read and has no deck: a judgment kept before the rule, which says the deck held no text, answers the
+		// website alone.
+		String mine = "$.candidates[?(@.solutionId == '" + solution + "')]";
+		jdbc.sql("""
+				update matching_candidate
+				set unread = array['deck', 'website'], findings = jsonb_set(findings, '{industry,source}', '"website 1"')
+				where use_case_id = ? and solution_id = ?
+				""").param(useCase).param(solution).update();
+		String told = body(call("GET", buyer, path, null).expectStatus().isOk());
+		assertThat(JsonPath.<List<List<String>>>read(told, mine + ".unread")).containsExactly(List.of("website"));
+		// A quote from a page of the website opens at the address kept for that page; a deck page has none.
+		assertThat(JsonPath.<List<Object>>read(told, mine + ".industry.sourceUrl")).containsExactly((Object) null);
+		webPage(solution, "https://example.test/claims");
+		String linked = body(call("GET", buyer, path, null).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(linked, mine + ".industry.sourceUrl"))
+			.containsExactly("https://example.test/claims");
+		assertThat(JsonPath.<List<Object>>read(linked, mine + ".findings[0].sourceUrl")).containsExactly((Object) null);
+		// An address that is not a web address is never answered.
+		webPage(solution, "javascript:alert(1)");
+		assertThat(JsonPath.<List<Object>>read(body(call("GET", buyer, path, null).expectStatus().isOk()),
+				mine + ".industry.sourceUrl"))
+			.containsExactly((Object) null);
+	}
+
+	/** Keeps one page of the solution's website, as the loaded passages are kept, at this address. */
+	private void webPage(UUID solution, String address) {
+		passages.replace(solution, SearchPassageRepository.WEBSITE, "loaded",
+				List.of(new Passage(SearchPassageRepository.WEBSITE, 1, 0, address, "Claims Desk, website",
+						"Claims Desk answers calls and chats for insurers.", SearchPassageRepository.READ_AS_TEXT)));
 	}
 
 	/** The next line of a stream of events; a stream that says nothing in time fails the test. */
