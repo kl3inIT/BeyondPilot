@@ -8,20 +8,30 @@ import {
   adminProgramRoute,
 } from "@/lib/site";
 
-/** The screens of one program in the admin: its Settings, its form's questions, its applications and its judges. */
+/**
+ * The screens of one program in the admin: its Settings and its form's questions, and, for a program
+ * that takes applications here, its applications and its judges. One that takes none has neither.
+ */
 async function ProgramTabs({
   id,
   current,
+  applications,
 }: {
   id: string;
   current: "settings" | "questions" | "applications" | "reviewers";
+  /** Whether the program takes applications on BeyondPilot. */
+  applications: boolean;
 }) {
   const t = await getTranslations("Admin.programs.tabs");
   const tabs = [
     { key: "settings", href: adminProgramRoute(id) },
     { key: "questions", href: adminProgramQuestionsRoute(id) },
-    { key: "applications", href: adminProgramApplicationsRoute(id) },
-    { key: "reviewers", href: adminProgramReviewersRoute(id) },
+    ...(applications
+      ? ([
+          { key: "applications", href: adminProgramApplicationsRoute(id) },
+          { key: "reviewers", href: adminProgramReviewersRoute(id) },
+        ] as const)
+      : []),
   ] as const;
   return (
     <nav aria-label={t("label")} className="border-b">

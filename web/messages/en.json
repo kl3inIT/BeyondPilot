@@ -394,6 +394,12 @@
     "deny": "Deny",
     "allow": "Allow",
     "switchAccount": "Not you? Switch account",
+    "expired": {
+      "title": "This connection request has ended",
+      "lead": "It has expired, or it was already answered.",
+      "next": "Go back to your AI app and connect to BeyondPilot again.",
+      "home": "Go to BeyondPilot"
+    },
     "refusedTitle": "{app} cannot connect to BeyondPilot",
     "refusedLead": "Only GenAI Fund operators can connect.",
     "signedInAs": "Signed in as {person}",
@@ -607,7 +613,7 @@
         },
         "applications": {
           "title": "Applications",
-          "what": "When applications are taken and how many teams go through.",
+          "what": "When applications are taken and how many teams go through. A program that takes them here gets its Applications and Reviewers screens.",
           "takes": "Applications are taken on BeyondPilot",
           "opens": "Opens",
           "closes": "Closes",
@@ -5993,7 +5999,11 @@
       "metaTitle": "Application",
       "back": "{program}",
       "position": "{place} of {total}",
+      "positionLeft": "{place} of {total} · {left, plural, =0 {none left to score} one {# left to score} other {# left to score}}",
+      "previous": "Previous",
       "next": "Next application",
+      "nextToScore": "Next to score",
+      "allScored": "All scored",
       "decision": {
         "under_review": "Under review",
         "shortlisted": "Shortlisted",

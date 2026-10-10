@@ -39,7 +39,7 @@ export default async function ProgramReviewersRoute({
           {program.status === "published" ? t("settings.published") : t("state.draft")}
         </Badge>
       </div>
-      <ProgramTabs id={id} current="reviewers" />
+      <ProgramTabs id={id} current="reviewers" applications />
       <ReviewersPage
         programId={id}
         programName={program.name}
