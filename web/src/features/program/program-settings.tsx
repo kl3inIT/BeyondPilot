@@ -4,9 +4,10 @@ import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { LockIcon, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { LeaveGuard } from "@/components/composites/leave-guard";
 import { setServerErrors, useAppForm, type ServerErrors } from "@/components/form/app-form";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -88,36 +89,6 @@ const refusals = [
 
 function isRefusal(code: string): code is (typeof refusals)[number] {
   return (refusals as readonly string[]).includes(code);
-}
-
-/**
- * Asks before the page is left while it holds unsaved changes: closing or reloading the tab, and
- * following a link inside the app, which the browser does not ask about.
- */
-function useLeaveGuard(dirty: boolean, question: string) {
-  useEffect(() => {
-    if (!dirty) {
-      return;
-    }
-    const unload = (event: BeforeUnloadEvent) => event.preventDefault();
-    const click = (event: MouseEvent) => {
-      const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
-      const href = link?.getAttribute("href") ?? "";
-      if (!link || href.startsWith("#") || link.getAttribute("target") === "_blank") {
-        return;
-      }
-      if (!window.confirm(question)) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    };
-    window.addEventListener("beforeunload", unload);
-    document.addEventListener("click", click, true);
-    return () => {
-      window.removeEventListener("beforeunload", unload);
-      document.removeEventListener("click", click, true);
-    };
-  }, [dirty, question]);
 }
 
 /** Which key date or event a dialog edits: its place in the list, or a new one. */
@@ -211,7 +182,6 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
   }
 
   const dirty = useStore(form.store, (formState) => formState.isDirty);
-  useLeaveGuard(dirty, t("leave"));
 
   const draft = program.status === "draft";
   const state = programState({ status: program.status, phase: "upcoming" });
@@ -242,7 +212,8 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="hidden items-center gap-2 md:flex">
+          {/* With unsaved changes these move to the bar that stays at the foot of the screen. */}
+          <div className={dirty ? "hidden" : "hidden items-center gap-2 md:flex"}>
             <form.AppForm>
               <form.SubmitButton prominence={draft ? "secondary" : "primary"}>
                 {t("save")}
@@ -587,8 +558,17 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
         </SettingsSection>
       </div>
 
-      {/* Below 768px the actions stay at the foot of the screen while the form scrolls. */}
-      <div className="fixed inset-x-0 bottom-0 z-10 flex flex-col gap-2 border-t bg-background px-4 pt-3 pb-6 md:hidden">
+      {/*
+        The actions stay at the foot of the screen while the form scrolls: always below 768px, and
+        from there up while there are unsaved changes, which the header's own actions scroll away from.
+      */}
+      <div
+        className={
+          dirty
+            ? "fixed inset-x-0 bottom-0 z-10 flex flex-col gap-2 border-t bg-background px-4 pt-3 pb-6 md:sticky md:inset-x-auto md:-mx-6 md:flex-row md:items-center md:justify-end md:px-6 md:py-3 lg:-mx-8 lg:px-8"
+            : "fixed inset-x-0 bottom-0 z-10 flex flex-col gap-2 border-t bg-background px-4 pt-3 pb-6 md:hidden"
+        }
+      >
         {draft && (
           <form.Subscribe selector={(formState) => missingToPublish(formState.values).length}>
             {(missing) =>
@@ -614,6 +594,15 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
           )}
         </div>
       </div>
+
+      <LeaveGuard
+        active={dirty}
+        back
+        title={t("leave.title")}
+        description={t("leave.lead")}
+        leaveLabel={t("leave.leave")}
+        stayLabel={t("leave.stay")}
+      />
 
       {keyDate && (
         <KeyDateDialog

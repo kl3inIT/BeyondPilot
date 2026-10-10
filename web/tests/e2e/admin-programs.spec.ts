@@ -219,8 +219,15 @@ test.describe("admin programs", () => {
     await expect(page.getByText("Demo night")).toBeVisible();
     // Until Settings is saved, the date is marked, and leaving the page asks first.
     await expect(page.getByText("Not saved yet")).toBeVisible();
-    page.once("dialog", (question) => void question.dismiss());
     await page.getByRole("link", { name: "Preview" }).click();
+    const leaving = page.getByRole("alertdialog");
+    await expect(leaving).toContainText("Leave without saving?");
+    await leaving.getByRole("button", { name: "Stay" }).click();
+    await expect(page).toHaveURL(`/admin/programs/${draft}/settings`);
+    // Back asks too, and staying keeps what was typed.
+    await page.goBack();
+    await expect(leaving).toContainText("Leave without saving?");
+    await leaving.getByRole("button", { name: "Stay" }).click();
     await expect(page).toHaveURL(`/admin/programs/${draft}/settings`);
     await expect(page.getByText("Demo night")).toBeVisible();
     await expect(page.getByText("Submissions close")).toBeVisible();

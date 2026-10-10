@@ -737,7 +737,12 @@
         "preview": "Xem trước",
         "viewPage": "Xem trang",
         "notSaved": "Chưa lưu",
-        "leave": "Có thay đổi chưa lưu. Rời trang này và bỏ các thay đổi đó?"
+        "leave": {
+          "title": "Rời trang mà không lưu?",
+          "lead": "Các thay đổi của chương trình này chưa được lưu và sẽ mất.",
+          "leave": "Rời trang",
+          "stay": "Ở lại"
+        }
       },
       "noDays": "Chưa đặt ngày",
       "search": "Tìm chương trình theo tên",
@@ -6029,6 +6034,13 @@
       "note": "Ghi chú riêng",
       "readByJudge": "Chỉ bạn và GenAI Fund đọc được.",
       "readByOperator": "Chỉ GenAI Fund đọc được.",
+      "unsaved": "Chưa lưu",
+      "leave": {
+        "title": "Rời trang mà không lưu?",
+        "lead": "Điểm và ghi chú của bạn cho đơn này chưa được lưu và sẽ mất.",
+        "leave": "Rời trang",
+        "stay": "Ở lại"
+      },
       "skip": "Bỏ qua",
       "saveAndNext": "Lưu và sang đơn tiếp",
       "save": "Lưu đánh giá",

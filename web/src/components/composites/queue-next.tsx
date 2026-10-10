@@ -1,13 +1,11 @@
 "use client";
 
 import { ArrowRightIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useLocale } from "next-intl";
+import { useId } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
 import { Kbd } from "@/components/ui/kbd";
 import { useShortcuts } from "@/hooks/use-shortcuts";
-import { getPathname } from "@/i18n/navigation";
 
 type QueueNextProps = {
   /** Where this record stands among those that wait: "2 of 3 waiting". Absent when it does not wait. */
@@ -21,17 +19,17 @@ type QueueNextProps = {
  * that waits, also under the N key.
  */
 function QueueNext({ position, next }: QueueNextProps) {
-  const router = useRouter();
-  const locale = useLocale();
+  const id = useId();
+  // The key follows the link itself, so a page that asks before it is left is asked here too.
   useShortcuts({
-    n: next ? () => router.push(getPathname({ href: next.href, locale })) : undefined,
+    n: next ? () => document.getElementById(id)?.click() : undefined,
   });
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
       {position && <span className="text-sm text-muted-foreground">{position}</span>}
       {next && (
-        <TextButton href={next.href}>
+        <TextButton id={id} href={next.href}>
           {next.label}
           <ArrowRightIcon aria-hidden="true" />
           <Kbd aria-hidden="true">N</Kbd>
