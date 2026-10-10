@@ -3,8 +3,6 @@ package ai.genaifund.beyondpilot.ai;
 import java.time.Instant;
 
 import ai.genaifund.beyondpilot.ai.persistence.AiUsageRepository;
-import com.anthropic.errors.AnthropicServiceException;
-import com.openai.errors.OpenAIServiceException;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +64,7 @@ final class UsageRecorder implements CallAdvisor {
 			return response;
 		}
 		catch (RuntimeException failure) {
-			record(started, clock, null, failure.getClass().getName(), status(failure));
+			record(started, clock, null, failure.getClass().getName(), ProviderFailures.status(failure));
 			throw failure;
 		}
 	}
@@ -89,21 +87,6 @@ final class UsageRecorder implements CallAdvisor {
 				.addKeyValue("error_type", unwritten.getClass().getName())
 				.log("A call to a chat model was not recorded");
 		}
-	}
-
-	/** The status the provider answered with, from whichever exception in the chain carries one. */
-	private static @Nullable Integer status(Throwable failure) {
-		Throwable cause = failure;
-		for (int depth = 0; cause != null && depth < 10; depth++) {
-			if (cause instanceof OpenAIServiceException refused) {
-				return refused.statusCode();
-			}
-			if (cause instanceof AnthropicServiceException refused) {
-				return refused.statusCode();
-			}
-			cause = cause.getCause();
-		}
-		return null;
 	}
 
 	private static @Nullable Long input(Usage tokens) {

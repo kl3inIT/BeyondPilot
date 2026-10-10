@@ -6660,6 +6660,7 @@
         "no_model": "Lúc đó chưa có mô hình AI nào được chọn cho việc tìm giải pháp.",
         "use_case_not_published": "Use case này không còn được đăng nên không tìm giải pháp nữa.",
         "no_capability": "AI chưa đọc ra được từ đề bài là giải pháp cần làm gì. Hãy viết rõ hơn trong đề bài rồi tìm lại.",
+        "request_refused": "Nhà cung cấp AI từ chối yêu cầu, nên chạy lại cũng không được. Hãy kiểm tra model đã chọn cho matching trong Admin › AI.",
         "provider": "Dịch vụ AI chưa hoàn tất được lượt này. Bạn có thể tìm lại.",
         "unknown": "Dịch vụ AI không phản hồi. Phần đã đọc vẫn được giữ, hãy tìm lại để tiếp tục."
       },

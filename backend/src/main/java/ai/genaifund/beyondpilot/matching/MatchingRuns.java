@@ -19,6 +19,7 @@ import ai.genaifund.beyondpilot.ai.AiChat;
 import ai.genaifund.beyondpilot.ai.AiModels;
 import ai.genaifund.beyondpilot.ai.AiSubject;
 import ai.genaifund.beyondpilot.ai.AiTask;
+import ai.genaifund.beyondpilot.ai.ProviderFailures;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange.Kind;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Judged;
@@ -60,6 +61,12 @@ class MatchingRuns {
 
 	/** The brief gave no capability a product could be judged on. */
 	static final String NO_CAPABILITY = "no_capability";
+
+	/**
+	 * The provider refused the request itself: what was sent, the key or the model. Asked again it is refused again,
+	 * so the run ends at once and an operator looks at the model chosen for matching.
+	 */
+	static final String REQUEST_REFUSED = "request_refused";
 
 	/** How many more solutions are asked of the search, to make up for the organization's own. */
 	private static final int OWN_SOLUTIONS = 10;
@@ -180,7 +187,7 @@ class MatchingRuns {
 			work(run);
 		}
 		catch (RuntimeException | LinkageError failure) {
-			stop(run, 0, failure.getClass().getName());
+			stop(run, 0, kind(failure));
 		}
 	}
 
@@ -270,7 +277,7 @@ class MatchingRuns {
 						changes.tell(run.useCaseId(), Kind.READ, solutionId);
 					}
 					catch (RuntimeException | LinkageError failure) {
-						refusal.compareAndSet(null, failure.getClass().getName());
+						refusal.compareAndSet(null, kind(failure));
 						// The page stops showing it as being read; the run says why it stopped when it ends.
 						changes.tell(run.useCaseId(), Kind.READ, solutionId);
 					}
@@ -300,6 +307,11 @@ class MatchingRuns {
 		}
 	}
 
+	/** The kind of a failed call, as a run keeps it: never a provider's message. */
+	private static String kind(Throwable failure) {
+		return ProviderFailures.refused(failure) ? REQUEST_REFUSED : failure.getClass().getName();
+	}
+
 	/** A run ends without finishing, for one of matching's own reasons. */
 	private void fail(Run run, String reason) {
 		matching.fail(run.id(), reason);
@@ -314,7 +326,8 @@ class MatchingRuns {
 	 */
 	private void stop(Run run, int judged, String failure) {
 		int stalls = judged > 0 ? 0 : run.stalls() + 1;
-		if (stalls > settings.maxStalls()) {
+		boolean ends = REQUEST_REFUSED.equals(failure) || stalls > settings.maxStalls();
+		if (ends) {
 			matching.fail(run.id(), failure);
 		}
 		else {
@@ -322,7 +335,7 @@ class MatchingRuns {
 		}
 		changes.tell(run.useCaseId(), Kind.RUN);
 		LOG.atWarn()
-			.addKeyValue("event", stalls > settings.maxStalls() ? "matching.run.failed" : "matching.run.waiting")
+			.addKeyValue("event", ends ? "matching.run.failed" : "matching.run.waiting")
 			.addKeyValue("runId", run.id())
 			.addKeyValue("error_type", failure)
 			.addKeyValue("judged", judged)

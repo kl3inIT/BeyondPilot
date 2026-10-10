@@ -26,7 +26,13 @@ export function describeMatchingError(error: unknown): MessageKey {
 }
 
 /** Why a run ended as failed, as the backend codes it. */
-const failures = ["no_model", "use_case_not_published", "no_capability", "provider"] as const;
+const failures = [
+  "no_model",
+  "use_case_not_published",
+  "no_capability",
+  "request_refused",
+  "provider",
+] as const;
 
 /** The words for a run that failed: by its kind when the screen knows it, general otherwise. */
 export function describeRunFailure(failure: string | undefined): MessageKey {

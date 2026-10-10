@@ -6660,6 +6660,7 @@
         "no_model": "No AI model was chosen for matching at the time.",
         "use_case_not_published": "This use case is no longer published, so we no longer look for solutions for it.",
         "no_capability": "AI could not tell from the brief what the solution has to do. Say it more plainly in the brief, then look again.",
+        "request_refused": "The AI provider refused the request, so starting again will not help. Check the model chosen for matching in Admin › AI.",
         "provider": "The AI service could not finish this run. You can start it again.",
         "unknown": "The AI service did not answer. What it read so far is kept. Look again to continue."
       },
