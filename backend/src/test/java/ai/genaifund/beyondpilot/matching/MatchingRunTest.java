@@ -333,8 +333,85 @@ class MatchingRunTest {
 		assertThat(JsonPath.<String>read(asOperator, "$.run.modelName")).isEqualTo("gpt-5-mini");
 		assertThat(JsonPath.<Object>read(asOperator, "$.runsLeftToday")).isNull();
 
-		// The member shortlists, removes with a reason and restores; a run never undoes it.
+		// The member says whether the AI put the solution in the right group. Nobody had answered.
 		String decide = "/api/matching/candidates/" + candidate;
+		assertThat(JsonPath.<Object>read(read, "$.candidates[0].feedback")).isNull();
+		assertThat(JsonPath.<Object>read(read, "$.candidates[0].feedbackCount")).isNull();
+		assertThat(JsonPath.<Integer>read(asOperator, "$.candidates[0].feedbackCount")).isZero();
+		String agreed = body(call("POST", buyer, decide + "/feedback", Map.of("agrees", true)).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(agreed, "$.candidates[0].feedback.agrees")).isTrue();
+		assertThat(JsonPath.<Object>read(agreed, "$.candidates[0].feedback.expectedBucket")).isNull();
+		// A disagreement names another group than the AI gave, an agreement names none, and a requirement that is
+		// disputed is one of the use case's.
+		assertProblem(call("POST", buyer, decide + "/feedback", Map.of("agrees", false)), 400,
+				"MATCHING_FEEDBACK_GROUP_INVALID");
+		assertProblem(call("POST", buyer, decide + "/feedback", Map.of("agrees", false, "expectedBucket", "direct")), 400,
+				"MATCHING_FEEDBACK_GROUP_INVALID");
+		assertProblem(call("POST", buyer, decide + "/feedback", Map.of("agrees", true, "expectedBucket", "industry")),
+				400, "MATCHING_FEEDBACK_GROUP_INVALID");
+		assertProblem(call("POST", buyer, decide + "/feedback", Map.of("agrees", false, "expectedBucket", "best")), 400,
+				"REQUEST_INVALID");
+		assertProblem(call("POST", buyer, decide + "/feedback",
+				Map.of("agrees", false, "expectedBucket", "industry", "requirements", List.of(9))), 400,
+				"MATCHING_FEEDBACK_REQUIREMENT_UNKNOWN");
+		// They change their mind: the last answer is theirs, with each requirement once and in order. The group and
+		// the place of the solution stay what the run gave.
+		Map<String, Object> disagreement = Map.of("agrees", false, "expectedBucket", "industry", "requirements",
+				List.of(3, 1, 3), "note", " Built for banks. ");
+		String disagreed = body(call("POST", buyer, decide + "/feedback", disagreement).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(disagreed, "$.candidates[0].feedback.agrees")).isFalse();
+		assertThat(JsonPath.<String>read(disagreed, "$.candidates[0].feedback.expectedBucket")).isEqualTo("industry");
+		assertThat(JsonPath.<List<Integer>>read(disagreed, "$.candidates[0].feedback.requirements")).containsExactly(1, 3);
+		assertThat(JsonPath.<String>read(disagreed, "$.candidates[0].feedback.note")).isEqualTo("Built for banks.");
+		assertThat(JsonPath.<String>read(disagreed, "$.candidates[0].bucket")).isEqualTo("direct");
+		assertThat(JsonPath.<Object>read(disagreed, "$.candidates[0].feedbackCount")).isNull();
+		// A candidate that is not theirs reads as one that does not exist.
+		assertProblem(call("POST", owner, decide + "/feedback", Map.of("agrees", true)), 404,
+				"MATCHING_CANDIDATE_NOT_FOUND");
+		// An operator reads how many answered and how many disagree, never a member's answer as their own; a member
+		// reads their own answer and no count.
+		String counted = body(call("GET", operator, path, null).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(counted, "$.candidates[0].feedback")).isNull();
+		assertThat(JsonPath.<Integer>read(counted, "$.candidates[0].feedbackCount")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(counted, "$.candidates[0].disagreeCount")).isEqualTo(1);
+		String both = body(call("POST", operator, decide + "/feedback", Map.of("agrees", true)).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(both, "$.candidates[0].feedback.agrees")).isTrue();
+		assertThat(JsonPath.<Integer>read(both, "$.candidates[0].feedbackCount")).isEqualTo(2);
+		assertThat(JsonPath.<Integer>read(both, "$.candidates[0].disagreeCount")).isEqualTo(1);
+		String own = body(call("GET", buyer, path, null).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(own, "$.candidates[0].feedback.agrees")).isFalse();
+		assertThat(JsonPath.<Object>read(own, "$.candidates[0].disagreeCount")).isNull();
+		// Operators read how often people agreed in the last 30 days, and each disagreement with its use case, its
+		// solution, the two groups, the requirements by their names, the note, who and when.
+		String said = "/api/matching/admin/feedback";
+		assertProblem(call("GET", buyer, said, null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(call("GET", operator, said + "?page=0", null), 400, "REQUEST_INVALID");
+		String answers = body(call("GET", operator, said, null).expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(answers, "$.answers")).isEqualTo(2);
+		assertThat(JsonPath.<Integer>read(answers, "$.agreements")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(answers, "$.page")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(answers, "$.pageSize")).isEqualTo(20);
+		assertThat(JsonPath.<Integer>read(answers, "$.total")).isEqualTo(1);
+		assertThat(JsonPath.<List<String>>read(answers, "$.items[*].useCaseId")).containsExactly(useCase.toString());
+		assertThat(JsonPath.<String>read(answers, "$.items[0].useCaseTitle")).isEqualTo("Claims triage " + word);
+		assertThat(JsonPath.<String>read(answers, "$.items[0].candidateId")).isEqualTo(candidate);
+		assertThat(JsonPath.<String>read(answers, "$.items[0].solutionId")).isEqualTo(solution.toString());
+		assertThat(JsonPath.<String>read(answers, "$.items[0].solutionName")).isEqualTo("Claims Desk " + word);
+		assertThat(JsonPath.<String>read(answers, "$.items[0].aiBucket")).isEqualTo("direct");
+		assertThat(JsonPath.<String>read(answers, "$.items[0].expectedBucket")).isEqualTo("industry");
+		assertThat(JsonPath.<List<Integer>>read(answers, "$.items[0].requirements[*].position")).containsExactly(1, 3);
+		assertThat(JsonPath.<List<String>>read(answers, "$.items[0].requirements[*].label")).containsExactly("Read forms", "");
+		assertThat(JsonPath.<List<String>>read(answers, "$.items[0].requirements[*].statement")).containsExactly(
+				"Reads printed and handwritten forms in Vietnamese.", "Integrates with the claims system.");
+		assertThat(JsonPath.<String>read(answers, "$.items[0].note")).isEqualTo("Built for banks.");
+		assertThat(JsonPath.<String>read(answers, "$.items[0].by")).isEqualTo("buyer-" + word + "@matching.test");
+		assertThat(JsonPath.<String>read(answers, "$.items[0].createdAt")).isNotBlank();
+		// A page past the end is empty, not an error.
+		String past = body(call("GET", operator, said + "?page=2", null).expectStatus().isOk());
+		assertThat(JsonPath.<List<Object>>read(past, "$.items")).isEmpty();
+		assertThat(JsonPath.<Integer>read(past, "$.total")).isEqualTo(1);
+
+		// The member shortlists, removes with a reason and restores; a run never undoes it.
 		// The member's page keeps a stream open, as a browser does: it is told at once that it is open, in a response
 		// no proxy may hold back, and then of the decision, once it is kept.
 		try (HttpClient browser = HttpClient.newHttpClient()) {
@@ -349,6 +426,9 @@ class MatchingRunTest {
 				assertThat(stream.headers().firstValue("X-Accel-Buffering")).contains("no");
 				assertThat(line(lines)).startsWith(":");
 				assertThat(decision(call("POST", buyer, decide + "/shortlist", null))).isEqualTo("shortlisted");
+				assertThat(event(lines)).isEqualTo("event:decision data:{}");
+				// An answer about the group is told the same way.
+				call("POST", buyer, decide + "/feedback", disagreement).expectStatus().isOk();
 				assertThat(event(lines)).isEqualTo("event:decision data:{}");
 			}
 			finally {
@@ -398,6 +478,10 @@ class MatchingRunTest {
 		String added = body(call("POST", operator, path + "/candidates", Map.of("solutionId", second)).expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(added, "$.candidates[*].origin")).containsExactly("recommended", "added");
 		assertThat(JsonPath.<List<Boolean>>read(added, "$.candidates[?(@.origin == 'added')].judged")).containsExactly(false);
+		// What no run judged has no group to answer about.
+		String unjudged = JsonPath.<List<String>>read(added, "$.candidates[?(@.origin == 'added')].id").getFirst();
+		assertProblem(call("POST", buyer, "/api/matching/candidates/" + unjudged + "/feedback", Map.of("agrees", true)),
+				409, "MATCHING_FEEDBACK_NOT_JUDGED");
 		// Adding it queued a run, so a second start is refused; only an operator has all judged again.
 		assertThat(JsonPath.<String>read(added, "$.run.state")).isEqualTo("queued");
 		assertProblem(call("POST", buyer, path + "/runs", Map.of("judgeAll", true)), 403, "MATCHING_OPERATORS_ONLY");
@@ -490,6 +574,39 @@ class MatchingRunTest {
 		assertThat(JsonPath.<List<Object>>read(body(call("GET", buyer, path, null).expectStatus().isOk()),
 				mine + ".industry.sourceUrl"))
 			.containsExactly((Object) null);
+
+		// Every answer so far is about the judgment the solution has: the member's is theirs, and two people answered.
+		assertThat(JsonPath.<List<Boolean>>read(body(call("GET", buyer, path, null).expectStatus().isOk()),
+				mine + ".feedback.agrees"))
+			.containsExactly(false);
+		assertThat(JsonPath.<List<Integer>>read(body(call("GET", operator, path, null).expectStatus().isOk()),
+				mine + ".feedbackCount"))
+			.containsExactly(2);
+		// The solution is judged again from other material: the question is asked again, and nobody has answered it.
+		deck(solution, "Claims Desk reads Vietnamese claim forms every working day.");
+		matching.queue(useCase, MatchingRepository.BY_OPERATOR, null, Prompts.VERSION, null, false).orElseThrow();
+		runs.work();
+		assertThat(runsOf(useCase)).doesNotContain("waiting operator", "failed operator");
+		String again = body(call("GET", buyer, path, null).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(again, mine + ".bucket")).containsExactly("direct");
+		assertThat(JsonPath.<List<Object>>read(again, mine + ".feedback")).containsExactly((Object) null);
+		assertThat(JsonPath.<List<Integer>>read(body(call("GET", operator, path, null).expectStatus().isOk()),
+				mine + ".feedbackCount"))
+			.containsExactly(0);
+		// The earlier disagreement stays as history; its requirements are no longer named, since they were those of
+		// the judgment before.
+		String history = body(call("GET", operator, "/api/matching/admin/feedback", null).expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(history, "$.total")).isEqualTo(1);
+		assertThat(JsonPath.<List<Integer>>read(history, "$.items[0].requirements[*].position")).containsExactly(1, 3);
+		assertThat(JsonPath.<List<Object>>read(history, "$.items[0].requirements[*].statement"))
+			.containsExactly((Object) null, (Object) null);
+		// The member answers about the new judgment.
+		String anew = body(call("POST", buyer, "/api/matching/candidates/" + candidate + "/feedback", Map.of("agrees", true))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<List<Boolean>>read(anew, mine + ".feedback.agrees")).containsExactly(true);
+		assertThat(JsonPath.<Integer>read(body(call("GET", operator, "/api/matching/admin/feedback", null).expectStatus()
+			.isOk()), "$.answers")).isEqualTo(3);
 	}
 
 	/** Keeps one page of the solution's website, as the loaded passages are kept, at this address. */

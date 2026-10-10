@@ -35,7 +35,10 @@ public record MatchingChange(@JsonIgnore @Schema(hidden = true) Kind kind,
 		/** The judgment of one solution ended: it was kept, was not needed, or failed. */
 		READ,
 
-		/** A person shortlisted, removed or restored a candidate, or an operator added one by hand. */
+		/**
+		 * A person shortlisted, removed or restored a candidate, an operator added one by hand, or someone said
+		 * whether the AI put one in the right group.
+		 */
 		DECISION
 
 	}

@@ -130,10 +130,11 @@ public class MatchingRepository {
 	 * @param decision {@link #SHORTLISTED}, {@link #REMOVED} or {@link #UNDECIDED}
 	 * @param decidedByOperator whether the last decision was an operator's
 	 * @param decidedBy who decided last; null when nobody decided
+	 * @param fingerprint what was judged, by which a judgment is told from the one before it; null until a run judged it
 	 */
 	public record Candidate(UUID id, UUID useCaseId, UUID solutionId, String origin, @Nullable Integer foundAt,
 			String bucket, int requiredMet, int requiredTotal, Map<String, Object> findings, @Nullable String summary,
-			List<String> unread, boolean judged, String decision, @Nullable String reason, @Nullable String note,
+			List<String> unread, boolean judged, @Nullable String fingerprint, String decision, @Nullable String reason, @Nullable String note,
 			boolean decidedByOperator, @Nullable UUID decidedBy, @Nullable Instant decidedAt) {
 	}
 
@@ -504,7 +505,7 @@ public class MatchingRepository {
 	private static final String CANDIDATE = """
 			select c.id, c.use_case_id, c.solution_id, c.origin, c.found_at, c.bucket, c.required_met, c.required_total,
 			       cast(c.findings as text) as findings, c.summary, array_to_string(c.unread, ',') as unread,
-			       c.judged_at is not null as judged, d.kind, d.reason, d.note, coalesce(d.by_operator, false) as by_operator,
+			       c.judged_at is not null as judged, c.fingerprint, d.kind, d.reason, d.note, coalesce(d.by_operator, false) as by_operator,
 			       d.account_id, d.created_at as decided_at
 			from matching_candidate c
 			left join lateral (select kind, reason, note, by_operator, account_id, created_at from matching_decision
@@ -535,7 +536,7 @@ public class MatchingRepository {
 				row.getString("bucket"), row.getInt("required_met"), row.getInt("required_total"),
 				json.readValue(row.getString("findings"), new TypeReference<Map<String, Object>>() {
 				}), row.getString("summary"), unread == null || unread.isEmpty() ? List.of() : List.of(unread.split(",")),
-				row.getBoolean("judged"), SHORTLISTED.equals(kind) || removed ? kind : UNDECIDED,
+				row.getBoolean("judged"), row.getString("fingerprint"), SHORTLISTED.equals(kind) || removed ? kind : UNDECIDED,
 				removed ? row.getString("reason") : null, removed ? row.getString("note") : null,
 				row.getBoolean("by_operator"), row.getObject("account_id", UUID.class),
 				instant(row.getTimestamp("decided_at")));

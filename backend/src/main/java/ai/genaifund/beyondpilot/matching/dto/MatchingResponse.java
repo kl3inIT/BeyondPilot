@@ -94,7 +94,22 @@ public record MatchingResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIR
 					description = "One finding per requirement, in their order.") List<Finding> findings,
 			@Schema(description = "Whether the product is made for the problem.") @Nullable Finding problem,
 			@Schema(description = "Whether the vendor delivered a similar workflow in the use case's industry.") @Nullable Finding industry,
-			@Schema(description = "Whether the product is built on the technologies the use case names.") @Nullable Finding technology) {
+			@Schema(description = "Whether the product is built on the technologies the use case names.") @Nullable Finding technology,
+			@Schema(description = "What the caller last said about the group of this judgment; absent when they said nothing, and once the candidate is judged again from other material.") @Nullable Feedback feedback,
+			@Schema(description = "How many people said something about the group of this judgment; absent for a caller who is not an operator.") @Nullable Integer feedbackCount,
+			@Schema(description = "How many of them said the group is wrong; absent for a caller who is not an operator.") @Nullable Integer disagreeCount) {
+	}
+
+	@Schema(name = "MatchingFeedback",
+			description = "What one person said about the group the AI gave a candidate. It changes nothing in the list.")
+	public record Feedback(
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+					description = "Whether the group the AI gave is the right one.") boolean agrees,
+			@Schema(description = "The group the person expected; absent when they agree.",
+					allowableValues = { "direct", "industry", "technology", "none" }) @Nullable String expectedBucket,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+					description = "The places of the requirements the person says the AI judged wrongly.") List<Integer> requirements,
+			@Nullable String note, @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt) {
 	}
 
 	@Schema(name = "MatchingFinding", description = "What the solution's own material shows, with the words that show it.")

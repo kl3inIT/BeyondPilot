@@ -8,6 +8,7 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
 import ai.genaifund.beyondpilot.matching.MatchingService;
 import ai.genaifund.beyondpilot.matching.dto.AddCandidateRequest;
+import ai.genaifund.beyondpilot.matching.dto.GiveFeedbackRequest;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange;
 import ai.genaifund.beyondpilot.matching.dto.MatchingResponse;
 import ai.genaifund.beyondpilot.matching.dto.RemoveCandidateRequest;
@@ -71,7 +72,8 @@ class MatchingController {
 			summary = "Hear that what matching holds for a use case changed, for as long as the connection stays open",
 			description = "Server-sent events. The name of an event says what changed: `run` (a run was queued, started, has to wait, ended or failed), "
 					+ "`brief` (the requirements are read), `found` (the solutions are found), `reading` (the judgment of one solution starts), "
-					+ "`read` (the judgment of one solution ended) and `decision` (a person shortlisted, removed, restored or added a solution). "
+					+ "`read` (the judgment of one solution ended) and `decision` (a person shortlisted, removed, restored or added a solution, "
+					+ "or said whether the AI put one in the right group). "
 					+ "An event carries no state: read `getMatching` again. Nothing is replayed, so read it once whenever the connection opens. "
 					+ "A comment line is sent when the stream opens and every 20 seconds.",
 			security = @SecurityRequirement(name = "session"))
@@ -162,6 +164,24 @@ class MatchingController {
 	@ApiResponse(responseCode = "404", description = "The candidate is unknown to the caller.", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	MatchingResponse restore(@CurrentActor Actor actor, @PathVariable UUID candidateId) {
 		return matching.restore(actor, candidateId);
+	}
+
+	@PostMapping(path = "/candidates/{candidateId}/feedback", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "giveMatchingFeedback",
+			summary = "Say whether the AI put a candidate in the right group, and where it belongs when it did not",
+			description = "The answer is about the judgment the candidate has now and is kept with who gave it. Answering again replaces the caller's answer. "
+					+ "It changes neither the group nor the order of the list.",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The answer is kept.")
+	@ApiResponse(responseCode = "400",
+			description = "The request is not valid: the caller disagrees without naming another group than the AI gave, agrees and names one, or names a requirement the use case does not have.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "The candidate is unknown to the caller.", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "No run judged the candidate yet.", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	MatchingResponse feedback(@CurrentActor Actor actor, @PathVariable UUID candidateId,
+			@Valid @RequestBody GiveFeedbackRequest request) {
+		return matching.feedback(actor, candidateId, request);
 	}
 
 }

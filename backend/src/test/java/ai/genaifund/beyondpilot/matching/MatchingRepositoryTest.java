@@ -6,6 +6,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingFeedbackRepository;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingFeedbackRepository.Answer;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingFeedbackRepository.Disagreement;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingFeedbackRepository.Totals;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Candidate;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Judged;
@@ -18,13 +22,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.groups.Tuple.tuple;
 
 /**
  * What matching keeps, against PostgreSQL: one open run per use case, taken by the worker in the order they were
- * queued, and candidates that a later run replaces without touching what people decided.
+ * queued, candidates that a later run replaces without touching what people decided, and what people said about the
+ * group of a judgment.
  */
 // The worker would take the runs this test queues; here it never wakes.
 @SpringBootTest(properties = "beyondpilot.matching.interval=PT24H")
@@ -33,6 +41,9 @@ class MatchingRepositoryTest {
 
 	@Autowired
 	private MatchingRepository matching;
+
+	@Autowired
+	private MatchingFeedbackRepository feedback;
 
 	@Autowired
 	private JdbcClient jdbc;
@@ -234,6 +245,70 @@ class MatchingRepositoryTest {
 				select summary || ' ' || array_to_string(unread, ',') || ' ' || (findings -> 'requirements' -> 0 ->> 'status')
 				from matching_candidate where solution_id = ?
 				""").param(kept).query(String.class).single()).isEqualTo("It answers calls. website met");
+	}
+
+	@Test
+	void aPersonsLastAnswerAboutAJudgmentCountsAndAnAnswerAboutAnEarlierJudgmentIsNotTheCurrentOne() {
+		UUID useCase = UUID.randomUUID();
+		UUID solution = UUID.randomUUID();
+		UUID person = UUID.randomUUID();
+		UUID colleague = UUID.randomUUID();
+		UUID run = matching.queue(useCase, MatchingRepository.BY_APPROVAL, null, 1, null, false).orElseThrow();
+		matching.found(useCase, List.of(solution));
+		matching.judged(useCase, solution, run, new Judged("industry", 0, 1, Map.of(), null, List.of(), "fingerprint-1"));
+		Candidate judged = matching.candidates(useCase).getFirst();
+		UUID candidate = judged.id();
+		assertThat(judged.fingerprint()).isEqualTo("fingerprint-1");
+		assertThat(feedback.current(useCase)).isEmpty();
+		assertThat(feedback.totals(Instant.now().minusSeconds(3600))).isEqualTo(new Totals(0, 0));
+
+		// The person agrees, then changes their mind: answers are only added, and the last one is theirs.
+		feedback.answer(candidate, person, "fingerprint-1", "industry", true, null, List.of(), null);
+		jdbc.sql("update matching_feedback set created_at = created_at - interval '2 minutes'").update();
+		feedback.answer(candidate, person, "fingerprint-1", "industry", false, "direct", List.of(1, 3),
+				"They do this for two banks.");
+		feedback.answer(candidate, colleague, "fingerprint-1", "industry", true, null, List.of(), null);
+		assertThat(jdbc.sql("select count(*) from matching_feedback").query(Long.class).single()).isEqualTo(3);
+		assertThat(feedback.current(useCase))
+			.extracting(Answer::candidateId, Answer::accountId, Answer::agrees, Answer::expectedBucket,
+					Answer::requirements, Answer::note)
+			.containsExactlyInAnyOrder(
+					tuple(candidate, person, false, "direct", List.of(1, 3), "They do this for two banks."),
+					tuple(candidate, colleague, true, null, List.of(), null));
+		// Each person counts once, by their last answer; an answer given before the period is not counted.
+		assertThat(feedback.totals(Instant.now().minusSeconds(3600))).isEqualTo(new Totals(2, 1));
+		assertThat(feedback.totals(Instant.now().plusSeconds(60))).isEqualTo(new Totals(0, 0));
+		assertThat(feedback.disagreementCount()).isEqualTo(1);
+		assertThat(feedback.disagreements(20, 0))
+			.extracting(Disagreement::candidateId, Disagreement::useCaseId, Disagreement::solutionId,
+					Disagreement::aiBucket, Disagreement::expectedBucket, Disagreement::requirements,
+					Disagreement::accountId, Disagreement::current)
+			.containsExactly(tuple(candidate, useCase, solution, "industry", "direct", List.of(1, 3), person, true));
+		assertThat(feedback.disagreements(20, 20)).as("a page past the end").isEmpty();
+
+		// The solution is judged again from other material: the question is open again, and the earlier answers stay.
+		matching.judged(useCase, solution, run, new Judged("industry", 0, 1, Map.of(), null, List.of(), "fingerprint-2"));
+		assertThat(feedback.current(useCase)).isEmpty();
+		assertThat(feedback.disagreements(20, 0)).extracting(Disagreement::accountId, Disagreement::current)
+			.containsExactly(tuple(person, false));
+		feedback.answer(candidate, person, "fingerprint-2", "industry", true, null, List.of(), null);
+		assertThat(feedback.current(useCase)).extracting(Answer::accountId, Answer::agrees)
+			.containsExactly(tuple(person, true));
+		assertThat(feedback.totals(Instant.now().minusSeconds(3600))).isEqualTo(new Totals(3, 2));
+		// The same material judged into another group is another judgment too.
+		matching.judged(useCase, solution, run, new Judged("direct", 1, 1, Map.of(), null, List.of(), "fingerprint-2"));
+		assertThat(feedback.current(useCase)).isEmpty();
+
+		// The database refuses an answer that disagrees and expects the group the AI gave, or agrees and expects one.
+		assertThatThrownBy(
+				() -> feedback.answer(candidate, person, "fingerprint-2", "direct", false, "direct", List.of(), null))
+			.isInstanceOf(DataIntegrityViolationException.class);
+		assertThatThrownBy(
+				() -> feedback.answer(candidate, person, "fingerprint-2", "direct", true, "industry", List.of(), null))
+			.isInstanceOf(DataIntegrityViolationException.class);
+		// The answers of a candidate go with it.
+		jdbc.sql("delete from matching_candidate where id = ?").param(candidate).update();
+		assertThat(jdbc.sql("select count(*) from matching_feedback").query(Long.class).single()).isZero();
 	}
 
 	private List<String> states() {

@@ -2,7 +2,9 @@ import { ApiError } from "@/lib/api/client";
 import {
   getMatching,
   getMatchingSettings,
+  listMatchingFeedback,
   type Matching,
+  type MatchingFeedbackList,
   type MatchingSettings,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
@@ -26,5 +28,14 @@ export async function readMatching(useCaseId: string): Promise<Matching | null> 
 /** The limits of matching, for the operator behind this request. Server only. */
 export async function readMatchingSettings(): Promise<MatchingSettings> {
   const { data } = await getMatchingSettings(await sessionRequest());
+  return data;
+}
+
+/** What people said about the groups the AI gave, for the operator behind this request. Server only. */
+export async function readMatchingFeedback(page: number): Promise<MatchingFeedbackList> {
+  const { data } = await listMatchingFeedback({
+    ...(await sessionRequest()),
+    query: { page: page > 1 ? page : undefined },
+  });
   return data;
 }

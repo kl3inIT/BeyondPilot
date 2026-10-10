@@ -1907,6 +1907,28 @@ export type FormQuestion = {
 };
 
 /**
+ * Whether the AI put a candidate in the right group, and where it belongs when it did not.
+ */
+export type GiveMatchingFeedback = {
+    /**
+     * Whether the group the AI gave is the right one.
+     */
+    agrees: boolean;
+    /**
+     * The group the candidate belongs in; required when the caller does not agree, never the AI's own, and absent when the caller agrees.
+     */
+    expectedBucket?: 'direct' | 'industry' | 'technology' | 'none';
+    /**
+     * A few words more, if the person wants.
+     */
+    note?: string;
+    /**
+     * The places of the requirements the AI judged wrongly, if the caller names any.
+     */
+    requirements?: Array<number>;
+};
+
+/**
  * A request for an introduction to the caller's organization.
  */
 export type Introduction = {
@@ -2050,6 +2072,18 @@ export type MatchingCandidate = {
      */
     decision: 'none' | 'shortlisted' | 'removed';
     /**
+     * How many of them said the group is wrong; absent for a caller who is not an operator.
+     */
+    disagreeCount?: number;
+    /**
+     * What the caller last said about the group of this judgment; absent when they said nothing, and once the candidate is judged again from other material.
+     */
+    feedback?: MatchingFeedback;
+    /**
+     * How many people said something about the group of this judgment; absent for a caller who is not an operator.
+     */
+    feedbackCount?: number;
+    /**
      * One finding per requirement, in their order.
      */
     findings: Array<MatchingFinding>;
@@ -2127,6 +2161,110 @@ export type MatchingChange = {
      * The solution whose judgment starts (`reading`) or ended (`read`); absent on every other event.
      */
     solutionId?: string;
+};
+
+/**
+ * One answer that says the AI put a solution in the wrong group.
+ */
+export type MatchingDisagreement = {
+    /**
+     * The group the AI had given.
+     */
+    aiBucket: 'direct' | 'industry' | 'technology' | 'none';
+    /**
+     * Who answered, by the name they are shown by; null for an account that no longer exists.
+     */
+    by?: string | null;
+    /**
+     * The candidate the answer is about, to open it among the solutions matched to its use case.
+     */
+    candidateId: string;
+    createdAt: string;
+    /**
+     * The group the person expected.
+     */
+    expectedBucket: 'direct' | 'industry' | 'technology' | 'none';
+    id: string;
+    note?: string | null;
+    /**
+     * The requirements the person says the AI judged wrongly.
+     */
+    requirements: Array<MatchingDisputedRequirement>;
+    solutionId: string;
+    /**
+     * The name of the solution; null when it is no longer shown anywhere.
+     */
+    solutionName?: string | null;
+    useCaseId: string;
+    /**
+     * The title of the use case; null when it is no longer published.
+     */
+    useCaseTitle?: string | null;
+};
+
+/**
+ * A requirement a person says the AI judged wrongly.
+ */
+export type MatchingDisputedRequirement = {
+    /**
+     * The two or three words it is shown by, empty when it has none; null when the answer is about an earlier judgment, whose requirements are no longer kept.
+     */
+    label?: string | null;
+    /**
+     * Its place among the requirements of the use case, from 1.
+     */
+    position: number;
+    /**
+     * Its statement; null when the answer is about an earlier judgment.
+     */
+    statement?: string | null;
+};
+
+/**
+ * What one person said about the group the AI gave a candidate. It changes nothing in the list.
+ */
+export type MatchingFeedback = {
+    /**
+     * Whether the group the AI gave is the right one.
+     */
+    agrees: boolean;
+    createdAt: string;
+    /**
+     * The group the person expected; absent when they agree.
+     */
+    expectedBucket?: 'direct' | 'industry' | 'technology' | 'none';
+    note?: string;
+    /**
+     * The places of the requirements the person says the AI judged wrongly.
+     */
+    requirements: Array<number>;
+};
+
+/**
+ * What people said about the groups the AI gave: how often they agreed in the last 30 days, and one page of the answers that say a group is wrong, newest first. A person's last answer about a judgment is the one that counts.
+ */
+export type MatchingFeedbackList = {
+    /**
+     * How many of them agreed with the AI.
+     */
+    agreements: number;
+    /**
+     * How many answers were given in the last 30 days.
+     */
+    answers: number;
+    items: Array<MatchingDisagreement>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    /**
+     * How many disagreements a page holds.
+     */
+    pageSize: number;
+    /**
+     * How many disagreements there are, over all pages and whenever they were given.
+     */
+    total: number;
 };
 
 /**
@@ -6731,6 +6869,44 @@ export type ReplyToIntroductionResponses = {
 
 export type ReplyToIntroductionResponse = ReplyToIntroductionResponses[keyof ReplyToIntroductionResponses];
 
+export type ListMatchingFeedbackData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+    };
+    url: '/api/matching/admin/feedback';
+};
+
+export type ListMatchingFeedbackErrors = {
+    /**
+     * The page is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListMatchingFeedbackError = ListMatchingFeedbackErrors[keyof ListMatchingFeedbackErrors];
+
+export type ListMatchingFeedbackResponses = {
+    /**
+     * The answers of the last 30 days counted, and one page of the disagreements, newest first.
+     */
+    200: MatchingFeedbackList;
+};
+
+export type ListMatchingFeedbackResponse = ListMatchingFeedbackResponses[keyof ListMatchingFeedbackResponses];
+
 export type GetMatchingSettingsData = {
     body?: never;
     path?: never;
@@ -6796,6 +6972,45 @@ export type SaveMatchingSettingsResponses = {
 };
 
 export type SaveMatchingSettingsResponse = SaveMatchingSettingsResponses[keyof SaveMatchingSettingsResponses];
+
+export type GiveMatchingFeedbackData = {
+    body: GiveMatchingFeedback;
+    path: {
+        candidateId: string;
+    };
+    query?: never;
+    url: '/api/matching/candidates/{candidateId}/feedback';
+};
+
+export type GiveMatchingFeedbackErrors = {
+    /**
+     * The request is not valid: the caller disagrees without naming another group than the AI gave, agrees and names one, or names a requirement the use case does not have.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The candidate is unknown to the caller.
+     */
+    404: Problem;
+    /**
+     * No run judged the candidate yet.
+     */
+    409: Problem;
+};
+
+export type GiveMatchingFeedbackError = GiveMatchingFeedbackErrors[keyof GiveMatchingFeedbackErrors];
+
+export type GiveMatchingFeedbackResponses = {
+    /**
+     * The answer is kept.
+     */
+    200: Matching;
+};
+
+export type GiveMatchingFeedbackResponse = GiveMatchingFeedbackResponses[keyof GiveMatchingFeedbackResponses];
 
 export type RemoveMatchingCandidateData = {
     body: RemoveMatchingCandidate;

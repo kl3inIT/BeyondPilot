@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -17,13 +18,17 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.matching.dto.AddCandidateRequest;
+import ai.genaifund.beyondpilot.matching.dto.GiveFeedbackRequest;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange.Kind;
 import ai.genaifund.beyondpilot.matching.dto.MatchingResponse;
 import ai.genaifund.beyondpilot.matching.dto.RemoveCandidateRequest;
 import ai.genaifund.beyondpilot.matching.dto.StartRunRequest;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingFeedbackRepository;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingFeedbackRepository.Answer;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Candidate;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Requirement;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.RunState;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Step;
 import ai.genaifund.beyondpilot.organization.Membership;
@@ -44,7 +49,8 @@ import reactor.core.publisher.Flux;
  * Matching as people use it: the members of the organization a use case belongs to, and GenAI Fund's operators. They
  * read the candidates with the reasons, start a run, and shortlist, remove and restore candidates; an operator also
  * adds a solution by hand. Anyone else is told there is no such use case. What a person decides is recorded with who
- * and when, and no run changes it. A page that stays open hears that something changed and reads again.
+ * and when, and no run changes it. They also say whether the AI put a candidate in the right group, which is kept and
+ * moves nothing in the list. A page that stays open hears that something changed and reads again.
  */
 @Service
 public class MatchingService {
@@ -67,6 +73,8 @@ public class MatchingService {
 
 	private final MatchingRepository matching;
 
+	private final MatchingFeedbackRepository feedback;
+
 	private final UseCaseDirectory useCases;
 
 	private final SolutionDirectory solutions;
@@ -83,10 +91,11 @@ public class MatchingService {
 
 	private final MatchingChanges changes;
 
-	MatchingService(MatchingRepository matching, UseCaseDirectory useCases, SolutionDirectory solutions,
-			SolutionEvidence evidence, OrganizationDirectory organizations, IdentityService identity, AiModels models,
-			AuditTrail audit, MatchingChanges changes) {
+	MatchingService(MatchingRepository matching, MatchingFeedbackRepository feedback, UseCaseDirectory useCases,
+			SolutionDirectory solutions, SolutionEvidence evidence, OrganizationDirectory organizations,
+			IdentityService identity, AiModels models, AuditTrail audit, MatchingChanges changes) {
 		this.matching = matching;
+		this.feedback = feedback;
 		this.useCases = useCases;
 		this.solutions = solutions;
 		this.evidence = evidence;
@@ -238,6 +247,49 @@ public class MatchingService {
 		return view(actor, access);
 	}
 
+	/**
+	 * Keeps what the caller says about the group the AI gave a candidate: that it is the right one, or which group
+	 * the candidate belongs in, with the requirements the AI judged wrongly and a note if they give any. The answer
+	 * is about the judgment the candidate has now, and is the caller's answer until they give another; it moves
+	 * nothing in the list.
+	 * @throws MatchingException when the candidate is unknown to the caller or no run judged it yet, when the caller
+	 * disagrees without naming another group than the AI's or agrees and names one, or when a requirement they name
+	 * is not one of the use case's
+	 */
+	@Transactional
+	public MatchingResponse feedback(Actor actor, UUID candidateId, GiveFeedbackRequest request) {
+		Candidate candidate = candidate(candidateId);
+		Access access = access(actor, candidate);
+		String fingerprint = candidate.fingerprint();
+		if (!candidate.judged() || fingerprint == null) {
+			throw new MatchingException(MatchingErrorCode.FEEDBACK_NOT_JUDGED,
+					"Candidate " + candidateId + " is not judged yet");
+		}
+		boolean agrees = request.agrees();
+		String expected = request.expectedBucket();
+		if (agrees ? expected != null : expected == null || expected.equals(candidate.bucket())) {
+			throw new MatchingException(MatchingErrorCode.FEEDBACK_GROUP_INVALID,
+					"Candidate " + candidateId + " is in " + candidate.bucket() + "; the answer agrees " + agrees
+							+ " and expects " + expected);
+		}
+		// Each requirement is named once, in the order of the use case.
+		List<Integer> disputed = request.requirements() == null ? List.of()
+				: List.copyOf(new TreeSet<>(request.requirements()));
+		Set<Integer> asked = matching.requirements(candidate.useCaseId())
+			.stream()
+			.map(Requirement::position)
+			.collect(Collectors.toSet());
+		if (!asked.containsAll(disputed)) {
+			throw new MatchingException(MatchingErrorCode.FEEDBACK_REQUIREMENT_UNKNOWN,
+					"Use case " + candidate.useCaseId() + " has no requirement at one of " + disputed);
+		}
+		String note = request.note() == null || request.note().isBlank() ? null : request.note().strip();
+		feedback.answer(candidate.id(), actor.accountId(), fingerprint, candidate.bucket(), agrees, expected, disputed,
+				note);
+		changes.tell(candidate.useCaseId(), Kind.DECISION);
+		return view(actor, access);
+	}
+
 	private Candidate candidate(UUID candidateId) {
 		return matching.candidate(candidateId)
 			.orElseThrow(() -> new MatchingException(MatchingErrorCode.CANDIDATE_NOT_FOUND, "No candidate " + candidateId));
@@ -307,6 +359,11 @@ public class MatchingService {
 			.map(Candidate::decidedBy)
 			.filter(Objects::nonNull)
 			.collect(Collectors.toSet()));
+		// What people said about the judgment each candidate has now. A member reads their own answer; an operator
+		// also reads how many answered and how many of them disagree.
+		Map<UUID, List<Answer>> said = feedback.current(useCaseId)
+			.stream()
+			.collect(Collectors.groupingBy(Answer::candidateId));
 		// A candidate whose solution is no longer shown anywhere is hidden; it comes back with its solution.
 		List<MatchingResponse.Candidate> candidates = new ArrayList<>();
 		int judged = 0;
@@ -322,6 +379,13 @@ public class MatchingService {
 					? people.get(candidate.decidedBy()) : null;
 			SolutionMaterial material = materials.get(candidate.solutionId());
 			Map<Integer, String> pages = webPages.getOrDefault(candidate.solutionId(), Map.of());
+			List<Answer> answers = said.getOrDefault(candidate.id(), List.of());
+			MatchingResponse.Feedback mine = answers.stream()
+				.filter(answer -> answer.accountId().equals(actor.accountId()))
+				.findFirst()
+				.map(answer -> new MatchingResponse.Feedback(answer.agrees(), answer.expectedBucket(),
+						answer.requirements(), answer.note(), answer.createdAt()))
+				.orElse(null);
 			candidates.add(new MatchingResponse.Candidate(candidate.id(), candidate.solutionId(), solution.slug(),
 					solution.name(), solution.organizationName(), solution.logoFileId(), solution.country(),
 					solution.maturity(), solution.listed(), candidate.origin(),
@@ -334,7 +398,9 @@ public class MatchingService {
 					findings(candidate.findings().get("requirements"), pages),
 					finding(candidate.findings().get("problem"), pages),
 					finding(candidate.findings().get("industry"), pages),
-					finding(candidate.findings().get("technology"), pages)));
+						finding(candidate.findings().get("technology"), pages), mine,
+						operator ? answers.size() : null,
+						operator ? (int) answers.stream().filter(answer -> !answer.agrees()).count() : null));
 		}
 		RunState last = matching.lastRun(useCaseId).orElse(null);
 		int total = candidates.size();

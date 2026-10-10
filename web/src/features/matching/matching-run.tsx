@@ -4,6 +4,7 @@ import {
   CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
+  ChevronUpIcon,
   CircleAlertIcon,
   CircleIcon,
   Loader2Icon,
@@ -19,6 +20,7 @@ import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,11 +38,11 @@ import {
 } from "@/components/ui/empty";
 import { Progress } from "@/components/ui/progress";
 import { LiveRefresh } from "@/features/usecase/live-refresh";
-import type { Matching } from "@/lib/api/generated";
+import type { Matching, MatchingStep } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { describeRunFailure } from "./matching-errors";
-import { runStages, stageOf, stageState, type RunStage } from "./matching-view";
+import { matchesOf, needsOf, runStages, stageOf, stageState, type RunStage } from "./matching-view";
 
 type RunStagesProps = {
   /** The stage the run is at; `done` once it ended. */
@@ -99,6 +101,75 @@ function RunStages({ at, judged, total }: RunStagesProps) {
   );
 }
 
+/**
+ * What the last run did, behind one quiet line: the stages it went through, each with its number: how
+ * many requirements it read in the brief, how many solutions it read closely, and how many of them
+ * match. How many solutions were read is the operators': it counts those put in no group, which the
+ * list does not show a member. An operator also reads how long each stage took and which model read
+ * the solutions, when the answer holds them.
+ */
+function RunFound({ matching }: { matching: Matching }) {
+  const t = useTranslations("Matching.run.found");
+  const format = useFormatter();
+  const [open, setOpen] = useState(false);
+  const { run, steps, requirements, candidates, operator } = matching;
+
+  /** How long a step of the run took, in seconds, or in minutes once it is more than a minute and a half. */
+  const took = (name: MatchingStep["name"]) => {
+    const step = steps.find((one) => one.name === name);
+    if (!step) {
+      return undefined;
+    }
+    const seconds = step.millis / 1000;
+    return seconds < 90
+      ? format.number(Math.max(1, Math.round(seconds)), { style: "unit", unit: "second" })
+      : format.number(seconds / 60, {
+          style: "unit",
+          unit: "minute",
+          maximumFractionDigits: 1,
+        });
+  };
+  const stages = [
+    {
+      name: "brief",
+      text: t("brief", { count: needsOf(requirements).length }),
+      more: took("requirements"),
+    },
+    { name: "search", text: t("search"), more: took("candidates") },
+    {
+      name: "reading",
+      text: operator ? t("reading", { total: run?.total ?? 0 }) : t("readingEach"),
+      more: [run?.modelName, took("judgment")].filter(Boolean).join(" · "),
+    },
+    { name: "matches", text: t("matches", { shown: matchesOf(candidates).matches }), more: "" },
+  ];
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger render={<TextButton size="sm" />}>
+        {t("title")}
+        {open ? <ChevronUpIcon aria-hidden="true" /> : <ChevronDownIcon aria-hidden="true" />}
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <ol aria-label={t("title")} className="flex flex-col gap-1 pt-2">
+          {stages.map((stage) => (
+            <li
+              key={stage.name}
+              data-stage={stage.name}
+              className="flex flex-wrap items-baseline gap-x-2"
+            >
+              {stage.text}
+              {stage.more && (
+                <span className="text-xs text-muted-foreground tabular-nums">{stage.more}</span>
+              )}
+            </li>
+          ))}
+        </ol>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
 type MatchingRunProps = {
   matching: Matching;
   /** Whether the stream of changes is open; while it is not, the page is read again on a timer. */
@@ -118,7 +189,7 @@ type MatchingRunProps = {
 /**
  * Where the search for solutions stands and how it is started: the run as it goes, by its stages and
  * with a line on what just happened, one that waits and continues by itself, one that failed and why,
- * and one visible action that looks again. A member is asked first, since a run is one of the few the
+ * one that ended with what it did behind a line that opens, and one visible action that looks again. A member is asked first, since a run is one of the few the
  * day allows. Operators find their own two actions under "More". While a run is open and the stream
  * of changes is not, the page is read again every few seconds.
  */
@@ -306,6 +377,7 @@ function MatchingRun({
                 </p>
               )}
             </div>
+            {run.state === "done" && <RunFound matching={matching} />}
           </div>
 
           {actions}

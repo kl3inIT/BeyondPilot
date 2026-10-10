@@ -20,6 +20,8 @@ type MatchingPageProps = {
     organizationName: string;
   };
   matching: Matching;
+  /** The solution to open with the page, by the identifier matching gives it. */
+  selected?: string;
 };
 
 /**
@@ -27,7 +29,7 @@ type MatchingPageProps = {
  * decide on them. The organization's members and GenAI Fund read the same page; the answer of the
  * backend says what each may do.
  */
-function MatchingPage({ area, useCase, matching }: MatchingPageProps) {
+function MatchingPage({ area, useCase, matching, selected }: MatchingPageProps) {
   const t = useTranslations("Matching");
   const statusLabel = useTranslations("Admin.useCases.status");
   const admin = area === "admin";
@@ -65,7 +67,7 @@ function MatchingPage({ area, useCase, matching }: MatchingPageProps) {
 
         <UseCaseTabs area={area} id={useCase.id} current="candidates" />
 
-        <MatchingBoard matching={matching} />
+        <MatchingBoard matching={matching} selected={selected} />
       </div>
     </div>
   );

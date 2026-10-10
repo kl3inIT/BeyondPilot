@@ -29,8 +29,8 @@ import type { MatchingCandidate } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
-import { StatusCounts } from "./matching-marks";
-import { statusCounts, unreadOf, type Need } from "./matching-view";
+import { SourceChip, StatusCounts } from "./matching-marks";
+import { rowQuoteOf, statusCounts, unreadOf, type Need } from "./matching-view";
 
 type MatchingRowProps = {
   candidate: MatchingCandidate;
@@ -66,8 +66,9 @@ function useCandidateMeta() {
 /**
  * One solution in a group. Its logo, its name and the shortlist action share the first line at every
  * width; under them come how many of the capabilities asked for it meets, meets in part and shows no
- * evidence for, the AI's sentence in two lines at most, and where the solution is from. The vendor's
- * own words are read in the panel, which the row opens.
+ * evidence for, one line of the vendor's own words with where they come from, and where the solution
+ * is from. A solution with no quote shows the AI's sentence instead, in two lines at most. The rest of
+ * the vendor's words, and the AI's sentence, are read in the panel, which the row opens.
  */
 function MatchingRow({
   candidate,
@@ -85,6 +86,7 @@ function MatchingRow({
   const counts = statusCounts(candidate, needs);
   const unread = candidate.judged ? unreadOf(candidate) : undefined;
   const summary = candidate.judged ? candidate.summary?.trim() : undefined;
+  const quoted = rowQuoteOf(candidate, needs);
   const shortlisted = candidate.decision === "shortlisted";
 
   return (
@@ -202,7 +204,17 @@ function MatchingRow({
             )}
           </p>
         )}
-        {summary && <p className="line-clamp-2 text-sm">{summary}</p>}
+        {quoted ? (
+          <p data-slot="matching-row-quote" className="flex min-w-0 items-center gap-2 text-sm">
+            {/* The marks stay at both ends however much of the words the line cuts. */}
+            <q className="flex min-w-0 before:shrink-0 after:shrink-0">
+              <span className="truncate">{quoted.quote.trim()}</span>
+            </q>
+            <SourceChip finding={quoted} />
+          </p>
+        ) : (
+          summary && <p className="line-clamp-2 text-sm">{summary}</p>
+        )}
         {meta && <p className="text-xs text-muted-foreground">{meta}</p>}
       </div>
     </li>
