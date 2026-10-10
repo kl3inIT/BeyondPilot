@@ -5619,6 +5619,7 @@
   "Apply": {
     "metaTitle": "Apply",
     "saved": "Saved {time}",
+    "unsaved": "Not saved yet",
     "closes": "Closes {when}",
     "saveAndExit": "Save and exit",
     "yourApplication": "Your application",
@@ -5660,6 +5661,8 @@
       "notListedYet": "Not in the directory yet",
       "applyingForHint": "GenAI Fund checks a new organization before it is listed in the directory. That doesn't hold up your application.",
       "applyingAs": "Applying as",
+      "applyingAsHint": "This is kept with your account when you continue, and it cannot be changed here afterwards.",
+      "whoRequired": "Choose who is applying.",
       "who": {
         "individual": {
           "title": "Individual",
@@ -5703,6 +5706,7 @@
       "newSolution": "New solution",
       "choiceHint": "One your organization already has fills this step; changes here update it.",
       "name": "Solution name",
+      "nameToSave": "Name the solution so that this step can be saved.",
       "summary": "What it does",
       "summaryHint": "Two or three sentences.",
       "problemsSolved": "Problem it solves",
@@ -5753,6 +5757,7 @@
     },
     "errors": {
       "saveFailed": "Your latest changes could not be saved. Check your connection; they are kept on this page.",
+      "saveInvalid": "Part of what you typed was not accepted, so it is not saved. Check the fields of this step.",
       "unknown": "Something went wrong. Try again.",
       "codes": {
         "PROPOSAL_CLOSED": "Applications to this program have closed.",

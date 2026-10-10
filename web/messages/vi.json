@@ -5619,6 +5619,7 @@
   "Apply": {
     "metaTitle": "Nộp đơn",
     "saved": "Đã lưu {time}",
+    "unsaved": "Chưa lưu",
     "closes": "Đóng {when}",
     "saveAndExit": "Lưu và thoát",
     "yourApplication": "Đơn của bạn",
@@ -5660,6 +5661,8 @@
       "notListedYet": "Chưa có trên danh mục",
       "applyingForHint": "GenAI Fund kiểm tra tổ chức mới trước khi đưa lên danh mục. Việc đó không làm chậm đơn của bạn.",
       "applyingAs": "Nộp với tư cách",
+      "applyingAsHint": "Lựa chọn này được lưu vào tài khoản khi bạn tiếp tục, và sau đó không đổi được ở đây.",
+      "whoRequired": "Chọn ai là người nộp.",
       "who": {
         "individual": {
           "title": "Cá nhân",
@@ -5703,6 +5706,7 @@
       "newSolution": "Giải pháp mới",
       "choiceHint": "Giải pháp tổ chức đã có sẽ điền sẵn bước này; sửa ở đây là sửa giải pháp đó.",
       "name": "Tên giải pháp",
+      "nameToSave": "Đặt tên cho giải pháp để bước này được lưu.",
       "summary": "Làm gì",
       "summaryHint": "Hai hoặc ba câu.",
       "problemsSolved": "Giải quyết vấn đề gì",
@@ -5753,6 +5757,7 @@
     },
     "errors": {
       "saveFailed": "Chưa lưu được thay đổi mới nhất. Kiểm tra kết nối; thay đổi vẫn còn trên trang này.",
+      "saveInvalid": "Một phần nội dung bạn nhập không được chấp nhận nên chưa được lưu. Kiểm tra lại các ô của bước này.",
       "unknown": "Có lỗi xảy ra. Thử lại.",
       "codes": {
         "PROPOSAL_CLOSED": "Đợt nhận đơn của chương trình này đã đóng.",
