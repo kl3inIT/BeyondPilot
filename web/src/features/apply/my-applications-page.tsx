@@ -5,7 +5,7 @@ import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import type { MyApplication, MyApplications } from "@/lib/api/generated";
-import { myApplicationRoute, programApplyUrl, siteRoutes } from "@/lib/site";
+import { myApplicationRoute, programApplyRoute, siteRoutes } from "@/lib/site";
 
 import { renderedAt } from "@/features/program/program-format";
 
@@ -101,7 +101,7 @@ async function MyApplicationsPage({ list }: { list: MyApplications }) {
                       {open(item) && (item.status === "draft" || item.allowUpdatesUntilClose) && (
                         <Button
                           prominence={item.status === "draft" ? "primary" : "secondary"}
-                          href={programApplyUrl(item.programSlug)}
+                          href={programApplyRoute(item.programSlug)}
                         >
                           {item.status === "draft" ? t("continue") : t("edit")}
                         </Button>

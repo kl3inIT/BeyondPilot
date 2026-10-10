@@ -184,6 +184,7 @@ function usageOverview(query) {
         failed: 93,
         lastFailedAt: "2026-10-09T07:24:00Z",
         lastFailure: "too_large",
+        assigned: true,
       },
     ],
     seriesStep: byHour ? "hour" : "day",

@@ -76,17 +76,17 @@ export function adminUseCaseCandidatesRoute(id: string) {
   return `${siteRoutes.adminUseCases}/${id}/candidates`;
 }
 
-/**
- * Where a program takes applications, while the application form of BeyondPilot is being built
- * (BEY-37): the Tasco challenge still takes them on its interim page. A program without one shows
- * no Apply button.
- */
+/** The application form of a program on BeyondPilot, where an application kept here is opened again. */
+export function programApplyRoute(slug: string) {
+  return `${programRoute(slug)}/apply`;
+}
+
 /**
  * Where Apply leads for a program that takes applications: its form on BeyondPilot. The AI for
  * Insurance Challenge keeps its interim form until it closes on 15 October 2026.
  */
 export function programApplyUrl(slug: string): string {
-  return slug === "insurance-ai-tasco" ? `${liveCampaignUrl}/apply` : `${programRoute(slug)}/apply`;
+  return slug === "insurance-ai-tasco" ? `${liveCampaignUrl}/apply` : programApplyRoute(slug);
 }
 
 /** One kind of email's wording in the admin area. */

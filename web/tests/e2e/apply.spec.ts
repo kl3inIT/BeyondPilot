@@ -330,7 +330,7 @@ test.describe("apply", () => {
     await expect(page.getByText("pocket-policy-proposal.pdf")).toBeVisible();
     await expect(page.getByRole("link", { name: "Edit application" })).toHaveAttribute(
       "href",
-      "https://beyondpilot.genaifund.ai/insurance-ai-tasco/apply",
+      "/programs/insurance-ai-tasco/apply",
     );
     await settled(page);
     await shot(page, `apply-6-application-${label}`);

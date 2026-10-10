@@ -45,7 +45,9 @@ public record AiUsageOverviewResponse(
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) long failed,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time") Instant lastFailedAt,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "key_refused", "rate_limited", "too_large", "request_refused", "provider_failed", "no_answer",
-					"failed" }) String lastFailure) {
+					"failed" }) String lastFailure,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+					description = "Whether the task still runs on this model or service. False once an operator gave the task another, so the failures are of what it used before.") boolean assigned) {
 	}
 
 	@Schema(name = "AiUsageBucket")

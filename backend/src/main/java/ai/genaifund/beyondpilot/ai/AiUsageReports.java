@@ -73,7 +73,7 @@ public class AiUsageReports {
 					.stream()
 					.map(failing -> new AiUsageOverviewResponse.Failing(failing.task(), failing.providerName(),
 							failing.modelName(), failing.calls(), failing.failed(), failing.lastFailedAt(),
-							kind(failing.errorStatus(), failing.errorType())))
+							kind(failing.errorStatus(), failing.errorType()), failing.assigned()))
 					.toList(),
 				byHour ? "hour" : "day",
 				usage.series(from, now, byHour)
