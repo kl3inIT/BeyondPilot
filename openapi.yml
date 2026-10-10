@@ -40,6 +40,9 @@ tags:
   name: AI administration
 - description: The solutions operators review.
   name: Solution administration
+- description: "The limits of matching that operators set, and what people said about\
+    \ the groups the AI gave."
+  name: Matching administration
 - description: The solutions of the caller's organization.
   name: My solutions
 - description: The accounts operators manage.
@@ -51,8 +54,6 @@ tags:
   name: Solutions
 - description: The requests for an introduction operators read.
   name: Introduction administration
-- description: The limits of matching that operators set.
-  name: Matching administration
 - description: The organization the caller belongs to.
   name: My organization
 - description: Who is signed in.
@@ -1746,6 +1747,51 @@ paths:
       summary: "Accept a request: both sides learn each other's address"
       tags:
       - Introductions
+  /api/matching/admin/feedback:
+    get:
+      operationId: listMatchingFeedback
+      parameters:
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchingFeedbackList"
+          description: "The answers of the last 30 days counted, and one page of the\
+            \ disagreements, newest first."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The page is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "How often people agreed with the group the AI gave a solution, and\
+        \ the answers that say a group is wrong"
+      tags:
+      - Matching administration
   /api/matching/admin/settings:
     get:
       operationId: getMatchingSettings
@@ -1817,6 +1863,64 @@ paths:
       summary: Set the limits of matching
       tags:
       - Matching administration
+  /api/matching/candidates/{candidateId}/feedback:
+    post:
+      description: The answer is about the judgment the candidate has now and is kept
+        with who gave it. Answering again replaces the caller's answer. It changes
+        neither the group nor the order of the list.
+      operationId: giveMatchingFeedback
+      parameters:
+      - in: path
+        name: candidateId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GiveMatchingFeedback"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matching"
+          description: The answer is kept.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The request is not valid: the caller disagrees without naming\
+            \ another group than the AI gave, agrees and names one, or names a requirement\
+            \ the use case does not have."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The candidate is unknown to the caller.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No run judged the candidate yet.
+      security:
+      - session: []
+      summary: "Say whether the AI put a candidate in the right group, and where it\
+        \ belongs when it did not"
+      tags:
+      - Matching
   /api/matching/candidates/{candidateId}/remove:
     post:
       operationId: removeMatchingCandidate
@@ -2044,10 +2148,11 @@ paths:
         \ (a run was queued, started, has to wait, ended or failed), `brief` (the\
         \ requirements are read), `found` (the solutions are found), `reading` (the\
         \ judgment of one solution starts), `read` (the judgment of one solution ended)\
-        \ and `decision` (a person shortlisted, removed, restored or added a solution).\
-        \ An event carries no state: read `getMatching` again. Nothing is replayed,\
-        \ so read it once whenever the connection opens. A comment line is sent when\
-        \ the stream opens and every 20 seconds."
+        \ and `decision` (a person shortlisted, removed, restored or added a solution,\
+        \ or said whether the AI put one in the right group). An event carries no\
+        \ state: read `getMatching` again. Nothing is replayed, so read it once whenever\
+        \ the connection opens. A comment line is sent when the stream opens and every\
+        \ 20 seconds."
       operationId: streamMatchingChanges
       parameters:
       - in: path
@@ -13132,6 +13237,41 @@ components:
       - maxLength
       - options
       - required
+    GiveMatchingFeedback:
+      type: object
+      description: "Whether the AI put a candidate in the right group, and where it\
+        \ belongs when it did not."
+      properties:
+        agrees:
+          type: boolean
+          description: Whether the group the AI gave is the right one.
+        expectedBucket:
+          type: string
+          description: "The group the candidate belongs in; required when the caller\
+            \ does not agree, never the AI's own, and absent when the caller agrees."
+          enum:
+          - direct
+          - industry
+          - technology
+          - none
+          pattern: direct|industry|technology|none
+        note:
+          type: string
+          description: "A few words more, if the person wants."
+          maxLength: 500
+          minLength: 0
+        requirements:
+          type: array
+          description: "The places of the requirements the AI judged wrongly, if the\
+            \ caller names any."
+          items:
+            type: integer
+            format: int32
+            minimum: 1
+          maxItems: 50
+          minItems: 0
+      required:
+      - agrees
     Introduction:
       type: object
       description: A request for an introduction to the caller's organization.
@@ -13336,6 +13476,21 @@ components:
           - none
           - shortlisted
           - removed
+        disagreeCount:
+          type: integer
+          format: int32
+          description: How many of them said the group is wrong; absent for a caller
+            who is not an operator.
+        feedback:
+          $ref: "#/components/schemas/MatchingFeedback"
+          description: "What the caller last said about the group of this judgment;\
+            \ absent when they said nothing, and once the candidate is judged again\
+            \ from other material."
+        feedbackCount:
+          type: integer
+          format: int32
+          description: How many people said something about the group of this judgment;
+            absent for a caller who is not an operator.
         findings:
           type: array
           description: "One finding per requirement, in their order."
@@ -13448,6 +13603,170 @@ components:
           format: uuid
           description: The solution whose judgment starts (`reading`) or ended (`read`);
             absent on every other event.
+    MatchingDisagreement:
+      type: object
+      description: One answer that says the AI put a solution in the wrong group.
+      properties:
+        aiBucket:
+          type: string
+          description: The group the AI had given.
+          enum:
+          - direct
+          - industry
+          - technology
+          - none
+        by:
+          type:
+          - string
+          - "null"
+          description: "Who answered, by the name they are shown by; null for an account\
+            \ that no longer exists."
+        candidateId:
+          type: string
+          format: uuid
+          description: "The candidate the answer is about, to open it among the solutions\
+            \ matched to its use case."
+        createdAt:
+          type: string
+          format: date-time
+        expectedBucket:
+          type: string
+          description: The group the person expected.
+          enum:
+          - direct
+          - industry
+          - technology
+          - none
+        id:
+          type: string
+          format: uuid
+        note:
+          type:
+          - string
+          - "null"
+        requirements:
+          type: array
+          description: The requirements the person says the AI judged wrongly.
+          items:
+            $ref: "#/components/schemas/MatchingDisputedRequirement"
+        solutionId:
+          type: string
+          format: uuid
+        solutionName:
+          type:
+          - string
+          - "null"
+          description: The name of the solution; null when it is no longer shown anywhere.
+        useCaseId:
+          type: string
+          format: uuid
+        useCaseTitle:
+          type:
+          - string
+          - "null"
+          description: The title of the use case; null when it is no longer published.
+      required:
+      - aiBucket
+      - candidateId
+      - createdAt
+      - expectedBucket
+      - id
+      - requirements
+      - solutionId
+      - useCaseId
+    MatchingDisputedRequirement:
+      type: object
+      description: A requirement a person says the AI judged wrongly.
+      properties:
+        label:
+          type:
+          - string
+          - "null"
+          description: "The two or three words it is shown by, empty when it has none;\
+            \ null when the answer is about an earlier judgment, whose requirements\
+            \ are no longer kept."
+        position:
+          type: integer
+          format: int32
+          description: "Its place among the requirements of the use case, from 1."
+        statement:
+          type:
+          - string
+          - "null"
+          description: Its statement; null when the answer is about an earlier judgment.
+      required:
+      - position
+    MatchingFeedback:
+      type: object
+      description: What one person said about the group the AI gave a candidate. It
+        changes nothing in the list.
+      properties:
+        agrees:
+          type: boolean
+          description: Whether the group the AI gave is the right one.
+        createdAt:
+          type: string
+          format: date-time
+        expectedBucket:
+          type: string
+          description: The group the person expected; absent when they agree.
+          enum:
+          - direct
+          - industry
+          - technology
+          - none
+        note:
+          type: string
+        requirements:
+          type: array
+          description: The places of the requirements the person says the AI judged
+            wrongly.
+          items:
+            type: integer
+            format: int32
+      required:
+      - agrees
+      - createdAt
+      - requirements
+    MatchingFeedbackList:
+      type: object
+      description: "What people said about the groups the AI gave: how often they\
+        \ agreed in the last 30 days, and one page of the answers that say a group\
+        \ is wrong, newest first. A person's last answer about a judgment is the one\
+        \ that counts."
+      properties:
+        agreements:
+          type: integer
+          format: int64
+          description: How many of them agreed with the AI.
+        answers:
+          type: integer
+          format: int64
+          description: How many answers were given in the last 30 days.
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MatchingDisagreement"
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+          description: How many disagreements a page holds.
+        total:
+          type: integer
+          format: int64
+          description: "How many disagreements there are, over all pages and whenever\
+            \ they were given."
+      required:
+      - agreements
+      - answers
+      - items
+      - page
+      - pageSize
+      - total
     MatchingFinding:
       type: object
       description: "What the solution's own material shows, with the words that show\
