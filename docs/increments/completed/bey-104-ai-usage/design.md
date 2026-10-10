@@ -1,12 +1,12 @@
 # AI usage: every call in a log, with what succeeded, what failed and what it cost
 
-Status: accepted on 9 October 2026 ([plan](plan.md)). Tracked in Linear as BEY-104. It adds a screen and read-only endpoints to the `ai` module; no new module and no new dependency between modules, so there is no boundary discovery.
+Status: done on 10 October 2026, live on staging; accepted on 9 October ([plan](plan.md), [verification](verification.md)). Tracked in Linear as BEY-104. It adds a screen and read-only endpoints to the `ai` module; no new module and no new dependency between modules, so there is no boundary discovery.
 
 The layout is the Figma section "Admin — AI: usage (draft for review, BEY-104)" on the Screens page. Đạt accepted it on 9 October as the draft to build from, to be corrected where building shows it does not hold; a correction is written here in the change that makes it.
 
 ## What it does
 
-Every call to a chat model or an OCR service already leaves a row in `ai_usage` ([BEY-92](../bey-92-ai-models/design.md) started it, [BEY-102](../bey-102-document-reading-ocr/design.md) added OCR calls, [BEY-103](../bey-103-prices-follow-the-catalog/design.md) the price in effect). Nothing shows those rows. On 9 October the reader of document pages failed about once a minute for over an hour, 93 calls, and it was found only by reading the staging database.
+Every call to a chat model or an OCR service already leaves a row in `ai_usage` ([BEY-92](../../active/bey-92-ai-models/design.md) started it, [BEY-102](../../active/bey-102-document-reading-ocr/design.md) added OCR calls, [BEY-103](../../active/bey-103-prices-follow-the-catalog/design.md) the price in effect). Nothing shows those rows. On 9 October the reader of document pages failed about once a minute for over an hour, 93 calls, and it was found only by reading the staging database.
 
 Operators get a page, **Admin › AI › Usage**, with a period switch and two tabs.
 
