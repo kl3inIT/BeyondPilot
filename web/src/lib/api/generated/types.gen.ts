@@ -2114,7 +2114,7 @@ export type MatchingCandidate = {
      */
     technology?: MatchingFinding;
     /**
-     * Which of its sources held no text to read: deck, website.
+     * Which of the sources it has could not be read at all: deck, website. A solution without a deck never says deck.
      */
     unread: Array<string>;
 };
@@ -2153,6 +2153,10 @@ export type MatchingFinding = {
      * Where the quote is: profile, customer case 1, deck p.3, website 2.
      */
     source: string;
+    /**
+     * The address of the web page the quote comes from, always http or https; absent for a source that is not a page of the website and for a page that is no longer kept.
+     */
+    sourceUrl?: string;
     status: 'met' | 'partly' | 'not_shown';
 };
 
