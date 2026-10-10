@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ReviewApplicationPage } from "@/features/review/review-application-page";
-import { readReviewApplication } from "@/features/review/review-queries";
+import { readReviewApplication, readReviewApplications } from "@/features/review/review-queries";
 import { requireAccount } from "@/lib/auth/session";
 import { reviewProgramRoute } from "@/lib/site";
 
@@ -21,7 +21,16 @@ export default async function ReviewApplicationRoute({
   const { locale, programId, applicationId } = await params;
   setRequestLocale(locale);
   await requireAccount(`${reviewProgramRoute(programId)}/${applicationId}`);
-  const review = await readReviewApplication(applicationId);
+  const [review, applications] = await Promise.all([
+    readReviewApplication(applicationId),
+    readReviewApplications(programId),
+  ]);
 
-  return <ReviewApplicationPage review={review} base={reviewProgramRoute(programId)} />;
+  return (
+    <ReviewApplicationPage
+      review={review}
+      queue={applications.items}
+      base={reviewProgramRoute(programId)}
+    />
+  );
 }

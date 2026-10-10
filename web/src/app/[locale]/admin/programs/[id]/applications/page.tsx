@@ -34,7 +34,7 @@ export default async function ProgramApplicationsRoute({
       data={data}
       search={search}
       base={adminProgramApplicationsRoute(id)}
-      tabs={<ProgramTabs id={id} current="applications" />}
+      tabs={<ProgramTabs id={id} current="applications" applications />}
     />
   );
 }

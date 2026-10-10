@@ -37,7 +37,7 @@ export default async function ProgramQuestionsRoute({
           {program.status === "published" ? t("settings.published") : t("state.draft")}
         </Badge>
       </div>
-      <ProgramTabs id={id} current="questions" />
+      <ProgramTabs id={id} current="questions" applications={Boolean(program.applications)} />
       {/* The editor starts from the questions as they were read; a save reads them again. */}
       <ProgramQuestionsEditor key={questions.version} programId={id} initial={questions} />
     </div>
