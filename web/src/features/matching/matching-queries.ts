@@ -1,5 +1,10 @@
 import { ApiError } from "@/lib/api/client";
-import { getMatching, type Matching } from "@/lib/api/generated";
+import {
+  getMatching,
+  getMatchingSettings,
+  type Matching,
+  type MatchingSettings,
+} from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
 
 /**
@@ -16,4 +21,10 @@ export async function readMatching(useCaseId: string): Promise<Matching | null> 
     }
     throw error;
   }
+}
+
+/** The limits of matching, for the operator behind this request. Server only. */
+export async function readMatchingSettings(): Promise<MatchingSettings> {
+  const { data } = await getMatchingSettings(await sessionRequest());
+  return data;
 }

@@ -510,6 +510,7 @@
       "ai": "AI",
       "aiProviders": "Nhà cung cấp",
       "searchIndex": "Chỉ mục tìm kiếm",
+      "aiMatching": "Ghép nối",
       "aiUsage": "Sử dụng",
       "mcp": "MCP",
       "email": "Email"
@@ -2444,6 +2445,75 @@
         "off": "Đã tắt semantic search",
         "rebuilt": "Đã dựng lại chỉ mục: đọc {saved} mục, xoá {removed}",
         "retried": "{count, plural, =0 {Không có mục nào cần thử lại} other {# mục sẽ được thử lại ở lượt chạy tới}}"
+      }
+    },
+    "matching": {
+      "metaTitle": "Ghép nối",
+      "title": "Ghép nối",
+      "lead": "Các giới hạn cho mỗi lượt ghép nối. Một lượt là một lần tìm giải pháp cho một use case: AI đọc đề bài, rồi đọc những giải pháp phù hợp nhất.",
+      "blocks": {
+        "run": {
+          "title": "Trong một lượt",
+          "lead": "AI đọc bao nhiêu giải pháp cho một use case, và nhanh đến đâu."
+        },
+        "start": {
+          "title": "Sau khi sửa đề bài",
+          "lead": "Khi nào một đề bài vừa sửa được ghép nối lại."
+        },
+        "day": {
+          "title": "Số lượt mỗi ngày",
+          "lead": "Mỗi ngày được bắt đầu tối đa bao nhiêu lượt."
+        }
+      },
+      "fields": {
+        "parallel": {
+          "label": "Số giải pháp đọc cùng lúc",
+          "hint": "Đọc cùng lúc càng nhiều thì càng nhanh: 40 giải pháp mất khoảng 3 phút nếu đọc 8 giải pháp một lúc, khoảng 6 phút nếu đọc 4. Nếu nhà cung cấp AI từ chối vì nhận quá nhiều yêu cầu, lượt chạy tạm dừng 2 phút rồi tự chạy tiếp."
+        },
+        "candidates": {
+          "label": "Số giải pháp mỗi lượt",
+          "hint": "Số giải pháp phù hợp nhất mà AI đọc kỹ. Mỗi giải pháp là một lần gọi mô hình AI; giải pháp nào không đổi so với lượt trước thì không đọc lại."
+        },
+        "settleMinutes": {
+          "label": "Chờ sau lần sửa cuối",
+          "hint": "Một đề bài thường được lưu nhiều lần liên tiếp. Lượt chạy chỉ bắt đầu khi đề bài đã không đổi trong ngần ấy thời gian. Đặt 0 thì bắt đầu ngay."
+        },
+        "editRunsPerDay": {
+          "label": "Lượt chạy do sửa đề bài, mỗi use case mỗi ngày",
+          "hint": "Đăng một use case hoặc sửa đề bài sẽ tự bắt đầu một lượt. Quá số này, phần sửa vẫn được lưu, còn danh sách giải pháp giữ nguyên cho đến khi có người bấm tìm lại."
+        },
+        "memberRunsPerDay": {
+          "label": "Lượt chạy thành viên được bấm, mỗi use case mỗi ngày",
+          "hint": "Tính chung cho mọi thành viên của tổ chức. Operator không bị giới hạn này."
+        },
+        "runsPerDay": {
+          "label": "Tổng lượt chạy mỗi ngày, toàn hệ thống",
+          "hint": "Mức trần để giữ chi phí, tính mọi lượt bất kể ai bắt đầu. Khi chạm trần, các lượt mới xếp hàng chờ sang ngày hôm sau. Để trống nếu không đặt trần."
+        }
+      },
+      "units": {
+        "solutions": "giải pháp",
+        "minutes": "phút",
+        "runs": "lượt"
+      },
+      "range": "Từ {min} đến {max}",
+      "outOfRange": "Nhập một số nguyên từ {min} đến {max}.",
+      "outOfRangeOrEmpty": "Nhập một số nguyên từ {min} đến {max}, hoặc để trống.",
+      "save": "Lưu thay đổi",
+      "saved": "Đã lưu thiết lập ghép nối.",
+      "unsaved": "Có thay đổi chưa lưu.",
+      "applies": "Thay đổi có hiệu lực từ lượt chạy kế tiếp. Lượt đang chạy vẫn giữ các con số lúc nó bắt đầu.",
+      "errors": {
+        "changed": "Có người khác vừa đổi các thiết lập này trong lúc bạn đang sửa. Các con số bên dưới giờ là của họ. Hãy sửa lại rồi lưu.",
+        "changedReload": "Có người khác vừa đổi các thiết lập này trong lúc bạn đang sửa. Hãy tải lại trang để xem các con số của họ, rồi sửa lại.",
+        "invalid": "Có con số nằm ngoài khoảng cho phép. Hãy kiểm tra từng mục rồi thử lại.",
+        "unknown": "Chưa lưu được thiết lập. Hãy thử lại."
+      },
+      "leave": {
+        "title": "Rời trang mà không lưu?",
+        "lead": "Những thay đổi trên trang này chưa được lưu và sẽ mất.",
+        "leave": "Rời trang",
+        "stay": "Ở lại"
       }
     },
     "aiUsage": {

@@ -30,6 +30,7 @@ export const siteRoutes = {
   adminIntroductions: "/admin/introductions",
   adminAiProviders: "/admin/ai/providers",
   adminSearchIndex: "/admin/ai/search-index",
+  adminAiMatching: "/admin/ai/matching",
   adminAiUsage: "/admin/ai/usage",
   adminAiUsageCalls: "/admin/ai/usage/calls",
   adminMcp: "/admin/ai/mcp",

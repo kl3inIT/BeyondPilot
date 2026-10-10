@@ -510,6 +510,7 @@
       "ai": "AI",
       "aiProviders": "Providers",
       "searchIndex": "Search index",
+      "aiMatching": "Matching",
       "aiUsage": "Usage",
       "mcp": "MCP",
       "email": "Email"
@@ -2444,6 +2445,75 @@
         "off": "Semantic search is off",
         "rebuilt": "Index rebuilt: {saved} items read, {removed} removed",
         "retried": "{count, plural, =0 {Nothing to try again} one {# item is tried again at the next run} other {# items are tried again at the next run}}"
+      }
+    },
+    "matching": {
+      "metaTitle": "Matching",
+      "title": "Matching",
+      "lead": "The limits a matching run works within. A run is one search for solutions for one use case: AI reads the brief, then the solutions that fit it best.",
+      "blocks": {
+        "run": {
+          "title": "One run",
+          "lead": "How many solutions AI reads for a use case, and how fast."
+        },
+        "start": {
+          "title": "After an edit",
+          "lead": "When a brief that changed is matched again."
+        },
+        "day": {
+          "title": "Runs per day",
+          "lead": "How many runs may start in a day."
+        }
+      },
+      "fields": {
+        "parallel": {
+          "label": "Solutions read at once",
+          "hint": "More at once is faster: 40 solutions take about 3 minutes at 8, about 6 minutes at 4. If the AI provider refuses calls because too many arrive, the run pauses for 2 minutes, then continues."
+        },
+        "candidates": {
+          "label": "Solutions per run",
+          "hint": "How many of the best matches AI reads closely. Each is one call to the AI model; a solution that has not changed since the last run is not read again."
+        },
+        "settleMinutes": {
+          "label": "Wait after the last edit",
+          "hint": "A brief is often saved several times. The run starts once the brief has stayed unchanged for this long. With 0 it starts at once."
+        },
+        "editRunsPerDay": {
+          "label": "Runs started by edits, per use case per day",
+          "hint": "Publishing a use case or editing its brief starts a run by itself. Past this number an edit is still saved, and the matched solutions stay as they are until someone starts a run."
+        },
+        "memberRunsPerDay": {
+          "label": "Runs a member may start, per use case per day",
+          "hint": "Counted for all members of the organisation together. Operators are not limited by it."
+        },
+        "runsPerDay": {
+          "label": "Runs per day, whole platform",
+          "hint": "A ceiling on cost, counting every run whoever started it. Once it is reached, new runs wait in line until the next day. Leave it empty for no ceiling."
+        }
+      },
+      "units": {
+        "solutions": "solutions",
+        "minutes": "minutes",
+        "runs": "runs"
+      },
+      "range": "{min} to {max}",
+      "outOfRange": "Enter a whole number from {min} to {max}.",
+      "outOfRangeOrEmpty": "Enter a whole number from {min} to {max}, or leave it empty.",
+      "save": "Save changes",
+      "saved": "Matching settings saved.",
+      "unsaved": "You have unsaved changes.",
+      "applies": "A change applies from the next run. A run already at work keeps the numbers it started with.",
+      "errors": {
+        "changed": "Someone else changed these settings while you were editing. The numbers below are theirs now. Make your change again, then save.",
+        "changedReload": "Someone else changed these settings while you were editing. Reload the page to see their numbers, then make your change again.",
+        "invalid": "A number is outside what is allowed. Check each field and try again.",
+        "unknown": "The settings were not saved. Try again."
+      },
+      "leave": {
+        "title": "Leave without saving?",
+        "lead": "Your changes on this page are not saved and will be lost.",
+        "leave": "Leave",
+        "stay": "Stay"
       }
     },
     "aiUsage": {
