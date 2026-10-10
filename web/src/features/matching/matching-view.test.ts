@@ -4,6 +4,7 @@ import type { MatchingCandidate, MatchingFinding, MatchingRequirement } from "@/
 
 import {
   changesBetween,
+  chipOf,
   constraintsOf,
   coverageOf,
   FOLDED_ROWS,
@@ -13,9 +14,12 @@ import {
   matchesOf,
   needsOf,
   openingOf,
+  othersAnswered,
   recommendedOf,
   requirementName,
+  rowQuoteOf,
   runStages,
+  sectionOf,
   sourceOf,
   stageOf,
   stageState,
@@ -491,6 +495,33 @@ describe("sources", () => {
     expect(openingOf(close, true)).toEqual({ how: "deck", page: 6 });
   });
 
+  it("are named on a row by the host of a web page, the page of a deck, the profile or the customer case", () => {
+    const page = {
+      ...finding(1, "met", "extracts the content", "website 2"),
+      sourceUrl: "https://www.staple.ai/platform",
+    };
+    expect(chipOf(page)).toEqual({ kind: "website", host: "staple.ai" });
+    // A web page whose address is not kept, or is not a web address, is named without a host.
+    expect(chipOf(finding(1, "met", "extracts the content", "website"))).toEqual({
+      kind: "website",
+      host: undefined,
+    });
+    expect(chipOf({ ...page, sourceUrl: "javascript:alert(1)" })).toEqual({
+      kind: "website",
+      host: undefined,
+    });
+    expect(chipOf(finding(2, "partly", "flags invoices", "deck p.6"))).toEqual({
+      kind: "deck",
+      page: 6,
+    });
+    expect(chipOf(finding(4, "met", "SAP connector", "profile"))).toEqual({ kind: "profile" });
+    expect(chipOf(finding(1, "partly", "1K invoices", "customer case 2"))).toEqual({
+      kind: "customerCase",
+      number: 2,
+    });
+    expect(chipOf(finding(1, "met", "words", "press release"))).toBeUndefined();
+  });
+
   it("open a web page at its address, listed or not, and only at a web address", () => {
     const page = {
       ...finding(1, "met", "extracts the content", "website 2"),
@@ -503,5 +534,70 @@ describe("sources", () => {
     });
     expect(openingOf(finding(1, "met", "extracts the content", "website 2"), true)).toBeUndefined();
     expect(openingOf({ ...page, sourceUrl: "javascript:alert(1)" }, true)).toBeUndefined();
+  });
+});
+
+describe("what people said about a group", () => {
+  const mine = { agrees: true, requirements: [], createdAt: "2026-10-10T03:00:00Z" };
+
+  it("is counted for an operator only when someone other than the reader answered", () => {
+    expect(othersAnswered({ feedbackCount: 3, disagreeCount: 1 })).toEqual({ n: 3, d: 1 });
+    expect(othersAnswered({ feedback: mine, feedbackCount: 2, disagreeCount: 0 })).toEqual({
+      n: 2,
+      d: 0,
+    });
+    expect(othersAnswered({ feedback: mine, feedbackCount: 1, disagreeCount: 0 })).toBeUndefined();
+    expect(othersAnswered({ feedbackCount: 0, disagreeCount: 0 })).toBeUndefined();
+    // A member is answered no count: Spring sends null where a value is absent.
+    expect(
+      othersAnswered({ feedback: mine, feedbackCount: null, disagreeCount: null } as never),
+    ).toBeUndefined();
+  });
+
+  it("opens a solution in the part of the list it stands in", () => {
+    expect(sectionOf({ judged: true, bucket: "technology" })).toBe("technology");
+    expect(sectionOf({ judged: true, bucket: "none" })).toBe("kept");
+    expect(sectionOf({ judged: false, bucket: "none" })).toBe("waiting");
+  });
+});
+
+describe("the vendor's words on a row", () => {
+  const needs = needsOf(requirements);
+  const judged = (findings: MatchingFinding[]) => ({ judged: true, findings });
+
+  it("are the quote for the first capability the use case cannot do without", () => {
+    const row = judged([
+      finding(2, "partly", "flags unusual invoices", "deck p.6"),
+      finding(1, "met", "extracts and verifies the content", "website 2"),
+    ]);
+    expect(rowQuoteOf(row, needs)?.quote).toBe("extracts and verifies the content");
+  });
+
+  it("are the first quote there is when the must-have has none, a delivery condition included", () => {
+    expect(
+      rowQuoteOf(
+        judged([
+          finding(1, "not_shown"),
+          finding(2, "not_shown", "  "),
+          finding(3, "partly", "routes approvals", "profile"),
+          finding(4, "met", "SAP connector available", "profile"),
+        ]),
+        needs,
+      )?.quote,
+    ).toBe("routes approvals");
+    expect(
+      rowQuoteOf(
+        judged([finding(1, "not_shown"), finding(4, "met", "SAP connector available", "profile")]),
+        needs,
+      )?.quote,
+    ).toBe("SAP connector available");
+  });
+
+  it("are absent for a solution with no quote and for one the AI has not read", () => {
+    expect(rowQuoteOf(judged([finding(1, "not_shown")]), needs)).toBeUndefined();
+    expect(rowQuoteOf(judged([]), needs)).toBeUndefined();
+    expect(
+      rowQuoteOf({ judged: false, findings: [finding(1, "met", "extracts", "profile")] }, needs),
+    ).toBeUndefined();
   });
 });

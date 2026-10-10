@@ -5,6 +5,7 @@ import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  EqualApproximatelyIcon,
   ExternalLinkIcon,
   FileQuestionIcon,
   FileTextIcon,
@@ -17,10 +18,16 @@ import { TextButton } from "@/components/actions/text-button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SolutionLogo } from "@/features/solution/solution-logo";
-import type { MatchingCandidate, MatchingFinding, MatchingRequirement } from "@/lib/api/generated";
+import type {
+  GiveMatchingFeedback,
+  MatchingCandidate,
+  MatchingFinding,
+  MatchingRequirement,
+} from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { MatchingDeck } from "./matching-deck";
+import { MatchingFeedback } from "./matching-feedback";
 import { StatusChip, useSourceLine } from "./matching-marks";
 import { useCandidateMeta } from "./matching-row";
 import { findingOf, openingOf, unreadOf, type Need } from "./matching-view";
@@ -31,15 +38,19 @@ type Quoted = Pick<MatchingCandidate, "solutionName" | "solutionSlug" | "listed"
 /**
  * Where a vendor's words come from, as something a reader can open: a page of the deck inside the app
  * with the words highlighted, the page of the website in a new tab, the solution's page for its profile
- * and its customer cases. A source that cannot be opened stays plain text.
+ * and its customer cases. A source that cannot be opened stays plain text. When code found the words in
+ * that source word for word, the line says so with a tick, in the place of "From": that the words are
+ * in the vendor's own material, not that what they say is true.
  */
 function SourceLine({ finding, solution }: { finding: MatchingFinding; solution: Quoted }) {
   const t = useTranslations("Matching.source");
-  const text = useSourceLine()(finding.source);
+  const found = finding.quoteState === "exact";
+  const text = useSourceLine()(finding.source, found);
   if (!text) {
     return null;
   }
   const opening = openingOf(finding, solution.listed);
+  const tick = found && <CheckIcon data-slot="matching-found" aria-hidden="true" />;
 
   if (opening?.how === "deck") {
     return (
@@ -49,7 +60,7 @@ function SourceLine({ finding, solution }: { finding: MatchingFinding; solution:
         page={opening.page}
         quote={finding.quote}
       >
-        <FileTextIcon aria-hidden="true" />
+        {tick || <FileTextIcon aria-hidden="true" />}
         {text}
       </MatchingDeck>
     );
@@ -63,7 +74,10 @@ function SourceLine({ finding, solution }: { finding: MatchingFinding; solution:
         rel="noopener noreferrer"
         className="max-w-full"
       >
-        <span className="truncate">{t("websiteAt", { host: opening.host })}</span>
+        {tick}
+        <span className="truncate">
+          {t(found ? "found.websiteAt" : "websiteAt", { host: opening.host })}
+        </span>
         <ExternalLinkIcon aria-hidden="true" />
       </TextButton>
     );
@@ -76,12 +90,20 @@ function SourceLine({ finding, solution }: { finding: MatchingFinding; solution:
         target="_blank"
         rel="noopener noreferrer"
       >
+        {tick}
         {text}
         <ExternalLinkIcon aria-hidden="true" />
       </TextButton>
     );
   }
-  return <span className="text-xs text-muted-foreground">{text}</span>;
+  return (
+    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+      {found && (
+        <CheckIcon data-slot="matching-found" aria-hidden="true" className="size-3 shrink-0" />
+      )}
+      {text}
+    </span>
+  );
 }
 
 type FindingItemProps = {
@@ -96,9 +118,11 @@ type FindingItemProps = {
 /**
  * One requirement and what the solution shows of it: the statement in full, the verdict in words, the
  * AI's reason as body text, then the vendor's own words set apart as a quotation with where they come
- * from under it, to open.
+ * from under it, to open. Words that are only close to the vendor's, most of them there and not all,
+ * say so before their source.
  */
 function FindingItem({ statement, tag, finding, solution }: FindingItemProps) {
+  const t = useTranslations("Matching.source");
   const quote = finding?.quote.trim();
   const reason = finding?.reason.trim();
 
@@ -115,7 +139,16 @@ function FindingItem({ statement, tag, finding, solution }: FindingItemProps) {
           <blockquote className="text-sm wrap-break-word">
             <q>{quote}</q>
           </blockquote>
-          <figcaption className="flex max-w-full">
+          <figcaption className="flex max-w-full flex-wrap items-center gap-x-3 gap-y-1">
+            {finding.quoteState === "close" && (
+              <span
+                data-slot="matching-close"
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground"
+              >
+                <EqualApproximatelyIcon aria-hidden="true" className="size-3 shrink-0" />
+                {t("close")}
+              </span>
+            )}
             <SourceLine finding={finding} solution={solution} />
           </figcaption>
         </figure>
@@ -129,6 +162,10 @@ type MatchingPanelProps = {
   needs: Need[];
   constraints: MatchingRequirement[];
   pending: boolean;
+  /** True while an answer about the group is on its way. */
+  answering: boolean;
+  /** Says whether the AI put the solution in the right group; resolves to whether it was kept. */
+  onFeedback: (body: GiveMatchingFeedback) => Promise<boolean>;
   /** Steps to the solution before or after it in the list; absent at either end. */
   onPrevious?: () => void;
   onNext?: () => void;
@@ -138,15 +175,19 @@ type MatchingPanelProps = {
 
 /**
  * One solution read in full, top to bottom: who it is, the AI's summary, each requirement with the
- * vendor's words and where they come from, the conditions of delivery behind a disclosure, and the two
- * decisions. A use case with one requirement says it at the top of the page, so the panel does not say
- * it again, and leaves out the summary when the reason for that one requirement is there.
+ * vendor's words and where they come from, the conditions of delivery behind a disclosure, whether the
+ * group is the right one, and the two decisions. A use case with one requirement says it at the top of the page, so the panel does not say
+ * it again, and leaves out the summary when the reason for that one requirement is there. The steps to
+ * the solutions around it and the two decisions each have a key, which the board listens for and the
+ * controls name in their tooltip.
  */
 function MatchingPanel({
   candidate,
   needs,
   constraints,
   pending,
+  answering,
+  onFeedback,
   onPrevious,
   onNext,
   onShortlist,
@@ -156,6 +197,8 @@ function MatchingPanel({
   const meta = useCandidateMeta()(candidate);
   const unread = unreadOf(candidate);
   const shortlisted = candidate.decision === "shortlisted";
+  /** What a control does and the key that does it too, as its tooltip. */
+  const hint = (label: string, key: string) => t("panel.shortcut", { label, key });
   const [onlyNeed] = needs.length === 1 ? needs : [];
   // With one requirement, its reason says what the summary would say.
   const reasoned = onlyNeed && Boolean(findingOf(candidate, onlyNeed.position)?.reason.trim());
@@ -177,12 +220,21 @@ function MatchingPanel({
             <IconButton
               size="sm"
               aria-label={t("panel.previous")}
+              title={hint(t("panel.previous"), "←")}
+              aria-keyshortcuts="ArrowLeft"
               disabled={!onPrevious}
               onClick={onPrevious}
             >
               <ChevronLeftIcon aria-hidden="true" />
             </IconButton>
-            <IconButton size="sm" aria-label={t("panel.next")} disabled={!onNext} onClick={onNext}>
+            <IconButton
+              size="sm"
+              aria-label={t("panel.next")}
+              title={hint(t("panel.next"), "→")}
+              aria-keyshortcuts="ArrowRight"
+              disabled={!onNext}
+              onClick={onNext}
+            >
               <ChevronRightIcon aria-hidden="true" />
             </IconButton>
           </div>
@@ -278,17 +330,36 @@ function MatchingPanel({
         </Collapsible>
       )}
 
+      {candidate.judged && (
+        <MatchingFeedback
+          // Another solution, or this one judged anew, is another question.
+          key={candidate.id}
+          candidate={candidate}
+          needs={needs}
+          pending={answering}
+          onAnswer={onFeedback}
+        />
+      )}
+
       <div className="flex flex-wrap items-center gap-2 border-t pt-5">
         <Button
           prominence={shortlisted ? "secondary" : "primary"}
           aria-pressed={shortlisted}
+          title={hint(t(shortlisted ? "row.shortlisted" : "row.shortlist"), "S")}
+          aria-keyshortcuts="S"
           pending={pending}
           onClick={onShortlist}
         >
           {shortlisted && !pending && <CheckIcon aria-hidden="true" />}
           {t(shortlisted ? "row.shortlisted" : "row.shortlist")}
         </Button>
-        <Button prominence="secondary" disabled={pending} onClick={onRemove}>
+        <Button
+          prominence="secondary"
+          title={hint(t("row.remove"), "N")}
+          aria-keyshortcuts="N"
+          disabled={pending}
+          onClick={onRemove}
+        >
           {t("row.remove")}
         </Button>
       </div>

@@ -2519,6 +2519,32 @@
         "lead": "Những thay đổi trên trang này chưa được lưu và sẽ mất.",
         "leave": "Rời trang",
         "stay": "Ở lại"
+      },
+      "feedback": {
+        "agreed": "{a}/{n} câu trả lời đồng ý trong 30 ngày qua",
+        "empty": "Chưa ai trả lời.",
+        "columns": {
+          "solution": "Giải pháp",
+          "ai": "Nhóm AI xếp",
+          "expected": "Nhóm họ chọn",
+          "requirements": "Yêu cầu AI chấm sai",
+          "note": "Ghi chú",
+          "who": "Ai, lúc nào"
+        },
+        "requirement": "Yêu cầu {position}",
+        "count": "{count} câu trả lời không đồng ý",
+        "pagination": {
+          "label": "Các trang câu trả lời không đồng ý",
+          "previous": "Trước",
+          "next": "Sau",
+          "goToPrevious": "Về trang trước",
+          "goToNext": "Sang trang sau",
+          "page": "Trang {page}"
+        }
+      },
+      "tabs": {
+        "limits": "Giới hạn",
+        "feedback": "Phản hồi"
       }
     },
     "aiUsage": {
@@ -6649,6 +6675,14 @@
         "note": "Mỗi giải pháp là một lần gọi mô hình. Những giải pháp đã lưu và đã loại vẫn giữ nguyên.",
         "confirm": "Xem xét lại toàn bộ",
         "cancel": "Hủy"
+      },
+      "found": {
+        "title": "AI đã tìm như thế nào",
+        "brief": "Đọc đề bài: {count} yêu cầu",
+        "search": "Tìm trong các giải pháp trên BeyondPilot",
+        "reading": "Đọc kỹ {total} giải pháp",
+        "readingEach": "Đọc kỹ những giải pháp gần nhất",
+        "matches": "{shown} giải pháp phù hợp"
       }
     },
     "summary": {
@@ -6683,7 +6717,7 @@
       },
       "waiting": {
         "title": "Chưa được xem xét",
-        "about": "GenAI Fund thêm thủ công. AI sẽ đọc các giải pháp này ở lượt tìm tới."
+        "about": "AI sẽ đọc các giải pháp này ở lượt tìm tới."
       },
       "reading": {
         "title": "Đang đọc",
@@ -6707,7 +6741,15 @@
       "customerCase": "Trích từ dự án khách hàng {number}",
       "deck": "Trích từ deck, trang {page}",
       "website": "Trích từ website",
-      "websiteAt": "Trích từ website · {host}"
+      "websiteAt": "Trích từ website · {host}",
+      "close": "Gần với lời của họ",
+      "found": {
+        "profile": "Có trong hồ sơ của họ",
+        "customerCase": "Có trong dự án khách hàng {number} của họ",
+        "deck": "Có trong deck của họ, trang {page}",
+        "website": "Có trên website của họ",
+        "websiteAt": "Có trên website của họ · {host}"
+      }
     },
     "row": {
       "shortlist": "Lưu lại",
@@ -6728,6 +6770,12 @@
         "met": "{count} đáp ứng",
         "partly": "{count} một phần",
         "not_shown": "{count} chưa có dẫn chứng"
+      },
+      "source": {
+        "profile": "Hồ sơ",
+        "customerCase": "Dự án khách hàng {number}",
+        "deck": "Deck, tr. {page}",
+        "website": "Website"
       }
     },
     "panel": {
@@ -6742,7 +6790,8 @@
       "required": "Bắt buộc",
       "constraints": "Cần hỏi lại nhà cung cấp",
       "constraintsCount": "{count} điều kiện triển khai cần hỏi lại",
-      "openDeck": "Mở deck"
+      "openDeck": "Mở deck",
+      "shortcut": "{label} ({key})"
     },
     "deck": {
       "page": "Deck, trang {page}",
@@ -6830,6 +6879,21 @@
       "MATCHING_SETTINGS_CHANGED": "Có người khác vừa đổi các thiết lập này. Hãy tải lại rồi thử lần nữa.",
       "REQUEST_INVALID": "Yêu cầu chưa được chấp nhận. Hãy chọn một lý do rồi thử lại.",
       "unknown": "Chưa thực hiện được. Hãy thử lại."
+    },
+    "feedback": {
+      "question": "AI xếp nhóm này có đúng không?",
+      "yes": "Đúng",
+      "no": "Chưa đúng",
+      "where": "Theo bạn nó thuộc nhóm nào?",
+      "none": "Không phù hợp",
+      "which": "AI chấm sai yêu cầu nào? (không bắt buộc)",
+      "note": "Ghi chú (không bắt buộc)",
+      "send": "Gửi",
+      "cancel": "Huỷ",
+      "change": "Sửa",
+      "agreed": "Bạn đã đồng ý.",
+      "said": "Bạn chọn: {group}.",
+      "counts": "{n} câu trả lời, {d} không đồng ý"
     }
   }
 }

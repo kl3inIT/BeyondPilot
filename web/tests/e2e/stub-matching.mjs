@@ -2,9 +2,14 @@
 // Pocket Policy and as operators read it. Two published use cases:
 // - "Claims triage" asks for three things: one required capability, two optional ones and a condition
 //   of delivery. A solution in each group, one the AI put in no group, one a member removed, one
-//   GenAI Fund removed and one the AI has not read yet.
+//   GenAI Fund removed and one the AI has not read yet. Its quotes stand as code found them: most word
+//   for word, one only close to the vendor's words, one not found. Three people said whether Staple AI
+//   is in the right group, which operators are told.
 // - "Invoice capture" asks for one thing, as most use cases do, with a condition of delivery: one
-//   solution in each of the first two groups and six in the last, which folds.
+//   solution in each of the first two groups and six in the last, which folds; the last of them has no
+//   quote.
+// And what people said about the AI's groups, as Admin › AI › Matching reads it: two disagreements, one
+// of them about a use case that is no longer published; nothing for the operator of another deployment.
 // And a family of use cases named "Document intake", each with a run at work: one solution read and
 // three that wait. A test takes one of them for itself, replaces what the stub answers for it and
 // pushes events into the stream of its changes, as a run does (see `serveMatchingLive`).
@@ -123,15 +128,15 @@ const requirements = [
 ];
 
 // As Spring answers: the address of a quote's web page is null when there is none, not left out.
-const finding = (requirement, status, quote = "", source = "", reason = "", sourceUrl = null) => ({
+const finding = (
   requirement,
   status,
-  quote,
-  source,
-  sourceUrl,
-  reason,
-  quoteState: quote ? "exact" : "none",
-});
+  quote = "",
+  source = "",
+  reason = "",
+  sourceUrl = null,
+  quoteState = quote ? "exact" : "none",
+) => ({ requirement, status, quote, source, sourceUrl, reason, quoteState });
 
 const candidate = (number, name, bucket, findings, more = {}) => ({
   id: `c4d1d47e-0000-4000-8000-${String(number).padStart(12, "0")}`,
@@ -175,7 +180,16 @@ const candidates = [
         "It flags, it does not check rules.",
       ),
       finding(3, "not_shown"),
-      finding(4, "met", "SAP connector available", "profile", "The profile names a SAP connector."),
+      // Kept before the check of quotes: code did not find these words.
+      finding(
+        4,
+        "met",
+        "SAP connector available",
+        "profile",
+        "The profile names a SAP connector.",
+        null,
+        "not_found",
+      ),
     ],
     { summary: "It reads claim documents in production today.", unread: ["website"] },
   ),
@@ -185,7 +199,16 @@ const candidates = [
     "industry",
     [
       finding(1, "partly", "More than 1K invoices per month", "customer case 1", "Invoices only."),
-      finding(2, "met", "Double payment and missing invoices", "deck p.3", "It checks payments."),
+      // Most of these words are on the page, not all of them.
+      finding(
+        2,
+        "met",
+        "Double payment and missing invoices",
+        "deck p.3",
+        "It checks payments.",
+        null,
+        "close",
+      ),
       finding(3, "not_shown"),
       finding(4, "not_shown"),
     ],
@@ -283,13 +306,16 @@ const oneNeedCandidates = [
       name,
       "technology",
       [
-        finding(
-          1,
-          "partly",
-          "extracting data from PDFs and images",
-          "website",
-          "A general extractor.",
-        ),
+        // The last one shows the requirement in part and quotes nothing.
+        name === "Inkstone"
+          ? finding(1, "partly")
+          : finding(
+              1,
+              "partly",
+              "extracting data from PDFs and images",
+              "website",
+              "A general extractor.",
+            ),
         finding(2, "not_shown"),
       ],
       { country: "VN", summary: "Built on document intelligence." },
@@ -332,6 +358,45 @@ const runningUseCase = {
   candidates: runningCandidates,
   run: runningRun,
 };
+
+// What people said about the AI's groups: five answers in thirty days, three of them agreeing.
+const disagreements = [
+  {
+    id: "fb000000-0000-4000-8000-000000000001",
+    useCaseId: matchedUseCaseId,
+    useCaseTitle: "Claims triage",
+    candidateId: candidates[2].id,
+    solutionId: candidates[2].solutionId,
+    solutionName: "Docbase",
+    aiBucket: "technology",
+    expectedBucket: "direct",
+    // The second is of a judgment before this one: its requirement is no longer kept.
+    requirements: [
+      { position: 1, label: "Read documents", statement: requirements[0].statement },
+      { position: 2, label: null, statement: null },
+    ],
+    note: "They read claim forms for two insurers.",
+    by: "Minh Trần",
+    createdAt: "2026-10-09T04:00:00Z",
+  },
+  {
+    id: "fb000000-0000-4000-8000-000000000002",
+    useCaseId: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0099",
+    useCaseTitle: null,
+    candidateId: "c4d1d47e-0000-4000-8000-000000000099",
+    solutionId: candidates[4].solutionId,
+    solutionName: "Peakflo",
+    aiBucket: "industry",
+    expectedBucket: "none",
+    requirements: [],
+    note: null,
+    by: "Siti Rahma",
+    createdAt: "2026-10-08T02:30:00Z",
+  },
+];
+
+/** How many people answered about a solution's group and how many disagree, as operators are told. */
+const answered = { "Staple AI": [3, 1] };
 
 /** What a test put in the place of the stub's answer for one "Document intake", by its identifier. */
 const replaced = new Map();
@@ -427,8 +492,9 @@ export function serveMatchingDeck(response, url) {
 
 /**
  * The reads of the Matched solutions page, as `[status, body]`; nothing for another path. An operator reads
- * the model and the steps; a member reads how many runs the day still allows. And the limits of matching, which
- * only an operator reads (Admin › AI › Matching).
+ * the model, the steps and how many people answered about a group; a member reads how many runs the day still
+ * allows. And the limits of matching and what people said about its groups, which only an operator reads
+ * (Admin › AI › Matching).
  */
 export function answerMatching(url, account) {
   const { pathname } = url;
@@ -436,6 +502,25 @@ export function answerMatching(url, account) {
     return account?.role === "operator"
       ? [200, matchingSettings]
       : [account ? 403 : 401, { code: "IDENTITY_OPERATOR_REQUIRED" }];
+  }
+  if (pathname === "/api/matching/admin/feedback") {
+    if (account?.role !== "operator") {
+      return [account ? 403 : 401, { code: "IDENTITY_OPERATOR_REQUIRED" }];
+    }
+    // The operator of another deployment, where nobody has answered.
+    const none = account.email === "ops@beyondpilot.ai";
+    const first = (url.searchParams.get("page") ?? "1") === "1";
+    return [
+      200,
+      {
+        answers: none ? 0 : 5,
+        agreements: none ? 0 : 3,
+        items: none || !first ? [] : disagreements,
+        page: Number(url.searchParams.get("page") ?? 1),
+        pageSize: 20,
+        total: none ? 0 : disagreements.length,
+      },
+    ];
   }
   const id = /\/([0-9a-f-]{36})$/.exec(pathname)?.[1];
   const useCase = id ? findUseCase(id) : undefined;
@@ -470,10 +555,34 @@ export function answerMatching(url, account) {
       operator,
       modelChosen: true,
       requirements: useCase.requirements,
-      candidates: useCase.candidates,
+      // As Spring answers: nobody's answer is null, and so are the counts a member is not told.
+      candidates: useCase.candidates.map((one) => ({
+        ...one,
+        feedback: null,
+        feedbackCount: operator ? (answered[one.solutionName]?.[0] ?? 0) : null,
+        disagreeCount: operator ? (answered[one.solutionName]?.[1] ?? 0) : null,
+      })),
       run: operator ? { ...useCase.run, modelName: "claude-sonnet-4-5" } : useCase.run,
       steps: operator
         ? [
+            {
+              name: "requirements",
+              takenIn: 1,
+              givenOut: 4,
+              calls: 1,
+              inputTokens: 2100,
+              outputTokens: 380,
+              millis: 4200,
+            },
+            {
+              name: "candidates",
+              takenIn: 4,
+              givenOut: 6,
+              calls: 0,
+              inputTokens: 0,
+              outputTokens: 0,
+              millis: 800,
+            },
             {
               name: "judgment",
               takenIn: 6,

@@ -1,8 +1,18 @@
-import { CircleCheckIcon, CircleDotIcon, CircleHelpIcon } from "lucide-react";
+import {
+  BriefcaseBusinessIcon,
+  CircleCheckIcon,
+  CircleDotIcon,
+  CircleHelpIcon,
+  FileTextIcon,
+  GlobeIcon,
+  IdCardIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Fragment } from "react";
 
-import { sourceOf, statuses, type NeedStatus } from "./matching-view";
+import type { MatchingFinding } from "@/lib/api/generated";
+
+import { chipOf, sourceOf, statuses, type NeedStatus } from "./matching-view";
 
 /** The tone of a status; the words beside it carry the meaning. */
 function StatusIcon({ status }: { status: NeedStatus }) {
@@ -59,21 +69,65 @@ function StatusCounts({ counts }: { counts: Record<NeedStatus, number> }) {
   );
 }
 
-/** Where a vendor's words come from, as a line of text; a source this screen cannot name gives nothing. */
+/**
+ * Where a vendor's words come from, as a line of text; a source this screen cannot name gives nothing.
+ * With `found`, the line says the words are in that source: code found them there word for word. It
+ * says where the words stand, never that what they claim is true.
+ */
 function useSourceLine() {
   const t = useTranslations("Matching.source");
 
-  return (source: string) => {
-    const found = sourceOf(source);
-    if (!found) {
+  return (source: string, found = false) => {
+    const at = sourceOf(source);
+    if (!at) {
       return undefined;
     }
-    return found.kind === "customerCase"
-      ? t("customerCase", { number: found.number })
-      : found.kind === "deck"
-        ? t("deck", { page: found.page })
-        : t(found.kind);
+    if (at.kind === "customerCase") {
+      return t(found ? "found.customerCase" : "customerCase", { number: at.number });
+    }
+    if (at.kind === "deck") {
+      return t(found ? "found.deck" : "deck", { page: at.page });
+    }
+    return t(found ? `found.${at.kind}` : at.kind);
   };
 }
 
-export { StatusChip, StatusCounts, useSourceLine };
+const chipIcons = {
+  website: GlobeIcon,
+  deck: FileTextIcon,
+  profile: IdCardIcon,
+  customerCase: BriefcaseBusinessIcon,
+} as const;
+
+/**
+ * Where the words on a row come from, in a few characters: an icon and the host of a web page, the page
+ * of a deck, the profile or the customer case. It is read, not pressed: the row opens the panel.
+ */
+function SourceChip({ finding }: { finding: Pick<MatchingFinding, "source" | "sourceUrl"> }) {
+  const t = useTranslations("Matching.row.source");
+  const chip = chipOf(finding);
+  if (!chip) {
+    return null;
+  }
+  const Icon = chipIcons[chip.kind];
+  const text =
+    chip.kind === "website"
+      ? (chip.host ?? t("website"))
+      : chip.kind === "deck"
+        ? t("deck", { page: chip.page })
+        : chip.kind === "customerCase"
+          ? t("customerCase", { number: chip.number })
+          : t("profile");
+
+  return (
+    <span
+      data-slot="matching-source"
+      className="inline-flex max-w-40 shrink-0 items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
+    >
+      <Icon aria-hidden="true" className="size-3 shrink-0" />
+      <span className="truncate">{text}</span>
+    </span>
+  );
+}
+
+export { SourceChip, StatusChip, StatusCounts, useSourceLine };

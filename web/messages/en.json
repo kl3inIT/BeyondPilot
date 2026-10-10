@@ -2519,6 +2519,32 @@
         "lead": "Your changes on this page are not saved and will be lost.",
         "leave": "Leave",
         "stay": "Stay"
+      },
+      "feedback": {
+        "agreed": "{a} of {n} answers agreed in the last 30 days",
+        "empty": "Nobody has answered yet.",
+        "columns": {
+          "solution": "Solution",
+          "ai": "AI's group",
+          "expected": "Their group",
+          "requirements": "Requirements the AI got wrong",
+          "note": "Note",
+          "who": "Who and when"
+        },
+        "requirement": "Requirement {position}",
+        "count": "{count, plural, one {# disagreement} other {# disagreements}}",
+        "pagination": {
+          "label": "Pages of disagreements",
+          "previous": "Previous",
+          "next": "Next",
+          "goToPrevious": "Go to the previous page",
+          "goToNext": "Go to the next page",
+          "page": "Page {page}"
+        }
+      },
+      "tabs": {
+        "limits": "Limits",
+        "feedback": "Feedback"
       }
     },
     "aiUsage": {
@@ -6649,6 +6675,14 @@
         "note": "It calls the model once for each solution. Saved and removed solutions stay as they are.",
         "confirm": "Re-review every solution",
         "cancel": "Cancel"
+      },
+      "found": {
+        "title": "How AI found these",
+        "brief": "Read the brief: {count, plural, one {# requirement} other {# requirements}}",
+        "search": "Searched the solutions on BeyondPilot",
+        "reading": "Read {total, plural, one {# solution} other {# solutions}} closely",
+        "readingEach": "Read the closest ones in full",
+        "matches": "{shown, plural, one {# matches} other {# match}}"
       }
     },
     "summary": {
@@ -6683,7 +6717,7 @@
       },
       "waiting": {
         "title": "Not reviewed yet",
-        "about": "GenAI Fund added these by hand. AI reads them in the next run."
+        "about": "AI reads these in the next run."
       },
       "reading": {
         "title": "Being read",
@@ -6707,7 +6741,15 @@
       "customerCase": "From customer case {number}",
       "deck": "From their deck, page {page}",
       "website": "From their website",
-      "websiteAt": "From their website · {host}"
+      "websiteAt": "From their website · {host}",
+      "close": "Close to their words",
+      "found": {
+        "profile": "Found in their profile",
+        "customerCase": "Found in their customer case {number}",
+        "deck": "Found in their deck, page {page}",
+        "website": "Found on their website",
+        "websiteAt": "Found on their website · {host}"
+      }
     },
     "row": {
       "shortlist": "Save",
@@ -6728,6 +6770,12 @@
         "met": "{count} met",
         "partly": "{count} partly",
         "not_shown": "{count} no evidence"
+      },
+      "source": {
+        "profile": "Profile",
+        "customerCase": "Customer case {number}",
+        "deck": "Deck, p. {page}",
+        "website": "Website"
       }
     },
     "panel": {
@@ -6742,7 +6790,8 @@
       "required": "Must have",
       "constraints": "Ask the vendor about these",
       "constraintsCount": "{count, plural, one {# delivery condition to ask about} other {# delivery conditions to ask about}}",
-      "openDeck": "Open the deck"
+      "openDeck": "Open the deck",
+      "shortcut": "{label} ({key})"
     },
     "deck": {
       "page": "Deck, page {page}",
@@ -6830,6 +6879,21 @@
       "MATCHING_SETTINGS_CHANGED": "Someone else changed these settings. Reload and try again.",
       "REQUEST_INVALID": "That was not accepted. Pick a reason and try again.",
       "unknown": "That did not work. Try again."
+    },
+    "feedback": {
+      "question": "Is this the right group?",
+      "yes": "Yes",
+      "no": "No",
+      "where": "Where does it belong?",
+      "none": "Not a fit",
+      "which": "Which requirement did the AI get wrong? (optional)",
+      "note": "Note (optional)",
+      "send": "Send",
+      "cancel": "Cancel",
+      "change": "Change",
+      "agreed": "You agreed.",
+      "said": "You said: {group}.",
+      "counts": "{n, plural, one {# answer} other {# answers}}, {d, plural, one {# disagrees} other {# disagree}}"
     }
   }
 }

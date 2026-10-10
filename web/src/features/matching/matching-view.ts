@@ -261,6 +261,23 @@ export function changesBetween(
     : { arrived };
 }
 
+/** The part of the list a solution stands in. */
+export function sectionOf(candidate: Pick<MatchingCandidate, "judged" | "bucket">): Section {
+  return !candidate.judged ? "waiting" : candidate.bucket === "none" ? "kept" : candidate.bucket;
+}
+
+/**
+ * How many people said whether a solution is in the right group and how many of them disagree, for an
+ * operator, when someone other than the reader answered; nothing otherwise, and nothing for a member,
+ * who is not answered these numbers.
+ */
+export function othersAnswered(
+  candidate: Pick<MatchingCandidate, "feedback" | "feedbackCount" | "disagreeCount">,
+): { n: number; d: number } | undefined {
+  const n = candidate.feedbackCount ?? 0;
+  return n > (candidate.feedback ? 1 : 0) ? { n, d: candidate.disagreeCount ?? 0 } : undefined;
+}
+
 /** Which of a solution's deck and website the AI could not read. */
 export function unreadOf(
   candidate: Pick<MatchingCandidate, "unread">,
@@ -316,6 +333,42 @@ export function openingOf(
     return finding.quoteState === "other_source" ? undefined : { how: "deck", page: source.page };
   }
   return { how: "profile" };
+}
+
+/** Where a quote comes from, as a row names it in a few characters: a web page by its host. */
+export type SourceChip = Exclude<Source, { kind: "website" }> | { kind: "website"; host?: string };
+
+/** The source of a finding's quote as a row names it; nothing for a label this screen does not know. */
+export function chipOf(
+  finding: Pick<MatchingFinding, "source" | "sourceUrl">,
+): SourceChip | undefined {
+  const source = sourceOf(finding.source);
+  if (!source) {
+    return undefined;
+  }
+  return source.kind === "website" ? { kind: "website", host: hostOf(finding.sourceUrl) } : source;
+}
+
+/**
+ * The vendor's words a row shows under a solution's name: the quote for the first capability the use
+ * case cannot do without that has one, otherwise the first quote the solution has for anything asked.
+ * A solution not read yet, or one with no quote, has none.
+ */
+export function rowQuoteOf(
+  candidate: Pick<MatchingCandidate, "judged" | "findings">,
+  needs: Need[],
+): MatchingFinding | undefined {
+  if (!candidate.judged) {
+    return undefined;
+  }
+  const quoted = (finding: MatchingFinding | undefined): finding is MatchingFinding =>
+    finding !== undefined && finding.quote.trim() !== "";
+  return (
+    needs
+      .filter((need) => need.required)
+      .map((need) => findingOf(candidate, need.position))
+      .find(quoted) ?? candidate.findings.find(quoted)
+  );
 }
 
 /** Reads the backend's label of a source; a label this screen does not know gives nothing. */
