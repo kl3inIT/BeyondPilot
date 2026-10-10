@@ -116,14 +116,15 @@ class MatchingRepositoryTest {
 	void theLimitsAreKeptOnlyWhenNobodyChangedThemMeanwhile() {
 		jdbc.sql("""
 				update matching_settings set settle_minutes = 10, edit_runs_per_day = 3, member_runs_per_day = 3,
-				    runs_per_day = 200, candidates = 40, version = 0
+				    runs_per_day = 200, candidates = 40, parallel = 8, version = 0
 				""").update();
-		assertThat(matching.settings()).isEqualTo(new Settings(10, 3, 3, 200, 40, 0));
+		assertThat(matching.settings()).isEqualTo(new Settings(10, 3, 3, 200, 40, 8, 0));
 
-		assertThat(matching.saveSettings(new Settings(0, 1, 2, null, 20, 0))).isTrue();
-		assertThat(matching.settings()).isEqualTo(new Settings(0, 1, 2, null, 20, 1));
-		assertThat(matching.saveSettings(new Settings(5, 5, 5, 5, 50, 0))).as("read before the last change").isFalse();
-		assertThat(matching.saveSettings(new Settings(10, 3, 3, 200, 40, 1))).isTrue();
+		assertThat(matching.saveSettings(new Settings(0, 1, 2, null, 20, 16, 0))).isTrue();
+		assertThat(matching.settings()).isEqualTo(new Settings(0, 1, 2, null, 20, 16, 1));
+		assertThat(matching.saveSettings(new Settings(5, 5, 5, 5, 50, 1, 0))).as("read before the last change").isFalse();
+		assertThat(matching.settings()).as("a refused change keeps nothing").isEqualTo(new Settings(0, 1, 2, null, 20, 16, 1));
+		assertThat(matching.saveSettings(new Settings(10, 3, 3, 200, 40, 8, 1))).isTrue();
 	}
 
 	@Test

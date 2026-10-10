@@ -17,8 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The limits of matching, which operators set in Admin: how long a changed use case waits before its run, how many
- * runs a day its changes and its members may start, how many runs a day start in all, and how many solutions a run
- * judges. Each change is recorded in the audit log.
+ * runs a day its changes and its members may start, how many runs a day start in all, how many solutions a run judges,
+ * and how many of them at the same time. Each change is recorded in the audit log.
  */
 @Service
 public class MatchingAdministration {
@@ -50,7 +50,8 @@ public class MatchingAdministration {
 	public MatchingSettingsResponse save(Actor actor, SaveMatchingSettingsRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		boolean saved = matching.saveSettings(new Settings(request.settleMinutes(), request.editRunsPerDay(),
-				request.memberRunsPerDay(), request.runsPerDay(), request.candidates(), request.version()));
+				request.memberRunsPerDay(), request.runsPerDay(), request.candidates(), request.parallel(),
+				request.version()));
 		if (!saved) {
 			throw new MatchingException(MatchingErrorCode.SETTINGS_CHANGED,
 					"Matching settings are no longer at version " + request.version());
@@ -63,7 +64,8 @@ public class MatchingAdministration {
 
 	private static MatchingSettingsResponse response(Settings settings) {
 		return new MatchingSettingsResponse(settings.settleMinutes(), settings.editRunsPerDay(),
-				settings.memberRunsPerDay(), settings.runsPerDay(), settings.candidates(), settings.version());
+				settings.memberRunsPerDay(), settings.runsPerDay(), settings.candidates(), settings.parallel(),
+				settings.version());
 	}
 
 }

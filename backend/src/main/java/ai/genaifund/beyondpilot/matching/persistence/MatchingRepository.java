@@ -113,9 +113,10 @@ public class MatchingRepository {
 	/**
 	 * What operators set.
 	 * @param runsPerDay how many runs a day start in all; null is no limit
+	 * @param parallel how many candidates a run judges at the same time
 	 */
 	public record Settings(int settleMinutes, int editRunsPerDay, int memberRunsPerDay, @Nullable Integer runsPerDay,
-			int candidates, long version) {
+			int candidates, int parallel, long version) {
 	}
 
 	/** A run as people see it. */
@@ -258,12 +259,13 @@ public class MatchingRepository {
 	/** What operators set. */
 	public Settings settings() {
 		return jdbc.sql("""
-				select settle_minutes, edit_runs_per_day, member_runs_per_day, runs_per_day, candidates, version
+				select settle_minutes, edit_runs_per_day, member_runs_per_day, runs_per_day, candidates, parallel,
+				    version
 				from matching_settings
 				""")
 			.query((row, number) -> new Settings(row.getInt("settle_minutes"), row.getInt("edit_runs_per_day"),
 					row.getInt("member_runs_per_day"), (Integer) row.getObject("runs_per_day"),
-					row.getInt("candidates"), row.getLong("version")))
+					row.getInt("candidates"), row.getInt("parallel"), row.getLong("version")))
 			.single();
 	}
 
@@ -276,7 +278,7 @@ public class MatchingRepository {
 				update matching_settings
 				set settle_minutes = :settleMinutes, edit_runs_per_day = :editRunsPerDay,
 				    member_runs_per_day = :memberRunsPerDay, runs_per_day = :runsPerDay, candidates = :candidates,
-				    version = version + 1, updated_at = now()
+				    parallel = :parallel, version = version + 1, updated_at = now()
 				where version = :version
 				""")
 			.param("settleMinutes", settings.settleMinutes())
@@ -284,6 +286,7 @@ public class MatchingRepository {
 			.param("memberRunsPerDay", settings.memberRunsPerDay())
 			.param("runsPerDay", settings.runsPerDay(), Types.INTEGER)
 			.param("candidates", settings.candidates())
+			.param("parallel", settings.parallel())
 			.param("version", settings.version())
 			.update() == 1;
 	}

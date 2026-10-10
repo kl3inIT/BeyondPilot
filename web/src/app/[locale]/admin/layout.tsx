@@ -89,6 +89,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
           icon: <adminIcons.searchIndex aria-hidden="true" />,
         },
         {
+          href: siteRoutes.adminAiMatching,
+          label: t("nav.aiMatching"),
+          icon: <adminIcons.aiMatching aria-hidden="true" />,
+        },
+        {
           href: siteRoutes.adminAiUsage,
           label: t("nav.aiUsage"),
           icon: <adminIcons.aiUsage aria-hidden="true" />,

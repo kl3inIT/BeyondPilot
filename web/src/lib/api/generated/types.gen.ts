@@ -2240,6 +2240,10 @@ export type MatchingSettings = {
      */
     memberRunsPerDay: number;
     /**
+     * How many solutions a run judges at the same time.
+     */
+    parallel: number;
+    /**
      * How many runs a day start in all; absent for no limit.
      */
     runsPerDay?: number;
@@ -4242,6 +4246,7 @@ export type SaveMatchingSettings = {
     candidates: number;
     editRunsPerDay: number;
     memberRunsPerDay: number;
+    parallel: number;
     /**
      * Absent for no limit.
      */
