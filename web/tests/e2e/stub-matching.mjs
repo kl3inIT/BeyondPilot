@@ -17,6 +17,17 @@ const runningUseCaseIds = /^0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a1\d{3}$/;
 
 const person = (name, more = {}) => ({ name, genaiFund: false, you: false, ...more });
 
+// The limits of matching as the migrations leave them, changed three times since.
+const matchingSettings = {
+  settleMinutes: 10,
+  editRunsPerDay: 3,
+  memberRunsPerDay: 3,
+  runsPerDay: 200,
+  candidates: 40,
+  parallel: 8,
+  version: 3,
+};
+
 const brief = {
   id: matchedUseCaseId,
   title: "Claims triage",
@@ -388,10 +399,16 @@ export function serveMatchingLive(request, response, url, account) {
 
 /**
  * The reads of the Matched solutions page, as `[status, body]`; nothing for another path. An operator reads
- * the model and the steps; a member reads how many runs the day still allows.
+ * the model and the steps; a member reads how many runs the day still allows. And the limits of matching, which
+ * only an operator reads (Admin › AI › Matching).
  */
 export function answerMatching(url, account) {
   const { pathname } = url;
+  if (pathname === "/api/matching/admin/settings") {
+    return account?.role === "operator"
+      ? [200, matchingSettings]
+      : [account ? 403 : 401, { code: "IDENTITY_OPERATOR_REQUIRED" }];
+  }
   const id = /\/([0-9a-f-]{36})$/.exec(pathname)?.[1];
   const useCase = id ? findUseCase(id) : undefined;
   if (!useCase) {
