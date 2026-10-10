@@ -1,6 +1,6 @@
 # AI models: a price follows the catalog unless an operator sets one
 
-Status: accepted on 9 October 2026 and built the same day ([plan](plan.md)). Tracked in Linear as BEY-103. It changes the `ai` module and its screens only.
+Status: done on 10 October 2026, live on staging; accepted and built on 9 October ([plan](plan.md)). Tracked in Linear as BEY-103. It changes the `ai` module and its screens only.
 
 ## What it does
 

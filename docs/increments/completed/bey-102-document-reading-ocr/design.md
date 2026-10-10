@@ -1,6 +1,6 @@
 # AI models: document reading with OCR providers
 
-Status: accepted on 9 October 2026 and built the same day ([plan](plan.md), [verification](verification.md)). Tracked in Linear as BEY-102. It changes the `ai` module and its screen only and adds no module and no dependency between modules, so there is no boundary discovery.
+Status: done on 9 October 2026, live on staging; accepted and built the same day ([plan](plan.md), [verification](verification.md)). Tracked in Linear as BEY-102. It changes the `ai` module and its screen only and adds no module and no dependency between modules, so there is no boundary discovery.
 
 ## What it does
 

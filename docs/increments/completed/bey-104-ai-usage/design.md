@@ -6,7 +6,7 @@ The layout is the Figma section "Admin — AI: usage (draft for review, BEY-104)
 
 ## What it does
 
-Every call to a chat model or an OCR service already leaves a row in `ai_usage` ([BEY-92](../../active/bey-92-ai-models/design.md) started it, [BEY-102](../../active/bey-102-document-reading-ocr/design.md) added OCR calls, [BEY-103](../../active/bey-103-prices-follow-the-catalog/design.md) the price in effect). Nothing shows those rows. On 9 October the reader of document pages failed about once a minute for over an hour, 93 calls, and it was found only by reading the staging database.
+Every call to a chat model or an OCR service already leaves a row in `ai_usage` ([BEY-92](../../active/bey-92-ai-models/design.md) started it, [BEY-102](../bey-102-document-reading-ocr/design.md) added OCR calls, [BEY-103](../bey-103-prices-follow-the-catalog/design.md) the price in effect). Nothing shows those rows. On 9 October the reader of document pages failed about once a minute for over an hour, 93 calls, and it was found only by reading the staging database.
 
 Operators get a page, **Admin › AI › Usage**, with a period switch and two tabs.
 
