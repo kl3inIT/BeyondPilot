@@ -424,16 +424,24 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
 
   async function saveAndExit() {
     let current = savable(draft);
-    if (solutionChanged.current && solution.name.trim() !== "") {
-      const id = await keepSolution(solution).catch(() => null);
-      if (id && id !== linked.current) {
-        linked.current = id;
-        changed.current = true;
-        current = { ...current, solutionId: id };
+    // A save that fails keeps the person on the page, where what they typed still is.
+    try {
+      if (solutionChanged.current && solution.name.trim() !== "") {
+        const id = await keepSolution(solution);
+        if (id !== linked.current) {
+          linked.current = id;
+          changed.current = true;
+          current = { ...current, solutionId: id };
+        }
       }
-    }
-    if (changed.current) {
-      await save(current).catch(() => undefined);
+      if (changed.current) {
+        await save(current);
+      }
+    } catch (error) {
+      solutionChanged.current = solutionChanged.current || solution.id === null;
+      changed.current = true;
+      setProblem(saveProblem(error));
+      return;
     }
     router.push(getPathname({ href: siteRoutes.myApplications, locale }));
   }
