@@ -2,7 +2,15 @@
 
 import { ChevronDownIcon, ChevronUpIcon, CircleAlertIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 
 import { IconButton } from "@/components/actions/icon-button";
 import { TextButton } from "@/components/actions/text-button";
@@ -13,11 +21,13 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useNotify } from "@/hooks/use-notify";
 import {
   addMatchingCandidate,
+  giveMatchingFeedback,
   removeMatchingCandidate,
   restoreMatchingCandidate,
   shortlistMatchingCandidate,
   startMatchingRun,
   type AdminSolutionSummary,
+  type GiveMatchingFeedback,
   type Matching,
   type MatchingCandidate,
   type RemoveMatchingCandidate,
@@ -40,6 +50,7 @@ import {
   groupView,
   matchesOf,
   needsOf,
+  sectionOf,
   tabsOf,
   withNeed,
   type Activity,
@@ -57,6 +68,21 @@ function subscribeToWidth(onChange: () => void) {
 
 const tabNames = ["matches", "shortlist", "removed"] as const;
 type TabName = (typeof tabNames)[number];
+
+/** Where a key is a letter being typed, not a shortcut. */
+const FIELDS =
+  'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"], [role="combobox"], [role="searchbox"]';
+
+/**
+ * What lies over the page while it is open: a dialog, a menu, the deck's sheet. The sheet the panel
+ * itself is read in on a narrow screen is not one of them.
+ */
+const OVERLAYS =
+  '[role="dialog"]:not([data-panel="matching"]), [role="alertdialog"], [role="menu"], [role="listbox"]';
+
+/** Where the arrows already move something: between tabs, between the choices of a group. */
+const ARROWED =
+  '[role="tablist"], [role="radiogroup"], [role="toolbar"], [data-slot="toggle-group"]';
 
 /** How long a row that entered a group stays marked, in milliseconds: its highlight has faded by then. */
 const MARKED = 2500;
@@ -153,9 +179,10 @@ function GroupCard({ title, about, count, fold, children }: GroupCardProps) {
  * the list on a wide screen and in a sheet below that. Every request answers with the whole state,
  * which the screen shows at once; a newer read of the page replaces it. While the screen is open it
  * listens to what changes, a run's work and other people's decisions, and reads the state again: a
- * solution the AI has read moves from "Being read" into its group, and a line says so.
+ * solution the AI has read moves from "Being read" into its group, and a line says so. `selected` is
+ * the solution the address asks for, which opens with the page.
  */
-function MatchingBoard({ matching: read }: { matching: Matching }) {
+function MatchingBoard({ matching: read, selected }: { matching: Matching; selected?: string }) {
   const t = useTranslations("Matching");
   const reasonName = useTranslations("Matching.remove.reasons");
   const notify = useNotify();
@@ -168,14 +195,19 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
   const [held, setHeld] = useState({ over: read, state: read });
   const [tab, setTab] = useState<TabName>("matches");
   const [need, setNeed] = useState<number | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(selected ?? null);
+  const [sheetOpen, setSheetOpen] = useState(selected !== undefined);
+  // A solution the address asks for is shown even where its group would fold it away.
+  const [asked] = useState((): Partial<Record<Section, boolean>> => {
+    const candidate = read.candidates.find((one) => one.id === selected);
+    return candidate ? { [sectionOf(candidate)]: true } : {};
+  });
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   /** Whether the folding group is open, once a person opened or closed it. */
-  const [opened, setOpened] = useState<Partial<Record<Section, boolean>>>({});
+  const [opened, setOpened] = useState<Partial<Record<Section, boolean>>>(asked);
   /** Whether a group shows every row, once a person asked for all of them or for fewer. */
-  const [expanded, setExpanded] = useState<Partial<Record<Section, boolean>>>({});
+  const [expanded, setExpanded] = useState<Partial<Record<Section, boolean>>>(asked);
   const [pending, setPending] = useState<string | null>(null);
 
   // What a request answered stands until the page is read again.
@@ -344,6 +376,12 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
       },
     );
 
+  // The panel itself says what was answered, so no toast does.
+  const giveFeedback = (candidate: MatchingCandidate, body: GiveMatchingFeedback) =>
+    send(`feedback:${candidate.id}`, () =>
+      giveMatchingFeedback({ path: { candidateId: candidate.id }, body }),
+    );
+
   /** Opens the reason picker in the place of the solution's row, wherever the person asked from. */
   function askWhy(candidate: MatchingCandidate) {
     setSheetOpen(false);
@@ -354,6 +392,52 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
     setSelectedId(candidate.id);
     setSheetOpen(true);
   }
+
+  // With a solution open, four keys do what its controls do: the arrows step to the solutions around
+  // it, S saves or unsaves it, N asks why it is not a fit. A key held with a modifier, typed in a
+  // field, or pressed while a dialog, a menu or the deck lies over the page is left alone, and so is
+  // an arrow where arrows already move something, as between tabs.
+  const panelOpen = chosen !== undefined && (wide || sheetOpen);
+  const onKey = useEffectEvent((event: KeyboardEvent) => {
+    if (
+      !chosen ||
+      event.defaultPrevented ||
+      event.isComposing ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey
+    ) {
+      return;
+    }
+    const target = event.target instanceof Element ? event.target : null;
+    if (target?.closest(FIELDS) || document.querySelector(OVERLAYS)) {
+      return;
+    }
+    const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+    if (key === "ArrowLeft" || key === "ArrowRight") {
+      const next = flat[place + (key === "ArrowLeft" ? -1 : 1)];
+      if (next && !target?.closest(ARROWED)) {
+        event.preventDefault();
+        setSelectedId(next.id);
+      }
+    } else if ((key === "s" || key === "n") && pending === null) {
+      event.preventDefault();
+      if (key === "s") {
+        void shortlist(chosen);
+      } else {
+        askWhy(chosen);
+      }
+    }
+  });
+  useEffect(() => {
+    if (!panelOpen) {
+      return;
+    }
+    const listen = (event: KeyboardEvent) => onKey(event);
+    window.addEventListener("keydown", listen);
+    return () => window.removeEventListener("keydown", listen);
+  }, [panelOpen]);
 
   const rows = (section: Section) => {
     const view = views[section];
@@ -466,6 +550,8 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
       needs={needs}
       constraints={constraints}
       pending={pending === chosen.id}
+      answering={pending === `feedback:${chosen.id}`}
+      onFeedback={(body) => giveFeedback(chosen, body)}
       onPrevious={place > 0 ? () => setSelectedId(flat[place - 1].id) : undefined}
       onNext={place < flat.length - 1 ? () => setSelectedId(flat[place + 1].id) : undefined}
       onShortlist={() => void shortlist(chosen)}
@@ -628,6 +714,7 @@ function MatchingBoard({ matching: read }: { matching: Matching }) {
         <Sheet open={sheetOpen && chosen !== undefined} onOpenChange={setSheetOpen}>
           <SheetContent
             aria-label={chosen?.solutionName}
+            data-panel="matching"
             showCloseButton={false}
             className="data-[side=right]:w-full data-[side=right]:sm:max-w-md"
           >

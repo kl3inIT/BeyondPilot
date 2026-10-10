@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { MatchingPage } from "@/features/matching/matching-page";
 import { readMatching } from "@/features/matching/matching-queries";
+import { loadMatchingSearch } from "@/features/matching/matching-search";
 import { readAdminUseCase } from "@/features/usecase/admin-use-case-queries";
 import { getPathname } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
@@ -21,6 +22,7 @@ export async function generateMetadata({
 
 export default async function AdminUseCaseCandidatesRoute({
   params,
+  searchParams,
 }: PageProps<"/[locale]/admin/use-cases/[id]/candidates">) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -44,12 +46,14 @@ export default async function AdminUseCaseCandidatesRoute({
   if (!matching) {
     notFound();
   }
+  const { solution } = await loadMatchingSearch(searchParams);
 
   return (
     <MatchingPage
       area="admin"
       useCase={{ ...useCase, organizationName: useCase.organization.name }}
       matching={matching}
+      selected={solution ?? undefined}
     />
   );
 }
