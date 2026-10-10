@@ -337,7 +337,8 @@ test.describe("admin matching settings", () => {
       "/admin/use-cases/0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0011/candidates?solution=c4d1d47e-0000-4000-8000-000000000003",
     );
     await link.click();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Claims triage");
+    // On a phone the solution's sheet lies over the page, so the page is told by its address.
+    await expect(page).toHaveURL(/\/candidates\?solution=c4d1d47e-0000-4000-8000-000000000003$/);
     const panel = isMobile
       ? page.getByRole("dialog")
       : page.getByRole("complementary", { name: "The solution you picked" });
