@@ -15,6 +15,12 @@ public record AdminTalentListRequest(
 				schema = @Schema(allowableValues = { "in_review", "needs_changes", "approved", "suspended" })) @Pattern(
 						regexp = "in_review|needs_changes|approved|suspended") @Nullable String status,
 		@Parameter(description = "Only profiles featured when true, only those not featured when false.") @Nullable Boolean featured,
+		@Parameter(
+				description = "The order: `name` by the name, `submitted` by when it was last sent for review; `-` "
+						+ "before a key turns it round, and one never sent comes last either way. Without it, those "
+						+ "waiting for review first, the longest wait on top.",
+				schema = @Schema(type = "string", allowableValues = { "name", "-name", "submitted",
+						"-submitted" })) @Pattern(regexp = TalentCodes.ADMIN_SORT) @Nullable String sort,
 		@Parameter(description = "The page, counted from 1.",
 				schema = @Schema(type = "integer", format = "int32", defaultValue = "1", minimum = "1")) @Min(1) @Nullable Integer page) {
 }
