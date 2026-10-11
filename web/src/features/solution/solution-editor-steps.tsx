@@ -12,6 +12,7 @@ import { useTranslations } from "next-intl";
 
 import { ChoiceChips } from "@/components/composites/choice-chips";
 import { ChoiceSelect } from "@/components/composites/choice-select";
+import { RequiredMark } from "@/components/composites/required-mark";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -80,11 +81,7 @@ function EditorField({
       <FieldLabel htmlFor={labelled ? id : undefined} id={`${id}-label`}>
         {icon && <span className="shrink-0 [&_svg]:size-4">{icon}</span>}
         {label}
-        {required && (
-          <span aria-hidden="true" className="text-destructive">
-            *
-          </span>
-        )}
+        {required && <RequiredMark />}
         {optional && <span className="text-xs font-normal text-muted-foreground">{optional}</span>}
       </FieldLabel>
       {children}
