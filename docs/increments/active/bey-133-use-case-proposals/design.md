@@ -4,11 +4,12 @@ Linear: BEY-133. Design in Figma, page Screens: "Use case — apply with a propo
 
 ## What a person can do
 
-- **Send a proposal.** A member of an approved organization opens a published use case and chooses **Send a proposal**. Six steps follow, each with **Save and return later**: Organization, AI solutions, Your profile, Team, Proposal PDF, Review. Sending is final for now.
+- **Send a proposal.** A member of an approved organization opens a published use case and chooses **Send a proposal**. Six steps follow, each with **Save and return later**: Organization, AI solutions, Your profile, Team, Proposal PDF, Review.
+- **Look at it and change it after sending.** The members of the organization keep reading what they sent. They may also edit it for the number of days GenAI Fund sets for that use case (7 unless GenAI Fund says otherwise, 0 to 90), counted from the sending, and only while the use case is open. A sent proposal that was edited says so to the organization that posted the use case.
 - **Read proposals.** Every member of the organization that posted the use case reads the proposals it received, in a list and one by one. Reading is all they do for now.
 - **See how many.** Anyone, signed in or not, sees how many proposals a use case has received.
 
-Out of scope, kept as screens or left out: withdrawing a sent proposal, shortlist and decline, every email, anything for operators.
+Out of scope, kept as screens or left out: editing a sent proposal's sender snapshot, withdrawing a sent proposal, shortlist and decline, every email, anything for operators.
 
 ## Domain story
 
@@ -32,9 +33,10 @@ Failures. The use case closes while the form is open: sending is refused with th
 | Posting organization | The organization that posted the use case. Its members read the proposals. | |
 | Team member | A member of the provider organization named on one proposal, with a role typed for that proposal. | The organization's own member role (`owner`, `member`) and a member's job title; neither is copied. |
 | Primary contact | The one team member the posting organization is told to speak to. | |
+| Edit window | The time after sending during which the provider organization may still save its proposal: the days `use_case.proposal_edit_days` (set by GenAI Fund for each use case) after `sent_at`, while the use case is open. | A deadline for sending, which is the use case's close date. |
 | Talent snapshot | The sender's talent profile as it was when the proposal was sent, kept with the proposal. | The live profile, which the person may change later. |
 
-A proposal is **draft** or **sent**. A sent proposal never returns to draft in this increment.
+A proposal is **draft** or **sent**. A sent proposal never returns to draft in this increment; it stays sent while its organization edits it.
 
 ## Boundary discovery
 
@@ -69,6 +71,7 @@ Invariants, checked on the server:
   - one stored PDF uploaded by the caller with the purpose `application_file`;
   - the caller's talent profile has a headline, a bio, a role and a skill (the profile's `complete`).
 - A saved draft may be partial; only sending demands the above.
+- A sent proposal may be saved again by the members of its organization while the use case is open and now is before `sent_at` plus the use case's `proposal_edit_days`. Such a save is checked as sending is (the same completeness and the same codes), keeps the status sent, the sender and the snapshot, keeps the `version` check, and records `edited_at`. Outside that window the save is refused with `PROPOSAL_EDIT_WINDOW_CLOSED`; with 0 days no sent proposal can be edited. Once the use case closes nobody edits, but the organization still reads what it sent.
 - Sending stores the snapshot and the time in the same transaction that makes the proposal sent.
 
 ## Data
@@ -87,6 +90,7 @@ create table use_case_proposal (
     status                text        not null default 'draft' check (status in ('draft', 'sent')),
     talent                jsonb check (talent is null or jsonb_typeof(talent) = 'object'),
     sent_at               timestamptz,
+    edited_at             timestamptz,
     version               bigint      not null default 0,
     created_at            timestamptz not null default now(),
     updated_at            timestamptz not null default now(),
@@ -113,6 +117,8 @@ create table use_case_proposal_solution (
 );
 ```
 
+A second migration, `V75__usecase_add_proposal_edit_days.sql`, adds `use_case.proposal_edit_days integer not null default 7 check (proposal_edit_days between 0 and 90)`; the module `usecase` owns it, GenAI Fund sets it when it creates a use case, and the use case an organization writes itself gets the default. `UseCaseTarget` and the public use case carry it as `proposalEditDays`, so the public page can say that proposals can be edited for that many days after sending.
+
 The snapshot is the profile without the rate band and without whether it is listed: the proposal shows what the sender chose to say about themselves, nothing the profile keeps private.
 
 When an organization is merged ([BEY-33](../../completed/bey-33-organization-flows-and-admin/design.md)), the existing merge listener of the module also moves `use_case_proposal.organization_id`. If the kept organization already has a proposal for the same use case, the proposal of the merged one is dropped when it is a draft and kept under its former organization when it is sent; the merged organization still exists as a row, so nothing breaks.
@@ -124,25 +130,30 @@ All paths are under `/api/proposal`; the operation ids are stable names for the 
 | Operation | Method and path | Who | Answers |
 | --- | --- | --- | --- |
 | `getUseCaseProposalForm` | `GET /use-cases/{useCaseId}/proposal` | signed in | The use case, the caller's organization and whether it is approved, its members, and the working copy (with the solutions it offers) or null |
-| `saveUseCaseProposal` | `PUT /use-cases/{useCaseId}/proposal` | member of an approved organization | The form with the draft as saved |
+| `saveUseCaseProposal` | `PUT /use-cases/{useCaseId}/proposal` | member of an approved organization | The form with the draft as saved, or with the sent proposal as edited within its edit window |
 | `sendUseCaseProposal` | `POST /use-case-proposals/{id}/send` | the same | The form with the proposal sent |
 | `listUseCaseProposals` | `GET /use-cases/{useCaseId}/proposals` | member of the posting organization | The sent proposals, newest first |
 | `getReceivedUseCaseProposal` | `GET /use-case-proposals/{id}` | member of the posting organization | One sent proposal with its snapshot and team |
 | `getUseCaseProposalFile` | `GET /use-case-proposals/{id}/file` | member of the posting organization | The PDF, saved under its name |
 | `countUseCaseProposals` | `GET /use-cases/proposal-counts?useCaseIds=…` | anyone | The number of sent proposals of each use case, at most 50 ids |
 
+The form (`getUseCaseProposalForm`) answers for the caller's sent proposal even after the use case closed or while it cannot be edited, so the organization can read it; the proposal carries `editableUntil` (the end of the edit window while the use case is open, the days are above 0 and the time has not passed, otherwise null) and `editedAt`. The proposals the posting organization reads carry `editedAt`.
+
+The proposal the sender reads carries `sender` (the profile snapshot as sent; null for a draft). Each offered solution carries its name, summary, `logoFileId` (its own logo, else its organization's), `viewKey` and `slug` (only while it is approved and not taken down); the review status is not part of it. Every offered solution opens in a new tab: at `/solutions/{slug}` when approved, otherwise at `/solutions/shared/{viewKey}`. `viewKey` is an unguessable `solution.view_key` (migration V76); `GET /api/solution/solutions/shared/{viewKey}` is public and returns the public solution page for any status (`approved` says whether it is published), without the owners' editor fields, and is never listed or indexed (the page is `noindex, nofollow`). Anyone holding the link reads even a draft, which is the accepted trade-off. `SolutionSummary` (the owners' list) carries `logoFileId` and `viewKey` so the wizard draws the same cards.
+
 The working copy is shared by the members of the provider organization; the `version` the form read travels with every save, as in the program application.
 
 ## Errors
 
-New codes of `ProposalErrorCode`, all starting `PROPOSAL_`: `USE_CASE_NOT_OPEN` (not found, not published or past its close), `OWN_USE_CASE`, `ORGANIZATION_NOT_APPROVED`, `ORGANIZATION_REQUIRED` (reused), `ALREADY_SENT`, `PROFILE_INCOMPLETE`, `TEAM_INVALID`, `TEAM_INCOMPLETE`, `PDF_REQUIRED`, `SOLUTION_REQUIRED` (reused), `APPROACH_REQUIRED`, `CHANGED_MEANWHILE` (reused), `SOLUTION_NOT_FOUND` (a solution that is not the organization's, or named twice), `PROPOSAL_NOT_FOUND` (read of a proposal that does not exist or is not the caller's to read). `USE_CASE_NOT_OPEN` is `USE_CASE_NOT_FOUND` and `USE_CASE_CLOSED`, and `ORGANIZATION_REQUIRED` is `NO_ORGANIZATION`, in the code.
+New codes of `ProposalErrorCode`, all starting `PROPOSAL_`: `USE_CASE_NOT_OPEN` (not found, not published or past its close), `OWN_USE_CASE`, `ORGANIZATION_NOT_APPROVED`, `ORGANIZATION_REQUIRED` (reused), `ALREADY_SENT`, `PROFILE_INCOMPLETE`, `TEAM_INVALID`, `TEAM_INCOMPLETE`, `PDF_REQUIRED`, `SOLUTION_REQUIRED` (reused), `APPROACH_REQUIRED`, `CHANGED_MEANWHILE` (reused), `SOLUTION_NOT_FOUND` (a solution that is not the organization's, or named twice), `EDIT_WINDOW_CLOSED` (a save of a sent proposal after its edit window, or with no edit days, or after the use case closed; `ALREADY_SENT` stays for sending a sent proposal), `PROPOSAL_NOT_FOUND` (read of a proposal that does not exist or is not the caller's to read). `USE_CASE_NOT_OPEN` is `USE_CASE_NOT_FOUND` and `USE_CASE_CLOSED`, and `ORGANIZATION_REQUIRED` is `NO_ORGANIZATION`, in the code.
 
 ## Web
 
 Pages (App Router, thin) and the feature folder `web/src/features/proposal`:
 
 - `/use-cases/[id]/propose`: the wizard. Server state is the working copy; the profile step reuses `TalentForm`'s fields and rules; **Save and return later** saves and goes back to the use case.
-- The use case page: **Send a proposal** links to the wizard; the "Proposals" tile shows the count.
+- The use case page: **Send a proposal** links to the wizard (no Save for later); the "Proposals" tile shows the count.
+- The sender's view page and the poster's detail page share the Sender profile card, the solution cards and the team table (name over a muted email).
 - `/workspace/organization/use-cases/[id]/proposals` and `.../[proposalId]`: the list with the tabs All, Shortlisted and Declined (the last two empty and inert for now), and one proposal read-only; the Shortlist and Decline buttons are drawn and disabled.
 - My organization › Use cases: a Proposals column and **View proposals** in the row menu.
 

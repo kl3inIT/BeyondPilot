@@ -14,7 +14,13 @@ public record UseCaseProposalResponse(@Schema(requiredMode = Schema.RequiredMode
 		@Schema(types = { "string", "null" }) @Nullable String approach,
 		@Schema(types = { "object", "null" }) @Nullable AttachedFileResponse deck,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<ProposalTeamMemberResponse> team,
+		@Schema(types = { "object", "null" },
+				description = "The sender's talent profile as it was when the proposal was sent; null for a draft.") @Nullable SenderProfileResponse sender,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant sentAt,
+		@Schema(types = { "string", "null" }, format = "date-time",
+				description = "While a sent proposal may still be edited, until when; null for a draft, and once the time to edit has ended or the use case has closed.") @Nullable Instant editableUntil,
+		@Schema(types = { "string", "null" }, format = "date-time",
+				description = "When the proposal was last edited after sending; null while it is as sent.") @Nullable Instant editedAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "int64",
 				description = "Sent back with the next save, so a save made on a stale copy is refused.") long version,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time") Instant updatedAt) {

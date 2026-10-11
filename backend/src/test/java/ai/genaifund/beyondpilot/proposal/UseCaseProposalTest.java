@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.proposal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -56,6 +57,18 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 				"AI engineer");
 		assertThat(JsonPath.<List<Boolean>>read(teamed, "$.proposal.team[*].primary")).containsExactly(true, false);
 		assertThat(proposalVersion(teamed)).isGreaterThan(proposalVersion(first));
+		// A draft carries no sender profile, and an unreviewed solution shows no address.
+		assertThat(JsonPath.<Object>read(teamed, "$.proposal.sender")).isNull();
+		assertThat(JsonPath.<Object>read(teamed, "$.proposal.solutions[0].slug")).isNull();
+		assertThat(JsonPath.<Object>read(teamed, "$.proposal.solutions[0].logoFileId")).isNull();
+		// Whoever holds its key reads even a draft, with no session and nothing of the owners' editor.
+		String viewKey = JsonPath.read(teamed, "$.proposal.solutions[0].viewKey");
+		String shared = body(client.get().uri("/api/solution/solutions/shared/" + viewKey).exchange().expectStatus().isOk());
+		assertThat(JsonPath.<String>read(shared, "$.name")).isEqualTo("Claim Copilot");
+		assertThat(JsonPath.<Boolean>read(shared, "$.approved")).isFalse();
+		assertThat(shared).doesNotContain("decisionReason", "decisionMessage", "suspendedAt", "submittedBy", "\"status\"");
+		client.get().uri("/api/solution/solutions/shared/" + UUID.randomUUID()).exchange().expectStatus().isNotFound();
+		client.get().uri("/api/solution/solutions/shared/not-a-key").exchange().expectStatus().is4xxClientError();
 
 		// A save made on a copy that another member has since changed is refused.
 		assertProblem(put(provider.founder, path, draft(provider.solution, "Stale.", null, List.of(), proposalVersion(first))),
@@ -69,10 +82,27 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			.isOk());
 		assertThat(JsonPath.<String>read(sent, "$.proposal.status")).isEqualTo("sent");
 		assertThat(JsonPath.<String>read(sent, "$.proposal.sentAt")).isNotNull();
+		// The sender reads the profile as sent.
+		assertThat(JsonPath.<String>read(sent, "$.proposal.sender.name")).isEqualTo("Founder Provider");
+		assertThat(JsonPath.<String>read(sent, "$.proposal.sender.headline")).isEqualTo("Builds claims AI");
+		assertThat(JsonPath.<List<String>>read(sent, "$.proposal.team[*].name")).hasSize(2);
 
-		// Sent is final: it cannot be saved or sent again.
+		// An approved solution carries its address, and its own logo when it has one.
+		UUID logo = file(provider.founderEmail);
+		jdbc.sql("update solution set status = 'approved', logo_file_id = ? where id = ?")
+			.params(logo, provider.solution)
+			.update();
+		String approvedSolution = body(get(provider.founder, path).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(approvedSolution, "$.proposal.solutions[0].slug")).isNotBlank();
+		assertThat(JsonPath.<String>read(approvedSolution, "$.proposal.solutions[0].logoFileId"))
+			.isEqualTo(logo.toString());
+		jdbc.sql("update solution set suspended_at = now() where id = ?").params(provider.solution).update();
+		assertThat(JsonPath.<Object>read(body(get(provider.founder, path).expectStatus().isOk()),
+				"$.proposal.solutions[0].slug")).isNull();
+
+		// A sent proposal may be saved again while its time to edit lasts, if it stays complete; it cannot be sent again.
 		assertProblem(put(provider.founder, path,
-				draft(provider.solution, "Late.", null, List.of(), proposalVersion(sent))), 409, "PROPOSAL_ALREADY_SENT");
+				draft(provider.solution, "Late.", null, List.of(), proposalVersion(sent))), 400, "PROPOSAL_PDF_REQUIRED");
 		assertProblem(post(provider.founder, API + "/use-case-proposals/" + id + "/send", null), 409,
 				"PROPOSAL_ALREADY_SENT");
 
@@ -204,6 +234,147 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 	}
 
 	@Test
+	void aSentProposalCanBeEditedWhileTheUseCaseAllowsItAndThePostersSeeIt() {
+		Provider provider = provider("edits.test");
+		Poster poster = poster("posts-edits.test");
+		UUID useCase = publishedUseCase(poster.organization, "Editable proposals");
+		String path = path(useCase);
+		String id = sentProposal(provider, useCase);
+		String sent = body(get(provider.founder, path).expectStatus().isOk());
+		assertThat(Instant.parse(JsonPath.read(sent, "$.proposal.editableUntil")))
+			.isCloseTo(Instant.parse(JsonPath.read(sent, "$.proposal.sentAt")).plus(7, ChronoUnit.DAYS),
+					within(1, ChronoUnit.SECONDS));
+		assertThat(JsonPath.<Object>read(sent, "$.proposal.editedAt")).isNull();
+		String before = body(get(poster.founder, API + "/use-case-proposals/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(before, "$.editedAt")).isNull();
+
+		// A colleague edits it: it stays sent, keeps its sender and its sending time, and says when it was edited.
+		String edited = body(put(provider.colleague, path,
+				draft(provider.solution, "A sharper approach.", file(provider.colleagueEmail),
+						List.of(member(provider.founderId, "Lead", true), member(provider.colleagueId, "Engineer", false)),
+						proposalVersion(sent)))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(edited, "$.proposal.status")).isEqualTo("sent");
+		assertThat(JsonPath.<String>read(edited, "$.proposal.approach")).isEqualTo("A sharper approach.");
+		assertThat(JsonPath.<String>read(edited, "$.proposal.sentAt")).isEqualTo(JsonPath.read(sent, "$.proposal.sentAt"));
+		assertThat(JsonPath.<String>read(edited, "$.proposal.editedAt")).isNotNull();
+		assertThat(JsonPath.<String>read(edited, "$.proposal.editableUntil")).isNotNull();
+		assertThat(jdbc.sql("select sent_by_account_id from use_case_proposal where id = ?")
+			.params(UUID.fromString(id))
+			.query(UUID.class)
+			.single()).isEqualTo(provider.founderId);
+
+		// A save on a stale copy is still refused.
+		assertProblem(put(provider.founder, path, draft(provider.solution, "Stale.", file(provider.founderEmail),
+				List.of(member(provider.founderId, "Lead", true)), proposalVersion(sent))), 409,
+				"PROPOSAL_CHANGED_MEANWHILE");
+
+		String read = body(get(poster.colleague, API + "/use-case-proposals/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(read, "$.approach")).isEqualTo("A sharper approach.");
+		assertThat(JsonPath.<String>read(read, "$.editedAt")).isNotNull();
+		assertThat(JsonPath.<List<String>>read(read, "$.team[*].role")).containsExactly("Lead", "Engineer");
+		String list = body(get(poster.founder, path + "s").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(list, "$.items[*].editedAt")).hasSize(1).doesNotContainNull();
+
+		// An edit must stay as complete as sending demanded; the codes are the same.
+		long version = proposalVersion(edited);
+		assertProblem(put(provider.founder, path, draft(null, "Approach.", file(provider.founderEmail),
+				List.of(member(provider.founderId, "Lead", true)), version)), 400, "PROPOSAL_SOLUTION_REQUIRED");
+		assertProblem(put(provider.founder, path, draft(provider.solution, " ", file(provider.founderEmail),
+				List.of(member(provider.founderId, "Lead", true)), version)), 400, "PROPOSAL_APPROACH_REQUIRED");
+		assertProblem(put(provider.founder, path, draft(provider.solution, "Approach.", null,
+				List.of(member(provider.founderId, "Lead", true)), version)), 400, "PROPOSAL_PDF_REQUIRED");
+		assertProblem(put(provider.founder, path, draft(provider.solution, "Approach.", file(provider.founderEmail),
+				List.of(), version)), 400, "PROPOSAL_TEAM_INCOMPLETE");
+		assertProblem(put(provider.founder, path, draft(provider.solution, "Approach.", file(provider.founderEmail),
+				List.of(member(provider.founderId, "Lead", false)), version)), 400, "PROPOSAL_TEAM_INCOMPLETE");
+		assertProblem(put(provider.founder, path, draft(provider.solution, "Approach.", file(provider.founderEmail),
+				List.of(member(provider.founderId, " ", true)), version)), 400, "PROPOSAL_TEAM_INCOMPLETE");
+		assertProblem(put(provider.founder, path, draft(provider.solution, "Approach.", file(provider.founderEmail),
+				List.of(member(UUID.randomUUID(), "Lead", true)), version)), 400, "PROPOSAL_TEAM_INVALID");
+		String unchanged = body(get(provider.founder, path).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(unchanged, "$.proposal.approach")).isEqualTo("A sharper approach.");
+		assertProblem(post(provider.founder, API + "/use-case-proposals/" + id + "/send", null), 409,
+				"PROPOSAL_ALREADY_SENT");
+	}
+
+	@Test
+	void aSentProposalCannotBeEditedOnceItsTimeHasEnded() {
+		Provider provider = provider("window.test");
+		Poster poster = poster("posts-window.test");
+		UUID useCase = publishedUseCase(poster.organization, "Window");
+		String path = path(useCase);
+		String id = sentProposal(provider, useCase);
+		String sent = body(get(provider.founder, path).expectStatus().isOk());
+
+		jdbc.sql("update use_case_proposal set sent_at = now() - interval '8 days' where id = ?")
+			.params(UUID.fromString(id))
+			.update();
+
+		assertProblem(put(provider.founder, path, draft(provider.solution, "Too late.", file(provider.founderEmail),
+				List.of(member(provider.founderId, "Lead", true)), proposalVersion(sent))), 409,
+				"PROPOSAL_EDIT_WINDOW_CLOSED");
+		// It stays readable, as sent.
+		String read = body(get(provider.founder, path).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(read, "$.proposal.status")).isEqualTo("sent");
+		assertThat(JsonPath.<Object>read(read, "$.proposal.editableUntil")).isNull();
+		String received = body(get(poster.founder, API + "/use-case-proposals/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(received, "$.editedAt")).isNull();
+	}
+
+	@Test
+	void aUseCaseThatAllowsNoEditsKeepsASentProposalAsSent() {
+		Provider provider = provider("nodays.test");
+		Poster poster = poster("posts-nodays.test");
+		UUID useCase = publishedUseCase(poster.organization, "No edits");
+		jdbc.sql("update use_case set proposal_edit_days = 0 where id = ?").params(useCase).update();
+		String path = path(useCase);
+		sentProposal(provider, useCase);
+		String sent = body(get(provider.founder, path).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(sent, "$.proposal.editableUntil")).isNull();
+
+		assertProblem(put(provider.founder, path, draft(provider.solution, "Nope.", file(provider.founderEmail),
+				List.of(member(provider.founderId, "Lead", true)), proposalVersion(sent))), 409,
+				"PROPOSAL_EDIT_WINDOW_CLOSED");
+	}
+
+	@Test
+	void aSentProposalStaysReadableAfterTheUseCaseClosedButCannotBeEdited() {
+		Provider provider = provider("closedview.test");
+		Poster poster = poster("posts-closedview.test");
+		UUID useCase = publishedUseCase(poster.organization, "Closing later");
+		String path = path(useCase);
+		sentProposal(provider, useCase);
+		String sent = body(get(provider.founder, path).expectStatus().isOk());
+
+		jdbc.sql("update use_case set closes_at = now() - interval '1 minute' where id = ?").params(useCase).update();
+
+		String read = body(get(provider.colleague, path).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(read, "$.proposal.status")).isEqualTo("sent");
+		assertThat(JsonPath.<String>read(read, "$.proposal.approach")).isEqualTo("We adapt it.");
+		assertThat(JsonPath.<Object>read(read, "$.proposal.editableUntil")).isNull();
+		assertProblem(put(provider.founder, path, draft(provider.solution, "After close.", file(provider.founderEmail),
+				List.of(member(provider.founderId, "Lead", true)), proposalVersion(sent))), 409,
+				"PROPOSAL_EDIT_WINDOW_CLOSED");
+		// An organization that sent nothing still finds the use case closed.
+		Provider other = provider("closedview-other.test");
+		assertProblem(get(other.founder, path), 409, "PROPOSAL_USE_CASE_CLOSED");
+	}
+
+	/** Saves a complete proposal as the founder, completes the founder's profile and sends it; returns its id. */
+	private String sentProposal(Provider provider, UUID useCase) {
+		String saved = body(put(provider.founder, path(useCase), draft(provider.solution, "We adapt it.",
+				file(provider.founderEmail), List.of(member(provider.founderId, "Lead", true)), null))
+			.expectStatus()
+			.isOk());
+		String id = JsonPath.read(saved, "$.proposal.id");
+		put(provider.founder, "/api/talent/mine", profile("Founder Provider")).expectStatus().isOk();
+		post(provider.founder, API + "/use-case-proposals/" + id + "/send", null).expectStatus().isOk();
+		return id;
+	}
+
+	@Test
 	void aMergeGivesTheProposalsToTheOrganizationKept() {
 		Provider duplicate = provider("dup-merge.test");
 		Provider kept = provider("kept-merge.test");
@@ -253,7 +424,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		String saved = body(put(provider.founder, path, two).expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(saved, "$.proposal.solutions[*].name"))
 			.containsExactly("Bare Desk", "Claim Copilot");
-		assertThat(JsonPath.<List<String>>read(saved, "$.proposal.solutions[*].status")).containsOnly("draft");
+		assertThat(JsonPath.<List<String>>read(saved, "$.proposal.solutions[*].slug")).containsOnlyNulls();
 
 		Map<String, Object> twice = draft(null, null, null, List.of(), proposalVersion(saved));
 		twice.put("solutionIds", List.of(bare, bare));

@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.proposal;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -107,15 +108,26 @@ public class UseCaseProposals {
 	/**
 	 * The form for the caller: the use case, their organization with its members, and their
 	 * organization's proposal when one was saved.
-	 * @throws ProposalException when the use case is unknown or no longer takes proposals, or the caller's organization
-	 * posted it
+	 * @throws ProposalException when the use case is unknown, or no longer takes proposals and the caller's organization
+	 * sent none, or the caller's organization posted it
 	 */
 	@Transactional(readOnly = true)
 	public UseCaseProposalFormResponse form(Actor actor, UUID useCaseId) {
 		identity.requireActive(actor);
-		UseCaseTarget target = open(useCaseId);
+		UseCaseTarget target = known(useCaseId);
 		Membership membership = organizations.membershipOf(actor).orElse(null);
 		requireNotOwn(target, membership);
+		if (!target.open()) {
+			// A use case that no longer takes proposals still shows the caller the one their organization sent.
+			UseCaseProposal sent = membership == null ? null
+					: proposals.findByUseCaseIdAndOrganizationId(useCaseId, membership.organizationId())
+						.filter(UseCaseProposal::isSent)
+						.orElse(null);
+			if (sent == null) {
+				throw closed(useCaseId);
+			}
+			return form(actor, target, membership, sent);
+		}
 		return form(actor, target, membership);
 	}
 
@@ -128,13 +140,15 @@ public class UseCaseProposals {
 	@Transactional
 	public UseCaseProposalFormResponse save(Actor actor, UUID useCaseId, SaveUseCaseProposalRequest request) {
 		identity.requireActive(actor);
-		UseCaseTarget target = open(useCaseId);
+		UseCaseTarget target = known(useCaseId);
 		Membership membership = approved(actor, target);
 		UUID organizationId = membership.organizationId();
 
 		UseCaseProposal proposal = proposals.findForUpdate(useCaseId, organizationId).orElse(null);
 		boolean created = proposal == null;
+		boolean edit = false;
 		if (proposal == null) {
+			requireOpen(target);
 			proposal = new UseCaseProposal(UUID.randomUUID(), useCaseId, organizationId, actor.accountId());
 		}
 		else {
@@ -142,8 +156,24 @@ public class UseCaseProposals {
 				throw new ProposalException(ProposalErrorCode.CHANGED_MEANWHILE, "Save of proposal " + proposal.getId()
 						+ " at version " + request.version() + ", which is at " + proposal.getVersion());
 			}
-			if (proposal.isSent()) {
-				throw new ProposalException(ProposalErrorCode.ALREADY_SENT, "Save of sent proposal " + proposal.getId());
+			edit = proposal.isSent();
+			if (!edit) {
+				requireOpen(target);
+			}
+			else {
+				if (editableUntil(proposal, target) == null) {
+					throw new ProposalException(ProposalErrorCode.EDIT_WINDOW_CLOSED,
+							"Save of sent proposal " + proposal.getId() + ", whose time to edit has ended");
+				}
+				UUID primaryNamed = request.team()
+					.stream()
+					.filter(TeamMemberRequest::primary)
+					.map(TeamMemberRequest::accountId)
+					.findFirst()
+					.orElse(null);
+				requireComplete(proposal.getId(), !request.solutionIds().isEmpty(), request.approach(),
+						request.deckFileId(), request.team().stream().map(TeamMemberRequest::accountId).toList(),
+						request.team().stream().map(TeamMemberRequest::role).toList(), primaryNamed);
 			}
 		}
 
@@ -163,7 +193,12 @@ public class UseCaseProposals {
 			// The delete runs as its own statement; the proposal is read again, still locked, and written.
 			proposal = proposals.findForUpdate(proposal.getId()).orElseThrow();
 		}
-		proposal.write(text(request.approach()), deck, primary, Instant.now());
+		if (edit) {
+			proposal.edit(text(request.approach()), deck, primary, Instant.now());
+		}
+		else {
+			proposal.write(text(request.approach()), deck, primary, Instant.now());
+		}
 		proposals.saveAndFlush(proposal);
 		teams.saveAll(team);
 		offers.saveAll(offered);
@@ -190,21 +225,10 @@ public class UseCaseProposals {
 			throw refused(ProposalErrorCode.ALREADY_SENT, id);
 		}
 
-		if (offers.findByProposalIdOrderByPosition(id).isEmpty()) {
-			throw refused(ProposalErrorCode.SOLUTION_REQUIRED, id);
-		}
-		if (blank(proposal.getApproach())) {
-			throw refused(ProposalErrorCode.APPROACH_REQUIRED, id);
-		}
-		if (proposal.getDeckFileId() == null) {
-			throw refused(ProposalErrorCode.PDF_REQUIRED, id);
-		}
 		List<UseCaseProposalMember> team = teams.findByProposalIdOrderByPosition(id);
-		UUID primary = proposal.getPrimaryContactAccountId();
-		if (team.isEmpty() || primary == null || team.stream().anyMatch(member -> blank(member.getRole()))
-				|| team.stream().noneMatch(member -> member.getAccountId().equals(primary))) {
-			throw refused(ProposalErrorCode.TEAM_INCOMPLETE, id);
-		}
+		requireComplete(id, !offers.findByProposalIdOrderByPosition(id).isEmpty(), proposal.getApproach(),
+				proposal.getDeckFileId(), team.stream().map(UseCaseProposalMember::getAccountId).toList(),
+				team.stream().map(UseCaseProposalMember::getRole).toList(), proposal.getPrimaryContactAccountId());
 		Set<UUID> members = Set.copyOf(organizations.memberAccountIds(membership.organizationId()));
 		if (!team.stream().allMatch(member -> members.contains(member.getAccountId()))) {
 			throw refused(ProposalErrorCode.TEAM_INVALID, id);
@@ -255,7 +279,8 @@ public class UseCaseProposals {
 			return new ReceivedUseCaseProposalSummaryResponse(proposal.getId(),
 					organization == null ? "" : organization.name(),
 					organization == null ? null : organization.logoFileId(), solutionNames,
-					contact == null ? null : label(contact), Objects.requireNonNull(proposal.getSentAt()));
+					contact == null ? null : label(contact), Objects.requireNonNull(proposal.getSentAt()),
+					proposal.getEditedAt());
 		}).toList();
 		return new ReceivedUseCaseProposalsResponse(useCase(target), items);
 	}
@@ -271,13 +296,12 @@ public class UseCaseProposals {
 		UseCaseTarget target = useCases.target(proposal.getUseCaseId()).orElseThrow(() -> notFound(id));
 		OrganizationName organization = organizations.names(List.of(proposal.getOrganizationId()))
 			.get(proposal.getOrganizationId());
-		SenderProfileResponse sender = proposal.getTalent() == null ? null
-				: json.readValue(proposal.getTalent(), SenderProfileResponse.class);
+		SenderProfileResponse sender = senderOf(proposal);
 		return new ReceivedUseCaseProposalResponse(proposal.getId(), useCase(target),
 				organization == null ? "" : organization.name(), organization == null ? null : organization.logoFileId(),
 				solutions(proposal),
 				proposal.getApproach(), sender, team(proposal), deck(proposal),
-				Objects.requireNonNull(proposal.getSentAt()));
+				Objects.requireNonNull(proposal.getSentAt()), proposal.getEditedAt());
 	}
 
 	/**
@@ -307,12 +331,55 @@ public class UseCaseProposals {
 	}
 
 	private UseCaseTarget open(UUID useCaseId) {
-		UseCaseTarget target = useCases.target(useCaseId)
-			.orElseThrow(() -> new ProposalException(ProposalErrorCode.USE_CASE_NOT_FOUND, "No use case " + useCaseId));
-		if (!target.open()) {
-			throw new ProposalException(ProposalErrorCode.USE_CASE_CLOSED, "Use case " + useCaseId + " takes no proposals");
-		}
+		UseCaseTarget target = known(useCaseId);
+		requireOpen(target);
 		return target;
+	}
+
+	private UseCaseTarget known(UUID useCaseId) {
+		return useCases.target(useCaseId)
+			.orElseThrow(() -> new ProposalException(ProposalErrorCode.USE_CASE_NOT_FOUND, "No use case " + useCaseId));
+	}
+
+	private static void requireOpen(UseCaseTarget target) {
+		if (!target.open()) {
+			throw closed(target.id());
+		}
+	}
+
+	private static ProposalException closed(UUID useCaseId) {
+		return new ProposalException(ProposalErrorCode.USE_CASE_CLOSED, "Use case " + useCaseId + " takes no proposals");
+	}
+
+	/**
+	 * Until when a sent proposal may still be edited: its sending time plus the days the use case allows, while the use
+	 * case takes proposals. Null for a draft, with no days, once the time has passed, and once the use case has closed.
+	 */
+	private static @Nullable Instant editableUntil(UseCaseProposal proposal, UseCaseTarget target) {
+		Instant sentAt = proposal.getSentAt();
+		if (!proposal.isSent() || sentAt == null || !target.open() || target.proposalEditDays() <= 0) {
+			return null;
+		}
+		Instant until = sentAt.plus(target.proposalEditDays(), ChronoUnit.DAYS);
+		return until.isAfter(Instant.now()) ? until : null;
+	}
+
+	/** What a proposal needs to be sent, and to stay complete when it is edited; the code says what is missing. */
+	private static void requireComplete(UUID id, boolean hasSolution, @Nullable String approach, @Nullable UUID deck,
+			List<UUID> team, List<String> roles, @Nullable UUID primary) {
+		if (!hasSolution) {
+			throw refused(ProposalErrorCode.SOLUTION_REQUIRED, id);
+		}
+		if (blank(approach)) {
+			throw refused(ProposalErrorCode.APPROACH_REQUIRED, id);
+		}
+		if (deck == null) {
+			throw refused(ProposalErrorCode.PDF_REQUIRED, id);
+		}
+		if (team.isEmpty() || primary == null || roles.stream().anyMatch(UseCaseProposals::blank)
+				|| !team.contains(primary)) {
+			throw refused(ProposalErrorCode.TEAM_INCOMPLETE, id);
+		}
 	}
 
 	/** The caller's membership, which must be of an approved organization other than the one that posted the use case. */
@@ -378,13 +445,18 @@ public class UseCaseProposals {
 		return new UseCaseProposalFormResponse(useCase(target),
 				new ProposingOrganizationResponse(organizationId, membership.organizationName(),
 						name == null ? null : name.logoFileId(), membership.approved()),
-				members, proposal == null ? null : response(proposal));
+				members, proposal == null ? null : response(proposal, target));
 	}
 
-	private UseCaseProposalResponse response(UseCaseProposal proposal) {
+	private UseCaseProposalResponse response(UseCaseProposal proposal, UseCaseTarget target) {
 		return new UseCaseProposalResponse(proposal.getId(), proposal.getStatus(), solutions(proposal),
-				proposal.getApproach(), deck(proposal), team(proposal), proposal.getSentAt(), proposal.getVersion(),
+				proposal.getApproach(), deck(proposal), team(proposal), senderOf(proposal), proposal.getSentAt(),
+				editableUntil(proposal, target), proposal.getEditedAt(), proposal.getVersion(),
 				proposal.getUpdatedAt());
+	}
+
+	private @Nullable SenderProfileResponse senderOf(UseCaseProposal proposal) {
+		return proposal.getTalent() == null ? null : json.readValue(proposal.getTalent(), SenderProfileResponse.class);
 	}
 
 	private List<ProposalTeamMemberResponse> team(UseCaseProposal proposal) {
@@ -468,7 +540,7 @@ public class UseCaseProposals {
 			.map(offer -> solutions.offered(offer.getSolutionId()))
 			.flatMap(Optional::stream)
 			.map(solution -> new ProposalSolutionResponse(solution.id(), solution.name(), solution.summary(),
-					solution.status()))
+					solution.viewKey(), solution.approved() ? solution.slug() : null, solution.logoFileId()))
 			.toList();
 	}
 
@@ -516,6 +588,6 @@ public class UseCaseProposals {
 	}
 
 	private static ProposalException refused(ProposalErrorCode code, UUID id) {
-		return new ProposalException(code, "Sending of proposal " + id + " refused: " + code.code());
+		return new ProposalException(code, "Proposal " + id + " refused: " + code.code());
 	}
 }

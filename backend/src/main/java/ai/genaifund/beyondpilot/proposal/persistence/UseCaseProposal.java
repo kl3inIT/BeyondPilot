@@ -56,6 +56,8 @@ public class UseCaseProposal {
 
 	private @Nullable Instant sentAt;
 
+	private @Nullable Instant editedAt;
+
 	@Version
 	private long version;
 
@@ -89,6 +91,16 @@ public class UseCaseProposal {
 		this.deckFileId = deckFileId;
 		this.primaryContactAccountId = primaryContactAccountId;
 		this.updatedAt = at;
+	}
+
+	/**
+	 * Keeps what the form holds now for a proposal that was already sent; the sender and the snapshot stay as sent, and
+	 * the time of the change is noted.
+	 */
+	public void edit(@Nullable String approach, @Nullable UUID deckFileId, @Nullable UUID primaryContactAccountId,
+			Instant at) {
+		write(approach, deckFileId, primaryContactAccountId, at);
+		this.editedAt = at;
 	}
 
 	/** Makes the proposal sent, with the sender's profile as it is now. */
@@ -145,6 +157,10 @@ public class UseCaseProposal {
 
 	public @Nullable Instant getSentAt() {
 		return sentAt;
+	}
+
+	public @Nullable Instant getEditedAt() {
+		return editedAt;
 	}
 
 	public long getVersion() {

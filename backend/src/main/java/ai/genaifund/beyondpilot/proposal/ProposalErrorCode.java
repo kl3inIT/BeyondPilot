@@ -129,7 +129,10 @@ public enum ProposalErrorCode implements ErrorCode {
 			"Name at least one person, give each a role and choose the primary contact."),
 
 	PDF_REQUIRED("PROPOSAL_PDF_REQUIRED", ErrorCategory.VALIDATION,
-			"Add the proposal as a PDF.");
+			"Add the proposal as a PDF."),
+
+	EDIT_WINDOW_CLOSED("PROPOSAL_EDIT_WINDOW_CLOSED", ErrorCategory.CONFLICT,
+			"This proposal was sent, and the time to edit it has ended.");
 
 	private final String code;
 	private final ErrorCategory category;

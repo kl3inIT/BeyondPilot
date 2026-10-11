@@ -17,5 +17,7 @@ public record ReceivedUseCaseProposalResponse(@Schema(requiredMode = Schema.Requ
 		@Schema(types = { "object", "null" }) @Nullable SenderProfileResponse sender,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<ProposalTeamMemberResponse> team,
 		@Schema(types = { "object", "null" }) @Nullable AttachedFileResponse deck,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time") Instant sentAt) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time") Instant sentAt,
+		@Schema(types = { "string", "null" }, format = "date-time",
+				description = "When the sending organization last edited the proposal after sending it; null while it is as sent.") @Nullable Instant editedAt) {
 }

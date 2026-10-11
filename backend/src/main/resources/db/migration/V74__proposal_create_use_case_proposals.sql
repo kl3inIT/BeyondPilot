@@ -15,6 +15,8 @@ create table use_case_proposal (
     -- The sender's profile when the proposal was sent, without what the profile keeps private.
     talent                     jsonb check (talent is null or jsonb_typeof(talent) = 'object'),
     sent_at                    timestamptz,
+    -- When the organization last changed the proposal after sending it; null while it is as sent.
+    edited_at                  timestamptz,
     version                    bigint      not null default 0,
     created_at                 timestamptz not null default now(),
     updated_at                 timestamptz not null default now(),
