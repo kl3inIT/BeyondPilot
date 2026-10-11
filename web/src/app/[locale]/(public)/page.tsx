@@ -9,7 +9,6 @@ import { Faq } from "@/components/sections/faq/faq";
 import { FinalCta } from "@/components/sections/final-cta/final-cta";
 import { Hero } from "@/components/sections/hero/hero";
 import { PartnerNetwork } from "@/components/sections/logos/partner-network";
-import { Team } from "@/components/sections/team/team";
 import { routing } from "@/i18n/routing";
 import { genaiFundLinks, siteOrigin } from "@/lib/site";
 
@@ -57,7 +56,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <Categories />
       <AgentJourney />
       <FeaturedChallenge />
-      <Team />
       <PartnerNetwork />
       <Faq />
       <FinalCta />

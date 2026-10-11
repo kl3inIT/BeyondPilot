@@ -54,6 +54,7 @@
       "platform": "Platform",
       "company": "Company",
       "about": "About GenAI Fund",
+      "aboutUs": "About BeyondPilot",
       "contact": "Contact",
       "linkedin": "GenAI Fund on LinkedIn",
       "facebook": "GenAI Fund on Facebook",
@@ -239,20 +240,6 @@
       "eyebrow": "Featured opportunity",
       "description": "Tasco and GenAI Fund are looking for AI solutions to real operating problems in Vietnamese insurance. Apply directly through the challenge page.",
       "partners": "With Microsoft for Startups and Notion"
-    },
-    "team": {
-      "eyebrow": "Team",
-      "title": "The team building BeyondPilot",
-      "description": "We’re building BeyondPilot to make it easier for enterprises and AI builders to find each other and move toward practical deployment.",
-      "role": "Full-stack engineer",
-      "linkedin": "LinkedIn",
-      "linkedinLabel": "{name} on LinkedIn (opens in a new tab)",
-      "backing": {
-        "title": "Funded by GenAI Fund",
-        "description": "BeyondPilot is an AI startup with its own product, funded by GenAI Fund. GenAI Fund’s programs and enterprise ecosystem are where many of the opportunities on BeyondPilot come from. Founders from the wider GenAI Fund network are part of that ecosystem, not the BeyondPilot operating team."
-      },
-      "partnerTitle": "Development partner",
-      "partnerDescription": "The engineering team building the product with BeyondPilot."
     },
     "faq": {
       "eyebrow": "FAQ",
@@ -6341,6 +6328,22 @@
         }
       ]
     }
+  },
+  "About": {
+    "metaTitle": "About",
+    "metaDescription": "The team building BeyondPilot and how GenAI Fund stands behind it.",
+    "eyebrow": "Team",
+    "title": "The team building BeyondPilot",
+    "description": "We’re building BeyondPilot to make it easier for enterprises and AI builders to find each other and move toward practical deployment.",
+    "role": "Full-stack engineer",
+    "linkedin": "LinkedIn",
+    "linkedinLabel": "{name} on LinkedIn (opens in a new tab)",
+    "backing": {
+      "title": "Funded by GenAI Fund",
+      "description": "BeyondPilot is an AI startup with its own product, funded by GenAI Fund. GenAI Fund’s programs and enterprise ecosystem are where many of the opportunities on BeyondPilot come from. Founders from the wider GenAI Fund network are part of that ecosystem, not the BeyondPilot operating team."
+    },
+    "partnerTitle": "Development partner",
+    "partnerDescription": "The engineering team building the product with BeyondPilot."
   },
   "HowItWorks": {
     "metaTitle": "How it works",

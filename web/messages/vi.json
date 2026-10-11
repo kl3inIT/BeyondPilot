@@ -54,6 +54,7 @@
       "platform": "Nền tảng",
       "company": "Công ty",
       "about": "Về GenAI Fund",
+      "aboutUs": "Về BeyondPilot",
       "contact": "Liên hệ",
       "linkedin": "GenAI Fund trên LinkedIn",
       "facebook": "GenAI Fund trên Facebook",
@@ -239,20 +240,6 @@
       "eyebrow": "Cơ hội nổi bật",
       "description": "Tasco và GenAI Fund đang tìm các giải pháp AI cho những bài toán vận hành thực tế của ngành bảo hiểm Việt Nam. Ứng tuyển trực tiếp qua trang thử thách.",
       "partners": "Cùng Microsoft for Startups và Notion"
-    },
-    "team": {
-      "eyebrow": "Đội ngũ",
-      "title": "Đội ngũ xây dựng BeyondPilot",
-      "description": "Chúng tôi xây dựng BeyondPilot để doanh nghiệp và nhà phát triển AI dễ tìm thấy nhau hơn và tiến tới triển khai thực tế.",
-      "role": "Full-stack engineer",
-      "linkedin": "LinkedIn",
-      "linkedinLabel": "{name} trên LinkedIn (mở trong tab mới)",
-      "backing": {
-        "title": "Được GenAI Fund đầu tư",
-        "description": "BeyondPilot là startup AI có sản phẩm riêng, được GenAI Fund đầu tư. Chương trình và hệ sinh thái doanh nghiệp của GenAI Fund là nơi nhiều cơ hội trên BeyondPilot xuất phát. Các founder trong mạng lưới GenAI Fund là một phần của hệ sinh thái đó, không phải đội ngũ vận hành BeyondPilot."
-      },
-      "partnerTitle": "Đối tác phát triển",
-      "partnerDescription": "Đội kỹ sư xây dựng sản phẩm cùng BeyondPilot."
     },
     "faq": {
       "eyebrow": "Hỏi đáp",
@@ -6341,6 +6328,22 @@
         }
       ]
     }
+  },
+  "About": {
+    "metaTitle": "Giới thiệu",
+    "metaDescription": "Đội ngũ xây dựng BeyondPilot và cách GenAI Fund đứng sau sản phẩm.",
+    "eyebrow": "Đội ngũ",
+    "title": "Đội ngũ xây dựng BeyondPilot",
+    "description": "Chúng tôi xây dựng BeyondPilot để doanh nghiệp và nhà phát triển AI dễ tìm thấy nhau hơn và tiến tới triển khai thực tế.",
+    "role": "Full-stack engineer",
+    "linkedin": "LinkedIn",
+    "linkedinLabel": "{name} trên LinkedIn (mở trong tab mới)",
+    "backing": {
+      "title": "Được GenAI Fund đầu tư",
+      "description": "BeyondPilot là startup AI có sản phẩm riêng, được GenAI Fund đầu tư. Chương trình và hệ sinh thái doanh nghiệp của GenAI Fund là nơi nhiều cơ hội trên BeyondPilot xuất phát. Các founder trong mạng lưới GenAI Fund là một phần của hệ sinh thái đó, không phải đội ngũ vận hành BeyondPilot."
+    },
+    "partnerTitle": "Đối tác phát triển",
+    "partnerDescription": "Đội kỹ sư xây dựng sản phẩm cùng BeyondPilot."
   },
   "HowItWorks": {
     "metaTitle": "Cách hoạt động",

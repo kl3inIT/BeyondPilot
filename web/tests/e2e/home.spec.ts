@@ -22,9 +22,9 @@ test.describe("home page", () => {
     await expect(
       page.getByRole("heading", { name: "AI for Insurance Challenge × Tasco" }),
     ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "The team building BeyondPilot" }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "The team building BeyondPilot" })).toHaveCount(
+      0,
+    );
     await expect(page.getByRole("heading", { name: /^Founders/ })).toHaveCount(0);
     await expect(
       page.getByRole("heading", { name: "The network behind every program" }),

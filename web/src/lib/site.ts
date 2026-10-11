@@ -2,6 +2,7 @@
 export const siteRoutes = {
   home: "/",
   howItWorks: "/how-it-works",
+  about: "/about",
   programs: "/programs",
   useCases: "/use-cases",
   solutions: "/solutions",

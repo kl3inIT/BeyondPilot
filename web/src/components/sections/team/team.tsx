@@ -46,25 +46,25 @@ const members: Member[] = [
   },
 ];
 
-/** The development partner's engineers and how GenAI Fund stands behind BeyondPilot. */
+/** The About page: the development partner's engineers and how GenAI Fund stands behind BeyondPilot. */
 function Team() {
-  const t = useTranslations("Home.team");
+  const t = useTranslations("About");
   const s = useTranslations("Site");
 
   return (
     <Section>
-      <div className="flex flex-col pb-8">
+      <div className="flex flex-col py-14 lg:py-20">
         <p className="text-copy font-semibold text-primary">{t("eyebrow")}</p>
-        <h2 className="mt-3 text-4xl font-semibold tracking-headline lg:text-section lg:tracking-section">
+        <h1 className="mt-3 text-4xl font-semibold tracking-headline lg:text-section lg:tracking-section">
           {t("title")}
-        </h2>
+        </h1>
         <p className="mt-3 max-w-175 text-base text-muted-foreground lg:text-lg">
           {t("description")}
         </p>
         {/* BeyondPilot's own leads join here, above the partner, once their profiles are agreed. */}
-        <h3 className="mt-9 text-xs font-semibold tracking-wide text-primary uppercase">
+        <h2 className="mt-9 text-xs font-semibold tracking-wide text-primary uppercase">
           {t("partnerTitle")}
-        </h3>
+        </h2>
         <p className="mt-1 text-sm text-muted-foreground">{t("partnerDescription")}</p>
         <ul className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
           {members.map(({ id, name, tint, linkedin }) => (
@@ -78,7 +78,7 @@ function Team() {
                 <UserRoundIcon className="size-3/4 fill-current opacity-60" aria-hidden="true" />
               </div>
               <div className="flex min-h-26 flex-col px-3 pt-4 pb-5">
-                <h4 className="text-lg font-semibold">{name}</h4>
+                <h3 className="text-lg font-semibold">{name}</h3>
                 <p className="mt-1 text-sm text-primary">{t("role")}</p>
                 {linkedin && (
                   <TextButton
@@ -112,7 +112,7 @@ function Team() {
               height={252}
               className="hidden h-10 w-auto self-start dark:block"
             />
-            <h3 className="text-2xl font-semibold">{t("backing.title")}</h3>
+            <h2 className="text-2xl font-semibold">{t("backing.title")}</h2>
           </div>
           <p className="max-w-185 text-copy text-background/80 lg:leading-6">
             {t("backing.description")}

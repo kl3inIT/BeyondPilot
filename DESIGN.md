@@ -223,7 +223,7 @@ A 1312px column with 64px gutters on desktop, 32px on tablet (1024) and 20px on 
 4. Five ways to explore: cards for solutions, talent, use cases, events and programs, each listing real entries with the logo or cover of who is behind them; no decorative icons.
 5. How it works: three steps on sky, lilac and peach tints.
 6. Featured opportunity: the live challenge card, a deep-to-bright azure panel (`panel-*` tokens) beside its facts and actions.
-7. Core team and GenAI Fund backing, then "The network behind every program": one full-width panel each for enterprises, technology partners, and government and institutions, a wall of logos in their own colours, on the panel by day; at night the panel falls away and each wall stands on a light plate (`logo-plate`) under its heading so no mark loses its colours, closed by an "And many more" line. The ecosystem founders are not on the landing page; they open the AI talent directory.
+7. "The network behind every program" (the team and GenAI Fund's backing are on the About page, reached from the footer): one full-width panel each for enterprises, technology partners, and government and institutions, a wall of logos in their own colours, on the panel by day; at night the panel falls away and each wall stands on a light plate (`logo-plate`) under its heading so no mark loses its colours, closed by an "And many more" line. The ecosystem founders are not on the landing page; they open the AI talent directory.
 8. FAQ, the final call to action on a wash of sky, lilac and peach with the ink-coloured `inverse` action, then the footer.
 
 ## Elevation & Depth

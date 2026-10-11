@@ -171,7 +171,11 @@ function PartnerNetwork() {
               </ul>
             </section>
           ))}
-          <p className="pt-6 text-center text-xl font-semibold md:pt-8 md:text-2xl">{t("more")}</p>
+          <p className="flex items-center gap-4 pt-4 text-base font-medium text-muted-foreground md:pt-6">
+            <span className="h-px flex-1 bg-border" />
+            {t("more")}
+            <span className="h-px flex-1 bg-border" />
+          </p>
         </div>
       </div>
     </Section>
