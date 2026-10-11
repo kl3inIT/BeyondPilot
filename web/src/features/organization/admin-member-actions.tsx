@@ -3,7 +3,7 @@
 import { EllipsisIcon, ShieldCheckIcon, ShieldOffIcon, UserMinusIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { Person } from "@/components/composites/person";
@@ -50,6 +50,8 @@ function AdminMemberActions({ organizationId, member, onlyOwner }: AdminMemberAc
   const router = useRouter();
   const [asking, setAsking] = useState<Asking>(null);
   const [pending, setPending] = useState(false);
+  // The page shows the change once it has read it again; until then the action cannot be repeated.
+  const [refreshing, startRefresh] = useTransition();
   const name = member.name ?? member.email;
 
   async function change(run: () => Promise<unknown>, done: Parameters<typeof notify.success>[0]) {
@@ -57,7 +59,7 @@ function AdminMemberActions({ organizationId, member, onlyOwner }: AdminMemberAc
     try {
       await run();
       notify.success(done, { name });
-      router.refresh();
+      startRefresh(() => router.refresh());
     } catch (error) {
       notify.error(organizationError(error));
     } finally {
@@ -93,7 +95,7 @@ function AdminMemberActions({ organizationId, member, onlyOwner }: AdminMemberAc
             <button
               type="button"
               aria-label={t("actions.open", { name })}
-              disabled={pending}
+              disabled={pending || refreshing}
               className={triggerClass}
             />
           }

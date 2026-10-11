@@ -85,9 +85,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
       <Status appearance="pill" tone={requestTones[organization.request]}>
         {t(`request.${organization.request}`)}
       </Status>
-    ) : (
-      <span className="text-muted-foreground">{t("request.none")}</span>
-    ),
+    ) : null,
     status: (
       <Status appearance="pill" tone={tones[reviewState(organization)]}>
         {t(`status.${reviewState(organization)}`)}
@@ -153,7 +151,9 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
           {rows.map((row) => (
             <TableRow key={row.id}>
               <TableCell className="max-w-0">{row.organization}</TableCell>
-              <TableCell>{row.request}</TableCell>
+              <TableCell>
+                {row.request ?? <span className="text-muted-foreground">{t("request.none")}</span>}
+              </TableCell>
               <TableCell>{row.status}</TableCell>
               <TableCell className="hidden max-w-0 xl:table-cell">{row.askedBy}</TableCell>
               <TableCell className="hidden 2xl:table-cell">{row.received}</TableCell>

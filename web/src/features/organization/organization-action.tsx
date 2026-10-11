@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 
 import { Button, type ButtonProps } from "@/components/actions/button";
 import { useNotify, type MessageKey } from "@/hooks/use-notify";
@@ -58,6 +58,8 @@ function OrganizationAction({ action, id = "", children, ...look }: Organization
   const notify = useNotify();
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  // The page shows the change once it has read it again; until then the action cannot be repeated.
+  const [refreshing, startRefresh] = useTransition();
   // Set at the first press, before the pending state has rendered, so presses in one tick decide once.
   const deciding = useRef(false);
 
@@ -76,7 +78,7 @@ function OrganizationAction({ action, id = "", children, ...look }: Organization
       if (done) {
         notify.success(done);
       }
-      router.refresh();
+      startRefresh(() => router.refresh());
     } catch (error) {
       notify.error(organizationError(error));
     } finally {
@@ -86,7 +88,7 @@ function OrganizationAction({ action, id = "", children, ...look }: Organization
   }
 
   return (
-    <Button {...look} pending={pending} onClick={act}>
+    <Button {...look} pending={pending || refreshing} onClick={act}>
       {children}
     </Button>
   );

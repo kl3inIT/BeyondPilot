@@ -1253,7 +1253,7 @@
       },
       "detail": {
         "back": "Tất cả tổ chức",
-        "createdByOn": "{name}, ngày {day}",
+        "createdByOn": "{name} tạo ngày {day}",
         "refused": "Không được duyệt: {reason}.",
         "sentBack": "Đã trả lại cho các chủ sở hữu:",
         "claims": "Yêu cầu nhận tổ chức",
@@ -3596,6 +3596,8 @@
       "unknown": "Chưa thực hiện được. Hãy thử lại.",
       "ORGANIZATION_DOMAIN_NOT_VERIFIED": "Chỉ tham gia ngay được trên tên miền mà GenAI Fund đã xác minh cho một tổ chức đã duyệt.",
       "ORGANIZATION_NOT_APPROVED": "Bạn có thể mời người khác sau khi GenAI Fund duyệt tổ chức.",
+      "ORGANIZATION_CANNOT_TAKE_DOWN": "Chỉ gỡ được tổ chức đã duyệt. Hãy tải lại trang để xem trạng thái hiện tại.",
+      "ORGANIZATION_NOT_TAKEN_DOWN": "Tổ chức này không còn bị gỡ nữa. Hãy tải lại trang.",
       "ORGANIZATION_INVITATION_DAILY_LIMIT": "Tổ chức đã gửi hết số lời mời của một ngày. Hãy mời thêm vào ngày mai.",
       "ORGANIZATION_INVITATION_OPEN_LIMIT": "Tổ chức đã có số lời mời đang mở tối đa. Hãy thu hồi bớt, hoặc chờ mọi người trả lời."
     },

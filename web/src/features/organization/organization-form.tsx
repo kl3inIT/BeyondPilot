@@ -3,7 +3,7 @@
 import { Building2Icon, FileTextIcon, ShieldCheckIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import { Button } from "@/components/actions/button";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
@@ -79,7 +79,10 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
   const [foundedYear, setFoundedYear] = useState(String(organization?.foundedYear ?? ""));
   const [logoFileId, setLogoFileId] = useState(organization?.logoFileId ?? "");
   const domain = useVerifiedDomain(organization?.emailDomain);
-  const [pending, setPending] = useState(false);
+  const [sending, setSending] = useState(false);
+  // A saved profile is compared with the one the page holds, which is the old one until it is read again.
+  const [refreshing, startRefresh] = useTransition();
+  const pending = sending || refreshing;
   const [invalid, setInvalid] = useState<Set<string>>(new Set());
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -125,7 +128,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
       foundedYear: year,
       logoFileId: logoFileId || null,
     };
-    setPending(true);
+    setSending(true);
     try {
       if (organization && admin) {
         await saveAdminOrganization({
@@ -133,13 +136,13 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
           body: { profile: { ...body, version: organization.version }, emailDomain },
         });
         notify.success("Organization.done.saved");
-        router.refresh();
-        setPending(false);
+        startRefresh(() => router.refresh());
+        setSending(false);
       } else if (organization) {
         await saveMyOrganization({ body: { ...body, version: organization.version } });
         notify.success("Organization.done.saved");
-        router.refresh();
-        setPending(false);
+        startRefresh(() => router.refresh());
+        setSending(false);
       } else {
         await createOrganization({ body });
         notify.success("Organization.done.created");
@@ -152,7 +155,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
       if (!domain.refused(error)) {
         notify.error(organizationError(error));
       }
-      setPending(false);
+      setSending(false);
     }
   }
 

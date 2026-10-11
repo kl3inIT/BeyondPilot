@@ -1253,7 +1253,7 @@
       },
       "detail": {
         "back": "All organizations",
-        "createdByOn": "{name} on {day}",
+        "createdByOn": "Created by {name} on {day}",
         "refused": "Not approved: {reason}.",
         "sentBack": "Sent back to its owners:",
         "claims": "Claims to own it",
@@ -3596,6 +3596,8 @@
       "unknown": "That did not work. Try again.",
       "ORGANIZATION_DOMAIN_NOT_VERIFIED": "People join at once only on a domain GenAI Fund verified for an approved organization.",
       "ORGANIZATION_NOT_APPROVED": "You can invite people once GenAI Fund has approved the organization.",
+      "ORGANIZATION_CANNOT_TAKE_DOWN": "Only an approved organization can be taken down. Reload the page to see where it stands.",
+      "ORGANIZATION_NOT_TAKEN_DOWN": "This organization is not taken down any more. Reload the page.",
       "ORGANIZATION_INVITATION_DAILY_LIMIT": "The organization has sent the most invitations it can in a day. Invite more people tomorrow.",
       "ORGANIZATION_INVITATION_OPEN_LIMIT": "The organization has the most invitations it can keep open. Revoke some, or wait for people to answer."
     },

@@ -3,7 +3,7 @@
 import { EllipsisIcon, MailXIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import {
   DropdownMenu,
@@ -23,13 +23,15 @@ function InvitationActions({ invitation }: { invitation: OrganizationInvitation 
   const notify = useNotify();
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  // The page shows the change once it has read it again; until then the action cannot be repeated.
+  const [refreshing, startRefresh] = useTransition();
 
   async function revoke() {
     setPending(true);
     try {
       await revokeOrganizationInvitation({ path: { id: invitation.id } });
       notify.success("Organization.done.invitationRevoked");
-      router.refresh();
+      startRefresh(() => router.refresh());
     } catch (error) {
       notify.error(organizationError(error));
     } finally {
@@ -44,7 +46,7 @@ function InvitationActions({ invitation }: { invitation: OrganizationInvitation 
           <button
             type="button"
             aria-label={t("openInvitation", { email: invitation.email })}
-            disabled={pending}
+            disabled={pending || refreshing}
             className="hit-area flex size-8 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted"
           />
         }
