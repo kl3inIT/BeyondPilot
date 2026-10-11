@@ -22,6 +22,9 @@ import { cn } from "@/lib/utils";
 
 type State = EmailSetup["checks"][number]["state"];
 
+/** Whose words say why a provider could not be asked; an SMTP server is never asked. */
+const limitWords = { ses: "ses", resend: "resend", brevo: "brevo", smtp: "resend" } as const;
+
 /** Each state as an icon in its colour: the word beside it carries the meaning. */
 const stateIcons: Record<State, { Icon: typeof CircleCheckIcon; className: string }> = {
   ok: { Icon: CircleCheckIcon, className: "text-success" },
@@ -153,7 +156,7 @@ function EmailSetupChecklist() {
       {setup?.limit && (
         <p className="flex items-start gap-2 text-sm">
           <CircleHelpIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-warning" />
-          {t(`limits.${setup.limit}.${setup.provider === "ses" ? "ses" : "resend"}`)}
+          {t(`limits.${setup.limit}.${limitWords[setup.provider]}`)}
         </p>
       )}
 
@@ -215,7 +218,7 @@ function EmailSetupChecklist() {
                         value={record.value}
                         label={t("records.copy", { what: record.type })}
                       />
-                      {record.purpose === "dmarc" && (
+                      {record.purpose === "dmarc" && record.state === "unknown" && (
                         <span className="text-xs whitespace-normal text-muted-foreground">
                           {t("records.dmarc")}
                         </span>
@@ -242,7 +245,7 @@ function EmailSetupChecklist() {
                 </span>
                 <Copyable value={record.host} label={t("records.copy", { what: record.host })} />
                 <Copyable value={record.value} label={t("records.copy", { what: record.type })} />
-                {record.purpose === "dmarc" && (
+                {record.purpose === "dmarc" && record.state === "unknown" && (
                   <span className="text-xs whitespace-normal text-muted-foreground">
                     {t("records.dmarc")}
                   </span>
