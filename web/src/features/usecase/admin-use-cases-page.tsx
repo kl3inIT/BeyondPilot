@@ -23,7 +23,11 @@ import { siteRoutes } from "@/lib/site";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 
 import { AdminUseCaseFeature } from "./admin-use-case-feature";
-import { adminUseCasesSearch, type AdminUseCasesSearch } from "./admin-use-cases-search";
+import {
+  adminUseCaseSortKeys,
+  adminUseCasesSearch,
+  type AdminUseCasesSearch,
+} from "./admin-use-cases-search";
 import { AdminUseCasesToolbar } from "./admin-use-cases-toolbar";
 import { LiveRefresh } from "./live-refresh";
 
@@ -147,9 +151,10 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
 
       {/* From 768px: a table. The Updated column gives way first. */}
       <DataTableRows
+        sortKeys={adminUseCaseSortKeys}
         className="hidden md:flex"
         columns={[
-          { id: "useCase", header: t("columns.useCase"), layout: { fill: true } },
+          { id: "title", header: t("columns.useCase"), layout: { fill: true } },
           { id: "organization", header: t("columns.organization"), layout: { width: "md" } },
           { id: "status", header: t("columns.status"), layout: { width: "md" } },
           { id: "closes", header: t("columns.closes"), layout: { width: "md" } },
@@ -163,7 +168,7 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
         rows={rows.map((row) => ({
           id: row.id,
           cells: {
-            useCase: row.title,
+            title: row.title,
             organization: row.organization,
             status: row.status,
             closes: row.closes,

@@ -13,7 +13,11 @@ import { adminEmailMessageRoute, siteRoutes } from "@/lib/site";
 
 import { EmailHeader } from "./email-header";
 import { isEmailKind } from "./email-kinds";
-import { emailSuppressionsSearch, type EmailSuppressionsSearch } from "./email-search";
+import {
+  emailSuppressionsSearch,
+  type EmailSuppressionsSearch,
+  emailSuppressionSortKeys,
+} from "./email-search";
 import { AddSuppressionButton, RemoveSuppressionButton } from "./email-suppression-actions";
 import { EmailSuppressionsToolbar } from "./email-suppressions-toolbar";
 
@@ -80,12 +84,17 @@ async function EmailSuppressionsPage({
       <EmailSuppressionsToolbar />
 
       <DataTableRows
+        sortKeys={emailSuppressionSortKeys}
         className="hidden md:flex"
         columns={[
           { id: "address", header: t("suppressions.columns.address") },
           { id: "reason", header: t("suppressions.columns.reason"), layout: { width: "md" } },
           { id: "origin", header: t("suppressions.columns.origin") },
-          { id: "since", header: t("suppressions.columns.since"), layout: { width: "sm" } },
+          {
+            id: "since",
+            header: t("suppressions.columns.since"),
+            layout: { width: "sm", descFirst: true },
+          },
           {
             id: "actions",
             header: <span className="sr-only">{t("suppressions.columns.actions")}</span>,

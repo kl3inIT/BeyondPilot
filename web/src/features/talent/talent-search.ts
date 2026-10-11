@@ -19,11 +19,15 @@ export const loadTalentSearch = createLoader(talentSearch);
 
 export type TalentSearch = Awaited<ReturnType<typeof loadTalentSearch>>;
 
+/** The columns the list sorts by, as its API names them. */
+export const adminTalentSortKeys = ["name", "submitted"] as const;
+
 /** What narrows the operators' list of talent profiles: `?q=&status=&featured=&page=`. */
 export const adminTalentSearch = {
   q: parseAsString.withDefault(""),
   status: parseAsStringLiteral(reviewedStatuses),
   featured: parseAsStringLiteral(featuredChoices),
+  sort: parseAsString.withDefault(""),
   page: parseAsInteger.withDefault(1),
 };
 

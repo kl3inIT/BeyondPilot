@@ -15,7 +15,7 @@ import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalentList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { adminTalentSearch, type AdminTalentSearch } from "./talent-search";
+import { adminTalentSearch, adminTalentSortKeys, type AdminTalentSearch } from "./talent-search";
 import { TalentToolbar } from "./talent-toolbar";
 
 const address = createSerializer(adminTalentSearch);
@@ -94,9 +94,10 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
 
       {/* From 768px: a table. The Headline column gives way first. */}
       <DataTableRows
+        sortKeys={adminTalentSortKeys}
         className="hidden md:flex"
         columns={[
-          { id: "person", header: t("columns.person") },
+          { id: "name", header: t("columns.person") },
           { id: "headline", header: t("columns.headline"), layout: { from: "xl" } },
           { id: "status", header: t("columns.status") },
           { id: "submitted", header: t("columns.submitted") },
@@ -105,7 +106,7 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
         rows={rows.map((row) => ({
           id: row.id,
           cells: {
-            person: row.person,
+            name: row.person,
             headline: (
               <span className="line-clamp-1 max-w-xs text-muted-foreground">{row.headline}</span>
             ),

@@ -20,3 +20,15 @@ export function listSort<K extends string>(
 export function sortParam<K extends string>(sort: ListSort<K>): string {
   return `${sort.desc ? "-" : ""}${sort.key}`;
 }
+
+/**
+ * `?sort=` as a list API takes it: the value when it names one of the list's keys, with or without
+ * `-`, and nothing otherwise, so that an address written by hand is never refused by the API.
+ */
+export function knownSort<K extends string>(
+  sort: string,
+  keys: readonly K[],
+): K | `-${K}` | undefined {
+  const key = keys.find((candidate) => candidate === (sort.startsWith("-") ? sort.slice(1) : sort));
+  return key ? (sort.startsWith("-") ? `-${key}` : key) : undefined;
+}

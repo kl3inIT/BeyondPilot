@@ -73,10 +73,14 @@ export const loadEmailActivitySearch = createLoader(emailActivitySearch);
 
 export type EmailActivitySearch = Awaited<ReturnType<typeof loadEmailActivitySearch>>;
 
+/** The columns the list sorts by, as its API names them. */
+export const emailSuppressionSortKeys = ["address", "since"] as const;
+
 /** What narrows the suppressed addresses and which page is shown: `?reason=&q=&page=`. */
 export const emailSuppressionsSearch = {
   reason: parseAsStringLiteral(suppressionReasons),
   q: parseAsString.withDefault(""),
+  sort: parseAsString.withDefault(""),
   page: parseAsInteger.withDefault(1),
 };
 

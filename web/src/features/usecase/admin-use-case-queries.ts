@@ -1,3 +1,4 @@
+import { knownSort } from "@/lib/list-sort";
 import { ApiError } from "@/lib/api/client";
 import {
   getAdminUseCase,
@@ -10,6 +11,7 @@ import {
 import { sessionRequest } from "@/lib/auth/session";
 
 import type { AdminUseCasesSearch } from "./admin-use-cases-search";
+import { adminUseCaseSortKeys } from "./admin-use-cases-search";
 
 /** The longest search the backend takes. */
 const MAX_SEARCH = 100;
@@ -23,6 +25,7 @@ export async function readAdminUseCases(search: AdminUseCasesSearch): Promise<Ad
       status: search.status ?? undefined,
       organizationId: search.organization ?? undefined,
       featured: search.featured === null ? undefined : search.featured === "true",
+      sort: knownSort(search.sort, adminUseCaseSortKeys),
       page: Math.max(1, search.page),
     },
   });

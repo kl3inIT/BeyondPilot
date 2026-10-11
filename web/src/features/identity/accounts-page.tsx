@@ -13,7 +13,7 @@ import type { AccountList, AccountSummary, Me } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { AccountRowActions } from "./account-row-actions";
-import { accountsSearch, type AccountsSearch } from "./accounts-search";
+import { accountsSearch, type AccountsSearch, accountSortKeys } from "./accounts-search";
 import { AccountsToolbar } from "./accounts-toolbar";
 
 const address = createSerializer(accountsSearch);
@@ -100,19 +100,20 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
 
       {/* From 768px: a table. The Created column gives way first. */}
       <DataTableRows
+        sortKeys={accountSortKeys}
         className="hidden md:flex"
         columns={[
-          { id: "account", header: t("columns.account") },
+          { id: "name", header: t("columns.account") },
           { id: "role", header: t("columns.role") },
           { id: "status", header: t("columns.status") },
-          { id: "lastSignIn", header: t("columns.lastSignIn") },
-          { id: "created", header: t("columns.created"), layout: { from: "xl" } },
+          { id: "lastSignIn", header: t("columns.lastSignIn"), layout: { descFirst: true } },
+          { id: "created", header: t("columns.created"), layout: { from: "xl", descFirst: true } },
           { id: "actions", header: <span className="sr-only">{t("columns.actions")}</span> },
         ]}
         rows={rows.map((row) => ({
           id: row.account.id,
           cells: {
-            account: row.person,
+            name: row.person,
             role: row.role,
             status: row.status,
             lastSignIn: (

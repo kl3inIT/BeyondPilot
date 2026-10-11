@@ -25,7 +25,11 @@ import { siteRoutes } from "@/lib/site";
 
 import { SolutionLogo } from "./solution-logo";
 import { SolutionFeature } from "./solution-feature";
-import { adminSolutionsSearch, type AdminSolutionsSearch } from "./solutions-search";
+import {
+  adminSolutionSortKeys,
+  adminSolutionsSearch,
+  type AdminSolutionsSearch,
+} from "./solutions-search";
 import { SolutionsToolbar } from "./solutions-toolbar";
 
 const address = createSerializer(adminSolutionsSearch);
@@ -129,20 +133,21 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
 
       {/* From 768px: a table. The sender gives way first, then the organization joins the solution. */}
       <DataTableRows
+        sortKeys={adminSolutionSortKeys}
         className="hidden md:flex"
         columns={[
           // The one column that gives its width up: a long name or summary is cut, not wrapped.
-          { id: "solution", header: t("columns.solution"), layout: { fill: true } },
+          { id: "name", header: t("columns.solution"), layout: { fill: true } },
           { id: "organization", header: t("columns.organization"), layout: { from: "lg" } },
           { id: "status", header: t("columns.status") },
           { id: "sentBy", header: t("columns.sentBy"), layout: { from: "xl" } },
-          { id: "waiting", header: t("columns.waiting") },
+          { id: "submitted", header: t("columns.waiting"), layout: { descFirst: true } },
           { id: "actions", header: <span className="sr-only">{t("columns.actions")}</span> },
         ]}
         rows={rows.map((row) => ({
           id: row.id,
           cells: {
-            solution: (
+            name: (
               <div className="flex min-w-0 items-center gap-3">
                 <SolutionLogo name={row.name} fileId={row.logoFileId} size="row" />
                 <div className="flex min-w-0 flex-col">
@@ -166,7 +171,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
             organization: row.organization,
             status: row.status,
             sentBy: row.sender,
-            waiting: <span className="text-muted-foreground">{row.submitted}</span>,
+            submitted: <span className="text-muted-foreground">{row.submitted}</span>,
             actions: (
               <div className="flex justify-end">
                 <RowMenu solution={row.solution} />

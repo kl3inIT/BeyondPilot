@@ -19,6 +19,7 @@ import { AdminOrganizationRowActions } from "./admin-organization-row-actions";
 import {
   adminOrganizationsSearch,
   type AdminOrganizationsSearch,
+  adminOrganizationSortKeys,
 } from "./admin-organizations-search";
 import { AdminOrganizationsToolbar } from "./admin-organizations-toolbar";
 import { OrganizationMark } from "./organization-mark";
@@ -135,9 +136,10 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
 
       {/* From 768px: a table. Who asked and when give way first, so the name keeps its room. */}
       <DataTableRows
+        sortKeys={adminOrganizationSortKeys}
         className="hidden md:flex"
         columns={[
-          { id: "organization", header: t("columns.organization"), layout: { fill: true } },
+          { id: "name", header: t("columns.organization"), layout: { fill: true } },
           { id: "request", header: t("columns.request"), layout: { width: "md" } },
           { id: "status", header: t("columns.status"), layout: { width: "md" } },
           {
@@ -145,7 +147,11 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
             header: t("columns.askedBy"),
             layout: { width: "lg", from: "xl" },
           },
-          { id: "received", header: t("columns.received"), layout: { width: "sm", from: "2xl" } },
+          {
+            id: "received",
+            header: t("columns.received"),
+            layout: { width: "sm", from: "2xl", descFirst: true },
+          },
           {
             id: "actions",
             header: <span className="sr-only">{t("columns.actions")}</span>,
@@ -155,7 +161,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
         rows={rows.map((row) => ({
           id: row.id,
           cells: {
-            organization: row.organization,
+            name: row.organization,
             request: row.request ?? (
               <span className="text-muted-foreground">{t("request.none")}</span>
             ),

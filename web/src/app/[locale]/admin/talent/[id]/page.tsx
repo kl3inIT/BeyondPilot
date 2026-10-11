@@ -37,6 +37,7 @@ export default async function AdminTalentRoute({
     q: "",
     status: "in_review",
     featured: null,
+    sort: "",
     page: 1,
   });
   // The queue is walked in its order: the record after this one, or its first when this is the last.

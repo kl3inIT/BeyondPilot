@@ -1,3 +1,4 @@
+import { knownSort } from "@/lib/list-sort";
 import { notFound } from "next/navigation";
 
 import {
@@ -18,6 +19,7 @@ import { ApiError } from "@/lib/api/client";
 import { sessionRequest } from "@/lib/auth/session";
 
 import type { EmailActivitySearch, EmailSuppressionsSearch } from "./email-search";
+import { emailSuppressionSortKeys } from "./email-search";
 
 /** The longest search the backend takes. */
 const MAX_SEARCH = 100;
@@ -98,6 +100,7 @@ export async function readEmailSuppressions(
     query: {
       reason: search.reason ?? undefined,
       q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
+      sort: knownSort(search.sort, emailSuppressionSortKeys),
       page: search.page,
     },
   }).catch(notFoundWhenRefused);

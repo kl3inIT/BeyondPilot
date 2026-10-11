@@ -39,6 +39,7 @@ export default async function AdminSolutionRoute({
     status: "in_review",
     industry: null,
     featured: null,
+    sort: "",
     page: 1,
   });
   // The queue is walked in its order: the record after this one, or its first when this is the last.
