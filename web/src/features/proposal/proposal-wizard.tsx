@@ -24,11 +24,7 @@ import {
   type UseCaseProposalForm,
 } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
-import {
-  proposalViewRoute,
-  proposeToUseCaseRoute as proposeRoute,
-  briefRoute,
-} from "@/lib/site";
+import { proposalViewRoute, proposeToUseCaseRoute as proposeRoute, briefRoute } from "@/lib/site";
 
 import {
   bodyOf,
