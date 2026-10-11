@@ -96,9 +96,9 @@ test.describe("use cases", () => {
 
     await page.getByRole("button", { name: "Clear all" }).click();
     await expect(page).toHaveURL(/\/use-cases\?q=retail$/);
-    await expect(page.getByRole("main").getByRole("heading", { level: 2 })).toHaveText([
-      "Demand forecasting for a retail chain",
-    ]);
+    await expect(
+      page.getByRole("main").getByRole("listitem").getByRole("heading", { level: 2 }),
+    ).toHaveText(["Demand forecasting for a retail chain"]);
     await expect(page.getByText("1 use case", { exact: true })).toBeVisible();
   });
 
