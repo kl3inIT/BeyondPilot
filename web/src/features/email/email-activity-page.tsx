@@ -14,6 +14,10 @@ import { EmailHeader } from "./email-header";
 import { isEmailKind, KindIcon } from "./email-kinds";
 import { emailActivitySearch, type EmailActivitySearch } from "./email-search";
 import { EmailStatusLabel } from "./email-status";
+import { PageSizeSelect } from "@/components/composites/page-size-select";
+
+/** How many entries a page of the log holds until the reader chooses. */
+const LOG_PAGE_SIZE = 50;
 
 const address = createSerializer(emailActivitySearch);
 
@@ -146,6 +150,7 @@ async function EmailActivityPage({
       <DataTablePager
         previous={messages.newer ? pageHref({ after: messages.newer }) : undefined}
         next={messages.older ? pageHref({ before: messages.older }) : undefined}
+        sizer={<PageSizeSelect size={search.size ?? LOG_PAGE_SIZE} />}
         labels={{
           navigation: t("activity.pagination.label"),
           previous: t("activity.pagination.previous"),

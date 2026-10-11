@@ -39,6 +39,7 @@ export default async function AdminTalentRoute({
     featured: null,
     sort: "",
     page: 1,
+    size: null,
   });
   // The queue is walked in its order: the record after this one, or its first when this is the last.
   const at = waiting.items.findIndex((item) => item.id === id);

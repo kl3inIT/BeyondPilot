@@ -499,7 +499,7 @@ createServer((request, response) => {
   if (chat) {
     return json(response, ...chat);
   }
-  const searched = answerSearch(url);
+  const searched = answerSearch(url, publicPrograms);
   if (searched) {
     return json(response, ...searched);
   }

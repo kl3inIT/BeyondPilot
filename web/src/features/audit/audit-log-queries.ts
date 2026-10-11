@@ -24,6 +24,7 @@ export async function readAuditLog(search: AuditLogSearch): Promise<AuditEventLi
       q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
       before: search.before ?? undefined,
       after: search.after ?? undefined,
+      size: search.size ?? undefined,
     },
   });
   return data;

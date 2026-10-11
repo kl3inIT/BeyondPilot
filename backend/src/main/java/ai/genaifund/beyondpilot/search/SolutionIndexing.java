@@ -79,6 +79,10 @@ class SolutionIndexing {
 		Cards.put(facets, Cards.FOCUS_AREAS, solution.focusAreas());
 		Cards.put(facets, Cards.PHOTO, solution.logoFileId());
 		facets.put(Cards.CUSTOMER_DEPLOYMENTS, solution.customerDeployments());
+		Cards.put(facets, Cards.PUBLISHED_AT, solution.publishedAt());
+		Cards.put(facets, Cards.COVER, solution.coverFileId());
+		Cards.put(facets, Cards.BACKING, solution.backing());
+		facets.put(Cards.FEATURED, solution.featured());
 		String maturity = solution.maturity();
 		String keywords = Cards.words(solution.focusAreas(), solution.industries(),
 				maturity == null ? List.of() : List.of(maturity), solution.deployment(), solution.builtWith());

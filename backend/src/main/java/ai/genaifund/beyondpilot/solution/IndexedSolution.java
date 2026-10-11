@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.solution;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,5 +16,6 @@ public record IndexedSolution(UUID id, String slug, String name, UUID organizati
 		String organizationSlug, @Nullable String country, @Nullable String summary, @Nullable String problemsSolved,
 		@Nullable String valueProposition, @Nullable String traction, @Nullable String bestCustomerProfile,
 		List<String> builtWith, List<String> focusAreas, List<String> industries, @Nullable String maturity,
-		List<String> deployment, @Nullable UUID logoFileId, int customerDeployments, boolean listed) {
+		List<String> deployment, @Nullable UUID logoFileId, int customerDeployments, boolean listed,
+		@Nullable Instant publishedAt, @Nullable UUID coverFileId, @Nullable String backing, boolean featured) {
 }

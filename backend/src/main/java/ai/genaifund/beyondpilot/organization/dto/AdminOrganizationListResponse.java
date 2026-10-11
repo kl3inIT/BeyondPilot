@@ -11,5 +11,7 @@ public record AdminOrganizationListResponse(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The page returned, counted from 1.") int page,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) int pageSize,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "How many organizations match, over all pages.") long total) {
+				description = "How many organizations match, over all pages.") long total,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The countries the list can be narrowed by: those an organization is in, ISO 3166-1 alpha-2, in order.") List<String> countries) {
 }

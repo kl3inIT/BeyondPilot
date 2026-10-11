@@ -36,23 +36,25 @@ public class AuditLog {
 	@Transactional(readOnly = true)
 	public AuditEventListResponse list(AuditEventListRequest request) {
 		String text = request.q() == null || request.q().isBlank() ? null : request.q().strip();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		if (request.before() == null && request.after() != null) {
-			return towardsThePresent(request, text, Place.of(request.after()));
+			return towardsThePresent(request, text, Place.of(request.after()), size);
 		}
 		Place place = request.before() == null ? null : Place.of(request.before());
 		// One more than a page tells whether an older page exists.
 		List<AuditEventResponse> found = events.older(request.from(), request.action(), text,
-				place == null ? null : place.at(), place == null ? null : place.id(), PAGE_SIZE + 1);
-		List<AuditEventResponse> page = found.subList(0, Math.min(found.size(), PAGE_SIZE));
+				place == null ? null : place.at(), place == null ? null : place.id(), size + 1);
+		List<AuditEventResponse> page = found.subList(0, Math.min(found.size(), size));
 		return new AuditEventListResponse(page, place == null || page.isEmpty() ? null : cursor(page.getFirst()),
-				found.size() > PAGE_SIZE ? cursor(page.getLast()) : null);
+				found.size() > size ? cursor(page.getLast()) : null);
 	}
 
-	private AuditEventListResponse towardsThePresent(AuditEventListRequest request, @Nullable String text, Place place) {
+	private AuditEventListResponse towardsThePresent(AuditEventListRequest request, @Nullable String text, Place place,
+			int size) {
 		List<AuditEventResponse> found = events.newer(request.from(), request.action(), text, place.at(), place.id(),
-				PAGE_SIZE + 1);
-		List<AuditEventResponse> page = found.subList(0, Math.min(found.size(), PAGE_SIZE)).reversed();
-		return new AuditEventListResponse(page, found.size() > PAGE_SIZE ? cursor(page.getFirst()) : null,
+				size + 1);
+		List<AuditEventResponse> page = found.subList(0, Math.min(found.size(), size)).reversed();
+		return new AuditEventListResponse(page, found.size() > size ? cursor(page.getFirst()) : null,
 				page.isEmpty() ? null : cursor(page.getLast()));
 	}
 

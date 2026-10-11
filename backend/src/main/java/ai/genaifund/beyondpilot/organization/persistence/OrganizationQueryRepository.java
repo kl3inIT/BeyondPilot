@@ -38,6 +38,7 @@ public class OrganizationQueryRepository {
 			       or (:status = 'approved' and o.status = 'approved' and o.suspended_at is null)
 			       or (:status not in ('suspended', 'approved') and o.status = :status)
 			       or (:status = 'in_review' and c.id is not null))
+			  and (cast(:country as text) is null or o.country = :country)
 			""";
 
 	private final JdbcClient jdbc;
@@ -128,8 +129,8 @@ public class OrganizationQueryRepository {
 	 * organization with an open claim; none selects every one but the merged
 	 * @param sort {@code name}, {@code received} or {@code members}, with {@code -} before it for the reverse
 	 */
-	public List<AdminRow> adminPage(@Nullable String text, @Nullable String status, @Nullable String sort, int limit,
-			long offset) {
+	public List<AdminRow> adminPage(@Nullable String text, @Nullable String status, @Nullable String country,
+			@Nullable String sort, int limit, long offset) {
 		return adminFiltered("""
 				select o.id, o.slug, o.name, o.logo_file_id, o.type, o.country, o.status, o.suspended_at, o.created_by_account_id,
 				       o.created_at,
@@ -138,7 +139,7 @@ public class OrganizationQueryRepository {
 				               where m.organization_id = o.id and m.role = 'owner') as owned,
 				       c.id as claim_id, c.account_id as claimant_account_id, c.created_at as claimed_at,
 				       k.name as merged_into_name
-				""" + ADMIN_SOURCE + "order by " + adminOrder(sort) + "\nlimit :limit offset :offset\n", text, status).param("limit", limit).param("offset", offset).query((row, index) -> {
+				""" + ADMIN_SOURCE + "order by " + adminOrder(sort) + "\nlimit :limit offset :offset\n", text, status, country).param("limit", limit).param("offset", offset).query((row, index) -> {
 			Timestamp claimedAt = row.getTimestamp("claimed_at");
 			Timestamp suspendedAt = row.getTimestamp("suspended_at");
 			return new AdminRow(row.getObject("id", UUID.class), row.getString("slug"), row.getString("name"),
@@ -150,8 +151,9 @@ public class OrganizationQueryRepository {
 		}).list();
 	}
 
-	public long adminCount(@Nullable String text, @Nullable String status) {
-		return adminFiltered("select count(*)\n" + ADMIN_SOURCE, text, status).query(Long.class).single();
+	public long adminCount(@Nullable String text, @Nullable String status, @Nullable String country) {
+		return adminFiltered("select count(*)\n" + ADMIN_SOURCE, text, status, country).query(Long.class)
+			.single();
 	}
 
 	/**
@@ -171,10 +173,21 @@ public class OrganizationQueryRepository {
 		};
 	}
 
-	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, @Nullable String status) {
+	/** The countries the operators' list can be narrowed by: those an organization that is not merged is in. */
+	public List<String> adminCountries() {
+		return jdbc.sql("""
+				select distinct country from organization
+				where country is not null and status <> 'merged'
+				order by country
+				""").query(String.class).list();
+	}
+
+	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, @Nullable String status,
+			@Nullable String country) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
-			.param("status", status, Types.VARCHAR);
+			.param("status", status, Types.VARCHAR)
+			.param("country", country, Types.VARCHAR);
 	}
 
 	private static final String MATCHES = """

@@ -79,8 +79,9 @@ public class MatchingAdministration {
 	public MatchingFeedbackListResponse feedback(Actor actor, MatchingFeedbackListRequest request) {
 		identity.requireOperator(actor);
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? FEEDBACK_PAGE_SIZE : request.size();
 		Totals totals = feedback.totals(Instant.now().minus(FEEDBACK_PERIOD));
-		List<Disagreement> rows = feedback.disagreements(FEEDBACK_PAGE_SIZE, (long) (page - 1) * FEEDBACK_PAGE_SIZE);
+		List<Disagreement> rows = feedback.disagreements(size, (long) (page - 1) * size);
 		Map<UUID, Shown> solutions = evidence.shown(rows.stream().map(Disagreement::solutionId).collect(Collectors.toSet()));
 		Map<UUID, Person> people = identity.people(rows.stream().map(Disagreement::accountId).collect(Collectors.toSet()));
 		// A page holds the disagreements of a few use cases; each is read once.
@@ -108,7 +109,7 @@ public class MatchingAdministration {
 					row.candidateId(), row.solutionId(), solution == null ? null : solution.name(), row.aiBucket(),
 					row.expectedBucket(), disputed, row.note(), person == null ? null : person.label(), row.createdAt());
 		}).toList();
-		return new MatchingFeedbackListResponse(totals.answers(), totals.agreements(), items, page, FEEDBACK_PAGE_SIZE,
+		return new MatchingFeedbackListResponse(totals.answers(), totals.agreements(), items, page, size,
 				feedback.disagreementCount());
 	}
 

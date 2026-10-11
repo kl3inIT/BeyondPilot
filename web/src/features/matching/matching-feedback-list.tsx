@@ -10,6 +10,7 @@ import { adminUseCaseCandidatesRoute, siteRoutes } from "@/lib/site";
 import { MatchingAdminTabs } from "./matching-admin-tabs";
 import { matchingFeedbackAddress } from "./matching-search";
 import { requirementName } from "./matching-view";
+import { PageSizeSelect } from "@/components/composites/page-size-select";
 
 /**
  * Admin › AI › Matching, the Feedback tab: what people said about the groups the AI gave. How many
@@ -17,7 +18,14 @@ import { requirementName } from "./matching-view";
  * wrong, newest first, with a link to the solution among those matched to its use case. A table from
  * 768px, one stacked row an answer below that. The page of the list is the URL.
  */
-async function MatchingFeedbackPage({ feedback }: { feedback: MatchingFeedbackList }) {
+async function MatchingFeedbackPage({
+  feedback,
+  size,
+}: {
+  feedback: MatchingFeedbackList;
+  /** The page size the URL holds; none is the list's own. */
+  size: number | null;
+}) {
   const [t, title, word, format] = await Promise.all([
     getTranslations("Admin.matching.feedback"),
     getTranslations("Admin.matching"),
@@ -149,7 +157,10 @@ async function MatchingFeedbackPage({ feedback }: { feedback: MatchingFeedbackLi
             count={t("count", { count: feedback.total })}
             page={feedback.page}
             pages={pages}
-            href={(page) => matchingFeedbackAddress(siteRoutes.adminAiMatchingFeedback, { page })}
+            href={(page) =>
+              matchingFeedbackAddress(siteRoutes.adminAiMatchingFeedback, { page, size })
+            }
+            sizer={<PageSizeSelect size={feedback.pageSize} total={feedback.total} />}
             labels={{
               navigation: t("pagination.label"),
               previous: t("pagination.previous"),

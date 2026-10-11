@@ -1,4 +1,5 @@
 import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import { pageSize } from "@/lib/page-size";
 
 /** The columns the list sorts by, as its API names them. */
 export const accountSortKeys = ["name", "lastSignIn", "created"] as const;
@@ -14,6 +15,7 @@ export const accountsSearch = {
   role: parseAsStringLiteral(["user", "operator"]),
   sort: parseAsString.withDefault(""),
   page: parseAsInteger.withDefault(1),
+  size: pageSize,
 };
 
 export const loadAccountsSearch = createLoader(accountsSearch);

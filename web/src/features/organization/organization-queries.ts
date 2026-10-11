@@ -25,11 +25,14 @@ export async function readMyOrganization(): Promise<MyOrganization> {
 }
 
 /** One page of who belongs to the caller's organization, or `null` when they belong to none. Server only. */
-export async function readMembers(page = 1): Promise<OrganizationMembers | null> {
+export async function readMembers(
+  page = 1,
+  size?: number | null,
+): Promise<OrganizationMembers | null> {
   try {
     const { data } = await listMyOrganizationMembers({
       ...(await sessionRequest()),
-      query: { page: Math.max(1, page) },
+      query: { page: Math.max(1, page), size: size ?? undefined },
     });
     return data;
   } catch (error) {
@@ -49,8 +52,10 @@ export async function readAdminOrganizations(
     query: {
       q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
       status: search.status ?? undefined,
+      country: search.country ?? undefined,
       sort: knownSort(search.sort, adminOrganizationSortKeys),
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;

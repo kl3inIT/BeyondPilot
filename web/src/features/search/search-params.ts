@@ -1,4 +1,5 @@
 import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import { pageSize } from "@/lib/page-size";
 
 /** The kinds a search returns, each with a tab of its own. */
 export const searchKinds = ["program", "solution", "talent", "use_case"] as const;
@@ -10,6 +11,7 @@ export const searchParams = {
   q: parseAsString.withDefault(""),
   kind: parseAsStringLiteral(searchKinds),
   page: parseAsInteger.withDefault(1),
+  size: pageSize,
 };
 
 export const loadSearchParams = createLoader(searchParams);

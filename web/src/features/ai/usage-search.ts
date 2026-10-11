@@ -5,6 +5,7 @@ import {
   parseAsString,
   parseAsStringLiteral,
 } from "nuqs/server";
+import { pageSize } from "@/lib/page-size";
 
 /** What the page covers: today, or the last 7 or 30 days with today, in Vietnam time. */
 export const usagePeriods = ["today", "7d", "30d"] as const;
@@ -33,6 +34,7 @@ export const usageCallsSearch = {
   model: parseAsString,
   outcome: parseAsStringLiteral(usageOutcomes),
   page: parseAsInteger.withDefault(1),
+  size: pageSize,
 };
 
 export const loadUsageOverviewSearch = createLoader(usageOverviewSearch);

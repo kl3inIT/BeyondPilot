@@ -27,6 +27,7 @@ export async function readAdminUseCases(search: AdminUseCasesSearch): Promise<Ad
       featured: search.featured === null ? undefined : search.featured === "true",
       sort: knownSort(search.sort, adminUseCaseSortKeys),
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;

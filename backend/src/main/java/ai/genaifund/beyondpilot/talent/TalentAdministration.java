@@ -80,15 +80,16 @@ public class TalentAdministration {
 		identity.requireOperator(actor);
 		String text = TalentViews.text(request.q());
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		List<TalentQueryRepository.Row> rows = profileList.adminPage(text, request.status(), request.featured(),
-				request.sort(), PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
+				request.sort(), size, (long) (page - 1) * size);
 		Map<UUID, Person> people = identity
 			.people(rows.stream().map(TalentQueryRepository.Row::accountId).toList());
 		return new AdminTalentListResponse(rows.stream()
 			.map(row -> new TalentSummaryResponse(row.id(), row.slug(), row.name(),
 					email(people, row.accountId()), row.headline(), row.status(), row.suspendedAt(), row.listed(),
 					row.featuredAt(), row.submittedAt(), row.updatedAt()))
-			.toList(), page, PAGE_SIZE, profileList.adminCount(text, request.status(), request.featured()));
+			.toList(), page, size, profileList.adminCount(text, request.status(), request.featured()));
 	}
 
 	/**
@@ -226,14 +227,15 @@ public class TalentAdministration {
 	public AdminTalentEnquiryListResponse reported(Actor actor, AdminTalentEnquiryListRequest request) {
 		identity.requireOperator(actor);
 		int page = request.page() == null ? 1 : request.page();
-		List<TalentDetailRepository.ReportedEnquiry> rows = details.reported(PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
+		int size = request.size() == null ? PAGE_SIZE : request.size();
+		List<TalentDetailRepository.ReportedEnquiry> rows = details.reported(size, (long) (page - 1) * size);
 		Map<UUID, Person> senders = identity
 			.people(rows.stream().map(TalentDetailRepository.ReportedEnquiry::senderAccountId).distinct().toList());
 		return new AdminTalentEnquiryListResponse(rows.stream()
 			.map(row -> new AdminTalentEnquiryResponse(row.id(), row.profileId(), row.profileName(),
 					TalentViews.senderName(row.senderName(), senders.get(row.senderAccountId())),
 					email(senders, row.senderAccountId()), row.topic(), row.message(), row.createdAt(), row.answeredAt()))
-			.toList(), page, PAGE_SIZE, details.reportedCount());
+			.toList(), page, size, details.reportedCount());
 	}
 
 	/** Tells the person what GenAI Fund decided; an account that no longer signs in is told nothing. */

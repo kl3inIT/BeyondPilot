@@ -22,6 +22,7 @@ export async function readAccounts(search: AccountsSearch): Promise<AccountList>
       role: search.role ?? undefined,
       sort: knownSort(search.sort, accountSortKeys),
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;

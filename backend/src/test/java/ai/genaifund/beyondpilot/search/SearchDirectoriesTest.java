@@ -83,6 +83,14 @@ class SearchDirectoriesTest {
 		assertThat(JsonPath.<Integer>read(body, "$.items[0].customerDeployments")).isZero();
 		assertThat(JsonPath.<List<String>>read(body, "$.items[0].industries")).containsExactly("insurance");
 		assertThat(JsonPath.<String>read(body, "$.items[0].organizationSlug")).isNotBlank();
+		assertThat(JsonPath.<String>read(body, "$.items[0].coverFileId")).isNotBlank();
+		assertThat(JsonPath.<String>read(body, "$.items[0].publishedAt")).isNotBlank();
+		assertThat(JsonPath.<Boolean>read(body, "$.items[0].featured")).isFalse();
+		assertThat(JsonPath.<Number>read(search("voice%20agent%20" + word
+				+ "&kind=solution&industry=insurance&focusArea=document_processing&maturity=pilot&size=1"),
+				"$.total").longValue()).isEqualTo(1);
+		assertThat(JsonPath.<Number>read(search("voice%20agent%20" + word
+				+ "&kind=solution&industry=healthcare"), "$.total").longValue()).isZero();
 		// A code is found as the words it stands for.
 		assertThat(total("document processing " + word)).isEqualTo(1);
 		// And a tool it is built with, by its name.
@@ -171,6 +179,10 @@ class SearchDirectoriesTest {
 		assertThat(JsonPath.<List<String>>read(body, "$.items[0].roles")).containsExactly("ml_engineer");
 		assertThat(JsonPath.<String>read(body, "$.items[0].worksAt")).isEqualTo("Revve AI");
 		assertThat(JsonPath.<String>read(body, "$.items[0].city")).isEqualTo("Ho Chi Minh City");
+		assertThat(JsonPath.<Integer>read(body, "$.items[0].projectCount")).isZero();
+		assertThat(JsonPath.<Boolean>read(body, "$.items[0].featured")).isFalse();
+		assertThat(JsonPath.<Number>read(search("langgraph%20" + word
+				+ "&kind=talent&role=ml_engineer&industry=insurance"), "$.total").longValue()).isEqualTo(1);
 
 		post(operator, "/api/talent/admin/profiles/" + profile + "/take-down", Map.of("reason", "other"));
 		await().atMost(WAIT).until(() -> total("lan " + word) == 0);
@@ -213,6 +225,12 @@ class SearchDirectoriesTest {
 		assertThat(JsonPath.<String>read(body, "$.items[0].slug")).isEqualTo(id);
 		assertThat(JsonPath.<Object>read(body, "$.items[0].subtitle")).isNull();
 		assertThat(JsonPath.<Integer>read(body, "$.counts.useCase")).isEqualTo(1);
+		assertThat(JsonPath.<Boolean>read(body, "$.items[0].budgetMembersOnly")).isFalse();
+		assertThat(JsonPath.<Integer>read(body, "$.items[0].timelineMinWeeks")).isEqualTo(4);
+		assertThat(JsonPath.<Integer>read(body, "$.items[0].timelineMaxWeeks")).isEqualTo(12);
+		assertThat(JsonPath.<List<String>>read(body, "$.items[0].technologies")).containsExactly("generative_ai");
+		assertThat(JsonPath.<Object>read(body, "$.items[0].organizationLogoFileId")).isNull();
+		assertThat(JsonPath.<String>read(body, "$.items[0].publishedAt")).isNotBlank();
 		// Search reads only what the index holds: the goal the public list shows, never the problem statement members
 		// read, and no name of an organization that stays anonymous.
 		assertThat(total("first assessment " + word)).isEqualTo(1);

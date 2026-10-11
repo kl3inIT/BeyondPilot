@@ -56,6 +56,11 @@ class TalentIndexing {
 		Cards.put(facets, Cards.ROLES, profile.roles());
 		Cards.put(facets, Cards.SKILLS, profile.skills());
 		Cards.put(facets, Cards.INDUSTRIES, profile.industries());
+		Cards.put(facets, Cards.PUBLISHED_AT, profile.publishedAt());
+		Cards.put(facets, Cards.LEAD_PROJECT_TITLE, profile.leadProjectTitle());
+		Cards.put(facets, Cards.LEAD_PROJECT_STAGE, profile.leadProjectStage());
+		facets.put(Cards.PROJECT_COUNT, profile.projectCount());
+		facets.put(Cards.FEATURED, profile.featured());
 		String keywords = Cards.words(profile.roles(), profile.skills(), profile.industries());
 		return new Document(SearchDocumentRepository.TALENT, profile.id(), profile.slug(), profile.name(),
 				profile.headline(), Objects.requireNonNullElse(profile.bio(), ""), keywords,

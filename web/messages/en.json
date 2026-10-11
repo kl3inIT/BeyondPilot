@@ -1176,6 +1176,10 @@
         "status": {
           "label": "Status",
           "all": "All statuses"
+        },
+        "country": {
+          "label": "Country",
+          "all": "All countries"
         }
       },
       "status": {
@@ -3377,6 +3381,9 @@
   },
   "Lists": {
     "loadMore": "Load more",
+    "pageSize": {
+      "label": "Per page"
+    },
     "pagination": {
       "label": "Pages",
       "previous": "Previous",
@@ -3387,6 +3394,7 @@
     },
     "sort": {
       "label": "Sort by",
+      "relevance": "Relevance",
       "newest": "Newest",
       "name": "Name A–Z"
     },
@@ -4276,7 +4284,7 @@
       "backing": "Confirmed by GenAI Fund:"
     },
     "filters": {
-      "search": "Search by name or summary",
+      "search": "Search AI solutions",
       "toggle": "Filters",
       "adminSearch": "Search by solution or organization",
       "organization": {
@@ -4915,7 +4923,7 @@
       "others": "Other AI talent you could look at"
     },
     "filters": {
-      "search": "Search by name, skill or project",
+      "search": "Search AI talent",
       "adminSearch": "Search by name or email",
       "role": {
         "label": "Role",
@@ -5278,6 +5286,7 @@
     "metaTitle": "Programs and events · BeyondPilot",
     "title": "Programs and events",
     "lead": "Enterprise challenges, open innovation calls, build weeks and meetups that GenAI Fund runs with its partners across Southeast Asia.",
+    "search": "Search programs and events",
     "filters": {
       "label": "Programs by phase",
       "all": "All",
@@ -6417,6 +6426,7 @@
     "search": "Search use cases",
     "sort": {
       "label": "Sort by",
+      "relevance": "Relevance",
       "newest": "Newest",
       "deadline": "Closing soonest",
       "budget": "Highest budget"

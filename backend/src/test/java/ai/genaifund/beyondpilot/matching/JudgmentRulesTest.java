@@ -195,7 +195,8 @@ class JudgmentRulesTest {
 	private static IndexedSolution solution() {
 		return new IndexedSolution(UUID.randomUUID(), "hotline-assist", "Hotline Assist", UUID.randomUUID(), "Voice Lab",
 				"voice-lab", "VN", "A voice agent.", null, null, null, null, List.of("speech recognition"),
-				List.of("customer service"), List.of("banking"), "in_production", List.of("cloud"), null, 1, true);
+				List.of("customer service"), List.of("banking"), "in_production", List.of("cloud"), null, 1, true,
+				null, null, null, false);
 	}
 
 }

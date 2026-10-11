@@ -10,6 +10,7 @@ import {
   listCustomerDeployments,
   listMySolutions,
   listSolutions,
+  search as searchDirectory,
   type AdminSolutionList,
   type MySolutions,
   type PublicCustomerDeploymentList,
@@ -19,6 +20,7 @@ import {
   type Solution,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
+import { maxSearchPage } from "@/lib/page-size";
 
 import type { AdminSolutionsSearch, SolutionsSearch } from "./solutions-search";
 import { adminSolutionSortKeys } from "./solutions-search";
@@ -38,6 +40,41 @@ function absent(error: unknown): null {
 
 /** One page of the public directory. Read without a session and never kept: approval shows at once. */
 export async function readSolutions(search: SolutionsSearch): Promise<PublicSolutionList> {
+  const q = text(search.q);
+  if (q) {
+    const { data } = await searchDirectory({
+      cache: "no-store",
+      query: {
+        q,
+        kind: "solution",
+        industry: search.industry ? [search.industry] : undefined,
+        focusArea: search.focusArea ?? undefined,
+        maturity: search.maturity ?? undefined,
+        sort: search.sort ?? undefined,
+        page: Math.min(maxSearchPage, Math.max(1, search.page)),
+        size: search.size ?? undefined,
+      },
+    });
+    return {
+      ...data,
+      items: data.items.map((item) => ({
+        name: item.title,
+        slug: item.slug,
+        summary: item.summary,
+        organizationName: item.subtitle!,
+        organizationSlug: item.organizationSlug!,
+        industries: item.industries,
+        focusAreas: item.focusAreas,
+        maturity: item.maturity as PublicSolutionList["items"][number]["maturity"],
+        country: item.country,
+        logoFileId: item.photoFileId,
+        coverFileId: item.coverFileId,
+        customerDeployments: item.customerDeployments!,
+        featured: item.featured!,
+        backing: item.backing,
+      })),
+    };
+  }
   const { data } = await listSolutions({
     cache: "no-store",
     query: {
@@ -45,8 +82,9 @@ export async function readSolutions(search: SolutionsSearch): Promise<PublicSolu
       industry: search.industry ?? undefined,
       focusArea: search.focusArea ?? undefined,
       maturity: search.maturity ?? undefined,
-      sort: search.sort,
+      sort: search.sort ?? "newest",
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;
@@ -147,6 +185,7 @@ export async function readAdminSolutions(search: AdminSolutionsSearch): Promise<
       featured: search.featured === null ? undefined : search.featured === "true",
       sort: knownSort(search.sort, adminSolutionSortKeys),
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;

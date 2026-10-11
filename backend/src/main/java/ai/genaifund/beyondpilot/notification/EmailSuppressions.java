@@ -47,9 +47,10 @@ public class EmailSuppressions {
 	public EmailSuppressionListResponse list(Actor actor, EmailSuppressionListRequest request) {
 		identity.requireOperator(actor);
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		return new EmailSuppressionListResponse(
-				suppressions.page(request.reason(), request.q(), request.sort(), (page - 1) * PAGE_SIZE, PAGE_SIZE),
-				page, PAGE_SIZE,
+				suppressions.page(request.reason(), request.q(), request.sort(), (page - 1) * size, size), page,
+				size,
 				suppressions.count(request.reason(), request.q()));
 	}
 

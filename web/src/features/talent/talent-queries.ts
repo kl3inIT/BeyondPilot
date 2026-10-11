@@ -7,6 +7,7 @@ import {
   listAdminTalent,
   listReportedTalentEnquiries,
   listTalent,
+  search as searchDirectory,
   type AdminTalent,
   type AdminTalentEnquiryList,
   type AdminTalentList,
@@ -15,6 +16,7 @@ import {
   type PublicTalentList,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
+import { maxSearchPage } from "@/lib/page-size";
 
 import type { AdminTalentSearch, TalentSearch } from "./talent-search";
 import { adminTalentSortKeys } from "./talent-search";
@@ -34,13 +36,51 @@ function absent(error: unknown): null {
 
 /** One page of the public directory. Read without a session and never kept: approval shows at once. */
 export async function readTalent(search: TalentSearch): Promise<PublicTalentList> {
+  const q = text(search.q);
+  if (q) {
+    const { data } = await searchDirectory({
+      cache: "no-store",
+      query: {
+        q,
+        kind: "talent",
+        role: search.role ?? undefined,
+        sort: search.sort ?? undefined,
+        page: Math.min(maxSearchPage, Math.max(1, search.page)),
+        size: search.size ?? undefined,
+      },
+    });
+    return {
+      ...data,
+      items: data.items.map((item) => ({
+        name: item.title,
+        slug: item.slug,
+        headline: item.subtitle,
+        city: item.city,
+        country: item.country,
+        photoFileId: item.photoFileId,
+        roles: item.roles,
+        skills: item.skills,
+        featured: item.featured!,
+        projectCount: item.projectCount!,
+        leadProject: item.leadProjectTitle
+          ? {
+              title: item.leadProjectTitle,
+              stage: (item.leadProjectStage ?? undefined) as NonNullable<
+                PublicTalentList["items"][number]["leadProject"]
+              >["stage"],
+            }
+          : null,
+      })),
+    };
+  }
   const { data } = await listTalent({
     cache: "no-store",
     query: {
       q: text(search.q),
       role: search.role ?? undefined,
-      sort: search.sort,
+      sort: search.sort ?? "newest",
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;
@@ -75,16 +115,20 @@ export async function readAdminTalentList(search: AdminTalentSearch): Promise<Ad
       featured: search.featured === null ? undefined : search.featured === "true",
       sort: knownSort(search.sort, adminTalentSortKeys),
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;
 }
 
 /** One page of the messages people reported, for the operator behind this request. Server only. */
-export async function readReportedTalentEnquiries(page: number): Promise<AdminTalentEnquiryList> {
+export async function readReportedTalentEnquiries(
+  page: number,
+  size: number | null,
+): Promise<AdminTalentEnquiryList> {
   const { data } = await listReportedTalentEnquiries({
     ...(await sessionRequest()),
-    query: { page: Math.max(1, page) },
+    query: { page: Math.max(1, page), size: size ?? undefined },
   });
   return data;
 }

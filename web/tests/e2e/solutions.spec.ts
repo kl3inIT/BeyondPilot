@@ -52,7 +52,7 @@ test.describe("solutions directory", () => {
   }) => {
     await page.goto("/solutions");
 
-    await page.getByRole("searchbox", { name: "Search by name or summary" }).fill("clinic");
+    await page.getByRole("searchbox", { name: "Search AI solutions" }).fill("clinic");
     await expect(page).toHaveURL(/[?&]q=clinic/);
     await expect(shownSolutions(page)).toHaveText(["Clinic Triage"]);
     await expect(page.getByText("Showing 1 of 1")).toBeVisible();

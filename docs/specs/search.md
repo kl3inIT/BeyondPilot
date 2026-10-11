@@ -66,20 +66,23 @@ On `OrganizationChanged`, the solution and use case listeners save the organizat
 What each kind puts in its row:
 
 - **Program.** Title the name, subtitle the partner, summary the summary; keywords the type; the card adds `about`.
-  Facets `type`, `coverFileId`, `externalUrl`, `applicationsOpenAt`, `applicationsCloseAt`; `starts_on` and `ends_on`
-  set.
+  Facets `type`, `coverFileId`, `externalUrl`, `applicationsOpenAt`, `applicationsCloseAt`, `createdAt`; `starts_on` and `ends_on`
+  set. Explicit newest ordering uses the start date, then the source creation time.
 - **Solution.** Title the name, subtitle the organization's name, summary the summary; keywords the focus areas,
   industries, maturity, deployment and `builtWith`; the card adds problems solved, value proposition, best customer
   profile and traction. Facets `organizationSlug`, `country`, `maturity`, `industries`, `focusAreas`, `photoFileId`
-  (its logo, or its organization's when it has none), `customerDeployments` (the count of approved deployments). `listed` follows the solution.
+  (its logo, or its organization's when it has none), `coverFileId`, `backing`, `featured`, `publishedAt`
+  (the approval time), `customerDeployments` (the count of approved deployments). `listed` follows the solution.
 - **Talent.** Title the name, subtitle the headline, summary the bio; keywords the roles, skills and industries; the
   card adds where the person works and their city. Facets `country`, `city`, `worksAt`, `photoFileId`, `roles`,
-  `skills`, `industries`.
+  `skills`, `industries`, `featured`, `publishedAt` (the approval time), `projectCount`, `leadProjectTitle` and `leadProjectStage`.
 - **Use case.** The slug is its id. Title the title, subtitle the organization's name, summary and card the expected
   outcomes (its goal); keywords the industry and technologies. Facets `industries`, `closesAt`, `budgetMin`,
-  `budgetMax`, `budgetToBeDetermined`, `currency`. Only what the public list of use cases shows is indexed: never the
-  problem statement, never the organization's name when the use case hides it, and no budget amounts when the budget
-  is for members only.
+  `budgetMax`, `budgetToBeDetermined`, `budgetMembersOnly`, `currency`, `publishedAt`, `technologies`,
+  `timelineMinWeeks`, `timelineMaxWeeks`, `organizationLogoFileId`, `featured` and `budgetUsd` (the public maximum
+  budget normalized with the configured VND/USD rate for sorting). Only what the public list shows is indexed:
+  never the problem statement, never the organization's name or logo when anonymous, and no budget amounts,
+  including the sort amount, when the budget is for members only.
 
 A facet without a value, or an empty list, is left out of `facets`.
 
@@ -94,17 +97,23 @@ the counts, and keeps the last run (when, items saved, rows removed) in memory u
 
 `GET /api/search` is open without a session (`SecurityConfiguration`) and served by `SearchService.search`.
 
-| Parameter | Contract                                                                        |
-| --------- | ------------------------------------------------------------------------------- |
-| `q`       | Required, 1 to 100 characters, not blank                                        |
-| `kind`    | Optional: `program`, `solution`, `talent` or `use_case`; every kind when absent |
-| `page`    | Optional, 1 to 50, default 1                                                    |
+| Parameter               | Contract                                                                                                                                                                                                                            |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `q`                     | Required, 1 to 100 characters, not blank                                                                                                                                                                                            |
+| `kind`                  | Optional: `program`, `solution`, `talent` or `use_case`; every kind when absent                                                                                                                                                     |
+| `page`                  | Optional, 1 to 50, default 1                                                                                                                                                                                                        |
+| `size`                  | Optional, 1 to 100, default 12 for one kind; All keeps 3 per kind                                                                                                                                                                   |
+| `industry`              | Optional industry codes; any selected industry matches                                                                                                                                                                              |
+| `focusArea`, `maturity` | Optional solution capability and stage                                                                                                                                                                                              |
+| `role`                  | Optional talent role                                                                                                                                                                                                                |
+| `type`, `phase`         | Optional program type and phase (`open`, `upcoming`, `done`); open includes running                                                                                                                                                 |
+| `sort`                  | Optional explicit directory order; absent or `relevance` uses hybrid ranking; solutions/talent/programs support `newest` and `name`, use cases `newest`, `deadline` and `budget`; incompatible kind/order combinations return `400` |
 
 The response, `SearchResults`, holds:
 
 - **`counts`:** how many items of each kind match, and `all`, whatever kind is shown.
 - **`items`:** without `kind`, the best 3 of each kind (`PER_KIND`), the kinds in the order of their best item; with
-  `kind`, a page of 12 (`PAGE_SIZE`) of that kind, best first, ties broken by title.
+  `kind`, a page of 12 (`PAGE_SIZE`) unless `size` overrides it, best first unless an explicit directory order is selected.
 - **`page`, `pageSize`, `total`:** `total` counts the kind shown, or every kind.
 
 Each `SearchItem` carries the kind, slug, title, subtitle, summary, the snippet and the facets of its kind as named
@@ -122,6 +131,9 @@ Rules of the results:
   and U+0003. `ts_headline` marks the unaccented text and the marks are carried over to the text as written; when the
   two do not line up letter for letter, the text comes back unmarked.
 - **The query is never logged.**
+- **Directories share the engine.** Solutions, Talent, Use Cases and Programs call this API when `q` is nonblank, with their kind, filters, order and page size. Without a query they keep their normal browse endpoints and featured/default ordering.
+- **Filters precede ranking.** Kind and facet eligibility apply before the nearest-vector candidate limit, not after a globally capped result set. Counts and page items agree for the selected kind. Public visibility and closed-use-case exclusion still apply.
+- **Bounded paging.** Search-backed directories use the API's existing 50-page window: out-of-window requested pages clamp to 50 and pagination never offers page 51. Browse-only directories retain their domain pagination.
 
 ## Ranking
 
@@ -147,12 +159,12 @@ Spring AI configures no model of its own (`spring.ai.model.embedding: none`).
 
 Configuration, `beyondpilot.search.embedding` in `application.yaml`:
 
-| Property         | Value                           | Meaning                                                                       |
-| ---------------- | ------------------------------- | ----------------------------------------------------------------------------- |
-| `batch-size`     | `32`                            | Items one request embeds                                                      |
-| `interval`       | `1m`                            | Delay between runs of the job, which first runs 30 seconds after start        |
-| `min-similarity` | `0.35`                          | Least cosine similarity for a match by meaning                                |
-| `pool`           | `48`                            | Nearest rows the meaning branch takes before ranking                          |
+| Property         | Value  | Meaning                                                                |
+| ---------------- | ------ | ---------------------------------------------------------------------- |
+| `batch-size`     | `32`   | Items one request embeds                                               |
+| `interval`       | `1m`   | Delay between runs of the job, which first runs 30 seconds after start |
+| `min-similarity` | `0.35` | Least cosine similarity for a match by meaning                         |
+| `pool`           | `48`   | Nearest rows the meaning branch takes before ranking                   |
 
 Behavior:
 

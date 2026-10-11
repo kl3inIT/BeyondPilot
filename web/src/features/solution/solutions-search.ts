@@ -1,6 +1,7 @@
 import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
 
 import { directorySorts } from "@/lib/directory-sort";
+import { pageSize } from "@/lib/page-size";
 
 import {
   focusAreas,
@@ -10,14 +11,15 @@ import {
   reviewedStatuses,
 } from "./solution-codes";
 
-/** What narrows the public directory, as the URL holds it: `?q=&industry=&focusArea=&maturity=&sort=&page=`. */
+/** What narrows the public directory, as the URL holds it: `?q=&industry=&focusArea=&maturity=&sort=&page=&size=`. */
 export const solutionsSearch = {
   q: parseAsString.withDefault(""),
   industry: parseAsStringLiteral(industries),
   focusArea: parseAsStringLiteral(focusAreas),
   maturity: parseAsStringLiteral(maturities),
-  sort: parseAsStringLiteral(directorySorts).withDefault(directorySorts[0]),
+  sort: parseAsStringLiteral(directorySorts),
   page: parseAsInteger.withDefault(1),
+  size: pageSize,
 };
 
 export const loadSolutionsSearch = createLoader(solutionsSearch);
@@ -32,7 +34,7 @@ export const loadCompanySearch = createLoader(companySearch);
 /** The columns the list sorts by, as its API names them. */
 export const adminSolutionSortKeys = ["name", "submitted"] as const;
 
-/** What narrows the operators' list of solutions: `?q=&organizationId=&status=&industry=&featured=&page=`. */
+/** What narrows the operators' list of solutions: `?q=&organizationId=&status=&industry=&featured=&sort=&page=&size=`. */
 export const adminSolutionsSearch = {
   q: parseAsString.withDefault(""),
   organizationId: parseAsString,
@@ -41,6 +43,7 @@ export const adminSolutionsSearch = {
   featured: parseAsStringLiteral(featuredChoices),
   sort: parseAsString.withDefault(""),
   page: parseAsInteger.withDefault(1),
+  size: pageSize,
 };
 
 export const loadAdminSolutionsSearch = createLoader(adminSolutionsSearch);

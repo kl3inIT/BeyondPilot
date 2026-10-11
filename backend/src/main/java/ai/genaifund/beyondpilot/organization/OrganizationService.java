@@ -354,8 +354,9 @@ public class OrganizationService {
 		Member caller = member(actor);
 		Organization organization = organizations.findById(caller.organizationId()).orElseThrow();
 		int page = list.page() == null ? 1 : list.page();
-		List<Member> members = memberships.members(organization.getId(), list.sort(), MEMBERS_PAGE_SIZE,
-				(long) (page - 1) * MEMBERS_PAGE_SIZE);
+		int size = list.size() == null ? MEMBERS_PAGE_SIZE : list.size();
+		List<Member> members = memberships.members(organization.getId(), list.sort(), size,
+				(long) (page - 1) * size);
 		List<Invitation> invitations = caller.isOwner() ? memberships.openInvitationsOf(organization.getId())
 				: List.of();
 		List<JoinRequest> requests = caller.isOwner() ? memberships.openRequestsTo(organization.getId()) : List.of();
@@ -364,7 +365,7 @@ public class OrganizationService {
 					OrganizationViews.accounts(invitations, requests).stream())
 			.toList());
 		return new MembersResponse(OrganizationViews.members(members, people, caller.accountId()), page,
-				MEMBERS_PAGE_SIZE, memberships.countMembers(organization.getId()),
+				size, memberships.countMembers(organization.getId()),
 				invitations.stream()
 					.map(invitation -> OrganizationViews.invitation(invitation, organization.getName(), people))
 					.toList(),

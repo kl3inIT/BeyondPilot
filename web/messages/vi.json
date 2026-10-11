@@ -1176,6 +1176,10 @@
         "status": {
           "label": "Trạng thái",
           "all": "Mọi trạng thái"
+        },
+        "country": {
+          "label": "Quốc gia",
+          "all": "Mọi quốc gia"
         }
       },
       "status": {
@@ -3377,6 +3381,9 @@
   },
   "Lists": {
     "loadMore": "Xem thêm",
+    "pageSize": {
+      "label": "Mỗi trang"
+    },
     "pagination": {
       "label": "Các trang",
       "previous": "Trước",
@@ -3387,6 +3394,7 @@
     },
     "sort": {
       "label": "Sắp xếp theo",
+      "relevance": "Mức độ phù hợp",
       "newest": "Mới nhất",
       "name": "Tên A–Z"
     },
@@ -4276,7 +4284,7 @@
       "backing": "GenAI Fund xác nhận:"
     },
     "filters": {
-      "search": "Tìm theo tên hoặc mô tả",
+      "search": "Tìm giải pháp AI",
       "toggle": "Bộ lọc",
       "adminSearch": "Tìm theo giải pháp hoặc tổ chức",
       "organization": {
@@ -4915,7 +4923,7 @@
       "others": "Các nhân lực AI khác bạn có thể xem"
     },
     "filters": {
-      "search": "Tìm theo tên, kỹ năng hoặc dự án",
+      "search": "Tìm nhân lực AI",
       "adminSearch": "Tìm theo tên hoặc email",
       "role": {
         "label": "Vai trò",
@@ -5278,6 +5286,7 @@
     "metaTitle": "Chương trình và sự kiện · BeyondPilot",
     "title": "Chương trình và sự kiện",
     "lead": "Thử thách doanh nghiệp, kêu gọi đổi mới mở, tuần lễ xây dựng và các buổi gặp mặt mà GenAI Fund tổ chức cùng đối tác khắp Đông Nam Á.",
+    "search": "Tìm chương trình và sự kiện",
     "filters": {
       "label": "Chương trình theo giai đoạn",
       "all": "Tất cả",
@@ -6417,6 +6426,7 @@
     "search": "Tìm bài toán",
     "sort": {
       "label": "Sắp xếp",
+      "relevance": "Mức độ phù hợp",
       "newest": "Mới nhất",
       "deadline": "Sắp hết hạn",
       "budget": "Ngân sách cao nhất"

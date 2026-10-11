@@ -94,15 +94,17 @@ public class OrganizationAdministration {
 		identity.requireOperator(actor);
 		String text = OrganizationViews.text(request.q());
 		int page = request.page() == null ? 1 : request.page();
-		List<AdminRow> rows = organizationList.adminPage(text, request.status(), request.sort(), PAGE_SIZE,
-				(long) (page - 1) * PAGE_SIZE);
+		int size = request.size() == null ? PAGE_SIZE : request.size();
+		List<AdminRow> rows = organizationList.adminPage(text, request.status(), request.country(), request.sort(),
+				size, (long) (page - 1) * size);
 		Map<UUID, Person> askers = identity.people(rows.stream()
 			.map(OrganizationAdministration::asker)
 			.filter(Objects::nonNull)
 			.distinct()
 			.toList());
 		return new AdminOrganizationListResponse(rows.stream().map(row -> summary(row, askers)).toList(), page,
-				PAGE_SIZE, organizationList.adminCount(text, request.status()));
+				size, organizationList.adminCount(text, request.status(), request.country()),
+				organizationList.adminCountries());
 	}
 
 	/**
@@ -657,8 +659,8 @@ public class OrganizationAdministration {
 	@Transactional(readOnly = true)
 	public OrganizationsAwaitingReview awaitingReview(Actor actor, int limit) {
 		identity.requireOperator(actor);
-		return new OrganizationsAwaitingReview(organizationList.adminCount(null, "in_review"),
-				organizationList.adminPage(null, "in_review", null, limit, 0)
+		return new OrganizationsAwaitingReview(organizationList.adminCount(null, "in_review", null),
+				organizationList.adminPage(null, "in_review", null, null, limit, 0)
 					.stream()
 					.map(row -> new OrganizationsAwaitingReview.Item(row.id(), row.name(), row.type(), row.country(),
 							row.createdAt()))

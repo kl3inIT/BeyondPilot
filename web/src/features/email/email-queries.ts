@@ -78,6 +78,7 @@ export async function readEmailActivity(search: EmailActivitySearch): Promise<Em
       q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
       before: search.before ?? undefined,
       after: search.after ?? undefined,
+      size: search.size ?? undefined,
     },
   }).catch(notFoundWhenRefused);
   return data;
@@ -102,6 +103,7 @@ export async function readEmailSuppressions(
       q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
       sort: knownSort(search.sort, emailSuppressionSortKeys),
       page: search.page,
+      size: search.size ?? undefined,
     },
   }).catch(notFoundWhenRefused);
   return data;
