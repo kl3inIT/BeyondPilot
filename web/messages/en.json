@@ -3656,7 +3656,7 @@
       "websiteHint": "Independent builders can use their portfolio website.",
       "foundedYear": "Year founded",
       "foundedYearHint": "For an independent builder, the year the practice started.",
-      "foundedYearInvalid": "Enter a four-digit year, such as 2021.",
+      "foundedYearInvalid": "Enter a four-digit year no later than this year, such as 2021.",
       "descriptionRequired": "Describe the organization in a few words.",
       "logo": {
         "label": "Logo",

@@ -3656,7 +3656,7 @@
       "websiteHint": "Người làm độc lập có thể dùng website portfolio.",
       "foundedYear": "Năm thành lập",
       "foundedYearHint": "Với người làm độc lập, là năm bắt đầu hoạt động.",
-      "foundedYearInvalid": "Nhập năm gồm bốn chữ số, ví dụ 2021.",
+      "foundedYearInvalid": "Nhập năm gồm bốn chữ số, không sau năm nay, ví dụ 2021.",
       "descriptionRequired": "Hãy mô tả tổ chức bằng vài câu ngắn.",
       "logo": {
         "label": "Logo",
