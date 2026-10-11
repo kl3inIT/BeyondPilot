@@ -6045,13 +6045,22 @@
       "kind": "Nộp với tư cách",
       "allKinds": "Nộp với tư cách: tất cả",
       "selection": {
-        "label": "Đơn đã chọn",
-        "count": "Đã chọn {count}",
         "shortlist": "Vào vòng trong",
         "notSelected": "Không được chọn",
-        "clear": "Bỏ chọn",
-        "all": "Chọn mọi đơn đang hiển thị",
-        "one": "Chọn {name}"
+        "confirm": {
+          "shortlisted": {
+            "title": "Cho {count} đơn vào vòng trong?",
+            "lead": "Mỗi đơn chuyển sang Vào vòng trong. Chưa ai nhận email cho tới khi công bố kết quả.",
+            "confirm": "Cho {count} đơn vào vòng trong"
+          },
+          "not_selected": {
+            "title": "Đánh dấu {count} đơn không được chọn?",
+            "lead": "Mỗi đơn chuyển sang Không được chọn. Chưa ai nhận email cho tới khi công bố kết quả.",
+            "confirm": "Đánh dấu {count} đơn"
+          },
+          "note": "Quyết định vẫn đổi lại được cho tới khi công bố kết quả.",
+          "cancel": "Huỷ"
+        }
       },
       "decided": {
         "shortlisted": "Đã đưa {count} đơn vào vòng trong.",

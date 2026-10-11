@@ -6,10 +6,9 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import { DataTable } from "@/components/composites/data-table";
+import { ConfirmDialog } from "@/components/composites/confirm-dialog";
+import { DataTableView, dataTableColumns } from "@/components/composites/data-table-view";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useNotify } from "@/hooks/use-notify";
 import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
@@ -31,9 +30,19 @@ type ReviewRow = {
   own: boolean;
 };
 
+type Decision = "shortlisted" | "not_selected";
+
+/** From this many applications on, a decision on several at once is asked again first. */
+const ASK_FROM = 5;
+
 type ReviewTableProps = {
   programId: string;
+  /** The page of applications to show. */
   rows: ReviewRow[];
+  /** Every application the search matches, on every page, that the operator may decide on. */
+  matching: string[];
+  sortKeys: readonly string[];
+  defaultSort: string;
   /** The label of the program's first one-choice question, the column its answer fills. */
   choiceLabel: string | null;
   /** An operator selects applications and decides on them together. */
@@ -42,29 +51,38 @@ type ReviewTableProps = {
   released: boolean;
 };
 
+const column = dataTableColumns<ReviewRow>();
+
 /**
- * A program's applications as a table, each opening its review. An operator ticks several and
- * shortlists them or marks them not selected at once; a judge only opens them.
+ * A program's applications as a table, each opening its review, sorted by a column header. An
+ * operator ticks several, or every one the search matches, and shortlists them or marks them not
+ * selected at once; five or more are asked again first. A judge only opens them.
  */
-function ReviewTable({ programId, rows, choiceLabel, operator, released }: ReviewTableProps) {
+function ReviewTable({
+  programId,
+  rows,
+  matching,
+  sortKeys,
+  defaultSort,
+  choiceLabel,
+  operator,
+  released,
+}: ReviewTableProps) {
   const t = useTranslations("Review.list");
   const notify = useNotify();
   const router = useRouter();
-  const [selected, setSelected] = useState<string[]>([]);
   const [pending, setPending] = useState(false);
-  const selecting = operator && !released;
-  const selectable = rows.filter((row) => !row.own);
-  const all = selectable.length > 0 && selectable.every((row) => selected.includes(row.id));
+  const [asking, setAsking] = useState<{ decision: Decision; ids: string[]; clear: () => void }>();
 
-  async function decide(decision: "shortlisted" | "not_selected") {
+  async function decide(decision: Decision, ids: string[], clear: () => void) {
     setPending(true);
     try {
       await decideApplications({
         path: { programId },
-        body: { applicationIds: selected, decision, reason: null },
+        body: { applicationIds: ids, decision, reason: null },
       });
-      notify.success(`Review.list.decided.${decision}`, { count: selected.length });
-      setSelected([]);
+      notify.success(`Review.list.decided.${decision}`, { count: ids.length });
+      clear();
       router.refresh();
     } catch (error) {
       const code = error instanceof ApiError ? error.code : undefined;
@@ -73,110 +91,115 @@ function ReviewTable({ programId, rows, choiceLabel, operator, released }: Revie
       );
     } finally {
       setPending(false);
+      setAsking(undefined);
     }
   }
 
+  function request(decision: Decision, ids: string[], clear: () => void) {
+    if (ids.length >= ASK_FROM) {
+      setAsking({ decision, ids, clear });
+    } else {
+      void decide(decision, ids, clear);
+    }
+  }
+
+  const columns = column.columns([
+    column.accessor("solution", {
+      id: "applicant",
+      header: t("columns.applicant"),
+      meta: { fill: true },
+      cell: ({ row }) => (
+        <div className="flex min-w-0 flex-col">
+          <Link
+            href={row.original.href}
+            className="truncate font-medium outline-none hover:underline focus-visible:underline"
+          >
+            {row.original.solution}
+          </Link>
+          <span className="truncate text-muted-foreground">{row.original.applicant}</span>
+        </div>
+      ),
+    }),
+    ...(choiceLabel
+      ? [
+          column.accessor("choice", {
+            header: choiceLabel,
+            meta: { wide: true },
+            cell: ({ getValue }) => getValue() ?? "—",
+          }),
+        ]
+      : []),
+    column.accessor("submitted", {
+      header: t("columns.submitted"),
+      meta: { nowrap: true },
+    }),
+    ...(operator
+      ? [
+          column.accessor("scores", {
+            id: "score",
+            header: t("columns.scores"),
+            sortDescFirst: true,
+            meta: { nowrap: true },
+          }),
+        ]
+      : []),
+    column.accessor("status", {
+      header: operator ? t("columns.status") : t("columns.yourAverage"),
+      cell: ({ getValue }) => <Badge variant={getValue().variant}>{getValue().label}</Badge>,
+    }),
+    column.display({
+      id: "open",
+      header: () => <span className="sr-only">{t("columns.open")}</span>,
+      cell: ({ row }) => (
+        <Link
+          href={row.original.href}
+          aria-label={t("openNamed", { name: row.original.solution })}
+          className="inline-flex size-8 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <ChevronRightIcon aria-hidden="true" className="size-4" />
+        </Link>
+      ),
+    }),
+  ]);
+
   return (
     <div className="flex flex-col gap-3">
-      {selecting && selected.length > 0 && (
-        <div
-          role="region"
-          aria-label={t("selection.label")}
-          className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted px-4 py-2.5"
-        >
-          <span className="text-sm font-medium">
-            {t("selection.count", { count: selected.length })}
-          </span>
-          <Button size="sm" pending={pending} onClick={() => decide("shortlisted")}>
-            {t("selection.shortlist")}
-          </Button>
-          <Button
-            size="sm"
-            prominence="secondary"
-            disabled={pending}
-            onClick={() => decide("not_selected")}
-          >
-            {t("selection.notSelected")}
-          </Button>
-          <Button size="sm" prominence="tertiary" onClick={() => setSelected([])}>
-            {t("selection.clear")}
-          </Button>
-        </div>
-      )}
-
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            {selecting && (
-              <TableHead className="w-10">
-                <Checkbox
-                  aria-label={t("selection.all")}
-                  checked={all}
-                  onCheckedChange={(checked) =>
-                    setSelected(checked ? selectable.map((row) => row.id) : [])
-                  }
-                />
-              </TableHead>
-            )}
-            <TableHead>{t("columns.applicant")}</TableHead>
-            {choiceLabel && <TableHead className="hidden lg:table-cell">{choiceLabel}</TableHead>}
-            <TableHead>{t("columns.submitted")}</TableHead>
-            {operator && <TableHead>{t("columns.scores")}</TableHead>}
-            <TableHead>{operator ? t("columns.status") : t("columns.yourAverage")}</TableHead>
-            <TableHead>
-              <span className="sr-only">{t("columns.open")}</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              {selecting && (
-                <TableCell>
-                  <Checkbox
-                    disabled={row.own}
-                    aria-label={t("selection.one", { name: row.solution })}
-                    checked={selected.includes(row.id)}
-                    onCheckedChange={(checked) =>
-                      setSelected((current) =>
-                        checked ? [...current, row.id] : current.filter((id) => id !== row.id),
-                      )
-                    }
-                  />
-                </TableCell>
-              )}
-              <TableCell className="w-full max-w-0">
-                <div className="flex min-w-0 flex-col">
-                  <Link
-                    href={row.href}
-                    className="truncate font-medium outline-none hover:underline focus-visible:underline"
-                  >
-                    {row.solution}
-                  </Link>
-                  <span className="truncate text-muted-foreground">{row.applicant}</span>
-                </div>
-              </TableCell>
-              {choiceLabel && (
-                <TableCell className="hidden lg:table-cell">{row.choice ?? "—"}</TableCell>
-              )}
-              <TableCell className="whitespace-nowrap">{row.submitted}</TableCell>
-              {operator && <TableCell className="whitespace-nowrap">{row.scores}</TableCell>}
-              <TableCell>
-                <Badge variant={row.status.variant}>{row.status.label}</Badge>
-              </TableCell>
-              <TableCell>
-                <Link
-                  href={row.href}
-                  aria-label={t("openNamed", { name: row.solution })}
-                  className="inline-flex size-8 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <ChevronRightIcon aria-hidden="true" className="size-4" />
-                </Link>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </DataTable>
+      <DataTableView
+        className="hidden md:flex"
+        columns={columns}
+        data={rows}
+        getRowId={(row) => row.id}
+        sortKeys={sortKeys}
+        defaultSort={defaultSort}
+        selection={
+          operator && !released
+            ? {
+                canSelect: (row) => !row.own,
+                name: (row) => row.solution,
+                matching,
+                actions: (ids, clear) => (
+                  <>
+                    <Button
+                      size="sm"
+                      pending={pending && !asking}
+                      onClick={() => request("shortlisted", ids, clear)}
+                    >
+                      {t("selection.shortlist")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      prominence="secondary"
+                      disabled={pending}
+                      onClick={() => request("not_selected", ids, clear)}
+                    >
+                      {t("selection.notSelected")}
+                    </Button>
+                  </>
+                ),
+              }
+            : undefined
+        }
+      />
 
       {/* Below 768px: one card per application, each opening its review. */}
       <ul className="flex flex-col gap-2 md:hidden">
@@ -198,6 +221,26 @@ function ReviewTable({ programId, rows, choiceLabel, operator, released }: Revie
           </li>
         ))}
       </ul>
+
+      <ConfirmDialog
+        open={asking !== undefined}
+        onOpenChange={(open) => (open ? undefined : setAsking(undefined))}
+        title={
+          asking
+            ? t(`selection.confirm.${asking.decision}.title`, { count: asking.ids.length })
+            : ""
+        }
+        description={asking ? t(`selection.confirm.${asking.decision}.lead`) : ""}
+        note={t("selection.confirm.note")}
+        confirmLabel={
+          asking
+            ? t(`selection.confirm.${asking.decision}.confirm`, { count: asking.ids.length })
+            : ""
+        }
+        cancelLabel={t("selection.confirm.cancel")}
+        pending={pending}
+        onConfirm={() => asking && void decide(asking.decision, asking.ids, asking.clear)}
+      />
     </div>
   );
 }

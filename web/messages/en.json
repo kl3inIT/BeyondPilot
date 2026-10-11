@@ -6045,13 +6045,22 @@
       "kind": "Applying as",
       "allKinds": "Applying as: all",
       "selection": {
-        "label": "Selected applications",
-        "count": "{count, plural, one {# selected} other {# selected}}",
         "shortlist": "Shortlist",
         "notSelected": "Not selected",
-        "clear": "Clear selection",
-        "all": "Select every application shown",
-        "one": "Select {name}"
+        "confirm": {
+          "shortlisted": {
+            "title": "Shortlist {count} applications?",
+            "lead": "Each one moves to Shortlisted. Nobody is emailed until the outcomes are released.",
+            "confirm": "Shortlist {count}"
+          },
+          "not_selected": {
+            "title": "Mark {count} applications not selected?",
+            "lead": "Each one moves to Not selected. Nobody is emailed until the outcomes are released.",
+            "confirm": "Mark {count} not selected"
+          },
+          "note": "A decision can change again until the outcomes are released.",
+          "cancel": "Cancel"
+        }
       },
       "decided": {
         "shortlisted": "{count, plural, one {# application shortlisted.} other {# applications shortlisted.}}",
