@@ -180,7 +180,11 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
             <Badge variant="success">{t("detail.open.status")}</Badge>
             <span className="text-sm text-muted-foreground">{proposalDeadline}</span>
           </div>
-          <ProposalActions useCaseId={useCase.id} closesAt={useCase.closesAt} />
+          <ProposalActions
+            useCaseId={useCase.id}
+            closesAt={useCase.closesAt}
+            proposalEditDays={useCase.proposalEditDays}
+          />
         </aside>
       </div>
     </div>
