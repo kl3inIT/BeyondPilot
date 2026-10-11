@@ -6178,7 +6178,11 @@
       "save": "Save assessment",
       "conflict": "I have a conflict with this applicant",
       "saved": "Assessment saved.",
-      "conflictSaved": "Conflict recorded. Your score is left out."
+      "conflictSaved": "Conflict recorded. Your score is left out.",
+      "bar": {
+        "progress": "Scored {scored} of {total}",
+        "score": "Score"
+      }
     },
     "decision": {
       "title": "Decision",

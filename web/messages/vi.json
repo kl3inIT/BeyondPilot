@@ -6178,7 +6178,11 @@
       "save": "Lưu đánh giá",
       "conflict": "Tôi có xung đột lợi ích với người nộp này",
       "saved": "Đã lưu đánh giá.",
-      "conflictSaved": "Đã ghi nhận xung đột. Điểm của bạn không được tính."
+      "conflictSaved": "Đã ghi nhận xung đột. Điểm của bạn không được tính.",
+      "bar": {
+        "progress": "Đã chấm {scored}/{total}",
+        "score": "Chấm điểm"
+      }
     },
     "decision": {
       "title": "Quyết định",

@@ -22,7 +22,9 @@ type ReviewApplicationPageProps = {
 
 /**
  * One application under review: what its applicant submitted last, beside the caller's assessment.
- * An operator also reads every judge's score and the history, and decides.
+ * An operator also reads every judge's score and the history, and decides. Below 1024px the
+ * application comes first, so that it is read before anyone's scores, and the assessment keeps a
+ * bar at the bottom of the screen with its progress.
  */
 async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationPageProps) {
   const [t, locale] = await Promise.all([getTranslations("Review.application"), getLocale()]);
@@ -36,7 +38,10 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
   const nextHref = nextId ? `${base}/${nextId}` : null;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
+    <div
+      className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-28 md:px-6 lg:px-8 lg:pb-12"
+      lang={locale}
+    >
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
         <TextButton href={base}>
           <ArrowLeftIcon aria-hidden="true" />
@@ -88,7 +93,10 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
-        <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-4 lg:order-2">
+        <div className="min-w-0 lg:col-span-2">
+          <SubmittedRecord applicationId={review.id} submitted={submitted} />
+        </div>
+        <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-4">
           {review.own ? (
             <p className="rounded-lg border bg-muted p-4 text-sm">{t("own")}</p>
           ) : (
@@ -195,10 +203,6 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
               ))}
             </ol>
           </section>
-        </div>
-
-        <div className="min-w-0 lg:order-1 lg:col-span-2">
-          <SubmittedRecord applicationId={review.id} submitted={submitted} />
         </div>
       </div>
     </div>
