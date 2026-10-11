@@ -78,7 +78,17 @@ type Failure = { message: MessageKey; content: string; conflict: boolean };
  * read by others, so its changes are kept only when the person chooses Save changes. The step is
  * part of the address, so the browser's Back returns to the step before.
  */
-function SolutionEditor({ solution }: { solution: Solution }) {
+function SolutionEditor({
+  solution,
+  onLeave,
+}: {
+  solution: Solution;
+  /**
+   * Set when another page holds the editor, such as a dialog of a proposal: every way out of the editor
+   * calls it instead of going to the list of solutions.
+   */
+  onLeave?: () => void;
+}) {
   const t = useTranslations("Solution.editor");
   const site = useTranslations("Site");
   // A refusal is kept by its message key, so it is said in the reader's language when it is drawn.
@@ -112,6 +122,8 @@ function SolutionEditor({ solution }: { solution: Solution }) {
   const firstStep = useRef(true);
 
   const list = getPathname({ href: siteRoutes.workspaceSolutions, locale });
+  /** Goes where the editor leads when it is done: the list of solutions, or back to what holds it. */
+  const leave = () => (onLeave ? onLeave() : router.push(list));
   // A draft and a solution sent back are written step by step and sent for review at the end.
   const autosaves = server.status === "draft" || server.status === "needs_changes";
   // A solution refused for good stays as it was reviewed: it is read, never saved.
@@ -256,7 +268,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
     }
     setPending("exit");
     if (await persist(draft)) {
-      router.push(list);
+      leave();
     } else {
       setPending(null);
     }
@@ -291,7 +303,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
       }
       await submitSolution({ path: { id: solution.id } });
       notify.success("Solution.done.submitted");
-      router.push(list);
+      leave();
     } catch (error) {
       notify.error(solutionError(error));
       setConfirming(null);
@@ -305,7 +317,7 @@ function SolutionEditor({ solution }: { solution: Solution }) {
     try {
       await deleteSolutionDraft({ path: { id: solution.id } });
       notify.success("Solution.done.deleted", { name: solution.name });
-      router.push(list);
+      leave();
     } catch (error) {
       notify.error(solutionError(error));
       setPending(null);
@@ -493,7 +505,11 @@ function SolutionEditor({ solution }: { solution: Solution }) {
                     {t("save")}
                   </Button>
                 )}
-                <Button prominence="tertiary" size="sm" href={siteRoutes.workspaceSolutions}>
+                <Button
+                  prominence="tertiary"
+                  size="sm"
+                  {...(onLeave ? { onClick: onLeave } : { href: siteRoutes.workspaceSolutions })}
+                >
                   {t("close")}
                 </Button>
               </>
@@ -697,7 +713,10 @@ function SolutionEditor({ solution }: { solution: Solution }) {
                     {t("exit")}
                   </Button>
                 ) : (
-                  <Button prominence="tertiary" href={siteRoutes.workspaceSolutions}>
+                  <Button
+                    prominence="tertiary"
+                    {...(onLeave ? { onClick: onLeave } : { href: siteRoutes.workspaceSolutions })}
+                  >
                     {t("close")}
                   </Button>
                 )

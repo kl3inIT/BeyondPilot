@@ -73,5 +73,7 @@ public interface SolutionRepository extends JpaRepository<Solution, UUID> {
 
 	Optional<Solution> findBySlug(String slug);
 
+	Optional<Solution> findByViewKey(UUID viewKey);
+
 	List<Solution> findByOrganizationIdOrderByCreatedAtDesc(UUID organizationId);
 }

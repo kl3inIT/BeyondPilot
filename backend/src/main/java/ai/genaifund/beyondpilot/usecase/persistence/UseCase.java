@@ -35,6 +35,9 @@ import org.jspecify.annotations.Nullable;
 @Table(name = "use_case")
 public class UseCase {
 
+	/** Days after sending that a proposal stays editable, unless GenAI Fund sets another number for the use case. */
+	public static final int DEFAULT_PROPOSAL_EDIT_DAYS = 7;
+
 	public static final String DRAFT = "draft";
 
 	public static final String IN_REVIEW = "in_review";
@@ -107,6 +110,9 @@ public class UseCase {
 	private @Nullable Instant publishedAt;
 
 	private @Nullable Instant closesAt;
+
+	@Column(nullable = false)
+	private int proposalEditDays = DEFAULT_PROPOSAL_EDIT_DAYS;
 
 	/**
 	 * When an operator featured the use case; null while it is not featured. Only {@code UseCaseRepository.feature} and
@@ -231,6 +237,10 @@ public class UseCase {
 
 	public void closeAt(@Nullable Instant closesAt) {
 		this.closesAt = closesAt;
+	}
+
+	public void allowProposalEdits(int days) {
+		this.proposalEditDays = days;
 	}
 
 	public void showCompanyName(boolean hide) {
@@ -400,6 +410,10 @@ public class UseCase {
 
 	public @Nullable Instant getPublishedAt() {
 		return publishedAt;
+	}
+
+	public int getProposalEditDays() {
+		return proposalEditDays;
 	}
 
 	public @Nullable Instant getClosesAt() {

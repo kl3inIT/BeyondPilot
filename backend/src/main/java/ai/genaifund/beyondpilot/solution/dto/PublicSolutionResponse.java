@@ -62,5 +62,7 @@ public record PublicSolutionResponse(@Schema(requiredMode = Schema.RequiredMode.
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether the directory lists it. False is approved but shared by its address only.") boolean listed,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "Whether it is approved and not taken down. False only on a shared page read by its key.") boolean approved,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Its approved customer deployments, the most recently approved first.") List<PublicCustomerDeploymentResponse> customerDeployments) {
 }

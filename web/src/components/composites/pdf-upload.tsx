@@ -1,11 +1,12 @@
 "use client";
 
-import { FileTextIcon, FileUpIcon } from "lucide-react";
+import { FileTextIcon, FileUpIcon, PlusIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { Spinner } from "@/components/ui/spinner";
+import { cn } from "cn";
 import { ApiError } from "@/lib/api/client";
 import { uploadFile } from "@/lib/storage/upload";
 
@@ -21,13 +22,15 @@ type PdfUploadProps = {
   onChange: (file: PdfFile | null) => void;
   invalid?: boolean;
   describedBy?: string;
+  /** Draws the empty state as a roomy dashed zone with a plus in the middle, for a page of one file. */
+  zone?: boolean;
 };
 
 /**
  * A private PDF of an application, such as a deck or a proposal: chosen, uploaded at once, then
  * replaced or removed. The record names the file when it is saved.
  */
-function PdfUpload({ id, value, onChange, invalid, describedBy }: PdfUploadProps) {
+function PdfUpload({ id, value, onChange, invalid, describedBy, zone }: PdfUploadProps) {
   const t = useTranslations("PdfUpload");
   const format = useFormatter();
   const input = useRef<HTMLInputElement>(null);
@@ -118,19 +121,26 @@ function PdfUpload({ id, value, onChange, invalid, describedBy }: PdfUploadProps
           onClick={() => input.current?.click()}
           aria-describedby={describedBy}
           className={
-            invalid
-              ? "flex w-full items-center gap-3 rounded-lg border border-dashed border-destructive p-4 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-wait"
-              : "flex w-full items-center gap-3 rounded-lg border border-dashed border-input p-4 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-wait"
+            zone
+              ? cn(
+                  "flex h-40 w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-center outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-wait",
+                  invalid ? "border-destructive" : "border-input",
+                )
+              : invalid
+                ? "flex w-full items-center gap-3 rounded-lg border border-dashed border-destructive p-4 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-wait"
+                : "flex w-full items-center gap-3 rounded-lg border border-dashed border-input p-4 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-wait"
           }
         >
           {uploading ? (
             <span className="text-muted-foreground">
               <Spinner />
             </span>
+          ) : zone ? (
+            <PlusIcon className="size-6 text-muted-foreground" aria-hidden="true" />
           ) : (
             <FileUpIcon className="size-5 text-muted-foreground" aria-hidden="true" />
           )}
-          <span className="flex flex-col">
+          <span className={cn("flex flex-col", zone && "items-center")}>
             <span className="text-sm font-medium">{uploading ? t("uploading") : t("empty")}</span>
             <span className="text-xs text-muted-foreground">{t("limits")}</span>
           </span>

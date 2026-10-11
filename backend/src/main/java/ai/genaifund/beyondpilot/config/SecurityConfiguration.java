@@ -71,9 +71,12 @@ class SecurityConfiguration {
 				// without a session. So is the deck of an approved solution; a session only adds the deck of one that
 				// is not approved, for those who may read it.
 				.requestMatchers(HttpMethod.GET, "/api/solution/solutions", "/api/solution/solutions/*",
-						"/api/solution/solutions/*/deck", "/api/solution/deployments", "/api/usecase/use-cases",
+						"/api/solution/solutions/*/deck", "/api/solution/solutions/shared/*", "/api/solution/deployments", "/api/usecase/use-cases",
 						"/api/usecase/use-cases/*", "/api/talent/profiles", "/api/talent/profiles/*",
 						"/api/organization/organizations/*")
+				.permitAll()
+				// How many proposals a use case received is for anyone who reads the use case.
+				.requestMatchers(HttpMethod.GET, "/api/proposal/use-case-proposal-counts")
 				.permitAll()
 				// An email provider reports what became of sent email; each report is accepted only by its signature.
 				.requestMatchers(HttpMethod.POST, CsrfHeaderFilter.PROVIDER_REPORTS + "*")

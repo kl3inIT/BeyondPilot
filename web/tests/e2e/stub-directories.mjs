@@ -58,6 +58,7 @@ function solution(organization, name, more) {
     coverFileId: null,
     imageFileIds: [],
     listed: true,
+    approved: true,
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
     deployment: ["cloud_saas"],

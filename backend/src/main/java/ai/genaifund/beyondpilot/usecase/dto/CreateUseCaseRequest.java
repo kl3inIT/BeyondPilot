@@ -58,6 +58,9 @@ public record CreateUseCaseRequest(
 				260) @Nullable Integer timelineMaxWeeks,
 		@Schema(types = { "string", "null" }, format = "date-time",
 				description = "When proposals stop, in the future; null for no deadline.") @Nullable Instant closesAt,
+		@Schema(types = { "integer", "null" }, minimum = "0", maximum = "90",
+				description = "How many days after sending a proposal its organization may still edit it; 0 allows no edit after sending. 7 when absent.") @Min(0) @Max(
+				90) @Nullable Integer proposalEditDays,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean hideOrganizationName,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "True to publish at once, false to save a draft for the organization.") boolean publishNow,

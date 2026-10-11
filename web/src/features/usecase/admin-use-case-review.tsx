@@ -57,6 +57,9 @@ function AdminUseCaseReview({ useCase }: { useCase: AdminUseCase }) {
           viewLabel={t("viewDetails")}
           hideEmpty={useCase.status === "approved"}
         />
+        <p className="text-sm text-muted-foreground">
+          {t("proposalEditDays", { days: useCase.proposalEditDays })}
+        </p>
       </div>
     );
   }

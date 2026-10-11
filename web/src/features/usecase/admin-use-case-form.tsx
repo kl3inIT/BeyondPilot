@@ -15,7 +15,7 @@ import { siteRoutes } from "@/lib/site";
 import { instantInVietnam } from "@/lib/vietnam-time";
 import { cn } from "@/lib/utils";
 
-import { adminUseCaseSchema } from "./admin-use-case-schema";
+import { adminUseCaseSchema, DEFAULT_EDIT_DAYS, editDaysOf } from "./admin-use-case-schema";
 import {
   defaultClosesTime,
   incompleteSteps,
@@ -26,7 +26,7 @@ import {
 } from "./use-case-draft";
 import { UseCaseStepFields } from "./use-case-step-fields";
 import { UseCaseSummary } from "./use-case-summary";
-import { Choice } from "./wizard-fields";
+import { Choice, TextInput } from "./wizard-fields";
 
 const blank: DraftValues = {
   title: "",
@@ -96,6 +96,7 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
   const router = useRouter();
   const [organizationId, setOrganizationId] = useState("");
   const [values, setValues] = useState<DraftValues>(blank);
+  const [editDays, setEditDays] = useState(String(DEFAULT_EDIT_DAYS));
   const [step, setStep] = useState<Step>("challenge");
   const [problem, setProblem] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
@@ -106,7 +107,11 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
   const schema = useMemo(
     () =>
       adminUseCaseSchema((key, parameters) =>
-        key === "budgetOutOfOrder" ? t("errors.budgetOutOfOrder") : say(key, parameters),
+        key === "budgetOutOfOrder"
+          ? t("errors.budgetOutOfOrder")
+          : key === "editDays"
+            ? t("proposalEditDays.invalid")
+            : say(key, parameters),
       ),
     [say, t],
   );
@@ -123,6 +128,7 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
       ...values,
       organizationId,
       timeline,
+      proposalEditDays: editDays,
     });
     if (!result.success) {
       const issue = result.error.issues[0];
@@ -161,6 +167,7 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
           timelineMaxWeeks: values.timelineMaxWeeks!,
           closesAt: instantInVietnam(values.closesDay, values.closesTime),
           hideOrganizationName: values.hideOrganizationName,
+          proposalEditDays: editDaysOf(editDays) ?? DEFAULT_EDIT_DAYS,
           publishNow: true,
         },
       });
@@ -240,6 +247,20 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
               onChange={(patch) => {
                 setProblem(null);
                 setValues((current) => ({ ...current, ...patch }));
+              }}
+            />
+          )}
+
+          {step === "budget" && (
+            <TextInput
+              label={t("proposalEditDays.label")}
+              hint={t("proposalEditDays.hint")}
+              inputMode="numeric"
+              maxLength={2}
+              value={editDays}
+              onValueChange={(days) => {
+                setProblem(null);
+                setEditDays(days);
               }}
             />
           )}
