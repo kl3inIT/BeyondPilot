@@ -87,7 +87,8 @@ public class SolutionAdministration {
 	}
 
 	/**
-	 * One page of the submitted solutions the request selects: those waiting for review first. The text matches a
+	 * One page of the submitted solutions the request selects, in the order it asks for; without one, those waiting
+	 * for review first. The text matches a
 	 * solution by its name or by its organization's name.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 */
@@ -98,7 +99,8 @@ public class SolutionAdministration {
 		int page = request.page() == null ? 1 : request.page();
 		List<UUID> named = text == null ? List.of() : organizations.named(text);
 		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(text, named, request.organizationId(),
-				request.status(), request.industry(), request.featured(), PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
+				request.status(), request.industry(), request.featured(), request.sort(), PAGE_SIZE,
+				(long) (page - 1) * PAGE_SIZE);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
 		Map<UUID, OrganizationName> optionNames = organizations.names(solutionList.adminOrganizationIds());
@@ -394,8 +396,7 @@ public class SolutionAdministration {
 	public SolutionsAwaitingReview awaitingReview(Actor actor, int limit) {
 		identity.requireOperator(actor);
 		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(null, List.of(), null, "in_review", null, null,
-				limit,
-				0);
+				null, limit, 0);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
 		return new SolutionsAwaitingReview(solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview(),
