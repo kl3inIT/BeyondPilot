@@ -580,6 +580,18 @@ test.describe("admin organizations", () => {
     ).toHaveCount(1);
   });
 
+  test("an organization nobody joined says so once, and asks for its first owner", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto(`/admin/organizations/${openKitchen}?tab=members`);
+
+    await expect(page.getByText("Invite its first owner.")).toBeVisible();
+    await expect(page.getByText("No members", { exact: true })).toHaveCount(1);
+  });
+
   test("an operator changes a role, removes a person, invites and withdraws an invitation", async ({
     page,
     context,
