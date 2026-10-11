@@ -151,6 +151,9 @@ class ReviewTest extends ApplicationsHttpTest {
 		String again = body(get(operator, one).expectStatus().isOk());
 		assertThat(JsonPath.<Integer>read(again, "$.version")).isEqualTo(2);
 		assertThat(JsonPath.<List<Integer>>read(again, "$.others[*].version")).containsExactly(1);
+		// An answer of several choices is read with its kind, as the applicant's form kept it.
+		assertThat(JsonPath.<List<String>>read(again, "$.submitted.answers[?(@.kind == 'multi_choice')].value"))
+			.containsExactly("[\"Claims\",\"Pricing\"]");
 		assertProblem(get(judge, one + "/files/" + UUID.randomUUID()), 404, "PROPOSAL_APPLICATION_NOT_FOUND");
 		assertThat(auditOf(form.programId())).doesNotContain("proposal.file_open");
 

@@ -13329,6 +13329,7 @@ components:
           - short_text
           - long_text
           - single_choice
+          - multi_choice
           - file
           - link
           - confirm
@@ -15702,10 +15703,11 @@ components:
           - short_text
           - long_text
           - single_choice
+          - multi_choice
           - file
           - link
           - confirm
-          pattern: short_text|long_text|single_choice|file|link|confirm
+          pattern: short_text|long_text|single_choice|multi_choice|file|link|confirm
         label:
           type: string
           maxLength: 300
@@ -15721,8 +15723,8 @@ components:
           minimum: 1
         options:
           type: array
-          description: "The choices of a single_choice question, two to twenty; empty\
-            \ otherwise."
+          description: "The choices of a single_choice or multi_choice question, two\
+            \ to twenty; empty otherwise."
           items:
             type: string
             maxLength: 160
@@ -17501,7 +17503,9 @@ components:
           additionalProperties:
             type: string
           description: "The answers to the program's questions by question identifier.\
-            \ A file is named by its identifier, a confirmation is \"true\"."
+            \ A file is named by its identifier, a confirmation is \"true\", and several\
+            \ choices are a JSON array of the options chosen, such as [\"Claims\"\
+            ,\"Pricing\"]."
         builtWith:
           type: array
           description: "The models, tools and frameworks the solution is built with."
