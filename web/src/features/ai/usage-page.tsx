@@ -9,11 +9,11 @@ import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
-import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
 import type { AiUsageOverview } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -326,85 +326,77 @@ async function UsageOverviewPage({
             </div>
 
             {/* From 768px: a table. Each name opens the calls of its row in the log. */}
-            <DataTable className="hidden md:block">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t(`breakdown.by.${overview.by}`)}</TableHead>
-                  {overview.by === "model" && <TableHead>{t("breakdown.by.task")}</TableHead>}
-                  <TableHead>{t("breakdown.share")}</TableHead>
-                  <TableHead>{t("breakdown.calls")}</TableHead>
-                  <TableHead>{t("breakdown.failed")}</TableHead>
-                  <TableHead>{t("breakdown.failureRate")}</TableHead>
-                  <TableHead>{t("breakdown.tokens")}</TableHead>
-                  <TableHead>{t("breakdown.time")}</TableHead>
-                  <TableHead>{t("breakdown.cost")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow key={row.key}>
-                    <TableCell>
-                      <Link
-                        href={row.href}
-                        className="flex items-center gap-1 font-medium outline-none hover:underline focus-visible:underline"
-                      >
-                        <span className="flex flex-col">
-                          {row.name}
-                          {row.under && (
-                            <span className="text-xs font-normal text-muted-foreground">
-                              {row.under}
-                            </span>
-                          )}
-                        </span>
-                        <ChevronRightIcon
-                          aria-hidden="true"
-                          className="size-4 text-muted-foreground"
-                        />
-                      </Link>
-                    </TableCell>
-                    {overview.by === "model" && <TableCell>{row.task}</TableCell>}
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress
-                          value={row.share}
-                          aria-label={t("breakdown.shareOf", { name: row.name })}
-                          className="w-28"
-                        />
-                        <span className="text-xs text-muted-foreground tabular-nums">
-                          {format.number(row.share / 100, { style: "percent" })}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="tabular-nums">{row.calls}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={row.failing ? "text-destructive tabular-nums" : "tabular-nums"}
-                      >
-                        {row.failed}
+            <DataTableRows
+              className="hidden md:flex"
+              columns={[
+                { id: "name", header: t(`breakdown.by.${overview.by}`) },
+                ...(overview.by === "model"
+                  ? [{ id: "task", header: t("breakdown.by.task") }]
+                  : []),
+                { id: "share", header: t("breakdown.share") },
+                { id: "calls", header: t("breakdown.calls") },
+                { id: "failed", header: t("breakdown.failed") },
+                { id: "failureRate", header: t("breakdown.failureRate") },
+                { id: "tokens", header: t("breakdown.tokens") },
+                { id: "time", header: t("breakdown.time") },
+                { id: "cost", header: t("breakdown.cost") },
+              ]}
+              rows={rows.map((row) => ({
+                id: row.key,
+                cells: {
+                  name: (
+                    <Link
+                      href={row.href}
+                      className="flex items-center gap-1 font-medium outline-none hover:underline focus-visible:underline"
+                    >
+                      <span className="flex flex-col">
+                        {row.name}
+                        {row.under && (
+                          <span className="text-xs font-normal text-muted-foreground">
+                            {row.under}
+                          </span>
+                        )}
                       </span>
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={row.failing ? "text-destructive tabular-nums" : "tabular-nums"}
-                      >
-                        {row.failureRate}
+                      <ChevronRightIcon
+                        aria-hidden="true"
+                        className="size-4 text-muted-foreground"
+                      />
+                    </Link>
+                  ),
+                  task: row.task,
+                  share: (
+                    <div className="flex items-center gap-2">
+                      <Progress
+                        value={row.share}
+                        aria-label={t("breakdown.shareOf", { name: row.name })}
+                        className="w-28"
+                      />
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {format.number(row.share / 100, { style: "percent" })}
                       </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="tabular-nums">{row.tokens ?? unknown}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="tabular-nums">{row.time}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="tabular-nums">{row.cost ?? unknown}</span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </DataTable>
+                    </div>
+                  ),
+                  calls: <span className="tabular-nums">{row.calls}</span>,
+                  failed: (
+                    <span
+                      className={row.failing ? "text-destructive tabular-nums" : "tabular-nums"}
+                    >
+                      {row.failed}
+                    </span>
+                  ),
+                  failureRate: (
+                    <span
+                      className={row.failing ? "text-destructive tabular-nums" : "tabular-nums"}
+                    >
+                      {row.failureRate}
+                    </span>
+                  ),
+                  tokens: <span className="tabular-nums">{row.tokens ?? unknown}</span>,
+                  time: <span className="tabular-nums">{row.time}</span>,
+                  cost: <span className="tabular-nums">{row.cost ?? unknown}</span>,
+                },
+              }))}
+            />
 
             {/* Below 768px: one stacked row per group, never a table scrolled sideways. */}
             <ul className="overflow-hidden rounded-lg border md:hidden">

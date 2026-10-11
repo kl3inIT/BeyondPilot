@@ -1,11 +1,10 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
-import { DataTable } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
 import { Badge } from "@/components/ui/badge";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { MyOrganization, Organization, OrganizationMembers } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -134,32 +133,31 @@ function OrganizationMembersPage({
         }
       >
         {/* From 768px: a table. */}
-        <DataTable className="hidden bg-background md:block">
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("columns.member")}</TableHead>
-              <TableHead className="w-30">{t("columns.role")}</TableHead>
-              <TableHead className="w-50">{t("columns.jobTitle")}</TableHead>
-              <TableHead className="w-32">{t("columns.joined")}</TableHead>
-              <TableHead className="w-12">
-                <span className="sr-only">{t("columns.actions")}</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.key}>
-                <TableCell>{row.person}</TableCell>
-                <TableCell>{row.role}</TableCell>
-                <TableCell className="whitespace-normal">{row.jobTitle}</TableCell>
-                <TableCell>{row.joined}</TableCell>
-                <TableCell>
-                  <div className="flex justify-end">{row.actions}</div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </DataTable>
+        <DataTableRows
+          className="hidden md:flex"
+          surface
+          columns={[
+            { id: "member", header: t("columns.member") },
+            { id: "role", header: t("columns.role"), layout: { width: "sm" } },
+            { id: "jobTitle", header: t("columns.jobTitle"), layout: { width: "lg" } },
+            { id: "joined", header: t("columns.joined"), layout: { width: "sm" } },
+            {
+              id: "actions",
+              header: <span className="sr-only">{t("columns.actions")}</span>,
+              layout: { width: "action" },
+            },
+          ]}
+          rows={rows.map((row) => ({
+            id: row.key,
+            cells: {
+              member: row.person,
+              role: row.role,
+              jobTitle: <span className="whitespace-normal">{row.jobTitle}</span>,
+              joined: row.joined,
+              actions: <div className="flex justify-end">{row.actions}</div>,
+            },
+          }))}
+        />
 
         {/* Below 768px: one stacked row per person, never a table scrolled sideways. */}
         <ul className="overflow-hidden rounded-lg border bg-background md:hidden">

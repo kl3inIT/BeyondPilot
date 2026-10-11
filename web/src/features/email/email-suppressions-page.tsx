@@ -3,10 +3,10 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Badge } from "@/components/ui/badge";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
 import type { EmailSuppressionList } from "@/lib/api/generated";
 import { adminEmailMessageRoute, siteRoutes } from "@/lib/site";
@@ -79,47 +79,35 @@ async function EmailSuppressionsPage({
 
       <EmailSuppressionsToolbar />
 
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("suppressions.columns.address")}</TableHead>
-            <TableHead className="w-36">{t("suppressions.columns.reason")}</TableHead>
-            <TableHead>{t("suppressions.columns.origin")}</TableHead>
-            <TableHead className="w-32">{t("suppressions.columns.since")}</TableHead>
-            <TableHead className="w-12">
-              <span className="sr-only">{t("suppressions.columns.actions")}</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {suppressions.items.map((item) => (
-            <TableRow key={item.address}>
-              <TableCell>
-                <span className="font-medium">{item.address}</span>
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline">{t(`suppressions.reasons.${item.reason}`)}</Badge>
-              </TableCell>
-              <TableCell>
-                <span className="text-muted-foreground">{origin(item)}</span>
-              </TableCell>
-              <TableCell>
-                <time dateTime={item.createdAt} className="text-muted-foreground">
-                  {date(item.createdAt)}
-                </time>
-              </TableCell>
-              <TableCell>
-                <RemoveSuppressionButton address={item.address} reason={item.reason} />
-              </TableCell>
-            </TableRow>
-          ))}
-          {empty && (
-            <TableRow>
-              <TableCell colSpan={5}>{empty}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </DataTable>
+      <DataTableRows
+        className="hidden md:flex"
+        columns={[
+          { id: "address", header: t("suppressions.columns.address") },
+          { id: "reason", header: t("suppressions.columns.reason"), layout: { width: "md" } },
+          { id: "origin", header: t("suppressions.columns.origin") },
+          { id: "since", header: t("suppressions.columns.since"), layout: { width: "sm" } },
+          {
+            id: "actions",
+            header: <span className="sr-only">{t("suppressions.columns.actions")}</span>,
+            layout: { width: "action" },
+          },
+        ]}
+        rows={suppressions.items.map((item) => ({
+          id: item.address,
+          cells: {
+            address: <span className="font-medium">{item.address}</span>,
+            reason: <Badge variant="outline">{t(`suppressions.reasons.${item.reason}`)}</Badge>,
+            origin: <span className="text-muted-foreground">{origin(item)}</span>,
+            since: (
+              <time dateTime={item.createdAt} className="text-muted-foreground">
+                {date(item.createdAt)}
+              </time>
+            ),
+            actions: <RemoveSuppressionButton address={item.address} reason={item.reason} />,
+          },
+        }))}
+        empty={empty}
+      />
 
       <ul className="overflow-hidden rounded-lg border md:hidden">
         {suppressions.items.map((item) => (

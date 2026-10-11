@@ -3,8 +3,8 @@ import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTable, DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AppMark } from "@/features/identity/app-mark";
 import type { McpCall, McpCallList, PersonConnectedApp } from "@/lib/api/generated";
@@ -124,49 +124,43 @@ async function McpActivityPage({
       <McpActivityToolbar apps={calls.apps} tools={calls.tools} />
 
       {/* From 768px: a table. A click on the short time opens the full date and time, to the second. */}
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("columns.time")}</TableHead>
-            <TableHead>{t("columns.person")}</TableHead>
-            <TableHead>{t("columns.app")}</TableHead>
-            <TableHead>{t("columns.tool")}</TableHead>
-            <TableHead>{t("columns.outcome")}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.key}>
-              <TableCell>
-                <Popover>
-                  <PopoverTrigger
-                    render={
-                      <button
-                        type="button"
-                        className="text-muted-foreground outline-none hover:underline focus-visible:underline"
-                      />
-                    }
-                  >
-                    <time dateTime={row.at}>{row.time}</time>
-                  </PopoverTrigger>
-                  <PopoverContent side="bottom" align="start">
-                    {row.fullTime}
-                  </PopoverContent>
-                </Popover>
-              </TableCell>
-              <TableCell>{row.person}</TableCell>
-              <TableCell>{row.app}</TableCell>
-              <TableCell>{row.tool}</TableCell>
-              <TableCell>{row.outcome}</TableCell>
-            </TableRow>
-          ))}
-          {empty && (
-            <TableRow>
-              <TableCell colSpan={5}>{empty}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </DataTable>
+      <DataTableRows
+        className="hidden md:flex"
+        columns={[
+          { id: "time", header: t("columns.time") },
+          { id: "person", header: t("columns.person") },
+          { id: "app", header: t("columns.app") },
+          { id: "tool", header: t("columns.tool") },
+          { id: "outcome", header: t("columns.outcome") },
+        ]}
+        rows={rows.map((row) => ({
+          id: row.key,
+          cells: {
+            time: (
+              <Popover>
+                <PopoverTrigger
+                  render={
+                    <button
+                      type="button"
+                      className="text-muted-foreground outline-none hover:underline focus-visible:underline"
+                    />
+                  }
+                >
+                  <time dateTime={row.at}>{row.time}</time>
+                </PopoverTrigger>
+                <PopoverContent side="bottom" align="start">
+                  {row.fullTime}
+                </PopoverContent>
+              </Popover>
+            ),
+            person: row.person,
+            app: row.app,
+            tool: row.tool,
+            outcome: row.outcome,
+          },
+        }))}
+        empty={empty}
+      />
 
       {/* Below 768px: one stacked row per call, never a table scrolled sideways. */}
       <ul className="overflow-hidden rounded-lg border md:hidden">

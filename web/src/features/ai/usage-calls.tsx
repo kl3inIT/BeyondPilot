@@ -3,8 +3,8 @@ import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
-import { DataTable, DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { AiUsageCallList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -141,64 +141,52 @@ async function UsageCallsPage({
       />
 
       {/* From 768px: a table. A click on the short time opens the full date and time. */}
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("columns.time")}</TableHead>
-            <TableHead>{t("columns.task")}</TableHead>
-            <TableHead>{t("columns.model")}</TableHead>
-            <TableHead>{t("columns.tokens")}</TableHead>
-            <TableHead>{t("columns.duration")}</TableHead>
-            <TableHead>{t("columns.cost")}</TableHead>
-            <TableHead>{t("columns.subject")}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.key}>
-              <TableCell>
-                <Popover>
-                  <PopoverTrigger
-                    render={
-                      <button
-                        type="button"
-                        className="text-muted-foreground outline-none hover:underline focus-visible:underline"
-                      />
-                    }
-                  >
-                    <time dateTime={row.at}>{row.time}</time>
-                  </PopoverTrigger>
-                  <PopoverContent side="bottom" align="start">
-                    {row.fullTime}
-                  </PopoverContent>
-                </Popover>
-              </TableCell>
-              <TableCell>{row.task}</TableCell>
-              <TableCell>
-                <span className="flex flex-col">
-                  <span className="font-medium">{row.model}</span>
-                  <span className="text-xs text-muted-foreground">{row.provider}</span>
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="tabular-nums">{row.failure ?? row.tokens ?? unknown}</span>
-              </TableCell>
-              <TableCell>
-                <span className="tabular-nums">{row.duration}</span>
-              </TableCell>
-              <TableCell>
-                <span className="tabular-nums">{row.cost ?? unknown}</span>
-              </TableCell>
-              <TableCell>{row.subject ?? unknown}</TableCell>
-            </TableRow>
-          ))}
-          {empty && (
-            <TableRow>
-              <TableCell colSpan={7}>{empty}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </DataTable>
+      <DataTableRows
+        className="hidden md:flex"
+        columns={[
+          { id: "time", header: t("columns.time") },
+          { id: "task", header: t("columns.task") },
+          { id: "model", header: t("columns.model") },
+          { id: "tokens", header: t("columns.tokens") },
+          { id: "duration", header: t("columns.duration") },
+          { id: "cost", header: t("columns.cost") },
+          { id: "subject", header: t("columns.subject") },
+        ]}
+        rows={rows.map((row) => ({
+          id: row.key,
+          cells: {
+            time: (
+              <Popover>
+                <PopoverTrigger
+                  render={
+                    <button
+                      type="button"
+                      className="text-muted-foreground outline-none hover:underline focus-visible:underline"
+                    />
+                  }
+                >
+                  <time dateTime={row.at}>{row.time}</time>
+                </PopoverTrigger>
+                <PopoverContent side="bottom" align="start">
+                  {row.fullTime}
+                </PopoverContent>
+              </Popover>
+            ),
+            task: row.task,
+            model: (
+              <span className="flex flex-col">
+                <span className="font-medium">{row.model}</span>
+                <span className="text-xs text-muted-foreground">{row.provider}</span>
+              </span>
+            ),
+            tokens: <span className="tabular-nums">{row.failure ?? row.tokens ?? unknown}</span>,
+            duration: <span className="tabular-nums">{row.duration}</span>,
+            cost: <span className="tabular-nums">{row.cost ?? unknown}</span>,
+            subject: row.subject ?? unknown,
+          },
+        }))}
+        empty={empty}
+      />
 
       {/* Below 768px: one stacked row per call, never a table scrolled sideways. */}
       <ul className="overflow-hidden rounded-lg border md:hidden">
