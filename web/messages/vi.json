@@ -5274,13 +5274,17 @@
     "nav": {
       "label": "Trên trang này",
       "challenge": "Tổng quan",
+      "client": "Tasco",
       "who": "Ai được nộp",
       "win": "Bạn nhận được gì",
       "directions": "Hướng gợi ý",
       "use-cases": "Use case",
       "timeline": "Dòng thời gian",
+      "pilot": "Tháng thử nghiệm",
       "submit": "Cần nộp gì",
+      "support": "Hỗ trợ",
       "judges": "Giám khảo",
+      "myths": "Ngộ nhận",
       "faq": "Hỏi đáp"
     },
     "useCases": {
@@ -5319,6 +5323,25 @@
       "constraint": {
         "title": "Một ràng buộc cứng",
         "text": "Không giảm phí, không hoàn tiền, không ưu đãi giá trá hình. Mục tiêu là trải nghiệm tốt hơn, không phải mua kết quả. Mọi thứ khác đều mở."
+      }
+    },
+    "client": {
+      "title": "Đây không phải một đối tác doanh nghiệp giả định",
+      "lead": "Tasco là một trong những tập đoàn đa ngành lớn của Việt Nam, niêm yết trên Sở Giao dịch Chứng khoán Hà Nội. Nếu bạn từng lái xe qua một trạm thu phí ở Việt Nam, bạn đã dùng thứ họ xây dựng.",
+      "group": "Tập đoàn hoạt động xuyên suốt vòng đời của chiếc xe và người chủ xe: phân phối và bán lẻ ô tô, thu phí điện tử qua VETC, bảo hiểm, cứu hộ, dịch vụ sau bán hàng, chăm sóc xe và hạ tầng sạc. Mạng lưới showroom và trung tâm dịch vụ trên toàn quốc phân phối Geely và Lynk & Co, với Mitsui là cổ đông chiến lược của Tasco Auto.",
+      "ecosystem": "Bảo hiểm nằm bên trong hệ sinh thái đó chứ không đứng bên cạnh. Vì vậy Tasco nhìn được toàn bộ hành trình của khách hàng — chiếc xe, con đường, trung tâm dịch vụ, lần bồi thường — thay vì chỉ thấy hợp đồng bảo hiểm.",
+      "businesses": {
+        "retail": "Bán lẻ ô tô",
+        "tolling": "Thu phí điện tử (VETC)",
+        "insurance": "Bảo hiểm",
+        "roadside": "Cứu hộ",
+        "care": "Sau bán hàng và chăm sóc xe",
+        "charging": "Hạ tầng sạc"
+      },
+      "why": {
+        "title": "Vì sao Tasco làm việc này",
+        "ambition": "Tham vọng của Tasco là thay đổi cảm nhận về bảo hiểm của người dân Việt Nam: sự bảo vệ dễ mua, không thể làm mất, dễ hiểu và dễ yêu cầu bồi thường. Hàng triệu tài xế đang giữ một sản phẩm họ buộc phải có mà chưa ai làm cho nó đáng để muốn có.",
+        "building": "Đó là thứ bạn sẽ xây dựng. Không phải một tính năng — mà là chính trải nghiệm."
       }
     },
     "who": {
@@ -5408,11 +5431,77 @@
           "title": "Một hướng hoàn toàn khác",
           "text": "Kết hợp các hướng, hoặc mang đến hướng chưa ai nghĩ tới."
         }
+      },
+      "efficiency": {
+        "title": "Vì sao hiệu quả lại quan trọng ở đây",
+        "cost": "Mỗi điểm vướng trong hành trình này đều khiến ai đó tốn tiền, và chi phí ấy cuối cùng nằm trong giá của sự bảo vệ. Khi toàn bộ quy trình thật sự hiệu quả hơn — và giàu hơn về dữ liệu trực tiếp mà khách hàng đã đồng ý chia sẻ — một điều tốt hơn trở nên khả thi: bảo hiểm rẻ hơn, sát với từng người hơn, và thật sự đáng để giữ.",
+        "prize": "Đó mới là phần thưởng. Không phải một ứng dụng bóng bẩy hơn — mà là một thoả thuận tốt hơn cho người mua."
       }
     },
     "timeline": {
       "title": "Dòng thời gian",
-      "lead": "Ba tuần, sáu mốc cố định. Giai đoạn xây dựng mở cùng ngày với việc nhận đơn."
+      "lead": "Ba tuần, sáu mốc cố định. Giai đoạn xây dựng mở cùng ngày với việc nhận đơn.",
+      "start": {
+        "title": "Bắt đầu từ ngày đầu tiên",
+        "text": "Giai đoạn xây dựng mở ngày 23 tháng 9 — cùng ngày mở nhận đơn. Đề bài bằng văn bản, phần hỏi đáp và mẫu bài nộp được công bố ngay từ ngày đầu. Buổi briefing ngày 7 tháng 10 là buổi đào sâu giữa chặng cùng Tasco, không phải hiệu lệnh xuất phát. Đội nào chờ tới buổi đó sẽ mất hai trong ba tuần."
+      },
+      "selection": {
+        "title": "Cách tuyển chọn",
+        "text": "GenAI Fund sàng lọc mọi bài nộp và chọn mười đội trình bày. Giám khảo và đội Tasco chấm điểm trực tiếp tại demo day. Không bài nộp nào phải nằm chờ cả tuần."
+      }
+    },
+    "pilot": {
+      "title": "Thắng chưa phải là hết. Đây là tháng tiếp theo.",
+      "lead": "Phần lớn chương trình dừng ở chiếc cúp và để lại câu “các bước tiếp theo sẽ trao đổi sau”. Đây là tháng thực tế, để bạn tính trước nguồn lực trước khi nộp đơn.",
+      "bring": "Mang theo",
+      "done": "Hoàn thành khi",
+      "steps": {
+        "selection": {
+          "when": "23 thg 10 – 1 thg 11",
+          "title": "Tuyển chọn và trao đổi phạm vi",
+          "text": "Tasco xác nhận những đội họ muốn đi tiếp. Bạn trình bày giải pháp và phương án thương mại với ban lãnh đạo và những người sẽ vận hành giải pháp. Thoả thuận bảo mật hai chiều được ký.",
+          "bring": "Bản demo và đề xuất thương mại một trang",
+          "done": "Hai bên đồng ý chạy thử nghiệm"
+        },
+        "week1": {
+          "when": "Tuần 1 · 3–7 thg 11",
+          "title": "Chốt phạm vi",
+          "text": "Bạn và Tasco thống nhất ranh giới chính xác: use case nào, người dùng nào, hệ thống nào, chỉ số thành công nào. Quyền truy cập dữ liệu và các phê duyệt được yêu cầu ngay ở bước này, không để về sau.",
+          "bring": "Yêu cầu tích hợp và dữ liệu của bạn, bằng văn bản",
+          "done": "Bản phạm vi một trang được hai bên ký"
+        },
+        "week2": {
+          "when": "Tuần 2 · 10–14 thg 11",
+          "title": "Xây dựng",
+          "text": "Bạn xây dựng theo bối cảnh thật của Tasco trong môi trường sandbox, có một người phụ trách nghiệp vụ được chỉ định sẵn sàng hỗ trợ.",
+          "bring": "Thời gian của đội kỹ thuật",
+          "done": "Luồng công việc chính chạy trọn vẹn trên dữ liệu thử"
+        },
+        "week3": {
+          "when": "Tuần 3 · 17–21 thg 11",
+          "title": "Tích hợp và rà soát giữa chặng",
+          "text": "Kết nối các hệ thống đã thống nhất và tổ chức buổi rà soát giữa chặng. Phần nào chưa chạy được ở mốc này sẽ không vào tuần 4.",
+          "bring": "Bản demo chạy được theo các chỉ số đã thống nhất",
+          "done": "Buổi rà soát giữa chặng đạt"
+        },
+        "week4": {
+          "when": "Tuần 4 · 24–28 thg 11",
+          "title": "Kiểm thử và đánh giá",
+          "text": "Đội của Tasco tự chạy giải pháp theo các chỉ số của tuần 1, với người dùng vận hành thật ở những nơi được phê duyệt. Bạn được xem kết quả — không phải một phán quyết sau cánh cửa đóng kín.",
+          "bring": "Hỗ trợ và sửa lỗi trong lúc kiểm thử",
+          "done": "Kết quả được ghi lại theo từng chỉ số"
+        },
+        "decision": {
+          "when": "Chậm nhất 5 thg 12",
+          "title": "Tasco quyết định",
+          "text": "Một trong ba kết quả, bằng văn bản: mở rộng thành thử nghiệm trên môi trường thật kèm điều khoản thương mại, kéo dài với phạm vi điều chỉnh, hoặc dừng lại, kèm lý do. Dù kết quả nào, bạn vẫn giữ các kết quả thử nghiệm."
+        }
+      },
+      "format": "Ý nghĩa của mô hình 90 ngày là câu trả lời “không” đến đủ nhanh để còn hữu ích.",
+      "note": {
+        "title": "Nên biết",
+        "text": "Việc bước vào thử nghiệm là quyết định của Tasco, đưa ra sau demo day. Một tháng là mục tiêu cho một thử nghiệm có phạm vi chặt — phạm vi rộng hơn sẽ kéo dài hơn, và phạm vi được hai bên thống nhất trong tuần 1 trước khi bất kỳ ai cam kết. Các mốc ngày linh hoạt theo lịch của doanh nghiệp."
+      }
     },
     "submit": {
       "title": "Cần nộp gì",
@@ -5449,7 +5538,36 @@
         "experience": "Trải nghiệm khách hàng",
         "sustainability": "Bền vững khi vận hành",
         "clarity": "Rõ ràng về triển khai"
+      },
+      "assumptions": "Hãy nêu rõ các giả định về dữ liệu, tích hợp và sự đồng ý. Đó không phải một ô tuân thủ cần đánh dấu — đó là một phần làm nên độ tin cậy của đề xuất, và các tiêu chí có tính điểm cho điều này.",
+      "design": {
+        "title": "Yêu cầu thiết kế",
+        "text": "Đề xuất nên tránh giảm phí, hoàn tiền hay ưu đãi giá trá hình; truyền thông chính xác, không tạo sự khẩn cấp giả; giải thích các giả định về truy cập dữ liệu, sự đồng ý và quyền riêng tư; tính đến nhu cầu theo mùa; và chỉ ra chỗ nào cần nhân viên rà soát.",
+        "more": "Yêu cầu chi tiết có trong bản đề bài dành cho người tham gia và được trao đổi trong buổi briefing."
       }
+    },
+    "support": {
+      "title": "Bạn không phải xây dựng trong mù mờ",
+      "lead": "Các buổi briefing, workshop và tài nguyên từ đối tác giúp bạn xây dựng thứ Tasco có thể đánh giá.",
+      "items": {
+        "briefing": {
+          "title": "Briefing nghiệp vụ và hỏi đáp mở",
+          "text": "Hiểu hành trình và thực tế vận hành phía sau, từ chính những người đang vận hành."
+        },
+        "workshops": {
+          "title": "Workshop kỹ thuật và kinh doanh",
+          "text": "Mài sắc giải pháp cùng mentor và các đối tác công nghệ."
+        },
+        "mentors": {
+          "title": "Tiếp cận mentor",
+          "text": "Hướng dẫn về kinh doanh và kỹ thuật trong suốt giai đoạn xây dựng."
+        },
+        "credits": {
+          "title": "Tín dụng và công cụ từ đối tác",
+          "text": "Khám phá tài nguyên qua các chương trình đối tác, gồm quyền lợi Microsoft for Startups cho đội đủ điều kiện."
+        }
+      },
+      "conditions": "Tín dụng và công cụ từ đối tác, việc vào thử nghiệm, đầu tư và mọi hợp tác tiếp theo phụ thuộc vào kết quả tuyển chọn, điều kiện tham gia, thẩm định và điều khoản của đối tác hoặc doanh nghiệp liên quan. Một số workshop của đối tác có thể diễn ra trực tiếp; lịch được gửi tới người tham gia."
     },
     "judges": {
       "title": "Những người chấm bài của bạn",
@@ -5465,9 +5583,45 @@
         "manuja": "Head of AI and Data, Manulife"
       }
     },
+    "myths": {
+      "title": "Năm điều người ta hiểu sai về thử thách này",
+      "lead": "Có lẽ bạn từng thất vọng vì một chương trình trông giống thế này. Dễ hiểu thôi. Đây là sự thật.",
+      "assume": "Điều người ta nghĩ",
+      "truth": "Sự thật",
+      "items": {
+        "rnd": {
+          "myth": "“Đây là R&D miễn phí cho Tasco.”",
+          "truth": "Bạn giữ tài sản trí tuệ của mình. Thoả thuận bảo mật hai chiều được ký trước mọi thử nghiệm, và phạm vi được hai bên thống nhất trong tuần 1 — trước khi bạn cam kết thời gian của đội kỹ thuật."
+        },
+        "procurement": {
+          "myth": "“Tôi sẽ chẳng bao giờ qua được khâu mua sắm.”",
+          "truth": "Ở đây không có RFP. Những người đặt đề bài và nắm ngân sách chính là những người chấm bài của bạn — toàn bộ cách làm là vậy."
+        },
+        "insurance": {
+          "myth": "“Tôi không rành bảo hiểm.”",
+          "truth": "Phần lớn bài nộp mạnh không bắt đầu từ đó. Đề bài bằng văn bản, buổi briefing ngày 7 tháng 10 và một người phụ trách nghiệp vụ được chỉ định sẽ lấp khoảng trống ấy. Bạn mang giải pháp tới."
+        },
+        "weeks": {
+          "myth": "“Ba tuần không đủ để xây dựng được gì.”",
+          "truth": "Giai đoạn xây dựng mở từ ngày 23 tháng 9, không phải ngày 7 tháng 10. Và không ai đòi phần mềm chạy thật — hãy cho thấy cái gì chạy được và mở rộng ra sao."
+        },
+        "prize": {
+          "myth": "“Không có giải tiền mặt — vậy được gì?”",
+          "truth": "Một khách hàng doanh nghiệp có tên tuổi, một thị trường, và khoản đầu tư tới 100.000 USD có thể được cân nhắc cho các đội đi hết giai đoạn thử nghiệm."
+        }
+      }
+    },
     "faq": {
       "title": "Câu hỏi thường gặp",
       "items": {
+        "motor": {
+          "q": "Tôi có bắt buộc phải làm về bảo hiểm bắt buộc xe cơ giới không?",
+          "a": "Không. Phạm vi là mở: bất kỳ giải pháp AI nào làm trải nghiệm bảo hiểm tốt hơn cho người dùng. Chúng tôi công bố hành trình bảo hiểm bắt buộc xe cơ giới như một ví dụ mẫu vì nó chạm tới gần như mọi tài xế ở Việt Nam — không phải vì đó là giới hạn."
+        },
+        "wontConsider": {
+          "q": "Có điều gì Tasco sẽ không xem xét không?",
+          "a": "Một ràng buộc cứng: không giảm phí, không hoàn tiền, không ưu đãi giá trá hình. Mục tiêu là trải nghiệm tốt hơn, không phải mua kết quả. Mọi thứ khác đều mở — hãy đưa ra lập luận của bạn."
+        },
         "startup": {
           "q": "Tôi có cần là startup không?",
           "a": "Không. Cá nhân, nhóm sinh viên, startup, ISV, đơn vị tích hợp hệ thống và đội ngũ doanh nghiệp đều nộp được. Bạn được chấm theo giải pháp, không theo công ty đứng sau."
@@ -5476,6 +5630,26 @@
           "q": "Tôi có nộp được sản phẩm đã ra thị trường không?",
           "a": "Được — và các bài như vậy thường làm tốt, vì bạn cho thấy được thứ chạy được ngay từ ngày đầu. Hãy cho biết cái gì đã có và bạn sẽ xây hay điều chỉnh gì cho Tasco."
         },
+        "win": {
+          "q": "Thực sự tôi được gì?",
+          "a": "Các đội Tasco chọn sẽ vào một tháng thử nghiệm cùng những người sẽ vận hành giải pháp, và các đội đi hết giai đoạn thử nghiệm có thể được cân nhắc đầu tư tới 100.000 USD. Thứ nhận về là một khách hàng doanh nghiệp có tên tuổi và một chỗ đứng ở Việt Nam, không phải chiếc cúp. (Đầu tư tuỳ thuộc vào kết quả tuyển chọn, thẩm định và thoả thuận cuối cùng.)"
+        },
+        "prizeMoney": {
+          "q": "Có tiền thưởng không?",
+          "a": "Không. Nếu bạn tìm giải tiền mặt, đây không phải chương trình phù hợp — và chúng tôi muốn bạn biết điều đó hôm nay hơn là vào ngày 15 tháng 10. Thứ được trao là một khách hàng."
+        },
+        "senior": {
+          "q": "Tôi có thật sự được gặp người cấp cao không?",
+          "a": "Có. Ban lãnh đạo Tasco và những người vận hành mảng bảo hiểm đặt đề bài này và có mặt tại demo day. Bạn không trình bày với một nhóm đổi mới rồi họ phải đi xin ý kiến người khác."
+        },
+        "data": {
+          "q": "Tôi có được dùng dữ liệu khách hàng thật không?",
+          "a": "Hãy coi như không. Mọi tài nguyên phát triển đều cần được phê duyệt. Hãy nêu các giả định về dữ liệu, tích hợp và sự đồng ý trong bài nộp — đó là một phần làm nên độ tin cậy của đề xuất, và tiêu chí chấm có tính điểm rõ ràng cho điều này."
+        },
+        "before": {
+          "q": "Buổi briefing diễn ra ngày 7 tháng 10. Trước đó tôi nên làm gì?",
+          "a": "Xây dựng. Giai đoạn xây dựng mở ngày 23 tháng 9, cùng ngày mở nhận đơn, và đề bài bằng văn bản, phần hỏi đáp và mẫu bài nộp được công bố ngay từ ngày đầu. Buổi briefing là buổi đào sâu giữa chặng cùng đội Tasco — không phải hiệu lệnh xuất phát. Đội nào chờ tới buổi đó sẽ mất hai trong ba tuần."
+        },
         "ip": {
           "q": "Ai sở hữu tài sản trí tuệ của tôi?",
           "a": "Bạn. Một thoả thuận bảo mật hai chiều được ký trước khi bắt đầu thử nghiệm. Điều khoản thương mại do bạn và Tasco thoả thuận trực tiếp, trước khi bắt đầu làm."
@@ -5483,6 +5657,10 @@
         "vietnam": {
           "q": "Tôi có cần ở Việt Nam hay nói tiếng Việt không?",
           "a": "Không. Nộp đơn, buổi briefing và demo day diễn ra bằng tiếng Anh, trực tuyến. Nếu vào giai đoạn thử nghiệm, bạn cần người làm việc được với đội Tasco theo giờ Việt Nam."
+        },
+        "pilot": {
+          "q": "Thử nghiệm gồm những gì và kéo dài bao lâu?",
+          "a": "Một tháng: chốt phạm vi, xây dựng, tích hợp, kiểm thử theo các chỉ số đã thống nhất, rồi một quyết định bằng văn bản: mở rộng, kéo dài hoặc dừng. Kế hoạch từng tuần có trên trang này. Việc bước vào thử nghiệm là quyết định của Tasco sau demo day, và phạm vi rộng hơn sẽ kéo dài hơn một tháng — phạm vi được hai bên thống nhất trước khi bất kỳ ai cam kết."
         },
         "hearBack": {
           "q": "Khi nào tôi nhận được kết quả?",
@@ -5976,6 +6154,7 @@
       "summary": "Giải pháp làm gì",
       "problemsSolved": "Vấn đề giải quyết",
       "maturity": "Giai đoạn",
+      "demoUrl": "Demo sản phẩm",
       "builtWith": "Xây dựng bằng",
       "traction": "Kết quả đạt được",
       "confirmed": "Đã xác nhận",

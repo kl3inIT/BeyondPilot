@@ -19832,6 +19832,10 @@ components:
           type: boolean
           description: "Whether it has what an application needs: what it does, the\
             \ problem it solves and its stage."
+        demoUrl:
+          type:
+          - string
+          - "null"
         id:
           type: string
           format: uuid
@@ -20031,6 +20035,11 @@ components:
           - object
           - "null"
           $ref: "#/components/schemas/AttachedFile"
+        demoUrl:
+          type:
+          - string
+          - "null"
+          description: The link to the product's demo the solution held at submission.
         email:
           type: string
         maturity:
