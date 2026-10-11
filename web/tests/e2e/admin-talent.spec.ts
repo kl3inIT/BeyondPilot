@@ -237,6 +237,56 @@ test.describe("admin talent", () => {
     expect((await page.goto("/admin/talent/no-such-record"))?.status()).toBe(404);
   });
 
+  test("a pinned profile is marked and the list narrows to the pinned ones", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/talent");
+
+    // The mark is a pin and the word, on the one profile that is pinned.
+    await expect(
+      page.locator('[data-slot="pinned-mark"]:visible').filter({ hasText: "Pinned" }),
+    ).toHaveCount(1);
+    await page.getByRole("combobox", { name: "Pinned" }).click();
+    await page.getByRole("option", { name: "Pinned", exact: true }).click();
+    await expect(page).toHaveURL("/admin/talent?pinned=true");
+    await expect(shownProfiles(page)).toHaveText(["Arif Hidayat"]);
+    await expectNoSeriousA11yViolations(page);
+
+    await page.getByRole("combobox", { name: "Pinned" }).click();
+    await page.getByRole("option", { name: "Not pinned" }).click();
+    await expect(page).toHaveURL("/admin/talent?pinned=false");
+    await expect(shownProfiles(page)).toHaveCount(4);
+  });
+
+  test("a profile is pinned and unpinned from its record, whatever its review says", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+
+    // One sent back for changes is pinned all the same: the pin counts once it is public.
+    await page.goto(`/admin/talent/${siti}`);
+    await expect(page.locator('[data-slot="pinned-mark"]')).toHaveCount(0);
+    await page.getByRole("button", { name: "Pin to the top" }).click();
+    await expect(page.getByText("Siti Rahma is pinned to the top of the directory.")).toBeVisible();
+
+    await page.goto(`/admin/talent/${arif}`);
+    await expect(page.locator('[data-slot="pinned-mark"]')).toHaveText("Pinned Oct 1, 2026");
+    await expectNoSeriousA11yViolations(page);
+    await page.getByRole("button", { name: "Unpin" }).click();
+    await expect(page.getByText("Arif Hidayat is no longer pinned.")).toBeVisible();
+
+    expect(decisions).toEqual([
+      { call: `POST /api/talent/admin/profiles/${siti}/pin`, body: null },
+      { call: `POST /api/talent/admin/profiles/${arif}/unpin`, body: null },
+    ]);
+  });
+
   test("operators read the reported messages with who sent them", async ({
     page,
     context,

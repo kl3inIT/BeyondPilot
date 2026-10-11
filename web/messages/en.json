@@ -954,6 +954,8 @@
           "reject": "Refused or sent back a solution",
           "take_down": "Took a solution down",
           "restore": "Restored a solution",
+          "pin": "Pinned a solution to the top",
+          "unpin": "Unpinned a solution",
           "deployment_approve": "Approved a customer deployment",
           "deployment_reject": "Sent a customer deployment back",
           "enrich": "Filled a solution from public sources",
@@ -972,6 +974,8 @@
           "request_changes": "Sent a talent profile back",
           "remove": "Took a talent profile down",
           "restore": "Restored a talent profile",
+          "pin": "Pinned a talent profile to the top",
+          "unpin": "Unpinned a talent profile",
           "delete": "Deleted a talent profile"
         },
         "proposal": {
@@ -1074,6 +1078,8 @@
           "reject": "Rejected the solution <resource></resource>",
           "take_down": "Took the solution <resource></resource> down",
           "restore": "Restored the solution <resource></resource>",
+          "pin": "Pinned the solution <resource></resource> to the top of the directory",
+          "unpin": "Unpinned the solution <resource></resource>",
           "deployment_approve": "Approved the customer deployment <resource></resource>",
           "deployment_reject": "Sent the customer deployment <resource></resource> back",
           "enrich": "Filled the solution <resource></resource> from public sources",
@@ -1092,6 +1098,8 @@
           "request_changes": "Sent back the talent profile of <resource></resource>",
           "remove": "Took the talent profile of <resource></resource> down",
           "restore": "Restored the talent profile of <resource></resource>",
+          "pin": "Pinned the talent profile of <resource></resource> to the top of the directory",
+          "unpin": "Unpinned the talent profile of <resource></resource>",
           "delete": "Deleted the talent profile of <resource></resource>"
         },
         "proposal": {
@@ -1424,6 +1432,13 @@
       },
       "count": "{count, plural, one {# solution} other {# solutions}}",
       "open": "Open",
+      "pin": {
+        "pinned": "Pinned",
+        "since": "Pinned {day}",
+        "pin": "Pin to the top",
+        "unpin": "Unpin",
+        "hint": "A pinned solution comes first in the public directory, before the order a reader chooses."
+      },
       "review": {
         "open": "Review",
         "approve": "Approve",
@@ -1467,6 +1482,7 @@
         "senderUnknown": "Not recorded",
         "sent": "Sent",
         "directory": "Directory",
+        "order": "Order",
         "listed": "Listed once approved",
         "deploymentsWaiting": "{count, plural, one {# customer deployment waits for review} other {# customer deployments wait for review}}",
         "sentBack": "Sent back:",
@@ -1562,6 +1578,13 @@
       },
       "count": "{count, plural, one {# profile} other {# profiles}}",
       "open": "Open",
+      "pin": {
+        "pinned": "Pinned",
+        "since": "Pinned {day}",
+        "pin": "Pin to the top",
+        "unpin": "Unpin",
+        "hint": "A pinned profile comes first in the public directory, before the order a reader chooses."
+      },
       "review": {
         "open": "Review",
         "approve": "Approve and list",
@@ -4175,7 +4198,9 @@
       "linkCopied": "Link copied",
       "sentBack": "{name} sent back with what to change.",
       "takenDown": "{name} is taken down.",
-      "restored": "{name} is back."
+      "restored": "{name} is back.",
+      "pinned": "{name} is pinned to the top of the directory.",
+      "unpinned": "{name} is no longer pinned."
     },
     "directory": {
       "metaTitle": "AI solutions · BeyondPilot",
@@ -4223,6 +4248,12 @@
       "status": {
         "label": "Status",
         "all": "All statuses"
+      },
+      "pinned": {
+        "label": "Pinned",
+        "all": "Pinned or not",
+        "yes": "Pinned",
+        "no": "Not pinned"
       },
       "clear": "Clear filters"
     },
@@ -4787,7 +4818,9 @@
       "sentBack": "{name} is sent back.",
       "takenDown": "{name} is taken down.",
       "restored": "{name} is back in the directory.",
-      "deleted": "Your talent profile is deleted."
+      "deleted": "Your talent profile is deleted.",
+      "pinned": "{name} is pinned to the top of the directory.",
+      "unpinned": "{name} is no longer pinned."
     },
     "directory": {
       "metaTitle": "AI talent · BeyondPilot",
@@ -4824,6 +4857,12 @@
       "status": {
         "label": "Status",
         "all": "All statuses"
+      },
+      "pinned": {
+        "label": "Pinned",
+        "all": "Pinned or not",
+        "yes": "Pinned",
+        "no": "Not pinned"
       },
       "clear": "Clear filters"
     },

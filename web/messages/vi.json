@@ -954,6 +954,8 @@
           "reject": "Từ chối hoặc trả lại giải pháp",
           "take_down": "Gỡ giải pháp xuống",
           "restore": "Khôi phục giải pháp",
+          "pin": "Ghim một giải pháp lên đầu",
+          "unpin": "Bỏ ghim một giải pháp",
           "deployment_approve": "Duyệt triển khai khách hàng",
           "deployment_reject": "Trả lại triển khai khách hàng",
           "enrich": "Bổ sung solution từ nguồn công khai",
@@ -972,6 +974,8 @@
           "request_changes": "Đã yêu cầu sửa một hồ sơ nhân lực",
           "remove": "Đã gỡ xuống một hồ sơ nhân lực",
           "restore": "Khôi phục một hồ sơ nhân lực",
+          "pin": "Ghim một hồ sơ nhân lực lên đầu",
+          "unpin": "Bỏ ghim một hồ sơ nhân lực",
           "delete": "Đã xoá một hồ sơ nhân lực"
         },
         "proposal": {
@@ -1074,6 +1078,8 @@
           "reject": "Từ chối giải pháp <resource></resource>",
           "take_down": "Gỡ giải pháp <resource></resource> xuống",
           "restore": "Khôi phục giải pháp <resource></resource>",
+          "pin": "Ghim giải pháp <resource></resource> lên đầu danh mục",
+          "unpin": "Bỏ ghim giải pháp <resource></resource>",
           "deployment_approve": "Duyệt triển khai khách hàng <resource></resource>",
           "deployment_reject": "Trả lại triển khai khách hàng <resource></resource>",
           "enrich": "Bổ sung solution <resource></resource> từ nguồn công khai",
@@ -1092,6 +1098,8 @@
           "request_changes": "Đã yêu cầu sửa hồ sơ nhân lực của <resource></resource>",
           "remove": "Đã gỡ xuống hồ sơ nhân lực của <resource></resource>",
           "restore": "Khôi phục hồ sơ nhân lực của <resource></resource>",
+          "pin": "Ghim hồ sơ nhân lực của <resource></resource> lên đầu danh mục",
+          "unpin": "Bỏ ghim hồ sơ nhân lực của <resource></resource>",
           "delete": "Đã xoá hồ sơ nhân lực của <resource></resource>"
         },
         "proposal": {
@@ -1424,6 +1432,13 @@
       },
       "count": "{count} giải pháp",
       "open": "Mở",
+      "pin": {
+        "pinned": "Đã ghim",
+        "since": "Đã ghim {day}",
+        "pin": "Ghim lên đầu",
+        "unpin": "Bỏ ghim",
+        "hint": "Giải pháp được ghim hiện đầu tiên trong danh mục công khai, trước thứ tự người đọc chọn."
+      },
       "review": {
         "open": "Duyệt",
         "approve": "Duyệt",
@@ -1467,6 +1482,7 @@
         "senderUnknown": "Chưa ghi nhận",
         "sent": "Thời điểm gửi",
         "directory": "Danh mục",
+        "order": "Thứ tự",
         "listed": "Sẽ hiện khi được duyệt",
         "deploymentsWaiting": "{count} triển khai khách hàng chờ duyệt",
         "sentBack": "Đã trả lại:",
@@ -1562,6 +1578,13 @@
       },
       "count": "{count} hồ sơ",
       "open": "Mở",
+      "pin": {
+        "pinned": "Đã ghim",
+        "since": "Đã ghim {day}",
+        "pin": "Ghim lên đầu",
+        "unpin": "Bỏ ghim",
+        "hint": "Hồ sơ được ghim hiện đầu tiên trong danh mục công khai, trước thứ tự người đọc chọn."
+      },
       "review": {
         "open": "Duyệt",
         "approve": "Duyệt và hiển thị",
@@ -4175,7 +4198,9 @@
       "linkCopied": "Đã sao chép liên kết",
       "sentBack": "Đã trả lại {name} kèm nội dung cần sửa.",
       "takenDown": "Đã gỡ {name} xuống.",
-      "restored": "Đã khôi phục {name}."
+      "restored": "Đã khôi phục {name}.",
+      "pinned": "Đã ghim {name} lên đầu danh mục.",
+      "unpinned": "Đã bỏ ghim {name}."
     },
     "directory": {
       "metaTitle": "Giải pháp AI · BeyondPilot",
@@ -4223,6 +4248,12 @@
       "status": {
         "label": "Trạng thái",
         "all": "Mọi trạng thái"
+      },
+      "pinned": {
+        "label": "Ghim",
+        "all": "Ghim hoặc không",
+        "yes": "Đã ghim",
+        "no": "Chưa ghim"
       },
       "clear": "Xóa bộ lọc"
     },
@@ -4787,7 +4818,9 @@
       "sentBack": "Đã yêu cầu {name} sửa hồ sơ.",
       "takenDown": "Đã gỡ {name} xuống.",
       "restored": "Đã khôi phục {name}.",
-      "deleted": "Đã xoá hồ sơ nhân lực của bạn."
+      "deleted": "Đã xoá hồ sơ nhân lực của bạn.",
+      "pinned": "Đã ghim {name} lên đầu danh mục.",
+      "unpinned": "Đã bỏ ghim {name}."
     },
     "directory": {
       "metaTitle": "Nhân lực AI · BeyondPilot",
@@ -4824,6 +4857,12 @@
       "status": {
         "label": "Trạng thái",
         "all": "Mọi trạng thái"
+      },
+      "pinned": {
+        "label": "Ghim",
+        "all": "Ghim hoặc không",
+        "yes": "Đã ghim",
+        "no": "Chưa ghim"
       },
       "clear": "Xóa bộ lọc"
     },

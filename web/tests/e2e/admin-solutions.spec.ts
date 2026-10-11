@@ -334,6 +334,67 @@ test.describe("admin solutions", () => {
     await expect(page.getByRole("button", { name: "Approve" })).toBeEnabled();
   });
 
+  test("a pinned solution is marked, the list narrows to the pinned ones, and its row unpins it", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    await page.goto("/admin/solutions");
+
+    // The mark is a pin and the word, on the one solution that is pinned.
+    await expect(
+      page.locator('[data-slot="pinned-mark"]:visible').filter({ hasText: "Pinned" }),
+    ).toHaveCount(1);
+    await page.getByRole("combobox", { name: "Pinned" }).click();
+    await page.getByRole("option", { name: "Pinned", exact: true }).click();
+    await expect(page).toHaveURL("/admin/solutions?pinned=true");
+    await expect(shownSolutions(page)).toHaveCount(1);
+    await expectNoSeriousA11yViolations(page);
+
+    await page.getByRole("button", { name: "Open Policy Chat" }).click();
+    await page.getByRole("menuitem", { name: "Unpin" }).click();
+
+    await expect(page.getByText("Policy Chat is no longer pinned.")).toBeVisible();
+    expect(decisions).toEqual([
+      { call: `POST /api/solution/admin/solutions/${policyChat}/unpin`, body: null },
+    ]);
+
+    await page.getByRole("combobox", { name: "Pinned" }).click();
+    await page.getByRole("option", { name: "Not pinned" }).click();
+    await expect(page).toHaveURL("/admin/solutions?pinned=false");
+    await expect(shownSolutions(page)).toHaveCount(4);
+  });
+
+  test("a solution is pinned and unpinned from its record, whatever its review says", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+
+    // One that waits for review is pinned all the same: the pin counts once it is public.
+    await page.goto(`/admin/solutions/${claimsCopilot}`);
+    await expect(page.locator('[data-slot="pinned-mark"]')).toHaveCount(0);
+    await page.getByRole("button", { name: "Pin to the top" }).click();
+    await expect(
+      page.getByText("Claims Copilot is pinned to the top of the directory."),
+    ).toBeVisible();
+
+    await page.goto(`/admin/solutions/${policyChat}`);
+    await expect(page.locator('[data-slot="pinned-mark"]')).toHaveText("Pinned Oct 1, 2026");
+    await expectNoSeriousA11yViolations(page);
+    await page.getByRole("button", { name: "Unpin" }).click();
+    await expect(page.getByText("Policy Chat is no longer pinned.")).toBeVisible();
+
+    expect(decisions).toEqual([
+      { call: `POST /api/solution/admin/solutions/${claimsCopilot}/pin`, body: null },
+      { call: `POST /api/solution/admin/solutions/${policyChat}/unpin`, body: null },
+    ]);
+  });
+
   test("a rejected solution's record says why and offers no decision", async ({
     page,
     context,

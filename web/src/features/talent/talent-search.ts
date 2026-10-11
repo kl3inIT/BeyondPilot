@@ -2,7 +2,7 @@ import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } fro
 
 import { directorySorts } from "@/lib/directory-sort";
 
-import { reviewedStatuses, talentRoles } from "./talent-codes";
+import { pinnedChoices, reviewedStatuses, talentRoles } from "./talent-codes";
 
 /**
  * What narrows the public directory of talent, as the URL holds it:
@@ -19,10 +19,11 @@ export const loadTalentSearch = createLoader(talentSearch);
 
 export type TalentSearch = Awaited<ReturnType<typeof loadTalentSearch>>;
 
-/** What narrows the operators' list of talent profiles: `?q=&status=&page=`. */
+/** What narrows the operators' list of talent profiles: `?q=&status=&pinned=&page=`. */
 export const adminTalentSearch = {
   q: parseAsString.withDefault(""),
   status: parseAsStringLiteral(reviewedStatuses),
+  pinned: parseAsStringLiteral(pinnedChoices),
   page: parseAsInteger.withDefault(1),
 };
 

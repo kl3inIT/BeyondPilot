@@ -2,7 +2,13 @@ import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } fro
 
 import { directorySorts } from "@/lib/directory-sort";
 
-import { focusAreas, industries, maturities, reviewedStatuses } from "./solution-codes";
+import {
+  focusAreas,
+  industries,
+  maturities,
+  pinnedChoices,
+  reviewedStatuses,
+} from "./solution-codes";
 
 /** What narrows the public directory, as the URL holds it: `?q=&industry=&focusArea=&maturity=&sort=&page=`. */
 export const solutionsSearch = {
@@ -23,11 +29,12 @@ export const companySearch = { more: parseAsInteger.withDefault(0) };
 
 export const loadCompanySearch = createLoader(companySearch);
 
-/** What narrows the operators' list of solutions: `?q=&status=&industry=&page=`. */
+/** What narrows the operators' list of solutions: `?q=&status=&industry=&pinned=&page=`. */
 export const adminSolutionsSearch = {
   q: parseAsString.withDefault(""),
   status: parseAsStringLiteral(reviewedStatuses),
   industry: parseAsStringLiteral(industries),
+  pinned: parseAsStringLiteral(pinnedChoices),
   page: parseAsInteger.withDefault(1),
 };
 
