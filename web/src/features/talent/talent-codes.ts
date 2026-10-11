@@ -65,3 +65,6 @@ export const talentSections = {
   links: "talent-section-links",
   visibility: "talent-visibility",
 } as const;
+
+/** What the operators' list narrows to: the featured profiles, or those that are not. */
+export const featuredChoices = ["true", "false"] as const;

@@ -24,6 +24,9 @@ public class TalentDirectory {
 
 	static final int PAGE_SIZE = 12;
 
+	/** The order the public directory opens with, the only one the featured profiles lead. */
+	private static final String OPENING_SORT = "newest";
+
 	private final TalentProfileRepository profiles;
 
 	private final TalentQueryRepository profileList;
@@ -37,20 +40,27 @@ public class TalentDirectory {
 		this.details = details;
 	}
 
-	/** One page of the directory the request selects, in the order it asks for. */
+	/**
+	 * One page of the directory the request selects, in the order it asks for. In the view the directory opens with,
+	 * where the reader has searched for nothing, chosen no filter and reads the newest first, the featured profiles
+	 * come first; as soon as the reader searches, filters or picks another order, the list is ordered by that alone.
+	 */
 	@Transactional(readOnly = true)
 	public PublicTalentListResponse list(PublicTalentListRequest request) {
 		String text = TalentViews.text(request.q());
 		int page = request.page() == null ? 1 : request.page();
 		TalentQueryRepository.PublicFilter filter = new TalentQueryRepository.PublicFilter(text, request.role(),
 				request.country(), request.industry(), request.engagement());
+		boolean opening = text == null && request.role() == null && request.country() == null
+				&& request.industry() == null && request.engagement() == null && OPENING_SORT.equals(request.sort());
 		return new PublicTalentListResponse(profileList
-			.publicPage(filter, request.sort(), PAGE_SIZE, (long) (page - 1) * PAGE_SIZE)
+			.publicPage(filter, request.sort(), opening, PAGE_SIZE, (long) (page - 1) * PAGE_SIZE)
 			.stream()
 			.map(row -> new PublicTalentSummaryResponse(row.slug(), row.name(), row.headline(), row.country(),
 					row.city(), row.roles(), row.skills(), row.photoFileId(), row.projectCount(),
 					row.leadTitle() == null ? null
-							: new TalentProjectDto(row.leadTitle(), null, null, null, row.leadStage())))
+							: new TalentProjectDto(row.leadTitle(), null, null, null, row.leadStage()),
+					row.featuredAt() != null))
 			.toList(), page, PAGE_SIZE, profileList.publicCount(filter));
 	}
 

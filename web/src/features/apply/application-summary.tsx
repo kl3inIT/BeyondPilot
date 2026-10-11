@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
 import type { ApplicationView } from "@/lib/api/generated";
+import { chosenOptions } from "@/lib/chosen-options";
 
 /** Rows of a summary block: what each part of the application holds, as the applicant reads it. */
 type Block = { key: "you" | "solution" | "questions"; rows: [string, string][] };
@@ -57,6 +58,9 @@ async function ApplicationSummary({ view }: { view: ApplicationView }) {
         [solutionText("summary"), solution?.summary ?? none],
         [solutionText("problemsSolved"), solution?.problemsSolved ?? none],
         [t("maturity"), solution?.maturity ? word("maturity", solution.maturity) : none],
+        ...(solution?.demoUrl
+          ? [[solutionText("demoUrl"), solution.demoUrl] as [string, string]]
+          : []),
         [t("traction"), application.traction ?? none],
         [t("builtWith"), application.builtWith.join(", ") || none],
         [t("deck"), application.deck?.fileName ?? none],
@@ -76,6 +80,10 @@ async function ApplicationSummary({ view }: { view: ApplicationView }) {
         }
         if (question.kind === "file") {
           return [question.label, application.files[question.id]?.fileName ?? t("uploaded")];
+        }
+        if (question.kind === "multi_choice") {
+          // One choice a line: a choice may hold a comma of its own.
+          return [question.label, chosenOptions(value).join("\n") || none];
         }
         return [question.label, value];
       }),

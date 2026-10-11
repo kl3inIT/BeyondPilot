@@ -467,6 +467,22 @@ test.describe("admin programs", () => {
 
     await expect(page.getByText("One choice · 2 choices")).toBeVisible();
     await expect(page.getByText("Not saved yet")).toBeVisible();
+
+    // A question answered by several choices takes its choices the same way.
+    await page.getByRole("button", { name: "Add a question" }).click();
+    await dialog.getByRole("combobox", { name: "Answered with" }).click();
+    await page.getByRole("option", { name: "Several choices" }).click();
+    await dialog.getByRole("textbox", { name: "Question" }).fill("Challenge areas");
+    await dialog.getByRole("button", { name: "Add question" }).click();
+    await expect(dialog.getByText("Add at least two choices.")).toBeVisible();
+    await choices.fill("Claims");
+    await choices.press("Enter");
+    await choices.fill("Pricing");
+    await choices.press("Enter");
+    await choices.fill("Fraud");
+    await choices.press("Enter");
+    await dialog.getByRole("button", { name: "Add question" }).click();
+    await expect(page.getByText("Several choices · 3 choices")).toBeVisible();
     await page.getByRole("button", { name: "Save questions" }).click();
     await expect(page.getByText("Questions saved.")).toBeVisible();
     expect(saved).toEqual([
@@ -479,6 +495,15 @@ test.describe("admin programs", () => {
             help: null,
             required: true,
             options: ["Buying", "Claiming"],
+            maxLength: null,
+          },
+          {
+            id: null,
+            kind: "multi_choice",
+            label: "Challenge areas",
+            help: null,
+            required: true,
+            options: ["Claims", "Pricing", "Fraud"],
             maxLength: null,
           },
         ],
@@ -497,6 +522,7 @@ test.describe("admin programs", () => {
 
     await expect(page.getByRole("status")).toContainText("the questions can no longer change");
     await expect(page.getByText("Direction")).toBeVisible();
+    await expect(page.getByText("Several choices · 3 choices")).toBeVisible();
     await expect(page.getByRole("button", { name: "Add a question" })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
   });

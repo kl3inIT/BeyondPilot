@@ -30,5 +30,7 @@ public record PublicUseCaseSummaryResponse(@Schema(requiredMode = Schema.Require
 		@Schema(types = { "integer", "null" }, description = "Null when the brief does not say.") @Nullable Integer timelineMaxWeeks,
 		@Schema(types = { "string", "null" }, format = "date-time",
 				description = "Proposals close at this instant; null for no deadline.") @Nullable Instant closesAt,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant publishedAt) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant publishedAt,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "Whether GenAI Fund features it; its card says so.") boolean featured) {
 }

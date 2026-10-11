@@ -270,6 +270,17 @@ test.describe("apply", () => {
       .fill("Claims reach a decision without a hotline call.");
     await page.locator(`#question-${tascoQuestions[2].id}`).setInputFiles(pdf);
     await page.getByRole("checkbox", { name: /one hard constraint/ }).check();
+    // A question answered by several choices is a named group of checkboxes, and a required one
+    // needs at least one of them.
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByText("Choose at least one.")).toBeVisible();
+    const areas = page.getByRole("group", { name: "Challenge areas" });
+    await expect(areas).toHaveAccessibleDescription("Every area your solution works in.");
+    await expect(areas.getByRole("checkbox")).toHaveCount(3);
+    // Ticked last to first: the answer keeps the order the question offers them in.
+    await areas.getByRole("checkbox", { name: "Fraud" }).check();
+    await areas.getByRole("checkbox", { name: "Claims" }).check();
+    await expect(page.getByText("Choose at least one.")).toHaveCount(0);
     await settled(page);
     await shot(page, `apply-3-${label}`);
     await page.getByRole("button", { name: "Continue" }).click();
@@ -278,6 +289,7 @@ test.describe("apply", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Review and submit");
     await expect(page.getByText("Claim Copilot").first()).toBeVisible();
     await expect(page.getByText("OpenAI GPT")).toBeVisible();
+    await expect(page.getByText("Claims Fraud")).toBeVisible();
     await page.getByRole("button", { name: "Submit application" }).click();
     await expect(page.getByText("Confirm the information to submit.")).toBeVisible();
     await page.getByRole("checkbox", { name: "I confirm the information is accurate." }).check();
@@ -302,6 +314,7 @@ test.describe("apply", () => {
       answers: {
         [tascoQuestions[0].id]: "Claiming",
         [tascoQuestions[3].id]: "true",
+        [tascoQuestions[4].id]: '["Claims","Fraud"]',
       },
     });
     expect(calls.map((call) => call.call)).toContain(
@@ -328,6 +341,8 @@ test.describe("apply", () => {
     await expect(page).toHaveURL(`/applications/${submittedId}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Claim Copilot");
     await expect(page.getByText("pocket-policy-proposal.pdf")).toBeVisible();
+    await expect(page.getByText("https://claimcopilot.example/demo")).toBeVisible();
+    await expect(page.getByText("Claims Pricing, and underwriting")).toBeVisible();
     await expect(page.getByRole("link", { name: "Edit application" })).toHaveAttribute(
       "href",
       "/programs/insurance-ai-tasco/apply",

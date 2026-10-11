@@ -2,12 +2,14 @@ import { ArrowLeftIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { QueueNext } from "@/components/composites/queue-next";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalent } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { TalentFeature } from "./talent-feature";
 import { TalentReview } from "./talent-review";
 import { TalentView } from "./talent-view";
 
@@ -25,6 +27,7 @@ type AdminTalentPageProps = {
  */
 function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
   const t = useTranslations("Admin.talent.detail");
+  const feature = useTranslations("Admin.talent.feature");
   const reason = useVocabulary("talentRejection");
   const status = useVocabulary("talentStatus");
   const role = useVocabulary("talentRole");
@@ -115,20 +118,34 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
               <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
                 {sent && <span>{sent}</span>}
                 {!profile.listed && <span className="text-muted-foreground">{t("unlisted")}</span>}
+                {detail.featuredAt && (
+                  <FeaturedBadge>
+                    {feature("since", {
+                      day: format.dateTime(new Date(detail.featuredAt), { dateStyle: "medium" }),
+                    })}
+                  </FeaturedBadge>
+                )}
                 {state === "approved" && profile.listed && (
                   <TextButton href={`${siteRoutes.talent}/${profile.slug}`}>
                     {t("public")}
                   </TextButton>
                 )}
               </p>
-              {(state === "in_review" || state === "approved" || state === "suspended") && (
-                <TalentReview
+              <div className="flex flex-wrap gap-2">
+                <TalentFeature
                   key={profile.id}
-                  profile={profile}
-                  nextHref={next?.href ?? `${siteRoutes.adminTalent}?status=in_review`}
+                  profile={{ id: profile.id, name: profile.name, featuredAt: detail.featuredAt }}
                 />
-              )}
+                {(state === "in_review" || state === "approved" || state === "suspended") && (
+                  <TalentReview
+                    key={profile.id}
+                    profile={profile}
+                    nextHref={next?.href ?? `${siteRoutes.adminTalent}?status=in_review`}
+                  />
+                )}
+              </div>
             </div>
+            <p className="text-xs text-muted-foreground">{feature("hint")}</p>
           </section>
         </div>
       </div>

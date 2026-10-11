@@ -43,7 +43,7 @@ class ProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Object>read(empty, "$.organization")).isNull();
 		assertThat(JsonPath.<Boolean>read(empty, "$.program.open")).isTrue();
 		assertThat(JsonPath.<List<String>>read(empty, "$.program.questions[*].kind")).containsExactly("long_text",
-				"single_choice", "file", "confirm");
+				"single_choice", "file", "confirm", "multi_choice");
 
 		// A draft keeps what the form holds, whatever is missing.
 		String draft = body(put(applicant, form.path(), application(Map.of("firstName", "Dat"), null, Map.of(), null))
@@ -69,6 +69,8 @@ class ProposalTest extends ApplicationsHttpTest {
 			.expectStatus()
 			.isOk());
 		assertThat(JsonPath.<Integer>read(saved, "$.application.files.length()")).isEqualTo(1);
+		assertThat(JsonPath.<String>read(saved, "$.application.answers['" + form.areas() + "']"))
+			.isEqualTo("[\"Claims\",\"Pricing\"]");
 		assertThat(JsonPath.<String>read(saved, "$.application.deck.fileName")).isEqualTo("proposal.pdf");
 		assertThat(JsonPath.<List<String>>read(saved, "$.application.builtWith")).containsExactly("OpenAI GPT",
 				"Whisper");
@@ -86,6 +88,8 @@ class ProposalTest extends ApplicationsHttpTest {
 		// It can change until the close; each submission is a version, and the earlier one stays as it was.
 		Map<String, String> changed = answers(form, email);
 		changed.put(form.direction().toString(), "Carrying");
+		// Several choices are kept in the order the question offers them, however the form sent them.
+		changed.put(form.areas().toString(), "[\"Fraud\",\"Claims\"]");
 		Map<String, Object> change = application(contact(), solution, changed, versionOf(submitted));
 		change.put("deckFileId", deck);
 		put(applicant, form.path(), change).expectStatus().isOk();
@@ -93,6 +97,8 @@ class ProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Integer>read(again, "$.application.submissions")).isEqualTo(2);
 		assertThat(answerOf(id, 1, form.direction())).isEqualTo("Claiming");
 		assertThat(answerOf(id, 2, form.direction())).isEqualTo("Carrying");
+		assertThat(answerOf(id, 1, form.areas())).isEqualTo("[\"Claims\",\"Pricing\"]");
+		assertThat(answerOf(id, 2, form.areas())).isEqualTo("[\"Claims\",\"Fraud\"]");
 
 		String withdrawn = body(post(applicant, API + "/applications/" + id + "/withdraw", null).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(withdrawn, "$.application.status")).isEqualTo("withdrawn");
@@ -140,6 +146,24 @@ class ProposalTest extends ApplicationsHttpTest {
 		withDeck.put("teamBackground", "Two engineers from an insurer.");
 		String saved = body(put(applicant, form.path(), withDeck).expectStatus().isOk());
 		assertProblem(post(applicant, submit, null), 400, "PROPOSAL_ANSWER_REQUIRED");
+
+		// A required question answered by several choices needs at least one.
+		Map<String, String> noAreas = answers(form, email);
+		noAreas.remove(form.areas().toString());
+		Map<String, Object> withoutAreas = withDeck(application(contact(), solution, noAreas, versionOf(saved)), email);
+		withoutAreas.put("teamBackground", "Two engineers from an insurer.");
+		saved = body(put(applicant, form.path(), withoutAreas).expectStatus().isOk());
+		assertThat(JsonPath.<Map<String, String>>read(saved, "$.application.answers"))
+			.doesNotContainKey(form.areas().toString());
+		assertProblem(post(applicant, submit, null), 400, "PROPOSAL_ANSWER_REQUIRED");
+		// Each choice is one of the question's options, exactly as written and named once.
+		for (String wrong : List.of("[\"Claims\",\"Somewhere else\"]", "[\"claims\"]", "[\"Claims\",\"Claims\"]", "[]",
+				"[null]", "Claims")) {
+			Map<String, String> wrongChoices = answers(form, email);
+			wrongChoices.put(form.areas().toString(), wrong);
+			assertProblem(put(applicant, form.path(), application(contact(), solution, wrongChoices, versionOf(saved))),
+					400, "PROPOSAL_ANSWER_INVALID");
+		}
 
 		Map<String, String> wrongChoice = answers(form, email);
 		wrongChoice.put(form.direction().toString(), "Somewhere else");

@@ -11,6 +11,7 @@ public record SolutionOptionResponse(@Schema(requiredMode = Schema.RequiredMode.
 		@Schema(types = { "string", "null" }) @Nullable String summary,
 		@Schema(types = { "string", "null" }) @Nullable String problemsSolved,
 		@Schema(types = { "string", "null" }) @Nullable String maturity,
+		@Schema(types = { "string", "null" }) @Nullable String demoUrl,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether it has what an application needs: what it does, the problem it solves and its stage.") boolean complete) {
 }

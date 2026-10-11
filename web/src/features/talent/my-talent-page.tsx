@@ -221,6 +221,8 @@ function PreviewCard({ profile }: { profile: TalentProfile }) {
           country: profile.country,
           projectCount: profile.projects.length,
           leadProject: profile.projects[0] ?? null,
+          // The owner's profile does not say whether GenAI Fund features it, so the preview never claims it.
+          featured: false,
         }}
       />
       <p className="text-xs text-muted-foreground">{t("note")}</p>

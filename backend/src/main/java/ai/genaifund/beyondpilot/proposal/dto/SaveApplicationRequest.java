@@ -26,7 +26,7 @@ public record SaveApplicationRequest(@Schema(requiredMode = Schema.RequiredMode.
 		@Schema(types = { "string", "null" },
 				description = "Customers, pilots, users or revenue so far.") @Size(max = 600) @Nullable String traction,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The answers to the program's questions by question identifier. A file is named by its identifier, a confirmation is \"true\".") @NotNull @Size(
+				description = "The answers to the program's questions by question identifier. A file is named by its identifier, a confirmation is \"true\", and several choices are a JSON array of the options chosen, such as [\"Claims\",\"Pricing\"].") @NotNull @Size(
 						max = 20) Map<UUID, @NotNull @Size(max = 4000) String> answers,
 		@Schema(types = { "integer", "null" }, format = "int64",
 				description = "The version the form read; null for the first save.") @Nullable Long version) {

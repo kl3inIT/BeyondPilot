@@ -130,6 +130,7 @@ export async function readAdminSolutions(search: AdminSolutionsSearch): Promise<
       q: text(search.q),
       status: search.status ?? undefined,
       industry: search.industry ?? undefined,
+      featured: search.featured === null ? undefined : search.featured === "true",
       page: Math.max(1, search.page),
     },
   });

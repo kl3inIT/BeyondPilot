@@ -5,10 +5,10 @@ import { useTranslations } from "next-intl";
 import type { UseCaseOrganization } from "@/lib/api/generated";
 import { FilterToolbar } from "@/components/composites/filter-toolbar";
 
-import { useCaseStatuses } from "./admin-use-case-codes";
+import { featuredChoices, useCaseStatuses } from "./admin-use-case-codes";
 import { adminUseCasesSearch } from "./admin-use-cases-search";
 
-/** Search and the status filter of the operators' list of use cases. */
+/** Search and the status, organization and featured filters of the operators' list of use cases. */
 function AdminUseCasesToolbar({ organizations }: { organizations: UseCaseOrganization[] }) {
   const t = useTranslations("Admin.useCases");
 
@@ -29,6 +29,15 @@ function AdminUseCasesToolbar({ organizations }: { organizations: UseCaseOrganiz
           label: t("filters.organization.label"),
           all: t("filters.organization.all"),
           options: organizations.map(({ id, name }) => ({ value: id, label: name })),
+        },
+        {
+          key: "featured",
+          label: t("filters.featured.label"),
+          all: t("filters.featured.all"),
+          options: featuredChoices.map((value) => ({
+            value,
+            label: t(value === "true" ? "filters.featured.yes" : "filters.featured.no"),
+          })),
         },
       ]}
     />
