@@ -349,13 +349,16 @@ function AdminMembers({
           </ul>
         </>
       )}
-      <ListFooter
-        count={t("summary.members", { count: total })}
-        page={current}
-        pageSize={MEMBERS_PAGE_SIZE}
-        total={total}
-        href={(next) => address(record, { tab: "members", page: next })}
-      />
+      {/* With nobody to count or page, the summary under the title has said it. */}
+      {total > 0 && (
+        <ListFooter
+          count={t("summary.members", { count: total })}
+          page={current}
+          pageSize={MEMBERS_PAGE_SIZE}
+          total={total}
+          href={(next) => address(record, { tab: "members", page: next })}
+        />
+      )}
     </section>
   );
 }
