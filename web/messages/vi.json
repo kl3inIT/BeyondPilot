@@ -263,11 +263,6 @@
       "partnerTitle": "Đối tác phát triển",
       "partnerDescription": "Đội kỹ sư xây dựng sản phẩm cùng BeyondPilot."
     },
-    "founders": {
-      "eyebrow": "Trong mạng lưới GenAI Fund",
-      "title": "Các founder đang xây dựng trong hệ sinh thái",
-      "description": "Các founder startup trong mạng lưới GenAI Fund. Họ là đồng nghiệp trong hệ sinh thái, không phải thành viên đội ngũ BeyondPilot."
-    },
     "faq": {
       "eyebrow": "Hỏi đáp",
       "title": "Câu hỏi thường gặp",
@@ -293,7 +288,7 @@
     "comingSoon": "Sắp ra mắt",
     "network": {
       "title": "Mạng lưới đứng sau mỗi chương trình",
-      "description": "Doanh nghiệp, công ty công nghệ và cơ quan nhà nước đã tham gia các chương trình của GenAI Fund trong năm 2025 và 2026.",
+      "description": "Doanh nghiệp, công ty công nghệ và cơ quan nhà nước mà GenAI Fund hợp tác trong khu vực.",
       "roles": {
         "enterprises": {
           "title": "Doanh nghiệp",
@@ -306,13 +301,6 @@
         "government": {
           "title": "Cơ quan nhà nước và tổ chức",
           "description": "Mở cửa vào thị trường trong khu vực"
-        },
-        "investors": {
-          "title": "Nhà đầu tư và cộng đồng",
-          "description": "Đồng hành cùng đội xây dựng sản phẩm"
-        },
-        "press": {
-          "title": "Báo chí"
         }
       }
     }
@@ -4779,6 +4767,10 @@
       "metaTitle": "Nhân lực AI · BeyondPilot",
       "title": "Nhân lực AI",
       "lead": "Kỹ sư và người xây dựng triển khai AI cho doanh nghiệp.",
+      "founders": {
+        "title": "Founder trong mạng lưới GenAI Fund",
+        "description": "Các founder startup mà GenAI Fund hậu thuẫn và đồng hành."
+      },
       "create": "Tạo hồ sơ nhân lực",
       "count": "Hiển thị {shown}/{total}",
       "total": "{count} người",

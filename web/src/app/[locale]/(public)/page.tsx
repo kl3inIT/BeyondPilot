@@ -7,7 +7,6 @@ import { FeaturedChallenge } from "@/components/sections/challenge/featured-chal
 import { Ecosystem } from "@/components/sections/ecosystem/ecosystem";
 import { Faq } from "@/components/sections/faq/faq";
 import { FinalCta } from "@/components/sections/final-cta/final-cta";
-import { Founders } from "@/components/sections/founders/founders";
 import { Hero } from "@/components/sections/hero/hero";
 import { PartnerNetwork } from "@/components/sections/logos/partner-network";
 import { Team } from "@/components/sections/team/team";
@@ -59,7 +58,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <AgentJourney />
       <FeaturedChallenge />
       <Team />
-      <Founders />
       <PartnerNetwork />
       <Faq />
       <FinalCta />

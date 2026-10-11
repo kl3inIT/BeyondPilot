@@ -263,11 +263,6 @@
       "partnerTitle": "Development partner",
       "partnerDescription": "The engineering team building the product with BeyondPilot."
     },
-    "founders": {
-      "eyebrow": "In the GenAI Fund network",
-      "title": "Founders building across the ecosystem",
-      "description": "Startup founders from the GenAI Fund network. They are ecosystem peers, not members of the BeyondPilot team."
-    },
     "faq": {
       "eyebrow": "FAQ",
       "title": "Frequently asked questions",
@@ -293,7 +288,7 @@
     "comingSoon": "Coming soon",
     "network": {
       "title": "The network behind every program",
-      "description": "Enterprises, technology companies and public institutions that took part in GenAI Fund programs in 2025 and 2026.",
+      "description": "Enterprises, technology companies and public institutions GenAI Fund works with across the region.",
       "roles": {
         "enterprises": {
           "title": "Enterprises",
@@ -306,13 +301,6 @@
         "government": {
           "title": "Government and institutions",
           "description": "They open doors across the region"
-        },
-        "investors": {
-          "title": "Investors and community",
-          "description": "They back the builders"
-        },
-        "press": {
-          "title": "In the press"
         }
       }
     }
@@ -4779,6 +4767,10 @@
       "metaTitle": "AI talent · BeyondPilot",
       "title": "AI talent",
       "lead": "Engineers and builders who deploy AI for businesses.",
+      "founders": {
+        "title": "Founders in the GenAI Fund network",
+        "description": "Startup founders GenAI Fund backs and works with."
+      },
       "create": "Create a talent profile",
       "count": "Showing {shown} of {total}",
       "total": "{count, plural, one {# person} other {# people}}",
