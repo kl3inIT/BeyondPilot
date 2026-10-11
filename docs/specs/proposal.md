@@ -38,6 +38,7 @@ was delivered by [BEY-37](../increments/completed/bey-37-proposal/design.md), re
 | `proposal_assessment` (V17)      | One per application and person, keyed `(proposal_id, account_id)`: `version_number`, `scores jsonb` (by criterion identifier), `note`, `conflict`, `saved_at`                                                                                                                                                                                                                                                                                                     |
 | `proposal_review_decision` (V17) | Every change of a decision: `proposal_id`, `account_id`, `from_status`, `to_status`, `reason`, `decided_at`                                                                                                                                                                                                                                                                                                                                                       |
 | `proposal_release` (V17)         | One row per released program, keyed `program_id`: `released_at`, `released_by_account_id`, and the subject and message sent to each group                                                                                                                                                                                                                                                                                                                         |
+| `proposal_release_draft` (V72)   | One row per program whose release emails an operator has written, keyed `program_id`: the subject and message of each group as last written, `updated_by_account_id` and `updated_at`. Removed by the release                                                                                                                                                                                                                                                     |
 
 ## Applying
 
@@ -225,8 +226,11 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 
 - **Preview.** `GET …/release` groups the submitted applications into shortlisted, not selected and undecided with
   their averages, counts the withdrawals, and says whether the release is `ready`: not released, closed, every
-  application decided and at least one submitted. Before the release it offers starting emails in the program's
-  words; after, the emails that were sent.
+  application decided and at least one submitted. Before the release it offers the emails as an operator last
+  wrote them, or starting emails in the program's words when nobody has; after, the emails that were sent.
+- **Draft.** `PUT …/release/draft` keeps the two subjects and messages as an operator is writing them, in
+  `proposal_release_draft`; a part may be empty, and nothing is sent. The page saves a moment after the last key.
+  It is refused with `PROPOSAL_RELEASED` once released, and the release removes the draft.
 - **Release.** `POST …/release` is refused with `PROPOSAL_OUTCOMES_NOT_READY` before the close, when nothing was
   submitted, or while a submitted application is `under_review`, and with `PROPOSAL_RELEASED` once released. It stores the two subjects (at most 200
   characters) and messages (at most 5000) once in `proposal_release`.
@@ -301,6 +305,7 @@ Every endpoint needs a session.
 | `GET /api/proposal/review/applications/{id}/files/{fileId}`                    | A file of the last submission                                     |
 | `POST /api/proposal/review/programs/{programId}/decisions`                     | Decide one application or several                                 |
 | `GET`, `POST /api/proposal/review/programs/{programId}/release`                | Preview the release; release                                      |
+| `PUT /api/proposal/review/programs/{programId}/release/draft`                  | Keep the release emails as they are written                       |
 
 ## Error codes
 

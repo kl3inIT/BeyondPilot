@@ -226,4 +226,39 @@ test.describe("judging applications", () => {
       notSelectedSubject: "Your application to AI for Insurance Challenge × Tasco",
     });
   });
+
+  test("the emails of a release are saved as they are written, and leaving before that asks first", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const calls = await recordWrites(page);
+    await page.goto(`${admin}/release`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Release outcomes");
+
+    // What is typed is not on the server yet: the page says so, and leaving asks first.
+    await page.getByLabel("Subject").fill("Shortlisted: AI for Insurance Challenge");
+    await expect(page.getByRole("status").filter({ hasText: "Not saved yet" })).toBeVisible();
+    await page
+      .getByRole("main")
+      .getByRole("link", { name: "Applications", exact: true })
+      .first()
+      .click();
+    const leave = page.getByRole("alertdialog", { name: "Leave before it is saved?" });
+    await expect(leave).toBeVisible();
+    await leave.getByRole("button", { name: "Stay" }).click();
+
+    // A moment after the last key it is saved by itself, all four parts together, and nothing is released.
+    await expect.poll(() => calls.length).toBe(1);
+    expect(calls[0].method).toBe("PUT");
+    expect(calls[0].url).toContain("/release/draft");
+    expect(calls[0].body).toMatchObject({
+      shortlistedSubject: "Shortlisted: AI for Insurance Challenge",
+      notSelectedSubject: "Your application to AI for Insurance Challenge × Tasco",
+    });
+    await expect(page.getByRole("status").filter({ hasText: /^Saved \d\d:\d\d$/ })).toBeVisible();
+    await settled(page);
+    await expectNoSeriousA11yViolations(page);
+  });
 });

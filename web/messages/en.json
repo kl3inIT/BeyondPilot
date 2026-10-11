@@ -5923,6 +5923,17 @@
       "withdrawn": "{count, plural, one {# withdrawn application gets} other {# withdrawn applications get}} no email.",
       "sentTitle": "Emails as they were sent",
       "emailsTitle": "Email to each group",
+      "draft": {
+        "unsaved": "Not saved yet",
+        "saved": "Saved {time}",
+        "failed": "Not saved. It is tried again on your next change.",
+        "leave": {
+          "title": "Leave before it is saved?",
+          "lead": "Your last changes to the emails are not saved yet and will be lost.",
+          "leave": "Leave",
+          "stay": "Stay"
+        }
+      },
       "subject": "Subject",
       "message": "Message",
       "placeholders": "{organization} and {solution} are filled in for each applicant.",

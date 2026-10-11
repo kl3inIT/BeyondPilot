@@ -16,7 +16,7 @@ public record ReleaseResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRE
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Still waiting for a decision.") List<Item> undecided,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) long withdrawn,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The emails as they were sent, or a starting point until then.") ReleaseEmails emails) {
+				description = "The emails as they were sent; until then, as an operator last wrote them, or a starting point.") ReleaseEmails emails) {
 
 	@Schema(name = "ReleaseItem")
 	public record Item(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,

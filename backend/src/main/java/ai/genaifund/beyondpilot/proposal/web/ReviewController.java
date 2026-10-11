@@ -13,6 +13,7 @@ import ai.genaifund.beyondpilot.proposal.ReviewService;
 import ai.genaifund.beyondpilot.proposal.dto.ApplicationsCsv;
 import ai.genaifund.beyondpilot.proposal.dto.DecideRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ExportApplicationsRequest;
+import ai.genaifund.beyondpilot.proposal.dto.ReleaseDraftRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseEmails;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationResponse;
@@ -174,6 +175,23 @@ class ReviewController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ReleaseResponse release(@CurrentActor Actor actor, @PathVariable UUID programId) {
 		return outcomes.release(actor, programId);
+	}
+
+	@PutMapping(path = "/programs/{programId}/release/draft", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "keepReleaseDraft",
+			summary = "Keep the emails of a release as they are being written; nothing is sent",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The emails as kept.")
+	@ApiResponse(responseCode = "400", description = "A subject or a message is longer than it may be.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such program taking applications.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The outcomes were released.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ReleaseEmails keepReleaseDraft(@CurrentActor Actor actor, @PathVariable UUID programId,
+			@Valid @RequestBody ReleaseDraftRequest draft) {
+		return outcomes.keepDraft(actor, programId, draft);
 	}
 
 	@PostMapping(path = "/programs/{programId}/release", consumes = MediaType.APPLICATION_JSON_VALUE,

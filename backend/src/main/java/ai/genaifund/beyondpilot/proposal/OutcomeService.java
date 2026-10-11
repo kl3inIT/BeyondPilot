@@ -16,6 +16,7 @@ import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.program.ApplicationForm;
 import ai.genaifund.beyondpilot.proposal.ReviewAccess.Reviewing;
 import ai.genaifund.beyondpilot.proposal.dto.DecideRequest;
+import ai.genaifund.beyondpilot.proposal.dto.ReleaseDraftRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseEmails;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationsResponse;
@@ -23,6 +24,8 @@ import ai.genaifund.beyondpilot.proposal.persistence.Proposal;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalAssessment;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalAssessmentRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalRelease;
+import ai.genaifund.beyondpilot.proposal.persistence.ProposalReleaseDraft;
+import ai.genaifund.beyondpilot.proposal.persistence.ProposalReleaseDraftRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalReleaseRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecision;
@@ -56,13 +59,16 @@ public class OutcomeService {
 
 	private final ProposalReleaseRepository releases;
 
+	private final ProposalReleaseDraftRepository drafts;
+
 	private final IdentityService identity;
 
 	private final ApplicationEventPublisher events;
 
 	OutcomeService(ReviewSetup setup, ReviewService review, ReviewAccess access, ProposalRepository proposals,
 			ProposalAssessmentRepository assessments, ProposalReviewDecisionRepository decisions,
-			ProposalReleaseRepository releases, IdentityService identity, ApplicationEventPublisher events) {
+			ProposalReleaseRepository releases, ProposalReleaseDraftRepository drafts, IdentityService identity,
+			ApplicationEventPublisher events) {
 		this.setup = setup;
 		this.review = review;
 		this.access = access;
@@ -70,6 +76,7 @@ public class OutcomeService {
 		this.assessments = assessments;
 		this.decisions = decisions;
 		this.releases = releases;
+		this.drafts = drafts;
 		this.identity = identity;
 		this.events = events;
 	}
@@ -124,6 +131,23 @@ public class OutcomeService {
 	}
 
 	/**
+	 * Keeps the emails of a release as an operator is writing them, so that they are there when the page is opened
+	 * again. A subject or a message may be empty; nothing is sent.
+	 * @throws ProposalException when the program takes no applications or its outcomes were released
+	 */
+	@Transactional
+	public ReleaseEmails keepDraft(Actor actor, UUID programId, ReleaseDraftRequest request) {
+		Operator operator = access.operator(actor);
+		ApplicationForm form = setup.form(programId);
+		review.requireNotReleased(form);
+		ProposalReleaseDraft draft = drafts.findById(programId).orElseGet(() -> new ProposalReleaseDraft(programId));
+		draft.write(request.shortlistedSubject(), request.shortlistedMessage(), request.notSelectedSubject(),
+				request.notSelectedMessage(), operator.accountId(), Instant.now());
+		drafts.save(draft);
+		return emails(draft);
+	}
+
+	/**
 	 * Releases the outcomes of a program: each applicant gets their group's email once this has committed, and sees
 	 * their outcome on BeyondPilot. It happens once.
 	 * @throws ProposalException when the program takes no applications, its applications have not closed, an
@@ -145,6 +169,8 @@ public class OutcomeService {
 		releases.saveAndFlush(new ProposalRelease(programId, now, operator.accountId(), emails.shortlistedSubject().strip(),
 				emails.shortlistedMessage().strip(), emails.notSelectedSubject().strip(),
 				emails.notSelectedMessage().strip()));
+		// What was sent is the release's; the draft it was written in has no use left.
+		drafts.deleteById(programId);
 		Map<UUID, Person> applicants = identity.people(submitted.stream().map(Proposal::getAccountId).toList());
 		List<OutcomesReleased.Outcome> outcomes = new ArrayList<>();
 		int shortlisted = 0;
@@ -198,9 +224,14 @@ public class OutcomeService {
 				&& !submitted.isEmpty();
 		return new ReleaseResponse(review.head(form, reviewing), ready, shortlisted, notSelected, undecided,
 				proposals.countByProgramIdAndStatus(form.programId(), Proposal.WITHDRAWN),
-				released == null ? starting(form) : new ReleaseEmails(released.getShortlistedSubject(),
-						released.getShortlistedMessage(), released.getNotSelectedSubject(),
-						released.getNotSelectedMessage()));
+				released == null ? drafts.findById(form.programId()).map(OutcomeService::emails).orElseGet(() -> starting(form))
+						: new ReleaseEmails(released.getShortlistedSubject(), released.getShortlistedMessage(),
+								released.getNotSelectedSubject(), released.getNotSelectedMessage()));
+	}
+
+	private static ReleaseEmails emails(ProposalReleaseDraft draft) {
+		return new ReleaseEmails(draft.getShortlistedSubject(), draft.getShortlistedMessage(),
+				draft.getNotSelectedSubject(), draft.getNotSelectedMessage());
 	}
 
 	/** The emails an operator starts from, in the words of the program. */

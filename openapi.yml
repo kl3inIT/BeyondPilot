@@ -6029,6 +6029,66 @@ paths:
       summary: Release a program's outcomes to every applicant
       tags:
       - Review
+  /api/proposal/review/programs/{programId}/release/draft:
+    put:
+      operationId: keepReleaseDraft
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReleaseDraftRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReleaseEmails"
+          description: The emails as kept.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A subject or a message is longer than it may be.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The outcomes were released.
+      security:
+      - session: []
+      summary: Keep the emails of a release as they are being written; nothing is
+        sent
+      tags:
+      - Review
   /api/proposal/review/programs/{programId}/reviewers:
     get:
       operationId: listReviewers
@@ -16630,7 +16690,8 @@ components:
       properties:
         emails:
           $ref: "#/components/schemas/ReleaseEmails"
-          description: "The emails as they were sent, or a starting point until then."
+          description: "The emails as they were sent; until then, as an operator last\
+            \ wrote them, or a starting point."
         head:
           $ref: "#/components/schemas/ReviewHead"
         notSelected:
@@ -16661,6 +16722,32 @@ components:
       - shortlisted
       - undecided
       - withdrawn
+    ReleaseDraftRequest:
+      type: object
+      description: The email of each group as it is being written. A subject or a
+        message may be empty until the release.
+      properties:
+        notSelectedMessage:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        notSelectedSubject:
+          type: string
+          maxLength: 200
+          minLength: 0
+        shortlistedMessage:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        shortlistedSubject:
+          type: string
+          maxLength: 200
+          minLength: 0
+      required:
+      - notSelectedMessage
+      - notSelectedSubject
+      - shortlistedMessage
+      - shortlistedSubject
     ReleaseEmails:
       type: object
       description: "The email each group gets. {organization} and {solution} are filled\
