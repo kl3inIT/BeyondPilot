@@ -66,6 +66,21 @@ export function useCaseRoute(id: string) {
   return `${siteRoutes.useCases}/${id}`;
 }
 
+/** The form in which a provider sends a proposal to a use case; signing in comes first and returns here. */
+export function useCaseProposeRoute(id: string) {
+  return `${useCaseRoute(id)}/propose`;
+}
+
+/** The proposals a use case received, as the organization that posted it reads them. */
+export function workspaceUseCaseProposalsRoute(id: string) {
+  return `${siteRoutes.workspaceUseCases}/${id}/proposals`;
+}
+
+/** One proposal a use case received, as the organization that posted it reads it. */
+export function workspaceUseCaseProposalRoute(useCaseId: string, proposalId: string) {
+  return `${workspaceUseCaseProposalsRoute(useCaseId)}/${proposalId}`;
+}
+
 /** The solutions matched to a use case, as its organization reads them. */
 export function workspaceUseCaseCandidatesRoute(id: string) {
   return `${siteRoutes.workspaceUseCases}/${id}/candidates`;

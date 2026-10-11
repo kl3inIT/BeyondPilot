@@ -5,6 +5,7 @@ import { WorkspaceFrame } from "@/components/layout/workspace-frame";
 import { readMembers, readMyOrganization } from "@/features/organization/organization-queries";
 import { readMySolutions } from "@/features/solution/solution-queries";
 import { MyUseCasesPage } from "@/features/usecase/my-use-cases-page";
+import { readProposalCounts } from "@/features/proposal/received-queries";
 import { hasUseCases, readMyUseCases } from "@/features/usecase/my-use-case-queries";
 import { getPathname } from "@/i18n/navigation";
 import { requireAccount } from "@/lib/auth/session";
@@ -34,6 +35,12 @@ export default async function OrganizationUseCasesRoute({
   }
   const [useCases, solutions] = await Promise.all([readMyUseCases(), readMySolutions()]);
 
+  // The counts are public data beside the list; the list shows without them when they cannot be read.
+  const published = useCases.items
+    .filter((useCase) => useCase.status === "approved" || useCase.status === "closed")
+    .map((useCase) => useCase.id);
+  const proposals = await readProposalCounts(published).catch(() => null);
+
   return (
     <WorkspaceFrame>
       <MyUseCasesPage
@@ -41,6 +48,7 @@ export default async function OrganizationUseCasesRoute({
         useCases={useCases}
         members={members?.total ?? 0}
         solutions={solutions?.items.length ?? null}
+        proposals={proposals}
       />
     </WorkspaceFrame>
   );

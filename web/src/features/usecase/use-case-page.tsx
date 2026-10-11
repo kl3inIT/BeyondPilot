@@ -1,6 +1,5 @@
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
-import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -10,6 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { ProposalActions } from "@/features/proposal/proposal-actions";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
@@ -57,11 +57,12 @@ function Fact({ label, value }: FactProps) {
 }
 
 /**
- * The public brief of one open use case. The proposal controls mirror the approved design but stay
- * inert until their server-backed capabilities exist.
+ * The public brief of one open use case, with how many proposals it received and the actions to
+ * send one. `proposals` is null when the count could not be read: the page shows without it.
  */
-function UseCasePage({ useCase }: { useCase: PublicUseCase }) {
+function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals: number | null }) {
   const t = useTranslations("UseCases");
+  const p = useTranslations("UseCaseProposal.actions");
   const industryName = useVocabulary("industry");
   const technologyName = useVocabulary("technology");
   const format = useFormatter();
@@ -148,13 +149,7 @@ function UseCasePage({ useCase }: { useCase: PublicUseCase }) {
         <Fact label={t("budget.label")} value={budget} />
         <Fact label={t("timeline.label")} value={timeline} />
         <Fact label={t("detail.applyBy")} value={deadline} />
-        <Fact
-          label={t("detail.published")}
-          value={format.dateTime(new Date(useCase.publishedAt), {
-            dateStyle: "medium",
-            timeZone: "Asia/Ho_Chi_Minh",
-          })}
-        />
+        {proposals !== null && <Fact label={p("proposals")} value={String(proposals)} />}
       </dl>
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start xl:gap-12">
@@ -185,26 +180,7 @@ function UseCasePage({ useCase }: { useCase: PublicUseCase }) {
             <Badge variant="success">{t("detail.open.status")}</Badge>
             <span className="text-sm text-muted-foreground">{proposalDeadline}</span>
           </div>
-          <div className="flex flex-col gap-2">
-            <Button
-              aria-disabled="true"
-              tabIndex={-1}
-              className="pointer-events-none w-full"
-              size="lg"
-            >
-              {t("detail.open.send")}
-            </Button>
-            <Button
-              aria-disabled="true"
-              tabIndex={-1}
-              className="pointer-events-none w-full"
-              prominence="secondary"
-              size="lg"
-            >
-              {t("detail.open.save")}
-            </Button>
-          </div>
-          <p className="text-xs leading-5 text-muted-foreground">{t("detail.open.note")}</p>
+          <ProposalActions useCaseId={useCase.id} closesAt={useCase.closesAt} />
         </aside>
       </div>
     </div>

@@ -8,7 +8,9 @@ import { OrganizationFrame } from "@/features/organization/organization-frame";
 import { OrganizationSection } from "@/features/organization/organization-section";
 import { Link } from "@/i18n/navigation";
 import type { MyOrganization, MyUseCases, Organization } from "@/lib/api/generated";
-import { siteRoutes } from "@/lib/site";
+import { siteRoutes, workspaceUseCaseProposalsRoute } from "@/lib/site";
+
+import { proposalsShown } from "@/features/proposal/received-proposals";
 
 import { MyUseCaseActions } from "./my-use-case-actions";
 import { PostUseCase } from "./post-use-case";
@@ -21,6 +23,8 @@ type MyUseCasesPageProps = {
   members: number;
   /** How many solutions it has, when it is a provider as well. */
   solutions: number | null;
+  /** How many proposals each published use case received; null when the count could not be read. */
+  proposals: Map<string, number> | null;
 };
 
 /** The statuses a use case is counted under, in the order the summary says them. */
@@ -31,8 +35,9 @@ const statuses = ["approved", "in_review", "needs_changes", "draft", "closed"] a
  * stands. Every member reads, writes and sends them; the tab opens the draft of a use case, or the
  * use case as it stands when it can no longer be changed.
  */
-function MyUseCasesPage({ mine, useCases, members, solutions }: MyUseCasesPageProps) {
+function MyUseCasesPage({ mine, useCases, members, solutions, proposals }: MyUseCasesPageProps) {
   const t = useTranslations("Organization.useCases");
+  const p = useTranslations("UseCaseProposal.received");
   const format = useFormatter();
   const day = (instant: string) =>
     format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
@@ -48,6 +53,7 @@ function MyUseCasesPage({ mine, useCases, members, solutions }: MyUseCasesPagePr
           ? t(`note.${useCase.status}`, { date })
           : t(`note.${useCase.status}`);
     const editor = useCase.lastEditedBy;
+    const received = proposalsShown(useCase.status, proposals?.get(useCase.id));
 
     return {
       id: useCase.id,
@@ -68,8 +74,21 @@ function MyUseCasesPage({ mine, useCases, members, solutions }: MyUseCasesPagePr
           {editor.you ? t("you") : editor.genaiFund ? t("genaiFund") : editor.name}
         </span>
       ),
+      proposals:
+        received === null || proposals === null ? (
+          <span aria-label={p("none")} className="text-muted-foreground">
+            –
+          </span>
+        ) : (
+          <Link
+            href={workspaceUseCaseProposalsRoute(useCase.id)}
+            className="rounded-sm text-sm outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            {p("count", { count: received })}
+          </Link>
+        ),
       updated: <span className="text-muted-foreground">{day(useCase.updatedAt)}</span>,
-      actions: <MyUseCaseActions useCase={useCase} />,
+      actions: <MyUseCaseActions useCase={useCase} viewProposals={received !== null} />,
     };
   });
 
@@ -109,6 +128,7 @@ function MyUseCasesPage({ mine, useCases, members, solutions }: MyUseCasesPagePr
                 <TableRow>
                   <TableHead>{t("columns.useCase")}</TableHead>
                   <TableHead className="w-36">{t("columns.status")}</TableHead>
+                  <TableHead className="w-32">{p("column")}</TableHead>
                   <TableHead className="w-36">{t("columns.editedBy")}</TableHead>
                   <TableHead className="w-32">{t("columns.updated")}</TableHead>
                   <TableHead className="w-12">
@@ -121,6 +141,7 @@ function MyUseCasesPage({ mine, useCases, members, solutions }: MyUseCasesPagePr
                   <TableRow key={row.id}>
                     <TableCell className="max-w-0">{row.title}</TableCell>
                     <TableCell>{row.status}</TableCell>
+                    <TableCell>{row.proposals}</TableCell>
                     <TableCell>{row.editedBy}</TableCell>
                     <TableCell>{row.updated}</TableCell>
                     <TableCell>
@@ -141,6 +162,7 @@ function MyUseCasesPage({ mine, useCases, members, solutions }: MyUseCasesPagePr
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                     {row.status}
+                    {row.proposals}
                     {row.editedBy}
                     {row.updated}
                   </div>

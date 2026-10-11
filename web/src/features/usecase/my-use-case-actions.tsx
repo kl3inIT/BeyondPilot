@@ -16,12 +16,14 @@ import {
 import { useNotify } from "@/hooks/use-notify";
 import { Link, useRouter } from "@/i18n/navigation";
 import { moveMyUseCaseToDraft, type MyUseCaseSummary } from "@/lib/api/generated";
-import { siteRoutes } from "@/lib/site";
+import { siteRoutes, workspaceUseCaseProposalsRoute } from "@/lib/site";
 
 import { describeUseCaseError } from "./my-use-case-errors";
 
 type MyUseCaseActionsProps = {
   useCase: Pick<MyUseCaseSummary, "id" | "status" | "title">;
+  /** Whether the use case was published, so that it can have received proposals. */
+  viewProposals: boolean;
 };
 
 /**
@@ -29,8 +31,9 @@ type MyUseCaseActionsProps = {
  * is edited, one in review is opened and can be pulled back, a published one is edited after a
  * warning that GenAI Fund reviews it again, or moved back to a draft, and a closed one is only opened.
  */
-function MyUseCaseActions({ useCase }: MyUseCaseActionsProps) {
+function MyUseCaseActions({ useCase, viewProposals }: MyUseCaseActionsProps) {
   const t = useTranslations("Organization.useCases");
+  const p = useTranslations("UseCaseProposal.received");
   const notify = useNotify();
   const router = useRouter();
   const [confirming, setConfirming] = useState<"edit" | "draft" | null>(null);
@@ -82,6 +85,11 @@ function MyUseCaseActions({ useCase }: MyUseCaseActionsProps) {
             {(inReview || status === "closed") && (
               <DropdownMenuItem render={<Link href={address} />}>
                 {t("actions.view")}
+              </DropdownMenuItem>
+            )}
+            {viewProposals && (
+              <DropdownMenuItem render={<Link href={workspaceUseCaseProposalsRoute(useCase.id)} />}>
+                {p("viewProposals")}
               </DropdownMenuItem>
             )}
             {published && (

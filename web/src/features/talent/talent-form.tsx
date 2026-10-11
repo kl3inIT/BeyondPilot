@@ -86,6 +86,18 @@ type TalentFormProps = {
   profile: TalentProfile | null;
   /** The name to start a new profile with, from the caller's account. */
   suggestedName: string;
+  /**
+   * Set when a step of a proposal holds the form: it is drawn without its own card, review wording and
+   * actions, and its foot goes back, saves and leaves, or saves and goes on once a review would have
+   * what it needs.
+   */
+  embedded?: Embedded;
+};
+
+type Embedded = {
+  onBack: () => void;
+  onLeave: () => void;
+  onContinue: () => void;
 };
 
 /** What the form holds for a profile as it was last saved, or for none. */
@@ -135,8 +147,9 @@ function saved(profile: TalentProfile | null, suggestedName: string) {
  * combobox that narrows as one types (industries, languages), and skills are free words kept as
  * tags.
  */
-function TalentForm({ profile, suggestedName }: TalentFormProps) {
+function TalentForm({ profile, suggestedName, embedded }: TalentFormProps) {
   const t = useTranslations("Talent.form");
+  const p = useTranslations("UseCaseProposal.wizard.profile");
   const role = useVocabulary("talentRole");
   const engagement = useVocabulary("engagement");
   const rateBand = useVocabulary("rateBand");
@@ -223,7 +236,8 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
     focusField(`project-title-${nextKey}`);
   }
 
-  async function save(thenSubmit: boolean) {
+  /** Saves the form; true when it was saved, and sent for review too when that was asked. */
+  async function save(thenSubmit: boolean): Promise<boolean> {
     const missing = new Set<string>(text.name.trim() ? [] : ["name"]);
     if (projects.some((project) => !project.title.trim())) {
       missing.add("projects");
@@ -240,7 +254,7 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
           ? "Talent.errors.REQUEST_INVALID"
           : "Talent.errors.TALENT_INCOMPLETE",
       );
-      return;
+      return false;
     }
     setPending(thenSubmit ? "submit" : "save");
     try {
@@ -274,13 +288,17 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
       if (thenSubmit) {
         await submitMyTalentProfile();
       }
-      notify.success(thenSubmit ? "Talent.done.submitted" : "Talent.done.saved");
+      if (!embedded) {
+        notify.success(thenSubmit ? "Talent.done.submitted" : "Talent.done.saved");
+      }
       router.refresh();
+      return true;
     } catch (error) {
       setInvalid(rejectedFields(error));
       notify.error(talentError(error));
       // The save may have gone through before the submission was refused; the page shows which.
       router.refresh();
+      return false;
     } finally {
       setPending(null);
     }
@@ -307,11 +325,36 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
   ];
   const group = "border-t pt-6 text-lg font-semibold";
 
+  /** The step goes on once the profile has what a proposal asks and what changed is saved. */
+  async function carryOn() {
+    const lackingNow = missingForReview();
+    if (lackingNow.size > 0) {
+      setInvalid(lackingNow);
+      focusField(
+        reviewFields.find((entry) => lackingNow.has(entry.field))?.id ?? "talent-headline",
+      );
+      return;
+    }
+    if (!dirty || (await save(false))) {
+      embedded?.onContinue();
+    }
+  }
+
+  async function leave() {
+    if (!dirty || (await save(false))) {
+      embedded?.onLeave();
+    }
+  }
+
   return (
     <form
       noValidate
       aria-labelledby="talent-form-title"
-      className="flex flex-col gap-7 rounded-3xl border bg-card p-5 md:p-10"
+      className={
+        embedded
+          ? "flex flex-col gap-7"
+          : "flex flex-col gap-7 rounded-3xl border bg-card p-5 md:p-10"
+      }
       onSubmit={(event) => {
         event.preventDefault();
         void save(false);
@@ -736,56 +779,101 @@ function TalentForm({ profile, suggestedName }: TalentFormProps) {
         ))}
       </RadioGroup>
 
-      {submittable && (
-        <ReviewReadiness
-          missingTitle={t("readiness.missing")}
-          readyTitle={t("readiness.ready")}
-          note={t("readiness.note")}
-          missing={toAdd}
-          refused={invalid.has("name") || reviewFields.some((entry) => invalid.has(entry.field))}
-        />
-      )}
+      {embedded
+        ? toAdd.length > 0 && (
+            <ReviewReadiness
+              missingTitle={p("readiness.missing")}
+              readyTitle={p("readiness.missing")}
+              note={p("readiness.note")}
+              missing={toAdd}
+              refused={reviewFields.some((entry) => invalid.has(entry.field))}
+            />
+          )
+        : submittable && (
+            <ReviewReadiness
+              missingTitle={t("readiness.missing")}
+              readyTitle={t("readiness.ready")}
+              note={t("readiness.note")}
+              missing={toAdd}
+              refused={
+                invalid.has("name") || reviewFields.some((entry) => invalid.has(entry.field))
+              }
+            />
+          )}
 
-      <div className="sticky bottom-0 z-10 -mx-5 -mb-5 flex flex-wrap items-center gap-3 rounded-b-3xl border-t bg-card px-5 py-4 md:-mx-10 md:-mb-10 md:px-10 md:py-6">
-        {submittable && (
+      {embedded && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
           <Button
-            type="submit"
             prominence="tertiary"
             size="lg"
-            pending={pending === "save"}
-            disabled={pending !== null || !dirty}
+            disabled={pending !== null}
+            onClick={() => void leave()}
           >
-            {t("saveDraft")}
+            {p("saveAndReturn")}
           </Button>
-        )}
-        {dirty && <span className="text-sm text-muted-foreground">{t("unsaved")}</span>}
-        <div className="ml-auto flex flex-wrap items-center gap-3">
-          {submittable && toAdd.length > 0 && (
-            <TextButton className="max-sm:hidden" onClick={() => focusField(toAdd[0].id)}>
-              {t("readiness.count", { count: toAdd.length })}
-            </TextButton>
-          )}
-          {submittable ? (
+          <div className="flex items-center gap-3">
+            <Button
+              prominence="tertiary"
+              size="lg"
+              disabled={pending !== null}
+              onClick={embedded.onBack}
+            >
+              {p("back")}
+            </Button>
             <Button
               size="lg"
-              pending={pending === "submit"}
+              pending={pending === "save"}
               disabled={pending !== null}
-              onClick={() => save(true)}
+              onClick={() => void carryOn()}
             >
-              {t(returned ? "resubmit" : "submit")}
+              {p("continue")}
             </Button>
-          ) : (
+          </div>
+        </div>
+      )}
+
+      {!embedded && (
+        <div className="sticky bottom-0 z-10 -mx-5 -mb-5 flex flex-wrap items-center gap-3 rounded-b-3xl border-t bg-card px-5 py-4 md:-mx-10 md:-mb-10 md:px-10 md:py-6">
+          {submittable && (
             <Button
               type="submit"
+              prominence="tertiary"
               size="lg"
               pending={pending === "save"}
               disabled={pending !== null || !dirty}
             >
-              {t("save")}
+              {t("saveDraft")}
             </Button>
           )}
+          {dirty && <span className="text-sm text-muted-foreground">{t("unsaved")}</span>}
+          <div className="ml-auto flex flex-wrap items-center gap-3">
+            {submittable && toAdd.length > 0 && (
+              <TextButton className="max-sm:hidden" onClick={() => focusField(toAdd[0].id)}>
+                {t("readiness.count", { count: toAdd.length })}
+              </TextButton>
+            )}
+            {submittable ? (
+              <Button
+                size="lg"
+                pending={pending === "submit"}
+                disabled={pending !== null}
+                onClick={() => save(true)}
+              >
+                {t(returned ? "resubmit" : "submit")}
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                size="lg"
+                pending={pending === "save"}
+                disabled={pending !== null || !dirty}
+              >
+                {t("save")}
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       <LeaveGuard
         active={dirty}
         title={t("leave.title")}
