@@ -4,7 +4,8 @@ import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
-import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
@@ -17,7 +18,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminSolutionList, AdminSolutionSummary } from "@/lib/api/generated";
@@ -128,64 +128,54 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
       <SolutionsToolbar list="admin" organizationOptions={solutions.organizations} />
 
       {/* From 768px: a table. The sender gives way first, then the organization joins the solution. */}
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("columns.solution")}</TableHead>
-            <TableHead className="hidden lg:table-cell">{t("columns.organization")}</TableHead>
-            <TableHead>{t("columns.status")}</TableHead>
-            <TableHead className="hidden xl:table-cell">{t("columns.sentBy")}</TableHead>
-            <TableHead>{t("columns.waiting")}</TableHead>
-            <TableHead>
-              <span className="sr-only">{t("columns.actions")}</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              {/* The one column that gives its width up: a long name or summary is cut, not wrapped. */}
-              <TableCell className="w-full max-w-0">
-                <div className="flex min-w-0 items-center gap-3">
-                  <SolutionLogo name={row.name} fileId={row.logoFileId} size="row" />
-                  <div className="flex min-w-0 flex-col">
-                    <Link
-                      href={row.href}
-                      className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-                    >
-                      {row.name}
-                    </Link>
-                    <span className="truncate text-muted-foreground lg:hidden">
-                      {row.organization}
+      <DataTableRows
+        className="hidden md:flex"
+        columns={[
+          // The one column that gives its width up: a long name or summary is cut, not wrapped.
+          { id: "solution", header: t("columns.solution"), layout: { fill: true } },
+          { id: "organization", header: t("columns.organization"), layout: { from: "lg" } },
+          { id: "status", header: t("columns.status") },
+          { id: "sentBy", header: t("columns.sentBy"), layout: { from: "xl" } },
+          { id: "waiting", header: t("columns.waiting") },
+          { id: "actions", header: <span className="sr-only">{t("columns.actions")}</span> },
+        ]}
+        rows={rows.map((row) => ({
+          id: row.id,
+          cells: {
+            solution: (
+              <div className="flex min-w-0 items-center gap-3">
+                <SolutionLogo name={row.name} fileId={row.logoFileId} size="row" />
+                <div className="flex min-w-0 flex-col">
+                  <Link
+                    href={row.href}
+                    className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                  >
+                    {row.name}
+                  </Link>
+                  <span className="truncate text-muted-foreground lg:hidden">
+                    {row.organization}
+                  </span>
+                  {row.summary && (
+                    <span className="hidden truncate text-muted-foreground lg:block">
+                      {row.summary}
                     </span>
-                    {row.summary && (
-                      <span className="hidden truncate text-muted-foreground lg:block">
-                        {row.summary}
-                      </span>
-                    )}
-                  </div>
+                  )}
                 </div>
-              </TableCell>
-              <TableCell className="hidden lg:table-cell">{row.organization}</TableCell>
-              <TableCell>{row.status}</TableCell>
-              <TableCell className="hidden xl:table-cell">{row.sender}</TableCell>
-              <TableCell>
-                <span className="text-muted-foreground">{row.submitted}</span>
-              </TableCell>
-              <TableCell>
-                <div className="flex justify-end">
-                  <RowMenu solution={row.solution} />
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-          {empty && (
-            <TableRow>
-              <TableCell colSpan={6}>{empty}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </DataTable>
+              </div>
+            ),
+            organization: row.organization,
+            status: row.status,
+            sentBy: row.sender,
+            waiting: <span className="text-muted-foreground">{row.submitted}</span>,
+            actions: (
+              <div className="flex justify-end">
+                <RowMenu solution={row.solution} />
+              </div>
+            ),
+          },
+        }))}
+        empty={empty}
+      />
 
       {/* Below 768px: one stacked row per solution, never a table scrolled sideways. */}
       <ul className="overflow-hidden rounded-lg border md:hidden">

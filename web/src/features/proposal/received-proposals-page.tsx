@@ -2,9 +2,9 @@ import { ArrowLeftIcon, InboxIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
-import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { Status } from "@/components/composites/status";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 import { Link } from "@/i18n/navigation";
 import type { ReceivedUseCaseProposals } from "@/lib/api/generated";
@@ -112,24 +112,19 @@ function ReceivedProposalsPage({ proposals }: ReceivedProposalsPageProps) {
         ) : (
           <>
             {/* From 768px: a table. */}
-            <DataTable className="hidden bg-background md:block">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("list.columns.proposal")}</TableHead>
-                  <TableHead className="w-36">{t("list.columns.status")}</TableHead>
-                  <TableHead className="w-36">{t("list.columns.sent")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell className="max-w-0">{row.proposal}</TableCell>
-                    <TableCell>{row.status}</TableCell>
-                    <TableCell>{row.sent}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </DataTable>
+            <DataTableRows
+              className="hidden md:flex"
+              surface
+              columns={[
+                { id: "proposal", header: t("list.columns.proposal"), layout: { fill: true } },
+                { id: "status", header: t("list.columns.status"), layout: { width: "md" } },
+                { id: "sent", header: t("list.columns.sent"), layout: { width: "md" } },
+              ]}
+              rows={rows.map((row) => ({
+                id: row.id,
+                cells: { proposal: row.proposal, status: row.status, sent: row.sent },
+              }))}
+            />
 
             {/* Below 768px: one stacked row per proposal, never a table scrolled sideways. */}
             <ul className="overflow-hidden rounded-lg border bg-background md:hidden">
