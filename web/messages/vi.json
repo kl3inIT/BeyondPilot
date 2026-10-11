@@ -4888,7 +4888,7 @@
       "title": "Nhân lực AI",
       "lead": "Kỹ sư và người xây dựng triển khai AI cho doanh nghiệp.",
       "create": "Tạo hồ sơ nhân lực",
-      "count": "Hiển thị {shown}/{total}",
+      "count": "Đang hiện {shown} trên {total}",
       "total": "{count} người",
       "more": "+{count}",
       "allSkills": "Xem cả {count} kỹ năng",
@@ -6435,11 +6435,9 @@
     },
     "industry": {
       "label": "Ngành",
-      "all": "Tất cả bài toán",
-      "placeholder": "Lọc theo ngành",
-      "empty": "Không có ngành phù hợp.",
-      "remove": "Bỏ {industry}",
-      "clear": "Xóa tất cả"
+      "all": "Mọi ngành",
+      "chosen": "{count, number} ngành",
+      "clear": "Xóa bộ lọc"
     },
     "technology": {
       "label": "Công nghệ AI liên quan",
@@ -6487,6 +6485,7 @@
       }
     },
     "count": "{count, plural, =0 {Không có bài toán nào} other {# bài toán}}",
+    "showing": "Đang hiện {shown} trên {total}",
     "empty": {
       "title": "Không có bài toán nào khớp",
       "clear": "Xóa từ khóa và bộ lọc"

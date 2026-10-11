@@ -4,8 +4,8 @@ import { useTranslations } from "next-intl";
 import { debounce, useQueryStates } from "nuqs";
 import { useTransition } from "react";
 
-import { DirectorySearch } from "@/components/composites/directory-search";
 import { DirectorySortSelect } from "@/components/composites/directory-sort";
+import { DirectoryToolbar } from "@/components/composites/directory-toolbar";
 import {
   Select,
   SelectContent,
@@ -39,18 +39,24 @@ function TalentFilters({ count }: TalentFiltersProps) {
   ];
 
   return (
-    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
-      <DirectorySearch
-        label={t("search")}
-        value={search.q}
-        loading={loading}
-        onChange={(q) =>
+    <DirectoryToolbar
+      search={{
+        label: t("search"),
+        value: search.q,
+        loading,
+        onChange: (q) =>
           setSearch(
             { q, page: null },
             { limitUrlUpdates: q ? debounce(SEARCH_DELAY_MS) : undefined },
-          )
-        }
-      />
+          ),
+      }}
+      count={count}
+      clear={
+        search.role === null
+          ? undefined
+          : { label: t("clear"), onClick: () => setSearch({ role: null, page: null }) }
+      }
+    >
       <Select
         items={roles}
         value={search.role}
@@ -58,7 +64,7 @@ function TalentFilters({ count }: TalentFiltersProps) {
           setSearch({ role: talentRoles.find((role) => role === value) ?? null, page: null })
         }
       >
-        <SelectTrigger size="lg" aria-label={t("role.label")} className="w-full md:w-72">
+        <SelectTrigger size="lg" aria-label={t("role.label")} className="w-full md:w-60">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -71,15 +77,12 @@ function TalentFilters({ count }: TalentFiltersProps) {
           </SelectGroup>
         </SelectContent>
       </Select>
-      <div className="flex shrink-0 items-center justify-between gap-3 md:justify-end">
-        {count && <p className="text-sm text-muted-foreground">{count}</p>}
-        <DirectorySortSelect
-          searching={Boolean(search.q.trim())}
-          value={search.sort}
-          onChange={(sort) => setSearch({ sort, page: null })}
-        />
-      </div>
-    </div>
+      <DirectorySortSelect
+        searching={Boolean(search.q.trim())}
+        value={search.sort}
+        onChange={(sort) => setSearch({ sort, page: null })}
+      />
+    </DirectoryToolbar>
   );
 }
 

@@ -15,20 +15,20 @@ import { directorySorts, type DirectorySort } from "@/lib/directory-sort";
 type DirectorySortSelectProps = {
   value: DirectorySort | null;
   searching?: boolean;
+  /** The list has no order to choose now; the select keeps its place and cannot be opened. */
+  disabled?: boolean;
   onChange: (value: DirectorySort | null) => void;
-  /** Optional layout classes for a directory-specific toolbar. */
-  className?: string;
 };
 
 /**
- * The order of a public directory, beside its count. The directory owns the value, which is its
- * URL. The select sits on a white ground because a directory's floor may be tinted.
+ * The order of a public directory, of one width whatever it reads. The directory owns the value,
+ * which is its URL. The select sits on a white ground because a directory's floor may be tinted.
  */
 function DirectorySortSelect({
   value,
   searching = false,
+  disabled = false,
   onChange,
-  className,
 }: DirectorySortSelectProps) {
   const t = useTranslations("Lists.sort");
   const items = [
@@ -37,13 +37,14 @@ function DirectorySortSelect({
   ];
 
   return (
-    <div className="rounded-lg bg-background">
+    <div className="rounded-lg bg-background md:w-44">
       <Select
         items={items}
+        disabled={disabled}
         value={value ?? (searching ? "relevance" : directorySorts[0])}
         onValueChange={(next) => onChange(directorySorts.find((sort) => sort === next) ?? null)}
       >
-        <SelectTrigger size="lg" aria-label={t("label")} className={className}>
+        <SelectTrigger size="lg" aria-label={t("label")} className="w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent align="end">

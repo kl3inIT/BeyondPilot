@@ -4,9 +4,7 @@ import { useTranslations } from "next-intl";
 import { debounce, useQueryStates } from "nuqs";
 import { useTransition } from "react";
 
-import { TextButton } from "@/components/actions/text-button";
-import { ChoiceCombobox } from "@/components/composites/choice-combobox";
-import { DirectorySearch } from "@/components/composites/directory-search";
+import { DirectoryToolbar } from "@/components/composites/directory-toolbar";
 import {
   Select,
   SelectContent,
@@ -15,8 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import { useVocabulary } from "@/i18n/vocabulary";
+
 import { useCaseIndustries } from "./admin-use-case-codes";
 import { useCaseSorts, useCasesSearch } from "./use-cases-search";
 
@@ -27,93 +25,104 @@ function isIndustry(value: string): value is (typeof useCaseIndustries)[number] 
   return useCaseIndustries.some((industry) => industry === value);
 }
 
+type UseCasesToolbarProps = {
+  /** How much of the list shows, already worded: "Showing 12 of 21". Absent when nothing matches. */
+  count: string | null;
+};
+
 /**
  * Search, order and industry of the use case list. They are the URL: a change writes it and the
  * server renders the list again. Typing waits 300 ms before it asks, and any change returns to
- * page 1.
+ * page 1. Several industries may narrow the list at once; the field names one, or says how many.
  */
-function UseCasesToolbar() {
+function UseCasesToolbar({ count }: UseCasesToolbarProps) {
   const t = useTranslations("UseCases");
   const industryName = useVocabulary("industry");
   const [loading, startTransition] = useTransition();
   const [search, setSearch] = useQueryStates(useCasesSearch, { shallow: false, startTransition });
 
+  const industries = useCaseIndustries.map((value) => ({ value, label: industryName(value) }));
   const sorts = [
     ...(search.q.trim() ? [{ value: "relevance", label: t("sort.relevance") }] : []),
     ...useCaseSorts.map((sort) => ({ value: sort, label: t(`sort.${sort}`) })),
   ];
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
-        <DirectorySearch
-          className="md:max-w-none md:flex-1"
-          label={t("search")}
-          value={search.q}
-          loading={loading}
-          onChange={(q) =>
-            setSearch(
-              { q, page: null },
-              { limitUrlUpdates: q ? debounce(SEARCH_DELAY_MS) : undefined },
-            )
-          }
-        />
-        <div className="flex items-start gap-2 md:w-72">
-          <div className="min-w-0 flex-1">
-            <ChoiceCombobox
-              size="lg"
-              label={t("industry.label")}
-              placeholder={t("industry.placeholder")}
-              emptyLabel={t("industry.empty")}
-              removeLabel={(industry) => t("industry.remove", { industry })}
-              options={useCaseIndustries.map((value) => ({ value, label: industryName(value) }))}
-              value={search.industry}
-              onValueChange={(industry) =>
-                setSearch({ industry: industry.filter(isIndustry), page: null })
-              }
-            />
-          </div>
-          {search.industry.length > 0 && (
-            <TextButton
-              className="self-start"
-              size="sm"
-              onClick={() => setSearch({ industry: null, page: null })}
-            >
-              {t("industry.clear")}
-            </TextButton>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground" aria-hidden="true">
-            {t("sort.label")}
-          </span>
-          <Select
-            items={sorts}
-            value={search.sort ?? (search.q.trim() ? "relevance" : "newest")}
-            onValueChange={(value) =>
-              setSearch({
-                sort: useCaseSorts.find((sort) => sort === value) ?? null,
-                page: null,
-              })
+    <DirectoryToolbar
+      search={{
+        label: t("search"),
+        value: search.q,
+        loading,
+        onChange: (q) =>
+          setSearch(
+            { q, page: null },
+            { limitUrlUpdates: q ? debounce(SEARCH_DELAY_MS) : undefined },
+          ),
+      }}
+      count={count}
+      clear={
+        search.industry.length > 0
+          ? {
+              label: t("industry.clear"),
+              onClick: () => setSearch({ industry: null, page: null }),
             }
-          >
-            <SelectTrigger size="lg" aria-label={t("sort.label")} className="w-44">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {sorts.map((sort) => (
-                  <SelectItem key={sort.value} value={sort.value}>
-                    {sort.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-    </div>
+          : undefined
+      }
+    >
+      <Select
+        multiple
+        items={industries}
+        value={search.industry}
+        onValueChange={(industry) =>
+          setSearch({ industry: industry.filter(isIndustry), page: null })
+        }
+      >
+        <SelectTrigger size="lg" aria-label={t("industry.label")} className="w-full md:w-60">
+          <SelectValue>
+            {(chosen: string[]) => {
+              if (chosen.length === 0) {
+                return t("industry.all");
+              }
+              return chosen.length === 1
+                ? industryName(chosen[0])
+                : t("industry.chosen", { count: chosen.length });
+            }}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {industries.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+      <Select
+        items={sorts}
+        value={search.sort ?? (search.q.trim() ? "relevance" : "newest")}
+        onValueChange={(value) =>
+          setSearch({
+            sort: useCaseSorts.find((sort) => sort === value) ?? null,
+            page: null,
+          })
+        }
+      >
+        <SelectTrigger size="lg" aria-label={t("sort.label")} className="w-full md:w-44">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent align="end">
+          <SelectGroup>
+            {sorts.map((sort) => (
+              <SelectItem key={sort.value} value={sort.value}>
+                {sort.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </DirectoryToolbar>
   );
 }
 

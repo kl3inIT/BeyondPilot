@@ -27,6 +27,7 @@ type UseCasesPageProps = {
  */
 async function UseCasesPage({ useCases, search }: UseCasesPageProps) {
   const t = await getTranslations("UseCases");
+  const shown = useCases.items.length;
   const pages = Math.min(
     search.q.trim() ? maxSearchPage : Infinity,
     Math.max(1, Math.ceil(useCases.total / useCases.pageSize)),
@@ -43,9 +44,11 @@ async function UseCasesPage({ useCases, search }: UseCasesPageProps) {
           </h1>
           <p className="max-w-2xl text-lg text-muted-foreground">{t("lead")}</p>
         </div>
-        <UseCasesToolbar />
+        <UseCasesToolbar
+          count={shown > 0 ? t("showing", { shown, total: useCases.total }) : null}
+        />
 
-        {useCases.items.length > 0 ? (
+        {shown > 0 ? (
           <ul className="flex flex-col gap-4">
             {useCases.items.map((useCase) => (
               <UseCaseCard key={useCase.id} useCase={useCase} />

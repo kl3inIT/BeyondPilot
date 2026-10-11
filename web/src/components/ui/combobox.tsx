@@ -194,17 +194,13 @@ function ComboboxSeparator({ className, ...props }: ComboboxPrimitive.Separator.
 
 function ComboboxChips({
   className,
-  size = "sm",
   ...props
-}: React.ComponentPropsWithRef<typeof ComboboxPrimitive.Chips> &
-  ComboboxPrimitive.Chips.Props & { size?: "sm" | "lg" }) {
+}: React.ComponentPropsWithRef<typeof ComboboxPrimitive.Chips> & ComboboxPrimitive.Chips.Props) {
   return (
     <ComboboxPrimitive.Chips
       data-slot="combobox-chips"
-      data-size={size}
       className={cn(
         "flex min-h-8 flex-wrap items-center gap-1 rounded-lg border border-input bg-background bg-clip-padding px-2.5 py-1 text-sm transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 has-aria-invalid:border-destructive has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 has-data-[slot=combobox-chip]:px-1 dark:bg-input/30 dark:has-aria-invalid:border-destructive/50 dark:has-aria-invalid:ring-destructive/40",
-        size === "lg" && "h-12 flex-nowrap overflow-x-auto",
         className,
       )}
       {...props}

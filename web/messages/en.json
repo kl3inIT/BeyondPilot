@@ -6435,11 +6435,9 @@
     },
     "industry": {
       "label": "Industry",
-      "all": "All use cases",
-      "placeholder": "Filter by industry",
-      "empty": "No industry matches.",
-      "remove": "Remove {industry}",
-      "clear": "Clear all"
+      "all": "All industries",
+      "chosen": "{count, number} industries",
+      "clear": "Clear filters"
     },
     "technology": {
       "label": "Relevant AI technologies",
@@ -6487,6 +6485,7 @@
       }
     },
     "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
+    "showing": "Showing {shown} of {total}",
     "empty": {
       "title": "No use cases match",
       "clear": "Clear search and filters"
