@@ -1,5 +1,6 @@
 import { ArrowUpRightIcon, MessageSquareTextIcon, SearchIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 
 import { PreviewBadge } from "@/components/sections/preview-badge";
 import { Section } from "@/components/ui/section";
@@ -12,8 +13,8 @@ const steps = [
 
 const matters = [1, 2, 3] as const;
 const options = [
-  { row: 1, monogram: "PA" },
-  { row: 2, monogram: "IN" },
+  { row: 1, logo: "/landing/logo-papaya.png" },
+  { row: 2, logo: "/landing/logo-infall.png" },
 ] as const;
 
 /**
@@ -88,10 +89,10 @@ function AgentJourney() {
                   {t("demo.options")}
                 </p>
                 <ul className="divide-y rounded-xl border">
-                  {options.map(({ row, monogram }) => (
+                  {options.map(({ row, logo }) => (
                     <li key={row} className="flex gap-3 px-3.5 py-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-card text-sm font-semibold text-solution">
-                        {monogram}
+                      <span className="relative size-9 shrink-0 overflow-hidden rounded-lg border bg-card">
+                        <Image src={logo} alt="" fill sizes="36px" className="object-cover" />
                       </span>
                       <span className="flex min-w-0 flex-col gap-0.5">
                         <span className="text-sm font-semibold">{t(`demo.option${row}Title`)}</span>

@@ -1,18 +1,28 @@
 import { cn } from "cn";
 import { LockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 
 import { PreviewBadge } from "@/components/sections/preview-badge";
 
 const tabs = ["all", "solutions", "useCases", "programs"] as const;
 
-/** Listings a search for "AI agents" returns, one of each kind the site lists for it. */
+/**
+ * Listings a search for "AI agents" returns, one of each kind the site lists for it, each with the
+ * logo of who is behind it. `ink` marks a logo on transparent that turns to one light ink at night.
+ */
 const results = [
-  { id: "revve", kind: "solution", monogram: "RE", ink: "text-solution" },
-  { id: "shieldbase", kind: "solution", monogram: "SH", ink: "text-solution" },
-  { id: "claims", kind: "useCase", monogram: "CC", ink: "text-use-case" },
-  { id: "fasttrack", kind: "program", monogram: "FT", ink: "text-primary" },
+  { id: "revve", kind: "solution", logo: "/landing/logo-revve.jpeg", ink: false },
+  { id: "shieldbase", kind: "solution", logo: "/landing/logo-shieldbase.png", ink: false },
+  { id: "claims", kind: "useCase", logo: "/partners/network/coca-cola.png", ink: true },
+  { id: "fasttrack", kind: "program", logo: "/landing/logo-nvidia.png", ink: true },
 ] as const;
+
+const kindInk = {
+  solution: "text-solution",
+  useCase: "text-use-case",
+  program: "text-primary",
+} as const;
 
 /**
  * What a search returns, drawn in the page rather than shown as a screenshot so it stays legible
@@ -59,18 +69,19 @@ function SearchPreview({ className }: { className?: string }) {
           ))}
         </ul>
         <ul className="divide-y">
-          {results.map(({ id, kind, monogram, ink }) => (
+          {results.map(({ id, kind, logo, ink }) => (
             <li key={id} className="flex gap-4 px-4 py-4 md:px-5">
-              <span
-                className={cn(
-                  "flex size-10 shrink-0 items-center justify-center rounded-lg border bg-card text-sm font-semibold",
-                  ink,
-                )}
-              >
-                {monogram}
+              <span className="relative size-10 shrink-0 overflow-hidden rounded-lg border bg-card">
+                <Image
+                  src={logo}
+                  alt=""
+                  fill
+                  sizes="40px"
+                  className={cn("object-contain", ink && "p-1 dark:brightness-0 dark:invert")}
+                />
               </span>
               <div className="flex min-w-0 flex-col gap-1">
-                <p className={cn("text-xs font-semibold", ink)}>{t(`kinds.${kind}`)}</p>
+                <p className={cn("text-xs font-semibold", kindInk[kind])}>{t(`kinds.${kind}`)}</p>
                 <p className="text-copy font-medium">{t(`${id}.title`)}</p>
                 <p className="line-clamp-2 text-sm text-foreground">{t(`${id}.summary`)}</p>
                 <p className="text-xs text-muted-foreground">{t(`${id}.meta`)}</p>

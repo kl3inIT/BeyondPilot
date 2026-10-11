@@ -56,7 +56,7 @@ function Hero() {
             action={getPathname({ href: siteRoutes.search, locale })}
             className={cn(
               rise,
-              "mt-6 flex h-16 w-full max-w-150 items-center gap-3 rounded-full bg-card pr-2.5 pl-6 shadow-search delay-340 focus-within:ring-3 focus-within:ring-ring/50",
+              "mt-6 flex h-16 w-full max-w-150 items-center gap-3 rounded-full border border-input bg-card pr-2.5 pl-6 shadow-search delay-340 focus-within:ring-3 focus-within:ring-ring/50",
             )}
           >
             <SearchIcon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
