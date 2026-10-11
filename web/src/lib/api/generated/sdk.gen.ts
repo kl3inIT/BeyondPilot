@@ -2197,7 +2197,7 @@ export const listUseCaseProposals = <ThrowOnError extends boolean = true>(option
 /**
  * What matches the query, best first
  *
- * Matches words with or without Vietnamese marks, the start of the last word, and typos in titles.
+ * Matches words, prefixes, title typos and meaning when configured. Directory facets narrow candidates before semantic ranking; explicit directory orders are preserved.
  */
 export const search = <ThrowOnError extends boolean = true>(options: Options<SearchData, ThrowOnError>): RequestResult<SearchResponses, SearchErrors, ThrowOnError> => (options.client ?? client).get<SearchResponses, SearchErrors, ThrowOnError>({ url: '/api/search', ...options });
 

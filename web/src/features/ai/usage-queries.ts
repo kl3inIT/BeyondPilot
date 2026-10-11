@@ -28,6 +28,7 @@ export async function readUsageCalls(search: UsageCallsSearch): Promise<AiUsageC
       model: search.model ?? undefined,
       outcome: search.outcome ?? undefined,
       page: search.page > 1 ? search.page : undefined,
+      size: search.size ?? undefined,
     },
   });
   return data;

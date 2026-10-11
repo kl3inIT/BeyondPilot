@@ -138,6 +138,11 @@ class SearchTest {
 			.exchange()
 			.expectStatus()
 			.isBadRequest();
+		for (String parameter : List.of("industry=INVALID", "focusArea=INVALID", "maturity=unknown",
+				"role=INVALID", "type=unknown", "phase=running", "sort=popular", "size=101",
+				"kind=talent&sort=budget")) {
+			client.get().uri("/api/search?q=agent&" + parameter).exchange().expectStatus().isBadRequest();
+		}
 	}
 
 	private long total(String query) {

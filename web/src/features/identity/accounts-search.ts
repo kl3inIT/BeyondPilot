@@ -1,4 +1,5 @@
 import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import { pageSize } from "@/lib/page-size";
 
 /**
  * What narrows the accounts list, as the URL holds it: `?q=&status=&role=&page=`. The page reads
@@ -10,6 +11,7 @@ export const accountsSearch = {
   status: parseAsStringLiteral(["active", "disabled"]),
   role: parseAsStringLiteral(["user", "operator"]),
   page: parseAsInteger.withDefault(1),
+  size: pageSize,
 };
 
 export const loadAccountsSearch = createLoader(accountsSearch);

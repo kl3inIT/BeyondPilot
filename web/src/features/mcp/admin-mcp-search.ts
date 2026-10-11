@@ -1,4 +1,5 @@
 import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import { pageSize } from "@/lib/page-size";
 
 /** How far back the activity looks; `week` is the default, and calls are kept 90 days. */
 export const mcpPeriods = ["day", "week", "month", "all"] as const;
@@ -17,6 +18,7 @@ export const mcpActivitySearch = {
   tool: parseAsString,
   outcome: parseAsStringLiteral(mcpOutcomes),
   page: parseAsInteger.withDefault(1),
+  size: pageSize,
 };
 
 export const loadMcpActivitySearch = createLoader(mcpActivitySearch);

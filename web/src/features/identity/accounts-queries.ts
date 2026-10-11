@@ -19,6 +19,7 @@ export async function readAccounts(search: AccountsSearch): Promise<AccountList>
       status: search.status ?? undefined,
       role: search.role ?? undefined,
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;

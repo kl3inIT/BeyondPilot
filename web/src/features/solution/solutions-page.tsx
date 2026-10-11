@@ -11,6 +11,7 @@ import { siteRoutes } from "@/lib/site";
 import { SolutionCard } from "./solution-card";
 import { solutionsSearch, type SolutionsSearch } from "./solutions-search";
 import { SolutionsToolbar } from "./solutions-toolbar";
+import { gridPageSizes, maxSearchPage } from "@/lib/page-size";
 
 const address = createSerializer(solutionsSearch);
 
@@ -67,13 +68,16 @@ function SolutionsPage({ solutions, search }: SolutionsPageProps) {
         />
       )}
 
-      {solutions.total > solutions.pageSize && (
+      {(search.size !== null ||
+        solutions.total > Math.min(gridPageSizes[0], solutions.pageSize)) && (
         <ListFooter
           count={t("count", { count: solutions.total })}
           page={solutions.page}
           pageSize={solutions.pageSize}
           total={solutions.total}
           href={(page) => address(siteRoutes.solutions, { ...search, page })}
+          sizes={gridPageSizes}
+          maxPages={search.q.trim() ? maxSearchPage : undefined}
         />
       )}
 

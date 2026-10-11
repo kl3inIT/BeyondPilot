@@ -70,6 +70,14 @@ class UseCaseIndexing {
 		Cards.put(facets, Cards.BUDGET_MAX, useCase.budgetMax());
 		facets.put(Cards.BUDGET_TO_BE_DETERMINED, useCase.budgetToBeDetermined());
 		facets.put(Cards.CURRENCY, useCase.currency());
+		Cards.put(facets, Cards.PUBLISHED_AT, useCase.publishedAt());
+		Cards.put(facets, Cards.BUDGET_USD, useCase.budgetUsd());
+		Cards.put(facets, Cards.TECHNOLOGIES, useCase.technologies());
+		Cards.put(facets, Cards.TIMELINE_MIN_WEEKS, useCase.timelineMinWeeks());
+		Cards.put(facets, Cards.TIMELINE_MAX_WEEKS, useCase.timelineMaxWeeks());
+		Cards.put(facets, Cards.ORGANIZATION_LOGO, useCase.organizationLogoFileId());
+		facets.put(Cards.BUDGET_MEMBERS_ONLY, useCase.budgetMembersOnly());
+		facets.put(Cards.FEATURED, useCase.featured());
 		String keywords = Cards.words(useCase.industry() == null ? List.of() : List.of(useCase.industry()),
 				useCase.technologies());
 		return new Document(SearchDocumentRepository.USE_CASE, useCase.id(), useCase.id().toString(),

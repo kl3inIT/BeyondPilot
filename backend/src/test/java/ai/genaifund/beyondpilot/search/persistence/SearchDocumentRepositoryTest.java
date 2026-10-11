@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
+import ai.genaifund.beyondpilot.search.dto.SearchRequest;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Document;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Hit;
 import org.jspecify.annotations.Nullable;
@@ -82,9 +83,10 @@ class SearchDocumentRepositoryTest {
 	void anUnlistedSolutionReachesMatchingButNoVisitor() {
 		save(SOLUTION, "Fraud Radar", "Gamma", "Flags suspicious claims", false);
 
-		assertThat(index.page("fraud", null, null, true, 12, 0)).isEmpty();
-		assertThat(index.counts("fraud", null, true)).isEmpty();
-		assertThat(index.page("fraud", null, null, false, 12, 0)).extracting(Hit::title).containsExactly("Fraud Radar");
+		assertThat(index.page(SearchRequest.builder("fraud").build(), null, true, 12, 0)).isEmpty();
+		assertThat(index.counts(SearchRequest.builder("fraud").build(), null, true)).isEmpty();
+		assertThat(index.page(SearchRequest.builder("fraud").build(), null, false, 12, 0))
+			.extracting(Hit::title).containsExactly("Fraud Radar");
 	}
 
 	@Test
@@ -94,12 +96,12 @@ class SearchDocumentRepositoryTest {
 		save(SOLUTION, "Insurance Pricing Engine", "Epsilon", "Prices policies", true);
 		save(TALENT, "Lan Nguyen", "Insurance data scientist", "Builds pricing models", true);
 
-		assertThat(index.counts("insurance", null, true)).containsExactlyInAnyOrderEntriesOf(
+		assertThat(index.counts(SearchRequest.builder("insurance").build(), null, true)).containsExactlyInAnyOrderEntriesOf(
 				Map.of(PROGRAM, 1L, SOLUTION, 2L, TALENT, 1L));
-		assertThat(index.page("insurance", null, SOLUTION, true, 12, 0)).extracting(Hit::kind)
+		assertThat(index.page(SearchRequest.builder("insurance").kind(SOLUTION).build(), null, true, 12, 0)).extracting(Hit::kind)
 			.containsOnly(SOLUTION)
 			.hasSize(2);
-		assertThat(index.page("insurance", null, null, true, 2, 2)).hasSize(2);
+		assertThat(index.page(SearchRequest.builder("insurance").build(), null, true, 2, 2)).hasSize(2);
 	}
 
 	@Test
@@ -133,11 +135,11 @@ class SearchDocumentRepositoryTest {
 	void theSnippetMarksTheMatchedWordsAsTheyAreWritten() {
 		save(PROGRAM, "Chương trình Đổi mới Sáng tạo", null, "Doanh nghiệp Việt Nam thử nghiệm AI", true);
 
-		assertThat(index.page("viet nam", null, null, true, 12, 0)).extracting(Hit::snippet)
+		assertThat(index.page(SearchRequest.builder("viet nam").build(), null, true, 12, 0)).extracting(Hit::snippet)
 			.containsExactly("Doanh nghiệp Việt Nam thử nghiệm AI");
 		// A word is marked whole, never inside another word.
 		save(SOLUTION, "GenAI Desk", "Beta", "GenAI tools for AI teams", true);
-		assertThat(index.page("ai teams", null, SOLUTION, true, 12, 0)).extracting(Hit::snippet)
+		assertThat(index.page(SearchRequest.builder("ai teams").kind(SOLUTION).build(), null, true, 12, 0)).extracting(Hit::snippet)
 			.containsExactly("GenAI tools for AI teams");
 	}
 
@@ -149,7 +151,7 @@ class SearchDocumentRepositoryTest {
 		save(SOLUTION, "Underwriting Copilot", "Zeta", "Helps insurance underwriters", true);
 		save(TALENT, "Lan Nguyen", "Data scientist", "Prices insurance risk", true);
 
-		List<Hit> best = index.bestOfEachKind("insurance", null, true, 3);
+		List<Hit> best = index.bestOfEachKind(SearchRequest.builder("insurance").build(), null, true, 3);
 
 		assertThat(best).extracting(Hit::kind).containsExactly(SOLUTION, SOLUTION, SOLUTION, TALENT);
 		assertThat(best).extracting(Hit::title).doesNotContain("Underwriting Copilot");
@@ -169,7 +171,7 @@ class SearchDocumentRepositoryTest {
 	}
 
 	private List<String> titles(String query) {
-		return index.page(query, null, null, true, 12, 0).stream().map(Hit::title).toList();
+		return index.page(SearchRequest.builder(query).build(), null, true, 12, 0).stream().map(Hit::title).toList();
 	}
 
 	private UUID save(String kind, String title, @Nullable String subtitle, String summary, boolean listed) {

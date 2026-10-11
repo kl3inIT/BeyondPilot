@@ -25,8 +25,8 @@ export default async function MatchingFeedbackRoute({
   const { locale } = await params;
   setRequestLocale(locale);
   await requireRole("operator", siteRoutes.adminAiMatchingFeedback);
-  const { page } = await loadMatchingFeedbackSearch(searchParams);
-  const feedback = await readMatchingFeedback(Math.max(1, page)).catch((error: unknown) => {
+  const { page, size } = await loadMatchingFeedbackSearch(searchParams);
+  const feedback = await readMatchingFeedback(Math.max(1, page), size).catch((error: unknown) => {
     // The role was withdrawn, or the session ended, between the check above and this read.
     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
       notFound();
@@ -34,5 +34,5 @@ export default async function MatchingFeedbackRoute({
     throw error;
   });
 
-  return <MatchingFeedbackPage feedback={feedback} />;
+  return <MatchingFeedbackPage feedback={feedback} size={size} />;
 }

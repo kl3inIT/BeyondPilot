@@ -58,7 +58,8 @@ public class McpActivity {
 		Collection<UUID> people = text.isEmpty() ? null : accounts.accountsMatching(text);
 		Filter filter = new Filter(request.from(), request.app(), request.tool(), request.outcome(), people);
 		int page = request.page() == null ? 1 : request.page();
-		List<LoggedCall> found = calls.page(filter, PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
+		int size = request.size() == null ? PAGE_SIZE : request.size();
+		List<LoggedCall> found = calls.page(filter, size, (long) (page - 1) * size);
 		List<String> callers = calls.clientsSince(request.from());
 
 		Set<String> clientIds = new HashSet<>(callers);
@@ -84,7 +85,7 @@ public class McpActivity {
 			.map(tool -> tool.tool().tool().name())
 			.distinct()
 			.toList();
-		return new McpCallListResponse(items, page, PAGE_SIZE, calls.count(filter), appOptions, tools);
+		return new McpCallListResponse(items, page, size, calls.count(filter), appOptions, tools);
 	}
 
 }

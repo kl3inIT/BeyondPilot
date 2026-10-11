@@ -71,6 +71,7 @@ export async function readMcpCalls(search: McpActivitySearch): Promise<McpCallLi
       outcome: search.outcome ?? undefined,
       q: search.q.trim().slice(0, 100) || undefined,
       page: search.page > 1 ? search.page : undefined,
+      size: search.size ?? undefined,
     },
   });
   return data;

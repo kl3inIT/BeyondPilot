@@ -1,6 +1,7 @@
 // What GET /api/search answers in the end-to-end tests: one query, "AI", with programs, solutions and
 // a person; "nothing" finds nothing. Matched words in a snippet are between U+0002 and U+0003, as the
 // backend sends them.
+import { directorySearchItems } from "./stub-directories.mjs";
 
 const mark = (word) => `\u0002${word}\u0003`;
 
@@ -28,6 +29,17 @@ const item = (fields) => ({
   budgetMax: null,
   budgetToBeDetermined: null,
   currency: null,
+  featured: null,
+  backing: null,
+  projectCount: null,
+  leadProjectTitle: null,
+  leadProjectStage: null,
+  budgetMembersOnly: null,
+  publishedAt: null,
+  technologies: [],
+  timelineMinWeeks: null,
+  timelineMaxWeeks: null,
+  organizationLogoFileId: null,
   ...fields,
 });
 
@@ -137,7 +149,7 @@ const results = {
 /** The order of the kinds in the All tab: the kind of the best result first. */
 const kindOrder = ["solution", "program", "talent", "use_case"];
 
-export function answerSearch(url) {
+export function answerSearch(url, programs = {}) {
   if (url.pathname !== "/api/search") {
     return null;
   }
@@ -145,8 +157,42 @@ export function answerSearch(url) {
   if (!q) {
     return [400, { code: "REQUEST_INVALID" }];
   }
+  const kind = url.searchParams.get("kind");
+  const directory = kind && q.toLowerCase() !== "ai" ? directorySearchItems(url) : null;
   const found =
     q.toLowerCase() === "ai" ? results : { solution: [], program: [], talent: [], use_case: [] };
+  if (directory) {
+    found[kind] = directory.map(item);
+  } else if (kind === "program" && q.toLowerCase() !== "ai") {
+    found.program = Object.values(programs)
+      .filter(
+        (program) =>
+          program.status === "published" &&
+          [program.name, program.summary, program.partnerName].some((text) =>
+            text?.toLowerCase().includes(q.toLowerCase()),
+          ) &&
+          (!url.searchParams.get("type") || program.type === url.searchParams.get("type")) &&
+          (!url.searchParams.get("phase") ||
+            program.phase === url.searchParams.get("phase") ||
+            (url.searchParams.get("phase") === "open" && program.phase === "running")),
+      )
+      .map((program) =>
+        item({
+          kind: "program",
+          slug: program.slug,
+          title: program.name,
+          subtitle: program.partnerName,
+          summary: program.summary ?? "",
+          snippet: program.summary ?? "",
+          type: program.type,
+          phase: program.phase,
+          startsOn: program.startsOn,
+          endsOn: program.endsOn,
+          coverFileId: program.coverFileId,
+          externalUrl: program.externalUrl,
+        }),
+      );
+  }
   const counts = {
     all: found.solution.length + found.program.length + found.talent.length + found.use_case.length,
     program: found.program.length,
@@ -154,11 +200,20 @@ export function answerSearch(url) {
     talent: found.talent.length,
     useCase: found.use_case.length,
   };
-  const kind = url.searchParams.get("kind");
   if (kind) {
     const total = kind === "use_case" ? counts.useCase : counts[kind];
     const page = Number(url.searchParams.get("page") ?? "1");
-    return [200, { counts, items: page === 1 ? found[kind] : [], page, pageSize: 12, total }];
+    const pageSize = Number(url.searchParams.get("size") ?? "12");
+    return [
+      200,
+      {
+        counts,
+        items: found[kind].slice((page - 1) * pageSize, page * pageSize),
+        page,
+        pageSize,
+        total,
+      },
+    ];
   }
   return [
     200,

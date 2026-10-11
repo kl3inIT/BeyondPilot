@@ -16,5 +16,5 @@ import org.jspecify.annotations.Nullable;
 public record IndexedProgram(UUID id, String slug, String name, String type, @Nullable String partnerName,
 		@Nullable String summary, @Nullable String about, @Nullable UUID coverFileId, @Nullable String externalUrl,
 		@Nullable LocalDate startsOn, @Nullable LocalDate endsOn, @Nullable Instant applicationsOpenAt,
-		@Nullable Instant applicationsCloseAt) {
+		@Nullable Instant applicationsCloseAt, Instant createdAt) {
 }

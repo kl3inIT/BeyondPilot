@@ -19,13 +19,14 @@ import { cn } from "@/lib/utils";
 import { searchKinds, searchParams, type SearchKind, type SearchParams } from "./search-params";
 import { MAX_QUERY } from "./search-queries";
 import { SearchResult } from "./search-result";
+import { gridPageSizes, maxSearchPage } from "@/lib/page-size";
 
 const address = createSerializer(searchParams);
 
 /** The queries offered when nothing matched, or nothing was asked yet: the landing's popular searches. */
 const popular = ["agentic", "document", "insurance", "retail"] as const;
 
-/** Where each kind is browsed and narrowed further; programs are narrowed by type and phase, not by text. */
+/** Where each kind is browsed and narrowed further by its directory filters. */
 const directories: Record<SearchKind, string> = {
   use_case: siteRoutes.useCases,
   program: siteRoutes.programs,
@@ -78,7 +79,7 @@ function SearchPage({ params, results }: SearchPageProps) {
           <>
             <KindTabs q={q} kind={kind} counts={results.counts} />
             {kind ? (
-              <KindResults q={q} kind={kind} results={results} />
+              <KindResults q={q} kind={kind} size={params.size} results={results} />
             ) : (
               <AllResults q={q} items={results.items} counts={results.counts} />
             )}
@@ -231,10 +232,13 @@ function AllResults({
 function KindResults({
   q,
   kind,
+  size,
   results,
 }: {
   q: string;
   kind: SearchKind;
+  /** The page size the URL holds; none is the search's own. */
+  size: number | null;
   results: SearchResults;
 }) {
   const t = useTranslations("Search");
@@ -248,13 +252,15 @@ function KindResults({
       ) : (
         <p className="text-sm text-muted-foreground">{t("pastTheEnd")}</p>
       )}
-      {results.total > results.pageSize && (
+      {(size !== null || results.total > Math.min(gridPageSizes[0], results.pageSize)) && (
         <ListFooter
           count={t("count", { count: results.total })}
           page={results.page}
           pageSize={results.pageSize}
           total={results.total}
-          href={(page) => address(siteRoutes.search, { q, kind, page })}
+          href={(page) => address(siteRoutes.search, { q, kind, page, size })}
+          sizes={gridPageSizes}
+          maxPages={maxSearchPage}
         />
       )}
       <Link

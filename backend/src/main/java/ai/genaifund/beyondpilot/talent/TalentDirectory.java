@@ -49,19 +49,20 @@ public class TalentDirectory {
 	public PublicTalentListResponse list(PublicTalentListRequest request) {
 		String text = TalentViews.text(request.q());
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		TalentQueryRepository.PublicFilter filter = new TalentQueryRepository.PublicFilter(text, request.role(),
 				request.country(), request.industry(), request.engagement());
 		boolean opening = text == null && request.role() == null && request.country() == null
 				&& request.industry() == null && request.engagement() == null && OPENING_SORT.equals(request.sort());
 		return new PublicTalentListResponse(profileList
-			.publicPage(filter, request.sort(), opening, PAGE_SIZE, (long) (page - 1) * PAGE_SIZE)
+			.publicPage(filter, request.sort(), opening, size, (long) (page - 1) * size)
 			.stream()
 			.map(row -> new PublicTalentSummaryResponse(row.slug(), row.name(), row.headline(), row.country(),
 					row.city(), row.roles(), row.skills(), row.photoFileId(), row.projectCount(),
 					row.leadTitle() == null ? null
 							: new TalentProjectDto(row.leadTitle(), null, null, null, row.leadStage()),
 					row.featuredAt() != null))
-			.toList(), page, PAGE_SIZE, profileList.publicCount(filter));
+			.toList(), page, size, profileList.publicCount(filter));
 	}
 
 	/** An approved, listed profile as search indexes it; empty for any other, or when the profile is gone. */
@@ -69,7 +70,7 @@ public class TalentDirectory {
 	public Optional<IndexedTalent> indexed(UUID profileId) {
 		return profiles.findById(profileId)
 			.filter(profile -> profile.isApproved() && profile.isListed())
-			.map(TalentDirectory::indexed);
+			.map(this::indexed);
 	}
 
 	/** An approved, listed profile by its address; empty for any other. For the operators' MCP server's {@code fetch}. */
@@ -77,7 +78,7 @@ public class TalentDirectory {
 	public Optional<IndexedTalent> listed(String slug) {
 		return profiles.findBySlug(slug)
 			.filter(profile -> profile.isApproved() && profile.isListed())
-			.map(TalentDirectory::indexed);
+			.map(this::indexed);
 	}
 
 	/** Every approved, listed profile as search indexes it, for a rebuild of the index. */
@@ -85,14 +86,18 @@ public class TalentDirectory {
 	public List<IndexedTalent> indexedAll() {
 		return profiles.findByStatusAndListedTrueAndSuspendedAtIsNull(TalentProfile.APPROVED)
 			.stream()
-			.map(TalentDirectory::indexed)
+			.map(this::indexed)
 			.toList();
 	}
 
-	private static IndexedTalent indexed(TalentProfile profile) {
+	private IndexedTalent indexed(TalentProfile profile) {
+		List<TalentDetailRepository.Project> projects = details.projects(profile.getId());
+		TalentDetailRepository.Project lead = projects.isEmpty() ? null : projects.getFirst();
 		return new IndexedTalent(profile.getId(), profile.getSlug(), profile.getName(), profile.getHeadline(),
 				profile.getBio(), profile.getRoles(), profile.getSkills(), profile.getIndustries(), profile.getCountry(),
-				profile.getCity(), profile.getWorksAt(), profile.getPhotoFileId());
+				profile.getCity(), profile.getWorksAt(), profile.getPhotoFileId(), profile.getDecidedAt(),
+				projects.size(), lead == null ? null : lead.title(), lead == null ? null : lead.stage(),
+				profile.getFeaturedAt() != null);
 	}
 
 	/**

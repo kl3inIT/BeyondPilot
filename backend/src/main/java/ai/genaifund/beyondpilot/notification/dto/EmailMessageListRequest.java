@@ -3,6 +3,9 @@ package ai.genaifund.beyondpilot.notification.dto;
 import java.time.Instant;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
@@ -17,7 +20,10 @@ public record EmailMessageListRequest(
 				regexp = "queued|sent|delivered|bounced|complained|failed|skipped") @Nullable String status,
 		@Parameter(description = "Emails whose recipient or subject contains this, ignoring case.") @Size(max = 100) @Nullable String q,
 		@Parameter(description = "The `older` cursor of a page: the emails before it.") @Pattern(regexp = CURSOR) @Nullable String before,
-		@Parameter(description = "The `newer` cursor of a page: the emails after it.") @Pattern(regexp = CURSOR) @Nullable String after) {
+		@Parameter(description = "The `newer` cursor of a page: the emails after it.") @Pattern(regexp = CURSOR) @Nullable String after,
+		@Parameter(description = "How many items a page holds; the list's own page size when absent.",
+				schema = @Schema(type = "integer", format = "int32", minimum = "1", maximum = "100")) @Min(1) @Max(
+						100) @Nullable Integer size) {
 
 	/** Microseconds since the epoch and the message's identifier. */
 	public static final String CURSOR = "\\d{1,18}_[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}";

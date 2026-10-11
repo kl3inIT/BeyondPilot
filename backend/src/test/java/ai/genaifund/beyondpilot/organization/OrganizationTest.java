@@ -820,6 +820,27 @@ class OrganizationTest {
 	}
 
 	@Test
+	void theOperatorsListNarrowsByCountryAndHoldsAsManyAsAsked() {
+		for (String[] one : new String[][] { { "Paged Alpha", "VN" }, { "Paged Beta", "VN" }, { "Paged Gamma", "SG" } }) {
+			post(operator, API + "/admin/organizations", Map.of("name", one[0], "type", "company", "country", one[1]))
+				.expectStatus()
+				.isCreated();
+		}
+
+		String vietnam = body(get(operator, API + "/admin/organizations?q=paged&country=VN").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(vietnam, "$.items[*].name")).containsExactlyInAnyOrder("Paged Alpha",
+				"Paged Beta");
+		assertThat(JsonPath.<List<String>>read(vietnam, "$.countries")).contains("SG", "VN").isSorted();
+
+		String one = body(get(operator, API + "/admin/organizations?q=paged&size=1&page=3").expectStatus().isOk());
+		assertThat(JsonPath.<List<Object>>read(one, "$.items")).hasSize(1);
+		assertThat(JsonPath.<Integer>read(one, "$.pageSize")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(one, "$.total")).isEqualTo(3);
+		assertProblem(get(operator, API + "/admin/organizations?size=101"), 400, "REQUEST_INVALID");
+		assertProblem(get(operator, API + "/admin/organizations?country=vietnam"), 400, "REQUEST_INVALID");
+	}
+
+	@Test
 	void anOperatorCreatesAnOrganizationAndTheInvitedPersonOwnsIt() {
 		String created = body(post(operator, API + "/admin/organizations",
 				Map.of("name", "Handed Over", "type", "company", "emailDomain",

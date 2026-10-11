@@ -19,6 +19,7 @@ import { OrganizationFrame } from "./organization-frame";
 import { isApproved } from "./organization-format";
 import { organizationMembersSearch } from "./organization-members-search";
 import { OrganizationSection } from "./organization-section";
+import { tablePageSizes } from "@/lib/page-size";
 
 const address = createSerializer(organizationMembersSearch);
 
@@ -29,6 +30,8 @@ type OrganizationMembersPageProps = {
   solutions: number | null;
   /** How many use cases it has, when it is an approved enterprise. */
   useCases: number | null;
+  /** The page size the URL holds; none is the list's own. */
+  size: number | null;
 };
 
 /**
@@ -41,6 +44,7 @@ function OrganizationMembersPage({
   members,
   solutions,
   useCases,
+  size,
 }: OrganizationMembersPageProps) {
   const t = useTranslations("Organization.members");
   const format = useFormatter();
@@ -178,14 +182,14 @@ function OrganizationMembersPage({
           ))}
         </ul>
 
-        {/* The summary beside the title has the count; the footer is for a list of several pages. */}
-        {members.total > members.pageSize && (
+        {/* Keep the chosen size available even when all members now fit on one page. */}
+        {(size !== null || members.total > Math.min(tablePageSizes[0], members.pageSize)) && (
           <ListFooter
             count={t("summary.members", { count: members.total })}
             page={members.page}
             pageSize={members.pageSize}
             total={members.total}
-            href={(page) => address(siteRoutes.workspaceMembers, { page })}
+            href={(page) => address(siteRoutes.workspaceMembers, { page, size })}
           />
         )}
       </OrganizationSection>

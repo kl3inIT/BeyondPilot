@@ -57,6 +57,18 @@ test.describe("programs", () => {
     await expect(
       page.getByRole("link", { name: "AI for Insurance Challenge × Tasco" }),
     ).toHaveCount(0);
+
+    await page.getByRole("searchbox", { name: "Search programs and events" }).fill("Tasco");
+    await expect(page).toHaveURL(/(?=.*q=Tasco)(?=.*type=event_series)/);
+    await expect(page.getByText("No programs here yet")).toBeVisible();
+    await page.getByRole("combobox", { name: "Type of program" }).click();
+    await page.getByRole("option", { name: "All types", exact: true }).click();
+    await expect(page).toHaveURL(/q=Tasco/);
+    await expect(
+      page.getByRole("link", { name: "AI for Insurance Challenge × Tasco" }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "GenAI Builders Hanoi" })).toHaveCount(0);
+    await expect(page.getByText("1 program", { exact: true })).toBeVisible();
   });
 
   test("a standard page shows the program, its timeline and when it starts", async ({ page }) => {

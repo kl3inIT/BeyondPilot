@@ -1,6 +1,13 @@
-import { createLoader, parseAsStringLiteral } from "nuqs/server";
+import {
+  createLoader,
+  createSerializer,
+  parseAsInteger,
+  parseAsString,
+  parseAsStringLiteral,
+} from "nuqs/server";
 
 import type { ProgramSummary } from "@/lib/api/generated";
+import { pageSize } from "@/lib/page-size";
 
 import { programTypes } from "./program-schemas";
 
@@ -12,20 +19,43 @@ export const openCardEvents = 3;
 
 /** What narrows the public list of programs, as the URL holds it: `?phase=&type=`. */
 export const programsPublicSearch = {
+  q: parseAsString.withDefault(""),
+  page: parseAsInteger.withDefault(1),
+  size: pageSize,
+  sort: parseAsStringLiteral(["relevance", "newest", "name"] as const),
   phase: parseAsStringLiteral(publicPhases),
   type: parseAsStringLiteral(programTypes),
 };
 
 export const loadProgramsPublicSearch = createLoader(programsPublicSearch);
+export const serializeProgramsPublicSearch = createSerializer(programsPublicSearch);
 
-export type ProgramsPublicSearch = Awaited<ReturnType<typeof loadProgramsPublicSearch>>;
+export type ProgramsPublicSearch = {
+  q: string;
+  page: number;
+  size: number | null;
+  sort: "relevance" | "newest" | "name" | null;
+  phase: (typeof publicPhases)[number] | null;
+  type: (typeof programTypes)[number] | null;
+};
+
+export type ProgramGroups = {
+  open: ProgramSummary[];
+  upcoming: ProgramSummary[];
+  done: ProgramSummary[];
+  events: { program: ProgramSummary; event: ProgramSummary["upcomingEvents"][number] }[];
+  counts: Record<(typeof publicPhases)[number] | "all", number>;
+};
 
 /**
  * The programs the search selects, grouped as the page shows them, and how many programs are in
  * each phase of the selected type, for the tabs. A program still running after its applications
  * closed is shown under Open now.
  */
-export function groupPrograms(programs: ProgramSummary[], search: ProgramsPublicSearch) {
+export function groupPrograms(
+  programs: ProgramSummary[],
+  search: ProgramsPublicSearch,
+): ProgramGroups {
   const ofType = programs.filter((program) => !search.type || program.type === search.type);
   const shown = (phase: (typeof publicPhases)[number]) => !search.phase || search.phase === phase;
   const open = ofType.filter((program) => program.phase === "open" || program.phase === "running");

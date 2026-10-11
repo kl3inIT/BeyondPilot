@@ -32,6 +32,7 @@ export async function readAdminIntroductions(
       q: search.q.trim().slice(0, 100) || undefined,
       status: search.status ?? undefined,
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;
