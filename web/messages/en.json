@@ -1759,7 +1759,12 @@
           },
           "hint": "PDF, Word, Excel, PowerPoint, CSV or text files, or PNG, JPEG or WebP images: up to {count} files, {size} each."
         },
-        "publishNoteUnnamed": "Publishing makes this use case visible immediately, without the organization’s name."
+        "publishNoteUnnamed": "Publishing makes this use case visible immediately, without the organization’s name.",
+        "proposalEditDays": {
+          "label": "Days a sent proposal can be edited",
+          "hint": "From 0 to 90 days after a provider sends a proposal. 0 means a sent proposal cannot be edited. Editing also ends when the use case closes.",
+          "invalid": "Enter a whole number of days from 0 to 90."
+        }
       },
       "untitled": "Untitled use case",
       "actions": {
@@ -1823,7 +1828,8 @@
         },
         "readOnly": "Read only: this is what {organization} wrote.",
         "viewDetails": "View details",
-        "backToReview": "Back to review"
+        "backToReview": "Back to review",
+        "proposalEditDays": "{days, plural, =0 {Sent proposals cannot be edited.} one {Sent proposals can be edited for # day after sending.} other {Sent proposals can be edited for # days after sending.}}"
       }
     },
     "ai": {
@@ -4335,7 +4341,8 @@
       },
       "references": {
         "title": "Customer references & case studies"
-      }
+      },
+      "sharedByLink": "Shared by link: this solution has not been published."
     },
     "mine": {
       "metaTitle": "Solutions · BeyondPilot",
@@ -6147,8 +6154,7 @@
         "closes": "Closes {when}",
         "noDeadline": "No closing date",
         "send": "Send a proposal",
-        "save": "Save for later",
-        "note": "A proposal reuses your solution profile."
+        "note": "{days, plural, one {Proposals can be edited for # day after sending.} other {Proposals can be edited for # days after sending.}}"
       }
     },
     "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
@@ -6745,7 +6751,8 @@
       "PROPOSAL_PDF_REQUIRED": "Add the proposal as a PDF.",
       "PROPOSAL_CHANGED_MEANWHILE": "Someone saved this proposal in the meantime. Reload it to see their changes.",
       "REQUEST_INVALID": "Something in the proposal is not valid. Check it and try again.",
-      "unknown": "Something went wrong. Try again in a moment."
+      "unknown": "Something went wrong. Try again in a moment.",
+      "PROPOSAL_EDIT_WINDOW_CLOSED": "The time to edit this proposal has ended, so your changes were not saved."
     },
     "received": {
       "column": "Proposals",
@@ -6801,14 +6808,24 @@
           "title": "Proposal PDF",
           "download": "Download PDF",
           "none": "No PDF attached."
-        }
-      }
+        },
+        "edited": "Edited {date}"
+      },
+      "edited": "Edited {date}"
     },
     "actions": {
       "proposals": "Proposals",
-      "saved": "Saved. You can finish this proposal later.",
       "continue": "Continue your proposal",
-      "sent": "Your organization sent a proposal."
+      "sent": "Your organization sent a proposal.",
+      "sentOn": "Your organization sent a proposal on {date}.",
+      "view": "View proposal",
+      "edit": "Edit proposal",
+      "editUntil": "You can edit it until {when}.",
+      "editClosed": {
+        "disabled": "Editing is closed: this use case does not allow editing after sending.",
+        "useCaseClosed": "Editing is closed because the use case has closed.",
+        "windowPassed": "Editing is closed: the time to edit has ended."
+      }
     },
     "wizard": {
       "metaTitle": "Send a proposal · BeyondPilot",
@@ -6865,7 +6882,7 @@
           "select": "Select",
           "choose": "Offer {name}",
           "empty": "Your organization has no solutions yet.",
-          "note": "Any solution can be added, whatever its status. Not in the list?",
+          "note": "Any solution can be added. Not in the list?",
           "cancel": "Cancel",
           "add": "{count, plural, one {Add # solution} other {Add # solutions}}"
         }
@@ -6953,7 +6970,32 @@
         },
         "backToUseCase": "Back to the use case",
         "moreUseCases": "Find more use cases"
+      },
+      "edit": {
+        "title": "You are editing a sent proposal",
+        "banner": "Your changes are visible to the organization that posted the use case once you save them. Editing closes {until}.",
+        "note": "Nothing is saved until you choose Save changes.",
+        "reviewLead": "Check your changes. They replace what you sent as soon as you save.",
+        "profileHint": "The profile copy sent with the proposal stays as it was when you sent it. Changes to your profile are not copied.",
+        "unsaved": "Changes not saved yet",
+        "pristine": "No changes yet",
+        "save": "Save changes",
+        "cancel": "Cancel",
+        "saved": "Your changes to the proposal were saved."
       }
+    },
+    "view": {
+      "metaTitle": "Your proposal · BeyondPilot",
+      "back": "Back to the use case",
+      "title": "Your proposal",
+      "edit": "Edit proposal",
+      "meta": "{useCase}",
+      "sent": "Sent {date}",
+      "edited": "Edited {date}",
+      "editUntil": "You can edit it until {when}."
+    },
+    "solutionList": {
+      "newTab": "(opens in a new tab)"
     }
   }
 }

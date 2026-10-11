@@ -1759,7 +1759,12 @@
           },
           "hint": "Tệp PDF, Word, Excel, PowerPoint, CSV hoặc văn bản, hoặc ảnh PNG, JPEG, WebP: tối đa {count} tệp, mỗi tệp {size}."
         },
-        "publishNoteUnnamed": "Khi đăng, use case sẽ hiển thị ngay, không kèm tên tổ chức."
+        "publishNoteUnnamed": "Khi đăng, use case sẽ hiển thị ngay, không kèm tên tổ chức.",
+        "proposalEditDays": {
+          "label": "Số ngày được chỉnh sửa đề xuất đã gửi",
+          "hint": "Từ 0 đến 90 ngày kể từ khi nhà cung cấp gửi đề xuất. 0 nghĩa là đề xuất đã gửi không thể chỉnh sửa. Việc chỉnh sửa cũng kết thúc khi bài toán đóng.",
+          "invalid": "Nhập một số ngày nguyên từ 0 đến 90."
+        }
       },
       "untitled": "Use case chưa đặt tên",
       "actions": {
@@ -1823,7 +1828,8 @@
         },
         "readOnly": "Chỉ xem: đây là nội dung {organization} đã viết.",
         "viewDetails": "Xem chi tiết",
-        "backToReview": "Về trang duyệt"
+        "backToReview": "Về trang duyệt",
+        "proposalEditDays": "{days, plural, =0 {Đề xuất đã gửi không thể chỉnh sửa.} other {Đề xuất đã gửi có thể được chỉnh sửa trong # ngày sau khi gửi.}}"
       }
     },
     "ai": {
@@ -4335,7 +4341,8 @@
       },
       "references": {
         "title": "Khách hàng tham chiếu và trường hợp thực tế"
-      }
+      },
+      "sharedByLink": "Chia sẻ qua liên kết: giải pháp này chưa được công bố."
     },
     "mine": {
       "metaTitle": "Giải pháp · BeyondPilot",
@@ -6147,8 +6154,7 @@
         "closes": "Đóng {when}",
         "noDeadline": "Không có hạn chót",
         "send": "Gửi đề xuất",
-        "save": "Lưu để xem sau",
-        "note": "Đề xuất sẽ dùng lại hồ sơ giải pháp của bạn."
+        "note": "{days, plural, other {Đề xuất có thể được chỉnh sửa trong # ngày sau khi gửi.}}"
       }
     },
     "count": "{count, plural, =0 {Không có bài toán nào} other {# bài toán}}",
@@ -6745,7 +6751,8 @@
       "PROPOSAL_PDF_REQUIRED": "Hãy thêm proposal dưới dạng PDF.",
       "PROPOSAL_CHANGED_MEANWHILE": "Có người đã lưu proposal này trong lúc bạn xem. Hãy tải lại để thấy thay đổi.",
       "REQUEST_INVALID": "Có chỗ trong proposal chưa hợp lệ. Hãy kiểm tra và thử lại.",
-      "unknown": "Đã có lỗi. Hãy thử lại sau một lát."
+      "unknown": "Đã có lỗi. Hãy thử lại sau một lát.",
+      "PROPOSAL_EDIT_WINDOW_CLOSED": "Đã hết thời gian chỉnh sửa đề xuất này nên các thay đổi của bạn chưa được lưu."
     },
     "received": {
       "column": "Đề xuất",
@@ -6801,14 +6808,24 @@
           "title": "Tệp PDF đề xuất",
           "download": "Tải PDF",
           "none": "Chưa đính kèm tệp PDF."
-        }
-      }
+        },
+        "edited": "Đã chỉnh sửa {date}"
+      },
+      "edited": "Đã chỉnh sửa {date}"
     },
     "actions": {
       "proposals": "Đề xuất",
-      "saved": "Đã lưu. Bạn có thể hoàn thiện đề xuất này sau.",
       "continue": "Tiếp tục đề xuất của bạn",
-      "sent": "Tổ chức của bạn đã gửi đề xuất."
+      "sent": "Tổ chức của bạn đã gửi đề xuất.",
+      "sentOn": "Tổ chức của bạn đã gửi đề xuất vào {date}.",
+      "view": "Xem đề xuất",
+      "edit": "Chỉnh sửa đề xuất",
+      "editUntil": "Bạn có thể chỉnh sửa đến {when}.",
+      "editClosed": {
+        "disabled": "Đã đóng chỉnh sửa: bài toán này không cho chỉnh sửa sau khi gửi.",
+        "useCaseClosed": "Đã đóng chỉnh sửa vì bài toán đã đóng.",
+        "windowPassed": "Đã đóng chỉnh sửa: đã hết thời gian chỉnh sửa."
+      }
     },
     "wizard": {
       "metaTitle": "Gửi proposal · BeyondPilot",
@@ -6865,7 +6882,7 @@
           "select": "Chọn",
           "choose": "Đưa {name} vào proposal",
           "empty": "Tổ chức của bạn chưa có giải pháp nào.",
-          "note": "Giải pháp nào cũng thêm được, bất kể trạng thái. Không thấy trong danh sách?",
+          "note": "Bạn có thể thêm bất kỳ giải pháp nào. Không thấy giải pháp cần tìm?",
           "cancel": "Hủy",
           "add": "{count, plural, other {Thêm # giải pháp}}"
         }
@@ -6953,7 +6970,32 @@
         },
         "backToUseCase": "Quay lại use case",
         "moreUseCases": "Tìm thêm use case"
+      },
+      "edit": {
+        "title": "Bạn đang chỉnh sửa một đề xuất đã gửi",
+        "banner": "Tổ chức đăng bài toán sẽ thấy các thay đổi của bạn ngay khi bạn lưu. Thời hạn chỉnh sửa kết thúc vào {until}.",
+        "note": "Sẽ không có gì được lưu cho đến khi bạn chọn Lưu thay đổi.",
+        "reviewLead": "Kiểm tra lại các thay đổi. Chúng sẽ thay thế nội dung bạn đã gửi ngay khi bạn lưu.",
+        "profileHint": "Bản sao hồ sơ gửi kèm đề xuất vẫn giữ nguyên như lúc bạn gửi. Các thay đổi trong hồ sơ của bạn sẽ không được sao chép.",
+        "unsaved": "Chưa lưu các thay đổi",
+        "pristine": "Chưa có thay đổi",
+        "save": "Lưu thay đổi",
+        "cancel": "Hủy",
+        "saved": "Đã lưu các thay đổi của đề xuất."
       }
+    },
+    "view": {
+      "metaTitle": "Đề xuất của bạn · BeyondPilot",
+      "back": "Quay lại bài toán",
+      "title": "Đề xuất của bạn",
+      "edit": "Chỉnh sửa đề xuất",
+      "meta": "{useCase}",
+      "sent": "Đã gửi {date}",
+      "edited": "Đã chỉnh sửa {date}",
+      "editUntil": "Bạn có thể chỉnh sửa đến {when}."
+    },
+    "solutionList": {
+      "newTab": "(mở trong thẻ mới)"
     }
   }
 }
