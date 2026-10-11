@@ -65,18 +65,10 @@ function SolutionImageDialog({
         )}
         {count > 1 && (
           <div className="flex justify-center gap-2">
-            <IconButton
-              prominence="secondary"
-              aria-label={t("previous")}
-              onClick={() => step(-1)}
-            >
+            <IconButton prominence="secondary" aria-label={t("previous")} onClick={() => step(-1)}>
               <ChevronLeftIcon aria-hidden="true" />
             </IconButton>
-            <IconButton
-              prominence="secondary"
-              aria-label={t("next")}
-              onClick={() => step(1)}
-            >
+            <IconButton prominence="secondary" aria-label={t("next")} onClick={() => step(1)}>
               <ChevronRightIcon aria-hidden="true" />
             </IconButton>
           </div>

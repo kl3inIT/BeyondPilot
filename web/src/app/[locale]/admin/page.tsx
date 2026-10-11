@@ -29,7 +29,7 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
     readAdminOrganizations({ q: "", status: "in_review", page: 1 }),
     readAdminSolutions({
       q: "",
-      organization: "",
+      organizationId: null,
       status: "in_review",
       industry: null,
       featured: null,

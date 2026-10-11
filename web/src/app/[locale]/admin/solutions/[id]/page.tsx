@@ -35,7 +35,7 @@ export default async function AdminSolutionRoute({
 
   const waiting = await readAdminSolutions({
     q: "",
-    organization: "",
+    organizationId: null,
     status: "in_review",
     industry: null,
     featured: null,

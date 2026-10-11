@@ -41,10 +41,7 @@ function SolutionRecordImages({ name, images }: SolutionRecordImagesProps) {
     <>
       <ul className="flex flex-wrap gap-2">
         {images.map((image, index) => (
-          <li
-            key={`${image.caption}-${image.fileId}`}
-            className="flex flex-col items-center gap-1"
-          >
+          <li key={`${image.caption}-${image.fileId}`} className="flex flex-col items-center gap-1">
             <button
               type="button"
               onClick={() => setOpen(index)}
@@ -57,14 +54,10 @@ function SolutionRecordImages({ name, images }: SolutionRecordImagesProps) {
                 fill
                 sizes="100px"
                 unoptimized
-                className={
-                  image.shape === "wide" ? "object-cover" : "object-contain"
-                }
+                className={image.shape === "wide" ? "object-cover" : "object-contain"}
               />
             </button>
-            <span className="text-xs text-muted-foreground">
-              {image.caption}
-            </span>
+            <span className="text-xs text-muted-foreground">{image.caption}</span>
           </li>
         ))}
       </ul>

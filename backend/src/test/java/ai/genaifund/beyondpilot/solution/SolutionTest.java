@@ -308,7 +308,8 @@ class SolutionTest {
 
 		// The name of the solution does not hold the text; the name of its organization does.
 		String byOrganization = body(get(operator, ADMIN + "?q=HARBOUR").expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(byOrganization, "$.items[*].name")).containsExactly("Quay Desk");
+		assertThat(JsonPath.<List<String>>read(byOrganization, "$.items[*].name"))
+			.containsExactly("Quay Desk", "Harbour Claims");
 		assertThat(JsonPath.<String>read(byOrganization, "$.items[0].organizationName")).isEqualTo("Harbour Analytics");
 		assertThat(JsonPath.<String>read(byOrganization, "$.items[0].submittedBy")).isEqualTo("founder@harbour.test");
 		assertThat(JsonPath.<Number>read(byOrganization, "$.awaitingReview").longValue()).isEqualTo(waiting + 1);
