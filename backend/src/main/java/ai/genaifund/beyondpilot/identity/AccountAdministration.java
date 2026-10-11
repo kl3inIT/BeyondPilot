@@ -44,7 +44,7 @@ public class AccountAdministration {
 	}
 
 	/**
-	 * One page of the accounts the request selects, latest sign-in first.
+	 * One page of the accounts the request selects, in the order it asks for; latest sign-in first without one.
 	 * @throws IdentityException when the caller is not an operator
 	 */
 	@Transactional(readOnly = true)
@@ -53,8 +53,8 @@ public class AccountAdministration {
 		String text = request.q() == null || request.q().isBlank() ? null : request.q().strip();
 		int page = request.page() == null ? 1 : request.page();
 		return new AccountListResponse(
-				accountList.page(text, request.status(), request.role(), properties.operatorEmails(), PAGE_SIZE,
-						(long) (page - 1) * PAGE_SIZE),
+				accountList.page(text, request.status(), request.role(), request.sort(), properties.operatorEmails(),
+						PAGE_SIZE, (long) (page - 1) * PAGE_SIZE),
 				page, PAGE_SIZE, accountList.count(text, request.status(), request.role()));
 	}
 
