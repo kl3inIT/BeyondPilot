@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { SendIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { Button } from "@/components/actions/button";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
@@ -53,6 +53,8 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
   const [asking, setAsking] = useState<OrganizationMatch | null>(null);
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState<string | null>(null);
+  // The page shows what joining made of the caller once it has read it again; until then nothing is asked twice.
+  const [refreshing, startRefresh] = useTransition();
 
   // The search asks 300 ms after the last keystroke; an answer to an older question is dropped.
   useEffect(() => {
@@ -93,7 +95,7 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
       });
       notify.success(done[data.outcome], { name: match.name });
       setAsking(null);
-      router.refresh();
+      startRefresh(() => router.refresh());
     } catch (error) {
       notify.error(organizationError(error));
     } finally {
@@ -161,7 +163,12 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
                 )}
               </div>
             </div>
-            <Button size="lg" pending={pending === match.id} onClick={() => choose(match)}>
+            <Button
+              size="lg"
+              pending={pending === match.id}
+              disabled={refreshing}
+              onClick={() => choose(match)}
+            >
               {t(`action.${match.way}`)}
             </Button>
           </div>

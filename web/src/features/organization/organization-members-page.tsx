@@ -178,13 +178,16 @@ function OrganizationMembersPage({
           ))}
         </ul>
 
-        <ListFooter
-          count={t("summary.members", { count: members.total })}
-          page={members.page}
-          pageSize={members.pageSize}
-          total={members.total}
-          href={(page) => address(siteRoutes.workspaceMembers, { page })}
-        />
+        {/* The summary beside the title has the count; the footer is for a list of several pages. */}
+        {members.total > members.pageSize && (
+          <ListFooter
+            count={t("summary.members", { count: members.total })}
+            page={members.page}
+            pageSize={members.pageSize}
+            total={members.total}
+            href={(page) => address(siteRoutes.workspaceMembers, { page })}
+          />
+        )}
       </OrganizationSection>
 
       {owner && isApproved(organization) && (

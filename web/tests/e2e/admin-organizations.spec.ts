@@ -341,7 +341,7 @@ test.describe("admin organizations", () => {
     await expect(page).toHaveURL(`/admin/organizations/${openKitchen}`);
     await expect(page).toHaveTitle("Open Kitchen · BeyondPilot");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Open Kitchen");
-    await expect(page.getByText("Đạt Phan on Oct 1, 2026")).toBeVisible();
+    await expect(page.getByText("Created by Đạt Phan on Oct 1, 2026")).toBeVisible();
     const claims = page.getByRole("region", { name: "Claims to own it" });
     await expect(claims.getByText("I founded the team.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
@@ -515,6 +515,11 @@ test.describe("admin organizations", () => {
     );
     await expect(page.getByRole("textbox")).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
+
+    // Its people went to the organization kept, so nobody is asked to invite a first owner.
+    await page.goto(`/admin/organizations/${pocketPolicyLtd}?tab=members`);
+    await expect(page.getByText("No members", { exact: true })).toHaveCount(1);
+    await expect(page.getByText("Invite its first owner.")).toHaveCount(0);
 
     await page.goto("/admin/organizations?q=pocket");
     await expect(shownOrganizations(page)).toHaveText(["Pocket Policy"]);

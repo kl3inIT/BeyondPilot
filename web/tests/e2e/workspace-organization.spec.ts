@@ -465,6 +465,8 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
     await expect(page.getByText("On pocketpolicy.example")).toBeVisible();
     await expect(page.getByText("I joined the claims team.")).toBeVisible();
+    // One page of members needs no count under it: the section's summary already says it.
+    await expect(page.getByText("2 members", { exact: true })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
 
     await page.getByRole("button", { name: "Approve" }).click();
@@ -621,6 +623,81 @@ test.describe("workspace organization", () => {
 
     release();
     await expect(access).toBeEnabled();
+  });
+
+  test("a decided request cannot be decided again until the page has read the change", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const changes = await answerDecisions(page, changesPath, 204);
+    await page.goto("/workspace/organization/members");
+
+    let release = () => {};
+    const held = new Promise<void>((resolve) => (release = resolve));
+    await page.route("**/workspace/organization/members**", async (route) => {
+      if (route.request().headers()["rsc"]) await held;
+      await route.fallback();
+    });
+
+    const approve = page.getByRole("button", { name: "Approve" });
+    await approve.click();
+    await expect(page.getByText("Request approved. They are now a member.")).toBeVisible();
+    await expect(approve).toBeDisabled();
+
+    release();
+    await expect(approve).toBeEnabled();
+    expect(changes).toHaveLength(1);
+  });
+
+  test("a saved profile cannot be saved again until the page has read it", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const changes = await answerDecisions(page, changesPath, 200, {});
+    await page.goto("/workspace/organization");
+    await page.getByRole("button", { name: "Edit profile" }).click();
+
+    let release = () => {};
+    const held = new Promise<void>((resolve) => (release = resolve));
+    await page.route("**/workspace/organization**", async (route) => {
+      if (route.request().headers()["rsc"]) await held;
+      await route.fallback();
+    });
+
+    await page.getByLabel("Short description").fill("Assistants for insurers and brokers.");
+    const save = page.getByRole("button", { name: "Save changes" });
+    await save.click();
+    await expect(page.getByText("Profile saved.")).toBeVisible();
+    // The page still holds the profile from before the save, so the form would look changed.
+    await expect(save).toBeDisabled();
+
+    release();
+    expect(changes).toHaveLength(1);
+  });
+
+  test("an address that already has an invitation is refused in words, not marked as mistyped", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await answerDecisions(page, changesPath, 409, refusal("ORGANIZATION_ALREADY_INVITED"));
+    await page.goto("/workspace/organization/members");
+
+    await page.getByRole("button", { name: "Invite people" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Email addresses").fill("hoa.le@example.com");
+    await dialog.getByRole("button", { name: "Send invitations" }).click();
+
+    await expect(page.getByText("This address already has an invitation.")).toBeVisible();
+    await expect(dialog.getByLabel("Email addresses")).not.toHaveAttribute("aria-invalid", "true");
+    await expect(dialog.getByText("Enter full email addresses, separated by commas.")).toHaveCount(
+      0,
+    );
   });
 
   test("the tabs scroll in their row, and the page stays as wide as the screen", async ({

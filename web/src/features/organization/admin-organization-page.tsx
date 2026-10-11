@@ -303,7 +303,8 @@ function AdminMembers({
         {!detail.merged && <AdminInvite organization={organization} />}
       </div>
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("empty")}</p>
+        // Nobody is invited to a merged organization: its people went to the one kept.
+        !detail.merged && <p className="text-sm text-muted-foreground">{t("empty")}</p>
       ) : (
         <>
           {/* From 768px: a table. */}
@@ -349,8 +350,8 @@ function AdminMembers({
           </ul>
         </>
       )}
-      {/* With nobody to count or page, the summary under the title has said it. */}
-      {total > 0 && (
+      {/* The summary under the title has the count; the footer is for a list of several pages. */}
+      {total > MEMBERS_PAGE_SIZE && (
         <ListFooter
           count={t("summary.members", { count: total })}
           page={current}

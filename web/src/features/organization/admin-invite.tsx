@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useNotify } from "@/hooks/use-notify";
 import { useVocabulary } from "@/i18n/vocabulary";
+import { ApiError } from "@/lib/api/client";
 import { inviteAdminOrganizationMember, type InviteMember } from "@/lib/api/generated";
 
 import { organizationError } from "./organization-errors";
@@ -51,7 +52,8 @@ function AdminInvite({ organization }: { organization: { id: string; name: strin
       setOpen(false);
       router.refresh();
     } catch (error) {
-      setInvalid(true);
+      // Only a badly written address is the field's to say; any other refusal has its own words.
+      setInvalid(error instanceof ApiError && error.code === "REQUEST_INVALID");
       notify.error(organizationError(error));
     } finally {
       setPending(false);
@@ -60,7 +62,14 @@ function AdminInvite({ organization }: { organization: { id: string; name: strin
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>{t("open")}</Button>
+      <Button
+        onClick={() => {
+          setInvalid(false);
+          setOpen(true);
+        }}
+      >
+        {t("open")}
+      </Button>
       <Dialog open={open} onOpenChange={(next) => (pending ? undefined : setOpen(next))}>
         <DialogContent showCloseButton={false} className="sm:max-w-120">
           <form noValidate onSubmit={submit} className="flex flex-col gap-4">
@@ -81,7 +90,10 @@ function AdminInvite({ organization }: { organization: { id: string; name: strin
                   spellCheck={false}
                   maxLength={254}
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setInvalid(false);
+                  }}
                   aria-invalid={invalid || undefined}
                 />
                 {invalid && <FieldError>{t("emailInvalid")}</FieldError>}

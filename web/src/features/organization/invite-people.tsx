@@ -32,6 +32,10 @@ const limitCodes = ["ORGANIZATION_INVITATION_DAILY_LIMIT", "ORGANIZATION_INVITAT
 const reachedLimit = (error: unknown) =>
   error instanceof ApiError && limitCodes.includes(error.code ?? "");
 
+/** The one refusal that is about how an address is written; the others are said by their own words alone. */
+const badAddress = (error: unknown) =>
+  error instanceof ApiError && error.code === "REQUEST_INVALID";
+
 type InvitePeopleProps = {
   organizationName: string;
   /** How many more invitations the organization may send today and keep open. */
@@ -85,8 +89,7 @@ function InvitePeople({ organizationName, allowance }: InvitePeopleProps) {
     }
     if (refused.length > 0) {
       setEmails(refused.map((entry) => entry.address).join(", "));
-      // A limit says nothing about the addresses; the dialog reads the new allowance and says it.
-      setInvalid(!reachedLimit(refused[0].error));
+      setInvalid(badAddress(refused[0].error));
       notify.error(organizationError(refused[0].error));
     } else {
       setEmails("");
@@ -98,7 +101,13 @@ function InvitePeople({ organizationName, allowance }: InvitePeopleProps) {
 
   return (
     <>
-      <Button size="lg" onClick={() => setOpen(true)}>
+      <Button
+        size="lg"
+        onClick={() => {
+          setInvalid(false);
+          setOpen(true);
+        }}
+      >
         {t("open")}
       </Button>
       <Dialog open={open} onOpenChange={(next) => (pending ? undefined : setOpen(next))}>

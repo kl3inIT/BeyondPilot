@@ -46,14 +46,14 @@ function IntroductionCard({
     <li className="flex flex-col gap-3 p-4 not-last:border-b">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="grid min-w-0 gap-0.5 text-sm">
-          <span className="font-medium">{sender}</span>
-          <span className="text-muted-foreground">
+          <span className="font-medium wrap-break-word">{sender}</span>
+          <span className="wrap-break-word text-muted-foreground">
             {t("about", { solution: introduction.solutionName })}
           </span>
         </div>
         <Status tone={tones[introduction.status]}>{t(`status.${introduction.status}`)}</Status>
       </div>
-      <p className="text-sm whitespace-pre-line">{introduction.message}</p>
+      <p className="text-sm wrap-break-word whitespace-pre-line">{introduction.message}</p>
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
         <span>{t("sent", { date: date(introduction.createdAt) })}</span>
         {introduction.status === "pending" && editable && (
