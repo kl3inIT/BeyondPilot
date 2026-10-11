@@ -9,7 +9,7 @@ import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -112,13 +112,13 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-        <div className="flex flex-col gap-1">
-          <AdminPageTitle destination="solutions">{t("title")}</AdminPageTitle>
-          <p className="text-sm text-muted-foreground">{t("lead")}</p>
-        </div>
-        {/* How much waits, whatever the list is narrowed to, and the way to only that. */}
-        {solutions.awaitingReview > 0 &&
+      <AdminPageHeader
+        destination="solutions"
+        title={t("title")}
+        lead={t("lead")}
+        actions={
+          // How much waits, whatever the list is narrowed to, and the way to only that.
+          solutions.awaitingReview > 0 &&
           (search.status === "in_review" ? (
             <span className="text-sm font-medium">
               {t("awaiting", { count: solutions.awaitingReview })}
@@ -127,8 +127,9 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
             <TextButton href={address(siteRoutes.adminSolutions, { status: "in_review" })}>
               {t("awaiting", { count: solutions.awaitingReview })}
             </TextButton>
-          ))}
-      </div>
+          ))
+        }
+      />
       <SolutionsToolbar list="admin" organizationOptions={solutions.organizations} />
 
       {/* From 768px: a table. The sender gives way first, then the organization joins the solution. */}

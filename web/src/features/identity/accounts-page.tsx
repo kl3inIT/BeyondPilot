@@ -7,7 +7,7 @@ import { DataTableEmpty, DataTableFooter } from "@/components/composites/data-ta
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { Person } from "@/components/composites/person";
 import { Status } from "@/components/composites/status";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import type { AccountList, AccountSummary, Me } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -96,7 +96,7 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <AdminPageTitle destination="accounts">{t("title")}</AdminPageTitle>
+      <AdminPageHeader destination="accounts" title={t("title")} />
       <AccountsToolbar />
 
       {/* From 768px: a table. The Created column gives way first. */}

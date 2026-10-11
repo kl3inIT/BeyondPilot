@@ -8,7 +8,7 @@ import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { reviewState } from "@/components/composites/review-status";
 import { Status } from "@/components/composites/status";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganizationList } from "@/lib/api/generated";
@@ -128,10 +128,11 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <AdminPageTitle destination="organizations">{t("title")}</AdminPageTitle>
-        <AdminCreateOrganization />
-      </div>
+      <AdminPageHeader
+        destination="organizations"
+        title={t("title")}
+        actions={<AdminCreateOrganization />}
+      />
       <AdminOrganizationsToolbar countries={organizations.countries} />
 
       {/* From 768px: a table. Who asked and when give way first, so the name keeps its room. */}
