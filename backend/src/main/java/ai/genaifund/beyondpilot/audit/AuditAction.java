@@ -73,6 +73,12 @@ public enum AuditAction {
 
 	SOLUTION_APPROVE("solution.approve"),
 
+	/** An operator started a solution as a draft of an organization. */
+	SOLUTION_CREATE("solution.create"),
+
+	/** An operator published a solution at once, with no review: the operator is GenAI Fund. */
+	SOLUTION_PUBLISH("solution.publish"),
+
 	/** An operator sent a solution back to its owners with what to change. */
 	SOLUTION_SEND_BACK("solution.send_back"),
 
