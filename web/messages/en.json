@@ -4398,6 +4398,7 @@
       },
       "company": {
         "title": "The company behind this solution",
+        "metaDescription": "{name} on BeyondPilot: the company and the AI solutions it lists in GenAI Fund’s directory.",
         "view": "View company",
         "solutions": "Solutions",
         "noSolutions": "No solution is listed yet.",

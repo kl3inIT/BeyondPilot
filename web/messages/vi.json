@@ -4398,6 +4398,7 @@
       },
       "company": {
         "title": "Công ty đứng sau giải pháp này",
+        "metaDescription": "{name} trên BeyondPilot: thông tin công ty và các giải pháp AI được đăng trong danh bạ của GenAI Fund.",
         "view": "Xem công ty",
         "solutions": "Giải pháp",
         "noSolutions": "Chưa có giải pháp nào được đăng.",
