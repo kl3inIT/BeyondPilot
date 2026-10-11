@@ -49,9 +49,9 @@ test.describe("use cases", () => {
       page.getByText("The team needs a clear, measurable way to improve this work."),
     ).toBeVisible();
     await expect(page.getByText("Open to proposals", { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Send a proposal" })).toHaveAttribute(
-      "aria-disabled",
-      "true",
+    await expect(page.getByRole("link", { name: "Send a proposal" })).toHaveAttribute(
+      "href",
+      /\/use-cases\/0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0001\/propose$/,
     );
     await expectNoSeriousA11yViolations(page);
   });

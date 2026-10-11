@@ -199,6 +199,9 @@ public class UseCaseAdministration {
 		useCase.attach(attachments);
 		useCase.takeWeeks(minWeeks, maxWeeks);
 		useCase.showCompanyName(request.hideOrganizationName());
+		if (request.proposalEditDays() != null) {
+			useCase.allowProposalEdits(request.proposalEditDays());
+		}
 		if (request.publishNow()) {
 			useCase.publish(now);
 		}
@@ -392,7 +395,8 @@ public class UseCaseAdministration {
 				useCase.getDataReadiness(), useCase.getIntegrationRequirements(), attachments, useCase.getBudgetMin(),
 				useCase.getBudgetMax(), useCase.getCurrency(), useCase.isBudgetToBeDetermined(),
 				useCase.isBudgetMembersOnly(),
-				useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(), useCase.isHideOrganizationName(),
+				useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(), useCase.getProposalEditDays(),
+				useCase.isHideOrganizationName(),
 				useCase.getPublishedAt(), useCase.getClosesAt(), useCase.getFeaturedAt(), useCase.getVersion(),
 				useCase.getCreatedAt(),
 				useCase.getUpdatedAt(), useCase.getSubmittedAt(), named.get(useCase.getCreatedByAccountId()),

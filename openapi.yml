@@ -25,6 +25,8 @@ tags:
   name: Matching
 - description: The programs operators create and edit.
   name: Program administration
+- description: "What an organization sends to a use case, and what a use case received."
+  name: Use case proposals
 - description: A person's applications to programs.
   name: Applications
 - description: The projects in which a customer put a solution to work.
@@ -6419,6 +6421,270 @@ paths:
       summary: Send an unused invitation again
       tags:
       - Review
+  /api/proposal/use-case-proposal-counts:
+    get:
+      description: "Read without a session: anyone sees how many proposals a use case\
+        \ has."
+      operationId: countUseCaseProposals
+      parameters:
+      - description: "The use cases to count, at most 50."
+        in: query
+        name: useCaseIds
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 50
+          minItems: 0
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseProposalCounts"
+          description: The number of sent proposals of each use case asked about.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "No use case, or more than 50."
+      summary: How many proposals use cases received
+      tags:
+      - Use case proposals
+  /api/proposal/use-case-proposals/{id}:
+    get:
+      operationId: getReceivedUseCaseProposal
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReceivedUseCaseProposal"
+          description: "The proposal as sent, with the sender's profile and the team."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The proposal was not sent, or the caller's organization did\
+            \ not post its use case."
+      security:
+      - session: []
+      summary: One proposal a use case received
+      tags:
+      - Use case proposals
+  /api/proposal/use-case-proposals/{id}/file:
+    get:
+      operationId: getUseCaseProposalFile
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+          description: "The bytes of the PDF, saved under its name."
+        "302":
+          description: "The address the object store serves the file at, for a while."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The proposal was not sent, or the caller's organization did\
+            \ not post its use case."
+      security:
+      - session: []
+      summary: The PDF of a proposal a use case received
+      tags:
+      - Use case proposals
+  /api/proposal/use-case-proposals/{id}/send:
+    post:
+      operationId: sendUseCaseProposal
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseProposalForm"
+          description: The form with the proposal as sent.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The proposal lacks what sending needs; its code says what.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization is not approved.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization has no such proposal.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The proposal was sent, or the use case no longer takes proposals."
+      security:
+      - session: []
+      summary: Send a proposal to its use case
+      tags:
+      - Use case proposals
+  /api/proposal/use-cases/{useCaseId}/proposal:
+    get:
+      operationId: getUseCaseProposalForm
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseProposalForm"
+          description: "The use case, the caller's organization with its solutions\
+            \ and members, and the proposal if one was saved."
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization posted the use case.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The use case no longer takes proposals.
+      security:
+      - session: []
+      summary: The proposal form of a use case for the caller
+      tags:
+      - Use case proposals
+    put:
+      operationId: saveUseCaseProposal
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveUseCaseProposal"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseProposalForm"
+          description: The form with the proposal as saved.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The team names someone who is not a member, a member twice\
+            \ or two primary contacts, or the solution is not the organization's."
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller has no organization, it is not approved, or it\
+            \ posted the use case."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The use case no longer takes proposals, the proposal was sent,\
+            \ or it changed since the form read it."
+      security:
+      - session: []
+      summary: Keep what the proposal form holds
+      tags:
+      - Use case proposals
+  /api/proposal/use-cases/{useCaseId}/proposals:
+    get:
+      operationId: listUseCaseProposals
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReceivedUseCaseProposals"
+          description: "The sent proposals, the latest first."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "There is no such use case, or the caller's organization did\
+            \ not post it."
+      security:
+      - session: []
+      summary: The proposals a use case received
+      tags:
+      - Use case proposals
   /api/search:
     get:
       description: "Matches words, prefixes, title typos and meaning when configured.\
@@ -8147,6 +8413,35 @@ paths:
                 $ref: "#/components/schemas/Problem"
           description: A parameter is not valid.
       summary: "The approved, listed solutions, in the order asked for"
+      tags:
+      - Solutions
+  /api/solution/solutions/shared/{viewKey}:
+    get:
+      description: "The page of the solution as the public reads it, whatever its\
+        \ review says, for those who hold its key. It is not listed or indexed anywhere,\
+        \ and none of the owners' editor is in it."
+      operationId: getSharedSolution
+      parameters:
+      - in: path
+        name: viewKey
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicSolution"
+          description: The solution.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No solution has this key.
+      summary: One solution by the key of its shared page
       tags:
       - Solutions
   /api/solution/solutions/{slug}:
@@ -11059,6 +11354,13 @@ components:
           description: "The programs it belongs to, by name."
           items:
             $ref: "#/components/schemas/UseCaseProgram"
+        proposalEditDays:
+          type: integer
+          format: int32
+          description: How many days after sending a proposal its organization may
+            still edit it; 0 allows no edit after sending.
+          maximum: 90
+          minimum: 0
         publishedAt:
           type:
           - string
@@ -11139,6 +11441,7 @@ components:
       - id
       - organization
       - programs
+      - proposalEditDays
       - requirements
       - status
       - technologies
@@ -12863,6 +13166,15 @@ components:
             format: uuid
           maxItems: 10
           minItems: 0
+        proposalEditDays:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: How many days after sending a proposal its organization may
+            still edit it; 0 allows no edit after sending. 7 when absent.
+          maximum: 90
+          minimum: 0
         publishNow:
           type: boolean
           description: "True to publish at once, false to save a draft for the organization."
@@ -16427,6 +16739,103 @@ components:
       - slug
       - type
       - upcomingEvents
+    ProposalSolution:
+      type: object
+      description: A solution a proposal offers.
+      properties:
+        id:
+          type: string
+          format: uuid
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Its logo, or its organization's when it has none; read at\
+            \ /api/storage/files/{id}."
+        name:
+          type: string
+        slug:
+          type:
+          - string
+          - "null"
+          description: "The address of its public page at /solutions/{slug}; set only\
+            \ while it is approved and not taken down."
+        summary:
+          type:
+          - string
+          - "null"
+        viewKey:
+          type: string
+          format: uuid
+          description: "Opens its page at /solutions/shared/{viewKey} for whoever\
+            \ holds the link, whatever its review says."
+      required:
+      - id
+      - name
+      - viewKey
+    ProposalTeamMember:
+      type: object
+      description: "One person a proposal names, with the role typed for it."
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        name:
+          type:
+          - string
+          - "null"
+        primary:
+          type: boolean
+        role:
+          type: string
+      required:
+      - accountId
+      - email
+      - primary
+      - role
+    ProposalUseCase:
+      type: object
+      description: The use case a proposal is for.
+      properties:
+        closesAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+      required:
+      - id
+      - title
+    ProposingOrganization:
+      type: object
+      description: The organization the caller sends a proposal for.
+      properties:
+        approved:
+          type: boolean
+          description: Whether GenAI Fund approved it; one that is not cannot send
+            a proposal.
+        id:
+          type: string
+          format: uuid
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Read at /api/storage/files/{id}."
+        name:
+          type: string
+      required:
+      - approved
+      - id
+      - name
     PublicCustomerDeployment:
       type: object
       description: An approved customer deployment as anyone reads it.
@@ -16551,6 +16960,10 @@ components:
       description: "An approved solution as anyone with its address reads it, listed\
         \ or not."
       properties:
+        approved:
+          type: boolean
+          description: Whether it is approved and not taken down. False only on a
+            shared page read by its key.
         backing:
           type:
           - object
@@ -16741,6 +17154,7 @@ components:
           - string
           - "null"
       required:
+      - approved
       - builtWith
       - customerDeployments
       - deployment
@@ -17105,6 +17519,13 @@ components:
           type:
           - string
           - "null"
+        proposalEditDays:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: How many days after sending a proposal its organization may
+            still edit it; 0 allows no edit after sending.
         publishedAt:
           type: string
           format: date-time
@@ -17267,6 +17688,116 @@ components:
       required:
       - editable
       - items
+    ReceivedUseCaseProposal:
+      type: object
+      description: "One proposal a use case received, as the members of the organization\
+        \ that posted it read it."
+      properties:
+        approach:
+          type:
+          - string
+          - "null"
+        deck:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/AttachedFile"
+        editedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the sending organization last edited the proposal after
+            sending it; null while it is as sent.
+        id:
+          type: string
+          format: uuid
+        organizationLogoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Read at /api/storage/files/{id}."
+        organizationName:
+          type: string
+        sender:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/SenderProfile"
+        sentAt:
+          type: string
+          format: date-time
+        solutions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProposalSolution"
+        team:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProposalTeamMember"
+        useCase:
+          $ref: "#/components/schemas/ProposalUseCase"
+      required:
+      - id
+      - organizationName
+      - sentAt
+      - solutions
+      - team
+      - useCase
+    ReceivedUseCaseProposalSummary:
+      type: object
+      description: One line of the proposals a use case received.
+      properties:
+        contactName:
+          type:
+          - string
+          - "null"
+          description: The primary contact.
+        editedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the sending organization last edited the proposal after
+            sending it; null while it is as sent.
+        id:
+          type: string
+          format: uuid
+        organizationLogoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Read at /api/storage/files/{id}."
+        organizationName:
+          type: string
+        sentAt:
+          type: string
+          format: date-time
+        solutionNames:
+          type: array
+          description: The names of the solutions offered.
+          items:
+            type: string
+      required:
+      - id
+      - organizationName
+      - sentAt
+      - solutionNames
+    ReceivedUseCaseProposals:
+      type: object
+      description: "The proposals a use case received, the latest first."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReceivedUseCaseProposalSummary"
+        useCase:
+          $ref: "#/components/schemas/ProposalUseCase"
+      required:
+      - items
+      - useCase
     RefuseOrganization:
       type: object
       description: "Why an organization is refused for good, and what its owners are\
@@ -19308,6 +19839,50 @@ components:
       - projects
       - roles
       - skills
+    SaveUseCaseProposal:
+      type: object
+      description: What the proposal form holds now. Nothing is required until the
+        proposal is sent.
+      properties:
+        approach:
+          type:
+          - string
+          - "null"
+          description: How the solutions solve this use case.
+          maxLength: 2000
+          minLength: 0
+        deckFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: A PDF the caller uploaded for an application.
+        solutionIds:
+          type: array
+          description: "Solutions of the caller's organization, whatever their review\
+            \ says, in the order shown."
+          items:
+            type: string
+            format: uuid
+          maxItems: 10
+          minItems: 0
+        team:
+          type: array
+          description: "The people named, in the order shown; at most one is primary."
+          items:
+            $ref: "#/components/schemas/TeamMemberRequest"
+          maxItems: 20
+          minItems: 0
+        version:
+          type:
+          - integer
+          - "null"
+          format: int64
+          description: The version the form read; null when the proposal does not
+            exist yet.
+      required:
+      - solutionIds
+      - team
     SearchCounts:
       type: object
       description: "How many items of each kind match, whatever kind is shown."
@@ -19829,6 +20404,101 @@ components:
       - message
       - senderName
       - topic
+    SenderProfile:
+      type: object
+      description: The sender's talent profile as it was when the proposal was sent.
+      properties:
+        bio:
+          type:
+          - string
+          - "null"
+        city:
+          type:
+          - string
+          - "null"
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+        engagement:
+          type: array
+          items:
+            type: string
+        headline:
+          type:
+          - string
+          - "null"
+        industries:
+          type: array
+          items:
+            type: string
+        languages:
+          type: array
+          description: ISO 639-1 codes.
+          items:
+            type: string
+        name:
+          type: string
+        photoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Read at /api/storage/files/{id}."
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/SenderProject"
+        roles:
+          type: array
+          items:
+            type: string
+        skills:
+          type: array
+          items:
+            type: string
+        website:
+          type:
+          - string
+          - "null"
+        worksAt:
+          type:
+          - string
+          - "null"
+      required:
+      - engagement
+      - industries
+      - languages
+      - name
+      - projects
+      - roles
+      - skills
+    SenderProject:
+      type: object
+      description: One piece of work the profile showed.
+      properties:
+        stage:
+          type:
+          - string
+          - "null"
+        summary:
+          type:
+          - string
+          - "null"
+        title:
+          type: string
+        url:
+          type:
+          - string
+          - "null"
+        year:
+          type:
+          - integer
+          - "null"
+          format: int32
+      required:
+      - title
     SetDocumentReader:
       type: object
       description: "What reads a page that is only a picture from now on: a model\
@@ -20259,6 +20929,12 @@ components:
           format: uuid
         listed:
           type: boolean
+        logoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "Its own logo; read at /api/storage/files/{id}."
         maturity:
           type:
           - string
@@ -20325,6 +21001,10 @@ components:
         updatedAt:
           type: string
           format: date-time
+        viewKey:
+          type: string
+          format: uuid
+          description: "The key its shared page is read by, at /solutions/shared/{viewKey}."
       required:
       - deploymentsAwaitingReview
       - id
@@ -20335,6 +21015,7 @@ components:
       - slug
       - status
       - updatedAt
+      - viewKey
     StartMatchingRun:
       type: object
       description: A run of matching a person starts.
@@ -20845,6 +21526,48 @@ components:
       - slug
       - status
       - updatedAt
+    TeamCandidate:
+      type: object
+      description: A member of the caller's organization the proposal may name.
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        name:
+          type:
+          - string
+          - "null"
+        self:
+          type: boolean
+          description: Whether this is the caller.
+      required:
+      - accountId
+      - email
+      - self
+    TeamMemberRequest:
+      type: object
+      description: "One person of the organization the proposal names, with the role\
+        \ typed for it."
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        primary:
+          type: boolean
+          description: Whether the posting organization is told to speak to this person;
+            at most one.
+        role:
+          type: string
+          description: "What the person does on this proposal; a draft may leave it\
+            \ empty, a proposal cannot be sent with it empty."
+          maxLength: 80
+          minLength: 0
+      required:
+      - accountId
+      - primary
+      - role
     TestAiProvider:
       type: object
       description: "A connection to try, saved or not. Without an apiKey the saved\
@@ -20998,6 +21721,129 @@ components:
       - name
       - published
       - slug
+    UseCaseProposal:
+      type: object
+      description: "An organization's proposal to a use case as its members see it:\
+        \ the working copy, or the proposal as sent."
+      properties:
+        approach:
+          type:
+          - string
+          - "null"
+        deck:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/AttachedFile"
+        editableUntil:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: "While a sent proposal may still be edited, until when; null\
+            \ for a draft, and once the time to edit has ended or the use case has\
+            \ closed."
+        editedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the proposal was last edited after sending; null while
+            it is as sent.
+        id:
+          type: string
+          format: uuid
+        sender:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/SenderProfile"
+          description: The sender's talent profile as it was when the proposal was
+            sent; null for a draft.
+        sentAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        solutions:
+          type: array
+          description: "The solutions offered, in the order shown."
+          items:
+            $ref: "#/components/schemas/ProposalSolution"
+        status:
+          type: string
+          enum:
+          - draft
+          - sent
+        team:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProposalTeamMember"
+        updatedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+          description: "Sent back with the next save, so a save made on a stale copy\
+            \ is refused."
+      required:
+      - id
+      - solutions
+      - status
+      - team
+      - updatedAt
+      - version
+    UseCaseProposalCount:
+      type: object
+      description: How many proposals one use case received.
+      properties:
+        received:
+          type: integer
+          format: int64
+        useCaseId:
+          type: string
+          format: uuid
+      required:
+      - received
+      - useCaseId
+    UseCaseProposalCounts:
+      type: object
+      description: The number of proposals each asked use case received; one that
+        received none is listed with 0.
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/UseCaseProposalCount"
+      required:
+      - items
+    UseCaseProposalForm:
+      type: object
+      description: "What the proposal form needs: the use case, the caller's organization\
+        \ with its members, and the proposal if one was saved."
+      properties:
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamCandidate"
+        organization:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/ProposingOrganization"
+          description: Null when the caller belongs to no organization.
+        proposal:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/UseCaseProposal"
+          description: Null until something was saved.
+        useCase:
+          $ref: "#/components/schemas/ProposalUseCase"
+      required:
+      - members
+      - useCase
     UseCaseRequirement:
       type: object
       description: One thing the solution must do.

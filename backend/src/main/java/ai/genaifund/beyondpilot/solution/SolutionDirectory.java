@@ -118,6 +118,23 @@ public class SolutionDirectory {
 		OrganizationProfile organization = organizations.profile(solution.getOrganizationId())
 			.filter(OrganizationProfile::approved)
 			.orElseThrow(() -> notFound(slug));
+		return shown(solution, organization);
+	}
+
+	/**
+	 * One solution by the key of its shared page, whatever its review says: the public page of it, with nothing of the
+	 * owners' editor. The key is not guessable and is handed only to those who hold the solution in a proposal.
+	 * @throws SolutionException when no solution has the key
+	 */
+	@Transactional(readOnly = true)
+	public PublicSolutionResponse shared(UUID viewKey) {
+		Solution solution = solutions.findByViewKey(viewKey).orElseThrow(() -> notFound(viewKey.toString()));
+		OrganizationProfile organization = organizations.profile(solution.getOrganizationId())
+			.orElseThrow(() -> notFound(viewKey.toString()));
+		return shown(solution, organization);
+	}
+
+	private PublicSolutionResponse shown(Solution solution, OrganizationProfile organization) {
 		return new PublicSolutionResponse(solution.getSlug(), solution.getName(), organization.name(),
 				organization.slug(), organization.country(), organization.foundedYear(), organization.teamSize(),
 				organization.companySizeLabel(), solution.getSummary(), solution.getProblemsSolved(),
@@ -130,7 +147,7 @@ public class SolutionDirectory {
 				solution.getBestCustomerProfile(), SolutionViews.backing(solution), solution.getWebsite(),
 				solution.getDemoUrl(), SolutionViews.publicDeck(solution),
 				shownLogo(solution.getLogoFileId(), organization.logoFileId()), solution.getCoverFileId(),
-				solution.getImageFileIds(), solution.isListed(),
+				solution.getImageFileIds(), solution.isListed(), solution.isApproved(),
 				deployments.findBySolutionIdAndStatusOrderByDecidedAtDesc(solution.getId(), CustomerDeployment.APPROVED)
 					.stream()
 					.map(deployment -> SolutionViews.publicDeployment(deployment, solution))
@@ -140,21 +157,30 @@ public class SolutionDirectory {
 	/** The solutions of an organization, the newest first, for the module that applies with one. */
 	@Transactional(readOnly = true)
 	public List<OfferedSolution> offeredBy(UUID organizationId) {
+		UUID organizationLogo = organizationLogo(organizationId);
 		return solutions.findByOrganizationIdOrderByCreatedAtDesc(organizationId)
 			.stream()
-			.map(SolutionDirectory::offered)
+			.map(solution -> offered(solution, organizationLogo))
 			.toList();
 	}
 
 	/** One solution, for the module that applies with it; empty when it does not exist. */
 	@Transactional(readOnly = true)
 	public Optional<OfferedSolution> offered(UUID solutionId) {
-		return solutions.findById(solutionId).map(SolutionDirectory::offered);
+		return solutions.findById(solutionId)
+			.map(solution -> offered(solution, organizationLogo(solution.getOrganizationId())));
 	}
 
-	private static OfferedSolution offered(Solution solution) {
+	private @Nullable UUID organizationLogo(UUID organizationId) {
+		OrganizationName organization = organizations.names(List.of(organizationId)).get(organizationId);
+		return organization == null ? null : organization.logoFileId();
+	}
+
+	private static OfferedSolution offered(Solution solution, @Nullable UUID organizationLogo) {
 		return new OfferedSolution(solution.getId(), solution.getOrganizationId(), solution.getName(),
-				solution.getSummary(), solution.getProblemsSolved(), solution.getMaturity(), solution.getDemoUrl());
+				solution.getSummary(), solution.getProblemsSolved(), solution.getMaturity(), solution.getDemoUrl(),
+				solution.getViewKey(), solution.getSlug(), shownLogo(solution.getLogoFileId(), organizationLogo),
+				solution.isApproved());
 	}
 
 	/**

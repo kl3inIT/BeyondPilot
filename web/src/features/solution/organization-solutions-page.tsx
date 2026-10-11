@@ -2,24 +2,16 @@ import { BoxesIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
-import { reviewState } from "@/components/composites/review-status";
-import { Status } from "@/components/composites/status";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { OrganizationFrame } from "@/features/organization/organization-frame";
 import { OrganizationSection } from "@/features/organization/organization-section";
 import { Link } from "@/i18n/navigation";
-import { useVocabulary } from "@/i18n/vocabulary";
-import type {
-  MyOrganization,
-  MySolutions,
-  Organization,
-  SolutionSummary,
-} from "@/lib/api/generated";
+import type { MyOrganization, MySolutions, Organization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { CreateSolution } from "./create-solution";
-import { reviewFields } from "./solution-editor-state";
 import { SolutionRowActions } from "./solution-row-actions";
+import { SolutionListingCell, SolutionNameCell, SolutionReviewCell } from "./solution-row-cells";
 
 type OrganizationSolutionsPageProps = {
   mine: MyOrganization & { organization: Organization };
@@ -29,27 +21,6 @@ type OrganizationSolutionsPageProps = {
   /** How many use cases it has, when it is an approved enterprise. */
   useCases: number | null;
 };
-
-/** The tone of each state of a review in the list, where the states are scanned as pills. */
-const reviewTones = {
-  draft: "neutral",
-  in_review: "info",
-  needs_changes: "warning",
-  approved: "success",
-  rejected: "destructive",
-  suspended: "destructive",
-} as const;
-
-/** Whether anyone outside the organization reads a solution, and how they come to it. */
-function listingOf(solution: SolutionSummary) {
-  if (solution.status === "approved") {
-    if (solution.suspendedAt) {
-      return "takenDown";
-    }
-    return solution.listed ? "listed" : "unlisted";
-  }
-  return solution.status === "in_review" ? "notYet" : "notPublic";
-}
 
 /**
  * My organization › Solutions: what the organization offers, each with where its review stands,
@@ -63,61 +34,31 @@ function OrganizationSolutionsPage({
   useCases,
 }: OrganizationSolutionsPageProps) {
   const t = useTranslations("Solution.mine");
-  const reason = useVocabulary("solutionRejection");
-  const takedown = useVocabulary("solutionTakedown");
   const format = useFormatter();
   const waiting =
     mine.role === "owner" &&
     (mine.organization.status !== "approved" || !!mine.organization.suspendedAt);
   const day = (instant: string) => format.dateTime(new Date(instant), { dateStyle: "medium" });
 
-  /** The line under a solution's name: what it does, or what its owners do next. */
-  function about(solution: SolutionSummary) {
-    if (solution.status === "draft") {
-      return t("about.draft", {
-        filled: reviewFields.length - solution.missing.length,
-        total: reviewFields.length,
-      });
-    }
-    if (solution.status === "needs_changes") {
-      return solution.decisionMessage
-        ? t("about.sentBack", { reason: solution.decisionMessage })
-        : t("about.sentBackPlain");
-    }
-    if (solution.status === "rejected") {
-      return t("about.rejected", {
-        reason: solution.decisionMessage ?? reason(solution.decisionReason ?? "other"),
-      });
-    }
-    if (solution.suspendedAt && solution.status === "approved") {
-      return t("about.takenDown", {
-        reason: solution.suspensionMessage ?? takedown(solution.suspensionReason ?? "other"),
-      });
-    }
-    return solution.summary;
-  }
-
   const rows = solutions.items.map((solution) => {
     const editor = `${siteRoutes.workspaceSolutions}/${solution.id}`;
     return {
       id: solution.id,
       name: (
-        <div className="grid min-w-0 text-sm">
-          <Link
-            href={editor}
-            className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            {solution.name}
-          </Link>
-          <span className="truncate text-muted-foreground">{about(solution)}</span>
-        </div>
+        <SolutionNameCell
+          solution={solution}
+          link={
+            <Link
+              href={editor}
+              className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              {solution.name}
+            </Link>
+          }
+        />
       ),
-      status: (
-        <Status appearance="pill" tone={reviewTones[reviewState(solution)]}>
-          {t(`review.${reviewState(solution)}`)}
-        </Status>
-      ),
-      listing: <span>{t(`listing.${listingOf(solution)}`)}</span>,
+      status: <SolutionReviewCell solution={solution} />,
+      listing: <SolutionListingCell solution={solution} />,
       updated: (
         <span className="text-muted-foreground">
           {solution.status === "in_review" && solution.submittedAt

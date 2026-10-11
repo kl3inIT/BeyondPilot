@@ -551,6 +551,10 @@ export type AdminUseCase = {
      * The programs it belongs to, by name.
      */
     programs: Array<UseCaseProgram>;
+    /**
+     * How many days after sending a proposal its organization may still edit it; 0 allows no edit after sending.
+     */
+    proposalEditDays: number;
     publishedAt?: string | null;
     requirements: Array<UseCaseRequirement>;
     /**
@@ -1442,6 +1446,10 @@ export type CreateUseCase = {
      * The programs it belongs to; none when absent.
      */
     programIds?: Array<string> | null;
+    /**
+     * How many days after sending a proposal its organization may still edit it; 0 allows no edit after sending. 7 when absent.
+     */
+    proposalEditDays?: number | null;
     /**
      * True to publish at once, false to save a draft for the organization.
      */
@@ -3383,6 +3391,63 @@ export type ProgramSummary = {
 };
 
 /**
+ * A solution a proposal offers.
+ */
+export type ProposalSolution = {
+    id: string;
+    /**
+     * Its logo, or its organization's when it has none; read at /api/storage/files/{id}.
+     */
+    logoFileId?: string | null;
+    name: string;
+    /**
+     * The address of its public page at /solutions/{slug}; set only while it is approved and not taken down.
+     */
+    slug?: string | null;
+    summary?: string | null;
+    /**
+     * Opens its page at /solutions/shared/{viewKey} for whoever holds the link, whatever its review says.
+     */
+    viewKey: string;
+};
+
+/**
+ * One person a proposal names, with the role typed for it.
+ */
+export type ProposalTeamMember = {
+    accountId: string;
+    email: string;
+    name?: string | null;
+    primary: boolean;
+    role: string;
+};
+
+/**
+ * The use case a proposal is for.
+ */
+export type ProposalUseCase = {
+    closesAt?: string | null;
+    id: string;
+    title: string;
+};
+
+/**
+ * The organization the caller sends a proposal for.
+ */
+export type ProposingOrganization = {
+    /**
+     * Whether GenAI Fund approved it; one that is not cannot send a proposal.
+     */
+    approved: boolean;
+    id: string;
+    /**
+     * Read at /api/storage/files/{id}.
+     */
+    logoFileId?: string | null;
+    name: string;
+};
+
+/**
  * An approved customer deployment as anyone reads it.
  */
 export type PublicCustomerDeployment = {
@@ -3438,6 +3503,10 @@ export type PublicOrganization = {
  * An approved solution as anyone with its address reads it, listed or not.
  */
 export type PublicSolution = {
+    /**
+     * Whether it is approved and not taken down. False only on a shared page read by its key.
+     */
+    approved: boolean;
     /**
      * What GenAI Fund says of it; null when it has said nothing.
      */
@@ -3719,6 +3788,10 @@ export type PublicUseCase = {
      */
     organizationName?: string | null;
     problemStatement?: string | null;
+    /**
+     * How many days after sending a proposal its organization may still edit it; 0 allows no edit after sending.
+     */
+    proposalEditDays?: number | null;
     publishedAt: string;
     targetUsers?: string | null;
     technologies: Array<string>;
@@ -3814,6 +3887,62 @@ export type ReceivedIntroductions = {
      * Newest first.
      */
     items: Array<Introduction>;
+};
+
+/**
+ * One proposal a use case received, as the members of the organization that posted it read it.
+ */
+export type ReceivedUseCaseProposal = {
+    approach?: string | null;
+    deck?: AttachedFile | null;
+    /**
+     * When the sending organization last edited the proposal after sending it; null while it is as sent.
+     */
+    editedAt?: string | null;
+    id: string;
+    /**
+     * Read at /api/storage/files/{id}.
+     */
+    organizationLogoFileId?: string | null;
+    organizationName: string;
+    sender?: SenderProfile | null;
+    sentAt: string;
+    solutions: Array<ProposalSolution>;
+    team: Array<ProposalTeamMember>;
+    useCase: ProposalUseCase;
+};
+
+/**
+ * One line of the proposals a use case received.
+ */
+export type ReceivedUseCaseProposalSummary = {
+    /**
+     * The primary contact.
+     */
+    contactName?: string | null;
+    /**
+     * When the sending organization last edited the proposal after sending it; null while it is as sent.
+     */
+    editedAt?: string | null;
+    id: string;
+    /**
+     * Read at /api/storage/files/{id}.
+     */
+    organizationLogoFileId?: string | null;
+    organizationName: string;
+    sentAt: string;
+    /**
+     * The names of the solutions offered.
+     */
+    solutionNames: Array<string>;
+};
+
+/**
+ * The proposals a use case received, the latest first.
+ */
+export type ReceivedUseCaseProposals = {
+    items: Array<ReceivedUseCaseProposalSummary>;
+    useCase: ProposalUseCase;
 };
 
 /**
@@ -4776,6 +4905,32 @@ export type SaveTalentProfile = {
 };
 
 /**
+ * What the proposal form holds now. Nothing is required until the proposal is sent.
+ */
+export type SaveUseCaseProposal = {
+    /**
+     * How the solutions solve this use case.
+     */
+    approach?: string | null;
+    /**
+     * A PDF the caller uploaded for an application.
+     */
+    deckFileId?: string | null;
+    /**
+     * Solutions of the caller's organization, whatever their review says, in the order shown.
+     */
+    solutionIds: Array<string>;
+    /**
+     * The people named, in the order shown; at most one is primary.
+     */
+    team: Array<TeamMemberRequest>;
+    /**
+     * The version the form read; null when the proposal does not exist yet.
+     */
+    version?: number | null;
+};
+
+/**
  * How many items of each kind match, whatever kind is shown.
  */
 export type SearchCounts = {
@@ -5071,6 +5226,46 @@ export type SendTalentEnquiry = {
 };
 
 /**
+ * The sender's talent profile as it was when the proposal was sent.
+ */
+export type SenderProfile = {
+    bio?: string | null;
+    city?: string | null;
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    engagement: Array<string>;
+    headline?: string | null;
+    industries: Array<string>;
+    /**
+     * ISO 639-1 codes.
+     */
+    languages: Array<string>;
+    name: string;
+    /**
+     * Read at /api/storage/files/{id}.
+     */
+    photoFileId?: string | null;
+    projects: Array<SenderProject>;
+    roles: Array<string>;
+    skills: Array<string>;
+    website?: string | null;
+    worksAt?: string | null;
+};
+
+/**
+ * One piece of work the profile showed.
+ */
+export type SenderProject = {
+    stage?: string | null;
+    summary?: string | null;
+    title: string;
+    url?: string | null;
+    year?: number | null;
+};
+
+/**
  * What reads a page that is only a picture from now on: a model that reads images, or an OCR provider. One of the two, or neither to leave pages unread.
  */
 export type SetDocumentReader = {
@@ -5307,6 +5502,10 @@ export type SolutionSummary = {
     deploymentsAwaitingReview: number;
     id: string;
     listed: boolean;
+    /**
+     * Its own logo; read at /api/storage/files/{id}.
+     */
+    logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     /**
      * What a review needs and it lacks, in the order of the editor: any of summary, maturity, industries, focusAreas, logo and cover. Empty when it can be sent for review.
@@ -5331,6 +5530,10 @@ export type SolutionSummary = {
      */
     suspensionReason?: 'misleading_information' | 'not_an_ai_solution' | 'unverifiable' | 'breaks_the_rules' | 'other';
     updatedAt: string;
+    /**
+     * The key its shared page is read by, at /solutions/shared/{viewKey}.
+     */
+    viewKey: string;
 };
 
 /**
@@ -5574,6 +5777,34 @@ export type TalentSummary = {
 };
 
 /**
+ * A member of the caller's organization the proposal may name.
+ */
+export type TeamCandidate = {
+    accountId: string;
+    email: string;
+    name?: string | null;
+    /**
+     * Whether this is the caller.
+     */
+    self: boolean;
+};
+
+/**
+ * One person of the organization the proposal names, with the role typed for it.
+ */
+export type TeamMemberRequest = {
+    accountId: string;
+    /**
+     * Whether the posting organization is told to speak to this person; at most one.
+     */
+    primary: boolean;
+    /**
+     * What the person does on this proposal; a draft may leave it empty, a proposal cannot be sent with it empty.
+     */
+    role: string;
+};
+
+/**
  * A connection to try, saved or not. Without an apiKey the saved key of providerId is used, while the address is the one it was saved with.
  */
 export type TestAiProvider = {
@@ -5673,6 +5904,70 @@ export type UseCaseProgram = {
      * The address of its public page.
      */
     slug: string;
+};
+
+/**
+ * An organization's proposal to a use case as its members see it: the working copy, or the proposal as sent.
+ */
+export type UseCaseProposal = {
+    approach?: string | null;
+    deck?: AttachedFile | null;
+    /**
+     * While a sent proposal may still be edited, until when; null for a draft, and once the time to edit has ended or the use case has closed.
+     */
+    editableUntil?: string | null;
+    /**
+     * When the proposal was last edited after sending; null while it is as sent.
+     */
+    editedAt?: string | null;
+    id: string;
+    /**
+     * The sender's talent profile as it was when the proposal was sent; null for a draft.
+     */
+    sender?: SenderProfile | null;
+    sentAt?: string | null;
+    /**
+     * The solutions offered, in the order shown.
+     */
+    solutions: Array<ProposalSolution>;
+    status: 'draft' | 'sent';
+    team: Array<ProposalTeamMember>;
+    updatedAt: string;
+    /**
+     * Sent back with the next save, so a save made on a stale copy is refused.
+     */
+    version: number;
+};
+
+/**
+ * How many proposals one use case received.
+ */
+export type UseCaseProposalCount = {
+    received: number;
+    useCaseId: string;
+};
+
+/**
+ * The number of proposals each asked use case received; one that received none is listed with 0.
+ */
+export type UseCaseProposalCounts = {
+    items: Array<UseCaseProposalCount>;
+};
+
+/**
+ * What the proposal form needs: the use case, the caller's organization with its members, and the proposal if one was saved.
+ */
+export type UseCaseProposalForm = {
+    members: Array<TeamCandidate>;
+    /**
+     * Null when the caller belongs to no organization.
+     */
+    organization?: ProposingOrganization | null;
+    /**
+     * Null until something was saved.
+     */
+    proposal?: UseCaseProposal | null;
+    useCase: ProposalUseCase;
 };
 
 /**
@@ -10826,6 +11121,230 @@ export type ResendReviewerInvitationResponses = {
 
 export type ResendReviewerInvitationResponse = ResendReviewerInvitationResponses[keyof ResendReviewerInvitationResponses];
 
+export type CountUseCaseProposalsData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * The use cases to count, at most 50.
+         */
+        useCaseIds: Array<string>;
+    };
+    url: '/api/proposal/use-case-proposal-counts';
+};
+
+export type CountUseCaseProposalsErrors = {
+    /**
+     * No use case, or more than 50.
+     */
+    400: Problem;
+};
+
+export type CountUseCaseProposalsError = CountUseCaseProposalsErrors[keyof CountUseCaseProposalsErrors];
+
+export type CountUseCaseProposalsResponses = {
+    /**
+     * The number of sent proposals of each use case asked about.
+     */
+    200: UseCaseProposalCounts;
+};
+
+export type CountUseCaseProposalsResponse = CountUseCaseProposalsResponses[keyof CountUseCaseProposalsResponses];
+
+export type GetReceivedUseCaseProposalData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-case-proposals/{id}';
+};
+
+export type GetReceivedUseCaseProposalErrors = {
+    /**
+     * The proposal was not sent, or the caller's organization did not post its use case.
+     */
+    404: Problem;
+};
+
+export type GetReceivedUseCaseProposalError = GetReceivedUseCaseProposalErrors[keyof GetReceivedUseCaseProposalErrors];
+
+export type GetReceivedUseCaseProposalResponses = {
+    /**
+     * The proposal as sent, with the sender's profile and the team.
+     */
+    200: ReceivedUseCaseProposal;
+};
+
+export type GetReceivedUseCaseProposalResponse = GetReceivedUseCaseProposalResponses[keyof GetReceivedUseCaseProposalResponses];
+
+export type GetUseCaseProposalFileData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-case-proposals/{id}/file';
+};
+
+export type GetUseCaseProposalFileErrors = {
+    /**
+     * The proposal was not sent, or the caller's organization did not post its use case.
+     */
+    404: Problem;
+};
+
+export type GetUseCaseProposalFileError = GetUseCaseProposalFileErrors[keyof GetUseCaseProposalFileErrors];
+
+export type GetUseCaseProposalFileResponses = {
+    /**
+     * The bytes of the PDF, saved under its name.
+     */
+    200: Blob | File;
+};
+
+export type GetUseCaseProposalFileResponse = GetUseCaseProposalFileResponses[keyof GetUseCaseProposalFileResponses];
+
+export type SendUseCaseProposalData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-case-proposals/{id}/send';
+};
+
+export type SendUseCaseProposalErrors = {
+    /**
+     * The proposal lacks what sending needs; its code says what.
+     */
+    400: Problem;
+    /**
+     * The caller's organization is not approved.
+     */
+    403: Problem;
+    /**
+     * The caller's organization has no such proposal.
+     */
+    404: Problem;
+    /**
+     * The proposal was sent, or the use case no longer takes proposals.
+     */
+    409: Problem;
+};
+
+export type SendUseCaseProposalError = SendUseCaseProposalErrors[keyof SendUseCaseProposalErrors];
+
+export type SendUseCaseProposalResponses = {
+    /**
+     * The form with the proposal as sent.
+     */
+    200: UseCaseProposalForm;
+};
+
+export type SendUseCaseProposalResponse = SendUseCaseProposalResponses[keyof SendUseCaseProposalResponses];
+
+export type GetUseCaseProposalFormData = {
+    body?: never;
+    path: {
+        useCaseId: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-cases/{useCaseId}/proposal';
+};
+
+export type GetUseCaseProposalFormErrors = {
+    /**
+     * The caller's organization posted the use case.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case no longer takes proposals.
+     */
+    409: Problem;
+};
+
+export type GetUseCaseProposalFormError = GetUseCaseProposalFormErrors[keyof GetUseCaseProposalFormErrors];
+
+export type GetUseCaseProposalFormResponses = {
+    /**
+     * The use case, the caller's organization with its solutions and members, and the proposal if one was saved.
+     */
+    200: UseCaseProposalForm;
+};
+
+export type GetUseCaseProposalFormResponse = GetUseCaseProposalFormResponses[keyof GetUseCaseProposalFormResponses];
+
+export type SaveUseCaseProposalData = {
+    body: SaveUseCaseProposal;
+    path: {
+        useCaseId: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-cases/{useCaseId}/proposal';
+};
+
+export type SaveUseCaseProposalErrors = {
+    /**
+     * The team names someone who is not a member, a member twice or two primary contacts, or the solution is not the organization's.
+     */
+    400: Problem;
+    /**
+     * The caller has no organization, it is not approved, or it posted the use case.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case no longer takes proposals, the proposal was sent, or it changed since the form read it.
+     */
+    409: Problem;
+};
+
+export type SaveUseCaseProposalError = SaveUseCaseProposalErrors[keyof SaveUseCaseProposalErrors];
+
+export type SaveUseCaseProposalResponses = {
+    /**
+     * The form with the proposal as saved.
+     */
+    200: UseCaseProposalForm;
+};
+
+export type SaveUseCaseProposalResponse = SaveUseCaseProposalResponses[keyof SaveUseCaseProposalResponses];
+
+export type ListUseCaseProposalsData = {
+    body?: never;
+    path: {
+        useCaseId: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-cases/{useCaseId}/proposals';
+};
+
+export type ListUseCaseProposalsErrors = {
+    /**
+     * There is no such use case, or the caller's organization did not post it.
+     */
+    404: Problem;
+};
+
+export type ListUseCaseProposalsError = ListUseCaseProposalsErrors[keyof ListUseCaseProposalsErrors];
+
+export type ListUseCaseProposalsResponses = {
+    /**
+     * The sent proposals, the latest first.
+     */
+    200: ReceivedUseCaseProposals;
+};
+
+export type ListUseCaseProposalsResponse = ListUseCaseProposalsResponses[keyof ListUseCaseProposalsResponses];
+
 export type SearchData = {
     body?: never;
     path?: never;
@@ -12185,6 +12704,33 @@ export type ListSolutionsResponses = {
 };
 
 export type ListSolutionsResponse = ListSolutionsResponses[keyof ListSolutionsResponses];
+
+export type GetSharedSolutionData = {
+    body?: never;
+    path: {
+        viewKey: string;
+    };
+    query?: never;
+    url: '/api/solution/solutions/shared/{viewKey}';
+};
+
+export type GetSharedSolutionErrors = {
+    /**
+     * No solution has this key.
+     */
+    404: Problem;
+};
+
+export type GetSharedSolutionError = GetSharedSolutionErrors[keyof GetSharedSolutionErrors];
+
+export type GetSharedSolutionResponses = {
+    /**
+     * The solution.
+     */
+    200: PublicSolution;
+};
+
+export type GetSharedSolutionResponse = GetSharedSolutionResponses[keyof GetSharedSolutionResponses];
 
 export type GetSolutionData = {
     body?: never;

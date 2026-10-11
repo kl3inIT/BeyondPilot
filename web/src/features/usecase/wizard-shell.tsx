@@ -10,18 +10,20 @@ import { siteRoutes } from "@/lib/site";
 
 import { steps, type Step } from "./use-case-draft";
 
-type WizardShellProps = {
+type WizardShellProps<S extends string = Step> = {
   /** What the header names: the use case, and the organization it is for. */
   title: string;
   organizationName: string;
   /** Beside the title on the right: where the saving stands, and the way out. */
   status?: ReactNode;
   exit?: ReactNode;
-  current: Step;
+  /** The steps in order, with their titles and the line above them; the use case's own by default. */
+  steps?: { names: readonly S[]; title: (step: S) => string; heading: string };
+  current: S;
   /** Whether a step is complete, shown as a check. */
-  done: (step: Step) => boolean;
+  done: (step: S) => boolean;
   /** Opens a step; without it the steps are only shown. */
-  onStep?: (step: Step) => void;
+  onStep?: (step: S) => void;
   notes: ReactNode[];
   children: ReactNode;
 };
@@ -30,18 +32,20 @@ type WizardShellProps = {
  * The frame of the use case pages that stand apart from the site: a header with the brand and the use case,
  * the list of steps on the left, and the use case in a card on the right.
  */
-function WizardShell({
+function WizardShell<S extends string = Step>({
   title,
   organizationName,
   status,
   exit,
+  steps: own,
   current,
   done,
   onStep,
   notes,
   children,
-}: WizardShellProps) {
+}: WizardShellProps<S>) {
   const t = useTranslations("Organization.useCases.wizard");
+  const names = (own?.names ?? steps) as readonly S[];
 
   return (
     <div className="flex min-h-svh flex-col bg-muted lg:fixed lg:inset-0 lg:min-h-0 lg:overflow-hidden">
@@ -67,9 +71,11 @@ function WizardShell({
       <div className="mx-auto grid w-full max-w-5xl flex-1 gap-8 px-5 py-8 md:px-8 md:py-12 lg:min-h-0 lg:grid-cols-3 lg:grid-rows-1 lg:py-0">
         <aside className="flex flex-col gap-6 lg:overflow-y-auto lg:py-12">
           <nav aria-label={t("stepsLabel")}>
-            <p className="mb-3 text-xs font-medium text-muted-foreground">{t("yourUseCase")}</p>
+            <p className="mb-3 text-xs font-medium text-muted-foreground">
+              {own ? own.heading : t("yourUseCase")}
+            </p>
             <ol className="flex flex-col">
-              {steps.map((name, index) => {
+              {names.map((name, index) => {
                 const finished = done(name);
                 const isCurrent = name === current;
                 const text = (
@@ -83,7 +89,7 @@ function WizardShell({
                           : "text-muted-foreground",
                     )}
                   >
-                    {t(`steps.${name}.title`)}
+                    {own ? own.title(name) : t(`steps.${name as Step}.title`)}
                   </span>
                 );
                 return (
@@ -102,7 +108,7 @@ function WizardShell({
                       >
                         {finished ? <CheckIcon className="size-3.5" /> : index + 1}
                       </span>
-                      {index < steps.length - 1 && (
+                      {index < names.length - 1 && (
                         <span
                           aria-hidden="true"
                           className={cn("my-1 w-0.5 flex-1", finished ? "bg-primary" : "bg-border")}

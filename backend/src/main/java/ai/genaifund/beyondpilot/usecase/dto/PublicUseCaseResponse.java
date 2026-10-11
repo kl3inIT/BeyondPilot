@@ -36,5 +36,7 @@ public record PublicUseCaseResponse(@Schema(requiredMode = Schema.RequiredMode.R
 		@Schema(types = { "integer", "null" }, description = "Null when the brief does not say.") @Nullable Integer timelineMaxWeeks,
 		@Schema(types = { "string", "null" }, format = "date-time",
 				description = "Proposals close at this instant; null for no deadline.") @Nullable Instant closesAt,
+		@Schema(types = { "integer", "null" },
+				description = "How many days after sending a proposal its organization may still edit it; 0 allows no edit after sending.") @Nullable Integer proposalEditDays,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant publishedAt) {
 }

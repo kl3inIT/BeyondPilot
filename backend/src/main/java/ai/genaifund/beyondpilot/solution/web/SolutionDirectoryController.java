@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.solution.web;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
@@ -61,6 +62,17 @@ class SolutionDirectoryController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	PublicSolutionResponse get(@PathVariable String slug) {
 		return directory.get(slug);
+	}
+
+	@GetMapping(path = "/shared/{viewKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getSharedSolution", summary = "One solution by the key of its shared page",
+			description = "The page of the solution as the public reads it, whatever its review says, for those who hold "
+					+ "its key. It is not listed or indexed anywhere, and none of the owners' editor is in it.")
+	@ApiResponse(responseCode = "200", description = "The solution.")
+	@ApiResponse(responseCode = "404", description = "No solution has this key.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	PublicSolutionResponse shared(@PathVariable UUID viewKey) {
+		return directory.shared(viewKey);
 	}
 
 	@GetMapping("/{slug}/deck")

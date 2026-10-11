@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
+import { readProposalCount } from "@/features/proposal/received-queries";
 import { UseCasePage } from "@/features/usecase/use-case-page";
 import { readUseCase } from "@/features/usecase/use-cases-queries";
 import { titleSuffix } from "@/lib/site";
@@ -20,10 +21,10 @@ export async function generateMetadata({
 export default async function UseCaseRoute({ params }: PageProps<"/[locale]/use-cases/[id]">) {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  const useCase = await readUseCase(id);
+  const [useCase, proposals] = await Promise.all([readUseCase(id), readProposalCount(id)]);
   if (!useCase) {
     notFound();
   }
 
-  return <UseCasePage useCase={useCase} />;
+  return <UseCasePage useCase={useCase} proposals={proposals} />;
 }

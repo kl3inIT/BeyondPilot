@@ -37,5 +37,9 @@ public record SolutionSummaryResponse(@Schema(requiredMode = Schema.RequiredMode
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant submittedAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "How many of its customer deployments wait for review.") int deploymentsAwaitingReview) {
+				description = "How many of its customer deployments wait for review.") int deploymentsAwaitingReview,
+		@Schema(types = { "string", "null" }, format = "uuid",
+				description = "Its own logo; read at /api/storage/files/{id}.") @Nullable UUID logoFileId,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The key its shared page is read by, at /solutions/shared/{viewKey}.") UUID viewKey) {
 }

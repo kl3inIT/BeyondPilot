@@ -151,7 +151,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
           />
           <AdminBreadcrumb
             area={{ href: siteRoutes.admin, label: t("title") }}
-            items={destinations.map(({ href, label }) => ({ href, label }))}
+            items={destinations}
             subpages={[{ href: siteRoutes.adminUseCasesNew, label: t("nav.useCasesNew") }]}
           />
         </header>

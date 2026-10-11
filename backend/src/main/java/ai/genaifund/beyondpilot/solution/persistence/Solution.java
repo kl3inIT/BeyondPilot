@@ -46,6 +46,9 @@ public class Solution {
 	@Column(nullable = false, updatable = false)
 	private String slug;
 
+	@Column(nullable = false, updatable = false)
+	private UUID viewKey = UUID.randomUUID();
+
 	@Column(nullable = false)
 	private String name;
 
@@ -374,6 +377,11 @@ public class Solution {
 
 	public UUID getOrganizationId() {
 		return organizationId;
+	}
+
+	/** The key it is read by from a link, whatever its review says. */
+	public UUID getViewKey() {
+		return viewKey;
 	}
 
 	public String getSlug() {

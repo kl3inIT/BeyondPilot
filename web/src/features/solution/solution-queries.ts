@@ -3,6 +3,7 @@ import {
   getAdminSolution,
   getMySolution,
   getOrganization,
+  getSharedSolution,
   getSolution,
   listAdminSolutions,
   listCustomerDeployments,
@@ -91,6 +92,16 @@ export async function readSolutions(search: SolutionsSearch): Promise<PublicSolu
 export async function readSolution(slug: string): Promise<PublicSolution | null> {
   try {
     const { data } = await getSolution({ cache: "no-store", path: { slug } });
+    return data;
+  } catch (error) {
+    return absent(error);
+  }
+}
+
+/** A solution by the key of its shared page, whatever its review says, or `null`. Read without a session. */
+export async function readSharedSolution(viewKey: string): Promise<PublicSolution | null> {
+  try {
+    const { data } = await getSharedSolution({ cache: "no-store", path: { viewKey } });
     return data;
   } catch (error) {
     return absent(error);

@@ -18,6 +18,10 @@ const springPaths = [
 const nextConfig: NextConfig = {
   output: "standalone",
   reactCompiler: true,
+  images: {
+    // 75 is the default; 90 is for portraits, whose skin and dark backdrops the default smooths away.
+    qualities: [75, 90],
+  },
   async headers() {
     return [
       {

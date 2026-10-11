@@ -11,12 +11,28 @@ import {
 
 /** The words a schema's messages are written in; the form passes its translator. */
 type Say = (
-  key: "required" | "tooLong" | "positive" | "budgetOutOfOrder",
+  key: "required" | "tooLong" | "positive" | "budgetOutOfOrder" | "editDays",
   values?: { max: number },
 ) => string;
 
 /** An amount in its currency: 0 or a whole number of up to thirteen digits, wide enough for đồng. */
 const whole = /^(0|[1-9]\d{0,12})$/;
+
+/** The most days after sending that a proposal may be edited, as the backend takes it. */
+const MAX_EDIT_DAYS = 90;
+
+/** How many days after sending a proposal may be edited when GenAI Fund does not say. */
+export const DEFAULT_EDIT_DAYS = 7;
+
+/** The days typed, when they are a whole number from 0 to 90; otherwise null. */
+export function editDaysOf(text: string): number | null {
+  const typed = text.trim();
+  if (!/^[0-9]{1,2}$/.test(typed)) {
+    return null;
+  }
+  const days = Number(typed);
+  return days <= MAX_EDIT_DAYS ? days : null;
+}
 
 /** The most any text of the form holds, as the backend takes it. */
 export const MAX_TEXT = 2000;
@@ -64,6 +80,9 @@ export function adminUseCaseSchema(say: Say) {
       budgetToBeDetermined: z.boolean(),
       budgetMembersOnly: z.boolean(),
       timeline: z.enum(timelineCodes, say("required")),
+      proposalEditDays: z.string().refine((value) => editDaysOf(value) !== null, {
+        message: say("editDays"),
+      }),
       hideOrganizationName: z.boolean(),
       closesDay: z.string().min(1, say("required")),
       closesTime: z.string().min(1, say("required")),

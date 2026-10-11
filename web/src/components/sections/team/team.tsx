@@ -8,6 +8,9 @@ import { Section } from "@/components/ui/section";
 
 type Member = { id: string; name: string; photo: string; linkedin?: string };
 
+/** Above the default 75, which smooths skin and the dark backdrop; allowed in `next.config.ts`. */
+const PORTRAIT_QUALITY = 90;
+
 /**
  * The people building BeyondPilot, with the role each of them has agreed to and the portrait each
  * of them supplied. A member without a public profile shows no LinkedIn link.
@@ -76,6 +79,7 @@ function Team() {
                 alt=""
                 width={810}
                 height={1080}
+                quality={PORTRAIT_QUALITY}
                 sizes="(min-width: 1024px) 240px, (min-width: 768px) 30vw, 45vw"
                 className="aspect-3/4 w-full rounded-2xl object-cover"
               />
