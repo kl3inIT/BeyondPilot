@@ -75,11 +75,11 @@ test.describe("use cases", () => {
     await page.goto("/use-cases");
 
     const industry = page.getByRole("combobox", { name: "Industry" });
-    await industry.fill("Insurance");
-    await page.getByRole("option", { name: "Insurance" }).click();
     await industry.click();
-    await industry.fill("Automotive");
+    await page.getByRole("option", { name: "Insurance" }).click();
     await page.getByRole("option", { name: "Automotive and mobility" }).click();
+    await page.keyboard.press("Escape");
+    await expect(industry).toContainText("2 industries");
     await expect(page).toHaveURL(/\/use-cases\?industry=insurance,automotive_mobility$/);
     await expect(page.getByText("2 use cases", { exact: true })).toBeVisible();
 
@@ -94,7 +94,7 @@ test.describe("use cases", () => {
       "/use-cases",
     );
 
-    await page.getByRole("button", { name: "Clear all" }).click();
+    await page.getByRole("button", { name: "Clear filters" }).click();
     await expect(page).toHaveURL(/\/use-cases\?q=retail$/);
     await expect(
       page.getByRole("main").getByRole("listitem").getByRole("heading", { level: 2 }),
