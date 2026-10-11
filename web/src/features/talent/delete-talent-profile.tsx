@@ -37,7 +37,7 @@ function DeleteTalentProfile() {
   }
 
   return (
-    <div className="flex max-w-3xl justify-start border-t pt-6">
+    <>
       <Button prominence="tertiary" tone="danger" onClick={() => setAsking(true)}>
         {t("action")}
       </Button>
@@ -54,7 +54,7 @@ function DeleteTalentProfile() {
           onConfirm={remove}
         />
       )}
-    </div>
+    </>
   );
 }
 

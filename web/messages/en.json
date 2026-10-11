@@ -4812,7 +4812,23 @@
       "edit": "Edit your profile",
       "noProject": "No project published yet",
       "projects": "{count, plural, one {# project} other {# projects}}",
-      "view": "View profile"
+      "view": "View profile",
+      "steps": {
+        "title": "How AI talent works",
+        "create": {
+          "title": "1. Create your profile",
+          "body": "Your headline, the roles you take, your skills and the projects you delivered. A draft stays private."
+        },
+        "review": {
+          "title": "2. GenAI Fund reviews it",
+          "body": "A check that it is a real person and real work, usually within one or two working days."
+        },
+        "reach": {
+          "title": "3. Businesses reach you here",
+          "body": "Enquiries come through BeyondPilot. Your email address is shared only when you accept one."
+        }
+      },
+      "others": "Other AI talent you could look at"
     },
     "filters": {
       "search": "Search by name, skill or project",
@@ -4919,7 +4935,7 @@
         "listed": "Approved and listed in the directory",
         "unlisted": "Approved, but hidden from the directory",
         "open": "Open your public profile",
-        "unlistedLead": "Choose “Listed in the directory” below to show it again; no new review.",
+        "unlistedLead": "Edit the profile and choose “Listed in the directory” to show it again; no new review.",
         "foot": "A change you save shows on your page at once, without a new review."
       },
       "inbox": {
@@ -4954,7 +4970,9 @@
           "confirm": "Report",
           "cancel": "Keep it"
         },
-        "none": "No enquiries yet."
+        "none": "No enquiries yet.",
+        "choose": "Choose an enquiry to read it.",
+        "list": "Enquiries received"
       },
       "sentBack": {
         "title": "Sent back: {reason}",
@@ -4983,6 +5001,20 @@
         "label": "Your talent profile",
         "profile": "Profile",
         "enquiries": "Enquiries"
+      },
+      "nav": {
+        "label": "Sections of your profile"
+      },
+      "edit": "Edit profile",
+      "back": "Back to your profile",
+      "previewCard": {
+        "title": "How it shows in AI talent",
+        "note": "As last saved. Your email address is never shown."
+      },
+      "enquiriesCard": {
+        "title": "Enquiries",
+        "waiting": "{count, plural, =0 {No enquiry waits for you.} one {# enquiry waits for your answer.} other {# enquiries wait for your answer.}}",
+        "lead": "Contact details are shared only when you accept; an unanswered enquiry closes after 14 days."
       }
     },
     "form": {

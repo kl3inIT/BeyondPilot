@@ -15,10 +15,21 @@ export async function generateMetadata({
   return { title: t("metaTitle"), robots: { index: false } };
 }
 
-export default async function MyTalentRoute({ params }: PageProps<"/[locale]/workspace/talent">) {
+export default async function MyTalentRoute({
+  params,
+  searchParams,
+}: PageProps<"/[locale]/workspace/talent">) {
   const { locale } = await params;
   setRequestLocale(locale);
   const account = await requireAccount(siteRoutes.talentProfile);
+  // `?edit=1` opens the editor for a profile that otherwise reads as people see it.
+  const { edit } = await searchParams;
 
-  return <MyTalentPage mine={await readMyTalent()} accountName={account.displayName ?? ""} />;
+  return (
+    <MyTalentPage
+      mine={await readMyTalent()}
+      accountName={account.displayName ?? ""}
+      editing={edit === "1"}
+    />
+  );
 }
